@@ -23,9 +23,8 @@ public class SpellService {
      * @param spell         le sort à lancer
      * @param caster        le personnage qui lance le sort
      * @param target        la cible du sort
-     * @param spellCategory la catégorie du sort (ex : INSPIRATION, EXPIRATION, etc.)
      */
-    public void castSpell(Spell spell, Personnage caster, Personnage target, SpellCategory spellCategory) {
+    public void castSpell(Spell spell, Personnage caster, Personnage target) {
         // Calcul du coût en mana fixe + pourcentage
         int actualManaCost = spell.getManaCost();
         if (spell.getPercentManaCost() > 0) {
@@ -62,7 +61,7 @@ public class SpellService {
         // Déclencher les passifs liés à la voie du caster
         if (caster.getVoie() != null && caster.getVoie().getPassiveEffects() != null) {
             caster.getVoie().getPassiveEffects().forEach(passif ->
-                    passif.onSpellCast(caster, spellCategory)
+                    passif.onSpellCast(caster, spell)
             );
         }
     }

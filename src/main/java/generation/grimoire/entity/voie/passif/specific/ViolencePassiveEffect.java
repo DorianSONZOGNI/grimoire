@@ -1,5 +1,6 @@
 package generation.grimoire.entity.voie.passif.specific;
 
+import generation.grimoire.entity.Spell;
 import generation.grimoire.entity.personnage.Personnage;
 import generation.grimoire.entity.voie.passif.VoiePassiveEffect;
 import generation.grimoire.enumeration.SpellCategory;
@@ -18,13 +19,13 @@ public class ViolencePassiveEffect extends VoiePassiveEffect {
     private int expirationCount;  // Maximum 10
 
     @Override
-    public void onSpellCast(Personnage personnage, SpellCategory spellCategory) {
-        if (spellCategory == SpellCategory.INSPIRATION) {
+    public void onSpellCast(Personnage personnage, Spell spell) {
+        if (spell.getCategory() == SpellCategory.INSPIRATION) {
             inspirationCount = Math.min(inspirationCount + 1, 5);
             expirationCount = 0; // Réinitialise l'autre cumul
             // Par exemple, appliquer un bonus mental de +2% par sort d'inspiration
             System.out.println(personnage.getName() + " gagne +2% de mental (inspiration " + inspirationCount + "/5).");
-        } else if (spellCategory == SpellCategory.EXPIRATION) {
+        } else if (spell.getCategory() == SpellCategory.EXPIRATION) {
             expirationCount = Math.min(expirationCount + 1, 10);
             inspirationCount = 0;
             // Par exemple, augmenter la puissance de +2 par sort d'expiration

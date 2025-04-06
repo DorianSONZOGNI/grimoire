@@ -1,5 +1,6 @@
 package generation.grimoire.entity.voie.passif;
 
+import generation.grimoire.entity.Spell;
 import generation.grimoire.entity.Voie;
 import generation.grimoire.entity.personnage.Personnage;
 import generation.grimoire.enumeration.SpellCategory;
@@ -32,9 +33,9 @@ public abstract class VoiePassiveEffect {
      * Le comportement pourra varier en fonction de la catégorie du sort.
      *
      * @param personnage le personnage concerné
-     * @param spellCategory la catégorie du sort lancé (ex : INSPIRATION ou EXPIRATION pour la voie violence)
+     * @param spell le spell
      */
-    public abstract void onSpellCast(Personnage personnage, SpellCategory spellCategory);
+    public abstract void onSpellCast(Personnage personnage, Spell spell);
 
     /**
      * Méthode appelée au début de chaque tour.

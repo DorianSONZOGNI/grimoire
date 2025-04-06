@@ -1,8 +1,8 @@
 package generation.grimoire.entity.voie.passif.specific;
 
+import generation.grimoire.entity.Spell;
 import generation.grimoire.entity.personnage.Personnage;
 import generation.grimoire.entity.voie.passif.VoiePassiveEffect;
-import generation.grimoire.enumeration.SpellCategory;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import lombok.Data;
@@ -17,7 +17,7 @@ public class TrahisonPassiveEffect extends VoiePassiveEffect {
     private boolean usedThisTurn = false; // Limité à 1 utilisation par tour
 
     @Override
-    public void onSpellCast(Personnage personnage, SpellCategory spellCategory) {
+    public void onSpellCast(Personnage personnage, Spell spell) {
         // Ici, l'effet n'est pas déclenché par un sort, donc on ne fait rien.
     }
 

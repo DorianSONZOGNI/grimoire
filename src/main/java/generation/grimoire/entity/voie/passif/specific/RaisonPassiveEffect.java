@@ -1,8 +1,8 @@
 package generation.grimoire.entity.voie.passif.specific;
 
+import generation.grimoire.entity.Spell;
 import generation.grimoire.entity.personnage.Personnage;
 import generation.grimoire.entity.voie.passif.VoiePassiveEffect;
-import generation.grimoire.enumeration.SpellCategory;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import lombok.Data;
@@ -17,7 +17,7 @@ public class RaisonPassiveEffect extends VoiePassiveEffect {
     private int consecutiveSuccessfulSpells = 0; // maximum 10
 
     @Override
-    public void onSpellCast(Personnage personnage, SpellCategory spellCategory) {
+    public void onSpellCast(Personnage personnage, Spell spell) {
         // Supposons que cet appel n'est effectué qu'en cas de succès
         consecutiveSuccessfulSpells = Math.min(consecutiveSuccessfulSpells + 1, 10);
         double bonusCritFromSpells = consecutiveSuccessfulSpells * 0.02;

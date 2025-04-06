@@ -1,8 +1,8 @@
 package generation.grimoire.entity.voie.passif.specific;
 
+import generation.grimoire.entity.Spell;
 import generation.grimoire.entity.personnage.Personnage;
 import generation.grimoire.entity.voie.passif.VoiePassiveEffect;
-import generation.grimoire.enumeration.SpellCategory;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import lombok.Data;
@@ -18,7 +18,7 @@ public class ConsolidationPassiveEffect extends VoiePassiveEffect {
     private int bonusLevel;
 
     @Override
-    public void onSpellCast(Personnage personnage, SpellCategory spellCategory) {
+    public void onSpellCast(Personnage personnage, Spell spell) {
         // Aucun effet particulier lors du cast
     }
 

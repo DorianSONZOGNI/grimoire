@@ -1,8 +1,8 @@
 package generation.grimoire.entity.voie.passif.specific;
 
+import generation.grimoire.entity.Spell;
 import generation.grimoire.entity.personnage.Personnage;
 import generation.grimoire.entity.voie.passif.VoiePassiveEffect;
-import generation.grimoire.enumeration.SpellCategory;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import lombok.Data;
@@ -17,7 +17,7 @@ public class DestructionPassiveEffect extends VoiePassiveEffect {
     private double heat; // valeur de chaleur accumulée
 
     @Override
-    public void onSpellCast(Personnage personnage, SpellCategory spellCategory) {
+    public void onSpellCast(Personnage personnage, Spell spell) {
         // Chaque sort lancé génère, par exemple, 10 points de chaleur
         heat += 10;
         System.out.println(personnage.getName() + " accumule de la chaleur (" + heat + "/100).");
