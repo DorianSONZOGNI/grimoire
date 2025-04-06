@@ -3,9 +3,11 @@ package generation.grimoire.entity;
 
 import generation.grimoire.entity.voie.passif.VoiePassiveEffect;
 import jakarta.persistence.*;
+import lombok.Data;
 
 import java.util.List;
 
+@Data
 @Entity
 @Table(name = "voie")
 public class Voie {
