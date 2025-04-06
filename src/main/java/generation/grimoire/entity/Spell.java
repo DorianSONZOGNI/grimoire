@@ -18,6 +18,10 @@ public class Spell {
     private String nom;
     private int niveau;
     private String description;
+    private int manaCost;
+    private int percentManaCost;
+    private int healCost;
+    private int percentHealCost;
 
     @ManyToOne
     @JoinColumn(name = "voie_id", nullable = true)

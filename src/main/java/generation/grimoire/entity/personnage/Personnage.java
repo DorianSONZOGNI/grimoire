@@ -30,6 +30,8 @@ public class Personnage {
     private int power;
     private int armor;
     private int resistance;
+    private int crit;
+    private int speed;
 
     // Liste des buffs/débuffs actifs (ici en mémoire, mais vous pouvez choisir de les persister si besoin)
     @Transient
@@ -70,9 +72,10 @@ public class Personnage {
      * @param buffDebuff l'effet à appliquer
      */
     public void applyBuff(BuffDebuffEffect buffDebuff, Double modifier) {
+        buffDebuff.setModifier(modifier);
         activeBuffs.add(buffDebuff);
         System.out.println(name + " reçoit un effet sur " + buffDebuff.getStatAffected()
-                + " (modificateur : " + buffDebuff.getModifier()
+                + " (modificateur : " + modifier
                 + ") pour " + buffDebuff.getDuration() + " tours.");
     }
 
@@ -90,4 +93,16 @@ public class Personnage {
             }
         }
     }
+
+    /**
+     * Retire tous les buffs/débuffs actifs de ce personnage.
+     * Vous pouvez ici rétablir les statistiques si nécessaire.
+     */
+    public void clearBuffs() {
+        // Optionnel : rétablir les statistiques en inversant les effets appliqués
+        activeBuffs.clear();
+        System.out.println(name + " a été purifié de tous les buffs/débuffs.");
+    }
+
+
 }
