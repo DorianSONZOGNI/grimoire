@@ -16,7 +16,7 @@ import static generation.grimoire.utils.StatCalculator.getSourceValue;
 @Data
 @Entity
 @DiscriminatorValue("PERCENTAGE_HEAL")
-public class PercentageHealEffect extends SpellEffect {
+public class HealPercentageEffect extends SpellEffect {
 
     // Pourcentage exprimé en décimal, par exemple 0.15 pour 15%
     private double percentage;

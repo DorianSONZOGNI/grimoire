@@ -3,7 +3,7 @@ package generation.grimoire.service;
 import generation.grimoire.entity.Spell;
 import generation.grimoire.entity.SpellEffect;
 import generation.grimoire.entity.personnage.Personnage;
-import generation.grimoire.entity.spell.type.effect.ConsumableSpellBuffEffect;
+import generation.grimoire.entity.spell.type.effect.ConsumableSpellBuffDebuffEffect;
 import generation.grimoire.enumeration.SpellCategory;
 import generation.grimoire.repository.SpellRepository;
 import org.springframework.stereotype.Service;
@@ -78,9 +78,9 @@ public class SpellService {
      */
     private void applyConsumableBuffs(Spell spell, Personnage caster) {
         if (caster.getConsumableSpellBuffs() != null && !caster.getConsumableSpellBuffs().isEmpty()) {
-            Iterator<ConsumableSpellBuffEffect> iterator = caster.getConsumableSpellBuffs().iterator();
+            Iterator<ConsumableSpellBuffDebuffEffect> iterator = caster.getConsumableSpellBuffs().iterator();
             while (iterator.hasNext()) {
-                ConsumableSpellBuffEffect buff = iterator.next();
+                ConsumableSpellBuffDebuffEffect buff = iterator.next();
                 if (buff.isActive()) {
                     buff.applyToSpell(spell);
                     if (!buff.isActive()) {  // Consommé

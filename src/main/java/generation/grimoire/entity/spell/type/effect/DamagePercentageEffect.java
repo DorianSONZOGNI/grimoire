@@ -1,6 +1,5 @@
 package generation.grimoire.entity.spell.type.effect;
 
-import generation.grimoire.entity.DamageEffect;
 import generation.grimoire.entity.personnage.Personnage;
 import generation.grimoire.enumeration.Source;
 import generation.grimoire.utils.StatCalculator;
@@ -15,7 +14,7 @@ import lombok.EqualsAndHashCode;
 @Data
 @Entity
 @DiscriminatorValue("PERCENTAGE_DAMAGE")
-public class PercentageDamageEffect extends DamageEffect {
+public class DamagePercentageEffect extends DamageEffect {
 
     private double percentage;
     @Enumerated(EnumType.STRING)

@@ -4,6 +4,7 @@ import generation.grimoire.entity.Spell;
 import generation.grimoire.entity.personnage.Personnage;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Transient;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -15,11 +16,12 @@ import java.util.List;
 @Data
 @Entity
 @DiscriminatorValue("CONSUMABLE_BUFF")
-public class ConsumableSpellBuffEffect extends BuffDebuffEffect {
+public class ConsumableSpellBuffDebuffEffect extends BuffDebuffEffect {
 
     /**
      * Liste des sorts qui ont été impactés par ce buff (pour suivi ou log).
      */
+    @Transient
     private List<Spell> impactedSpells = new ArrayList<>();
 
     /**
@@ -31,7 +33,7 @@ public class ConsumableSpellBuffEffect extends BuffDebuffEffect {
      * Constructeur par défaut.
      * Par défaut, le buff s'applique sur 1 sort et aucun bonus n'est appliqué (modifier = 1.0, donc pas de changement).
      */
-    public ConsumableSpellBuffEffect() {
+    public ConsumableSpellBuffDebuffEffect() {
         this.remainingApplications = 1;
         // Par défaut, ne modifier aucun effet (1.0 = multiplicateur neutre)
         this.setModifier(1.0);
@@ -43,7 +45,7 @@ public class ConsumableSpellBuffEffect extends BuffDebuffEffect {
      * @param remainingApplications Le nombre de sorts qui seront buffés.
      * @param modifier              Le multiplicateur à appliquer (par exemple, 1.5 pour +50%).
      */
-    public ConsumableSpellBuffEffect(int remainingApplications, double modifier) {
+    public ConsumableSpellBuffDebuffEffect(int remainingApplications, double modifier) {
         this.remainingApplications = remainingApplications;
         this.setModifier(modifier);
     }
@@ -57,10 +59,10 @@ public class ConsumableSpellBuffEffect extends BuffDebuffEffect {
     public void applyToSpell(Spell spell) {
         // Pour tous les effets de dégâts (qui étendent DamageEffect)
         spell.getEffects().stream()
-                .filter(effect -> effect instanceof generation.grimoire.entity.DamageEffect)
+                .filter(effect -> effect instanceof DamageEffect)
                 .forEach(effect -> {
-                    generation.grimoire.entity.DamageEffect damageEffect =
-                            (generation.grimoire.entity.DamageEffect) effect;
+                    DamageEffect damageEffect =
+                            (DamageEffect) effect;
                     double currentMult = damageEffect.getAmplificationMultiplier();
                     damageEffect.setAmplificationMultiplier(currentMult * getModifier());
                 });

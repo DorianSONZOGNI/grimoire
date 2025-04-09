@@ -2,7 +2,7 @@ package generation.grimoire.entity.personnage;
 
 import generation.grimoire.entity.Voie;
 import generation.grimoire.entity.spell.type.effect.BuffDebuffEffect;
-import generation.grimoire.entity.spell.type.effect.ConsumableSpellBuffEffect;
+import generation.grimoire.entity.spell.type.effect.ConsumableSpellBuffDebuffEffect;
 import generation.grimoire.entity.spell.type.effect.DamageOverTimeEffect;
 import generation.grimoire.entity.spell.type.effect.HealOverTimeEffect;
 import generation.grimoire.enumeration.DamageType;
@@ -53,7 +53,7 @@ public class Personnage {
     private List<DamageOverTimeEffect> activeDamageOverTimeEffects = new ArrayList<>();
 
     @Transient
-    private List<ConsumableSpellBuffEffect> consumableSpellBuffs = new ArrayList<>();
+    private List<ConsumableSpellBuffDebuffEffect> consumableSpellBuffs = new ArrayList<>();
 
     /**
      * Applique des dégâts après calculs des résistance à ce personnage.
@@ -181,7 +181,7 @@ public class Personnage {
         }
     }
 
-    public void addConsumableSpellBuff(ConsumableSpellBuffEffect buff) {
+    public void addConsumableSpellBuff(ConsumableSpellBuffDebuffEffect buff) {
         consumableSpellBuffs.add(buff);
         System.out.println(this.name + " reçoit un buff consommable pour " + buff.getRemainingApplications() + " prochain(s) sort(s).");
     }

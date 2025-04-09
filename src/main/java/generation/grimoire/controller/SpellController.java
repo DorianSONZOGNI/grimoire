@@ -1,10 +1,10 @@
 package generation.grimoire.controller;
 
 import generation.grimoire.entity.Spell;
-import generation.grimoire.entity.spell.type.effect.ConsumableSpellBuffEffect;
+import generation.grimoire.entity.spell.type.effect.ConsumableSpellBuffDebuffEffect;
 import generation.grimoire.entity.spell.type.effect.DamageOverTimeEffect;
-import generation.grimoire.entity.spell.type.effect.FixedDamageEffect;
-import generation.grimoire.entity.spell.type.effect.PercentageDamageEffect;
+import generation.grimoire.entity.spell.type.effect.DamageFixedEffect;
+import generation.grimoire.entity.spell.type.effect.DamagePercentageEffect;
 import generation.grimoire.enumeration.DamageType;
 import generation.grimoire.enumeration.Source;
 import generation.grimoire.service.SpellService;
@@ -27,7 +27,7 @@ public class SpellController {
         spell.setNom("Explosion Arcanique");
         spell.setNiveau(3);
 
-        PercentageDamageEffect effect = new PercentageDamageEffect();
+        DamagePercentageEffect effect = new DamagePercentageEffect();
         effect.setPercentage(0.10); // 10% des dégâts
         effect.setDamageSource(Source.CASTER_POWER); // Les dégâts se baseront sur la puissance du caster
         effect.setDamageType(DamageType.MAGIC); // Des dégâts magiques
@@ -65,12 +65,12 @@ public class SpellController {
     @GetMapping("/applyBuff")
     public void applyNextSpellBuff() {
         // Par exemple, le buff est consomé au bout d'un sorts et augmente les dégâts de 50%
-        ConsumableSpellBuffEffect buff = new ConsumableSpellBuffEffect();
+        ConsumableSpellBuffDebuffEffect buff = new ConsumableSpellBuffDebuffEffect();
         buff.setModifier(0.5);
         buff.setRemainingApplications(1);
 
 
-        ConsumableSpellBuffEffect buff2 = new ConsumableSpellBuffEffect();
+        ConsumableSpellBuffDebuffEffect buff2 = new ConsumableSpellBuffDebuffEffect();
         buff.setModifier(0.5);
         buff.setDuration(1);
     }
@@ -91,7 +91,7 @@ public class SpellController {
         spell.setAction(1);
 
         // Ajout d'un effet de dégâts fixes qui pourra être amplifié par le buff consommable
-        FixedDamageEffect damageEffect = new FixedDamageEffect();
+        DamageFixedEffect damageEffect = new DamageFixedEffect();
         damageEffect.setDamage(100);
         spell.addEffect(damageEffect);
 

@@ -1,5 +1,6 @@
-package generation.grimoire.entity;
+package generation.grimoire.entity.spell.type.effect;
 
+import generation.grimoire.entity.SpellEffect;
 import generation.grimoire.enumeration.DamageType;
 import jakarta.persistence.EnumType;
 import jakarta.persistence.Enumerated;
