@@ -15,4 +15,10 @@ public abstract class DamageEffect extends SpellEffect {
     @Enumerated(EnumType.STRING)
     private DamageType damageType;
 
+    /**
+     * Multiplicateur d'amplification pour cet effet.
+     * Par défaut, 1.0 signifie qu'aucun buff n'est appliqué.
+     */
+    private double amplificationMultiplier = 1.0;
+
 }
