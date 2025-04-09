@@ -2,6 +2,8 @@ package generation.grimoire.entity.personnage;
 
 import generation.grimoire.entity.Voie;
 import generation.grimoire.entity.spell.type.effect.BuffDebuffEffect;
+import generation.grimoire.entity.spell.type.effect.DamageOverTimeEffect;
+import generation.grimoire.entity.spell.type.effect.HealOverTimeEffect;
 import generation.grimoire.enumeration.DamageType;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -42,6 +44,13 @@ public class Personnage {
     @Transient
     private List<BuffDebuffEffect> activeBuffs = new ArrayList<>();
 
+    // Liste des effets de heal over time actifs (non persistés)
+    @Transient
+    private List<HealOverTimeEffect> activeHealOverTimeEffects = new ArrayList<>();
+
+    @Transient
+    private List<DamageOverTimeEffect> activeDamageOverTimeEffects = new ArrayList<>();
+
     /**
      * Applique des dégâts à ce personnage.
      * Vous pouvez ajouter ici des calculs de résistance en fonction du DamageType.
@@ -69,6 +78,46 @@ public class Personnage {
             this.healthCurrent = this.healthMax;
         }
         System.out.println(name + " est soigné de " + healAmount + " points. Vie actuelle : " + healthCurrent);
+    }
+
+    /**
+     * Ajoute un effet de heal over time à ce personnage.
+     * Vous pouvez cloner l'effet pour éviter de partager une même instance entre plusieurs applications.
+     */
+    public void addHealOverTimeEffect(HealOverTimeEffect effect) {
+        activeHealOverTimeEffects.add(effect);
+    }
+
+    /**
+     * Met à jour les effets de heal over time.
+     * Doit être appelé à chaque tour pour appliquer les soins et décrémenter la durée.
+     */
+    public void updateHealOverTimeEffects() {
+        Iterator<HealOverTimeEffect> iterator = activeHealOverTimeEffects.iterator();
+        while (iterator.hasNext()) {
+            HealOverTimeEffect effect = iterator.next();
+            effect.tick(this);
+            if (effect.getDuration() <= 0) {
+                iterator.remove();
+                System.out.println(name + " n'a plus d'effet de heal over time.");
+            }
+        }
+    }
+
+    public void addDamageOverTimeEffect(DamageOverTimeEffect effect) {
+        activeDamageOverTimeEffects.add(effect);
+    }
+
+    public void updateDamageOverTimeEffects() {
+        Iterator<DamageOverTimeEffect> iterator = activeDamageOverTimeEffects.iterator();
+        while (iterator.hasNext()) {
+            DamageOverTimeEffect dot = iterator.next();
+            dot.tick(this);
+            if (dot.getDuration() <= 0) {
+                iterator.remove();
+                System.out.println(this.getName() + " n'est plus affecté par un effet de Damage Over Time.");
+            }
+        }
     }
 
     /**

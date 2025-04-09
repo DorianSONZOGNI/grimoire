@@ -35,4 +35,23 @@ public class SpellController {
 
         return "Sort lancé ! Consultez la console pour voir les résultats.";
     }
+
+    @GetMapping("/poison")
+    public String saveSpellPoison() {
+
+        Spell spell = new Spell();
+        spell.setNom("Poison Arcanique");
+        spell.setNiveau(4);
+
+        PercentageDamageEffect effect = new PercentageDamageEffect();
+        effect.setPercentage(0.10); // 10% des dégâts
+        effect.setSource(Source.CASTER_POWER); // Les dégâts se baseront sur la puissance du caster
+        effect.setDamageType(DamageType.MAGIC); // Des dégâts magiques
+
+        spell.addEffect(effect);
+
+        spellService.saveSpell(spell);
+
+        return "Sort lancé ! Consultez la console pour voir les résultats.";
+    }
 }

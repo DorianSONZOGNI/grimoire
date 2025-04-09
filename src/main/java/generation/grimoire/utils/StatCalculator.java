@@ -19,6 +19,7 @@ public class StatCalculator {
             case TARGET_MANA_MISSING -> target.getManaMax() - target.getManaCurrent();
             case TARGET_HEALTH_MAX -> target.getHealthMax();
             case CASTER_MANA_MAX -> caster.getManaMax();
+            case TARGET_HEALTH_MISSING -> target.getHealthMax() - target.getHealthCurrent();
             default -> throw new IllegalArgumentException("Source de calcul non supportée : " + source);
         };
     }
