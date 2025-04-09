@@ -1,5 +1,6 @@
 package generation.grimoire.entity;
 
+import generation.grimoire.enumeration.SpellCategory;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -18,6 +19,14 @@ public class Spell {
     private String nom;
     private int niveau;
     private String description;
+    private int manaCost;
+    private int percentManaCost;
+    private int healCost;
+    private int percentHealCost;
+    private int action;
+
+    @Enumerated(EnumType.STRING)
+    private SpellCategory category;
 
     @ManyToOne
     @JoinColumn(name = "voie_id", nullable = true)

@@ -1,5 +1,6 @@
 package generation.grimoire.entity.personnage;
 
+import generation.grimoire.entity.Voie;
 import generation.grimoire.entity.spell.type.effect.BuffDebuffEffect;
 import generation.grimoire.enumeration.DamageType;
 import jakarta.persistence.*;
@@ -30,6 +31,12 @@ public class Personnage {
     private int power;
     private int armor;
     private int resistance;
+    private int crit;
+    private int speed;
+
+    @ManyToOne
+    @JoinColumn(name = "voie_id", nullable = true)
+    private Voie voie;
 
     // Liste des buffs/débuffs actifs (ici en mémoire, mais vous pouvez choisir de les persister si besoin)
     @Transient
@@ -70,9 +77,10 @@ public class Personnage {
      * @param buffDebuff l'effet à appliquer
      */
     public void applyBuff(BuffDebuffEffect buffDebuff, Double modifier) {
+        buffDebuff.setModifier(modifier);
         activeBuffs.add(buffDebuff);
         System.out.println(name + " reçoit un effet sur " + buffDebuff.getStatAffected()
-                + " (modificateur : " + buffDebuff.getModifier()
+                + " (modificateur : " + modifier
                 + ") pour " + buffDebuff.getDuration() + " tours.");
     }
 
@@ -90,4 +98,26 @@ public class Personnage {
             }
         }
     }
+
+    /**
+     * Retire tous les buffs/débuffs actifs de ce personnage.
+     * Vous pouvez ici rétablir les statistiques si nécessaire.
+     */
+    public void clearBuffs() {
+        // Optionnel : rétablir les statistiques en inversant les effets appliqués
+        activeBuffs.clear();
+        System.out.println(name + " a été purifié de tous les buffs/débuffs.");
+    }
+
+    /**
+     * Déclenche la logique d'un sort gratuit.
+     * Ici, vous pouvez simplement afficher un message ou définir un flag pour qu'un sort gratuit soit traité ensuite.
+     */
+    public void triggerFreeSpell() {
+        // Exemple simple : affichage et/ou flag à gérer par votre logique de jeu
+        System.out.println(name + " déclenche un sort gratuit !");
+        // Vous pouvez par exemple stocker un flag ou appeler directement un service de free spell
+    }
+
+
 }
