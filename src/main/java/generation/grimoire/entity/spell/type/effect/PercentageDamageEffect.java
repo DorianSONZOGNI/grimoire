@@ -19,7 +19,7 @@ public class PercentageDamageEffect extends DamageEffect {
 
     private double percentage;
     @Enumerated(EnumType.STRING)
-    private Source source;
+    private Source damageSource;
 
     /**
      * Calcule les dégâts en fonction de la valeur source passée en paramètre.
@@ -32,7 +32,7 @@ public class PercentageDamageEffect extends DamageEffect {
 
     @Override
     public void apply(Personnage caster, Personnage target) {
-        double sourceValue = StatCalculator.getSourceValue(source, caster, target);
+        double sourceValue = StatCalculator.getSourceValue(damageSource, caster, target);
         double damage = calculateDamage(sourceValue);
         target.takeDamage((int) damage, this.getDamageType());
     }

@@ -24,8 +24,10 @@ public class BuffDebuffEffect extends SpellEffect {
     // Valeur du modificateur : positif pour buff, négatif pour débuff.
     private double modifier;
 
+    // Duration 0 -> tours en cours (on invalide les buff duration == 0 en fin de tours et duration -1 après)
     private int duration;
 
+    // S'il y a un ration, la source est importante
     @Enumerated(EnumType.STRING)
     private Source modifierSource;
 

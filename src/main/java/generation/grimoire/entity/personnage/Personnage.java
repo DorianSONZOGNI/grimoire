@@ -2,6 +2,7 @@ package generation.grimoire.entity.personnage;
 
 import generation.grimoire.entity.Voie;
 import generation.grimoire.entity.spell.type.effect.BuffDebuffEffect;
+import generation.grimoire.entity.spell.type.effect.ConsumableSpellBuffEffect;
 import generation.grimoire.entity.spell.type.effect.DamageOverTimeEffect;
 import generation.grimoire.entity.spell.type.effect.HealOverTimeEffect;
 import generation.grimoire.enumeration.DamageType;
@@ -16,7 +17,7 @@ import java.util.List;
 @Data
 @NoArgsConstructor
 @Entity
-@Table(name = "game_character") // "character" pouvant être réservé selon le SGBD
+@Table(name = "Personnage")
 public class Personnage {
 
     @Id
@@ -51,20 +52,52 @@ public class Personnage {
     @Transient
     private List<DamageOverTimeEffect> activeDamageOverTimeEffects = new ArrayList<>();
 
+    @Transient
+    private List<ConsumableSpellBuffEffect> consumableSpellBuffs = new ArrayList<>();
+
     /**
-     * Applique des dégâts à ce personnage.
-     * Vous pouvez ajouter ici des calculs de résistance en fonction du DamageType.
+     * Applique des dégâts après calculs des résistance à ce personnage.
+     * Calculs de résistance en fonction du DamageType.
      *
      * @param damage     le montant de dégâts
      * @param damageType le type de dégâts (ex : PHYSICAL, MAGICAL, etc.)
      */
     public void takeDamage(int damage, DamageType damageType) {
-        // Exemple de logique simplifiée : soustrait les dégâts de la vie actuelle
-        this.healthCurrent -= damage;
-        if (this.healthCurrent < 0) {
-            this.healthCurrent = 0;
+        double constant; // La constante K qui détermine la courbe.
+        double resistanceValue = switch (damageType) {
+            case PHYSIC -> {
+                constant = 100; // Exemple, vous pouvez l'ajuster
+                yield this.armor;
+            }
+            case MAGIC -> {
+                constant = 100; // Vous pouvez aussi utiliser une constante différente
+                yield this.resistance;
+            }
+            default -> {
+                constant = 100;
+                yield 0;
+            }
+        }; // La valeur de résistance à utiliser.
+
+        // On choisit la constante et la valeur de résistance en fonction du type de dégâts.
+
+        // Calcul du facteur de réduction (valeur entre 0 et 1, jamais exactement 1)
+        double reductionFactor = resistanceValue / (resistanceValue + constant);
+
+        // Calcul des dégâts effectifs
+        int effectiveDamage = (int) (damage * (1 - reductionFactor));
+
+        // Si les dégâts calculés sont inférieurs à 1, on les considére comme 0
+        if (effectiveDamage < 1) {
+            effectiveDamage = 0;
         }
-        System.out.println(name + " subit " + damage + " dégâts (" + damageType + "). Vie actuelle : " + healthCurrent);
+
+        // Appliquer les dégâts à la santé actuelle
+        this.healthCurrent -= effectiveDamage;
+
+        System.out.println(this.name + " subit " + effectiveDamage + " dégâts (" +
+                "réduction de " + (int)(reductionFactor * 100) + "%), " +
+                "PV restants : " + this.healthCurrent);
     }
 
     /**
@@ -146,6 +179,11 @@ public class Personnage {
                 System.out.println(name + " perd l'effet sur " + effect.getStatAffected());
             }
         }
+    }
+
+    public void addConsumableSpellBuff(ConsumableSpellBuffEffect buff) {
+        consumableSpellBuffs.add(buff);
+        System.out.println(this.name + " reçoit un buff consommable pour " + buff.getRemainingApplications() + " prochain(s) sort(s).");
     }
 
     /**
