@@ -11,7 +11,7 @@ import lombok.EqualsAndHashCode;
 @Data
 @Entity
 @DiscriminatorValue("HEAL_OVER_TIME")
-public class HealOverTimeEffect extends SpellEffect {
+public class HealOverTimeEffect extends HealEffect {
 
     /**
      * Montant fixe de soin à appliquer chaque tour.
@@ -40,6 +40,7 @@ public class HealOverTimeEffect extends SpellEffect {
             if (percentageHealPerTick > 0) {
                 totalHeal += (int)(target.getHealthMax() * percentageHealPerTick);
             }
+            totalHeal = (int) (totalHeal * getAmplificationMultiplier());
             target.heal(totalHeal);
             duration--;
             System.out.println(target.getName() + " est soigné de " + totalHeal + " PV par heal over time, durée restante : " + duration);

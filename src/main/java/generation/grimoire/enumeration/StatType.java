@@ -8,6 +8,10 @@ public enum StatType {
     ARMURE,
     RESISTANCE,
     POWER,
+    STRENGTH,
     BURN,
-    POISON
+    POISON,
+    DAMAGE_TAKEN_MAGIC,
+    DAMAGE_TAKEN_PHYSIC,
+    DAMAGE_TAKEN_BRUT
 }

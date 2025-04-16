@@ -6,6 +6,7 @@ import generation.grimoire.entity.spell.type.effect.ConsumableSpellBuffDebuffEff
 import generation.grimoire.entity.spell.type.effect.DamageOverTimeEffect;
 import generation.grimoire.entity.spell.type.effect.HealOverTimeEffect;
 import generation.grimoire.enumeration.DamageType;
+import generation.grimoire.enumeration.StatType;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -64,40 +65,57 @@ public class Personnage {
      */
     public void takeDamage(int damage, DamageType damageType) {
         double constant; // La constante K qui détermine la courbe.
+        // Sélectionner la résistance en fonction du type de dégâts
         double resistanceValue = switch (damageType) {
             case PHYSIC -> {
-                constant = 100; // Exemple, vous pouvez l'ajuster
+                constant = 100; // Exemple, ajustez selon vos besoins
                 yield this.armor;
             }
             case MAGIC -> {
-                constant = 100; // Vous pouvez aussi utiliser une constante différente
+                constant = 100; // Utilisez une constante différente si nécessaire
                 yield this.resistance;
             }
             default -> {
                 constant = 100;
                 yield 0;
             }
-        }; // La valeur de résistance à utiliser.
+        };
 
-        // On choisit la constante et la valeur de résistance en fonction du type de dégâts.
-
-        // Calcul du facteur de réduction (valeur entre 0 et 1, jamais exactement 1)
+        // Calcul du facteur de réduction des dégâts (valeur entre 0 et 1)
         double reductionFactor = resistanceValue / (resistanceValue + constant);
 
-        // Calcul des dégâts effectifs
-        int effectiveDamage = (int) (damage * (1 - reductionFactor));
+        // Mapper le DamageType vers StatType pour obtenir le multiplicateur de vulnérabilité
+        StatType statType = switch (damageType) {
+            case MAGIC -> StatType.DAMAGE_TAKEN_MAGIC;
+            case PHYSIC -> StatType.DAMAGE_TAKEN_PHYSIC;
+            case BRUT -> StatType.DAMAGE_TAKEN_BRUT;
+            default -> throw new IllegalArgumentException("Unknown damage type: " + damageType);
+        };
 
-        // Si les dégâts calculés sont inférieurs à 1, on les considére comme 0
-        if (effectiveDamage < 1) {
-            effectiveDamage = 0;
-        }
+        // Récupérer le multiplicateur de vulnérabilité
+        double damageTakenMultiplier = Math.max(1.0, getStatBuffMultiplier(statType));
+
+        // Appliquer le multiplicateur de dégâts avant de calculer la résistance
+        double damageAfterBuff = damage * damageTakenMultiplier;
+
+        // Calcul des dégâts après la réduction
+        double finalDamage = damageAfterBuff * (1 - reductionFactor);
+
+        // S'assurer que les dégâts sont toujours au moins 1
+        int effectiveDamage = (int) finalDamage;
 
         // Appliquer les dégâts à la santé actuelle
-        this.healthCurrent -= effectiveDamage;
+        this.healthCurrent += effectiveDamage;
 
+        // Affichage des informations
+        double finalReductionFactor = Math.min(reductionFactor, 0.90); // Limite la réduction à 90%
         System.out.println(this.name + " subit " + effectiveDamage + " dégâts (" +
-                "réduction de " + (int)(reductionFactor * 100) + "%), " +
+                "réduction de " + (int)(finalReductionFactor * 100) + "%), " +
                 "PV restants : " + this.healthCurrent);
+
+        // Affichage pour le débogage
+        System.out.println("reductionFactor : " + reductionFactor);
+        System.out.println("damageTakenMultiplier : " + damageTakenMultiplier);
     }
 
     /**
@@ -161,6 +179,7 @@ public class Personnage {
     public void applyBuff(BuffDebuffEffect buffDebuff, Double modifier) {
         buffDebuff.setModifier(modifier);
         activeBuffs.add(buffDebuff);
+
         System.out.println(name + " reçoit un effet sur " + buffDebuff.getStatAffected()
                 + " (modificateur : " + modifier
                 + ") pour " + buffDebuff.getDuration() + " tours.");
@@ -204,6 +223,13 @@ public class Personnage {
         // Exemple simple : affichage et/ou flag à gérer par votre logique de jeu
         System.out.println(name + " déclenche un sort gratuit !");
         // Vous pouvez par exemple stocker un flag ou appeler directement un service de free spell
+    }
+
+    public double getStatBuffMultiplier(StatType statType) {
+        return activeBuffs.stream()
+                .filter(buff -> buff.affectsStatType(statType))
+                .map(BuffDebuffEffect::getModifier)
+                .reduce(1.0, (a, b) -> a * b);
     }
 
 

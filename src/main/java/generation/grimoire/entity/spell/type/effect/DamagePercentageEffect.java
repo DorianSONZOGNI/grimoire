@@ -31,8 +31,15 @@ public class DamagePercentageEffect extends DamageEffect {
 
     @Override
     public void apply(Personnage caster, Personnage target) {
+        // Récupérer la valeur de la source (par exemple, la vie max du caster ou d'un autre attribut)
         double sourceValue = StatCalculator.getSourceValue(damageSource, caster, target);
         double damage = calculateDamage(sourceValue);
+
+        // Appliquer le multiplicateur de vulnérabilité pour prendre en compte les résistances de la cible
+        double multiplier = getDamageTakenMultiplier(target); // Utilisation de damageType
+        damage *= multiplier;
+
+        // Appliquer les dégâts à la cible
         target.takeDamage((int) damage, this.getDamageType());
     }
 

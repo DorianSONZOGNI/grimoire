@@ -57,7 +57,7 @@ public class SpellService {
                 + " PV pour lancer " + spell.getNom());
 
         // Appliquer les buffs consommables de manière générique
-        applyConsumableBuffs(spell, caster);
+        applyConsumableBuffs(spell, caster, target);
 
         // Appliquer chacun des effets du sort
         for (SpellEffect effect : spell.getEffects()) {
@@ -76,13 +76,13 @@ public class SpellService {
      * Parcourt la liste des buffs consommables du caster, applique chacun d'eux sur le sort,
      * et consomme ceux qui ont épuisé leur nombre d'applications.
      */
-    private void applyConsumableBuffs(Spell spell, Personnage caster) {
+    private void applyConsumableBuffs(Spell spell, Personnage caster, Personnage target) {
         if (caster.getConsumableSpellBuffs() != null && !caster.getConsumableSpellBuffs().isEmpty()) {
             Iterator<ConsumableSpellBuffDebuffEffect> iterator = caster.getConsumableSpellBuffs().iterator();
             while (iterator.hasNext()) {
                 ConsumableSpellBuffDebuffEffect buff = iterator.next();
                 if (buff.isActive()) {
-                    buff.applyToSpell(spell);
+                    buff.applyToSpell(spell, caster, target);
                     if (!buff.isActive()) {  // Consommé
                         iterator.remove();
                         System.out.println(caster.getName() + " a consommé un buff consumable.");

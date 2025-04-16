@@ -12,7 +12,7 @@ import lombok.EqualsAndHashCode;
 @Data
 @Entity
 @DiscriminatorValue("DAMAGE_OVER_TIME")
-public class DamageOverTimeEffect extends SpellEffect {
+public class DamageOverTimeEffect extends DamageEffect {
 
     /**
      * Dégâts fixes à infliger à chaque tour.
@@ -44,13 +44,18 @@ public class DamageOverTimeEffect extends SpellEffect {
      */
     public void tick(Personnage target) {
         if (duration > 0) {
-            int totalDamage = fixedDamagePerTick;
+            int baseDamage = fixedDamagePerTick;
             if (percentageDamagePerTick > 0) {
-                totalDamage += (int)(target.getHealthMax() * percentageDamagePerTick);
+                baseDamage += (int)(target.getHealthMax() * percentageDamagePerTick);
             }
-            // Utilisation de damageType pour préciser le type de dégâts
+
+            // Application du multiplicateur de vulnérabilité
+            double multiplier = getDamageTakenMultiplier(target);
+            int totalDamage = (int)(baseDamage * multiplier);
+
             target.takeDamage(totalDamage, damageType);
             duration--;
+
             System.out.println(target.getName() + " subit " + totalDamage
                     + " dégâts (" + damageType + ") de damage over time, durée restante: " + duration);
         }

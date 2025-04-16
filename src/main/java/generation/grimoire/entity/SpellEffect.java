@@ -1,6 +1,7 @@
 package generation.grimoire.entity;
 
 import generation.grimoire.entity.personnage.Personnage;
+import generation.grimoire.entity.spell.type.effect.BuffDebuffEffect;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -27,4 +28,11 @@ public abstract class SpellEffect {
      * @param target la cible
      */
     public abstract void apply(Personnage caster, Personnage target);
+
+    /**
+     * Permet aux effets de réagir à un buff/débuff (peut être ignoré si non concerné).
+     */
+    public void applyModifierFromBuff(BuffDebuffEffect buff, Personnage caster, Personnage target) {
+        // Par défaut, ne fait rien
+    }
 }

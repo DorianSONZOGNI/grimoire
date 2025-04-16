@@ -1,12 +1,11 @@
 package generation.grimoire.controller;
 
 import generation.grimoire.entity.Spell;
-import generation.grimoire.entity.spell.type.effect.ConsumableSpellBuffDebuffEffect;
-import generation.grimoire.entity.spell.type.effect.DamageOverTimeEffect;
-import generation.grimoire.entity.spell.type.effect.DamageFixedEffect;
-import generation.grimoire.entity.spell.type.effect.DamagePercentageEffect;
+import generation.grimoire.entity.personnage.Personnage;
+import generation.grimoire.entity.spell.type.effect.*;
 import generation.grimoire.enumeration.DamageType;
 import generation.grimoire.enumeration.Source;
+import generation.grimoire.enumeration.StatType;
 import generation.grimoire.service.SpellService;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -96,4 +95,109 @@ public class SpellController {
         spell.addEffect(damageEffect);
 
     }
+
+    @GetMapping("/BuffSystem")
+    public void testCombatBuffSystem2() {
+
+        Personnage mage = new Personnage();
+        mage.setName("Mage Rouge");
+        mage.setHealthMax(500);
+        mage.setHealthCurrent(500);
+        mage.setManaCurrent(100);
+        mage.setManaMax(100);
+
+        Personnage moine = new Personnage();
+        moine.setName("Moine de Jade");
+        moine.setHealthMax(500);
+        moine.setHealthCurrent(500);
+        moine.setManaCurrent(100);
+        moine.setManaMax(100);
+        moine.setResistance(50);
+
+        // ===== Buff de vulnérabilité (cible) =====
+        BuffDebuffEffect buffVulne = new BuffDebuffEffect();
+        buffVulne.setStatAffected(StatType.DAMAGE_TAKEN_MAGIC); // +100% dégâts magiques reçus
+        buffVulne.setModifier(2.0);
+        buffVulne.setDuration(2);
+        System.out.println("Avant buff - Multiplicateur : " + moine.getStatBuffMultiplier(StatType.DAMAGE_TAKEN_MAGIC));
+        buffVulne.apply(mage, moine);  // Appliquer le buff
+        System.out.println("Après buff - Multiplicateur : " + moine.getStatBuffMultiplier(StatType.DAMAGE_TAKEN_MAGIC));
+
+
+
+        // ===== Dégâts infligés sur la cible =====
+        DamageFixedEffect bouleDeFeu = new DamageFixedEffect();
+        bouleDeFeu.setDamage(100);
+        bouleDeFeu.setDamageType(DamageType.MAGIC);
+        bouleDeFeu.apply(mage, moine); // Devrait infliger 200 grâce au buff
+
+        System.out.println("PV de " + moine.getName() + " après boule de feu : " + moine.getHealthCurrent());
+
+        // ===== Buff de soin reçu (auto-appliqué) =====
+        BuffDebuffEffect buffHealReceve = new BuffDebuffEffect();
+        buffHealReceve.setStatAffected(StatType.HEALTH);
+        buffHealReceve.setModifier(1.10); // +10%
+        buffHealReceve.setDuration(3);
+        buffHealReceve.setModifierSource(Source.CASTER_POWER);
+        buffHealReceve.apply(moine, moine);
+
+        // ===== Soin reçu =====
+        HealFixedEffect soin = new HealFixedEffect();
+        soin.setHealAmount(80);
+        soin.apply(moine, moine); // Devrait donner 88 PV grâce au buff
+
+        System.out.println("PV de " + moine.getName() + " après soin : " + moine.getHealthCurrent());
+    }
+
+
+    @GetMapping("/testCombatBuffSystem")
+    public void testCombatBuffSystem() {
+
+        Personnage mage = new Personnage();
+        mage.setName("Mage Rouge");
+        mage.setHealthMax(500);
+        mage.setHealthCurrent(500);
+        mage.setManaCurrent(100);
+        mage.setManaMax(100);
+
+        Personnage moine = new Personnage();
+        moine.setName("Moine de Jade");
+        moine.setHealthMax(500);
+        moine.setHealthCurrent(500);
+        moine.setManaCurrent(100);
+        moine.setManaMax(100);
+        moine.setResistance(50);
+
+        // ===== Buff de vulnérabilité (cible) =====
+        BuffDebuffEffect buffVulne = new BuffDebuffEffect();
+        buffVulne.setStatAffected(StatType.DAMAGE_TAKEN_MAGIC); // +100% dégâts magiques reçus
+        buffVulne.setModifier(2.0);
+        buffVulne.setDuration(2);
+        buffVulne.setModifierSource(Source.CASTER_POWER);
+        buffVulne.apply(mage, moine);
+
+        // ===== Dégâts infligés sur la cible =====
+        DamageFixedEffect bouleDeFeu = new DamageFixedEffect();
+        bouleDeFeu.setDamage(100);
+        bouleDeFeu.setDamageType(DamageType.MAGIC);
+        bouleDeFeu.apply(mage, moine); // Devrait infliger 200 grâce au buff
+
+        System.out.println("PV de " + moine.getName() + " après boule de feu : " + moine.getHealthCurrent());
+
+        // ===== Buff de soin reçu (auto-appliqué) =====
+        BuffDebuffEffect buffHealReceve = new BuffDebuffEffect();
+        buffHealReceve.setStatAffected(StatType.HEALTH);
+        buffHealReceve.setModifier(1.10); // +10%
+        buffHealReceve.setDuration(3);
+        buffHealReceve.setModifierSource(Source.CASTER_POWER);
+        buffHealReceve.apply(moine, moine);
+
+        // ===== Soin reçu =====
+        HealFixedEffect soin = new HealFixedEffect();
+        soin.setHealAmount(80);
+        soin.apply(moine, moine); // Devrait donner 88 PV grâce au buff
+
+        System.out.println("PV de " + moine.getName() + " après soin : " + moine.getHealthCurrent());
+    }
+
 }

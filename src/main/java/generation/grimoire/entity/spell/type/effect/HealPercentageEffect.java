@@ -1,6 +1,5 @@
 package generation.grimoire.entity.spell.type.effect;
 
-import generation.grimoire.entity.SpellEffect;
 import generation.grimoire.entity.personnage.Personnage;
 import generation.grimoire.enumeration.Source;
 import jakarta.persistence.DiscriminatorValue;
@@ -16,7 +15,7 @@ import static generation.grimoire.utils.StatCalculator.getSourceValue;
 @Data
 @Entity
 @DiscriminatorValue("PERCENTAGE_HEAL")
-public class HealPercentageEffect extends SpellEffect {
+public class HealPercentageEffect extends HealEffect {
 
     // Pourcentage exprimé en décimal, par exemple 0.15 pour 15%
     private double percentage;
@@ -35,8 +34,10 @@ public class HealPercentageEffect extends SpellEffect {
     @Override
     public void apply(Personnage caster, Personnage target) {
         double sourceValue = getSourceValue(healSource, caster, target);
-        double healAmount = calculateHeal(sourceValue);
+        double healAmount = calculateHeal(sourceValue) * getAmplificationMultiplier();
         target.heal((int) healAmount);
+        System.out.println(target.getName() + " est soigné de " + (int) healAmount +
+                " PV via HealPercentageEffect (source : " + healSource + ", x" + getAmplificationMultiplier() + ")");
     }
 
 }

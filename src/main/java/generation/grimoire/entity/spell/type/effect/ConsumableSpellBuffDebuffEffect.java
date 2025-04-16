@@ -4,12 +4,8 @@ import generation.grimoire.entity.Spell;
 import generation.grimoire.entity.personnage.Personnage;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
-import jakarta.persistence.Transient;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
-
-import java.util.ArrayList;
-import java.util.List;
 
 
 @EqualsAndHashCode(callSuper = true)
@@ -17,12 +13,6 @@ import java.util.List;
 @Entity
 @DiscriminatorValue("CONSUMABLE_BUFF")
 public class ConsumableSpellBuffDebuffEffect extends BuffDebuffEffect {
-
-    /**
-     * Liste des sorts qui ont été impactés par ce buff (pour suivi ou log).
-     */
-    @Transient
-    private List<Spell> impactedSpells = new ArrayList<>();
 
     /**
      * Nombre de sorts restants sur lesquels ce buff s'appliquera.
@@ -56,17 +46,11 @@ public class ConsumableSpellBuffDebuffEffect extends BuffDebuffEffect {
      *
      * @param spell Le sort à modifier.
      */
-    public void applyToSpell(Spell spell) {
+    public void applyToSpell(Spell spell, Personnage caster, Personnage target) {
+        if (!isActive()) return;
         // Pour tous les effets de dégâts (qui étendent DamageEffect)
-        spell.getEffects().stream()
-                .filter(effect -> effect instanceof DamageEffect)
-                .forEach(effect -> {
-                    DamageEffect damageEffect =
-                            (DamageEffect) effect;
-                    double currentMult = damageEffect.getAmplificationMultiplier();
-                    damageEffect.setAmplificationMultiplier(currentMult * getModifier());
-                });
-        impactedSpells.add(spell);
+        super.applyToSpell(spell, caster, target);
+
         remainingApplications--;
         System.out.println("Buff consommable appliqué sur le sort " + spell.getNom() +
                 " avec un multiplicateur de " + getModifier() +

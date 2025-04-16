@@ -14,6 +14,9 @@ public class StatCalculator {
      * @return la valeur correspondant à la source choisie
      */
     public static double getSourceValue(Source source, Personnage caster, Personnage target) {
+        if (source == null) {
+            return 1.0;
+        }
         return switch (source) {
             case CASTER_POWER -> caster.getPower();
             case TARGET_POWER -> target.getPower();
