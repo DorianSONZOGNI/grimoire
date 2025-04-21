@@ -14,12 +14,20 @@ public class StatCalculator {
      * @return la valeur correspondant à la source choisie
      */
     public static double getSourceValue(Source source, Personnage caster, Personnage target) {
+        if (source == null) {
+            return 1.0;
+        }
         return switch (source) {
             case CASTER_POWER -> caster.getPower();
-            case TARGET_MANA_MISSING -> target.getManaMax() - target.getManaCurrent();
-            case TARGET_HEALTH_MAX -> target.getHealthMax();
+            case TARGET_POWER -> target.getPower();
             case CASTER_MANA_MAX -> caster.getManaMax();
-            default -> throw new IllegalArgumentException("Source de calcul non supportée : " + source);
+            case TARGET_MANA_MAX -> target.getManaMax();
+            case TARGET_MANA_MISSING -> target.getManaMax() - target.getManaCurrent();
+            case CASTER_MANA_MISSING -> caster.getManaMax() - caster.getManaCurrent();
+            case TARGET_HEALTH_MAX -> target.getHealthMax();
+            case CASTER_HEALTH_MAX -> caster.getHealthMax();
+            case TARGET_HEALTH_MISSING -> target.getHealthMax() - target.getHealthCurrent();
+            case CASTER_HEALTH_MISSING -> caster.getHealthMax() - caster.getHealthCurrent();
         };
     }
 

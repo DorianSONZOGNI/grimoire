@@ -1,6 +1,5 @@
 package generation.grimoire.entity.spell.type.effect;
 
-import generation.grimoire.entity.DamageEffect;
 import generation.grimoire.entity.personnage.Personnage;
 import generation.grimoire.enumeration.Source;
 import generation.grimoire.utils.StatCalculator;
@@ -15,11 +14,11 @@ import lombok.EqualsAndHashCode;
 @Data
 @Entity
 @DiscriminatorValue("PERCENTAGE_DAMAGE")
-public class PercentageDamageEffect extends DamageEffect {
+public class DamagePercentageEffect extends DamageEffect {
 
     private double percentage;
     @Enumerated(EnumType.STRING)
-    private Source source;
+    private Source damageSource;
 
     /**
      * Calcule les dégâts en fonction de la valeur source passée en paramètre.
@@ -32,8 +31,15 @@ public class PercentageDamageEffect extends DamageEffect {
 
     @Override
     public void apply(Personnage caster, Personnage target) {
-        double sourceValue = StatCalculator.getSourceValue(source, caster, target);
+        // Récupérer la valeur de la source (par exemple, la vie max du caster ou d'un autre attribut)
+        double sourceValue = StatCalculator.getSourceValue(damageSource, caster, target);
         double damage = calculateDamage(sourceValue);
+
+        // Appliquer le multiplicateur de vulnérabilité pour prendre en compte les résistances de la cible
+        double multiplier = getDamageTakenMultiplier(target); // Utilisation de damageType
+        damage *= multiplier;
+
+        // Appliquer les dégâts à la cible
         target.takeDamage((int) damage, this.getDamageType());
     }
 

@@ -1,6 +1,7 @@
 package generation.grimoire.entity;
 
 import generation.grimoire.enumeration.SpellCategory;
+import generation.grimoire.enumeration.ZoneType;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -24,6 +25,9 @@ public class Spell {
     private int healCost;
     private int percentHealCost;
     private int action;
+
+    @Enumerated(EnumType.STRING)
+    private ZoneType zoneEffect;
 
     @Enumerated(EnumType.STRING)
     private SpellCategory category;

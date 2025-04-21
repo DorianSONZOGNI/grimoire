@@ -11,12 +11,14 @@ import lombok.EqualsAndHashCode;
 @Data
 @Entity
 @DiscriminatorValue("FIXED_HEAL")
-public class FixedHealEffect extends SpellEffect {
+public class HealFixedEffect extends HealEffect {
 
     private int healAmount;
 
     @Override
     public void apply(Personnage caster, Personnage target) {
-        target.heal((int) healAmount);
+        int finalHeal = (int) (healAmount * getAmplificationMultiplier());
+        target.heal(finalHeal);
+        System.out.println(target.getName() + " est soigné de " + finalHeal + " PV (x" + getAmplificationMultiplier() + ")");
     }
 }

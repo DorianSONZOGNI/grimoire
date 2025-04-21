@@ -3,9 +3,12 @@ package generation.grimoire.service;
 import generation.grimoire.entity.Spell;
 import generation.grimoire.entity.SpellEffect;
 import generation.grimoire.entity.personnage.Personnage;
+import generation.grimoire.entity.spell.type.effect.ConsumableSpellBuffDebuffEffect;
 import generation.grimoire.enumeration.SpellCategory;
 import generation.grimoire.repository.SpellRepository;
 import org.springframework.stereotype.Service;
+
+import java.util.Iterator;
 
 @Service
 public class SpellService {
@@ -24,7 +27,7 @@ public class SpellService {
      * @param caster        le personnage qui lance le sort
      * @param target        la cible du sort
      */
-    public void castSpell(Spell spell, Personnage caster, Personnage target) {
+    public void castSpell(Spell spell, Personnage caster, Personnage target, SpellCategory defaultCategory) {
         // Calcul du coût en mana fixe + pourcentage
         int actualManaCost = spell.getManaCost();
         if (spell.getPercentManaCost() > 0) {
@@ -53,6 +56,9 @@ public class SpellService {
         System.out.println(caster.getName() + " dépense " + actualManaCost + " mana et " + actualHealCost
                 + " PV pour lancer " + spell.getNom());
 
+        // Appliquer les buffs consommables de manière générique
+        applyConsumableBuffs(spell, caster, target);
+
         // Appliquer chacun des effets du sort
         for (SpellEffect effect : spell.getEffects()) {
             effect.apply(caster, target);
@@ -63,6 +69,26 @@ public class SpellService {
             caster.getVoie().getPassiveEffects().forEach(passif ->
                     passif.onSpellCast(caster, spell)
             );
+        }
+    }
+
+    /**
+     * Parcourt la liste des buffs consommables du caster, applique chacun d'eux sur le sort,
+     * et consomme ceux qui ont épuisé leur nombre d'applications.
+     */
+    private void applyConsumableBuffs(Spell spell, Personnage caster, Personnage target) {
+        if (caster.getConsumableSpellBuffs() != null && !caster.getConsumableSpellBuffs().isEmpty()) {
+            Iterator<ConsumableSpellBuffDebuffEffect> iterator = caster.getConsumableSpellBuffs().iterator();
+            while (iterator.hasNext()) {
+                ConsumableSpellBuffDebuffEffect buff = iterator.next();
+                if (buff.isActive()) {
+                    buff.applyToSpell(spell, caster, target);
+                    if (!buff.isActive()) {  // Consommé
+                        iterator.remove();
+                        System.out.println(caster.getName() + " a consommé un buff consumable.");
+                    }
+                }
+            }
         }
     }
 
