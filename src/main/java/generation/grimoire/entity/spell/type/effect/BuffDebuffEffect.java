@@ -23,8 +23,17 @@ public class BuffDebuffEffect extends SpellEffect {
     @Enumerated(EnumType.STRING)
     private StatType statAffected;
 
-    // Valeur du modificateur : positif pour buff, négatif pour débuff.
+    /**
+     * Multiplicateur : positif pour buff, négatif pour débuff.
+     * Ignoré si flatValue != 0.
+     */
     private double modifier;
+
+    /**
+     * Valeur brute à ajouter (ou soustraire si négative) à la statAffected.
+     * Si non nul, s'applique directement sans multiplication.
+     */
+    private int flatValue;
 
     // Duration 0 -> tours en cours (on invalide les buff duration == 0 en fin de tours et duration -1 après)
     private int duration;
@@ -41,18 +50,29 @@ public class BuffDebuffEffect extends SpellEffect {
 
     @Override
     public void apply(Personnage caster, Personnage target) {
-        if (impactedSpells.isEmpty()) {
-            // Si la liste est vide, on applique le buff/débuff normalement à la cible
-            double baseValue = StatCalculator.getSourceValue(modifierSource, caster, target);
+        if (!impactedSpells.isEmpty()) {
+            for (Spell spell : impactedSpells) {
+                System.out.println("Buff/Débuff sur le sort : " + spell.getNom());
+                // flat sur la cible
+                if (flatValue != 0) {
+                    target.applyFlatBuff(statAffected, flatValue);
+                }
+                // ratio sur les effets du sort
+                if (modifier != 0) {
+                    applyToSpell(spell, caster, target);
+                }
+            }
+            return;
+        }
+
+        if (flatValue != 0) {
+            target.applyFlatBuff(statAffected, flatValue);
+        }
+
+        if (modifier != 0) {
+            double baseValue     = StatCalculator.getSourceValue(modifierSource, caster, target);
             double modifierValue = baseValue * modifier;
             target.applyBuff(this, modifierValue);
-        } else {
-            // Si la liste est renseignée, appliquer uniquement aux sorts listés
-            for (Spell spell : impactedSpells) {
-                System.out.println("Buff/Débuff appliqué sur le sort : " + spell.getNom());
-                // On applique le buff ou le debuff sur le sort spécifié
-                applyToSpell(spell, caster, target);
-            }
         }
     }
 
@@ -64,17 +84,7 @@ public class BuffDebuffEffect extends SpellEffect {
     }
 
     public boolean affectsStatType(StatType statType) {
-
-        // Un buff de puissance (POWER) affecte tous les types de dégâts (magiques, physiques, bruts)
-        if (statType == StatType.POWER && statAffected == StatType.POWER) return true;
-
-        // L’armure réduit les dégâts physiques
-        if (statType == StatType.ARMURE && statAffected == StatType.ARMURE) return true;
-
-        // La résistance réduit les dégâts magiques
-        if (statType == StatType.RESISTANCE && statAffected == StatType.RESISTANCE) return true;
-
-        // Pour les stats "pures" comme SPEED ou MANA
-        return statType == statAffected;
+        return this.statAffected == statType;
     }
+
 }

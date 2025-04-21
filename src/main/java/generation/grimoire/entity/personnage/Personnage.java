@@ -27,6 +27,8 @@ public class Personnage {
 
     private String name;
 
+    private String teamId;
+
     // Statistiques de vie et de mana
     private int healthMax;
     private int healthCurrent;
@@ -67,18 +69,9 @@ public class Personnage {
         double constant; // La constante K qui détermine la courbe.
         // Sélectionner la résistance en fonction du type de dégâts
         double resistanceValue = switch (damageType) {
-            case PHYSIC -> {
-                constant = 100; // Exemple, ajustez selon vos besoins
-                yield this.armor;
-            }
-            case MAGIC -> {
-                constant = 100; // Utilisez une constante différente si nécessaire
-                yield this.resistance;
-            }
-            default -> {
-                constant = 100;
-                yield 0;
-            }
+            case PHYSIC -> { constant = 100; yield this.armor; }
+            case MAGIC  -> { constant = 100; yield this.resistance; }
+            default    -> { constant = 100; yield 0; }
         };
 
         // Calcul du facteur de réduction des dégâts (valeur entre 0 et 1)
@@ -95,8 +88,9 @@ public class Personnage {
         // Récupérer le multiplicateur de vulnérabilité
         double damageTakenMultiplier = Math.max(1.0, getStatBuffMultiplier(statType));
 
-        // Appliquer le multiplicateur de dégâts avant de calculer la résistance
-        double damageAfterBuff = damage * damageTakenMultiplier;
+        int flat = getStatFlatBonus(statType);
+
+        double damageAfterBuff  = damage * damageTakenMultiplier + flat;
 
         // Calcul des dégâts après la réduction
         double finalDamage = damageAfterBuff * (1 - reductionFactor);
@@ -227,10 +221,57 @@ public class Personnage {
 
     public double getStatBuffMultiplier(StatType statType) {
         return activeBuffs.stream()
-                .filter(buff -> buff.affectsStatType(statType))
+                .filter(buff -> buff.affectsStatType(statType) && buff.getFlatValue() == 0)
                 .map(BuffDebuffEffect::getModifier)
                 .reduce(1.0, (a, b) -> a * b);
     }
 
+    public int getStatFlatBonus(StatType statType) {
+        return activeBuffs.stream()
+                .filter(buff -> buff.affectsStatType(statType) && buff.getFlatValue() != 0)
+                .mapToInt(BuffDebuffEffect::getFlatValue)
+                .sum();
+    }
+
+    public boolean isAlly(Personnage other) {
+        if (other == null) return false;
+        // Objects.equals gère le null-safe
+        return java.util.Objects.equals(this.teamId, other.teamId);
+    }
+
+    public void applyFlatBuff(StatType statType, int flatValue) {
+        switch (statType) {
+            case HEALTH -> {
+                if (flatValue > 0) heal(flatValue);
+                else takeDamage(-flatValue, DamageType.BRUT);
+            }
+            case MANA -> {
+                int before = manaCurrent;
+                manaCurrent = Math.min(manaMax, Math.max(0, manaCurrent + flatValue));
+                System.out.println(name + " voit sa mana passer de " + before + " à " + manaCurrent);
+            }
+            default -> {
+                // Toutes les autres stats numériques
+                adjustStat(statType, flatValue);
+                System.out.println(name + " voit sa stat " + statType
+                        + (flatValue >= 0 ? " augmenter de " : " diminuer de ")
+                        + Math.abs(flatValue));
+            }
+        }
+    }
+
+
+    /** Méthode générique pour ajuster une stat numérique (power, armor, speed…) */
+    public void adjustStat(StatType statType, int amount) {
+        switch (statType) {
+            case POWER -> power += amount;
+            case ARMURE -> armor += amount;
+            case RESISTANCE -> resistance += amount;
+            case CRIT -> crit += amount;
+            case SPEED -> speed += amount;
+            // ajoute ici tes autres cas si besoin
+            default -> throw new IllegalArgumentException("Stat inexploitable en flat: " + statType);
+        }
+    }
 
 }

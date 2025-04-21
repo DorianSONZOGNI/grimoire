@@ -1,5 +1,6 @@
 package generation.grimoire.enumeration;
 
+//Pour le calcul des statistiques
 public enum Source {
     CASTER_POWER,
     TARGET_POWER,

@@ -18,6 +18,8 @@ public class Voie {
 
     private String nom;
 
+    private String description;
+
     @OneToMany(mappedBy = "voie", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<VoiePassiveEffect> passiveEffects;
 }
