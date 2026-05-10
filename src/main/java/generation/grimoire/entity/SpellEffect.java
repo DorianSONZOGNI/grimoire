@@ -35,4 +35,18 @@ public abstract class SpellEffect {
     public void applyModifierFromBuff(BuffDebuffEffect buff, Personnage caster, Personnage target) {
         // Par défaut, ne fait rien
     }
+    /**
+     * Calcule si le sort déclenche un coup critique.
+     */
+    protected boolean checkCriticalHit(Personnage caster) {
+        int totalCrit = caster.getCrit() + caster.getStatFlatBonus(generation.grimoire.enumeration.StatType.CRIT);
+        totalCrit = Math.max(0, Math.min(100, totalCrit));
+        int roll = (int) (Math.random() * 100) + 1;
+        
+        boolean isCrit = roll <= totalCrit;
+        if (isCrit) {
+            System.out.println("💥 Coup Critique déclenché par " + caster.getName() + " !");
+        }
+        return isCrit;
+    }
 }

@@ -35,6 +35,9 @@ public class HealPercentageEffect extends HealEffect {
     public void apply(Personnage caster, Personnage target) {
         double sourceValue = getSourceValue(healSource, caster, target);
         double healAmount = calculateHeal(sourceValue) * getAmplificationMultiplier();
+        if (checkCriticalHit(caster)) {
+            healAmount *= 1.5;
+        }
         target.heal((int) healAmount);
         System.out.println(target.getName() + " est soigné de " + (int) healAmount +
                 " PV via HealPercentageEffect (source : " + healSource + ", x" + getAmplificationMultiplier() + ")");

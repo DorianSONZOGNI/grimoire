@@ -69,7 +69,12 @@ public class BuffDebuffEffect extends SpellEffect {
         }
 
         if (flatValue != 0) {
-            target.applyFlatBuff(statAffected, flatValue);
+            if (duration > 0) {
+                target.getActiveBuffs().add(this);
+                System.out.println(target.getName() + " reçoit un effet sur " + statAffected + " (valeur fixe: " + flatValue + ") pour " + duration + " tours.");
+            } else {
+                target.applyFlatBuff(statAffected, flatValue);
+            }
         }
 
         if (modifier != 0) {

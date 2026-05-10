@@ -18,6 +18,9 @@ public class HealFixedEffect extends HealEffect {
     @Override
     public void apply(Personnage caster, Personnage target) {
         int finalHeal = (int) (healAmount * getAmplificationMultiplier());
+        if (checkCriticalHit(caster)) {
+            finalHeal = (int) (finalHeal * 1.5);
+        }
         target.heal(finalHeal);
         System.out.println(target.getName() + " est soigné de " + finalHeal + " PV (x" + getAmplificationMultiplier() + ")");
     }

@@ -38,6 +38,10 @@ public class DamagePercentageEffect extends DamageEffect {
         // Appliquer l'amplification (qui vient potentiellement des buffs du lanceur)
         damage *= getAmplificationMultiplier();
 
+        if (checkCriticalHit(caster)) {
+            damage *= 1.5;
+        }
+
         // Appliquer les dégâts à la cible
         target.takeDamage((int) damage, this.getDamageType());
     }
