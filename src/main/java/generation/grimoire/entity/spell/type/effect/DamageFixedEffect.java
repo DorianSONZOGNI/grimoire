@@ -17,7 +17,7 @@ public class DamageFixedEffect extends DamageEffect {
     @Override
     public void apply(Personnage caster, Personnage target) {
         double baseDamage = this.damage;
-        double finalDamage = baseDamage * (1 - getDamageTakenMultiplier(target)) * getAmplificationMultiplier();
+        double finalDamage = baseDamage * getAmplificationMultiplier();
         target.takeDamage((int) finalDamage, this.getDamageType());
     }
 }

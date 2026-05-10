@@ -25,10 +25,11 @@ public class Spell {
     private int percentManaCost;
     private int healCost;
     private int percentHealCost;
+    private int heatGenerated;
     private int action;
     private Integer variantId; // Groupe de variantes de sorts
     @Enumerated(EnumType.STRING)
-    private SpellCondition conditionType; //"ALLY", "HIGHER_RESISTANCE", LOW_LIFE etc. Permet les choix conditionnel
+    private SpellCondition conditionType; // "ALLY", "HIGHER_RESISTANCE", LOW_LIFE etc. Permet les choix conditionnel
     private Integer choiceKey; // La "clé" pour différencier les versions du sort, permet les choix manuel
 
     @Enumerated(EnumType.STRING)

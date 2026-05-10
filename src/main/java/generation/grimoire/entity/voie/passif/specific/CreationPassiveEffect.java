@@ -15,16 +15,13 @@ import lombok.EqualsAndHashCode;
 public class CreationPassiveEffect extends VoiePassiveEffect
 {
 
-    private int spellsCastThisTurn = 0;
-    private final int MAX_SPELLS_PER_TURN = 3;
-
-
     /**
      * Nouvelle méthode utilisant le coût en actions du sort.
      * Convention : 1 = instantané, 2 = banal, 3 ou plus = lent.
      */
     @Override
     public void onSpellCast(Personnage personnage, Spell spell) {
+        int spellsCastThisTurn = personnage.getPassiveState("creation_spells_cast", 0);
         if (spellsCastThisTurn == 0) {
             if (spell.getAction() == 1) {
                 System.out.println(personnage.getName() + " lance un sort instantané gratuit (Création).");
@@ -34,11 +31,11 @@ public class CreationPassiveEffect extends VoiePassiveEffect
                 System.out.println(personnage.getName() + " obtient un bouclier équivalent au mana dépensé pour le sort lent (Création), mais ne peut pas se déplacer.");
             }
         }
-        spellsCastThisTurn = Math.min(spellsCastThisTurn + 1, MAX_SPELLS_PER_TURN);
+        personnage.setPassiveState("creation_spells_cast", Math.min(spellsCastThisTurn + 1, 3));
     }
 
     @Override
     public void onTurnStart(Personnage personnage) {
-        spellsCastThisTurn = 0;
+        personnage.setPassiveState("creation_spells_cast", 0);
     }
 }

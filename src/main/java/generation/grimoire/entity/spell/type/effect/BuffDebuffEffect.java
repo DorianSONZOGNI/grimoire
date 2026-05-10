@@ -44,6 +44,9 @@ public class BuffDebuffEffect extends SpellEffect {
     @Transient
     private List<Spell> impactedSpells = new ArrayList<>();
 
+    @Transient
+    private String sourceName;
+
     // S'il y a un ratio, la source est importante
     @Enumerated(EnumType.STRING)
     private Source modifierSource;

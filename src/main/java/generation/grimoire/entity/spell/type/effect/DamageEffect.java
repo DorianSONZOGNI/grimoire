@@ -30,23 +30,4 @@ public abstract class DamageEffect extends SpellEffect {
         System.out.println("Amplification appliquée au DamageEffect avec x" + buff.getModifier());
     }
 
-    public double getDamageTakenMultiplier(Personnage target) {
-        StatType resistance = switch (this.getDamageType()) {
-            case MAGIC -> StatType.RESISTANCE;
-            case PHYSIC -> StatType.ARMURE;
-            case BRUT -> StatType.HEALTH;
-        };
-
-        StatType vulnerability = switch (this.getDamageType()) {
-            case MAGIC -> StatType.DAMAGE_TAKEN_MAGIC;
-            case PHYSIC -> StatType.DAMAGE_TAKEN_PHYSIC;
-            case BRUT -> StatType.DAMAGE_TAKEN_BRUT;
-        };
-
-        System.out.println("Multiplicateurs appliqués : " +
-                resistance + " = " + target.getStatBuffMultiplier(resistance) + ", " +
-                vulnerability + " = " + target.getStatBuffMultiplier(vulnerability));
-
-        return target.getStatBuffMultiplier(resistance) * target.getStatBuffMultiplier(vulnerability);
-    }
 }

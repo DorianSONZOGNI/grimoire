@@ -58,6 +58,17 @@ public class Personnage {
     @Transient
     private List<ConsumableSpellBuffDebuffEffect> consumableSpellBuffs = new ArrayList<>();
 
+    @Transient
+    private java.util.Map<String, Integer> passiveStates = new java.util.HashMap<>();
+
+    public int getPassiveState(String key, int defaultValue) {
+        return passiveStates.getOrDefault(key, defaultValue);
+    }
+
+    public void setPassiveState(String key, int value) {
+        passiveStates.put(key, value);
+    }
+
     /**
      * Applique des dégâts après calculs des résistance à ce personnage.
      * Calculs de résistance en fonction du DamageType.
@@ -67,15 +78,22 @@ public class Personnage {
      */
     public void takeDamage(int damage, DamageType damageType) {
         double constant; // La constante K qui détermine la courbe.
+        
+        double effectiveArmor = this.armor + getStatFlatBonus(StatType.ARMURE);
+        double effectiveResistance = this.resistance + getStatFlatBonus(StatType.RESISTANCE);
+
         // Sélectionner la résistance en fonction du type de dégâts
         double resistanceValue = switch (damageType) {
-            case PHYSIC -> { constant = 100; yield this.armor; }
-            case MAGIC  -> { constant = 100; yield this.resistance; }
+            case PHYSIC -> { constant = 100; yield effectiveArmor * Math.max(0, getStatBuffMultiplier(StatType.ARMURE)); }
+            case MAGIC  -> { constant = 100; yield effectiveResistance * Math.max(0, getStatBuffMultiplier(StatType.RESISTANCE)); }
             default    -> { constant = 100; yield 0; }
         };
 
         // Calcul du facteur de réduction des dégâts (valeur entre 0 et 1)
         double reductionFactor = resistanceValue / (resistanceValue + constant);
+
+        //TODO si de multiple buff sont donnée, ça marche toujours (buff phy, buff mag)
+        //TODO La vulnérabilité et la res fonction (multiple sur la target), mais pas la surpuissance (multiple sur le caster
 
         // Mapper le DamageType vers StatType pour obtenir le multiplicateur de vulnérabilité
         StatType statType = switch (damageType) {
@@ -99,7 +117,7 @@ public class Personnage {
         int effectiveDamage = (int) finalDamage;
 
         // Appliquer les dégâts à la santé actuelle
-        this.healthCurrent += effectiveDamage;
+        this.healthCurrent -= effectiveDamage;
 
         // Affichage des informations
         double finalReductionFactor = Math.min(reductionFactor, 0.90); // Limite la réduction à 90%
@@ -227,16 +245,53 @@ public class Personnage {
     }
 
     public int getStatFlatBonus(StatType statType) {
-        return activeBuffs.stream()
+        int buffBonus = activeBuffs.stream()
                 .filter(buff -> buff.affectsStatType(statType) && buff.getFlatValue() != 0)
                 .mapToInt(BuffDebuffEffect::getFlatValue)
                 .sum();
+        int passiveBonus = getPassiveState("stat_flat_" + statType.name(), 0);
+        
+        if (statType == StatType.CRIT) {
+            int speedRatio = getPassiveState("stat_derive_CRIT_from_SPEED", 0);
+            if (speedRatio != 0) {
+                // To prevent infinite recursion if SPEED derived from CRIT, we only do one level
+                int effectiveSpeed = this.speed + activeBuffs.stream()
+                        .filter(buff -> buff.affectsStatType(StatType.SPEED) && buff.getFlatValue() != 0)
+                        .mapToInt(BuffDebuffEffect::getFlatValue)
+                        .sum()
+                        + getPassiveState("stat_flat_SPEED", 0);
+                passiveBonus += effectiveSpeed * speedRatio;
+            }
+        }
+        
+        return buffBonus + passiveBonus;
     }
 
     public boolean isAlly(Personnage other) {
         if (other == null) return false;
         // Objects.equals gère le null-safe
         return java.util.Objects.equals(this.teamId, other.teamId);
+    }
+
+    /** Alias pour la lisibilité dans les passifs. */
+    public int getCurrentHp() {
+        return healthCurrent;
+    }
+
+    /** Alias pour la lisibilité dans les passifs. */
+    public int getMaxHp() {
+        return healthMax;
+    }
+
+    /**
+     * Retourne vrai si le personnage est actuellement sous l'effet d'au moins un débuff
+     * (buff dont la valeur est négative ou modificateur < 1.0).
+     */
+    public boolean hasDebuff() {
+        return activeBuffs.stream().anyMatch(b ->
+                (b.getFlatValue() != 0 && b.getFlatValue() < 0) ||
+                (b.getFlatValue() == 0 && b.getModifier() < 1.0)
+        );
     }
 
     public void applyFlatBuff(StatType statType, int flatValue) {

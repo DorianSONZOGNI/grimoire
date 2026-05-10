@@ -49,9 +49,8 @@ public class DamageOverTimeEffect extends DamageEffect {
                 baseDamage += (int)(target.getHealthMax() * percentageDamagePerTick);
             }
 
-            // Application du multiplicateur de vulnérabilité
-            double multiplier = getDamageTakenMultiplier(target);
-            int totalDamage = (int)(baseDamage * multiplier);
+            // Appliquer l'amplification du lanceur
+            int totalDamage = (int)(baseDamage * getAmplificationMultiplier());
 
             target.takeDamage(totalDamage, damageType);
             duration--;
