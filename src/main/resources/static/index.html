@@ -1802,7 +1802,7 @@
                             <div class="form-group">
                                 <label>Stat Affectée</label>
                                 <select onchange="updateEffectProp(${eff.id}, 'statAffected', this.value)">
-                                    ${renderOptions(metaData.statTypes, eff.statAffected)}
+                                    ${renderStatOptions(metaData.statTypes, eff.statAffected)}
                                 </select>
                             </div>
                             <div class="form-group">
@@ -1953,6 +1953,33 @@
                 'TARGET_HEALTH_MISSING': 'PV Manquant de la Cible',
                 'CASTER_HEALTH_CURRENT': 'PV Actuel du Lanceur',
                 'TARGET_HEALTH_CURRENT': 'PV Actuel de la Cible'
+            };
+            return arr.map(s => {
+                const val = typeof s === 'object' ? s.id || s : s;
+                const label = labels[val] || val;
+                return `<option value="${val}" ${val === selectedVal ? 'selected' : ''}>${label}</option>`;
+            }).join('');
+        }
+
+        function renderStatOptions(arr, selectedVal) {
+            if (!arr || !Array.isArray(arr)) return '';
+            const labels = {
+                'SPEED': '⚡ Vitesse d\'action',
+                'MANA': '💧 Points de Mana (Max)',
+                'HEALTH': '💖 Points de Vie (Max)',
+                'CRIT': '🎯 Chances de Critique',
+                'ARMURE': '🛡️ Armure (Réd. Phys.)',
+                'RESISTANCE': '✨ Résistance (Réd. Mag.)',
+                'POWER': '🔮 Puissance Magique',
+                'STRENGTH': '⚔️ Force Physique',
+                'BURN': '🔥 Intensité Brûlure',
+                'POISON': '🧪 Intensité Poison',
+                'DAMAGE_TAKEN_MAGIC': '💥 Dégâts Magiques Subis',
+                'DAMAGE_TAKEN_PHYSIC': '💥 Dégâts Physiques Subis',
+                'DAMAGE_TAKEN_BRUT': '💥 Dégâts Bruts Subis',
+                'DAMAGE_GIVEN_MAGIC': '✨ Dégâts Magiques Infligés',
+                'DAMAGE_GIVEN_PHYSIC': '⚔️ Dégâts Physiques Infligés',
+                'DAMAGE_GIVEN_BRUT': '🩸 Dégâts Bruts Infligés'
             };
             return arr.map(s => {
                 const val = typeof s === 'object' ? s.id || s : s;
@@ -2625,14 +2652,101 @@
                         const targetText = e.targetExpression || baseTargetText;
                         const indicatorClass = e.effectTarget ? e.effectTarget.toLowerCase() : 'target';
 
-                        let eTypeStr = e.effectType || e.effect_type || 'Effet';
-                        if (eTypeStr === 'PURGE') eTypeStr = '✨ Dissipation Bonus/Malus';
+                        const typeNames = {
+                            'DamageFixedEffect': 'Dégâts Fixes',
+                            'FIXED_DAMAGE': 'Dégâts Fixes',
+                            'DamagePercentageEffect': 'Dégâts %',
+                            'PERCENTAGE_DAMAGE': 'Dégâts %',
+                            'HealFixedEffect': 'Soins Fixes',
+                            'FIXED_HEAL': 'Soins Fixes',
+                            'HealPercentageEffect': 'Soins %',
+                            'PERCENTAGE_HEAL': 'Soins %',
+                            'BuffDebuffEffect': 'Buff/Débuff',
+                            'BUFF_DEBUFF': 'Buff/Débuff',
+                            'DamageOverTimeEffect': 'DoT',
+                            'DOT': 'DoT',
+                            'HealOverTimeEffect': 'HoT',
+                            'HOT': 'HoT',
+                            'PurgeEffect': '✨ Dissipation',
+                            'PURGE': '✨ Dissipation'
+                        };
+                        const eTypeStr = typeNames[e.effectType || e.effect_type] || (e.effectType || e.effect_type || 'Effet');
+
+                        const statLabels = {
+                            'SPEED': 'Vitesse', 'MANA': 'Mana Max', 'HEALTH': 'PV Max', 'CRIT': 'Critique',
+                            'ARMURE': 'Armure', 'RESISTANCE': 'Résistance', 'POWER': 'Puissance Mag.', 'STRENGTH': 'Force Phys.',
+                            'BURN': 'Brûlure', 'POISON': 'Poison', 'DAMAGE_TAKEN_MAGIC': 'Dégâts Mag. Subis',
+                            'DAMAGE_TAKEN_PHYSIC': 'Dégâts Phys. Subis', 'DAMAGE_TAKEN_BRUT': 'Dégâts Bruts Subis',
+                            'DAMAGE_GIVEN_MAGIC': 'Dégâts Mag. Infligés', 'DAMAGE_GIVEN_PHYSIC': 'Dégâts Phys. Infligés',
+                            'DAMAGE_GIVEN_BRUT': 'Dégâts Bruts Infligés'
+                        };
+                        const formatStat = s => statLabels[s] || s;
+
+                        const srcLabels = {
+                            'CASTER_POWER': 'Puiss. Lanceur', 'TARGET_POWER': 'Puiss. Cible', 'CASTER_MANA_MAX': 'Mana Max Lanc.',
+                            'TARGET_MANA_MAX': 'Mana Max Cib.', 'CASTER_MANA_MISSING': 'Mana Manq. Lanc.', 'TARGET_MANA_MISSING': 'Mana Manq. Cib.',
+                            'CASTER_MANA_CURRENT': 'Mana Act. Lanc.', 'TARGET_MANA_CURRENT': 'Mana Act. Cib.', 'CASTER_HEALTH_MAX': 'PV Max Lanc.',
+                            'TARGET_HEALTH_MAX': 'PV Max Cib.', 'CASTER_HEALTH_MISSING': 'PV Manq. Lanc.', 'TARGET_HEALTH_MISSING': 'PV Manq. Cib.'
+                        };
+                        const formatSrc = s => srcLabels[s] || s;
+
+                        const dt = (e.damageType || 'MAGIC').toLowerCase();
+                        const dtStr = dt === 'magic' ? 'Magiques' : (dt === 'physic' ? 'Physiques' : 'Bruts');
+
+                        let detailsStr = '';
+                        const rawType = e.effectType || e.effect_type || '';
+                        const t = rawType.replace('Effect', '');
+
+                        if (t === 'DamageFixed' || t === 'FIXED_DAMAGE') {
+                            detailsStr = `➔ inflige ${e.damage || 0} Dégâts ${dtStr}`;
+                        } else if (t === 'DamagePercentage' || t === 'PERCENTAGE_DAMAGE') {
+                            const pct = Math.round((e.percentage || 0) * 100);
+                            detailsStr = `➔ inflige ${pct}% de ${formatSrc(e.damageSource || e.source)} en Dégâts ${dtStr}`;
+                        } else if (t === 'HealFixed' || t === 'FIXED_HEAL') {
+                            detailsStr = `➔ rend ${e.healAmount || 0} PV`;
+                        } else if (t === 'HealPercentage' || t === 'PERCENTAGE_HEAL') {
+                            const pct = Math.round((e.percentage || 0) * 100);
+                            detailsStr = `➔ rend ${pct}% de ${formatSrc(e.healSource || e.source)} en PV`;
+                        } else if (t === 'BuffDebuff' || t === 'BUFF_DEBUFF') {
+                            let parts = [];
+                            if (e.flatValue) {
+                                parts.push(`${e.flatValue > 0 ? '+' : ''}${e.flatValue} ${formatStat(e.statAffected)}`);
+                            }
+                            if (e.modifier) {
+                                const sign = e.modifier > 0 ? '+' : '';
+                                parts.push(`${sign}${Math.round(e.modifier * 100)}% ${formatStat(e.statAffected)}`);
+                            }
+                            if (parts.length === 0) parts.push(`modifie ${formatStat(e.statAffected)}`);
+                            const durStr = e.duration > 0 ? ` (${e.duration} tours)` : '';
+                            detailsStr = `➔ ${parts.join(' et ')}${durStr}`;
+                        } else if (t === 'DamageOverTime' || t === 'DOT') {
+                            let parts = [];
+                            const fd = e.fixedDamagePerTick || e.damage || 0;
+                            const pd = e.percentageDamagePerTick || e.percentage || 0;
+                            if (fd) parts.push(`${fd}`);
+                            if (pd) parts.push(`${Math.round(pd * 100)}% ${formatSrc(e.damageSource || e.source)}`);
+                            if (parts.length === 0) parts.push('0');
+                            const durStr = e.duration > 0 ? ` sur ${e.duration} tours` : '';
+                            detailsStr = `➔ DoT de ${parts.join(' + ')} Dégâts ${dtStr}/tour${durStr}`;
+                        } else if (t === 'HealOverTime' || t === 'HOT') {
+                            let parts = [];
+                            const fh = e.fixedHealPerTick || e.healAmount || 0;
+                            const ph = e.percentageHealPerTick || e.percentage || 0;
+                            if (fh) parts.push(`${fh}`);
+                            if (ph) parts.push(`${Math.round(ph * 100)}% PV Max`);
+                            if (parts.length === 0) parts.push('0');
+                            const durStr = e.duration > 0 ? ` sur ${e.duration} tours` : '';
+                            detailsStr = `➔ HoT de ${parts.join(' + ')} PV/tour${durStr}`;
+                        } else if (t === 'Purge' || t === 'PURGE') {
+                            detailsStr = `➔ dissipe les altérations`;
+                        }
 
                         effectsSummaryHtml += `
-                            <div class="effect-line">
-                                <div class="indicator ${indicatorClass}"></div>
+                            <div class="effect-line" style="display:flex; align-items:baseline; gap:0.3rem; flex-wrap:wrap;">
+                                <div class="indicator ${indicatorClass}" style="flex-shrink:0;"></div>
                                 <span style="font-weight:600; color:#fff;">[${targetText}]</span>
-                                <span style="color:var(--text-muted);">${eTypeStr}</span>
+                                <span style="color:var(--spell-color, #38bdf8); font-weight:500;">${eTypeStr}</span>
+                                <span style="color:#e2e8f0;">${detailsStr}</span>
                             </div>
                         `;
                     });
