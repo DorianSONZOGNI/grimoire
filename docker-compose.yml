@@ -1,0 +1,17 @@
+version: '3.8'
+
+services:
+  db:
+    image: mysql:8.0
+    container_name: grimoire-mysql
+    restart: always
+    environment:
+      MYSQL_ROOT_PASSWORD: root
+      MYSQL_DATABASE: grimoire
+    ports:
+      - "3306:3306"
+    volumes:
+      - grimoire-db-data:/var/lib/mysql
+
+volumes:
+  grimoire-db-data:

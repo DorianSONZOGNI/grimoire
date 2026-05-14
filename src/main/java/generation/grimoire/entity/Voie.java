@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.Data;
 
 import java.util.List;
+import java.util.Map;
 
 @Data
 @Entity
@@ -17,6 +18,14 @@ public class Voie {
     private Long id;
 
     private String nom;
+
+    private String description;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "voie_rank_names", joinColumns = @JoinColumn(name = "voie_id"))
+    @MapKeyColumn(name = "rang")
+    @Column(name = "nom_rang")
+    private Map<Integer, String> rankNames = new java.util.HashMap<>();
 
     @OneToMany(mappedBy = "voie", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<VoiePassiveEffect> passiveEffects;

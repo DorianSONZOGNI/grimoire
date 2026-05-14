@@ -21,6 +21,7 @@ public abstract class VoiePassiveEffect {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     @ManyToOne
     @JoinColumn(name = "voie_id", nullable = false)
     private Voie voie;

@@ -2,6 +2,7 @@ package generation.grimoire.entity;
 
 import generation.grimoire.entity.personnage.Personnage;
 import generation.grimoire.entity.spell.type.effect.BuffDebuffEffect;
+import generation.grimoire.enumeration.EffectTarget;
 import jakarta.persistence.*;
 import lombok.Data;
 
@@ -17,9 +18,16 @@ public abstract class SpellEffect {
     private Long id;
 
     // Association vers le sort auquel cet effet appartient
+    @com.fasterxml.jackson.annotation.JsonIgnore
     @ManyToOne
     @JoinColumn(name = "spell_id", nullable = false)
     private Spell spell;
+
+    @Enumerated(EnumType.STRING)
+    private EffectTarget effectTarget = EffectTarget.TARGET;
+
+    @Column(name = "target_expression")
+    private String targetExpression;
 
     /**
      * Applique cet effet du sort sur la cible.
@@ -34,5 +42,24 @@ public abstract class SpellEffect {
      */
     public void applyModifierFromBuff(BuffDebuffEffect buff, Personnage caster, Personnage target) {
         // Par défaut, ne fait rien
+    }
+    /**
+     * Calcule si le sort déclenche un coup critique.
+     */
+    protected boolean checkCriticalHit(Personnage caster) {
+        int totalCrit = caster.getCrit() + caster.getStatFlatBonus(generation.grimoire.enumeration.StatType.CRIT);
+        totalCrit = Math.max(0, Math.min(100, totalCrit));
+        int roll = (int) (Math.random() * 100) + 1;
+        
+        boolean isCrit = roll <= totalCrit;
+        if (isCrit) {
+            System.out.println("💥 Coup Critique déclenché par " + caster.getName() + " !");
+        }
+        return isCrit;
+    }
+
+    @Transient
+    public String getEffectType() {
+        return this.getClass().getSimpleName();
     }
 }

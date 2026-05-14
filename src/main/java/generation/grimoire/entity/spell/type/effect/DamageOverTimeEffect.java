@@ -5,6 +5,8 @@ import generation.grimoire.entity.personnage.Personnage;
 import generation.grimoire.enumeration.DamageType;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.EnumType;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
@@ -29,12 +31,21 @@ public class DamageOverTimeEffect extends DamageEffect {
     /**
      * Durée en nombre de tours pendant lesquels cet effet est actif.
      */
+    /**
+     * Type de damage infligé
+     */
     private int duration;
 
     /**
      * Type de damage infligé
      */
     private DamageType damageType;
+
+    @Enumerated(jakarta.persistence.EnumType.STRING)
+    private generation.grimoire.enumeration.Source damageSource = generation.grimoire.enumeration.Source.TARGET_HEALTH_MAX;
+
+    @jakarta.persistence.Transient
+    private Personnage caster;
 
     /**
      * Méthode qui applique les dégâts de l'effet à la cible.
@@ -46,12 +57,17 @@ public class DamageOverTimeEffect extends DamageEffect {
         if (duration > 0) {
             int baseDamage = fixedDamagePerTick;
             if (percentageDamagePerTick > 0) {
-                baseDamage += (int)(target.getHealthMax() * percentageDamagePerTick);
+                double sourceValue = generation.grimoire.utils.StatCalculator.getSourceValue(damageSource, caster, target);
+                baseDamage += (int)(sourceValue * percentageDamagePerTick);
             }
 
-            // Application du multiplicateur de vulnérabilité
-            double multiplier = getDamageTakenMultiplier(target);
-            int totalDamage = (int)(baseDamage * multiplier);
+            // Appliquer l'amplification du lanceur
+            int totalDamage = (int)(baseDamage * getAmplificationMultiplier());
+
+            // Check crit on each tick? Let's check crit on each tick for fun.
+            if (caster != null && checkCriticalHit(caster)) {
+                totalDamage = (int) (totalDamage * 1.5);
+            }
 
             target.takeDamage(totalDamage, damageType);
             duration--;
@@ -69,6 +85,7 @@ public class DamageOverTimeEffect extends DamageEffect {
      */
     @Override
     public void apply(Personnage caster, Personnage target) {
+        this.caster = caster;
         target.addDamageOverTimeEffect(this);
         System.out.println("Damage over time appliqué sur " + target.getName()
                 + " pour " + duration + " tours.");

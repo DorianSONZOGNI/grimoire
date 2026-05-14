@@ -1,5 +1,6 @@
 package generation.grimoire.enumeration;
 
+//Pour le calcul des statistiques
 public enum Source {
     CASTER_POWER,
     TARGET_POWER,
@@ -10,5 +11,9 @@ public enum Source {
     TARGET_HEALTH_MAX,
     CASTER_HEALTH_MAX,
     TARGET_HEALTH_MISSING,
-    CASTER_HEALTH_MISSING
+    CASTER_HEALTH_MISSING,
+    TARGET_HEALTH_CURRENT,
+    CASTER_HEALTH_CURRENT,
+    CASTER_MANA_CURRENT,
+    TARGET_MANA_CURRENT
 }

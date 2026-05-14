@@ -35,9 +35,12 @@ public class DamagePercentageEffect extends DamageEffect {
         double sourceValue = StatCalculator.getSourceValue(damageSource, caster, target);
         double damage = calculateDamage(sourceValue);
 
-        // Appliquer le multiplicateur de vulnérabilité pour prendre en compte les résistances de la cible
-        double multiplier = getDamageTakenMultiplier(target); // Utilisation de damageType
-        damage *= multiplier;
+        // Appliquer l'amplification (qui vient potentiellement des buffs du lanceur)
+        damage *= getAmplificationMultiplier();
+
+        if (checkCriticalHit(caster)) {
+            damage *= 1.5;
+        }
 
         // Appliquer les dégâts à la cible
         target.takeDamage((int) damage, this.getDamageType());

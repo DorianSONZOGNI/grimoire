@@ -14,23 +14,35 @@ import lombok.EqualsAndHashCode;
 @DiscriminatorValue("RAISON_PASSIVE")
 public class RaisonPassiveEffect extends VoiePassiveEffect {
 
-    private int consecutiveSuccessfulSpells = 0; // maximum 10
-
     @Override
     public void onSpellCast(Personnage personnage, Spell spell) {
-        // Supposons que cet appel n'est effectué qu'en cas de succès
-        consecutiveSuccessfulSpells = Math.min(consecutiveSuccessfulSpells + 1, 10);
-        double bonusCritFromSpells = consecutiveSuccessfulSpells * 0.02;
-        double bonusCritFromSpeed = personnage.getSpeed() * 0.02;
-        double totalBonusCrit = bonusCritFromSpells + bonusCritFromSpeed;
-        System.out.println(personnage.getName() + " gagne un bonus de critique de " + (totalBonusCrit * 100) + "% (Raison).");
-        personnage.setCrit(personnage.getCrit() + (int)(totalBonusCrit * 100));
+        personnage.setPassiveState("raison_cast_this_turn", 1);
+        personnage.setPassiveState("stat_derive_CRIT_from_SPEED", 2); // Toujours actif
+        System.out.println(personnage.getName() + " lance un sort (Raison : gain de vitesse prévu au prochain tour).");
     }
 
     @Override
     public void onTurnStart(Personnage personnage) {
-        // Si aucun sort réussi n'est lancé dans le tour, le cumul peut être réinitialisé
-        consecutiveSuccessfulSpells = 0;
-        personnage.setCrit(personnage.getCrit());
+        personnage.setPassiveState("stat_derive_CRIT_from_SPEED", 2); // Toujours actif
+        
+        int castLastTurn = personnage.getPassiveState("raison_cast_this_turn", 0);
+        int currentSpeedStacks = personnage.getPassiveState("raison_speed_stacks", 0);
+        
+        if (castLastTurn == 1) {
+            // A lancé un sort au tour précédent : gagne +1 de vitesse (cumulable)
+            currentSpeedStacks = Math.min(currentSpeedStacks + 1, 10);
+            System.out.println(personnage.getName() + " gagne +1 de Vitesse grâce à la Raison (Total: +" + currentSpeedStacks + ").");
+        } else {
+            // Aucun sort lancé au tour précédent : perd tous ses cumuls
+            if (currentSpeedStacks > 0) {
+                System.out.println(personnage.getName() + " perd ses cumuls de Vitesse (Raison) car aucun sort n'a été lancé.");
+            }
+            currentSpeedStacks = 0;
+        }
+        
+        personnage.setPassiveState("raison_speed_stacks", currentSpeedStacks);
+        personnage.setPassiveState("stat_flat_" + generation.grimoire.enumeration.StatType.SPEED.name(), currentSpeedStacks);
+        
+        personnage.setPassiveState("raison_cast_this_turn", 0);
     }
 }
