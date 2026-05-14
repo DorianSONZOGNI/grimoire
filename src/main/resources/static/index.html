@@ -1491,47 +1491,58 @@
             const cx = rect.left + rect.width / 2;
             const cy = rect.top + rect.height / 2;
 
-            // Détection thème par voie/spiritualité
             const nom = (voieName + ' ' + spiritName).toLowerCase();
 
             if (nom.includes('création') || nom.includes('creation')) {
-                // 🌱 Plante qui pousse: petites feuilles/points verts qui s'élèvent
-                for (let i = 0; i < 18; i++) {
+                // 🌱 Quelques plantes qui poussent depuis le bas du bouton
+                const plants = ['🌱','🌿','🍀','🌾'];
+                for (let i = 0; i < 8; i++) {
                     setTimeout(() => {
                         const p = document.createElement('div');
-                        p.textContent = ['🌿','🌱','✿','🍀'][Math.floor(Math.random()*4)];
-                        p.style.cssText = `position:fixed;left:${rect.left + Math.random()*rect.width}px;top:${rect.bottom}px;font-size:${12+Math.random()*10}px;pointer-events:none;z-index:9999;transition:all 0.9s cubic-bezier(0.1,0.8,0.3,1);opacity:1;`;
+                        p.textContent = plants[Math.floor(Math.random()*plants.length)];
+                        const sx = rect.left + 10 + Math.random() * (rect.width - 20);
+                        p.style.cssText = `position:fixed;left:${sx}px;top:${rect.bottom - 5}px;font-size:${14+Math.random()*10}px;pointer-events:none;z-index:9999;transition:none;opacity:0;transform:scaleY(0) translateY(0);transform-origin:bottom center;`;
                         document.body.appendChild(p);
                         requestAnimationFrame(() => {
-                            p.style.transform = `translate(${(Math.random()-0.5)*80}px, -${60+Math.random()*80}px) rotate(${(Math.random()-0.5)*60}deg)`;
+                            requestAnimationFrame(() => {
+                                p.style.transition = `all ${0.6+Math.random()*0.4}s cubic-bezier(0.34,1.56,0.64,1)`;
+                                p.style.transform = `scaleY(1) translateY(-${25+Math.random()*30}px)`;
+                                p.style.opacity = '1';
+                                setTimeout(() => {
+                                    p.style.transition = 'opacity 0.4s ease';
+                                    p.style.opacity = '0';
+                                    setTimeout(() => p.remove(), 400);
+                                }, 700);
+                            });
+                        });
+                    }, i * 80);
+                }
+
+            } else if (nom.includes('destruction')) {
+                // 🔥💨 Flammes et fumée qui s'élèvent depuis le bas et les côtés
+                for (let i = 0; i < 22; i++) {
+                    setTimeout(() => {
+                        const p = document.createElement('div');
+                        const isFire = Math.random() > 0.35;
+                        p.textContent = isFire
+                            ? ['🔥','🔥','🔥','🔥'][Math.floor(Math.random()*4)]
+                            : ['💨','🌫️'][Math.floor(Math.random()*2)];
+                        const sx = rect.left + Math.random() * rect.width;
+                        const sy = rect.top + Math.random() * rect.height;
+                        p.style.cssText = `position:fixed;left:${sx}px;top:${sy}px;font-size:${isFire ? 16+Math.random()*14 : 18+Math.random()*12}px;pointer-events:none;z-index:9999;opacity:1;transition:all ${0.6+Math.random()*0.5}s ease-out;`;
+                        document.body.appendChild(p);
+                        const dx = (Math.random()-0.5)*50;
+                        const dy = -(40+Math.random()*70);
+                        requestAnimationFrame(() => {
+                            p.style.transform = `translate(${dx}px, ${dy}px) scale(${isFire ? 0.2 : 1.8})`;
                             p.style.opacity = '0';
                         });
-                        setTimeout(() => p.remove(), 900);
-                    }, i * 50);
+                        setTimeout(() => p.remove(), 1100);
+                    }, i * 35);
                 }
-            } else if (nom.includes('destruction')) {
-                // 💥 Feu aux coins: flammes qui s'élèvent depuis les bords
-                const corners = [
-                    {x: rect.left, y: rect.top}, {x: rect.right, y: rect.top},
-                    {x: rect.left, y: rect.bottom}, {x: rect.right, y: rect.bottom}
-                ];
-                corners.forEach(corner => {
-                    for (let i = 0; i < 5; i++) {
-                        setTimeout(() => {
-                            const p = document.createElement('div');
-                            p.textContent = ['🔥','💥','✨'][Math.floor(Math.random()*3)];
-                            p.style.cssText = `position:fixed;left:${corner.x + (Math.random()-0.5)*20}px;top:${corner.y}px;font-size:${14+Math.random()*10}px;pointer-events:none;z-index:9999;transition:all 0.7s ease-out;opacity:1;`;
-                            document.body.appendChild(p);
-                            requestAnimationFrame(() => {
-                                p.style.transform = `translate(${(Math.random()-0.5)*40}px, -${40+Math.random()*50}px)`;
-                                p.style.opacity = '0';
-                            });
-                            setTimeout(() => p.remove(), 700);
-                        }, i * 60);
-                    }
-                });
+
             } else if (nom.includes('sûreté') || nom.includes('surete')) {
-                // 💧 Gouttes qui tombent sur le bouton depuis le haut
+                // 💧 Gouttes qui tombent depuis le haut
                 for (let i = 0; i < 14; i++) {
                     setTimeout(() => {
                         const p = document.createElement('div');
@@ -1546,22 +1557,55 @@
                         setTimeout(() => p.remove(), 600);
                     }, i * 55);
                 }
+
             } else if (nom.includes('trahison')) {
-                // 🗡️ Poignards/éclairs qui fondent depuis les côtés
-                for (let i = 0; i < 12; i++) {
-                    setTimeout(() => {
-                        const p = document.createElement('div');
-                        const fromLeft = Math.random() > 0.5;
-                        p.textContent = ['🗡️','⚡','👁️'][Math.floor(Math.random()*3)];
-                        p.style.cssText = `position:fixed;left:${fromLeft ? rect.left - 40 : rect.right + 40}px;top:${rect.top + Math.random()*rect.height}px;font-size:${12+Math.random()*8}px;pointer-events:none;z-index:9999;transition:all 0.5s ease-in;opacity:1;`;
-                        document.body.appendChild(p);
-                        requestAnimationFrame(() => {
-                            p.style.transform = `translateX(${fromLeft ? 50 : -50}px) scale(0)`;
-                            p.style.opacity = '0';
-                        });
-                        setTimeout(() => p.remove(), 500);
-                    }, i * 40);
-                }
+                // ⚡ Un slash diagonal qui traverse le bouton (ligne CSS animée)
+                const slash = document.createElement('div');
+                slash.style.cssText = `
+                    position:fixed;
+                    left:${rect.left - 10}px;
+                    top:${rect.top - 10}px;
+                    width:0px;
+                    height:3px;
+                    background: linear-gradient(90deg, transparent, #ed5677, #fff, #ed5677, transparent);
+                    box-shadow: 0 0 12px #ed5677, 0 0 4px #fff;
+                    transform: rotate(-15deg);
+                    transform-origin: left center;
+                    pointer-events:none;
+                    z-index:9999;
+                    border-radius:2px;
+                    transition: width 0.18s ease-in, opacity 0.3s ease 0.25s;
+                    opacity:1;
+                `;
+                document.body.appendChild(slash);
+                requestAnimationFrame(() => {
+                    slash.style.width = (rect.width + 30) + 'px';
+                });
+                // Deuxième slash (croisé)
+                setTimeout(() => {
+                    const slash2 = document.createElement('div');
+                    slash2.style.cssText = `
+                        position:fixed;
+                        left:${rect.right + 10}px;
+                        top:${rect.top - 10}px;
+                        width:0px;
+                        height:2px;
+                        background: linear-gradient(270deg, transparent, #ed5677, #fff, #ed5677, transparent);
+                        box-shadow: 0 0 12px #ed5677;
+                        transform: rotate(15deg);
+                        transform-origin: right center;
+                        pointer-events:none;
+                        z-index:9999;
+                        border-radius:2px;
+                        transition: width 0.15s ease-in, opacity 0.3s ease 0.2s;
+                        opacity:1;
+                    `;
+                    document.body.appendChild(slash2);
+                    requestAnimationFrame(() => slash2.style.width = (rect.width + 30) + 'px');
+                    setTimeout(() => { slash2.style.opacity = '0'; setTimeout(() => slash2.remove(), 300); }, 200);
+                }, 100);
+                setTimeout(() => { slash.style.opacity = '0'; setTimeout(() => slash.remove(), 300); }, 250);
+
             } else if (nom.includes('violence')) {
                 // 🩸 Éclaboussures depuis le centre
                 for (let i = 0; i < 20; i++) {
@@ -1577,8 +1621,9 @@
                     });
                     setTimeout(() => p.remove(), 700);
                 }
+
             } else if (nom.includes('consolidation')) {
-                // 🧱 Blocs qui s'empilent vers le haut
+                // 🧱 Blocs qui s'empilent
                 for (let i = 0; i < 10; i++) {
                     setTimeout(() => {
                         const p = document.createElement('div');
@@ -1592,8 +1637,9 @@
                         setTimeout(() => p.remove(), 800);
                     }, i * 60);
                 }
+
             } else if (nom.includes('raison')) {
-                // 🔮 Engrenages/symboles logiques qui tournent
+                // ⚙️ Engrenages qui tourbillonnent
                 for (let i = 0; i < 14; i++) {
                     setTimeout(() => {
                         const p = document.createElement('div');
@@ -1608,72 +1654,104 @@
                         setTimeout(() => p.remove(), 800);
                     }, i * 45);
                 }
+
             } else if (nom.includes('conviction')) {
-                // ⚖️ Flammes dorées qui montent solennellement
-                for (let i = 0; i < 16; i++) {
-                    setTimeout(() => {
-                        const p = document.createElement('div');
-                        p.textContent = ['⚖️','🌟','✨','🏆'][Math.floor(Math.random()*4)];
-                        p.style.cssText = `position:fixed;left:${rect.left + Math.random()*rect.width}px;top:${rect.top + rect.height/2}px;font-size:${12+Math.random()*10}px;pointer-events:none;z-index:9999;transition:all 1s cubic-bezier(0.1,0.8,0.3,1);opacity:1;`;
-                        document.body.appendChild(p);
-                        requestAnimationFrame(() => {
-                            p.style.transform = `translateY(-${70+Math.random()*50}px) scale(1.2)`;
-                            p.style.opacity = '0';
-                        });
-                        setTimeout(() => p.remove(), 1000);
-                    }, i * 50);
-                }
-            } else if (nom.includes('esprit')) {
-                // ✨ Orbes cyan qui orbitent
-                for (let i = 0; i < 16; i++) {
-                    const p = document.createElement('div');
-                    const angle0 = (i / 16) * Math.PI * 2;
-                    const r0 = 20 + Math.random() * 20;
-                    p.textContent = ['🔵','✨','🌊','💫'][Math.floor(Math.random()*4)];
-                    p.style.cssText = `position:fixed;left:${cx + Math.cos(angle0)*r0}px;top:${cy + Math.sin(angle0)*r0}px;font-size:${8+Math.random()*8}px;pointer-events:none;z-index:9999;transition:all 0.9s cubic-bezier(0.1,0.9,0.3,1);opacity:1;`;
-                    document.body.appendChild(p);
-                    const angle1 = angle0 + Math.PI;
-                    const dist = 60 + Math.random() * 60;
-                    requestAnimationFrame(() => {
-                        p.style.left = (cx + Math.cos(angle1)*dist) + 'px';
-                        p.style.top = (cy + Math.sin(angle1)*dist) + 'px';
-                        p.style.opacity = '0';
-                    });
-                    setTimeout(() => p.remove(), 900);
-                }
-            } else if (nom.includes('ténèbres') || nom.includes('tenebres')) {
-                // 🌑 Particules sombres/violettes qui se dissipent
+                // 🌋 Lave : grosses gouttes orange/rouge qui jaillissent depuis le bas
                 for (let i = 0; i < 18; i++) {
-                    const p = document.createElement('div');
-                    p.textContent = ['🌑','💀','🦇','🌫️'][Math.floor(Math.random()*4)];
-                    p.style.cssText = `position:fixed;left:${cx}px;top:${cy}px;font-size:${10+Math.random()*12}px;pointer-events:none;z-index:9999;transition:all 0.8s ease-out;opacity:0.9;`;
-                    document.body.appendChild(p);
-                    const angle = Math.random() * Math.PI * 2;
-                    const dist = 50 + Math.random() * 80;
-                    requestAnimationFrame(() => {
-                        p.style.transform = `translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist - 20}px) scale(0)`;
-                        p.style.opacity = '0';
-                    });
-                    setTimeout(() => p.remove(), 800);
-                }
-            } else if (nom.includes('karma')) {
-                // ♾️ Symboles qui tournent en cercle
-                for (let i = 0; i < 12; i++) {
                     setTimeout(() => {
                         const p = document.createElement('div');
-                        p.textContent = ['☯️','♾️','🌀','⚡'][Math.floor(Math.random()*4)];
-                        const a = (i / 12) * Math.PI * 2;
-                        p.style.cssText = `position:fixed;left:${cx + Math.cos(a)*30}px;top:${cy + Math.sin(a)*30}px;font-size:${12+Math.random()*8}px;pointer-events:none;z-index:9999;transition:all 1s cubic-bezier(0.1,0.8,0.3,1);opacity:1;`;
+                        p.textContent = ['🔴','🟠','🌋','💧'][Math.floor(Math.random()*4)];
+                        const sx = rect.left + 10 + Math.random() * (rect.width - 20);
+                        p.style.cssText = `position:fixed;left:${sx}px;top:${rect.bottom}px;font-size:${14+Math.random()*12}px;pointer-events:none;z-index:9999;transition:none;opacity:1;`;
+                        // Teinte orangée via filtre CSS
+                        p.style.filter = 'hue-rotate(-20deg) saturate(2) brightness(1.2)';
                         document.body.appendChild(p);
+                        const dx = (Math.random()-0.5)*60;
+                        const dyUp = -(50+Math.random()*70);
                         requestAnimationFrame(() => {
-                            p.style.transform = `rotate(${720}deg) translate(${(Math.random()-0.5)*60}px, ${(Math.random()-0.5)*60}px) scale(0)`;
+                            requestAnimationFrame(() => {
+                                p.style.transition = `transform ${0.5+Math.random()*0.3}s cubic-bezier(0.25,0.8,0.5,1), opacity ${0.3}s ease ${0.3+Math.random()*0.3}s`;
+                                p.style.transform = `translate(${dx}px, ${dyUp}px) scale(0.3)`;
+                                p.style.opacity = '0';
+                            });
+                        });
+                        setTimeout(() => p.remove(), 1000);
+                    }, i * 40);
+                }
+
+            } else if (nom.includes('esprit')) {
+                // ✨ Flash de luminosité sur le bouton + petites lueurs qui partent
+                btn.style.transition = 'box-shadow 0.1s ease, background 0.1s ease';
+                const origBg = btn.style.background;
+                btn.style.boxShadow = '0 0 40px 15px #38bdf8, 0 0 80px 30px rgba(56,189,248,0.4)';
+                btn.style.background = 'rgba(56,189,248,0.6)';
+                setTimeout(() => {
+                    btn.style.transition = 'box-shadow 0.5s ease, background 0.5s ease';
+                    btn.style.boxShadow = '';
+                    btn.style.background = origBg || '';
+                }, 120);
+
+                for (let i = 0; i < 20; i++) {
+                    setTimeout(() => {
+                        const p = document.createElement('div');
+                        p.textContent = '✦';
+                        p.style.cssText = `position:fixed;left:${cx}px;top:${cy}px;font-size:${6+Math.random()*10}px;color:#38bdf8;text-shadow:0 0 8px #38bdf8;pointer-events:none;z-index:9999;transition:all ${0.5+Math.random()*0.5}s ease-out;opacity:1;`;
+                        document.body.appendChild(p);
+                        const angle = Math.random() * Math.PI * 2;
+                        const dist = 40 + Math.random() * 80;
+                        requestAnimationFrame(() => {
+                            p.style.transform = `translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist}px) scale(0)`;
                             p.style.opacity = '0';
                         });
                         setTimeout(() => p.remove(), 1000);
-                    }, i * 60);
+                    }, i * 20);
                 }
+
+            } else if (nom.includes('ténèbres') || nom.includes('tenebres')) {
+                // 💀 Têtes de mort lentes qui se dissipent
+                for (let i = 0; i < 10; i++) {
+                    setTimeout(() => {
+                        const p = document.createElement('div');
+                        p.textContent = ['💀','💀','☠️','🌑'][Math.floor(Math.random()*4)];
+                        p.style.cssText = `position:fixed;left:${cx + (Math.random()-0.5)*rect.width}px;top:${cy + (Math.random()-0.5)*rect.height}px;font-size:${14+Math.random()*14}px;pointer-events:none;z-index:9999;opacity:1;transition:all 1.8s ease-out;`;
+                        document.body.appendChild(p);
+                        const angle = Math.random() * Math.PI * 2;
+                        const dist = 40 + Math.random() * 70;
+                        requestAnimationFrame(() => {
+                            p.style.transform = `translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist - 30}px) scale(0.2) rotate(${(Math.random()-0.5)*30}deg)`;
+                            p.style.opacity = '0';
+                        });
+                        setTimeout(() => p.remove(), 1800);
+                    }, i * 120);
+                }
+
+            } else if (nom.includes('karma')) {
+                // 🪷 Bouddha/lotus qui flotte et va doucement de haut en bas
+                const buddha = document.createElement('div');
+                buddha.textContent = '🪷';
+                buddha.style.cssText = `position:fixed;left:${cx - 18}px;top:${rect.top - 60}px;font-size:36px;pointer-events:none;z-index:9999;opacity:0;transition:opacity 0.4s ease;`;
+                document.body.appendChild(buddha);
+
+                // Animation flottante manuelle
+                let t = 0;
+                const startY = rect.top - 60;
+                const bobInterval = setInterval(() => {
+                    t += 0.08;
+                    buddha.style.top = (startY + Math.sin(t) * 8) + 'px';
+                }, 30);
+
+                requestAnimationFrame(() => { buddha.style.opacity = '1'; });
+
+                setTimeout(() => {
+                    clearInterval(bobInterval);
+                    buddha.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
+                    buddha.style.opacity = '0';
+                    buddha.style.transform = 'translateY(-20px) scale(0.5)';
+                    setTimeout(() => buddha.remove(), 800);
+                }, 2200);
+
             } else {
-                // ✦ Générique : étincelles dorées
+                // ✦ Générique
                 createSparkles(cx, cy, '#ffd700');
             }
 
