@@ -1030,6 +1030,75 @@
                 filter: brightness(1);
             }
         }
+
+        .karma-ring {
+            position: fixed;
+            width: 68px;
+            height: 68px;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: .95;
+            border: 2px solid rgba(255, 215, 120, .9);
+            border-radius: 50%;
+            box-shadow:
+                0 0 12px rgba(255, 210, 100, .8),
+                inset 0 0 12px rgba(255, 210, 100, .45);
+            transition:
+                transform 1.1s ease-out,
+                opacity 1.1s ease-out;
+        }
+
+        .karma-ring::before,
+        .karma-ring::after {
+            content: "";
+            position: absolute;
+            inset: 13px;
+            border-radius: 50%;
+            border: 1px solid rgba(255, 245, 180, .75);
+        }
+
+        .karma-ring::after {
+            inset: 28px;
+            background: rgba(255, 230, 150, .9);
+            box-shadow: 0 0 10px rgba(255, 220, 100, .9);
+        }
+
+        .karma-orb {
+            position: fixed;
+            width: 7px;
+            height: 7px;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: .9;
+            border-radius: 50%;
+            background: radial-gradient(circle, #fff8c8, #ffd66b 45%, transparent 75%);
+            box-shadow: 0 0 10px rgba(255, 220, 120, .9);
+            transition:
+                transform .9s ease-out,
+                opacity .9s ease-out;
+        }
+
+        .karma-balance {
+            animation: karmaBalance 1.1s ease-out;
+        }
+
+        @keyframes karmaBalance {
+            0% {
+                transform: rotate(0deg) scale(1);
+            }
+
+            25% {
+                transform: rotate(1.5deg) scale(1.03);
+            }
+
+            50% {
+                transform: rotate(-1.5deg) scale(1.03);
+            }
+
+            100% {
+                transform: rotate(0deg) scale(1);
+            }
+        }
     </style>
 </head>
 
@@ -2133,30 +2202,47 @@
                     }, i * 45);
                 }
             } else if (nom.includes('karma')) {
-                // 🪷 Bouddha/lotus qui flotte et va doucement de haut en bas
-                const buddha = document.createElement('div');
-                buddha.textContent = '🪷';
-                buddha.style.cssText = `position:fixed;left:${cx - 18}px;top:${rect.top - 60}px;font-size:36px;pointer-events:none;z-index:9999;opacity:0;transition:opacity 0.4s ease;`;
-                document.body.appendChild(buddha);
+                btn.classList.add('karma-balance');
+                setTimeout(() => btn.classList.remove('karma-balance'), 1200);
 
-                // Animation flottante manuelle
-                let t = 0;
-                const startY = rect.top - 60;
-                const bobInterval = setInterval(() => {
-                    t += 0.08;
-                    buddha.style.top = (startY + Math.sin(t) * 8) + 'px';
-                }, 30);
+                const ring = document.createElement('div');
+                ring.className = 'karma-ring';
+                ring.style.left = `${cx - 34}px`;
+                ring.style.top = `${cy - 34}px`;
 
-                requestAnimationFrame(() => { buddha.style.opacity = '1'; });
+                document.body.appendChild(ring);
 
-                setTimeout(() => {
-                    clearInterval(bobInterval);
-                    buddha.style.transition = 'opacity 0.8s ease, transform 0.8s ease';
-                    buddha.style.opacity = '0';
-                    buddha.style.transform = 'translateY(-20px) scale(0.5)';
-                    setTimeout(() => buddha.remove(), 800);
-                }, 2200);
+                requestAnimationFrame(() => {
+                    ring.style.transform = 'scale(1.25) rotate(180deg)';
+                    ring.style.opacity = '0';
+                });
 
+                for (let i = 0; i < 16; i++) {
+                    setTimeout(() => {
+                        const p = document.createElement('div');
+                        p.className = 'karma-orb';
+
+                        const angle = (i / 16) * Math.PI * 2;
+                        const radius = 36 + Math.random() * 12;
+
+                        p.style.left = `${cx}px`;
+                        p.style.top = `${cy}px`;
+
+                        document.body.appendChild(p);
+
+                        requestAnimationFrame(() => {
+                            p.style.transform = `
+                                translate(${Math.cos(angle) * radius}px, ${Math.sin(angle) * radius}px)
+                                scale(0.15)
+                            `;
+                            p.style.opacity = '0';
+                        });
+
+                        setTimeout(() => p.remove(), 1000);
+                    }, i * 25);
+                }
+
+                setTimeout(() => ring.remove(), 1200);
             } else {
                 // ✦ Générique
                 createSparkles(cx, cy, '#ffd700');
