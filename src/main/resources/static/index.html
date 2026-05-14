@@ -1477,7 +1477,214 @@
             }).join('');
         }
 
+        // === ANIMATIONS FORGE ===
+        function playForgeAnimation() {
+            const btn = document.getElementById('submitSpellBtn');
+            if (!btn) return;
+
+            const voieSelect = document.getElementById('voieSelect');
+            const spiritSelect = document.getElementById('spiritSelect');
+            const voieName = (voieSelect.options[voieSelect.selectedIndex] || {}).text || '';
+            const spiritName = (spiritSelect.options[spiritSelect.selectedIndex] || {}).text || '';
+
+            const rect = btn.getBoundingClientRect();
+            const cx = rect.left + rect.width / 2;
+            const cy = rect.top + rect.height / 2;
+
+            // Détection thème par voie/spiritualité
+            const nom = (voieName + ' ' + spiritName).toLowerCase();
+
+            if (nom.includes('création') || nom.includes('creation')) {
+                // 🌱 Plante qui pousse: petites feuilles/points verts qui s'élèvent
+                for (let i = 0; i < 18; i++) {
+                    setTimeout(() => {
+                        const p = document.createElement('div');
+                        p.textContent = ['🌿','🌱','✿','🍀'][Math.floor(Math.random()*4)];
+                        p.style.cssText = `position:fixed;left:${rect.left + Math.random()*rect.width}px;top:${rect.bottom}px;font-size:${12+Math.random()*10}px;pointer-events:none;z-index:9999;transition:all 0.9s cubic-bezier(0.1,0.8,0.3,1);opacity:1;`;
+                        document.body.appendChild(p);
+                        requestAnimationFrame(() => {
+                            p.style.transform = `translate(${(Math.random()-0.5)*80}px, -${60+Math.random()*80}px) rotate(${(Math.random()-0.5)*60}deg)`;
+                            p.style.opacity = '0';
+                        });
+                        setTimeout(() => p.remove(), 900);
+                    }, i * 50);
+                }
+            } else if (nom.includes('destruction')) {
+                // 💥 Feu aux coins: flammes qui s'élèvent depuis les bords
+                const corners = [
+                    {x: rect.left, y: rect.top}, {x: rect.right, y: rect.top},
+                    {x: rect.left, y: rect.bottom}, {x: rect.right, y: rect.bottom}
+                ];
+                corners.forEach(corner => {
+                    for (let i = 0; i < 5; i++) {
+                        setTimeout(() => {
+                            const p = document.createElement('div');
+                            p.textContent = ['🔥','💥','✨'][Math.floor(Math.random()*3)];
+                            p.style.cssText = `position:fixed;left:${corner.x + (Math.random()-0.5)*20}px;top:${corner.y}px;font-size:${14+Math.random()*10}px;pointer-events:none;z-index:9999;transition:all 0.7s ease-out;opacity:1;`;
+                            document.body.appendChild(p);
+                            requestAnimationFrame(() => {
+                                p.style.transform = `translate(${(Math.random()-0.5)*40}px, -${40+Math.random()*50}px)`;
+                                p.style.opacity = '0';
+                            });
+                            setTimeout(() => p.remove(), 700);
+                        }, i * 60);
+                    }
+                });
+            } else if (nom.includes('sûreté') || nom.includes('surete')) {
+                // 💧 Gouttes qui tombent sur le bouton depuis le haut
+                for (let i = 0; i < 14; i++) {
+                    setTimeout(() => {
+                        const p = document.createElement('div');
+                        p.textContent = '💧';
+                        const startX = rect.left + Math.random() * rect.width;
+                        p.style.cssText = `position:fixed;left:${startX}px;top:${rect.top - 60}px;font-size:${10+Math.random()*8}px;pointer-events:none;z-index:9999;transition:all 0.6s cubic-bezier(0.4,0,1,1);opacity:1;`;
+                        document.body.appendChild(p);
+                        requestAnimationFrame(() => {
+                            p.style.transform = `translateY(${60 + Math.random()*20}px)`;
+                            p.style.opacity = '0';
+                        });
+                        setTimeout(() => p.remove(), 600);
+                    }, i * 55);
+                }
+            } else if (nom.includes('trahison')) {
+                // 🗡️ Poignards/éclairs qui fondent depuis les côtés
+                for (let i = 0; i < 12; i++) {
+                    setTimeout(() => {
+                        const p = document.createElement('div');
+                        const fromLeft = Math.random() > 0.5;
+                        p.textContent = ['🗡️','⚡','👁️'][Math.floor(Math.random()*3)];
+                        p.style.cssText = `position:fixed;left:${fromLeft ? rect.left - 40 : rect.right + 40}px;top:${rect.top + Math.random()*rect.height}px;font-size:${12+Math.random()*8}px;pointer-events:none;z-index:9999;transition:all 0.5s ease-in;opacity:1;`;
+                        document.body.appendChild(p);
+                        requestAnimationFrame(() => {
+                            p.style.transform = `translateX(${fromLeft ? 50 : -50}px) scale(0)`;
+                            p.style.opacity = '0';
+                        });
+                        setTimeout(() => p.remove(), 500);
+                    }, i * 40);
+                }
+            } else if (nom.includes('violence')) {
+                // 🩸 Éclaboussures depuis le centre
+                for (let i = 0; i < 20; i++) {
+                    const p = document.createElement('div');
+                    p.textContent = ['💢','🩸','⚔️'][Math.floor(Math.random()*3)];
+                    p.style.cssText = `position:fixed;left:${cx}px;top:${cy}px;font-size:${10+Math.random()*10}px;pointer-events:none;z-index:9999;transition:all 0.7s cubic-bezier(0.1,0.8,0.2,1);opacity:1;`;
+                    document.body.appendChild(p);
+                    const angle = (i / 20) * Math.PI * 2;
+                    const dist = 50 + Math.random() * 60;
+                    requestAnimationFrame(() => {
+                        p.style.transform = `translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist}px) scale(0.5)`;
+                        p.style.opacity = '0';
+                    });
+                    setTimeout(() => p.remove(), 700);
+                }
+            } else if (nom.includes('consolidation')) {
+                // 🧱 Blocs qui s'empilent vers le haut
+                for (let i = 0; i < 10; i++) {
+                    setTimeout(() => {
+                        const p = document.createElement('div');
+                        p.textContent = ['🧱','🪨','⬛'][Math.floor(Math.random()*3)];
+                        p.style.cssText = `position:fixed;left:${rect.left + Math.random()*rect.width}px;top:${rect.bottom}px;font-size:${12+Math.random()*8}px;pointer-events:none;z-index:9999;transition:all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);opacity:1;`;
+                        document.body.appendChild(p);
+                        requestAnimationFrame(() => {
+                            p.style.transform = `translateY(-${40+i*8}px)`;
+                            p.style.opacity = '0';
+                        });
+                        setTimeout(() => p.remove(), 800);
+                    }, i * 60);
+                }
+            } else if (nom.includes('raison')) {
+                // 🔮 Engrenages/symboles logiques qui tournent
+                for (let i = 0; i < 14; i++) {
+                    setTimeout(() => {
+                        const p = document.createElement('div');
+                        p.textContent = ['⚙️','🔮','📐','💡'][Math.floor(Math.random()*4)];
+                        p.style.cssText = `position:fixed;left:${cx + (Math.random()-0.5)*rect.width*0.8}px;top:${cy + (Math.random()-0.5)*rect.height*0.8}px;font-size:${10+Math.random()*10}px;pointer-events:none;z-index:9999;transition:all 0.8s ease-out;opacity:1;`;
+                        document.body.appendChild(p);
+                        const spin = (Math.random()-0.5)*360;
+                        requestAnimationFrame(() => {
+                            p.style.transform = `translate(${(Math.random()-0.5)*70}px, ${(Math.random()-0.5)*70}px) rotate(${spin}deg) scale(0)`;
+                            p.style.opacity = '0';
+                        });
+                        setTimeout(() => p.remove(), 800);
+                    }, i * 45);
+                }
+            } else if (nom.includes('conviction')) {
+                // ⚖️ Flammes dorées qui montent solennellement
+                for (let i = 0; i < 16; i++) {
+                    setTimeout(() => {
+                        const p = document.createElement('div');
+                        p.textContent = ['⚖️','🌟','✨','🏆'][Math.floor(Math.random()*4)];
+                        p.style.cssText = `position:fixed;left:${rect.left + Math.random()*rect.width}px;top:${rect.top + rect.height/2}px;font-size:${12+Math.random()*10}px;pointer-events:none;z-index:9999;transition:all 1s cubic-bezier(0.1,0.8,0.3,1);opacity:1;`;
+                        document.body.appendChild(p);
+                        requestAnimationFrame(() => {
+                            p.style.transform = `translateY(-${70+Math.random()*50}px) scale(1.2)`;
+                            p.style.opacity = '0';
+                        });
+                        setTimeout(() => p.remove(), 1000);
+                    }, i * 50);
+                }
+            } else if (nom.includes('esprit')) {
+                // ✨ Orbes cyan qui orbitent
+                for (let i = 0; i < 16; i++) {
+                    const p = document.createElement('div');
+                    const angle0 = (i / 16) * Math.PI * 2;
+                    const r0 = 20 + Math.random() * 20;
+                    p.textContent = ['🔵','✨','🌊','💫'][Math.floor(Math.random()*4)];
+                    p.style.cssText = `position:fixed;left:${cx + Math.cos(angle0)*r0}px;top:${cy + Math.sin(angle0)*r0}px;font-size:${8+Math.random()*8}px;pointer-events:none;z-index:9999;transition:all 0.9s cubic-bezier(0.1,0.9,0.3,1);opacity:1;`;
+                    document.body.appendChild(p);
+                    const angle1 = angle0 + Math.PI;
+                    const dist = 60 + Math.random() * 60;
+                    requestAnimationFrame(() => {
+                        p.style.left = (cx + Math.cos(angle1)*dist) + 'px';
+                        p.style.top = (cy + Math.sin(angle1)*dist) + 'px';
+                        p.style.opacity = '0';
+                    });
+                    setTimeout(() => p.remove(), 900);
+                }
+            } else if (nom.includes('ténèbres') || nom.includes('tenebres')) {
+                // 🌑 Particules sombres/violettes qui se dissipent
+                for (let i = 0; i < 18; i++) {
+                    const p = document.createElement('div');
+                    p.textContent = ['🌑','💀','🦇','🌫️'][Math.floor(Math.random()*4)];
+                    p.style.cssText = `position:fixed;left:${cx}px;top:${cy}px;font-size:${10+Math.random()*12}px;pointer-events:none;z-index:9999;transition:all 0.8s ease-out;opacity:0.9;`;
+                    document.body.appendChild(p);
+                    const angle = Math.random() * Math.PI * 2;
+                    const dist = 50 + Math.random() * 80;
+                    requestAnimationFrame(() => {
+                        p.style.transform = `translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist - 20}px) scale(0)`;
+                        p.style.opacity = '0';
+                    });
+                    setTimeout(() => p.remove(), 800);
+                }
+            } else if (nom.includes('karma')) {
+                // ♾️ Symboles qui tournent en cercle
+                for (let i = 0; i < 12; i++) {
+                    setTimeout(() => {
+                        const p = document.createElement('div');
+                        p.textContent = ['☯️','♾️','🌀','⚡'][Math.floor(Math.random()*4)];
+                        const a = (i / 12) * Math.PI * 2;
+                        p.style.cssText = `position:fixed;left:${cx + Math.cos(a)*30}px;top:${cy + Math.sin(a)*30}px;font-size:${12+Math.random()*8}px;pointer-events:none;z-index:9999;transition:all 1s cubic-bezier(0.1,0.8,0.3,1);opacity:1;`;
+                        document.body.appendChild(p);
+                        requestAnimationFrame(() => {
+                            p.style.transform = `rotate(${720}deg) translate(${(Math.random()-0.5)*60}px, ${(Math.random()-0.5)*60}px) scale(0)`;
+                            p.style.opacity = '0';
+                        });
+                        setTimeout(() => p.remove(), 1000);
+                    }, i * 60);
+                }
+            } else {
+                // ✦ Générique : étincelles dorées
+                createSparkles(cx, cy, '#ffd700');
+            }
+
+            // Pulse du bouton
+            btn.style.transition = 'transform 0.15s ease';
+            btn.style.transform = 'scale(1.06)';
+            setTimeout(() => btn.style.transform = 'scale(1)', 200);
+        }
+
         async function submitSpell() {
+            playForgeAnimation();
             const nomInput = document.getElementById('nom');
             if (!nomInput.value.trim()) {
                 alert("Veuillez saisir un nom de sort.");
