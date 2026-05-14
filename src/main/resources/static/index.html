@@ -419,19 +419,77 @@
         }
 
         .spell-card {
-            background: rgba(255, 255, 255, 0.02);
-            border: 1px solid var(--glass-border);
             border-radius: 12px;
             padding: 1.2rem;
             transition: all 0.3s ease;
             display: flex;
             flex-direction: column;
             gap: 0.8rem;
+            
+            --card-glow-alpha: 0;
+            --card-border-alpha: 0.08;
+            --card-bg-alpha: 0.02;
+            
+            border: 1px solid rgba(var(--spell-rgb), var(--card-border-alpha));
+            background: linear-gradient(135deg, rgba(var(--spell-rgb), var(--card-bg-alpha)) 0%, rgba(255,255,255,0.01) 100%);
+            box-shadow: 0 4px 20px rgba(var(--spell-rgb), var(--card-glow-alpha));
         }
 
         .spell-card:hover {
-            border-color: rgba(255, 255, 255, 0.2);
-            background: rgba(255, 255, 255, 0.04);
+            --card-glow-alpha: 0.05;
+            --card-border-alpha: 0.2;
+            --card-bg-alpha: 0.04;
+            transform: translateY(-1px);
+        }
+
+        /* Lvl 1 (default) */
+        .spell-card-lvl-1 { }
+
+        /* Lvl 2: Subtile (More border presence) */
+        .spell-card-lvl-2 {
+            --card-border-alpha: 0.2;
+            --card-bg-alpha: 0.04;
+        }
+        .spell-card-lvl-2:hover {
+            --card-glow-alpha: 0.15;
+            --card-border-alpha: 0.4;
+        }
+
+        /* Lvl 3: Advanced (Noticeable tint & glow) */
+        .spell-card-lvl-3 {
+            --card-border-alpha: 0.35;
+            --card-bg-alpha: 0.08;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 4px 20px rgba(var(--spell-rgb), var(--card-glow-alpha));
+        }
+        .spell-card-lvl-3:hover {
+            --card-glow-alpha: 0.25;
+            --card-border-alpha: 0.55;
+            transform: translateY(-2px);
+        }
+
+        /* Lvl 4: Master (Strong presence, brighter border) */
+        .spell-card-lvl-4 {
+            --card-border-alpha: 0.5;
+            --card-bg-alpha: 0.12;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 6px 25px rgba(var(--spell-rgb), var(--card-glow-alpha));
+        }
+        .spell-card-lvl-4:hover {
+            --card-glow-alpha: 0.4;
+            --card-border-alpha: 0.75;
+            transform: translateY(-2px);
+        }
+
+        /* Lvl 5: Legendary (Shiny, strong tint, animated reflection) */
+        .spell-card-lvl-5 {
+            --card-border-alpha: 0.8;
+            --card-bg-alpha: 0.18;
+            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 8px 30px rgba(var(--spell-rgb), var(--card-glow-alpha));
+        }
+        .spell-card-lvl-5:hover {
+            --card-glow-alpha: 0.6;
+            --card-border-alpha: 1;
+            transform: translateY(-2px);
+            background: linear-gradient(135deg, rgba(var(--spell-rgb), 0.25) 0%, rgba(255,255,255,0.05) 100%);
         }
 
         .spell-card-header {
@@ -1598,15 +1656,16 @@
 
                 let rankTitleBadge = '';
                 if (sp.spiritualite && sp.spiritualite.rankNames && sp.spiritualite.rankNames[sp.niveau]) {
-                    rankTitleBadge = `<div style="font-size:0.85rem; color:#10b981; font-weight:600; margin-top:-0.4rem;">✨ Rang : "${sp.spiritualite.rankNames[sp.niveau]}"</div>`;
+                    rankTitleBadge = `<div style="font-size:0.85rem; color:#10b981; font-weight:600; margin-top:-0.4rem;">✨ "${sp.spiritualite.rankNames[sp.niveau]}"</div>`;
                 } else if (sp.voie && sp.voie.rankNames && sp.voie.rankNames[sp.niveau]) {
-                    rankTitleBadge = `<div style="font-size:0.85rem; color:#10b981; font-weight:600; margin-top:-0.4rem;">✨ Rang : "${sp.voie.rankNames[sp.niveau]}"</div>`;
+                    rankTitleBadge = `<div style="font-size:0.85rem; color:#10b981; font-weight:600; margin-top:-0.4rem;">✨ "${sp.voie.rankNames[sp.niveau]}"</div>`;
                 }
 
                 const titleColor = getSpellColor(sp);
+                const titleRgb = hexToRgb(titleColor);
 
                 return `
-                    <div class="spell-card">
+                    <div class="spell-card spell-card-lvl-${sp.niveau || 1}" style="--spell-color: ${titleColor}; --spell-rgb: ${titleRgb};">
                         <div class="spell-card-header" style="align-items: flex-start;">
                             <div style="display: flex; flex-direction: column; gap: 0.4rem;">
                                 <div class="spell-name" style="color: ${titleColor};">${sp.nom}</div>
@@ -1679,15 +1738,15 @@
         function makeCustomSelect(selectId) {
             const select = document.getElementById(selectId);
             if (!select || select.dataset.customized) return;
-            
+
             select.style.display = 'none';
             select.dataset.customized = "true";
-            
+
             const wrapper = document.createElement('div');
             wrapper.style.position = 'relative';
             wrapper.style.width = '100%';
             wrapper.style.fontFamily = "inherit";
-            
+
             const trigger = document.createElement('div');
             trigger.style.padding = '0.6rem 0.8rem';
             trigger.style.background = 'rgba(255, 255, 255, 0.05)';
@@ -1699,7 +1758,7 @@
             trigger.style.gap = '0.6rem';
             trigger.style.color = '#fff';
             trigger.style.fontSize = '0.9rem';
-            
+
             const optionsContainer = document.createElement('div');
             optionsContainer.style.position = 'absolute';
             optionsContainer.style.top = '100%';
@@ -1714,35 +1773,35 @@
             optionsContainer.style.overflowY = 'auto';
             optionsContainer.style.display = 'none';
             optionsContainer.style.boxShadow = '0 10px 25px rgba(0,0,0,0.5)';
-            
+
             const updateSelect = () => {
                 optionsContainer.innerHTML = '';
                 const options = Array.from(select.options);
                 let selectedOption = options[select.selectedIndex] || options[0];
-                
+
                 let iconName = 'radio_button_unchecked';
                 let triggerColor = 'var(--text-muted)';
                 if (selectId === 'voieSelect') {
                     iconName = getVoieIcon(selectedOption.text);
-                    triggerColor = getVoieButtonColor({nom: selectedOption.text});
+                    triggerColor = getVoieButtonColor({ nom: selectedOption.text });
                 } else if (selectId === 'spiritSelect') {
                     iconName = getSpiritIcon(selectedOption.text);
-                    triggerColor = getSpiritButtonColor({nom: selectedOption.text});
+                    triggerColor = getSpiritButtonColor({ nom: selectedOption.text });
                 }
-                
+
                 trigger.innerHTML = `<span class="material-symbols-outlined" style="font-size:1.2rem; color:${triggerColor};">${iconName}</span> <span>${selectedOption.text}</span>`;
-                
+
                 options.forEach((opt, index) => {
                     let optIcon = 'radio_button_unchecked';
                     let optColor = 'var(--text-muted)';
                     if (selectId === 'voieSelect') {
                         optIcon = getVoieIcon(opt.text);
-                        optColor = getVoieButtonColor({nom: opt.text});
+                        optColor = getVoieButtonColor({ nom: opt.text });
                     } else if (selectId === 'spiritSelect') {
                         optIcon = getSpiritIcon(opt.text);
-                        optColor = getSpiritButtonColor({nom: opt.text});
+                        optColor = getSpiritButtonColor({ nom: opt.text });
                     }
-                    
+
                     const optionDiv = document.createElement('div');
                     optionDiv.style.padding = '0.6rem 0.8rem';
                     optionDiv.style.cursor = 'pointer';
@@ -1753,21 +1812,21 @@
                     optionDiv.style.fontSize = '0.9rem';
                     optionDiv.style.transition = 'background 0.2s';
                     optionDiv.innerHTML = `<span class="material-symbols-outlined" style="font-size:1.2rem; color:${optColor};">${optIcon}</span> ${opt.text}`;
-                    
+
                     optionDiv.addEventListener('mouseover', () => optionDiv.style.background = 'rgba(255,255,255,0.1)');
                     optionDiv.addEventListener('mouseout', () => optionDiv.style.background = 'transparent');
-                    
+
                     optionDiv.addEventListener('click', (e) => {
                         e.stopPropagation();
                         select.selectedIndex = index;
                         select.dispatchEvent(new Event('change'));
                         optionsContainer.style.display = 'none';
                     });
-                    
+
                     optionsContainer.appendChild(optionDiv);
                 });
             };
-            
+
             trigger.addEventListener('click', (e) => {
                 e.stopPropagation();
                 const isVisible = optionsContainer.style.display === 'block';
@@ -1775,17 +1834,17 @@
                 optionsContainer.style.display = isVisible ? 'none' : 'block';
                 optionsContainer.className = 'custom-select-options'; // tag for closing
             });
-            
+
             document.addEventListener('click', (e) => {
                 if (!wrapper.contains(e.target)) {
                     optionsContainer.style.display = 'none';
                 }
             });
-            
+
             select.addEventListener('change', updateSelect);
             const observer = new MutationObserver(updateSelect);
             observer.observe(select, { childList: true });
-            
+
             updateSelect();
             wrapper.appendChild(trigger);
             wrapper.appendChild(optionsContainer);
