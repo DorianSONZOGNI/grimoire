@@ -1991,7 +1991,7 @@
                     const shadow = isSel ? `box-shadow: 0 0 8px rgba(${rgb}, 0.4);` : '';
                     const opacity = isSel ? '1' : '0.85';
                     const icon = getVoieIcon(v.nom);
-                    return `<button type="button" style="padding:0.3rem 0.6rem;font-size:0.75rem;border-radius:6px;cursor:pointer;background:${bg};border:1px solid ${border};color:${color};font-weight:${isSel ? 'bold' : 'normal'};opacity:${opacity};transition:all 0.2s;display:inline-flex;align-items:center;gap:0.3rem;${shadow}" onclick="toggleFilterVoie(${v.id})"><span class="material-symbols-outlined" style="font-size:1.1em;">${icon}</span>${v.nom}</button>`;
+                    return `<button type="button" style="padding:0.3rem 0.6rem;font-size:0.75rem;border-radius:6px;cursor:pointer;background:${bg};border:1px solid ${border};color:${color};font-weight:${isSel ? 'bold' : 'normal'};opacity:${opacity};transition:all 0.2s;display:inline-flex;align-items:center;gap:0.3rem;${shadow}" onclick="toggleFilterVoie(event, ${v.id}, '${hex}')"><span class="material-symbols-outlined" style="font-size:1.1em;">${icon}</span>${v.nom}</button>`;
                 }).join('');
             }
 
@@ -2007,12 +2007,16 @@
                     const shadow = isSel ? `box-shadow: 0 0 8px rgba(${rgb}, 0.4);` : '';
                     const opacity = isSel ? '1' : '0.85';
                     const icon = getSpiritIcon(s.nom);
-                    return `<button type="button" style="padding:0.3rem 0.6rem;font-size:0.75rem;border-radius:6px;cursor:pointer;background:${bg};border:1px solid ${border};color:${color};font-weight:${isSel ? 'bold' : 'normal'};opacity:${opacity};transition:all 0.2s;display:inline-flex;align-items:center;gap:0.3rem;${shadow}" onclick="toggleFilterSpirit(${s.id})"><span class="material-symbols-outlined" style="font-size:1.1em;">${icon}</span>${s.nom}</button>`;
+                    return `<button type="button" style="padding:0.3rem 0.6rem;font-size:0.75rem;border-radius:6px;cursor:pointer;background:${bg};border:1px solid ${border};color:${color};font-weight:${isSel ? 'bold' : 'normal'};opacity:${opacity};transition:all 0.2s;display:inline-flex;align-items:center;gap:0.3rem;${shadow}" onclick="toggleFilterSpirit(event, ${s.id}, '${hex}')"><span class="material-symbols-outlined" style="font-size:1.1em;">${icon}</span>${s.nom}</button>`;
                 }).join('');
             }
         }
 
-        function toggleFilterVoie(id) {
+        function toggleFilterVoie(event, id, hexColor) {
+            if (event && hexColor && selectedFilterVoieId !== id) {
+                const rect = event.currentTarget.getBoundingClientRect();
+                createSparkles(rect.left + rect.width / 2, rect.top + rect.height / 2, hexColor);
+            }
             if (selectedFilterVoieId === id) {
                 selectedFilterVoieId = null;
             } else {
@@ -2022,7 +2026,11 @@
             renderFilteredSpells();
         }
 
-        function toggleFilterSpirit(id) {
+        function toggleFilterSpirit(event, id, hexColor) {
+            if (event && hexColor && selectedFilterSpiritId !== id) {
+                const rect = event.currentTarget.getBoundingClientRect();
+                createSparkles(rect.left + rect.width / 2, rect.top + rect.height / 2, hexColor);
+            }
             if (selectedFilterSpiritId === id) {
                 selectedFilterSpiritId = null;
             } else {
