@@ -402,7 +402,8 @@
             gap: 1rem;
             max-height: 700px;
             overflow-y: auto;
-            padding-right: 0.5rem;
+            padding: 1rem;
+            margin: -1rem; /* compense le padding visuellement pour l'alignement */
         }
 
         .spells-list::-webkit-scrollbar {
@@ -421,10 +422,12 @@
         .spell-card {
             border-radius: 12px;
             padding: 1.2rem;
-            transition: all 0.3s ease;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), box-shadow 0.4s ease, border-color 0.4s ease, background 0.4s ease;
             display: flex;
             flex-direction: column;
             gap: 0.8rem;
+            position: relative;
+            z-index: 1;
             
             --card-glow-alpha: 0;
             --card-border-alpha: 0.08;
@@ -436,10 +439,11 @@
         }
 
         .spell-card:hover {
+            z-index: 10;
             --card-glow-alpha: 0.05;
             --card-border-alpha: 0.2;
             --card-bg-alpha: 0.04;
-            transform: translateY(-1px);
+            transform: translateY(-2px);
         }
 
         /* Lvl 1 (default) */
@@ -453,6 +457,7 @@
         .spell-card-lvl-2:hover {
             --card-glow-alpha: 0.15;
             --card-border-alpha: 0.4;
+            transform: translateY(-3px) scale(1.005);
         }
 
         /* Lvl 3: Advanced (Noticeable tint & glow) */
@@ -464,7 +469,7 @@
         .spell-card-lvl-3:hover {
             --card-glow-alpha: 0.25;
             --card-border-alpha: 0.55;
-            transform: translateY(-2px);
+            transform: translateY(-4px) scale(1.01);
         }
 
         /* Lvl 4: Master (Strong presence, brighter border) */
@@ -476,19 +481,34 @@
         .spell-card-lvl-4:hover {
             --card-glow-alpha: 0.4;
             --card-border-alpha: 0.75;
-            transform: translateY(-2px);
+            transform: translateY(-5px) scale(1.015);
         }
 
         /* Lvl 5: Legendary (Shiny, strong tint, animated reflection) */
         .spell-card-lvl-5 {
             --card-border-alpha: 0.8;
             --card-bg-alpha: 0.18;
-            box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.2), 0 8px 30px rgba(var(--spell-rgb), var(--card-glow-alpha));
+            box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.3), 0 8px 30px rgba(var(--spell-rgb), var(--card-glow-alpha));
+            position: relative;
         }
+        
+        .spell-card-lvl-5::after {
+            content: '';
+            position: absolute;
+            top: -1px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 50%;
+            height: 2px;
+            background: linear-gradient(90deg, transparent, var(--spell-color), transparent);
+            box-shadow: 0 0 15px var(--spell-color), 0 0 5px #fff;
+            border-radius: 50%;
+        }
+
         .spell-card-lvl-5:hover {
             --card-glow-alpha: 0.6;
             --card-border-alpha: 1;
-            transform: translateY(-2px);
+            transform: translateY(-6px) scale(1.02);
             background: linear-gradient(135deg, rgba(var(--spell-rgb), 0.25) 0%, rgba(255,255,255,0.05) 100%);
         }
 
@@ -1664,6 +1684,21 @@
                 const titleColor = getSpellColor(sp);
                 const titleRgb = hexToRgb(titleColor);
 
+                let lvlBadgeStyle = 'background: rgba(255,255,255,0.1); color: #e2e8f0;';
+                let lvlIcon = '';
+                if (sp.niveau === 2) {
+                    lvlBadgeStyle = 'background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: #fff;';
+                } else if (sp.niveau === 3) {
+                    lvlBadgeStyle = `background: rgba(var(--spell-rgb), 0.2); border: 1px solid rgba(var(--spell-rgb), 0.5); color: var(--spell-color); font-weight: bold;`;
+                } else if (sp.niveau === 4) {
+                    lvlBadgeStyle = `background: rgba(var(--spell-rgb), 0.3); border: 1px solid var(--spell-color); color: #fff; font-weight: bold; text-shadow: 0 0 5px var(--spell-color); box-shadow: 0 0 10px rgba(var(--spell-rgb), 0.3);`;
+                    lvlIcon = '✨ ';
+                } else if (sp.niveau === 5) {
+                    lvlBadgeStyle = `background: linear-gradient(135deg, var(--spell-color), rgba(var(--spell-rgb), 0.4)); border: 1px solid #fff; color: #fff; font-weight: bold; text-shadow: 0 1px 3px rgba(0,0,0,0.8); box-shadow: 0 0 15px rgba(var(--spell-rgb), 0.6);`;
+                    lvlIcon = '👑 ';
+                }
+                const lvlBadge = `<span class="badge" style="${lvlBadgeStyle}">${lvlIcon}Lvl ${sp.niveau}</span>`;
+
                 return `
                     <div class="spell-card spell-card-lvl-${sp.niveau || 1}" style="--spell-color: ${titleColor}; --spell-rgb: ${titleRgb};">
                         <div class="spell-card-header" style="align-items: flex-start;">
@@ -1671,7 +1706,7 @@
                                 <div class="spell-name" style="color: ${titleColor};">${sp.nom}</div>
                                 <div class="spell-badges">
                                     ${castBadge}
-                                    <span class="badge" style="background: rgba(255,255,255,0.1);">Lvl ${sp.niveau}</span>
+                                    ${lvlBadge}
                                     ${voieBadge}
                                     ${spiritBadge}
                                 </div>
@@ -1733,6 +1768,37 @@
             if (n.includes('ténèbres') || n.includes('tenebres')) return 'dark_mode';
             if (n.includes('karma')) return 'all_inclusive';
             return 'radio_button_unchecked';
+        }
+
+        function createSparkles(x, y, color) {
+            for (let i = 0; i < 15; i++) {
+                const spark = document.createElement('div');
+                spark.style.position = 'fixed';
+                spark.style.left = x + 'px';
+                spark.style.top = y + 'px';
+                spark.style.width = '4px';
+                spark.style.height = '4px';
+                spark.style.borderRadius = '50%';
+                spark.style.backgroundColor = color === 'var(--text-muted)' ? '#fff' : color;
+                spark.style.boxShadow = `0 0 10px ${spark.style.backgroundColor}`;
+                spark.style.pointerEvents = 'none';
+                spark.style.zIndex = '9999';
+
+                const angle = Math.random() * Math.PI * 2;
+                const distance = 40 + Math.random() * 60;
+                const tx = Math.cos(angle) * distance;
+                const ty = Math.sin(angle) * distance - 20;
+
+                spark.style.transition = 'all 0.6s cubic-bezier(0.1, 0.8, 0.3, 1)';
+                document.body.appendChild(spark);
+
+                requestAnimationFrame(() => {
+                    spark.style.transform = `translate(${tx}px, ${ty}px) scale(0)`;
+                    spark.style.opacity = '0';
+                });
+
+                setTimeout(() => spark.remove(), 600);
+            }
         }
 
         function makeCustomSelect(selectId) {
@@ -1810,14 +1876,33 @@
                     optionDiv.style.gap = '0.6rem';
                     optionDiv.style.color = '#e2e8f0';
                     optionDiv.style.fontSize = '0.9rem';
-                    optionDiv.style.transition = 'background 0.2s';
-                    optionDiv.innerHTML = `<span class="material-symbols-outlined" style="font-size:1.2rem; color:${optColor};">${optIcon}</span> ${opt.text}`;
+                    optionDiv.style.transition = 'all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275)';
+                    optionDiv.innerHTML = `<span class="material-symbols-outlined" style="font-size:1.2rem; color:${optColor}; transition: transform 0.3s;">${optIcon}</span> <span style="transition: transform 0.3s;">${opt.text}</span>`;
 
-                    optionDiv.addEventListener('mouseover', () => optionDiv.style.background = 'rgba(255,255,255,0.1)');
-                    optionDiv.addEventListener('mouseout', () => optionDiv.style.background = 'transparent');
+                    optionDiv.addEventListener('mouseover', () => {
+                        optionDiv.style.background = 'linear-gradient(90deg, rgba(255,255,255,0.03), transparent)';
+                        optionDiv.style.paddingLeft = '1.2rem';
+                        if (optColor !== 'var(--text-muted)') {
+                            optionDiv.style.boxShadow = `inset 3px 0 0 ${optColor}, inset 20px 0 20px -20px ${optColor}`;
+                        } else {
+                            optionDiv.style.boxShadow = `inset 3px 0 0 #fff, inset 20px 0 20px -20px #fff`;
+                        }
+                        optionDiv.querySelector('.material-symbols-outlined').style.transform = 'scale(1.2)';
+                    });
+                    
+                    optionDiv.addEventListener('mouseout', () => {
+                        optionDiv.style.background = 'transparent';
+                        optionDiv.style.paddingLeft = '0.8rem';
+                        optionDiv.style.boxShadow = 'none';
+                        optionDiv.querySelector('.material-symbols-outlined').style.transform = 'scale(1)';
+                    });
 
                     optionDiv.addEventListener('click', (e) => {
                         e.stopPropagation();
+                        
+                        const rect = wrapper.getBoundingClientRect();
+                        createSparkles(rect.left + rect.width / 2, rect.top + rect.height / 2, optColor);
+                        
                         select.selectedIndex = index;
                         select.dispatchEvent(new Event('change'));
                         optionsContainer.style.display = 'none';
