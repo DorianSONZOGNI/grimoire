@@ -1099,6 +1099,85 @@
                 transform: rotate(0deg) scale(1);
             }
         }
+
+        .betrayal-slash {
+            position: fixed;
+            height: 3px;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 1;
+            border-radius: 999px;
+            background: linear-gradient(90deg,
+                    transparent,
+                    rgba(237, 86, 119, .2),
+                    #ff2f6d,
+                    #ffffff,
+                    #ff2f6d,
+                    rgba(237, 86, 119, .2),
+                    transparent);
+            box-shadow:
+                0 0 8px rgba(255, 255, 255, .9),
+                0 0 16px rgba(237, 86, 119, .95),
+                0 0 30px rgba(237, 86, 119, .55);
+            transition:
+                width .16s ease-out,
+                opacity .28s ease,
+                filter .28s ease;
+        }
+
+        .betrayal-slash::after {
+            content: "";
+            position: absolute;
+            inset: -6px 0;
+            background: inherit;
+            filter: blur(8px);
+            opacity: .45;
+        }
+
+        .betrayal-spark {
+            position: fixed;
+            width: 5px;
+            height: 5px;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 1;
+            border-radius: 50%;
+            background: radial-gradient(circle, #ffffff, #ff4f8a 45%, transparent 75%);
+            box-shadow: 0 0 10px rgba(255, 70, 130, .9);
+            transition:
+                transform .55s ease-out,
+                opacity .55s ease-out;
+        }
+
+        .betrayal-glitch {
+            animation: betrayalGlitch .45s ease-out;
+        }
+
+        @keyframes betrayalGlitch {
+            0% {
+                transform: translateX(0);
+                filter: hue-rotate(0deg);
+            }
+
+            20% {
+                transform: translateX(-3px) skewX(-3deg);
+                filter: hue-rotate(20deg);
+            }
+
+            40% {
+                transform: translateX(3px) skewX(3deg);
+            }
+
+            60% {
+                transform: translateX(-2px);
+                filter: brightness(1.35);
+            }
+
+            100% {
+                transform: translateX(0);
+                filter: none;
+            }
+        }
     </style>
 </head>
 
@@ -1916,53 +1995,39 @@
                 }
 
             } else if (nom.includes('trahison')) {
-                // ⚡ Un slash diagonal qui traverse le bouton (ligne CSS animée)
-                const slash = document.createElement('div');
-                slash.style.cssText = `
-                    position:fixed;
-                    left:${rect.left - 10}px;
-                    top:${rect.top - 10}px;
-                    width:0px;
-                    height:3px;
-                    background: linear-gradient(90deg, transparent, #ed5677, #fff, #ed5677, transparent);
-                    box-shadow: 0 0 12px #ed5677, 0 0 4px #fff;
-                    transform: rotate(-15deg);
-                    transform-origin: left center;
-                    pointer-events:none;
-                    z-index:9999;
-                    border-radius:2px;
-                    transition: width 0.18s ease-in, opacity 0.3s ease 0.25s;
-                    opacity:1;
-                `;
-                document.body.appendChild(slash);
-                requestAnimationFrame(() => {
-                    slash.style.width = (rect.width + 30) + 'px';
-                });
-                // Deuxième slash (croisé)
-                setTimeout(() => {
-                    const slash2 = document.createElement('div');
-                    slash2.style.cssText = `
-                        position:fixed;
-                        left:${rect.right + 10}px;
-                        top:${rect.top - 10}px;
-                        width:0px;
-                        height:2px;
-                        background: linear-gradient(270deg, transparent, #ed5677, #fff, #ed5677, transparent);
-                        box-shadow: 0 0 12px #ed5677;
-                        transform: rotate(15deg);
-                        transform-origin: right center;
-                        pointer-events:none;
-                        z-index:9999;
-                        border-radius:2px;
-                        transition: width 0.15s ease-in, opacity 0.3s ease 0.2s;
-                        opacity:1;
-                    `;
-                    document.body.appendChild(slash2);
-                    requestAnimationFrame(() => slash2.style.width = (rect.width + 30) + 'px');
-                    setTimeout(() => { slash2.style.opacity = '0'; setTimeout(() => slash2.remove(), 300); }, 200);
-                }, 100);
-                setTimeout(() => { slash.style.opacity = '0'; setTimeout(() => slash.remove(), 300); }, 250);
+                btn.classList.add('betrayal-glitch');
+                setTimeout(() => btn.classList.remove('betrayal-glitch'), 500);
 
+                createBetrayalSlash(rect.left - 18, rect.top + rect.height * 0.25, rect.width + 42, -14, 'left');
+
+                setTimeout(() => {
+                    createBetrayalSlash(rect.right + 18, rect.top + rect.height * 0.72, rect.width + 42, 14, 'right');
+                }, 95);
+
+                for (let i = 0; i < 12; i++) {
+                    setTimeout(() => {
+                        const spark = document.createElement('div');
+                        spark.className = 'betrayal-spark';
+
+                        spark.style.left = `${cx}px`;
+                        spark.style.top = `${cy}px`;
+
+                        document.body.appendChild(spark);
+
+                        const angle = Math.random() * Math.PI * 2;
+                        const dist = 25 + Math.random() * 55;
+
+                        requestAnimationFrame(() => {
+                            spark.style.transform = `
+                                translate(${Math.cos(angle) * dist}px, ${Math.sin(angle) * dist}px)
+                                scale(0.1)
+                            `;
+                            spark.style.opacity = '0';
+                        });
+
+                        setTimeout(() => spark.remove(), 600);
+                    }, i * 18);
+                }
             } else if (nom.includes('violence')) {
                 // 🩸 Éclaboussures depuis le centre
                 for (let i = 0; i < 20; i++) {
@@ -2252,6 +2317,29 @@
             btn.style.transition = 'transform 0.15s ease';
             btn.style.transform = 'scale(1.06)';
             setTimeout(() => btn.style.transform = 'scale(1)', 200);
+        }
+
+        function createBetrayalSlash(x, y, width, rotation, origin) {
+            const slash = document.createElement('div');
+            slash.className = 'betrayal-slash';
+
+            slash.style.left = `${x}px`;
+            slash.style.top = `${y}px`;
+            slash.style.width = '0px';
+            slash.style.transform = `rotate(${rotation}deg)`;
+            slash.style.transformOrigin = origin === 'left' ? 'left center' : 'right center';
+
+            document.body.appendChild(slash);
+
+            requestAnimationFrame(() => {
+                slash.style.width = `${width}px`;
+            });
+
+            setTimeout(() => {
+                slash.style.opacity = '0';
+                slash.style.filter = 'blur(4px)';
+                setTimeout(() => slash.remove(), 280);
+            }, 220);
         }
 
         async function submitSpell() {
