@@ -130,12 +130,16 @@
             display: flex;
             flex-direction: column;
             gap: 0.5rem;
+            min-width: 0;
+            width: 100%;
         }
 
         .form-row {
             display: grid;
             grid-template-columns: 1fr 1fr;
             gap: 1rem;
+            min-width: 0;
+            width: 100%;
         }
 
         label {
@@ -146,7 +150,22 @@
 
         input[type="text"],
         input[type="number"],
-        select,
+        select {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 0.8rem 1rem;
+            color: var(--text-main);
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+            width: 100%;
+            max-width: 100%;
+            text-overflow: ellipsis;
+            overflow: hidden;
+            white-space: nowrap;
+        }
+
         textarea {
             background: rgba(0, 0, 0, 0.3);
             border: 1px solid var(--glass-border);
@@ -156,6 +175,9 @@
             font-size: 1rem;
             outline: none;
             transition: all 0.3s ease;
+            width: 100%;
+            max-width: 100%;
+            resize: vertical;
         }
 
         input[type="text"]:focus,
@@ -206,8 +228,8 @@
         }
 
         .btn-effect-add {
-            background: rgba(59, 130, 246, 0.1);
-            border: 1px solid rgba(59, 130, 246, 0.3);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             color: var(--text-main);
             border-radius: 8px;
             padding: 0.6rem 0.5rem;
@@ -222,11 +244,24 @@
         }
 
         .btn-effect-add:hover {
-            background: rgba(59, 130, 246, 0.25);
-            border-color: var(--accent);
             transform: translateY(-1px);
-            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
         }
+
+        /* Coloration logique par type */
+        .btn-effect-add.dmg { background: rgba(239, 68, 68, 0.1); border-color: rgba(239, 68, 68, 0.3); color: #fca5a5; }
+        .btn-effect-add.dmg:hover { background: rgba(239, 68, 68, 0.25); border-color: #ef4444; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2); }
+
+        .btn-effect-add.heal { background: rgba(16, 185, 129, 0.1); border-color: rgba(16, 185, 129, 0.3); color: #6ee7b7; }
+        .btn-effect-add.heal:hover { background: rgba(16, 185, 129, 0.25); border-color: #10b981; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2); }
+
+        .btn-effect-add.mana { background: rgba(56, 189, 248, 0.1); border-color: rgba(56, 189, 248, 0.3); color: #7dd3fc; }
+        .btn-effect-add.mana:hover { background: rgba(56, 189, 248, 0.25); border-color: #38bdf8; box-shadow: 0 4px 12px rgba(56, 189, 248, 0.2); }
+
+        .btn-effect-add.buff { background: rgba(245, 158, 11, 0.1); border-color: rgba(245, 158, 11, 0.3); color: #fde68a; }
+        .btn-effect-add.buff:hover { background: rgba(245, 158, 11, 0.25); border-color: #f59e0b; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2); }
+
+        .btn-effect-add.purge { background: rgba(255, 255, 255, 0.1); border-color: rgba(255, 255, 255, 0.3); color: #ffffff; }
+        .btn-effect-add.purge:hover { background: rgba(255, 255, 255, 0.25); border-color: #ffffff; box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2); }
 
         .btn-danger {
             background: rgba(244, 63, 94, 0.15);
@@ -1367,28 +1402,17 @@
                 <label style="color: #fff; font-weight: 600; margin-bottom: 0.3rem;">Ajouter une ligne d'effet au sort
                     :</label>
                 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 0.5rem;">
-                    <button type="button" class="btn-effect-add" onclick="addEffectPanel('FIXED_DAMAGE')">⚔️ Dégâts
-                        Fixes</button>
-                    <button type="button" class="btn-effect-add" onclick="addEffectPanel('PERCENTAGE_DAMAGE')">💥 Dégâts
-                        %</button>
-                    <button type="button" class="btn-effect-add" onclick="addEffectPanel('FIXED_HEAL')">💚 Soins
-                        Fixes</button>
-                    <button type="button" class="btn-effect-add" onclick="addEffectPanel('PERCENTAGE_HEAL')">✨ Soins
-                        %</button>
-                    <button type="button" class="btn-effect-add" onclick="addEffectPanel('FIXED_MANA')">💧 Mana
-                        Fixe</button>
-                    <button type="button" class="btn-effect-add" onclick="addEffectPanel('PERCENTAGE_MANA')">🌊 Mana
-                        %</button>
-                    <button type="button" class="btn-effect-add" onclick="addEffectPanel('BUFF_DEBUFF')">🛡️ Buff /
-                        Débuff</button>
-                    <button type="button" class="btn-effect-add" onclick="addEffectPanel('DOT')">🔥 Tick Dégâts
-                        (DoT)</button>
-                    <button type="button" class="btn-effect-add" onclick="addEffectPanel('HOT')">💖 Tick Soins
-                        (HoT)</button>
-                    <button type="button" class="btn-effect-add" onclick="addEffectPanel('MOT')">🌀 Tick Mana
-                        (MoT)</button>
-                    <button type="button" class="btn-effect-add" style="border-color: #10b981; color: #10b981;"
-                        onclick="addEffectPanel('PURGE')">✨ Purge / Dissiper</button>
+                    <button type="button" class="btn-effect-add dmg" onclick="addEffectPanel('FIXED_DAMAGE')">⚔️ Dégâts Fixes</button>
+                    <button type="button" class="btn-effect-add dmg" onclick="addEffectPanel('PERCENTAGE_DAMAGE')">💥 Dégâts %</button>
+                    <button type="button" class="btn-effect-add heal" onclick="addEffectPanel('FIXED_HEAL')">💚 Soins Fixes</button>
+                    <button type="button" class="btn-effect-add heal" onclick="addEffectPanel('PERCENTAGE_HEAL')">✨ Soins %</button>
+                    <button type="button" class="btn-effect-add mana" onclick="addEffectPanel('FIXED_MANA')">💧 Mana Fixe</button>
+                    <button type="button" class="btn-effect-add mana" onclick="addEffectPanel('PERCENTAGE_MANA')">🌊 Mana %</button>
+                    <button type="button" class="btn-effect-add buff" onclick="addEffectPanel('BUFF_DEBUFF')">🛡️ Buff / Débuff</button>
+                    <button type="button" class="btn-effect-add dmg" onclick="addEffectPanel('DOT')">🔥 Tick Dégâts (DoT)</button>
+                    <button type="button" class="btn-effect-add heal" onclick="addEffectPanel('HOT')">💖 Tick Soins (HoT)</button>
+                    <button type="button" class="btn-effect-add mana" onclick="addEffectPanel('MOT')">🌀 Tick Mana (MoT)</button>
+                    <button type="button" class="btn-effect-add purge" onclick="addEffectPanel('PURGE')">✨ Purge / Dissiper</button>
                 </div>
             </div>
 
@@ -1922,10 +1946,25 @@
                     `;
                 }
 
+                let typeBadgeStyle = 'background: rgba(255,255,255,0.05); color: #fff; border-color: var(--glass-border);';
+                if (['FIXED_DAMAGE', 'PERCENTAGE_DAMAGE'].includes(eff.effectType)) {
+                    typeBadgeStyle = 'background: linear-gradient(135deg, rgba(239, 68, 68, 0.25), rgba(185, 28, 28, 0.4)); color: #fca5a5; border: 1px solid #ef4444; box-shadow: 0 0 12px rgba(239, 68, 68, 0.3); text-shadow: 0 0 5px rgba(0,0,0,0.8);';
+                } else if (['FIXED_HEAL', 'PERCENTAGE_HEAL', 'HOT'].includes(eff.effectType)) {
+                    typeBadgeStyle = 'background: linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(4, 120, 87, 0.4)); color: #6ee7b7; border: 1px solid #10b981; box-shadow: 0 0 12px rgba(16, 185, 129, 0.3); text-shadow: 0 0 5px rgba(0,0,0,0.8);';
+                } else if (['FIXED_MANA', 'PERCENTAGE_MANA', 'MOT'].includes(eff.effectType)) {
+                    typeBadgeStyle = 'background: linear-gradient(135deg, rgba(56, 189, 248, 0.25), rgba(2, 132, 199, 0.4)); color: #7dd3fc; border: 1px solid #38bdf8; box-shadow: 0 0 12px rgba(56, 189, 248, 0.3); text-shadow: 0 0 5px rgba(0,0,0,0.8);';
+                } else if (eff.effectType === 'BUFF_DEBUFF') {
+                    typeBadgeStyle = 'background: linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(180, 83, 9, 0.4)); color: #fde68a; border: 1px solid #f59e0b; box-shadow: 0 0 12px rgba(245, 158, 11, 0.3); text-shadow: 0 0 5px rgba(0,0,0,0.8);';
+                } else if (eff.effectType === 'DOT') {
+                    typeBadgeStyle = 'background: linear-gradient(135deg, rgba(249, 115, 22, 0.25), rgba(194, 65, 12, 0.4)); color: #fdba74; border: 1px solid #f97316; box-shadow: 0 0 12px rgba(249, 115, 22, 0.3); text-shadow: 0 0 5px rgba(0,0,0,0.8);';
+                } else if (eff.effectType === 'PURGE') {
+                    typeBadgeStyle = 'background: linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(52, 211, 153, 0.5)); color: #a7f3d0; border: 1px solid #34d399; box-shadow: 0 0 12px rgba(52, 211, 153, 0.4); text-shadow: 0 0 5px rgba(0,0,0,0.8);';
+                }
+
                 const itemHtml = `
                     <div class="effect-item target-${targetClass}">
                         <div class="effect-header">
-                            <span class="effect-type-badge">${typeLabel}</span>
+                            <span class="effect-type-badge" style="${typeBadgeStyle}">${typeLabel}</span>
                             <button type="button" class="btn-danger" onclick="removeEffect(${eff.id})">✕ Supprimer</button>
                         </div>
 
@@ -1997,20 +2036,20 @@
         function renderSourceOptions(arr, selectedVal) {
             if (!arr || !Array.isArray(arr)) return '';
             const labels = {
-                'CASTER_POWER': 'Puissance du Lanceur',
-                'TARGET_POWER': 'Puissance de la Cible',
-                'CASTER_MANA_MAX': 'Mana Max du Lanceur',
-                'TARGET_MANA_MAX': 'Mana Max de la Cible',
-                'CASTER_MANA_MISSING': 'Mana Manquant du Lanceur',
-                'TARGET_MANA_MISSING': 'Mana Manquant de la Cible',
-                'CASTER_MANA_CURRENT': 'Mana Actuel du Lanceur',
-                'TARGET_MANA_CURRENT': 'Mana Actuel de la Cible',
-                'CASTER_HEALTH_MAX': 'PV Max du Lanceur',
-                'TARGET_HEALTH_MAX': 'PV Max de la Cible',
-                'CASTER_HEALTH_MISSING': 'PV Manquant du Lanceur',
-                'TARGET_HEALTH_MISSING': 'PV Manquant de la Cible',
-                'CASTER_HEALTH_CURRENT': 'PV Actuel du Lanceur',
-                'TARGET_HEALTH_CURRENT': 'PV Actuel de la Cible'
+                'CASTER_POWER': '🔮 Puissance du Lanceur',
+                'TARGET_POWER': '🔮 Puissance de la Cible',
+                'CASTER_MANA_MAX': '💧 Mana Max du Lanceur',
+                'TARGET_MANA_MAX': '💧 Mana Max de la Cible',
+                'CASTER_MANA_MISSING': '⚠️ Mana Manquant du Lanceur',
+                'TARGET_MANA_MISSING': '⚠️ Mana Manquant de la Cible',
+                'CASTER_MANA_CURRENT': '🌊 Mana Actuel du Lanceur',
+                'TARGET_MANA_CURRENT': '🌊 Mana Actuel de la Cible',
+                'CASTER_HEALTH_MAX': '💖 PV Max du Lanceur',
+                'TARGET_HEALTH_MAX': '💖 PV Max de la Cible',
+                'CASTER_HEALTH_MISSING': '💔 PV Manquant du Lanceur',
+                'TARGET_HEALTH_MISSING': '💔 PV Manquant de la Cible',
+                'CASTER_HEALTH_CURRENT': '❤️ PV Actuel du Lanceur',
+                'TARGET_HEALTH_CURRENT': '❤️ PV Actuel de la Cible'
             };
             return arr.map(s => {
                 const val = typeof s === 'object' ? s.id || s : s;
