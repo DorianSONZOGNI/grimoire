@@ -1,6 +1,10 @@
 package generation.grimoire.service;
 
 import generation.grimoire.entity.Spell;
+import generation.grimoire.entity.Spiritualite;
+import generation.grimoire.entity.spiritualite.passif.specific.EspritPassiveEffect;
+import generation.grimoire.entity.spiritualite.passif.specific.KarmaPassiveEffect;
+import generation.grimoire.entity.spiritualite.passif.specific.TenebrePassiveEffect;
 import generation.grimoire.entity.Voie;
 import generation.grimoire.entity.personnage.Personnage;
 import generation.grimoire.entity.spell.type.effect.BuffDebuffEffect;
@@ -58,7 +62,7 @@ class SpellIntegrationTest {
         // 1. Création de la Voie et de son Passif
         Voie voieDestruction = new Voie();
         voieDestruction.setNom("Voie de la Destruction");
-        
+
         generation.grimoire.entity.voie.passif.specific.DestructionPassiveEffect destructionEffect = new generation.grimoire.entity.voie.passif.specific.DestructionPassiveEffect();
         voieDestruction.setPassiveEffects(List.of(destructionEffect));
         hero.setVoie(voieDestruction);
@@ -69,7 +73,7 @@ class SpellIntegrationTest {
         crushSpell.setManaCost(15);
         crushSpell.setHeatGenerated(20); // Génère 20 de Chaleur !
         crushSpell.setVoie(voieDestruction);
-        
+
         // Effet 1 : Dégâts physiques fixes
         DamageFixedEffect damageEffect = new DamageFixedEffect();
         damageEffect.setDamageType(DamageType.PHYSIC);
@@ -92,7 +96,8 @@ class SpellIntegrationTest {
 
         // Dégâts calculés :
         // Base = 30 + (0.5 * 10 puissance) = 35 dégâts bruts
-        // Le monstre a 10 d'armure (avant que le débuff ne prenne effet si l'ordre compte, 
+        // Le monstre a 10 d'armure (avant que le débuff ne prenne effet si l'ordre
+        // compte,
         // l'effet de dégât est appliqué en premier car inséré en premier)
         // Donc Dégâts finaux = 35. L'armure de l'ennemi va réduire ça.
         // On vérifie que la vie de l'ennemi a baissé
@@ -130,8 +135,9 @@ class SpellIntegrationTest {
 
         // On lance le sort
         spellService.castSpell(pokeSpell, hero, enemy, null);
-        
-        // Comme TrahisonPassiveEffect ne réagit pas sur onSpellCast, on vérifie juste que rien n'a crashé
+
+        // Comme TrahisonPassiveEffect ne réagit pas sur onSpellCast, on vérifie juste
+        // que rien n'a crashé
         assertThat(hero.getManaCurrent()).isEqualTo(45);
         assertThat(enemy.getHealthCurrent()).isLessThan(200);
 
@@ -139,6 +145,7 @@ class SpellIntegrationTest {
         trahisonEffect.onPhysicalHit(hero, enemy, 50);
         assertThat(hero.getPassiveState("trahison_used_this_turn", 0)).isEqualTo(1);
     }
+
     @Test
     void testSpellWithVoiePassive_Surete() {
         // Voie de Sûreté
@@ -150,7 +157,7 @@ class SpellIntegrationTest {
 
         // Sort de Sûreté
         Spell safeSpell = new Spell();
-        safeSpell.setNom("Lumière Protectrice");
+        safeSpell.setNom("Esprit Protectrice");
         safeSpell.setManaCost(10);
         safeSpell.setVoie(voieSurete);
 
@@ -162,7 +169,7 @@ class SpellIntegrationTest {
         // Vérifications
         assertThat(hero.getManaCurrent()).isEqualTo(0); // 50 - (5*10) = 0
         assertThat(hero.getPassiveState("surete_points", -1)).isEqualTo(0); // Les points ont reset
-        
+
         // Un buff de critique a dû être appliqué
         assertThat(hero.getActiveBuffs()).hasSize(1);
         assertThat(hero.getActiveBuffs().get(0).getStatAffected()).isEqualTo(StatType.CRIT);
@@ -197,6 +204,7 @@ class SpellIntegrationTest {
         assertThat(hero.getPassiveState("raison_speed_stacks", 0)).isEqualTo(1);
         assertThat(hero.getPassiveState("stat_flat_SPEED", 0)).isEqualTo(1);
     }
+
     @Test
     void testSpellWithVoiePassive_Creation() {
         Voie voieCreation = new Voie();
@@ -212,7 +220,8 @@ class SpellIntegrationTest {
 
         spellService.castSpell(createSpell, hero, enemy, null);
 
-        // La Création a 10% de chance d'accorder un sort gratuit, ce qui ajoute un flag dans passiveStates
+        // La Création a 10% de chance d'accorder un sort gratuit, ce qui ajoute un flag
+        // dans passiveStates
         // Le test peut être aléatoire, on vérifie juste que ça tourne sans erreur
     }
 
@@ -228,10 +237,11 @@ class SpellIntegrationTest {
         hitSpell.setNom("Coup Brutal");
         hitSpell.setManaCost(15);
         hitSpell.setVoie(voieViolence);
-        hitSpell.setCategory(generation.grimoire.enumeration.SpellCategory.EXPIRATION); // Le sort doit être d'Expiration
+        hitSpell.setCategory(generation.grimoire.enumeration.SpellCategory.EXPIRATION); // Le sort doit être
+                                                                                        // d'Expiration
 
         spellService.castSpell(hitSpell, hero, enemy, null);
-        
+
         // Inspiration reset, expiration ++
         assertThat(hero.getPassiveState("violence_inspiration", -1)).isEqualTo(0);
         assertThat(hero.getPassiveState("violence_expiration", 0)).isEqualTo(1);
@@ -247,7 +257,7 @@ class SpellIntegrationTest {
         hero.setVoie(voieConsolidation);
 
         // Armor de base du héros : 5
-        // 5 * (0.05 * 2) = 0.5 (arrondi à 0 car entier). 
+        // 5 * (0.05 * 2) = 0.5 (arrondi à 0 car entier).
         // Mettons l'armure du héros à 20 pour que le buff soit de 20 * 0.10 = 2.
         hero.setArmor(20);
 
@@ -257,12 +267,134 @@ class SpellIntegrationTest {
         buffSpell.setVoie(voieConsolidation);
 
         spellService.castSpell(buffSpell, hero, enemy, null);
-        
+
         // La consolidation ajoute de l'armure en début de tour
         consoEffect.onTurnStart(hero);
-        
+
         assertThat(hero.getActiveBuffs()).hasSize(1);
         assertThat(hero.getActiveBuffs().get(0).getStatAffected()).isEqualTo(StatType.ARMURE);
         assertThat(hero.getActiveBuffs().get(0).getFlatValue()).isEqualTo(2); // +2 armure
+    }
+
+    @Test
+    void testSpiritualiteEsprit() {
+        Spiritualite esprit = new Spiritualite();
+        esprit.setNom("Esprit");
+        EspritPassiveEffect espritEffect = new EspritPassiveEffect();
+        esprit.setPassiveEffects(List.of(espritEffect));
+
+        Spell lightSpell = new Spell();
+        lightSpell.setNom("Rayon Sacré");
+        lightSpell.setManaCost(5);
+        lightSpell.setSpiritualite(esprit);
+
+        // Cas 1 : HP < 20% et Mana < 20% -> Lancement impossible
+        hero.setHealthCurrent(10); // 10/100 = 10%
+        hero.setManaCurrent(5); // 5/50 = 10%
+
+        spellService.castSpell(lightSpell, hero, enemy, null);
+        assertThat(hero.getManaCurrent()).isEqualTo(5); // Non consommé
+
+        // Cas 2 : HP >= 20% -> Lancement réussi
+        hero.setHealthCurrent(30);
+        spellService.castSpell(lightSpell, hero, enemy, null);
+        assertThat(hero.getManaCurrent()).isEqualTo(0); // 5 - 5 = 0
+    }
+
+    @Test
+    void testSpiritualiteTenebres() {
+        Spiritualite tenebres = new Spiritualite();
+        tenebres.setNom("Ténèbres");
+        TenebrePassiveEffect tenebresEffect = new TenebrePassiveEffect();
+        tenebres.setPassiveEffects(List.of(tenebresEffect));
+
+        Spell darkSpell = new Spell();
+        darkSpell.setNom("Orbe Noir");
+        darkSpell.setManaCost(10);
+        darkSpell.setSpiritualite(tenebres);
+
+        // Cas 1 : HP > 80% et Mana > 80% -> Lancement impossible
+        hero.setHealthCurrent(90); // 90%
+        hero.setManaCurrent(45); // 90%
+
+        spellService.castSpell(darkSpell, hero, enemy, null);
+        assertThat(hero.getManaCurrent()).isEqualTo(45); // Non consommé
+
+        // Cas 2 : HP <= 80% -> Lancement réussi
+        hero.setHealthCurrent(70);
+        spellService.castSpell(darkSpell, hero, enemy, null);
+        assertThat(hero.getManaCurrent()).isEqualTo(35); // 45 - 10 = 35
+    }
+
+    @Test
+    void testSpiritualiteKarma() {
+        Spiritualite karma = new Spiritualite();
+        karma.setNom("Karma");
+        KarmaPassiveEffect karmaEffect = new KarmaPassiveEffect();
+        karma.setPassiveEffects(List.of(karmaEffect));
+
+        Spell karmaSpell = new Spell();
+        karmaSpell.setNom("Onde Karmique");
+        karmaSpell.setManaCost(5);
+        karmaSpell.setSpiritualite(karma);
+
+        // Le Karma n'a pas de restriction, le sort se lance
+        hero.setManaCurrent(10);
+        spellService.castSpell(karmaSpell, hero, enemy, null);
+        assertThat(hero.getManaCurrent()).isEqualTo(5);
+    }
+
+    @Test
+    void testSpellWithBothVoieAndSpiritualite() {
+        // Configuration de la Voie (ex: Trahison)
+        Voie voieTrahison = new Voie();
+        voieTrahison.setNom("Voie de Trahison");
+        generation.grimoire.entity.voie.passif.specific.TrahisonPassiveEffect trahisonEffect = new generation.grimoire.entity.voie.passif.specific.TrahisonPassiveEffect();
+        voieTrahison.setPassiveEffects(List.of(trahisonEffect));
+        hero.setVoie(voieTrahison);
+
+        // Configuration de la Spiritualité (ex: Esprit)
+        Spiritualite esprit = new Spiritualite();
+        esprit.setNom("Esprit");
+        EspritPassiveEffect espritEffect = new EspritPassiveEffect();
+        esprit.setPassiveEffects(List.of(espritEffect));
+
+        // Création d'un sort possédant à la fois la Voie et la Spiritualité
+        Spell hybridSpell = new Spell();
+        hybridSpell.setNom("Lame de l'Aube");
+        hybridSpell.setManaCost(10);
+        hybridSpell.setVoie(voieTrahison);
+        hybridSpell.setSpiritualite(esprit);
+
+        // Les prérequis de Esprit exigent >= 20% HP ou >= 20% Mana
+        hero.setHealthCurrent(100); // 100% -> condition remplie
+        hero.setManaCurrent(50);
+
+        spellService.castSpell(hybridSpell, hero, enemy, null);
+
+        // Le sort s'est lancé avec succès, déduisant son coût
+        assertThat(hero.getManaCurrent()).isEqualTo(40);
+    }
+
+    @Test
+    void testCustomTargetExpressionMultiTarget() {
+        Spell multiTargetSpell = new Spell();
+        multiTargetSpell.setNom("Lumière Partagée");
+        multiTargetSpell.setManaCost(5);
+
+        // Un effet de soin configuré pour toucher le "Lanceur & ses alliés proches"
+        generation.grimoire.entity.spell.type.effect.HealFixedEffect healEffect = new generation.grimoire.entity.spell.type.effect.HealFixedEffect();
+        healEffect.setHealAmount(15);
+        healEffect.setTargetExpression("Lanceur & ses alliés proches");
+        multiTargetSpell.addEffect(healEffect);
+
+        hero.setHealthCurrent(50); // 50/100
+        hero.setManaCurrent(10);
+
+        // Au lancement, l'effet s'applique concrètement sur le Lanceur ET sur un allié simulé
+        spellService.castSpell(multiTargetSpell, hero, enemy, null);
+
+        // On vérifie que le lanceur a bien reçu les soins (50 + 15 = 65)
+        assertThat(hero.getHealthCurrent()).isEqualTo(65);
     }
 }

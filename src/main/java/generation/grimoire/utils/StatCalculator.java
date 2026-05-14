@@ -30,6 +30,8 @@ public class StatCalculator {
             case CASTER_HEALTH_MISSING -> caster.getHealthMax() - caster.getHealthCurrent();
             case TARGET_HEALTH_CURRENT -> target.getHealthCurrent();
             case CASTER_HEALTH_CURRENT -> caster.getHealthCurrent();
+            case CASTER_MANA_CURRENT -> caster.getManaCurrent();
+            case TARGET_MANA_CURRENT -> target.getManaCurrent();
         };
     }
 

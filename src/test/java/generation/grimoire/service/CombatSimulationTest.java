@@ -243,6 +243,16 @@ class CombatSimulationTest {
         if (ally1.getVoie() != null) ally1.getVoie().getPassiveEffects().forEach(p -> p.onTurnStart(ally1));
         if (ally2.getVoie() != null) ally2.getVoie().getPassiveEffects().forEach(p -> p.onTurnStart(ally2));
         if (boss.getVoie() != null) boss.getVoie().getPassiveEffects().forEach(p -> p.onTurnStart(boss));
+
+        if (ally1.getSpiritualite() != null && ally1.getSpiritualite().getPassiveEffects() != null) {
+            ally1.getSpiritualite().getPassiveEffects().forEach(p -> p.onTurnStart(ally1));
+        }
+        if (ally2.getSpiritualite() != null && ally2.getSpiritualite().getPassiveEffects() != null) {
+            ally2.getSpiritualite().getPassiveEffects().forEach(p -> p.onTurnStart(ally2));
+        }
+        if (boss.getSpiritualite() != null && boss.getSpiritualite().getPassiveEffects() != null) {
+            boss.getSpiritualite().getPassiveEffects().forEach(p -> p.onTurnStart(boss));
+        }
     }
 
     private void triggerTurnEndForAll() {

@@ -29,14 +29,12 @@ public class SpellController {
             @RequestParam Long spellId,
             @RequestParam Long casterId,
             @RequestParam Long targetId,
-            @RequestParam(required = false) Integer choiceKey
-    ) {
+            @RequestParam(required = false) Integer choiceKey) {
         spellService.castSpellInvoq(
                 spellId,
                 casterId,
                 targetId,
-                choiceKey
-        );
+                choiceKey);
         return ResponseEntity.ok("Sort lancé !");
     }
 
@@ -58,7 +56,6 @@ public class SpellController {
 
         return "Sort lancé ! Consultez la console pour voir les résultats.";
     }
-
 
     @PostMapping("/initVariants")
     public ResponseEntity<String> initVariants() {
@@ -82,7 +79,6 @@ public class SpellController {
         dmgEnemy.addEffect(dmg1);
         spellService.saveSpell(dmgEnemy);
 
-
         // === VARIANT 2 : adaptatif magie vs physique ===
         int variant2 = 2;
         Spell magicIfResHigh = new Spell();
@@ -105,7 +101,6 @@ public class SpellController {
         physIfArmorHigh.addEffect(dmgPhys);
         spellService.saveSpell(physIfArmorHigh);
 
-
         // === VARIANT 3 : choix manuel heal+res vs mana-HP ===
         int variant3 = 3;
         // choiceKey = 1 : heal + résistance
@@ -115,7 +110,7 @@ public class SpellController {
         healResChoice.setChoiceKey(1);
         BuffDebuffEffect buffRes = new BuffDebuffEffect();
         buffRes.setStatAffected(StatType.RESISTANCE);
-        buffRes.setModifier(1.5);  // +50% résistance
+        buffRes.setModifier(1.5); // +50% résistance
         buffRes.setDuration(3);
         healResChoice.addEffect(buffRes);
         HealFixedEffect healSelf = new HealFixedEffect();
@@ -160,23 +155,25 @@ public class SpellController {
 
     /**
      * Endpoint pour appliquer un buff consommable sur le prochain sort(s)
-     * Exemple : pour la Voie de la Raison, buffer les 3 prochains sorts avec +50% de dégâts.
+     * Exemple : pour la Voie de la Raison, buffer les 3 prochains sorts avec +50%
+     * de dégâts.
      */
     @GetMapping("/applyBuff")
     public void applyNextSpellBuff() {
-        // Par exemple, le buff est consomé au bout d'un sorts et augmente les dégâts de 50%
+        // Par exemple, le buff est consomé au bout d'un sorts et augmente les dégâts de
+        // 50%
         ConsumableSpellBuffDebuffEffect buff = new ConsumableSpellBuffDebuffEffect();
         buff.setModifier(0.5);
-        buff.setRemainingApplications(1);
-
+        buff.setRemainingApplications(2);
 
         ConsumableSpellBuffDebuffEffect buff2 = new ConsumableSpellBuffDebuffEffect();
-        buff.setModifier(0.5);
-        buff.setDuration(1);
+        buff2.setModifier(0.8);
+        buff2.setDuration(1);
     }
 
     /**
-     * Endpoint pour lancer un sort de dégâts qui bénéficiera du buff consommable s'il est actif.
+     * Endpoint pour lancer un sort de dégâts qui bénéficiera du buff consommable
+     * s'il est actif.
      * Le sort est instantané (1 action) et coûte 15 mana.
      * Dans cet exemple, le sort inflige des dégâts fixes de 100 points.
      */
@@ -190,7 +187,8 @@ public class SpellController {
         spell.setManaCost(15);
         spell.setAction(1);
 
-        // Ajout d'un effet de dégâts fixes qui pourra être amplifié par le buff consommable
+        // Ajout d'un effet de dégâts fixes qui pourra être amplifié par le buff
+        // consommable
         DamageFixedEffect damageEffect = new DamageFixedEffect();
         damageEffect.setDamage(100);
         spell.addEffect(damageEffect);
@@ -221,10 +219,8 @@ public class SpellController {
         buffVulne.setModifier(2.0);
         buffVulne.setDuration(2);
         System.out.println("Avant buff - Multiplicateur : " + moine.getStatBuffMultiplier(StatType.DAMAGE_TAKEN_MAGIC));
-        buffVulne.apply(mage, moine);  // Appliquer le buff
+        buffVulne.apply(mage, moine); // Appliquer le buff
         System.out.println("Après buff - Multiplicateur : " + moine.getStatBuffMultiplier(StatType.DAMAGE_TAKEN_MAGIC));
-
-
 
         // ===== Dégâts infligés sur la cible =====
         DamageFixedEffect bouleDeFeu = new DamageFixedEffect();
@@ -249,7 +245,6 @@ public class SpellController {
 
         System.out.println("PV de " + moine.getName() + " après soin : " + moine.getHealthCurrent());
     }
-
 
     @GetMapping("/testCombatBuffSystem")
     public void testCombatBuffSystem() {
@@ -299,7 +294,6 @@ public class SpellController {
 
         System.out.println("PV de " + moine.getName() + " après soin : " + moine.getHealthCurrent());
     }
-
 
     @GetMapping("/voie")
     public void setvoie() {

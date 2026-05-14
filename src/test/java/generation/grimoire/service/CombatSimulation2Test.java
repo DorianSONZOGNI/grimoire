@@ -254,6 +254,16 @@ class CombatSimulation2Test {
         if (mage.getVoie() != null) mage.getVoie().getPassiveEffects().forEach(p -> p.onTurnStart(mage));
         if (necromancien.getVoie() != null) necromancien.getVoie().getPassiveEffects().forEach(p -> p.onTurnStart(necromancien));
         if (boss.getVoie() != null) boss.getVoie().getPassiveEffects().forEach(p -> p.onTurnStart(boss));
+
+        if (mage.getSpiritualite() != null && mage.getSpiritualite().getPassiveEffects() != null) {
+            mage.getSpiritualite().getPassiveEffects().forEach(p -> p.onTurnStart(mage));
+        }
+        if (necromancien.getSpiritualite() != null && necromancien.getSpiritualite().getPassiveEffects() != null) {
+            necromancien.getSpiritualite().getPassiveEffects().forEach(p -> p.onTurnStart(necromancien));
+        }
+        if (boss.getSpiritualite() != null && boss.getSpiritualite().getPassiveEffects() != null) {
+            boss.getSpiritualite().getPassiveEffects().forEach(p -> p.onTurnStart(boss));
+        }
     }
 
     private void triggerTurnEndForAll() {

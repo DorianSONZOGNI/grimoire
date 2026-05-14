@@ -1,0 +1,1866 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Grimoire Engine - Éditeur de Sorts Premium</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <style>
+        :root {
+            --bg-base: #0b0f19;
+            --bg-gradient: linear-gradient(135deg, #0b0f19 0%, #171e30 100%);
+            --glass-bg: rgba(255, 255, 255, 0.03);
+            --glass-border: rgba(255, 255, 255, 0.08);
+            --primary: #8b5cf6;
+            --primary-glow: rgba(139, 92, 246, 0.4);
+            --secondary: #ec4899;
+            --accent: #3b82f6;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --danger: #f43f5e;
+            --success: #10b981;
+            --caster-color: #34d399;
+            --target-color: #fb7185;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', sans-serif;
+        }
+
+        body {
+            background: var(--bg-gradient);
+            background-attachment: fixed;
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+        }
+
+        header {
+            padding: 2rem 5%;
+            border-bottom: 1px solid var(--glass-border);
+            background: rgba(11, 15, 25, 0.6);
+            backdrop-filter: blur(12px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+        }
+
+        .logo {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #a78bfa, #f472b6);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .logo::before {
+            content: "✦";
+            font-size: 2rem;
+            color: var(--primary);
+        }
+
+        main {
+            padding: 2rem 5%;
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 2.5rem;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+        @media (max-width: 1024px) {
+            main {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 2rem;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .panel::before {
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+        }
+
+        .panel-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+        }
+
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        label {
+            font-size: 0.9rem;
+            font-weight: 500;
+            color: var(--text-muted);
+        }
+
+        input[type="text"],
+        input[type="number"],
+        select,
+        textarea {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--glass-border);
+            border-radius: 8px;
+            padding: 0.8rem 1rem;
+            color: var(--text-main);
+            font-size: 1rem;
+            outline: none;
+            transition: all 0.3s ease;
+        }
+
+        input[type="text"]:focus,
+        input[type="number"]:focus,
+        select:focus,
+        textarea:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 12px var(--primary-glow);
+        }
+
+        option {
+            background: #171e30;
+            color: #fff;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, var(--primary), var(--secondary));
+            color: #fff;
+            border: none;
+            border-radius: 8px;
+            padding: 0.8rem 1.5rem;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(139, 92, 246, 0.3);
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.5rem;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(139, 92, 246, 0.5);
+        }
+
+        .btn-secondary {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+            box-shadow: none;
+        }
+
+        .btn-secondary:hover {
+            background: rgba(255, 255, 255, 0.1);
+            box-shadow: none;
+        }
+
+        .btn-effect-add {
+            background: rgba(59, 130, 246, 0.1);
+            border: 1px solid rgba(59, 130, 246, 0.3);
+            color: var(--text-main);
+            border-radius: 8px;
+            padding: 0.6rem 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+        }
+
+        .btn-effect-add:hover {
+            background: rgba(59, 130, 246, 0.25);
+            border-color: var(--accent);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 12px rgba(59, 130, 246, 0.2);
+        }
+
+        .btn-danger {
+            background: rgba(244, 63, 94, 0.15);
+            border: 1px solid rgba(244, 63, 94, 0.3);
+            color: var(--danger);
+            padding: 0.4rem 0.8rem;
+            font-size: 0.85rem;
+        }
+
+        .btn-danger:hover {
+            background: var(--danger);
+            color: #fff;
+        }
+
+        .cost-section {
+            background: rgba(16, 23, 42, 0.4);
+            border: 1px solid rgba(148, 163, 184, 0.15);
+            border-radius: 12px;
+            padding: 1.2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .cost-section-title {
+            font-size: 0.85rem;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--primary);
+            font-weight: 700;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .cost-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+            border-left: 3px solid;
+        }
+
+        .cost-card.mana {
+            border-left-color: #3b82f6;
+        }
+
+        .cost-card.health {
+            border-left-color: #ef4444;
+        }
+
+        .cost-card-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            font-weight: 600;
+            font-size: 0.95rem;
+            color: #fff;
+        }
+
+        .cost-inputs-grid {
+            display: grid;
+            grid-template-columns: 140px 1fr;
+            gap: 0.8rem;
+            align-items: center;
+        }
+
+        .effects-container {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .effect-item {
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1.2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            position: relative;
+            animation: fadeIn 0.4s ease-out;
+            border-left: 4px solid var(--accent);
+        }
+
+        .effect-item.target-caster {
+            border-left-color: var(--caster-color);
+        }
+
+        .effect-item.target-target {
+            border-left-color: var(--target-color);
+        }
+
+        .effect-item.target-ally {
+            border-left-color: #60a5fa;
+        }
+
+        @keyframes fadeIn {
+            from {
+                opacity: 0;
+                transform: translateY(10px);
+            }
+
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
+
+        .effect-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .effect-type-badge {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .target-selector {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(0, 0, 0, 0.4);
+            padding: 0.3rem;
+            border-radius: 8px;
+            border: 1px solid var(--glass-border);
+        }
+
+        .target-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .target-btn.active-caster {
+            background: rgba(52, 211, 153, 0.2);
+            color: var(--caster-color);
+            border: 1px solid rgba(52, 211, 153, 0.3);
+        }
+
+        .target-btn.active-target {
+            background: rgba(251, 113, 133, 0.2);
+            color: var(--target-color);
+            border: 1px solid rgba(251, 113, 133, 0.3);
+        }
+
+        .target-btn.active-ally {
+            background: rgba(96, 165, 250, 0.2);
+            color: #60a5fa;
+            border: 1px solid rgba(96, 165, 250, 0.3);
+        }
+
+        .spells-list {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            max-height: 700px;
+            overflow-y: auto;
+            padding-right: 0.5rem;
+        }
+
+        .spells-list::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .spells-list::-webkit-scrollbar-track {
+            background: rgba(0, 0, 0, 0.1);
+        }
+
+        .spells-list::-webkit-scrollbar-thumb {
+            background: var(--glass-border);
+            border-radius: 3px;
+        }
+
+        .spell-card {
+            background: rgba(255, 255, 255, 0.02);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1.2rem;
+            transition: all 0.3s ease;
+            display: flex;
+            flex-direction: column;
+            gap: 0.8rem;
+        }
+
+        .spell-card:hover {
+            border-color: rgba(255, 255, 255, 0.2);
+            background: rgba(255, 255, 255, 0.04);
+        }
+
+        .spell-card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .spell-name {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.2rem;
+            font-weight: 600;
+            color: var(--primary);
+        }
+
+        .spell-badges {
+            display: flex;
+            gap: 0.5rem;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.2rem 0.6rem;
+            border-radius: 4px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--glass-border);
+        }
+
+        .badge-voie {
+            color: #facc15;
+            border-color: rgba(250, 204, 21, 0.3);
+            background: rgba(250, 204, 21, 0.05);
+        }
+
+        .badge-spirit {
+            color: #38bdf8;
+            border-color: rgba(56, 189, 248, 0.3);
+            background: rgba(56, 189, 248, 0.05);
+        }
+
+        .spell-meta {
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            display: flex;
+            gap: 1rem;
+        }
+
+        .spell-effects-summary {
+            margin-top: 0.5rem;
+            padding-top: 0.5rem;
+            border-top: 1px dashed var(--glass-border);
+            display: flex;
+            flex-direction: column;
+            gap: 0.4rem;
+        }
+
+        .effect-line {
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .indicator {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+        }
+
+        .indicator.caster {
+            background: var(--caster-color);
+            box-shadow: 0 0 6px var(--caster-color);
+        }
+
+        .indicator.target {
+            background: var(--target-color);
+            box-shadow: 0 0 6px var(--target-color);
+        }
+
+        .indicator.ally {
+            background: #60a5fa;
+            box-shadow: 0 0 6px #60a5fa;
+        }
+
+        .helper-text {
+            font-size: 0.8rem;
+            color: var(--accent);
+            margin-top: -0.2rem;
+        }
+
+        .notification {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            background: rgba(16, 185, 129, 0.9);
+            color: #fff;
+            font-weight: 500;
+            backdrop-filter: blur(8px);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.3);
+            transform: translateY(100px);
+            opacity: 0;
+            transition: all 0.4s cubic-bezier(0.68, -0.55, 0.265, 1.55);
+            z-index: 1000;
+        }
+
+        .notification.show {
+            transform: translateY(0);
+            opacity: 1;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 3rem 1rem;
+            color: var(--text-muted);
+            font-style: italic;
+        }
+
+        /* Styles du Simulateur Live */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.75);
+            backdrop-filter: blur(8px);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            z-index: 2000;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .modal-overlay.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .simulation-modal {
+            background: rgba(20, 25, 35, 0.95);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            width: 90%;
+            max-width: 700px;
+            padding: 1.5rem;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+            display: flex;
+            flex-direction: column;
+            gap: 1.2rem;
+            transform: scale(0.95);
+            transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .modal-overlay.active .simulation-modal {
+            transform: scale(1);
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 0.8rem;
+        }
+
+        .modal-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 600;
+            color: #fff;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .combatants-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
+        .combatant-card {
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 10px;
+            padding: 1rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        .combatant-name {
+            font-weight: 600;
+            font-size: 1.05rem;
+            color: #fff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .gauge-container {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+
+        .gauge-label {
+            font-size: 0.75rem;
+            color: var(--text-muted);
+            display: flex;
+            justify-content: space-between;
+            font-weight: 500;
+        }
+
+        .gauge-track {
+            width: 100%;
+            height: 8px;
+            background: rgba(0, 0, 0, 0.4);
+            border-radius: 4px;
+            overflow: hidden;
+            position: relative;
+        }
+
+        .gauge-fill {
+            height: 100%;
+            border-radius: 4px;
+            transition: width 0.6s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .gauge-fill.hp {
+            background: linear-gradient(90deg, #ef4444, #f87171);
+        }
+
+        .gauge-fill.mana {
+            background: linear-gradient(90deg, #3b82f6, #60a5fa);
+        }
+
+        .simulation-console {
+            background: #0f121b;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 1rem;
+            font-family: 'Consolas', 'Courier New', monospace;
+            font-size: 0.85rem;
+            color: #e2e8f0;
+            line-height: 1.4;
+            max-height: 220px;
+            overflow-y: auto;
+            white-space: pre-wrap;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header>
+        <div class="logo">Grimoire Studio</div>
+        <div style="font-size: 0.9rem; color: var(--text-muted);">Moteur d'Édition Dynamique</div>
+    </header>
+
+    <main>
+        <!-- Colonne Gauche : Paramètres de Base du Sort -->
+        <div class="panel">
+            <div class="panel-title">Création de Sort</div>
+
+            <div class="form-group">
+                <label for="nom">Nom du sort</label>
+                <input type="text" id="nom" placeholder="Ex: Lame d'Infini, Éruption d'Ombre..." required>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="niveau">Niveau</label>
+                    <input type="number" id="niveau" min="1" max="5" value="1" style="width: 100px;"
+                        oninput="updateRankTitle()" onchange="updateRankTitle()">
+                    <div class="helper-text" id="lvl-helper">Niveaux : 1-3 (Spiritualité) / 1-5 (Voie)</div>
+                    <div id="rankTitleDisplay"
+                        style="margin-top: 0.3rem; font-weight: 600; color: #10b981; font-size: 0.85rem; display: none;">
+                    </div>
+                </div>
+                <div class="form-group">
+                    <label for="castingTypeSelect">Catégorie d'Action (Tour)</label>
+                    <select id="castingTypeSelect">
+                        <option value="INSTANTANE">⚡ Instantané (Action Libre)</option>
+                        <option value="BANAL" selected>⏳ Banal (Consomme le tour)</option>
+                        <option value="CANALISE">🌀 Canalisé (Multi-tours)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- SECTION DES COÛTS DU SORT -->
+            <div class="cost-section">
+                <div class="cost-section-title">
+                    <span>⚡ Formules de Consommation du Sort</span>
+                </div>
+
+                <!-- Coûts en Mana -->
+                <div class="cost-card mana">
+                    <div class="cost-card-header">
+                        <span>💧 Énergie (Mana)</span>
+                    </div>
+                    <div class="cost-inputs-grid">
+                        <label for="manaCost" style="color: #fff;">Montant Fixe :</label>
+                        <input type="number" id="manaCost" min="0" value="10">
+                    </div>
+                    <div class="cost-inputs-grid">
+                        <label for="percentManaCost" style="color: #fff;">Ratio additionnel :</label>
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            <input type="number" id="percentManaCost" min="0" value="0" style="width: 70px;">
+                            <span style="color: var(--text-muted);">% de</span>
+                            <select id="percentManaCostSource" style="flex: 1; padding: 0.4rem; font-size: 0.85rem;">
+                                <!-- Rempli dynamiquement -->
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Coûts en PV -->
+                <div class="cost-card health">
+                    <div class="cost-card-header">
+                        <span>🩸 Sacrifice (Points de Vie)</span>
+                    </div>
+                    <div class="cost-inputs-grid">
+                        <label for="healCost" style="color: #fff;">Montant Fixe :</label>
+                        <input type="number" id="healCost" min="0" value="0">
+                    </div>
+                    <div class="cost-inputs-grid">
+                        <label for="percentHealCost" style="color: #fff;">Ratio additionnel :</label>
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            <input type="number" id="percentHealCost" min="0" value="0" style="width: 70px;">
+                            <span style="color: var(--text-muted);">% de</span>
+                            <select id="percentHealCostSource" style="flex: 1; padding: 0.4rem; font-size: 0.85rem;">
+                                <!-- Rempli dynamiquement -->
+                            </select>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="description">Description</label>
+                <textarea id="description" rows="2" placeholder="Effets narratifs ou secrets de ce sort..."></textarea>
+            </div>
+
+            <div class="form-row">
+                <div class="form-group">
+                    <label for="voieSelect">Voie Associée</label>
+                    <select id="voieSelect" onchange="updateRankTitle()">
+                        <option value="">-- Aucune (Neutre) --</option>
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="spiritSelect">Spiritualité</label>
+                    <select id="spiritSelect" onchange="updateRankTitle()">
+                        <option value="">-- Aucune (Neutre) --</option>
+                    </select>
+                </div>
+            </div>
+
+            <hr style="border-color: var(--glass-border); margin: 0.5rem 0;">
+
+            <div class="form-group">
+                <label style="color: #fff; font-weight: 600; margin-bottom: 0.3rem;">Ajouter une ligne d'effet au sort
+                    :</label>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 0.5rem;">
+                    <button type="button" class="btn-effect-add" onclick="addEffectPanel('FIXED_DAMAGE')">⚔️ Dégâts
+                        Fixes</button>
+                    <button type="button" class="btn-effect-add" onclick="addEffectPanel('PERCENTAGE_DAMAGE')">💥 Dégâts
+                        %</button>
+                    <button type="button" class="btn-effect-add" onclick="addEffectPanel('FIXED_HEAL')">💚 Soins
+                        Fixes</button>
+                    <button type="button" class="btn-effect-add" onclick="addEffectPanel('PERCENTAGE_HEAL')">✨ Soins
+                        %</button>
+                    <button type="button" class="btn-effect-add" onclick="addEffectPanel('BUFF_DEBUFF')">🛡️ Buff /
+                        Débuff</button>
+                    <button type="button" class="btn-effect-add" onclick="addEffectPanel('DOT')">🔥 Tick Dégâts
+                        (DoT)</button>
+                    <button type="button" class="btn-effect-add" onclick="addEffectPanel('HOT')">💖 Tick Soins
+                        (HoT)</button>
+                    <button type="button" class="btn-effect-add" style="border-color: #10b981; color: #10b981;"
+                        onclick="addEffectPanel('PURGE')">✨ Purge / Dissiper</button>
+                </div>
+            </div>
+
+            <!-- Conteneur des effets ajoutés -->
+            <div class="effects-container" id="effectsList">
+                <!-- Les panels d'effets s'injectent ici -->
+            </div>
+
+            <button type="button" id="submitSpellBtn" class="btn" style="margin-top: 1rem;" onclick="submitSpell()">✦
+                Forger le Sort</button>
+        </div>
+
+        <!-- Colonne Droite : Liste des Sorts Existants -->
+        <div class="panel">
+            <div class="panel-title">
+                <span>Grimoire des Sorts Forgés</span>
+                <button type="button" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;"
+                    onclick="loadSpells()">Actualiser</button>
+            </div>
+
+            <!-- Barre de Filtres et Tris Premium -->
+            <div
+                style="background: linear-gradient(145deg, rgba(30, 41, 59, 0.4), rgba(15, 23, 42, 0.6)); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 8px 20px rgba(0,0,0,0.25); border-radius: 12px; padding: 1.2rem; margin-bottom: 1.2rem; display: flex; flex-direction: column; gap: 1rem; backdrop-filter: blur(8px);">
+                <div
+                    style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.6rem;">
+                    <div
+                        style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--primary); display: flex; align-items: center; gap: 0.4rem;">
+                        <span>🎛️ Affinage & Ordonnancement</span>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 0.6rem;">
+                        <button type="button" class="btn-secondary"
+                            style="padding: 0.2rem 0.5rem; font-size: 0.7rem; line-height: 1.2; border-radius: 4px; border: none; background: rgba(244,63,94,0.1); color: #f43f5e;"
+                            onclick="resetFilters()" title="Réinitialiser les sélecteurs">↺ Réinitialiser</button>
+                        <span id="filterCountBadge" class="badge"
+                            style="background: rgba(16,185,129,0.15); color: #10b981; font-weight: 600;">0 sort</span>
+                    </div>
+                </div>
+
+                <div style="position: relative;">
+                    <span
+                        style="position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%); font-size: 0.9rem; opacity: 0.6;">🔍</span>
+                    <input type="text" id="filterSearch"
+                        placeholder="Rechercher par lettre dans le nom ou la description..."
+                        style="width: 100%; font-size: 0.85rem; padding: 0.6rem 1rem 0.6rem 2.2rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; outline: none; transition: border-color 0.2s;"
+                        onfocus="this.style.borderColor='var(--primary)'"
+                        onblur="this.style.borderColor='rgba(255,255,255,0.1)'" oninput="renderFilteredSpells()">
+                </div>
+
+                <!-- Section Filtrage par Voie (Boutons uniques) -->
+                <div>
+                    <label style="font-size: 0.65rem; color: var(--text-muted); display: block; margin-bottom: 0.4rem; font-weight: 700; letter-spacing: 0.5px;">🔮 FILTRER PAR VOIE</label>
+                    <div id="filterVoiesButtonsContainer" style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
+                        <!-- Injecté dynamiquement en JS -->
+                    </div>
+                </div>
+
+                <!-- Section Filtrage par Spiritualité (Boutons uniques) -->
+                <div>
+                    <label style="font-size: 0.65rem; color: var(--text-muted); display: block; margin-bottom: 0.4rem; font-weight: 700; letter-spacing: 0.5px;">✨ FILTRER PAR SPIRITUALITÉ</label>
+                    <div id="filterSpiritsButtonsContainer" style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
+                        <!-- Injecté dynamiquement en JS -->
+                    </div>
+                </div>
+
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.8rem;">
+                    <div>
+                        <label
+                            style="font-size: 0.65rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem; font-weight: 700; letter-spacing: 0.5px;">⚡
+                            NATURE D'EFFET</label>
+                        <select id="filterEffect"
+                            style="font-size: 0.8rem; padding: 0.4rem 0.6rem; width: 100%; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; border-radius: 6px; cursor: pointer; outline: none;"
+                            onchange="renderFilteredSpells()">
+                            <option value="ALL">✦ Tous effets</option>
+                            <option value="FIXED_DAMAGE">⚔️ Dégâts Fixes</option>
+                            <option value="PERCENTAGE_DAMAGE">💥 Dégâts %</option>
+                            <option value="FIXED_HEAL">💚 Soins Fixes</option>
+                            <option value="PERCENTAGE_HEAL">💖 Soins %</option>
+                            <option value="BUFF_DEBUFF">🛡️ Buff / Débuff</option>
+                            <option value="DOT">🔥 Dégâts DoT</option>
+                            <option value="HOT">✨ Soins HoT</option>
+                            <option value="PURGE">💨 Dissipation</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label
+                            style="font-size: 0.65rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem; font-weight: 700; letter-spacing: 0.5px;">🌟
+                            PALIER (NIVEAU)</label>
+                        <select id="filterLevel"
+                            style="font-size: 0.8rem; padding: 0.4rem 0.6rem; width: 100%; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; border-radius: 6px; cursor: pointer; outline: none;"
+                            onchange="renderFilteredSpells()">
+                            <option value="ALL">✦ Tous niveaux</option>
+                            <option value="1">Niveau 1</option>
+                            <option value="2">Niveau 2</option>
+                            <option value="3">Niveau 3</option>
+                            <option value="4">Niveau 4</option>
+                            <option value="5">Niveau 5</option>
+                        </select>
+                    </div>
+                    <div>
+                        <label
+                            style="font-size: 0.65rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem; font-weight: 700; letter-spacing: 0.5px;">🔀
+                            ORDONNANCEMENT</label>
+                        <select id="sortBy"
+                            style="font-size: 0.8rem; padding: 0.4rem 0.6rem; width: 100%; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; border-radius: 6px; cursor: pointer; outline: none;"
+                            onchange="renderFilteredSpells()">
+                            <option value="NEWEST">⏳ Plus récents</option>
+                            <option value="NAME_ASC">🔤 Nom (A-Z)</option>
+                            <option value="LEVEL_ASC">📈 Niveau croissant</option>
+                            <option value="LEVEL_DESC">📉 Niveau décroissant</option>
+                            <option value="MANA_ASC">💧 Coût Mana</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+
+            <div class="spells-list" id="createdSpellsContainer">
+                <div class="empty-state">Chargement des sorts...</div>
+            </div>
+        </div>
+    </main>
+
+    <div class="notification" id="notif">Sort créé avec succès !</div>
+
+    <!-- Modale du Simulateur de Combat Live -->
+    <div class="modal-overlay" id="simulationModalOverlay">
+        <div class="simulation-modal">
+            <div class="modal-header">
+                <div class="modal-title">⚔️ Simulateur de Combat : <span id="simSpellName"
+                        style="color: var(--primary);">Sort</span></div>
+                <button type="button" class="btn-danger"
+                    style="padding: 0.2rem 0.5rem; font-size: 0.8rem; border-radius: 4px;"
+                    onclick="closeSimulationModal()">✕</button>
+            </div>
+
+            <div class="combatants-grid">
+                <!-- Héros -->
+                <div class="combatant-card">
+                    <div class="combatant-name">
+                        <span>🧙‍♂️ Héros (Lanceur)</span>
+                    </div>
+                    <div class="gauge-container">
+                        <div class="gauge-label"><span>Santé (PV)</span><span id="heroHpText">100 / 100</span></div>
+                        <div class="gauge-track">
+                            <div class="gauge-fill hp" id="heroHpFill" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                    <div class="gauge-container">
+                        <div class="gauge-label"><span>Mana</span><span id="heroManaText">100 / 100</span></div>
+                        <div class="gauge-track">
+                            <div class="gauge-fill mana" id="heroManaFill" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Monstre -->
+                <div class="combatant-card">
+                    <div class="combatant-name">
+                        <span>👹 Monstre (Cible)</span>
+                    </div>
+                    <div class="gauge-container">
+                        <div class="gauge-label"><span>Santé (PV)</span><span id="monsterHpText">200 / 200</span></div>
+                        <div class="gauge-track">
+                            <div class="gauge-fill hp" id="monsterHpFill" style="width: 100%;"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: -0.6rem; font-weight: 500;">Logs du
+                Moteur d'Effets :</div>
+            <div class="simulation-console" id="simulationLogsContainer"></div>
+        </div>
+    </div>
+
+    <script>
+        let metaData = {};
+        let currentEffects = [];
+        let editingSpellId = null;
+        let loadedSpells = [];
+        let selectedFilterVoieId = null;
+        let selectedFilterSpiritId = null;
+
+        // Au chargement, récupérer les métadonnées
+        window.addEventListener('DOMContentLoaded', async () => {
+            await fetchMeta();
+            await loadSpells();
+        });
+
+        async function fetchMeta() {
+            try {
+                const res = await fetch('/api/spells-editor/meta');
+                metaData = await res.json();
+
+                // Remplir les Voies
+                const voieSel = document.getElementById('voieSelect');
+                const optgroupVoies = document.getElementById('optgroupVoiesFilter');
+                metaData.voies.forEach(v => {
+                    voieSel.innerHTML += `<option value="${v.id}">${v.nom}</option>`;
+                    if (optgroupVoies) optgroupVoies.innerHTML += `<option value="V_${v.id}">${v.nom}</option>`;
+                });
+
+                // Remplir les Spiritualités
+                const spiritSel = document.getElementById('spiritSelect');
+                const optgroupSpirits = document.getElementById('optgroupSpiritsFilter');
+                metaData.spiritualites.forEach(s => {
+                    spiritSel.innerHTML += `<option value="${s.id}">${s.nom}</option>`;
+                    if (optgroupSpirits) optgroupSpirits.innerHTML += `<option value="S_${s.id}">${s.nom}</option>`;
+                });
+
+                // Remplir les sources de coûts
+                const pms = document.getElementById('percentManaCostSource');
+                const phs = document.getElementById('percentHealCostSource');
+                const sourcesHtml = renderSourceOptions(metaData.sources, '');
+                if (pms) pms.innerHTML = sourcesHtml;
+                if (phs) phs.innerHTML = sourcesHtml;
+
+                // Sélectionner des valeurs par défaut pertinentes
+                if (pms) pms.value = 'CASTER_MANA_MAX';
+                if (phs) phs.value = 'CASTER_HEALTH_MAX';
+
+                updateRankTitle();
+                renderOriginButtons();
+            } catch (err) {
+                console.error("Erreur de chargement des métadonnées", err);
+            }
+        }
+
+        function updateRankTitle() {
+            const display = document.getElementById('rankTitleDisplay');
+            if (!display) return;
+
+            const lvl = parseInt(document.getElementById('niveau').value) || 1;
+            const spiritId = document.getElementById('spiritSelect').value;
+            const voieId = document.getElementById('voieSelect').value;
+
+            let rankName = '';
+            let sourceNom = '';
+
+            if (spiritId && metaData.spiritualites) {
+                const sp = metaData.spiritualites.find(s => s.id == spiritId);
+                if (sp && sp.rankNames && sp.rankNames[lvl]) {
+                    rankName = sp.rankNames[lvl];
+                    sourceNom = sp.nom;
+                }
+            } else if (voieId && metaData.voies) {
+                const v = metaData.voies.find(vo => vo.id == voieId);
+                if (v && v.rankNames && v.rankNames[lvl]) {
+                    rankName = v.rankNames[lvl];
+                    sourceNom = v.nom;
+                }
+            }
+
+            if (rankName) {
+                display.style.display = 'block';
+                display.innerHTML = `✨ Titre du Rang : <span style="color:#fff;">"${rankName}"</span> <span style="font-size:0.75rem; color:var(--text-muted);">(${sourceNom})</span>`;
+            } else {
+                display.style.display = 'none';
+                display.innerHTML = '';
+            }
+        }
+
+        function addEffectPanel(type) {
+            const effectObj = {
+                id: Date.now() + Math.random(),
+                effectType: type,
+                effectTarget: 'TARGET',
+                targetExpression: 'Cible',
+                damage: 20,
+                healAmount: 20,
+                percentage: 0.10,
+                flatValue: 5,
+                modifier: 0.20,
+                duration: 2,
+                damageType: 'MAGIC',
+                statAffected: 'ARMURE',
+                source: 'TARGET_HEALTH_MAX'
+            };
+
+            currentEffects.push(effectObj);
+            renderEffects();
+        }
+
+        function removeEffect(id) {
+            currentEffects = currentEffects.filter(e => e.id !== id);
+            renderEffects();
+        }
+
+        function setEffectTarget(id, target) {
+            const effect = currentEffects.find(e => e.id === id);
+            if (effect) {
+                effect.effectTarget = target;
+                if (!effect.targetExpression || effect.targetExpression === 'Cible' || effect.targetExpression === 'Lanceur' || effect.targetExpression === 'Allié proche') {
+                    if (target === 'CASTER') effect.targetExpression = 'Lanceur';
+                    else if (target === 'ALLY') effect.targetExpression = 'Allié proche';
+                    else effect.targetExpression = 'Cible';
+                }
+                renderEffects();
+            }
+        }
+
+        function appendTargetExpr(id, token) {
+            const eff = currentEffects.find(e => e.id === id);
+            if (!eff) return;
+
+            let expr = eff.targetExpression || '';
+            if (expr === 'Cible' || expr === 'Lanceur' || expr === 'Allié proche') {
+                if (token !== ' & ' && token !== ' || ') {
+                    expr = token;
+                } else {
+                    expr += token;
+                }
+            } else {
+                expr += token;
+            }
+            eff.targetExpression = expr;
+            renderEffects();
+        }
+
+        function updateEffectProp(id, prop, value) {
+            const effect = currentEffects.find(e => e.id === id);
+            if (effect) {
+                if (['damage', 'healAmount', 'flatValue', 'duration'].includes(prop)) {
+                    effect[prop] = parseInt(value) || 0;
+                } else if (prop === 'percentage' || prop === 'modifier') {
+                    effect[prop] = parseFloat(value) || 0;
+                } else {
+                    effect[prop] = value;
+                }
+            }
+        }
+
+        function renderEffects() {
+            const container = document.getElementById('effectsList');
+            container.innerHTML = '';
+
+            if (currentEffects.length === 0) {
+                container.innerHTML = `<div style="font-size: 0.85rem; color: var(--text-muted); text-align: center;">Aucun effet configuré. Le sort n'aura que ses coûts.</div>`;
+                return;
+            }
+
+            currentEffects.forEach((eff, idx) => {
+                const labelObj = metaData.effectTypes.find(t => t.type === eff.effectType);
+                const typeLabel = labelObj ? labelObj.label : eff.effectType;
+                const targetClass = eff.effectTarget ? eff.effectTarget.toLowerCase() : 'target';
+
+                let fieldsHtml = '';
+
+                // Champs spécifiques en fonction du type
+                if (eff.effectType === 'FIXED_DAMAGE') {
+                    fieldsHtml = `
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Dégâts</label>
+                                <input type="number" value="${eff.damage}" onchange="updateEffectProp(${eff.id}, 'damage', this.value)">
+                            </div>
+                            <div class="form-group">
+                                <label>Type de Dégâts</label>
+                                <select onchange="updateEffectProp(${eff.id}, 'damageType', this.value)">
+                                    ${renderOptions(metaData.damageTypes, eff.damageType)}
+                                </select>
+                            </div>
+                        </div>
+                    `;
+                } else if (eff.effectType === 'PERCENTAGE_DAMAGE') {
+                    fieldsHtml = `
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Ratio (ex: 0.10 pour 10%)</label>
+                                <input type="number" step="0.01" value="${eff.percentage}" onchange="updateEffectProp(${eff.id}, 'percentage', this.value)">
+                            </div>
+                            <div class="form-group">
+                                <label>Type</label>
+                                <select onchange="updateEffectProp(${eff.id}, 'damageType', this.value)">
+                                    ${renderOptions(metaData.damageTypes, eff.damageType)}
+                                </select>
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Source du Ratio</label>
+                            <select onchange="updateEffectProp(${eff.id}, 'source', this.value)">
+                                ${renderSourceOptions(metaData.sources, eff.source)}
+                            </select>
+                        </div>
+                    `;
+                } else if (eff.effectType === 'FIXED_HEAL') {
+                    fieldsHtml = `
+                        <div class="form-group">
+                            <label>Montant du Soin</label>
+                            <input type="number" value="${eff.healAmount}" onchange="updateEffectProp(${eff.id}, 'healAmount', this.value)">
+                        </div>
+                    `;
+                } else if (eff.effectType === 'PERCENTAGE_HEAL') {
+                    fieldsHtml = `
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Ratio (ex: 0.20 pour 20%)</label>
+                                <input type="number" step="0.01" value="${eff.percentage}" onchange="updateEffectProp(${eff.id}, 'percentage', this.value)">
+                            </div>
+                            <div class="form-group">
+                                <label>Source du Ratio</label>
+                                <select onchange="updateEffectProp(${eff.id}, 'source', this.value)">
+                                    ${renderSourceOptions(metaData.sources, eff.source)}
+                                </select>
+                            </div>
+                        </div>
+                    `;
+                } else if (eff.effectType === 'BUFF_DEBUFF') {
+                    fieldsHtml = `
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Stat Affectée</label>
+                                <select onchange="updateEffectProp(${eff.id}, 'statAffected', this.value)">
+                                    ${renderOptions(metaData.statTypes, eff.statAffected)}
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label>Durée (Tours)</label>
+                                <input type="number" value="${eff.duration}" onchange="updateEffectProp(${eff.id}, 'duration', this.value)">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Valeur Fixe (+/-)</label>
+                                <input type="number" value="${eff.flatValue}" onchange="updateEffectProp(${eff.id}, 'flatValue', this.value)">
+                            </div>
+                            <div class="form-group">
+                                <label>Multiplicateur (Ratio)</label>
+                                <input type="number" step="0.05" value="${eff.modifier}" onchange="updateEffectProp(${eff.id}, 'modifier', this.value)">
+                            </div>
+                        </div>
+                    `;
+                } else if (eff.effectType === 'DOT') {
+                    fieldsHtml = `
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Dégâts Fixes / Tour</label>
+                                <input type="number" value="${eff.damage}" onchange="updateEffectProp(${eff.id}, 'damage', this.value)">
+                            </div>
+                            <div class="form-group">
+                                <label>Ratio / Tour</label>
+                                <input type="number" step="0.01" value="${eff.percentage}" onchange="updateEffectProp(${eff.id}, 'percentage', this.value)">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Durée (Tours)</label>
+                                <input type="number" value="${eff.duration}" onchange="updateEffectProp(${eff.id}, 'duration', this.value)">
+                            </div>
+                            <div class="form-group">
+                                <label>Type de Dégâts</label>
+                                <select onchange="updateEffectProp(${eff.id}, 'damageType', this.value)">
+                                    ${renderOptions(metaData.damageTypes, eff.damageType)}
+                                </select>
+                            </div>
+                        </div>
+                    `;
+                } else if (eff.effectType === 'HOT') {
+                    fieldsHtml = `
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Soins Fixes / Tour</label>
+                                <input type="number" value="${eff.healAmount}" onchange="updateEffectProp(${eff.id}, 'healAmount', this.value)">
+                            </div>
+                            <div class="form-group">
+                                <label>Ratio / Tour</label>
+                                <input type="number" step="0.01" value="${eff.percentage}" onchange="updateEffectProp(${eff.id}, 'percentage', this.value)">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Durée (Tours)</label>
+                            <input type="number" value="${eff.duration}" onchange="updateEffectProp(${eff.id}, 'duration', this.value)">
+                        </div>
+                    `;
+                } else if (eff.effectType === 'PURGE') {
+                    fieldsHtml = `
+                        <div style="padding: 0.5rem; background: rgba(16, 185, 129, 0.1); border-left: 3px solid #10b981; border-radius: 4px; font-size: 0.85rem; color: #10b981;">
+                            ✨ Dissipe instantanément tous les bonus, malus et altérations d'état (DoT/HoT) actifs sur la cible.
+                        </div>
+                    `;
+                }
+
+                const itemHtml = `
+                    <div class="effect-item target-${targetClass}">
+                        <div class="effect-header">
+                            <span class="effect-type-badge">${typeLabel}</span>
+                            <button type="button" class="btn-danger" onclick="removeEffect(${eff.id})">✕ Supprimer</button>
+                        </div>
+
+                        <!-- Sélection de la cible Impactée (Composée) -->
+                        <div style="display: flex; flex-direction: column; gap: 0.8rem; background: rgba(0,0,0,0.25); padding: 0.8rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
+                                <label style="color: #fff; font-weight: 600; font-size: 0.9rem;">Catégorie Principale de la Cible :</label>
+                                <div class="target-selector">
+                                    <button type="button" class="target-btn ${eff.effectTarget === 'CASTER' ? 'active-caster' : ''}" onclick="setEffectTarget(${eff.id}, 'CASTER')">
+                                        ✦ Lanceur
+                                    </button>
+                                    <button type="button" class="target-btn ${eff.effectTarget === 'ALLY' ? 'active-ally' : ''}" onclick="setEffectTarget(${eff.id}, 'ALLY')">
+                                        🛡️ Allié
+                                    </button>
+                                    <button type="button" class="target-btn ${eff.effectTarget === 'TARGET' ? 'active-target' : ''}" onclick="setEffectTarget(${eff.id}, 'TARGET')">
+                                        🎯 Ennemis
+                                    </button>
+                                </div>
+                            </div>
+                            
+                            <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+                                <label style="font-size: 0.8rem; color: var(--text-muted);">Expression Logique Exacte (ET & / OU || / Multicibles) :</label>
+                                <div style="display: flex; gap: 0.5rem;">
+                                    <input type="text" value="${eff.targetExpression || ''}" placeholder="Ex: Lanceur & Ses alliés proches" style="flex: 1; font-family: monospace; font-size: 0.9rem; padding: 0.4rem 0.8rem;" oninput="updateEffectProp(${eff.id}, 'targetExpression', this.value)">
+                                </div>
+                                
+                                <!-- Raccourcis de construction -->
+                                <div style="display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.2rem; align-items: center;">
+                                    <span style="font-size: 0.75rem; color: var(--accent);">Ajouter :</span>
+                                    <button type="button" class="badge" style="cursor: pointer; background: rgba(52,211,153,0.1); color: #34d399;" onclick="appendTargetExpr(${eff.id}, 'Lanceur')">+ Lanceur</button>
+                                    <button type="button" class="badge" style="cursor: pointer; background: rgba(96,165,250,0.1); color: #60a5fa;" onclick="appendTargetExpr(${eff.id}, 'Allié proche')">+ Allié</button>
+                                    <button type="button" class="badge" style="cursor: pointer; background: rgba(96,165,250,0.1); color: #60a5fa;" onclick="appendTargetExpr(${eff.id}, 'Ses alliés proches')">+ Ses alliés</button>
+                                    <button type="button" class="badge" style="cursor: pointer; background: rgba(251,113,133,0.1); color: #fb7185;" onclick="appendTargetExpr(${eff.id}, 'Ennemi proche')">+ Ennemi</button>
+                                    <button type="button" class="badge" style="cursor: pointer; background: rgba(251,113,133,0.1); color: #fb7185;" onclick="appendTargetExpr(${eff.id}, 'Tous les ennemis proches')">+ Tous les ennemis</button>
+                                    <span style="color: var(--glass-border); margin: 0 0.2rem;">|</span>
+                                    <button type="button" class="badge" style="cursor: pointer; background: rgba(245,158,11,0.15); color: #f59e0b; font-weight: bold;" onclick="appendTargetExpr(${eff.id}, ' & ')">& (ET)</button>
+                                    <button type="button" class="badge" style="cursor: pointer; background: rgba(245,158,11,0.15); color: #f59e0b; font-weight: bold;" onclick="appendTargetExpr(${eff.id}, ' || ')">|| (OU)</button>
+                                </div>
+                            </div>
+                        </div>
+
+                        <hr style="border-color: var(--glass-border); margin: 0;">
+
+                        ${fieldsHtml}
+                    </div>
+                `;
+
+                container.innerHTML += itemHtml;
+            });
+        }
+
+        function renderOptions(arr, selectedVal) {
+            if (!arr || !Array.isArray(arr)) return '';
+            return arr.map(item => {
+                if (!item) return '';
+                const val = typeof item === 'object' ? (item.id !== undefined ? item.id : item.type) : item;
+                const name = typeof item === 'object' ? (item.nom !== undefined ? item.nom : item.label) : item;
+                return `<option value="${val}" ${val === selectedVal ? 'selected' : ''}>${name}</option>`;
+            }).join('');
+        }
+
+        function renderSourceOptions(arr, selectedVal) {
+            if (!arr || !Array.isArray(arr)) return '';
+            const labels = {
+                'CASTER_POWER': 'Puissance du Lanceur',
+                'TARGET_POWER': 'Puissance de la Cible',
+                'CASTER_MANA_MAX': 'Mana Max du Lanceur',
+                'TARGET_MANA_MAX': 'Mana Max de la Cible',
+                'CASTER_MANA_MISSING': 'Mana Manquant du Lanceur',
+                'TARGET_MANA_MISSING': 'Mana Manquant de la Cible',
+                'CASTER_MANA_CURRENT': 'Mana Actuel du Lanceur',
+                'TARGET_MANA_CURRENT': 'Mana Actuel de la Cible',
+                'CASTER_HEALTH_MAX': 'PV Max du Lanceur',
+                'TARGET_HEALTH_MAX': 'PV Max de la Cible',
+                'CASTER_HEALTH_MISSING': 'PV Manquant du Lanceur',
+                'TARGET_HEALTH_MISSING': 'PV Manquant de la Cible',
+                'CASTER_HEALTH_CURRENT': 'PV Actuel du Lanceur',
+                'TARGET_HEALTH_CURRENT': 'PV Actuel de la Cible'
+            };
+            return arr.map(s => {
+                const val = typeof s === 'object' ? s.id || s : s;
+                const label = labels[val] || val;
+                return `<option value="${val}" ${val === selectedVal ? 'selected' : ''}>${label}</option>`;
+            }).join('');
+        }
+
+        async function submitSpell() {
+            const nomInput = document.getElementById('nom');
+            if (!nomInput.value.trim()) {
+                alert("Veuillez saisir un nom de sort.");
+                return;
+            }
+
+            const payload = {
+                id: editingSpellId || null,
+                nom: nomInput.value.trim(),
+                niveau: parseInt(document.getElementById('niveau').value) || 1,
+                castingType: document.getElementById('castingTypeSelect').value || 'BANAL',
+                description: document.getElementById('description').value.trim(),
+                manaCost: parseInt(document.getElementById('manaCost').value) || 0,
+                percentManaCost: parseInt(document.getElementById('percentManaCost').value) || 0,
+                percentManaCostSource: document.getElementById('percentManaCostSource').value || 'CASTER_MANA_MAX',
+                healCost: parseInt(document.getElementById('healCost').value) || 0,
+                percentHealCost: parseInt(document.getElementById('percentHealCost').value) || 0,
+                percentHealCostSource: document.getElementById('percentHealCostSource').value || 'CASTER_HEALTH_MAX',
+                voieId: document.getElementById('voieSelect').value ? parseInt(document.getElementById('voieSelect').value) : null,
+                spiritualiteId: document.getElementById('spiritSelect').value ? parseInt(document.getElementById('spiritSelect').value) : null,
+                effects: currentEffects.map(e => ({
+                    effectType: e.effectType,
+                    effectTarget: e.effectTarget,
+                    targetExpression: e.targetExpression,
+                    damage: e.damage,
+                    healAmount: e.healAmount,
+                    percentage: e.percentage,
+                    flatValue: e.flatValue,
+                    modifier: e.modifier,
+                    duration: e.duration,
+                    damageType: e.damageType,
+                    statAffected: e.statAffected,
+                    source: e.source
+                }))
+            };
+
+            try {
+                const res = await fetch('/api/spells-editor', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+
+                if (res.ok) {
+                    const msg = await res.text();
+                    showNotif(msg);
+
+                    // Réinitialiser le formulaire et l'état d'édition
+                    editingSpellId = null;
+                    document.getElementById('submitSpellBtn').innerText = '✦ Forger le Sort';
+                    nomInput.value = '';
+                    document.getElementById('description').value = '';
+                    currentEffects = [];
+                    renderEffects();
+
+                    // Recharger la liste
+                    await loadSpells();
+                } else {
+                    alert("Erreur lors de l'enregistrement du sort.");
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Erreur de connexion au serveur.");
+            }
+        }
+
+        async function loadSpells() {
+            const container = document.getElementById('createdSpellsContainer');
+            try {
+                const res = await fetch('/api/spells-editor');
+                const spells = await res.json();
+                loadedSpells = spells;
+                renderFilteredSpells();
+            } catch (err) {
+                if (container) container.innerHTML = `<div class="empty-state" style="color:var(--danger);">Erreur de chargement des sorts.</div>`;
+            }
+        }
+
+        function renderFilteredSpells() {
+            const container = document.getElementById('createdSpellsContainer');
+            if (!container) return;
+
+            if (!loadedSpells || loadedSpells.length === 0) {
+                container.innerHTML = `<div class="empty-state">Le grimoire est vierge. Forgez le premier sort !</div>`;
+                return;
+            }
+
+            // Récupérer les valeurs des filtres
+            const searchVal = (document.getElementById('filterSearch')?.value || '').toLowerCase().trim();
+            const effectVal = document.getElementById('filterEffect')?.value || 'ALL';
+            const levelVal = document.getElementById('filterLevel')?.value || 'ALL';
+            const sortByVal = document.getElementById('sortBy')?.value || 'NEWEST';
+
+            // Filtrage multi-critères
+            let filtered = loadedSpells.filter(sp => {
+                // Recherche textuelle (nom ou description)
+                if (searchVal) {
+                    const matchNom = (sp.nom || '').toLowerCase().includes(searchVal);
+                    const matchDesc = (sp.description || '').toLowerCase().includes(searchVal);
+                    if (!matchNom && !matchDesc) return false;
+                }
+
+                // Origine Spatiale via boutons uniques de sélection
+                if (selectedFilterVoieId !== null) {
+                    if (!sp.voie || sp.voie.id != selectedFilterVoieId) return false;
+                }
+                if (selectedFilterSpiritId !== null) {
+                    if (!sp.spiritualite || sp.spiritualite.id != selectedFilterSpiritId) return false;
+                }
+
+                // Type d'effet
+                if (effectVal !== 'ALL') {
+                    if (!sp.effects || !sp.effects.some(e => (e.effectType || e.effect_type) === effectVal)) {
+                        return false;
+                    }
+                }
+
+                // Niveau
+                if (levelVal !== 'ALL') {
+                    if (sp.niveau != levelVal) return false;
+                }
+
+                return true;
+            });
+
+            // Tri par critère
+            filtered = [...filtered]; // Copie locale
+            filtered.sort((a, b) => {
+                if (sortByVal === 'NEWEST') {
+                    return b.id - a.id;
+                } else if (sortByVal === 'NAME_ASC') {
+                    return (a.nom || '').localeCompare(b.nom || '');
+                } else if (sortByVal === 'LEVEL_ASC') {
+                    return (a.niveau || 1) - (b.niveau || 1);
+                } else if (sortByVal === 'LEVEL_DESC') {
+                    return (b.niveau || 1) - (a.niveau || 1);
+                } else if (sortByVal === 'MANA_ASC') {
+                    return (a.manaCost || 0) - (b.manaCost || 0);
+                }
+                return 0;
+            });
+
+            const badge = document.getElementById('filterCountBadge');
+            if (badge) {
+                badge.innerText = `${filtered.length} sort${filtered.length > 1 ? 's' : ''}`;
+            }
+
+            if (filtered.length === 0) {
+                container.innerHTML = `<div class="empty-state">Aucun sort ne correspond à vos filtres.</div>`;
+                return;
+            }
+
+            container.innerHTML = filtered.map(sp => {
+                const voieBadge = sp.voie ? `<span class="badge badge-voie">Voie: ${sp.voie.nom}</span>` : '';
+                const spiritBadge = sp.spiritualite ? `<span class="badge badge-spirit">Spirit: ${sp.spiritualite.nom}</span>` : '';
+
+                let castBadge = '';
+                if (sp.castingType === 'INSTANTANE') castBadge = `<span class="badge" style="background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid #f59e0b;">⚡ Instantané</span>`;
+                else if (sp.castingType === 'CANALISE') castBadge = `<span class="badge" style="background: rgba(139, 92, 246, 0.2); color: #8b5cf6; border: 1px solid #8b5cf6;">🌀 Canalisé</span>`;
+                else castBadge = `<span class="badge" style="background: rgba(100, 116, 139, 0.2); color: #94a3b8;">⏳ Banal</span>`;
+
+                let effectsSummaryHtml = '';
+                if (sp.effects && sp.effects.length > 0) {
+                    effectsSummaryHtml = `<div class="spell-effects-summary">`;
+                    sp.effects.forEach(e => {
+                        const baseTargetText = e.effectTarget === 'CASTER' ? 'Lanceur' : (e.effectTarget === 'ALLY' ? 'Allié' : 'Cible');
+                        const targetText = e.targetExpression || baseTargetText;
+                        const indicatorClass = e.effectTarget ? e.effectTarget.toLowerCase() : 'target';
+
+                        let eTypeStr = e.effectType || e.effect_type || 'Effet';
+                        if (eTypeStr === 'PURGE') eTypeStr = '✨ Dissipation Bonus/Malus';
+
+                        effectsSummaryHtml += `
+                            <div class="effect-line">
+                                <div class="indicator ${indicatorClass}"></div>
+                                <span style="font-weight:600; color:#fff;">[${targetText}]</span>
+                                <span style="color:var(--text-muted);">${eTypeStr}</span>
+                            </div>
+                        `;
+                    });
+                    effectsSummaryHtml += `</div>`;
+                }
+
+                let rankTitleBadge = '';
+                if (sp.spiritualite && sp.spiritualite.rankNames && sp.spiritualite.rankNames[sp.niveau]) {
+                    rankTitleBadge = `<div style="font-size:0.85rem; color:#10b981; font-weight:600; margin-top:-0.4rem;">✨ Rang : "${sp.spiritualite.rankNames[sp.niveau]}"</div>`;
+                } else if (sp.voie && sp.voie.rankNames && sp.voie.rankNames[sp.niveau]) {
+                    rankTitleBadge = `<div style="font-size:0.85rem; color:#10b981; font-weight:600; margin-top:-0.4rem;">✨ Rang : "${sp.voie.rankNames[sp.niveau]}"</div>`;
+                }
+
+                const titleColor = getSpellColor(sp);
+
+                return `
+                    <div class="spell-card">
+                        <div class="spell-card-header" style="align-items: flex-start;">
+                            <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+                                <div class="spell-name" style="color: ${titleColor};">${sp.nom}</div>
+                                <div class="spell-badges">
+                                    ${castBadge}
+                                    <span class="badge" style="background: rgba(255,255,255,0.1);">Lvl ${sp.niveau}</span>
+                                    ${voieBadge}
+                                    ${spiritBadge}
+                                </div>
+                            </div>
+                            <div style="display: flex; gap: 0.3rem; align-items: center; flex-wrap: wrap;">
+                                <button type="button" class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; line-height: 1; border-radius: 4px; background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3);" onclick="trySpell(${sp.id})" title="Lancer ce sort en direct dans le simulateur">🎯 Essayer</button>
+                                <button type="button" class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; line-height: 1; border-radius: 4px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3);" onclick="editSpell(${sp.id})" title="Modifier les propriétés de ce sort">✏️ Éditer</button>
+                                <button type="button" class="btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; line-height: 1; border-radius: 4px; opacity: 0.75;" onclick="deleteSpell(${sp.id})" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.75'" title="Supprimer définitivement ce sort">✕</button>
+                            </div>
+                        </div>
+                        ${rankTitleBadge}
+                        <div class="spell-meta" style="flex-wrap: wrap; gap: 0.5rem;">
+                            <span>💧 ${sp.manaCost}${sp.percentManaCost > 0 ? ` + ${sp.percentManaCost}% (${sp.percentManaCostSource || 'MAX'})` : ''} Mana</span>
+                            ${sp.healCost > 0 || sp.percentHealCost > 0 ? `<span>🩸 ${sp.healCost}${sp.percentHealCost > 0 ? ` + ${sp.percentHealCost}% (${sp.percentHealCostSource || 'MAX'})` : ''} PV</span>` : ''}
+                        </div>
+                        ${sp.description ? `<div style="font-size:0.9rem; color:var(--text-muted); font-style:italic;">"${sp.description}"</div>` : ''}
+                        ${effectsSummaryHtml}
+                    </div>
+                `;
+            }).join('');
+        }
+
+        function getSpellColor(sp) {
+            if (sp.spiritualite && sp.spiritualite.nom) {
+                const sNom = sp.spiritualite.nom.toLowerCase();
+                if (sNom.includes('esprit')) return '#38bdf8';
+                if (sNom.includes('ténèbres') || sNom.includes('tenebres')) return '#c084fc';
+                if (sNom.includes('karma')) return '#fbbf24';
+                return '#a78bfa';
+            }
+            if (sp.voie && sp.voie.nom) {
+                const vNom = sp.voie.nom.toLowerCase();
+                if (vNom.includes('raison')) return '#60a5fa';
+                if (vNom.includes('sûreté') || vNom.includes('surete')) return '#34d399';
+                if (vNom.includes('trahison')) return '#f43f5e';
+                if (vNom.includes('consolidation')) return '#fb923c';
+                if (vNom.includes('conviction')) return '#eab308';
+                if (vNom.includes('création') || vNom.includes('creation')) return '#2dd4bf';
+                if (vNom.includes('destruction')) return '#ef4444';
+                if (vNom.includes('violence')) return '#dc2626';
+                return '#94a3b8';
+            }
+            return '#ffffff';
+        }
+
+        // Convertit un hex code (#RRGGBB) en chaîne "R, G, B"
+        function hexToRgb(hex) {
+            const cleaned = hex.replace('#', '');
+            const bigint = parseInt(cleaned, 16);
+            const r = (bigint >> 16) & 255;
+            const g = (bigint >> 8) & 255;
+            const b = bigint & 255;
+            return `${r}, ${g}, ${b}`;
+        }
+
+        // Couleur dédiée aux Voies (même logique que getSpellColor)
+        function getVoieButtonColor(v) {
+            const vNom = v.nom.toLowerCase();
+            if (vNom.includes('raison')) return '#60a5fa';
+            if (vNom.includes('sûreté') || vNom.includes('surete')) return '#34d399';
+            if (vNom.includes('trahison')) return '#f43f5e';
+            if (vNom.includes('consolidation')) return '#fb923c';
+            if (vNom.includes('conviction')) return '#eab308';
+            if (vNom.includes('création') || vNom.includes('creation')) return '#2dd4bf';
+            if (vNom.includes('destruction')) return '#ef4444';
+            if (vNom.includes('violence')) return '#dc2626';
+            return '#94a3b8';
+        }
+
+        // Couleur dédiée aux Spiritualités (même logique que getSpellColor)
+        function getSpiritButtonColor(s) {
+            const sNom = s.nom.toLowerCase();
+            if (sNom.includes('esprit')) return '#38bdf8';
+            if (sNom.includes('ténèbres') || sNom.includes('tenebres')) return '#c084fc';
+            if (sNom.includes('karma')) return '#fbbf24';
+            return '#a78bfa';
+        }
+
+        function resetFilters() {
+            selectedFilterVoieId = null;
+            selectedFilterSpiritId = null;
+            renderOriginButtons();
+
+            const search = document.getElementById('filterSearch');
+            if (search) search.value = '';
+            const effect = document.getElementById('filterEffect');
+            if (effect) effect.value = 'ALL';
+            const level = document.getElementById('filterLevel');
+            if (level) level.value = 'ALL';
+            const sort = document.getElementById('sortBy');
+            if (sort) sort.value = 'NEWEST';
+            renderFilteredSpells();
+        }
+
+        function renderOriginButtons() {
+            const voiesContainer = document.getElementById('filterVoiesButtonsContainer');
+            const spiritsContainer = document.getElementById('filterSpiritsButtonsContainer');
+            
+            // Voies – utilise la couleur dédiée à chaque voie
+            if (voiesContainer && metaData.voies) {
+                voiesContainer.innerHTML = metaData.voies.map(v => {
+                    const isSel = selectedFilterVoieId === v.id;
+                    const hex = getVoieButtonColor(v);
+                    const rgb = hexToRgb(hex);
+                    const bg = isSel ? `rgba(${rgb}, 0.25)` : 'rgba(255,255,255,0.05)';
+                    const border = isSel ? hex : 'rgba(255,255,255,0.1)';
+                    const color = isSel ? hex : '#e2e8f0';
+                    return `<button type="button" style="padding:0.3rem 0.6rem;font-size:0.75rem;border-radius:6px;cursor:pointer;background:${bg};border:1px solid ${border};color:${color};font-weight:${isSel ? 'bold' : 'normal'};transition:all 0.2s;" onclick="toggleFilterVoie(${v.id})">${v.nom}</button>`;
+                }).join('');
+            }
+            
+            // Spiritualités – applique la couleur dédiée à chaque spiritualité
+            if (spiritsContainer && metaData.spiritualites) {
+                spiritsContainer.innerHTML = metaData.spiritualites.map(s => {
+                    const isSel = selectedFilterSpiritId === s.id;
+                    const hex = getSpiritButtonColor(s);
+                    const rgb = hexToRgb(hex);
+                    const bg = isSel ? `rgba(${rgb}, 0.25)` : 'rgba(255,255,255,0.05)';
+                    const border = isSel ? hex : 'rgba(255,255,255,0.1)';
+                    const color = isSel ? hex : '#e2e8f0';
+                    return `<button type="button" style="padding:0.3rem 0.6rem;font-size:0.75rem;border-radius:6px;cursor:pointer;background:${bg};border:1px solid ${border};color:${color};font-weight:${isSel ? 'bold' : 'normal'};transition:all 0.2s;" onclick="toggleFilterSpirit(${s.id})">${s.nom}</button>`;
+                }).join('');
+            }
+        }
+
+        function toggleFilterVoie(id) {
+            if (selectedFilterVoieId === id) {
+                selectedFilterVoieId = null;
+            } else {
+                selectedFilterVoieId = id;
+            }
+            renderOriginButtons();
+            renderFilteredSpells();
+        }
+
+        function toggleFilterSpirit(id) {
+            if (selectedFilterSpiritId === id) {
+                selectedFilterSpiritId = null;
+            } else {
+                selectedFilterSpiritId = id;
+            }
+            renderOriginButtons();
+            renderFilteredSpells();
+        }
+
+        async function deleteSpell(id) {
+            if (!confirm("Êtes-vous sûr de vouloir supprimer définitivement ce sort ?")) return;
+            try {
+                const res = await fetch(`/api/spells-editor/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    const msg = await res.text();
+                    showNotif(msg);
+                    await loadSpells();
+                } else {
+                    alert("Erreur lors de la suppression du sort.");
+                }
+            } catch (err) {
+                console.error(err);
+                alert("Erreur de connexion au serveur.");
+            }
+        }
+
+        function editSpell(id) {
+            const sp = loadedSpells.find(s => s.id === id);
+            if (!sp) return;
+
+            editingSpellId = sp.id;
+            document.getElementById('nom').value = sp.nom || '';
+            document.getElementById('niveau').value = sp.niveau || 1;
+            document.getElementById('castingTypeSelect').value = sp.castingType || 'BANAL';
+            document.getElementById('description').value = sp.description || '';
+            document.getElementById('manaCost').value = sp.manaCost || 0;
+            document.getElementById('percentManaCost').value = sp.percentManaCost || 0;
+            document.getElementById('percentManaCostSource').value = sp.percentManaCostSource || 'CASTER_MANA_MAX';
+            document.getElementById('healCost').value = sp.healCost || 0;
+            document.getElementById('percentHealCost').value = sp.percentHealCost || 0;
+            document.getElementById('percentHealCostSource').value = sp.percentHealCostSource || 'CASTER_HEALTH_MAX';
+
+            document.getElementById('voieSelect').value = sp.voie ? sp.voie.id : '';
+            document.getElementById('spiritSelect').value = sp.spiritualite ? sp.spiritualite.id : '';
+
+            // Mettre à jour l'aperçu dynamique du rang
+            if (typeof updateRankTitle === 'function') {
+                updateRankTitle();
+            }
+
+            // Charger les effets rattachés
+            currentEffects = (sp.effects || []).map((e, idx) => ({
+                id: Date.now() + idx,
+                effectType: e.effectType || e.effect_type,
+                effectTarget: e.effectTarget || 'TARGET',
+                targetExpression: e.targetExpression || '',
+                damage: e.damage || 0,
+                healAmount: e.healAmount || 0,
+                percentage: e.percentage || 0,
+                flatValue: e.flatValue || 0,
+                modifier: e.modifier || 0,
+                duration: e.duration || 0,
+                damageType: e.damageType || 'MAGIC',
+                statAffected: e.statAffected || 'ARMURE',
+                source: e.source || 'TARGET_HEALTH_MAX'
+            }));
+
+            renderEffects();
+
+            // Mettre à jour l'indicateur d'action du bouton principal
+            document.getElementById('submitSpellBtn').innerText = '💾 Mettre à jour le Sort';
+
+            // Faire défiler la vue vers le haut en douceur
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        async function trySpell(id) {
+            const overlay = document.getElementById('simulationModalOverlay');
+            overlay.classList.add('active');
+
+            document.getElementById('simSpellName').innerText = "Simulation...";
+            document.getElementById('simulationLogsContainer').innerText = "Initialisation de l'environnement bac à sable...";
+
+            try {
+                const res = await fetch(`/api/spells-editor/try/${id}`);
+                if (res.ok) {
+                    const data = await res.json();
+                    document.getElementById('simSpellName').innerText = data.spellName || "Sort";
+
+                    // Mise à jour de la jauge de vie du Héros
+                    const heroHpPct = Math.max(0, Math.min(100, (data.casterHpAfter / data.casterHpMax) * 100));
+                    document.getElementById('heroHpText').innerText = `${data.casterHpAfter} / ${data.casterHpMax}`;
+                    document.getElementById('heroHpFill').style.width = `${heroHpPct}%`;
+
+                    // Mise à jour de la jauge de mana du Héros
+                    const heroManaPct = Math.max(0, Math.min(100, (data.casterManaAfter / data.casterManaMax) * 100));
+                    document.getElementById('heroManaText').innerText = `${data.casterManaAfter} / ${data.casterManaMax}`;
+                    document.getElementById('heroManaFill').style.width = `${heroManaPct}%`;
+
+                    // Mise à jour de la jauge de vie du Monstre
+                    const monsterHpPct = Math.max(0, Math.min(100, (data.targetHpAfter / data.targetHpMax) * 100));
+                    document.getElementById('monsterHpText').innerText = `${data.targetHpAfter} / ${data.targetHpMax}`;
+                    document.getElementById('monsterHpFill').style.width = `${monsterHpPct}%`;
+
+                    // Affichage des logs complets capturés depuis stdout
+                    document.getElementById('simulationLogsContainer').innerText = data.rawLogs || "Aucun événement loggé.";
+                } else {
+                    document.getElementById('simulationLogsContainer').innerText = "❌ Impossible de simuler le sort (prérequis insuffisants ou sort introuvable).";
+                }
+            } catch (err) {
+                console.error(err);
+                document.getElementById('simulationLogsContainer').innerText = "❌ Erreur de communication avec le simulateur embarqué.";
+            }
+        }
+
+        function closeSimulationModal() {
+            document.getElementById('simulationModalOverlay').classList.remove('active');
+            // Réinitialisation douce des jauges après fermeture
+            setTimeout(() => {
+                document.getElementById('heroHpFill').style.width = '100%';
+                document.getElementById('heroManaFill').style.width = '100%';
+                document.getElementById('monsterHpFill').style.width = '100%';
+                document.getElementById('heroHpText').innerText = '100 / 100';
+                document.getElementById('heroManaText').innerText = '100 / 100';
+                document.getElementById('monsterHpText').innerText = '200 / 200';
+            }, 300);
+        }
+
+        function showNotif(text) {
+            const notif = document.getElementById('notif');
+            notif.innerText = text;
+            notif.classList.add('show');
+            setTimeout(() => {
+                notif.classList.remove('show');
+            }, 4000);
+        }
+    </script>
+</body>
+
+</html>

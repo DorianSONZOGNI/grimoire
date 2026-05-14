@@ -1,12 +1,12 @@
 package generation.grimoire.repository;
 
-import generation.grimoire.entity.Voie;
+import generation.grimoire.entity.Spiritualite;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 import java.util.Optional;
 
 @Repository
-public interface VoieRepository extends JpaRepository<Voie, Long> {
-    Optional<Voie> findByNom(String nom);
+public interface SpiritualiteRepository extends JpaRepository<Spiritualite, Long> {
+    Optional<Spiritualite> findByNom(String nom);
 }
