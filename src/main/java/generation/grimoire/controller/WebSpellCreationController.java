@@ -259,9 +259,13 @@ public class WebSpellCreationController {
 
         if (dto.getVoieId() != null) {
             voieRepository.findById(dto.getVoieId()).ifPresent(spell::setVoie);
+        } else {
+            spell.setVoie(null);
         }
         if (dto.getSpiritualiteId() != null) {
             spiritualiteRepository.findById(dto.getSpiritualiteId()).ifPresent(spell::setSpiritualite);
+        } else {
+            spell.setSpiritualite(null);
         }
 
         if (dto.getEffects() != null) {

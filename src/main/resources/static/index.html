@@ -2461,8 +2461,8 @@
                 healCost: parseInt(document.getElementById('healCost').value) || 0,
                 percentHealCost: parseInt(document.getElementById('percentHealCost').value) || 0,
                 percentHealCostSource: document.getElementById('percentHealCostSource').value || 'CASTER_HEALTH_MAX',
-                voieId: document.getElementById('voieSelect').value ? parseInt(document.getElementById('voieSelect').value) : null,
-                spiritualiteId: document.getElementById('spiritSelect').value ? parseInt(document.getElementById('spiritSelect').value) : null,
+                voieId: (document.getElementById('voieSelect').value && document.getElementById('voieSelect').value !== '0') ? parseInt(document.getElementById('voieSelect').value) : null,
+                spiritualiteId: (document.getElementById('spiritSelect').value && document.getElementById('spiritSelect').value !== '0') ? parseInt(document.getElementById('spiritSelect').value) : null,
                 effects: currentEffects.map(e => ({
                     effectType: e.effectType,
                     effectTarget: e.effectTarget,
@@ -3049,9 +3049,23 @@
             }
 
             // Charger les effets rattachés
-            currentEffects = (sp.effects || []).map((e, idx) => ({
+            // Map des noms de classes Java → codes attendus par le switch JS/Java
+            const javaClassToCode = {
+                'DamageFixedEffect':      'FIXED_DAMAGE',
+                'DamagePercentageEffect': 'PERCENTAGE_DAMAGE',
+                'HealFixedEffect':        'FIXED_HEAL',
+                'HealPercentageEffect':   'PERCENTAGE_HEAL',
+                'BuffDebuffEffect':       'BUFF_DEBUFF',
+                'DamageOverTimeEffect':   'DOT',
+                'HealOverTimeEffect':     'HOT',
+                'PurgeEffect':            'PURGE',
+            };
+            currentEffects = (sp.effects || []).map((e, idx) => {
+                const rawType = e.effectType || e.effect_type || '';
+                const effectType = javaClassToCode[rawType] || rawType;
+                return {
                 id: Date.now() + idx,
-                effectType: e.effectType || e.effect_type,
+                effectType,
                 effectTarget: e.effectTarget || 'TARGET',
                 targetExpression: e.targetExpression || '',
                 damage: e.damage || 0,
@@ -3063,7 +3077,9 @@
                 damageType: e.damageType || 'MAGIC',
                 statAffected: e.statAffected || 'ARMURE',
                 source: e.source || 'TARGET_HEALTH_MAX'
-            }));
+                };
+            });
+
 
             renderEffects();
 
