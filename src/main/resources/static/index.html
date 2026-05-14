@@ -1721,15 +1721,27 @@
                 let selectedOption = options[select.selectedIndex] || options[0];
                 
                 let iconName = 'radio_button_unchecked';
-                if (selectId === 'voieSelect') iconName = getVoieIcon(selectedOption.text);
-                else if (selectId === 'spiritSelect') iconName = getSpiritIcon(selectedOption.text);
+                let triggerColor = 'var(--text-muted)';
+                if (selectId === 'voieSelect') {
+                    iconName = getVoieIcon(selectedOption.text);
+                    triggerColor = getVoieButtonColor({nom: selectedOption.text});
+                } else if (selectId === 'spiritSelect') {
+                    iconName = getSpiritIcon(selectedOption.text);
+                    triggerColor = getSpiritButtonColor({nom: selectedOption.text});
+                }
                 
-                trigger.innerHTML = `<span class="material-symbols-outlined" style="font-size:1.2rem; color:var(--primary);">${iconName}</span> <span>${selectedOption.text}</span>`;
+                trigger.innerHTML = `<span class="material-symbols-outlined" style="font-size:1.2rem; color:${triggerColor};">${iconName}</span> <span>${selectedOption.text}</span>`;
                 
                 options.forEach((opt, index) => {
                     let optIcon = 'radio_button_unchecked';
-                    if (selectId === 'voieSelect') optIcon = getVoieIcon(opt.text);
-                    else if (selectId === 'spiritSelect') optIcon = getSpiritIcon(opt.text);
+                    let optColor = 'var(--text-muted)';
+                    if (selectId === 'voieSelect') {
+                        optIcon = getVoieIcon(opt.text);
+                        optColor = getVoieButtonColor({nom: opt.text});
+                    } else if (selectId === 'spiritSelect') {
+                        optIcon = getSpiritIcon(opt.text);
+                        optColor = getSpiritButtonColor({nom: opt.text});
+                    }
                     
                     const optionDiv = document.createElement('div');
                     optionDiv.style.padding = '0.6rem 0.8rem';
@@ -1740,7 +1752,7 @@
                     optionDiv.style.color = '#e2e8f0';
                     optionDiv.style.fontSize = '0.9rem';
                     optionDiv.style.transition = 'background 0.2s';
-                    optionDiv.innerHTML = `<span class="material-symbols-outlined" style="font-size:1.2rem; color:var(--primary);">${optIcon}</span> ${opt.text}`;
+                    optionDiv.innerHTML = `<span class="material-symbols-outlined" style="font-size:1.2rem; color:${optColor};">${optIcon}</span> ${opt.text}`;
                     
                     optionDiv.addEventListener('mouseover', () => optionDiv.style.background = 'rgba(255,255,255,0.1)');
                     optionDiv.addEventListener('mouseout', () => optionDiv.style.background = 'transparent');
