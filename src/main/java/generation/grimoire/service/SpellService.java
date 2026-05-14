@@ -95,6 +95,9 @@ public class SpellService {
 
         // Appliquer chacun des effets du sort en résolvant dynamiquement les destinataires de la règle textuelle
         for (SpellEffect effect : toCast.getEffects()) {
+            if (effect.getRequiredChoiceKey() != null && !effect.getRequiredChoiceKey().equals(choiceKey)) {
+                continue; // L'effet ne s'active que si la clé de choix correspond
+            }
             java.util.List<Personnage> recipients = new java.util.ArrayList<>();
             String expr = effect.getTargetExpression();
 

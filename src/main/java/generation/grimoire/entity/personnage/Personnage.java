@@ -6,6 +6,7 @@ import generation.grimoire.entity.spell.type.effect.BuffDebuffEffect;
 import generation.grimoire.entity.spell.type.effect.ConsumableSpellBuffDebuffEffect;
 import generation.grimoire.entity.spell.type.effect.DamageOverTimeEffect;
 import generation.grimoire.entity.spell.type.effect.HealOverTimeEffect;
+import generation.grimoire.entity.spell.type.effect.ManaOverTimeEffect;
 import generation.grimoire.enumeration.DamageType;
 import generation.grimoire.enumeration.StatType;
 import jakarta.persistence.*;
@@ -57,6 +58,9 @@ public class Personnage {
     // Liste des effets de heal over time actifs (non persistés)
     @Transient
     private List<HealOverTimeEffect> activeHealOverTimeEffects = new ArrayList<>();
+
+    @Transient
+    private List<ManaOverTimeEffect> activeManaOverTimeEffects = new ArrayList<>();
 
     @Transient
     private List<DamageOverTimeEffect> activeDamageOverTimeEffects = new ArrayList<>();
@@ -160,6 +164,14 @@ public class Personnage {
         System.out.println(name + " est soigné de " + healAmount + " points. Vie actuelle : " + healthCurrent);
     }
 
+    public void restoreMana(int manaAmount) {
+        this.manaCurrent += manaAmount;
+        if (this.manaCurrent > this.manaMax) {
+            this.manaCurrent = this.manaMax;
+        }
+        System.out.println(name + " régénère " + manaAmount + " mana. Mana actuelle : " + manaCurrent);
+    }
+
     /**
      * Ajoute un effet de heal over time à ce personnage.
      * Vous pouvez cloner l'effet pour éviter de partager une même instance entre
@@ -185,6 +197,23 @@ public class Personnage {
             }
         }
     }
+
+    public void addManaOverTimeEffect(ManaOverTimeEffect effect) {
+        activeManaOverTimeEffects.add(effect);
+    }
+
+    public void updateManaOverTimeEffects() {
+        Iterator<ManaOverTimeEffect> iterator = activeManaOverTimeEffects.iterator();
+        while (iterator.hasNext()) {
+            ManaOverTimeEffect effect = iterator.next();
+            effect.tick(this);
+            if (effect.getDuration() <= 0) {
+                iterator.remove();
+                System.out.println(name + " n'a plus d'effet de mana over time.");
+            }
+        }
+    }
+
 
     public void addDamageOverTimeEffect(DamageOverTimeEffect effect) {
         activeDamageOverTimeEffects.add(effect);
@@ -361,6 +390,7 @@ public class Personnage {
         consumableSpellBuffs.clear();
         activeHealOverTimeEffects.clear();
         activeDamageOverTimeEffects.clear();
+        activeManaOverTimeEffects.clear();
         System.out.println(name + " est purifié de tous ses bonus et malus !");
     }
 

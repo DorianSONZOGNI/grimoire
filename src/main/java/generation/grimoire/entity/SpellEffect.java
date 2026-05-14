@@ -29,6 +29,9 @@ public abstract class SpellEffect {
     @Column(name = "target_expression")
     private String targetExpression;
 
+    @Column(name = "required_choice_key")
+    private Integer requiredChoiceKey;
+
     /**
      * Applique cet effet du sort sur la cible.
      *

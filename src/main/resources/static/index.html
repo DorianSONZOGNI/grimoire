@@ -1359,6 +1359,8 @@
                 </div>
             </div>
 
+
+
             <hr style="border-color: var(--glass-border); margin: 0.5rem 0;">
 
             <div class="form-group">
@@ -1373,12 +1375,18 @@
                         Fixes</button>
                     <button type="button" class="btn-effect-add" onclick="addEffectPanel('PERCENTAGE_HEAL')">✨ Soins
                         %</button>
+                    <button type="button" class="btn-effect-add" onclick="addEffectPanel('FIXED_MANA')">💧 Mana
+                        Fixe</button>
+                    <button type="button" class="btn-effect-add" onclick="addEffectPanel('PERCENTAGE_MANA')">🌊 Mana
+                        %</button>
                     <button type="button" class="btn-effect-add" onclick="addEffectPanel('BUFF_DEBUFF')">🛡️ Buff /
                         Débuff</button>
                     <button type="button" class="btn-effect-add" onclick="addEffectPanel('DOT')">🔥 Tick Dégâts
                         (DoT)</button>
                     <button type="button" class="btn-effect-add" onclick="addEffectPanel('HOT')">💖 Tick Soins
                         (HoT)</button>
+                    <button type="button" class="btn-effect-add" onclick="addEffectPanel('MOT')">🌀 Tick Mana
+                        (MoT)</button>
                     <button type="button" class="btn-effect-add" style="border-color: #10b981; color: #10b981;"
                         onclick="addEffectPanel('PURGE')">✨ Purge / Dissiper</button>
                 </div>
@@ -1610,6 +1618,8 @@
                 if (pms) pms.value = 'CASTER_MANA_MAX';
                 if (phs) phs.value = 'CASTER_HEALTH_MAX';
 
+
+
                 updateRankTitle();
                 renderOriginButtons();
             } catch (err) {
@@ -1659,13 +1669,15 @@
                 targetExpression: 'Cible',
                 damage: 20,
                 healAmount: 20,
+                manaAmount: 20,
                 percentage: 0.10,
                 flatValue: 5,
                 modifier: 0.20,
                 duration: 2,
                 damageType: 'MAGIC',
                 statAffected: 'ARMURE',
-                source: 'TARGET_HEALTH_MAX'
+                source: 'TARGET_HEALTH_MAX',
+                requiredChoiceKey: null
             };
 
             currentEffects.push(effectObj);
@@ -1711,7 +1723,7 @@
         function updateEffectProp(id, prop, value) {
             const effect = currentEffects.find(e => e.id === id);
             if (effect) {
-                if (['damage', 'healAmount', 'flatValue', 'duration'].includes(prop)) {
+                if (['damage', 'healAmount', 'manaAmount', 'flatValue', 'duration'].includes(prop)) {
                     effect[prop] = parseInt(value) || 0;
                 } else if (prop === 'percentage' || prop === 'modifier') {
                     effect[prop] = parseFloat(value) || 0;
@@ -1863,6 +1875,45 @@
                             <input type="number" value="${eff.duration}" onchange="updateEffectProp(${eff.id}, 'duration', this.value)">
                         </div>
                     `;
+                } else if (eff.effectType === 'FIXED_MANA') {
+                    fieldsHtml = `
+                        <div class="form-group">
+                            <label>Montant de Mana</label>
+                            <input type="number" value="${eff.manaAmount || 0}" onchange="updateEffectProp(${eff.id}, 'manaAmount', this.value)">
+                        </div>
+                    `;
+                } else if (eff.effectType === 'PERCENTAGE_MANA') {
+                    fieldsHtml = `
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Ratio (ex: 0.15 pour 15%)</label>
+                                <input type="number" step="0.01" value="${eff.percentage}" onchange="updateEffectProp(${eff.id}, 'percentage', this.value)">
+                            </div>
+                            <div class="form-group">
+                                <label>Source du Ratio</label>
+                                <select onchange="updateEffectProp(${eff.id}, 'source', this.value)">
+                                    ${renderSourceOptions(metaData.sources, eff.source)}
+                                </select>
+                            </div>
+                        </div>
+                    `;
+                } else if (eff.effectType === 'MOT') {
+                    fieldsHtml = `
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Mana Fixe / Tour</label>
+                                <input type="number" value="${eff.manaAmount || 0}" onchange="updateEffectProp(${eff.id}, 'manaAmount', this.value)">
+                            </div>
+                            <div class="form-group">
+                                <label>Ratio / Tour</label>
+                                <input type="number" step="0.01" value="${eff.percentage}" onchange="updateEffectProp(${eff.id}, 'percentage', this.value)">
+                            </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Durée (Tours)</label>
+                            <input type="number" value="${eff.duration}" onchange="updateEffectProp(${eff.id}, 'duration', this.value)">
+                        </div>
+                    `;
                 } else if (eff.effectType === 'PURGE') {
                     fieldsHtml = `
                         <div style="padding: 0.5rem; background: rgba(16, 185, 129, 0.1); border-left: 3px solid #10b981; border-radius: 4px; font-size: 0.85rem; color: #10b981;">
@@ -1913,6 +1964,13 @@
                                     <button type="button" class="badge" style="cursor: pointer; background: rgba(245,158,11,0.15); color: #f59e0b; font-weight: bold;" onclick="appendTargetExpr(${eff.id}, ' & ')">& (ET)</button>
                                     <button type="button" class="badge" style="cursor: pointer; background: rgba(245,158,11,0.15); color: #f59e0b; font-weight: bold;" onclick="appendTargetExpr(${eff.id}, ' || ')">|| (OU)</button>
                                 </div>
+                            </div>
+
+                            <!-- Option / Clé d'activation de la ligne d'effet -->
+                            <div style="display: flex; gap: 0.5rem; align-items: center; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px dashed rgba(255,255,255,0.05);">
+                                <label style="font-size: 0.8rem; color: #f59e0b; font-weight:600;">🔑 S'active uniquement si l'Option de sort choisie est :</label>
+                                <input type="number" value="${eff.requiredChoiceKey !== undefined && eff.requiredChoiceKey !== null ? eff.requiredChoiceKey : ''}" placeholder="Toutes (Par défaut)" style="width: 140px; font-size: 0.85rem; padding: 0.2rem 0.4rem; background: var(--glass-bg); color: #fff; border: 1px solid var(--glass-border); border-radius: 4px;" onchange="updateEffectProp(${eff.id}, 'requiredChoiceKey', this.value ? parseInt(this.value) : null)">
+                                <span style="font-size: 0.75rem; color: var(--text-muted);">Ex: 1 pour la ligne Soin, 2 pour la ligne Mana. Laissez vide pour s'activer toujours.</span>
                             </div>
                         </div>
 
@@ -2490,19 +2548,22 @@
                 percentHealCostSource: document.getElementById('percentHealCostSource').value || 'CASTER_HEALTH_MAX',
                 voieId: (document.getElementById('voieSelect').value && document.getElementById('voieSelect').value !== '0') ? parseInt(document.getElementById('voieSelect').value) : null,
                 spiritualiteId: (document.getElementById('spiritSelect').value && document.getElementById('spiritSelect').value !== '0') ? parseInt(document.getElementById('spiritSelect').value) : null,
+
                 effects: currentEffects.map(e => ({
                     effectType: e.effectType,
                     effectTarget: e.effectTarget,
                     targetExpression: e.targetExpression,
                     damage: e.damage,
                     healAmount: e.healAmount,
+                    manaAmount: e.manaAmount || 0,
                     percentage: e.percentage,
                     flatValue: e.flatValue,
                     modifier: e.modifier,
                     duration: e.duration,
                     damageType: e.damageType,
                     statAffected: e.statAffected,
-                    source: e.source
+                    source: e.source,
+                    requiredChoiceKey: e.requiredChoiceKey !== undefined ? e.requiredChoiceKey : null
                 }))
             };
 
@@ -2661,12 +2722,18 @@
                             'FIXED_HEAL': 'Soins Fixes',
                             'HealPercentageEffect': 'Soins %',
                             'PERCENTAGE_HEAL': 'Soins %',
+                            'ManaFixedEffect': 'Mana Fixe',
+                            'FIXED_MANA': 'Mana Fixe',
+                            'ManaPercentageEffect': 'Mana %',
+                            'PERCENTAGE_MANA': 'Mana %',
                             'BuffDebuffEffect': 'Buff/Débuff',
                             'BUFF_DEBUFF': 'Buff/Débuff',
                             'DamageOverTimeEffect': 'DoT',
                             'DOT': 'DoT',
                             'HealOverTimeEffect': 'HoT',
                             'HOT': 'HoT',
+                            'ManaOverTimeEffect': 'MoT',
+                            'MOT': 'MoT',
                             'PurgeEffect': '✨ Dissipation',
                             'PURGE': '✨ Dissipation'
                         };
@@ -2737,13 +2804,29 @@
                             if (parts.length === 0) parts.push('0');
                             const durStr = e.duration > 0 ? ` sur ${e.duration} tours` : '';
                             detailsStr = `➔ HoT de ${parts.join(' + ')} PV/tour${durStr}`;
+                        } else if (t === 'ManaFixed' || t === 'FIXED_MANA') {
+                            detailsStr = `➔ rend ${e.manaAmount || 0} Mana`;
+                        } else if (t === 'ManaPercentage' || t === 'PERCENTAGE_MANA') {
+                            const pct = Math.round((e.percentage || 0) * 100);
+                            detailsStr = `➔ rend ${pct}% de ${formatSrc(e.manaSource || e.source)} en Mana`;
+                        } else if (t === 'ManaOverTime' || t === 'MOT') {
+                            let parts = [];
+                            const fm = e.fixedManaPerTick || e.manaAmount || 0;
+                            const pm = e.percentageManaPerTick || e.percentage || 0;
+                            if (fm) parts.push(`${fm}`);
+                            if (pm) parts.push(`${Math.round(pm * 100)}% Mana Max`);
+                            if (parts.length === 0) parts.push('0');
+                            const durStr = e.duration > 0 ? ` sur ${e.duration} tours` : '';
+                            detailsStr = `➔ MoT de ${parts.join(' + ')} Mana/tour${durStr}`;
                         } else if (t === 'Purge' || t === 'PURGE') {
                             detailsStr = `➔ dissipe les altérations`;
                         }
 
+                        const keyBadge = e.requiredChoiceKey != null ? `<span style="background:rgba(245,158,11,0.2); color:#f59e0b; padding:0.1rem 0.3rem; border-radius:3px; font-size:0.75rem; font-weight:bold;" title="S'active uniquement si l'option choisie au cast est ${e.requiredChoiceKey}">Option ${e.requiredChoiceKey}</span>` : '';
                         effectsSummaryHtml += `
                             <div class="effect-line" style="display:flex; align-items:baseline; gap:0.3rem; flex-wrap:wrap;">
                                 <div class="indicator ${indicatorClass}" style="flex-shrink:0;"></div>
+                                ${keyBadge}
                                 <span style="font-weight:600; color:#fff;">[${targetText}]</span>
                                 <span style="color:var(--spell-color, #38bdf8); font-weight:500;">${eTypeStr}</span>
                                 <span style="color:#e2e8f0;">${detailsStr}</span>
@@ -2788,6 +2871,7 @@
                                     ${lvlBadge}
                                     ${voieBadge}
                                     ${spiritBadge}
+
                                 </div>
                             </div>
                             <div style="display: flex; gap: 0.3rem; align-items: center; flex-wrap: wrap;">
@@ -3157,6 +3241,8 @@
             document.getElementById('spiritSelect').value = sp.spiritualite ? sp.spiritualite.id : '';
             document.getElementById('spiritSelect').dispatchEvent(new Event('change'));
 
+
+
             // Mettre à jour l'aperçu dynamique du rang
             if (typeof updateRankTitle === 'function') {
                 updateRankTitle();
@@ -3169,9 +3255,12 @@
                 'DamagePercentageEffect': 'PERCENTAGE_DAMAGE',
                 'HealFixedEffect':        'FIXED_HEAL',
                 'HealPercentageEffect':   'PERCENTAGE_HEAL',
+                'ManaFixedEffect':        'FIXED_MANA',
+                'ManaPercentageEffect':   'PERCENTAGE_MANA',
                 'BuffDebuffEffect':       'BUFF_DEBUFF',
                 'DamageOverTimeEffect':   'DOT',
                 'HealOverTimeEffect':     'HOT',
+                'ManaOverTimeEffect':     'MOT',
                 'PurgeEffect':            'PURGE',
             };
             currentEffects = (sp.effects || []).map((e, idx) => {
@@ -3182,15 +3271,17 @@
                 effectType,
                 effectTarget: e.effectTarget || 'TARGET',
                 targetExpression: e.targetExpression || '',
-                damage: e.damage || 0,
-                healAmount: e.healAmount || 0,
-                percentage: e.percentage || 0,
+                damage: e.damage || e.fixedDamagePerTick || 0,
+                healAmount: e.healAmount || e.fixedHealPerTick || 0,
+                manaAmount: e.manaAmount || e.fixedManaPerTick || 0,
+                percentage: e.percentage || e.percentageDamagePerTick || e.percentageHealPerTick || e.percentageManaPerTick || 0,
                 flatValue: e.flatValue || 0,
                 modifier: e.modifier || 0,
                 duration: e.duration || 0,
                 damageType: e.damageType || 'MAGIC',
                 statAffected: e.statAffected || 'ARMURE',
-                source: e.source || 'TARGET_HEALTH_MAX'
+                source: e.source || e.damageSource || e.healSource || e.manaSource || e.modifierSource || 'TARGET_HEALTH_MAX',
+                requiredChoiceKey: e.requiredChoiceKey !== undefined ? e.requiredChoiceKey : null
                 };
             });
 

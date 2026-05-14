@@ -148,9 +148,12 @@ public class WebSpellCreationController {
                 Map.of("type", "PERCENTAGE_DAMAGE", "label", "Dégâts en Pourcentage"),
                 Map.of("type", "FIXED_HEAL", "label", "Soins Fixes"),
                 Map.of("type", "PERCENTAGE_HEAL", "label", "Soins en Pourcentage"),
+                Map.of("type", "FIXED_MANA", "label", "Régénération de Mana Fixe"),
+                Map.of("type", "PERCENTAGE_MANA", "label", "Régénération de Mana en %"),
                 Map.of("type", "BUFF_DEBUFF", "label", "Buff / Débuff"),
                 Map.of("type", "DOT", "label", "Dégâts sur la durée (DoT)"),
                 Map.of("type", "HOT", "label", "Soins sur la durée (HoT)"),
+                Map.of("type", "MOT", "label", "Régénération de Mana continue (MoT)"),
                 Map.of("type", "PURGE", "label", "Purge (Dissiper Bonus/Malus)"));
         meta.put("effectTypes", effectTypes);
 
@@ -321,6 +324,24 @@ public class WebSpellCreationController {
                         hot.setDuration(eDto.getDuration());
                         effect = hot;
                         break;
+                    case "FIXED_MANA":
+                        ManaFixedEffect mfe = new ManaFixedEffect();
+                        mfe.setManaAmount(eDto.getManaAmount());
+                        effect = mfe;
+                        break;
+                    case "PERCENTAGE_MANA":
+                        ManaPercentageEffect mpe = new ManaPercentageEffect();
+                        mpe.setPercentage(eDto.getPercentage());
+                        mpe.setManaSource(eDto.getSource() != null ? eDto.getSource() : Source.TARGET_MANA_MAX);
+                        effect = mpe;
+                        break;
+                    case "MOT":
+                        ManaOverTimeEffect mot = new ManaOverTimeEffect();
+                        mot.setPercentageManaPerTick(eDto.getPercentage());
+                        mot.setFixedManaPerTick(eDto.getManaAmount());
+                        mot.setDuration(eDto.getDuration());
+                        effect = mot;
+                        break;
                     case "PURGE":
                         effect = new generation.grimoire.entity.spell.type.effect.PurgeEffect();
                         break;
@@ -335,6 +356,7 @@ public class WebSpellCreationController {
                     if (eDto.getTargetExpression() != null && !eDto.getTargetExpression().trim().isEmpty()) {
                         effect.setTargetExpression(eDto.getTargetExpression().trim());
                     }
+                    effect.setRequiredChoiceKey(eDto.getRequiredChoiceKey());
                     spell.addEffect(effect);
                 }
             }
@@ -373,6 +395,7 @@ public class WebSpellCreationController {
         private String targetExpression;
         private int damage;
         private int healAmount;
+        private int manaAmount;
         private double percentage;
         private int flatValue;
         private double modifier;
@@ -380,6 +403,7 @@ public class WebSpellCreationController {
         private DamageType damageType;
         private StatType statAffected;
         private Source source;
+        private Integer requiredChoiceKey;
     }
 
     @Data
