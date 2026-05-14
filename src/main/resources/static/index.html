@@ -10,6 +10,9 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap"
         rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+        rel="stylesheet" />
     <style>
         :root {
             --bg-base: #0b0f19;
@@ -843,7 +846,7 @@
                     style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.6rem;">
                     <div
                         style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--primary); display: flex; align-items: center; gap: 0.4rem;">
-                        <span>🎛️ Affinage & Ordonnancement</span>
+                        <span>👁️ Perception Arcanique</span>
                     </div>
                     <div style="display: flex; align-items: center; gap: 0.6rem;">
                         <button type="button" class="btn-secondary"
@@ -866,7 +869,9 @@
 
                 <!-- Section Filtrage par Voie (Boutons uniques) -->
                 <div>
-                    <label style="font-size: 0.65rem; color: var(--text-muted); display: block; margin-bottom: 0.4rem; font-weight: 700; letter-spacing: 0.5px;">🔮 FILTRER PAR VOIE</label>
+                    <label
+                        style="font-size: 0.65rem; color: var(--text-muted); display: block; margin-bottom: 0.4rem; font-weight: 700; letter-spacing: 0.5px;">🔮
+                        FILTRER PAR VOIE</label>
                     <div id="filterVoiesButtonsContainer" style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
                         <!-- Injecté dynamiquement en JS -->
                     </div>
@@ -874,7 +879,9 @@
 
                 <!-- Section Filtrage par Spiritualité (Boutons uniques) -->
                 <div>
-                    <label style="font-size: 0.65rem; color: var(--text-muted); display: block; margin-bottom: 0.4rem; font-weight: 700; letter-spacing: 0.5px;">✨ FILTRER PAR SPIRITUALITÉ</label>
+                    <label
+                        style="font-size: 0.65rem; color: var(--text-muted); display: block; margin-bottom: 0.4rem; font-weight: 700; letter-spacing: 0.5px;">✨
+                        FILTRER PAR SPIRITUALITÉ</label>
                     <div id="filterSpiritsButtonsContainer" style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
                         <!-- Injecté dynamiquement en JS -->
                     </div>
@@ -1011,6 +1018,7 @@
 
                 // Remplir les Voies
                 const voieSel = document.getElementById('voieSelect');
+                if (voieSel) voieSel.style.fontFamily = "";
                 const optgroupVoies = document.getElementById('optgroupVoiesFilter');
                 metaData.voies.forEach(v => {
                     voieSel.innerHTML += `<option value="${v.id}">${v.nom}</option>`;
@@ -1019,11 +1027,15 @@
 
                 // Remplir les Spiritualités
                 const spiritSel = document.getElementById('spiritSelect');
+                if (spiritSel) spiritSel.style.fontFamily = "";
                 const optgroupSpirits = document.getElementById('optgroupSpiritsFilter');
                 metaData.spiritualites.forEach(s => {
                     spiritSel.innerHTML += `<option value="${s.id}">${s.nom}</option>`;
                     if (optgroupSpirits) optgroupSpirits.innerHTML += `<option value="S_${s.id}">${s.nom}</option>`;
                 });
+
+                makeCustomSelect('voieSelect');
+                makeCustomSelect('spiritSelect');
 
                 // Remplir les sources de coûts
                 const pms = document.getElementById('percentManaCostSource');
@@ -1541,8 +1553,21 @@
             }
 
             container.innerHTML = filtered.map(sp => {
-                const voieBadge = sp.voie ? `<span class="badge badge-voie">Voie: ${sp.voie.nom}</span>` : '';
-                const spiritBadge = sp.spiritualite ? `<span class="badge badge-spirit">Spirit: ${sp.spiritualite.nom}</span>` : '';
+                let voieBadge = '';
+                if (sp.voie) {
+                    const vHex = getVoieButtonColor(sp.voie);
+                    const vRgb = hexToRgb(vHex);
+                    const vIcon = getVoieIcon(sp.voie.nom);
+                    voieBadge = `<span class="badge" style="color: ${vHex}; border-color: rgba(${vRgb}, 0.3); background: rgba(${vRgb}, 0.05); display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size:1.1em;">${vIcon}</span>${sp.voie.nom}</span>`;
+                }
+
+                let spiritBadge = '';
+                if (sp.spiritualite) {
+                    const sHex = getSpiritButtonColor(sp.spiritualite);
+                    const sRgb = hexToRgb(sHex);
+                    const sIcon = getSpiritIcon(sp.spiritualite.nom);
+                    spiritBadge = `<span class="badge" style="color: ${sHex}; border-color: rgba(${sRgb}, 0.3); background: rgba(${sRgb}, 0.05); display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size:1.1em;">${sIcon}</span>${sp.spiritualite.nom}</span>`;
+                }
 
                 let castBadge = '';
                 if (sp.castingType === 'INSTANTANE') castBadge = `<span class="badge" style="background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid #f59e0b;">⚡ Instantané</span>`;
@@ -1611,24 +1636,11 @@
         }
 
         function getSpellColor(sp) {
-            if (sp.spiritualite && sp.spiritualite.nom) {
-                const sNom = sp.spiritualite.nom.toLowerCase();
-                if (sNom.includes('esprit')) return '#38bdf8';
-                if (sNom.includes('ténèbres') || sNom.includes('tenebres')) return '#c084fc';
-                if (sNom.includes('karma')) return '#fbbf24';
-                return '#a78bfa';
-            }
             if (sp.voie && sp.voie.nom) {
-                const vNom = sp.voie.nom.toLowerCase();
-                if (vNom.includes('raison')) return '#60a5fa';
-                if (vNom.includes('sûreté') || vNom.includes('surete')) return '#34d399';
-                if (vNom.includes('trahison')) return '#f43f5e';
-                if (vNom.includes('consolidation')) return '#fb923c';
-                if (vNom.includes('conviction')) return '#eab308';
-                if (vNom.includes('création') || vNom.includes('creation')) return '#2dd4bf';
-                if (vNom.includes('destruction')) return '#ef4444';
-                if (vNom.includes('violence')) return '#dc2626';
-                return '#94a3b8';
+                return getVoieButtonColor(sp.voie);
+            }
+            if (sp.spiritualite && sp.spiritualite.nom) {
+                return getSpiritButtonColor(sp.spiritualite);
             }
             return '#ffffff';
         }
@@ -1643,17 +1655,142 @@
             return `${r}, ${g}, ${b}`;
         }
 
+        function getVoieIcon(nom) {
+            const n = nom.toLowerCase();
+            if (n.includes('raison')) return 'psychology';
+            if (n.includes('sûreté') || n.includes('surete')) return 'water_drop';
+            if (n.includes('trahison')) return 'visibility_off';
+            if (n.includes('consolidation')) return 'foundation';
+            if (n.includes('conviction')) return 'volcano';
+            if (n.includes('création') || n.includes('creation')) return 'eco';
+            if (n.includes('destruction')) return 'local_fire_department';
+            if (n.includes('violence')) return 'explosion';
+            return 'radio_button_unchecked';
+        }
+
+        function getSpiritIcon(nom) {
+            const n = nom.toLowerCase();
+            if (n.includes('esprit')) return 'blur_on';
+            if (n.includes('ténèbres') || n.includes('tenebres')) return 'dark_mode';
+            if (n.includes('karma')) return 'all_inclusive';
+            return 'radio_button_unchecked';
+        }
+
+        function makeCustomSelect(selectId) {
+            const select = document.getElementById(selectId);
+            if (!select || select.dataset.customized) return;
+            
+            select.style.display = 'none';
+            select.dataset.customized = "true";
+            
+            const wrapper = document.createElement('div');
+            wrapper.style.position = 'relative';
+            wrapper.style.width = '100%';
+            wrapper.style.fontFamily = "inherit";
+            
+            const trigger = document.createElement('div');
+            trigger.style.padding = '0.6rem 0.8rem';
+            trigger.style.background = 'rgba(255, 255, 255, 0.05)';
+            trigger.style.border = '1px solid var(--glass-border)';
+            trigger.style.borderRadius = '8px';
+            trigger.style.cursor = 'pointer';
+            trigger.style.display = 'flex';
+            trigger.style.alignItems = 'center';
+            trigger.style.gap = '0.6rem';
+            trigger.style.color = '#fff';
+            trigger.style.fontSize = '0.9rem';
+            
+            const optionsContainer = document.createElement('div');
+            optionsContainer.style.position = 'absolute';
+            optionsContainer.style.top = '100%';
+            optionsContainer.style.left = '0';
+            optionsContainer.style.right = '0';
+            optionsContainer.style.background = '#1e293b';
+            optionsContainer.style.border = '1px solid var(--glass-border)';
+            optionsContainer.style.borderRadius = '8px';
+            optionsContainer.style.marginTop = '4px';
+            optionsContainer.style.zIndex = '999';
+            optionsContainer.style.maxHeight = '220px';
+            optionsContainer.style.overflowY = 'auto';
+            optionsContainer.style.display = 'none';
+            optionsContainer.style.boxShadow = '0 10px 25px rgba(0,0,0,0.5)';
+            
+            const updateSelect = () => {
+                optionsContainer.innerHTML = '';
+                const options = Array.from(select.options);
+                let selectedOption = options[select.selectedIndex] || options[0];
+                
+                let iconName = 'radio_button_unchecked';
+                if (selectId === 'voieSelect') iconName = getVoieIcon(selectedOption.text);
+                else if (selectId === 'spiritSelect') iconName = getSpiritIcon(selectedOption.text);
+                
+                trigger.innerHTML = `<span class="material-symbols-outlined" style="font-size:1.2rem; color:var(--primary);">${iconName}</span> <span>${selectedOption.text}</span>`;
+                
+                options.forEach((opt, index) => {
+                    let optIcon = 'radio_button_unchecked';
+                    if (selectId === 'voieSelect') optIcon = getVoieIcon(opt.text);
+                    else if (selectId === 'spiritSelect') optIcon = getSpiritIcon(opt.text);
+                    
+                    const optionDiv = document.createElement('div');
+                    optionDiv.style.padding = '0.6rem 0.8rem';
+                    optionDiv.style.cursor = 'pointer';
+                    optionDiv.style.display = 'flex';
+                    optionDiv.style.alignItems = 'center';
+                    optionDiv.style.gap = '0.6rem';
+                    optionDiv.style.color = '#e2e8f0';
+                    optionDiv.style.fontSize = '0.9rem';
+                    optionDiv.style.transition = 'background 0.2s';
+                    optionDiv.innerHTML = `<span class="material-symbols-outlined" style="font-size:1.2rem; color:var(--primary);">${optIcon}</span> ${opt.text}`;
+                    
+                    optionDiv.addEventListener('mouseover', () => optionDiv.style.background = 'rgba(255,255,255,0.1)');
+                    optionDiv.addEventListener('mouseout', () => optionDiv.style.background = 'transparent');
+                    
+                    optionDiv.addEventListener('click', (e) => {
+                        e.stopPropagation();
+                        select.selectedIndex = index;
+                        select.dispatchEvent(new Event('change'));
+                        optionsContainer.style.display = 'none';
+                    });
+                    
+                    optionsContainer.appendChild(optionDiv);
+                });
+            };
+            
+            trigger.addEventListener('click', (e) => {
+                e.stopPropagation();
+                const isVisible = optionsContainer.style.display === 'block';
+                document.querySelectorAll('.custom-select-options').forEach(el => el.style.display = 'none');
+                optionsContainer.style.display = isVisible ? 'none' : 'block';
+                optionsContainer.className = 'custom-select-options'; // tag for closing
+            });
+            
+            document.addEventListener('click', (e) => {
+                if (!wrapper.contains(e.target)) {
+                    optionsContainer.style.display = 'none';
+                }
+            });
+            
+            select.addEventListener('change', updateSelect);
+            const observer = new MutationObserver(updateSelect);
+            observer.observe(select, { childList: true });
+            
+            updateSelect();
+            wrapper.appendChild(trigger);
+            wrapper.appendChild(optionsContainer);
+            select.parentNode.insertBefore(wrapper, select.nextSibling);
+        }
+
         // Couleur dédiée aux Voies (même logique que getSpellColor)
         function getVoieButtonColor(v) {
             const vNom = v.nom.toLowerCase();
-            if (vNom.includes('raison')) return '#60a5fa';
-            if (vNom.includes('sûreté') || vNom.includes('surete')) return '#34d399';
-            if (vNom.includes('trahison')) return '#f43f5e';
-            if (vNom.includes('consolidation')) return '#fb923c';
-            if (vNom.includes('conviction')) return '#eab308';
-            if (vNom.includes('création') || vNom.includes('creation')) return '#2dd4bf';
-            if (vNom.includes('destruction')) return '#ef4444';
-            if (vNom.includes('violence')) return '#dc2626';
+            if (vNom.includes('raison')) return '#3b82f6';
+            if (vNom.includes('sûreté') || vNom.includes('surete')) return '#00e5cc';
+            if (vNom.includes('trahison')) return '#ed5677';
+            if (vNom.includes('consolidation')) return '#99674c';
+            if (vNom.includes('conviction')) return '#b74c0b';
+            if (vNom.includes('création') || vNom.includes('creation')) return '#10b981';
+            if (vNom.includes('destruction')) return '#ff0000';
+            if (vNom.includes('violence')) return '#a70740';
             return '#94a3b8';
         }
 
@@ -1662,7 +1799,7 @@
             const sNom = s.nom.toLowerCase();
             if (sNom.includes('esprit')) return '#38bdf8';
             if (sNom.includes('ténèbres') || sNom.includes('tenebres')) return '#c084fc';
-            if (sNom.includes('karma')) return '#fbbf24';
+            if (sNom.includes('karma')) return '#e7d198';
             return '#a78bfa';
         }
 
@@ -1685,30 +1822,36 @@
         function renderOriginButtons() {
             const voiesContainer = document.getElementById('filterVoiesButtonsContainer');
             const spiritsContainer = document.getElementById('filterSpiritsButtonsContainer');
-            
+
             // Voies – utilise la couleur dédiée à chaque voie
             if (voiesContainer && metaData.voies) {
                 voiesContainer.innerHTML = metaData.voies.map(v => {
                     const isSel = selectedFilterVoieId === v.id;
                     const hex = getVoieButtonColor(v);
                     const rgb = hexToRgb(hex);
-                    const bg = isSel ? `rgba(${rgb}, 0.25)` : 'rgba(255,255,255,0.05)';
-                    const border = isSel ? hex : 'rgba(255,255,255,0.1)';
-                    const color = isSel ? hex : '#e2e8f0';
-                    return `<button type="button" style="padding:0.3rem 0.6rem;font-size:0.75rem;border-radius:6px;cursor:pointer;background:${bg};border:1px solid ${border};color:${color};font-weight:${isSel ? 'bold' : 'normal'};transition:all 0.2s;" onclick="toggleFilterVoie(${v.id})">${v.nom}</button>`;
+                    const bg = isSel ? `rgba(${rgb}, 0.3)` : `rgba(${rgb}, 0.1)`;
+                    const border = isSel ? hex : `rgba(${rgb}, 0.4)`;
+                    const color = hex;
+                    const shadow = isSel ? `box-shadow: 0 0 8px rgba(${rgb}, 0.4);` : '';
+                    const opacity = isSel ? '1' : '0.85';
+                    const icon = getVoieIcon(v.nom);
+                    return `<button type="button" style="padding:0.3rem 0.6rem;font-size:0.75rem;border-radius:6px;cursor:pointer;background:${bg};border:1px solid ${border};color:${color};font-weight:${isSel ? 'bold' : 'normal'};opacity:${opacity};transition:all 0.2s;display:inline-flex;align-items:center;gap:0.3rem;${shadow}" onclick="toggleFilterVoie(${v.id})"><span class="material-symbols-outlined" style="font-size:1.1em;">${icon}</span>${v.nom}</button>`;
                 }).join('');
             }
-            
+
             // Spiritualités – applique la couleur dédiée à chaque spiritualité
             if (spiritsContainer && metaData.spiritualites) {
                 spiritsContainer.innerHTML = metaData.spiritualites.map(s => {
                     const isSel = selectedFilterSpiritId === s.id;
                     const hex = getSpiritButtonColor(s);
                     const rgb = hexToRgb(hex);
-                    const bg = isSel ? `rgba(${rgb}, 0.25)` : 'rgba(255,255,255,0.05)';
-                    const border = isSel ? hex : 'rgba(255,255,255,0.1)';
-                    const color = isSel ? hex : '#e2e8f0';
-                    return `<button type="button" style="padding:0.3rem 0.6rem;font-size:0.75rem;border-radius:6px;cursor:pointer;background:${bg};border:1px solid ${border};color:${color};font-weight:${isSel ? 'bold' : 'normal'};transition:all 0.2s;" onclick="toggleFilterSpirit(${s.id})">${s.nom}</button>`;
+                    const bg = isSel ? `rgba(${rgb}, 0.3)` : `rgba(${rgb}, 0.1)`;
+                    const border = isSel ? hex : `rgba(${rgb}, 0.4)`;
+                    const color = hex;
+                    const shadow = isSel ? `box-shadow: 0 0 8px rgba(${rgb}, 0.4);` : '';
+                    const opacity = isSel ? '1' : '0.85';
+                    const icon = getSpiritIcon(s.nom);
+                    return `<button type="button" style="padding:0.3rem 0.6rem;font-size:0.75rem;border-radius:6px;cursor:pointer;background:${bg};border:1px solid ${border};color:${color};font-weight:${isSel ? 'bold' : 'normal'};opacity:${opacity};transition:all 0.2s;display:inline-flex;align-items:center;gap:0.3rem;${shadow}" onclick="toggleFilterSpirit(${s.id})"><span class="material-symbols-outlined" style="font-size:1.1em;">${icon}</span>${s.nom}</button>`;
                 }).join('');
             }
         }
@@ -1767,7 +1910,9 @@
             document.getElementById('percentHealCostSource').value = sp.percentHealCostSource || 'CASTER_HEALTH_MAX';
 
             document.getElementById('voieSelect').value = sp.voie ? sp.voie.id : '';
+            document.getElementById('voieSelect').dispatchEvent(new Event('change'));
             document.getElementById('spiritSelect').value = sp.spiritualite ? sp.spiritualite.id : '';
+            document.getElementById('spiritSelect').dispatchEvent(new Event('change'));
 
             // Mettre à jour l'aperçu dynamique du rang
             if (typeof updateRankTitle === 'function') {

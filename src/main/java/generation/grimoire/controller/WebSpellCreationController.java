@@ -103,18 +103,18 @@ public class WebSpellCreationController {
 
         spiritualiteRepository.findByNom("Ténèbres").ifPresent(sp -> {
             if (sp.getRankNames().isEmpty()) {
-                sp.getRankNames().put(1, "Obscurcissement");
-                sp.getRankNames().put(2, "Pénombre");
-                sp.getRankNames().put(3, "Éclipse");
+                sp.getRankNames().put(1, "Ombrage");
+                sp.getRankNames().put(2, "Corruption");
+                sp.getRankNames().put(3, "Nécromancie");
                 spiritualiteRepository.save(sp);
             }
         });
 
         spiritualiteRepository.findByNom("Karma").ifPresent(sp -> {
             if (sp.getRankNames().isEmpty()) {
-                sp.getRankNames().put(1, "Écho");
-                sp.getRankNames().put(2, "Résonance");
-                sp.getRankNames().put(3, "Rétribution");
+                sp.getRankNames().put(1, "Équilibre");
+                sp.getRankNames().put(2, "Justesse");
+                sp.getRankNames().put(3, "Plénitude");
                 spiritualiteRepository.save(sp);
             }
         });
@@ -339,7 +339,8 @@ public class WebSpellCreationController {
         spellService.saveSpell(spell);
         String actionStr = isUpdate ? "mis à jour" : "créé";
         return ResponseEntity
-                .ok("Sort '" + spell.getNom() + "' " + actionStr + " avec succès avec " + spell.getEffects().size() + " effets !");
+                .ok("Sort '" + spell.getNom() + "' " + actionStr + " avec succès avec " + spell.getEffects().size()
+                        + " effets !");
     }
 
     @Data
