@@ -907,6 +907,79 @@
                 transform: translateX(2px);
             }
         }
+
+        .consolidation-wall {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9998;
+            opacity: 0;
+            transform: translateY(20px) scaleY(0.2);
+            transform-origin: bottom;
+            border-radius: 8px 8px 3px 3px;
+            background:
+                linear-gradient(90deg, rgba(255, 255, 255, .08) 1px, transparent 1px),
+                linear-gradient(180deg, rgba(255, 255, 255, .10), transparent 35%),
+                linear-gradient(135deg, #8a6847, #4b3524 55%, #24170f);
+            background-size: 28px 100%, 100% 100%, 100% 100%;
+            border-top: 2px solid #c59b6b;
+            box-shadow:
+                inset 0 2px 8px rgba(255, 255, 255, .12),
+                0 0 18px rgba(180, 120, 60, .35),
+                0 8px 24px rgba(0, 0, 0, .5);
+            transition:
+                transform .55s cubic-bezier(.18, .89, .32, 1.28),
+                opacity .45s ease;
+        }
+
+        .consolidation-wall::before {
+            content: "";
+            position: absolute;
+            inset: 8px 12px;
+            border-radius: 4px;
+            background:
+                linear-gradient(120deg, transparent 48%, rgba(255, 255, 255, .15) 49%, transparent 51%),
+                linear-gradient(30deg, transparent 52%, rgba(0, 0, 0, .22) 53%, transparent 55%);
+            opacity: .6;
+        }
+
+        .consolidation-shard {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: .9;
+            background: linear-gradient(135deg, #c8a276, #6b4a2f, #2b1a10);
+            clip-path: polygon(50% 0%, 100% 35%, 75% 100%, 20% 85%, 0% 25%);
+            box-shadow: 0 0 8px rgba(190, 140, 80, .45);
+            transition:
+                transform .7s ease-out,
+                opacity .7s ease-out;
+        }
+
+        .consolidation-impact {
+            animation: consolidationImpact .45s ease-out;
+        }
+
+        @keyframes consolidationImpact {
+            0% {
+                transform: translateY(0);
+            }
+
+            25% {
+                transform: translateY(-2px);
+            }
+
+            45% {
+                transform: translateY(3px);
+            }
+
+            65% {
+                transform: translateY(-1px);
+            }
+
+            100% {
+                transform: translateY(0);
+            }
+        }
     </style>
 </head>
 
@@ -1788,59 +1861,56 @@
                 }
 
             } else if (nom.includes('consolidation')) {
-                // 🧱 Un gros bloc de terre qui émerge lentement du bas de l'écran en tremblant
-                const block = document.createElement('div');
-                const blockW = rect.width * 0.8;
-                block.style.cssText = `
-                    position:fixed;
-                    left:${rect.left + rect.width * 0.1}px;
-                    bottom:-${blockW * 0.6}px;
-                    width:${blockW}px;
-                    height:${blockW * 0.6}px;
-                    background: linear-gradient(180deg, #6b4226 0%, #4a2c17 40%, #2d1a0e 100%);
-                    border-top: 3px solid #8b5e3c;
-                    border-radius: 4px 4px 0 0;
-                    box-shadow: inset 0 3px 10px rgba(255,255,255,0.08), 0 -4px 20px rgba(0,0,0,0.6);
-                    pointer-events:none;
-                    z-index:9999;
-                    opacity:1;
-                    transition: bottom 2.2s cubic-bezier(0.22, 1, 0.36, 1);
-                `;
-                document.body.appendChild(block);
+                btn.classList.add('consolidation-impact');
+                setTimeout(() => btn.classList.remove('consolidation-impact'), 650);
 
-                // Effet de fissures/texture dessus
-                const cracks = ['🧱', '🪨', '⛰️'];
-                for (let c = 0; c < 3; c++) {
-                    const crack = document.createElement('div');
-                    crack.textContent = cracks[c % cracks.length];
-                    crack.style.cssText = `position:absolute;font-size:18px;top:4px;left:${10 + c * 30}%;opacity:0.5;pointer-events:none;`;
-                    block.appendChild(crack);
-                }
+                const wall = document.createElement('div');
+                const wallW = rect.width * 0.9;
+                const wallH = rect.height * 0.75;
 
-                // Tremblements pendant la montée
-                let shakeCount = 0;
-                const shakeInterval = setInterval(() => {
-                    shakeCount++;
-                    const dx = (Math.random() - 0.5) * 6;
-                    block.style.marginLeft = dx + 'px';
-                    if (shakeCount > 14) clearInterval(shakeInterval);
-                }, 120);
+                wall.className = 'consolidation-wall';
+                wall.style.left = `${rect.left + rect.width * 0.05}px`;
+                wall.style.top = `${rect.bottom + 12}px`;
+                wall.style.width = `${wallW}px`;
+                wall.style.height = `${wallH}px`;
+
+                document.body.appendChild(wall);
 
                 requestAnimationFrame(() => {
-                    requestAnimationFrame(() => {
-                        block.style.bottom = `${window.innerHeight - rect.bottom - 2}px`;
-                    });
+                    wall.style.transform = `translateY(-${wallH + 18}px) scaleY(1)`;
+                    wall.style.opacity = '1';
                 });
 
-                // Disparaît lentement après
-                setTimeout(() => {
-                    clearInterval(shakeInterval);
-                    block.style.transition = 'bottom 1s ease-in, opacity 0.6s ease';
-                    block.style.bottom = `-${blockW * 0.6}px`;
-                    block.style.opacity = '0';
-                    setTimeout(() => block.remove(), 1600);
-                }, 2400);
+                for (let i = 0; i < 16; i++) {
+                    setTimeout(() => {
+                        const shard = document.createElement('div');
+                        shard.className = 'consolidation-shard';
 
+                        const size = 4 + Math.random() * 8;
+                        shard.style.width = `${size}px`;
+                        shard.style.height = `${size}px`;
+                        shard.style.left = `${rect.left + Math.random() * rect.width}px`;
+                        shard.style.top = `${rect.bottom}px`;
+
+                        document.body.appendChild(shard);
+
+                        const dx = (Math.random() - 0.5) * 80;
+                        const dy = -(15 + Math.random() * 45);
+
+                        requestAnimationFrame(() => {
+                            shard.style.transform = `translate(${dx}px, ${dy}px) rotate(${Math.random() * 180}deg)`;
+                            shard.style.opacity = '0';
+                        });
+
+                        setTimeout(() => shard.remove(), 800);
+                    }, i * 25);
+                }
+
+                setTimeout(() => {
+                    wall.style.transform = `translateY(-${wallH + 18}px) scaleY(0.15)`;
+                    wall.style.opacity = '0';
+                    setTimeout(() => wall.remove(), 500);
+                }, 950);
             } else if (nom.includes('raison')) {
                 // 💨 Courant d'air : le bouton se décale comme soufflé, puis revient
                 const origTransform = btn.style.transform;
