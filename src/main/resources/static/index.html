@@ -770,6 +770,143 @@
             overflow-y: auto;
             white-space: pre-wrap;
         }
+
+        .destruction-spark {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 1;
+            border-radius: 50%;
+            background: radial-gradient(circle, #fff7a8 0%, #ff9b21 35%, #ff2d00 70%, transparent 100%);
+            box-shadow:
+                0 0 8px #ffb000,
+                0 0 18px #ff3c00,
+                0 0 28px rgba(255, 40, 0, 0.8);
+            transition:
+                transform 0.85s cubic-bezier(.16, .84, .44, 1),
+                opacity 0.85s ease-out;
+        }
+
+        .destruction-smoke {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9998;
+            opacity: 0.45;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(120, 120, 120, .45), rgba(30, 30, 30, .25), transparent 70%);
+            filter: blur(2px);
+            transition:
+                transform 1.15s ease-out,
+                opacity 1.15s ease-out;
+        }
+
+        .destruction-shake {
+            animation: destructionShake 0.35s ease-in-out;
+        }
+
+        @keyframes destructionShake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            20% {
+                transform: translateX(-3px);
+            }
+
+            40% {
+                transform: translateX(4px);
+            }
+
+            60% {
+                transform: translateX(-2px);
+            }
+
+            80% {
+                transform: translateX(2px);
+            }
+        }
+
+        .creation-leaf {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.95;
+            border-radius: 100% 0 100% 0;
+            background: linear-gradient(135deg, #d9ffb3, #61d66e 45%, #1f8f4a);
+            box-shadow:
+                0 0 8px rgba(120, 255, 130, 0.8),
+                0 0 18px rgba(50, 220, 90, 0.45);
+            transform: translateY(8px) scale(0.2);
+            transition:
+                transform 0.95s cubic-bezier(.18, .89, .32, 1.28),
+                opacity 0.95s ease-out;
+        }
+
+        .creation-spark {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 0.85;
+            border-radius: 50%;
+            background: radial-gradient(circle, #ffffff 0%, #b8ff9c 35%, #55d66b 70%, transparent 100%);
+            box-shadow:
+                0 0 8px rgba(150, 255, 130, 0.9),
+                0 0 18px rgba(80, 255, 120, 0.55);
+            transform: translateY(6px) scale(0.3);
+            transition:
+                transform 0.9s ease-out,
+                opacity 0.9s ease-out;
+        }
+
+        .creation-pulse {
+            animation: creationPulse 0.7s ease-out;
+        }
+
+        @keyframes creationPulse {
+            0% {
+                box-shadow: 0 0 0 rgba(120, 255, 150, 0);
+            }
+
+            45% {
+                box-shadow:
+                    0 0 12px rgba(120, 255, 150, 0.9),
+                    0 0 26px rgba(60, 220, 100, 0.55);
+            }
+
+            100% {
+                box-shadow: 0 0 0 rgba(120, 255, 150, 0);
+            }
+        }
+
+        .destruction-shake {
+            animation: destructionShake 0.35s ease-in-out;
+        }
+
+        @keyframes destructionShake {
+
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+
+            20% {
+                transform: translateX(-3px);
+            }
+
+            40% {
+                transform: translateX(4px);
+            }
+
+            60% {
+                transform: translateX(-2px);
+            }
+
+            80% {
+                transform: translateX(2px);
+            }
+        }
     </style>
 </head>
 
@@ -1498,51 +1635,75 @@
             const nom = (voieName + ' ' + spiritName).toLowerCase();
 
             if (nom.includes('création') || nom.includes('creation')) {
-                // 🌱 Quelques plantes qui poussent depuis le bas du bouton
-                const plants = ['🌱', '🌿', '🍀', '🌾'];
-                for (let i = 0; i < 8; i++) {
-                    setTimeout(() => {
-                        const p = document.createElement('div');
-                        p.textContent = plants[Math.floor(Math.random() * plants.length)];
-                        const sx = rect.left + 10 + Math.random() * (rect.width - 20);
-                        p.style.cssText = `position:fixed;left:${sx}px;top:${rect.bottom - 5}px;font-size:${14 + Math.random() * 10}px;pointer-events:none;z-index:9999;transition:none;opacity:0;transform:scaleY(0) translateY(0);transform-origin:bottom center;`;
-                        document.body.appendChild(p);
-                        requestAnimationFrame(() => {
-                            requestAnimationFrame(() => {
-                                p.style.transition = `all ${0.6 + Math.random() * 0.4}s cubic-bezier(0.34,1.56,0.64,1)`;
-                                p.style.transform = `scaleY(1) translateY(-${25 + Math.random() * 30}px)`;
-                                p.style.opacity = '1';
-                                setTimeout(() => {
-                                    p.style.transition = 'opacity 0.4s ease';
-                                    p.style.opacity = '0';
-                                    setTimeout(() => p.remove(), 400);
-                                }, 700);
-                            });
-                        });
-                    }, i * 80);
-                }
+                btn.classList.add('creation-pulse');
+                setTimeout(() => btn.classList.remove('creation-pulse'), 700);
 
-            } else if (nom.includes('destruction')) {
-                // 🔥💨 Flammes et fumée qui s'élèvent depuis le bas et les côtés
-                for (let i = 0; i < 22; i++) {
+                for (let i = 0; i < 18; i++) {
                     setTimeout(() => {
                         const p = document.createElement('div');
-                        const isFire = Math.random() > 0.35;
-                        p.textContent = isFire
-                            ? ['🔥', '🔥', '🔥', '🔥'][Math.floor(Math.random() * 4)]
-                            : ['💨', '🌫️'][Math.floor(Math.random() * 2)];
-                        const sx = rect.left + Math.random() * rect.width;
-                        const sy = rect.top + Math.random() * rect.height;
-                        p.style.cssText = `position:fixed;left:${sx}px;top:${sy}px;font-size:${isFire ? 16 + Math.random() * 14 : 18 + Math.random() * 12}px;pointer-events:none;z-index:9999;opacity:1;transition:all ${0.6 + Math.random() * 0.5}s ease-out;`;
+
+                        const isLeaf = Math.random() > 0.35;
+                        p.className = isLeaf ? 'creation-leaf' : 'creation-spark';
+
+                        const sx = rect.left + 8 + Math.random() * (rect.width - 16);
+                        const sy = rect.bottom - 6 - Math.random() * rect.height * 0.45;
+
+                        const size = isLeaf ? 7 + Math.random() * 9 : 3 + Math.random() * 5;
+
+                        p.style.left = `${sx}px`;
+                        p.style.top = `${sy}px`;
+                        p.style.width = `${size}px`;
+                        p.style.height = `${size}px`;
+
                         document.body.appendChild(p);
-                        const dx = (Math.random() - 0.5) * 50;
-                        const dy = -(40 + Math.random() * 70);
+
+                        const dx = (Math.random() - 0.5) * 45;
+                        const dy = -(25 + Math.random() * 55);
+                        const rot = (Math.random() - 0.5) * 120;
+                        const scale = isLeaf ? 1.2 + Math.random() * 0.8 : 0.2;
+
                         requestAnimationFrame(() => {
-                            p.style.transform = `translate(${dx}px, ${dy}px) scale(${isFire ? 0.2 : 1.8})`;
+                            p.style.transform = `translate(${dx}px, ${dy}px) rotate(${rot}deg) scale(${scale})`;
                             p.style.opacity = '0';
                         });
+
                         setTimeout(() => p.remove(), 1100);
-                    }, i * 35);
+                    }, i * 45);
+                }
+            } else if (nom.includes('destruction')) {
+                btn.classList.add('destruction-shake');
+                setTimeout(() => btn.classList.remove('destruction-shake'), 350);
+
+                for (let i = 0; i < 34; i++) {
+                    setTimeout(() => {
+                        const p = document.createElement('div');
+
+                        const sx = rect.left + Math.random() * rect.width;
+                        const sy = rect.top + rect.height * (0.35 + Math.random() * 0.65);
+
+                        const size = 5 + Math.random() * 12;
+                        const isSmoke = Math.random() < 0.3;
+
+                        p.className = isSmoke ? 'destruction-smoke' : 'destruction-spark';
+
+                        p.style.left = `${sx}px`;
+                        p.style.top = `${sy}px`;
+                        p.style.width = `${size}px`;
+                        p.style.height = `${size}px`;
+
+                        document.body.appendChild(p);
+
+                        const dx = (Math.random() - 0.5) * 90;
+                        const dy = -(50 + Math.random() * 100);
+                        const scale = isSmoke ? 2.8 + Math.random() * 1.5 : 0.2;
+
+                        requestAnimationFrame(() => {
+                            p.style.transform = `translate(${dx}px, ${dy}px) scale(${scale}) rotate(${Math.random() * 360}deg)`;
+                            p.style.opacity = '0';
+                        });
+
+                        setTimeout(() => p.remove(), 1200);
+                    }, i * 22);
                 }
 
             } else if (nom.includes('sûreté') || nom.includes('surete')) {
@@ -1627,41 +1788,105 @@
                 }
 
             } else if (nom.includes('consolidation')) {
-                // 🧱 Blocs qui s'empilent
-                for (let i = 0; i < 10; i++) {
-                    setTimeout(() => {
-                        const p = document.createElement('div');
-                        p.textContent = ['🧱', '🪨', '⬛'][Math.floor(Math.random() * 3)];
-                        p.style.cssText = `position:fixed;left:${rect.left + Math.random() * rect.width}px;top:${rect.bottom}px;font-size:${12 + Math.random() * 8}px;pointer-events:none;z-index:9999;transition:all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);opacity:1;`;
-                        document.body.appendChild(p);
-                        requestAnimationFrame(() => {
-                            p.style.transform = `translateY(-${40 + i * 8}px)`;
-                            p.style.opacity = '0';
-                        });
-                        setTimeout(() => p.remove(), 800);
-                    }, i * 60);
+                // 🧱 Un gros bloc de terre qui émerge lentement du bas de l'écran en tremblant
+                const block = document.createElement('div');
+                const blockW = rect.width * 0.8;
+                block.style.cssText = `
+                    position:fixed;
+                    left:${rect.left + rect.width * 0.1}px;
+                    bottom:-${blockW * 0.6}px;
+                    width:${blockW}px;
+                    height:${blockW * 0.6}px;
+                    background: linear-gradient(180deg, #6b4226 0%, #4a2c17 40%, #2d1a0e 100%);
+                    border-top: 3px solid #8b5e3c;
+                    border-radius: 4px 4px 0 0;
+                    box-shadow: inset 0 3px 10px rgba(255,255,255,0.08), 0 -4px 20px rgba(0,0,0,0.6);
+                    pointer-events:none;
+                    z-index:9999;
+                    opacity:1;
+                    transition: bottom 2.2s cubic-bezier(0.22, 1, 0.36, 1);
+                `;
+                document.body.appendChild(block);
+
+                // Effet de fissures/texture dessus
+                const cracks = ['🧱', '🪨', '⛰️'];
+                for (let c = 0; c < 3; c++) {
+                    const crack = document.createElement('div');
+                    crack.textContent = cracks[c % cracks.length];
+                    crack.style.cssText = `position:absolute;font-size:18px;top:4px;left:${10 + c * 30}%;opacity:0.5;pointer-events:none;`;
+                    block.appendChild(crack);
                 }
 
+                // Tremblements pendant la montée
+                let shakeCount = 0;
+                const shakeInterval = setInterval(() => {
+                    shakeCount++;
+                    const dx = (Math.random() - 0.5) * 6;
+                    block.style.marginLeft = dx + 'px';
+                    if (shakeCount > 14) clearInterval(shakeInterval);
+                }, 120);
+
+                requestAnimationFrame(() => {
+                    requestAnimationFrame(() => {
+                        block.style.bottom = `${window.innerHeight - rect.bottom - 2}px`;
+                    });
+                });
+
+                // Disparaît lentement après
+                setTimeout(() => {
+                    clearInterval(shakeInterval);
+                    block.style.transition = 'bottom 1s ease-in, opacity 0.6s ease';
+                    block.style.bottom = `-${blockW * 0.6}px`;
+                    block.style.opacity = '0';
+                    setTimeout(() => block.remove(), 1600);
+                }, 2400);
+
             } else if (nom.includes('raison')) {
-                // ⚙️ Engrenages qui tourbillonnent
-                for (let i = 0; i < 14; i++) {
+                // 💨 Courant d'air : le bouton se décale comme soufflé, puis revient
+                const origTransform = btn.style.transform;
+                const origTransition = btn.style.transition;
+
+                // Souffle aérien : traits de vent horizontaux
+                for (let i = 0; i < 8; i++) {
                     setTimeout(() => {
-                        const p = document.createElement('div');
-                        p.textContent = ['⚙️', '🔮', '📐', '💡'][Math.floor(Math.random() * 4)];
-                        p.style.cssText = `position:fixed;left:${cx + (Math.random() - 0.5) * rect.width * 0.8}px;top:${cy + (Math.random() - 0.5) * rect.height * 0.8}px;font-size:${10 + Math.random() * 10}px;pointer-events:none;z-index:9999;transition:all 0.8s ease-out;opacity:1;`;
-                        document.body.appendChild(p);
-                        const spin = (Math.random() - 0.5) * 360;
+                        const wind = document.createElement('div');
+                        const w = 30 + Math.random() * 60;
+                        wind.style.cssText = `
+                            position:fixed;
+                            left:${rect.left - w - 10}px;
+                            top:${rect.top + 4 + i * (rect.height / 8)}px;
+                            width:${w}px;
+                            height:${1 + Math.random()}px;
+                            background: linear-gradient(90deg, transparent, rgba(180,230,255,0.7), transparent);
+                            border-radius:2px;
+                            pointer-events:none;
+                            z-index:9999;
+                            opacity:0.8;
+                            transition: transform ${0.25 + Math.random() * 0.2}s ease-out, opacity 0.3s ease 0.15s;
+                        `;
+                        document.body.appendChild(wind);
                         requestAnimationFrame(() => {
-                            p.style.transform = `translate(${(Math.random() - 0.5) * 70}px, ${(Math.random() - 0.5) * 70}px) rotate(${spin}deg) scale(0)`;
-                            p.style.opacity = '0';
+                            wind.style.transform = `translateX(${rect.width + w + 30}px)`;
+                            wind.style.opacity = '0';
                         });
-                        setTimeout(() => p.remove(), 800);
-                    }, i * 45);
+                        setTimeout(() => wind.remove(), 500);
+                    }, i * 30);
                 }
+
+                // Le bouton se décale vers la droite comme soufflé, puis revient avec rebond
+                btn.style.transition = 'transform 0.15s ease-in';
+                btn.style.transform = 'translateX(12px) rotate(1.5deg)';
+                setTimeout(() => {
+                    btn.style.transition = 'transform 0.6s cubic-bezier(0.34,1.56,0.64,1)';
+                    btn.style.transform = origTransform || '';
+                    setTimeout(() => {
+                        btn.style.transition = origTransition || '';
+                    }, 600);
+                }, 150);
 
             } else if (nom.includes('conviction')) {
                 // 🌋 Coulées de lave lentes qui débordent depuis le haut du bouton
-                const lavaColors = ['#ff4500','#ff6a00','#e8380d','#ff8c00','#c0392b'];
+                const lavaColors = ['#ff4500', '#ff6a00', '#e8380d', '#ff8c00', '#c0392b'];
                 const nbStreams = 5 + Math.floor(Math.random() * 4); // 5-8 coulées
                 for (let i = 0; i < nbStreams; i++) {
                     setTimeout(() => {
@@ -1679,8 +1904,8 @@
                             width:${w}px;
                             height:0px;
                             background: linear-gradient(180deg, #fff5 0%, ${color} 30%, #8b0000 100%);
-                            border-radius: 0 0 ${w/2}px ${w/2}px;
-                            box-shadow: 0 0 ${w+4}px ${color}, 0 0 2px #fff;
+                            border-radius: 0 0 ${w / 2}px ${w / 2}px;
+                            box-shadow: 0 0 ${w + 4}px ${color}, 0 0 2px #fff;
                             pointer-events:none;
                             z-index:9999;
                             opacity:0.95;
@@ -1697,7 +1922,7 @@
                                     const drop = document.createElement('div');
                                     drop.style.cssText = `
                                         position:fixed;
-                                        left:${sx + w/2 - 4}px;
+                                        left:${sx + w / 2 - 4}px;
                                         top:${rect.top + finalLength}px;
                                         width:${w + 2}px;
                                         height:${w + 2}px;
