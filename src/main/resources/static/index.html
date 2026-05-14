@@ -403,7 +403,8 @@
             max-height: 700px;
             overflow-y: auto;
             padding: 1rem;
-            margin: -1rem; /* compense le padding visuellement pour l'alignement */
+            margin: -1rem;
+            /* compense le padding visuellement pour l'alignement */
         }
 
         .spells-list::-webkit-scrollbar {
@@ -428,13 +429,13 @@
             gap: 0.8rem;
             position: relative;
             z-index: 1;
-            
+
             --card-glow-alpha: 0;
             --card-border-alpha: 0.08;
             --card-bg-alpha: 0.02;
-            
+
             border: 1px solid rgba(var(--spell-rgb), var(--card-border-alpha));
-            background: linear-gradient(135deg, rgba(var(--spell-rgb), var(--card-bg-alpha)) 0%, rgba(255,255,255,0.01) 100%);
+            background: linear-gradient(135deg, rgba(var(--spell-rgb), var(--card-bg-alpha)) 0%, rgba(255, 255, 255, 0.01) 100%);
             box-shadow: 0 4px 20px rgba(var(--spell-rgb), var(--card-glow-alpha));
         }
 
@@ -447,13 +448,14 @@
         }
 
         /* Lvl 1 (default) */
-        .spell-card-lvl-1 { }
+        .spell-card-lvl-1 {}
 
         /* Lvl 2: Subtile (More border presence) */
         .spell-card-lvl-2 {
             --card-border-alpha: 0.2;
             --card-bg-alpha: 0.04;
         }
+
         .spell-card-lvl-2:hover {
             --card-glow-alpha: 0.15;
             --card-border-alpha: 0.4;
@@ -466,6 +468,7 @@
             --card-bg-alpha: 0.08;
             box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05), 0 4px 20px rgba(var(--spell-rgb), var(--card-glow-alpha));
         }
+
         .spell-card-lvl-3:hover {
             --card-glow-alpha: 0.25;
             --card-border-alpha: 0.55;
@@ -478,6 +481,7 @@
             --card-bg-alpha: 0.12;
             box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.1), 0 6px 25px rgba(var(--spell-rgb), var(--card-glow-alpha));
         }
+
         .spell-card-lvl-4:hover {
             --card-glow-alpha: 0.4;
             --card-border-alpha: 0.75;
@@ -491,7 +495,7 @@
             box-shadow: inset 0 2px 0 rgba(255, 255, 255, 0.3), 0 8px 30px rgba(var(--spell-rgb), var(--card-glow-alpha));
             position: relative;
         }
-        
+
         .spell-card-lvl-5::after {
             content: '';
             position: absolute;
@@ -509,7 +513,7 @@
             --card-glow-alpha: 0.6;
             --card-border-alpha: 1;
             transform: translateY(-6px) scale(1.02);
-            background: linear-gradient(135deg, rgba(var(--spell-rgb), 0.25) 0%, rgba(255,255,255,0.05) 100%);
+            background: linear-gradient(135deg, rgba(var(--spell-rgb), 0.25) 0%, rgba(255, 255, 255, 0.05) 100%);
         }
 
         .spell-card-header {
@@ -772,14 +776,14 @@
 <body>
 
     <header>
-        <div class="logo">Grimoire Studio</div>
+        <div class="logo">Grimoire</div>
         <div style="font-size: 0.9rem; color: var(--text-muted);">Moteur d'Édition Dynamique</div>
     </header>
 
     <main>
         <!-- Colonne Gauche : Paramètres de Base du Sort -->
         <div class="panel">
-            <div class="panel-title">Création de Sort</div>
+            <div class="panel-title">Forge des Âmes</div>
 
             <div class="form-group">
                 <label for="nom">Nom du sort</label>
@@ -912,7 +916,7 @@
         <!-- Colonne Droite : Liste des Sorts Existants -->
         <div class="panel">
             <div class="panel-title">
-                <span>Grimoire des Sorts Forgés</span>
+                <span>Grimoire des Sorts</span>
                 <button type="button" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;"
                     onclick="loadSpells()">Actualiser</button>
             </div>
@@ -1495,18 +1499,18 @@
 
             if (nom.includes('création') || nom.includes('creation')) {
                 // 🌱 Quelques plantes qui poussent depuis le bas du bouton
-                const plants = ['🌱','🌿','🍀','🌾'];
+                const plants = ['🌱', '🌿', '🍀', '🌾'];
                 for (let i = 0; i < 8; i++) {
                     setTimeout(() => {
                         const p = document.createElement('div');
-                        p.textContent = plants[Math.floor(Math.random()*plants.length)];
+                        p.textContent = plants[Math.floor(Math.random() * plants.length)];
                         const sx = rect.left + 10 + Math.random() * (rect.width - 20);
-                        p.style.cssText = `position:fixed;left:${sx}px;top:${rect.bottom - 5}px;font-size:${14+Math.random()*10}px;pointer-events:none;z-index:9999;transition:none;opacity:0;transform:scaleY(0) translateY(0);transform-origin:bottom center;`;
+                        p.style.cssText = `position:fixed;left:${sx}px;top:${rect.bottom - 5}px;font-size:${14 + Math.random() * 10}px;pointer-events:none;z-index:9999;transition:none;opacity:0;transform:scaleY(0) translateY(0);transform-origin:bottom center;`;
                         document.body.appendChild(p);
                         requestAnimationFrame(() => {
                             requestAnimationFrame(() => {
-                                p.style.transition = `all ${0.6+Math.random()*0.4}s cubic-bezier(0.34,1.56,0.64,1)`;
-                                p.style.transform = `scaleY(1) translateY(-${25+Math.random()*30}px)`;
+                                p.style.transition = `all ${0.6 + Math.random() * 0.4}s cubic-bezier(0.34,1.56,0.64,1)`;
+                                p.style.transform = `scaleY(1) translateY(-${25 + Math.random() * 30}px)`;
                                 p.style.opacity = '1';
                                 setTimeout(() => {
                                     p.style.transition = 'opacity 0.4s ease';
@@ -1525,14 +1529,14 @@
                         const p = document.createElement('div');
                         const isFire = Math.random() > 0.35;
                         p.textContent = isFire
-                            ? ['🔥','🔥','🔥','🔥'][Math.floor(Math.random()*4)]
-                            : ['💨','🌫️'][Math.floor(Math.random()*2)];
+                            ? ['🔥', '🔥', '🔥', '🔥'][Math.floor(Math.random() * 4)]
+                            : ['💨', '🌫️'][Math.floor(Math.random() * 2)];
                         const sx = rect.left + Math.random() * rect.width;
                         const sy = rect.top + Math.random() * rect.height;
-                        p.style.cssText = `position:fixed;left:${sx}px;top:${sy}px;font-size:${isFire ? 16+Math.random()*14 : 18+Math.random()*12}px;pointer-events:none;z-index:9999;opacity:1;transition:all ${0.6+Math.random()*0.5}s ease-out;`;
+                        p.style.cssText = `position:fixed;left:${sx}px;top:${sy}px;font-size:${isFire ? 16 + Math.random() * 14 : 18 + Math.random() * 12}px;pointer-events:none;z-index:9999;opacity:1;transition:all ${0.6 + Math.random() * 0.5}s ease-out;`;
                         document.body.appendChild(p);
-                        const dx = (Math.random()-0.5)*50;
-                        const dy = -(40+Math.random()*70);
+                        const dx = (Math.random() - 0.5) * 50;
+                        const dy = -(40 + Math.random() * 70);
                         requestAnimationFrame(() => {
                             p.style.transform = `translate(${dx}px, ${dy}px) scale(${isFire ? 0.2 : 1.8})`;
                             p.style.opacity = '0';
@@ -1548,10 +1552,10 @@
                         const p = document.createElement('div');
                         p.textContent = '💧';
                         const startX = rect.left + Math.random() * rect.width;
-                        p.style.cssText = `position:fixed;left:${startX}px;top:${rect.top - 60}px;font-size:${10+Math.random()*8}px;pointer-events:none;z-index:9999;transition:all 0.6s cubic-bezier(0.4,0,1,1);opacity:1;`;
+                        p.style.cssText = `position:fixed;left:${startX}px;top:${rect.top - 60}px;font-size:${10 + Math.random() * 8}px;pointer-events:none;z-index:9999;transition:all 0.6s cubic-bezier(0.4,0,1,1);opacity:1;`;
                         document.body.appendChild(p);
                         requestAnimationFrame(() => {
-                            p.style.transform = `translateY(${60 + Math.random()*20}px)`;
+                            p.style.transform = `translateY(${60 + Math.random() * 20}px)`;
                             p.style.opacity = '0';
                         });
                         setTimeout(() => p.remove(), 600);
@@ -1610,13 +1614,13 @@
                 // 🩸 Éclaboussures depuis le centre
                 for (let i = 0; i < 20; i++) {
                     const p = document.createElement('div');
-                    p.textContent = ['💢','🩸','⚔️'][Math.floor(Math.random()*3)];
-                    p.style.cssText = `position:fixed;left:${cx}px;top:${cy}px;font-size:${10+Math.random()*10}px;pointer-events:none;z-index:9999;transition:all 0.7s cubic-bezier(0.1,0.8,0.2,1);opacity:1;`;
+                    p.textContent = ['💢', '🩸', '⚔️'][Math.floor(Math.random() * 3)];
+                    p.style.cssText = `position:fixed;left:${cx}px;top:${cy}px;font-size:${10 + Math.random() * 10}px;pointer-events:none;z-index:9999;transition:all 0.7s cubic-bezier(0.1,0.8,0.2,1);opacity:1;`;
                     document.body.appendChild(p);
                     const angle = (i / 20) * Math.PI * 2;
                     const dist = 50 + Math.random() * 60;
                     requestAnimationFrame(() => {
-                        p.style.transform = `translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist}px) scale(0.5)`;
+                        p.style.transform = `translate(${Math.cos(angle) * dist}px, ${Math.sin(angle) * dist}px) scale(0.5)`;
                         p.style.opacity = '0';
                     });
                     setTimeout(() => p.remove(), 700);
@@ -1627,11 +1631,11 @@
                 for (let i = 0; i < 10; i++) {
                     setTimeout(() => {
                         const p = document.createElement('div');
-                        p.textContent = ['🧱','🪨','⬛'][Math.floor(Math.random()*3)];
-                        p.style.cssText = `position:fixed;left:${rect.left + Math.random()*rect.width}px;top:${rect.bottom}px;font-size:${12+Math.random()*8}px;pointer-events:none;z-index:9999;transition:all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);opacity:1;`;
+                        p.textContent = ['🧱', '🪨', '⬛'][Math.floor(Math.random() * 3)];
+                        p.style.cssText = `position:fixed;left:${rect.left + Math.random() * rect.width}px;top:${rect.bottom}px;font-size:${12 + Math.random() * 8}px;pointer-events:none;z-index:9999;transition:all 0.8s cubic-bezier(0.34, 1.56, 0.64, 1);opacity:1;`;
                         document.body.appendChild(p);
                         requestAnimationFrame(() => {
-                            p.style.transform = `translateY(-${40+i*8}px)`;
+                            p.style.transform = `translateY(-${40 + i * 8}px)`;
                             p.style.opacity = '0';
                         });
                         setTimeout(() => p.remove(), 800);
@@ -1643,12 +1647,12 @@
                 for (let i = 0; i < 14; i++) {
                     setTimeout(() => {
                         const p = document.createElement('div');
-                        p.textContent = ['⚙️','🔮','📐','💡'][Math.floor(Math.random()*4)];
-                        p.style.cssText = `position:fixed;left:${cx + (Math.random()-0.5)*rect.width*0.8}px;top:${cy + (Math.random()-0.5)*rect.height*0.8}px;font-size:${10+Math.random()*10}px;pointer-events:none;z-index:9999;transition:all 0.8s ease-out;opacity:1;`;
+                        p.textContent = ['⚙️', '🔮', '📐', '💡'][Math.floor(Math.random() * 4)];
+                        p.style.cssText = `position:fixed;left:${cx + (Math.random() - 0.5) * rect.width * 0.8}px;top:${cy + (Math.random() - 0.5) * rect.height * 0.8}px;font-size:${10 + Math.random() * 10}px;pointer-events:none;z-index:9999;transition:all 0.8s ease-out;opacity:1;`;
                         document.body.appendChild(p);
-                        const spin = (Math.random()-0.5)*360;
+                        const spin = (Math.random() - 0.5) * 360;
                         requestAnimationFrame(() => {
-                            p.style.transform = `translate(${(Math.random()-0.5)*70}px, ${(Math.random()-0.5)*70}px) rotate(${spin}deg) scale(0)`;
+                            p.style.transform = `translate(${(Math.random() - 0.5) * 70}px, ${(Math.random() - 0.5) * 70}px) rotate(${spin}deg) scale(0)`;
                             p.style.opacity = '0';
                         });
                         setTimeout(() => p.remove(), 800);
@@ -1656,29 +1660,70 @@
                 }
 
             } else if (nom.includes('conviction')) {
-                // 🌋 Lave : grosses gouttes orange/rouge qui jaillissent depuis le bas
-                for (let i = 0; i < 18; i++) {
+                // 🌋 Coulées de lave lentes qui débordent depuis le haut du bouton
+                const lavaColors = ['#ff4500','#ff6a00','#e8380d','#ff8c00','#c0392b'];
+                const nbStreams = 5 + Math.floor(Math.random() * 4); // 5-8 coulées
+                for (let i = 0; i < nbStreams; i++) {
                     setTimeout(() => {
-                        const p = document.createElement('div');
-                        p.textContent = ['🔴','🟠','🌋','💧'][Math.floor(Math.random()*4)];
-                        const sx = rect.left + 10 + Math.random() * (rect.width - 20);
-                        p.style.cssText = `position:fixed;left:${sx}px;top:${rect.bottom}px;font-size:${14+Math.random()*12}px;pointer-events:none;z-index:9999;transition:none;opacity:1;`;
-                        // Teinte orangée via filtre CSS
-                        p.style.filter = 'hue-rotate(-20deg) saturate(2) brightness(1.2)';
-                        document.body.appendChild(p);
-                        const dx = (Math.random()-0.5)*60;
-                        const dyUp = -(50+Math.random()*70);
+                        const stream = document.createElement('div');
+                        const color = lavaColors[Math.floor(Math.random() * lavaColors.length)];
+                        const w = 4 + Math.random() * 8; // largeur 4-12px
+                        const sx = rect.left + 8 + Math.random() * (rect.width - 16);
+                        const duration = 1.2 + Math.random() * 1.2; // 1.2 à 2.4s (lente)
+                        const finalLength = 20 + Math.random() * 45; // hauteur finale de la coulée
+
+                        stream.style.cssText = `
+                            position:fixed;
+                            left:${sx}px;
+                            top:${rect.top}px;
+                            width:${w}px;
+                            height:0px;
+                            background: linear-gradient(180deg, #fff5 0%, ${color} 30%, #8b0000 100%);
+                            border-radius: 0 0 ${w/2}px ${w/2}px;
+                            box-shadow: 0 0 ${w+4}px ${color}, 0 0 2px #fff;
+                            pointer-events:none;
+                            z-index:9999;
+                            opacity:0.95;
+                            transition: height ${duration}s cubic-bezier(0.4,0,0.6,1), opacity 0.4s ease ${duration - 0.2}s;
+                        `;
+                        document.body.appendChild(stream);
+
+                        // La coulée descend (height grandit)
                         requestAnimationFrame(() => {
                             requestAnimationFrame(() => {
-                                p.style.transition = `transform ${0.5+Math.random()*0.3}s cubic-bezier(0.25,0.8,0.5,1), opacity ${0.3}s ease ${0.3+Math.random()*0.3}s`;
-                                p.style.transform = `translate(${dx}px, ${dyUp}px) scale(0.3)`;
-                                p.style.opacity = '0';
+                                stream.style.height = finalLength + 'px';
+                                // Goutte qui tombe au bout
+                                setTimeout(() => {
+                                    const drop = document.createElement('div');
+                                    drop.style.cssText = `
+                                        position:fixed;
+                                        left:${sx + w/2 - 4}px;
+                                        top:${rect.top + finalLength}px;
+                                        width:${w + 2}px;
+                                        height:${w + 2}px;
+                                        background:${color};
+                                        border-radius:50% 50% 50% 50% / 40% 40% 60% 60%;
+                                        box-shadow:0 0 8px ${color};
+                                        pointer-events:none;
+                                        z-index:9999;
+                                        opacity:1;
+                                        transition: transform ${0.6 + Math.random() * 0.4}s cubic-bezier(0.4,0,1,1), opacity 0.3s ease 0.5s;
+                                    `;
+                                    document.body.appendChild(drop);
+                                    requestAnimationFrame(() => {
+                                        drop.style.transform = `translateY(${20 + Math.random() * 30}px) scaleY(1.5)`;
+                                        drop.style.opacity = '0';
+                                    });
+                                    setTimeout(() => drop.remove(), 900);
+                                }, duration * 900);
+
+                                // Fondu de la coulée
+                                stream.style.opacity = '0';
+                                setTimeout(() => stream.remove(), (duration + 0.4) * 1000);
                             });
                         });
-                        setTimeout(() => p.remove(), 1000);
-                    }, i * 40);
+                    }, i * 180);
                 }
-
             } else if (nom.includes('esprit')) {
                 // ✨ Flash de luminosité sur le bouton + petites lueurs qui partent
                 btn.style.transition = 'box-shadow 0.1s ease, background 0.1s ease';
@@ -1695,12 +1740,12 @@
                     setTimeout(() => {
                         const p = document.createElement('div');
                         p.textContent = '✦';
-                        p.style.cssText = `position:fixed;left:${cx}px;top:${cy}px;font-size:${6+Math.random()*10}px;color:#38bdf8;text-shadow:0 0 8px #38bdf8;pointer-events:none;z-index:9999;transition:all ${0.5+Math.random()*0.5}s ease-out;opacity:1;`;
+                        p.style.cssText = `position:fixed;left:${cx}px;top:${cy}px;font-size:${6 + Math.random() * 10}px;color:#38bdf8;text-shadow:0 0 8px #38bdf8;pointer-events:none;z-index:9999;transition:all ${0.5 + Math.random() * 0.5}s ease-out;opacity:1;`;
                         document.body.appendChild(p);
                         const angle = Math.random() * Math.PI * 2;
                         const dist = 40 + Math.random() * 80;
                         requestAnimationFrame(() => {
-                            p.style.transform = `translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist}px) scale(0)`;
+                            p.style.transform = `translate(${Math.cos(angle) * dist}px, ${Math.sin(angle) * dist}px) scale(0)`;
                             p.style.opacity = '0';
                         });
                         setTimeout(() => p.remove(), 1000);
@@ -1712,13 +1757,13 @@
                 for (let i = 0; i < 10; i++) {
                     setTimeout(() => {
                         const p = document.createElement('div');
-                        p.textContent = ['💀','💀','☠️','🌑'][Math.floor(Math.random()*4)];
-                        p.style.cssText = `position:fixed;left:${cx + (Math.random()-0.5)*rect.width}px;top:${cy + (Math.random()-0.5)*rect.height}px;font-size:${14+Math.random()*14}px;pointer-events:none;z-index:9999;opacity:1;transition:all 1.8s ease-out;`;
+                        p.textContent = ['💀', '💀', '☠️', '🌑'][Math.floor(Math.random() * 4)];
+                        p.style.cssText = `position:fixed;left:${cx + (Math.random() - 0.5) * rect.width}px;top:${cy + (Math.random() - 0.5) * rect.height}px;font-size:${14 + Math.random() * 14}px;pointer-events:none;z-index:9999;opacity:1;transition:all 1.8s ease-out;`;
                         document.body.appendChild(p);
                         const angle = Math.random() * Math.PI * 2;
                         const dist = 40 + Math.random() * 70;
                         requestAnimationFrame(() => {
-                            p.style.transform = `translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist - 30}px) scale(0.2) rotate(${(Math.random()-0.5)*30}deg)`;
+                            p.style.transform = `translate(${Math.cos(angle) * dist}px, ${Math.sin(angle) * dist - 30}px) scale(0.2) rotate(${(Math.random() - 0.5) * 30}deg)`;
                             p.style.opacity = '0';
                         });
                         setTimeout(() => p.remove(), 1800);
@@ -2174,7 +2219,7 @@
                         }
                         optionDiv.querySelector('.material-symbols-outlined').style.transform = 'scale(1.2)';
                     });
-                    
+
                     optionDiv.addEventListener('mouseout', () => {
                         optionDiv.style.background = 'transparent';
                         optionDiv.style.paddingLeft = '0.8rem';
@@ -2184,10 +2229,10 @@
 
                     optionDiv.addEventListener('click', (e) => {
                         e.stopPropagation();
-                        
+
                         const rect = wrapper.getBoundingClientRect();
                         createSparkles(rect.left + rect.width / 2, rect.top + rect.height / 2, optColor);
-                        
+
                         select.selectedIndex = index;
                         select.dispatchEvent(new Event('change'));
                         optionsContainer.style.display = 'none';
