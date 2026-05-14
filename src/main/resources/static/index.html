@@ -1178,6 +1178,77 @@
                 filter: none;
             }
         }
+
+        .violence-blast {
+            position: fixed;
+            width: 16px;
+            height: 16px;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: .95;
+            border-radius: 50%;
+            background: radial-gradient(circle, #fff 0%, #ffd27a 25%, #ff3b00 55%, transparent 75%);
+            box-shadow:
+                0 0 18px rgba(255, 210, 90, .9),
+                0 0 42px rgba(255, 45, 0, .8);
+            transition:
+                transform .5s ease-out,
+                opacity .55s ease-out;
+        }
+
+        .violence-ember {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9999;
+            opacity: 1;
+            border-radius: 50%;
+            background: radial-gradient(circle, #fff2a0, #ff6a00 45%, #b31300 80%, transparent);
+            box-shadow:
+                0 0 10px rgba(255, 120, 0, .9),
+                0 0 22px rgba(255, 30, 0, .55);
+            transition:
+                transform .75s cubic-bezier(.12, .74, .33, 1),
+                opacity .75s ease-out;
+        }
+
+        .violence-smoke {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9998;
+            opacity: .45;
+            border-radius: 50%;
+            background: radial-gradient(circle, rgba(70, 70, 70, .45), rgba(10, 10, 10, .35), transparent 70%);
+            filter: blur(3px);
+            transition:
+                transform .9s ease-out,
+                opacity .9s ease-out;
+        }
+
+        .violence-shock {
+            animation: violenceShock .42s ease-out;
+        }
+
+        @keyframes violenceShock {
+            0% {
+                transform: scale(1);
+            }
+
+            25% {
+                transform: scale(1.08) rotate(-1deg);
+            }
+
+            45% {
+                transform: scale(.98) rotate(1deg);
+            }
+
+            70% {
+                transform: scale(1.04);
+            }
+
+            100% {
+                transform: scale(1);
+            }
+        }
     </style>
 </head>
 
@@ -2029,21 +2100,48 @@
                     }, i * 18);
                 }
             } else if (nom.includes('violence')) {
-                // 🩸 Éclaboussures depuis le centre
-                for (let i = 0; i < 20; i++) {
+                btn.classList.add('violence-shock');
+                setTimeout(() => btn.classList.remove('violence-shock'), 450);
+
+                const blast = document.createElement('div');
+                blast.className = 'violence-blast';
+                blast.style.left = `${cx - 8}px`;
+                blast.style.top = `${cy - 8}px`;
+                document.body.appendChild(blast);
+
+                requestAnimationFrame(() => {
+                    blast.style.transform = 'scale(8)';
+                    blast.style.opacity = '0';
+                });
+
+                setTimeout(() => blast.remove(), 650);
+
+                for (let i = 0; i < 34; i++) {
                     const p = document.createElement('div');
-                    p.textContent = ['💢', '🩸', '⚔️'][Math.floor(Math.random() * 3)];
-                    p.style.cssText = `position:fixed;left:${cx}px;top:${cy}px;font-size:${10 + Math.random() * 10}px;pointer-events:none;z-index:9999;transition:all 0.7s cubic-bezier(0.1,0.8,0.2,1);opacity:1;`;
+                    p.className = Math.random() < 0.75 ? 'violence-ember' : 'violence-smoke';
+
+                    const size = 4 + Math.random() * 10;
+                    p.style.left = `${cx}px`;
+                    p.style.top = `${cy}px`;
+                    p.style.width = `${size}px`;
+                    p.style.height = `${size}px`;
+
                     document.body.appendChild(p);
-                    const angle = (i / 20) * Math.PI * 2;
-                    const dist = 50 + Math.random() * 60;
+
+                    const angle = Math.random() * Math.PI * 2;
+                    const dist = 45 + Math.random() * 95;
+
                     requestAnimationFrame(() => {
-                        p.style.transform = `translate(${Math.cos(angle) * dist}px, ${Math.sin(angle) * dist}px) scale(0.5)`;
+                        p.style.transform = `
+                            translate(${Math.cos(angle) * dist}px, ${Math.sin(angle) * dist}px)
+                            scale(${Math.random() < 0.75 ? 0.15 : 2.2})
+                            rotate(${Math.random() * 360}deg)
+                        `;
                         p.style.opacity = '0';
                     });
-                    setTimeout(() => p.remove(), 700);
-                }
 
+                    setTimeout(() => p.remove(), 900);
+                }
             } else if (nom.includes('consolidation')) {
                 btn.classList.add('consolidation-impact');
                 setTimeout(() => btn.classList.remove('consolidation-impact'), 650);
