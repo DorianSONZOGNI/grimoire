@@ -55,6 +55,9 @@ public class Personnage {
     @Transient
     private List<BuffDebuffEffect> activeBuffs = new ArrayList<>();
 
+    @Transient
+    private List<ActiveShield> activeShields = new ArrayList<>();
+
     // Liste des effets de heal over time actifs (non persistés)
     @Transient
     private List<HealOverTimeEffect> activeHealOverTimeEffects = new ArrayList<>();
@@ -137,12 +140,29 @@ public class Personnage {
         // S'assurer que les dégâts sont toujours au moins 1
         int effectiveDamage = (int) finalDamage;
 
-        // Appliquer les dégâts à la santé actuelle
-        this.healthCurrent -= effectiveDamage;
+        // Appliquer les dégâts aux boucliers d'abord
+        int remainingDamage = effectiveDamage;
+        if (activeShields != null && !activeShields.isEmpty()) {
+            for (ActiveShield shield : activeShields) {
+                if (shield.getAmount() > 0) {
+                    int absorbed = Math.min(shield.getAmount(), remainingDamage);
+                    shield.setAmount(shield.getAmount() - absorbed);
+                    remainingDamage -= absorbed;
+                    System.out.println("🛡️ Le bouclier (" + shield.getSourceName() + ") absorbe " + absorbed + " dégâts. Reste : " + shield.getAmount() + " absorption.");
+                    if (remainingDamage <= 0) {
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Appliquer les dégâts restants à la santé actuelle
+        this.healthCurrent -= remainingDamage;
 
         // Affichage des informations
         double finalReductionFactor = Math.min(reductionFactor, 0.90); // Limite la réduction à 90%
         System.out.println(this.name + " subit " + effectiveDamage + " dégâts (" +
+                "absorbés par les boucliers : " + (effectiveDamage - remainingDamage) + ", " +
                 "réduction de " + (int) (finalReductionFactor * 100) + "%), " +
                 "PV restants : " + this.healthCurrent);
 
@@ -157,11 +177,13 @@ public class Personnage {
      * @param healAmount le montant de soin à appliquer
      */
     public void heal(int healAmount) {
-        this.healthCurrent += healAmount;
+        double multiplier = getStatBuffMultiplier(StatType.HEAL_RECEIVED);
+        int finalHeal = (int) (healAmount * Math.max(0, multiplier));
+        this.healthCurrent += finalHeal;
         if (this.healthCurrent > this.healthMax) {
             this.healthCurrent = this.healthMax;
         }
-        System.out.println(name + " est soigné de " + healAmount + " points. Vie actuelle : " + healthCurrent);
+        System.out.println(name + " est soigné de " + finalHeal + " points (multiplier soin reçu: " + multiplier + "). Vie actuelle : " + healthCurrent);
     }
 
     public void restoreMana(int manaAmount) {
@@ -258,6 +280,35 @@ public class Personnage {
                 System.out.println(name + " perd l'effet sur " + effect.getStatAffected());
             }
         }
+        updateShields();
+    }
+
+    public void addShield(int amount, int duration, String sourceName) {
+        if (activeShields == null) {
+            activeShields = new ArrayList<>();
+        }
+        double multiplier = getStatBuffMultiplier(StatType.SHIELD_RECEIVED);
+        int finalAmount = (int) (amount * Math.max(0, multiplier));
+        activeShields.add(new ActiveShield(finalAmount, duration, sourceName));
+        System.out.println(name + " reçoit un bouclier de " + finalAmount + " (multiplier bouclier reçu: " + multiplier + ") pour " + duration + " tours (" + sourceName + ").");
+    }
+
+    public void updateShields() {
+        if (activeShields == null) return;
+        Iterator<ActiveShield> iterator = activeShields.iterator();
+        while (iterator.hasNext()) {
+            ActiveShield shield = iterator.next();
+            shield.setDuration(shield.getDuration() - 1);
+            if (shield.getDuration() <= 0 || shield.getAmount() <= 0) {
+                iterator.remove();
+                System.out.println(name + " perd l'effet de bouclier (" + shield.getSourceName() + ").");
+            }
+        }
+    }
+
+    public int getTotalShield() {
+        if (activeShields == null) return 0;
+        return activeShields.stream().mapToInt(ActiveShield::getAmount).sum();
     }
 
     public void addConsumableSpellBuff(ConsumableSpellBuffDebuffEffect buff) {

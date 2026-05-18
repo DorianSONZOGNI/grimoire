@@ -154,7 +154,8 @@ public class WebSpellCreationController {
                 Map.of("type", "DOT", "label", "Dégâts sur la durée (DoT)"),
                 Map.of("type", "HOT", "label", "Soins sur la durée (HoT)"),
                 Map.of("type", "MOT", "label", "Régénération de Mana continue (MoT)"),
-                Map.of("type", "PURGE", "label", "Purge (Dissiper Bonus/Malus)"));
+                Map.of("type", "PURGE", "label", "Purge (Dissiper Bonus/Malus)"),
+                Map.of("type", "SHIELD", "label", "Bouclier"));
         meta.put("effectTypes", effectTypes);
 
         return ResponseEntity.ok(meta);
@@ -346,6 +347,14 @@ public class WebSpellCreationController {
                         break;
                     case "PURGE":
                         effect = new generation.grimoire.entity.spell.type.effect.PurgeEffect();
+                        break;
+                    case "SHIELD":
+                        generation.grimoire.entity.spell.type.effect.ShieldEffect se = new generation.grimoire.entity.spell.type.effect.ShieldEffect();
+                        se.setFixedValue(eDto.getFlatValue());
+                        se.setPercentage(eDto.getPercentage());
+                        se.setDuration(eDto.getDuration());
+                        se.setShieldSource(eDto.getSource() != null ? eDto.getSource() : Source.TARGET_HEALTH_MAX);
+                        effect = se;
                         break;
                 }
 

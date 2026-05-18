@@ -279,4 +279,174 @@ class CombatSimulation2Test {
         boss.updateHealOverTimeEffects();
         boss.updateDamageOverTimeEffects();
     }
+
+    @Test
+    void testShieldEffect() {
+        System.out.println("=== DEBUT TEST SHIELD ===");
+        Personnage caster = new Personnage();
+        caster.setName("Protecteur");
+        caster.setPower(50);
+
+        Personnage target = new Personnage();
+        target.setName("Cible Protegee");
+        target.setHealthMax(200);
+        target.setHealthCurrent(200);
+
+        generation.grimoire.entity.spell.type.effect.ShieldEffect shieldEffect = new generation.grimoire.entity.spell.type.effect.ShieldEffect();
+        shieldEffect.setFixedValue(50);
+        shieldEffect.setPercentage(0.20);
+        shieldEffect.setShieldSource(Source.CASTER_POWER);
+        shieldEffect.setDuration(2);
+
+        // Appliquer le bouclier
+        shieldEffect.apply(caster, target);
+
+        // Attendu: 50 + (50 * 0.20) = 60 d'absorption
+        assertThat(target.getTotalShield()).isEqualTo(60);
+        assertThat(target.getActiveShields()).hasSize(1);
+
+        // Subir 40 dégâts physiques
+        // Attendu: absorbé par le bouclier, PV intacts (200), bouclier restant à 20
+        target.takeDamage(40, DamageType.PHYSIC);
+        assertThat(target.getHealthCurrent()).isEqualTo(200);
+        assertThat(target.getTotalShield()).isEqualTo(20);
+
+        // Subir 30 dégâts magiques
+        // Attendu: 20 absorbés, 10 subis, PV à 190, bouclier détruit (0)
+        target.takeDamage(30, DamageType.MAGIC);
+        assertThat(target.getHealthCurrent()).isEqualTo(190);
+        assertThat(target.getTotalShield()).isEqualTo(0);
+
+        // Relancer un bouclier pour tester la durée
+        shieldEffect.apply(caster, target);
+        assertThat(target.getTotalShield()).isEqualTo(60);
+
+        // Passer un tour (décrémenter la durée)
+        target.updateBuffs(); // Appelle updateShields() en interne
+        assertThat(target.getTotalShield()).isEqualTo(60);
+
+        // Passer le second tour (durée expire)
+        target.updateBuffs();
+        assertThat(target.getTotalShield()).isEqualTo(0);
+        assertThat(target.getActiveShields()).isEmpty();
+
+        System.out.println("=== FIN TEST SHIELD SUCCESS ===");
+    }
+
+    @Test
+    void testShieldCumulativeDecay() {
+        System.out.println("=== DEBUT TEST SHIELD CUMULATIVE DECAY ===");
+        Personnage target = new Personnage();
+        target.setName("Cible Bouclier");
+        target.setHealthMax(200);
+        target.setHealthCurrent(200);
+
+        // T1: Lance un shield de 10 pendant 2 tours
+        target.addShield(10, 2, "Bouclier A");
+        assertThat(target.getTotalShield()).isEqualTo(10);
+        assertThat(target.getActiveShields()).hasSize(1);
+
+        // Fin T1: Décompte (Bouclier A passe à 1 tour restant)
+        target.updateBuffs();
+        assertThat(target.getTotalShield()).isEqualTo(10);
+
+        // T2: Lance un second shield de 10 pendant 2 tours
+        target.addShield(10, 2, "Bouclier B");
+        // Les deux boucliers cumulés font 20 d'absorption
+        assertThat(target.getTotalShield()).isEqualTo(20);
+        assertThat(target.getActiveShields()).hasSize(2);
+
+        // Fin T2: Décompte (Bouclier A passe à 0 -> expire et retiré, Bouclier B passe à 1 tour restant)
+        target.updateBuffs();
+        
+        // T3: Il ne reste plus que le Bouclier B (10 shield)
+        assertThat(target.getTotalShield()).isEqualTo(10);
+        assertThat(target.getActiveShields()).hasSize(1);
+        assertThat(target.getActiveShields().get(0).getSourceName()).isEqualTo("Bouclier B");
+
+        // Fin T3: Décompte (Bouclier B passe à 0 -> expire et retiré)
+        target.updateBuffs();
+
+        // T4: Plus aucun bouclier actif
+        assertThat(target.getTotalShield()).isEqualTo(0);
+        assertThat(target.getActiveShields()).isEmpty();
+
+        System.out.println("=== FIN TEST SHIELD CUMULATIVE DECAY SUCCESS ===");
+    }
+
+    @Test
+    void testHealAndShieldReceivedModifiers() {
+        System.out.println("=== DEBUT TEST HEAL AND SHIELD RECEIVED MODIFIERS ===");
+        Personnage target = new Personnage();
+        target.setName("Cible Modifiers");
+        target.setHealthMax(200);
+        target.setHealthCurrent(100);
+
+        // --- TEST 1 : SOIN REÇU (HEAL_RECEIVED) ---
+        // 1. Soin de base : 50. Attendu : 50. PV à 150.
+        target.heal(50);
+        assertThat(target.getHealthCurrent()).isEqualTo(150);
+
+        // 2. Appliquer un buff boost de soin reçu de +20% (multiplier 1.20)
+        BuffDebuffEffect boostHeal = new BuffDebuffEffect();
+        boostHeal.setStatAffected(StatType.HEAL_RECEIVED);
+        boostHeal.setModifier(1.20);
+        boostHeal.setDuration(3);
+        target.applyBuff(boostHeal, 1.20);
+
+        // Soin de base : 50. Attendu : 50 * 1.20 = 60. PV passe de 150 à 160.
+        target.setHealthCurrent(100);
+        target.heal(50);
+        assertThat(target.getHealthCurrent()).isEqualTo(160);
+
+        // 3. Appliquer un débuff malus de soin reçu de -30% (multiplier 0.70)
+        target.getActiveBuffs().clear(); // reset pour isoler le malus
+
+        BuffDebuffEffect malusHeal = new BuffDebuffEffect();
+        malusHeal.setStatAffected(StatType.HEAL_RECEIVED);
+        malusHeal.setModifier(0.70);
+        malusHeal.setDuration(3);
+        target.applyBuff(malusHeal, 0.70);
+
+        // Soin de base : 100. Attendu : 100 * 0.70 = 70. PV passe de 100 à 170.
+        target.setHealthCurrent(100);
+        target.heal(100);
+        assertThat(target.getHealthCurrent()).isEqualTo(170);
+
+
+        // --- TEST 2 : BOUCLIER REÇU (SHIELD_RECEIVED) ---
+        // Reset buffs
+        target.getActiveBuffs().clear();
+
+        // 1. Bouclier de base : 100. Attendu : 100.
+        target.addShield(100, 2, "Base Shield");
+        assertThat(target.getTotalShield()).isEqualTo(100);
+        target.getActiveShields().clear();
+
+        // 2. Appliquer un buff boost de bouclier reçu de +30% (multiplier 1.30)
+        BuffDebuffEffect boostShield = new BuffDebuffEffect();
+        boostShield.setStatAffected(StatType.SHIELD_RECEIVED);
+        boostShield.setModifier(1.30);
+        boostShield.setDuration(3);
+        target.applyBuff(boostShield, 1.30);
+
+        // Bouclier de base : 100. Attendu : 100 * 1.30 = 130.
+        target.addShield(100, 2, "Boosted Shield");
+        assertThat(target.getTotalShield()).isEqualTo(130);
+        target.getActiveShields().clear();
+        target.getActiveBuffs().clear();
+
+        // 3. Appliquer un débuff malus de bouclier reçu de -40% (multiplier 0.60)
+        BuffDebuffEffect malusShield = new BuffDebuffEffect();
+        malusShield.setStatAffected(StatType.SHIELD_RECEIVED);
+        malusShield.setModifier(0.60);
+        malusShield.setDuration(3);
+        target.applyBuff(malusShield, 0.60);
+
+        // Bouclier de base : 100. Attendu : 100 * 0.60 = 60.
+        target.addShield(100, 2, "Malused Shield");
+        assertThat(target.getTotalShield()).isEqualTo(60);
+
+        System.out.println("=== FIN TEST HEAL AND SHIELD RECEIVED MODIFIERS SUCCESS ===");
+    }
 }

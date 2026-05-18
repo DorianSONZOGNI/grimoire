@@ -1483,7 +1483,10 @@
                         <span class="material-symbols-outlined" style="font-size: 1.1rem;">cyclone</span> Tick Mana (MoT)
                     </button>
                     <button type="button" class="btn-effect-add purge" onclick="addEffectPanel('PURGE')">
-                        <span class="material-symbols-outlined" style="font-size: 1.1rem;">air</span> Purge / Dissiper
+                        <span class="material-symbols-outlined" style="font-size: 1.1rem;">air</span> Purge / Dissip.
+                    </button>
+                    <button type="button" class="btn-effect-add buff" onclick="addEffectPanel('SHIELD')">
+                        <span class="material-symbols-outlined" style="font-size: 1.1rem;">shield</span> Bouclier
                     </button>
                 </div>
             </div>
@@ -1570,6 +1573,7 @@
                             <option value="DOT">Dégâts DoT</option>
                             <option value="HOT">Soins HoT</option>
                             <option value="PURGE">Dissipation</option>
+                            <option value="SHIELD">Bouclier</option>
                         </select>
                     </div>
                     <div>
@@ -2043,6 +2047,31 @@
                             </div>
                         </div>
                     `;
+                } else if (eff.effectType === 'SHIELD') {
+                    fieldsHtml = `
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Valeur Fixe Bouclier</label>
+                                <input type="number" value="${eff.flatValue || 0}" onchange="updateEffectProp(${eff.id}, 'flatValue', this.value)">
+                            </div>
+                            <div class="form-group">
+                                <label>Ratio (ex: 0.10 pour 10%)</label>
+                                <input type="number" step="0.01" value="${eff.percentage || 0}" onchange="updateEffectProp(${eff.id}, 'percentage', this.value)">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Durée (Tours)</label>
+                                <input type="number" value="${eff.duration || 0}" onchange="updateEffectProp(${eff.id}, 'duration', this.value)">
+                            </div>
+                            <div class="form-group">
+                                <label>Source du Ratio</label>
+                                <select class="custom-select-dynamic" id="ratioSource-${eff.id}" onchange="updateEffectProp(${eff.id}, 'source', this.value)">
+                                    ${renderSourceOptions(metaData.sources, eff.source)}
+                                </select>
+                            </div>
+                        </div>
+                    `;
                 } else if (eff.effectType === 'PURGE') {
                     fieldsHtml = `
                         <div style="padding: 0.5rem; background: rgba(16, 185, 129, 0.1); border-left: 3px solid #10b981; border-radius: 4px; font-size: 0.85rem; color: #10b981;">
@@ -2064,6 +2093,8 @@
                     typeBadgeStyle = 'background: linear-gradient(135deg, rgba(249, 115, 22, 0.25), rgba(194, 65, 12, 0.4)); color: #fdba74; border: 1px solid #f97316; box-shadow: 0 0 12px rgba(249, 115, 22, 0.3); text-shadow: 0 0 5px rgba(0,0,0,0.8);';
                 } else if (eff.effectType === 'PURGE') {
                     typeBadgeStyle = 'background: linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(52, 211, 153, 0.5)); color: #a7f3d0; border: 1px solid #34d399; box-shadow: 0 0 12px rgba(52, 211, 153, 0.4); text-shadow: 0 0 5px rgba(0,0,0,0.8);';
+                } else if (eff.effectType === 'SHIELD') {
+                    typeBadgeStyle = 'background: linear-gradient(135deg, rgba(6, 182, 212, 0.25), rgba(8, 145, 178, 0.4)); color: #a5f3fc; border: 1px solid #06b6d4; box-shadow: 0 0 12px rgba(6, 182, 212, 0.3); text-shadow: 0 0 5px rgba(0,0,0,0.8);';
                 }
 
                 const itemHtml = `
@@ -2186,7 +2217,9 @@
                 'DAMAGE_TAKEN_BRUT': 'Dégâts Bruts Subis',
                 'DAMAGE_GIVEN_MAGIC': 'Dégâts Magiques Infligés',
                 'DAMAGE_GIVEN_PHYSIC': 'Dégâts Physiques Infligés',
-                'DAMAGE_GIVEN_BRUT': 'Dégâts Bruts Infligés'
+                'DAMAGE_GIVEN_BRUT': 'Dégâts Bruts Infligés',
+                'HEAL_RECEIVED': 'Soin Reçu (Modificateur)',
+                'SHIELD_RECEIVED': 'Bouclier Reçu (Modificateur)'
             };
             return arr.map(s => {
                 const val = typeof s === 'object' ? s.id || s : s;
@@ -2894,7 +2927,9 @@
                             'ManaOverTimeEffect': 'MoT',
                             'MOT': 'MoT',
                             'PurgeEffect': '✨ Dissipation',
-                            'PURGE': '✨ Dissipation'
+                            'PURGE': '✨ Dissipation',
+                            'ShieldEffect': '🛡️ Bouclier',
+                            'SHIELD': '🛡️ Bouclier'
                         };
                         const eTypeStr = typeNames[e.effectType || e.effect_type] || (e.effectType || e.effect_type || 'Effet');
 
@@ -2904,7 +2939,8 @@
                             'BURN': 'Brûlure', 'POISON': 'Poison', 'DAMAGE_TAKEN_MAGIC': 'Dégâts Mag. Subis',
                             'DAMAGE_TAKEN_PHYSIC': 'Dégâts Phys. Subis', 'DAMAGE_TAKEN_BRUT': 'Dégâts Bruts Subis',
                             'DAMAGE_GIVEN_MAGIC': 'Dégâts Mag. Infligés', 'DAMAGE_GIVEN_PHYSIC': 'Dégâts Phys. Infligés',
-                            'DAMAGE_GIVEN_BRUT': 'Dégâts Bruts Infligés'
+                            'DAMAGE_GIVEN_BRUT': 'Dégâts Bruts Infligés',
+                            'HEAL_RECEIVED': 'Soin Reçu', 'SHIELD_RECEIVED': 'Bouclier Reçu'
                         };
                         const formatStat = s => statLabels[s] || s;
 
@@ -2980,6 +3016,15 @@
                             detailsStr = `➔ MoT de ${parts.join(' + ')} Mana/tour${durStr}`;
                         } else if (t === 'Purge' || t === 'PURGE') {
                             detailsStr = `➔ dissipe les altérations`;
+                        } else if (t === 'Shield' || t === 'SHIELD') {
+                            let parts = [];
+                            const fv = e.fixedValue || e.flatValue || 0;
+                            const pv = e.percentage || 0;
+                            if (fv) parts.push(`${fv}`);
+                            if (pv) parts.push(`${Math.round(pv * 100)}% ${formatSrc(e.shieldSource || e.source || 'TARGET_HEALTH_MAX')}`);
+                            if (parts.length === 0) parts.push('0');
+                            const durStr = e.duration > 0 ? ` sur ${e.duration} tours` : '';
+                            detailsStr = `➔ Bouclier de ${parts.join(' + ')}${durStr}`;
                         }
 
                         const keyBadge = e.requiredChoiceKey != null ? `<span style="background:rgba(245,158,11,0.2); color:#f59e0b; padding:0.1rem 0.3rem; border-radius:3px; font-size:0.75rem; font-weight:bold;" title="S'active uniquement si l'option choisie au cast est ${e.requiredChoiceKey}">Option ${e.requiredChoiceKey}</span>` : '';
@@ -3195,6 +3240,7 @@
                     if (t.includes('dot') || (t.includes('durée') && (t.includes('dégâ') || t.includes('dega'))) || t.includes('🔥')) return { icon: 'whatshot', color: '#f97316' };
                     if (t.includes('hot') || (t.includes('durée') && t.includes('soin')) || t.includes('✨')) return { icon: 'healing', color: '#34d399' };
                     if (t.includes('dissipation') || t.includes('purge') || t.includes('💨')) return { icon: 'air', color: '#a78bfa' };
+                    if (t.includes('bouclier') || t.includes('shield')) return { icon: 'shield', color: '#06b6d4' };
                     return { icon: 'auto_awesome', color: '#94a3b8' };
                 }
                 if (id === 'sortBy') {
@@ -3218,6 +3264,8 @@
                     if (t.includes('force') || t.includes('⚔️')) return { icon: 'swords', color: '#f43f5e' };
                     if (t.includes('brûlure') || t.includes('brulure') || t.includes('🔥')) return { icon: 'whatshot', color: '#f97316' };
                     if (t.includes('poison') || t.includes('🧪')) return { icon: 'skull', color: '#10b981' };
+                    if (t.includes('soin reçu') || t.includes('soin recu') || t.includes('heal_received')) return { icon: 'healing', color: '#10b981' };
+                    if (t.includes('bouclier reçu') || t.includes('bouclier recu') || t.includes('shield_received')) return { icon: 'shield', color: '#06b6d4' };
                     if (t.includes('subis') || t.includes('💥')) {
                         if (t.includes('magique')) return { icon: 'explosion', color: '#a855f7' };
                         if (t.includes('physique')) return { icon: 'explosion', color: '#ef4444' };
@@ -3489,6 +3537,7 @@
                 'HealOverTimeEffect': 'HOT',
                 'ManaOverTimeEffect': 'MOT',
                 'PurgeEffect': 'PURGE',
+                'ShieldEffect': 'SHIELD',
             };
             currentEffects = (sp.effects || []).map((e, idx) => {
                 const rawType = e.effectType || e.effect_type || '';
@@ -3502,12 +3551,12 @@
                     healAmount: e.healAmount || e.fixedHealPerTick || 0,
                     manaAmount: e.manaAmount || e.fixedManaPerTick || 0,
                     percentage: e.percentage || e.percentageDamagePerTick || e.percentageHealPerTick || e.percentageManaPerTick || 0,
-                    flatValue: e.flatValue || 0,
+                    flatValue: e.flatValue || e.fixedValue || 0,
                     modifier: e.modifier || 0,
                     duration: e.duration || 0,
                     damageType: e.damageType || 'MAGIC',
                     statAffected: e.statAffected || 'ARMURE',
-                    source: e.source || e.damageSource || e.healSource || e.manaSource || e.modifierSource || 'TARGET_HEALTH_MAX',
+                    source: e.source || e.shieldSource || e.damageSource || e.healSource || e.manaSource || e.modifierSource || 'TARGET_HEALTH_MAX',
                     requiredChoiceKey: e.requiredChoiceKey !== undefined ? e.requiredChoiceKey : null
                 };
             });
