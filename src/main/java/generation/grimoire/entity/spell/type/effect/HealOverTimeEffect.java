@@ -2,6 +2,7 @@ package generation.grimoire.entity.spell.type.effect;
 
 import generation.grimoire.entity.SpellEffect;
 import generation.grimoire.entity.personnage.Personnage;
+import generation.grimoire.enumeration.StatType;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import lombok.Data;
@@ -47,10 +48,14 @@ public class HealOverTimeEffect extends HealEffect {
                 double sourceValue = generation.grimoire.utils.StatCalculator.getSourceValue(healSource, caster, target);
                 totalHeal += (int)(sourceValue * percentageHealPerTick);
             }
-            totalHeal = (int) (totalHeal * getAmplificationMultiplier());
+            double healGivenMultiplier = 1.0;
+            if (caster != null) {
+                healGivenMultiplier = caster.getStatBuffMultiplier(StatType.HEAL_GIVEN);
+            }
+            totalHeal = (int) (totalHeal * getAmplificationMultiplier() * Math.max(0, healGivenMultiplier));
             target.heal(totalHeal);
             duration--;
-            System.out.println(target.getName() + " est soigné de " + totalHeal + " PV par heal over time, durée restante : " + duration);
+            System.out.println(target.getName() + " est soigné de " + totalHeal + " PV par heal over time (multiplier donné: " + healGivenMultiplier + "), durée restante : " + duration);
         }
     }
 

@@ -2219,7 +2219,9 @@
                 'DAMAGE_GIVEN_PHYSIC': 'Dégâts Physiques Infligés',
                 'DAMAGE_GIVEN_BRUT': 'Dégâts Bruts Infligés',
                 'HEAL_RECEIVED': 'Soin Reçu (Modificateur)',
-                'SHIELD_RECEIVED': 'Bouclier Reçu (Modificateur)'
+                'SHIELD_RECEIVED': 'Bouclier Reçu (Modificateur)',
+                'HEAL_GIVEN': 'Soin Donné (Modificateur)',
+                'SHIELD_GIVEN': 'Bouclier Donné (Modificateur)'
             };
             return arr.map(s => {
                 const val = typeof s === 'object' ? s.id || s : s;
@@ -2940,7 +2942,8 @@
                             'DAMAGE_TAKEN_PHYSIC': 'Dégâts Phys. Subis', 'DAMAGE_TAKEN_BRUT': 'Dégâts Bruts Subis',
                             'DAMAGE_GIVEN_MAGIC': 'Dégâts Mag. Infligés', 'DAMAGE_GIVEN_PHYSIC': 'Dégâts Phys. Infligés',
                             'DAMAGE_GIVEN_BRUT': 'Dégâts Bruts Infligés',
-                            'HEAL_RECEIVED': 'Soin Reçu', 'SHIELD_RECEIVED': 'Bouclier Reçu'
+                            'HEAL_RECEIVED': 'Soin Reçu', 'SHIELD_RECEIVED': 'Bouclier Reçu',
+                            'HEAL_GIVEN': 'Soin Donné', 'SHIELD_GIVEN': 'Bouclier Donné'
                         };
                         const formatStat = s => statLabels[s] || s;
 
@@ -3266,6 +3269,8 @@
                     if (t.includes('poison') || t.includes('🧪')) return { icon: 'skull', color: '#10b981' };
                     if (t.includes('soin reçu') || t.includes('soin recu') || t.includes('heal_received')) return { icon: 'healing', color: '#10b981' };
                     if (t.includes('bouclier reçu') || t.includes('bouclier recu') || t.includes('shield_received')) return { icon: 'shield', color: '#06b6d4' };
+                    if (t.includes('soin donné') || t.includes('soin donne') || t.includes('heal_given')) return { icon: 'healing', color: '#34d399' };
+                    if (t.includes('bouclier donné') || t.includes('bouclier donne') || t.includes('shield_given')) return { icon: 'shield', color: '#22d3ee' };
                     if (t.includes('subis') || t.includes('💥')) {
                         if (t.includes('magique')) return { icon: 'explosion', color: '#a855f7' };
                         if (t.includes('physique')) return { icon: 'explosion', color: '#ef4444' };

@@ -2,6 +2,7 @@ package generation.grimoire.entity.spell.type.effect;
 
 import generation.grimoire.entity.personnage.Personnage;
 import generation.grimoire.enumeration.Source;
+import generation.grimoire.enumeration.StatType;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.EnumType;
@@ -34,13 +35,14 @@ public class HealPercentageEffect extends HealEffect {
     @Override
     public void apply(Personnage caster, Personnage target) {
         double sourceValue = getSourceValue(healSource, caster, target);
-        double healAmount = calculateHeal(sourceValue) * getAmplificationMultiplier();
+        double healGivenMultiplier = caster.getStatBuffMultiplier(StatType.HEAL_GIVEN);
+        double healAmount = calculateHeal(sourceValue) * getAmplificationMultiplier() * Math.max(0, healGivenMultiplier);
         if (checkCriticalHit(caster)) {
             healAmount *= 1.5;
         }
         target.heal((int) healAmount);
         System.out.println(target.getName() + " est soigné de " + (int) healAmount +
-                " PV via HealPercentageEffect (source : " + healSource + ", x" + getAmplificationMultiplier() + ")");
+                " PV via HealPercentageEffect (source : " + healSource + ", x" + getAmplificationMultiplier() + ", multiplier donné: " + healGivenMultiplier + ")");
     }
 
 }

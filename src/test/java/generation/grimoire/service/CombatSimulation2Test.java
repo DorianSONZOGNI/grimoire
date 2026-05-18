@@ -7,6 +7,8 @@ import generation.grimoire.entity.spell.type.effect.BuffDebuffEffect;
 import generation.grimoire.entity.spell.type.effect.DamageFixedEffect;
 import generation.grimoire.entity.spell.type.effect.DamageOverTimeEffect;
 import generation.grimoire.entity.spell.type.effect.DamagePercentageEffect;
+import generation.grimoire.entity.spell.type.effect.HealFixedEffect;
+import generation.grimoire.entity.spell.type.effect.ShieldEffect;
 import generation.grimoire.entity.voie.passif.specific.RaisonPassiveEffect;
 import generation.grimoire.entity.voie.passif.specific.ViolencePassiveEffect;
 import generation.grimoire.enumeration.DamageType;
@@ -448,5 +450,89 @@ class CombatSimulation2Test {
         assertThat(target.getTotalShield()).isEqualTo(60);
 
         System.out.println("=== FIN TEST HEAL AND SHIELD RECEIVED MODIFIERS SUCCESS ===");
+    }
+
+    @Test
+    void testHealAndShieldGivenModifiers() {
+        Personnage caster = new Personnage();
+        caster.setName("Lanceur Modifiers");
+        caster.setHealthMax(100);
+        caster.setHealthCurrent(100);
+
+        Personnage target = new Personnage();
+        target.setName("Cible Modifiers");
+        target.setHealthMax(200);
+        target.setHealthCurrent(100);
+
+        // --- TEST 1 : SOIN DONNÉ (HEAL_GIVEN) ---
+        // 1. Soin de base fixe : 50. Attendu : 50. PV de la cible passe à 150.
+        HealFixedEffect healEffect = new HealFixedEffect();
+        healEffect.setHealAmount(50);
+        healEffect.apply(caster, target);
+        assertThat(target.getHealthCurrent()).isEqualTo(150);
+
+        // 2. Buff de +20% Soin Donné sur le Caster (multiplier 1.20)
+        BuffDebuffEffect boostHealGiven = new BuffDebuffEffect();
+        boostHealGiven.setStatAffected(StatType.HEAL_GIVEN);
+        boostHealGiven.setModifier(1.20);
+        boostHealGiven.setDuration(3);
+        caster.applyBuff(boostHealGiven, 1.20);
+
+        // Soin de base : 50. Attendu : 50 * 1.20 = 60. PV passe de 100 à 160.
+        target.setHealthCurrent(100);
+        healEffect.apply(caster, target);
+        assertThat(target.getHealthCurrent()).isEqualTo(160);
+
+        // 3. Débuff de -30% Soin Donné sur le Caster (multiplier 0.70)
+        caster.getActiveBuffs().clear();
+        BuffDebuffEffect malusHealGiven = new BuffDebuffEffect();
+        malusHealGiven.setStatAffected(StatType.HEAL_GIVEN);
+        malusHealGiven.setModifier(0.70);
+        malusHealGiven.setDuration(3);
+        caster.applyBuff(malusHealGiven, 0.70);
+
+        // Soin de base : 100. Attendu : 100 * 0.70 = 70. PV passe de 100 à 170.
+        HealFixedEffect bigHeal = new HealFixedEffect();
+        bigHeal.setHealAmount(100);
+        target.setHealthCurrent(100);
+        bigHeal.apply(caster, target);
+        assertThat(target.getHealthCurrent()).isEqualTo(170);
+
+
+        // --- TEST 2 : BOUCLIER DONNÉ (SHIELD_GIVEN) ---
+        caster.getActiveBuffs().clear();
+        target.getActiveShields().clear();
+
+        // 1. Bouclier de base : 100. Attendu : 100.
+        ShieldEffect shieldEffect = new ShieldEffect();
+        shieldEffect.setFixedValue(100);
+        shieldEffect.setDuration(2);
+        shieldEffect.apply(caster, target);
+        assertThat(target.getTotalShield()).isEqualTo(100);
+
+        // 2. Buff de +30% Bouclier Donné sur le Caster (multiplier 1.30)
+        target.getActiveShields().clear();
+        BuffDebuffEffect boostShieldGiven = new BuffDebuffEffect();
+        boostShieldGiven.setStatAffected(StatType.SHIELD_GIVEN);
+        boostShieldGiven.setModifier(1.30);
+        boostShieldGiven.setDuration(3);
+        caster.applyBuff(boostShieldGiven, 1.30);
+
+        shieldEffect.apply(caster, target);
+        assertThat(target.getTotalShield()).isEqualTo(130);
+
+        // 3. Débuff de -40% Bouclier Donné sur le Caster (multiplier 0.60)
+        caster.getActiveBuffs().clear();
+        target.getActiveShields().clear();
+        BuffDebuffEffect malusShieldGiven = new BuffDebuffEffect();
+        malusShieldGiven.setStatAffected(StatType.SHIELD_GIVEN);
+        malusShieldGiven.setModifier(0.60);
+        malusShieldGiven.setDuration(3);
+        caster.applyBuff(malusShieldGiven, 0.60);
+
+        shieldEffect.apply(caster, target);
+        assertThat(target.getTotalShield()).isEqualTo(60);
+
+        System.out.println("=== FIN TEST HEAL AND SHIELD GIVEN MODIFIERS SUCCESS ===");
     }
 }
