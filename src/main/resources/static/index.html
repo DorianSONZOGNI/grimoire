@@ -1368,23 +1368,25 @@
                 <div class="form-group">
                     <label for="castingTypeSelect">Catégorie d'Action (Tour)</label>
                     <select id="castingTypeSelect">
-                        <option value="INSTANTANE">⚡ Instantané (Action Libre)</option>
-                        <option value="BANAL" selected>⏳ Banal (Consomme le tour)</option>
-                        <option value="CANALISE">🌀 Canalisé (Multi-tours)</option>
+                        <option value="INSTANTANE">Instantané (Action Libre)</option>
+                        <option value="BANAL" selected>Banal (Consomme le tour)</option>
+                        <option value="CANALISE">Canalisé (Multi-tours)</option>
                     </select>
                 </div>
             </div>
 
             <!-- SECTION DES COÛTS DU SORT -->
             <div class="cost-section">
-                <div class="cost-section-title">
-                    <span>⚡ Formules de Consommation du Sort</span>
+                <div class="cost-section-title" style="display: flex; align-items: center; gap: 0.4rem;">
+                    <span class="material-symbols-outlined" style="font-size: 1.2rem; color: #f59e0b;">electric_bolt</span>
+                    <span>Coûts du Sort</span>
                 </div>
 
                 <!-- Coûts en Mana -->
                 <div class="cost-card mana">
-                    <div class="cost-card-header">
-                        <span>💧 Mana</span>
+                    <div class="cost-card-header" style="display: flex; align-items: center; gap: 0.4rem;">
+                        <span class="material-symbols-outlined" style="font-size: 1.1rem; color: #38bdf8;">water_drop</span>
+                        <span>Mana</span>
                     </div>
                     <div class="cost-inputs-grid">
                         <label for="manaCost" style="color: #fff;">Montant Fixe :</label>
@@ -1404,8 +1406,9 @@
 
                 <!-- Coûts en PV -->
                 <div class="cost-card health">
-                    <div class="cost-card-header">
-                        <span>🩸 Sacrifice (Points de Vie)</span>
+                    <div class="cost-card-header" style="display: flex; align-items: center; gap: 0.4rem;">
+                        <span class="material-symbols-outlined" style="font-size: 1.1rem; color: #ef4444;">bloodtype</span>
+                        <span>Sacrifice (Points de Vie)</span>
                     </div>
                     <div class="cost-inputs-grid">
                         <label for="healCost" style="color: #fff;">Montant Fixe :</label>
@@ -1474,13 +1477,16 @@
                         <span class="material-symbols-outlined" style="font-size: 1.1rem;">shield</span> Buff / Débuff
                     </button>
                     <button type="button" class="btn-effect-add dmg" onclick="addEffectPanel('DOT')">
-                        <span class="material-symbols-outlined" style="font-size: 1.1rem;">whatshot</span> Tick Dégâts (DoT)
+                        <span class="material-symbols-outlined" style="font-size: 1.1rem;">whatshot</span> Tick Dégâts
+                        (DoT)
                     </button>
                     <button type="button" class="btn-effect-add heal" onclick="addEffectPanel('HOT')">
-                        <span class="material-symbols-outlined" style="font-size: 1.1rem;">healing</span> Tick Soins (HoT)
+                        <span class="material-symbols-outlined" style="font-size: 1.1rem;">healing</span> Tick Soins
+                        (HoT)
                     </button>
                     <button type="button" class="btn-effect-add mana" onclick="addEffectPanel('MOT')">
-                        <span class="material-symbols-outlined" style="font-size: 1.1rem;">cyclone</span> Tick Mana (MoT)
+                        <span class="material-symbols-outlined" style="font-size: 1.1rem;">cyclone</span> Tick Mana
+                        (MoT)
                     </button>
                     <button type="button" class="btn-effect-add purge" onclick="addEffectPanel('PURGE')">
                         <span class="material-symbols-outlined" style="font-size: 1.1rem;">air</span> Purge / Dissip.
@@ -1514,8 +1520,9 @@
                 <div
                     style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.6rem;">
                     <div
-                        style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; color: var(--primary); display: flex; align-items: center; gap: 0.4rem;">
-                        <span>👁️ Perception Arcanique</span>
+                        style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: var(--primary); display: flex; align-items: center; gap: 0.5rem;">
+                        <span class="material-symbols-outlined" style="font-size: 1.2rem;">visibility</span>
+                        <span>Perception Arcanique</span>
                     </div>
                     <div style="display: flex; align-items: center; gap: 0.6rem;">
                         <button type="button" class="btn-secondary"
@@ -1539,8 +1546,10 @@
                 <!-- Section Filtrage par Voie (Boutons uniques) -->
                 <div>
                     <label
-                        style="font-size: 0.65rem; color: var(--text-muted); display: block; margin-bottom: 0.4rem; font-weight: 700; letter-spacing: 0.5px;">🔮
-                        FILTRER PAR VOIE</label>
+                        style="font-size: 0.65rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.4rem; font-weight: 700; letter-spacing: 0.5px;">
+                        <span class="material-symbols-outlined" style="font-size: 0.95rem; color: #a855f7;">auto_awesome</span>
+                        FILTRER PAR VOIE
+                    </label>
                     <div id="filterVoiesButtonsContainer" style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
                         <!-- Injecté dynamiquement en JS -->
                     </div>
@@ -1549,8 +1558,10 @@
                 <!-- Section Filtrage par Spiritualité (Boutons uniques) -->
                 <div>
                     <label
-                        style="font-size: 0.65rem; color: var(--text-muted); display: block; margin-bottom: 0.4rem; font-weight: 700; letter-spacing: 0.5px;">✨
-                        FILTRER PAR SPIRITUALITÉ</label>
+                        style="font-size: 0.65rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.4rem; font-weight: 700; letter-spacing: 0.5px;">
+                        <span class="material-symbols-outlined" style="font-size: 0.95rem; color: #fb923c;">grade</span>
+                        FILTRER PAR SPIRITUALITÉ
+                    </label>
                     <div id="filterSpiritsButtonsContainer" style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
                         <!-- Injecté dynamiquement en JS -->
                     </div>
@@ -1559,8 +1570,10 @@
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.8rem;">
                     <div>
                         <label
-                            style="font-size: 0.65rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem; font-weight: 700; letter-spacing: 0.5px;">⚡
-                            NATURE D'EFFET</label>
+                            style="font-size: 0.65rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.3rem; font-weight: 700; letter-spacing: 0.5px;">
+                            <span class="material-symbols-outlined" style="font-size: 0.95rem; color: #10b981;">category</span>
+                            NATURE D'EFFET
+                        </label>
                         <select id="filterEffect"
                             style="font-size: 0.8rem; padding: 0.4rem 0.6rem; width: 100%; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; border-radius: 6px; cursor: pointer; outline: none;"
                             onchange="renderFilteredSpells()">
@@ -1578,8 +1591,10 @@
                     </div>
                     <div>
                         <label
-                            style="font-size: 0.65rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem; font-weight: 700; letter-spacing: 0.5px;">🌟
-                            PALIER (NIVEAU)</label>
+                            style="font-size: 0.65rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.3rem; font-weight: 700; letter-spacing: 0.5px;">
+                            <span class="material-symbols-outlined" style="font-size: 0.95rem; color: #f59e0b;">military_tech</span>
+                            PALIER (NIVEAU)
+                        </label>
                         <select id="filterLevel"
                             style="font-size: 0.8rem; padding: 0.4rem 0.6rem; width: 100%; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; border-radius: 6px; cursor: pointer; outline: none;"
                             onchange="renderFilteredSpells()">
@@ -1593,8 +1608,10 @@
                     </div>
                     <div>
                         <label
-                            style="font-size: 0.65rem; color: var(--text-muted); display: block; margin-bottom: 0.3rem; font-weight: 700; letter-spacing: 0.5px;">🔀
-                            ORDONNANCEMENT</label>
+                            style="font-size: 0.65rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.3rem; font-weight: 700; letter-spacing: 0.5px;">
+                            <span class="material-symbols-outlined" style="font-size: 0.95rem; color: #a78bfa;">sort</span>
+                            ORDONNANCEMENT
+                        </label>
                         <select id="sortBy"
                             style="font-size: 0.8rem; padding: 0.4rem 0.6rem; width: 100%; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; border-radius: 6px; cursor: pointer; outline: none;"
                             onchange="renderFilteredSpells()">
@@ -1620,8 +1637,10 @@
     <div class="modal-overlay" id="simulationModalOverlay">
         <div class="simulation-modal">
             <div class="modal-header">
-                <div class="modal-title">⚔️ Simulateur de Combat : <span id="simSpellName"
-                        style="color: var(--primary);">Sort</span></div>
+                <div class="modal-title" style="display: flex; align-items: center; gap: 0.4rem;">
+                    <span class="material-symbols-outlined" style="font-size: 1.3rem; color: var(--primary);">swords</span>
+                    <span>Simulateur de Combat : <span id="simSpellName" style="color: var(--primary);">Sort</span></span>
+                </div>
                 <button type="button" class="btn-danger"
                     style="padding: 0.2rem 0.5rem; font-size: 0.8rem; border-radius: 4px;"
                     onclick="closeSimulationModal()">✕</button>
@@ -1870,7 +1889,7 @@
                             </div>
                             <div class="form-group">
                                 <label>Type de Dégâts</label>
-                                <select onchange="updateEffectProp(${eff.id}, 'damageType', this.value)">
+                                <select class="custom-select-dynamic" id="damageType-${eff.id}" onchange="updateEffectProp(${eff.id}, 'damageType', this.value)">
                                     ${renderOptions(metaData.damageTypes, eff.damageType)}
                                 </select>
                             </div>
@@ -1885,14 +1904,14 @@
                             </div>
                             <div class="form-group">
                                 <label>Type</label>
-                                <select onchange="updateEffectProp(${eff.id}, 'damageType', this.value)">
+                                <select class="custom-select-dynamic" id="damageType-${eff.id}" onchange="updateEffectProp(${eff.id}, 'damageType', this.value)">
                                     ${renderOptions(metaData.damageTypes, eff.damageType)}
                                 </select>
                             </div>
                         </div>
                         <div class="form-group">
                             <label>Source du Ratio</label>
-                            <select onchange="updateEffectProp(${eff.id}, 'source', this.value)">
+                            <select class="custom-select-dynamic" id="ratioSource-${eff.id}" onchange="updateEffectProp(${eff.id}, 'source', this.value)">
                                 ${renderSourceOptions(metaData.sources, eff.source)}
                             </select>
                         </div>
@@ -1913,7 +1932,7 @@
                             </div>
                             <div class="form-group">
                                 <label>Source du Ratio</label>
-                                <select onchange="updateEffectProp(${eff.id}, 'source', this.value)">
+                                <select class="custom-select-dynamic" id="ratioSource-${eff.id}" onchange="updateEffectProp(${eff.id}, 'source', this.value)">
                                     ${renderSourceOptions(metaData.sources, eff.source)}
                                 </select>
                             </div>
@@ -1963,7 +1982,7 @@
                             </div>
                             <div class="form-group">
                                 <label>Type de Dégâts</label>
-                                <select onchange="updateEffectProp(${eff.id}, 'damageType', this.value)">
+                                <select class="custom-select-dynamic" id="damageType-${eff.id}" onchange="updateEffectProp(${eff.id}, 'damageType', this.value)">
                                     ${renderOptions(metaData.damageTypes, eff.damageType)}
                                 </select>
                             </div>
@@ -2896,7 +2915,7 @@
                         const target = e.effectTarget || e.effect_target;
                         const baseTargetText = target === 'CASTER' ? 'Lanceur' : (target === 'ALLY' ? 'Allié' : 'Cible');
                         const targetText = e.targetExpression || e.target_expression || baseTargetText;
-                        
+
                         let indicatorClass = 'target';
                         const lowerText = targetText.toLowerCase();
                         if (lowerText.includes('lanceur')) {
@@ -3216,12 +3235,18 @@
             optionsContainer.style.boxShadow = '0 10px 25px rgba(0,0,0,0.5)';
 
             const getIconInfo = (id, text) => {
-                if (id === 'voieSelect' || id === 'filterVoie') return { icon: getVoieIcon(text), color: getVoieButtonColor({ nom: text }) };
-                if (id === 'spiritSelect' || id === 'filterSpirit') return { icon: getSpiritIcon(text), color: getSpiritButtonColor({ nom: text }) };
+                if (id === 'voieSelect' || id === 'filterVoie') {
+                    if (text.includes('Aucune') || text.includes('Neutre')) return { icon: 'trip_origin', color: '#94a3b8' };
+                    return { icon: getVoieIcon(text), color: getVoieButtonColor({ nom: text }) };
+                }
+                if (id === 'spiritSelect' || id === 'filterSpirit') {
+                    if (text.includes('Aucune') || text.includes('Neutre')) return { icon: 'trip_origin', color: '#94a3b8' };
+                    return { icon: getSpiritIcon(text), color: getSpiritButtonColor({ nom: text }) };
+                }
                 if (id === 'niveau' || id === 'filterLevel') {
                     const t = text.toLowerCase();
                     if (t.includes('tous') || t.includes('all')) return { icon: 'layers', color: '#94a3b8' };
-                    if (t.includes('1')) return { icon: 'looks_one', color: '#94a3b8' };
+                    if (t.includes('1')) return { icon: 'looks_one', color: '#cbd5e1' };
                     if (t.includes('2')) return { icon: 'looks_two', color: '#10b981' };
                     if (t.includes('3')) return { icon: 'looks_3', color: '#3b82f6' };
                     if (t.includes('4')) return { icon: 'looks_4', color: '#a855f7' };
@@ -3233,17 +3258,25 @@
                     if (text.includes('Banal')) return { icon: 'hourglass_empty', color: '#3b82f6' };
                     return { icon: 'cyclone', color: '#8b5cf6' };
                 }
+                if (id && id.toLowerCase().includes('damagetype')) {
+                    const t = text.toLowerCase();
+                    if (t.includes('magic') || t.includes('magique')) return { icon: 'auto_awesome', color: '#a855f7' };
+                    if (t.includes('physic') || t.includes('physique')) return { icon: 'swords', color: '#f43f5e' };
+                    if (t.includes('brut')) return { icon: 'bloodtype', color: '#ef4444' };
+                    return { icon: 'star', color: '#94a3b8' };
+                }
                 if (id === 'filterEffect') {
                     const t = text.toLowerCase();
+                    if (t.includes('tous') || t.includes('all')) return { icon: 'category', color: '#94a3b8' };
                     if ((t.includes('fixes') && (t.includes('dégâ') || t.includes('dega'))) || t.includes('⚔️')) return { icon: 'swords', color: '#f43f5e' };
                     if ((t.includes('%') && (t.includes('dégâ') || t.includes('dega'))) || t.includes('💥')) return { icon: 'explosion', color: '#f97316' };
                     if ((t.includes('fixes') && t.includes('soin')) || t.includes('💚')) return { icon: 'favorite', color: '#10b981' };
-                    if ((t.includes('%') && t.includes('soin')) || t.includes('💖')) return { icon: 'favorite', color: '#ec4899' };
-                    if (t.includes('buff') || t.includes('débuff') || t.includes('debuff') || t.includes('🛡️')) return { icon: 'shield', color: '#3b82f6' };
+                    if ((t.includes('%') && t.includes('soin')) || t.includes('💖')) return { icon: 'healing', color: '#ec4899' };
+                    if (t.includes('buff') || t.includes('débuff') || t.includes('debuff') || t.includes('🛡️')) return { icon: 'trending_up', color: '#3b82f6' };
                     if (t.includes('dot') || (t.includes('durée') && (t.includes('dégâ') || t.includes('dega'))) || t.includes('🔥')) return { icon: 'whatshot', color: '#f97316' };
-                    if (t.includes('hot') || (t.includes('durée') && t.includes('soin')) || t.includes('✨')) return { icon: 'healing', color: '#34d399' };
+                    if (t.includes('hot') || (t.includes('durée') && t.includes('soin')) || t.includes('✨')) return { icon: 'spa', color: '#34d399' };
                     if (t.includes('dissipation') || t.includes('purge') || t.includes('💨')) return { icon: 'air', color: '#a78bfa' };
-                    if (t.includes('bouclier') || t.includes('shield')) return { icon: 'shield', color: '#06b6d4' };
+                    if (t.includes('bouclier') || t.includes('shield')) return { icon: 'security', color: '#06b6d4' };
                     return { icon: 'auto_awesome', color: '#94a3b8' };
                 }
                 if (id === 'sortBy') {
@@ -3264,13 +3297,13 @@
                     if (t.includes('armure') || t.includes('🛡️')) return { icon: 'shield', color: '#3b82f6' };
                     if (t.includes('résistance') || t.includes('resistance') || t.includes('✨')) return { icon: 'shield', color: '#10b981' };
                     if (t.includes('puissance') || t.includes('🔮')) return { icon: 'auto_awesome', color: '#a855f7' };
-                    if (t.includes('force') || t.includes('⚔️')) return { icon: 'swords', color: '#f43f5e' };
+                    if (t.includes('force') || t.includes('⚔️')) return { icon: 'fitness_center', color: '#f43f5e' };
                     if (t.includes('brûlure') || t.includes('brulure') || t.includes('🔥')) return { icon: 'whatshot', color: '#f97316' };
                     if (t.includes('poison') || t.includes('🧪')) return { icon: 'skull', color: '#10b981' };
-                    if (t.includes('soin reçu') || t.includes('soin recu') || t.includes('heal_received')) return { icon: 'healing', color: '#10b981' };
-                    if (t.includes('bouclier reçu') || t.includes('bouclier recu') || t.includes('shield_received')) return { icon: 'shield', color: '#06b6d4' };
+                    if (t.includes('soin reçu') || t.includes('soin recu') || t.includes('heal_received')) return { icon: 'health_and_safety', color: '#10b981' };
+                    if (t.includes('bouclier reçu') || t.includes('bouclier recu') || t.includes('shield_received')) return { icon: 'security', color: '#06b6d4' };
                     if (t.includes('soin donné') || t.includes('soin donne') || t.includes('heal_given')) return { icon: 'healing', color: '#34d399' };
-                    if (t.includes('bouclier donné') || t.includes('bouclier donne') || t.includes('shield_given')) return { icon: 'shield', color: '#22d3ee' };
+                    if (t.includes('bouclier donné') || t.includes('bouclier donne') || t.includes('shield_given')) return { icon: 'add_moderator', color: '#22d3ee' };
                     if (t.includes('subis') || t.includes('💥')) {
                         if (t.includes('magique')) return { icon: 'explosion', color: '#a855f7' };
                         if (t.includes('physique')) return { icon: 'explosion', color: '#ef4444' };
@@ -3283,9 +3316,36 @@
                     }
                     return { icon: 'star', color: '#94a3b8' };
                 }
-                if (id.includes('Source')) {
-                    if (text.includes('PV')) return { icon: 'favorite', color: '#ef4444' };
-                    if (text.includes('Mana')) return { icon: 'water_drop', color: '#38bdf8' };
+                if (id && id.toLowerCase().includes('source')) {
+                    const t = text.toLowerCase();
+                    const isLanceur = t.includes('lanceur') || t.includes('lanc');
+
+                    if (t.includes('pv') || t.includes('health') || t.includes('vie')) {
+                        if (t.includes('max')) {
+                            return { icon: 'favorite', color: isLanceur ? '#10b981' : '#f43f5e' };
+                        } else if (t.includes('actuel') || t.includes('curr') || t.includes('tour')) {
+                            return { icon: 'monitor_heart', color: isLanceur ? '#34d399' : '#ec4899' };
+                        } else if (t.includes('manquant') || t.includes('miss')) {
+                            return { icon: 'heart_broken', color: isLanceur ? '#059669' : '#b91c1c' };
+                        }
+                        return { icon: 'favorite', color: isLanceur ? '#10b981' : '#f43f5e' };
+                    }
+
+                    if (t.includes('mana')) {
+                        if (t.includes('max')) {
+                            return { icon: 'water_drop', color: isLanceur ? '#0284c7' : '#38bdf8' };
+                        } else if (t.includes('actuel') || t.includes('curr')) {
+                            return { icon: 'waves', color: isLanceur ? '#38bdf8' : '#22d3ee' };
+                        } else if (t.includes('manquant') || t.includes('miss')) {
+                            return { icon: 'opacity', color: isLanceur ? '#0369a1' : '#0891b2' };
+                        }
+                        return { icon: 'water_drop', color: isLanceur ? '#0284c7' : '#38bdf8' };
+                    }
+
+                    if (t.includes('puissance') || t.includes('power')) {
+                        return { icon: 'auto_awesome', color: isLanceur ? '#a855f7' : '#fb923c' };
+                    }
+
                     return { icon: 'auto_awesome', color: '#8b5cf6' };
                 }
                 return { icon: 'radio_button_unchecked', color: 'var(--text-muted)' };
