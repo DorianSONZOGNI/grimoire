@@ -1846,7 +1846,13 @@
             currentEffects.forEach((eff, idx) => {
                 const labelObj = metaData.effectTypes.find(t => t.type === eff.effectType);
                 const typeLabel = labelObj ? labelObj.label : eff.effectType;
-                const targetClass = eff.effectTarget ? eff.effectTarget.toLowerCase() : 'target';
+                let targetClass = eff.effectTarget ? eff.effectTarget.toLowerCase() : 'target';
+                const lowerExpr = (eff.targetExpression || '').toLowerCase();
+                if (lowerExpr.includes('lanceur')) {
+                    targetClass = 'caster';
+                } else if (lowerExpr.includes('allié')) {
+                    targetClass = 'ally';
+                }
 
                 let fieldsHtml = '';
 
@@ -2852,9 +2858,19 @@
                 if (sp.effects && sp.effects.length > 0) {
                     effectsSummaryHtml = `<div class="spell-effects-summary">`;
                     sp.effects.forEach(e => {
-                        const baseTargetText = e.effectTarget === 'CASTER' ? 'Lanceur' : (e.effectTarget === 'ALLY' ? 'Allié' : 'Cible');
-                        const targetText = e.targetExpression || baseTargetText;
-                        const indicatorClass = e.effectTarget ? e.effectTarget.toLowerCase() : 'target';
+                        const target = e.effectTarget || e.effect_target;
+                        const baseTargetText = target === 'CASTER' ? 'Lanceur' : (target === 'ALLY' ? 'Allié' : 'Cible');
+                        const targetText = e.targetExpression || e.target_expression || baseTargetText;
+                        
+                        let indicatorClass = 'target';
+                        const lowerText = targetText.toLowerCase();
+                        if (lowerText.includes('lanceur')) {
+                            indicatorClass = 'caster';
+                        } else if (lowerText.includes('allié')) {
+                            indicatorClass = 'ally';
+                        } else if (target) {
+                            indicatorClass = target.toLowerCase();
+                        }
 
                         const typeNames = {
                             'DamageFixedEffect': 'Dégâts Fixes',
@@ -2896,7 +2912,8 @@
                             'CASTER_POWER': 'Puiss. Lanceur', 'TARGET_POWER': 'Puiss. Cible', 'CASTER_MANA_MAX': 'Mana Max Lanc.',
                             'TARGET_MANA_MAX': 'Mana Max Cib.', 'CASTER_MANA_MISSING': 'Mana Manq. Lanc.', 'TARGET_MANA_MISSING': 'Mana Manq. Cib.',
                             'CASTER_MANA_CURRENT': 'Mana Act. Lanc.', 'TARGET_MANA_CURRENT': 'Mana Act. Cib.', 'CASTER_HEALTH_MAX': 'PV Max Lanc.',
-                            'TARGET_HEALTH_MAX': 'PV Max Cib.', 'CASTER_HEALTH_MISSING': 'PV Manq. Lanc.', 'TARGET_HEALTH_MISSING': 'PV Manq. Cib.'
+                            'TARGET_HEALTH_MAX': 'PV Max Cib.', 'CASTER_HEALTH_MISSING': 'PV Manq. Lanc.', 'TARGET_HEALTH_MISSING': 'PV Manq. Cib.',
+                            'CASTER_HEALTH_CURRENT': 'PV Act. Lanc.', 'TARGET_HEALTH_CURRENT': 'PV Act. Cib.'
                         };
                         const formatSrc = s => srcLabels[s] || s;
 
@@ -2943,7 +2960,7 @@
                             const fh = e.fixedHealPerTick || e.healAmount || 0;
                             const ph = e.percentageHealPerTick || e.percentage || 0;
                             if (fh) parts.push(`${fh}`);
-                            if (ph) parts.push(`${Math.round(ph * 100)}% PV Max`);
+                            if (ph) parts.push(`${Math.round(ph * 100)}% ${formatSrc(e.healSource || e.source || 'TARGET_HEALTH_MAX')}`);
                             if (parts.length === 0) parts.push('0');
                             const durStr = e.duration > 0 ? ` sur ${e.duration} tours` : '';
                             detailsStr = `➔ HoT de ${parts.join(' + ')} PV/tour${durStr}`;
@@ -2957,7 +2974,7 @@
                             const fm = e.fixedManaPerTick || e.manaAmount || 0;
                             const pm = e.percentageManaPerTick || e.percentage || 0;
                             if (fm) parts.push(`${fm}`);
-                            if (pm) parts.push(`${Math.round(pm * 100)}% Mana Max`);
+                            if (pm) parts.push(`${Math.round(pm * 100)}% ${formatSrc(e.manaSource || e.source || 'TARGET_MANA_MAX')}`);
                             if (parts.length === 0) parts.push('0');
                             const durStr = e.duration > 0 ? ` sur ${e.duration} tours` : '';
                             detailsStr = `➔ MoT de ${parts.join(' + ')} Mana/tour${durStr}`;
