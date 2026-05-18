@@ -30,6 +30,12 @@ public class HealOverTimeEffect extends HealEffect {
      */
     private int duration;
 
+    @jakarta.persistence.Enumerated(jakarta.persistence.EnumType.STRING)
+    private generation.grimoire.enumeration.Source healSource = generation.grimoire.enumeration.Source.TARGET_HEALTH_MAX;
+
+    @jakarta.persistence.Transient
+    private Personnage caster;
+
     /**
      * Méthode qui applique le soin chaque tour.
      * Cette méthode sera appelée par le Personnage (via sa méthode d'update des effets) à chaque début ou fin de tour.
@@ -38,7 +44,8 @@ public class HealOverTimeEffect extends HealEffect {
         if (duration > 0) {
             int totalHeal = fixedHealPerTick;
             if (percentageHealPerTick > 0) {
-                totalHeal += (int)(target.getHealthMax() * percentageHealPerTick);
+                double sourceValue = generation.grimoire.utils.StatCalculator.getSourceValue(healSource, caster, target);
+                totalHeal += (int)(sourceValue * percentageHealPerTick);
             }
             totalHeal = (int) (totalHeal * getAmplificationMultiplier());
             target.heal(totalHeal);
@@ -53,6 +60,7 @@ public class HealOverTimeEffect extends HealEffect {
      */
     @Override
     public void apply(Personnage caster, Personnage target) {
+        this.caster = caster;
         target.addHealOverTimeEffect(this);
         System.out.println("Heal over time appliqué sur " + target.getName() + " pour " + duration + " tours.");
     }

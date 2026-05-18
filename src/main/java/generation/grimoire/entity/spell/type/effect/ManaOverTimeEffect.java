@@ -28,11 +28,18 @@ public class ManaOverTimeEffect extends ManaEffect {
      */
     private int duration;
 
+    @jakarta.persistence.Enumerated(jakarta.persistence.EnumType.STRING)
+    private generation.grimoire.enumeration.Source manaSource = generation.grimoire.enumeration.Source.TARGET_MANA_MAX;
+
+    @jakarta.persistence.Transient
+    private Personnage caster;
+
     public void tick(Personnage target) {
         if (duration > 0) {
             int totalMana = fixedManaPerTick;
             if (percentageManaPerTick > 0) {
-                totalMana += (int)(target.getManaMax() * percentageManaPerTick);
+                double sourceValue = generation.grimoire.utils.StatCalculator.getSourceValue(manaSource, caster, target);
+                totalMana += (int)(sourceValue * percentageManaPerTick);
             }
             totalMana = (int) (totalMana * getAmplificationMultiplier());
             target.restoreMana(totalMana);
@@ -43,6 +50,7 @@ public class ManaOverTimeEffect extends ManaEffect {
 
     @Override
     public void apply(Personnage caster, Personnage target) {
+        this.caster = caster;
         target.addManaOverTimeEffect(this);
         System.out.println("Mana over time appliqué sur " + target.getName() + " pour " + duration + " tours.");
     }

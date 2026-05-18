@@ -322,6 +322,7 @@ public class WebSpellCreationController {
                         hot.setPercentageHealPerTick(eDto.getPercentage());
                         hot.setFixedHealPerTick(eDto.getHealAmount());
                         hot.setDuration(eDto.getDuration());
+                        hot.setHealSource(eDto.getSource() != null ? eDto.getSource() : Source.TARGET_HEALTH_MAX);
                         effect = hot;
                         break;
                     case "FIXED_MANA":
@@ -340,6 +341,7 @@ public class WebSpellCreationController {
                         mot.setPercentageManaPerTick(eDto.getPercentage());
                         mot.setFixedManaPerTick(eDto.getManaAmount());
                         mot.setDuration(eDto.getDuration());
+                        mot.setManaSource(eDto.getSource() != null ? eDto.getSource() : Source.TARGET_MANA_MAX);
                         effect = mot;
                         break;
                     case "PURGE":
