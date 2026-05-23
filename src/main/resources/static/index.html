@@ -2964,6 +2964,15 @@
             const container = document.getElementById('createdSpellsContainer');
             if (!container) return;
 
+            const srcLabels = {
+                'CASTER_POWER': 'Puiss. Lanceur', 'TARGET_POWER': 'Puiss. Cible', 'CASTER_MANA_MAX': 'Mana Max Lanc.',
+                'TARGET_MANA_MAX': 'Mana Max Cib.', 'CASTER_MANA_MISSING': 'Mana Manq. Lanc.', 'TARGET_MANA_MISSING': 'Mana Manq. Cib.',
+                'CASTER_MANA_CURRENT': 'Mana Act. Lanc.', 'TARGET_MANA_CURRENT': 'Mana Act. Cib.', 'CASTER_HEALTH_MAX': 'PV Max Lanc.',
+                'TARGET_HEALTH_MAX': 'PV Max Cib.', 'CASTER_HEALTH_MISSING': 'PV Manq. Lanc.', 'TARGET_HEALTH_MISSING': 'PV Manq. Cib.',
+                'CASTER_HEALTH_CURRENT': 'PV Act. Lanc.', 'TARGET_HEALTH_CURRENT': 'PV Act. Cib.'
+            };
+            const formatSrc = s => srcLabels[s] || s;
+
             if (!loadedSpells || loadedSpells.length === 0) {
                 container.innerHTML = `<div class="empty-state">Le grimoire est vierge. Forgez le premier sort !</div>`;
                 return;
@@ -3114,14 +3123,6 @@
                         };
                         const formatStat = s => statLabels[s] || s;
 
-                        const srcLabels = {
-                            'CASTER_POWER': 'Puiss. Lanceur', 'TARGET_POWER': 'Puiss. Cible', 'CASTER_MANA_MAX': 'Mana Max Lanc.',
-                            'TARGET_MANA_MAX': 'Mana Max Cib.', 'CASTER_MANA_MISSING': 'Mana Manq. Lanc.', 'TARGET_MANA_MISSING': 'Mana Manq. Cib.',
-                            'CASTER_MANA_CURRENT': 'Mana Act. Lanc.', 'TARGET_MANA_CURRENT': 'Mana Act. Cib.', 'CASTER_HEALTH_MAX': 'PV Max Lanc.',
-                            'TARGET_HEALTH_MAX': 'PV Max Cib.', 'CASTER_HEALTH_MISSING': 'PV Manq. Lanc.', 'TARGET_HEALTH_MISSING': 'PV Manq. Cib.',
-                            'CASTER_HEALTH_CURRENT': 'PV Act. Lanc.', 'TARGET_HEALTH_CURRENT': 'PV Act. Cib.'
-                        };
-                        const formatSrc = s => srcLabels[s] || s;
 
                         const dt = (e.damageType || 'MAGIC').toLowerCase();
                         const dtStr = dt === 'magic' ? 'Magiques' : (dt === 'physic' ? 'Physiques' : 'Bruts');
@@ -3198,9 +3199,22 @@
                         }
 
                         const keyBadge = e.requiredChoiceKey != null ? `<span style="background:rgba(245,158,11,0.2); color:#f59e0b; padding:0.1rem 0.3rem; border-radius:3px; font-size:0.75rem; font-weight:bold;" title="S'active uniquement si l'option choisie au cast est ${e.requiredChoiceKey}">Option ${e.requiredChoiceKey}</span>` : '';
+                        
+                        let turnBadge = '';
+                        if (sp.castingType === 'CANALISE') {
+                            const turns = e.channelingTurns || [];
+                            if (turns.length > 0) {
+                                const turnStr = turns.map(t => `T${t}`).join(', ');
+                                turnBadge = `<span style="background:rgba(139,92,246,0.2); color:#a78bfa; padding:0.1rem 0.3rem; border-radius:3px; font-size:0.75rem; font-weight:bold;" title="Déclenché aux tours de canalisation : ${turnStr}">${turnStr}</span>`;
+                            } else {
+                                turnBadge = `<span style="background:rgba(239,68,68,0.2); color:#fca5a5; padding:0.1rem 0.3rem; border-radius:3px; font-size:0.75rem; font-weight:bold;" title="Ne se déclenche à aucun tour">Jamais</span>`;
+                            }
+                        }
+
                         effectsSummaryHtml += `
                             <div class="effect-line" style="display:flex; align-items:baseline; gap:0.3rem; flex-wrap:wrap;">
                                 <div class="indicator ${indicatorClass}" style="flex-shrink:0;"></div>
+                                ${turnBadge}
                                 ${keyBadge}
                                 <span style="font-weight:600; color:#fff;">[${targetText}]</span>
                                 <span style="color:var(--spell-color, #38bdf8); font-weight:500;">${eTypeStr}</span>
@@ -3257,8 +3271,8 @@
                         </div>
                         ${rankTitleBadge}
                         <div class="spell-meta" style="flex-wrap: wrap; gap: 0.5rem;">
-                            <span>💧 ${sp.manaCost}${sp.percentManaCost > 0 ? ` + ${sp.percentManaCost}% (${sp.percentManaCostSource || 'MAX'})` : ''} Mana</span>
-                            ${sp.healCost > 0 || sp.percentHealCost > 0 ? `<span>🩸 ${sp.healCost}${sp.percentHealCost > 0 ? ` + ${sp.percentHealCost}% (${sp.percentHealCostSource || 'MAX'})` : ''} PV</span>` : ''}
+                            <span>💧 ${sp.manaCost}${sp.percentManaCost > 0 ? ` + ${sp.percentManaCost}% (${formatSrc(sp.percentManaCostSource || 'CASTER_MANA_MAX')})` : ''} Mana</span>
+                            ${sp.healCost > 0 || sp.percentHealCost > 0 ? `<span>🩸 ${sp.healCost}${sp.percentHealCost > 0 ? ` + ${sp.percentHealCost}% (${formatSrc(sp.percentHealCostSource || 'CASTER_HEALTH_MAX')})` : ''} PV</span>` : ''}
                             ${sp.castingType === 'CANALISE' ? `
                                 <span style="color: #a78bfa; display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.85rem;" title="Paramètres du sort canalisé">
                                     <span class="material-symbols-outlined" style="font-size: 1.1rem; color: #a78bfa; vertical-align: middle;">cyclone</span>
@@ -3729,6 +3743,7 @@
             editingSpellId = sp.id;
             document.getElementById('nom').value = sp.nom || '';
             document.getElementById('niveau').value = sp.niveau || 1;
+            document.getElementById('niveau').dispatchEvent(new Event('change'));
             document.getElementById('castingTypeSelect').value = sp.castingType || 'BANAL';
             document.getElementById('castingTypeSelect').dispatchEvent(new Event('change'));
             document.getElementById('channelingDuration').value = sp.channelingDuration || 1;
@@ -3737,9 +3752,11 @@
             document.getElementById('manaCost').value = sp.manaCost || 0;
             document.getElementById('percentManaCost').value = sp.percentManaCost || 0;
             document.getElementById('percentManaCostSource').value = sp.percentManaCostSource || 'CASTER_MANA_MAX';
+            document.getElementById('percentManaCostSource').dispatchEvent(new Event('change'));
             document.getElementById('healCost').value = sp.healCost || 0;
             document.getElementById('percentHealCost').value = sp.percentHealCost || 0;
             document.getElementById('percentHealCostSource').value = sp.percentHealCostSource || 'CASTER_HEALTH_MAX';
+            document.getElementById('percentHealCostSource').dispatchEvent(new Event('change'));
 
             document.getElementById('voieSelect').value = sp.voie ? sp.voie.id : '';
             document.getElementById('voieSelect').dispatchEvent(new Event('change'));
