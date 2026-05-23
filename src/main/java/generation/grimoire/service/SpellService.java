@@ -5,7 +5,6 @@ import generation.grimoire.entity.SpellEffect;
 import generation.grimoire.entity.personnage.Personnage;
 import generation.grimoire.entity.spiritualite.passif.SpiritualitePassiveEffect;
 import generation.grimoire.entity.spell.type.effect.ConsumableSpellBuffDebuffEffect;
-import generation.grimoire.enumeration.SpellCategory;
 import generation.grimoire.enumeration.SpellCondition;
 import generation.grimoire.repository.SpellRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -25,9 +24,9 @@ public class SpellService {
         this.personnageService = personnageService;
     }
 
-    public void castSpellInvoq(Long spellId,
-            Long casterId,
-            Long targetId,
+    public void castSpellInvoq(@org.springframework.lang.NonNull Long spellId,
+            @org.springframework.lang.NonNull Long casterId,
+            @org.springframework.lang.NonNull Long targetId,
             Integer choiceKey) {
         Spell baseSpell = spellRepository.findById(spellId)
                 .orElseThrow(() -> new EntityNotFoundException("Sort non trouvé : " + spellId));
@@ -50,6 +49,36 @@ public class SpellService {
 
         // Dans le cas d'un variant, on détermine lequel est sélectioné
         Spell toCast = selectVariant(spell, caster, target, choiceKey);
+
+        // 1) Enforce category casting limits
+        generation.grimoire.enumeration.SpellCastingType cType = toCast.getCastingType();
+        if (cType == null) {
+            cType = generation.grimoire.enumeration.SpellCastingType.BANAL;
+        }
+
+        // Rule A: If currently channeling
+        if (caster.getRemainingChannelingTurns() > 0) {
+            if (cType != generation.grimoire.enumeration.SpellCastingType.INSTANTANE) {
+                System.out.println(caster.getName() + " ne peut pas lancer de sort banal ou canalisé pendant sa canalisation.");
+                return;
+            }
+            if (!caster.isAllowInstantDuringCurrentChanneling()) {
+                System.out.println(caster.getName() + " ne peut pas lancer de sort instantané pendant cette canalisation.");
+                return;
+            }
+        }
+
+        // Rule B: If already cast a Banal or Channeled spell this turn
+        if (caster.isBanalSpellCastThisTurn()) {
+            System.out.println(caster.getName() + " a déjà lancé un sort banal ce tour-ci (sa dernière action magique est consommée).");
+            return;
+        }
+
+        // Rule C: If already cast an Instant spell this turn
+        if (cType == generation.grimoire.enumeration.SpellCastingType.INSTANTANE && caster.isInstantSpellCastThisTurn()) {
+            System.out.println(caster.getName() + " a déjà lancé un sort instantané ce tour-ci.");
+            return;
+        }
 
         // Validation des prérequis de la spiritualité associée au sort
         if (toCast.getSpiritualite() != null && toCast.getSpiritualite().getPassiveEffects() != null) {
@@ -89,6 +118,18 @@ public class SpellService {
         caster.setHealthCurrent(caster.getHealthCurrent() - actualHealCost);
         System.out.println(caster.getName() + " dépense " + actualManaCost + " mana et " + actualHealCost
                 + " PV pour lancer " + toCast.getNom());
+
+        // Mettre à jour l'état de lancement du caster
+        if (cType == generation.grimoire.enumeration.SpellCastingType.INSTANTANE) {
+            caster.setInstantSpellCastThisTurn(true);
+        } else if (cType == generation.grimoire.enumeration.SpellCastingType.BANAL) {
+            caster.setBanalSpellCastThisTurn(true);
+        } else if (cType == generation.grimoire.enumeration.SpellCastingType.CANALISE) {
+            caster.setBanalSpellCastThisTurn(true);
+            caster.setRemainingChannelingTurns(toCast.getChannelingDuration());
+            caster.setAllowInstantDuringCurrentChanneling(toCast.isAllowInstantDuringChanneling());
+            System.out.println(caster.getName() + " commence à canaliser " + toCast.getNom() + " pour " + toCast.getChannelingDuration() + " tours.");
+        }
 
         // Appliquer les buffs consommables de manière générique
         applyConsumableBuffs(toCast, caster, target);
@@ -268,7 +309,7 @@ public class SpellService {
      *
      * @param spell le sort à enregistrer
      */
-    public void saveSpell(Spell spell) {
+    public void saveSpell(@org.springframework.lang.NonNull Spell spell) {
         spellRepository.save(spell);
     }
 

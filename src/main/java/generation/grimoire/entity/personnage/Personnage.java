@@ -82,6 +82,32 @@ public class Personnage {
         passiveStates.put(key, value);
     }
 
+    @Transient
+    private boolean instantSpellCastThisTurn;
+
+    @Transient
+    private boolean banalSpellCastThisTurn;
+
+    @Transient
+    private int remainingChannelingTurns;
+
+    @Transient
+    private boolean allowInstantDuringCurrentChanneling = true;
+
+    public void startTurn() {
+        this.instantSpellCastThisTurn = false;
+        this.banalSpellCastThisTurn = false;
+        if (this.remainingChannelingTurns > 0) {
+            this.remainingChannelingTurns--;
+            if (this.remainingChannelingTurns == 0) {
+                this.allowInstantDuringCurrentChanneling = true;
+                System.out.println(name + " a terminé sa canalisation.");
+            } else {
+                System.out.println(name + " continue de canaliser (tours restants : " + remainingChannelingTurns + ").");
+            }
+        }
+    }
+
     /**
      * Applique des dégâts après calculs des résistance à ce personnage.
      * Calculs de résistance en fonction du DamageType.
@@ -114,9 +140,9 @@ public class Personnage {
         // Calcul du facteur de réduction des dégâts (valeur entre 0 et 1)
         double reductionFactor = resistanceValue / (resistanceValue + constant);
 
-        // TODO si de multiple buff sont donnée, ça marche toujours (buff phy, buff mag)
-        // TODO La vulnérabilité et la res fonction (multiple sur la target), mais pas
-        // la surpuissance (multiple sur le caster
+        // NOTE : si de multiples buffs sont donnés, cela fonctionne (buff phy, buff mag).
+        // NOTE : La vulnérabilité et la résistance fonctionnent en cumulé sur la cible,
+        // mais pas encore la surpuissance (multiple sur le lanceur).
 
         // Mapper le DamageType vers StatType pour obtenir le multiplicateur de
         // vulnérabilité

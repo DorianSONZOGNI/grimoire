@@ -1329,6 +1329,56 @@
                 transform: scale(1);
             }
         }
+
+        /* Custom Switch Slider */
+        .switch-container {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            cursor: pointer;
+            user-select: none;
+        }
+        .switch {
+            position: relative;
+            display: inline-block;
+            width: 44px;
+            height: 22px;
+        }
+        .switch input {
+            opacity: 0;
+            width: 0;
+            height: 0;
+        }
+        .slider {
+            position: absolute;
+            cursor: pointer;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background-color: rgba(0, 0, 0, 0.3);
+            border: 1px solid var(--glass-border);
+            transition: .3s;
+            border-radius: 22px;
+        }
+        .slider:before {
+            position: absolute;
+            content: "";
+            height: 14px;
+            width: 14px;
+            left: 3px;
+            bottom: 3px;
+            background-color: white;
+            transition: .3s;
+            border-radius: 50%;
+        }
+        input:checked + .slider {
+            background-color: var(--primary);
+            box-shadow: 0 0 8px var(--primary-glow);
+        }
+        input:checked + .slider:before {
+            transform: translateX(22px);
+        }
     </style>
 </head>
 
@@ -1372,6 +1422,23 @@
                         <option value="BANAL" selected>Banal (Consomme le tour)</option>
                         <option value="CANALISE">Canalisé (Multi-tours)</option>
                     </select>
+                </div>
+            </div>
+
+            <!-- Options spécifiques pour sort canalisé -->
+            <div id="channelingConfig" class="form-row" style="display: none; margin-top: 1rem;">
+                <div class="form-group">
+                    <label for="channelingDuration">Durée de canalisation (Tours)</label>
+                    <input type="number" id="channelingDuration" min="1" value="1">
+                </div>
+                <div class="form-group" style="justify-content: center; align-items: flex-start; height: 100%;">
+                    <label class="switch-container" style="margin-top: 2rem; display: flex; align-items: center;">
+                        <span class="switch">
+                            <input type="checkbox" id="allowInstantDuringChanneling" checked>
+                            <span class="slider"></span>
+                        </span>
+                        <span style="color: var(--text-main); font-size: 0.9rem;">Autoriser les instantanés</span>
+                    </label>
                 </div>
             </div>
 
@@ -1746,8 +1813,27 @@
 
                 updateRankTitle();
                 renderOriginButtons();
+
+                // Toggle channeling fields visibility based on casting type select
+                const castingTypeSel = document.getElementById('castingTypeSelect');
+                if (castingTypeSel) {
+                    castingTypeSel.addEventListener('change', toggleChannelingFields);
+                }
+                toggleChannelingFields();
             } catch (err) {
                 console.error("Erreur de chargement des métadonnées", err);
+            }
+        }
+
+        function toggleChannelingFields() {
+            const castingTypeSel = document.getElementById('castingTypeSelect');
+            const container = document.getElementById('channelingConfig');
+            if (!castingTypeSel || !container) return;
+            
+            if (castingTypeSel.value === 'CANALISE') {
+                container.style.display = 'grid';
+            } else {
+                container.style.display = 'none';
             }
         }
 
@@ -2742,6 +2828,12 @@
                 nom: nomInput.value.trim(),
                 niveau: parseInt(document.getElementById('niveau').value) || 1,
                 castingType: document.getElementById('castingTypeSelect').value || 'BANAL',
+                channelingDuration: document.getElementById('castingTypeSelect').value === 'CANALISE'
+                    ? (parseInt(document.getElementById('channelingDuration').value) || 1)
+                    : 0,
+                allowInstantDuringChanneling: document.getElementById('castingTypeSelect').value === 'CANALISE'
+                    ? document.getElementById('allowInstantDuringChanneling').checked
+                    : true,
                 description: document.getElementById('description').value.trim(),
                 manaCost: parseInt(document.getElementById('manaCost').value) || 0,
                 percentManaCost: parseInt(document.getElementById('percentManaCost').value) || 0,
@@ -2788,6 +2880,14 @@
                     document.getElementById('description').value = '';
                     currentEffects = [];
                     renderEffects();
+
+                    // Réinitialiser les champs de canalisation
+                    const channelingDurInput = document.getElementById('channelingDuration');
+                    if (channelingDurInput) channelingDurInput.value = 1;
+                    const allowInstantInput = document.getElementById('allowInstantDuringChanneling');
+                    if (allowInstantInput) allowInstantInput.checked = true;
+                    document.getElementById('castingTypeSelect').value = 'BANAL';
+                    document.getElementById('castingTypeSelect').dispatchEvent(new Event('change'));
 
                     // Recharger la liste
                     await loadSpells();
@@ -3568,6 +3668,9 @@
             document.getElementById('nom').value = sp.nom || '';
             document.getElementById('niveau').value = sp.niveau || 1;
             document.getElementById('castingTypeSelect').value = sp.castingType || 'BANAL';
+            document.getElementById('castingTypeSelect').dispatchEvent(new Event('change'));
+            document.getElementById('channelingDuration').value = sp.channelingDuration || 1;
+            document.getElementById('allowInstantDuringChanneling').checked = sp.allowInstantDuringChanneling !== false;
             document.getElementById('description').value = sp.description || '';
             document.getElementById('manaCost').value = sp.manaCost || 0;
             document.getElementById('percentManaCost').value = sp.percentManaCost || 0;

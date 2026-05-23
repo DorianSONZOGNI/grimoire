@@ -13,7 +13,7 @@ public class VoieService {
         this.voieRepository = voieRepository;
     }
 
-    public void saveSpell(Voie voie) {
+    public void saveSpell(@org.springframework.lang.NonNull Voie voie) {
         voieRepository.save(voie);
     }
 }

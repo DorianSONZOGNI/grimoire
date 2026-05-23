@@ -6,7 +6,6 @@ import generation.grimoire.entity.personnage.Personnage;
 import generation.grimoire.entity.spell.type.effect.BuffDebuffEffect;
 import generation.grimoire.entity.spell.type.effect.DamageFixedEffect;
 import generation.grimoire.entity.spell.type.effect.DamageOverTimeEffect;
-import generation.grimoire.entity.spell.type.effect.DamagePercentageEffect;
 import generation.grimoire.entity.spell.type.effect.HealFixedEffect;
 import generation.grimoire.entity.spell.type.effect.ShieldEffect;
 import generation.grimoire.entity.voie.passif.specific.RaisonPassiveEffect;
@@ -253,6 +252,9 @@ class CombatSimulation2Test {
     }
 
     private void triggerTurnStartForAll() {
+        mage.startTurn();
+        necromancien.startTurn();
+        boss.startTurn();
         if (mage.getVoie() != null) mage.getVoie().getPassiveEffects().forEach(p -> p.onTurnStart(mage));
         if (necromancien.getVoie() != null) necromancien.getVoie().getPassiveEffects().forEach(p -> p.onTurnStart(necromancien));
         if (boss.getVoie() != null) boss.getVoie().getPassiveEffects().forEach(p -> p.onTurnStart(boss));

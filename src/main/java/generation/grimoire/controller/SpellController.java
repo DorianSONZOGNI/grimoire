@@ -1,7 +1,6 @@
 package generation.grimoire.controller;
 
 import generation.grimoire.entity.Spell;
-import generation.grimoire.entity.SpellEffect;
 import generation.grimoire.entity.personnage.Personnage;
 import generation.grimoire.entity.spell.type.effect.*;
 import generation.grimoire.enumeration.DamageType;
@@ -26,9 +25,9 @@ public class SpellController {
 
     @PostMapping("/cast")
     public ResponseEntity<String> cast(
-            @RequestParam Long spellId,
-            @RequestParam Long casterId,
-            @RequestParam Long targetId,
+            @RequestParam @org.springframework.lang.NonNull Long spellId,
+            @RequestParam @org.springframework.lang.NonNull Long casterId,
+            @RequestParam @org.springframework.lang.NonNull Long targetId,
             @RequestParam(required = false) Integer choiceKey) {
         spellService.castSpellInvoq(
                 spellId,

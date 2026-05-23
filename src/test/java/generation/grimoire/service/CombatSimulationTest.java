@@ -8,7 +8,6 @@ import generation.grimoire.entity.spell.type.effect.DamageFixedEffect;
 import generation.grimoire.entity.voie.passif.specific.SuretePassiveEffect;
 import generation.grimoire.entity.voie.passif.specific.TrahisonPassiveEffect;
 import generation.grimoire.enumeration.DamageType;
-import generation.grimoire.enumeration.SpellCategory;
 import generation.grimoire.enumeration.StatType;
 import generation.grimoire.repository.SpellRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -240,6 +239,9 @@ class CombatSimulationTest {
     }
 
     private void triggerTurnStartForAll() {
+        ally1.startTurn();
+        ally2.startTurn();
+        boss.startTurn();
         if (ally1.getVoie() != null) ally1.getVoie().getPassiveEffects().forEach(p -> p.onTurnStart(ally1));
         if (ally2.getVoie() != null) ally2.getVoie().getPassiveEffects().forEach(p -> p.onTurnStart(ally2));
         if (boss.getVoie() != null) boss.getVoie().getPassiveEffects().forEach(p -> p.onTurnStart(boss));

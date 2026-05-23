@@ -167,7 +167,7 @@ public class WebSpellCreationController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteSpell(@PathVariable Long id) {
+    public ResponseEntity<String> deleteSpell(@PathVariable @org.springframework.lang.NonNull Long id) {
         if (spellRepository.existsById(id)) {
             spellRepository.deleteById(id);
             return ResponseEntity.ok("Sort supprimé avec succès.");
@@ -176,7 +176,7 @@ public class WebSpellCreationController {
     }
 
     @GetMapping("/try/{id}")
-    public ResponseEntity<SimulationResultDto> trySpell(@PathVariable Long id) {
+    public ResponseEntity<SimulationResultDto> trySpell(@PathVariable @org.springframework.lang.NonNull Long id) {
         java.util.Optional<Spell> opt = spellRepository.findById(id);
         if (opt.isEmpty()) {
             return ResponseEntity.notFound().build();
@@ -240,8 +240,9 @@ public class WebSpellCreationController {
     public ResponseEntity<String> createSpellPayload(@RequestBody SpellCreationDto dto) {
         Spell spell;
         boolean isUpdate = false;
-        if (dto.getId() != null && spellRepository.existsById(dto.getId())) {
-            spell = spellRepository.findById(dto.getId()).get();
+        Long id = dto.getId();
+        if (id != null && spellRepository.existsById(id)) {
+            spell = spellRepository.findById(id).get();
             spell.getEffects().clear();
             isUpdate = true;
         } else {
@@ -260,14 +261,18 @@ public class WebSpellCreationController {
             spell.setPercentHealCostSource(dto.getPercentHealCostSource());
         if (dto.getCastingType() != null)
             spell.setCastingType(dto.getCastingType());
+        spell.setChannelingDuration(dto.getChannelingDuration());
+        spell.setAllowInstantDuringChanneling(dto.isAllowInstantDuringChanneling());
 
-        if (dto.getVoieId() != null) {
-            voieRepository.findById(dto.getVoieId()).ifPresent(spell::setVoie);
+        Long voieId = dto.getVoieId();
+        if (voieId != null) {
+            voieRepository.findById(voieId).ifPresent(spell::setVoie);
         } else {
             spell.setVoie(null);
         }
-        if (dto.getSpiritualiteId() != null) {
-            spiritualiteRepository.findById(dto.getSpiritualiteId()).ifPresent(spell::setSpiritualite);
+        Long spiritualiteId = dto.getSpiritualiteId();
+        if (spiritualiteId != null) {
+            spiritualiteRepository.findById(spiritualiteId).ifPresent(spell::setSpiritualite);
         } else {
             spell.setSpiritualite(null);
         }
@@ -395,6 +400,8 @@ public class WebSpellCreationController {
         private Source percentHealCostSource;
         private Long voieId;
         private Long spiritualiteId;
+        private int channelingDuration;
+        private boolean allowInstantDuringChanneling = true;
         private List<EffectCreationDto> effects = new ArrayList<>();
     }
 

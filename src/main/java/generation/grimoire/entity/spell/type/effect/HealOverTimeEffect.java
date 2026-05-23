@@ -1,6 +1,5 @@
 package generation.grimoire.entity.spell.type.effect;
 
-import generation.grimoire.entity.SpellEffect;
 import generation.grimoire.entity.personnage.Personnage;
 import generation.grimoire.enumeration.StatType;
 import jakarta.persistence.DiscriminatorValue;

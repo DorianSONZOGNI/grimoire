@@ -1,12 +1,10 @@
 package generation.grimoire.entity.spell.type.effect;
 
-import generation.grimoire.entity.SpellEffect;
 import generation.grimoire.entity.personnage.Personnage;
 import generation.grimoire.enumeration.DamageType;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import jakarta.persistence.Enumerated;
-import jakarta.persistence.EnumType;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
 
