@@ -194,4 +194,63 @@ class SpellCategoryCastingTest {
         spellService.castSpell(instantSpell, caster, target, null);
         assertThat(caster.getManaCurrent()).isEqualTo(80);
     }
+
+    @Test
+    void testChannelingTurnSpecificEffects() {
+        // Create a channeled spell with duration 3
+        Spell spell = new Spell();
+        spell.setNom("Tempest");
+        spell.setCastingType(SpellCastingType.CANALISE);
+        spell.setChannelingDuration(3);
+        spell.setManaCost(10);
+
+        // Effect 1: fixed damage active on Turn 1 and Turn 3
+        generation.grimoire.entity.spell.type.effect.DamageFixedEffect dmg = new generation.grimoire.entity.spell.type.effect.DamageFixedEffect();
+        dmg.setDamage(15);
+        dmg.setDamageType(generation.grimoire.enumeration.DamageType.MAGIC);
+        dmg.getChannelingTurns().addAll(java.util.List.of(1, 3));
+        spell.addEffect(dmg);
+
+        // Effect 2: fixed heal active on Turn 2
+        generation.grimoire.entity.spell.type.effect.HealFixedEffect heal = new generation.grimoire.entity.spell.type.effect.HealFixedEffect();
+        heal.setHealAmount(20);
+        heal.setEffectTarget(generation.grimoire.enumeration.EffectTarget.CASTER);
+        heal.getChannelingTurns().add(2);
+        spell.addEffect(heal);
+
+        // Set caster to lower health so we can see healing
+        caster.setHealthCurrent(50);
+
+        // --- Turn 1 ---
+        caster.startTurn();
+        spellService.castSpell(spell, caster, target, null);
+
+        // Turn 1: Damage should apply (15 damage), Heal should NOT apply
+        assertThat(target.getHealthCurrent()).isEqualTo(85); // 100 - 15
+        assertThat(caster.getHealthCurrent()).isEqualTo(50); // No heal
+
+        // --- Turn 2 ---
+        caster.startTurn(); // Decrements remaining turns to 2
+        spellService.tickChanneling(caster, target, null);
+
+        // Turn 2: Damage should NOT apply, Heal should apply (20 heal)
+        assertThat(target.getHealthCurrent()).isEqualTo(85); // No extra damage
+        assertThat(caster.getHealthCurrent()).isEqualTo(70); // 50 + 20
+
+        // --- Turn 3 ---
+        caster.startTurn(); // Decrements remaining turns to 1
+        spellService.tickChanneling(caster, target, null);
+
+        // Turn 3: Damage should apply (15 damage), Heal should NOT apply
+        assertThat(target.getHealthCurrent()).isEqualTo(70); // 85 - 15
+        assertThat(caster.getHealthCurrent()).isEqualTo(70); // No heal
+
+        // --- Turn 4 ---
+        caster.startTurn(); // Decrements remaining turns to 0, resets channeling
+        spellService.tickChanneling(caster, target, null);
+
+        // Turn 4: Channeling finished, nothing happens
+        assertThat(target.getHealthCurrent()).isEqualTo(70);
+        assertThat(caster.getHealthCurrent()).isEqualTo(70);
+    }
 }

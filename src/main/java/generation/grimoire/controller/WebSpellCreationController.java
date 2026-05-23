@@ -221,6 +221,16 @@ public class WebSpellCreationController {
 
             System.out.println("⚔️ --- Lancement de : " + spell.getNom() + " ---");
             spellService.castSpell(spell, hero, monstre, null);
+
+            // Simuler le déroulement des tours restants de la canalisation
+            if (spell.getCastingType() == generation.grimoire.enumeration.SpellCastingType.CANALISE) {
+                int duration = spell.getChannelingDuration();
+                for (int t = 2; t <= duration; t++) {
+                    System.out.println("\n--- TOUR DE CANALISATION " + t + " ---");
+                    hero.startTurn();
+                    spellService.tickChanneling(hero, monstre, null);
+                }
+            }
             ps.flush();
         } catch (Exception e) {
             System.out.println("❌ Erreur de simulation : " + e.getMessage());
@@ -373,6 +383,9 @@ public class WebSpellCreationController {
                         effect.setTargetExpression(eDto.getTargetExpression().trim());
                     }
                     effect.setRequiredChoiceKey(eDto.getRequiredChoiceKey());
+                    if (eDto.getChannelingTurns() != null) {
+                        effect.setChannelingTurns(new java.util.ArrayList<>(eDto.getChannelingTurns()));
+                    }
                     spell.addEffect(effect);
                 }
             }
@@ -422,6 +435,7 @@ public class WebSpellCreationController {
         private StatType statAffected;
         private Source source;
         private Integer requiredChoiceKey;
+        private List<Integer> channelingTurns = new ArrayList<>();
     }
 
     @Data

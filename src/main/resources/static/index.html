@@ -1429,7 +1429,7 @@
             <div id="channelingConfig" class="form-row" style="display: none; margin-top: 1rem;">
                 <div class="form-group">
                     <label for="channelingDuration">Durée de canalisation (Tours)</label>
-                    <input type="number" id="channelingDuration" min="1" value="1">
+                    <input type="number" id="channelingDuration" min="1" value="1" oninput="renderEffects()">
                 </div>
                 <div class="form-group" style="justify-content: center; align-items: flex-start; height: 100%;">
                     <label class="switch-container" style="margin-top: 2rem; display: flex; align-items: center;">
@@ -1835,6 +1835,7 @@
             } else {
                 container.style.display = 'none';
             }
+            renderEffects();
         }
 
         function updateRankTitle() {
@@ -1887,7 +1888,8 @@
                 damageType: 'MAGIC',
                 statAffected: 'ARMURE',
                 source: 'TARGET_HEALTH_MAX',
-                requiredChoiceKey: null
+                requiredChoiceKey: null,
+                channelingTurns: [1]
             };
 
             currentEffects.push(effectObj);
@@ -1943,14 +1945,37 @@
             }
         }
 
+        function toggleEffectChannelingTurn(effectId, turnNum) {
+            const effect = currentEffects.find(e => e.id === effectId);
+            if (effect) {
+                if (!effect.channelingTurns) {
+                    effect.channelingTurns = [];
+                }
+                const index = effect.channelingTurns.indexOf(turnNum);
+                if (index > -1) {
+                    effect.channelingTurns.splice(index, 1);
+                } else {
+                    effect.channelingTurns.push(turnNum);
+                }
+                effect.channelingTurns.sort((a, b) => a - b);
+                renderEffects();
+            }
+        }
+
         function renderEffects() {
             const container = document.getElementById('effectsList');
+            if (!container) return;
             container.innerHTML = '';
 
             if (currentEffects.length === 0) {
                 container.innerHTML = `<div style="font-size: 0.85rem; color: var(--text-muted); text-align: center;">Aucun effet configuré. Le sort n'aura que ses coûts.</div>`;
                 return;
             }
+
+            const castingTypeSelect = document.getElementById('castingTypeSelect');
+            const isCanalise = castingTypeSelect && castingTypeSelect.value === 'CANALISE';
+            const durationInput = document.getElementById('channelingDuration');
+            const duration = durationInput ? (parseInt(durationInput.value) || 1) : 1;
 
             currentEffects.forEach((eff, idx) => {
                 const labelObj = metaData.effectTypes.find(t => t.type === eff.effectType);
@@ -2252,6 +2277,28 @@
                                 <input type="number" value="${eff.requiredChoiceKey !== undefined && eff.requiredChoiceKey !== null ? eff.requiredChoiceKey : ''}" placeholder="Toutes (Par défaut)" style="width: 140px; font-size: 0.85rem; padding: 0.2rem 0.4rem; background: var(--glass-bg); color: #fff; border: 1px solid var(--glass-border); border-radius: 4px;" onchange="updateEffectProp(${eff.id}, 'requiredChoiceKey', this.value ? parseInt(this.value) : null)">
                                 <span style="font-size: 0.75rem; color: var(--text-muted);">Ex: 1 pour la ligne Soin, 2 pour la ligne Mana. Laissez vide pour s'activer toujours.</span>
                             </div>
+
+                            <!-- Tour(s) d'activation de l'effet dans la canalisation (uniquement si le sort est canalisé) -->
+                            ${isCanalise ? `
+                            <div style="display: flex; flex-direction: column; gap: 0.4rem; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px dashed rgba(255,255,255,0.05);">
+                                <label style="font-size: 0.8rem; color: #a78bfa; font-weight: 600;">🌀 Activation par Tour de Canalisation :</label>
+                                <div style="display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center;">
+                                    ${Array.from({ length: duration }, (_, i) => i + 1).map(turn => {
+                                        const isActive = (eff.channelingTurns || []).includes(turn);
+                                        const btnBg = isActive ? 'var(--primary)' : 'rgba(255, 255, 255, 0.05)';
+                                        const btnColor = isActive ? '#fff' : 'var(--text-muted)';
+                                        const btnBorder = isActive ? '1px solid #fff' : '1px solid var(--glass-border)';
+                                        const btnShadow = isActive ? '0 0 8px var(--primary-glow)' : 'none';
+                                        return `
+                                            <button type="button" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; border-radius: 4px; background: ${btnBg}; color: ${btnColor}; border: ${btnBorder}; box-shadow: ${btnShadow}; cursor: pointer; transition: all 0.2s;" onclick="toggleEffectChannelingTurn(${eff.id}, ${turn})">
+                                                Tour ${turn}
+                                            </button>
+                                        `;
+                                    }).join('')}
+                                    <span style="font-size: 0.75rem; color: var(--text-muted); margin-left: 0.5rem;">Sélectionnez les tours où cet effet se déclenche.</span>
+                                </div>
+                            </div>
+                            ` : ''}
                         </div>
 
                         <hr style="border-color: var(--glass-border); margin: 0;">
@@ -2858,7 +2905,8 @@
                     damageType: e.damageType,
                     statAffected: e.statAffected,
                     source: e.source,
-                    requiredChoiceKey: e.requiredChoiceKey !== undefined ? e.requiredChoiceKey : null
+                    requiredChoiceKey: e.requiredChoiceKey !== undefined ? e.requiredChoiceKey : null,
+                    channelingTurns: e.channelingTurns || []
                 }))
             };
 
@@ -3739,7 +3787,8 @@
                     damageType: e.damageType || 'MAGIC',
                     statAffected: e.statAffected || 'ARMURE',
                     source: e.source || e.shieldSource || e.damageSource || e.healSource || e.manaSource || e.modifierSource || 'TARGET_HEALTH_MAX',
-                    requiredChoiceKey: e.requiredChoiceKey !== undefined ? e.requiredChoiceKey : null
+                    requiredChoiceKey: e.requiredChoiceKey !== undefined ? e.requiredChoiceKey : null,
+                    channelingTurns: e.channelingTurns || [1]
                 };
             });
 

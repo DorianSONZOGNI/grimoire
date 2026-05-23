@@ -2,6 +2,7 @@ package generation.grimoire.entity.personnage;
 
 import generation.grimoire.entity.Spiritualite;
 import generation.grimoire.entity.Voie;
+import generation.grimoire.entity.Spell;
 import generation.grimoire.entity.spell.type.effect.BuffDebuffEffect;
 import generation.grimoire.entity.spell.type.effect.ConsumableSpellBuffDebuffEffect;
 import generation.grimoire.entity.spell.type.effect.DamageOverTimeEffect;
@@ -94,6 +95,15 @@ public class Personnage {
     @Transient
     private boolean allowInstantDuringCurrentChanneling = true;
 
+    @Transient
+    private Spell channeledSpell;
+
+    @Transient
+    private Personnage channelingTarget;
+
+    @Transient
+    private Integer channelingChoiceKey;
+
     public void startTurn() {
         this.instantSpellCastThisTurn = false;
         this.banalSpellCastThisTurn = false;
@@ -101,6 +111,9 @@ public class Personnage {
             this.remainingChannelingTurns--;
             if (this.remainingChannelingTurns == 0) {
                 this.allowInstantDuringCurrentChanneling = true;
+                this.channeledSpell = null;
+                this.channelingTarget = null;
+                this.channelingChoiceKey = null;
                 System.out.println(name + " a terminé sa canalisation.");
             } else {
                 System.out.println(name + " continue de canaliser (tours restants : " + remainingChannelingTurns + ").");

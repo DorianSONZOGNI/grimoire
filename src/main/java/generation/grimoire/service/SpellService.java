@@ -128,6 +128,9 @@ public class SpellService {
             caster.setBanalSpellCastThisTurn(true);
             caster.setRemainingChannelingTurns(toCast.getChannelingDuration());
             caster.setAllowInstantDuringCurrentChanneling(toCast.isAllowInstantDuringChanneling());
+            caster.setChanneledSpell(toCast);
+            caster.setChannelingTarget(target);
+            caster.setChannelingChoiceKey(choiceKey);
             System.out.println(caster.getName() + " commence à canaliser " + toCast.getNom() + " pour " + toCast.getChannelingDuration() + " tours.");
         }
 
@@ -138,6 +141,13 @@ public class SpellService {
         for (SpellEffect effect : toCast.getEffects()) {
             if (effect.getRequiredChoiceKey() != null && !effect.getRequiredChoiceKey().equals(choiceKey)) {
                 continue; // L'effet ne s'active que si la clé de choix correspond
+            }
+            if (toCast.getCastingType() == generation.grimoire.enumeration.SpellCastingType.CANALISE) {
+                if (effect.getChannelingTurns() != null && !effect.getChannelingTurns().isEmpty()) {
+                    if (!effect.getChannelingTurns().contains(1)) {
+                        continue; // L'effet ne s'active pas au Tour 1
+                    }
+                }
             }
             java.util.List<Personnage> recipients = new java.util.ArrayList<>();
             String expr = effect.getTargetExpression();
@@ -300,6 +310,59 @@ public class SpellService {
                         System.out.println(caster.getName() + " a consommé un buff consumable.");
                     }
                 }
+            }
+        }
+    }
+
+    public void tickChanneling(Personnage caster, Personnage target, Integer choiceKey) {
+        Spell channeledSpell = caster.getChanneledSpell();
+        if (channeledSpell == null) return;
+
+        int duration = channeledSpell.getChannelingDuration();
+        int remaining = caster.getRemainingChannelingTurns();
+        int currentTurn = duration - remaining + 1;
+
+        System.out.println("🌀 [Canalisation] Résolution des effets pour le Tour " + currentTurn + " de " + channeledSpell.getNom());
+
+        for (SpellEffect effect : channeledSpell.getEffects()) {
+            if (effect.getRequiredChoiceKey() != null && !effect.getRequiredChoiceKey().equals(choiceKey)) {
+                continue;
+            }
+            if (effect.getChannelingTurns() != null && !effect.getChannelingTurns().isEmpty()) {
+                if (!effect.getChannelingTurns().contains(currentTurn)) {
+                    continue;
+                }
+            }
+
+            java.util.List<Personnage> recipients = new java.util.ArrayList<>();
+            String expr = effect.getTargetExpression();
+
+            if (expr == null || expr.trim().isEmpty()) {
+                recipients.add((effect.getEffectTarget() != null && effect.getEffectTarget() == generation.grimoire.enumeration.EffectTarget.CASTER) ? caster : target);
+            } else {
+                String lower = expr.toLowerCase();
+                boolean targetsCaster = lower.contains("lanceur") || lower.contains("soi");
+                boolean targetsAlly = lower.contains("allié") || lower.contains("allier");
+                boolean targetsEnemy = lower.contains("cible") || lower.contains("ennemi");
+
+                if (targetsCaster) {
+                    recipients.add(caster);
+                }
+                if (targetsAlly) {
+                    Personnage simulatedAlly = new Personnage();
+                    simulatedAlly.setName("Compagnon Allié");
+                    simulatedAlly.setHealthMax(caster.getHealthMax());
+                    simulatedAlly.setHealthCurrent(caster.getHealthCurrent());
+                    recipients.add(simulatedAlly);
+                }
+                if (targetsEnemy || (!targetsCaster && !targetsAlly)) {
+                    recipients.add(target);
+                }
+                recipients = recipients.stream().distinct().toList();
+            }
+
+            for (Personnage recipient : recipients) {
+                effect.apply(caster, recipient);
             }
         }
     }
