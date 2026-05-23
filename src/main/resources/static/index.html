@@ -3211,6 +3211,20 @@
                         <div class="spell-meta" style="flex-wrap: wrap; gap: 0.5rem;">
                             <span>💧 ${sp.manaCost}${sp.percentManaCost > 0 ? ` + ${sp.percentManaCost}% (${sp.percentManaCostSource || 'MAX'})` : ''} Mana</span>
                             ${sp.healCost > 0 || sp.percentHealCost > 0 ? `<span>🩸 ${sp.healCost}${sp.percentHealCost > 0 ? ` + ${sp.percentHealCost}% (${sp.percentHealCostSource || 'MAX'})` : ''} PV</span>` : ''}
+                            ${sp.castingType === 'CANALISE' ? `
+                                <span style="color: #a78bfa; display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.85rem;" title="Paramètres du sort canalisé">
+                                    <span class="material-symbols-outlined" style="font-size: 1.1rem; color: #a78bfa; vertical-align: middle;">cyclone</span>
+                                    <span>${sp.channelingDuration} tour${sp.channelingDuration > 1 ? 's' : ''}</span>
+                                    ${sp.allowInstantDuringChanneling ? `
+                                        <span class="material-symbols-outlined" style="font-size: 1.1rem; color: #f59e0b; vertical-align: middle;" title="Instantanés autorisés pendant la canalisation">bolt</span>
+                                    ` : `
+                                        <span style="position: relative; display: inline-flex; align-items: center; justify-content: center; width: 1.1rem; height: 1.1rem; vertical-align: middle;" title="Instantanés interdits pendant la canalisation">
+                                            <span class="material-symbols-outlined" style="font-size: 1.1rem; color: #ef4444; position: absolute;">block</span>
+                                            <span class="material-symbols-outlined" style="font-size: 0.75rem; color: #cbd5e1; position: absolute;">bolt</span>
+                                        </span>
+                                    `}
+                                </span>
+                            ` : ''}
                         </div>
                         ${sp.description ? `<div style="font-size:0.9rem; color:var(--text-muted); font-style:italic;">"${sp.description}"</div>` : ''}
                         ${effectsSummaryHtml}
