@@ -50,6 +50,24 @@ public class BuffDebuffEffect extends SpellEffect {
     @Enumerated(EnumType.STRING)
     private Source modifierSource;
 
+    public BuffDebuffEffect cloneEffect() {
+        BuffDebuffEffect clone = new BuffDebuffEffect();
+        clone.setId(this.getId());
+        clone.setSpell(this.getSpell());
+        clone.setEffectTarget(this.getEffectTarget());
+        clone.setTargetExpression(this.getTargetExpression());
+        clone.setRequiredChoiceKey(this.getRequiredChoiceKey());
+        clone.setChannelingTurns(this.getChannelingTurns() != null ? new java.util.ArrayList<>(this.getChannelingTurns()) : null);
+        
+        clone.setStatAffected(this.statAffected);
+        clone.setModifier(this.modifier);
+        clone.setFlatValue(this.flatValue);
+        clone.setDuration(this.duration);
+        clone.setModifierSource(this.getModifierSource());
+        clone.setSourceName(this.getSourceName());
+        return clone;
+    }
+
     @Override
     public void apply(Personnage caster, Personnage target) {
         if (!impactedSpells.isEmpty()) {
@@ -69,7 +87,9 @@ public class BuffDebuffEffect extends SpellEffect {
 
         if (flatValue != 0) {
             if (duration > 0) {
-                target.getActiveBuffs().add(this);
+                BuffDebuffEffect flatClone = this.cloneEffect();
+                flatClone.setModifier(0);
+                target.getActiveBuffs().add(flatClone);
                 System.out.println(target.getName() + " reçoit un effet sur " + statAffected + " (valeur fixe: " + flatValue + ") pour " + duration + " tours.");
             } else {
                 target.applyFlatBuff(statAffected, flatValue);
@@ -77,9 +97,17 @@ public class BuffDebuffEffect extends SpellEffect {
         }
 
         if (modifier != 0) {
-            double baseValue     = StatCalculator.getSourceValue(modifierSource, caster, target);
+            double baseValue     = StatCalculator.getSourceValue(getModifierSource(), caster, target);
             double modifierValue = baseValue * modifier;
-            target.applyBuff(this, modifierValue);
+            if (duration > 0) {
+                BuffDebuffEffect modClone = this.cloneEffect();
+                modClone.setFlatValue(0);
+                target.applyBuff(modClone, modifierValue);
+            } else {
+                BuffDebuffEffect modClone = this.cloneEffect();
+                modClone.setFlatValue(0);
+                target.applyBuff(modClone, modifierValue);
+            }
         }
     }
 

@@ -58,14 +58,31 @@ public class HealOverTimeEffect extends HealEffect {
         }
     }
 
+    public HealOverTimeEffect cloneEffect() {
+        HealOverTimeEffect clone = new HealOverTimeEffect();
+        clone.setId(this.getId());
+        clone.setSpell(this.getSpell());
+        clone.setEffectTarget(this.getEffectTarget());
+        clone.setTargetExpression(this.getTargetExpression());
+        clone.setRequiredChoiceKey(this.getRequiredChoiceKey());
+        clone.setChannelingTurns(this.getChannelingTurns() != null ? new java.util.ArrayList<>(this.getChannelingTurns()) : null);
+        
+        clone.setFixedHealPerTick(this.fixedHealPerTick);
+        clone.setPercentageHealPerTick(this.percentageHealPerTick);
+        clone.setDuration(this.duration);
+        clone.setHealSource(this.healSource);
+        return clone;
+    }
+
     /**
      * Lors de l'application initiale du soin sur la durée,
      * on ajoute cet effet à la liste des effets de soins en cours sur la cible.
      */
     @Override
     public void apply(Personnage caster, Personnage target) {
-        this.caster = caster;
-        target.addHealOverTimeEffect(this);
+        HealOverTimeEffect clone = this.cloneEffect();
+        clone.caster = caster;
+        target.addHealOverTimeEffect(clone);
         System.out.println("Heal over time appliqué sur " + target.getName() + " pour " + duration + " tours.");
     }
 }

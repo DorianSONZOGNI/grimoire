@@ -297,4 +297,30 @@ class PersonnageTest {
 
         assertThat(buff.getModifierSource()).isNull();
     }
+
+    @Test
+    void shouldCloneBuffEffectAndNotMutateTemplateDuration() {
+        BuffDebuffEffect buffTemplate = new BuffDebuffEffect();
+        buffTemplate.setStatAffected(StatType.ARMURE);
+        buffTemplate.setFlatValue(10);
+        buffTemplate.setModifier(0.2);
+        buffTemplate.setDuration(2);
+
+        buffTemplate.apply(hero, enemy);
+
+        // Template duration should remain 2
+        assertThat(buffTemplate.getDuration()).isEqualTo(2);
+
+        // Enemy should have cloned active buffs
+        assertThat(enemy.getActiveBuffs()).hasSize(2); // One flat, one modifier clone
+        
+        // Update buffs: should decrement active buff duration to 1
+        enemy.updateBuffs();
+        assertThat(enemy.getActiveBuffs()).hasSize(2);
+        assertThat(enemy.getActiveBuffs().get(0).getDuration()).isEqualTo(1);
+        assertThat(enemy.getActiveBuffs().get(1).getDuration()).isEqualTo(1);
+
+        // Template duration remains 2
+        assertThat(buffTemplate.getDuration()).isEqualTo(2);
+    }
 }
