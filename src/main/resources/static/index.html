@@ -596,6 +596,145 @@
             background: linear-gradient(135deg, rgba(var(--spell-rgb), 0.25) 0%, rgba(255, 255, 255, 0.05) 100%);
         }
 
+        /* =====================================================
+           LVL-5 HOVER EFFECTS — Keyframes par voie/spiritualité
+           ===================================================== */
+
+        /* --- Consolidation : tremblement pierre --- */
+        @keyframes lvl5-quake {
+            0%,100% { transform: translateY(-6px) scale(1.02) translate(0,0); }
+            10% { transform: translateY(-6px) scale(1.02) translate(-2px, 1px); }
+            20% { transform: translateY(-6px) scale(1.02) translate(2px, -1px); }
+            30% { transform: translateY(-6px) scale(1.02) translate(-1px, 2px); }
+            40% { transform: translateY(-6px) scale(1.02) translate(2px, 1px); }
+            50% { transform: translateY(-6px) scale(1.02) translate(-2px, -1px); }
+            60% { transform: translateY(-6px) scale(1.02) translate(1px, 2px); }
+            70% { transform: translateY(-6px) scale(1.02) translate(-1px, -2px); }
+            80% { transform: translateY(-6px) scale(1.02) translate(2px, -1px); }
+            90% { transform: translateY(-6px) scale(1.02) translate(-1px, 1px); }
+        }
+        .spell-card-lvl-5.lvl5-enter-consolidation {
+            animation: lvl5-quake 0.55s ease-in-out;
+        }
+
+        /* --- Raison : pulsation mentale (ondulation de la bordure) --- */
+        @keyframes lvl5-mind-pulse {
+            0%,100% { box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 8px 30px rgba(59,130,246,0.6), 0 0 0 0 rgba(59,130,246,0); }
+            40% { box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 8px 30px rgba(59,130,246,0.8), 0 0 0 12px rgba(59,130,246,0.15); }
+            80% { box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 8px 30px rgba(59,130,246,0.6), 0 0 0 22px rgba(59,130,246,0); }
+        }
+        .spell-card-lvl-5.lvl5-enter-raison {
+            animation: lvl5-mind-pulse 0.7s ease-out;
+        }
+
+        /* --- Sûreté : vague d'eau (border ripple) --- */
+        @keyframes lvl5-wave-ripple {
+            0%,100% { box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 8px 30px rgba(0,229,204,0.6), 0 0 0 0 rgba(0,229,204,0); }
+            30% { box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 8px 30px rgba(0,229,204,0.8), 0 0 0 8px rgba(0,229,204,0.2); }
+            60% { box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 8px 30px rgba(0,229,204,0.5), 0 0 0 18px rgba(0,229,204,0.05); }
+            80% { box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 8px 30px rgba(0,229,204,0.4), 0 0 0 25px rgba(0,229,204,0); }
+        }
+        .spell-card-lvl-5.lvl5-enter-surete {
+            animation: lvl5-wave-ripple 0.8s ease-out;
+        }
+
+        /* --- Trahison : scintillement instable / craquelure --- */
+        @keyframes lvl5-flicker {
+            0%,100% { opacity: 1; filter: brightness(1); }
+            15% { opacity: 0.85; filter: brightness(1.4) hue-rotate(10deg); }
+            30% { opacity: 1; filter: brightness(0.9); }
+            45% { opacity: 0.9; filter: brightness(1.5) hue-rotate(-15deg); }
+            60% { opacity: 1; filter: brightness(1); }
+            75% { opacity: 0.88; filter: brightness(1.3); }
+        }
+        .spell-card-lvl-5.lvl5-enter-trahison {
+            animation: lvl5-flicker 0.6s ease-in-out;
+        }
+
+        /* --- Conviction : embrasement (flash + léger tremblement chaud) --- */
+        @keyframes lvl5-ignite {
+            0%,100% { box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 8px 30px rgba(183,76,11,0.6); transform: translateY(-6px) scale(1.02); }
+            20% { box-shadow: inset 0 2px 0 rgba(255,200,100,0.5), 0 8px 40px rgba(255,100,0,0.9), 0 0 25px rgba(255,69,0,0.5); transform: translateY(-7px) scale(1.025) rotate(0.3deg); }
+            40% { box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 8px 30px rgba(183,76,11,0.7); transform: translateY(-6px) scale(1.02) rotate(-0.2deg); }
+            60% { box-shadow: inset 0 2px 0 rgba(255,200,100,0.3), 0 8px 35px rgba(255,80,0,0.6); transform: translateY(-6.5px) scale(1.022) rotate(0.15deg); }
+        }
+        .spell-card-lvl-5.lvl5-enter-conviction {
+            animation: lvl5-ignite 0.65s ease-out;
+        }
+
+        /* --- Création : éclat végétal (verdissement lumineux) --- */
+        @keyframes lvl5-bloom {
+            0%,100% { box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 8px 30px rgba(16,185,129,0.6); filter: brightness(1); }
+            25% { box-shadow: inset 0 2px 0 rgba(100,255,180,0.5), 0 8px 40px rgba(16,185,129,1), 0 0 20px rgba(52,211,153,0.4); filter: brightness(1.15) saturate(1.3); }
+            60% { box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 8px 30px rgba(16,185,129,0.7); filter: brightness(1.05); }
+        }
+        .spell-card-lvl-5.lvl5-enter-creation {
+            animation: lvl5-bloom 0.7s ease-out;
+        }
+
+        /* --- Destruction : choc sismique rouge --- */
+        @keyframes lvl5-shockwave {
+            0% { box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 8px 30px rgba(255,0,0,0.6), 0 0 0 0 rgba(255,0,0,0.4); transform: translateY(-6px) scale(1.02); }
+            15% { box-shadow: inset 0 2px 0 rgba(255,200,200,0.5), 0 8px 50px rgba(255,0,0,1), 0 0 0 10px rgba(255,0,0,0.2); transform: translateY(-7px) scale(1.025); }
+            35% { box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 8px 40px rgba(255,0,0,0.7), 0 0 0 22px rgba(255,0,0,0.05); transform: translateY(-6px) scale(1.02); }
+            100% { box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 8px 30px rgba(255,0,0,0.6), 0 0 0 35px rgba(255,0,0,0); transform: translateY(-6px) scale(1.02); }
+        }
+        .spell-card-lvl-5.lvl5-enter-destruction {
+            animation: lvl5-shockwave 0.7s ease-out;
+        }
+
+        /* --- Violence : impact brutal (tremblement + flash rouge-bordeaux) --- */
+        @keyframes lvl5-brutal {
+            0% { transform: translateY(-6px) scale(1.02); filter: brightness(1); }
+            8% { transform: translateY(-8px) scale(1.03) rotate(-1deg); filter: brightness(1.5); }
+            16% { transform: translateY(-5px) scale(1.015) rotate(0.8deg); filter: brightness(0.9); }
+            24% { transform: translateY(-7px) scale(1.025) rotate(-0.5deg); filter: brightness(1.2); }
+            40% { transform: translateY(-6px) scale(1.02) rotate(0.2deg); filter: brightness(1.05); }
+            100% { transform: translateY(-6px) scale(1.02) rotate(0deg); filter: brightness(1); }
+        }
+        .spell-card-lvl-5.lvl5-enter-violence {
+            animation: lvl5-brutal 0.5s cubic-bezier(0.36,0.07,0.19,0.97);
+        }
+
+        /* --- Esprit : scintillement astral (lueurs bleues) --- */
+        @keyframes lvl5-astral {
+            0%,100% { box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 8px 30px rgba(56,189,248,0.6); filter: brightness(1); }
+            20% { box-shadow: inset 0 2px 0 rgba(200,240,255,0.6), 0 8px 40px rgba(56,189,248,1), 0 0 30px rgba(56,189,248,0.5); filter: brightness(1.2) saturate(1.2); }
+            50% { box-shadow: inset 0 2px 0 rgba(255,255,255,0.4), 0 8px 35px rgba(56,189,248,0.8), 0 0 15px rgba(56,189,248,0.3); filter: brightness(1.1); }
+        }
+        .spell-card-lvl-5.lvl5-enter-esprit {
+            animation: lvl5-astral 0.75s ease-out;
+        }
+
+        /* --- Ténèbres : absorption ténébreuse (assombrissement + violet) --- */
+        @keyframes lvl5-void {
+            0%,100% { box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 8px 30px rgba(192,132,252,0.6); filter: brightness(1); }
+            25% { box-shadow: inset 0 2px 0 rgba(0,0,0,0.8), 0 8px 50px rgba(192,132,252,0.9), 0 0 40px rgba(88,28,135,0.6); filter: brightness(0.7) saturate(1.5); }
+            55% { box-shadow: inset 0 2px 0 rgba(100,0,150,0.3), 0 8px 35px rgba(192,132,252,0.75); filter: brightness(0.9); }
+        }
+        .spell-card-lvl-5.lvl5-enter-tenebres {
+            animation: lvl5-void 0.8s ease-out;
+        }
+
+        /* --- Karma : équilibre doré (oscillation harmonieuse) --- */
+        @keyframes lvl5-balance {
+            0%,100% { box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 8px 30px rgba(231,209,152,0.6); transform: translateY(-6px) scale(1.02) rotate(0deg); }
+            25% { box-shadow: inset 0 2px 0 rgba(255,240,150,0.5), 0 8px 40px rgba(231,209,152,1), 0 0 25px rgba(231,209,152,0.4); transform: translateY(-6px) scale(1.02) rotate(1deg); }
+            50% { box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 8px 35px rgba(231,209,152,0.8); transform: translateY(-6px) scale(1.02) rotate(-1deg); }
+            75% { box-shadow: inset 0 2px 0 rgba(255,240,150,0.4), 0 8px 38px rgba(231,209,152,0.9); transform: translateY(-6px) scale(1.02) rotate(0.5deg); }
+        }
+        .spell-card-lvl-5.lvl5-enter-karma {
+            animation: lvl5-balance 0.8s ease-out;
+        }
+
+        /* === Particules flottantes pour les cartes lvl-5 === */
+        .lvl5-particle {
+            position: fixed;
+            pointer-events: none;
+            z-index: 9998;
+            border-radius: 50%;
+        }
+
         .spell-card-header {
             display: flex;
             justify-content: space-between;
@@ -3293,6 +3432,398 @@
                     </div>
                 `;
             }).join('');
+
+            // Attacher les effets lvl-5 après le rendu
+            attachLvl5CardEffects(container);
+        }
+
+        /* ================================================================
+           EFFETS HOVER LVL-5 : enter/leave par voie / spiritualité
+           ================================================================ */
+        function attachLvl5CardEffects(container) {
+            const cards = container.querySelectorAll('.spell-card-lvl-5');
+            cards.forEach(card => {
+                // Nettoyer les anciens listeners via cloneNode trick
+                const fresh = card.cloneNode(true);
+                card.parentNode.replaceChild(fresh, card);
+
+                // Déterminer la voie / spiritualité depuis les badges
+                const badgeText = (fresh.querySelector('.spell-badges')?.innerText || '').toLowerCase();
+                const origin = getLvl5Origin(badgeText);
+
+                fresh.addEventListener('mouseenter', () => spellCardEnter(fresh, origin));
+                fresh.addEventListener('mouseleave', () => spellCardLeave(fresh, origin));
+            });
+        }
+
+        function getLvl5Origin(badgeText) {
+            if (badgeText.includes('consolidation')) return 'consolidation';
+            if (badgeText.includes('raison'))        return 'raison';
+            if (badgeText.includes('sûreté') || badgeText.includes('surete')) return 'surete';
+            if (badgeText.includes('trahison'))      return 'trahison';
+            if (badgeText.includes('conviction'))    return 'conviction';
+            if (badgeText.includes('création') || badgeText.includes('creation')) return 'creation';
+            if (badgeText.includes('destruction'))   return 'destruction';
+            if (badgeText.includes('violence'))      return 'violence';
+            if (badgeText.includes('esprit'))        return 'esprit';
+            if (badgeText.includes('ténèbres') || badgeText.includes('tenebres')) return 'tenebres';
+            if (badgeText.includes('karma'))         return 'karma';
+            return 'generic';
+        }
+
+        // ---- ENTER (mouseenter) ----
+        function spellCardEnter(card, origin) {
+            // Animation CSS sur le cadre
+            const cls = `lvl5-enter-${origin}`;
+            card.classList.remove(cls);
+            void card.offsetWidth; // reflow
+            card.classList.add(cls);
+            card.addEventListener('animationend', () => card.classList.remove(cls), { once: true });
+
+            // Particules thématiques (zoom-in)
+            const rect = card.getBoundingClientRect();
+            const cx = rect.left + rect.width / 2;
+            const cy = rect.top + rect.height / 2;
+
+            switch(origin) {
+                case 'consolidation':
+                    spawnParticles(rect, 6, { color:'#b4855a', shape:'square', size:[3,7], spread:60, up:true, duration:600 });
+                    break;
+                case 'raison':
+                    spawnParticles(rect, 8, { color:'#3b82f6', shape:'circle', size:[2,5], glow:'#3b82f6', spread:80, up:false, duration:700 });
+                    break;
+                case 'surete':
+                    spawnParticles(rect, 8, { color:'#00e5cc', shape:'circle', size:[2,5], glow:'#00e5cc', spread:70, up:true, duration:700 });
+                    break;
+                case 'trahison':
+                    spawnParticles(rect, 10, { color:'#ed5677', shape:'diamond', size:[3,6], spread:90, up:false, duration:500 });
+                    break;
+                case 'conviction':
+                    spawnFlameParticles(rect, 10, 'enter');
+                    break;
+                case 'creation':
+                    spawnParticles(rect, 10, { color:'#10b981', shape:'petal', size:[3,7], glow:'#10b981', spread:75, up:true, duration:750 });
+                    break;
+                case 'destruction':
+                    spawnParticles(rect, 12, { color:'#ff4444', shape:'shard', size:[3,8], spread:100, up:false, duration:600 });
+                    break;
+                case 'violence':
+                    spawnParticles(rect, 8, { color:'#a70740', shape:'shard', size:[4,9], spread:80, up:false, duration:500 });
+                    break;
+                case 'esprit':
+                    spawnParticles(rect, 14, { color:'#38bdf8', shape:'star', size:[2,6], glow:'#38bdf8', spread:100, up:true, duration:800 });
+                    break;
+                case 'tenebres':
+                    spawnParticles(rect, 10, { color:'#c084fc', shape:'mist', size:[10,22], spread:80, up:true, duration:900 });
+                    break;
+                case 'karma':
+                    spawnParticles(rect, 10, { color:'#e7d198', shape:'circle', size:[3,7], glow:'#e7d198', spread:85, up:true, duration:750 });
+                    break;
+                default:
+                    spawnParticles(rect, 6, { color:'#ffd700', shape:'circle', size:[2,5], glow:'#ffd700', spread:60, up:true, duration:600 });
+            }
+        }
+
+        // ---- LEAVE (mouseleave) ----
+        function spellCardLeave(card, origin) {
+            const rect = card.getBoundingClientRect();
+
+            switch(origin) {
+                case 'consolidation':
+                    // Poussière de pierre : particules qui tombent vers le bas
+                    spawnDustCloud(rect, { color:'#a0886b', count:14, gravity:true });
+                    break;
+                case 'raison':
+                    // Bulles d'air qui montent doucement
+                    spawnBubbles(rect, { color:'#3b82f6', count:8 });
+                    break;
+                case 'surete':
+                    // Gouttelettes d'eau
+                    spawnDroplets(rect, { color:'#00e5cc', count:10 });
+                    break;
+                case 'trahison':
+                    // Ombres qui se dissipent vers les côtés
+                    spawnShadowMist(rect, { color:'#ed5677', count:8 });
+                    break;
+                case 'conviction':
+                    // Braises qui tombent
+                    spawnFlameParticles(rect, 10, 'leave');
+                    break;
+                case 'creation':
+                    // Pollen / pétales
+                    spawnPollenDrift(rect, { color:'#10b981', count:12 });
+                    break;
+                case 'destruction':
+                    // Débris / gravats
+                    spawnDebris(rect, { color:'#ff4444', count:12 });
+                    break;
+                case 'violence':
+                    // Brume rouge sombre
+                    spawnShadowMist(rect, { color:'#a70740', count:8 });
+                    break;
+                case 'esprit':
+                    // Lueurs spectrales qui s'évaporent
+                    spawnEtherealMist(rect, { color:'#38bdf8', count:10 });
+                    break;
+                case 'tenebres':
+                    // Voile de ténèbres
+                    spawnShadowMist(rect, { color:'#c084fc', count:12 });
+                    break;
+                case 'karma':
+                    // Orbes dorées en équilibre
+                    spawnParticles(rect, 10, { color:'#e7d198', shape:'circle', size:[4,8], glow:'#e7d198', spread:80, up:false, duration:900 });
+                    break;
+                default:
+                    spawnDustCloud(rect, { color:'#ffffff', count:6, gravity:false });
+            }
+        }
+
+        // --- Helpers de particules ---
+
+        function spawnParticles(rect, count, opts) {
+            for (let i = 0; i < count; i++) {
+                setTimeout(() => {
+                    const p = document.createElement('div');
+                    const size = opts.size[0] + Math.random() * (opts.size[1] - opts.size[0]);
+                    p.className = 'lvl5-particle';
+                    p.style.width = `${size}px`;
+                    p.style.height = `${size}px`;
+                    p.style.background = opts.color;
+                    if (opts.glow) p.style.boxShadow = `0 0 ${size+4}px ${opts.glow}`;
+                    if (opts.shape === 'square' || opts.shape === 'shard') p.style.borderRadius = opts.shape === 'square' ? '2px' : '1px';
+                    if (opts.shape === 'diamond') { p.style.borderRadius = '0'; p.style.transform = 'rotate(45deg)'; }
+                    if (opts.shape === 'mist') { p.style.borderRadius = '50%'; p.style.opacity = '0.35'; }
+                    p.style.left = `${rect.left + Math.random() * rect.width}px`;
+                    p.style.top = `${rect.top + Math.random() * rect.height}px`;
+                    p.style.opacity = '0.9';
+                    p.style.transition = `all ${opts.duration + Math.random() * 200}ms cubic-bezier(0.1,0.8,0.3,1)`;
+                    document.body.appendChild(p);
+                    const angle = Math.random() * Math.PI * 2;
+                    const dist = 20 + Math.random() * opts.spread;
+                    const dy = opts.up ? -(dist * 0.5 + Math.random() * dist * 0.5) : (dist * 0.3 + Math.random() * dist * 0.7);
+                    requestAnimationFrame(() => {
+                        p.style.transform = `translate(${Math.cos(angle) * dist * 0.6}px, ${dy}px) scale(0) rotate(${Math.random()*180}deg)`;
+                        p.style.opacity = '0';
+                    });
+                    setTimeout(() => p.remove(), opts.duration + 300);
+                }, i * 30);
+            }
+        }
+
+        function spawnDustCloud(rect, opts) {
+            // Poussière qui tombe vers le bas depuis le bas du cadre
+            for (let i = 0; i < opts.count; i++) {
+                setTimeout(() => {
+                    const p = document.createElement('div');
+                    const size = 4 + Math.random() * 10;
+                    p.className = 'lvl5-particle';
+                    p.style.width = `${size}px`;
+                    p.style.height = `${size}px`;
+                    p.style.borderRadius = '30%';
+                    p.style.background = opts.color;
+                    p.style.opacity = '0.7';
+                    p.style.left = `${rect.left + Math.random() * rect.width}px`;
+                    p.style.top = `${rect.bottom - 4}px`;
+                    p.style.transition = `all ${600 + Math.random() * 400}ms ease-in`;
+                    document.body.appendChild(p);
+                    const dx = (Math.random() - 0.5) * 40;
+                    const dy = opts.gravity ? (15 + Math.random() * 35) : -(15 + Math.random() * 25);
+                    requestAnimationFrame(() => {
+                        p.style.transform = `translate(${dx}px, ${dy}px) scale(0.2) rotate(${Math.random()*90}deg)`;
+                        p.style.opacity = '0';
+                    });
+                    setTimeout(() => p.remove(), 1100);
+                }, i * 35);
+            }
+        }
+
+        function spawnBubbles(rect, opts) {
+            for (let i = 0; i < opts.count; i++) {
+                setTimeout(() => {
+                    const p = document.createElement('div');
+                    const size = 3 + Math.random() * 7;
+                    p.className = 'lvl5-particle';
+                    p.style.width = `${size}px`;
+                    p.style.height = `${size}px`;
+                    p.style.background = 'transparent';
+                    p.style.border = `1px solid ${opts.color}`;
+                    p.style.boxShadow = `0 0 4px ${opts.color}, inset 0 0 3px ${opts.color}40`;
+                    p.style.opacity = '0.8';
+                    p.style.left = `${rect.left + Math.random() * rect.width}px`;
+                    p.style.top = `${rect.top + Math.random() * rect.height}px`;
+                    p.style.transition = `all ${800 + Math.random() * 500}ms ease-out`;
+                    document.body.appendChild(p);
+                    const dx = (Math.random() - 0.5) * 30;
+                    requestAnimationFrame(() => {
+                        p.style.transform = `translate(${dx}px, ${-(30 + Math.random() * 50)}px) scale(${0.3 + Math.random() * 0.5})`;
+                        p.style.opacity = '0';
+                    });
+                    setTimeout(() => p.remove(), 1400);
+                }, i * 50);
+            }
+        }
+
+        function spawnDroplets(rect, opts) {
+            for (let i = 0; i < opts.count; i++) {
+                setTimeout(() => {
+                    const p = document.createElement('div');
+                    const w = 3 + Math.random() * 4;
+                    p.className = 'lvl5-particle';
+                    p.style.width = `${w}px`;
+                    p.style.height = `${w * (1.4 + Math.random() * 0.8)}px`;
+                    p.style.borderRadius = '50% 50% 50% 50% / 30% 30% 70% 70%';
+                    p.style.background = opts.color;
+                    p.style.boxShadow = `0 0 6px ${opts.color}80`;
+                    p.style.opacity = '0.85';
+                    p.style.left = `${rect.left + Math.random() * rect.width}px`;
+                    p.style.top = `${rect.top + Math.random() * rect.height}px`;
+                    p.style.transition = `all ${500 + Math.random() * 400}ms cubic-bezier(0.4,0,1,1)`;
+                    document.body.appendChild(p);
+                    const dx = (Math.random() - 0.5) * 40;
+                    requestAnimationFrame(() => {
+                        p.style.transform = `translate(${dx}px, ${20 + Math.random() * 40}px) scaleY(1.5)`;
+                        p.style.opacity = '0';
+                    });
+                    setTimeout(() => p.remove(), 1000);
+                }, i * 40);
+            }
+        }
+
+        function spawnShadowMist(rect, opts) {
+            for (let i = 0; i < opts.count; i++) {
+                setTimeout(() => {
+                    const p = document.createElement('div');
+                    const size = 12 + Math.random() * 28;
+                    p.className = 'lvl5-particle';
+                    p.style.width = `${size}px`;
+                    p.style.height = `${size}px`;
+                    p.style.background = `radial-gradient(circle, ${opts.color}60 0%, transparent 70%)`;
+                    p.style.opacity = '0.7';
+                    p.style.left = `${rect.left + Math.random() * rect.width}px`;
+                    p.style.top = `${rect.top + Math.random() * rect.height}px`;
+                    p.style.transition = `all ${800 + Math.random() * 600}ms ease-out`;
+                    document.body.appendChild(p);
+                    const dx = (Math.random() - 0.5) * 80;
+                    const dy = (Math.random() - 0.5) * 50 - 10;
+                    requestAnimationFrame(() => {
+                        p.style.transform = `translate(${dx}px, ${dy}px) scale(2.5)`;
+                        p.style.opacity = '0';
+                    });
+                    setTimeout(() => p.remove(), 1500);
+                }, i * 45);
+            }
+        }
+
+        function spawnFlameParticles(rect, count, mode) {
+            const colors = ['#ff4500','#ff6a00','#ffd700','#ff8c00'];
+            for (let i = 0; i < count; i++) {
+                setTimeout(() => {
+                    const p = document.createElement('div');
+                    const size = 4 + Math.random() * 10;
+                    p.className = 'lvl5-particle';
+                    p.style.width = `${size}px`;
+                    p.style.height = `${size * (1 + Math.random())}px`;
+                    p.style.borderRadius = '50% 50% 30% 30%';
+                    const c = colors[Math.floor(Math.random() * colors.length)];
+                    p.style.background = c;
+                    p.style.boxShadow = `0 0 ${size}px ${c}`;
+                    p.style.opacity = '0.9';
+                    p.style.left = `${rect.left + Math.random() * rect.width}px`;
+                    p.style.top = `${mode === 'enter' ? rect.top + Math.random() * rect.height : rect.bottom - 4}px`;
+                    const dur = 600 + Math.random() * 400;
+                    p.style.transition = `all ${dur}ms ease-out`;
+                    document.body.appendChild(p);
+                    const dx = (Math.random() - 0.5) * 50;
+                    const dy = mode === 'enter' ? -(20 + Math.random() * 50) : (10 + Math.random() * 30);
+                    requestAnimationFrame(() => {
+                        p.style.transform = `translate(${dx}px, ${dy}px) scale(0.1) rotate(${(Math.random()-0.5)*60}deg)`;
+                        p.style.opacity = '0';
+                    });
+                    setTimeout(() => p.remove(), dur + 200);
+                }, i * 35);
+            }
+        }
+
+        function spawnPollenDrift(rect, opts) {
+            for (let i = 0; i < opts.count; i++) {
+                setTimeout(() => {
+                    const p = document.createElement('div');
+                    const size = 3 + Math.random() * 6;
+                    p.className = 'lvl5-particle';
+                    p.style.width = `${size}px`;
+                    p.style.height = `${size}px`;
+                    p.style.background = opts.color;
+                    p.style.boxShadow = `0 0 6px ${opts.color}`;
+                    p.style.opacity = '0.8';
+                    p.style.left = `${rect.left + Math.random() * rect.width}px`;
+                    p.style.top = `${rect.top + rect.height * 0.3 + Math.random() * rect.height * 0.4}px`;
+                    const dur = 1000 + Math.random() * 700;
+                    p.style.transition = `all ${dur}ms cubic-bezier(0.25,0.46,0.45,0.94)`;
+                    document.body.appendChild(p);
+                    const dx = (Math.random() - 0.5) * 100;
+                    const dy = -(20 + Math.random() * 60);
+                    requestAnimationFrame(() => {
+                        p.style.transform = `translate(${dx}px, ${dy}px) scale(0.3) rotate(${Math.random()*360}deg)`;
+                        p.style.opacity = '0';
+                    });
+                    setTimeout(() => p.remove(), dur + 200);
+                }, i * 40);
+            }
+        }
+
+        function spawnDebris(rect, opts) {
+            for (let i = 0; i < opts.count; i++) {
+                setTimeout(() => {
+                    const p = document.createElement('div');
+                    const w = 3 + Math.random() * 9;
+                    const h = 2 + Math.random() * 5;
+                    p.className = 'lvl5-particle';
+                    p.style.width = `${w}px`;
+                    p.style.height = `${h}px`;
+                    p.style.borderRadius = '1px';
+                    p.style.background = opts.color;
+                    p.style.boxShadow = `0 0 4px ${opts.color}80`;
+                    p.style.opacity = '0.9';
+                    p.style.left = `${rect.left + Math.random() * rect.width}px`;
+                    p.style.top = `${rect.top + Math.random() * rect.height}px`;
+                    const dur = 500 + Math.random() * 500;
+                    p.style.transition = `all ${dur}ms cubic-bezier(0.4,0,1,1)`;
+                    document.body.appendChild(p);
+                    const angle = Math.random() * Math.PI * 2;
+                    const dist = 30 + Math.random() * 80;
+                    requestAnimationFrame(() => {
+                        p.style.transform = `translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist}px) scale(0.1) rotate(${Math.random()*720}deg)`;
+                        p.style.opacity = '0';
+                    });
+                    setTimeout(() => p.remove(), dur + 200);
+                }, i * 30);
+            }
+        }
+
+        function spawnEtherealMist(rect, opts) {
+            for (let i = 0; i < opts.count; i++) {
+                setTimeout(() => {
+                    const p = document.createElement('div');
+                    const size = 8 + Math.random() * 18;
+                    p.className = 'lvl5-particle';
+                    p.style.width = `${size}px`;
+                    p.style.height = `${size}px`;
+                    p.style.background = `radial-gradient(circle, ${opts.color}70 0%, transparent 70%)`;
+                    p.style.boxShadow = `0 0 10px ${opts.color}50`;
+                    p.style.opacity = '0.8';
+                    p.style.left = `${rect.left + Math.random() * rect.width}px`;
+                    p.style.top = `${rect.top + Math.random() * rect.height}px`;
+                    const dur = 900 + Math.random() * 600;
+                    p.style.transition = `all ${dur}ms ease-out`;
+                    document.body.appendChild(p);
+                    const dx = (Math.random() - 0.5) * 60;
+                    requestAnimationFrame(() => {
+                        p.style.transform = `translate(${dx}px, ${-(25 + Math.random() * 45)}px) scale(2)`;
+                        p.style.opacity = '0';
+                    });
+                    setTimeout(() => p.remove(), dur + 200);
+                }, i * 50);
+            }
         }
 
         function getSpellColor(sp) {
