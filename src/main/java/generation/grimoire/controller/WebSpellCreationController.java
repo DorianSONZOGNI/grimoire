@@ -509,7 +509,7 @@ public class WebSpellCreationController {
                         bde.setFlatValue(eDto.getFlatValue());
                         bde.setModifier(eDto.getModifier());
                         bde.setDuration(eDto.getDuration());
-                        bde.setModifierSource(eDto.getSource() != null ? eDto.getSource() : Source.TARGET_HEALTH_MAX);
+                        bde.setModifierSource(eDto.getSource());
                         effect = bde;
                         break;
                     case "DOT":

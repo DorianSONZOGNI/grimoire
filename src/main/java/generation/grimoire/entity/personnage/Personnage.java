@@ -183,27 +183,56 @@ public class Personnage {
         // S'assurer que les dégâts sont toujours au moins 1
         int effectiveDamage = (int) finalDamage;
 
-        // Appliquer les dégâts aux boucliers d'abord
-        int remainingDamage = effectiveDamage;
-
-        // Vérifier l'état Perce-Bouclier (SHIELD_PENETRATION)
-        boolean ignoreShields = false;
+        // Calculer la pénétration de bouclier (pourcentage et flat)
+        double casterPenetrationPct = 0.0;
         if (caster != null) {
-            boolean casterHasShieldPenetrationBuff = caster.getStatFlatBonus(StatType.SHIELD_PENETRATION) > 0 
-                || caster.getStatBuffMultiplier(StatType.SHIELD_PENETRATION) > 1.0;
-            if (casterHasShieldPenetrationBuff) {
-                ignoreShields = true;
+            boolean hasPenBuff = caster.getActiveBuffs().stream()
+                    .anyMatch(b -> b.affectsStatType(StatType.SHIELD_PENETRATION) && b.getFlatValue() == 0);
+            if (hasPenBuff) {
+                casterPenetrationPct = caster.getStatBuffMultiplier(StatType.SHIELD_PENETRATION);
             }
         }
-        boolean targetHasShieldPenetrationDebuff = this.getStatFlatBonus(StatType.SHIELD_PENETRATION) < 0 
-            || this.getStatBuffMultiplier(StatType.SHIELD_PENETRATION) < 1.0;
-        if (targetHasShieldPenetrationDebuff) {
-            ignoreShields = true;
+
+        double targetPiercedPct = 0.0;
+        boolean hasPiercedBuff = this.getActiveBuffs().stream()
+                .anyMatch(b -> b.affectsStatType(StatType.SHIELD_PIERCED) && b.getFlatValue() == 0);
+        if (hasPiercedBuff) {
+            targetPiercedPct = this.getStatBuffMultiplier(StatType.SHIELD_PIERCED);
         }
 
-        if (ignoreShields) {
-            System.out.println("🛡️ Les boucliers de " + this.name + " sont ignorés par l'effet Perce-Bouclier !");
-        } else {
+        // Rétrocompatibilité avec les debuffs négatifs de SHIELD_PENETRATION sur la cible
+        double targetPenetrationPctDebuff = 0.0;
+        boolean hasTargetPenDebuff = this.getActiveBuffs().stream()
+                .anyMatch(b -> b.affectsStatType(StatType.SHIELD_PENETRATION) && b.getFlatValue() == 0);
+        if (hasTargetPenDebuff) {
+            double targetPenetrationMult = this.getStatBuffMultiplier(StatType.SHIELD_PENETRATION);
+            if (targetPenetrationMult < 1.0) {
+                targetPenetrationPctDebuff = 1.0 - targetPenetrationMult;
+            }
+        }
+
+        double totalBypassPct = casterPenetrationPct + targetPiercedPct + targetPenetrationPctDebuff;
+
+        int casterPenetrationFlat = caster != null ? caster.getStatFlatBonus(StatType.SHIELD_PENETRATION) : 0;
+        int targetPiercedFlat = this.getStatFlatBonus(StatType.SHIELD_PIERCED);
+        int targetPenetrationFlatDebuff = this.getStatFlatBonus(StatType.SHIELD_PENETRATION);
+        int targetPiercedFlatCombined = targetPiercedFlat + (targetPenetrationFlatDebuff < 0 ? -targetPenetrationFlatDebuff : 0);
+
+        int totalBypassFlat = casterPenetrationFlat + targetPiercedFlatCombined;
+
+
+
+        // Calculer le montant qui passe en dessous du bouclier
+        int bypassDamage = 0;
+        if (totalBypassPct > 0 || totalBypassFlat > 0) {
+            double rawBypass = effectiveDamage * Math.min(1.0, totalBypassPct) + totalBypassFlat;
+            bypassDamage = (int) Math.min(effectiveDamage, Math.max(0, rawBypass));
+        }
+
+        int remainingDamage = effectiveDamage - bypassDamage;
+        int absorbedByShields = 0;
+
+        if (remainingDamage > 0) {
             if (activeShields != null && !activeShields.isEmpty()) {
                 double shieldDamageMult = 1.0;
                 int shieldDamageFlat = 0;
@@ -231,6 +260,7 @@ public class Personnage {
                             }
                             int rawConsumedInt = (int) Math.ceil(rawConsumed);
                             remainingDamage -= rawConsumedInt;
+                            absorbedByShields += rawConsumedInt;
 
                             shieldDamageFlat = Math.max(0, shieldDamageFlat - absorbed);
 
@@ -245,13 +275,19 @@ public class Personnage {
             }
         }
 
-        // Appliquer les dégâts restants à la santé actuelle
-        this.healthCurrent -= remainingDamage;
+        // Appliquer les dégâts finaux (bypass + dégâts non absorbés par le bouclier) à la santé actuelle
+        int totalDamageToHealth = bypassDamage + remainingDamage;
+        this.healthCurrent -= totalDamageToHealth;
+
+        // Affichage des informations
+        if (bypassDamage > 0) {
+            System.out.println("🛡️ Perce-Bouclier / Bouclier Percé : " + bypassDamage + " dégâts passent en dessous du bouclier.");
+        }
 
         // Affichage des informations
         double finalReductionFactor = Math.min(reductionFactor, 0.90); // Limite la réduction à 90%
         System.out.println(this.name + " subit " + effectiveDamage + " dégâts (" +
-                "absorbés par les boucliers : " + (effectiveDamage - remainingDamage) + ", " +
+                "absorbés par les boucliers : " + absorbedByShields + ", " +
                 "réduction de " + (int) (finalReductionFactor * 100) + "%), " +
                 "PV restants : " + this.healthCurrent);
 

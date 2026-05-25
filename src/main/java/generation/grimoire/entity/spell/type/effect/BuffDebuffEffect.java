@@ -94,4 +94,11 @@ public class BuffDebuffEffect extends SpellEffect {
         return this.statAffected == statType;
     }
 
+    @PostLoad
+    private void postLoad() {
+        if (this.modifierSource == Source.TARGET_HEALTH_MAX) {
+            this.modifierSource = null;
+        }
+    }
+
 }

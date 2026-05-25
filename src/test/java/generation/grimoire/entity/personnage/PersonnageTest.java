@@ -3,6 +3,7 @@ package generation.grimoire.entity.personnage;
 import generation.grimoire.entity.spell.type.effect.BuffDebuffEffect;
 import generation.grimoire.entity.spell.type.effect.ShieldEffect;
 import generation.grimoire.enumeration.DamageType;
+import generation.grimoire.enumeration.Source;
 import generation.grimoire.enumeration.StatType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -208,9 +209,9 @@ class PersonnageTest {
         
         BuffDebuffEffect penBuff = new BuffDebuffEffect();
         penBuff.setStatAffected(StatType.SHIELD_PENETRATION);
-        penBuff.setFlatValue(1); // Flat bonus > 0 -> buff
+        penBuff.setFlatValue(50); // Flat bonus > 0 -> buff
         penBuff.setDuration(2);
-        hero.applyBuff(penBuff, 1.0); // flat is 1
+        hero.applyBuff(penBuff, 1.0); // flat is 50
 
         enemy.takeDamage(50, DamageType.PHYSIC, hero);
 
@@ -224,13 +225,76 @@ class PersonnageTest {
 
         BuffDebuffEffect penDebuff = new BuffDebuffEffect();
         penDebuff.setStatAffected(StatType.SHIELD_PENETRATION);
-        penDebuff.setFlatValue(-1); // Flat bonus < 0 -> debuff
+        penDebuff.setFlatValue(-50); // Flat bonus < 0 -> debuff
         penDebuff.setDuration(2);
-        enemy.applyBuff(penDebuff, 1.0); // flat is -1
+        enemy.applyBuff(penDebuff, 1.0); // flat is -50
 
         enemy.takeDamage(50, DamageType.PHYSIC, hero);
 
         assertThat(enemy.getTotalShield()).isEqualTo(50);
         assertThat(enemy.getHealthCurrent()).isEqualTo(75);
+    }
+
+    @Test
+    void shouldBypassShieldIfTargetHasShieldPiercedDebuff() {
+        enemy.addShield(50, 2, "ShieldSource");
+
+        BuffDebuffEffect pierceDebuff = new BuffDebuffEffect();
+        pierceDebuff.setStatAffected(StatType.SHIELD_PIERCED);
+        pierceDebuff.setFlatValue(50); // Flat bonus > 0 -> debuff is active
+        pierceDebuff.setDuration(2);
+        enemy.applyBuff(pierceDebuff, 1.0);
+
+        enemy.takeDamage(50, DamageType.PHYSIC, hero);
+
+        assertThat(enemy.getTotalShield()).isEqualTo(50);
+        assertThat(enemy.getHealthCurrent()).isEqualTo(75);
+    }
+
+    @Test
+    void shouldBypassShieldPartiallyIfCasterHasShieldPenetrationPercentageBuff() {
+        enemy.addShield(100, 2, "ShieldSource");
+
+        BuffDebuffEffect penBuff = new BuffDebuffEffect();
+        penBuff.setStatAffected(StatType.SHIELD_PENETRATION);
+        penBuff.setModifier(0.2); // 20% modifier
+        penBuff.setDuration(2);
+        hero.applyBuff(penBuff, 0.2); // set modifier to 0.2
+
+        enemy.takeDamage(50, DamageType.PHYSIC, hero);
+
+        // 25 effective damage * 20% = 5 damage bypasses shield.
+        // Remaining 20 damage is absorbed by shield.
+        // Shield goes from 100 to 80.
+        // Health goes from 100 to 95.
+        assertThat(enemy.getTotalShield()).isEqualTo(80);
+        assertThat(enemy.getHealthCurrent()).isEqualTo(95);
+    }
+
+    @Test
+    void shouldNotInflateModifierIfModifierSourceIsNull() {
+        BuffDebuffEffect buff = new BuffDebuffEffect();
+        buff.setStatAffected(StatType.SHIELD_PENETRATION);
+        buff.setModifier(0.2);
+        buff.setDuration(2);
+        buff.setModifierSource(null);
+
+        buff.apply(hero, enemy);
+
+        assertThat(enemy.getActiveBuffs()).hasSize(1);
+        assertThat(enemy.getActiveBuffs().get(0).getModifier()).isEqualTo(0.2);
+    }
+
+    @Test
+    void shouldCleanUpTargetHealthMaxSourceInPostLoad() throws Exception {
+        BuffDebuffEffect buff = new BuffDebuffEffect();
+        buff.setModifierSource(Source.TARGET_HEALTH_MAX);
+
+        // Access private postLoad method using reflection
+        java.lang.reflect.Method method = BuffDebuffEffect.class.getDeclaredMethod("postLoad");
+        method.setAccessible(true);
+        method.invoke(buff);
+
+        assertThat(buff.getModifierSource()).isNull();
     }
 }
