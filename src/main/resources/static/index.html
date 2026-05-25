@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 
 <head>
@@ -7,6 +7,7 @@
     <title>Grimoire</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="icon" type="image/png" href="/favicon.svg">
     <link
         href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap"
         rel="stylesheet">
@@ -1762,7 +1763,7 @@
             max-height: 200px;
             overflow-y: auto;
             white-space: pre-wrap;
-            box-shadow: inset 0 0 10px rgba(0,0,0,0.8);
+            box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8);
         }
 
         .destruction-spark {
@@ -2759,7 +2760,8 @@
                             <span>👹 Monstre (Cible)</span>
                         </div>
                         <div class="gauge-container">
-                            <div class="gauge-label"><span>Santé (PV)</span><span id="monsterHpText">200 / 200</span></div>
+                            <div class="gauge-label"><span>Santé (PV)</span><span id="monsterHpText">200 / 200</span>
+                            </div>
                             <div class="gauge-track">
                                 <div class="gauge-fill hp" id="monsterHpFill" style="width: 100%;"></div>
                             </div>
@@ -2771,17 +2773,22 @@
 
                 <!-- Colonne de Droite : Sélection et Lancement de Sorts -->
                 <div class="sandbox-column">
-                    <div class="combatant-card" style="flex: 1; display: flex; flex-direction: column; gap: 0.8rem; max-height: 480px;">
-                        <div class="combatant-name" style="border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.4rem;">
+                    <div class="combatant-card"
+                        style="flex: 1; display: flex; flex-direction: column; gap: 0.8rem; max-height: 480px;">
+                        <div class="combatant-name"
+                            style="border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.4rem;">
                             <span>🔮 Sorts à essayer</span>
                         </div>
-                        
+
                         <!-- Sélecteur de Sorts -->
                         <div style="display: flex; gap: 0.5rem; align-items: center;">
-                            <select id="sandboxSpellSelect" style="flex: 1; background: #111827; border: 1px solid rgba(255, 255, 255, 0.15); color: #fff; font-size: 0.85rem; border-radius: 6px; padding: 0.4rem 0.6rem; outline: none; cursor: pointer;">
+                            <select id="sandboxSpellSelect"
+                                style="flex: 1; background: #111827; border: 1px solid rgba(255, 255, 255, 0.15); color: #fff; font-size: 0.85rem; border-radius: 6px; padding: 0.4rem 0.6rem; outline: none; cursor: pointer;">
                                 <option value="">-- Ajouter un sort au banc d'essai --</option>
                             </select>
-                            <button type="button" class="btn" style="background: var(--primary); padding: 0.4rem 0.8rem; font-size: 0.85rem; border-radius: 6px; border: none; color: #fff;" onclick="addSelectedSpellToSandbox()">Ajouter</button>
+                            <button type="button" class="btn"
+                                style="background: var(--primary); padding: 0.4rem 0.8rem; font-size: 0.85rem; border-radius: 6px; border: none; color: #fff;"
+                                onclick="addSelectedSpellToSandbox()">Ajouter</button>
                         </div>
 
                         <!-- Liste des Sorts dans le Banc d'Essai -->
@@ -2797,19 +2804,25 @@
                     <span>Tour <span id="sandboxTurnText" style="color: var(--accent);">1</span></span>
                 </div>
                 <div style="display: flex; gap: 0.6rem;">
-                    <button type="button" class="btn" style="background: rgba(139, 92, 246, 0.2); color: #c084fc; border: 1px solid rgba(139, 92, 246, 0.4); display: flex; align-items: center; gap: 0.3rem; padding: 0.5rem 1rem; border-radius: 8px;" onclick="passSandboxTurn()">
+                    <button type="button" class="btn"
+                        style="background: rgba(139, 92, 246, 0.2); color: #c084fc; border: 1px solid rgba(139, 92, 246, 0.4); display: flex; align-items: center; gap: 0.3rem; padding: 0.5rem 1rem; border-radius: 8px;"
+                        onclick="passSandboxTurn()">
                         <span class="material-symbols-outlined" style="font-size: 1.15rem;">hourglass_top</span>
                         <span>Finir le Tour</span>
                     </button>
-                    <button type="button" class="btn" style="background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); display: flex; align-items: center; gap: 0.3rem; padding: 0.5rem 1rem; border-radius: 8px;" onclick="resetSandbox()">
+                    <button type="button" class="btn"
+                        style="background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); display: flex; align-items: center; gap: 0.3rem; padding: 0.5rem 1rem; border-radius: 8px;"
+                        onclick="resetSandbox()">
                         <span class="material-symbols-outlined" style="font-size: 1.15rem;">restart_alt</span>
                         <span>Réinitialiser</span>
                     </button>
                 </div>
             </div>
 
-            <div style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: -0.6rem; font-weight: 500; display: flex; align-items: center; gap: 0.3rem;">
-                <span class="material-symbols-outlined" style="font-size: 0.95rem; color: var(--primary);">terminal</span>
+            <div
+                style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: -0.6rem; font-weight: 500; display: flex; align-items: center; gap: 0.3rem;">
+                <span class="material-symbols-outlined"
+                    style="font-size: 0.95rem; color: var(--primary);">terminal</span>
                 <span>Console d'événements du Banc d'Essai :</span>
             </div>
             <div class="sandbox-console" id="simulationLogsContainer"></div>
@@ -3041,7 +3054,6 @@
                 id: Date.now() + Math.random(),
                 effectType: type,
                 effectTarget: 'TARGET',
-                targetExpression: 'Cible',
                 damage: 20,
                 healAmount: 20,
                 manaAmount: 20,
@@ -3069,32 +3081,10 @@
             const effect = currentEffects.find(e => e.id === id);
             if (effect) {
                 effect.effectTarget = target;
-                if (!effect.targetExpression || effect.targetExpression === 'Cible' || effect.targetExpression === 'Lanceur' || effect.targetExpression === 'Allié proche') {
-                    if (target === 'CASTER') effect.targetExpression = 'Lanceur';
-                    else if (target === 'ALLY') effect.targetExpression = 'Allié proche';
-                    else effect.targetExpression = 'Cible';
-                }
                 renderEffects();
             }
         }
 
-        function appendTargetExpr(id, token) {
-            const eff = currentEffects.find(e => e.id === id);
-            if (!eff) return;
-
-            let expr = eff.targetExpression || '';
-            if (expr === 'Cible' || expr === 'Lanceur' || expr === 'Allié proche') {
-                if (token !== ' & ' && token !== ' || ') {
-                    expr = token;
-                } else {
-                    expr += token;
-                }
-            } else {
-                expr += token;
-            }
-            eff.targetExpression = expr;
-            renderEffects();
-        }
 
         function updateEffectProp(id, prop, value) {
             const effect = currentEffects.find(e => e.id === id);
@@ -3145,12 +3135,6 @@
                 const labelObj = metaData.effectTypes.find(t => t.type === eff.effectType);
                 const typeLabel = labelObj ? labelObj.label : eff.effectType;
                 let targetClass = eff.effectTarget ? eff.effectTarget.toLowerCase() : 'target';
-                const lowerExpr = (eff.targetExpression || '').toLowerCase();
-                if (lowerExpr.includes('lanceur')) {
-                    targetClass = 'caster';
-                } else if (lowerExpr.includes('allié')) {
-                    targetClass = 'ally';
-                }
 
                 let fieldsHtml = '';
 
@@ -3398,42 +3382,30 @@
                             <button type="button" class="btn-danger" onclick="removeEffect(${eff.id})">✕ Supprimer</button>
                         </div>
 
-                        <!-- Sélection de la cible Impactée (Composée) -->
+                        <!-- Sélection de la cible de l'Effet -->
                         <div style="display: flex; flex-direction: column; gap: 0.8rem; background: rgba(0,0,0,0.25); padding: 0.8rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-                            <div style="display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: 0.5rem;">
-                                <label style="color: #fff; font-weight: 600; font-size: 0.9rem;">Catégorie Principale de la Cible :</label>
-                                <div class="target-selector">
-                                    <button type="button" class="target-btn ${eff.effectTarget === 'CASTER' ? 'active-caster' : ''}" onclick="setEffectTarget(${eff.id}, 'CASTER')">
-                                        ✦ Lanceur
-                                    </button>
-                                    <button type="button" class="target-btn ${eff.effectTarget === 'ALLY' ? 'active-ally' : ''}" onclick="setEffectTarget(${eff.id}, 'ALLY')">
-                                        🛡️ Allié
-                                    </button>
-                                    <button type="button" class="target-btn ${eff.effectTarget === 'TARGET' ? 'active-target' : ''}" onclick="setEffectTarget(${eff.id}, 'TARGET')">
-                                        🎯 Ennemis
-                                    </button>
-                                </div>
+                            <label style="color: #fff; font-weight: 600; font-size: 0.9rem;">Cible de l'Effet :</label>
+                            <div class="target-selector" style="flex-wrap: wrap; gap: 0.5rem;">
+                                <button type="button" class="target-btn ${eff.effectTarget === 'CASTER' ? 'active-caster' : ''}" onclick="setEffectTarget(${eff.id}, 'CASTER')" title="Affecte uniquement le lanceur du sort">
+                                    ✦ Lanceur
+                                </button>
+                                <button type="button" class="target-btn ${eff.effectTarget === 'ALLY' ? 'active-ally' : ''}" onclick="setEffectTarget(${eff.id}, 'ALLY')" title="Affecte un allié ciblé">
+                                    🛡️ Allié (Ciblé)
+                                </button>
+                                <button type="button" class="target-btn ${eff.effectTarget === 'TARGET' ? 'active-target' : ''}" onclick="setEffectTarget(${eff.id}, 'TARGET')" title="Affecte la cible ennemie principale">
+                                    🎯 Ennemi (Cible)
+                                </button>
+                                <button type="button" class="target-btn ${eff.effectTarget === 'ALL_ALLIES' ? 'active-caster' : ''}" onclick="setEffectTarget(${eff.id}, 'ALL_ALLIES')" title="Affecte le lanceur et tous ses alliés">
+                                    ✦+🛡️ Lanceur &amp; Alliés
+                                </button>
+                                <button type="button" class="target-btn ${eff.effectTarget === 'ALL_ENEMIES' ? 'active-target' : ''}" onclick="setEffectTarget(${eff.id}, 'ALL_ENEMIES')" title="Affecte tous les ennemis (zone)">
+                                    💥 Tous les Ennemis
+                                </button>
+                                <button type="button" class="target-btn" onclick="setEffectTarget(${eff.id}, 'ALL_COMBATANTS')" style="${eff.effectTarget === 'ALL_COMBATANTS' ? 'background: rgba(245,158,11,0.25); color: #fbbf24; border-color: #f59e0b;' : ''}" title="Affecte tout le monde (alliés et ennemis)">
+                                    🌐 Tout le Monde
+                                </button>
                             </div>
-                            
-                            <div style="display: flex; flex-direction: column; gap: 0.4rem;">
-                                <label style="font-size: 0.8rem; color: var(--text-muted);">Expression Logique Exacte (ET & / OU || / Multicibles) :</label>
-                                <div style="display: flex; gap: 0.5rem;">
-                                    <input type="text" value="${eff.targetExpression || ''}" placeholder="Ex: Lanceur & Ses alliés proches" style="flex: 1; font-family: monospace; font-size: 0.9rem; padding: 0.4rem 0.8rem;" oninput="updateEffectProp(${eff.id}, 'targetExpression', this.value)">
-                                </div>
-                                
-                                <!-- Raccourcis de construction -->
-                                <div style="display: flex; flex-wrap: wrap; gap: 0.3rem; margin-top: 0.2rem; align-items: center;">
-                                    <span style="font-size: 0.75rem; color: var(--accent);">Ajouter :</span>
-                                    <button type="button" class="badge" style="cursor: pointer; background: rgba(52,211,153,0.1); color: #34d399;" onclick="appendTargetExpr(${eff.id}, 'Lanceur')">+ Lanceur</button>
-                                    <button type="button" class="badge" style="cursor: pointer; background: rgba(96,165,250,0.1); color: #60a5fa;" onclick="appendTargetExpr(${eff.id}, 'Allié proche')">+ Allié</button>
-                                    <button type="button" class="badge" style="cursor: pointer; background: rgba(96,165,250,0.1); color: #60a5fa;" onclick="appendTargetExpr(${eff.id}, 'Ses alliés proches')">+ Ses alliés</button>
-                                    <button type="button" class="badge" style="cursor: pointer; background: rgba(251,113,133,0.1); color: #fb7185;" onclick="appendTargetExpr(${eff.id}, 'Ennemi proche')">+ Ennemi</button>
-                                    <button type="button" class="badge" style="cursor: pointer; background: rgba(251,113,133,0.1); color: #fb7185;" onclick="appendTargetExpr(${eff.id}, 'Tous les ennemis proches')">+ Tous les ennemis</button>
-                                    <span style="color: var(--glass-border); margin: 0 0.2rem;">|</span>
-                                    <button type="button" class="badge" style="cursor: pointer; background: rgba(245,158,11,0.15); color: #f59e0b; font-weight: bold;" onclick="appendTargetExpr(${eff.id}, ' & ')">& (ET)</button>
-                                    <button type="button" class="badge" style="cursor: pointer; background: rgba(245,158,11,0.15); color: #f59e0b; font-weight: bold;" onclick="appendTargetExpr(${eff.id}, ' || ')">|| (OU)</button>
-                                </div>
-                            </div>
+                        </div>
 
                             <!-- Option / Clé d'activation de la ligne d'effet -->
                             <div style="display: flex; gap: 0.5rem; align-items: center; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px dashed rgba(255,255,255,0.05);">
@@ -4062,7 +4034,6 @@
                 effects: currentEffects.map(e => ({
                     effectType: e.effectType,
                     effectTarget: e.effectTarget,
-                    targetExpression: e.targetExpression,
                     damage: e.damage,
                     healAmount: e.healAmount,
                     manaAmount: e.manaAmount || 0,
@@ -4265,17 +4236,23 @@
                 effectsSummaryHtml = `<div class="spell-effects-summary">`;
                 sp.effects.forEach(e => {
                     const target = e.effectTarget || e.effect_target;
-                    const baseTargetText = target === 'CASTER' ? 'Lanceur' : (target === 'ALLY' ? 'Allié' : 'Cible');
-                    const targetText = e.targetExpression || e.target_expression || baseTargetText;
+                    const effectTargetLabels = {
+                        'CASTER': 'Lanceur',
+                        'ALLY': 'Allié',
+                        'TARGET': 'Cible',
+                        'ALL_ALLIES': 'Lanceur & Alliés',
+                        'ALL_ENEMIES': 'Tous les Ennemis',
+                        'ALL_COMBATANTS': 'Tout le Monde'
+                    };
+                    const targetText = effectTargetLabels[target] || 'Cible';
 
                     let indicatorClass = 'target';
-                    const lowerText = targetText.toLowerCase();
-                    if (lowerText.includes('lanceur')) {
+                    if (target === 'CASTER') {
                         indicatorClass = 'caster';
-                    } else if (lowerText.includes('allié')) {
+                    } else if (target === 'ALLY' || target === 'ALL_ALLIES') {
                         indicatorClass = 'ally';
                     } else if (target) {
-                        indicatorClass = target.toLowerCase();
+                        indicatorClass = target.toLowerCase().replace('_', '-');
                     }
 
                     const typeNames = {
@@ -6070,7 +6047,6 @@
                     id: Date.now() + idx,
                     effectType,
                     effectTarget: e.effectTarget || 'TARGET',
-                    targetExpression: e.targetExpression || '',
                     damage: e.damage || e.fixedDamagePerTick || 0,
                     healAmount: e.healAmount || e.fixedHealPerTick || 0,
                     manaAmount: e.manaAmount || e.fixedManaPerTick || 0,
@@ -6137,7 +6113,7 @@
                 if (!sp) return '';
 
                 const titleColor = getSpellColor(sp);
-                
+
                 // Scanner les requiredChoiceKey uniques des effets
                 const effectsList = sp.effects || [];
                 const choiceKeys = [...new Set(effectsList.map(e => e.requiredChoiceKey).filter(k => k != null))];

@@ -383,10 +383,10 @@ class SpellIntegrationTest {
         multiTargetSpell.setNom("Lumière Partagée");
         multiTargetSpell.setManaCost(5);
 
-        // Un effet de soin configuré pour toucher le "Lanceur & ses alliés proches"
+        // Un effet de soin configuré pour toucher le Lanceur ET ses alliés (ALL_ALLIES)
         generation.grimoire.entity.spell.type.effect.HealFixedEffect healEffect = new generation.grimoire.entity.spell.type.effect.HealFixedEffect();
         healEffect.setHealAmount(15);
-        healEffect.setTargetExpression("Lanceur & ses alliés proches");
+        healEffect.setEffectTarget(generation.grimoire.enumeration.EffectTarget.ALL_ALLIES);
         multiTargetSpell.addEffect(healEffect);
 
         hero.setHealthCurrent(50); // 50/100

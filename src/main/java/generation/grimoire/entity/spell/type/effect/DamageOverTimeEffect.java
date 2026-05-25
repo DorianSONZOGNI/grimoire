@@ -80,7 +80,6 @@ public class DamageOverTimeEffect extends DamageEffect {
         clone.setId(this.getId());
         clone.setSpell(this.getSpell());
         clone.setEffectTarget(this.getEffectTarget());
-        clone.setTargetExpression(this.getTargetExpression());
         clone.setRequiredChoiceKey(this.getRequiredChoiceKey());
         clone.setChannelingTurns(this.getChannelingTurns() != null ? new java.util.ArrayList<>(this.getChannelingTurns()) : null);
         

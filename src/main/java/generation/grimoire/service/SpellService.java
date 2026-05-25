@@ -149,39 +149,7 @@ public class SpellService {
                     }
                 }
             }
-            java.util.List<Personnage> recipients = new java.util.ArrayList<>();
-            String expr = effect.getTargetExpression();
-
-            if (expr == null || expr.trim().isEmpty()) {
-                // Règle par défaut issue de l'énumération basique
-                recipients.add((effect.getEffectTarget() != null && effect.getEffectTarget() == generation.grimoire.enumeration.EffectTarget.CASTER) ? caster : target);
-            } else {
-                System.out.println("⚡ [Ciblage Avancé] Analyse de l'expression de cible : '" + expr + "'");
-                String lower = expr.toLowerCase();
-                boolean targetsCaster = lower.contains("lanceur") || lower.contains("soi");
-                boolean targetsAlly = lower.contains("allié") || lower.contains("allier");
-                boolean targetsEnemy = lower.contains("cible") || lower.contains("ennemi");
-
-                if (targetsCaster) {
-                    recipients.add(caster);
-                }
-                if (targetsAlly) {
-                    // Simulation contextuelle d'un compagnon/allié proche impacté
-                    Personnage simulatedAlly = new Personnage();
-                    simulatedAlly.setName("Compagnon Allié");
-                    simulatedAlly.setHealthMax(caster.getHealthMax());
-                    simulatedAlly.setHealthCurrent(caster.getHealthCurrent());
-                    recipients.add(simulatedAlly);
-                }
-                if (targetsEnemy || (!targetsCaster && !targetsAlly)) {
-                    recipients.add(target);
-                    if (lower.contains("tous") || lower.contains("tout")) {
-                        System.out.println("💥 [Zone d'Effet] Le sort se propage à l'ensemble des ennemis proches !");
-                    }
-                }
-                // Dédoublonnage pour éviter d'appliquer deux fois à la même instance
-                recipients = recipients.stream().distinct().toList();
-            }
+            java.util.List<Personnage> recipients = resolveRecipients(effect.getEffectTarget(), caster, target);
 
             // Application concrète de l'effet sur chaque destinataire résolu
             for (Personnage recipient : recipients) {
@@ -334,32 +302,7 @@ public class SpellService {
                 }
             }
 
-            java.util.List<Personnage> recipients = new java.util.ArrayList<>();
-            String expr = effect.getTargetExpression();
-
-            if (expr == null || expr.trim().isEmpty()) {
-                recipients.add((effect.getEffectTarget() != null && effect.getEffectTarget() == generation.grimoire.enumeration.EffectTarget.CASTER) ? caster : target);
-            } else {
-                String lower = expr.toLowerCase();
-                boolean targetsCaster = lower.contains("lanceur") || lower.contains("soi");
-                boolean targetsAlly = lower.contains("allié") || lower.contains("allier");
-                boolean targetsEnemy = lower.contains("cible") || lower.contains("ennemi");
-
-                if (targetsCaster) {
-                    recipients.add(caster);
-                }
-                if (targetsAlly) {
-                    Personnage simulatedAlly = new Personnage();
-                    simulatedAlly.setName("Compagnon Allié");
-                    simulatedAlly.setHealthMax(caster.getHealthMax());
-                    simulatedAlly.setHealthCurrent(caster.getHealthCurrent());
-                    recipients.add(simulatedAlly);
-                }
-                if (targetsEnemy || (!targetsCaster && !targetsAlly)) {
-                    recipients.add(target);
-                }
-                recipients = recipients.stream().distinct().toList();
-            }
+            java.util.List<Personnage> recipients = resolveRecipients(effect.getEffectTarget(), caster, target);
 
             for (Personnage recipient : recipients) {
                 effect.apply(caster, recipient);
@@ -374,6 +317,64 @@ public class SpellService {
      */
     public void saveSpell(@org.springframework.lang.NonNull Spell spell) {
         spellRepository.save(spell);
+    }
+
+    public static java.util.List<Personnage> resolveRecipients(generation.grimoire.enumeration.EffectTarget targetType, Personnage caster, Personnage target) {
+        java.util.List<Personnage> recipients = new java.util.ArrayList<>();
+        if (targetType == null) {
+            if (target != null) recipients.add(target);
+            return recipients;
+        }
+        switch (targetType) {
+            case CASTER -> {
+                if (caster != null) recipients.add(caster);
+            }
+            case TARGET -> {
+                if (target != null) recipients.add(target);
+            }
+            case ALLY -> {
+                if (caster != null) {
+                    Personnage simulatedAlly = new Personnage();
+                    simulatedAlly.setName("Compagnon Allié");
+                    simulatedAlly.setHealthMax(caster.getHealthMax());
+                    simulatedAlly.setHealthCurrent(caster.getHealthCurrent());
+                    simulatedAlly.setTeamId(caster.getTeamId());
+                    recipients.add(simulatedAlly);
+                }
+            }
+            case ALL_ALLIES -> {
+                if (caster != null) {
+                    recipients.add(caster);
+                    Personnage simulatedAlly = new Personnage();
+                    simulatedAlly.setName("Compagnon Allié");
+                    simulatedAlly.setHealthMax(caster.getHealthMax());
+                    simulatedAlly.setHealthCurrent(caster.getHealthCurrent());
+                    simulatedAlly.setTeamId(caster.getTeamId());
+                    recipients.add(simulatedAlly);
+                }
+            }
+            case ALL_ENEMIES -> {
+                if (target != null) {
+                    recipients.add(target);
+                    System.out.println("💥 [Zone d'Effet] Le sort se propage à l'ensemble des ennemis proches !");
+                }
+            }
+            case ALL_COMBATANTS -> {
+                if (caster != null) {
+                    recipients.add(caster);
+                    Personnage simulatedAlly = new Personnage();
+                    simulatedAlly.setName("Compagnon Allié");
+                    simulatedAlly.setHealthMax(caster.getHealthMax());
+                    simulatedAlly.setHealthCurrent(caster.getHealthCurrent());
+                    simulatedAlly.setTeamId(caster.getTeamId());
+                    recipients.add(simulatedAlly);
+                }
+                if (target != null) {
+                    recipients.add(target);
+                }
+            }
+        }
+        return recipients.stream().distinct().toList();
     }
 
 }

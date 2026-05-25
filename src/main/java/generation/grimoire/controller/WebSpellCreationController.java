@@ -562,14 +562,7 @@ public class WebSpellCreationController {
                 }
 
                 if (effect != null) {
-                    if (eDto.getEffectTarget() != null) {
-                        effect.setEffectTarget(eDto.getEffectTarget());
-                    } else {
-                        effect.setEffectTarget(EffectTarget.TARGET);
-                    }
-                    if (eDto.getTargetExpression() != null && !eDto.getTargetExpression().trim().isEmpty()) {
-                        effect.setTargetExpression(eDto.getTargetExpression().trim());
-                    }
+                    effect.setEffectTarget(eDto.getEffectTarget() != null ? eDto.getEffectTarget() : EffectTarget.TARGET);
                     effect.setRequiredChoiceKey(eDto.getRequiredChoiceKey());
                     if (eDto.getChannelingTurns() != null) {
                         effect.setChannelingTurns(new java.util.ArrayList<>(eDto.getChannelingTurns()));
@@ -611,7 +604,6 @@ public class WebSpellCreationController {
         private String effectType; // FIXED_DAMAGE, PERCENTAGE_DAMAGE, FIXED_HEAL, PERCENTAGE_HEAL, BUFF_DEBUFF,
                                    // DOT, HOT
         private EffectTarget effectTarget = EffectTarget.TARGET;
-        private String targetExpression;
         private int damage;
         private int healAmount;
         private int manaAmount;
