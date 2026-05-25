@@ -2825,23 +2825,24 @@
             let rankName = '';
             let sourceNom = '';
 
-            if (spiritId && metaData.spiritualites) {
-                const sp = metaData.spiritualites.find(s => s.id == spiritId);
-                if (sp && sp.rankNames && sp.rankNames[lvl]) {
-                    rankName = sp.rankNames[lvl];
-                    sourceNom = sp.nom;
-                }
-            } else if (voieId && metaData.voies) {
+            if (voieId && metaData.voies) {
                 const v = metaData.voies.find(vo => vo.id == voieId);
                 if (v && v.rankNames && v.rankNames[lvl]) {
                     rankName = v.rankNames[lvl];
                     sourceNom = v.nom;
                 }
             }
+            if (!rankName && spiritId && metaData.spiritualites) {
+                const sp = metaData.spiritualites.find(s => s.id == spiritId);
+                if (sp && sp.rankNames && sp.rankNames[lvl]) {
+                    rankName = sp.rankNames[lvl];
+                    sourceNom = sp.nom;
+                }
+            }
 
             if (rankName) {
                 display.style.display = 'block';
-                display.innerHTML = `✨ Titre du Rang : <span style="color:#fff;">"${rankName}"</span> <span style="font-size:0.75rem; color:var(--text-muted);">(${sourceNom})</span>`;
+                display.innerHTML = `<span class="material-symbols-outlined" style="font-size: 1.1rem; vertical-align: middle; color: #10b981; margin-right: 0.2rem;">workspace_premium</span>Titre du Rang : <span style="color:#fff;">"${rankName}"</span> <span style="font-size:0.75rem; color:var(--text-muted);">(${sourceNom})</span>`;
             } else {
                 display.style.display = 'none';
                 display.innerHTML = '';
@@ -4245,10 +4246,10 @@
             }
 
             let rankTitleBadge = '';
-            if (sp.spiritualite && sp.spiritualite.rankNames && sp.spiritualite.rankNames[sp.niveau]) {
-                rankTitleBadge = `<div style="font-size:0.85rem; color:#10b981; font-weight:600; margin-top:-0.4rem;">✨ "${sp.spiritualite.rankNames[sp.niveau]}"</div>`;
-            } else if (sp.voie && sp.voie.rankNames && sp.voie.rankNames[sp.niveau]) {
-                rankTitleBadge = `<div style="font-size:0.85rem; color:#10b981; font-weight:600; margin-top:-0.4rem;">✨ "${sp.voie.rankNames[sp.niveau]}"</div>`;
+            if (sp.voie && sp.voie.rankNames && sp.voie.rankNames[sp.niveau]) {
+                rankTitleBadge = `<div style="font-size:0.85rem; color:#10b981; font-weight:600; margin-top:-0.4rem; display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size:1.1em; color:#10b981; vertical-align:middle;">workspace_premium</span>"${sp.voie.rankNames[sp.niveau]}"</div>`;
+            } else if (sp.spiritualite && sp.spiritualite.rankNames && sp.spiritualite.rankNames[sp.niveau]) {
+                rankTitleBadge = `<div style="font-size:0.85rem; color:#10b981; font-weight:600; margin-top:-0.4rem; display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size:1.1em; color:#10b981; vertical-align:middle;">workspace_premium</span>"${sp.spiritualite.rankNames[sp.niveau]}"</div>`;
             }
 
             const titleColor = getSpellColor(sp);
@@ -4301,9 +4302,9 @@
                         </div>
                     </div>
                     ${rankTitleBadge}
-                    <div class="spell-meta" style="flex-wrap: wrap; gap: 0.5rem;">
-                        <span>💧 ${sp.manaCost}${sp.percentManaCost > 0 ? ` + ${sp.percentManaCost}% (${formatSrc(sp.percentManaCostSource || 'CASTER_MANA_MAX')})` : ''} Mana</span>
-                        ${sp.healCost > 0 || sp.percentHealCost > 0 ? `<span>🩸 ${sp.healCost}${sp.percentHealCost > 0 ? ` + ${sp.percentHealCost}% (${formatSrc(sp.percentHealCostSource || 'CASTER_HEALTH_MAX')})` : ''} PV</span>` : ''}
+                    <div class="spell-meta" style="flex-wrap: wrap; gap: 0.5rem; align-items: center;">
+                        <span style="display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined" style="font-size: 1.05rem; color: #38bdf8; vertical-align: middle;">water_drop</span>${sp.manaCost}${sp.percentManaCost > 0 ? ` + ${sp.percentManaCost}% (${formatSrc(sp.percentManaCostSource || 'CASTER_MANA_MAX')})` : ''} Mana</span>
+                        ${sp.healCost > 0 || sp.percentHealCost > 0 ? `<span style="display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined" style="font-size: 1.05rem; color: #f43f5e; vertical-align: middle;">bloodtype</span>${sp.healCost}${sp.percentHealCost > 0 ? ` + ${sp.percentHealCost}% (${formatSrc(sp.percentHealCostSource || 'CASTER_HEALTH_MAX')})` : ''} PV</span>` : ''}
                         ${sp.castingType === 'CANALISE' ? `
                             <span style="color: #a78bfa; display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.85rem;" title="Paramètres du sort canalisé">
                                 <span class="material-symbols-outlined" style="font-size: 1.1rem; color: #a78bfa; vertical-align: middle;">cyclone</span>
