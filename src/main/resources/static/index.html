@@ -2436,13 +2436,21 @@
                             style="font-size: 0.8rem; padding: 0.4rem 0.6rem; width: 100%; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; border-radius: 6px; cursor: pointer; outline: none;"
                             onchange="renderFilteredSpells()">
                             <option value="ALL">Tous effets</option>
+                            <option value="GROUP_DAMAGE">Dégâts</option>
+                            <option value="GROUP_HEAL">Soins</option>
+                            <option value="GROUP_MANA">Mana</option>
+                            <option value="GROUP_EFFECTS">Effets</option>
+                            <option disabled>────────────────</option>
                             <option value="FIXED_DAMAGE">Dégâts Fixes</option>
                             <option value="PERCENTAGE_DAMAGE">Dégâts %</option>
                             <option value="FIXED_HEAL">Soins Fixes</option>
                             <option value="PERCENTAGE_HEAL">Soins %</option>
+                            <option value="FIXED_MANA">Mana Fixe</option>
+                            <option value="PERCENTAGE_MANA">Mana %</option>
                             <option value="BUFF_DEBUFF">Buff / Débuff</option>
                             <option value="DOT">Dégâts DoT</option>
                             <option value="HOT">Soins HoT</option>
+                            <option value="MOT">Tick Mana (MoT)</option>
                             <option value="PURGE">Dissipation</option>
                             <option value="SHIELD">Bouclier</option>
                         </select>
@@ -3901,6 +3909,20 @@
                     if (!sp.effects || !sp.effects.some(e => {
                         const rawType = e.effectType || e.effect_type || '';
                         const mappedType = javaClassToCode[rawType] || rawType;
+                        
+                        if (effectVal === 'GROUP_DAMAGE') {
+                            return ['FIXED_DAMAGE', 'PERCENTAGE_DAMAGE', 'DOT'].includes(mappedType);
+                        }
+                        if (effectVal === 'GROUP_HEAL') {
+                            return ['FIXED_HEAL', 'PERCENTAGE_HEAL', 'HOT'].includes(mappedType);
+                        }
+                        if (effectVal === 'GROUP_MANA') {
+                            return ['FIXED_MANA', 'PERCENTAGE_MANA', 'MOT'].includes(mappedType);
+                        }
+                        if (effectVal === 'GROUP_EFFECTS') {
+                            return ['BUFF_DEBUFF', 'PURGE', 'SHIELD'].includes(mappedType);
+                        }
+                        
                         return mappedType === effectVal;
                     })) {
                         return false;
@@ -5354,13 +5376,20 @@
                 if (id === 'filterEffect') {
                     const t = text.toLowerCase();
                     if (t.includes('tous') || t.includes('all')) return { icon: 'category', color: '#94a3b8' };
+                    if (t === 'dégâts' || t === 'degats') return { icon: 'swords', color: '#f43f5e' };
+                    if (t === 'soins' || t === 'soin') return { icon: 'favorite', color: '#10b981' };
+                    if (t === 'mana') return { icon: 'water_drop', color: '#38bdf8' };
+                    if (t === 'effets' || t === 'effet') return { icon: 'auto_awesome', color: '#a78bfa' };
                     if ((t.includes('fixes') && (t.includes('dégâ') || t.includes('dega'))) || t.includes('⚔️')) return { icon: 'swords', color: '#f43f5e' };
                     if ((t.includes('%') && (t.includes('dégâ') || t.includes('dega'))) || t.includes('💥')) return { icon: 'explosion', color: '#f97316' };
                     if ((t.includes('fixes') && t.includes('soin')) || t.includes('💚')) return { icon: 'favorite', color: '#10b981' };
                     if ((t.includes('%') && t.includes('soin')) || t.includes('💖')) return { icon: 'healing', color: '#ec4899' };
+                    if (t.includes('mana') && t.includes('fixe')) return { icon: 'water_drop', color: '#38bdf8' };
+                    if (t.includes('mana') && t.includes('%')) return { icon: 'water_drop', color: '#7dd3fc' };
                     if (t.includes('buff') || t.includes('débuff') || t.includes('debuff') || t.includes('🛡️')) return { icon: 'trending_up', color: '#3b82f6' };
                     if (t.includes('dot') || (t.includes('durée') && (t.includes('dégâ') || t.includes('dega'))) || t.includes('🔥')) return { icon: 'whatshot', color: '#f97316' };
                     if (t.includes('hot') || (t.includes('durée') && t.includes('soin')) || t.includes('✨')) return { icon: 'spa', color: '#34d399' };
+                    if (t.includes('mot') || (t.includes('mana') && t.includes('tick'))) return { icon: 'cyclone', color: '#8b5cf6' };
                     if (t.includes('dissipation') || t.includes('purge') || t.includes('💨')) return { icon: 'air', color: '#a78bfa' };
                     if (t.includes('bouclier') || t.includes('shield')) return { icon: 'security', color: '#06b6d4' };
                     return { icon: 'auto_awesome', color: '#94a3b8' };
@@ -5446,6 +5475,15 @@
                 trigger.innerHTML = `<span class="material-symbols-outlined" style="font-size:1.2rem; color:${info.color};">${info.icon}</span> <span>${selectedOption.text}</span>`;
 
                 options.forEach((opt, index) => {
+                    if (opt.disabled) {
+                        const separatorDiv = document.createElement('div');
+                        separatorDiv.style.borderTop = '1px solid rgba(255, 255, 255, 0.08)';
+                        separatorDiv.style.margin = '0.4rem 0.8rem';
+                        separatorDiv.style.pointerEvents = 'none';
+                        optionsContainer.appendChild(separatorDiv);
+                        return;
+                    }
+
                     const optInfo = getIconInfo(selectId, opt.text);
 
                     const optionDiv = document.createElement('div');
