@@ -9,7 +9,6 @@ import generation.grimoire.entity.Voie;
 import generation.grimoire.entity.personnage.Personnage;
 import generation.grimoire.entity.spell.type.effect.BuffDebuffEffect;
 import generation.grimoire.entity.spell.type.effect.DamageFixedEffect;
-import generation.grimoire.entity.spell.type.effect.DamagePercentageEffect;
 import generation.grimoire.entity.voie.passif.specific.TrahisonPassiveEffect;
 import generation.grimoire.enumeration.DamageType;
 import generation.grimoire.enumeration.StatType;
@@ -21,8 +20,6 @@ import org.mockito.Mockito;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.when;
 
 class SpellIntegrationTest {
 
@@ -163,6 +160,7 @@ class SpellIntegrationTest {
 
         // Lance le sort 5 fois (5 * 20 points = 100 points -> déclenche le buff crit)
         for (int i = 0; i < 5; i++) {
+            hero.startTurn();
             spellService.castSpell(safeSpell, hero, enemy, null);
         }
 
@@ -192,6 +190,7 @@ class SpellIntegrationTest {
 
         // Lance 3 sorts
         for (int i = 0; i < 3; i++) {
+            hero.startTurn();
             spellService.castSpell(reasonSpell, hero, enemy, null);
         }
 
@@ -297,6 +296,7 @@ class SpellIntegrationTest {
 
         // Cas 2 : HP >= 20% -> Lancement réussi
         hero.setHealthCurrent(30);
+        hero.startTurn();
         spellService.castSpell(lightSpell, hero, enemy, null);
         assertThat(hero.getManaCurrent()).isEqualTo(0); // 5 - 5 = 0
     }
@@ -322,6 +322,7 @@ class SpellIntegrationTest {
 
         // Cas 2 : HP <= 80% -> Lancement réussi
         hero.setHealthCurrent(70);
+        hero.startTurn();
         spellService.castSpell(darkSpell, hero, enemy, null);
         assertThat(hero.getManaCurrent()).isEqualTo(35); // 45 - 10 = 35
     }

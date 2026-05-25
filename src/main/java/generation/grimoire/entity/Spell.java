@@ -48,6 +48,9 @@ public class Spell {
     @Enumerated(EnumType.STRING)
     private SpellCastingType castingType = SpellCastingType.BANAL;
 
+    private int channelingDuration;
+    private boolean allowInstantDuringChanneling = true;
+
     @ManyToOne
     @JoinColumn(name = "voie_id", nullable = true)
     private Voie voie;

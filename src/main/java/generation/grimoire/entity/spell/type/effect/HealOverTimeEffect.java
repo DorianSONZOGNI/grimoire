@@ -1,7 +1,7 @@
 package generation.grimoire.entity.spell.type.effect;
 
-import generation.grimoire.entity.SpellEffect;
 import generation.grimoire.entity.personnage.Personnage;
+import generation.grimoire.enumeration.StatType;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import lombok.Data;
@@ -30,6 +30,12 @@ public class HealOverTimeEffect extends HealEffect {
      */
     private int duration;
 
+    @jakarta.persistence.Enumerated(jakarta.persistence.EnumType.STRING)
+    private generation.grimoire.enumeration.Source healSource = generation.grimoire.enumeration.Source.TARGET_HEALTH_MAX;
+
+    @jakarta.persistence.Transient
+    private Personnage caster;
+
     /**
      * Méthode qui applique le soin chaque tour.
      * Cette méthode sera appelée par le Personnage (via sa méthode d'update des effets) à chaque début ou fin de tour.
@@ -38,12 +44,17 @@ public class HealOverTimeEffect extends HealEffect {
         if (duration > 0) {
             int totalHeal = fixedHealPerTick;
             if (percentageHealPerTick > 0) {
-                totalHeal += (int)(target.getHealthMax() * percentageHealPerTick);
+                double sourceValue = generation.grimoire.utils.StatCalculator.getSourceValue(healSource, caster, target);
+                totalHeal += (int)(sourceValue * percentageHealPerTick);
             }
-            totalHeal = (int) (totalHeal * getAmplificationMultiplier());
+            double healGivenMultiplier = 1.0;
+            if (caster != null) {
+                healGivenMultiplier = caster.getStatBuffMultiplier(StatType.HEAL_GIVEN);
+            }
+            totalHeal = (int) (totalHeal * getAmplificationMultiplier() * Math.max(0, healGivenMultiplier));
             target.heal(totalHeal);
             duration--;
-            System.out.println(target.getName() + " est soigné de " + totalHeal + " PV par heal over time, durée restante : " + duration);
+            System.out.println(target.getName() + " est soigné de " + totalHeal + " PV par heal over time (multiplier donné: " + healGivenMultiplier + "), durée restante : " + duration);
         }
     }
 
@@ -53,6 +64,7 @@ public class HealOverTimeEffect extends HealEffect {
      */
     @Override
     public void apply(Personnage caster, Personnage target) {
+        this.caster = caster;
         target.addHealOverTimeEffect(this);
         System.out.println("Heal over time appliqué sur " + target.getName() + " pour " + duration + " tours.");
     }

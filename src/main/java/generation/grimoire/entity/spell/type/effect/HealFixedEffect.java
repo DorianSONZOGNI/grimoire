@@ -1,7 +1,7 @@
 package generation.grimoire.entity.spell.type.effect;
 
-import generation.grimoire.entity.SpellEffect;
 import generation.grimoire.entity.personnage.Personnage;
+import generation.grimoire.enumeration.StatType;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import lombok.Data;
@@ -17,11 +17,12 @@ public class HealFixedEffect extends HealEffect {
 
     @Override
     public void apply(Personnage caster, Personnage target) {
-        int finalHeal = (int) (healAmount * getAmplificationMultiplier());
+        double healGivenMultiplier = caster.getStatBuffMultiplier(StatType.HEAL_GIVEN);
+        int finalHeal = (int) (healAmount * getAmplificationMultiplier() * Math.max(0, healGivenMultiplier));
         if (checkCriticalHit(caster)) {
             finalHeal = (int) (finalHeal * 1.5);
         }
         target.heal(finalHeal);
-        System.out.println(target.getName() + " est soigné de " + finalHeal + " PV (x" + getAmplificationMultiplier() + ")");
+        System.out.println(target.getName() + " est soigné de " + finalHeal + " PV (x" + getAmplificationMultiplier() + ", multiplier donné: " + healGivenMultiplier + ")");
     }
 }

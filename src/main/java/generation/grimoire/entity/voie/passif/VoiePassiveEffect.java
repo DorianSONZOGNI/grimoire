@@ -3,7 +3,6 @@ package generation.grimoire.entity.voie.passif;
 import generation.grimoire.entity.Spell;
 import generation.grimoire.entity.Voie;
 import generation.grimoire.entity.personnage.Personnage;
-import generation.grimoire.enumeration.SpellCategory;
 import generation.grimoire.enumeration.StatType;
 import jakarta.persistence.*;
 import lombok.Data;

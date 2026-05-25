@@ -2,10 +2,12 @@ package generation.grimoire.entity.personnage;
 
 import generation.grimoire.entity.Spiritualite;
 import generation.grimoire.entity.Voie;
+import generation.grimoire.entity.Spell;
 import generation.grimoire.entity.spell.type.effect.BuffDebuffEffect;
 import generation.grimoire.entity.spell.type.effect.ConsumableSpellBuffDebuffEffect;
 import generation.grimoire.entity.spell.type.effect.DamageOverTimeEffect;
 import generation.grimoire.entity.spell.type.effect.HealOverTimeEffect;
+import generation.grimoire.entity.spell.type.effect.ManaOverTimeEffect;
 import generation.grimoire.enumeration.DamageType;
 import generation.grimoire.enumeration.StatType;
 import jakarta.persistence.*;
@@ -54,9 +56,15 @@ public class Personnage {
     @Transient
     private List<BuffDebuffEffect> activeBuffs = new ArrayList<>();
 
+    @Transient
+    private List<ActiveShield> activeShields = new ArrayList<>();
+
     // Liste des effets de heal over time actifs (non persistés)
     @Transient
     private List<HealOverTimeEffect> activeHealOverTimeEffects = new ArrayList<>();
+
+    @Transient
+    private List<ManaOverTimeEffect> activeManaOverTimeEffects = new ArrayList<>();
 
     @Transient
     private List<DamageOverTimeEffect> activeDamageOverTimeEffects = new ArrayList<>();
@@ -73,6 +81,44 @@ public class Personnage {
 
     public void setPassiveState(String key, int value) {
         passiveStates.put(key, value);
+    }
+
+    @Transient
+    private boolean instantSpellCastThisTurn;
+
+    @Transient
+    private boolean banalSpellCastThisTurn;
+
+    @Transient
+    private int remainingChannelingTurns;
+
+    @Transient
+    private boolean allowInstantDuringCurrentChanneling = true;
+
+    @Transient
+    private Spell channeledSpell;
+
+    @Transient
+    private Personnage channelingTarget;
+
+    @Transient
+    private Integer channelingChoiceKey;
+
+    public void startTurn() {
+        this.instantSpellCastThisTurn = false;
+        this.banalSpellCastThisTurn = false;
+        if (this.remainingChannelingTurns > 0) {
+            this.remainingChannelingTurns--;
+            if (this.remainingChannelingTurns == 0) {
+                this.allowInstantDuringCurrentChanneling = true;
+                this.channeledSpell = null;
+                this.channelingTarget = null;
+                this.channelingChoiceKey = null;
+                System.out.println(name + " a terminé sa canalisation.");
+            } else {
+                System.out.println(name + " continue de canaliser (tours restants : " + remainingChannelingTurns + ").");
+            }
+        }
     }
 
     /**
@@ -107,9 +153,9 @@ public class Personnage {
         // Calcul du facteur de réduction des dégâts (valeur entre 0 et 1)
         double reductionFactor = resistanceValue / (resistanceValue + constant);
 
-        // TODO si de multiple buff sont donnée, ça marche toujours (buff phy, buff mag)
-        // TODO La vulnérabilité et la res fonction (multiple sur la target), mais pas
-        // la surpuissance (multiple sur le caster
+        // NOTE : si de multiples buffs sont donnés, cela fonctionne (buff phy, buff mag).
+        // NOTE : La vulnérabilité et la résistance fonctionnent en cumulé sur la cible,
+        // mais pas encore la surpuissance (multiple sur le lanceur).
 
         // Mapper le DamageType vers StatType pour obtenir le multiplicateur de
         // vulnérabilité
@@ -133,12 +179,29 @@ public class Personnage {
         // S'assurer que les dégâts sont toujours au moins 1
         int effectiveDamage = (int) finalDamage;
 
-        // Appliquer les dégâts à la santé actuelle
-        this.healthCurrent -= effectiveDamage;
+        // Appliquer les dégâts aux boucliers d'abord
+        int remainingDamage = effectiveDamage;
+        if (activeShields != null && !activeShields.isEmpty()) {
+            for (ActiveShield shield : activeShields) {
+                if (shield.getAmount() > 0) {
+                    int absorbed = Math.min(shield.getAmount(), remainingDamage);
+                    shield.setAmount(shield.getAmount() - absorbed);
+                    remainingDamage -= absorbed;
+                    System.out.println("🛡️ Le bouclier (" + shield.getSourceName() + ") absorbe " + absorbed + " dégâts. Reste : " + shield.getAmount() + " absorption.");
+                    if (remainingDamage <= 0) {
+                        break;
+                    }
+                }
+            }
+        }
+
+        // Appliquer les dégâts restants à la santé actuelle
+        this.healthCurrent -= remainingDamage;
 
         // Affichage des informations
         double finalReductionFactor = Math.min(reductionFactor, 0.90); // Limite la réduction à 90%
         System.out.println(this.name + " subit " + effectiveDamage + " dégâts (" +
+                "absorbés par les boucliers : " + (effectiveDamage - remainingDamage) + ", " +
                 "réduction de " + (int) (finalReductionFactor * 100) + "%), " +
                 "PV restants : " + this.healthCurrent);
 
@@ -153,11 +216,21 @@ public class Personnage {
      * @param healAmount le montant de soin à appliquer
      */
     public void heal(int healAmount) {
-        this.healthCurrent += healAmount;
+        double multiplier = getStatBuffMultiplier(StatType.HEAL_RECEIVED);
+        int finalHeal = (int) (healAmount * Math.max(0, multiplier));
+        this.healthCurrent += finalHeal;
         if (this.healthCurrent > this.healthMax) {
             this.healthCurrent = this.healthMax;
         }
-        System.out.println(name + " est soigné de " + healAmount + " points. Vie actuelle : " + healthCurrent);
+        System.out.println(name + " est soigné de " + finalHeal + " points (multiplier soin reçu: " + multiplier + "). Vie actuelle : " + healthCurrent);
+    }
+
+    public void restoreMana(int manaAmount) {
+        this.manaCurrent += manaAmount;
+        if (this.manaCurrent > this.manaMax) {
+            this.manaCurrent = this.manaMax;
+        }
+        System.out.println(name + " régénère " + manaAmount + " mana. Mana actuelle : " + manaCurrent);
     }
 
     /**
@@ -185,6 +258,23 @@ public class Personnage {
             }
         }
     }
+
+    public void addManaOverTimeEffect(ManaOverTimeEffect effect) {
+        activeManaOverTimeEffects.add(effect);
+    }
+
+    public void updateManaOverTimeEffects() {
+        Iterator<ManaOverTimeEffect> iterator = activeManaOverTimeEffects.iterator();
+        while (iterator.hasNext()) {
+            ManaOverTimeEffect effect = iterator.next();
+            effect.tick(this);
+            if (effect.getDuration() <= 0) {
+                iterator.remove();
+                System.out.println(name + " n'a plus d'effet de mana over time.");
+            }
+        }
+    }
+
 
     public void addDamageOverTimeEffect(DamageOverTimeEffect effect) {
         activeDamageOverTimeEffects.add(effect);
@@ -229,6 +319,35 @@ public class Personnage {
                 System.out.println(name + " perd l'effet sur " + effect.getStatAffected());
             }
         }
+        updateShields();
+    }
+
+    public void addShield(int amount, int duration, String sourceName) {
+        if (activeShields == null) {
+            activeShields = new ArrayList<>();
+        }
+        double multiplier = getStatBuffMultiplier(StatType.SHIELD_RECEIVED);
+        int finalAmount = (int) (amount * Math.max(0, multiplier));
+        activeShields.add(new ActiveShield(finalAmount, duration, sourceName));
+        System.out.println(name + " reçoit un bouclier de " + finalAmount + " (multiplier bouclier reçu: " + multiplier + ") pour " + duration + " tours (" + sourceName + ").");
+    }
+
+    public void updateShields() {
+        if (activeShields == null) return;
+        Iterator<ActiveShield> iterator = activeShields.iterator();
+        while (iterator.hasNext()) {
+            ActiveShield shield = iterator.next();
+            shield.setDuration(shield.getDuration() - 1);
+            if (shield.getDuration() <= 0 || shield.getAmount() <= 0) {
+                iterator.remove();
+                System.out.println(name + " perd l'effet de bouclier (" + shield.getSourceName() + ").");
+            }
+        }
+    }
+
+    public int getTotalShield() {
+        if (activeShields == null) return 0;
+        return activeShields.stream().mapToInt(ActiveShield::getAmount).sum();
     }
 
     public void addConsumableSpellBuff(ConsumableSpellBuffDebuffEffect buff) {
@@ -361,6 +480,7 @@ public class Personnage {
         consumableSpellBuffs.clear();
         activeHealOverTimeEffects.clear();
         activeDamageOverTimeEffects.clear();
+        activeManaOverTimeEffects.clear();
         System.out.println(name + " est purifié de tous ses bonus et malus !");
     }
 

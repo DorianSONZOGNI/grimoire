@@ -29,6 +29,14 @@ public abstract class SpellEffect {
     @Column(name = "target_expression")
     private String targetExpression;
 
+    @Column(name = "required_choice_key")
+    private Integer requiredChoiceKey;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "spell_effect_channeling_turns", joinColumns = @JoinColumn(name = "spell_effect_id"))
+    @Column(name = "turn")
+    private java.util.List<Integer> channelingTurns = new java.util.ArrayList<>();
+
     /**
      * Applique cet effet du sort sur la cible.
      *

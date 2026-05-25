@@ -2,9 +2,6 @@ package generation.grimoire.entity.spell.type.effect;
 
 import generation.grimoire.entity.SpellEffect;
 import generation.grimoire.entity.personnage.Personnage;
-import generation.grimoire.enumeration.DamageType;
-import jakarta.persistence.EnumType;
-import jakarta.persistence.Enumerated;
 import jakarta.persistence.MappedSuperclass;
 import lombok.Data;
 import lombok.EqualsAndHashCode;
@@ -12,21 +9,17 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @MappedSuperclass
-public abstract class DamageEffect extends SpellEffect {
-
-    @Enumerated(EnumType.STRING)
-    private DamageType damageType;
+public abstract class ManaEffect extends SpellEffect {
 
     /**
-     * Multiplicateur d'amplification pour cet effet.
-     * Par défaut, 1.0 signifie qu'aucun buff n'est appliqué.
+     * Multiplicateur d'amplification de la régénération de mana.
+     * 1.0 signifie pas de modification.
      */
     private double amplificationMultiplier = 1.0;
 
     @Override
     public void applyModifierFromBuff(BuffDebuffEffect buff, Personnage caster, Personnage target) {
         this.amplificationMultiplier *= buff.getModifier();
-        System.out.println("Amplification appliquée au DamageEffect avec x" + buff.getModifier());
+        System.out.println("Amplification appliquée au ManaEffect avec x" + buff.getModifier());
     }
-
 }

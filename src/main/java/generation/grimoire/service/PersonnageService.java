@@ -13,7 +13,7 @@ public class PersonnageService {
         this.persoRepo = persoRepo;
     }
 
-    public Personnage findByIdOrThrow(Long id) {
+    public Personnage findByIdOrThrow(@org.springframework.lang.NonNull Long id) {
         return persoRepo.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException("Personnage non trouvé : " + id));
     }

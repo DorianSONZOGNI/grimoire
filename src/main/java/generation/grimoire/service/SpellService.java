@@ -5,7 +5,6 @@ import generation.grimoire.entity.SpellEffect;
 import generation.grimoire.entity.personnage.Personnage;
 import generation.grimoire.entity.spiritualite.passif.SpiritualitePassiveEffect;
 import generation.grimoire.entity.spell.type.effect.ConsumableSpellBuffDebuffEffect;
-import generation.grimoire.enumeration.SpellCategory;
 import generation.grimoire.enumeration.SpellCondition;
 import generation.grimoire.repository.SpellRepository;
 import jakarta.persistence.EntityNotFoundException;
@@ -25,9 +24,9 @@ public class SpellService {
         this.personnageService = personnageService;
     }
 
-    public void castSpellInvoq(Long spellId,
-            Long casterId,
-            Long targetId,
+    public void castSpellInvoq(@org.springframework.lang.NonNull Long spellId,
+            @org.springframework.lang.NonNull Long casterId,
+            @org.springframework.lang.NonNull Long targetId,
             Integer choiceKey) {
         Spell baseSpell = spellRepository.findById(spellId)
                 .orElseThrow(() -> new EntityNotFoundException("Sort non trouvé : " + spellId));
@@ -50,6 +49,36 @@ public class SpellService {
 
         // Dans le cas d'un variant, on détermine lequel est sélectioné
         Spell toCast = selectVariant(spell, caster, target, choiceKey);
+
+        // 1) Enforce category casting limits
+        generation.grimoire.enumeration.SpellCastingType cType = toCast.getCastingType();
+        if (cType == null) {
+            cType = generation.grimoire.enumeration.SpellCastingType.BANAL;
+        }
+
+        // Rule A: If currently channeling
+        if (caster.getRemainingChannelingTurns() > 0) {
+            if (cType != generation.grimoire.enumeration.SpellCastingType.INSTANTANE) {
+                System.out.println(caster.getName() + " ne peut pas lancer de sort banal ou canalisé pendant sa canalisation.");
+                return;
+            }
+            if (!caster.isAllowInstantDuringCurrentChanneling()) {
+                System.out.println(caster.getName() + " ne peut pas lancer de sort instantané pendant cette canalisation.");
+                return;
+            }
+        }
+
+        // Rule B: If already cast a Banal or Channeled spell this turn
+        if (caster.isBanalSpellCastThisTurn()) {
+            System.out.println(caster.getName() + " a déjà lancé un sort banal ce tour-ci (sa dernière action magique est consommée).");
+            return;
+        }
+
+        // Rule C: If already cast an Instant spell this turn
+        if (cType == generation.grimoire.enumeration.SpellCastingType.INSTANTANE && caster.isInstantSpellCastThisTurn()) {
+            System.out.println(caster.getName() + " a déjà lancé un sort instantané ce tour-ci.");
+            return;
+        }
 
         // Validation des prérequis de la spiritualité associée au sort
         if (toCast.getSpiritualite() != null && toCast.getSpiritualite().getPassiveEffects() != null) {
@@ -90,11 +119,36 @@ public class SpellService {
         System.out.println(caster.getName() + " dépense " + actualManaCost + " mana et " + actualHealCost
                 + " PV pour lancer " + toCast.getNom());
 
+        // Mettre à jour l'état de lancement du caster
+        if (cType == generation.grimoire.enumeration.SpellCastingType.INSTANTANE) {
+            caster.setInstantSpellCastThisTurn(true);
+        } else if (cType == generation.grimoire.enumeration.SpellCastingType.BANAL) {
+            caster.setBanalSpellCastThisTurn(true);
+        } else if (cType == generation.grimoire.enumeration.SpellCastingType.CANALISE) {
+            caster.setBanalSpellCastThisTurn(true);
+            caster.setRemainingChannelingTurns(toCast.getChannelingDuration());
+            caster.setAllowInstantDuringCurrentChanneling(toCast.isAllowInstantDuringChanneling());
+            caster.setChanneledSpell(toCast);
+            caster.setChannelingTarget(target);
+            caster.setChannelingChoiceKey(choiceKey);
+            System.out.println(caster.getName() + " commence à canaliser " + toCast.getNom() + " pour " + toCast.getChannelingDuration() + " tours.");
+        }
+
         // Appliquer les buffs consommables de manière générique
         applyConsumableBuffs(toCast, caster, target);
 
         // Appliquer chacun des effets du sort en résolvant dynamiquement les destinataires de la règle textuelle
         for (SpellEffect effect : toCast.getEffects()) {
+            if (effect.getRequiredChoiceKey() != null && !effect.getRequiredChoiceKey().equals(choiceKey)) {
+                continue; // L'effet ne s'active que si la clé de choix correspond
+            }
+            if (toCast.getCastingType() == generation.grimoire.enumeration.SpellCastingType.CANALISE) {
+                if (effect.getChannelingTurns() != null && !effect.getChannelingTurns().isEmpty()) {
+                    if (!effect.getChannelingTurns().contains(1)) {
+                        continue; // L'effet ne s'active pas au Tour 1
+                    }
+                }
+            }
             java.util.List<Personnage> recipients = new java.util.ArrayList<>();
             String expr = effect.getTargetExpression();
 
@@ -260,12 +314,65 @@ public class SpellService {
         }
     }
 
+    public void tickChanneling(Personnage caster, Personnage target, Integer choiceKey) {
+        Spell channeledSpell = caster.getChanneledSpell();
+        if (channeledSpell == null) return;
+
+        int duration = channeledSpell.getChannelingDuration();
+        int remaining = caster.getRemainingChannelingTurns();
+        int currentTurn = duration - remaining + 1;
+
+        System.out.println("🌀 [Canalisation] Résolution des effets pour le Tour " + currentTurn + " de " + channeledSpell.getNom());
+
+        for (SpellEffect effect : channeledSpell.getEffects()) {
+            if (effect.getRequiredChoiceKey() != null && !effect.getRequiredChoiceKey().equals(choiceKey)) {
+                continue;
+            }
+            if (effect.getChannelingTurns() != null && !effect.getChannelingTurns().isEmpty()) {
+                if (!effect.getChannelingTurns().contains(currentTurn)) {
+                    continue;
+                }
+            }
+
+            java.util.List<Personnage> recipients = new java.util.ArrayList<>();
+            String expr = effect.getTargetExpression();
+
+            if (expr == null || expr.trim().isEmpty()) {
+                recipients.add((effect.getEffectTarget() != null && effect.getEffectTarget() == generation.grimoire.enumeration.EffectTarget.CASTER) ? caster : target);
+            } else {
+                String lower = expr.toLowerCase();
+                boolean targetsCaster = lower.contains("lanceur") || lower.contains("soi");
+                boolean targetsAlly = lower.contains("allié") || lower.contains("allier");
+                boolean targetsEnemy = lower.contains("cible") || lower.contains("ennemi");
+
+                if (targetsCaster) {
+                    recipients.add(caster);
+                }
+                if (targetsAlly) {
+                    Personnage simulatedAlly = new Personnage();
+                    simulatedAlly.setName("Compagnon Allié");
+                    simulatedAlly.setHealthMax(caster.getHealthMax());
+                    simulatedAlly.setHealthCurrent(caster.getHealthCurrent());
+                    recipients.add(simulatedAlly);
+                }
+                if (targetsEnemy || (!targetsCaster && !targetsAlly)) {
+                    recipients.add(target);
+                }
+                recipients = recipients.stream().distinct().toList();
+            }
+
+            for (Personnage recipient : recipients) {
+                effect.apply(caster, recipient);
+            }
+        }
+    }
+
     /**
      * Enregistre un sort en base de données.
      *
      * @param spell le sort à enregistrer
      */
-    public void saveSpell(Spell spell) {
+    public void saveSpell(@org.springframework.lang.NonNull Spell spell) {
         spellRepository.save(spell);
     }
 

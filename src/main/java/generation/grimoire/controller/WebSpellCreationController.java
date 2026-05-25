@@ -148,10 +148,14 @@ public class WebSpellCreationController {
                 Map.of("type", "PERCENTAGE_DAMAGE", "label", "Dégâts en Pourcentage"),
                 Map.of("type", "FIXED_HEAL", "label", "Soins Fixes"),
                 Map.of("type", "PERCENTAGE_HEAL", "label", "Soins en Pourcentage"),
+                Map.of("type", "FIXED_MANA", "label", "Régénération de Mana Fixe"),
+                Map.of("type", "PERCENTAGE_MANA", "label", "Régénération de Mana en %"),
                 Map.of("type", "BUFF_DEBUFF", "label", "Buff / Débuff"),
                 Map.of("type", "DOT", "label", "Dégâts sur la durée (DoT)"),
                 Map.of("type", "HOT", "label", "Soins sur la durée (HoT)"),
-                Map.of("type", "PURGE", "label", "Purge (Dissiper Bonus/Malus)"));
+                Map.of("type", "MOT", "label", "Régénération de Mana continue (MoT)"),
+                Map.of("type", "PURGE", "label", "Purge (Dissiper Bonus/Malus)"),
+                Map.of("type", "SHIELD", "label", "Bouclier"));
         meta.put("effectTypes", effectTypes);
 
         return ResponseEntity.ok(meta);
@@ -163,7 +167,7 @@ public class WebSpellCreationController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> deleteSpell(@PathVariable Long id) {
+    public ResponseEntity<String> deleteSpell(@PathVariable @org.springframework.lang.NonNull Long id) {
         if (spellRepository.existsById(id)) {
             spellRepository.deleteById(id);
             return ResponseEntity.ok("Sort supprimé avec succès.");
@@ -172,7 +176,7 @@ public class WebSpellCreationController {
     }
 
     @GetMapping("/try/{id}")
-    public ResponseEntity<SimulationResultDto> trySpell(@PathVariable Long id) {
+    public ResponseEntity<SimulationResultDto> trySpell(@PathVariable @org.springframework.lang.NonNull Long id) {
         java.util.Optional<Spell> opt = spellRepository.findById(id);
         if (opt.isEmpty()) {
             return ResponseEntity.notFound().build();
@@ -217,6 +221,16 @@ public class WebSpellCreationController {
 
             System.out.println("⚔️ --- Lancement de : " + spell.getNom() + " ---");
             spellService.castSpell(spell, hero, monstre, null);
+
+            // Simuler le déroulement des tours restants de la canalisation
+            if (spell.getCastingType() == generation.grimoire.enumeration.SpellCastingType.CANALISE) {
+                int duration = spell.getChannelingDuration();
+                for (int t = 2; t <= duration; t++) {
+                    System.out.println("\n--- TOUR DE CANALISATION " + t + " ---");
+                    hero.startTurn();
+                    spellService.tickChanneling(hero, monstre, null);
+                }
+            }
             ps.flush();
         } catch (Exception e) {
             System.out.println("❌ Erreur de simulation : " + e.getMessage());
@@ -236,8 +250,9 @@ public class WebSpellCreationController {
     public ResponseEntity<String> createSpellPayload(@RequestBody SpellCreationDto dto) {
         Spell spell;
         boolean isUpdate = false;
-        if (dto.getId() != null && spellRepository.existsById(dto.getId())) {
-            spell = spellRepository.findById(dto.getId()).get();
+        Long id = dto.getId();
+        if (id != null && spellRepository.existsById(id)) {
+            spell = spellRepository.findById(id).get();
             spell.getEffects().clear();
             isUpdate = true;
         } else {
@@ -256,12 +271,20 @@ public class WebSpellCreationController {
             spell.setPercentHealCostSource(dto.getPercentHealCostSource());
         if (dto.getCastingType() != null)
             spell.setCastingType(dto.getCastingType());
+        spell.setChannelingDuration(dto.getChannelingDuration());
+        spell.setAllowInstantDuringChanneling(dto.isAllowInstantDuringChanneling());
 
-        if (dto.getVoieId() != null) {
-            voieRepository.findById(dto.getVoieId()).ifPresent(spell::setVoie);
+        Long voieId = dto.getVoieId();
+        if (voieId != null) {
+            voieRepository.findById(voieId).ifPresent(spell::setVoie);
+        } else {
+            spell.setVoie(null);
         }
-        if (dto.getSpiritualiteId() != null) {
-            spiritualiteRepository.findById(dto.getSpiritualiteId()).ifPresent(spell::setSpiritualite);
+        Long spiritualiteId = dto.getSpiritualiteId();
+        if (spiritualiteId != null) {
+            spiritualiteRepository.findById(spiritualiteId).ifPresent(spell::setSpiritualite);
+        } else {
+            spell.setSpiritualite(null);
         }
 
         if (dto.getEffects() != null) {
@@ -315,10 +338,38 @@ public class WebSpellCreationController {
                         hot.setPercentageHealPerTick(eDto.getPercentage());
                         hot.setFixedHealPerTick(eDto.getHealAmount());
                         hot.setDuration(eDto.getDuration());
+                        hot.setHealSource(eDto.getSource() != null ? eDto.getSource() : Source.TARGET_HEALTH_MAX);
                         effect = hot;
+                        break;
+                    case "FIXED_MANA":
+                        ManaFixedEffect mfe = new ManaFixedEffect();
+                        mfe.setManaAmount(eDto.getManaAmount());
+                        effect = mfe;
+                        break;
+                    case "PERCENTAGE_MANA":
+                        ManaPercentageEffect mpe = new ManaPercentageEffect();
+                        mpe.setPercentage(eDto.getPercentage());
+                        mpe.setManaSource(eDto.getSource() != null ? eDto.getSource() : Source.TARGET_MANA_MAX);
+                        effect = mpe;
+                        break;
+                    case "MOT":
+                        ManaOverTimeEffect mot = new ManaOverTimeEffect();
+                        mot.setPercentageManaPerTick(eDto.getPercentage());
+                        mot.setFixedManaPerTick(eDto.getManaAmount());
+                        mot.setDuration(eDto.getDuration());
+                        mot.setManaSource(eDto.getSource() != null ? eDto.getSource() : Source.TARGET_MANA_MAX);
+                        effect = mot;
                         break;
                     case "PURGE":
                         effect = new generation.grimoire.entity.spell.type.effect.PurgeEffect();
+                        break;
+                    case "SHIELD":
+                        generation.grimoire.entity.spell.type.effect.ShieldEffect se = new generation.grimoire.entity.spell.type.effect.ShieldEffect();
+                        se.setFixedValue(eDto.getFlatValue());
+                        se.setPercentage(eDto.getPercentage());
+                        se.setDuration(eDto.getDuration());
+                        se.setShieldSource(eDto.getSource() != null ? eDto.getSource() : Source.TARGET_HEALTH_MAX);
+                        effect = se;
                         break;
                 }
 
@@ -330,6 +381,10 @@ public class WebSpellCreationController {
                     }
                     if (eDto.getTargetExpression() != null && !eDto.getTargetExpression().trim().isEmpty()) {
                         effect.setTargetExpression(eDto.getTargetExpression().trim());
+                    }
+                    effect.setRequiredChoiceKey(eDto.getRequiredChoiceKey());
+                    if (eDto.getChannelingTurns() != null) {
+                        effect.setChannelingTurns(new java.util.ArrayList<>(eDto.getChannelingTurns()));
                     }
                     spell.addEffect(effect);
                 }
@@ -358,6 +413,8 @@ public class WebSpellCreationController {
         private Source percentHealCostSource;
         private Long voieId;
         private Long spiritualiteId;
+        private int channelingDuration;
+        private boolean allowInstantDuringChanneling = true;
         private List<EffectCreationDto> effects = new ArrayList<>();
     }
 
@@ -369,6 +426,7 @@ public class WebSpellCreationController {
         private String targetExpression;
         private int damage;
         private int healAmount;
+        private int manaAmount;
         private double percentage;
         private int flatValue;
         private double modifier;
@@ -376,6 +434,8 @@ public class WebSpellCreationController {
         private DamageType damageType;
         private StatType statAffected;
         private Source source;
+        private Integer requiredChoiceKey;
+        private List<Integer> channelingTurns = new ArrayList<>();
     }
 
     @Data
