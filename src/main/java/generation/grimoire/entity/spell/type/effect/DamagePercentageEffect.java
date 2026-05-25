@@ -43,7 +43,7 @@ public class DamagePercentageEffect extends DamageEffect {
         }
 
         // Appliquer les dégâts à la cible
-        target.takeDamage((int) damage, this.getDamageType());
+        target.takeDamage((int) damage, this.getDamageType(), caster);
     }
 
 }

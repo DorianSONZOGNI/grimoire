@@ -129,6 +129,10 @@ public class Personnage {
      * @param damageType le type de dégâts (ex : PHYSICAL, MAGICAL, etc.)
      */
     public void takeDamage(int damage, DamageType damageType) {
+        takeDamage(damage, damageType, null);
+    }
+
+    public void takeDamage(int damage, DamageType damageType, Personnage caster) {
         double constant; // La constante K qui détermine la courbe.
 
         double effectiveArmor = this.armor + getStatFlatBonus(StatType.ARMURE);
@@ -181,15 +185,61 @@ public class Personnage {
 
         // Appliquer les dégâts aux boucliers d'abord
         int remainingDamage = effectiveDamage;
-        if (activeShields != null && !activeShields.isEmpty()) {
-            for (ActiveShield shield : activeShields) {
-                if (shield.getAmount() > 0) {
-                    int absorbed = Math.min(shield.getAmount(), remainingDamage);
-                    shield.setAmount(shield.getAmount() - absorbed);
-                    remainingDamage -= absorbed;
-                    System.out.println("🛡️ Le bouclier (" + shield.getSourceName() + ") absorbe " + absorbed + " dégâts. Reste : " + shield.getAmount() + " absorption.");
-                    if (remainingDamage <= 0) {
-                        break;
+
+        // Vérifier l'état Perce-Bouclier (SHIELD_PENETRATION)
+        boolean ignoreShields = false;
+        if (caster != null) {
+            boolean casterHasShieldPenetrationBuff = caster.getStatFlatBonus(StatType.SHIELD_PENETRATION) > 0 
+                || caster.getStatBuffMultiplier(StatType.SHIELD_PENETRATION) > 1.0;
+            if (casterHasShieldPenetrationBuff) {
+                ignoreShields = true;
+            }
+        }
+        boolean targetHasShieldPenetrationDebuff = this.getStatFlatBonus(StatType.SHIELD_PENETRATION) < 0 
+            || this.getStatBuffMultiplier(StatType.SHIELD_PENETRATION) < 1.0;
+        if (targetHasShieldPenetrationDebuff) {
+            ignoreShields = true;
+        }
+
+        if (ignoreShields) {
+            System.out.println("🛡️ Les boucliers de " + this.name + " sont ignorés par l'effet Perce-Bouclier !");
+        } else {
+            if (activeShields != null && !activeShields.isEmpty()) {
+                double shieldDamageMult = 1.0;
+                int shieldDamageFlat = 0;
+                if (caster != null) {
+                    if (damageType == DamageType.MAGIC) {
+                        shieldDamageMult = caster.getStatBuffMultiplier(StatType.DAMAGE_GIVEN_MAGIC_TO_SHIELD);
+                        shieldDamageFlat = caster.getStatFlatBonus(StatType.DAMAGE_GIVEN_MAGIC_TO_SHIELD);
+                    } else if (damageType == DamageType.PHYSIC) {
+                        shieldDamageMult = caster.getStatBuffMultiplier(StatType.DAMAGE_GIVEN_PHYSIC_TO_SHIELD);
+                        shieldDamageFlat = caster.getStatFlatBonus(StatType.DAMAGE_GIVEN_PHYSIC_TO_SHIELD);
+                    }
+                }
+                double safeMult = Math.max(0.001, shieldDamageMult);
+
+                for (ActiveShield shield : activeShields) {
+                    if (shield.getAmount() > 0) {
+                        double damageToShield = remainingDamage * safeMult + shieldDamageFlat;
+                        if (damageToShield > 0) {
+                            int absorbed = Math.min(shield.getAmount(), (int) Math.ceil(damageToShield));
+                            shield.setAmount(shield.getAmount() - absorbed);
+
+                            double rawConsumed = (absorbed - shieldDamageFlat) / safeMult;
+                            if (rawConsumed < 0) {
+                                rawConsumed = 0;
+                            }
+                            int rawConsumedInt = (int) Math.ceil(rawConsumed);
+                            remainingDamage -= rawConsumedInt;
+
+                            shieldDamageFlat = Math.max(0, shieldDamageFlat - absorbed);
+
+                            System.out.println("🛡️ Le bouclier (" + shield.getSourceName() + ") absorbe " + absorbed + " dégâts (dégâts bruts consommés : " + rawConsumedInt + "). Reste : " + shield.getAmount() + " absorption.");
+                            if (remainingDamage <= 0) {
+                                remainingDamage = 0;
+                                break;
+                            }
+                        }
                     }
                 }
             }
