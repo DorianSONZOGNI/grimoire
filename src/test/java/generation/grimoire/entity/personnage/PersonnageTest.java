@@ -148,4 +148,92 @@ class PersonnageTest {
         assertThat(enemy.getTotalShield()).isEqualTo(0);
         assertThat(enemy.getHealthCurrent()).isEqualTo(100);
     }
+
+    @Test
+    void shouldMultiplyShieldReceived() {
+        BuffDebuffEffect recBuff = new BuffDebuffEffect();
+        recBuff.setStatAffected(StatType.SHIELD_RECEIVED);
+        recBuff.setModifier(1.5); // +50% shield received
+        recBuff.setDuration(2);
+        hero.applyBuff(recBuff, 1.5);
+
+        // base amount = 100
+        // with 1.5 multiplier on recipient -> final amount = 150
+        hero.addShield(100, 2, "TestShield");
+        assertThat(hero.getTotalShield()).isEqualTo(150);
+    }
+
+    @Test
+    void shouldMultiplyShieldGivenByCaster() {
+        BuffDebuffEffect giveBuff = new BuffDebuffEffect();
+        giveBuff.setStatAffected(StatType.SHIELD_GIVEN);
+        giveBuff.setModifier(2.0); // +100% shield given
+        giveBuff.setDuration(2);
+        hero.applyBuff(giveBuff, 2.0);
+
+        ShieldEffect shieldEff = new ShieldEffect();
+        shieldEff.setFixedValue(50);
+        shieldEff.setDuration(3);
+        shieldEff.apply(hero, enemy);
+
+        // base amount = 50
+        // with 2.0 SHIELD_GIVEN on hero -> final amount created = 100
+        // since enemy has no SHIELD_RECEIVED buff, enemy receives 100.
+        assertThat(enemy.getTotalShield()).isEqualTo(100);
+    }
+
+    @Test
+    void shouldAmplifyMagicShieldDamageIfCasterHasShieldDamageBuff() {
+        enemy.addShield(50, 2, "ShieldSource");
+
+        BuffDebuffEffect shieldDmgBuff = new BuffDebuffEffect();
+        shieldDmgBuff.setStatAffected(StatType.DAMAGE_GIVEN_MAGIC_TO_SHIELD);
+        shieldDmgBuff.setModifier(2.0); // double damage to shield
+        shieldDmgBuff.setDuration(2);
+        hero.applyBuff(shieldDmgBuff, 2.0);
+
+        // resistance = 100, constant = 100 -> reduction factor = 0.5
+        // raw damage = 50 -> effective damage = 25
+        // shield multiplier = 2.0 -> damageToShield = 25 * 2 = 50
+        // enemy has 50 shield, which absorbs all 50 damage against shield.
+        // rawConsumed = (50 - 0) / 2 = 25.
+        // remainingRawDamage = 25 - 25 = 0.
+        // health current remains 100. enemy shield becomes 0.
+        enemy.takeDamage(50, DamageType.MAGIC, hero);
+
+        assertThat(enemy.getTotalShield()).isEqualTo(0);
+        assertThat(enemy.getHealthCurrent()).isEqualTo(100);
+    }
+
+    @Test
+    void shouldBypassShieldIfCasterHasShieldPenetrationFlatBuff() {
+        enemy.addShield(50, 2, "ShieldSource");
+        
+        BuffDebuffEffect penBuff = new BuffDebuffEffect();
+        penBuff.setStatAffected(StatType.SHIELD_PENETRATION);
+        penBuff.setFlatValue(1); // Flat bonus > 0 -> buff
+        penBuff.setDuration(2);
+        hero.applyBuff(penBuff, 1.0); // flat is 1
+
+        enemy.takeDamage(50, DamageType.PHYSIC, hero);
+
+        assertThat(enemy.getTotalShield()).isEqualTo(50);
+        assertThat(enemy.getHealthCurrent()).isEqualTo(75);
+    }
+
+    @Test
+    void shouldBypassShieldIfTargetHasShieldPenetrationFlatDebuff() {
+        enemy.addShield(50, 2, "ShieldSource");
+
+        BuffDebuffEffect penDebuff = new BuffDebuffEffect();
+        penDebuff.setStatAffected(StatType.SHIELD_PENETRATION);
+        penDebuff.setFlatValue(-1); // Flat bonus < 0 -> debuff
+        penDebuff.setDuration(2);
+        enemy.applyBuff(penDebuff, 1.0); // flat is -1
+
+        enemy.takeDamage(50, DamageType.PHYSIC, hero);
+
+        assertThat(enemy.getTotalShield()).isEqualTo(50);
+        assertThat(enemy.getHealthCurrent()).isEqualTo(75);
+    }
 }
