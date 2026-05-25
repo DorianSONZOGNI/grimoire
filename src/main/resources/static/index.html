@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 
 <head>
@@ -600,131 +600,267 @@
            LVL-5 HOVER EFFECTS — Keyframes par voie/spiritualité
            ===================================================== */
 
-        /* --- Consolidation : tremblement pierre --- */
-        @keyframes lvl5-quake {
-            0%,100% { transform: translateY(-6px) scale(1.02) translate(0,0); }
-            10% { transform: translateY(-6px) scale(1.02) translate(-2px, 1px); }
-            20% { transform: translateY(-6px) scale(1.02) translate(2px, -1px); }
-            30% { transform: translateY(-6px) scale(1.02) translate(-1px, 2px); }
-            40% { transform: translateY(-6px) scale(1.02) translate(2px, 1px); }
-            50% { transform: translateY(-6px) scale(1.02) translate(-2px, -1px); }
-            60% { transform: translateY(-6px) scale(1.02) translate(1px, 2px); }
-            70% { transform: translateY(-6px) scale(1.02) translate(-1px, -2px); }
-            80% { transform: translateY(-6px) scale(1.02) translate(2px, -1px); }
-            90% { transform: translateY(-6px) scale(1.02) translate(-1px, 1px); }
-        }
-        .spell-card-lvl-5.lvl5-enter-consolidation {
-            animation: lvl5-quake 0.55s ease-in-out;
-        }
-
-        /* --- Raison : pulsation mentale (ondulation de la bordure) --- */
-        @keyframes lvl5-mind-pulse {
-            0%,100% { box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 8px 30px rgba(59,130,246,0.6), 0 0 0 0 rgba(59,130,246,0); }
-            40% { box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 8px 30px rgba(59,130,246,0.8), 0 0 0 12px rgba(59,130,246,0.15); }
-            80% { box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 8px 30px rgba(59,130,246,0.6), 0 0 0 22px rgba(59,130,246,0); }
+        /* --- VENT (Raison) : la carte se soulève portée par un courant d'air --- */
+        @keyframes lvl5-wind {
+            0%   { transform: translateY(-6px) scale(1.02) skewX(0deg); filter: brightness(1); }
+            15%  { transform: translateY(-10px) scale(1.025) skewX(-1.5deg); filter: brightness(1.1); }
+            30%  { transform: translateY(-7px) scale(1.02) skewX(1deg); }
+            50%  { transform: translateY(-9px) scale(1.022) skewX(-0.8deg); filter: brightness(1.05); }
+            70%  { transform: translateY(-6px) scale(1.02) skewX(0.5deg); }
+            100% { transform: translateY(-6px) scale(1.02) skewX(0deg); filter: brightness(1); }
         }
         .spell-card-lvl-5.lvl5-enter-raison {
-            animation: lvl5-mind-pulse 0.7s ease-out;
+            animation: lvl5-wind 0.7s cubic-bezier(0.25,0.46,0.45,0.94);
+        }
+        /* dézoom Raison : le cadre s'incline légèrement à droite comme soufflé */
+        @keyframes lvl5-wind-leave {
+            0%   { transform: translateY(0) scale(1) skewX(0deg); }
+            30%  { transform: translateY(2px) scale(0.99) skewX(2deg); }
+            60%  { transform: translateY(0px) scale(1) skewX(-0.5deg); }
+            100% { transform: translateY(0) scale(1) skewX(0deg); }
+        }
+        .spell-card-lvl-5.lvl5-leave-raison {
+            animation: lvl5-wind-leave 0.5s ease-out;
         }
 
-        /* --- Sûreté : vague d'eau (border ripple) --- */
-        @keyframes lvl5-wave-ripple {
-            0%,100% { box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 8px 30px rgba(0,229,204,0.6), 0 0 0 0 rgba(0,229,204,0); }
-            30% { box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 8px 30px rgba(0,229,204,0.8), 0 0 0 8px rgba(0,229,204,0.2); }
-            60% { box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 8px 30px rgba(0,229,204,0.5), 0 0 0 18px rgba(0,229,204,0.05); }
-            80% { box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 8px 30px rgba(0,229,204,0.4), 0 0 0 25px rgba(0,229,204,0); }
+        /* --- EAU (Sûreté) : ondulation douce, la carte flotte sur une vague --- */
+        @keyframes lvl5-water {
+            0%,100% { transform: translateY(-6px) scale(1.02); box-shadow: inset 0 2px 0 rgba(0,229,204,0.4), 0 8px 30px rgba(0,229,204,0.6), 0 0 0 0 rgba(0,229,204,0); }
+            20% { transform: translateY(-9px) scale(1.022); box-shadow: inset 0 3px 0 rgba(0,229,204,0.6), 0 12px 40px rgba(0,229,204,0.8), 0 0 0 6px rgba(0,229,204,0.15); }
+            45% { transform: translateY(-5px) scale(1.018); box-shadow: inset 0 2px 0 rgba(0,229,204,0.3), 0 8px 30px rgba(0,229,204,0.5), 0 0 0 14px rgba(0,229,204,0.06); }
+            70% { transform: translateY(-8px) scale(1.02); box-shadow: inset 0 2px 0 rgba(0,229,204,0.5), 0 10px 35px rgba(0,229,204,0.7), 0 0 0 22px rgba(0,229,204,0); }
         }
         .spell-card-lvl-5.lvl5-enter-surete {
-            animation: lvl5-wave-ripple 0.8s ease-out;
+            animation: lvl5-water 0.9s ease-in-out;
+        }
+        /* dézoom Sûreté : le cadre plonge légèrement vers le bas */
+        @keyframes lvl5-water-leave {
+            0%   { transform: translateY(0) scale(1); }
+            40%  { transform: translateY(3px) scale(0.995); }
+            70%  { transform: translateY(1px) scale(1); }
+            100% { transform: translateY(0) scale(1); }
+        }
+        .spell-card-lvl-5.lvl5-leave-surete {
+            animation: lvl5-water-leave 0.6s ease-out;
         }
 
-        /* --- Trahison : scintillement instable / craquelure --- */
-        @keyframes lvl5-flicker {
-            0%,100% { opacity: 1; filter: brightness(1); }
-            15% { opacity: 0.85; filter: brightness(1.4) hue-rotate(10deg); }
-            30% { opacity: 1; filter: brightness(0.9); }
-            45% { opacity: 0.9; filter: brightness(1.5) hue-rotate(-15deg); }
-            60% { opacity: 1; filter: brightness(1); }
-            75% { opacity: 0.88; filter: brightness(1.3); }
+        /* --- POISON (Trahison) : distorsion subtile + teinte verdâtre empoisonnée --- */
+        @keyframes lvl5-poison {
+            0%,100% { filter: brightness(1) saturate(1) hue-rotate(0deg); transform: translateY(-6px) scale(1.02); }
+            10%  { filter: brightness(0.85) saturate(1.8) hue-rotate(80deg); transform: translateY(-6px) scale(1.02) skewY(-0.5deg); }
+            25%  { filter: brightness(1.1) saturate(2) hue-rotate(100deg); transform: translateY(-7px) scale(1.025) skewY(0.3deg); }
+            45%  { filter: brightness(0.9) saturate(1.5) hue-rotate(70deg); transform: translateY(-6px) scale(1.02) skewY(-0.3deg); }
+            65%  { filter: brightness(1.05) saturate(1.7) hue-rotate(90deg); transform: translateY(-6px) scale(1.02); }
+            80%  { filter: brightness(0.95) saturate(1.3) hue-rotate(40deg); }
         }
         .spell-card-lvl-5.lvl5-enter-trahison {
-            animation: lvl5-flicker 0.6s ease-in-out;
+            animation: lvl5-poison 0.75s ease-in-out;
+        }
+        /* dézoom Trahison : teinte poison qui s'estompe avec un dernier frisson */
+        @keyframes lvl5-poison-leave {
+            0%   { filter: brightness(1) hue-rotate(0deg); transform: translateY(0) scale(1); }
+            20%  { filter: brightness(0.8) saturate(2) hue-rotate(90deg); transform: translateY(1px) scale(0.998) skewX(0.5deg); }
+            50%  { filter: brightness(1) hue-rotate(20deg); transform: translateY(0) scale(1); }
+            100% { filter: brightness(1) hue-rotate(0deg); }
+        }
+        .spell-card-lvl-5.lvl5-leave-trahison {
+            animation: lvl5-poison-leave 0.6s ease-out;
         }
 
-        /* --- Conviction : embrasement (flash + léger tremblement chaud) --- */
-        @keyframes lvl5-ignite {
-            0%,100% { box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 8px 30px rgba(183,76,11,0.6); transform: translateY(-6px) scale(1.02); }
-            20% { box-shadow: inset 0 2px 0 rgba(255,200,100,0.5), 0 8px 40px rgba(255,100,0,0.9), 0 0 25px rgba(255,69,0,0.5); transform: translateY(-7px) scale(1.025) rotate(0.3deg); }
-            40% { box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 8px 30px rgba(183,76,11,0.7); transform: translateY(-6px) scale(1.02) rotate(-0.2deg); }
-            60% { box-shadow: inset 0 2px 0 rgba(255,200,100,0.3), 0 8px 35px rgba(255,80,0,0.6); transform: translateY(-6.5px) scale(1.022) rotate(0.15deg); }
+        /* --- TERRE (Consolidation) : grondement tellurique, la carte s'enfonce puis remonte --- */
+        @keyframes lvl5-earth {
+            0%   { transform: translateY(-6px) scale(1.02) translate(0,0); box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 8px 30px rgba(153,103,76,0.6); }
+            6%   { transform: translateY(-5px) scale(1.022) translate(-3px, 1px); }
+            12%  { transform: translateY(-7px) scale(1.018) translate(3px, -1px); }
+            18%  { transform: translateY(-4px) scale(1.025) translate(-2px, 2px); box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 12px 40px rgba(153,103,76,0.9); }
+            24%  { transform: translateY(-8px) scale(1.02) translate(2px, -2px); }
+            36%  { transform: translateY(-5px) scale(1.02) translate(-1px, 1px); }
+            50%  { transform: translateY(-7px) scale(1.022) translate(1px, -1px); }
+            70%  { transform: translateY(-6px) scale(1.02) translate(0,0); box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 8px 30px rgba(153,103,76,0.7); }
+            100% { transform: translateY(-6px) scale(1.02) translate(0,0); }
+        }
+        .spell-card-lvl-5.lvl5-enter-consolidation {
+            animation: lvl5-earth 0.7s ease-in-out;
+        }
+        /* dézoom Consolidation : chute lourde + vibration finale */
+        @keyframes lvl5-earth-leave {
+            0%   { transform: translateY(0) scale(1); }
+            10%  { transform: translateY(4px) scale(1.005) translate(-1px, 0); }
+            20%  { transform: translateY(2px) scale(0.998) translate(1px, 0); }
+            30%  { transform: translateY(3px) scale(1.002) translate(-0.5px, 0); }
+            50%  { transform: translateY(1px) scale(1) translate(0.5px, 0); }
+            100% { transform: translateY(0) scale(1); }
+        }
+        .spell-card-lvl-5.lvl5-leave-consolidation {
+            animation: lvl5-earth-leave 0.55s cubic-bezier(0.36,0.07,0.19,0.97);
+        }
+
+        /* --- LAVE (Conviction) : surchauffe progressive, la carte pulse comme un magma --- */
+        @keyframes lvl5-lava {
+            0%   { transform: translateY(-6px) scale(1.02); box-shadow: inset 0 2px 0 rgba(255,200,50,0.2), 0 8px 30px rgba(183,76,11,0.6); filter: brightness(1); }
+            15%  { transform: translateY(-8px) scale(1.028); box-shadow: inset 0 3px 0 rgba(255,150,0,0.6), 0 10px 50px rgba(255,80,0,0.9), 0 0 20px rgba(255,69,0,0.4); filter: brightness(1.3); }
+            30%  { transform: translateY(-6px) scale(1.022); box-shadow: inset 0 2px 0 rgba(255,100,0,0.4), 0 8px 35px rgba(220,50,0,0.7); filter: brightness(1.1); }
+            50%  { transform: translateY(-7px) scale(1.026); box-shadow: inset 0 3px 0 rgba(255,200,0,0.5), 0 12px 55px rgba(255,60,0,1), 0 0 30px rgba(255,40,0,0.5); filter: brightness(1.35); }
+            75%  { transform: translateY(-6px) scale(1.02); box-shadow: inset 0 2px 0 rgba(255,150,50,0.3), 0 8px 35px rgba(183,76,11,0.75); filter: brightness(1.15); }
+            100% { transform: translateY(-6px) scale(1.02); box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 8px 30px rgba(183,76,11,0.6); filter: brightness(1); }
         }
         .spell-card-lvl-5.lvl5-enter-conviction {
-            animation: lvl5-ignite 0.65s ease-out;
+            animation: lvl5-lava 0.8s ease-out;
+        }
+        /* dézoom Conviction : refroidissement — la carte retombe lourdement */
+        @keyframes lvl5-lava-leave {
+            0%   { transform: translateY(0) scale(1); filter: brightness(1); }
+            20%  { transform: translateY(2px) scale(0.997); filter: brightness(1.2); }
+            50%  { transform: translateY(1px) scale(0.999); filter: brightness(1.05); }
+            100% { transform: translateY(0) scale(1); filter: brightness(1); }
+        }
+        .spell-card-lvl-5.lvl5-leave-conviction {
+            animation: lvl5-lava-leave 0.5s ease-in;
         }
 
-        /* --- Création : éclat végétal (verdissement lumineux) --- */
-        @keyframes lvl5-bloom {
-            0%,100% { box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 8px 30px rgba(16,185,129,0.6); filter: brightness(1); }
-            25% { box-shadow: inset 0 2px 0 rgba(100,255,180,0.5), 0 8px 40px rgba(16,185,129,1), 0 0 20px rgba(52,211,153,0.4); filter: brightness(1.15) saturate(1.3); }
-            60% { box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 8px 30px rgba(16,185,129,0.7); filter: brightness(1.05); }
+        /* --- PLANTE (Création) : croissance organique, la carte s'étire vers le haut et s'épanouit --- */
+        @keyframes lvl5-plant {
+            0%   { transform: translateY(-6px) scale(1.02) scaleY(1); box-shadow: inset 0 2px 0 rgba(100,255,150,0.2), 0 8px 30px rgba(16,185,129,0.6); filter: brightness(1) saturate(1); }
+            20%  { transform: translateY(-10px) scale(1.02) scaleY(1.01); box-shadow: inset 0 4px 0 rgba(100,255,150,0.5), 0 12px 40px rgba(16,185,129,0.9), 0 0 15px rgba(52,211,153,0.3); filter: brightness(1.2) saturate(1.4); }
+            40%  { transform: translateY(-7px) scale(1.025) scaleY(1); filter: brightness(1.1) saturate(1.2); }
+            60%  { transform: translateY(-9px) scale(1.022); box-shadow: inset 0 3px 0 rgba(50,200,120,0.4), 0 10px 35px rgba(16,185,129,0.8); filter: brightness(1.15) saturate(1.3); }
+            80%  { transform: translateY(-6px) scale(1.02); filter: brightness(1.05); }
+            100% { transform: translateY(-6px) scale(1.02); filter: brightness(1) saturate(1); }
         }
         .spell-card-lvl-5.lvl5-enter-creation {
-            animation: lvl5-bloom 0.7s ease-out;
+            animation: lvl5-plant 0.85s cubic-bezier(0.34,1.56,0.64,1);
+        }
+        /* dézoom Création : retombée souple comme une plante qui se courbe sous son poids */
+        @keyframes lvl5-plant-leave {
+            0%   { transform: translateY(0) scale(1); filter: brightness(1) saturate(1); }
+            30%  { transform: translateY(2px) scale(0.997) scaleY(0.998); filter: brightness(0.95) saturate(0.8); }
+            60%  { transform: translateY(1px) scale(1) scaleY(1.001); }
+            100% { transform: translateY(0) scale(1); }
+        }
+        .spell-card-lvl-5.lvl5-leave-creation {
+            animation: lvl5-plant-leave 0.6s ease-out;
         }
 
-        /* --- Destruction : choc sismique rouge --- */
-        @keyframes lvl5-shockwave {
-            0% { box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 8px 30px rgba(255,0,0,0.6), 0 0 0 0 rgba(255,0,0,0.4); transform: translateY(-6px) scale(1.02); }
-            15% { box-shadow: inset 0 2px 0 rgba(255,200,200,0.5), 0 8px 50px rgba(255,0,0,1), 0 0 0 10px rgba(255,0,0,0.2); transform: translateY(-7px) scale(1.025); }
-            35% { box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 8px 40px rgba(255,0,0,0.7), 0 0 0 22px rgba(255,0,0,0.05); transform: translateY(-6px) scale(1.02); }
-            100% { box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 8px 30px rgba(255,0,0,0.6), 0 0 0 35px rgba(255,0,0,0); transform: translateY(-6px) scale(1.02); }
+        /* --- FEU (Destruction) : explosion soudaine, la carte clignote comme des flammes --- */
+        @keyframes lvl5-fire {
+            0%   { transform: translateY(-6px) scale(1.02); box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 8px 30px rgba(255,0,0,0.6); filter: brightness(1); }
+            5%   { transform: translateY(-8px) scale(1.04); box-shadow: inset 0 2px 0 rgba(255,200,100,0.8), 0 8px 60px rgba(255,50,0,1), 0 0 40px rgba(255,100,0,0.6); filter: brightness(2) saturate(2); }
+            15%  { transform: translateY(-6px) scale(1.015); box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 8px 30px rgba(255,0,0,0.5); filter: brightness(0.8); }
+            25%  { transform: translateY(-9px) scale(1.03); box-shadow: inset 0 2px 0 rgba(255,200,50,0.6), 0 10px 50px rgba(255,80,0,0.9), 0 0 25px rgba(255,50,0,0.4); filter: brightness(1.6) saturate(1.5); }
+            40%  { transform: translateY(-5px) scale(1.018); filter: brightness(0.9); }
+            55%  { transform: translateY(-7px) scale(1.025); box-shadow: inset 0 2px 0 rgba(255,150,50,0.4), 0 8px 40px rgba(255,40,0,0.8); filter: brightness(1.3); }
+            75%  { transform: translateY(-6px) scale(1.02); filter: brightness(1.1); }
+            100% { transform: translateY(-6px) scale(1.02); filter: brightness(1); }
         }
         .spell-card-lvl-5.lvl5-enter-destruction {
-            animation: lvl5-shockwave 0.7s ease-out;
+            animation: lvl5-fire 0.7s ease-out;
+        }
+        /* dézoom Destruction : extinction brusque, la carte retombe comme de la braise froide */
+        @keyframes lvl5-fire-leave {
+            0%   { transform: translateY(0) scale(1); filter: brightness(1); }
+            10%  { transform: translateY(1px) scale(1.003); filter: brightness(1.4); }
+            30%  { transform: translateY(2px) scale(0.996); filter: brightness(0.7); }
+            60%  { transform: translateY(1px) scale(0.999); filter: brightness(0.9); }
+            100% { transform: translateY(0) scale(1); filter: brightness(1); }
+        }
+        .spell-card-lvl-5.lvl5-leave-destruction {
+            animation: lvl5-fire-leave 0.45s ease-out;
         }
 
-        /* --- Violence : impact brutal (tremblement + flash rouge-bordeaux) --- */
-        @keyframes lvl5-brutal {
-            0% { transform: translateY(-6px) scale(1.02); filter: brightness(1); }
-            8% { transform: translateY(-8px) scale(1.03) rotate(-1deg); filter: brightness(1.5); }
-            16% { transform: translateY(-5px) scale(1.015) rotate(0.8deg); filter: brightness(0.9); }
-            24% { transform: translateY(-7px) scale(1.025) rotate(-0.5deg); filter: brightness(1.2); }
-            40% { transform: translateY(-6px) scale(1.02) rotate(0.2deg); filter: brightness(1.05); }
+        /* --- EXPLOSION (Violence) : choc cinétique brutal, onde de compression-expansion --- */
+        @keyframes lvl5-blast {
+            0%   { transform: translateY(-6px) scale(1.02); filter: brightness(1); }
+            4%   { transform: translateY(-3px) scale(0.97); filter: brightness(0.7); box-shadow: inset 0 2px 0 rgba(255,255,255,0.5), 0 2px 8px rgba(167,7,64,0.4); }
+            10%  { transform: translateY(-12px) scale(1.05) rotate(-1.5deg); filter: brightness(2.5); box-shadow: inset 0 4px 0 rgba(255,255,255,0.8), 0 0 60px rgba(167,7,64,1), 0 0 0 12px rgba(167,7,64,0.3); }
+            20%  { transform: translateY(-4px) scale(0.99) rotate(1deg); filter: brightness(0.85); }
+            32%  { transform: translateY(-9px) scale(1.035) rotate(-0.5deg); filter: brightness(1.4); box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 10px 45px rgba(167,7,64,0.8); }
+            48%  { transform: translateY(-5px) scale(1.01) rotate(0.3deg); filter: brightness(1.05); }
+            65%  { transform: translateY(-7px) scale(1.022); filter: brightness(1.15); }
             100% { transform: translateY(-6px) scale(1.02) rotate(0deg); filter: brightness(1); }
         }
         .spell-card-lvl-5.lvl5-enter-violence {
-            animation: lvl5-brutal 0.5s cubic-bezier(0.36,0.07,0.19,0.97);
+            animation: lvl5-blast 0.55s cubic-bezier(0.36,0.07,0.19,0.97);
+        }
+        /* dézoom Violence : recul d'impact — la carte rebondit en arrière */
+        @keyframes lvl5-blast-leave {
+            0%   { transform: translateY(0) scale(1) rotate(0deg); }
+            15%  { transform: translateY(5px) scale(0.992) rotate(0.8deg); }
+            35%  { transform: translateY(-1px) scale(1.006) rotate(-0.4deg); }
+            55%  { transform: translateY(2px) scale(0.998); }
+            100% { transform: translateY(0) scale(1) rotate(0deg); }
+        }
+        .spell-card-lvl-5.lvl5-leave-violence {
+            animation: lvl5-blast-leave 0.5s cubic-bezier(0.36,0.07,0.19,0.97);
         }
 
-        /* --- Esprit : scintillement astral (lueurs bleues) --- */
-        @keyframes lvl5-astral {
-            0%,100% { box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 8px 30px rgba(56,189,248,0.6); filter: brightness(1); }
-            20% { box-shadow: inset 0 2px 0 rgba(200,240,255,0.6), 0 8px 40px rgba(56,189,248,1), 0 0 30px rgba(56,189,248,0.5); filter: brightness(1.2) saturate(1.2); }
-            50% { box-shadow: inset 0 2px 0 rgba(255,255,255,0.4), 0 8px 35px rgba(56,189,248,0.8), 0 0 15px rgba(56,189,248,0.3); filter: brightness(1.1); }
+        /* --- ESPRIT : la carte devient éthérée, semi-transparente, lumineuse --- */
+        @keyframes lvl5-spirit {
+            0%   { transform: translateY(-6px) scale(1.02); box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 8px 30px rgba(56,189,248,0.6); filter: brightness(1) opacity(1); }
+            20%  { transform: translateY(-10px) scale(1.025); box-shadow: inset 0 4px 0 rgba(200,240,255,0.8), 0 0 60px rgba(56,189,248,1), 0 0 0 15px rgba(56,189,248,0.1); filter: brightness(1.5) opacity(0.85); }
+            40%  { transform: translateY(-7px) scale(1.02); filter: brightness(1.1) opacity(0.95); }
+            60%  { transform: translateY(-9px) scale(1.024); box-shadow: inset 0 3px 0 rgba(200,240,255,0.6), 0 0 45px rgba(56,189,248,0.9); filter: brightness(1.3) opacity(0.9); }
+            80%  { transform: translateY(-6px) scale(1.02); filter: brightness(1.05); }
+            100% { transform: translateY(-6px) scale(1.02); filter: brightness(1) opacity(1); }
         }
         .spell-card-lvl-5.lvl5-enter-esprit {
-            animation: lvl5-astral 0.75s ease-out;
+            animation: lvl5-spirit 0.9s ease-out;
+        }
+        /* dézoom Esprit : dissolution spectrale — la carte s'efface légèrement puis revient */
+        @keyframes lvl5-spirit-leave {
+            0%   { transform: translateY(0) scale(1); filter: brightness(1) opacity(1); }
+            25%  { transform: translateY(-2px) scale(1.005); filter: brightness(1.3) opacity(0.7); }
+            60%  { transform: translateY(1px) scale(0.998); filter: brightness(0.9) opacity(0.9); }
+            100% { transform: translateY(0) scale(1); filter: brightness(1) opacity(1); }
+        }
+        .spell-card-lvl-5.lvl5-leave-esprit {
+            animation: lvl5-spirit-leave 0.7s ease-out;
         }
 
-        /* --- Ténèbres : absorption ténébreuse (assombrissement + violet) --- */
-        @keyframes lvl5-void {
-            0%,100% { box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 8px 30px rgba(192,132,252,0.6); filter: brightness(1); }
-            25% { box-shadow: inset 0 2px 0 rgba(0,0,0,0.8), 0 8px 50px rgba(192,132,252,0.9), 0 0 40px rgba(88,28,135,0.6); filter: brightness(0.7) saturate(1.5); }
-            55% { box-shadow: inset 0 2px 0 rgba(100,0,150,0.3), 0 8px 35px rgba(192,132,252,0.75); filter: brightness(0.9); }
+        /* --- TÉNÈBRES : absorption dans le vide, la carte s'assombrit et se contracte --- */
+        @keyframes lvl5-dark {
+            0%   { transform: translateY(-6px) scale(1.02); box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 8px 30px rgba(192,132,252,0.6); filter: brightness(1) saturate(1); }
+            15%  { transform: translateY(-4px) scale(1.005); box-shadow: inset 0 0 20px rgba(0,0,0,0.9), 0 8px 50px rgba(88,28,135,0.9), 0 0 0 20px rgba(88,28,135,0.15); filter: brightness(0.4) saturate(2); }
+            35%  { transform: translateY(-7px) scale(1.025); box-shadow: inset 0 2px 0 rgba(150,0,255,0.4), 0 10px 60px rgba(192,132,252,1), 0 0 30px rgba(88,28,135,0.5); filter: brightness(0.7) saturate(1.8); }
+            55%  { transform: translateY(-5px) scale(1.015); box-shadow: inset 0 0 15px rgba(0,0,0,0.6), 0 8px 40px rgba(100,0,200,0.7); filter: brightness(0.55) saturate(1.5); }
+            75%  { transform: translateY(-6px) scale(1.02); box-shadow: inset 0 2px 0 rgba(100,0,150,0.3), 0 8px 35px rgba(192,132,252,0.75); filter: brightness(0.8); }
+            100% { transform: translateY(-6px) scale(1.02); filter: brightness(1) saturate(1); }
         }
         .spell-card-lvl-5.lvl5-enter-tenebres {
-            animation: lvl5-void 0.8s ease-out;
+            animation: lvl5-dark 0.85s ease-out;
+        }
+        /* dézoom Ténèbres : relâchement du vide — un voile sombre se dissipe */
+        @keyframes lvl5-dark-leave {
+            0%   { transform: translateY(0) scale(1); filter: brightness(1); }
+            20%  { transform: translateY(1px) scale(0.997); filter: brightness(0.4) saturate(2); }
+            45%  { transform: translateY(0px) scale(1.002); filter: brightness(0.7); }
+            100% { transform: translateY(0) scale(1); filter: brightness(1); }
+        }
+        .spell-card-lvl-5.lvl5-leave-tenebres {
+            animation: lvl5-dark-leave 0.65s ease-out;
         }
 
-        /* --- Karma : équilibre doré (oscillation harmonieuse) --- */
-        @keyframes lvl5-balance {
-            0%,100% { box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 8px 30px rgba(231,209,152,0.6); transform: translateY(-6px) scale(1.02) rotate(0deg); }
-            25% { box-shadow: inset 0 2px 0 rgba(255,240,150,0.5), 0 8px 40px rgba(231,209,152,1), 0 0 25px rgba(231,209,152,0.4); transform: translateY(-6px) scale(1.02) rotate(1deg); }
-            50% { box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 8px 35px rgba(231,209,152,0.8); transform: translateY(-6px) scale(1.02) rotate(-1deg); }
-            75% { box-shadow: inset 0 2px 0 rgba(255,240,150,0.4), 0 8px 38px rgba(231,209,152,0.9); transform: translateY(-6px) scale(1.02) rotate(0.5deg); }
+        /* --- KARMA : pendule cosmique — balance entre lumière et ombre, or et argent --- */
+        @keyframes lvl5-karma {
+            0%   { transform: translateY(-6px) scale(1.02) rotate(0deg); box-shadow: inset 0 2px 0 rgba(255,255,255,0.3), 0 8px 30px rgba(231,209,152,0.6); filter: brightness(1) saturate(1); }
+            15%  { transform: translateY(-8px) scale(1.02) rotate(2.5deg); box-shadow: inset 0 2px 0 rgba(255,240,100,0.6), 0 10px 45px rgba(255,215,0,0.9), 0 0 20px rgba(231,209,152,0.4); filter: brightness(1.3) saturate(1.5); }
+            35%  { transform: translateY(-5px) scale(1.02) rotate(-2.5deg); box-shadow: inset 0 2px 0 rgba(150,150,255,0.3), 0 10px 40px rgba(200,200,255,0.6); filter: brightness(0.85) saturate(0.8); }
+            55%  { transform: translateY(-8px) scale(1.02) rotate(1.5deg); box-shadow: inset 0 2px 0 rgba(255,240,100,0.5), 0 10px 40px rgba(231,209,152,0.9); filter: brightness(1.2) saturate(1.3); }
+            75%  { transform: translateY(-6px) scale(1.02) rotate(-1deg); filter: brightness(0.95); }
+            100% { transform: translateY(-6px) scale(1.02) rotate(0deg); filter: brightness(1) saturate(1); }
         }
         .spell-card-lvl-5.lvl5-enter-karma {
-            animation: lvl5-balance 0.8s ease-out;
+            animation: lvl5-karma 0.9s cubic-bezier(0.34,1.2,0.64,1);
+        }
+        /* dézoom Karma : équilibre retrouvé — oscillation qui s'amortit */
+        @keyframes lvl5-karma-leave {
+            0%   { transform: translateY(0) scale(1) rotate(0deg); }
+            20%  { transform: translateY(1px) scale(0.998) rotate(1.5deg); }
+            40%  { transform: translateY(0) scale(1) rotate(-1deg); }
+            60%  { transform: translateY(0.5px) scale(1) rotate(0.5deg); }
+            100% { transform: translateY(0) scale(1) rotate(0deg); }
+        }
+        .spell-card-lvl-5.lvl5-leave-karma {
+            animation: lvl5-karma-leave 0.6s ease-out;
         }
 
         /* === Particules flottantes pour les cartes lvl-5 === */
@@ -3471,165 +3607,418 @@
             return 'generic';
         }
 
+        // ================================================================
+        //   EFFETS HOVER LVL-5 : enter/leave par voie / spiritualité
+        // ================================================================
+
         // ---- ENTER (mouseenter) ----
         function spellCardEnter(card, origin) {
-            // Animation CSS sur le cadre
-            const cls = `lvl5-enter-${origin}`;
-            card.classList.remove(cls);
-            void card.offsetWidth; // reflow
-            card.classList.add(cls);
-            card.addEventListener('animationend', () => card.classList.remove(cls), { once: true });
+            const enterCls = `lvl5-enter-${origin}`;
+            card.classList.remove(enterCls);
+            void card.offsetWidth;
+            card.classList.add(enterCls);
+            card.addEventListener('animationend', () => card.classList.remove(enterCls), { once: true });
 
-            // Particules thématiques (zoom-in)
             const rect = card.getBoundingClientRect();
-            const cx = rect.left + rect.width / 2;
-            const cy = rect.top + rect.height / 2;
-
             switch(origin) {
-                case 'consolidation':
-                    spawnParticles(rect, 6, { color:'#b4855a', shape:'square', size:[3,7], spread:60, up:true, duration:600 });
-                    break;
-                case 'raison':
-                    spawnParticles(rect, 8, { color:'#3b82f6', shape:'circle', size:[2,5], glow:'#3b82f6', spread:80, up:false, duration:700 });
-                    break;
-                case 'surete':
-                    spawnParticles(rect, 8, { color:'#00e5cc', shape:'circle', size:[2,5], glow:'#00e5cc', spread:70, up:true, duration:700 });
-                    break;
-                case 'trahison':
-                    spawnParticles(rect, 10, { color:'#ed5677', shape:'diamond', size:[3,6], spread:90, up:false, duration:500 });
-                    break;
-                case 'conviction':
-                    spawnFlameParticles(rect, 10, 'enter');
-                    break;
-                case 'creation':
-                    spawnParticles(rect, 10, { color:'#10b981', shape:'petal', size:[3,7], glow:'#10b981', spread:75, up:true, duration:750 });
-                    break;
-                case 'destruction':
-                    spawnParticles(rect, 12, { color:'#ff4444', shape:'shard', size:[3,8], spread:100, up:false, duration:600 });
-                    break;
-                case 'violence':
-                    spawnParticles(rect, 8, { color:'#a70740', shape:'shard', size:[4,9], spread:80, up:false, duration:500 });
-                    break;
-                case 'esprit':
-                    spawnParticles(rect, 14, { color:'#38bdf8', shape:'star', size:[2,6], glow:'#38bdf8', spread:100, up:true, duration:800 });
-                    break;
-                case 'tenebres':
-                    spawnParticles(rect, 10, { color:'#c084fc', shape:'mist', size:[10,22], spread:80, up:true, duration:900 });
-                    break;
-                case 'karma':
-                    spawnParticles(rect, 10, { color:'#e7d198', shape:'circle', size:[3,7], glow:'#e7d198', spread:85, up:true, duration:750 });
-                    break;
-                default:
-                    spawnParticles(rect, 6, { color:'#ffd700', shape:'circle', size:[2,5], glow:'#ffd700', spread:60, up:true, duration:600 });
+                case 'raison':      fx_vent_enter(rect);        break;
+                case 'surete':      fx_eau_enter(rect);         break;
+                case 'trahison':    fx_poison_enter(rect);      break;
+                case 'consolidation': fx_terre_enter(rect);     break;
+                case 'conviction':  fx_lave_enter(rect);        break;
+                case 'creation':    fx_plante_enter(rect);      break;
+                case 'destruction': fx_feu_enter(rect);         break;
+                case 'violence':    fx_explosion_enter(rect);   break;
+                case 'esprit':      fx_esprit_enter(rect);      break;
+                case 'tenebres':    fx_tenebres_enter(rect);    break;
+                case 'karma':       fx_karma_enter(rect);       break;
+                default:            fx_generic_enter(rect);
             }
         }
 
         // ---- LEAVE (mouseleave) ----
         function spellCardLeave(card, origin) {
-            const rect = card.getBoundingClientRect();
+            const leaveCls = `lvl5-leave-${origin}`;
+            card.classList.remove(leaveCls);
+            void card.offsetWidth;
+            card.classList.add(leaveCls);
+            card.addEventListener('animationend', () => card.classList.remove(leaveCls), { once: true });
 
+            const rect = card.getBoundingClientRect();
             switch(origin) {
-                case 'consolidation':
-                    // Poussière de pierre : particules qui tombent vers le bas
-                    spawnDustCloud(rect, { color:'#a0886b', count:14, gravity:true });
-                    break;
-                case 'raison':
-                    // Bulles d'air qui montent doucement
-                    spawnBubbles(rect, { color:'#3b82f6', count:8 });
-                    break;
-                case 'surete':
-                    // Gouttelettes d'eau
-                    spawnDroplets(rect, { color:'#00e5cc', count:10 });
-                    break;
-                case 'trahison':
-                    // Ombres qui se dissipent vers les côtés
-                    spawnShadowMist(rect, { color:'#ed5677', count:8 });
-                    break;
-                case 'conviction':
-                    // Braises qui tombent
-                    spawnFlameParticles(rect, 10, 'leave');
-                    break;
-                case 'creation':
-                    // Pollen / pétales
-                    spawnPollenDrift(rect, { color:'#10b981', count:12 });
-                    break;
-                case 'destruction':
-                    // Débris / gravats
-                    spawnDebris(rect, { color:'#ff4444', count:12 });
-                    break;
-                case 'violence':
-                    // Brume rouge sombre
-                    spawnShadowMist(rect, { color:'#a70740', count:8 });
-                    break;
-                case 'esprit':
-                    // Lueurs spectrales qui s'évaporent
-                    spawnEtherealMist(rect, { color:'#38bdf8', count:10 });
-                    break;
-                case 'tenebres':
-                    // Voile de ténèbres
-                    spawnShadowMist(rect, { color:'#c084fc', count:12 });
-                    break;
-                case 'karma':
-                    // Orbes dorées en équilibre
-                    spawnParticles(rect, 10, { color:'#e7d198', shape:'circle', size:[4,8], glow:'#e7d198', spread:80, up:false, duration:900 });
-                    break;
-                default:
-                    spawnDustCloud(rect, { color:'#ffffff', count:6, gravity:false });
+                case 'raison':      fx_vent_leave(rect);        break;
+                case 'surete':      fx_eau_leave(rect);         break;
+                case 'trahison':    fx_poison_leave(rect);      break;
+                case 'consolidation': fx_terre_leave(rect);     break;
+                case 'conviction':  fx_lave_leave(rect);        break;
+                case 'creation':    fx_plante_leave(rect);      break;
+                case 'destruction': fx_feu_leave(rect);         break;
+                case 'violence':    fx_explosion_leave(rect);   break;
+                case 'esprit':      fx_esprit_leave(rect);      break;
+                case 'tenebres':    fx_tenebres_leave(rect);    break;
+                case 'karma':       fx_karma_leave(rect);       break;
+                default:            fx_generic_leave(rect);
             }
         }
 
-        // --- Helpers de particules ---
+        // ================================================================
+        //   EFFETS ÉLÉMENTAIRES — ENTER
+        // ================================================================
 
-        function spawnParticles(rect, count, opts) {
-            for (let i = 0; i < count; i++) {
+        // 💨 VENT (Raison) : traits de vent qui balayent la carte de gauche à droite
+        function fx_vent_enter(rect) {
+            for (let i = 0; i < 9; i++) {
                 setTimeout(() => {
-                    const p = document.createElement('div');
-                    const size = opts.size[0] + Math.random() * (opts.size[1] - opts.size[0]);
-                    p.className = 'lvl5-particle';
-                    p.style.width = `${size}px`;
-                    p.style.height = `${size}px`;
-                    p.style.background = opts.color;
-                    if (opts.glow) p.style.boxShadow = `0 0 ${size+4}px ${opts.glow}`;
-                    if (opts.shape === 'square' || opts.shape === 'shard') p.style.borderRadius = opts.shape === 'square' ? '2px' : '1px';
-                    if (opts.shape === 'diamond') { p.style.borderRadius = '0'; p.style.transform = 'rotate(45deg)'; }
-                    if (opts.shape === 'mist') { p.style.borderRadius = '50%'; p.style.opacity = '0.35'; }
-                    p.style.left = `${rect.left + Math.random() * rect.width}px`;
-                    p.style.top = `${rect.top + Math.random() * rect.height}px`;
-                    p.style.opacity = '0.9';
-                    p.style.transition = `all ${opts.duration + Math.random() * 200}ms cubic-bezier(0.1,0.8,0.3,1)`;
+                    const w = 35 + Math.random() * 55;
+                    const p = mkp();
+                    p.style.cssText = `
+                        position:fixed; pointer-events:none; z-index:9999;
+                        left:${rect.left - w}px;
+                        top:${rect.top + (i / 9) * rect.height + (Math.random()-0.5)*12}px;
+                        width:${w}px; height:${1 + Math.random()}px;
+                        background:linear-gradient(90deg, transparent, rgba(148,219,255,0.8), rgba(56,189,248,0.6), transparent);
+                        border-radius:2px; opacity:0.9;
+                        transition:transform ${0.22 + Math.random()*0.15}s cubic-bezier(0.4,0,0.6,1), opacity 0.15s ease ${0.18}s;
+                    `;
                     document.body.appendChild(p);
-                    const angle = Math.random() * Math.PI * 2;
-                    const dist = 20 + Math.random() * opts.spread;
-                    const dy = opts.up ? -(dist * 0.5 + Math.random() * dist * 0.5) : (dist * 0.3 + Math.random() * dist * 0.7);
                     requestAnimationFrame(() => {
-                        p.style.transform = `translate(${Math.cos(angle) * dist * 0.6}px, ${dy}px) scale(0) rotate(${Math.random()*180}deg)`;
+                        p.style.transform = `translateX(${rect.width + w + 30}px)`;
                         p.style.opacity = '0';
                     });
-                    setTimeout(() => p.remove(), opts.duration + 300);
-                }, i * 30);
+                    setTimeout(() => p.remove(), 500);
+                }, i * 45);
+            }
+            // quelques particules d'air qui tourbillonnent
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    const p = mkp();
+                    const sz = 4 + Math.random() * 5;
+                    p.style.cssText = `
+                        position:fixed; pointer-events:none; z-index:9999;
+                        width:${sz}px; height:${sz}px; border-radius:50%;
+                        left:${rect.left + Math.random()*rect.width}px;
+                        top:${rect.top + Math.random()*rect.height}px;
+                        background:rgba(148,219,255,0.7);
+                        box-shadow:0 0 6px #38bdf8;
+                        transition:all ${0.5+Math.random()*0.3}s ease-out; opacity:0.8;
+                    `;
+                    document.body.appendChild(p);
+                    requestAnimationFrame(() => {
+                        p.style.transform = `translate(${30+Math.random()*50}px, ${(Math.random()-0.5)*30}px) scale(0)`;
+                        p.style.opacity = '0';
+                    });
+                    setTimeout(() => p.remove(), 900);
+                }, i * 60);
             }
         }
 
-        function spawnDustCloud(rect, opts) {
-            // Poussière qui tombe vers le bas depuis le bas du cadre
-            for (let i = 0; i < opts.count; i++) {
+        // 💧 EAU (Sûreté) : vague qui monte depuis le bas de la carte
+        function fx_eau_enter(rect) {
+            // Ondulation de surface
+            for (let i = 0; i < 3; i++) {
                 setTimeout(() => {
-                    const p = document.createElement('div');
-                    const size = 4 + Math.random() * 10;
-                    p.className = 'lvl5-particle';
-                    p.style.width = `${size}px`;
-                    p.style.height = `${size}px`;
-                    p.style.borderRadius = '30%';
-                    p.style.background = opts.color;
-                    p.style.opacity = '0.7';
-                    p.style.left = `${rect.left + Math.random() * rect.width}px`;
-                    p.style.top = `${rect.bottom - 4}px`;
-                    p.style.transition = `all ${600 + Math.random() * 400}ms ease-in`;
+                    const p = mkp();
+                    const w = rect.width * (0.3 + Math.random() * 0.5);
+                    p.style.cssText = `
+                        position:fixed; pointer-events:none; z-index:9999;
+                        left:${rect.left + (rect.width-w)/2 + (Math.random()-0.5)*20}px;
+                        top:${rect.bottom - 2 - i*3}px;
+                        width:${w}px; height:2px;
+                        background:linear-gradient(90deg, transparent, rgba(0,229,204,0.8), transparent);
+                        border-radius:50%; opacity:0;
+                        transition:all ${0.5+i*0.15}s ease-out;
+                    `;
                     document.body.appendChild(p);
-                    const dx = (Math.random() - 0.5) * 40;
-                    const dy = opts.gravity ? (15 + Math.random() * 35) : -(15 + Math.random() * 25);
                     requestAnimationFrame(() => {
-                        p.style.transform = `translate(${dx}px, ${dy}px) scale(0.2) rotate(${Math.random()*90}deg)`;
+                        p.style.transform = `scaleX(1.4) translateY(-${20+i*15}px)`;
+                        p.style.opacity = '0.7';
+                        setTimeout(() => { p.style.opacity = '0'; }, 300+i*100);
+                    });
+                    setTimeout(() => p.remove(), 1000);
+                }, i * 130);
+            }
+            // Bulles qui montent
+            for (let i = 0; i < 7; i++) {
+                setTimeout(() => {
+                    const p = mkp();
+                    const sz = 3 + Math.random() * 7;
+                    p.style.cssText = `
+                        position:fixed; pointer-events:none; z-index:9999;
+                        width:${sz}px; height:${sz}px; border-radius:50%;
+                        background:transparent;
+                        border:1px solid rgba(0,229,204,0.8);
+                        box-shadow:0 0 5px rgba(0,229,204,0.5), inset 0 0 4px rgba(0,229,204,0.2);
+                        left:${rect.left + Math.random()*rect.width}px;
+                        top:${rect.bottom}px;
+                        transition:all ${0.7+Math.random()*0.6}s ease-out; opacity:0.85;
+                    `;
+                    document.body.appendChild(p);
+                    const dx = (Math.random()-0.5)*40;
+                    requestAnimationFrame(() => {
+                        p.style.transform = `translate(${dx}px, -${rect.height*0.5 + Math.random()*rect.height*0.4}px)`;
+                        p.style.opacity = '0';
+                    });
+                    setTimeout(() => p.remove(), 1400);
+                }, i * 55);
+            }
+        }
+
+        // ☠️ POISON (Trahison) : bulles de poison verdâtres qui émanent du centre
+        function fx_poison_enter(rect) {
+            const poisonColors = ['#39d353','#22c55e','#4ade80','#86efac','#bbf7d0'];
+            for (let i = 0; i < 12; i++) {
+                setTimeout(() => {
+                    const p = mkp();
+                    const sz = 5 + Math.random() * 12;
+                    const c = poisonColors[Math.floor(Math.random()*poisonColors.length)];
+                    p.style.cssText = `
+                        position:fixed; pointer-events:none; z-index:9999;
+                        width:${sz}px; height:${sz}px; border-radius:50%;
+                        background:radial-gradient(circle, ${c}90 0%, ${c}30 60%, transparent 100%);
+                        box-shadow:0 0 ${sz}px ${c}60, inset 0 0 ${sz/2}px ${c}40;
+                        left:${rect.left + Math.random()*rect.width}px;
+                        top:${rect.top + Math.random()*rect.height}px;
+                        opacity:0.85;
+                        transition:all ${0.6+Math.random()*0.5}s cubic-bezier(0.1,0.8,0.3,1);
+                    `;
+                    document.body.appendChild(p);
+                    const angle = Math.random()*Math.PI*2;
+                    const dist = 20 + Math.random()*60;
+                    requestAnimationFrame(() => {
+                        p.style.transform = `translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist - 20}px) scale(${1.5+Math.random()})`;
+                        p.style.opacity = '0';
+                    });
+                    setTimeout(() => p.remove(), 1200);
+                }, i * 35);
+            }
+            // brume verte centrale
+            for (let i = 0; i < 4; i++) {
+                setTimeout(() => {
+                    const p = mkp();
+                    const sz = 20 + Math.random()*30;
+                    p.style.cssText = `
+                        position:fixed; pointer-events:none; z-index:9998;
+                        width:${sz}px; height:${sz}px; border-radius:50%;
+                        background:radial-gradient(circle, rgba(34,197,94,0.4) 0%, transparent 70%);
+                        left:${rect.left + rect.width*0.2 + Math.random()*rect.width*0.6}px;
+                        top:${rect.top + rect.height*0.2 + Math.random()*rect.height*0.6}px;
+                        opacity:0; transition:all ${0.8+Math.random()*0.4}s ease-out;
+                    `;
+                    document.body.appendChild(p);
+                    requestAnimationFrame(() => {
+                        p.style.opacity = '0.6';
+                        setTimeout(() => { p.style.opacity = '0'; p.style.transform = 'scale(2.5)'; }, 300+i*100);
+                    });
+                    setTimeout(() => p.remove(), 1500);
+                }, i * 80);
+            }
+        }
+
+        // 🪨 TERRE (Consolidation) : fragments de roche qui jaillissent vers le haut
+        function fx_terre_enter(rect) {
+            const stoneColors = ['#92614a','#a0886b','#78503c','#c8a47a','#5c3d2e'];
+            for (let i = 0; i < 10; i++) {
+                setTimeout(() => {
+                    const p = mkp();
+                    const w = 4 + Math.random() * 10;
+                    const h = 3 + Math.random() * 8;
+                    const c = stoneColors[Math.floor(Math.random()*stoneColors.length)];
+                    p.style.cssText = `
+                        position:fixed; pointer-events:none; z-index:9999;
+                        width:${w}px; height:${h}px; border-radius:1px;
+                        background:${c};
+                        box-shadow:1px 1px 3px rgba(0,0,0,0.4), inset 0 1px 0 rgba(255,255,255,0.1);
+                        left:${rect.left + Math.random()*rect.width}px;
+                        top:${rect.bottom}px;
+                        opacity:0.95;
+                        transition:all ${0.5+Math.random()*0.35}s cubic-bezier(0.4,0,0.2,1);
+                    `;
+                    document.body.appendChild(p);
+                    const dx = (Math.random()-0.5)*60;
+                    const dy = -(25 + Math.random()*55);
+                    requestAnimationFrame(() => {
+                        p.style.transform = `translate(${dx}px, ${dy}px) rotate(${(Math.random()-0.5)*180}deg) scale(0.2)`;
+                        p.style.opacity = '0';
+                    });
+                    setTimeout(() => p.remove(), 900);
+                }, i * 40);
+            }
+            // poussière lumineuse ocre
+            for (let i = 0; i < 6; i++) {
+                setTimeout(() => {
+                    const p = mkp();
+                    const sz = 8 + Math.random()*15;
+                    p.style.cssText = `
+                        position:fixed; pointer-events:none; z-index:9998;
+                        width:${sz}px; height:${sz}px; border-radius:50%;
+                        background:radial-gradient(circle, rgba(160,136,107,0.5) 0%, transparent 70%);
+                        left:${rect.left + Math.random()*rect.width}px;
+                        top:${rect.bottom - sz/2}px;
+                        opacity:0.7; transition:all ${0.7+Math.random()*0.4}s ease-out;
+                    `;
+                    document.body.appendChild(p);
+                    const dx = (Math.random()-0.5)*50;
+                    requestAnimationFrame(() => {
+                        p.style.transform = `translate(${dx}px, -${20+Math.random()*40}px) scale(2)`;
+                        p.style.opacity = '0';
+                    });
+                    setTimeout(() => p.remove(), 1200);
+                }, i * 60);
+            }
+        }
+
+        // 🌋 LAVE (Conviction) : coulées de lave qui descendent depuis le haut
+        function fx_lave_enter(rect) {
+            const lavaColors = ['#ff4500','#ff6a00','#ff8c00','#e8380d','#ffd700'];
+            const streams = 5 + Math.floor(Math.random()*4);
+            for (let i = 0; i < streams; i++) {
+                setTimeout(() => {
+                    const stream = mkp();
+                    const c = lavaColors[Math.floor(Math.random()*lavaColors.length)];
+                    const w = 4 + Math.random()*8;
+                    const sx = rect.left + 8 + Math.random()*(rect.width-16);
+                    const dur = 0.8 + Math.random()*0.8;
+                    const len = 20 + Math.random()*40;
+                    stream.style.cssText = `
+                        position:fixed; pointer-events:none; z-index:9999;
+                        left:${sx}px; top:${rect.top}px;
+                        width:${w}px; height:0;
+                        background:linear-gradient(180deg, rgba(255,255,200,0.8) 0%, ${c} 30%, #8b0000 100%);
+                        border-radius:0 0 ${w/2}px ${w/2}px;
+                        box-shadow:0 0 ${w+4}px ${c}, 0 0 2px #fff;
+                        opacity:0.95;
+                        transition:height ${dur}s cubic-bezier(0.4,0,0.6,1), opacity 0.4s ease ${dur-0.2}s;
+                    `;
+                    document.body.appendChild(stream);
+                    requestAnimationFrame(() => requestAnimationFrame(() => {
+                        stream.style.height = len + 'px';
+                        setTimeout(() => {
+                            // goutte au bout
+                            const drop = mkp();
+                            drop.style.cssText = `
+                                position:fixed; pointer-events:none; z-index:9999;
+                                left:${sx + w/2 - 4}px; top:${rect.top + len}px;
+                                width:${w+2}px; height:${w+2}px;
+                                background:${c}; border-radius:50% 50% 50% 50% / 40% 40% 60% 60%;
+                                box-shadow:0 0 8px ${c}; opacity:1;
+                                transition:all ${0.5+Math.random()*0.3}s cubic-bezier(0.4,0,1,1);
+                            `;
+                            document.body.appendChild(drop);
+                            requestAnimationFrame(() => {
+                                drop.style.transform = `translateY(${20+Math.random()*25}px) scaleY(1.5)`;
+                                drop.style.opacity = '0';
+                            });
+                            setTimeout(() => drop.remove(), 900);
+                        }, dur*900);
+                        stream.style.opacity = '0';
+                        setTimeout(() => stream.remove(), (dur+0.4)*1000);
+                    }));
+                }, i * 160);
+            }
+        }
+
+        // 🌿 PLANTE (Création) : vrilles de vigne qui s'élancent depuis les bords
+        function fx_plante_enter(rect) {
+            const greenColors = ['#10b981','#34d399','#6ee7b7','#059669','#86efac'];
+            // vrilles SVG-like (lignes courbées)
+            for (let i = 0; i < 8; i++) {
+                setTimeout(() => {
+                    const p = mkp();
+                    const c = greenColors[Math.floor(Math.random()*greenColors.length)];
+                    const sz = 5 + Math.random()*8;
+                    p.style.cssText = `
+                        position:fixed; pointer-events:none; z-index:9999;
+                        width:${sz}px; height:${sz}px; border-radius:50%;
+                        background:${c};
+                        box-shadow:0 0 ${sz+3}px ${c}, 0 0 ${sz*2}px ${c}50;
+                        left:${rect.left + Math.random()*rect.width}px;
+                        top:${rect.top + Math.random()*rect.height}px;
+                        opacity:0.9;
+                        transition:all ${0.6+Math.random()*0.5}s cubic-bezier(0.34,1.56,0.64,1);
+                    `;
+                    document.body.appendChild(p);
+                    const angle = Math.random()*Math.PI*2;
+                    const dist = 25 + Math.random()*55;
+                    requestAnimationFrame(() => {
+                        p.style.transform = `translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist - 15}px) scale(0.15)`;
+                        p.style.opacity = '0';
+                    });
+                    setTimeout(() => p.remove(), 1200);
+                }, i * 50);
+            }
+            // feuilles
+            for (let i = 0; i < 5; i++) {
+                setTimeout(() => {
+                    const p = mkp();
+                    const w = 6 + Math.random()*10;
+                    p.style.cssText = `
+                        position:fixed; pointer-events:none; z-index:9999;
+                        width:${w}px; height:${w*1.6}px;
+                        border-radius:${w/2}px ${w/2}px ${w/2}px 0;
+                        background:linear-gradient(135deg, #34d399, #059669);
+                        box-shadow:0 0 4px #10b98180;
+                        left:${rect.left + Math.random()*rect.width}px;
+                        top:${rect.top + Math.random()*rect.height}px;
+                        opacity:0.9;
+                        transition:all ${0.7+Math.random()*0.5}s cubic-bezier(0.34,1.56,0.64,1);
+                    `;
+                    document.body.appendChild(p);
+                    const dx = (Math.random()-0.5)*50;
+                    requestAnimationFrame(() => {
+                        p.style.transform = `translate(${dx}px, -${30+Math.random()*40}px) rotate(${Math.random()*720}deg) scale(0)`;
+                        p.style.opacity = '0';
+                    });
+                    setTimeout(() => p.remove(), 1300);
+                }, i * 70);
+            }
+        }
+
+        // 🔥 FEU (Destruction) : gerbe de flammes qui explose vers le haut
+        function fx_feu_enter(rect) {
+            const fireColors = ['#ff4500','#ff6a00','#ffd700','#ff8c00','#ff2400','#fff7a1'];
+            for (let i = 0; i < 16; i++) {
+                setTimeout(() => {
+                    const p = mkp();
+                    const sz = 5 + Math.random()*14;
+                    const c = fireColors[Math.floor(Math.random()*fireColors.length)];
+                    p.style.cssText = `
+                        position:fixed; pointer-events:none; z-index:9999;
+                        width:${sz}px; height:${sz*(1.2+Math.random()*1)}px;
+                        border-radius:50% 50% 30% 30%;
+                        background:radial-gradient(ellipse at 50% 100%, ${c}, ${c}00);
+                        box-shadow:0 0 ${sz}px ${c}, 0 0 ${sz*2}px ${c}60;
+                        left:${rect.left + 10 + Math.random()*(rect.width-20)}px;
+                        top:${rect.top + rect.height*0.5 + Math.random()*rect.height*0.4}px;
+                        opacity:0.95;
+                        transition:all ${0.45+Math.random()*0.35}s ease-out;
+                    `;
+                    document.body.appendChild(p);
+                    const dx = (Math.random()-0.5)*50;
+                    const dy = -(30 + Math.random()*rect.height*0.7);
+                    requestAnimationFrame(() => {
+                        p.style.transform = `translate(${dx}px, ${dy}px) scale(0.05) rotate(${(Math.random()-0.5)*30}deg)`;
+                        p.style.opacity = '0';
+                    });
+                    setTimeout(() => p.remove(), 900);
+                }, i * 30);
+            }
+            // étincelles
+            for (let i = 0; i < 10; i++) {
+                setTimeout(() => {
+                    const p = mkp();
+                    p.style.cssText = `
+                        position:fixed; pointer-events:none; z-index:9999;
+                        width:2px; height:2px; border-radius:50%;
+                        background:#fff; box-shadow:0 0 6px #ffd700, 0 0 3px #fff;
+                        left:${rect.left + Math.random()*rect.width}px;
+                        top:${rect.top + rect.height*0.4 + Math.random()*rect.height*0.4}px;
+                        opacity:1; transition:all ${0.6+Math.random()*0.4}s ease-out;
+                    `;
+                    document.body.appendChild(p);
+                    const angle = Math.random()*Math.PI*2;
+                    const dist = 30 + Math.random()*60;
+                    requestAnimationFrame(() => {
+                        p.style.transform = `translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist - 20}px)`;
                         p.style.opacity = '0';
                     });
                     setTimeout(() => p.remove(), 1100);
@@ -3637,193 +4026,556 @@
             }
         }
 
-        function spawnBubbles(rect, opts) {
-            for (let i = 0; i < opts.count; i++) {
+        // 💥 EXPLOSION (Violence) : onde de choc circulaire + éclats
+        function fx_explosion_enter(rect) {
+            const cx = rect.left + rect.width/2;
+            const cy = rect.top + rect.height/2;
+            // onde de choc
+            const ring = mkp();
+            ring.style.cssText = `
+                position:fixed; pointer-events:none; z-index:9999;
+                left:${cx - 10}px; top:${cy - 10}px;
+                width:20px; height:20px; border-radius:50%;
+                border:3px solid rgba(167,7,64,0.9);
+                box-shadow:0 0 20px rgba(167,7,64,0.7), inset 0 0 15px rgba(167,7,64,0.3);
+                opacity:0.9; transition:all 0.5s cubic-bezier(0,0,0.2,1);
+            `;
+            document.body.appendChild(ring);
+            requestAnimationFrame(() => {
+                ring.style.width = `${Math.max(rect.width, rect.height)*1.8}px`;
+                ring.style.height = `${Math.max(rect.width, rect.height)*1.8}px`;
+                ring.style.left = `${cx - Math.max(rect.width, rect.height)*0.9}px`;
+                ring.style.top = `${cy - Math.max(rect.width, rect.height)*0.9}px`;
+                ring.style.opacity = '0';
+                ring.style.borderColor = 'rgba(255,200,50,0)';
+            });
+            setTimeout(() => ring.remove(), 600);
+
+            // éclats de shrapnel
+            const shrapColors = ['#a70740','#d40756','#ff4488','#ff0000','#ffd700'];
+            for (let i = 0; i < 18; i++) {
                 setTimeout(() => {
-                    const p = document.createElement('div');
-                    const size = 3 + Math.random() * 7;
-                    p.className = 'lvl5-particle';
-                    p.style.width = `${size}px`;
-                    p.style.height = `${size}px`;
-                    p.style.background = 'transparent';
-                    p.style.border = `1px solid ${opts.color}`;
-                    p.style.boxShadow = `0 0 4px ${opts.color}, inset 0 0 3px ${opts.color}40`;
-                    p.style.opacity = '0.8';
-                    p.style.left = `${rect.left + Math.random() * rect.width}px`;
-                    p.style.top = `${rect.top + Math.random() * rect.height}px`;
-                    p.style.transition = `all ${800 + Math.random() * 500}ms ease-out`;
+                    const p = mkp();
+                    const w = 3 + Math.random()*9;
+                    const h = 2 + Math.random()*5;
+                    const c = shrapColors[Math.floor(Math.random()*shrapColors.length)];
+                    p.style.cssText = `
+                        position:fixed; pointer-events:none; z-index:9999;
+                        width:${w}px; height:${h}px; border-radius:1px;
+                        background:${c};
+                        box-shadow:0 0 5px ${c}, 0 0 2px #fff;
+                        left:${cx}px; top:${cy}px;
+                        opacity:1; transition:all ${0.35+Math.random()*0.3}s cubic-bezier(0,0,0.4,1);
+                    `;
                     document.body.appendChild(p);
-                    const dx = (Math.random() - 0.5) * 30;
+                    const angle = (i/18)*Math.PI*2 + (Math.random()-0.5)*0.4;
+                    const dist = 35 + Math.random()*80;
                     requestAnimationFrame(() => {
-                        p.style.transform = `translate(${dx}px, ${-(30 + Math.random() * 50)}px) scale(${0.3 + Math.random() * 0.5})`;
+                        p.style.transform = `translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist}px) rotate(${Math.random()*720}deg) scale(0.1)`;
                         p.style.opacity = '0';
+                    });
+                    setTimeout(() => p.remove(), 800);
+                }, i * 15);
+            }
+        }
+
+        // 👻 ESPRIT : orbes d'âme qui orbitent autour de la carte
+        function fx_esprit_enter(rect) {
+            const cx = rect.left + rect.width/2;
+            const cy = rect.top + rect.height/2;
+            const orbColors = ['#38bdf8','#7dd3fc','#bae6fd','#e0f2fe','#fff'];
+            for (let i = 0; i < 10; i++) {
+                setTimeout(() => {
+                    const p = mkp();
+                    const sz = 4 + Math.random()*8;
+                    const c = orbColors[Math.floor(Math.random()*orbColors.length)];
+                    const startAngle = (i/10)*Math.PI*2;
+                    const orbitR = Math.max(rect.width, rect.height)*0.55 + Math.random()*20;
+                    p.style.cssText = `
+                        position:fixed; pointer-events:none; z-index:9999;
+                        width:${sz}px; height:${sz}px; border-radius:50%;
+                        background:${c};
+                        box-shadow:0 0 ${sz+4}px ${c}, 0 0 ${sz*3}px ${c}40;
+                        left:${cx + Math.cos(startAngle)*orbitR - sz/2}px;
+                        top:${cy + Math.sin(startAngle)*orbitR - sz/2}px;
+                        opacity:0.9; transition:all ${0.6+Math.random()*0.4}s ease-out;
+                    `;
+                    document.body.appendChild(p);
+                    const endAngle = startAngle + Math.PI*(0.5+Math.random()*0.5);
+                    requestAnimationFrame(() => {
+                        p.style.left = `${cx + Math.cos(endAngle)*orbitR - sz/2}px`;
+                        p.style.top = `${cy + Math.sin(endAngle)*orbitR - sz/2}px`;
+                        p.style.opacity = '0';
+                        p.style.transform = 'scale(0.2)';
+                    });
+                    setTimeout(() => p.remove(), 1100);
+                }, i * 50);
+            }
+            // halo lumineux central
+            const halo = mkp();
+            halo.style.cssText = `
+                position:fixed; pointer-events:none; z-index:9998;
+                left:${cx - 15}px; top:${cy - 15}px;
+                width:30px; height:30px; border-radius:50%;
+                background:radial-gradient(circle, rgba(56,189,248,0.7) 0%, transparent 70%);
+                box-shadow:0 0 30px rgba(56,189,248,0.5);
+                opacity:0; transition:all 0.4s ease-out;
+            `;
+            document.body.appendChild(halo);
+            requestAnimationFrame(() => {
+                halo.style.opacity = '1';
+                halo.style.transform = 'scale(4)';
+                setTimeout(() => { halo.style.opacity = '0'; }, 250);
+            });
+            setTimeout(() => halo.remove(), 700);
+        }
+
+        // 🌑 TÉNÈBRES : tentacules d'ombre qui surgissent des bords
+        function fx_tenebres_enter(rect) {
+            const darkColors = ['#c084fc','#a855f7','#7c3aed','#4c1d95','#2e1065'];
+            for (let i = 0; i < 10; i++) {
+                setTimeout(() => {
+                    const p = mkp();
+                    const sz = 12 + Math.random()*25;
+                    const c = darkColors[Math.floor(Math.random()*darkColors.length)];
+                    const isTop = Math.random() < 0.5;
+                    p.style.cssText = `
+                        position:fixed; pointer-events:none; z-index:9999;
+                        width:${sz}px; height:${sz}px; border-radius:50%;
+                        background:radial-gradient(circle, ${c}80 0%, transparent 65%);
+                        left:${rect.left + Math.random()*rect.width - sz/2}px;
+                        top:${isTop ? rect.top - sz/2 : rect.bottom - sz/2}px;
+                        opacity:0; transition:all ${0.7+Math.random()*0.5}s cubic-bezier(0.4,0,0.6,1);
+                    `;
+                    document.body.appendChild(p);
+                    requestAnimationFrame(() => {
+                        p.style.top = `${isTop ? rect.top + Math.random()*rect.height*0.6 : rect.bottom - Math.random()*rect.height*0.6}px`;
+                        p.style.opacity = '0.8';
+                        p.style.transform = `scale(${1.5+Math.random()})`;
+                        setTimeout(() => { p.style.opacity = '0'; p.style.transform = 'scale(3)'; }, 300+i*60);
                     });
                     setTimeout(() => p.remove(), 1400);
                 }, i * 50);
             }
+            // flash de ténèbres
+            const flash = mkp();
+            flash.style.cssText = `
+                position:fixed; pointer-events:none; z-index:9997;
+                left:${rect.left}px; top:${rect.top}px;
+                width:${rect.width}px; height:${rect.height}px;
+                border-radius:12px;
+                background:rgba(88,28,135,0.25);
+                opacity:0; transition:opacity 0.2s ease-out;
+            `;
+            document.body.appendChild(flash);
+            requestAnimationFrame(() => {
+                flash.style.opacity = '1';
+                setTimeout(() => { flash.style.opacity = '0'; }, 200);
+            });
+            setTimeout(() => flash.remove(), 500);
         }
 
-        function spawnDroplets(rect, opts) {
-            for (let i = 0; i < opts.count; i++) {
+        // ⚖️ KARMA : deux orbes — or et argent — qui convergent
+        function fx_karma_enter(rect) {
+            const cx = rect.left + rect.width/2;
+            const cy = rect.top + rect.height/2;
+            const pairs = [
+                { color:'#fbbf24', start: { x: rect.left - 30, y: cy } },
+                { color:'#e2e8f0', start: { x: rect.right + 30, y: cy } },
+                { color:'#f59e0b', start: { x: cx, y: rect.top - 30 } },
+                { color:'#94a3b8', start: { x: cx, y: rect.bottom + 30 } },
+            ];
+            pairs.forEach((pair, idx) => {
                 setTimeout(() => {
-                    const p = document.createElement('div');
-                    const w = 3 + Math.random() * 4;
-                    p.className = 'lvl5-particle';
-                    p.style.width = `${w}px`;
-                    p.style.height = `${w * (1.4 + Math.random() * 0.8)}px`;
-                    p.style.borderRadius = '50% 50% 50% 50% / 30% 30% 70% 70%';
-                    p.style.background = opts.color;
-                    p.style.boxShadow = `0 0 6px ${opts.color}80`;
-                    p.style.opacity = '0.85';
-                    p.style.left = `${rect.left + Math.random() * rect.width}px`;
-                    p.style.top = `${rect.top + Math.random() * rect.height}px`;
-                    p.style.transition = `all ${500 + Math.random() * 400}ms cubic-bezier(0.4,0,1,1)`;
+                    const p = mkp();
+                    const sz = 8 + Math.random()*10;
+                    p.style.cssText = `
+                        position:fixed; pointer-events:none; z-index:9999;
+                        width:${sz}px; height:${sz}px; border-radius:50%;
+                        background:radial-gradient(circle, ${pair.color} 30%, ${pair.color}40 100%);
+                        box-shadow:0 0 15px ${pair.color}, 0 0 30px ${pair.color}50;
+                        left:${pair.start.x - sz/2}px; top:${pair.start.y - sz/2}px;
+                        opacity:0.9; transition:all 0.5s cubic-bezier(0.34,1.2,0.64,1);
+                    `;
                     document.body.appendChild(p);
-                    const dx = (Math.random() - 0.5) * 40;
                     requestAnimationFrame(() => {
-                        p.style.transform = `translate(${dx}px, ${20 + Math.random() * 40}px) scaleY(1.5)`;
+                        p.style.left = `${cx - sz/2}px`;
+                        p.style.top = `${cy - sz/2}px`;
+                        p.style.transform = 'scale(0)';
                         p.style.opacity = '0';
                     });
-                    setTimeout(() => p.remove(), 1000);
+                    setTimeout(() => p.remove(), 700);
+                }, idx * 80);
+            });
+            // spirale de petites orbes
+            for (let i = 0; i < 8; i++) {
+                setTimeout(() => {
+                    const p = mkp();
+                    const isGold = i % 2 === 0;
+                    const c = isGold ? '#fbbf24' : '#e2e8f0';
+                    const angle = (i/8)*Math.PI*2;
+                    const r = 40;
+                    p.style.cssText = `
+                        position:fixed; pointer-events:none; z-index:9999;
+                        width:5px; height:5px; border-radius:50%;
+                        background:${c}; box-shadow:0 0 8px ${c};
+                        left:${cx + Math.cos(angle)*r - 2.5}px;
+                        top:${cy + Math.sin(angle)*r - 2.5}px;
+                        opacity:0.9; transition:all ${0.5+Math.random()*0.3}s ease-out;
+                    `;
+                    document.body.appendChild(p);
+                    requestAnimationFrame(() => {
+                        p.style.transform = `translate(${(Math.random()-0.5)*30}px, ${(Math.random()-0.5)*30}px) scale(0)`;
+                        p.style.opacity = '0';
+                    });
+                    setTimeout(() => p.remove(), 900);
+                }, i * 50 + 200);
+            }
+        }
+
+        function fx_generic_enter(rect) {
+            for (let i = 0; i < 8; i++) {
+                setTimeout(() => {
+                    const p = mkp();
+                    const sz = 3 + Math.random()*6;
+                    p.style.cssText = `
+                        position:fixed; pointer-events:none; z-index:9999;
+                        width:${sz}px; height:${sz}px; border-radius:50%;
+                        background:#ffd700; box-shadow:0 0 8px #ffd700;
+                        left:${rect.left + Math.random()*rect.width}px;
+                        top:${rect.top + Math.random()*rect.height}px;
+                        opacity:0.9; transition:all 0.6s ease-out;
+                    `;
+                    document.body.appendChild(p);
+                    const angle = Math.random()*Math.PI*2;
+                    const dist = 25 + Math.random()*50;
+                    requestAnimationFrame(() => {
+                        p.style.transform = `translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist}px) scale(0)`;
+                        p.style.opacity = '0';
+                    });
+                    setTimeout(() => p.remove(), 900);
                 }, i * 40);
             }
         }
 
-        function spawnShadowMist(rect, opts) {
-            for (let i = 0; i < opts.count; i++) {
+        // ================================================================
+        //   EFFETS ÉLÉMENTAIRES — LEAVE
+        // ================================================================
+
+        // 💨 VENT — le vent retombe : quelques tourbillons qui se dissipent
+        function fx_vent_leave(rect) {
+            for (let i = 0; i < 5; i++) {
                 setTimeout(() => {
-                    const p = document.createElement('div');
-                    const size = 12 + Math.random() * 28;
-                    p.className = 'lvl5-particle';
-                    p.style.width = `${size}px`;
-                    p.style.height = `${size}px`;
-                    p.style.background = `radial-gradient(circle, ${opts.color}60 0%, transparent 70%)`;
-                    p.style.opacity = '0.7';
-                    p.style.left = `${rect.left + Math.random() * rect.width}px`;
-                    p.style.top = `${rect.top + Math.random() * rect.height}px`;
-                    p.style.transition = `all ${800 + Math.random() * 600}ms ease-out`;
+                    const p = mkp();
+                    const w = 20 + Math.random()*40;
+                    p.style.cssText = `
+                        position:fixed; pointer-events:none; z-index:9999;
+                        left:${rect.left + Math.random()*rect.width - w/2}px;
+                        top:${rect.bottom - 3}px;
+                        width:${w}px; height:1px;
+                        background:linear-gradient(90deg, transparent, rgba(148,219,255,0.5), transparent);
+                        opacity:0.6; border-radius:2px;
+                        transition:all ${0.4+Math.random()*0.3}s ease-out;
+                    `;
                     document.body.appendChild(p);
-                    const dx = (Math.random() - 0.5) * 80;
-                    const dy = (Math.random() - 0.5) * 50 - 10;
                     requestAnimationFrame(() => {
-                        p.style.transform = `translate(${dx}px, ${dy}px) scale(2.5)`;
+                        p.style.transform = `translateX(${(Math.random()-0.5)*60}px) translateY(${10+Math.random()*20}px) scaleX(0.3)`;
+                        p.style.opacity = '0';
+                    });
+                    setTimeout(() => p.remove(), 800);
+                }, i * 60);
+            }
+        }
+
+        // 💧 EAU — gouttelettes qui tombent et éclaboussent
+        function fx_eau_leave(rect) {
+            for (let i = 0; i < 12; i++) {
+                setTimeout(() => {
+                    const p = mkp();
+                    const w = 3 + Math.random()*5;
+                    p.style.cssText = `
+                        position:fixed; pointer-events:none; z-index:9999;
+                        width:${w}px; height:${w*(1.5+Math.random())}px;
+                        border-radius:50% 50% 50% 50% / 30% 30% 70% 70%;
+                        background:linear-gradient(180deg, rgba(0,229,204,0.9), rgba(0,229,204,0.4));
+                        box-shadow:0 0 5px rgba(0,229,204,0.6);
+                        left:${rect.left + Math.random()*rect.width}px;
+                        top:${rect.bottom - 2}px;
+                        opacity:0.85; transition:all ${0.4+Math.random()*0.4}s cubic-bezier(0.4,0,1,1);
+                    `;
+                    document.body.appendChild(p);
+                    const dx = (Math.random()-0.5)*35;
+                    requestAnimationFrame(() => {
+                        p.style.transform = `translate(${dx}px, ${15+Math.random()*30}px) scaleY(0.4)`;
+                        p.style.opacity = '0';
+                    });
+                    setTimeout(() => p.remove(), 900);
+                }, i * 40);
+            }
+        }
+
+        // ☠️ POISON — brume verte toxique qui s'étale vers l'extérieur
+        function fx_poison_leave(rect) {
+            for (let i = 0; i < 10; i++) {
+                setTimeout(() => {
+                    const p = mkp();
+                    const sz = 15 + Math.random()*30;
+                    const alpha = 0.3 + Math.random()*0.3;
+                    p.style.cssText = `
+                        position:fixed; pointer-events:none; z-index:9998;
+                        width:${sz}px; height:${sz}px; border-radius:50%;
+                        background:radial-gradient(circle, rgba(34,197,94,${alpha}) 0%, transparent 70%);
+                        left:${rect.left + Math.random()*rect.width - sz/2}px;
+                        top:${rect.top + Math.random()*rect.height - sz/2}px;
+                        opacity:0.8; transition:all ${0.8+Math.random()*0.6}s ease-out;
+                    `;
+                    document.body.appendChild(p);
+                    const dx = (Math.random()-0.5)*80;
+                    const dy = (Math.random()-0.5)*60 - 10;
+                    requestAnimationFrame(() => {
+                        p.style.transform = `translate(${dx}px, ${dy}px) scale(3)`;
                         p.style.opacity = '0';
                     });
                     setTimeout(() => p.remove(), 1500);
-                }, i * 45);
-            }
-        }
-
-        function spawnFlameParticles(rect, count, mode) {
-            const colors = ['#ff4500','#ff6a00','#ffd700','#ff8c00'];
-            for (let i = 0; i < count; i++) {
-                setTimeout(() => {
-                    const p = document.createElement('div');
-                    const size = 4 + Math.random() * 10;
-                    p.className = 'lvl5-particle';
-                    p.style.width = `${size}px`;
-                    p.style.height = `${size * (1 + Math.random())}px`;
-                    p.style.borderRadius = '50% 50% 30% 30%';
-                    const c = colors[Math.floor(Math.random() * colors.length)];
-                    p.style.background = c;
-                    p.style.boxShadow = `0 0 ${size}px ${c}`;
-                    p.style.opacity = '0.9';
-                    p.style.left = `${rect.left + Math.random() * rect.width}px`;
-                    p.style.top = `${mode === 'enter' ? rect.top + Math.random() * rect.height : rect.bottom - 4}px`;
-                    const dur = 600 + Math.random() * 400;
-                    p.style.transition = `all ${dur}ms ease-out`;
-                    document.body.appendChild(p);
-                    const dx = (Math.random() - 0.5) * 50;
-                    const dy = mode === 'enter' ? -(20 + Math.random() * 50) : (10 + Math.random() * 30);
-                    requestAnimationFrame(() => {
-                        p.style.transform = `translate(${dx}px, ${dy}px) scale(0.1) rotate(${(Math.random()-0.5)*60}deg)`;
-                        p.style.opacity = '0';
-                    });
-                    setTimeout(() => p.remove(), dur + 200);
-                }, i * 35);
-            }
-        }
-
-        function spawnPollenDrift(rect, opts) {
-            for (let i = 0; i < opts.count; i++) {
-                setTimeout(() => {
-                    const p = document.createElement('div');
-                    const size = 3 + Math.random() * 6;
-                    p.className = 'lvl5-particle';
-                    p.style.width = `${size}px`;
-                    p.style.height = `${size}px`;
-                    p.style.background = opts.color;
-                    p.style.boxShadow = `0 0 6px ${opts.color}`;
-                    p.style.opacity = '0.8';
-                    p.style.left = `${rect.left + Math.random() * rect.width}px`;
-                    p.style.top = `${rect.top + rect.height * 0.3 + Math.random() * rect.height * 0.4}px`;
-                    const dur = 1000 + Math.random() * 700;
-                    p.style.transition = `all ${dur}ms cubic-bezier(0.25,0.46,0.45,0.94)`;
-                    document.body.appendChild(p);
-                    const dx = (Math.random() - 0.5) * 100;
-                    const dy = -(20 + Math.random() * 60);
-                    requestAnimationFrame(() => {
-                        p.style.transform = `translate(${dx}px, ${dy}px) scale(0.3) rotate(${Math.random()*360}deg)`;
-                        p.style.opacity = '0';
-                    });
-                    setTimeout(() => p.remove(), dur + 200);
                 }, i * 40);
             }
         }
 
-        function spawnDebris(rect, opts) {
-            for (let i = 0; i < opts.count; i++) {
+        // 🪨 TERRE — poussière de pierre qui retombe lourdement depuis le bas
+        function fx_terre_leave(rect) {
+            const stoneColors = ['#92614a','#a0886b','#c8a47a','#5c3d2e','#d4b896'];
+            for (let i = 0; i < 18; i++) {
                 setTimeout(() => {
-                    const p = document.createElement('div');
-                    const w = 3 + Math.random() * 9;
-                    const h = 2 + Math.random() * 5;
-                    p.className = 'lvl5-particle';
-                    p.style.width = `${w}px`;
-                    p.style.height = `${h}px`;
-                    p.style.borderRadius = '1px';
-                    p.style.background = opts.color;
-                    p.style.boxShadow = `0 0 4px ${opts.color}80`;
-                    p.style.opacity = '0.9';
-                    p.style.left = `${rect.left + Math.random() * rect.width}px`;
-                    p.style.top = `${rect.top + Math.random() * rect.height}px`;
-                    const dur = 500 + Math.random() * 500;
-                    p.style.transition = `all ${dur}ms cubic-bezier(0.4,0,1,1)`;
+                    const p = mkp();
+                    const sz = 3 + Math.random()*9;
+                    const c = stoneColors[Math.floor(Math.random()*stoneColors.length)];
+                    p.style.cssText = `
+                        position:fixed; pointer-events:none; z-index:9999;
+                        width:${sz}px; height:${sz}px;
+                        border-radius:${Math.random()<0.4 ? '1px' : '30%'};
+                        background:${c};
+                        box-shadow:1px 1px 2px rgba(0,0,0,0.3);
+                        left:${rect.left + Math.random()*rect.width}px;
+                        top:${rect.bottom - sz}px;
+                        opacity:0.8; transition:all ${0.55+Math.random()*0.4}s cubic-bezier(0.4,0,1,1);
+                    `;
                     document.body.appendChild(p);
-                    const angle = Math.random() * Math.PI * 2;
-                    const dist = 30 + Math.random() * 80;
+                    const dx = (Math.random()-0.5)*40;
+                    const dy = 20 + Math.random()*40;
                     requestAnimationFrame(() => {
-                        p.style.transform = `translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist}px) scale(0.1) rotate(${Math.random()*720}deg)`;
+                        p.style.transform = `translate(${dx}px, ${dy}px) rotate(${Math.random()*180}deg) scale(0.15)`;
                         p.style.opacity = '0';
                     });
-                    setTimeout(() => p.remove(), dur + 200);
+                    setTimeout(() => p.remove(), 1100);
                 }, i * 30);
             }
         }
 
-        function spawnEtherealMist(rect, opts) {
-            for (let i = 0; i < opts.count; i++) {
+        // 🌋 LAVE — braises qui refroidissent et tombent
+        function fx_lave_leave(rect) {
+            const emberColors = ['#ff4500','#ff6a00','#ff8c00','#dc2626','#7f1d1d'];
+            for (let i = 0; i < 14; i++) {
                 setTimeout(() => {
-                    const p = document.createElement('div');
-                    const size = 8 + Math.random() * 18;
-                    p.className = 'lvl5-particle';
-                    p.style.width = `${size}px`;
-                    p.style.height = `${size}px`;
-                    p.style.background = `radial-gradient(circle, ${opts.color}70 0%, transparent 70%)`;
-                    p.style.boxShadow = `0 0 10px ${opts.color}50`;
-                    p.style.opacity = '0.8';
-                    p.style.left = `${rect.left + Math.random() * rect.width}px`;
-                    p.style.top = `${rect.top + Math.random() * rect.height}px`;
-                    const dur = 900 + Math.random() * 600;
-                    p.style.transition = `all ${dur}ms ease-out`;
+                    const p = mkp();
+                    const sz = 3 + Math.random()*7;
+                    const c = emberColors[Math.floor(Math.random()*emberColors.length)];
+                    p.style.cssText = `
+                        position:fixed; pointer-events:none; z-index:9999;
+                        width:${sz}px; height:${sz*0.6}px; border-radius:50%;
+                        background:${c}; box-shadow:0 0 ${sz}px ${c};
+                        left:${rect.left + Math.random()*rect.width}px;
+                        top:${rect.top + Math.random()*rect.height}px;
+                        opacity:0.9; transition:all ${0.6+Math.random()*0.5}s ease-in;
+                    `;
                     document.body.appendChild(p);
-                    const dx = (Math.random() - 0.5) * 60;
+                    const dx = (Math.random()-0.5)*30;
                     requestAnimationFrame(() => {
-                        p.style.transform = `translate(${dx}px, ${-(25 + Math.random() * 45)}px) scale(2)`;
+                        p.style.transform = `translate(${dx}px, ${25+Math.random()*50}px) scale(0.1)`;
+                        p.style.opacity = '0';
+                        p.style.filter = 'brightness(0.2)';
+                    });
+                    setTimeout(() => p.remove(), 1200);
+                }, i * 40);
+            }
+        }
+
+        // 🌿 PLANTE — pollen et graines qui dérivent lentement
+        function fx_plante_leave(rect) {
+            const pollenColors = ['#10b981','#34d399','#86efac','#fef08a','#d9f99d'];
+            for (let i = 0; i < 14; i++) {
+                setTimeout(() => {
+                    const p = mkp();
+                    const sz = 2 + Math.random()*5;
+                    const c = pollenColors[Math.floor(Math.random()*pollenColors.length)];
+                    p.style.cssText = `
+                        position:fixed; pointer-events:none; z-index:9999;
+                        width:${sz}px; height:${sz}px; border-radius:50%;
+                        background:${c}; box-shadow:0 0 ${sz+2}px ${c};
+                        left:${rect.left + Math.random()*rect.width}px;
+                        top:${rect.top + rect.height*0.2 + Math.random()*rect.height*0.6}px;
+                        opacity:0.8; transition:all ${1.0+Math.random()*0.8}s cubic-bezier(0.25,0.46,0.45,0.94);
+                    `;
+                    document.body.appendChild(p);
+                    const dx = (Math.random()-0.5)*120;
+                    const dy = -(20+Math.random()*60);
+                    requestAnimationFrame(() => {
+                        p.style.transform = `translate(${dx}px, ${dy}px) scale(0.3) rotate(${Math.random()*720}deg)`;
                         p.style.opacity = '0';
                     });
-                    setTimeout(() => p.remove(), dur + 200);
+                    setTimeout(() => p.remove(), 1900);
+                }, i * 45);
+            }
+        }
+
+        // 🔥 FEU — cendres et fumée qui s'élèvent
+        function fx_feu_leave(rect) {
+            // cendres
+            for (let i = 0; i < 14; i++) {
+                setTimeout(() => {
+                    const p = mkp();
+                    const sz = 2 + Math.random()*6;
+                    const grey = Math.floor(50 + Math.random()*100);
+                    p.style.cssText = `
+                        position:fixed; pointer-events:none; z-index:9999;
+                        width:${sz}px; height:${sz*0.5}px; border-radius:50%;
+                        background:rgb(${grey},${grey},${grey});
+                        opacity:0.7; transition:all ${0.8+Math.random()*0.6}s ease-out;
+                        left:${rect.left + Math.random()*rect.width}px;
+                        top:${rect.top + rect.height*0.3 + Math.random()*rect.height*0.5}px;
+                    `;
+                    document.body.appendChild(p);
+                    const dx = (Math.random()-0.5)*50;
+                    requestAnimationFrame(() => {
+                        p.style.transform = `translate(${dx}px, -${20+Math.random()*50}px) scale(0.2)`;
+                        p.style.opacity = '0';
+                    });
+                    setTimeout(() => p.remove(), 1500);
+                }, i * 40);
+            }
+        }
+
+        // 💥 EXPLOSION — retombée : éclats qui tombent + fumée
+        function fx_explosion_leave(rect) {
+            const debrisColors = ['#a70740','#881337','#f43f5e','#fbbf24'];
+            for (let i = 0; i < 14; i++) {
+                setTimeout(() => {
+                    const p = mkp();
+                    const w = 2 + Math.random()*7;
+                    const c = debrisColors[Math.floor(Math.random()*debrisColors.length)];
+                    p.style.cssText = `
+                        position:fixed; pointer-events:none; z-index:9999;
+                        width:${w}px; height:${w*0.5}px; border-radius:1px;
+                        background:${c}; box-shadow:0 0 4px ${c}80;
+                        left:${rect.left + Math.random()*rect.width}px;
+                        top:${rect.top + Math.random()*rect.height}px;
+                        opacity:0.9; transition:all ${0.5+Math.random()*0.4}s cubic-bezier(0.4,0,1,1);
+                    `;
+                    document.body.appendChild(p);
+                    const angle = Math.random()*Math.PI*2;
+                    const dist = 20 + Math.random()*60;
+                    requestAnimationFrame(() => {
+                        p.style.transform = `translate(${Math.cos(angle)*dist}px, ${Math.abs(Math.sin(angle)*dist) + 10}px) rotate(${Math.random()*360}deg) scale(0.1)`;
+                        p.style.opacity = '0';
+                    });
+                    setTimeout(() => p.remove(), 1000);
+                }, i * 30);
+            }
+        }
+
+        // 👻 ESPRIT — dissolution : la carte libère des âmes spectrales
+        function fx_esprit_leave(rect) {
+            for (let i = 0; i < 10; i++) {
+                setTimeout(() => {
+                    const p = mkp();
+                    const sz = 8 + Math.random()*18;
+                    p.style.cssText = `
+                        position:fixed; pointer-events:none; z-index:9999;
+                        width:${sz}px; height:${sz}px; border-radius:50%;
+                        background:radial-gradient(circle, rgba(56,189,248,0.7) 0%, transparent 65%);
+                        box-shadow:0 0 12px rgba(56,189,248,0.5);
+                        left:${rect.left + Math.random()*rect.width - sz/2}px;
+                        top:${rect.top + Math.random()*rect.height - sz/2}px;
+                        opacity:0.8; transition:all ${0.9+Math.random()*0.6}s ease-out;
+                    `;
+                    document.body.appendChild(p);
+                    const dx = (Math.random()-0.5)*50;
+                    requestAnimationFrame(() => {
+                        p.style.transform = `translate(${dx}px, -${25+Math.random()*50}px) scale(2.5)`;
+                        p.style.opacity = '0';
+                    });
+                    setTimeout(() => p.remove(), 1600);
                 }, i * 50);
             }
+        }
+
+        // 🌑 TÉNÈBRES — le vide se referme : brume noire/violette qui s'absorbe
+        function fx_tenebres_leave(rect) {
+            for (let i = 0; i < 12; i++) {
+                setTimeout(() => {
+                    const p = mkp();
+                    const sz = 18 + Math.random()*35;
+                    const darkC = ['#4c1d95','#5b21b6','#6d28d9','#7c3aed','#1e1b4b'][Math.floor(Math.random()*5)];
+                    p.style.cssText = `
+                        position:fixed; pointer-events:none; z-index:9998;
+                        width:${sz}px; height:${sz}px; border-radius:50%;
+                        background:radial-gradient(circle, ${darkC}70 0%, transparent 70%);
+                        left:${rect.left + Math.random()*rect.width - sz/2}px;
+                        top:${rect.top + Math.random()*rect.height - sz/2}px;
+                        opacity:0.7; transition:all ${0.8+Math.random()*0.7}s ease-out;
+                    `;
+                    document.body.appendChild(p);
+                    const angle = Math.random()*Math.PI*2;
+                    const dist = 30 + Math.random()*70;
+                    requestAnimationFrame(() => {
+                        p.style.transform = `translate(${Math.cos(angle)*dist}px, ${Math.sin(angle)*dist}px) scale(2.5)`;
+                        p.style.opacity = '0';
+                    });
+                    setTimeout(() => p.remove(), 1600);
+                }, i * 45);
+            }
+        }
+
+        // ⚖️ KARMA — les orbes se séparent et partent en orbites opposées
+        function fx_karma_leave(rect) {
+            const cx = rect.left + rect.width/2;
+            const cy = rect.top + rect.height/2;
+            const orbs = [
+                { c:'#fbbf24', tx: -60, ty: -20 },
+                { c:'#e2e8f0', tx: 60,  ty: 20  },
+                { c:'#f59e0b', tx: 20,  ty: -50 },
+                { c:'#94a3b8', tx: -20, ty: 50  },
+            ];
+            orbs.forEach((orb, idx) => {
+                setTimeout(() => {
+                    const p = mkp();
+                    const sz = 8 + Math.random()*8;
+                    p.style.cssText = `
+                        position:fixed; pointer-events:none; z-index:9999;
+                        width:${sz}px; height:${sz}px; border-radius:50%;
+                        background:radial-gradient(circle, ${orb.c} 30%, ${orb.c}30 100%);
+                        box-shadow:0 0 12px ${orb.c}, 0 0 25px ${orb.c}40;
+                        left:${cx - sz/2}px; top:${cy - sz/2}px;
+                        opacity:0.9; transition:all ${0.55+Math.random()*0.25}s cubic-bezier(0.34,0,0.64,1);
+                    `;
+                    document.body.appendChild(p);
+                    requestAnimationFrame(() => {
+                        p.style.transform = `translate(${orb.tx}px, ${orb.ty}px) scale(0.1)`;
+                        p.style.opacity = '0';
+                    });
+                    setTimeout(() => p.remove(), 900);
+                }, idx * 70);
+            });
+        }
+
+        function fx_generic_leave(rect) {
+            fx_vent_leave(rect);
+        }
+
+        // Crée un div de base pour les particules
+        function mkp() {
+            const el = document.createElement('div');
+            el.style.pointerEvents = 'none';
+            return el;
         }
 
         function getSpellColor(sp) {
