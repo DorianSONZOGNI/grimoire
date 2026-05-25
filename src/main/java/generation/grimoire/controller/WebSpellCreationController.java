@@ -352,7 +352,7 @@ public class WebSpellCreationController {
     }
 
     @PostMapping("/sandbox/cast/{spellId}")
-    public ResponseEntity<SandboxStateDto> castSandboxSpell(@PathVariable Long spellId, @RequestParam(required = false) Integer choiceKey) {
+    public ResponseEntity<SandboxStateDto> castSandboxSpell(@PathVariable @org.springframework.lang.NonNull Long spellId, @RequestParam(required = false) Integer choiceKey) {
         initSandbox();
         java.util.Optional<Spell> opt = spellRepository.findById(spellId);
         if (opt.isEmpty()) {
