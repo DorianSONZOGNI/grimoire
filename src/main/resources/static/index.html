@@ -2158,6 +2158,61 @@
         input:checked+.slider:before {
             transform: translateX(22px);
         }
+
+        /* Floating Preview of Spell under Edit */
+        .editing-preview-container {
+            position: fixed;
+            bottom: 2rem;
+            right: 2rem;
+            width: 380px;
+            max-width: 90%;
+            background: rgba(15, 23, 42, 0.95);
+            border: 1px solid var(--primary);
+            box-shadow: 0 10px 30px var(--primary-glow), 0 0 20px rgba(139, 92, 246, 0.15);
+            border-radius: 12px;
+            padding: 1.2rem;
+            z-index: 99999;
+            backdrop-filter: blur(12px);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transform: translateY(150%);
+            opacity: 0;
+            pointer-events: none;
+        }
+
+        .editing-preview-container.active {
+            transform: translateY(0);
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .editing-preview-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.8rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.08);
+            padding-bottom: 0.5rem;
+        }
+
+        .editing-preview-title {
+            font-size: 0.8rem;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: var(--primary);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        @media (max-width: 768px) {
+            .editing-preview-container {
+                left: 1rem;
+                right: 1rem;
+                width: auto;
+                bottom: 1rem;
+            }
+        }
     </style>
 </head>
 
@@ -2498,6 +2553,18 @@
             </div>
         </div>
     </main>
+
+    <!-- Aperçu du sort en cours d'édition (Flottant) -->
+    <div class="editing-preview-container" id="editingSpellPreview">
+        <div class="editing-preview-header">
+            <div class="editing-preview-title">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">edit_note</span>
+                <span>Sort en cours d'édition</span>
+            </div>
+            <button type="button" class="btn-danger" style="padding: 0.2rem 0.5rem; font-size: 0.75rem; border-radius: 4px;" onclick="cancelEditSpell()" title="Annuler l'édition">Annuler x</button>
+        </div>
+        <div id="editingSpellCardBody"></div>
+    </div>
 
     <div class="notification" id="notif">Sort créé avec succès !</div>
 
@@ -3840,6 +3907,9 @@
                     document.getElementById('castingTypeSelect').value = 'BANAL';
                     document.getElementById('castingTypeSelect').dispatchEvent(new Event('change'));
 
+                    // Mettre à jour l'aperçu d'édition flottant
+                    updateEditingPreview();
+
                     // Recharger la liste
                     await loadSpells();
                 } else {
@@ -3964,262 +4034,327 @@
                 return;
             }
 
-            container.innerHTML = filtered.map(sp => {
-                let voieBadge = '';
-                if (sp.voie) {
-                    const vHex = getVoieButtonColor(sp.voie);
-                    const vRgb = hexToRgb(vHex);
-                    const vIcon = getVoieIcon(sp.voie.nom);
-                    voieBadge = `<span class="badge" style="color: ${vHex}; border-color: rgba(${vRgb}, 0.3); background: rgba(${vRgb}, 0.05); display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size:1.1em;">${vIcon}</span>${sp.voie.nom}</span>`;
-                }
-
-                let spiritBadge = '';
-                if (sp.spiritualite) {
-                    const sHex = getSpiritButtonColor(sp.spiritualite);
-                    const sRgb = hexToRgb(sHex);
-                    const sIcon = getSpiritIcon(sp.spiritualite.nom);
-                    spiritBadge = `<span class="badge" style="color: ${sHex}; border-color: rgba(${sRgb}, 0.3); background: rgba(${sRgb}, 0.05); display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size:1.1em;">${sIcon}</span>${sp.spiritualite.nom}</span>`;
-                }
-
-                let castBadge = '';
-                if (sp.castingType === 'INSTANTANE') castBadge = `<span class="badge" style="background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid #f59e0b;">⚡ Instantané</span>`;
-                else if (sp.castingType === 'CANALISE') castBadge = `<span class="badge" style="background: rgba(139, 92, 246, 0.2); color: #8b5cf6; border: 1px solid #8b5cf6;">🌀 Canalisé</span>`;
-                else castBadge = `<span class="badge" style="background: rgba(100, 116, 139, 0.2); color: #94a3b8;">⏳ Banal</span>`;
-
-                let effectsSummaryHtml = '';
-                if (sp.effects && sp.effects.length > 0) {
-                    effectsSummaryHtml = `<div class="spell-effects-summary">`;
-                    sp.effects.forEach(e => {
-                        const target = e.effectTarget || e.effect_target;
-                        const baseTargetText = target === 'CASTER' ? 'Lanceur' : (target === 'ALLY' ? 'Allié' : 'Cible');
-                        const targetText = e.targetExpression || e.target_expression || baseTargetText;
-
-                        let indicatorClass = 'target';
-                        const lowerText = targetText.toLowerCase();
-                        if (lowerText.includes('lanceur')) {
-                            indicatorClass = 'caster';
-                        } else if (lowerText.includes('allié')) {
-                            indicatorClass = 'ally';
-                        } else if (target) {
-                            indicatorClass = target.toLowerCase();
-                        }
-
-                        const typeNames = {
-                            'DamageFixedEffect': 'Dégâts Fixes',
-                            'FIXED_DAMAGE': 'Dégâts Fixes',
-                            'DamagePercentageEffect': 'Dégâts %',
-                            'PERCENTAGE_DAMAGE': 'Dégâts %',
-                            'HealFixedEffect': 'Soins Fixes',
-                            'FIXED_HEAL': 'Soins Fixes',
-                            'HealPercentageEffect': 'Soins %',
-                            'PERCENTAGE_HEAL': 'Soins %',
-                            'ManaFixedEffect': 'Mana Fixe',
-                            'FIXED_MANA': 'Mana Fixe',
-                            'ManaPercentageEffect': 'Mana %',
-                            'PERCENTAGE_MANA': 'Mana %',
-                            'BuffDebuffEffect': 'Buff/Débuff',
-                            'BUFF_DEBUFF': 'Buff/Débuff',
-                            'DamageOverTimeEffect': 'DoT',
-                            'DOT': 'DoT',
-                            'HealOverTimeEffect': 'HoT',
-                            'HOT': 'HoT',
-                            'ManaOverTimeEffect': 'MoT',
-                            'MOT': 'MoT',
-                            'PurgeEffect': '✨ Dissipation',
-                            'PURGE': '✨ Dissipation',
-                            'ShieldEffect': '🛡️ Bouclier',
-                            'SHIELD': '🛡️ Bouclier'
-                        };
-                        const eTypeStr = typeNames[e.effectType || e.effect_type] || (e.effectType || e.effect_type || 'Effet');
-
-                        const statLabels = {
-                            'SPEED': 'Vitesse', 'MANA': 'Mana Max', 'HEALTH': 'PV Max', 'CRIT': 'Critique',
-                            'ARMURE': 'Armure', 'RESISTANCE': 'Résistance', 'POWER': 'Puissance Mag.', 'STRENGTH': 'Force Phys.',
-                            'BURN': 'Brûlure', 'POISON': 'Poison', 'DAMAGE_TAKEN_MAGIC': 'Dégâts Mag. Subis',
-                            'DAMAGE_TAKEN_PHYSIC': 'Dégâts Phys. Subis', 'DAMAGE_TAKEN_BRUT': 'Dégâts Bruts Subis',
-                            'DAMAGE_GIVEN_MAGIC': 'Dégâts Mag. Infligés', 'DAMAGE_GIVEN_PHYSIC': 'Dégâts Phys. Infligés',
-                            'DAMAGE_GIVEN_BRUT': 'Dégâts Bruts Infligés',
-                            'HEAL_RECEIVED': 'Soin Reçu', 'SHIELD_RECEIVED': 'Bouclier Reçu',
-                            'HEAL_GIVEN': 'Soin Donné', 'SHIELD_GIVEN': 'Bouclier Donné'
-                        };
-                        const formatStat = s => statLabels[s] || s;
-
-
-                        const dt = (e.damageType || 'MAGIC').toLowerCase();
-                        const dtStr = dt === 'magic' ? 'Magiques' : (dt === 'physic' ? 'Physiques' : 'Bruts');
-
-                        let detailsStr = '';
-                        const rawType = e.effectType || e.effect_type || '';
-                        const t = rawType.replace('Effect', '');
-
-                        if (t === 'DamageFixed' || t === 'FIXED_DAMAGE') {
-                            detailsStr = `➔ inflige ${e.damage || 0} Dégâts ${dtStr}`;
-                        } else if (t === 'DamagePercentage' || t === 'PERCENTAGE_DAMAGE') {
-                            const pct = Math.round((e.percentage || 0) * 100);
-                            detailsStr = `➔ inflige ${pct}% de ${formatSrc(e.damageSource || e.source)} en Dégâts ${dtStr}`;
-                        } else if (t === 'HealFixed' || t === 'FIXED_HEAL') {
-                            detailsStr = `➔ rend ${e.healAmount || 0} PV`;
-                        } else if (t === 'HealPercentage' || t === 'PERCENTAGE_HEAL') {
-                            const pct = Math.round((e.percentage || 0) * 100);
-                            detailsStr = `➔ rend ${pct}% de ${formatSrc(e.healSource || e.source)} en PV`;
-                        } else if (t === 'BuffDebuff' || t === 'BUFF_DEBUFF') {
-                            let parts = [];
-                            if (e.flatValue) {
-                                parts.push(`${e.flatValue > 0 ? '+' : ''}${e.flatValue} ${formatStat(e.statAffected)}`);
-                            }
-                            if (e.modifier) {
-                                const sign = e.modifier > 0 ? '+' : '';
-                                parts.push(`${sign}${Math.round(e.modifier * 100)}% ${formatStat(e.statAffected)}`);
-                            }
-                            if (parts.length === 0) parts.push(`modifie ${formatStat(e.statAffected)}`);
-                            const durStr = e.duration > 0 ? ` (${e.duration} tours)` : '';
-                            detailsStr = `➔ ${parts.join(' et ')}${durStr}`;
-                        } else if (t === 'DamageOverTime' || t === 'DOT') {
-                            let parts = [];
-                            const fd = e.fixedDamagePerTick || e.damage || 0;
-                            const pd = e.percentageDamagePerTick || e.percentage || 0;
-                            if (fd) parts.push(`${fd}`);
-                            if (pd) parts.push(`${Math.round(pd * 100)}% ${formatSrc(e.damageSource || e.source)}`);
-                            if (parts.length === 0) parts.push('0');
-                            const durStr = e.duration > 0 ? ` sur ${e.duration} tours` : '';
-                            detailsStr = `➔ DoT de ${parts.join(' + ')} Dégâts ${dtStr}/tour${durStr}`;
-                        } else if (t === 'HealOverTime' || t === 'HOT') {
-                            let parts = [];
-                            const fh = e.fixedHealPerTick || e.healAmount || 0;
-                            const ph = e.percentageHealPerTick || e.percentage || 0;
-                            if (fh) parts.push(`${fh}`);
-                            if (ph) parts.push(`${Math.round(ph * 100)}% ${formatSrc(e.healSource || e.source || 'TARGET_HEALTH_MAX')}`);
-                            if (parts.length === 0) parts.push('0');
-                            const durStr = e.duration > 0 ? ` sur ${e.duration} tours` : '';
-                            detailsStr = `➔ HoT de ${parts.join(' + ')} PV/tour${durStr}`;
-                        } else if (t === 'ManaFixed' || t === 'FIXED_MANA') {
-                            detailsStr = `➔ rend ${e.manaAmount || 0} Mana`;
-                        } else if (t === 'ManaPercentage' || t === 'PERCENTAGE_MANA') {
-                            const pct = Math.round((e.percentage || 0) * 100);
-                            detailsStr = `➔ rend ${pct}% de ${formatSrc(e.manaSource || e.source)} en Mana`;
-                        } else if (t === 'ManaOverTime' || t === 'MOT') {
-                            let parts = [];
-                            const fm = e.fixedManaPerTick || e.manaAmount || 0;
-                            const pm = e.percentageManaPerTick || e.percentage || 0;
-                            if (fm) parts.push(`${fm}`);
-                            if (pm) parts.push(`${Math.round(pm * 100)}% ${formatSrc(e.manaSource || e.source || 'TARGET_MANA_MAX')}`);
-                            if (parts.length === 0) parts.push('0');
-                            const durStr = e.duration > 0 ? ` sur ${e.duration} tours` : '';
-                            detailsStr = `➔ MoT de ${parts.join(' + ')} Mana/tour${durStr}`;
-                        } else if (t === 'Purge' || t === 'PURGE') {
-                            detailsStr = `➔ dissipe les altérations`;
-                        } else if (t === 'Shield' || t === 'SHIELD') {
-                            let parts = [];
-                            const fv = e.fixedValue || e.flatValue || 0;
-                            const pv = e.percentage || 0;
-                            if (fv) parts.push(`${fv}`);
-                            if (pv) parts.push(`${Math.round(pv * 100)}% ${formatSrc(e.shieldSource || e.source || 'TARGET_HEALTH_MAX')}`);
-                            if (parts.length === 0) parts.push('0');
-                            const durStr = e.duration > 0 ? ` sur ${e.duration} tours` : '';
-                            detailsStr = `➔ Bouclier de ${parts.join(' + ')}${durStr}`;
-                        }
-
-                        const keyBadge = e.requiredChoiceKey != null ? `<span style="background:rgba(245,158,11,0.2); color:#f59e0b; padding:0.1rem 0.3rem; border-radius:3px; font-size:0.75rem; font-weight:bold;" title="S'active uniquement si l'option choisie au cast est ${e.requiredChoiceKey}">Option ${e.requiredChoiceKey}</span>` : '';
-
-                        let turnBadge = '';
-                        if (sp.castingType === 'CANALISE') {
-                            const turns = e.channelingTurns || [];
-                            if (turns.length > 0) {
-                                const turnStr = turns.map(t => `T${t}`).join(', ');
-                                turnBadge = `<span style="background:rgba(139,92,246,0.2); color:#a78bfa; padding:0.1rem 0.3rem; border-radius:3px; font-size:0.75rem; font-weight:bold;" title="Déclenché aux tours de canalisation : ${turnStr}">${turnStr}</span>`;
-                            } else {
-                                turnBadge = `<span style="background:rgba(239,68,68,0.2); color:#fca5a5; padding:0.1rem 0.3rem; border-radius:3px; font-size:0.75rem; font-weight:bold;" title="Ne se déclenche à aucun tour">Jamais</span>`;
-                            }
-                        }
-
-                        effectsSummaryHtml += `
-                            <div class="effect-line" style="display:flex; align-items:baseline; gap:0.3rem; flex-wrap:wrap;">
-                                <div class="indicator ${indicatorClass}" style="flex-shrink:0;"></div>
-                                ${turnBadge}
-                                ${keyBadge}
-                                <span style="font-weight:600; color:#fff;">[${targetText}]</span>
-                                <span style="color:var(--spell-color, #38bdf8); font-weight:500;">${eTypeStr}</span>
-                                <span style="color:#e2e8f0;">${detailsStr}</span>
-                            </div>
-                        `;
-                    });
-                    effectsSummaryHtml += `</div>`;
-                }
-
-                let rankTitleBadge = '';
-                if (sp.spiritualite && sp.spiritualite.rankNames && sp.spiritualite.rankNames[sp.niveau]) {
-                    rankTitleBadge = `<div style="font-size:0.85rem; color:#10b981; font-weight:600; margin-top:-0.4rem;">✨ "${sp.spiritualite.rankNames[sp.niveau]}"</div>`;
-                } else if (sp.voie && sp.voie.rankNames && sp.voie.rankNames[sp.niveau]) {
-                    rankTitleBadge = `<div style="font-size:0.85rem; color:#10b981; font-weight:600; margin-top:-0.4rem;">✨ "${sp.voie.rankNames[sp.niveau]}"</div>`;
-                }
-
-                const titleColor = getSpellColor(sp);
-                const titleRgb = hexToRgb(titleColor);
-
-                // Un sort spirituel (sans voie) est plafonné à niveau 3 — c'est donc son niveau légendaire
-                const isMaxLevel = (sp.niveau === 5 && sp.voie) || (sp.niveau === 3 && sp.spiritualite && !sp.voie);
-
-                let lvlBadgeStyle = 'background: rgba(255,255,255,0.1); color: #e2e8f0;';
-                let lvlIcon = '';
-                if (sp.niveau === 2) {
-                    lvlBadgeStyle = 'background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: #fff;';
-                } else if (sp.niveau === 3 && !isMaxLevel) {
-                    lvlBadgeStyle = `background: rgba(var(--spell-rgb), 0.2); border: 1px solid rgba(var(--spell-rgb), 0.5); color: var(--spell-color); font-weight: bold;`;
-                } else if (sp.niveau === 4) {
-                    lvlBadgeStyle = `background: rgba(var(--spell-rgb), 0.3); border: 1px solid var(--spell-color); color: #fff; font-weight: bold; text-shadow: 0 0 5px var(--spell-color); box-shadow: 0 0 10px rgba(var(--spell-rgb), 0.3);`;
-                    lvlIcon = '✨ ';
-                } else if (isMaxLevel) {
-                    lvlBadgeStyle = `background: linear-gradient(135deg, var(--spell-color), rgba(var(--spell-rgb), 0.4)); border: 1px solid #fff; color: #fff; font-weight: bold; text-shadow: 0 1px 3px rgba(0,0,0,0.8); box-shadow: 0 0 15px rgba(var(--spell-rgb), 0.6);`;
-                    lvlIcon = '👑 ';
-                }
-                const lvlBadge = `<span class="badge" style="${lvlBadgeStyle}">${lvlIcon}Lvl ${sp.niveau}</span>`;
-
-                return `
-                    <div class="spell-card spell-card-lvl-${isMaxLevel ? 5 : (sp.niveau || 1)}" style="--spell-color: ${titleColor}; --spell-rgb: ${titleRgb};">
-                        <div class="spell-card-header" style="align-items: flex-start;">
-                            <div style="display: flex; flex-direction: column; gap: 0.4rem;">
-                                <div class="spell-name" style="color: ${titleColor};">${sp.nom}</div>
-                                <div class="spell-badges">
-                                    ${castBadge}
-                                    ${lvlBadge}
-                                    ${voieBadge}
-                                    ${spiritBadge}
-
-                                </div>
-                            </div>
-                            <div style="display: flex; gap: 0.3rem; align-items: center; flex-wrap: wrap;">
-                                <button type="button" class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; line-height: 1; border-radius: 4px; background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3);" onclick="trySpell(${sp.id})" title="Lancer ce sort en direct dans le simulateur">🎯 Essayer</button>
-                                <button type="button" class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; line-height: 1; border-radius: 4px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3);" onclick="editSpell(${sp.id})" title="Modifier les propriétés de ce sort">✏️ Éditer</button>
-                                <button type="button" class="btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; line-height: 1; border-radius: 4px; opacity: 0.75;" onclick="deleteSpell(${sp.id})" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.75'" title="Supprimer définitivement ce sort">✕</button>
-                            </div>
-                        </div>
-                        ${rankTitleBadge}
-                        <div class="spell-meta" style="flex-wrap: wrap; gap: 0.5rem;">
-                            <span>💧 ${sp.manaCost}${sp.percentManaCost > 0 ? ` + ${sp.percentManaCost}% (${formatSrc(sp.percentManaCostSource || 'CASTER_MANA_MAX')})` : ''} Mana</span>
-                            ${sp.healCost > 0 || sp.percentHealCost > 0 ? `<span>🩸 ${sp.healCost}${sp.percentHealCost > 0 ? ` + ${sp.percentHealCost}% (${formatSrc(sp.percentHealCostSource || 'CASTER_HEALTH_MAX')})` : ''} PV</span>` : ''}
-                            ${sp.castingType === 'CANALISE' ? `
-                                <span style="color: #a78bfa; display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.85rem;" title="Paramètres du sort canalisé">
-                                    <span class="material-symbols-outlined" style="font-size: 1.1rem; color: #a78bfa; vertical-align: middle;">cyclone</span>
-                                    <span>${sp.channelingDuration} tour${sp.channelingDuration > 1 ? 's' : ''}</span>
-                                    ${sp.allowInstantDuringChanneling ? `
-                                        <span class="material-symbols-outlined" style="font-size: 1.1rem; color: #f59e0b; vertical-align: middle;" title="Instantanés autorisés pendant la canalisation">bolt</span>
-                                    ` : `
-                                        <span style="position: relative; display: inline-flex; align-items: center; justify-content: center; width: 1.1rem; height: 1.1rem; vertical-align: middle;" title="Instantanés interdits pendant la canalisation">
-                                            <span class="material-symbols-outlined" style="font-size: 1.1rem; color: #ef4444; position: absolute;">block</span>
-                                            <span class="material-symbols-outlined" style="font-size: 0.75rem; color: #cbd5e1; position: absolute;">bolt</span>
-                                        </span>
-                                    `}
-                                </span>
-                            ` : ''}
-                        </div>
-                        ${sp.description ? `<div style="font-size:0.9rem; color:var(--text-muted); font-style:italic;">"${sp.description}"</div>` : ''}
-                        ${effectsSummaryHtml}
-                    </div>
-                `;
-            }).join('');
+            container.innerHTML = filtered.map(sp => getSpellCardHtml(sp)).join('');
 
             // Attacher les effets lvl-5 après le rendu
             attachLvl5CardEffects(container);
+        }
+
+        function getSpellCardHtml(sp) {
+            let voieBadge = '';
+            if (sp.voie) {
+                const vHex = getVoieButtonColor(sp.voie);
+                const vRgb = hexToRgb(vHex);
+                const vIcon = getVoieIcon(sp.voie.nom);
+                voieBadge = `<span class="badge" style="color: ${vHex}; border-color: rgba(${vRgb}, 0.3); background: rgba(${vRgb}, 0.05); display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size:1.1em;">${vIcon}</span>${sp.voie.nom}</span>`;
+            }
+
+            let spiritBadge = '';
+            if (sp.spiritualite) {
+                const sHex = getSpiritButtonColor(sp.spiritualite);
+                const sRgb = hexToRgb(sHex);
+                const sIcon = getSpiritIcon(sp.spiritualite.nom);
+                spiritBadge = `<span class="badge" style="color: ${sHex}; border-color: rgba(${sRgb}, 0.3); background: rgba(${sRgb}, 0.05); display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size:1.1em;">${sIcon}</span>${sp.spiritualite.nom}</span>`;
+            }
+
+            let castBadge = '';
+            if (sp.castingType === 'INSTANTANE') castBadge = `<span class="badge" style="background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid #f59e0b;">⚡ Instantané</span>`;
+            else if (sp.castingType === 'CANALISE') castBadge = `<span class="badge" style="background: rgba(139, 92, 246, 0.2); color: #8b5cf6; border: 1px solid #8b5cf6;">🌀 Canalisé</span>`;
+            else castBadge = `<span class="badge" style="background: rgba(100, 116, 139, 0.2); color: #94a3b8;">⏳ Banal</span>`;
+
+            let effectsSummaryHtml = '';
+            if (sp.effects && sp.effects.length > 0) {
+                effectsSummaryHtml = `<div class="spell-effects-summary">`;
+                sp.effects.forEach(e => {
+                    const target = e.effectTarget || e.effect_target;
+                    const baseTargetText = target === 'CASTER' ? 'Lanceur' : (target === 'ALLY' ? 'Allié' : 'Cible');
+                    const targetText = e.targetExpression || e.target_expression || baseTargetText;
+
+                    let indicatorClass = 'target';
+                    const lowerText = targetText.toLowerCase();
+                    if (lowerText.includes('lanceur')) {
+                        indicatorClass = 'caster';
+                    } else if (lowerText.includes('allié')) {
+                        indicatorClass = 'ally';
+                    } else if (target) {
+                        indicatorClass = target.toLowerCase();
+                    }
+
+                    const typeNames = {
+                        'DamageFixedEffect': 'Dégâts Fixes',
+                        'FIXED_DAMAGE': 'Dégâts Fixes',
+                        'DamagePercentageEffect': 'Dégâts %',
+                        'PERCENTAGE_DAMAGE': 'Dégâts %',
+                        'HealFixedEffect': 'Soins Fixes',
+                        'FIXED_HEAL': 'Soins Fixes',
+                        'HealPercentageEffect': 'Soins %',
+                        'PERCENTAGE_HEAL': 'Soins %',
+                        'ManaFixedEffect': 'Mana Fixe',
+                        'FIXED_MANA': 'Mana Fixe',
+                        'ManaPercentageEffect': 'Mana %',
+                        'PERCENTAGE_MANA': 'Mana %',
+                        'BuffDebuffEffect': 'Buff/Débuff',
+                        'BUFF_DEBUFF': 'Buff/Débuff',
+                        'DamageOverTimeEffect': 'DoT',
+                        'DOT': 'DoT',
+                        'HealOverTimeEffect': 'HoT',
+                        'HOT': 'HoT',
+                        'ManaOverTimeEffect': 'MoT',
+                        'MOT': 'MoT',
+                        'PurgeEffect': '✨ Dissipation',
+                        'PURGE': '✨ Dissipation',
+                        'ShieldEffect': '🛡️ Bouclier',
+                        'SHIELD': '🛡️ Bouclier'
+                    };
+                    const eTypeStr = typeNames[e.effectType || e.effect_type] || (e.effectType || e.effect_type || 'Effet');
+
+                    const statLabels = {
+                        'SPEED': 'Vitesse', 'MANA': 'Mana Max', 'HEALTH': 'PV Max', 'CRIT': 'Critique',
+                        'ARMURE': 'Armure', 'RESISTANCE': 'Résistance', 'POWER': 'Puissance Mag.', 'STRENGTH': 'Force Phys.',
+                        'BURN': 'Brûlure', 'POISON': 'Poison', 'DAMAGE_TAKEN_MAGIC': 'Dégâts Mag. Subis',
+                        'DAMAGE_TAKEN_PHYSIC': 'Dégâts Phys. Subis', 'DAMAGE_TAKEN_BRUT': 'Dégâts Bruts Subis',
+                        'DAMAGE_GIVEN_MAGIC': 'Dégâts Mag. Infligés', 'DAMAGE_GIVEN_PHYSIC': 'Dégâts Phys. Infligés',
+                        'DAMAGE_GIVEN_BRUT': 'Dégâts Bruts Infligés',
+                        'HEAL_RECEIVED': 'Soin Reçu', 'SHIELD_RECEIVED': 'Bouclier Reçu',
+                        'HEAL_GIVEN': 'Soin Donné', 'SHIELD_GIVEN': 'Bouclier Donné'
+                    };
+                    const formatStat = s => statLabels[s] || s;
+
+                    const formatSrc = s => {
+                        const srcLabels = {
+                            'CASTER_POWER': 'Puiss. Lanceur', 'TARGET_POWER': 'Puiss. Cible', 'CASTER_MANA_MAX': 'Mana Max Lanc.',
+                            'TARGET_MANA_MAX': 'Mana Max Cib.', 'CASTER_MANA_MISSING': 'Mana Manq. Lanc.', 'TARGET_MANA_MISSING': 'Mana Manq. Cib.',
+                            'CASTER_MANA_CURRENT': 'Mana Act. Lanc.', 'TARGET_MANA_CURRENT': 'Mana Act. Cib.', 'CASTER_HEALTH_MAX': 'PV Max Lanc.',
+                            'TARGET_HEALTH_MAX': 'PV Max Cib.', 'CASTER_HEALTH_MISSING': 'PV Manq. Lanc.', 'TARGET_HEALTH_MISSING': 'PV Manq. Cib.',
+                            'CASTER_HEALTH_CURRENT': 'PV Act. Lanc.', 'TARGET_HEALTH_CURRENT': 'PV Act. Cib.'
+                        };
+                        return srcLabels[s] || s;
+                    };
+
+                    const dt = (e.damageType || 'MAGIC').toLowerCase();
+                    const dtStr = dt === 'magic' ? 'Magiques' : (dt === 'physic' ? 'Physiques' : 'Bruts');
+
+                    let detailsStr = '';
+                    const rawType = e.effectType || e.effect_type || '';
+                    const t = rawType.replace('Effect', '');
+
+                    if (t === 'DamageFixed' || t === 'FIXED_DAMAGE') {
+                        detailsStr = `➔ inflige ${e.damage || 0} Dégâts ${dtStr}`;
+                    } else if (t === 'DamagePercentage' || t === 'PERCENTAGE_DAMAGE') {
+                        const pct = Math.round((e.percentage || 0) * 100);
+                        detailsStr = `➔ inflige ${pct}% de ${formatSrc(e.damageSource || e.source)} en Dégâts ${dtStr}`;
+                    } else if (t === 'HealFixed' || t === 'FIXED_HEAL') {
+                        detailsStr = `➔ rend ${e.healAmount || 0} PV`;
+                    } else if (t === 'HealPercentage' || t === 'PERCENTAGE_HEAL') {
+                        const pct = Math.round((e.percentage || 0) * 100);
+                        detailsStr = `➔ rend ${pct}% de ${formatSrc(e.healSource || e.source)} en PV`;
+                    } else if (t === 'BuffDebuff' || t === 'BUFF_DEBUFF') {
+                        let parts = [];
+                        if (e.flatValue) {
+                            parts.push(`${e.flatValue > 0 ? '+' : ''}${e.flatValue} ${formatStat(e.statAffected)}`);
+                        }
+                        if (e.modifier) {
+                            const sign = e.modifier > 0 ? '+' : '';
+                            parts.push(`${sign}${Math.round(e.modifier * 100)}% ${formatStat(e.statAffected)}`);
+                        }
+                        if (parts.length === 0) parts.push(`modifie ${formatStat(e.statAffected)}`);
+                        const durStr = e.duration > 0 ? ` (${e.duration} tours)` : '';
+                        detailsStr = `➔ ${parts.join(' et ')}${durStr}`;
+                    } else if (t === 'DamageOverTime' || t === 'DOT') {
+                        let parts = [];
+                        const fd = e.fixedDamagePerTick || e.damage || 0;
+                        const pd = e.percentageDamagePerTick || e.percentage || 0;
+                        if (fd) parts.push(`${fd}`);
+                        if (pd) parts.push(`${Math.round(pd * 100)}% ${formatSrc(e.damageSource || e.source)}`);
+                        if (parts.length === 0) parts.push('0');
+                        const durStr = e.duration > 0 ? ` sur ${e.duration} tours` : '';
+                        detailsStr = `➔ DoT de ${parts.join(' + ')} Dégâts ${dtStr}/tour${durStr}`;
+                    } else if (t === 'HealOverTime' || t === 'HOT') {
+                        let parts = [];
+                        const fh = e.fixedHealPerTick || e.healAmount || 0;
+                        const ph = e.percentageHealPerTick || e.percentage || 0;
+                        if (fh) parts.push(`${fh}`);
+                        if (ph) parts.push(`${Math.round(ph * 100)}% ${formatSrc(e.healSource || e.source || 'TARGET_HEALTH_MAX')}`);
+                        if (parts.length === 0) parts.push('0');
+                        const durStr = e.duration > 0 ? ` sur ${e.duration} tours` : '';
+                        detailsStr = `➔ HoT de ${parts.join(' + ')} PV/tour${durStr}`;
+                    } else if (t === 'ManaFixed' || t === 'FIXED_MANA') {
+                        detailsStr = `➔ rend ${e.manaAmount || 0} Mana`;
+                    } else if (t === 'ManaPercentage' || t === 'PERCENTAGE_MANA') {
+                        const pct = Math.round((e.percentage || 0) * 100);
+                        detailsStr = `➔ rend ${pct}% de ${formatSrc(e.manaSource || e.source)} en Mana`;
+                    } else if (t === 'ManaOverTime' || t === 'MOT') {
+                        let parts = [];
+                        const fm = e.fixedManaPerTick || e.manaAmount || 0;
+                        const pm = e.percentageManaPerTick || e.percentage || 0;
+                        if (fm) parts.push(`${fm}`);
+                        if (pm) parts.push(`${Math.round(pm * 100)}% ${formatSrc(e.manaSource || e.source || 'TARGET_MANA_MAX')}`);
+                        if (parts.length === 0) parts.push('0');
+                        const durStr = e.duration > 0 ? ` sur ${e.duration} tours` : '';
+                        detailsStr = `➔ MoT de ${parts.join(' + ')} Mana/tour${durStr}`;
+                    } else if (t === 'Purge' || t === 'PURGE') {
+                        detailsStr = `➔ dissipe les altérations`;
+                    } else if (t === 'Shield' || t === 'SHIELD') {
+                        let parts = [];
+                        const fv = e.fixedValue || e.flatValue || 0;
+                        const pv = e.percentage || 0;
+                        if (fv) parts.push(`${fv}`);
+                        if (pv) parts.push(`${Math.round(pv * 100)}% ${formatSrc(e.shieldSource || e.source || 'TARGET_HEALTH_MAX')}`);
+                        if (parts.length === 0) parts.push('0');
+                        const durStr = e.duration > 0 ? ` sur ${e.duration} tours` : '';
+                        detailsStr = `➔ Bouclier de ${parts.join(' + ')}${durStr}`;
+                    }
+
+                    const keyBadge = e.requiredChoiceKey != null ? `<span style="background:rgba(245,158,11,0.2); color:#f59e0b; padding:0.1rem 0.3rem; border-radius:3px; font-size:0.75rem; font-weight:bold;" title="S'active uniquement si l'option choisie au cast est ${e.requiredChoiceKey}">Option ${e.requiredChoiceKey}</span>` : '';
+
+                    let turnBadge = '';
+                    if (sp.castingType === 'CANALISE') {
+                        const turns = e.channelingTurns || [];
+                        if (turns.length > 0) {
+                            const turnStr = turns.map(t => `T${t}`).join(', ');
+                            turnBadge = `<span style="background:rgba(139,92,246,0.2); color:#a78bfa; padding:0.1rem 0.3rem; border-radius:3px; font-size:0.75rem; font-weight:bold;" title="Déclenché aux tours de canalisation : ${turnStr}">${turnStr}</span>`;
+                        } else {
+                            turnBadge = `<span style="background:rgba(239,68,68,0.2); color:#fca5a5; padding:0.1rem 0.3rem; border-radius:3px; font-size:0.75rem; font-weight:bold;" title="Ne se déclenche à aucun tour">Jamais</span>`;
+                        }
+                    }
+
+                    effectsSummaryHtml += `
+                        <div class="effect-line" style="display:flex; align-items:baseline; gap:0.3rem; flex-wrap:wrap;">
+                            <div class="indicator ${indicatorClass}" style="flex-shrink:0;"></div>
+                            ${turnBadge}
+                            ${keyBadge}
+                            <span style="font-weight:600; color:#fff;">[${targetText}]</span>
+                            <span style="color:var(--spell-color, #38bdf8); font-weight:500;">${eTypeStr}</span>
+                            <span style="color:#e2e8f0;">${detailsStr}</span>
+                        </div>
+                    `;
+                });
+                effectsSummaryHtml += `</div>`;
+            }
+
+            let rankTitleBadge = '';
+            if (sp.spiritualite && sp.spiritualite.rankNames && sp.spiritualite.rankNames[sp.niveau]) {
+                rankTitleBadge = `<div style="font-size:0.85rem; color:#10b981; font-weight:600; margin-top:-0.4rem;">✨ "${sp.spiritualite.rankNames[sp.niveau]}"</div>`;
+            } else if (sp.voie && sp.voie.rankNames && sp.voie.rankNames[sp.niveau]) {
+                rankTitleBadge = `<div style="font-size:0.85rem; color:#10b981; font-weight:600; margin-top:-0.4rem;">✨ "${sp.voie.rankNames[sp.niveau]}"</div>`;
+            }
+
+            const titleColor = getSpellColor(sp);
+            const titleRgb = hexToRgb(titleColor);
+
+            const isMaxLevel = (sp.niveau === 5 && sp.voie) || (sp.niveau === 3 && sp.spiritualite && !sp.voie);
+
+            let lvlBadgeStyle = 'background: rgba(255,255,255,0.1); color: #e2e8f0;';
+            let lvlIcon = '';
+            if (sp.niveau === 2) {
+                lvlBadgeStyle = 'background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: #fff;';
+            } else if (sp.niveau === 3 && !isMaxLevel) {
+                lvlBadgeStyle = `background: rgba(var(--spell-rgb), 0.2); border: 1px solid rgba(var(--spell-rgb), 0.5); color: var(--spell-color); font-weight: bold;`;
+            } else if (sp.niveau === 4) {
+                lvlBadgeStyle = `background: rgba(var(--spell-rgb), 0.3); border: 1px solid var(--spell-color); color: #fff; font-weight: bold; text-shadow: 0 0 5px var(--spell-color); box-shadow: 0 0 10px rgba(var(--spell-rgb), 0.3);`;
+                lvlIcon = '✨ ';
+            } else if (isMaxLevel) {
+                lvlBadgeStyle = `background: linear-gradient(135deg, var(--spell-color), rgba(var(--spell-rgb), 0.4)); border: 1px solid #fff; color: #fff; font-weight: bold; text-shadow: 0 1px 3px rgba(0,0,0,0.8); box-shadow: 0 0 15px rgba(var(--spell-rgb), 0.6);`;
+                lvlIcon = '👑 ';
+            }
+            const lvlBadge = `<span class="badge" style="${lvlBadgeStyle}">${lvlIcon}Lvl ${sp.niveau}</span>`;
+
+            const formatSrc = s => {
+                const srcLabels = {
+                    'CASTER_POWER': 'Puiss. Lanceur', 'TARGET_POWER': 'Puiss. Cible', 'CASTER_MANA_MAX': 'Mana Max Lanc.',
+                    'TARGET_MANA_MAX': 'Mana Max Cib.', 'CASTER_MANA_MISSING': 'Mana Manq. Lanc.', 'TARGET_MANA_MISSING': 'Mana Manq. Cib.',
+                    'CASTER_MANA_CURRENT': 'Mana Act. Lanc.', 'TARGET_MANA_CURRENT': 'Mana Act. Cib.', 'CASTER_HEALTH_MAX': 'PV Max Lanc.',
+                    'TARGET_HEALTH_MAX': 'PV Max Cib.', 'CASTER_HEALTH_MISSING': 'PV Manq. Lanc.', 'TARGET_HEALTH_MISSING': 'PV Manq. Cib.',
+                    'CASTER_HEALTH_CURRENT': 'PV Act. Lanc.', 'TARGET_HEALTH_CURRENT': 'PV Act. Cib.'
+                };
+                return srcLabels[s] || s;
+            };
+
+            return `
+                <div class="spell-card spell-card-lvl-${isMaxLevel ? 5 : (sp.niveau || 1)}" style="--spell-color: ${titleColor}; --spell-rgb: ${titleRgb};">
+                    <div class="spell-card-header" style="align-items: flex-start;">
+                        <div style="display: flex; flex-direction: column; gap: 0.4rem;">
+                            <div class="spell-name" style="color: ${titleColor};">${sp.nom}</div>
+                            <div class="spell-badges">
+                                ${castBadge}
+                                ${lvlBadge}
+                                ${voieBadge}
+                                ${spiritBadge}
+                            </div>
+                        </div>
+                        <div style="display: flex; gap: 0.3rem; align-items: center; flex-wrap: wrap;">
+                            <button type="button" class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; line-height: 1; border-radius: 4px; background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3);" onclick="trySpell(${sp.id})" title="Lancer ce sort en direct dans le simulateur">🎯 Essayer</button>
+                            <button type="button" class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; line-height: 1; border-radius: 4px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3);" onclick="editSpell(${sp.id})" title="Modifier les propriétés de ce sort">✏️ Éditer</button>
+                            <button type="button" class="btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; line-height: 1; border-radius: 4px; opacity: 0.75;" onclick="deleteSpell(${sp.id})" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.75'" title="Supprimer définitivement ce sort">✕</button>
+                        </div>
+                    </div>
+                    ${rankTitleBadge}
+                    <div class="spell-meta" style="flex-wrap: wrap; gap: 0.5rem;">
+                        <span>💧 ${sp.manaCost}${sp.percentManaCost > 0 ? ` + ${sp.percentManaCost}% (${formatSrc(sp.percentManaCostSource || 'CASTER_MANA_MAX')})` : ''} Mana</span>
+                        ${sp.healCost > 0 || sp.percentHealCost > 0 ? `<span>🩸 ${sp.healCost}${sp.percentHealCost > 0 ? ` + ${sp.percentHealCost}% (${formatSrc(sp.percentHealCostSource || 'CASTER_HEALTH_MAX')})` : ''} PV</span>` : ''}
+                        ${sp.castingType === 'CANALISE' ? `
+                            <span style="color: #a78bfa; display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.85rem;" title="Paramètres du sort canalisé">
+                                <span class="material-symbols-outlined" style="font-size: 1.1rem; color: #a78bfa; vertical-align: middle;">cyclone</span>
+                                <span>${sp.channelingDuration} tour${sp.channelingDuration > 1 ? 's' : ''}</span>
+                                ${sp.allowInstantDuringChanneling ? `
+                                    <span class="material-symbols-outlined" style="font-size: 1.1rem; color: #f59e0b; vertical-align: middle;" title="Instantanés autorisés pendant la canalisation">bolt</span>
+                                ` : `
+                                    <span style="position: relative; display: inline-flex; align-items: center; justify-content: center; width: 1.1rem; height: 1.1rem; vertical-align: middle;" title="Instantanés interdits pendant la canalisation">
+                                        <span class="material-symbols-outlined" style="font-size: 1.1rem; color: #ef4444; position: absolute;">block</span>
+                                        <span class="material-symbols-outlined" style="font-size: 0.75rem; color: #cbd5e1; position: absolute;">bolt</span>
+                                    </span>
+                                `}
+                            </span>
+                        ` : ''}
+                    </div>
+                    ${sp.description ? `<div style="font-size:0.9rem; color:var(--text-muted); font-style:italic;">"${sp.description}"</div>` : ''}
+                    ${effectsSummaryHtml}
+                </div>
+            `;
+        }
+
+        function cancelEditSpell() {
+            editingSpellId = null;
+            document.getElementById('submitSpellBtn').innerText = '✦ Forger le Sort';
+            document.getElementById('nom').value = '';
+            document.getElementById('description').value = '';
+            currentEffects = [];
+            renderEffects();
+            
+            // Réinitialiser les champs de canalisation
+            const channelingDurInput = document.getElementById('channelingDuration');
+            if (channelingDurInput) channelingDurInput.value = 1;
+            const allowInstantInput = document.getElementById('allowInstantDuringChanneling');
+            if (allowInstantInput) allowInstantInput.checked = true;
+            document.getElementById('castingTypeSelect').value = 'BANAL';
+            document.getElementById('castingTypeSelect').dispatchEvent(new Event('change'));
+
+            updateEditingPreview();
+        }
+
+        function updateEditingPreview() {
+            const preview = document.getElementById('editingSpellPreview');
+            const cardBody = document.getElementById('editingSpellCardBody');
+            if (!preview || !cardBody) return;
+
+            if (editingSpellId !== null && loadedSpells) {
+                const sp = loadedSpells.find(s => s.id === editingSpellId);
+                if (sp) {
+                    cardBody.innerHTML = getSpellCardHtml(sp);
+                    
+                    // Masquer les boutons d'action du sort dans le preview
+                    const headerActions = cardBody.querySelector('.spell-card-header div[style*="display: flex; gap: 0.3rem"]');
+                    if (headerActions) {
+                        headerActions.style.display = 'none';
+                    }
+                    
+                    preview.classList.add('active');
+                } else {
+                    preview.classList.remove('active');
+                }
+            } else {
+                preview.classList.remove('active');
+            }
         }
 
         /* ================================================================
@@ -5674,6 +5809,9 @@
                 if (res.ok) {
                     const msg = await res.text();
                     showNotif(msg);
+                    if (editingSpellId === id) {
+                        cancelEditSpell();
+                    }
                     await loadSpells();
                 } else {
                     alert("Erreur lors de la suppression du sort.");
@@ -5747,6 +5885,9 @@
 
             // Mettre à jour l'indicateur d'action du bouton principal
             document.getElementById('submitSpellBtn').innerText = '💾 Mettre à jour le Sort';
+
+            // Mettre à jour l'aperçu flottant
+            updateEditingPreview();
 
             // Faire défiler la vue vers le haut en douceur
             window.scrollTo({ top: 0, behavior: 'smooth' });
