@@ -15,6 +15,9 @@ import generation.grimoire.repository.VoieRepository;
 import generation.grimoire.service.SpellService;
 import jakarta.annotation.PostConstruct;
 import lombok.Data;
+import lombok.AllArgsConstructor;
+import generation.grimoire.entity.personnage.Personnage;
+import generation.grimoire.entity.personnage.ActiveShield;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,6 +43,42 @@ public class WebSpellCreationController {
         this.spellRepository = spellRepository;
         this.voieRepository = voieRepository;
         this.spiritualiteRepository = spiritualiteRepository;
+    }
+
+    private Personnage sandboxHero;
+    private Personnage sandboxMonster;
+    private int sandboxTurn = 1;
+    private final java.util.List<String> sandboxLogs = new java.util.ArrayList<>();
+
+    private synchronized void initSandbox() {
+        if (sandboxHero == null) {
+            resetSandbox();
+        }
+    }
+
+    private synchronized void resetSandbox() {
+        sandboxHero = new Personnage();
+        sandboxHero.setName("Héros");
+        sandboxHero.setTeamId("HERO_TEAM");
+        sandboxHero.setHealthMax(100);
+        sandboxHero.setHealthCurrent(100);
+        sandboxHero.setManaMax(100);
+        sandboxHero.setManaCurrent(100);
+        sandboxHero.setPower(25);
+        sandboxHero.setArmor(10);
+        sandboxHero.setResistance(10);
+
+        sandboxMonster = new Personnage();
+        sandboxMonster.setName("Monstre");
+        sandboxMonster.setTeamId("MONSTER_TEAM");
+        sandboxMonster.setHealthMax(200);
+        sandboxMonster.setHealthCurrent(200);
+        sandboxMonster.setArmor(5);
+        sandboxMonster.setResistance(5);
+
+        sandboxLogs.clear();
+        sandboxLogs.add("⚔️ Banc d'essai initialisé. Héros et Monstre sont prêts.");
+        sandboxTurn = 1;
     }
 
     @PostConstruct
@@ -244,6 +283,155 @@ public class WebSpellCreationController {
         res.setRawLogs(baos.toString(java.nio.charset.StandardCharsets.UTF_8));
 
         return ResponseEntity.ok(res);
+    }
+
+    private SandboxStateDto buildSandboxStateResponse() {
+        initSandbox();
+
+        SandboxStateDto res = new SandboxStateDto();
+        res.setTurnCount(sandboxTurn);
+        res.setHeroName(sandboxHero.getName());
+        res.setHeroHpMax(sandboxHero.getHealthMax());
+        res.setHeroHpCurrent(sandboxHero.getHealthCurrent());
+        res.setHeroManaMax(sandboxHero.getManaMax());
+        res.setHeroManaCurrent(sandboxHero.getManaCurrent());
+        res.setHeroShieldTotal(sandboxHero.getTotalShield());
+        
+        java.util.List<ShieldState> heroShields = new java.util.ArrayList<>();
+        if (sandboxHero.getActiveShields() != null) {
+            for (ActiveShield s : sandboxHero.getActiveShields()) {
+                heroShields.add(new ShieldState(s.getAmount(), s.getDuration(), s.getSourceName()));
+            }
+        }
+        res.setHeroShields(heroShields);
+
+        java.util.List<BuffState> heroBuffs = new java.util.ArrayList<>();
+        if (sandboxHero.getActiveBuffs() != null) {
+            for (BuffDebuffEffect b : sandboxHero.getActiveBuffs()) {
+                String source = b.getSpell() != null ? b.getSpell().getNom() : (b.getSourceName() != null ? b.getSourceName() : "Effet");
+                heroBuffs.add(new BuffState(b.getStatAffected().name(), b.getModifier(), b.getFlatValue(), b.getDuration(), source));
+            }
+        }
+        res.setHeroBuffs(heroBuffs);
+
+        res.setMonsterName(sandboxMonster.getName());
+        res.setMonsterHpMax(sandboxMonster.getHealthMax());
+        res.setMonsterHpCurrent(sandboxMonster.getHealthCurrent());
+        res.setMonsterShieldTotal(sandboxMonster.getTotalShield());
+
+        java.util.List<ShieldState> monsterShields = new java.util.ArrayList<>();
+        if (sandboxMonster.getActiveShields() != null) {
+            for (ActiveShield s : sandboxMonster.getActiveShields()) {
+                monsterShields.add(new ShieldState(s.getAmount(), s.getDuration(), s.getSourceName()));
+            }
+        }
+        res.setMonsterShields(monsterShields);
+
+        java.util.List<BuffState> monsterBuffs = new java.util.ArrayList<>();
+        if (sandboxMonster.getActiveBuffs() != null) {
+            for (BuffDebuffEffect b : sandboxMonster.getActiveBuffs()) {
+                String source = b.getSpell() != null ? b.getSpell().getNom() : (b.getSourceName() != null ? b.getSourceName() : "Effet");
+                monsterBuffs.add(new BuffState(b.getStatAffected().name(), b.getModifier(), b.getFlatValue(), b.getDuration(), source));
+            }
+        }
+        res.setMonsterBuffs(monsterBuffs);
+
+        res.setRawLogs(String.join("\n", sandboxLogs));
+        return res;
+    }
+
+    @GetMapping("/sandbox/state")
+    public ResponseEntity<SandboxStateDto> getSandboxState() {
+        return ResponseEntity.ok(buildSandboxStateResponse());
+    }
+
+    @PostMapping("/sandbox/reset")
+    public ResponseEntity<SandboxStateDto> resetSandboxEndpoint() {
+        resetSandbox();
+        return ResponseEntity.ok(buildSandboxStateResponse());
+    }
+
+    @PostMapping("/sandbox/cast/{spellId}")
+    public ResponseEntity<SandboxStateDto> castSandboxSpell(@PathVariable Long spellId, @RequestParam(required = false) Integer choiceKey) {
+        initSandbox();
+        java.util.Optional<Spell> opt = spellRepository.findById(spellId);
+        if (opt.isEmpty()) {
+            return ResponseEntity.notFound().build();
+        }
+        Spell spell = opt.get();
+
+        // Mettre à jour dynamiquement la voie et la spiritualité du héros pour correspondre au sort
+        sandboxHero.setVoie(spell.getVoie());
+        sandboxHero.setSpiritualite(spell.getSpiritualite());
+
+        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+        java.io.PrintStream originalOut = System.out;
+        try {
+            java.io.PrintStream ps = new java.io.PrintStream(baos, true, java.nio.charset.StandardCharsets.UTF_8);
+            System.setOut(ps);
+
+            System.out.println("\n🧙‍♂️ --- Action : " + sandboxHero.getName() + " lance " + spell.getNom() + " (Lvl " + spell.getNiveau() + ") ---");
+            spellService.castSpell(spell, sandboxHero, sandboxMonster, choiceKey);
+            
+            ps.flush();
+        } catch (Exception e) {
+            System.out.println("❌ Erreur lors du lancer : " + e.getMessage());
+        } finally {
+            System.setOut(originalOut);
+        }
+
+        String castLog = baos.toString(java.nio.charset.StandardCharsets.UTF_8);
+        sandboxLogs.add(castLog);
+
+        return ResponseEntity.ok(buildSandboxStateResponse());
+    }
+
+    @PostMapping("/sandbox/pass-turn")
+    public ResponseEntity<SandboxStateDto> sandboxPassTurn() {
+        initSandbox();
+
+        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+        java.io.PrintStream originalOut = System.out;
+        try {
+            java.io.PrintStream ps = new java.io.PrintStream(baos, true, java.nio.charset.StandardCharsets.UTF_8);
+            System.setOut(ps);
+
+            System.out.println("\n🌀 --- FIN DU TOUR " + sandboxTurn + " ---");
+            
+            // Résoudre les canalisations actives du héros
+            if (sandboxHero.getRemainingChannelingTurns() > 0) {
+                spellService.tickChanneling(sandboxHero, sandboxMonster, sandboxHero.getChannelingChoiceKey());
+            }
+
+            // Déclencher le début du tour suivant
+            sandboxHero.startTurn();
+            sandboxMonster.startTurn();
+
+            // Mettre à jour les effets sur la durée (DoT / HoT / MoT) et buffs
+            sandboxHero.updateHealOverTimeEffects();
+            sandboxHero.updateManaOverTimeEffects();
+            sandboxHero.updateDamageOverTimeEffects();
+            sandboxHero.updateBuffs();
+
+            sandboxMonster.updateHealOverTimeEffects();
+            sandboxMonster.updateManaOverTimeEffects();
+            sandboxMonster.updateDamageOverTimeEffects();
+            sandboxMonster.updateBuffs();
+
+            sandboxTurn++;
+            System.out.println("✨ Début du tour " + sandboxTurn + ". Prêt pour les actions.");
+
+            ps.flush();
+        } catch (Exception e) {
+            System.out.println("❌ Erreur lors de la fin de tour : " + e.getMessage());
+        } finally {
+            System.setOut(originalOut);
+        }
+
+        String passTurnLog = baos.toString(java.nio.charset.StandardCharsets.UTF_8);
+        sandboxLogs.add(passTurnLog);
+
+        return ResponseEntity.ok(buildSandboxStateResponse());
     }
 
     @PostMapping
@@ -451,5 +639,45 @@ public class WebSpellCreationController {
         private int targetHpAfter;
         private int targetHpMax;
         private String rawLogs;
+    }
+
+    @Data
+    public static class SandboxStateDto {
+        private int turnCount;
+        private String heroName;
+        private int heroHpMax;
+        private int heroHpCurrent;
+        private int heroManaMax;
+        private int heroManaCurrent;
+        private int heroShieldTotal;
+        private java.util.List<ShieldState> heroShields;
+        private java.util.List<BuffState> heroBuffs;
+
+        private String monsterName;
+        private int monsterHpMax;
+        private int monsterHpCurrent;
+        private int monsterShieldTotal;
+        private java.util.List<ShieldState> monsterShields;
+        private java.util.List<BuffState> monsterBuffs;
+
+        private String rawLogs;
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class ShieldState {
+        private int amount;
+        private int duration;
+        private String sourceName;
+    }
+
+    @Data
+    @AllArgsConstructor
+    public static class BuffState {
+        private String statAffected;
+        private double modifier;
+        private int flatValue;
+        private int duration;
+        private String sourceName;
     }
 }
