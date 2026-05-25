@@ -2556,6 +2556,22 @@
         let selectedFilterVoieId = null;
         let selectedFilterSpiritId = null;
 
+        // Map des noms de classes Java → codes attendus par le switch JS/Java
+        const javaClassToCode = {
+            'DamageFixedEffect': 'FIXED_DAMAGE',
+            'DamagePercentageEffect': 'PERCENTAGE_DAMAGE',
+            'HealFixedEffect': 'FIXED_HEAL',
+            'HealPercentageEffect': 'PERCENTAGE_HEAL',
+            'ManaFixedEffect': 'FIXED_MANA',
+            'ManaPercentageEffect': 'PERCENTAGE_MANA',
+            'BuffDebuffEffect': 'BUFF_DEBUFF',
+            'DamageOverTimeEffect': 'DOT',
+            'HealOverTimeEffect': 'HOT',
+            'ManaOverTimeEffect': 'MOT',
+            'PurgeEffect': 'PURGE',
+            'ShieldEffect': 'SHIELD',
+        };
+
         // Mode d'affichage du grimoire : 'scroll' ou 'full'
         let grimoireDisplayMode = localStorage.getItem('grimoireDisplayMode') || 'scroll';
 
@@ -3882,7 +3898,11 @@
 
                 // Type d'effet
                 if (effectVal !== 'ALL') {
-                    if (!sp.effects || !sp.effects.some(e => (e.effectType || e.effect_type) === effectVal)) {
+                    if (!sp.effects || !sp.effects.some(e => {
+                        const rawType = e.effectType || e.effect_type || '';
+                        const mappedType = javaClassToCode[rawType] || rawType;
+                        return mappedType === effectVal;
+                    })) {
                         return false;
                     }
                 }
@@ -5661,21 +5681,6 @@
             }
 
             // Charger les effets rattachés
-            // Map des noms de classes Java → codes attendus par le switch JS/Java
-            const javaClassToCode = {
-                'DamageFixedEffect': 'FIXED_DAMAGE',
-                'DamagePercentageEffect': 'PERCENTAGE_DAMAGE',
-                'HealFixedEffect': 'FIXED_HEAL',
-                'HealPercentageEffect': 'PERCENTAGE_HEAL',
-                'ManaFixedEffect': 'FIXED_MANA',
-                'ManaPercentageEffect': 'PERCENTAGE_MANA',
-                'BuffDebuffEffect': 'BUFF_DEBUFF',
-                'DamageOverTimeEffect': 'DOT',
-                'HealOverTimeEffect': 'HOT',
-                'ManaOverTimeEffect': 'MOT',
-                'PurgeEffect': 'PURGE',
-                'ShieldEffect': 'SHIELD',
-            };
             currentEffects = (sp.effects || []).map((e, idx) => {
                 const rawType = e.effectType || e.effect_type || '';
                 const effectType = javaClassToCode[rawType] || rawType;
