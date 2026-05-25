@@ -3051,7 +3051,7 @@
                 duration: 2,
                 damageType: 'MAGIC',
                 statAffected: 'ARMURE',
-                source: 'TARGET_HEALTH_MAX',
+                source: type === 'BUFF_DEBUFF' ? null : 'TARGET_HEALTH_MAX',
                 requiredChoiceKey: null,
                 channelingTurns: [1]
             };
@@ -3540,7 +3540,8 @@
                 'SHIELD_GIVEN': 'Bouclier Donné (Modificateur)',
                 'DAMAGE_GIVEN_MAGIC_TO_SHIELD': 'Dégâts Magiques au Bouclier',
                 'DAMAGE_GIVEN_PHYSIC_TO_SHIELD': 'Dégâts Physiques au Bouclier',
-                'SHIELD_PENETRATION': 'Perce-Bouclier (Ignore Bouclier)'
+                'SHIELD_PENETRATION': 'Perce-Bouclier (Ignore Bouclier)',
+                'SHIELD_PIERCED': 'Bouclier Percé (Dégâts direct PV)'
             };
             return arr.map(s => {
                 const val = typeof s === 'object' ? s.id || s : s;
@@ -4071,7 +4072,7 @@
                     duration: e.duration,
                     damageType: e.damageType,
                     statAffected: e.statAffected,
-                    source: e.source,
+                    source: e.effectType === 'BUFF_DEBUFF' ? null : e.source,
                     requiredChoiceKey: e.requiredChoiceKey !== undefined ? e.requiredChoiceKey : null,
                     channelingTurns: e.channelingTurns || []
                 }))
@@ -4316,7 +4317,8 @@
                         'HEAL_GIVEN': 'Soin Donné', 'SHIELD_GIVEN': 'Bouclier Donné',
                         'DAMAGE_GIVEN_MAGIC_TO_SHIELD': 'Dég. Mag. au Bouclier',
                         'DAMAGE_GIVEN_PHYSIC_TO_SHIELD': 'Dég. Phys. au Bouclier',
-                        'SHIELD_PENETRATION': 'Perce-Bouclier'
+                        'SHIELD_PENETRATION': 'Perce-Bouclier',
+                        'SHIELD_PIERCED': 'Bouclier Percé'
                     };
                     const formatStat = s => statLabels[s] || s;
 
@@ -5757,6 +5759,7 @@
                     if (t.includes('magiques au bouclier') || t.includes('mag. au bouclier') || t.includes('magic_to_shield')) return { icon: 'gavel', color: '#d946ef' };
                     if (t.includes('physiques au bouclier') || t.includes('phys. au bouclier') || t.includes('physic_to_shield')) return { icon: 'gavel', color: '#f43f5e' };
                     if (t.includes('perce-bouclier') || t.includes('penetration')) return { icon: 'heart_broken', color: '#fb923c' };
+                    if (t.includes('bouclier-percé') || t.includes('bouclier percé') || t.includes('pierced')) return { icon: 'heart_broken', color: '#ef4444' };
                     if (t.includes('subis') || t.includes('💥')) {
                         if (t.includes('magique')) return { icon: 'explosion', color: '#a855f7' };
                         if (t.includes('physique')) return { icon: 'explosion', color: '#ef4444' };
@@ -6077,7 +6080,7 @@
                     duration: e.duration || 0,
                     damageType: e.damageType || 'MAGIC',
                     statAffected: e.statAffected || 'ARMURE',
-                    source: e.source || e.shieldSource || e.damageSource || e.healSource || e.manaSource || e.modifierSource || 'TARGET_HEALTH_MAX',
+                    source: effectType === 'BUFF_DEBUFF' ? (e.source || e.modifierSource || null) : (e.source || e.shieldSource || e.damageSource || e.healSource || e.manaSource || e.modifierSource || 'TARGET_HEALTH_MAX'),
                     requiredChoiceKey: e.requiredChoiceKey !== undefined ? e.requiredChoiceKey : null,
                     channelingTurns: e.channelingTurns || [1]
                 };
@@ -6293,7 +6296,8 @@
                 'HEAL_GIVEN': 'Soin Donné', 'SHIELD_GIVEN': 'Bouclier Donné',
                 'DAMAGE_GIVEN_MAGIC_TO_SHIELD': 'Dég. Mag. au Bouclier',
                 'DAMAGE_GIVEN_PHYSIC_TO_SHIELD': 'Dég. Phys. au Bouclier',
-                'SHIELD_PENETRATION': 'Perce-Bouclier'
+                'SHIELD_PENETRATION': 'Perce-Bouclier',
+                'SHIELD_PIERCED': 'Bouclier Percé'
             };
             const formatStat = s => statLabels[s] || s;
 
@@ -6318,8 +6322,8 @@
             const renderBuffsHtml = (buffList) => {
                 return (buffList || []).map(b => {
                     let isBad = b.modifier < 0 || b.flatValue < 0;
-                    if (b.statAffected.startsWith('DAMAGE_TAKEN_') && (b.modifier > 0 || b.flatValue > 0)) {
-                        isBad = true; // Subir plus de dégâts est un debuff
+                    if ((b.statAffected.startsWith('DAMAGE_TAKEN_') || b.statAffected === 'SHIELD_PIERCED') && (b.modifier > 0 || b.flatValue > 0)) {
+                        isBad = true; // Subir plus de dégâts ou avoir son bouclier percé est un debuff
                     }
                     const badgeClass = isBad ? 'debuff' : 'buff';
                     const icon = isBad ? 'trending_down' : 'trending_up';
