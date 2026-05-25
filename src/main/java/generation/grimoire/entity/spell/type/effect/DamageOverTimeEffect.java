@@ -67,7 +67,7 @@ public class DamageOverTimeEffect extends DamageEffect {
                 totalDamage = (int) (totalDamage * 1.5);
             }
 
-            target.takeDamage(totalDamage, damageType);
+            target.takeDamage(totalDamage, damageType, caster);
             duration--;
 
             System.out.println(target.getName() + " subit " + totalDamage

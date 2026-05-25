@@ -21,6 +21,6 @@ public class DamageFixedEffect extends DamageEffect {
         if (checkCriticalHit(caster)) {
             finalDamage *= 1.5; // Multiplicateur de dégâts critiques
         }
-        target.takeDamage((int) finalDamage, this.getDamageType());
+        target.takeDamage((int) finalDamage, this.getDamageType(), caster);
     }
 }
