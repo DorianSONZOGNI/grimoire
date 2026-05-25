@@ -75,6 +75,23 @@ public class DamageOverTimeEffect extends DamageEffect {
         }
     }
 
+    public DamageOverTimeEffect cloneEffect() {
+        DamageOverTimeEffect clone = new DamageOverTimeEffect();
+        clone.setId(this.getId());
+        clone.setSpell(this.getSpell());
+        clone.setEffectTarget(this.getEffectTarget());
+        clone.setTargetExpression(this.getTargetExpression());
+        clone.setRequiredChoiceKey(this.getRequiredChoiceKey());
+        clone.setChannelingTurns(this.getChannelingTurns() != null ? new java.util.ArrayList<>(this.getChannelingTurns()) : null);
+        
+        clone.setFixedDamagePerTick(this.fixedDamagePerTick);
+        clone.setPercentageDamagePerTick(this.percentageDamagePerTick);
+        clone.setDuration(this.duration);
+        clone.setDamageType(this.damageType);
+        clone.setDamageSource(this.damageSource);
+        return clone;
+    }
+
     /**
      * Lors de l'application initiale de l'effet, on ajoute cet effet à la liste des DamageOverTimeEffect actifs de la cible.
      *
@@ -83,8 +100,9 @@ public class DamageOverTimeEffect extends DamageEffect {
      */
     @Override
     public void apply(Personnage caster, Personnage target) {
-        this.caster = caster;
-        target.addDamageOverTimeEffect(this);
+        DamageOverTimeEffect clone = this.cloneEffect();
+        clone.caster = caster;
+        target.addDamageOverTimeEffect(clone);
         System.out.println("Damage over time appliqué sur " + target.getName()
                 + " pour " + duration + " tours.");
     }
