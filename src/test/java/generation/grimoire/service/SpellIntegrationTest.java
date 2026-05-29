@@ -9,16 +9,22 @@ import generation.grimoire.entity.Voie;
 import generation.grimoire.entity.personnage.Personnage;
 import generation.grimoire.entity.spell.type.effect.BuffDebuffEffect;
 import generation.grimoire.entity.spell.type.effect.DamageFixedEffect;
+import generation.grimoire.entity.voie.passif.VoiePassiveEffect;
+import generation.grimoire.entity.voie.passif.specific.DestructionPassiveEffect;
 import generation.grimoire.entity.voie.passif.specific.TrahisonPassiveEffect;
 import generation.grimoire.enumeration.DamageType;
 import generation.grimoire.enumeration.Source;
 import generation.grimoire.enumeration.StatType;
+import generation.grimoire.event.GameEvent;
+import generation.grimoire.event.SpellCostPaidEvent;
 import generation.grimoire.repository.SpellRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
@@ -255,7 +261,8 @@ class SpellIntegrationTest {
         creationEffect.onTurnStart(hero);
         hero.setManaCurrent(manaBefore);
 
-        // --- Cas 3 : Sort canalisé (action >= 3) -> Donne un bouclier = mana dépensé ---
+        // --- Cas 3 : Sort canalisé (action >= 3) -> Donne un bouclier = mana dépensé
+        // ---
         Spell channeledSpell = new Spell();
         channeledSpell.setNom("Tempête Canalisée");
         channeledSpell.setManaCost(25);
@@ -267,7 +274,8 @@ class SpellIntegrationTest {
         spellService.castSpell(channeledSpell, hero, enemy, null);
         // Doit coûter du mana
         assertThat(hero.getManaCurrent()).isEqualTo(manaBefore - 25);
-        // Doit avoir généré un bouclier égal au coût en mana dépensé (25) pour la durée du sort (3 tours)
+        // Doit avoir généré un bouclier égal au coût en mana dépensé (25) pour la durée
+        // du sort (3 tours)
         assertThat(hero.getTotalShield()).isEqualTo(25);
     }
 
@@ -439,7 +447,8 @@ class SpellIntegrationTest {
         hero.setHealthCurrent(50); // 50/100
         hero.setManaCurrent(10);
 
-        // Au lancement, l'effet s'applique concrètement sur le Lanceur ET sur un allié simulé
+        // Au lancement, l'effet s'applique concrètement sur le Lanceur ET sur un allié
+        // simulé
         spellService.castSpell(multiTargetSpell, hero, enemy, null);
 
         // On vérifie que le lanceur a bien reçu les soins (50 + 15 = 65)
@@ -470,14 +479,16 @@ class SpellIntegrationTest {
 
         // Tour 1: Cast Spell A
         spellService.castSpell(spellA, hero, enemy, null);
-        assertThat(hero.getPassiveState("destruction_heat", 0)).isEqualTo(0); // Applique le Over Time (qui ne tick qu'au début du tour suivant)
+        assertThat(hero.getPassiveState("destruction_heat", 0)).isEqualTo(0); // Applique le Over Time (qui ne tick
+                                                                              // qu'au début du tour suivant)
 
         // Fin Tour 1 / Début Tour 2
         hero.startTurn();
         enemy.startTurn();
         hero.updateHeatOverTimeEffects();
         enemy.updateHeatOverTimeEffects();
-        // Le tick s'applique: fixed 10 + 5% of target (hero) health (100 * 0.05 = 5) = 15 heat.
+        // Le tick s'applique: fixed 10 + 5% of target (hero) health (100 * 0.05 = 5) =
+        // 15 heat.
         assertThat(hero.getPassiveState("destruction_heat", 0)).isEqualTo(15);
 
         // Tour 2: Cast Spell B (normal or generates heat, e.g. flat value heat)
@@ -485,7 +496,7 @@ class SpellIntegrationTest {
         spellB.setNom("Spell B");
         spellB.setManaCost(10);
         spellB.setVoie(voieDestruction);
-        
+
         generation.grimoire.entity.spell.type.effect.HeatFixedEffect heatFixed = new generation.grimoire.entity.spell.type.effect.HeatFixedEffect();
         heatFixed.setAmount(15);
         heatFixed.setEffectTarget(generation.grimoire.enumeration.EffectTarget.CASTER);
@@ -520,14 +531,16 @@ class SpellIntegrationTest {
 
         hero.startTurn();
 
-        // Cast Spell A second time -> 120 capped at 100 heat, cost paid (mana goes 40 -> 30)
+        // Cast Spell A second time -> 120 capped at 100 heat, cost paid (mana goes 40
+        // -> 30)
         spellService.castSpell(spellA, hero, enemy, null);
         assertThat(hero.getPassiveState("destruction_heat", 0)).isEqualTo(100);
         assertThat(hero.getManaCurrent()).isEqualTo(30);
 
         hero.startTurn();
 
-        // Cast Spell A third time -> Should be FREE (mana stays at 30) and heat resets to 0 (then generates 60 heat)
+        // Cast Spell A third time -> Should be FREE (mana stays at 30) and heat resets
+        // to 0 (then generates 60 heat)
         spellService.castSpell(spellA, hero, enemy, null);
         // Cost was free: mana remains 30
         assertThat(hero.getManaCurrent()).isEqualTo(30);
@@ -539,25 +552,43 @@ class SpellIntegrationTest {
     void testHeatRemains100DuringCast() {
         Voie voieDestruction = new Voie();
         voieDestruction.setNom("Voie de la Destruction");
-        
-        generation.grimoire.entity.voie.passif.specific.DestructionPassiveEffect destructionEffect = new generation.grimoire.entity.voie.passif.specific.DestructionPassiveEffect();
-        
-        // Custom test passive to assert heat is still 100 during cost paid event
-        generation.grimoire.entity.voie.passif.VoiePassiveEffect testAssertPassive = new generation.grimoire.entity.voie.passif.VoiePassiveEffect() {
+
+        DestructionPassiveEffect destructionEffect = new DestructionPassiveEffect();
+
+        AtomicBoolean spellCostPaidEventSeen = new AtomicBoolean(false);
+        AtomicInteger heatDuringCostPaid = new AtomicInteger(-1);
+        AtomicInteger wasMaxDuringCostPaid = new AtomicInteger(-1);
+
+        VoiePassiveEffect testAssertPassive = new VoiePassiveEffect() {
+
             @Override
-            public void onEvent(generation.grimoire.event.GameEvent event) {
-                if (event instanceof generation.grimoire.event.SpellCostPaidEvent) {
-                    // Assert that heat is still 100 when cost is paid (before spell effects run)
-                    assertThat(event.getSource().getPassiveState("destruction_heat", 0)).isEqualTo(100);
-                    assertThat(event.getSource().getPassiveState("destruction_heat_was_max", 0)).isEqualTo(1);
+            public void onEvent(GameEvent event) {
+                if (event instanceof SpellCostPaidEvent) {
+                    spellCostPaidEventSeen.set(true);
+
+                    heatDuringCostPaid.set(
+                            event.getSource().getPassiveState("destruction_heat", 0));
+
+                    wasMaxDuringCostPaid.set(
+                            event.getSource().getPassiveState("destruction_heat_was_max", 0));
                 }
+            }
+
+            @Override
+            public void onTurnStart(Personnage personnage) {
+                // No-op for this test
+            }
+
+            @Override
+            public void onSpellCast(Personnage caster, Spell spell) {
+                // No-op for this test
             }
         };
 
         voieDestruction.setPassiveEffects(List.of(destructionEffect, testAssertPassive));
         hero.setVoie(voieDestruction);
 
-        // Put hero at 100 heat
+        // Put hero at 100 heat before casting
         hero.setPassiveState("destruction_heat", 100);
 
         Spell spell = new Spell();
@@ -565,10 +596,16 @@ class SpellIntegrationTest {
         spell.setManaCost(10);
         spell.setVoie(voieDestruction);
 
-        // Cast spell -> this will trigger the events and execute the assertion inside testAssertPassive
         spellService.castSpell(spell, hero, enemy, null);
 
-        // After the cast is finished, heat should be reset to 0 (since spell generates 0 heat)
+        // Verify the event really happened
+        assertThat(spellCostPaidEventSeen.get()).isTrue();
+
+        // During SpellCostPaidEvent, heat must still be 100
+        assertThat(heatDuringCostPaid.get()).isEqualTo(100);
+        assertThat(wasMaxDuringCostPaid.get()).isEqualTo(1);
+
+        // After cast is finished, heat should be consumed/reset
         assertThat(hero.getPassiveState("destruction_heat", 0)).isEqualTo(0);
         assertThat(hero.getPassiveState("destruction_heat_was_max", 0)).isEqualTo(0);
     }

@@ -2543,15 +2543,25 @@
                     </button>
 
                     <!-- Boutons de Chaleur (spécifique Voie de la Destruction) -->
-                    <div id="heatEffectButtons" style="display: none; grid-column: 1 / -1; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.5rem; margin-top: 0.5rem; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 0.5rem; width: 100%;">
-                        <button type="button" class="btn-effect-add" style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.35);" onclick="addEffectPanel('HEAT_FIXED')">
-                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">whatshot</span> Chaleur Fixe
+                    <div id="heatEffectButtons"
+                        style="display: none; grid-column: 1 / -1; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.5rem; margin-top: 0.5rem; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 0.5rem; width: 100%;">
+                        <button type="button" class="btn-effect-add"
+                            style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.35);"
+                            onclick="addEffectPanel('HEAT_FIXED')">
+                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">whatshot</span> Chaleur
+                            Fixe
                         </button>
-                        <button type="button" class="btn-effect-add" style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.35);" onclick="addEffectPanel('HEAT_PERCENTAGE')">
-                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">explosion</span> Chaleur %
+                        <button type="button" class="btn-effect-add"
+                            style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.35);"
+                            onclick="addEffectPanel('HEAT_PERCENTAGE')">
+                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">explosion</span> Chaleur
+                            %
                         </button>
-                        <button type="button" class="btn-effect-add" style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.35);" onclick="addEffectPanel('HEAT_OVER_TIME')">
-                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">cyclone</span> Tick Chaleur
+                        <button type="button" class="btn-effect-add"
+                            style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.35);"
+                            onclick="addEffectPanel('HEAT_OVER_TIME')">
+                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">cyclone</span> Tick
+                            Chaleur
                         </button>
                     </div>
                 </div>
@@ -3082,20 +3092,12 @@
             }
 
             const heatTypes = ['HEAT_FIXED', 'HEAT_PERCENTAGE', 'HEAT_OVER_TIME'];
-            const hasHeat = currentEffects.some(e => heatTypes.includes(e.effectType));
-            if (isDestruction && !hasHeat) {
-                currentEffects.push({
-                    id: 'destruction-heat',
-                    effectType: 'HEAT_FIXED',
-                    effectTarget: 'CASTER',
-                    flatValue: 20,
-                    requiredChoiceKey: null,
-                    channelingTurns: [1]
-                });
-                renderEffects();
-            } else if (!isDestruction && hasHeat) {
-                currentEffects = currentEffects.filter(e => !heatTypes.includes(e.effectType));
-                renderEffects();
+            if (!isDestruction) {
+                const hasHeat = currentEffects.some(e => heatTypes.includes(e.effectType));
+                if (hasHeat) {
+                    currentEffects = currentEffects.filter(e => !heatTypes.includes(e.effectType));
+                    renderEffects();
+                }
             }
         }
 
@@ -3184,9 +3186,9 @@
             currentEffects.forEach((eff, idx) => {
                 const labelObj = metaData.effectTypes.find(t => t.type === eff.effectType);
                 const heatLabels = {
-                    'HEAT_FIXED': '🔥 Chaleur Fixe',
-                    'HEAT_PERCENTAGE': '🔥 Chaleur %',
-                    'HEAT_OVER_TIME': '🔥 Chaleur Tick'
+                    'HEAT_FIXED': 'Chaleur Fixe',
+                    'HEAT_PERCENTAGE': 'Chaleur %',
+                    'HEAT_OVER_TIME': 'Chaleur Tick'
                 };
                 const typeLabel = labelObj ? labelObj.label : (heatLabels[eff.effectType] || eff.effectType);
 
@@ -3484,9 +3486,7 @@
                     typeBadgeStyle = 'background: linear-gradient(135deg, rgba(239, 68, 68, 0.25), rgba(185, 28, 28, 0.4)); color: #fca5a5; border: 1px solid #ef4444; box-shadow: 0 0 12px rgba(239, 68, 68, 0.3); text-shadow: 0 0 5px rgba(0,0,0,0.8);';
                 }
 
-                const deleteOrLinkedButton = (isHeatEffect && eff.id === 'destruction-heat')
-                    ? `<span style="font-size: 0.82rem; color: #fca5a5; font-weight: 600; display: inline-flex; align-items: center; gap: 0.25rem; background: rgba(239, 68, 68, 0.1); padding: 0.25rem 0.5rem; border-radius: 4px; border: 1px solid rgba(239, 68, 68, 0.2);"><span class="material-symbols-outlined" style="font-size: 1.15rem; color: #ef4444;">local_fire_department</span> Lié à la Voie</span>`
-                    : `<button type="button" class="btn-danger" onclick="removeEffect('${eff.id}')">✕ Supprimer</button>`;
+                const deleteOrLinkedButton = `<button type="button" class="btn-danger" onclick="removeEffect('${eff.id}')">✕ Supprimer</button>`;
 
                 const targetSelectorHtml = isHeatEffect ? `
                         <div style="display: flex; align-items: center; gap: 0.5rem; background: rgba(239, 68, 68, 0.08); padding: 0.6rem 0.8rem; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.25); margin-bottom: 0.5rem;">
@@ -4132,7 +4132,7 @@
                 return;
             }
 
-            const heatEffect = currentEffects.find(e => e.id === 'destruction-heat' || e.effectType === 'HEAT_FIXED');
+            const heatEffect = currentEffects.find(e => e.effectType === 'HEAT_FIXED');
             const heatValue = heatEffect ? (parseInt(heatEffect.flatValue) || 0) : 0;
 
             const payload = {
@@ -4377,191 +4377,191 @@
                 }
                 if (sp.effects && sp.effects.length > 0) {
                     sp.effects.forEach(e => {
-                    const target = e.effectTarget || e.effect_target;
-                    const effectTargetLabels = {
-                        'CASTER': 'Lanceur',
-                        'ALLY': 'Allié',
-                        'TARGET': 'Cible',
-                        'ALL_ALLIES': 'Lanceur & Alliés',
-                        'ALL_ENEMIES': 'Tous les Ennemis',
-                        'ALL_COMBATANTS': 'Tout le Monde'
-                    };
-                    const targetText = effectTargetLabels[target] || 'Cible';
-
-                    let indicatorClass = 'target';
-                    if (target === 'CASTER') {
-                        indicatorClass = 'caster';
-                    } else if (target === 'ALLY' || target === 'ALL_ALLIES') {
-                        indicatorClass = 'ally';
-                    } else if (target) {
-                        indicatorClass = target.toLowerCase().replace('_', '-');
-                    }
-
-                    const typeNames = {
-                        'DamageFixedEffect': 'Dégâts Fixes',
-                        'FIXED_DAMAGE': 'Dégâts Fixes',
-                        'DamagePercentageEffect': 'Dégâts %',
-                        'PERCENTAGE_DAMAGE': 'Dégâts %',
-                        'HealFixedEffect': 'Soins Fixes',
-                        'FIXED_HEAL': 'Soins Fixes',
-                        'HealPercentageEffect': 'Soins %',
-                        'PERCENTAGE_HEAL': 'Soins %',
-                        'ManaFixedEffect': 'Mana Fixe',
-                        'FIXED_MANA': 'Mana Fixe',
-                        'ManaPercentageEffect': 'Mana %',
-                        'PERCENTAGE_MANA': 'Mana %',
-                        'BuffDebuffEffect': 'Buff/Débuff',
-                        'BUFF_DEBUFF': 'Buff/Débuff',
-                        'DamageOverTimeEffect': 'DoT',
-                        'DOT': 'DoT',
-                        'HealOverTimeEffect': 'HoT',
-                        'HOT': 'HoT',
-                        'ManaOverTimeEffect': 'MoT',
-                        'MOT': 'MoT',
-                        'PurgeEffect': '✨ Dissipation',
-                        'PURGE': '✨ Dissipation',
-                        'ShieldEffect': '🛡️ Bouclier',
-                        'SHIELD': '🛡️ Bouclier',
-                        'HeatFixedEffect': '🔥 Chaleur Fixe',
-                        'HEAT_FIXED': '🔥 Chaleur Fixe',
-                        'HeatPercentageEffect': '🔥 Chaleur %',
-                        'HEAT_PERCENTAGE': '🔥 Chaleur %',
-                        'HeatOverTimeEffect': '🔥 Chaleur Tick',
-                        'HEAT_OVER_TIME': '🔥 Chaleur Tick',
-                        'HeatEffect': '🔥 Chaleur',
-                        'HEAT': '🔥 Chaleur'
-                    };
-                    const eTypeStr = typeNames[e.effectType || e.effect_type] || (e.effectType || e.effect_type || 'Effet');
-
-                    const statLabels = {
-                        'SPEED': 'Vitesse', 'MANA': 'Mana Max', 'HEALTH': 'PV Max', 'CRIT': 'Critique',
-                        'ARMURE': 'Armure', 'RESISTANCE': 'Résistance', 'POWER': 'Puissance Mag.', 'STRENGTH': 'Force Phys.',
-                        'BURN': 'Brûlure', 'POISON': 'Poison', 'DAMAGE_TAKEN_MAGIC': 'Dégâts Mag. Subis',
-                        'DAMAGE_TAKEN_PHYSIC': 'Dégâts Phys. Subis', 'DAMAGE_TAKEN_BRUT': 'Dégâts Bruts Subis',
-                        'DAMAGE_GIVEN_MAGIC': 'Dégâts Mag. Infligés', 'DAMAGE_GIVEN_PHYSIC': 'Dégâts Phys. Infligés',
-                        'DAMAGE_GIVEN_BRUT': 'Dégâts Bruts Infligés',
-                        'HEAL_RECEIVED': 'Soin Reçu', 'SHIELD_RECEIVED': 'Bouclier Reçu',
-                        'HEAL_GIVEN': 'Soin Donné', 'SHIELD_GIVEN': 'Bouclier Donné',
-                        'DAMAGE_GIVEN_MAGIC_TO_SHIELD': 'Dég. Mag. au Bouclier',
-                        'DAMAGE_GIVEN_PHYSIC_TO_SHIELD': 'Dég. Phys. au Bouclier',
-                        'SHIELD_PENETRATION': 'Perce-Bouclier',
-                        'SHIELD_PIERCED': 'Bouclier Percé'
-                    };
-                    const formatStat = s => statLabels[s] || s;
-
-                    const formatSrc = s => {
-                        const srcLabels = {
-                            'CASTER_POWER': 'Puiss. Lanceur', 'TARGET_POWER': 'Puiss. Cible', 'CASTER_MANA_MAX': 'Mana Max Lanc.',
-                            'TARGET_MANA_MAX': 'Mana Max Cib.', 'CASTER_MANA_MISSING': 'Mana Manq. Lanc.', 'TARGET_MANA_MISSING': 'Mana Manq. Cib.',
-                            'CASTER_MANA_CURRENT': 'Mana Act. Lanc.', 'TARGET_MANA_CURRENT': 'Mana Act. Cib.', 'CASTER_HEALTH_MAX': 'PV Max Lanc.',
-                            'TARGET_HEALTH_MAX': 'PV Max Cib.', 'CASTER_HEALTH_MISSING': 'PV Manq. Lanc.', 'TARGET_HEALTH_MISSING': 'PV Manq. Cib.',
-                            'CASTER_HEALTH_CURRENT': 'PV Act. Lanc.', 'TARGET_HEALTH_CURRENT': 'PV Act. Cib.'
+                        const target = e.effectTarget || e.effect_target;
+                        const effectTargetLabels = {
+                            'CASTER': 'Lanceur',
+                            'ALLY': 'Allié',
+                            'TARGET': 'Cible',
+                            'ALL_ALLIES': 'Lanceur & Alliés',
+                            'ALL_ENEMIES': 'Tous les Ennemis',
+                            'ALL_COMBATANTS': 'Tout le Monde'
                         };
-                        return srcLabels[s] || s;
-                    };
+                        const targetText = effectTargetLabels[target] || 'Cible';
 
-                    const dt = (e.damageType || 'MAGIC').toLowerCase();
-                    const dtStr = dt === 'magic' ? 'Magiques' : (dt === 'physic' ? 'Physiques' : 'Bruts');
-
-                    let detailsStr = '';
-                    const rawType = e.effectType || e.effect_type || '';
-                    const t = rawType.replace('Effect', '');
-
-                    if (t === 'DamageFixed' || t === 'FIXED_DAMAGE') {
-                        detailsStr = `➔ inflige ${e.damage || 0} Dégâts ${dtStr}`;
-                    } else if (t === 'DamagePercentage' || t === 'PERCENTAGE_DAMAGE') {
-                        const pct = Math.round((e.percentage || 0) * 100);
-                        detailsStr = `➔ inflige ${pct}% de ${formatSrc(e.damageSource || e.source)} en Dégâts ${dtStr}`;
-                    } else if (t === 'HealFixed' || t === 'FIXED_HEAL') {
-                        detailsStr = `➔ rend ${e.healAmount || 0} PV`;
-                    } else if (t === 'HealPercentage' || t === 'PERCENTAGE_HEAL') {
-                        const pct = Math.round((e.percentage || 0) * 100);
-                        detailsStr = `➔ rend ${pct}% de ${formatSrc(e.healSource || e.source)} en PV`;
-                    } else if (t === 'BuffDebuff' || t === 'BUFF_DEBUFF') {
-                        let parts = [];
-                        if (e.flatValue) {
-                            parts.push(`${e.flatValue > 0 ? '+' : ''}${e.flatValue} ${formatStat(e.statAffected)}`);
+                        let indicatorClass = 'target';
+                        if (target === 'CASTER') {
+                            indicatorClass = 'caster';
+                        } else if (target === 'ALLY' || target === 'ALL_ALLIES') {
+                            indicatorClass = 'ally';
+                        } else if (target) {
+                            indicatorClass = target.toLowerCase().replace('_', '-');
                         }
-                        if (e.modifier) {
-                            const sign = e.modifier > 0 ? '+' : '';
-                            parts.push(`${sign}${Math.round(e.modifier * 100)}% ${formatStat(e.statAffected)}`);
+
+                        const typeNames = {
+                            'DamageFixedEffect': 'Dégâts Fixes',
+                            'FIXED_DAMAGE': 'Dégâts Fixes',
+                            'DamagePercentageEffect': 'Dégâts %',
+                            'PERCENTAGE_DAMAGE': 'Dégâts %',
+                            'HealFixedEffect': 'Soins Fixes',
+                            'FIXED_HEAL': 'Soins Fixes',
+                            'HealPercentageEffect': 'Soins %',
+                            'PERCENTAGE_HEAL': 'Soins %',
+                            'ManaFixedEffect': 'Mana Fixe',
+                            'FIXED_MANA': 'Mana Fixe',
+                            'ManaPercentageEffect': 'Mana %',
+                            'PERCENTAGE_MANA': 'Mana %',
+                            'BuffDebuffEffect': 'Buff/Débuff',
+                            'BUFF_DEBUFF': 'Buff/Débuff',
+                            'DamageOverTimeEffect': 'DoT',
+                            'DOT': 'DoT',
+                            'HealOverTimeEffect': 'HoT',
+                            'HOT': 'HoT',
+                            'ManaOverTimeEffect': 'MoT',
+                            'MOT': 'MoT',
+                            'PurgeEffect': 'Dissipation',
+                            'PURGE': 'Dissipation',
+                            'ShieldEffect': 'Bouclier',
+                            'SHIELD': 'Bouclier',
+                            'HeatFixedEffect': 'Chaleur Fixe',
+                            'HEAT_FIXED': 'Chaleur Fixe',
+                            'HeatPercentageEffect': 'Chaleur %',
+                            'HEAT_PERCENTAGE': 'Chaleur %',
+                            'HeatOverTimeEffect': 'Chaleur Tick',
+                            'HEAT_OVER_TIME': 'Chaleur Tick',
+                            'HeatEffect': 'Chaleur',
+                            'HEAT': 'Chaleur'
+                        };
+                        const eTypeStr = typeNames[e.effectType || e.effect_type] || (e.effectType || e.effect_type || 'Effet');
+
+                        const statLabels = {
+                            'SPEED': 'Vitesse', 'MANA': 'Mana Max', 'HEALTH': 'PV Max', 'CRIT': 'Critique',
+                            'ARMURE': 'Armure', 'RESISTANCE': 'Résistance', 'POWER': 'Puissance Mag.', 'STRENGTH': 'Force Phys.',
+                            'BURN': 'Brûlure', 'POISON': 'Poison', 'DAMAGE_TAKEN_MAGIC': 'Dégâts Mag. Subis',
+                            'DAMAGE_TAKEN_PHYSIC': 'Dégâts Phys. Subis', 'DAMAGE_TAKEN_BRUT': 'Dégâts Bruts Subis',
+                            'DAMAGE_GIVEN_MAGIC': 'Dégâts Mag. Infligés', 'DAMAGE_GIVEN_PHYSIC': 'Dégâts Phys. Infligés',
+                            'DAMAGE_GIVEN_BRUT': 'Dégâts Bruts Infligés',
+                            'HEAL_RECEIVED': 'Soin Reçu', 'SHIELD_RECEIVED': 'Bouclier Reçu',
+                            'HEAL_GIVEN': 'Soin Donné', 'SHIELD_GIVEN': 'Bouclier Donné',
+                            'DAMAGE_GIVEN_MAGIC_TO_SHIELD': 'Dég. Mag. au Bouclier',
+                            'DAMAGE_GIVEN_PHYSIC_TO_SHIELD': 'Dég. Phys. au Bouclier',
+                            'SHIELD_PENETRATION': 'Perce-Bouclier',
+                            'SHIELD_PIERCED': 'Bouclier Percé'
+                        };
+                        const formatStat = s => statLabels[s] || s;
+
+                        const formatSrc = s => {
+                            const srcLabels = {
+                                'CASTER_POWER': 'Puiss. Lanceur', 'TARGET_POWER': 'Puiss. Cible', 'CASTER_MANA_MAX': 'Mana Max Lanc.',
+                                'TARGET_MANA_MAX': 'Mana Max Cib.', 'CASTER_MANA_MISSING': 'Mana Manq. Lanc.', 'TARGET_MANA_MISSING': 'Mana Manq. Cib.',
+                                'CASTER_MANA_CURRENT': 'Mana Act. Lanc.', 'TARGET_MANA_CURRENT': 'Mana Act. Cib.', 'CASTER_HEALTH_MAX': 'PV Max Lanc.',
+                                'TARGET_HEALTH_MAX': 'PV Max Cib.', 'CASTER_HEALTH_MISSING': 'PV Manq. Lanc.', 'TARGET_HEALTH_MISSING': 'PV Manq. Cib.',
+                                'CASTER_HEALTH_CURRENT': 'PV Act. Lanc.', 'TARGET_HEALTH_CURRENT': 'PV Act. Cib.'
+                            };
+                            return srcLabels[s] || s;
+                        };
+
+                        const dt = (e.damageType || 'MAGIC').toLowerCase();
+                        const dtStr = dt === 'magic' ? 'Magiques' : (dt === 'physic' ? 'Physiques' : 'Bruts');
+
+                        let detailsStr = '';
+                        const rawType = e.effectType || e.effect_type || '';
+                        const t = rawType.replace('Effect', '');
+
+                        if (t === 'DamageFixed' || t === 'FIXED_DAMAGE') {
+                            detailsStr = `➔ inflige ${e.damage || 0} Dégâts ${dtStr}`;
+                        } else if (t === 'DamagePercentage' || t === 'PERCENTAGE_DAMAGE') {
+                            const pct = Math.round((e.percentage || 0) * 100);
+                            detailsStr = `➔ inflige ${pct}% de ${formatSrc(e.damageSource || e.source)} en Dégâts ${dtStr}`;
+                        } else if (t === 'HealFixed' || t === 'FIXED_HEAL') {
+                            detailsStr = `➔ rend ${e.healAmount || 0} PV`;
+                        } else if (t === 'HealPercentage' || t === 'PERCENTAGE_HEAL') {
+                            const pct = Math.round((e.percentage || 0) * 100);
+                            detailsStr = `➔ rend ${pct}% de ${formatSrc(e.healSource || e.source)} en PV`;
+                        } else if (t === 'BuffDebuff' || t === 'BUFF_DEBUFF') {
+                            let parts = [];
+                            if (e.flatValue) {
+                                parts.push(`${e.flatValue > 0 ? '+' : ''}${e.flatValue} ${formatStat(e.statAffected)}`);
+                            }
+                            if (e.modifier) {
+                                const sign = e.modifier > 0 ? '+' : '';
+                                parts.push(`${sign}${Math.round(e.modifier * 100)}% ${formatStat(e.statAffected)}`);
+                            }
+                            if (parts.length === 0) parts.push(`modifie ${formatStat(e.statAffected)}`);
+                            const durStr = e.duration > 0 ? ` (${e.duration} tours)` : '';
+                            detailsStr = `➔ ${parts.join(' et ')}${durStr}`;
+                        } else if (t === 'DamageOverTime' || t === 'DOT') {
+                            let parts = [];
+                            const fd = e.fixedDamagePerTick || e.damage || 0;
+                            const pd = e.percentageDamagePerTick || e.percentage || 0;
+                            if (fd) parts.push(`${fd}`);
+                            if (pd) parts.push(`${Math.round(pd * 100)}% ${formatSrc(e.damageSource || e.source)}`);
+                            if (parts.length === 0) parts.push('0');
+                            const durStr = e.duration > 0 ? ` sur ${e.duration} tours` : '';
+                            detailsStr = `➔ DoT de ${parts.join(' + ')} Dégâts ${dtStr}/tour${durStr}`;
+                        } else if (t === 'HealOverTime' || t === 'HOT') {
+                            let parts = [];
+                            const fh = e.fixedHealPerTick || e.healAmount || 0;
+                            const ph = e.percentageHealPerTick || e.percentage || 0;
+                            if (fh) parts.push(`${fh}`);
+                            if (ph) parts.push(`${Math.round(ph * 100)}% ${formatSrc(e.healSource || e.source || 'TARGET_HEALTH_MAX')}`);
+                            if (parts.length === 0) parts.push('0');
+                            const durStr = e.duration > 0 ? ` sur ${e.duration} tours` : '';
+                            detailsStr = `➔ HoT de ${parts.join(' + ')} PV/tour${durStr}`;
+                        } else if (t === 'ManaFixed' || t === 'FIXED_MANA') {
+                            detailsStr = `➔ rend ${e.manaAmount || 0} Mana`;
+                        } else if (t === 'ManaPercentage' || t === 'PERCENTAGE_MANA') {
+                            const pct = Math.round((e.percentage || 0) * 100);
+                            detailsStr = `➔ rend ${pct}% de ${formatSrc(e.manaSource || e.source)} en Mana`;
+                        } else if (t === 'ManaOverTime' || t === 'MOT') {
+                            let parts = [];
+                            const fm = e.fixedManaPerTick || e.manaAmount || 0;
+                            const pm = e.percentageManaPerTick || e.percentage || 0;
+                            if (fm) parts.push(`${fm}`);
+                            if (pm) parts.push(`${Math.round(pm * 100)}% ${formatSrc(e.manaSource || e.source || 'TARGET_MANA_MAX')}`);
+                            if (parts.length === 0) parts.push('0');
+                            const durStr = e.duration > 0 ? ` sur ${e.duration} tours` : '';
+                            detailsStr = `➔ MoT de ${parts.join(' + ')} Mana/tour${durStr}`;
+                        } else if (t === 'Purge' || t === 'PURGE') {
+                            detailsStr = `➔ dissipe les altérations`;
+                        } else if (t === 'Shield' || t === 'SHIELD') {
+                            let parts = [];
+                            const fv = e.fixedValue || e.flatValue || 0;
+                            const pv = e.percentage || 0;
+                            if (fv) parts.push(`${fv}`);
+                            if (pv) parts.push(`${Math.round(pv * 100)}% ${formatSrc(e.shieldSource || e.source || 'TARGET_HEALTH_MAX')}`);
+                            if (parts.length === 0) parts.push('0');
+                            const durStr = e.duration > 0 ? ` sur ${e.duration} tours` : '';
+                            detailsStr = `➔ Bouclier de ${parts.join(' + ')}${durStr}`;
+                        } else if (t === 'Heat' || t === 'HEAT' || t === 'HeatFixed' || t === 'HEAT_FIXED') {
+                            detailsStr = `➔ génère ${e.amount || e.flatValue || 0} Chaleur`;
+                        } else if (t === 'HeatPercentage' || t === 'HEAT_PERCENTAGE') {
+                            const pct = Math.round((e.percentage || 0) * 100);
+                            detailsStr = `➔ génère ${pct}% de ${formatSrc(e.source)} en Chaleur`;
+                        } else if (t === 'HeatOverTime' || t === 'HEAT_OVER_TIME') {
+                            let parts = [];
+                            const fv = e.flatValue || e.fixedValue || 0;
+                            const pv = e.percentage || 0;
+                            if (fv) parts.push(`${fv}`);
+                            if (pv) parts.push(`${Math.round(pv * 100)}% ${formatSrc(e.source || 'TARGET_HEALTH_MAX')}`);
+                            if (parts.length === 0) parts.push('0');
+                            const durStr = e.duration > 0 ? ` sur ${e.duration} tours` : '';
+                            detailsStr = `➔ Tick Chaleur de ${parts.join(' + ')}/tour${durStr}`;
                         }
-                        if (parts.length === 0) parts.push(`modifie ${formatStat(e.statAffected)}`);
-                        const durStr = e.duration > 0 ? ` (${e.duration} tours)` : '';
-                        detailsStr = `➔ ${parts.join(' et ')}${durStr}`;
-                    } else if (t === 'DamageOverTime' || t === 'DOT') {
-                        let parts = [];
-                        const fd = e.fixedDamagePerTick || e.damage || 0;
-                        const pd = e.percentageDamagePerTick || e.percentage || 0;
-                        if (fd) parts.push(`${fd}`);
-                        if (pd) parts.push(`${Math.round(pd * 100)}% ${formatSrc(e.damageSource || e.source)}`);
-                        if (parts.length === 0) parts.push('0');
-                        const durStr = e.duration > 0 ? ` sur ${e.duration} tours` : '';
-                        detailsStr = `➔ DoT de ${parts.join(' + ')} Dégâts ${dtStr}/tour${durStr}`;
-                    } else if (t === 'HealOverTime' || t === 'HOT') {
-                        let parts = [];
-                        const fh = e.fixedHealPerTick || e.healAmount || 0;
-                        const ph = e.percentageHealPerTick || e.percentage || 0;
-                        if (fh) parts.push(`${fh}`);
-                        if (ph) parts.push(`${Math.round(ph * 100)}% ${formatSrc(e.healSource || e.source || 'TARGET_HEALTH_MAX')}`);
-                        if (parts.length === 0) parts.push('0');
-                        const durStr = e.duration > 0 ? ` sur ${e.duration} tours` : '';
-                        detailsStr = `➔ HoT de ${parts.join(' + ')} PV/tour${durStr}`;
-                    } else if (t === 'ManaFixed' || t === 'FIXED_MANA') {
-                        detailsStr = `➔ rend ${e.manaAmount || 0} Mana`;
-                    } else if (t === 'ManaPercentage' || t === 'PERCENTAGE_MANA') {
-                        const pct = Math.round((e.percentage || 0) * 100);
-                        detailsStr = `➔ rend ${pct}% de ${formatSrc(e.manaSource || e.source)} en Mana`;
-                    } else if (t === 'ManaOverTime' || t === 'MOT') {
-                        let parts = [];
-                        const fm = e.fixedManaPerTick || e.manaAmount || 0;
-                        const pm = e.percentageManaPerTick || e.percentage || 0;
-                        if (fm) parts.push(`${fm}`);
-                        if (pm) parts.push(`${Math.round(pm * 100)}% ${formatSrc(e.manaSource || e.source || 'TARGET_MANA_MAX')}`);
-                        if (parts.length === 0) parts.push('0');
-                        const durStr = e.duration > 0 ? ` sur ${e.duration} tours` : '';
-                        detailsStr = `➔ MoT de ${parts.join(' + ')} Mana/tour${durStr}`;
-                    } else if (t === 'Purge' || t === 'PURGE') {
-                        detailsStr = `➔ dissipe les altérations`;
-                    } else if (t === 'Shield' || t === 'SHIELD') {
-                        let parts = [];
-                        const fv = e.fixedValue || e.flatValue || 0;
-                        const pv = e.percentage || 0;
-                        if (fv) parts.push(`${fv}`);
-                        if (pv) parts.push(`${Math.round(pv * 100)}% ${formatSrc(e.shieldSource || e.source || 'TARGET_HEALTH_MAX')}`);
-                        if (parts.length === 0) parts.push('0');
-                        const durStr = e.duration > 0 ? ` sur ${e.duration} tours` : '';
-                        detailsStr = `➔ Bouclier de ${parts.join(' + ')}${durStr}`;
-                    } else if (t === 'Heat' || t === 'HEAT' || t === 'HeatFixed' || t === 'HEAT_FIXED') {
-                        detailsStr = `➔ génère ${e.amount || e.flatValue || 0} Chaleur`;
-                    } else if (t === 'HeatPercentage' || t === 'HEAT_PERCENTAGE') {
-                        const pct = Math.round((e.percentage || 0) * 100);
-                        detailsStr = `➔ génère ${pct}% de ${formatSrc(e.source)} en Chaleur`;
-                    } else if (t === 'HeatOverTime' || t === 'HEAT_OVER_TIME') {
-                        let parts = [];
-                        const fv = e.flatValue || e.fixedValue || 0;
-                        const pv = e.percentage || 0;
-                        if (fv) parts.push(`${fv}`);
-                        if (pv) parts.push(`${Math.round(pv * 100)}% ${formatSrc(e.source || 'TARGET_HEALTH_MAX')}`);
-                        if (parts.length === 0) parts.push('0');
-                        const durStr = e.duration > 0 ? ` sur ${e.duration} tours` : '';
-                        detailsStr = `➔ Tick Chaleur de ${parts.join(' + ')}/tour${durStr}`;
-                    }
 
-                    const keyBadge = e.requiredChoiceKey != null ? `<span style="background:rgba(245,158,11,0.2); color:#f59e0b; padding:0.1rem 0.3rem; border-radius:3px; font-size:0.75rem; font-weight:bold;" title="S'active uniquement si l'option choisie au cast est ${e.requiredChoiceKey}">Option ${e.requiredChoiceKey}</span>` : '';
+                        const keyBadge = e.requiredChoiceKey != null ? `<span style="background:rgba(245,158,11,0.2); color:#f59e0b; padding:0.1rem 0.3rem; border-radius:3px; font-size:0.75rem; font-weight:bold;" title="S'active uniquement si l'option choisie au cast est ${e.requiredChoiceKey}">Option ${e.requiredChoiceKey}</span>` : '';
 
-                    let turnBadge = '';
-                    if (sp.castingType === 'CANALISE') {
-                        const turns = e.channelingTurns || [];
-                        if (turns.length > 0) {
-                            const turnStr = turns.map(t => `T${t}`).join(', ');
-                            turnBadge = `<span style="background:rgba(139,92,246,0.2); color:#a78bfa; padding:0.1rem 0.3rem; border-radius:3px; font-size:0.75rem; font-weight:bold;" title="Déclenché aux tours de canalisation : ${turnStr}">${turnStr}</span>`;
-                        } else {
-                            turnBadge = `<span style="background:rgba(239,68,68,0.2); color:#fca5a5; padding:0.1rem 0.3rem; border-radius:3px; font-size:0.75rem; font-weight:bold;" title="Ne se déclenche à aucun tour">Jamais</span>`;
+                        let turnBadge = '';
+                        if (sp.castingType === 'CANALISE') {
+                            const turns = e.channelingTurns || [];
+                            if (turns.length > 0) {
+                                const turnStr = turns.map(t => `T${t}`).join(', ');
+                                turnBadge = `<span style="background:rgba(139,92,246,0.2); color:#a78bfa; padding:0.1rem 0.3rem; border-radius:3px; font-size:0.75rem; font-weight:bold;" title="Déclenché aux tours de canalisation : ${turnStr}">${turnStr}</span>`;
+                            } else {
+                                turnBadge = `<span style="background:rgba(239,68,68,0.2); color:#fca5a5; padding:0.1rem 0.3rem; border-radius:3px; font-size:0.75rem; font-weight:bold;" title="Ne se déclenche à aucun tour">Jamais</span>`;
+                            }
                         }
-                    }
 
-                    effectsSummaryHtml += `
+                        effectsSummaryHtml += `
                         <div class="effect-line" style="display:flex; align-items:baseline; gap:0.3rem; flex-wrap:wrap;">
                             <div class="indicator ${indicatorClass}" style="flex-shrink:0;"></div>
                             ${turnBadge}
@@ -6206,17 +6206,11 @@
             }
 
             // Charger les effets rattachés
-            let foundFirstHeat = false;
             currentEffects = (sp.effects || []).map((e, idx) => {
                 const rawType = e.effectType || e.effect_type || '';
                 const effectType = javaClassToCode[rawType] || rawType;
-                
-                const isHeatType = ['HEAT_FIXED', 'HEAT_PERCENTAGE', 'HEAT_OVER_TIME'].includes(effectType);
+
                 let effectId = Date.now() + idx + Math.random();
-                if (isHeatType && !foundFirstHeat) {
-                    effectId = 'destruction-heat';
-                    foundFirstHeat = true;
-                }
 
                 return {
                     id: effectId,
@@ -6240,12 +6234,12 @@
             // Fallback pour la chaleur de la destruction si non présente dans les effets
             const isDest = sp.voie && sp.voie.nom && sp.voie.nom.toLowerCase().includes('destruction');
             const hasHeat = currentEffects.some(e => ['HEAT_FIXED', 'HEAT_PERCENTAGE', 'HEAT_OVER_TIME'].includes(e.effectType));
-            if (isDest && !hasHeat) {
+            if (isDest && !hasHeat && sp.heatGenerated && sp.heatGenerated > 0) {
                 currentEffects.push({
-                    id: 'destruction-heat',
+                    id: Date.now() + Math.random(),
                     effectType: 'HEAT_FIXED',
                     effectTarget: 'CASTER',
-                    flatValue: sp.heatGenerated || 20,
+                    flatValue: sp.heatGenerated,
                     requiredChoiceKey: null,
                     channelingTurns: [1]
                 });
