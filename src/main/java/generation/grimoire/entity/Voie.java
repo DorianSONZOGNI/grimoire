@@ -27,6 +27,6 @@ public class Voie {
     @Column(name = "nom_rang")
     private Map<Integer, String> rankNames = new java.util.HashMap<>();
 
-    @OneToMany(mappedBy = "voie", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "voie", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<VoiePassiveEffect> passiveEffects;
 }

@@ -43,7 +43,8 @@ class CombatSimulation2Test {
     void setUp() {
         SpellRepository spellRepository = Mockito.mock(SpellRepository.class);
         PersonnageService personnageService = Mockito.mock(PersonnageService.class);
-        spellService = new SpellService(spellRepository, personnageService);
+        PassiveDispatcher passiveDispatcher = new PassiveDispatcher();
+        spellService = new SpellService(spellRepository, personnageService, passiveDispatcher);
 
         // --- SETUP ALLY 1 (Mage - Raison) ---
         mage = new Personnage();
@@ -536,5 +537,52 @@ class CombatSimulation2Test {
         assertThat(target.getTotalShield()).isEqualTo(60);
 
         System.out.println("=== FIN TEST HEAL AND SHIELD GIVEN MODIFIERS SUCCESS ===");
+    }
+
+    @Test
+    void testHeatEffect() {
+        System.out.println("=== DÉBUT TEST HEAT EFFECT ===");
+        Personnage caster = new Personnage();
+        caster.setName("Lanceur Chaleur");
+        caster.setHealthMax(100);
+        caster.setHealthCurrent(100);
+
+        Personnage target = new Personnage();
+        target.setName("Cible Chaleur");
+        target.setHealthMax(200);
+        target.setHealthCurrent(150); // 150/200 HP
+
+        // 1. HEAT_FIXED
+        generation.grimoire.entity.spell.type.effect.HeatFixedEffect heatFixed = new generation.grimoire.entity.spell.type.effect.HeatFixedEffect();
+        heatFixed.setAmount(30);
+
+        heatFixed.apply(caster, target);
+        assertThat(target.getPassiveState("destruction_heat", 0)).isEqualTo(30);
+
+        // 2. HEAT_PERCENTAGE (e.g. 10% of target max health = 20)
+        generation.grimoire.entity.spell.type.effect.HeatPercentageEffect heatPct = new generation.grimoire.entity.spell.type.effect.HeatPercentageEffect();
+        heatPct.setPercentage(0.10);
+        heatPct.setSource(generation.grimoire.enumeration.Source.TARGET_HEALTH_MAX);
+
+        heatPct.apply(caster, target);
+        assertThat(target.getPassiveState("destruction_heat", 0)).isEqualTo(50); // 30 + 20
+
+        // 3. HEAT_OVER_TIME (e.g. fixed 15 + 5% of target max health (=10) = 25 per turn for 2 turns)
+        generation.grimoire.entity.spell.type.effect.HeatOverTimeEffect heatOt = new generation.grimoire.entity.spell.type.effect.HeatOverTimeEffect();
+        heatOt.setFixedValue(15);
+        heatOt.setPercentage(0.05);
+        heatOt.setDuration(2);
+        heatOt.setSource(generation.grimoire.enumeration.Source.TARGET_HEALTH_MAX);
+
+        heatOt.apply(caster, target);
+        // Turn 1 tick
+        target.updateHeatOverTimeEffects();
+        assertThat(target.getPassiveState("destruction_heat", 0)).isEqualTo(75); // 50 + 25
+
+        // Turn 2 tick (should hit 100, trigger free spell and stay at 100)
+        target.updateHeatOverTimeEffects();
+        assertThat(target.getPassiveState("destruction_heat", 0)).isEqualTo(100);
+
+        System.out.println("=== FIN TEST HEAT EFFECT SUCCESS ===");
     }
 }

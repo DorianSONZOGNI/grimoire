@@ -68,7 +68,7 @@ public class TrahisonPassiveEffect extends VoiePassiveEffect {
                 + extraDamage
                 + " dégâts supplémentaires grâce à Trahison.");
 
-        target.takeDamage(extraDamage, DamageType.PHYSIC);
+        target.takeDamage(extraDamage, DamageType.PHYSIC, attacker);
 
         // À garder si tu veux conserver l'identité vol de vie de Trahison.
         attacker.heal(extraDamage);

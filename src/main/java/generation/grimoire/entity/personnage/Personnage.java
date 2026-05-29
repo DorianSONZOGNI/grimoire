@@ -70,6 +70,9 @@ public class Personnage {
     private List<DamageOverTimeEffect> activeDamageOverTimeEffects = new ArrayList<>();
 
     @Transient
+    private List<generation.grimoire.entity.spell.type.effect.HeatOverTimeEffect> activeHeatOverTimeEffects = new ArrayList<>();
+
+    @Transient
     private List<ConsumableSpellBuffDebuffEffect> consumableSpellBuffs = new ArrayList<>();
 
     @Transient
@@ -129,6 +132,10 @@ public class Personnage {
      * @param damageType le type de dégâts (ex : PHYSICAL, MAGICAL, etc.)
      */
     public void takeDamage(int damage, DamageType damageType) {
+        takeDamage(damage, damageType, null);
+    }
+
+    public void takeDamage(int damage, DamageType damageType, Personnage caster) {
         double constant; // La constante K qui détermine la courbe.
 
         double effectiveArmor = this.armor + getStatFlatBonus(StatType.ARMURE);
@@ -179,29 +186,111 @@ public class Personnage {
         // S'assurer que les dégâts sont toujours au moins 1
         int effectiveDamage = (int) finalDamage;
 
-        // Appliquer les dégâts aux boucliers d'abord
-        int remainingDamage = effectiveDamage;
-        if (activeShields != null && !activeShields.isEmpty()) {
-            for (ActiveShield shield : activeShields) {
-                if (shield.getAmount() > 0) {
-                    int absorbed = Math.min(shield.getAmount(), remainingDamage);
-                    shield.setAmount(shield.getAmount() - absorbed);
-                    remainingDamage -= absorbed;
-                    System.out.println("🛡️ Le bouclier (" + shield.getSourceName() + ") absorbe " + absorbed + " dégâts. Reste : " + shield.getAmount() + " absorption.");
-                    if (remainingDamage <= 0) {
-                        break;
+        // Calculer la pénétration de bouclier (pourcentage et flat)
+        double casterPenetrationPct = 0.0;
+        if (caster != null) {
+            boolean hasPenBuff = caster.getActiveBuffs().stream()
+                    .anyMatch(b -> b.affectsStatType(StatType.SHIELD_PENETRATION) && b.getFlatValue() == 0);
+            if (hasPenBuff) {
+                casterPenetrationPct = caster.getStatBuffMultiplier(StatType.SHIELD_PENETRATION);
+            }
+        }
+
+        double targetPiercedPct = 0.0;
+        boolean hasPiercedBuff = this.getActiveBuffs().stream()
+                .anyMatch(b -> b.affectsStatType(StatType.SHIELD_PIERCED) && b.getFlatValue() == 0);
+        if (hasPiercedBuff) {
+            targetPiercedPct = this.getStatBuffMultiplier(StatType.SHIELD_PIERCED);
+        }
+
+        // Rétrocompatibilité avec les debuffs négatifs de SHIELD_PENETRATION sur la cible
+        double targetPenetrationPctDebuff = 0.0;
+        boolean hasTargetPenDebuff = this.getActiveBuffs().stream()
+                .anyMatch(b -> b.affectsStatType(StatType.SHIELD_PENETRATION) && b.getFlatValue() == 0);
+        if (hasTargetPenDebuff) {
+            double targetPenetrationMult = this.getStatBuffMultiplier(StatType.SHIELD_PENETRATION);
+            if (targetPenetrationMult < 1.0) {
+                targetPenetrationPctDebuff = 1.0 - targetPenetrationMult;
+            }
+        }
+
+        double totalBypassPct = casterPenetrationPct + targetPiercedPct + targetPenetrationPctDebuff;
+
+        int casterPenetrationFlat = caster != null ? caster.getStatFlatBonus(StatType.SHIELD_PENETRATION) : 0;
+        int targetPiercedFlat = this.getStatFlatBonus(StatType.SHIELD_PIERCED);
+        int targetPenetrationFlatDebuff = this.getStatFlatBonus(StatType.SHIELD_PENETRATION);
+        int targetPiercedFlatCombined = targetPiercedFlat + (targetPenetrationFlatDebuff < 0 ? -targetPenetrationFlatDebuff : 0);
+
+        int totalBypassFlat = casterPenetrationFlat + targetPiercedFlatCombined;
+
+
+
+        // Calculer le montant qui passe en dessous du bouclier
+        int bypassDamage = 0;
+        if (totalBypassPct > 0 || totalBypassFlat > 0) {
+            double rawBypass = effectiveDamage * Math.min(1.0, totalBypassPct) + totalBypassFlat;
+            bypassDamage = (int) Math.min(effectiveDamage, Math.max(0, rawBypass));
+        }
+
+        int remainingDamage = effectiveDamage - bypassDamage;
+        int absorbedByShields = 0;
+
+        if (remainingDamage > 0) {
+            if (activeShields != null && !activeShields.isEmpty()) {
+                double shieldDamageMult = 1.0;
+                int shieldDamageFlat = 0;
+                if (caster != null) {
+                    if (damageType == DamageType.MAGIC) {
+                        shieldDamageMult = caster.getStatBuffMultiplier(StatType.DAMAGE_GIVEN_MAGIC_TO_SHIELD);
+                        shieldDamageFlat = caster.getStatFlatBonus(StatType.DAMAGE_GIVEN_MAGIC_TO_SHIELD);
+                    } else if (damageType == DamageType.PHYSIC) {
+                        shieldDamageMult = caster.getStatBuffMultiplier(StatType.DAMAGE_GIVEN_PHYSIC_TO_SHIELD);
+                        shieldDamageFlat = caster.getStatFlatBonus(StatType.DAMAGE_GIVEN_PHYSIC_TO_SHIELD);
+                    }
+                }
+                double safeMult = Math.max(0.001, shieldDamageMult);
+
+                for (ActiveShield shield : activeShields) {
+                    if (shield.getAmount() > 0) {
+                        double damageToShield = remainingDamage * safeMult + shieldDamageFlat;
+                        if (damageToShield > 0) {
+                            int absorbed = Math.min(shield.getAmount(), (int) Math.ceil(damageToShield));
+                            shield.setAmount(shield.getAmount() - absorbed);
+
+                            double rawConsumed = (absorbed - shieldDamageFlat) / safeMult;
+                            if (rawConsumed < 0) {
+                                rawConsumed = 0;
+                            }
+                            int rawConsumedInt = (int) Math.ceil(rawConsumed);
+                            remainingDamage -= rawConsumedInt;
+                            absorbedByShields += rawConsumedInt;
+
+                            shieldDamageFlat = Math.max(0, shieldDamageFlat - absorbed);
+
+                            System.out.println("🛡️ Le bouclier (" + shield.getSourceName() + ") absorbe " + absorbed + " dégâts (dégâts bruts consommés : " + rawConsumedInt + "). Reste : " + shield.getAmount() + " absorption.");
+                            if (remainingDamage <= 0) {
+                                remainingDamage = 0;
+                                break;
+                            }
+                        }
                     }
                 }
             }
         }
 
-        // Appliquer les dégâts restants à la santé actuelle
-        this.healthCurrent -= remainingDamage;
+        // Appliquer les dégâts finaux (bypass + dégâts non absorbés par le bouclier) à la santé actuelle
+        int totalDamageToHealth = bypassDamage + remainingDamage;
+        this.healthCurrent -= totalDamageToHealth;
+
+        // Affichage des informations
+        if (bypassDamage > 0) {
+            System.out.println("🛡️ Perce-Bouclier / Bouclier Percé : " + bypassDamage + " dégâts passent en dessous du bouclier.");
+        }
 
         // Affichage des informations
         double finalReductionFactor = Math.min(reductionFactor, 0.90); // Limite la réduction à 90%
         System.out.println(this.name + " subit " + effectiveDamage + " dégâts (" +
-                "absorbés par les boucliers : " + (effectiveDamage - remainingDamage) + ", " +
+                "absorbés par les boucliers : " + absorbedByShields + ", " +
                 "réduction de " + (int) (finalReductionFactor * 100) + "%), " +
                 "PV restants : " + this.healthCurrent);
 
@@ -288,6 +377,22 @@ public class Personnage {
             if (dot.getDuration() <= 0) {
                 iterator.remove();
                 System.out.println(this.getName() + " n'est plus affecté par un effet de Damage Over Time.");
+            }
+        }
+    }
+
+    public void addHeatOverTimeEffect(generation.grimoire.entity.spell.type.effect.HeatOverTimeEffect effect) {
+        activeHeatOverTimeEffects.add(effect);
+    }
+
+    public void updateHeatOverTimeEffects() {
+        Iterator<generation.grimoire.entity.spell.type.effect.HeatOverTimeEffect> iterator = activeHeatOverTimeEffects.iterator();
+        while (iterator.hasNext()) {
+            generation.grimoire.entity.spell.type.effect.HeatOverTimeEffect hot = iterator.next();
+            hot.tick(this);
+            if (hot.getDuration() <= 0) {
+                iterator.remove();
+                System.out.println(this.getName() + " n'est plus affecté par un effet de Heat Over Time.");
             }
         }
     }
@@ -481,6 +586,7 @@ public class Personnage {
         activeHealOverTimeEffects.clear();
         activeDamageOverTimeEffects.clear();
         activeManaOverTimeEffects.clear();
+        activeHeatOverTimeEffects.clear();
         System.out.println(name + " est purifié de tous ses bonus et malus !");
     }
 

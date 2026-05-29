@@ -67,12 +67,28 @@ public class DamageOverTimeEffect extends DamageEffect {
                 totalDamage = (int) (totalDamage * 1.5);
             }
 
-            target.takeDamage(totalDamage, damageType);
+            target.takeDamage(totalDamage, damageType, caster);
             duration--;
 
             System.out.println(target.getName() + " subit " + totalDamage
                     + " dégâts (" + damageType + ") de damage over time, durée restante: " + duration);
         }
+    }
+
+    public DamageOverTimeEffect cloneEffect() {
+        DamageOverTimeEffect clone = new DamageOverTimeEffect();
+        clone.setId(this.getId());
+        clone.setSpell(this.getSpell());
+        clone.setEffectTarget(this.getEffectTarget());
+        clone.setRequiredChoiceKey(this.getRequiredChoiceKey());
+        clone.setChannelingTurns(this.getChannelingTurns() != null ? new java.util.ArrayList<>(this.getChannelingTurns()) : null);
+        
+        clone.setFixedDamagePerTick(this.fixedDamagePerTick);
+        clone.setPercentageDamagePerTick(this.percentageDamagePerTick);
+        clone.setDuration(this.duration);
+        clone.setDamageType(this.damageType);
+        clone.setDamageSource(this.damageSource);
+        return clone;
     }
 
     /**
@@ -83,8 +99,9 @@ public class DamageOverTimeEffect extends DamageEffect {
      */
     @Override
     public void apply(Personnage caster, Personnage target) {
-        this.caster = caster;
-        target.addDamageOverTimeEffect(this);
+        DamageOverTimeEffect clone = this.cloneEffect();
+        clone.caster = caster;
+        target.addDamageOverTimeEffect(clone);
         System.out.println("Damage over time appliqué sur " + target.getName()
                 + " pour " + duration + " tours.");
     }

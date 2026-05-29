@@ -5,8 +5,10 @@ import generation.grimoire.entity.spell.type.effect.BuffDebuffEffect;
 import generation.grimoire.enumeration.EffectTarget;
 import jakarta.persistence.*;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 
 @Data
+@EqualsAndHashCode(exclude = "spell")
 @Entity
 @Table(name = "spell_effect")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
@@ -26,8 +28,6 @@ public abstract class SpellEffect {
     @Enumerated(EnumType.STRING)
     private EffectTarget effectTarget = EffectTarget.TARGET;
 
-    @Column(name = "target_expression")
-    private String targetExpression;
 
     @Column(name = "required_choice_key")
     private Integer requiredChoiceKey;

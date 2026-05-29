@@ -48,10 +48,26 @@ public class ManaOverTimeEffect extends ManaEffect {
         }
     }
 
+    public ManaOverTimeEffect cloneEffect() {
+        ManaOverTimeEffect clone = new ManaOverTimeEffect();
+        clone.setId(this.getId());
+        clone.setSpell(this.getSpell());
+        clone.setEffectTarget(this.getEffectTarget());
+        clone.setRequiredChoiceKey(this.getRequiredChoiceKey());
+        clone.setChannelingTurns(this.getChannelingTurns() != null ? new java.util.ArrayList<>(this.getChannelingTurns()) : null);
+        
+        clone.setFixedManaPerTick(this.fixedManaPerTick);
+        clone.setPercentageManaPerTick(this.percentageManaPerTick);
+        clone.setDuration(this.duration);
+        clone.setManaSource(this.manaSource);
+        return clone;
+    }
+
     @Override
     public void apply(Personnage caster, Personnage target) {
-        this.caster = caster;
-        target.addManaOverTimeEffect(this);
+        ManaOverTimeEffect clone = this.cloneEffect();
+        clone.caster = caster;
+        target.addManaOverTimeEffect(clone);
         System.out.println("Mana over time appliqué sur " + target.getName() + " pour " + duration + " tours.");
     }
 }

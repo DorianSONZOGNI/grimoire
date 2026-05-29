@@ -3,9 +3,10 @@ package generation.grimoire.service;
 import generation.grimoire.entity.Spell;
 import generation.grimoire.entity.SpellEffect;
 import generation.grimoire.entity.personnage.Personnage;
-import generation.grimoire.entity.spiritualite.passif.SpiritualitePassiveEffect;
 import generation.grimoire.entity.spell.type.effect.ConsumableSpellBuffDebuffEffect;
+import generation.grimoire.enumeration.SpellCastingType;
 import generation.grimoire.enumeration.SpellCondition;
+import generation.grimoire.event.*;
 import generation.grimoire.repository.SpellRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
@@ -18,10 +19,12 @@ public class SpellService {
 
     private final SpellRepository spellRepository;
     private final PersonnageService personnageService;
+    private final PassiveDispatcher passiveDispatcher;
 
-    public SpellService(SpellRepository spellRepository, PersonnageService personnageService) {
+    public SpellService(SpellRepository spellRepository, PersonnageService personnageService, PassiveDispatcher passiveDispatcher) {
         this.spellRepository = spellRepository;
         this.personnageService = personnageService;
+        this.passiveDispatcher = passiveDispatcher;
     }
 
     public void castSpellInvoq(@org.springframework.lang.NonNull Long spellId,
@@ -38,8 +41,7 @@ public class SpellService {
 
     /**
      * Lance un sort en déduisant les coûts en mana et en heal,
-     * en appliquant ses effets, puis en déclenchant les passifs de la voie du
-     * caster.
+     * en appliquant ses effets, puis en déclenchant les passifs via le dispatcher unifié.
      *
      * @param spell  le sort à lancer
      * @param caster le personnage qui lance le sort
@@ -51,14 +53,19 @@ public class SpellService {
         Spell toCast = selectVariant(spell, caster, target, choiceKey);
 
         // 1) Enforce category casting limits
-        generation.grimoire.enumeration.SpellCastingType cType = toCast.getCastingType();
+        SpellCastingType cType = toCast.getCastingType();
         if (cType == null) {
-            cType = generation.grimoire.enumeration.SpellCastingType.BANAL;
+            cType = SpellCastingType.BANAL;
         }
+
+        // Dispatch : ajustement du type de casting par les passifs
+        CastingTypeAdjustEvent castingEvent = new CastingTypeAdjustEvent(caster, target, toCast, cType);
+        passiveDispatcher.dispatch(caster, toCast, castingEvent);
+        cType = castingEvent.getCurrentType();
 
         // Rule A: If currently channeling
         if (caster.getRemainingChannelingTurns() > 0) {
-            if (cType != generation.grimoire.enumeration.SpellCastingType.INSTANTANE) {
+            if (cType != SpellCastingType.INSTANTANE) {
                 System.out.println(caster.getName() + " ne peut pas lancer de sort banal ou canalisé pendant sa canalisation.");
                 return;
             }
@@ -75,18 +82,16 @@ public class SpellService {
         }
 
         // Rule C: If already cast an Instant spell this turn
-        if (cType == generation.grimoire.enumeration.SpellCastingType.INSTANTANE && caster.isInstantSpellCastThisTurn()) {
+        if (cType == SpellCastingType.INSTANTANE && caster.isInstantSpellCastThisTurn()) {
             System.out.println(caster.getName() + " a déjà lancé un sort instantané ce tour-ci.");
             return;
         }
 
-        // Validation des prérequis de la spiritualité associée au sort
-        if (toCast.getSpiritualite() != null && toCast.getSpiritualite().getPassiveEffects() != null) {
-            for (SpiritualitePassiveEffect passif : toCast.getSpiritualite().getPassiveEffects()) {
-                if (!passif.canCastSpell(caster, toCast)) {
-                    return; // Interrompt le lancement si le prérequis n'est pas satisfait
-                }
-            }
+        // Dispatch : validation des prérequis des passifs (Spiritualités, etc.)
+        CanCastCheckEvent canCastEvent = new CanCastCheckEvent(caster, target, toCast);
+        passiveDispatcher.dispatch(caster, toCast, canCastEvent);
+        if (!canCastEvent.isAllowed()) {
+            return;
         }
 
         // Calcul du coût en mana fixe + pourcentage dynamique
@@ -103,6 +108,20 @@ public class SpellService {
             actualHealCost += (int) (healBase * toCast.getPercentHealCost() / 100);
         }
 
+        // Calcul du coût en chaleur fixe + pourcentage dynamique (basé sur 100 max)
+        int actualHeatCost = toCast.getHeatCost();
+        if (toCast.getPercentHeatCost() > 0) {
+            actualHeatCost += (int) (100.0 * toCast.getPercentHeatCost() / 100.0);
+        }
+
+        // Dispatch : ajustement des coûts par les passifs
+        int[] costs = { actualManaCost, actualHealCost, actualHeatCost };
+        SpellCostAdjustEvent costEvent = new SpellCostAdjustEvent(caster, target, toCast, costs);
+        passiveDispatcher.dispatch(caster, toCast, costEvent);
+        actualManaCost = costs[0];
+        actualHealCost = costs[1];
+        actualHeatCost = costs.length > 2 ? costs[2] : actualHeatCost;
+
         // Vérifier que le caster dispose des ressources nécessaires
         if (caster.getManaCurrent() < actualManaCost) {
             System.out.println("Mana insuffisant pour lancer le sort " + toCast.getNom());
@@ -112,19 +131,29 @@ public class SpellService {
             System.out.println("PV insuffisants pour lancer le sort " + toCast.getNom());
             return;
         }
+        int currentHeat = caster.getPassiveState("destruction_heat", 0);
+        if (currentHeat < actualHeatCost) {
+            System.out.println("Chaleur insuffisante pour lancer le sort " + toCast.getNom());
+            return;
+        }
 
         // Déduire les coûts
         caster.setManaCurrent(caster.getManaCurrent() - actualManaCost);
         caster.setHealthCurrent(caster.getHealthCurrent() - actualHealCost);
-        System.out.println(caster.getName() + " dépense " + actualManaCost + " mana et " + actualHealCost
-                + " PV pour lancer " + toCast.getNom());
+        caster.setPassiveState("destruction_heat", currentHeat - actualHeatCost);
+        System.out.println(caster.getName() + " dépense " + actualManaCost + " mana, " + actualHealCost
+                + " PV et " + actualHeatCost + " chaleur pour lancer " + toCast.getNom());
+
+        // Dispatch : hook post-paiement de coût
+        SpellCostPaidEvent costPaidEvent = new SpellCostPaidEvent(caster, target, toCast, actualManaCost, actualHealCost, actualHeatCost);
+        passiveDispatcher.dispatch(caster, toCast, costPaidEvent);
 
         // Mettre à jour l'état de lancement du caster
-        if (cType == generation.grimoire.enumeration.SpellCastingType.INSTANTANE) {
+        if (cType == SpellCastingType.INSTANTANE) {
             caster.setInstantSpellCastThisTurn(true);
-        } else if (cType == generation.grimoire.enumeration.SpellCastingType.BANAL) {
+        } else if (cType == SpellCastingType.BANAL) {
             caster.setBanalSpellCastThisTurn(true);
-        } else if (cType == generation.grimoire.enumeration.SpellCastingType.CANALISE) {
+        } else if (cType == SpellCastingType.CANALISE) {
             caster.setBanalSpellCastThisTurn(true);
             caster.setRemainingChannelingTurns(toCast.getChannelingDuration());
             caster.setAllowInstantDuringCurrentChanneling(toCast.isAllowInstantDuringChanneling());
@@ -142,46 +171,14 @@ public class SpellService {
             if (effect.getRequiredChoiceKey() != null && !effect.getRequiredChoiceKey().equals(choiceKey)) {
                 continue; // L'effet ne s'active que si la clé de choix correspond
             }
-            if (toCast.getCastingType() == generation.grimoire.enumeration.SpellCastingType.CANALISE) {
+            if (toCast.getCastingType() == SpellCastingType.CANALISE) {
                 if (effect.getChannelingTurns() != null && !effect.getChannelingTurns().isEmpty()) {
                     if (!effect.getChannelingTurns().contains(1)) {
                         continue; // L'effet ne s'active pas au Tour 1
                     }
                 }
             }
-            java.util.List<Personnage> recipients = new java.util.ArrayList<>();
-            String expr = effect.getTargetExpression();
-
-            if (expr == null || expr.trim().isEmpty()) {
-                // Règle par défaut issue de l'énumération basique
-                recipients.add((effect.getEffectTarget() != null && effect.getEffectTarget() == generation.grimoire.enumeration.EffectTarget.CASTER) ? caster : target);
-            } else {
-                System.out.println("⚡ [Ciblage Avancé] Analyse de l'expression de cible : '" + expr + "'");
-                String lower = expr.toLowerCase();
-                boolean targetsCaster = lower.contains("lanceur") || lower.contains("soi");
-                boolean targetsAlly = lower.contains("allié") || lower.contains("allier");
-                boolean targetsEnemy = lower.contains("cible") || lower.contains("ennemi");
-
-                if (targetsCaster) {
-                    recipients.add(caster);
-                }
-                if (targetsAlly) {
-                    // Simulation contextuelle d'un compagnon/allié proche impacté
-                    Personnage simulatedAlly = new Personnage();
-                    simulatedAlly.setName("Compagnon Allié");
-                    simulatedAlly.setHealthMax(caster.getHealthMax());
-                    simulatedAlly.setHealthCurrent(caster.getHealthCurrent());
-                    recipients.add(simulatedAlly);
-                }
-                if (targetsEnemy || (!targetsCaster && !targetsAlly)) {
-                    recipients.add(target);
-                    if (lower.contains("tous") || lower.contains("tout")) {
-                        System.out.println("💥 [Zone d'Effet] Le sort se propage à l'ensemble des ennemis proches !");
-                    }
-                }
-                // Dédoublonnage pour éviter d'appliquer deux fois à la même instance
-                recipients = recipients.stream().distinct().toList();
-            }
+            java.util.List<Personnage> recipients = resolveRecipients(effect.getEffectTarget(), caster, target);
 
             // Application concrète de l'effet sur chaque destinataire résolu
             for (Personnage recipient : recipients) {
@@ -192,22 +189,9 @@ public class SpellService {
             }
         }
 
-        // Déclencher les passifs liés à la voie du caster
-        if (caster.getVoie() != null && caster.getVoie().getPassiveEffects() != null) {
-            caster.getVoie().getPassiveEffects().forEach(passif -> passif.onSpellCast(caster, spell));
-        }
-
-        // Déclencher les passifs liés à la spiritualité du caster
-        if (caster.getSpiritualite() != null && caster.getSpiritualite().getPassiveEffects() != null) {
-            caster.getSpiritualite().getPassiveEffects().forEach(passif -> passif.onSpellCast(caster, spell));
-        }
-
-        // Déclencher les passifs liés à la spiritualité attribuée au sort (si différente de celle du caster)
-        if (toCast.getSpiritualite() != null && toCast.getSpiritualite().getPassiveEffects() != null) {
-            if (caster.getSpiritualite() == null || !caster.getSpiritualite().equals(toCast.getSpiritualite())) {
-                toCast.getSpiritualite().getPassiveEffects().forEach(passif -> passif.onSpellCast(caster, spell));
-            }
-        }
+        // Dispatch : notification post-cast à tous les passifs (Voie + Spiritualité)
+        SpellCastEvent spellCastEvent = new SpellCastEvent(caster, target, toCast);
+        passiveDispatcher.dispatch(caster, toCast, spellCastEvent);
     }
 
     /**
@@ -334,32 +318,7 @@ public class SpellService {
                 }
             }
 
-            java.util.List<Personnage> recipients = new java.util.ArrayList<>();
-            String expr = effect.getTargetExpression();
-
-            if (expr == null || expr.trim().isEmpty()) {
-                recipients.add((effect.getEffectTarget() != null && effect.getEffectTarget() == generation.grimoire.enumeration.EffectTarget.CASTER) ? caster : target);
-            } else {
-                String lower = expr.toLowerCase();
-                boolean targetsCaster = lower.contains("lanceur") || lower.contains("soi");
-                boolean targetsAlly = lower.contains("allié") || lower.contains("allier");
-                boolean targetsEnemy = lower.contains("cible") || lower.contains("ennemi");
-
-                if (targetsCaster) {
-                    recipients.add(caster);
-                }
-                if (targetsAlly) {
-                    Personnage simulatedAlly = new Personnage();
-                    simulatedAlly.setName("Compagnon Allié");
-                    simulatedAlly.setHealthMax(caster.getHealthMax());
-                    simulatedAlly.setHealthCurrent(caster.getHealthCurrent());
-                    recipients.add(simulatedAlly);
-                }
-                if (targetsEnemy || (!targetsCaster && !targetsAlly)) {
-                    recipients.add(target);
-                }
-                recipients = recipients.stream().distinct().toList();
-            }
+            java.util.List<Personnage> recipients = resolveRecipients(effect.getEffectTarget(), caster, target);
 
             for (Personnage recipient : recipients) {
                 effect.apply(caster, recipient);
@@ -374,6 +333,64 @@ public class SpellService {
      */
     public void saveSpell(@org.springframework.lang.NonNull Spell spell) {
         spellRepository.save(spell);
+    }
+
+    public static java.util.List<Personnage> resolveRecipients(generation.grimoire.enumeration.EffectTarget targetType, Personnage caster, Personnage target) {
+        java.util.List<Personnage> recipients = new java.util.ArrayList<>();
+        if (targetType == null) {
+            if (target != null) recipients.add(target);
+            return recipients;
+        }
+        switch (targetType) {
+            case CASTER -> {
+                if (caster != null) recipients.add(caster);
+            }
+            case TARGET -> {
+                if (target != null) recipients.add(target);
+            }
+            case ALLY -> {
+                if (caster != null) {
+                    Personnage simulatedAlly = new Personnage();
+                    simulatedAlly.setName("Compagnon Allié");
+                    simulatedAlly.setHealthMax(caster.getHealthMax());
+                    simulatedAlly.setHealthCurrent(caster.getHealthCurrent());
+                    simulatedAlly.setTeamId(caster.getTeamId());
+                    recipients.add(simulatedAlly);
+                }
+            }
+            case ALL_ALLIES -> {
+                if (caster != null) {
+                    recipients.add(caster);
+                    Personnage simulatedAlly = new Personnage();
+                    simulatedAlly.setName("Compagnon Allié");
+                    simulatedAlly.setHealthMax(caster.getHealthMax());
+                    simulatedAlly.setHealthCurrent(caster.getHealthCurrent());
+                    simulatedAlly.setTeamId(caster.getTeamId());
+                    recipients.add(simulatedAlly);
+                }
+            }
+            case ALL_ENEMIES -> {
+                if (target != null) {
+                    recipients.add(target);
+                    System.out.println("💥 [Zone d'Effet] Le sort se propage à l'ensemble des ennemis proches !");
+                }
+            }
+            case ALL_COMBATANTS -> {
+                if (caster != null) {
+                    recipients.add(caster);
+                    Personnage simulatedAlly = new Personnage();
+                    simulatedAlly.setName("Compagnon Allié");
+                    simulatedAlly.setHealthMax(caster.getHealthMax());
+                    simulatedAlly.setHealthCurrent(caster.getHealthCurrent());
+                    simulatedAlly.setTeamId(caster.getTeamId());
+                    recipients.add(simulatedAlly);
+                }
+                if (target != null) {
+                    recipients.add(target);
+                }
+            }
+        }
+        return recipients.stream().distinct().toList();
     }
 
 }

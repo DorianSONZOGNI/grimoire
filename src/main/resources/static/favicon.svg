@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64" role="img" aria-label="Grimoire magique ouvert">
+  <title>Grimoire magique ouvert</title>
+
+  <!-- Fond très contrasté pour rester visible dans l'onglet -->
+  <rect width="64" height="64" rx="14" fill="#18072f"/>
+
+  <!-- Aura simple, sans flou, lisible en 16x16 -->
+  <circle cx="32" cy="31" r="25" fill="#2a0b55"/>
+
+  <!-- Livre ouvert : grosse silhouette, peu de détails -->
+  <path
+    d="M7 27
+       C16 22 25 23 32 30
+       C39 23 48 22 57 27
+       V52
+       C48 48 39 49 32 57
+       C25 49 16 48 7 52
+       Z"
+    fill="#4b1d78"/>
+
+  <path
+    d="M11 22
+       C19 20 27 22 32 29
+       V53
+       C26 46 19 43 11 44
+       Z"
+    fill="#ffea75"
+    stroke="#fff6b0"
+    stroke-width="2"
+    stroke-linejoin="round"/>
+
+  <path
+    d="M53 22
+       C45 20 37 22 32 29
+       V53
+       C38 46 45 43 53 44
+       Z"
+    fill="#fff08a"
+    stroke="#fff6b0"
+    stroke-width="2"
+    stroke-linejoin="round"/>
+
+  <!-- Creux central très marqué -->
+  <path d="M32 28 V54" stroke="#220a3d" stroke-width="3" stroke-linecap="round"/>
+
+  <!-- Bord inférieur du grimoire, épais et reconnaissable -->
+  <path
+    d="M11 44
+       C20 43 27 47 32 54
+       C37 47 44 43 53 44"
+    fill="none"
+    stroke="#220a3d"
+    stroke-width="4"
+    stroke-linecap="round"/>
+</svg>
