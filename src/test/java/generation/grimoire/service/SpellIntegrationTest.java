@@ -11,6 +11,7 @@ import generation.grimoire.entity.spell.type.effect.BuffDebuffEffect;
 import generation.grimoire.entity.spell.type.effect.DamageFixedEffect;
 import generation.grimoire.entity.voie.passif.specific.TrahisonPassiveEffect;
 import generation.grimoire.enumeration.DamageType;
+import generation.grimoire.enumeration.Source;
 import generation.grimoire.enumeration.StatType;
 import generation.grimoire.repository.SpellRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -443,5 +444,54 @@ class SpellIntegrationTest {
 
         // On vérifie que le lanceur a bien reçu les soins (50 + 15 = 65)
         assertThat(hero.getHealthCurrent()).isEqualTo(65);
+    }
+
+    @Test
+    void testSandboxScenario_HeatOverTimeAndNextTurnCast() {
+        Voie voieDestruction = new Voie();
+        voieDestruction.setNom("Voie de la Destruction");
+        generation.grimoire.entity.voie.passif.specific.DestructionPassiveEffect destructionEffect = new generation.grimoire.entity.voie.passif.specific.DestructionPassiveEffect();
+        voieDestruction.setPassiveEffects(List.of(destructionEffect));
+        hero.setVoie(voieDestruction);
+
+        // Spell A: Heat Over Time Effect
+        Spell spellA = new Spell();
+        spellA.setNom("Spell A");
+        spellA.setManaCost(10);
+        spellA.setVoie(voieDestruction);
+
+        generation.grimoire.entity.spell.type.effect.HeatOverTimeEffect heatOt = new generation.grimoire.entity.spell.type.effect.HeatOverTimeEffect();
+        heatOt.setFixedValue(10);
+        heatOt.setPercentage(0.05);
+        heatOt.setDuration(2);
+        heatOt.setSource(Source.TARGET_HEALTH_MAX);
+        heatOt.setEffectTarget(generation.grimoire.enumeration.EffectTarget.CASTER);
+        spellA.addEffect(heatOt);
+
+        // Tour 1: Cast Spell A
+        spellService.castSpell(spellA, hero, enemy, null);
+        assertThat(hero.getPassiveState("destruction_heat", 0)).isEqualTo(0); // Applique le Over Time (qui ne tick qu'au début du tour suivant)
+
+        // Fin Tour 1 / Début Tour 2
+        hero.startTurn();
+        enemy.startTurn();
+        hero.updateHeatOverTimeEffects();
+        enemy.updateHeatOverTimeEffects();
+        // Le tick s'applique: fixed 10 + 5% of target (hero) health (100 * 0.05 = 5) = 15 heat.
+        assertThat(hero.getPassiveState("destruction_heat", 0)).isEqualTo(15);
+
+        // Tour 2: Cast Spell B (normal or generates heat, e.g. flat value heat)
+        Spell spellB = new Spell();
+        spellB.setNom("Spell B");
+        spellB.setManaCost(10);
+        spellB.setVoie(voieDestruction);
+        
+        generation.grimoire.entity.spell.type.effect.HeatFixedEffect heatFixed = new generation.grimoire.entity.spell.type.effect.HeatFixedEffect();
+        heatFixed.setAmount(15);
+        heatFixed.setEffectTarget(generation.grimoire.enumeration.EffectTarget.CASTER);
+        spellB.addEffect(heatFixed);
+
+        spellService.castSpell(spellB, hero, enemy, null);
+        assertThat(hero.getPassiveState("destruction_heat", 0)).isEqualTo(30); // 15 + 15
     }
 }

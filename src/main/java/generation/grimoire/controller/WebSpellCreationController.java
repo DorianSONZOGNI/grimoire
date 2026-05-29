@@ -456,11 +456,13 @@ public class WebSpellCreationController {
             sandboxHero.updateHealOverTimeEffects();
             sandboxHero.updateManaOverTimeEffects();
             sandboxHero.updateDamageOverTimeEffects();
+            sandboxHero.updateHeatOverTimeEffects();
             sandboxHero.updateBuffs();
 
             sandboxMonster.updateHealOverTimeEffects();
             sandboxMonster.updateManaOverTimeEffects();
             sandboxMonster.updateDamageOverTimeEffects();
+            sandboxMonster.updateHeatOverTimeEffects();
             sandboxMonster.updateBuffs();
 
             sandboxTurn++;
@@ -605,10 +607,24 @@ public class WebSpellCreationController {
                         se.setShieldSource(eDto.getSource() != null ? eDto.getSource() : Source.TARGET_HEALTH_MAX);
                         effect = se;
                         break;
-                    case "HEAT":
-                        generation.grimoire.entity.spell.type.effect.HeatEffect he = new generation.grimoire.entity.spell.type.effect.HeatEffect();
-                        he.setAmount(eDto.getFlatValue());
-                        effect = he;
+                    case "HEAT_FIXED":
+                        generation.grimoire.entity.spell.type.effect.HeatFixedEffect heatFixed = new generation.grimoire.entity.spell.type.effect.HeatFixedEffect();
+                        heatFixed.setAmount(eDto.getFlatValue());
+                        effect = heatFixed;
+                        break;
+                    case "HEAT_PERCENTAGE":
+                        generation.grimoire.entity.spell.type.effect.HeatPercentageEffect heatPercentage = new generation.grimoire.entity.spell.type.effect.HeatPercentageEffect();
+                        heatPercentage.setPercentage(eDto.getPercentage());
+                        heatPercentage.setSource(eDto.getSource() != null ? eDto.getSource() : Source.TARGET_HEALTH_MAX);
+                        effect = heatPercentage;
+                        break;
+                    case "HEAT_OVER_TIME":
+                        generation.grimoire.entity.spell.type.effect.HeatOverTimeEffect hote = new generation.grimoire.entity.spell.type.effect.HeatOverTimeEffect();
+                        hote.setFixedValue(eDto.getFlatValue());
+                        hote.setPercentage(eDto.getPercentage());
+                        hote.setDuration(eDto.getDuration());
+                        hote.setSource(eDto.getSource() != null ? eDto.getSource() : Source.TARGET_HEALTH_MAX);
+                        effect = hote;
                         break;
                 }
 

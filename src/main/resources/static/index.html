@@ -2541,6 +2541,19 @@
                     <button type="button" class="btn-effect-add purge" onclick="addEffectPanel('PURGE')">
                         <span class="material-symbols-outlined" style="font-size: 1.1rem;">air</span> Purge / Dissip.
                     </button>
+
+                    <!-- Boutons de Chaleur (spécifique Voie de la Destruction) -->
+                    <div id="heatEffectButtons" style="display: none; grid-column: 1 / -1; display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.5rem; margin-top: 0.5rem; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 0.5rem; width: 100%;">
+                        <button type="button" class="btn-effect-add" style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.35);" onclick="addEffectPanel('HEAT_FIXED')">
+                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">whatshot</span> Chaleur Fixe
+                        </button>
+                        <button type="button" class="btn-effect-add" style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.35);" onclick="addEffectPanel('HEAT_PERCENTAGE')">
+                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">explosion</span> Chaleur %
+                        </button>
+                        <button type="button" class="btn-effect-add" style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.35);" onclick="addEffectPanel('HEAT_OVER_TIME')">
+                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">cyclone</span> Tick Chaleur
+                        </button>
+                    </div>
                 </div>
             </div>
 
@@ -2852,7 +2865,9 @@
             'ManaOverTimeEffect': 'MOT',
             'PurgeEffect': 'PURGE',
             'ShieldEffect': 'SHIELD',
-            'HeatEffect': 'HEAT',
+            'HeatFixedEffect': 'HEAT_FIXED',
+            'HeatPercentageEffect': 'HEAT_PERCENTAGE',
+            'HeatOverTimeEffect': 'HEAT_OVER_TIME',
         };
 
         // Mode d'affichage du grimoire : 'scroll' ou 'full'
@@ -3053,23 +3068,25 @@
 
         function updateSpecialVoieConfig() {
             const voieId = document.getElementById('voieSelect').value;
-            console.log("updateSpecialVoieConfig - voieId:", voieId);
             let isDestruction = false;
             if (voieId && metaData.voies) {
                 const v = metaData.voies.find(vo => vo.id == voieId);
-                console.log("updateSpecialVoieConfig - Voie trouvée:", v);
                 if (v && v.nom && v.nom.toLowerCase().includes('destruction')) {
                     isDestruction = true;
                 }
             }
-            console.log("updateSpecialVoieConfig - isDestruction:", isDestruction);
 
-            const hasHeat = currentEffects.some(e => e.effectType === 'HEAT');
-            console.log("updateSpecialVoieConfig - hasHeat:", hasHeat, "currentEffects:", currentEffects);
+            const heatButtons = document.getElementById('heatEffectButtons');
+            if (heatButtons) {
+                heatButtons.style.display = isDestruction ? 'grid' : 'none';
+            }
+
+            const heatTypes = ['HEAT_FIXED', 'HEAT_PERCENTAGE', 'HEAT_OVER_TIME'];
+            const hasHeat = currentEffects.some(e => heatTypes.includes(e.effectType));
             if (isDestruction && !hasHeat) {
                 currentEffects.push({
                     id: 'destruction-heat',
-                    effectType: 'HEAT',
+                    effectType: 'HEAT_FIXED',
                     effectTarget: 'CASTER',
                     flatValue: 20,
                     requiredChoiceKey: null,
@@ -3077,7 +3094,7 @@
                 });
                 renderEffects();
             } else if (!isDestruction && hasHeat) {
-                currentEffects = currentEffects.filter(e => e.effectType !== 'HEAT');
+                currentEffects = currentEffects.filter(e => !heatTypes.includes(e.effectType));
                 renderEffects();
             }
         }
@@ -3086,7 +3103,7 @@
             const effectObj = {
                 id: Date.now() + Math.random(),
                 effectType: type,
-                effectTarget: 'TARGET',
+                effectTarget: type.startsWith('HEAT') ? 'CASTER' : 'TARGET',
                 damage: 20,
                 healAmount: 20,
                 manaAmount: 20,
@@ -3166,7 +3183,17 @@
 
             currentEffects.forEach((eff, idx) => {
                 const labelObj = metaData.effectTypes.find(t => t.type === eff.effectType);
-                const typeLabel = labelObj ? labelObj.label : (eff.effectType === 'HEAT' ? '🔥 Chaleur Générée' : eff.effectType);
+                const heatLabels = {
+                    'HEAT_FIXED': '🔥 Chaleur Fixe',
+                    'HEAT_PERCENTAGE': '🔥 Chaleur %',
+                    'HEAT_OVER_TIME': '🔥 Chaleur Tick'
+                };
+                const typeLabel = labelObj ? labelObj.label : (heatLabels[eff.effectType] || eff.effectType);
+
+                const isHeatEffect = eff.effectType.startsWith('HEAT');
+                if (isHeatEffect) {
+                    eff.effectTarget = 'CASTER';
+                }
                 let targetClass = eff.effectTarget ? eff.effectTarget.toLowerCase() : 'target';
 
                 let fieldsHtml = '';
@@ -3389,11 +3416,51 @@
                             ✨ Dissipe instantanément tous les bonus, malus et altérations d'état (DoT/HoT) actifs sur la cible.
                         </div>
                     `;
-                } else if (eff.effectType === 'HEAT') {
+                } else if (eff.effectType === 'HEAT_FIXED') {
                     fieldsHtml = `
                         <div class="form-group">
-                            <label>Montant de Chaleur Générée</label>
+                            <label>Montant de Chaleur Générée (Fixe)</label>
                             <input type="number" min="0" value="${eff.flatValue || 0}" onchange="updateEffectProp('${eff.id}', 'flatValue', this.value)">
+                        </div>
+                    `;
+                } else if (eff.effectType === 'HEAT_PERCENTAGE') {
+                    fieldsHtml = `
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Ratio (ex: 0.10 pour 10%)</label>
+                                <input type="number" step="0.01" value="${eff.percentage}" onchange="updateEffectProp('${eff.id}', 'percentage', this.value)">
+                            </div>
+                            <div class="form-group">
+                                <label>Source du Ratio</label>
+                                <select class="custom-select-dynamic" id="ratioSource-${eff.id}" onchange="updateEffectProp('${eff.id}', 'source', this.value)">
+                                    ${renderSourceOptions(metaData.sources, eff.source)}
+                                </select>
+                            </div>
+                        </div>
+                    `;
+                } else if (eff.effectType === 'HEAT_OVER_TIME') {
+                    fieldsHtml = `
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Chaleur Fixe / Tour</label>
+                                <input type="number" value="${eff.flatValue}" onchange="updateEffectProp('${eff.id}', 'flatValue', this.value)">
+                            </div>
+                            <div class="form-group">
+                                <label>Ratio / Tour</label>
+                                <input type="number" step="0.01" value="${eff.percentage}" onchange="updateEffectProp('${eff.id}', 'percentage', this.value)">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Durée (Tours)</label>
+                                <input type="number" value="${eff.duration}" onchange="updateEffectProp('${eff.id}', 'duration', this.value)">
+                            </div>
+                            <div class="form-group">
+                                <label>Source du Ratio</label>
+                                <select class="custom-select-dynamic" id="ratioSource-${eff.id}" onchange="updateEffectProp('${eff.id}', 'source', this.value)">
+                                    ${renderSourceOptions(metaData.sources, eff.source)}
+                                </select>
+                            </div>
                         </div>
                     `;
                 }
@@ -3413,21 +3480,20 @@
                     typeBadgeStyle = 'background: linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(52, 211, 153, 0.5)); color: #a7f3d0; border: 1px solid #34d399; box-shadow: 0 0 12px rgba(52, 211, 153, 0.4); text-shadow: 0 0 5px rgba(0,0,0,0.8);';
                 } else if (eff.effectType === 'SHIELD') {
                     typeBadgeStyle = 'background: linear-gradient(135deg, rgba(6, 182, 212, 0.25), rgba(8, 145, 178, 0.4)); color: #a5f3fc; border: 1px solid #06b6d4; box-shadow: 0 0 12px rgba(6, 182, 212, 0.3); text-shadow: 0 0 5px rgba(0,0,0,0.8);';
-                } else if (eff.effectType === 'HEAT') {
+                } else if (['HEAT_FIXED', 'HEAT_PERCENTAGE', 'HEAT_OVER_TIME'].includes(eff.effectType)) {
                     typeBadgeStyle = 'background: linear-gradient(135deg, rgba(239, 68, 68, 0.25), rgba(185, 28, 28, 0.4)); color: #fca5a5; border: 1px solid #ef4444; box-shadow: 0 0 12px rgba(239, 68, 68, 0.3); text-shadow: 0 0 5px rgba(0,0,0,0.8);';
                 }
 
-                const deleteOrLinkedButton = eff.effectType === 'HEAT'
+                const deleteOrLinkedButton = (isHeatEffect && eff.id === 'destruction-heat')
                     ? `<span style="font-size: 0.82rem; color: #fca5a5; font-weight: 600; display: inline-flex; align-items: center; gap: 0.25rem; background: rgba(239, 68, 68, 0.1); padding: 0.25rem 0.5rem; border-radius: 4px; border: 1px solid rgba(239, 68, 68, 0.2);"><span class="material-symbols-outlined" style="font-size: 1.15rem; color: #ef4444;">local_fire_department</span> Lié à la Voie</span>`
                     : `<button type="button" class="btn-danger" onclick="removeEffect('${eff.id}')">✕ Supprimer</button>`;
 
-                const itemHtml = `
-                    <div class="effect-item target-${targetClass}">
-                        <div class="effect-header">
-                            <span class="effect-type-badge" style="${typeBadgeStyle}">${typeLabel}</span>
-                            ${deleteOrLinkedButton}
+                const targetSelectorHtml = isHeatEffect ? `
+                        <div style="display: flex; align-items: center; gap: 0.5rem; background: rgba(239, 68, 68, 0.08); padding: 0.6rem 0.8rem; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.25); margin-bottom: 0.5rem;">
+                            <span class="material-symbols-outlined" style="color: #fca5a5; font-size: 1.25rem;">person</span>
+                            <span style="font-size: 0.85rem; color: #fca5a5; font-weight: 600;">Cible : Lanceur (Chaleur générée)</span>
                         </div>
-
+                ` : `
                         <!-- Sélection de la cible de l'Effet -->
                         <div style="display: flex; flex-direction: column; gap: 0.8rem; background: rgba(0,0,0,0.25); padding: 0.8rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
                             <label style="color: #fff; font-weight: 600; font-size: 0.9rem;">Cible de l'Effet :</label>
@@ -3452,6 +3518,16 @@
                                 </button>
                             </div>
                         </div>
+                `;
+
+                const itemHtml = `
+                    <div class="effect-item target-${targetClass}">
+                        <div class="effect-header">
+                            <span class="effect-type-badge" style="${typeBadgeStyle}">${typeLabel}</span>
+                            ${deleteOrLinkedButton}
+                        </div>
+
+                        ${targetSelectorHtml}
 
                             <!-- Option / Clé d'activation de la ligne d'effet -->
                             <div style="display: flex; gap: 0.5rem; align-items: center; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px dashed rgba(255,255,255,0.05);">
@@ -4056,7 +4132,7 @@
                 return;
             }
 
-            const heatEffect = currentEffects.find(e => e.effectType === 'HEAT');
+            const heatEffect = currentEffects.find(e => e.id === 'destruction-heat' || e.effectType === 'HEAT_FIXED');
             const heatValue = heatEffect ? (parseInt(heatEffect.flatValue) || 0) : 0;
 
             const payload = {
@@ -4287,7 +4363,7 @@
                 effectsSummaryHtml = `<div class="spell-effects-summary">`;
                 const hasHeatEffectInList = sp.effects && sp.effects.some(e => {
                     const t = (e.effectType || e.effect_type || '').replace('Effect', '');
-                    return t === 'Heat' || t === 'HEAT';
+                    return t.startsWith('Heat') || t.startsWith('HEAT');
                 });
                 if (sp.heatGenerated && sp.heatGenerated > 0 && !hasHeatEffectInList) {
                     effectsSummaryHtml += `
@@ -4346,6 +4422,12 @@
                         'PURGE': '✨ Dissipation',
                         'ShieldEffect': '🛡️ Bouclier',
                         'SHIELD': '🛡️ Bouclier',
+                        'HeatFixedEffect': '🔥 Chaleur Fixe',
+                        'HEAT_FIXED': '🔥 Chaleur Fixe',
+                        'HeatPercentageEffect': '🔥 Chaleur %',
+                        'HEAT_PERCENTAGE': '🔥 Chaleur %',
+                        'HeatOverTimeEffect': '🔥 Chaleur Tick',
+                        'HEAT_OVER_TIME': '🔥 Chaleur Tick',
                         'HeatEffect': '🔥 Chaleur',
                         'HEAT': '🔥 Chaleur'
                     };
@@ -4450,8 +4532,20 @@
                         if (parts.length === 0) parts.push('0');
                         const durStr = e.duration > 0 ? ` sur ${e.duration} tours` : '';
                         detailsStr = `➔ Bouclier de ${parts.join(' + ')}${durStr}`;
-                    } else if (t === 'Heat' || t === 'HEAT') {
+                    } else if (t === 'Heat' || t === 'HEAT' || t === 'HeatFixed' || t === 'HEAT_FIXED') {
                         detailsStr = `➔ génère ${e.amount || e.flatValue || 0} Chaleur`;
+                    } else if (t === 'HeatPercentage' || t === 'HEAT_PERCENTAGE') {
+                        const pct = Math.round((e.percentage || 0) * 100);
+                        detailsStr = `➔ génère ${pct}% de ${formatSrc(e.source)} en Chaleur`;
+                    } else if (t === 'HeatOverTime' || t === 'HEAT_OVER_TIME') {
+                        let parts = [];
+                        const fv = e.flatValue || e.fixedValue || 0;
+                        const pv = e.percentage || 0;
+                        if (fv) parts.push(`${fv}`);
+                        if (pv) parts.push(`${Math.round(pv * 100)}% ${formatSrc(e.source || 'TARGET_HEALTH_MAX')}`);
+                        if (parts.length === 0) parts.push('0');
+                        const durStr = e.duration > 0 ? ` sur ${e.duration} tours` : '';
+                        detailsStr = `➔ Tick Chaleur de ${parts.join(' + ')}/tour${durStr}`;
                     }
 
                     const keyBadge = e.requiredChoiceKey != null ? `<span style="background:rgba(245,158,11,0.2); color:#f59e0b; padding:0.1rem 0.3rem; border-radius:3px; font-size:0.75rem; font-weight:bold;" title="S'active uniquement si l'option choisie au cast est ${e.requiredChoiceKey}">Option ${e.requiredChoiceKey}</span>` : '';
@@ -6112,11 +6206,20 @@
             }
 
             // Charger les effets rattachés
+            let foundFirstHeat = false;
             currentEffects = (sp.effects || []).map((e, idx) => {
                 const rawType = e.effectType || e.effect_type || '';
                 const effectType = javaClassToCode[rawType] || rawType;
+                
+                const isHeatType = ['HEAT_FIXED', 'HEAT_PERCENTAGE', 'HEAT_OVER_TIME'].includes(effectType);
+                let effectId = Date.now() + idx + Math.random();
+                if (isHeatType && !foundFirstHeat) {
+                    effectId = 'destruction-heat';
+                    foundFirstHeat = true;
+                }
+
                 return {
-                    id: effectType === 'HEAT' ? 'destruction-heat' : Date.now() + idx,
+                    id: effectId,
                     effectType,
                     effectTarget: e.effectTarget || 'TARGET',
                     damage: e.damage || e.fixedDamagePerTick || 0,
@@ -6136,11 +6239,11 @@
 
             // Fallback pour la chaleur de la destruction si non présente dans les effets
             const isDest = sp.voie && sp.voie.nom && sp.voie.nom.toLowerCase().includes('destruction');
-            const hasHeat = currentEffects.some(e => e.effectType === 'HEAT');
+            const hasHeat = currentEffects.some(e => ['HEAT_FIXED', 'HEAT_PERCENTAGE', 'HEAT_OVER_TIME'].includes(e.effectType));
             if (isDest && !hasHeat) {
                 currentEffects.push({
                     id: 'destruction-heat',
-                    effectType: 'HEAT',
+                    effectType: 'HEAT_FIXED',
                     effectTarget: 'CASTER',
                     flatValue: sp.heatGenerated || 20,
                     requiredChoiceKey: null,

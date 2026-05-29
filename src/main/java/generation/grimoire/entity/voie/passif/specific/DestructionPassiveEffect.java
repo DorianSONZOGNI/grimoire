@@ -43,7 +43,9 @@ public class DestructionPassiveEffect extends VoiePassiveEffect {
 
         // Si le sort a déjà un effet de chaleur direct, le passif ne double pas la génération de chaleur
         boolean hasHeatEffect = spell.getEffects() != null && spell.getEffects().stream()
-                .anyMatch(e -> e instanceof generation.grimoire.entity.spell.type.effect.HeatEffect);
+                .anyMatch(e -> e instanceof generation.grimoire.entity.spell.type.effect.HeatFixedEffect
+                        || e instanceof generation.grimoire.entity.spell.type.effect.HeatPercentageEffect
+                        || e instanceof generation.grimoire.entity.spell.type.effect.HeatOverTimeEffect);
         if (hasHeatEffect) {
             return;
         }
