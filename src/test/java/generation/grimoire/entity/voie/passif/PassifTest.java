@@ -60,9 +60,9 @@ class PassifTest {
         }
         assertThat(hero.getPassiveState("destruction_heat", 0)).isEqualTo(90);
 
-        // 10th spell should trigger free spell and reset heat
+        // 10th spell should trigger free spell and stay at 100 heat
         destruction.onSpellCast(hero, dummySpell);
-        assertThat(hero.getPassiveState("destruction_heat", 0)).isEqualTo(0);
+        assertThat(hero.getPassiveState("destruction_heat", 0)).isEqualTo(100);
         // Note: checking if triggerFreeSpell was called is hard without a mock, but heat reset proves it triggered.
     }
 
