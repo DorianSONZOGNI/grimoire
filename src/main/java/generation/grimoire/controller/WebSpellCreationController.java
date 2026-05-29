@@ -12,6 +12,7 @@ import generation.grimoire.enumeration.*;
 import generation.grimoire.repository.SpellRepository;
 import generation.grimoire.repository.SpiritualiteRepository;
 import generation.grimoire.repository.VoieRepository;
+import generation.grimoire.entity.voie.passif.VoiePassiveEffect;
 import generation.grimoire.service.SpellService;
 import jakarta.annotation.PostConstruct;
 import lombok.Data;
@@ -83,14 +84,56 @@ public class WebSpellCreationController {
 
     @PostConstruct
     public void initStandardEntities() {
-        // Initialiser les Voies classiques si absentes
+        // Initialiser les Voies classiques si absentes, et y associer leurs passifs respectifs
         String[] voies = { "Voie de la Raison", "Voie de la Sûreté", "Voie de Trahison", "Voie de la Consolidation",
                 "Voie de la Conviction", "Voie de la Création", "Voie de la Destruction", "Voie de la Violence" };
         for (String v : voies) {
-            if (voieRepository.findByNom(v).isEmpty()) {
-                Voie voie = new Voie();
+            java.util.Optional<Voie> optVoie = voieRepository.findByNom(v);
+            Voie voie;
+            boolean isNew = false;
+            if (optVoie.isEmpty()) {
+                voie = new Voie();
                 voie.setNom(v);
                 voie.setDescription("Voie classique du grimoire.");
+                isNew = true;
+            } else {
+                voie = optVoie.get();
+            }
+
+            if (voie.getPassiveEffects() == null || voie.getPassiveEffects().isEmpty()) {
+                VoiePassiveEffect passif = null;
+                switch (v) {
+                    case "Voie de la Raison":
+                        passif = new generation.grimoire.entity.voie.passif.specific.RaisonPassiveEffect();
+                        break;
+                    case "Voie de la Sûreté":
+                        passif = new generation.grimoire.entity.voie.passif.specific.SuretePassiveEffect();
+                        break;
+                    case "Voie de Trahison":
+                        passif = new generation.grimoire.entity.voie.passif.specific.TrahisonPassiveEffect();
+                        break;
+                    case "Voie de la Consolidation":
+                        passif = new generation.grimoire.entity.voie.passif.specific.ConsolidationPassiveEffect();
+                        break;
+                    case "Voie de la Conviction":
+                        passif = new generation.grimoire.entity.voie.passif.specific.ConvictionPassiveEffect();
+                        break;
+                    case "Voie de la Création":
+                        passif = new generation.grimoire.entity.voie.passif.specific.CreationPassiveEffect();
+                        break;
+                    case "Voie de la Destruction":
+                        passif = new generation.grimoire.entity.voie.passif.specific.DestructionPassiveEffect();
+                        break;
+                    case "Voie de la Violence":
+                        passif = new generation.grimoire.entity.voie.passif.specific.ViolencePassiveEffect();
+                        break;
+                }
+                if (passif != null) {
+                    passif.setVoie(voie);
+                    voie.setPassiveEffects(List.of(passif));
+                }
+                voieRepository.save(voie);
+            } else if (isNew) {
                 voieRepository.save(voie);
             }
         }
@@ -336,6 +379,8 @@ public class WebSpellCreationController {
         }
         res.setMonsterBuffs(monsterBuffs);
 
+        res.setHeroHeat(sandboxHero.getPassiveState("destruction_heat", 0));
+        res.setMonsterHeat(sandboxMonster.getPassiveState("destruction_heat", 0));
         res.setRawLogs(String.join("\n", sandboxLogs));
         return res;
     }
@@ -642,6 +687,7 @@ public class WebSpellCreationController {
         private int heroManaMax;
         private int heroManaCurrent;
         private int heroShieldTotal;
+        private int heroHeat;
         private java.util.List<ShieldState> heroShields;
         private java.util.List<BuffState> heroBuffs;
 
@@ -649,6 +695,7 @@ public class WebSpellCreationController {
         private int monsterHpMax;
         private int monsterHpCurrent;
         private int monsterShieldTotal;
+        private int monsterHeat;
         private java.util.List<ShieldState> monsterShields;
         private java.util.List<BuffState> monsterBuffs;
 

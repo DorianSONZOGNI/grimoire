@@ -26,6 +26,7 @@ class SpellIntegrationTest {
     private SpellService spellService;
     private SpellRepository spellRepository;
     private PersonnageService personnageService;
+    private PassiveDispatcher passiveDispatcher;
 
     private Personnage hero;
     private Personnage enemy;
@@ -34,7 +35,8 @@ class SpellIntegrationTest {
     void setUp() {
         spellRepository = Mockito.mock(SpellRepository.class);
         personnageService = Mockito.mock(PersonnageService.class);
-        spellService = new SpellService(spellRepository, personnageService);
+        passiveDispatcher = new PassiveDispatcher();
+        spellService = new SpellService(spellRepository, personnageService, passiveDispatcher);
 
         hero = new Personnage();
         hero.setName("Héros");
@@ -212,16 +214,60 @@ class SpellIntegrationTest {
         voieCreation.setPassiveEffects(List.of(creationEffect));
         hero.setVoie(voieCreation);
 
-        Spell createSpell = new Spell();
-        createSpell.setNom("Invocation Mineure");
-        createSpell.setManaCost(10);
-        createSpell.setVoie(voieCreation);
+        // --- Cas 1 : Sort instantané (action = 1) -> Gratuit ! ---
+        Spell instantSpell = new Spell();
+        instantSpell.setNom("Lancer Rapide");
+        instantSpell.setManaCost(20);
+        instantSpell.setAction(1);
+        instantSpell.setCastingType(generation.grimoire.enumeration.SpellCastingType.INSTANTANE);
+        instantSpell.setVoie(voieCreation);
 
-        spellService.castSpell(createSpell, hero, enemy, null);
+        int manaBefore = hero.getManaCurrent();
+        spellService.castSpell(instantSpell, hero, enemy, null);
+        // Doit avoir coûté 0 mana car premier sort du tour
+        assertThat(hero.getManaCurrent()).isEqualTo(manaBefore);
+        // A consommé l'effet passif de création pour ce tour
+        assertThat(hero.getPassiveState("creation_spells_cast", 0)).isEqualTo(1);
 
-        // La Création a 10% de chance d'accorder un sort gratuit, ce qui ajoute un flag
-        // dans passiveStates
-        // Le test peut être aléatoire, on vérifie juste que ça tourne sans erreur
+        // Reset du tour et du passif
+        hero.startTurn();
+        creationEffect.onTurnStart(hero);
+        assertThat(hero.getPassiveState("creation_spells_cast", 0)).isEqualTo(0);
+
+        // --- Cas 2 : Sort banal (action = 2) -> Lancé comme un instantané ---
+        Spell banalSpell = new Spell();
+        banalSpell.setNom("Projectile Magique");
+        banalSpell.setManaCost(15);
+        banalSpell.setAction(2);
+        banalSpell.setCastingType(generation.grimoire.enumeration.SpellCastingType.BANAL);
+        banalSpell.setVoie(voieCreation);
+
+        spellService.castSpell(banalSpell, hero, enemy, null);
+        // Doit coûter du mana car ce n'est pas un instantané gratuit
+        assertThat(hero.getManaCurrent()).isEqualTo(manaBefore - 15);
+        // Mais doit être marqué comme instantané du tour, pas comme sort banal !
+        assertThat(hero.isInstantSpellCastThisTurn()).isTrue();
+        assertThat(hero.isBanalSpellCastThisTurn()).isFalse();
+
+        // Reset
+        hero.startTurn();
+        creationEffect.onTurnStart(hero);
+        hero.setManaCurrent(manaBefore);
+
+        // --- Cas 3 : Sort canalisé (action >= 3) -> Donne un bouclier = mana dépensé ---
+        Spell channeledSpell = new Spell();
+        channeledSpell.setNom("Tempête Canalisée");
+        channeledSpell.setManaCost(25);
+        channeledSpell.setAction(3);
+        channeledSpell.setCastingType(generation.grimoire.enumeration.SpellCastingType.CANALISE);
+        channeledSpell.setChannelingDuration(3);
+        channeledSpell.setVoie(voieCreation);
+
+        spellService.castSpell(channeledSpell, hero, enemy, null);
+        // Doit coûter du mana
+        assertThat(hero.getManaCurrent()).isEqualTo(manaBefore - 25);
+        // Doit avoir généré un bouclier égal au coût en mana dépensé (25) pour la durée du sort (3 tours)
+        assertThat(hero.getTotalShield()).isEqualTo(25);
     }
 
     @Test
