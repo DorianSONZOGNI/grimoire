@@ -6276,22 +6276,40 @@
             };
             const formatStat = s => statLabels[s] || s;
 
-            // Render Shields
+            // Render Shields & Heat
             const heroShieldsContainer = document.getElementById('heroShieldsContainer');
-            heroShieldsContainer.innerHTML = (state.heroShields || []).map(s => `
+            let heroShieldsHtml = (state.heroShields || []).map(s => `
                 <div class="sandbox-status-badge shield" title="Source: ${s.sourceName}">
                     <span class="material-symbols-outlined" style="font-size: 0.95rem;">shield</span>
                     <span>${s.amount} (${s.duration}t)</span>
                 </div>
             `).join('');
+            if (state.heroHeat > 0) {
+                heroShieldsHtml += `
+                    <div class="sandbox-status-badge heat" title="Chaleur accumulée" style="background: rgba(239, 68, 68, 0.25); color: #fca5a5; border: 1px solid #ef4444; box-shadow: 0 0 8px rgba(239, 68, 68, 0.3);">
+                        <span class="material-symbols-outlined" style="font-size: 0.95rem; color: #ef4444; vertical-align: middle;">whatshot</span>
+                        <span>${state.heroHeat}°C / 100</span>
+                    </div>
+                `;
+            }
+            heroShieldsContainer.innerHTML = heroShieldsHtml;
 
             const monsterShieldsContainer = document.getElementById('monsterShieldsContainer');
-            monsterShieldsContainer.innerHTML = (state.monsterShields || []).map(s => `
+            let monsterShieldsHtml = (state.monsterShields || []).map(s => `
                 <div class="sandbox-status-badge shield" title="Source: ${s.sourceName}">
                     <span class="material-symbols-outlined" style="font-size: 0.95rem;">shield</span>
                     <span>${s.amount} (${s.duration}t)</span>
                 </div>
             `).join('');
+            if (state.monsterHeat > 0) {
+                monsterShieldsHtml += `
+                    <div class="sandbox-status-badge heat" title="Chaleur accumulée" style="background: rgba(239, 68, 68, 0.25); color: #fca5a5; border: 1px solid #ef4444; box-shadow: 0 0 8px rgba(239, 68, 68, 0.3);">
+                        <span class="material-symbols-outlined" style="font-size: 0.95rem; color: #ef4444; vertical-align: middle;">whatshot</span>
+                        <span>${state.monsterHeat}°C / 100</span>
+                    </div>
+                `;
+            }
+            monsterShieldsContainer.innerHTML = monsterShieldsHtml;
 
             // Helper to render Buffs/Debuffs
             const renderBuffsHtml = (buffList) => {

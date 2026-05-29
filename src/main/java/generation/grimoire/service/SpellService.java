@@ -3,9 +3,10 @@ package generation.grimoire.service;
 import generation.grimoire.entity.Spell;
 import generation.grimoire.entity.SpellEffect;
 import generation.grimoire.entity.personnage.Personnage;
-import generation.grimoire.entity.spiritualite.passif.SpiritualitePassiveEffect;
 import generation.grimoire.entity.spell.type.effect.ConsumableSpellBuffDebuffEffect;
+import generation.grimoire.enumeration.SpellCastingType;
 import generation.grimoire.enumeration.SpellCondition;
+import generation.grimoire.event.*;
 import generation.grimoire.repository.SpellRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
@@ -18,10 +19,12 @@ public class SpellService {
 
     private final SpellRepository spellRepository;
     private final PersonnageService personnageService;
+    private final PassiveDispatcher passiveDispatcher;
 
-    public SpellService(SpellRepository spellRepository, PersonnageService personnageService) {
+    public SpellService(SpellRepository spellRepository, PersonnageService personnageService, PassiveDispatcher passiveDispatcher) {
         this.spellRepository = spellRepository;
         this.personnageService = personnageService;
+        this.passiveDispatcher = passiveDispatcher;
     }
 
     public void castSpellInvoq(@org.springframework.lang.NonNull Long spellId,
@@ -38,8 +41,7 @@ public class SpellService {
 
     /**
      * Lance un sort en déduisant les coûts en mana et en heal,
-     * en appliquant ses effets, puis en déclenchant les passifs de la voie du
-     * caster.
+     * en appliquant ses effets, puis en déclenchant les passifs via le dispatcher unifié.
      *
      * @param spell  le sort à lancer
      * @param caster le personnage qui lance le sort
@@ -51,14 +53,19 @@ public class SpellService {
         Spell toCast = selectVariant(spell, caster, target, choiceKey);
 
         // 1) Enforce category casting limits
-        generation.grimoire.enumeration.SpellCastingType cType = toCast.getCastingType();
+        SpellCastingType cType = toCast.getCastingType();
         if (cType == null) {
-            cType = generation.grimoire.enumeration.SpellCastingType.BANAL;
+            cType = SpellCastingType.BANAL;
         }
+
+        // Dispatch : ajustement du type de casting par les passifs
+        CastingTypeAdjustEvent castingEvent = new CastingTypeAdjustEvent(caster, target, toCast, cType);
+        passiveDispatcher.dispatch(caster, toCast, castingEvent);
+        cType = castingEvent.getCurrentType();
 
         // Rule A: If currently channeling
         if (caster.getRemainingChannelingTurns() > 0) {
-            if (cType != generation.grimoire.enumeration.SpellCastingType.INSTANTANE) {
+            if (cType != SpellCastingType.INSTANTANE) {
                 System.out.println(caster.getName() + " ne peut pas lancer de sort banal ou canalisé pendant sa canalisation.");
                 return;
             }
@@ -75,18 +82,16 @@ public class SpellService {
         }
 
         // Rule C: If already cast an Instant spell this turn
-        if (cType == generation.grimoire.enumeration.SpellCastingType.INSTANTANE && caster.isInstantSpellCastThisTurn()) {
+        if (cType == SpellCastingType.INSTANTANE && caster.isInstantSpellCastThisTurn()) {
             System.out.println(caster.getName() + " a déjà lancé un sort instantané ce tour-ci.");
             return;
         }
 
-        // Validation des prérequis de la spiritualité associée au sort
-        if (toCast.getSpiritualite() != null && toCast.getSpiritualite().getPassiveEffects() != null) {
-            for (SpiritualitePassiveEffect passif : toCast.getSpiritualite().getPassiveEffects()) {
-                if (!passif.canCastSpell(caster, toCast)) {
-                    return; // Interrompt le lancement si le prérequis n'est pas satisfait
-                }
-            }
+        // Dispatch : validation des prérequis des passifs (Spiritualités, etc.)
+        CanCastCheckEvent canCastEvent = new CanCastCheckEvent(caster, target, toCast);
+        passiveDispatcher.dispatch(caster, toCast, canCastEvent);
+        if (!canCastEvent.isAllowed()) {
+            return;
         }
 
         // Calcul du coût en mana fixe + pourcentage dynamique
@@ -102,6 +107,13 @@ public class SpellService {
             double healBase = generation.grimoire.utils.StatCalculator.getSourceValue(toCast.getPercentHealCostSource() != null ? toCast.getPercentHealCostSource() : generation.grimoire.enumeration.Source.CASTER_HEALTH_MAX, caster, target);
             actualHealCost += (int) (healBase * toCast.getPercentHealCost() / 100);
         }
+
+        // Dispatch : ajustement des coûts par les passifs
+        int[] costs = { actualManaCost, actualHealCost };
+        SpellCostAdjustEvent costEvent = new SpellCostAdjustEvent(caster, target, toCast, costs);
+        passiveDispatcher.dispatch(caster, toCast, costEvent);
+        actualManaCost = costs[0];
+        actualHealCost = costs[1];
 
         // Vérifier que le caster dispose des ressources nécessaires
         if (caster.getManaCurrent() < actualManaCost) {
@@ -119,12 +131,16 @@ public class SpellService {
         System.out.println(caster.getName() + " dépense " + actualManaCost + " mana et " + actualHealCost
                 + " PV pour lancer " + toCast.getNom());
 
+        // Dispatch : hook post-paiement de coût
+        SpellCostPaidEvent costPaidEvent = new SpellCostPaidEvent(caster, target, toCast, actualManaCost, actualHealCost);
+        passiveDispatcher.dispatch(caster, toCast, costPaidEvent);
+
         // Mettre à jour l'état de lancement du caster
-        if (cType == generation.grimoire.enumeration.SpellCastingType.INSTANTANE) {
+        if (cType == SpellCastingType.INSTANTANE) {
             caster.setInstantSpellCastThisTurn(true);
-        } else if (cType == generation.grimoire.enumeration.SpellCastingType.BANAL) {
+        } else if (cType == SpellCastingType.BANAL) {
             caster.setBanalSpellCastThisTurn(true);
-        } else if (cType == generation.grimoire.enumeration.SpellCastingType.CANALISE) {
+        } else if (cType == SpellCastingType.CANALISE) {
             caster.setBanalSpellCastThisTurn(true);
             caster.setRemainingChannelingTurns(toCast.getChannelingDuration());
             caster.setAllowInstantDuringCurrentChanneling(toCast.isAllowInstantDuringChanneling());
@@ -142,7 +158,7 @@ public class SpellService {
             if (effect.getRequiredChoiceKey() != null && !effect.getRequiredChoiceKey().equals(choiceKey)) {
                 continue; // L'effet ne s'active que si la clé de choix correspond
             }
-            if (toCast.getCastingType() == generation.grimoire.enumeration.SpellCastingType.CANALISE) {
+            if (toCast.getCastingType() == SpellCastingType.CANALISE) {
                 if (effect.getChannelingTurns() != null && !effect.getChannelingTurns().isEmpty()) {
                     if (!effect.getChannelingTurns().contains(1)) {
                         continue; // L'effet ne s'active pas au Tour 1
@@ -160,22 +176,9 @@ public class SpellService {
             }
         }
 
-        // Déclencher les passifs liés à la voie du caster
-        if (caster.getVoie() != null && caster.getVoie().getPassiveEffects() != null) {
-            caster.getVoie().getPassiveEffects().forEach(passif -> passif.onSpellCast(caster, spell));
-        }
-
-        // Déclencher les passifs liés à la spiritualité du caster
-        if (caster.getSpiritualite() != null && caster.getSpiritualite().getPassiveEffects() != null) {
-            caster.getSpiritualite().getPassiveEffects().forEach(passif -> passif.onSpellCast(caster, spell));
-        }
-
-        // Déclencher les passifs liés à la spiritualité attribuée au sort (si différente de celle du caster)
-        if (toCast.getSpiritualite() != null && toCast.getSpiritualite().getPassiveEffects() != null) {
-            if (caster.getSpiritualite() == null || !caster.getSpiritualite().equals(toCast.getSpiritualite())) {
-                toCast.getSpiritualite().getPassiveEffects().forEach(passif -> passif.onSpellCast(caster, spell));
-            }
-        }
+        // Dispatch : notification post-cast à tous les passifs (Voie + Spiritualité)
+        SpellCastEvent spellCastEvent = new SpellCastEvent(caster, target, toCast);
+        passiveDispatcher.dispatch(caster, toCast, spellCastEvent);
     }
 
     /**

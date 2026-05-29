@@ -43,7 +43,8 @@ class CombatSimulation2Test {
     void setUp() {
         SpellRepository spellRepository = Mockito.mock(SpellRepository.class);
         PersonnageService personnageService = Mockito.mock(PersonnageService.class);
-        spellService = new SpellService(spellRepository, personnageService);
+        PassiveDispatcher passiveDispatcher = new PassiveDispatcher();
+        spellService = new SpellService(spellRepository, personnageService, passiveDispatcher);
 
         // --- SETUP ALLY 1 (Mage - Raison) ---
         mage = new Personnage();

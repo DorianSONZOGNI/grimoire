@@ -26,6 +26,6 @@ public class Spiritualite {
     @Column(name = "nom_rang")
     private Map<Integer, String> rankNames = new java.util.HashMap<>();
 
-    @OneToMany(mappedBy = "spiritualite", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "spiritualite", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     private List<SpiritualitePassiveEffect> passiveEffects;
 }

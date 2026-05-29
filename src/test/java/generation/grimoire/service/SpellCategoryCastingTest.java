@@ -25,7 +25,8 @@ class SpellCategoryCastingTest {
     void setUp() {
         SpellRepository spellRepository = Mockito.mock(SpellRepository.class);
         PersonnageService personnageService = Mockito.mock(PersonnageService.class);
-        spellService = new SpellService(spellRepository, personnageService);
+        PassiveDispatcher passiveDispatcher = new PassiveDispatcher();
+        spellService = new SpellService(spellRepository, personnageService, passiveDispatcher);
 
         caster = new Personnage();
         caster.setName("Caster");
