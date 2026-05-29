@@ -12,10 +12,17 @@ import lombok.Getter;
 public class SpellCostPaidEvent extends GameEvent {
     private final int manaPaid;
     private final int hpPaid;
+    private final int heatPaid;
 
-    public SpellCostPaidEvent(Personnage source, Personnage target, Spell spell, int manaPaid, int hpPaid) {
+    public SpellCostPaidEvent(Personnage source, Personnage target, Spell spell, int manaPaid, int hpPaid, int heatPaid) {
         super(source, target, spell);
         this.manaPaid = manaPaid;
         this.hpPaid = hpPaid;
+        this.heatPaid = heatPaid;
+    }
+
+    @Deprecated
+    public SpellCostPaidEvent(Personnage source, Personnage target, Spell spell, int manaPaid, int hpPaid) {
+        this(source, target, spell, manaPaid, hpPaid, 0);
     }
 }

@@ -47,6 +47,9 @@ public class DestructionPassiveEffect extends VoiePassiveEffect {
             int[] costs = event.getCosts();
             costs[0] = 0; // mana cost = 0
             costs[1] = 0; // heal cost = 0
+            if (costs.length > 2) {
+                costs[2] = 0; // heat cost = 0
+            }
             
             // Marquer que la chaleur a été consommée pour ce lancer de sort
             personnage.setPassiveState("destruction_heat_was_max", 1);
