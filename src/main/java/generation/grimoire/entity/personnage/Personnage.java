@@ -70,6 +70,9 @@ public class Personnage {
     private List<DamageOverTimeEffect> activeDamageOverTimeEffects = new ArrayList<>();
 
     @Transient
+    private List<generation.grimoire.entity.spell.type.effect.HeatOverTimeEffect> activeHeatOverTimeEffects = new ArrayList<>();
+
+    @Transient
     private List<ConsumableSpellBuffDebuffEffect> consumableSpellBuffs = new ArrayList<>();
 
     @Transient
@@ -378,6 +381,22 @@ public class Personnage {
         }
     }
 
+    public void addHeatOverTimeEffect(generation.grimoire.entity.spell.type.effect.HeatOverTimeEffect effect) {
+        activeHeatOverTimeEffects.add(effect);
+    }
+
+    public void updateHeatOverTimeEffects() {
+        Iterator<generation.grimoire.entity.spell.type.effect.HeatOverTimeEffect> iterator = activeHeatOverTimeEffects.iterator();
+        while (iterator.hasNext()) {
+            generation.grimoire.entity.spell.type.effect.HeatOverTimeEffect hot = iterator.next();
+            hot.tick(this);
+            if (hot.getDuration() <= 0) {
+                iterator.remove();
+                System.out.println(this.getName() + " n'est plus affecté par un effet de Heat Over Time.");
+            }
+        }
+    }
+
     /**
      * Applique un effet de buff ou débuff sur ce personnage.
      *
@@ -567,6 +586,7 @@ public class Personnage {
         activeHealOverTimeEffects.clear();
         activeDamageOverTimeEffects.clear();
         activeManaOverTimeEffects.clear();
+        activeHeatOverTimeEffects.clear();
         System.out.println(name + " est purifié de tous ses bonus et malus !");
     }
 

@@ -10,8 +10,8 @@ import lombok.EqualsAndHashCode;
 @EqualsAndHashCode(callSuper = true)
 @Data
 @Entity
-@DiscriminatorValue("HEAT")
-public class HeatEffect extends SpellEffect {
+@DiscriminatorValue("HEAT_FIXED")
+public class HeatFixedEffect extends SpellEffect {
 
     private int amount;
 
