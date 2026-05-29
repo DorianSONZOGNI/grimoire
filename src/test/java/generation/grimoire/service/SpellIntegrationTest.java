@@ -205,12 +205,12 @@ class SpellIntegrationTest {
 
         // Le passif flag qu'un sort a été lancé
         assertThat(hero.getPassiveState("raison_cast_this_turn", 0)).isEqualTo(1);
-        assertThat(hero.getPassiveState("stat_derive_CRIT_from_SPEED", 0)).isEqualTo(2);
 
         // Au prochain tour, le héros gagne 1 stack de vitesse
         raisonEffect.onTurnStart(hero);
         assertThat(hero.getPassiveState("raison_speed_stacks", 0)).isEqualTo(1);
         assertThat(hero.getPassiveState("stat_flat_SPEED", 0)).isEqualTo(1);
+        assertThat(hero.getStatFlatBonus(StatType.CRIT)).isEqualTo(2);
     }
 
     @Test

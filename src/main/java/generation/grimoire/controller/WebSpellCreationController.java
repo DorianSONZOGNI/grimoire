@@ -381,6 +381,22 @@ public class WebSpellCreationController {
 
         res.setHeroHeat(sandboxHero.getPassiveState("destruction_heat", 0));
         res.setMonsterHeat(sandboxMonster.getPassiveState("destruction_heat", 0));
+
+        // Calculer le critère dérivé de la Raison
+        Integer heroCritDerived = null;
+        if (sandboxHero.getVoie() != null && "Voie de la Raison".equals(sandboxHero.getVoie().getNom())) {
+            int effectiveSpeed = sandboxHero.getSpeed() + sandboxHero.getStatFlatBonus(generation.grimoire.enumeration.StatType.SPEED);
+            heroCritDerived = effectiveSpeed * 2;
+        }
+        res.setHeroCritDerived(heroCritDerived);
+
+        Integer monsterCritDerived = null;
+        if (sandboxMonster.getVoie() != null && "Voie de la Raison".equals(sandboxMonster.getVoie().getNom())) {
+            int effectiveSpeed = sandboxMonster.getSpeed() + sandboxMonster.getStatFlatBonus(generation.grimoire.enumeration.StatType.SPEED);
+            monsterCritDerived = effectiveSpeed * 2;
+        }
+        res.setMonsterCritDerived(monsterCritDerived);
+
         res.setRawLogs(String.join("\n", sandboxLogs));
         return res;
     }
@@ -702,6 +718,7 @@ public class WebSpellCreationController {
         private int heroManaCurrent;
         private int heroShieldTotal;
         private int heroHeat;
+        private Integer heroCritDerived;
         private java.util.List<ShieldState> heroShields;
         private java.util.List<BuffState> heroBuffs;
 
@@ -710,6 +727,7 @@ public class WebSpellCreationController {
         private int monsterHpCurrent;
         private int monsterShieldTotal;
         private int monsterHeat;
+        private Integer monsterCritDerived;
         private java.util.List<ShieldState> monsterShields;
         private java.util.List<BuffState> monsterBuffs;
 

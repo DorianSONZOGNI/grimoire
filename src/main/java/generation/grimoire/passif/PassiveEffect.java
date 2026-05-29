@@ -42,4 +42,12 @@ public interface PassiveEffect {
     default int getPriority() {
         return 0;
     }
+
+    default int adjustFlatBonus(generation.grimoire.entity.personnage.Personnage personnage, generation.grimoire.enumeration.StatType statType, int currentBonus) {
+        return currentBonus;
+    }
+
+    default int adjustMaxMana(generation.grimoire.entity.personnage.Personnage personnage, int currentMaxMana) {
+        return currentMaxMana;
+    }
 }

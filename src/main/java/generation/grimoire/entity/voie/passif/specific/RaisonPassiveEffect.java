@@ -16,15 +16,14 @@ public class RaisonPassiveEffect extends VoiePassiveEffect {
 
     @Override
     public void onSpellCast(Personnage personnage, Spell spell) {
-        personnage.setPassiveState("raison_cast_this_turn", 1);
-        personnage.setPassiveState("stat_derive_CRIT_from_SPEED", 2); // Toujours actif
-        System.out.println(personnage.getName() + " lance un sort (Raison : gain de vitesse prévu au prochain tour).");
+        if (spell.getVoie() != null && "Voie de la Raison".equals(spell.getVoie().getNom())) {
+            personnage.setPassiveState("raison_cast_this_turn", 1);
+            System.out.println(personnage.getName() + " lance un sort de la Raison (gain de vitesse prévu au prochain tour).");
+        }
     }
 
     @Override
     public void onTurnStart(Personnage personnage) {
-        personnage.setPassiveState("stat_derive_CRIT_from_SPEED", 2); // Toujours actif
-        
         int castLastTurn = personnage.getPassiveState("raison_cast_this_turn", 0);
         int currentSpeedStacks = personnage.getPassiveState("raison_speed_stacks", 0);
         
@@ -44,5 +43,14 @@ public class RaisonPassiveEffect extends VoiePassiveEffect {
         personnage.setPassiveState("stat_flat_" + generation.grimoire.enumeration.StatType.SPEED.name(), currentSpeedStacks);
         
         personnage.setPassiveState("raison_cast_this_turn", 0);
+    }
+
+    @Override
+    public int adjustFlatBonus(Personnage personnage, generation.grimoire.enumeration.StatType statType, int currentBonus) {
+        if (statType == generation.grimoire.enumeration.StatType.CRIT) {
+            int effectiveSpeed = personnage.getSpeed() + personnage.getStatFlatBonus(generation.grimoire.enumeration.StatType.SPEED);
+            return currentBonus + effectiveSpeed * 2;
+        }
+        return currentBonus;
     }
 }

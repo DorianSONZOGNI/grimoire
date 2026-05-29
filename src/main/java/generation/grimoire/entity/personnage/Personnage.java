@@ -496,22 +496,20 @@ public class Personnage {
                 .mapToInt(BuffDebuffEffect::getFlatValue)
                 .sum();
         int passiveBonus = getPassiveState("stat_flat_" + statType.name(), 0);
+        int totalBonus = buffBonus + passiveBonus;
 
-        if (statType == StatType.CRIT) {
-            int speedRatio = getPassiveState("stat_derive_CRIT_from_SPEED", 0);
-            if (speedRatio != 0) {
-                // To prevent infinite recursion if SPEED derived from CRIT, we only do one
-                // level
-                int effectiveSpeed = this.speed + activeBuffs.stream()
-                        .filter(buff -> buff.affectsStatType(StatType.SPEED) && buff.getFlatValue() != 0)
-                        .mapToInt(BuffDebuffEffect::getFlatValue)
-                        .sum()
-                        + getPassiveState("stat_flat_SPEED", 0);
-                passiveBonus += effectiveSpeed * speedRatio;
+        if (this.voie != null && this.voie.getPassiveEffects() != null) {
+            for (generation.grimoire.entity.voie.passif.VoiePassiveEffect p : this.voie.getPassiveEffects()) {
+                totalBonus = p.adjustFlatBonus(this, statType, totalBonus);
+            }
+        }
+        if (this.spiritualite != null && this.spiritualite.getPassiveEffects() != null) {
+            for (generation.grimoire.entity.spiritualite.passif.SpiritualitePassiveEffect p : this.spiritualite.getPassiveEffects()) {
+                totalBonus = p.adjustFlatBonus(this, statType, totalBonus);
             }
         }
 
-        return buffBonus + passiveBonus;
+        return totalBonus;
     }
 
     public boolean isAlly(Personnage other) {
@@ -592,21 +590,20 @@ public class Personnage {
 
     public void setVoie(Voie voie) {
         this.voie = voie;
-        if (voie != null && "Voie de la Conviction".equals(voie.getNom())) {
-            if (this.manaMax > 100) {
-                this.manaMax = 100;
-            }
-            if (this.manaCurrent > 100) {
-                this.manaCurrent = 100;
-            }
+        int max = getManaMax();
+        if (this.manaMax > max) {
+            this.manaMax = max;
+        }
+        if (this.manaCurrent > max) {
+            this.manaCurrent = max;
         }
     }
 
     public void setManaMax(int manaMax) {
-        if (this.voie != null && "Voie de la Conviction".equals(this.voie.getNom())) {
-            this.manaMax = Math.min(manaMax, 100);
-        } else {
-            this.manaMax = manaMax;
+        this.manaMax = manaMax;
+        int max = getManaMax();
+        if (this.manaMax > max) {
+            this.manaMax = max;
         }
         if (this.manaCurrent > this.manaMax) {
             this.manaCurrent = this.manaMax;
@@ -619,10 +616,18 @@ public class Personnage {
     }
 
     public int getManaMax() {
-        if (this.voie != null && "Voie de la Conviction".equals(this.voie.getNom())) {
-            return Math.min(this.manaMax, 100);
+        int max = this.manaMax;
+        if (this.voie != null && this.voie.getPassiveEffects() != null) {
+            for (generation.grimoire.entity.voie.passif.VoiePassiveEffect p : this.voie.getPassiveEffects()) {
+                max = p.adjustMaxMana(this, max);
+            }
         }
-        return this.manaMax;
+        if (this.spiritualite != null && this.spiritualite.getPassiveEffects() != null) {
+            for (generation.grimoire.entity.spiritualite.passif.SpiritualitePassiveEffect p : this.spiritualite.getPassiveEffects()) {
+                max = p.adjustMaxMana(this, max);
+            }
+        }
+        return max;
     }
 
     public int getManaCurrent() {

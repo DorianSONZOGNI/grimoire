@@ -69,6 +69,10 @@ class PassifTest {
     @Test
     void shouldApplyRaisonPassive() {
         RaisonPassiveEffect raison = new RaisonPassiveEffect();
+        generation.grimoire.entity.Voie voieRaison = new generation.grimoire.entity.Voie();
+        voieRaison.setNom("Voie de la Raison");
+        voieRaison.setPassiveEffects(java.util.List.of(raison));
+        hero.setVoie(voieRaison);
 
         hero.setSpeed(2); // Base speed 2
 
@@ -78,6 +82,7 @@ class PassifTest {
         // Base crit is 0, but because of Raison, it's speed * 2 = 4
         assertThat(hero.getStatFlatBonus(StatType.CRIT)).isEqualTo(4);
 
+        dummySpell.setVoie(voieRaison);
         raison.onSpellCast(hero, dummySpell);
 
         // Turn 2 begins. Spell was cast in T1, so it gains 1 speed stack.
