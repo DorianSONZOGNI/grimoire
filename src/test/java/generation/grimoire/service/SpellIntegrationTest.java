@@ -161,10 +161,14 @@ class SpellIntegrationTest {
         voieSurete.setPassiveEffects(List.of(sureteEffect));
         hero.setVoie(voieSurete);
 
+        // Augmenter le mana pour supporter le coût de 100 mana
+        hero.setManaMax(500);
+        hero.setManaCurrent(500);
+
         // Sort de Sûreté
         Spell safeSpell = new Spell();
         safeSpell.setNom("Esprit Protectrice");
-        safeSpell.setManaCost(10);
+        safeSpell.setManaCost(100);
         safeSpell.setVoie(voieSurete);
 
         // Lance le sort 5 fois (5 * 20 points = 100 points -> déclenche le buff crit)
@@ -174,10 +178,10 @@ class SpellIntegrationTest {
         }
 
         // Vérifications
-        assertThat(hero.getManaCurrent()).isEqualTo(0); // 50 - (5*10) = 0
+        assertThat(hero.getManaCurrent()).isEqualTo(0); // 500 - (5*100) = 0
         assertThat(hero.getPassiveState("surete_points", -1)).isEqualTo(0); // Les points ont reset
 
-        // Un buff de critique a dû être appliqué
+        // Un buff de critique a dû être appliqué (pour le tour suivant)
         assertThat(hero.getActiveBuffs()).hasSize(1);
         assertThat(hero.getActiveBuffs().get(0).getStatAffected()).isEqualTo(StatType.CRIT);
         assertThat(hero.getActiveBuffs().get(0).getFlatValue()).isEqualTo(15);

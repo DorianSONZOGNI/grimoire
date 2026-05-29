@@ -382,6 +382,9 @@ public class WebSpellCreationController {
         res.setHeroHeat(sandboxHero.getPassiveState("destruction_heat", 0));
         res.setMonsterHeat(sandboxMonster.getPassiveState("destruction_heat", 0));
 
+        res.setHeroSurete(sandboxHero.getPassiveState("surete_points", 0));
+        res.setMonsterSurete(sandboxMonster.getPassiveState("surete_points", 0));
+
         // Calculer le critère dérivé de la Raison
         Integer heroCritDerived = null;
         if (sandboxHero.getVoie() != null && "Voie de la Raison".equals(sandboxHero.getVoie().getNom())) {
@@ -719,6 +722,7 @@ public class WebSpellCreationController {
         private int heroShieldTotal;
         private int heroHeat;
         private Integer heroCritDerived;
+        private int heroSurete;
         private java.util.List<ShieldState> heroShields;
         private java.util.List<BuffState> heroBuffs;
 
@@ -728,6 +732,7 @@ public class WebSpellCreationController {
         private int monsterShieldTotal;
         private int monsterHeat;
         private Integer monsterCritDerived;
+        private int monsterSurete;
         private java.util.List<ShieldState> monsterShields;
         private java.util.List<BuffState> monsterBuffs;
 

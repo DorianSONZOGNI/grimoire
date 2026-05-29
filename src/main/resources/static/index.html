@@ -6513,6 +6513,14 @@
                     </div>
                 `;
             }
+            if (state.heroSurete > 0) {
+                heroShieldsHtml += `
+                    <div class="sandbox-status-badge surete" title="Points de sûreté" style="background: rgba(245, 158, 11, 0.25); color: #fde68a; border: 1px solid #f59e0b; box-shadow: 0 0 8px rgba(245, 158, 11, 0.3);">
+                        <span class="material-symbols-outlined" style="font-size: 0.95rem; color: #f59e0b; vertical-align: middle;">security</span>
+                        <span>${state.heroSurete}/100 Sûreté</span>
+                    </div>
+                `;
+            }
             if (state.heroCritDerived !== null && state.heroCritDerived !== undefined) {
                 const sign = state.heroCritDerived >= 0 ? '+' : '';
                 heroShieldsHtml += `
@@ -6536,6 +6544,14 @@
                     <div class="sandbox-status-badge heat" title="Chaleur accumulée" style="background: rgba(239, 68, 68, 0.25); color: #fca5a5; border: 1px solid #ef4444; box-shadow: 0 0 8px rgba(239, 68, 68, 0.3);">
                         <span class="material-symbols-outlined" style="font-size: 0.95rem; color: #ef4444; vertical-align: middle;">whatshot</span>
                         <span>${state.monsterHeat}°C / 100</span>
+                    </div>
+                `;
+            }
+            if (state.monsterSurete > 0) {
+                monsterShieldsHtml += `
+                    <div class="sandbox-status-badge surete" title="Points de sûreté" style="background: rgba(245, 158, 11, 0.25); color: #fde68a; border: 1px solid #f59e0b; box-shadow: 0 0 8px rgba(245, 158, 11, 0.3);">
+                        <span class="material-symbols-outlined" style="font-size: 0.95rem; color: #f59e0b; vertical-align: middle;">security</span>
+                        <span>${state.monsterSurete}/100 Sûreté</span>
                     </div>
                 `;
             }

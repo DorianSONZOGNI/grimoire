@@ -108,6 +108,7 @@ class PassifTest {
         surete.onTurnStart(hero);
         assertThat(hero.getPassiveState("surete_points", -1)).isEqualTo(10);
 
+        dummySpell.setManaCost(100);
         // Cast 4 spells (4 * 20 = 80 points) -> Total 90 points
         for (int i = 0; i < 4; i++) {
             surete.onSpellCast(hero, dummySpell);
