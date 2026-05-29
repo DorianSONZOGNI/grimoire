@@ -640,4 +640,40 @@ class SpellIntegrationTest {
         assertThat(hero.getManaCurrent()).isEqualTo(40); // No change
         assertThat(hero.getPassiveState("destruction_heat", 0)).isEqualTo(30); // No change
     }
+
+    @Test
+    void testConvictionPassive() {
+        Voie voieConviction = new Voie();
+        voieConviction.setNom("Voie de la Conviction");
+        generation.grimoire.entity.voie.passif.specific.ConvictionPassiveEffect convictionPassive = new generation.grimoire.entity.voie.passif.specific.ConvictionPassiveEffect();
+        voieConviction.setPassiveEffects(List.of(convictionPassive));
+
+        // 1. Assign Conviction to hero
+        hero.setVoie(voieConviction);
+
+        // Even if we try to set manaMax to 150, it should be capped at 100
+        hero.setManaMax(150);
+        assertThat(hero.getManaMax()).isEqualTo(100);
+
+        // Set mana to 50
+        hero.setManaCurrent(50);
+        assertThat(hero.getManaCurrent()).isEqualTo(50);
+
+        // 2. Trigger onTurnStart
+        convictionPassive.onTurnStart(hero);
+
+        // Mana should regenerate by 25 -> 75
+        assertThat(hero.getManaCurrent()).isEqualTo(75);
+
+        // Trigger onTurnStart again
+        convictionPassive.onTurnStart(hero);
+        // Mana should regenerate by 25 -> 100
+        assertThat(hero.getManaCurrent()).isEqualTo(100);
+
+        // Trigger onTurnStart again
+        convictionPassive.onTurnStart(hero);
+        // Mana should remain capped at 100
+        assertThat(hero.getManaCurrent()).isEqualTo(100);
+    }
 }
+

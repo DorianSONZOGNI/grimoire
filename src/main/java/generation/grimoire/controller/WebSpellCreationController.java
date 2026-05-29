@@ -309,7 +309,7 @@ public class WebSpellCreationController {
                 int duration = spell.getChannelingDuration();
                 for (int t = 2; t <= duration; t++) {
                     System.out.println("\n--- TOUR DE CANALISATION " + t + " ---");
-                    hero.startTurn();
+                    spellService.startTurn(hero);
                     spellService.tickChanneling(hero, monstre, null);
                 }
             }
@@ -448,22 +448,9 @@ public class WebSpellCreationController {
                 spellService.tickChanneling(sandboxHero, sandboxMonster, sandboxHero.getChannelingChoiceKey());
             }
 
-            // Déclencher le début du tour suivant
-            sandboxHero.startTurn();
-            sandboxMonster.startTurn();
-
-            // Mettre à jour les effets sur la durée (DoT / HoT / MoT) et buffs
-            sandboxHero.updateHealOverTimeEffects();
-            sandboxHero.updateManaOverTimeEffects();
-            sandboxHero.updateDamageOverTimeEffects();
-            sandboxHero.updateHeatOverTimeEffects();
-            sandboxHero.updateBuffs();
-
-            sandboxMonster.updateHealOverTimeEffects();
-            sandboxMonster.updateManaOverTimeEffects();
-            sandboxMonster.updateDamageOverTimeEffects();
-            sandboxMonster.updateHeatOverTimeEffects();
-            sandboxMonster.updateBuffs();
+            // Déclencher le début du tour suivant pour le héros et le monstre (inclut les passifs, DoTs, HoTs, etc.)
+            spellService.startTurn(sandboxHero);
+            spellService.startTurn(sandboxMonster);
 
             sandboxTurn++;
             System.out.println("✨ Début du tour " + sandboxTurn + ". Prêt pour les actions.");

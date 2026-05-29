@@ -590,4 +590,44 @@ public class Personnage {
         System.out.println(name + " est purifié de tous ses bonus et malus !");
     }
 
+    public void setVoie(Voie voie) {
+        this.voie = voie;
+        if (voie != null && "Voie de la Conviction".equals(voie.getNom())) {
+            if (this.manaMax > 100) {
+                this.manaMax = 100;
+            }
+            if (this.manaCurrent > 100) {
+                this.manaCurrent = 100;
+            }
+        }
+    }
+
+    public void setManaMax(int manaMax) {
+        if (this.voie != null && "Voie de la Conviction".equals(this.voie.getNom())) {
+            this.manaMax = Math.min(manaMax, 100);
+        } else {
+            this.manaMax = manaMax;
+        }
+        if (this.manaCurrent > this.manaMax) {
+            this.manaCurrent = this.manaMax;
+        }
+    }
+
+    public void setManaCurrent(int manaCurrent) {
+        int max = getManaMax();
+        this.manaCurrent = Math.max(0, Math.min(manaCurrent, max));
+    }
+
+    public int getManaMax() {
+        if (this.voie != null && "Voie de la Conviction".equals(this.voie.getNom())) {
+            return Math.min(this.manaMax, 100);
+        }
+        return this.manaMax;
+    }
+
+    public int getManaCurrent() {
+        int max = getManaMax();
+        return Math.max(0, Math.min(this.manaCurrent, max));
+    }
+
 }

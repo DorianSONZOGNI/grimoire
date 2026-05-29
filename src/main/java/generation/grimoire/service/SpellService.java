@@ -393,4 +393,14 @@ public class SpellService {
         return recipients.stream().distinct().toList();
     }
 
+    public void startTurn(Personnage personnage) {
+        personnage.startTurn();
+        passiveDispatcher.dispatch(personnage, null, new TurnStartEvent(personnage));
+        personnage.updateHealOverTimeEffects();
+        personnage.updateManaOverTimeEffects();
+        personnage.updateDamageOverTimeEffects();
+        personnage.updateHeatOverTimeEffects();
+        personnage.updateBuffs();
+    }
+
 }
