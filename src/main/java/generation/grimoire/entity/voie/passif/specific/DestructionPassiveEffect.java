@@ -30,6 +30,8 @@ public class DestructionPassiveEffect extends VoiePassiveEffect {
             handleSpellCast(e);
         } else if (event instanceof TurnStartEvent e) {
             handleTurnStart(e);
+        } else {
+            super.onEvent(event);
         }
     }
 
@@ -38,8 +40,15 @@ public class DestructionPassiveEffect extends VoiePassiveEffect {
     private void handleSpellCast(SpellCastEvent event) {
         Personnage personnage = event.getSource();
         Spell spell = event.getSpell();
+
+        // Si le sort a déjà un effet de chaleur direct, le passif ne double pas la génération de chaleur
+        boolean hasHeatEffect = spell.getEffects() != null && spell.getEffects().stream()
+                .anyMatch(e -> e instanceof generation.grimoire.entity.spell.type.effect.HeatEffect);
+        if (hasHeatEffect) {
+            return;
+        }
+
         int heat = personnage.getPassiveState("destruction_heat", 0);
-        
         int addedHeat = spell.getHeatGenerated();
         
         if (addedHeat == 0) {

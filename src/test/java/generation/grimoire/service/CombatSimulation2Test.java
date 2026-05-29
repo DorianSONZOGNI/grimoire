@@ -538,4 +538,36 @@ class CombatSimulation2Test {
 
         System.out.println("=== FIN TEST HEAL AND SHIELD GIVEN MODIFIERS SUCCESS ===");
     }
+
+    @Test
+    void testHeatEffect() {
+        System.out.println("=== DÉBUT TEST HEAT EFFECT ===");
+        Personnage caster = new Personnage();
+        caster.setName("Lanceur Chaleur");
+        caster.setHealthMax(100);
+        caster.setHealthCurrent(100);
+
+        Personnage target = new Personnage();
+        target.setName("Cible Chaleur");
+        target.setHealthMax(100);
+        target.setHealthCurrent(100);
+
+        generation.grimoire.entity.spell.type.effect.HeatEffect heatEffect = new generation.grimoire.entity.spell.type.effect.HeatEffect();
+        heatEffect.setAmount(30);
+
+        // Apply heatEffect once (adds 30 heat to target)
+        heatEffect.apply(caster, target);
+        assertThat(target.getPassiveState("destruction_heat", 0)).isEqualTo(30);
+
+        // Apply heatEffect two more times (adds 30 + 30 = 90 total heat to target)
+        heatEffect.apply(caster, target);
+        heatEffect.apply(caster, target);
+        assertThat(target.getPassiveState("destruction_heat", 0)).isEqualTo(90);
+
+        // Apply heatEffect one last time (reaches 120, triggers free spell, resets heat to 0)
+        heatEffect.apply(caster, target);
+        assertThat(target.getPassiveState("destruction_heat", 0)).isEqualTo(0);
+
+        System.out.println("=== FIN TEST HEAT EFFECT SUCCESS ===");
+    }
 }

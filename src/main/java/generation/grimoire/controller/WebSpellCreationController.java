@@ -506,6 +506,7 @@ public class WebSpellCreationController {
             spell.setCastingType(dto.getCastingType());
         spell.setChannelingDuration(dto.getChannelingDuration());
         spell.setAllowInstantDuringChanneling(dto.isAllowInstantDuringChanneling());
+        spell.setHeatGenerated(dto.getHeatGenerated());
 
         Long voieId = dto.getVoieId();
         if (voieId != null) {
@@ -604,6 +605,11 @@ public class WebSpellCreationController {
                         se.setShieldSource(eDto.getSource() != null ? eDto.getSource() : Source.TARGET_HEALTH_MAX);
                         effect = se;
                         break;
+                    case "HEAT":
+                        generation.grimoire.entity.spell.type.effect.HeatEffect he = new generation.grimoire.entity.spell.type.effect.HeatEffect();
+                        he.setAmount(eDto.getFlatValue());
+                        effect = he;
+                        break;
                 }
 
                 if (effect != null) {
@@ -637,6 +643,7 @@ public class WebSpellCreationController {
         private int healCost;
         private int percentHealCost;
         private Source percentHealCostSource;
+        private int heatGenerated;
         private Long voieId;
         private Long spiritualiteId;
         private int channelingDuration;
