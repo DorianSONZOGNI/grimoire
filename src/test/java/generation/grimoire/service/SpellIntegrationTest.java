@@ -609,4 +609,35 @@ class SpellIntegrationTest {
         assertThat(hero.getPassiveState("destruction_heat", 0)).isEqualTo(0);
         assertThat(hero.getPassiveState("destruction_heat_was_max", 0)).isEqualTo(0);
     }
+
+    @Test
+    void testSpellWithHeatCost() {
+        Voie voieDestruction = new Voie();
+        voieDestruction.setNom("Voie de la Destruction");
+        DestructionPassiveEffect destructionEffect = new DestructionPassiveEffect();
+        voieDestruction.setPassiveEffects(List.of(destructionEffect));
+        hero.setVoie(voieDestruction);
+
+        // Put hero at 40 heat
+        hero.setPassiveState("destruction_heat", 40);
+
+        Spell spell = new Spell();
+        spell.setNom("Sort Chaleureux");
+        spell.setManaCost(10);
+        spell.setHeatCost(15);
+        spell.setPercentHeatCost(20); // 20% of 100 heat max = 20 heat. Total cost = 15 + 20 = 35 heat.
+        spell.setVoie(voieDestruction);
+
+        // Cast spell -> pays 10 mana and 35 heat. Hero should be left with 40 - 35 = 5 heat.
+        spellService.castSpell(spell, hero, enemy, null);
+        assertThat(hero.getManaCurrent()).isEqualTo(40); // 50 - 10
+        assertThat(hero.getPassiveState("destruction_heat", 0)).isEqualTo(5);
+
+        // Put hero at 30 heat (insufficient)
+        hero.setPassiveState("destruction_heat", 30);
+        // Cast spell -> should fail because of insufficient heat resource
+        spellService.castSpell(spell, hero, enemy, null);
+        assertThat(hero.getManaCurrent()).isEqualTo(40); // No change
+        assertThat(hero.getPassiveState("destruction_heat", 0)).isEqualTo(30); // No change
+    }
 }

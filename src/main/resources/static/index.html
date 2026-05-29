@@ -2470,6 +2470,26 @@
                         </div>
                     </div>
                 </div>
+
+                <!-- Coût en Chaleur (Voie de la Destruction) -->
+                <div class="cost-card health" id="heatCostCard" style="display: none; border-left-color: #f97316;">
+                    <div class="cost-card-header" style="display: flex; align-items: center; gap: 0.4rem;">
+                        <span class="material-symbols-outlined"
+                            style="font-size: 1.1rem; color: #f97316;">local_fire_department</span>
+                        <span>Coût en Chaleur</span>
+                    </div>
+                    <div class="cost-inputs-grid">
+                        <label for="heatCost" style="color: #fff;">Montant Fixe :</label>
+                        <input type="number" id="heatCost" min="0" value="0">
+                    </div>
+                    <div class="cost-inputs-grid">
+                        <label for="percentHeatCost" style="color: #fff;">Ratio :</label>
+                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                            <input type="number" id="percentHeatCost" min="0" value="0" style="width: 70px;">
+                            <span style="color: var(--text-muted);">% de la chaleur max (100)</span>
+                        </div>
+                    </div>
+                </div>
             </div>
 
             <div class="form-group">
@@ -3089,6 +3109,15 @@
             const heatButtons = document.getElementById('heatEffectButtons');
             if (heatButtons) {
                 heatButtons.style.display = isDestruction ? 'grid' : 'none';
+            }
+
+            const heatCostCard = document.getElementById('heatCostCard');
+            if (heatCostCard) {
+                heatCostCard.style.display = isDestruction ? 'block' : 'none';
+                if (!isDestruction) {
+                    document.getElementById('heatCost').value = 0;
+                    document.getElementById('percentHeatCost').value = 0;
+                }
             }
 
             const heatTypes = ['HEAT_FIXED', 'HEAT_PERCENTAGE', 'HEAT_OVER_TIME'];
@@ -4153,6 +4182,8 @@
                 healCost: parseInt(document.getElementById('healCost').value) || 0,
                 percentHealCost: parseInt(document.getElementById('percentHealCost').value) || 0,
                 percentHealCostSource: document.getElementById('percentHealCostSource').value || 'CASTER_HEALTH_MAX',
+                heatCost: parseInt(document.getElementById('heatCost').value) || 0,
+                percentHeatCost: parseInt(document.getElementById('percentHeatCost').value) || 0,
                 heatGenerated: heatValue,
                 voieId: (document.getElementById('voieSelect').value && document.getElementById('voieSelect').value !== '0') ? parseInt(document.getElementById('voieSelect').value) : null,
                 spiritualiteId: (document.getElementById('spiritSelect').value && document.getElementById('spiritSelect').value !== '0') ? parseInt(document.getElementById('spiritSelect').value) : null,
@@ -4636,6 +4667,7 @@
                     <div class="spell-meta" style="flex-wrap: wrap; gap: 0.5rem; align-items: center;">
                         <span style="display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined" style="font-size: 1.05rem; color: #38bdf8; vertical-align: middle;">water_drop</span>${sp.manaCost}${sp.percentManaCost > 0 ? ` + ${sp.percentManaCost}% (${formatSrc(sp.percentManaCostSource || 'CASTER_MANA_MAX')})` : ''} Mana</span>
                         ${sp.healCost > 0 || sp.percentHealCost > 0 ? `<span style="display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined" style="font-size: 1.05rem; color: #f43f5e; vertical-align: middle;">bloodtype</span>${sp.healCost}${sp.percentHealCost > 0 ? ` + ${sp.percentHealCost}% (${formatSrc(sp.percentHealCostSource || 'CASTER_HEALTH_MAX')})` : ''} PV</span>` : ''}
+                        ${sp.heatCost > 0 || sp.percentHeatCost > 0 ? `<span style="display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined" style="font-size: 1.05rem; color: #f97316; vertical-align: middle;">local_fire_department</span>${sp.heatCost}${sp.percentHeatCost > 0 ? ` + ${sp.percentHeatCost}% Chaleur` : ''} Chaleur</span>` : ''}
                         ${sp.castingType === 'CANALISE' ? `
                             <span style="color: #a78bfa; display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.85rem;" title="Paramètres du sort canalisé">
                                 <span class="material-symbols-outlined" style="font-size: 1.1rem; color: #a78bfa; vertical-align: middle;">cyclone</span>
@@ -4662,6 +4694,8 @@
             document.getElementById('submitSpellBtn').innerText = '✦ Forger le Sort';
             document.getElementById('nom').value = '';
             document.getElementById('description').value = '';
+            document.getElementById('heatCost').value = 0;
+            document.getElementById('percentHeatCost').value = 0;
             currentEffects = [];
             renderEffects();
 
@@ -6191,6 +6225,8 @@
             document.getElementById('percentHealCost').value = sp.percentHealCost || 0;
             document.getElementById('percentHealCostSource').value = sp.percentHealCostSource || 'CASTER_HEALTH_MAX';
             document.getElementById('percentHealCostSource').dispatchEvent(new Event('change'));
+            document.getElementById('heatCost').value = sp.heatCost || 0;
+            document.getElementById('percentHeatCost').value = sp.percentHeatCost || 0;
 
             document.getElementById('voieSelect').value = sp.voie ? sp.voie.id : '';
             document.getElementById('voieSelect').dispatchEvent(new Event('change'));
@@ -6315,6 +6351,7 @@
 
                 let costDetails = `${sp.manaCost} Mana`;
                 if (sp.healCost > 0) costDetails += ` / ${sp.healCost} PV`;
+                if (sp.heatCost > 0) costDetails += ` / ${sp.heatCost} Chaleur`;
 
                 return `
                     <div class="sandbox-spell-card" style="border-left: 3px solid ${titleColor};">

@@ -504,6 +504,8 @@ public class WebSpellCreationController {
         spell.setPercentHealCost(dto.getPercentHealCost());
         if (dto.getPercentHealCostSource() != null)
             spell.setPercentHealCostSource(dto.getPercentHealCostSource());
+        spell.setHeatCost(dto.getHeatCost());
+        spell.setPercentHeatCost(dto.getPercentHeatCost());
         if (dto.getCastingType() != null)
             spell.setCastingType(dto.getCastingType());
         spell.setChannelingDuration(dto.getChannelingDuration());
@@ -659,6 +661,8 @@ public class WebSpellCreationController {
         private int healCost;
         private int percentHealCost;
         private Source percentHealCostSource;
+        private int heatCost;
+        private int percentHeatCost;
         private int heatGenerated;
         private Long voieId;
         private Long spiritualiteId;

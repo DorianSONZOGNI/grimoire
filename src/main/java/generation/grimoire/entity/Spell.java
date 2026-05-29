@@ -32,6 +32,8 @@ public class Spell {
     private int percentHealCost;
     @Enumerated(EnumType.STRING)
     private Source percentHealCostSource = Source.CASTER_HEALTH_MAX;
+    private int heatCost;
+    private int percentHeatCost;
     private int heatGenerated;
     private int action;
     private Integer variantId; // Groupe de variantes de sorts

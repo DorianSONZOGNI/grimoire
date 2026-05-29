@@ -108,12 +108,19 @@ public class SpellService {
             actualHealCost += (int) (healBase * toCast.getPercentHealCost() / 100);
         }
 
+        // Calcul du coût en chaleur fixe + pourcentage dynamique (basé sur 100 max)
+        int actualHeatCost = toCast.getHeatCost();
+        if (toCast.getPercentHeatCost() > 0) {
+            actualHeatCost += (int) (100.0 * toCast.getPercentHeatCost() / 100.0);
+        }
+
         // Dispatch : ajustement des coûts par les passifs
-        int[] costs = { actualManaCost, actualHealCost };
+        int[] costs = { actualManaCost, actualHealCost, actualHeatCost };
         SpellCostAdjustEvent costEvent = new SpellCostAdjustEvent(caster, target, toCast, costs);
         passiveDispatcher.dispatch(caster, toCast, costEvent);
         actualManaCost = costs[0];
         actualHealCost = costs[1];
+        actualHeatCost = costs.length > 2 ? costs[2] : actualHeatCost;
 
         // Vérifier que le caster dispose des ressources nécessaires
         if (caster.getManaCurrent() < actualManaCost) {
@@ -124,15 +131,21 @@ public class SpellService {
             System.out.println("PV insuffisants pour lancer le sort " + toCast.getNom());
             return;
         }
+        int currentHeat = caster.getPassiveState("destruction_heat", 0);
+        if (currentHeat < actualHeatCost) {
+            System.out.println("Chaleur insuffisante pour lancer le sort " + toCast.getNom());
+            return;
+        }
 
         // Déduire les coûts
         caster.setManaCurrent(caster.getManaCurrent() - actualManaCost);
         caster.setHealthCurrent(caster.getHealthCurrent() - actualHealCost);
-        System.out.println(caster.getName() + " dépense " + actualManaCost + " mana et " + actualHealCost
-                + " PV pour lancer " + toCast.getNom());
+        caster.setPassiveState("destruction_heat", currentHeat - actualHeatCost);
+        System.out.println(caster.getName() + " dépense " + actualManaCost + " mana, " + actualHealCost
+                + " PV et " + actualHeatCost + " chaleur pour lancer " + toCast.getNom());
 
         // Dispatch : hook post-paiement de coût
-        SpellCostPaidEvent costPaidEvent = new SpellCostPaidEvent(caster, target, toCast, actualManaCost, actualHealCost);
+        SpellCostPaidEvent costPaidEvent = new SpellCostPaidEvent(caster, target, toCast, actualManaCost, actualHealCost, actualHeatCost);
         passiveDispatcher.dispatch(caster, toCast, costPaidEvent);
 
         // Mettre à jour l'état de lancement du caster
