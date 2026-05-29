@@ -579,9 +579,9 @@ class CombatSimulation2Test {
         target.updateHeatOverTimeEffects();
         assertThat(target.getPassiveState("destruction_heat", 0)).isEqualTo(75); // 50 + 25
 
-        // Turn 2 tick (should hit 100, trigger free spell and reset to 0)
+        // Turn 2 tick (should hit 100, trigger free spell and stay at 100)
         target.updateHeatOverTimeEffects();
-        assertThat(target.getPassiveState("destruction_heat", 0)).isEqualTo(0);
+        assertThat(target.getPassiveState("destruction_heat", 0)).isEqualTo(100);
 
         System.out.println("=== FIN TEST HEAT EFFECT SUCCESS ===");
     }

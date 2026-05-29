@@ -27,12 +27,18 @@ public class HeatPercentageEffect extends SpellEffect {
         
         int currentHeat = target.getPassiveState("destruction_heat", 0);
         currentHeat += amount;
+        if (currentHeat > 100) {
+            currentHeat = 100;
+        }
         System.out.println("🔥 [Destruction] " + target.getName() + " accumule de la chaleur (+" + amount + " -> " + currentHeat + "/100).");
         if (currentHeat >= 100) {
             target.triggerFreeSpell();
-            currentHeat = 0;
-            System.out.println("🔥 [Destruction] " + target.getName() + " consomme sa chaleur et lance un sort gratuit !");
+            System.out.println("🔥 [Destruction] " + target.getName() + " a atteint 100 de chaleur ! Le prochain sort sera gratuit.");
         }
         target.setPassiveState("destruction_heat", currentHeat);
+
+        // Enregistrer la chaleur générée durant ce lancer
+        int gen = target.getPassiveState("destruction_heat_generated_this_cast", 0);
+        target.setPassiveState("destruction_heat_generated_this_cast", gen + amount);
     }
 }

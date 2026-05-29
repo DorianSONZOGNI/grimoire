@@ -494,4 +494,82 @@ class SpellIntegrationTest {
         spellService.castSpell(spellB, hero, enemy, null);
         assertThat(hero.getPassiveState("destruction_heat", 0)).isEqualTo(30); // 15 + 15
     }
+
+    @Test
+    void testFreeSpellOn100Heat() {
+        Voie voieDestruction = new Voie();
+        voieDestruction.setNom("Voie de la Destruction");
+        generation.grimoire.entity.voie.passif.specific.DestructionPassiveEffect destructionEffect = new generation.grimoire.entity.voie.passif.specific.DestructionPassiveEffect();
+        voieDestruction.setPassiveEffects(List.of(destructionEffect));
+        hero.setVoie(voieDestruction);
+
+        // Spell A: Generates 60 heat
+        Spell spellA = new Spell();
+        spellA.setNom("Spell A");
+        spellA.setManaCost(10);
+        spellA.setVoie(voieDestruction);
+        generation.grimoire.entity.spell.type.effect.HeatFixedEffect heatFixedA = new generation.grimoire.entity.spell.type.effect.HeatFixedEffect();
+        heatFixedA.setAmount(60);
+        heatFixedA.setEffectTarget(generation.grimoire.enumeration.EffectTarget.CASTER);
+        spellA.addEffect(heatFixedA);
+
+        // Cast Spell A first time -> 60 heat, cost paid (mana goes 50 -> 40)
+        spellService.castSpell(spellA, hero, enemy, null);
+        assertThat(hero.getPassiveState("destruction_heat", 0)).isEqualTo(60);
+        assertThat(hero.getManaCurrent()).isEqualTo(40);
+
+        hero.startTurn();
+
+        // Cast Spell A second time -> 120 capped at 100 heat, cost paid (mana goes 40 -> 30)
+        spellService.castSpell(spellA, hero, enemy, null);
+        assertThat(hero.getPassiveState("destruction_heat", 0)).isEqualTo(100);
+        assertThat(hero.getManaCurrent()).isEqualTo(30);
+
+        hero.startTurn();
+
+        // Cast Spell A third time -> Should be FREE (mana stays at 30) and heat resets to 0 (then generates 60 heat)
+        spellService.castSpell(spellA, hero, enemy, null);
+        // Cost was free: mana remains 30
+        assertThat(hero.getManaCurrent()).isEqualTo(30);
+        // Heat was reset to 0, then Spell A execution added 60 heat -> 60 heat
+        assertThat(hero.getPassiveState("destruction_heat", 0)).isEqualTo(60);
+    }
+
+    @Test
+    void testHeatRemains100DuringCast() {
+        Voie voieDestruction = new Voie();
+        voieDestruction.setNom("Voie de la Destruction");
+        
+        generation.grimoire.entity.voie.passif.specific.DestructionPassiveEffect destructionEffect = new generation.grimoire.entity.voie.passif.specific.DestructionPassiveEffect();
+        
+        // Custom test passive to assert heat is still 100 during cost paid event
+        generation.grimoire.entity.voie.passif.VoiePassiveEffect testAssertPassive = new generation.grimoire.entity.voie.passif.VoiePassiveEffect() {
+            @Override
+            public void onEvent(generation.grimoire.event.GameEvent event) {
+                if (event instanceof generation.grimoire.event.SpellCostPaidEvent) {
+                    // Assert that heat is still 100 when cost is paid (before spell effects run)
+                    assertThat(event.getSource().getPassiveState("destruction_heat", 0)).isEqualTo(100);
+                    assertThat(event.getSource().getPassiveState("destruction_heat_was_max", 0)).isEqualTo(1);
+                }
+            }
+        };
+
+        voieDestruction.setPassiveEffects(List.of(destructionEffect, testAssertPassive));
+        hero.setVoie(voieDestruction);
+
+        // Put hero at 100 heat
+        hero.setPassiveState("destruction_heat", 100);
+
+        Spell spell = new Spell();
+        spell.setNom("Test Spell");
+        spell.setManaCost(10);
+        spell.setVoie(voieDestruction);
+
+        // Cast spell -> this will trigger the events and execute the assertion inside testAssertPassive
+        spellService.castSpell(spell, hero, enemy, null);
+
+        // After the cast is finished, heat should be reset to 0 (since spell generates 0 heat)
+        assertThat(hero.getPassiveState("destruction_heat", 0)).isEqualTo(0);
+        assertThat(hero.getPassiveState("destruction_heat_was_max", 0)).isEqualTo(0);
+    }
 }
