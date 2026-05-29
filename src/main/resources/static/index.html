@@ -6530,6 +6530,41 @@
                     </div>
                 `;
             }
+            if (state.heroHasTrahison) {
+                const baseStyle = state.heroTrahisonBaseAvailable
+                    ? "background: rgba(139, 92, 246, 0.25); color: #c084fc; border: 1px solid #8b5cf6; box-shadow: 0 0 8px rgba(139, 92, 246, 0.3);"
+                    : "background: rgba(75, 85, 99, 0.15); color: #9ca3af; border: 1px dashed #4b5563; opacity: 0.6;";
+                const baseText = state.heroTrahisonBaseAvailable ? "+10%" : "";
+                const baseIcon = state.heroTrahisonBaseAvailable ? "flash_on" : "flash_off";
+                heroShieldsHtml += `
+                    <div class="sandbox-status-badge trahison-base" title="Bonus de base de Trahison (1er coup du tour)" style="${baseStyle}">
+                        <span class="material-symbols-outlined" style="font-size: 0.95rem; vertical-align: middle;">${baseIcon}</span>
+                        <span>${baseText}</span>
+                    </div>
+                `;
+
+                const lowHpStyle = state.heroTrahisonLowHpAvailable
+                    ? "background: rgba(139, 92, 246, 0.25); color: #c084fc; border: 1px solid #8b5cf6; box-shadow: 0 0 8px rgba(139, 92, 246, 0.3);"
+                    : "background: rgba(75, 85, 99, 0.15); color: #9ca3af; border: 1px dashed #4b5563; opacity: 0.6;";
+                const lowHpText = state.heroTrahisonLowHpAvailable ? "+15%" : "";
+                heroShieldsHtml += `
+                    <div class="sandbox-status-badge trahison-lowhp" title="Bonus de Trahison contre cible à moins de 50% PV" style="${lowHpStyle}">
+                        <span class="material-symbols-outlined" style="font-size: 0.95rem; vertical-align: middle;">heart_broken</span>
+                        <span>${lowHpText}</span>
+                    </div>
+                `;
+
+                const debuffStyle = state.heroTrahisonDebuffAvailable
+                    ? "background: rgba(139, 92, 246, 0.25); color: #c084fc; border: 1px solid #8b5cf6; box-shadow: 0 0 8px rgba(139, 92, 246, 0.3);"
+                    : "background: rgba(75, 85, 99, 0.15); color: #9ca3af; border: 1px dashed #4b5563; opacity: 0.6;";
+                const debuffText = state.heroTrahisonDebuffAvailable ? "+10%" : "";
+                heroShieldsHtml += `
+                    <div class="sandbox-status-badge trahison-debuff" title="Bonus de Trahison contre cible débuffée" style="${debuffStyle}">
+                        <span class="material-symbols-outlined" style="font-size: 0.95rem; vertical-align: middle;">trending_down</span>
+                        <span>${debuffText}</span>
+                    </div>
+                `;
+            }
             heroShieldsContainer.innerHTML = heroShieldsHtml;
 
             const monsterShieldsContainer = document.getElementById('monsterShieldsContainer');
@@ -6561,6 +6596,41 @@
                     <div class="sandbox-status-badge raison" title="Critique dérivé (Raison)" style="background: rgba(59, 130, 246, 0.25); color: #93c5fd; border: 1px solid #3b82f6; box-shadow: 0 0 8px rgba(59, 130, 246, 0.3);">
                         <span class="material-symbols-outlined" style="font-size: 0.95rem; color: #3b82f6; vertical-align: middle;">track_changes</span>
                         <span>${sign}${state.monsterCritDerived}% Critique</span>
+                    </div>
+                `;
+            }
+            if (state.monsterHasTrahison) {
+                const baseStyle = state.monsterTrahisonBaseAvailable
+                    ? "background: rgba(139, 92, 246, 0.25); color: #c084fc; border: 1px solid #8b5cf6; box-shadow: 0 0 8px rgba(139, 92, 246, 0.3);"
+                    : "background: rgba(75, 85, 99, 0.15); color: #9ca3af; border: 1px dashed #4b5563; opacity: 0.6;";
+                const baseText = state.monsterTrahisonBaseAvailable ? "Trahison: 1er coup (+10%)" : "1er coup (Consommé)";
+                const baseIcon = state.monsterTrahisonBaseAvailable ? "flash_on" : "flash_off";
+                monsterShieldsHtml += `
+                    <div class="sandbox-status-badge trahison-base" title="Bonus de base de Trahison (1er coup du tour)" style="${baseStyle}">
+                        <span class="material-symbols-outlined" style="font-size: 0.95rem; vertical-align: middle;">${baseIcon}</span>
+                        <span>${baseText}</span>
+                    </div>
+                `;
+
+                const lowHpStyle = state.monsterTrahisonLowHpAvailable
+                    ? "background: rgba(139, 92, 246, 0.25); color: #c084fc; border: 1px solid #8b5cf6; box-shadow: 0 0 8px rgba(139, 92, 246, 0.3);"
+                    : "background: rgba(75, 85, 99, 0.15); color: #9ca3af; border: 1px dashed #4b5563; opacity: 0.6;";
+                const lowHpText = state.monsterTrahisonLowHpAvailable ? "Trahison: Cible <50% PV (+15%)" : "Cible <50% PV (Consommé)";
+                monsterShieldsHtml += `
+                    <div class="sandbox-status-badge trahison-lowhp" title="Bonus de Trahison contre cible à moins de 50% PV" style="${lowHpStyle}">
+                        <span class="material-symbols-outlined" style="font-size: 0.95rem; vertical-align: middle;">heart_broken</span>
+                        <span>${lowHpText}</span>
+                    </div>
+                `;
+
+                const debuffStyle = state.monsterTrahisonDebuffAvailable
+                    ? "background: rgba(139, 92, 246, 0.25); color: #c084fc; border: 1px solid #8b5cf6; box-shadow: 0 0 8px rgba(139, 92, 246, 0.3);"
+                    : "background: rgba(75, 85, 99, 0.15); color: #9ca3af; border: 1px dashed #4b5563; opacity: 0.6;";
+                const debuffText = state.monsterTrahisonDebuffAvailable ? "Trahison: Cible débuffée (+10%)" : "Cible débuffée (Consommé)";
+                monsterShieldsHtml += `
+                    <div class="sandbox-status-badge trahison-debuff" title="Bonus de Trahison contre cible débuffée" style="${debuffStyle}">
+                        <span class="material-symbols-outlined" style="font-size: 0.95rem; vertical-align: middle;">trending_down</span>
+                        <span>${debuffText}</span>
                     </div>
                 `;
             }

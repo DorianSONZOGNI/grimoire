@@ -215,8 +215,13 @@ class PassifTest {
         int hpAfterFirst = enemy.getHealthCurrent();
         assertThat(hpAfterFirst).isLessThan(100); // extra damage was applied
 
-        // Second hit: base already used, but debuff bonus is permanent (every hit)
+        // Second hit: base and debuff bonuses are already used, so no extra damage
         trahison.onPhysicalHit(hero, enemy, 100);
-        assertThat(enemy.getHealthCurrent()).isLessThan(hpAfterFirst); // debuff bonus still applies
+        assertThat(enemy.getHealthCurrent()).isEqualTo(hpAfterFirst); // debuff bonus is once per turn
+
+        // New turn resets; hit again
+        trahison.onTurnStart(hero);
+        trahison.onPhysicalHit(hero, enemy, 100);
+        assertThat(enemy.getHealthCurrent()).isLessThan(hpAfterFirst); // debuff bonus is available again!
     }
 }

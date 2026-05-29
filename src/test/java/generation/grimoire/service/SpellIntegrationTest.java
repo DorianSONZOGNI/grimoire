@@ -632,7 +632,8 @@ class SpellIntegrationTest {
         spell.setPercentHeatCost(20); // 20% of 100 heat max = 20 heat. Total cost = 15 + 20 = 35 heat.
         spell.setVoie(voieDestruction);
 
-        // Cast spell -> pays 10 mana and 35 heat. Hero should be left with 40 - 35 = 5 heat.
+        // Cast spell -> pays 10 mana and 35 heat. Hero should be left with 40 - 35 = 5
+        // heat.
         spellService.castSpell(spell, hero, enemy, null);
         assertThat(hero.getManaCurrent()).isEqualTo(40); // 50 - 10
         assertThat(hero.getPassiveState("destruction_heat", 0)).isEqualTo(5);
@@ -679,5 +680,169 @@ class SpellIntegrationTest {
         // Mana should remain capped at 100
         assertThat(hero.getManaCurrent()).isEqualTo(100);
     }
-}
 
+    @Test
+    void testTrahisonWithBanalInstantAndChanneledSpells() {
+        // Setup Trahison passive on Hero
+        Voie voieTrahison = new Voie();
+        voieTrahison.setNom("Voie de la Trahison");
+        TrahisonPassiveEffect trahisonEffect = new TrahisonPassiveEffect();
+        voieTrahison.setPassiveEffects(List.of(trahisonEffect));
+        hero.setVoie(voieTrahison);
+
+        // Reset states
+        trahisonEffect.onTurnStart(hero);
+
+        // 1. Cast Banal spell dealing physical damage
+        Spell banalSpell = new Spell();
+        banalSpell.setNom("Banal Strike");
+        banalSpell.setCastingType(generation.grimoire.enumeration.SpellCastingType.BANAL);
+        banalSpell.setManaCost(10);
+        banalSpell.setVoie(voieTrahison);
+
+        DamageFixedEffect dmgBanal = new DamageFixedEffect();
+        dmgBanal.setDamageType(DamageType.PHYSIC);
+        dmgBanal.setDamage(100);
+        banalSpell.getEffects().add(dmgBanal);
+
+        // Enemy starts at 200 HP
+        enemy.setHealthCurrent(200);
+
+        spellService.castSpell(banalSpell, hero, enemy, null);
+        // Expect Trahison base bonus to trigger: 100 base * 10% = 10 extra BRUT damage.
+        // Enemy receives 90 PHYSICAL damage (100 base reduced by 10 armor) + 10 BRUT
+        // damage = 100. HP should be 200 - 100 = 100.
+        assertThat(enemy.getHealthCurrent()).isEqualTo(100);
+        assertThat(hero.getPassiveState("trahison_used_this_turn", 0)).isEqualTo(1);
+
+        // 2. Reset turn to test Instant Spell
+        trahisonEffect.onTurnStart(hero);
+        hero.startTurn();
+        enemy.startTurn();
+        enemy.setHealthCurrent(200);
+
+        Spell instantSpell = new Spell();
+        instantSpell.setNom("Instant Strike");
+        instantSpell.setCastingType(generation.grimoire.enumeration.SpellCastingType.INSTANTANE);
+        instantSpell.setManaCost(10);
+        instantSpell.setVoie(voieTrahison);
+
+        DamageFixedEffect dmgInstant = new DamageFixedEffect();
+        dmgInstant.setDamageType(DamageType.PHYSIC);
+        dmgInstant.setDamage(100);
+        instantSpell.getEffects().add(dmgInstant);
+
+        spellService.castSpell(instantSpell, hero, enemy, null);
+        // Enemy should receive 90 PHYSICAL damage + 10 BRUT damage = 100 damage.
+        assertThat(enemy.getHealthCurrent()).isEqualTo(100);
+        assertThat(hero.getPassiveState("trahison_used_this_turn", 0)).isEqualTo(1);
+
+        // 3. Reset turn to test Channeled Spell
+        trahisonEffect.onTurnStart(hero);
+        hero.startTurn();
+        enemy.startTurn();
+        enemy.setHealthCurrent(200);
+
+        Spell channeledSpell = new Spell();
+        channeledSpell.setNom("Channeled Strike");
+        channeledSpell.setCastingType(generation.grimoire.enumeration.SpellCastingType.CANALISE);
+        channeledSpell.setManaCost(10);
+        channeledSpell.setChannelingDuration(3);
+        channeledSpell.setVoie(voieTrahison);
+
+        DamageFixedEffect dmgChanneled = new DamageFixedEffect();
+        dmgChanneled.setDamageType(DamageType.PHYSIC);
+        dmgChanneled.setDamage(100);
+        // Set effect to tick on turn 2
+        dmgChanneled.setChannelingTurns(List.of(2));
+        channeledSpell.getEffects().add(dmgChanneled);
+
+        // Initial cast on Turn 1 (no damage since dmgChanneled ticks on turn 2)
+        spellService.castSpell(channeledSpell, hero, enemy, null);
+        assertThat(enemy.getHealthCurrent()).isEqualTo(200);
+        assertThat(hero.getPassiveState("trahison_used_this_turn", 0)).isEqualTo(0);
+
+        // Tick channeling for Turn 2
+        // We simulate start of Turn 2 first to decrement/process remaining channeling
+        // turns on the hero
+        hero.startTurn();
+        enemy.startTurn();
+        // Reset Trahison state for Turn 2
+        trahisonEffect.onTurnStart(hero);
+        spellService.tickChanneling(hero, enemy, null);
+        // Turn 2 tick deals 100 PHYSICAL damage.
+        // Since Trahison hasn't been used this turn yet, it should trigger!
+        // 90 PHYSICAL + 10 BRUT = 100 damage.
+        assertThat(enemy.getHealthCurrent()).isEqualTo(100);
+        assertThat(hero.getPassiveState("trahison_used_this_turn", 0)).isEqualTo(1);
+    }
+
+    @Test
+    void testTrahisonDebuffDetection() {
+        // Setup Trahison passive on Hero
+        Voie voieTrahison = new Voie();
+        voieTrahison.setNom("Voie de la Trahison");
+        TrahisonPassiveEffect trahisonEffect = new TrahisonPassiveEffect();
+        voieTrahison.setPassiveEffects(List.of(trahisonEffect));
+        hero.setVoie(voieTrahison);
+
+        // Reset states
+        trahisonEffect.onTurnStart(hero);
+
+        // 1. Cast Banal spell dealing physical damage
+        Spell banalSpell = new Spell();
+        banalSpell.setNom("Banal Strike");
+        banalSpell.setCastingType(generation.grimoire.enumeration.SpellCastingType.BANAL);
+        banalSpell.setManaCost(10);
+        banalSpell.setVoie(voieTrahison);
+
+        DamageFixedEffect dmgBanal = new DamageFixedEffect();
+        dmgBanal.setDamageType(DamageType.PHYSIC);
+        dmgBanal.setDamage(100);
+        banalSpell.getEffects().add(dmgBanal);
+
+        // 2. Apply a DoT to the enemy
+        generation.grimoire.entity.spell.type.effect.DamageOverTimeEffect dot = new generation.grimoire.entity.spell.type.effect.DamageOverTimeEffect();
+        dot.setDamageType(DamageType.MAGIC);
+        dot.setFixedDamagePerTick(10);
+        dot.setDuration(3);
+        dot.apply(hero, enemy);
+
+        assertThat(enemy.hasDebuff()).isTrue();
+
+        // 3. Cast spell -> should trigger base + debuff bonus
+        enemy.setHealthCurrent(200);
+        spellService.castSpell(banalSpell, hero, enemy, null);
+        // Enemy has 10 armor -> 100 physical is reduced by 9% to 90.
+        // Trahison base bonus = 10 (100 * 10%).
+        // Trahison debuff bonus = 10 (100 * 10%).
+        // Total damage = 90 + 10 + 10 = 110. HP should be 200 - 110 = 90.
+        assertThat(enemy.getHealthCurrent()).isEqualTo(90);
+        assertThat(hero.getPassiveState("trahison_used_this_turn", 0)).isEqualTo(1);
+        assertThat(hero.getPassiveState("trahison_debuff_used_this_turn", 0)).isEqualTo(1);
+
+        // 4. Test with a vulnerability buff (e.g. DAMAGE_TAKEN_PHYSIC modifier > 1.0)
+        // Reset turn and states
+        trahisonEffect.onTurnStart(hero);
+        hero.startTurn();
+        enemy.startTurn();
+        enemy.purgeAllBuffsAndDebuffs(); // clear DoT
+        enemy.setHealthCurrent(200);
+
+        assertThat(enemy.hasDebuff()).isFalse();
+
+        // Apply vulnerability debuff
+        BuffDebuffEffect vuln = new BuffDebuffEffect();
+        vuln.setStatAffected(StatType.DAMAGE_TAKEN_PHYSIC);
+        vuln.setModifier(1.2); // taking +20% damage
+        vuln.setDuration(2);
+        enemy.getActiveBuffs().add(vuln);
+
+        assertThat(enemy.hasDebuff()).isTrue(); // should be true now!
+
+        // Cast spell -> should trigger base + debuff bonus
+        spellService.castSpell(banalSpell, hero, enemy, null);
+        assertThat(enemy.getHealthCurrent()).isLessThan(200);
+        assertThat(hero.getPassiveState("trahison_debuff_used_this_turn", 0)).isEqualTo(1);
+    }
+}

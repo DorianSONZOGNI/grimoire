@@ -385,6 +385,16 @@ public class WebSpellCreationController {
         res.setHeroSurete(sandboxHero.getPassiveState("surete_points", 0));
         res.setMonsterSurete(sandboxMonster.getPassiveState("surete_points", 0));
 
+        res.setHeroHasTrahison(sandboxHero.getVoie() != null && "Voie de Trahison".equals(sandboxHero.getVoie().getNom()));
+        res.setHeroTrahisonBaseAvailable(sandboxHero.getPassiveState("trahison_used_this_turn", 0) == 0);
+        res.setHeroTrahisonLowHpAvailable(sandboxHero.getPassiveState("trahison_low_hp_used_this_turn", 0) == 0);
+        res.setHeroTrahisonDebuffAvailable(sandboxHero.getPassiveState("trahison_debuff_used_this_turn", 0) == 0);
+
+        res.setMonsterHasTrahison(sandboxMonster.getVoie() != null && "Voie de Trahison".equals(sandboxMonster.getVoie().getNom()));
+        res.setMonsterTrahisonBaseAvailable(sandboxMonster.getPassiveState("trahison_used_this_turn", 0) == 0);
+        res.setMonsterTrahisonLowHpAvailable(sandboxMonster.getPassiveState("trahison_low_hp_used_this_turn", 0) == 0);
+        res.setMonsterTrahisonDebuffAvailable(sandboxMonster.getPassiveState("trahison_debuff_used_this_turn", 0) == 0);
+
         // Calculer le critère dérivé de la Raison
         Integer heroCritDerived = null;
         if (sandboxHero.getVoie() != null && "Voie de la Raison".equals(sandboxHero.getVoie().getNom())) {
@@ -723,6 +733,10 @@ public class WebSpellCreationController {
         private int heroHeat;
         private Integer heroCritDerived;
         private int heroSurete;
+        private boolean heroHasTrahison;
+        private boolean heroTrahisonBaseAvailable;
+        private boolean heroTrahisonLowHpAvailable;
+        private boolean heroTrahisonDebuffAvailable;
         private java.util.List<ShieldState> heroShields;
         private java.util.List<BuffState> heroBuffs;
 
@@ -733,6 +747,10 @@ public class WebSpellCreationController {
         private int monsterHeat;
         private Integer monsterCritDerived;
         private int monsterSurete;
+        private boolean monsterHasTrahison;
+        private boolean monsterTrahisonBaseAvailable;
+        private boolean monsterTrahisonLowHpAvailable;
+        private boolean monsterTrahisonDebuffAvailable;
         private java.util.List<ShieldState> monsterShields;
         private java.util.List<BuffState> monsterBuffs;
 
