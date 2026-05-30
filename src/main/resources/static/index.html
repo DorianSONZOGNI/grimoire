@@ -2684,13 +2684,13 @@
 
             <div class="form-row">
                 <div class="form-group">
-                    <label for="voieSelect">Voie Associée</label>
+                    <label for="voieSelect" style="display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem;">route</span>Voie Associée</label>
                     <select id="voieSelect" onchange="updateRankTitle(); updateSpecialVoieConfig();">
                         <option value="">-- Aucune (Neutre) --</option>
                     </select>
                 </div>
                 <div class="form-group">
-                    <label for="spiritSelect">Spiritualité</label>
+                    <label for="spiritSelect" style="display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem;">psychology</span>Spiritualité</label>
                     <select id="spiritSelect" onchange="updateRankTitle()">
                         <option value="">-- Aucune (Neutre) --</option>
                     </select>
@@ -2999,25 +2999,25 @@
                                 <div class="config-section-title">Voie & Spiritualité</div>
                                 <div class="config-row">
                                     <div class="config-field">
-                                        <label>Voie</label>
+                                        <label style="display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem;">route</span>Voie</label>
                                         <select id="heroConfigVoie">
                                             <option value="">— Aucune —</option>
                                         </select>
                                     </div>
                                     <div class="config-field">
-                                        <label>Niveau Voie</label>
+                                        <label style="display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem;">star</span>Niveau Voie</label>
                                         <input type="number" id="heroConfigVoieLevel" min="1" max="5" value="1">
                                     </div>
                                 </div>
                                 <div class="config-row">
                                     <div class="config-field">
-                                        <label>Spiritualité</label>
+                                        <label style="display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem;">psychology</span>Spiritualité</label>
                                         <select id="heroConfigSpiritualite">
                                             <option value="">— Aucune —</option>
                                         </select>
                                     </div>
                                     <div class="config-field">
-                                        <label>Niveau Spirit.</label>
+                                        <label style="display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem;">star</span>Niveau Spirit.</label>
                                         <input type="number" id="heroConfigSpiritLevel" min="1" max="3" value="1">
                                     </div>
                                 </div>
@@ -3025,35 +3025,35 @@
                                 <div class="config-section-title">Statistiques de base</div>
                                 <div class="config-row">
                                     <div class="config-field">
-                                        <label>PV Max</label>
+                                        <label style="display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem;">favorite</span>PV Max</label>
                                         <input type="number" id="heroConfigHp" min="1" value="100">
                                     </div>
                                     <div class="config-field">
-                                        <label>Mana Max</label>
+                                        <label style="display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem;">water_drop</span>Mana Max</label>
                                         <input type="number" id="heroConfigMana" min="0" value="100">
                                     </div>
                                 </div>
                                 <div class="config-row triple">
                                     <div class="config-field">
-                                        <label>Puissance</label>
+                                        <label style="display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem;">auto_awesome</span>Puissance</label>
                                         <input type="number" id="heroConfigPower" min="0" value="25">
                                     </div>
                                     <div class="config-field">
-                                        <label>Armure</label>
+                                        <label style="display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem;">shield</span>Armure</label>
                                         <input type="number" id="heroConfigArmor" min="0" value="10">
                                     </div>
                                     <div class="config-field">
-                                        <label>Résistance</label>
+                                        <label style="display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem;">security</span>Résistance</label>
                                         <input type="number" id="heroConfigResistance" min="0" value="10">
                                     </div>
                                 </div>
                                 <div class="config-row">
                                     <div class="config-field">
-                                        <label>Vitesse</label>
+                                        <label style="display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem;">speed</span>Vitesse</label>
                                         <input type="number" id="heroConfigSpeed" min="0" value="0">
                                     </div>
                                     <div class="config-field">
-                                        <label>Critique (%)</label>
+                                        <label style="display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem;">track_changes</span>Critique (%)</label>
                                         <input type="number" id="heroConfigCrit" min="0" max="100" value="0">
                                     </div>
                                 </div>
@@ -3305,6 +3305,8 @@
 
                 makeCustomSelect('voieSelect');
                 makeCustomSelect('spiritSelect');
+                makeCustomSelect('heroConfigVoie');
+                makeCustomSelect('heroConfigSpiritualite');
 
                 // Remplir les sources de coûts
                 const pms = document.getElementById('percentManaCostSource');
@@ -6234,11 +6236,11 @@
             optionsContainer.style.boxShadow = '0 10px 25px rgba(0,0,0,0.5)';
 
             const getIconInfo = (id, text) => {
-                if (id === 'voieSelect' || id === 'filterVoie') {
+                if (id === 'voieSelect' || id === 'filterVoie' || id === 'heroConfigVoie') {
                     if (text.includes('Aucune') || text.includes('Neutre')) return { icon: 'trip_origin', color: '#94a3b8' };
                     return { icon: getVoieIcon(text), color: getVoieButtonColor({ nom: text }) };
                 }
-                if (id === 'spiritSelect' || id === 'filterSpirit') {
+                if (id === 'spiritSelect' || id === 'filterSpirit' || id === 'heroConfigSpiritualite') {
                     if (text.includes('Aucune') || text.includes('Neutre')) return { icon: 'trip_origin', color: '#94a3b8' };
                     return { icon: getSpiritIcon(text), color: getSpiritButtonColor({ nom: text }) };
                 }
@@ -6801,10 +6803,16 @@
         function syncHeroConfigForm(state) {
             const voieSelect = document.getElementById('heroConfigVoie');
             const spiritSelect = document.getElementById('heroConfigSpiritualite');
-            if (voieSelect && state.heroVoieId != null) voieSelect.value = state.heroVoieId;
-            else if (voieSelect) voieSelect.value = '';
-            if (spiritSelect && state.heroSpiritualiteId != null) spiritSelect.value = state.heroSpiritualiteId;
-            else if (spiritSelect) spiritSelect.value = '';
+            if (voieSelect) {
+                if (state.heroVoieId != null) voieSelect.value = state.heroVoieId;
+                else voieSelect.value = '';
+                voieSelect.dispatchEvent(new Event('change'));
+            }
+            if (spiritSelect) {
+                if (state.heroSpiritualiteId != null) spiritSelect.value = state.heroSpiritualiteId;
+                else spiritSelect.value = '';
+                spiritSelect.dispatchEvent(new Event('change'));
+            }
 
             const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
             setVal('heroConfigVoieLevel', state.heroVoieLevel || 1);
