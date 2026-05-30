@@ -427,12 +427,12 @@ public class WebSpellCreationController {
         res.setMonsterViolenceExpiration(sandboxMonster.getPassiveState("violence_expiration", 0));
 
         // Karma
-        res.setHeroHasKarma(sandboxHero.getSpiritualite() != null && "Spiritualité Karma".equals(sandboxHero.getSpiritualite().getNom()));
+        res.setHeroHasKarma(sandboxHero.getSpiritualite() != null && sandboxHero.getSpiritualite().getNom() != null && sandboxHero.getSpiritualite().getNom().toLowerCase().contains("karma"));
         res.setHeroKarmaGauge(sandboxHero.getPassiveState("karma_gauge", 0));
         res.setHeroKarmaLocked(sandboxHero.getPassiveState("karma_locked", 0) == 1);
         res.setHeroKarmaHarmony(sandboxHero.getPassiveState("karma_harmony", 0) == 1);
 
-        res.setMonsterHasKarma(sandboxMonster.getSpiritualite() != null && "Spiritualité Karma".equals(sandboxMonster.getSpiritualite().getNom()));
+        res.setMonsterHasKarma(sandboxMonster.getSpiritualite() != null && sandboxMonster.getSpiritualite().getNom() != null && sandboxMonster.getSpiritualite().getNom().toLowerCase().contains("karma"));
         res.setMonsterKarmaGauge(sandboxMonster.getPassiveState("karma_gauge", 0));
         res.setMonsterKarmaLocked(sandboxMonster.getPassiveState("karma_locked", 0) == 1);
         res.setMonsterKarmaHarmony(sandboxMonster.getPassiveState("karma_harmony", 0) == 1);
