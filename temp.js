@@ -1846,8 +1846,8 @@ function getSpellCardHtml(sp) {
                                     <span class="material-symbols-outlined" style="font-size: 1.1rem; color: #f59e0b; vertical-align: middle;" title="Instantanés autorisés pendant la canalisation">bolt</span>
                                 ` : `
                                     <span style="position: relative; display: inline-flex; align-items: center; justify-content: center; width: 1.1rem; height: 1.1rem; vertical-align: middle;" title="Instantanés interdits pendant la canalisation">
-                                        <span class="material-symbols-outlined" style="font-size: 1.1rem; color: #ef4444; position: absolute;">block</span>
-                                        <span class="material-symbols-outlined" style="font-size: 0.75rem; color: #cbd5e1; position: absolute;">bolt</span>
+                                        <span class="material-symbols-outlined" style="font-size: 1.1rem; color: #64748b;">bolt</span>
+                                        <span style="position: absolute; width: 100%; height: 2px; background: #ef4444; transform: rotate(-45deg);"></span>
                                     </span>
                                 `}
                             </span>
