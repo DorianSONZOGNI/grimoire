@@ -426,6 +426,17 @@ public class WebSpellCreationController {
         res.setMonsterViolenceInspiration(sandboxMonster.getPassiveState("violence_inspiration", 0));
         res.setMonsterViolenceExpiration(sandboxMonster.getPassiveState("violence_expiration", 0));
 
+        // Karma
+        res.setHeroHasKarma(sandboxHero.getSpiritualite() != null && "Spiritualité Karma".equals(sandboxHero.getSpiritualite().getNom()));
+        res.setHeroKarmaGauge(sandboxHero.getPassiveState("karma_gauge", 0));
+        res.setHeroKarmaLocked(sandboxHero.getPassiveState("karma_locked", 0) == 1);
+        res.setHeroKarmaHarmony(sandboxHero.getPassiveState("karma_harmony", 0) == 1);
+
+        res.setMonsterHasKarma(sandboxMonster.getSpiritualite() != null && "Spiritualité Karma".equals(sandboxMonster.getSpiritualite().getNom()));
+        res.setMonsterKarmaGauge(sandboxMonster.getPassiveState("karma_gauge", 0));
+        res.setMonsterKarmaLocked(sandboxMonster.getPassiveState("karma_locked", 0) == 1);
+        res.setMonsterKarmaHarmony(sandboxMonster.getPassiveState("karma_harmony", 0) == 1);
+
         // Configuration du héros
         res.setHeroVoieId(sandboxHero.getVoie() != null ? sandboxHero.getVoie().getId() : null);
         res.setHeroVoieName(sandboxHero.getVoie() != null ? sandboxHero.getVoie().getNom() : null);
@@ -598,6 +609,12 @@ public class WebSpellCreationController {
         spell.setAllowInstantDuringChanneling(dto.isAllowInstantDuringChanneling());
         spell.setHeatGenerated(dto.getHeatGenerated());
         spell.setInspiration(dto.isInspiration());
+        
+        if (dto.getKarmaAlignment() != null) {
+            spell.setKarmaAlignment(dto.getKarmaAlignment());
+        } else {
+            spell.setKarmaAlignment(generation.grimoire.enumeration.KarmaAlignment.NONE);
+        }
 
         Long voieId = dto.getVoieId();
         if (voieId != null) {
@@ -764,6 +781,7 @@ public class WebSpellCreationController {
         private int channelingDuration;
         private boolean allowInstantDuringChanneling = true;
         private boolean inspiration;
+        private generation.grimoire.enumeration.KarmaAlignment karmaAlignment;
         private List<EffectCreationDto> effects = new ArrayList<>();
     }
 
@@ -822,6 +840,11 @@ public class WebSpellCreationController {
         private boolean heroHasViolence;
         private int heroViolenceInspiration;
         private int heroViolenceExpiration;
+        
+        private boolean heroHasKarma;
+        private int heroKarmaGauge;
+        private boolean heroKarmaLocked;
+        private boolean heroKarmaHarmony;
         private java.util.List<ShieldState> heroShields;
         private java.util.List<BuffState> heroBuffs;
 
@@ -860,6 +883,11 @@ public class WebSpellCreationController {
         private boolean monsterHasViolence;
         private int monsterViolenceInspiration;
         private int monsterViolenceExpiration;
+
+        private boolean monsterHasKarma;
+        private int monsterKarmaGauge;
+        private boolean monsterKarmaLocked;
+        private boolean monsterKarmaHarmony;
         private java.util.List<ShieldState> monsterShields;
         private java.util.List<BuffState> monsterBuffs;
 

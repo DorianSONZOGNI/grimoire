@@ -2861,7 +2861,7 @@
                     <label for="spiritSelect" style="display: flex; align-items: center; gap: 0.3rem;"><span
                             class="material-symbols-outlined"
                             style="font-size: 1rem;">psychology</span>Spiritualité</label>
-                    <select id="spiritSelect" onchange="updateRankTitle()">
+                    <select id="spiritSelect" onchange="updateRankTitle(); updateSpecialSpiritConfig();">
                         <option value="">-- Aucune (Neutre) --</option>
                     </select>
                 </div>
@@ -2886,6 +2886,29 @@
                             style="font-size: 1.5rem; transition: transform 0.3s;">local_fire_department</span>
                         <span style="font-size: 0.9rem; font-weight: 600;">Expiration</span>
                         <span style="font-size: 0.75rem; opacity: 0.8;">+Puissance</span>
+                    </button>
+                </div>
+            </div>
+
+            <!-- Options spécifiques pour la Spiritualité Karma -->
+            <div id="karmaConfig" class="form-group" style="display: none; margin-top: 1rem;">
+                <input type="hidden" id="karmaAlignment" value="NONE">
+                <div class="karma-segmented-control"
+                    style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--glass-border); padding: 0.4rem; border-radius: 12px;">
+                    <button type="button" id="btnKarmaOffensive" onclick="setKarmaAlignment('OFFENSIVE')"
+                        style="background: transparent; border: 1px solid transparent; border-radius: 8px; padding: 0.8rem 0.5rem; display: flex; flex-direction: column; align-items: center; gap: 0.3rem; cursor: pointer; transition: all 0.3s ease;">
+                        <span class="material-symbols-outlined" style="font-size: 1.5rem; transition: transform 0.3s;">dark_mode</span>
+                        <span style="font-size: 0.85rem; font-weight: 600;">Ténèbres</span>
+                    </button>
+                    <button type="button" id="btnKarmaRestorative" onclick="setKarmaAlignment('RESTORATIVE')"
+                        style="background: transparent; border: 1px solid transparent; border-radius: 8px; padding: 0.8rem 0.5rem; display: flex; flex-direction: column; align-items: center; gap: 0.3rem; cursor: pointer; transition: all 0.3s ease;">
+                        <span class="material-symbols-outlined" style="font-size: 1.5rem; transition: transform 0.3s;">brightness_medium</span>
+                        <span style="font-size: 0.85rem; font-weight: 600;">Harmonie</span>
+                    </button>
+                    <button type="button" id="btnKarmaProtective" onclick="setKarmaAlignment('PROTECTIVE')"
+                        style="background: transparent; border: 1px solid transparent; border-radius: 8px; padding: 0.8rem 0.5rem; display: flex; flex-direction: column; align-items: center; gap: 0.3rem; cursor: pointer; transition: all 0.3s ease;">
+                        <span class="material-symbols-outlined" style="font-size: 1.5rem; transition: transform 0.3s;">light_mode</span>
+                        <span style="font-size: 0.85rem; font-weight: 600;">Lumière</span>
                     </button>
                 </div>
             </div>
@@ -3687,6 +3710,25 @@
             }
         }
 
+        function updateSpecialSpiritConfig() {
+            const spiritId = document.getElementById('spiritSelect').value;
+            let isKarma = false;
+            if (spiritId && metaData.spiritualites) {
+                const s = metaData.spiritualites.find(sp => sp.id == spiritId);
+                if (s && s.nom) {
+                    if (s.nom.toLowerCase().includes('karma')) {
+                        isKarma = true;
+                    }
+                }
+            }
+
+            const karmaConfig = document.getElementById('karmaConfig');
+            if (karmaConfig) {
+                karmaConfig.style.display = isKarma ? 'block' : 'none';
+                updateKarmaLabel();
+            }
+        }
+
         function setViolenceType(isInspiration) {
             const input = document.getElementById('isInspiration');
             if (input) {
@@ -3736,6 +3778,62 @@
                 btnInsp.style.color = 'var(--text-muted)';
                 btnInsp.style.opacity = '0.6';
                 btnInsp.querySelector('.material-symbols-outlined').style.transform = 'scale(1)';
+            }
+        }
+
+        function setKarmaAlignment(alignment) {
+            const input = document.getElementById('karmaAlignment');
+            if (input) {
+                if (input.value === alignment) {
+                    input.value = 'NONE'; // Toggle off
+                } else {
+                    input.value = alignment;
+                }
+                updateKarmaLabel();
+            }
+        }
+
+        function updateKarmaLabel() {
+            const input = document.getElementById('karmaAlignment');
+            const alignment = input ? input.value : 'NONE';
+
+            const btnOff = document.getElementById('btnKarmaOffensive');
+            const btnRes = document.getElementById('btnKarmaRestorative');
+            const btnPro = document.getElementById('btnKarmaProtective');
+
+            if (!btnOff || !btnRes || !btnPro) return;
+
+            // Reset all
+            [btnOff, btnRes, btnPro].forEach(btn => {
+                btn.style.background = 'transparent';
+                btn.style.border = '1px solid transparent';
+                btn.style.boxShadow = 'none';
+                btn.style.color = 'var(--text-muted)';
+                btn.style.opacity = '0.6';
+                btn.querySelector('.material-symbols-outlined').style.transform = 'scale(1)';
+            });
+
+            if (alignment === 'OFFENSIVE') {
+                btnOff.style.background = 'linear-gradient(135deg, rgba(147, 51, 234, 0.15) 0%, rgba(126, 34, 206, 0.3) 100%)';
+                btnOff.style.border = '1px solid rgba(147, 51, 234, 0.4)';
+                btnOff.style.boxShadow = '0 0 12px rgba(147, 51, 234, 0.2)';
+                btnOff.style.color = '#c084fc';
+                btnOff.style.opacity = '1';
+                btnOff.querySelector('.material-symbols-outlined').style.transform = 'scale(1.15)';
+            } else if (alignment === 'RESTORATIVE') {
+                btnRes.style.background = 'linear-gradient(135deg, rgba(100, 116, 139, 0.15) 0%, rgba(71, 85, 105, 0.3) 100%)';
+                btnRes.style.border = '1px solid rgba(100, 116, 139, 0.4)';
+                btnRes.style.boxShadow = '0 0 12px rgba(100, 116, 139, 0.2)';
+                btnRes.style.color = '#cbd5e1';
+                btnRes.style.opacity = '1';
+                btnRes.querySelector('.material-symbols-outlined').style.transform = 'scale(1.15)';
+            } else if (alignment === 'PROTECTIVE') {
+                btnPro.style.background = 'linear-gradient(135deg, rgba(234, 179, 8, 0.15) 0%, rgba(202, 138, 4, 0.3) 100%)';
+                btnPro.style.border = '1px solid rgba(234, 179, 8, 0.4)';
+                btnPro.style.boxShadow = '0 0 12px rgba(234, 179, 8, 0.2)';
+                btnPro.style.color = '#fde047';
+                btnPro.style.opacity = '1';
+                btnPro.querySelector('.material-symbols-outlined').style.transform = 'scale(1.15)';
             }
         }
 
@@ -4753,6 +4851,7 @@
                 voieId: (document.getElementById('voieSelect').value && document.getElementById('voieSelect').value !== '0') ? parseInt(document.getElementById('voieSelect').value) : null,
                 spiritualiteId: (document.getElementById('spiritSelect').value && document.getElementById('spiritSelect').value !== '0') ? parseInt(document.getElementById('spiritSelect').value) : null,
                 inspiration: document.getElementById('isInspiration') ? document.getElementById('isInspiration').checked : false,
+                karmaAlignment: document.getElementById('karmaAlignment') ? document.getElementById('karmaAlignment').value : 'NONE',
 
                 effects: currentEffects.map(e => ({
                     effectType: e.effectType,
@@ -5165,6 +5264,15 @@
                     castBadge += ` <span class="badge" style="display: inline-flex; align-items: center; gap: 0.2rem; background: rgba(6, 182, 212, 0.2); color: #67e8f9; border: 1px solid rgba(6, 182, 212, 0.4);"><span class="material-symbols-outlined" style="font-size: 1.05rem;">air</span>Inspiration</span>`;
                 } else {
                     castBadge += ` <span class="badge" style="display: inline-flex; align-items: center; gap: 0.2rem; background: rgba(219, 39, 119, 0.2); color: #f472b6; border: 1px solid rgba(219, 39, 119, 0.4);"><span class="material-symbols-outlined" style="font-size: 1.05rem;">local_fire_department</span>Expiration</span>`;
+                }
+            }
+            if (sp.spiritualite && sp.spiritualite.nom && sp.spiritualite.nom.toLowerCase().includes('karma')) {
+                if (sp.karmaAlignment === 'OFFENSIVE') {
+                    castBadge += ` <span class="badge" style="display: inline-flex; align-items: center; gap: 0.2rem; background: rgba(147, 51, 234, 0.2); color: #c084fc; border: 1px solid rgba(147, 51, 234, 0.4);"><span class="material-symbols-outlined" style="font-size: 1.05rem;">dark_mode</span>Ténèbres</span>`;
+                } else if (sp.karmaAlignment === 'PROTECTIVE') {
+                    castBadge += ` <span class="badge" style="display: inline-flex; align-items: center; gap: 0.2rem; background: rgba(234, 179, 8, 0.2); color: #fde047; border: 1px solid rgba(234, 179, 8, 0.4);"><span class="material-symbols-outlined" style="font-size: 1.05rem;">light_mode</span>Lumière</span>`;
+                } else if (sp.karmaAlignment === 'RESTORATIVE') {
+                    castBadge += ` <span class="badge" style="display: inline-flex; align-items: center; gap: 0.2rem; background: rgba(100, 116, 139, 0.2); color: #cbd5e1; border: 1px solid rgba(100, 116, 139, 0.4);"><span class="material-symbols-outlined" style="font-size: 1.05rem;">brightness_medium</span>Harmonie</span>`;
                 }
             }
 
@@ -6808,6 +6916,12 @@
 
             document.getElementById('voieSelect').value = sp.voie ? sp.voie.id : '';
             document.getElementById('voieSelect').dispatchEvent(new Event('change'));
+
+            const karmaInput = document.getElementById('karmaAlignment');
+            if (karmaInput) {
+                karmaInput.value = sp.karmaAlignment || 'NONE';
+            }
+
             document.getElementById('spiritSelect').value = sp.spiritualite ? sp.spiritualite.id : '';
             document.getElementById('spiritSelect').dispatchEvent(new Event('change'));
 

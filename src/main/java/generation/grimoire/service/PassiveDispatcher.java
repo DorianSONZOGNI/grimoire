@@ -70,7 +70,7 @@ public class PassiveDispatcher {
 
         // Passifs de la Spiritualité du sort (si différente de celle du personnage)
         if (spell != null && spell.getSpiritualite() != null) {
-            if (caster.getSpiritualite() == null || !caster.getSpiritualite().equals(spell.getSpiritualite())) {
+            if (caster.getSpiritualite() == null || !caster.getSpiritualite().getId().equals(spell.getSpiritualite().getId())) {
                 if (spell.getSpiritualite().getPassiveEffects() != null) {
                     result.addAll(spell.getSpiritualite().getPassiveEffects());
                 }

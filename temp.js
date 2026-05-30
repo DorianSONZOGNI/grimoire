@@ -1585,6 +1585,15 @@ function getSpellCardHtml(sp) {
             castBadge += ` <span class="badge" style="display: inline-flex; align-items: center; gap: 0.2rem; background: rgba(219, 39, 119, 0.2); color: #f472b6; border: 1px solid rgba(219, 39, 119, 0.4);"><span class="material-symbols-outlined" style="font-size: 1.05rem;">local_fire_department</span>Expiration</span>`;
         }
     }
+    if (sp.spiritualite && sp.spiritualite.nom && sp.spiritualite.nom.toLowerCase().includes('karma')) {
+        if (sp.karmaAlignment === 'OFFENSIVE') {
+            castBadge += ` <span class="badge" style="display: inline-flex; align-items: center; gap: 0.2rem; background: rgba(147, 51, 234, 0.2); color: #c084fc; border: 1px solid rgba(147, 51, 234, 0.4);"><span class="material-symbols-outlined" style="font-size: 1.05rem;">dark_mode</span>Ténèbres</span>`;
+        } else if (sp.karmaAlignment === 'PROTECTIVE') {
+            castBadge += ` <span class="badge" style="display: inline-flex; align-items: center; gap: 0.2rem; background: rgba(234, 179, 8, 0.2); color: #fde047; border: 1px solid rgba(234, 179, 8, 0.4);"><span class="material-symbols-outlined" style="font-size: 1.05rem;">light_mode</span>Lumière</span>`;
+        } else if (sp.karmaAlignment === 'RESTORATIVE') {
+            castBadge += ` <span class="badge" style="display: inline-flex; align-items: center; gap: 0.2rem; background: rgba(100, 116, 139, 0.2); color: #cbd5e1; border: 1px solid rgba(100, 116, 139, 0.4);"><span class="material-symbols-outlined" style="font-size: 1.05rem;">brightness_medium</span>Harmonie</span>`;
+        }
+    }
 
     let effectsSummaryHtml = '';
     if ((sp.effects && sp.effects.length > 0) || (sp.heatGenerated && sp.heatGenerated > 0)) {
@@ -3942,6 +3951,56 @@ function updateSandboxUI(state) {
                     </div>
                 `;
     }
+    if (state.heroHasKarma) {
+        const gauge = state.heroKarmaGauge;
+        const isLocked = state.heroKarmaLocked;
+        const isHarmony = state.heroKarmaHarmony;
+        let bg, border, color, icon, text, title;
+
+        if (isLocked) {
+            bg = 'rgba(239, 68, 68, 0.25)';
+            border = '1px solid #ef4444';
+            color = '#f87171';
+            icon = 'block';
+            text = 'Karma Brisé';
+            title = 'La voie du Karma est définitivement verrouillée.';
+        } else if (isHarmony) {
+            bg = 'rgba(100, 116, 139, 0.25)';
+            border = '1px solid #cbd5e1';
+            color = '#cbd5e1';
+            icon = 'brightness_medium';
+            text = 'Harmonie';
+            title = 'Équilibre parfait atteint. Les effets karmiques sont amplifiés !';
+        } else if (gauge < 0) {
+            bg = 'rgba(147, 51, 234, 0.25)';
+            border = '1px solid #c084fc';
+            color = '#c084fc';
+            icon = 'dark_mode';
+            text = `Ténèbres (${Math.abs(gauge)})`;
+            title = `Le Karma penche vers les Ténèbres. Jauge: ${gauge}`;
+        } else if (gauge > 0) {
+            bg = 'rgba(234, 179, 8, 0.25)';
+            border = '1px solid #fde047';
+            color = '#fde047';
+            icon = 'light_mode';
+            text = `Lumière (${gauge})`;
+            title = `Le Karma penche vers la Lumière. Jauge: +${gauge}`;
+        } else {
+            bg = 'rgba(107, 114, 128, 0.15)';
+            border = '1px dashed #6b7280';
+            color = '#9ca3af';
+            icon = 'balance';
+            text = 'Karma Neutre';
+            title = 'Le Karma est neutre.';
+        }
+
+        heroShieldsHtml += `
+                    <div class="sandbox-status-badge karma" title="${title}" style="background: ${bg}; color: ${color}; border: ${border}; box-shadow: 0 0 8px ${bg};">
+                        <span class="material-symbols-outlined" style="font-size: 0.95rem; color: ${color}; vertical-align: middle;">${icon}</span>
+                        <span>${text}</span>
+                    </div>
+                `;
+    }
     heroShieldsContainer.innerHTML = heroShieldsHtml;
 
     const monsterShieldsContainer = document.getElementById('monsterShieldsContainer');
@@ -4057,6 +4116,56 @@ function updateSandboxUI(state) {
         }
         monsterShieldsHtml += `
                     <div class="sandbox-status-badge violence" title="${title}" style="background: ${bg}; color: ${color}; border: ${border}; box-shadow: 0 0 8px ${bg};">
+                        <span class="material-symbols-outlined" style="font-size: 0.95rem; color: ${color}; vertical-align: middle;">${icon}</span>
+                        <span>${text}</span>
+                    </div>
+                `;
+    }
+    if (state.monsterHasKarma) {
+        const gauge = state.monsterKarmaGauge;
+        const isLocked = state.monsterKarmaLocked;
+        const isHarmony = state.monsterKarmaHarmony;
+        let bg, border, color, icon, text, title;
+
+        if (isLocked) {
+            bg = 'rgba(239, 68, 68, 0.25)';
+            border = '1px solid #ef4444';
+            color = '#f87171';
+            icon = 'block';
+            text = 'Karma Brisé';
+            title = 'La voie du Karma est définitivement verrouillée.';
+        } else if (isHarmony) {
+            bg = 'rgba(100, 116, 139, 0.25)';
+            border = '1px solid #cbd5e1';
+            color = '#cbd5e1';
+            icon = 'brightness_medium';
+            text = 'Harmonie';
+            title = 'Équilibre parfait atteint. Les effets karmiques sont amplifiés !';
+        } else if (gauge < 0) {
+            bg = 'rgba(147, 51, 234, 0.25)';
+            border = '1px solid #c084fc';
+            color = '#c084fc';
+            icon = 'dark_mode';
+            text = `Ténèbres (${Math.abs(gauge)})`;
+            title = `Le Karma penche vers les Ténèbres. Jauge: ${gauge}`;
+        } else if (gauge > 0) {
+            bg = 'rgba(234, 179, 8, 0.25)';
+            border = '1px solid #fde047';
+            color = '#fde047';
+            icon = 'light_mode';
+            text = `Lumière (${gauge})`;
+            title = `Le Karma penche vers la Lumière. Jauge: +${gauge}`;
+        } else {
+            bg = 'rgba(107, 114, 128, 0.15)';
+            border = '1px dashed #6b7280';
+            color = '#9ca3af';
+            icon = 'balance';
+            text = 'Karma Neutre';
+            title = 'Le Karma est neutre.';
+        }
+
+        monsterShieldsHtml += `
+                    <div class="sandbox-status-badge karma" title="${title}" style="background: ${bg}; color: ${color}; border: ${border}; box-shadow: 0 0 8px ${bg};">
                         <span class="material-symbols-outlined" style="font-size: 0.95rem; color: ${color}; vertical-align: middle;">${icon}</span>
                         <span>${text}</span>
                     </div>
