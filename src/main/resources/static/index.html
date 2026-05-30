@@ -105,7 +105,7 @@
             flex-direction: column;
             gap: 1.5rem;
             position: relative;
-            overflow: hidden;
+            overflow: visible;
             height: 100%;
         }
 
@@ -117,6 +117,8 @@
             right: 0;
             height: 3px;
             background: linear-gradient(to right, var(--primary), var(--secondary));
+            border-top-left-radius: 16px;
+            border-top-right-radius: 16px;
         }
 
         .panel-title {
@@ -1765,6 +1767,189 @@
             box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.8);
         }
 
+        /* Hero Configuration Panel */
+        .hero-config-panel {
+            background: rgba(15, 23, 42, 0.7);
+            border: 1px solid rgba(139, 92, 246, 0.2);
+            border-radius: 12px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+
+        .hero-config-panel:hover {
+            border-color: rgba(139, 92, 246, 0.4);
+        }
+
+        .hero-config-toggle {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 0.6rem 0.8rem;
+            cursor: pointer;
+            user-select: none;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.1), rgba(59, 130, 246, 0.05));
+            border: none;
+            width: 100%;
+            color: #c084fc;
+            font-size: 0.85rem;
+            font-weight: 600;
+            font-family: 'Outfit', sans-serif;
+            transition: background 0.2s;
+        }
+
+        .hero-config-toggle:hover {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.2), rgba(59, 130, 246, 0.1));
+        }
+
+        .hero-config-toggle .toggle-arrow {
+            transition: transform 0.3s;
+            font-size: 1.1rem;
+        }
+
+        .hero-config-panel.expanded .toggle-arrow {
+            transform: rotate(180deg);
+        }
+
+        .hero-config-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.4s cubic-bezier(0.16, 1, 0.3, 1);
+        }
+
+        .hero-config-panel.expanded .hero-config-body {
+            max-height: 600px;
+        }
+
+        .hero-config-content {
+            padding: 0.8rem;
+            display: flex;
+            flex-direction: column;
+            gap: 0.6rem;
+        }
+
+        .config-section-title {
+            font-size: 0.7rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-muted);
+            font-weight: 600;
+            margin-bottom: -0.2rem;
+        }
+
+        .config-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0.5rem;
+        }
+
+        .config-row.triple {
+            grid-template-columns: 1fr 1fr 1fr;
+        }
+
+        .config-field {
+            display: flex;
+            flex-direction: column;
+            gap: 0.2rem;
+        }
+
+        .config-field label {
+            font-size: 0.72rem;
+            color: #94a3b8;
+            font-weight: 500;
+        }
+
+        .config-field select,
+        .config-field input[type="number"] {
+            background: #0f172a;
+            border: 1px solid rgba(255, 255, 255, 0.12);
+            color: #e2e8f0;
+            border-radius: 6px;
+            padding: 0.35rem 0.5rem;
+            font-size: 0.8rem;
+            outline: none;
+            transition: border-color 0.2s;
+            font-family: inherit;
+        }
+
+        .config-field select:focus,
+        .config-field input[type="number"]:focus {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.15);
+        }
+
+        .config-field input[type="number"] {
+            width: 100%;
+            box-sizing: border-box;
+        }
+
+        .config-apply-btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.3rem;
+            width: 100%;
+            padding: 0.45rem;
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.3), rgba(59, 130, 246, 0.2));
+            color: #c084fc;
+            border: 1px solid rgba(139, 92, 246, 0.4);
+            border-radius: 6px;
+            font-size: 0.8rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-family: 'Outfit', sans-serif;
+        }
+
+        .config-apply-btn:hover {
+            background: linear-gradient(135deg, rgba(139, 92, 246, 0.5), rgba(59, 130, 246, 0.3));
+            box-shadow: 0 0 12px rgba(139, 92, 246, 0.3);
+        }
+
+        .hero-config-badge {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.25rem;
+            font-size: 0.72rem;
+            padding: 0.15rem 0.45rem;
+            border-radius: 4px;
+            font-weight: 500;
+        }
+
+        .hero-config-badge.voie {
+            background: rgba(139, 92, 246, 0.2);
+            color: #c084fc;
+            border: 1px solid rgba(139, 92, 246, 0.3);
+        }
+
+        .hero-config-badge.spirit {
+            background: rgba(59, 130, 246, 0.2);
+            color: #93c5fd;
+            border: 1px solid rgba(59, 130, 246, 0.3);
+        }
+
+        .hero-stats-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.3rem;
+            margin-top: 0.2rem;
+        }
+
+        .hero-stat-chip {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.2rem;
+            font-size: 0.7rem;
+            padding: 0.1rem 0.35rem;
+            border-radius: 3px;
+            background: rgba(255, 255, 255, 0.05);
+            color: #94a3b8;
+            border: 1px solid rgba(255, 255, 255, 0.06);
+        }
+
+        .hero-stat-chip .material-symbols-outlined {
+            font-size: 0.8rem;
+        }
+
         .destruction-spark {
             position: fixed;
             pointer-events: none;
@@ -2513,15 +2698,25 @@
             </div>
 
             <!-- Options spécifiques pour la Voie de la Violence -->
-            <div id="violenceConfig" class="form-row" style="display: none; margin-top: 1rem;">
-                <div class="form-group" style="flex-direction: row; align-items: center; gap: 0.5rem;">
-                    <label class="switch-container" style="display: flex; align-items: center; cursor: pointer;">
-                        <span class="switch">
-                            <input type="checkbox" id="isInspiration" checked onchange="updateViolenceLabel()">
-                            <span class="slider"></span>
-                        </span>
-                        <span id="violenceCategoryLabel" style="color: var(--text-main); font-size: 0.9rem; margin-left: 0.5rem; font-weight: 600;">Sort d'Inspiration (gagne +Critique)</span>
-                    </label>
+            <div id="violenceConfig" class="form-group" style="display: none; margin-top: 1rem;">
+                <input type="checkbox" id="isInspiration" checked style="display: none;"
+                    onchange="updateViolenceLabel()">
+                <div class="violence-segmented-control"
+                    style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--glass-border); padding: 0.4rem; border-radius: 12px;">
+                    <button type="button" id="btnInspiration" onclick="setViolenceType(true)"
+                        style="background: transparent; border: 1px solid transparent; border-radius: 8px; padding: 0.8rem 0.5rem; display: flex; flex-direction: column; align-items: center; gap: 0.3rem; cursor: pointer; transition: all 0.3s ease;">
+                        <span class="material-symbols-outlined"
+                            style="font-size: 1.5rem; transition: transform 0.3s;">air</span>
+                        <span style="font-size: 0.9rem; font-weight: 600;">Inspiration</span>
+                        <span style="font-size: 0.75rem; opacity: 0.8;">+Critique</span>
+                    </button>
+                    <button type="button" id="btnExpiration" onclick="setViolenceType(false)"
+                        style="background: transparent; border: 1px solid transparent; border-radius: 8px; padding: 0.8rem 0.5rem; display: flex; flex-direction: column; align-items: center; gap: 0.3rem; cursor: pointer; transition: all 0.3s ease;">
+                        <span class="material-symbols-outlined"
+                            style="font-size: 1.5rem; transition: transform 0.3s;">local_fire_department</span>
+                        <span style="font-size: 0.9rem; font-weight: 600;">Expiration</span>
+                        <span style="font-size: 0.75rem; opacity: 0.8;">+Puissance</span>
+                    </button>
                 </div>
             </div>
 
@@ -2639,16 +2834,16 @@
                     </div>
                     <div style="display: flex; align-items: center; gap: 0.6rem;">
                         <button type="button" class="btn-secondary"
-                            style="padding: 0.2rem 0.5rem; font-size: 0.7rem; line-height: 1.2; border-radius: 4px; border: none; background: rgba(244,63,94,0.1); color: #f43f5e;"
-                            onclick="resetFilters()" title="Réinitialiser les sélecteurs">↺ Réinitialiser</button>
+                            style="padding: 0.2rem 0.5rem; font-size: 0.7rem; line-height: 1.2; border-radius: 4px; border: none; background: rgba(244,63,94,0.1); color: #f43f5e; display: inline-flex; align-items: center; gap: 0.2rem;"
+                            onclick="resetFilters()" title="Réinitialiser les sélecteurs"><span class="material-symbols-outlined" style="font-size: 0.95rem;">restart_alt</span>Réinitialiser</button>
                         <span id="filterCountBadge" class="badge"
                             style="background: rgba(16,185,129,0.15); color: #10b981; font-weight: 600;">0 sort</span>
                     </div>
                 </div>
 
                 <div style="position: relative;">
-                    <span
-                        style="position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%); font-size: 0.9rem; opacity: 0.6;">🔍</span>
+                    <span class="material-symbols-outlined"
+                        style="position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%); font-size: 1.1rem; opacity: 0.6; color: var(--text-muted);">search</span>
                     <input type="text" id="filterSearch"
                         placeholder="Rechercher par lettre dans le nom ou la description..."
                         style="width: 100%; font-size: 0.85rem; padding: 0.6rem 1rem 0.6rem 2.2rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; outline: none; transition: border-color 0.2s;"
@@ -2790,11 +2985,93 @@
             <div class="sandbox-grid">
                 <!-- Colonne de Gauche : Personnages et États -->
                 <div class="sandbox-column">
+                    <!-- Panel de Configuration du Héros -->
+                    <div class="hero-config-panel" id="heroConfigPanel">
+                        <button type="button" class="hero-config-toggle" onclick="toggleHeroConfig()">
+                            <span style="display: flex; align-items: center; gap: 0.3rem;">
+                                <span class="material-symbols-outlined" style="font-size: 1rem;">tune</span>
+                                <span>Configuration du Héros</span>
+                            </span>
+                            <span class="material-symbols-outlined toggle-arrow">expand_more</span>
+                        </button>
+                        <div class="hero-config-body">
+                            <div class="hero-config-content">
+                                <div class="config-section-title">Voie & Spiritualité</div>
+                                <div class="config-row">
+                                    <div class="config-field">
+                                        <label>Voie</label>
+                                        <select id="heroConfigVoie">
+                                            <option value="">— Aucune —</option>
+                                        </select>
+                                    </div>
+                                    <div class="config-field">
+                                        <label>Niveau Voie</label>
+                                        <input type="number" id="heroConfigVoieLevel" min="1" max="5" value="1">
+                                    </div>
+                                </div>
+                                <div class="config-row">
+                                    <div class="config-field">
+                                        <label>Spiritualité</label>
+                                        <select id="heroConfigSpiritualite">
+                                            <option value="">— Aucune —</option>
+                                        </select>
+                                    </div>
+                                    <div class="config-field">
+                                        <label>Niveau Spirit.</label>
+                                        <input type="number" id="heroConfigSpiritLevel" min="1" max="3" value="1">
+                                    </div>
+                                </div>
+
+                                <div class="config-section-title">Statistiques de base</div>
+                                <div class="config-row">
+                                    <div class="config-field">
+                                        <label>PV Max</label>
+                                        <input type="number" id="heroConfigHp" min="1" value="100">
+                                    </div>
+                                    <div class="config-field">
+                                        <label>Mana Max</label>
+                                        <input type="number" id="heroConfigMana" min="0" value="100">
+                                    </div>
+                                </div>
+                                <div class="config-row triple">
+                                    <div class="config-field">
+                                        <label>Puissance</label>
+                                        <input type="number" id="heroConfigPower" min="0" value="25">
+                                    </div>
+                                    <div class="config-field">
+                                        <label>Armure</label>
+                                        <input type="number" id="heroConfigArmor" min="0" value="10">
+                                    </div>
+                                    <div class="config-field">
+                                        <label>Résistance</label>
+                                        <input type="number" id="heroConfigResistance" min="0" value="10">
+                                    </div>
+                                </div>
+                                <div class="config-row">
+                                    <div class="config-field">
+                                        <label>Vitesse</label>
+                                        <input type="number" id="heroConfigSpeed" min="0" value="0">
+                                    </div>
+                                    <div class="config-field">
+                                        <label>Critique (%)</label>
+                                        <input type="number" id="heroConfigCrit" min="0" max="100" value="0">
+                                    </div>
+                                </div>
+
+                                <button type="button" class="config-apply-btn" onclick="configureSandboxHero()">
+                                    <span class="material-symbols-outlined" style="font-size: 1rem;">check_circle</span>
+                                    <span>Appliquer la Configuration</span>
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+
                     <!-- Héros -->
                     <div class="combatant-card">
                         <div class="combatant-name">
                             <span>🧙‍♂️ Héros (Lanceur)</span>
                         </div>
+                        <div id="heroConfigBadges" style="display: flex; flex-wrap: wrap; gap: 0.3rem; margin-bottom: 0.3rem;"></div>
                         <div class="gauge-container">
                             <div class="gauge-label"><span>Santé (PV)</span><span id="heroHpText">100 / 100</span></div>
                             <div class="gauge-track">
@@ -3156,16 +3433,55 @@
             }
         }
 
+        function setViolenceType(isInspiration) {
+            const input = document.getElementById('isInspiration');
+            if (input) {
+                input.checked = isInspiration;
+                updateViolenceLabel();
+            }
+        }
+
         function updateViolenceLabel() {
-            const isInspInput = document.getElementById('isInspiration');
-            const isInsp = isInspInput ? isInspInput.checked : true;
-            const label = document.getElementById('violenceCategoryLabel');
-            if (label) {
-                if (isInsp) {
-                    label.innerHTML = `Sort d'Inspiration <span style="color: #67e8f9; font-size: 0.8rem; margin-left: 0.5rem;">(+Critique)</span>`;
-                } else {
-                    label.innerHTML = `Sort d'Expiration <span style="color: #f472b6; font-size: 0.8rem; margin-left: 0.5rem;">(+Puissance)</span>`;
-                }
+            const input = document.getElementById('isInspiration');
+            const isInsp = input ? input.checked : true;
+
+            const btnInsp = document.getElementById('btnInspiration');
+            const btnExp = document.getElementById('btnExpiration');
+
+            if (!btnInsp || !btnExp) return;
+
+            if (isInsp) {
+                // Inspiration Active (Cyan Theme)
+                btnInsp.style.background = 'linear-gradient(135deg, rgba(6, 182, 212, 0.15) 0%, rgba(8, 145, 178, 0.3) 100%)';
+                btnInsp.style.border = '1px solid rgba(6, 182, 212, 0.4)';
+                btnInsp.style.boxShadow = '0 0 12px rgba(6, 182, 212, 0.2)';
+                btnInsp.style.color = '#67e8f9';
+                btnInsp.style.opacity = '1';
+                btnInsp.querySelector('.material-symbols-outlined').style.transform = 'scale(1.15)';
+
+                // Expiration Inactive
+                btnExp.style.background = 'transparent';
+                btnExp.style.border = '1px solid transparent';
+                btnExp.style.boxShadow = 'none';
+                btnExp.style.color = 'var(--text-muted)';
+                btnExp.style.opacity = '0.6';
+                btnExp.querySelector('.material-symbols-outlined').style.transform = 'scale(1)';
+            } else {
+                // Expiration Active (Pink/Rose Theme)
+                btnExp.style.background = 'linear-gradient(135deg, rgba(219, 39, 119, 0.15) 0%, rgba(190, 24, 74, 0.3) 100%)';
+                btnExp.style.border = '1px solid rgba(219, 39, 119, 0.4)';
+                btnExp.style.boxShadow = '0 0 12px rgba(219, 39, 119, 0.2)';
+                btnExp.style.color = '#f472b6';
+                btnExp.style.opacity = '1';
+                btnExp.querySelector('.material-symbols-outlined').style.transform = 'scale(1.15) rotate(10deg)';
+
+                // Inspiration Inactive
+                btnInsp.style.background = 'transparent';
+                btnInsp.style.border = '1px solid transparent';
+                btnInsp.style.boxShadow = 'none';
+                btnInsp.style.color = 'var(--text-muted)';
+                btnInsp.style.opacity = '0.6';
+                btnInsp.querySelector('.material-symbols-outlined').style.transform = 'scale(1)';
             }
         }
 
@@ -3424,7 +3740,7 @@
                             </div>
                             <div class="form-group">
                                 <label>Source du Ratio</label>
-                                <select onchange="updateEffectProp('${eff.id}', 'source', this.value)">
+                                <select class="custom-select-dynamic" id="ratioSource-${eff.id}" onchange="updateEffectProp('${eff.id}', 'source', this.value)">
                                     ${renderSourceOptions(metaData.sources, eff.source)}
                                 </select>
                             </div>
@@ -4430,15 +4746,19 @@
             }
 
             let castBadge = '';
-            if (sp.castingType === 'INSTANTANE') castBadge = `<span class="badge" style="background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid #f59e0b;">⚡ Instantané</span>`;
-            else if (sp.castingType === 'CANALISE') castBadge = `<span class="badge" style="background: rgba(139, 92, 246, 0.2); color: #8b5cf6; border: 1px solid #8b5cf6;">🌀 Canalisé</span>`;
-            else castBadge = `<span class="badge" style="background: rgba(100, 116, 139, 0.2); color: #94a3b8;">⏳ Banal</span>`;
+            if (sp.castingType === 'INSTANTANE') {
+                castBadge = `<span class="badge" style="display: inline-flex; align-items: center; gap: 0.2rem; background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.4);"><span class="material-symbols-outlined" style="font-size: 1.05rem;">bolt</span>Instantané</span>`;
+            } else if (sp.castingType === 'CANALISE') {
+                castBadge = `<span class="badge" style="display: inline-flex; align-items: center; gap: 0.2rem; background: rgba(139, 92, 246, 0.2); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.4);"><span class="material-symbols-outlined" style="font-size: 1.05rem;">cyclone</span>Canalisé</span>`;
+            } else {
+                castBadge = `<span class="badge" style="display: inline-flex; align-items: center; gap: 0.2rem; background: rgba(100, 116, 139, 0.2); color: #94a3b8; border: 1px solid rgba(100, 116, 139, 0.3);"><span class="material-symbols-outlined" style="font-size: 1.05rem;">hourglass_empty</span>Banal</span>`;
+            }
 
             if (sp.voie && sp.voie.nom && sp.voie.nom.toLowerCase().includes('violence')) {
                 if (sp.inspiration) {
-                    castBadge += ` <span class="badge" style="background: rgba(6, 182, 212, 0.2); color: #67e8f9; border: 1px solid #06b6d4;">💥 Inspiration</span>`;
+                    castBadge += ` <span class="badge" style="display: inline-flex; align-items: center; gap: 0.2rem; background: rgba(6, 182, 212, 0.2); color: #67e8f9; border: 1px solid rgba(6, 182, 212, 0.4);"><span class="material-symbols-outlined" style="font-size: 1.05rem;">air</span>Inspiration</span>`;
                 } else {
-                    castBadge += ` <span class="badge" style="background: rgba(219, 39, 119, 0.2); color: #f472b6; border: 1px solid #db2777;">💥 Expiration</span>`;
+                    castBadge += ` <span class="badge" style="display: inline-flex; align-items: center; gap: 0.2rem; background: rgba(219, 39, 119, 0.2); color: #f472b6; border: 1px solid rgba(219, 39, 119, 0.4);"><span class="material-symbols-outlined" style="font-size: 1.05rem;">local_fire_department</span>Expiration</span>`;
                 }
             }
 
@@ -4673,19 +4993,19 @@
             const isMaxLevel = (sp.niveau === 5 && sp.voie) || (sp.niveau === 3 && sp.spiritualite && !sp.voie);
 
             let lvlBadgeStyle = 'background: rgba(255,255,255,0.1); color: #e2e8f0;';
-            let lvlIcon = '';
+            let lvlIcon = '<span class="material-symbols-outlined" style="font-size: 1.05rem;">military_tech</span>';
             if (sp.niveau === 2) {
                 lvlBadgeStyle = 'background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: #fff;';
             } else if (sp.niveau === 3 && !isMaxLevel) {
                 lvlBadgeStyle = `background: rgba(var(--spell-rgb), 0.2); border: 1px solid rgba(var(--spell-rgb), 0.5); color: var(--spell-color); font-weight: bold;`;
             } else if (sp.niveau === 4) {
                 lvlBadgeStyle = `background: rgba(var(--spell-rgb), 0.3); border: 1px solid var(--spell-color); color: #fff; font-weight: bold; text-shadow: 0 0 5px var(--spell-color); box-shadow: 0 0 10px rgba(var(--spell-rgb), 0.3);`;
-                lvlIcon = '✨ ';
+                lvlIcon = '<span class="material-symbols-outlined" style="font-size: 1.05rem;">auto_awesome</span>';
             } else if (isMaxLevel) {
                 lvlBadgeStyle = `background: linear-gradient(135deg, var(--spell-color), rgba(var(--spell-rgb), 0.4)); border: 1px solid #fff; color: #fff; font-weight: bold; text-shadow: 0 1px 3px rgba(0,0,0,0.8); box-shadow: 0 0 15px rgba(var(--spell-rgb), 0.6);`;
-                lvlIcon = '👑 ';
+                lvlIcon = '<span class="material-symbols-outlined" style="font-size: 1.05rem;">workspace_premium</span>';
             }
-            const lvlBadge = `<span class="badge" style="${lvlBadgeStyle}">${lvlIcon}Lvl ${sp.niveau}</span>`;
+            const lvlBadge = `<span class="badge" style="display: inline-flex; align-items: center; gap: 0.2rem; ${lvlBadgeStyle}">${lvlIcon}Lvl ${sp.niveau}</span>`;
 
             const formatSrc = s => {
                 const srcLabels = {
@@ -4711,9 +5031,9 @@
                             </div>
                         </div>
                         <div style="display: flex; gap: 0.3rem; align-items: center; flex-wrap: wrap;">
-                            <button type="button" class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; line-height: 1; border-radius: 4px; background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3);" onclick="trySpell(${sp.id})" title="Lancer ce sort en direct dans le simulateur">🎯 Essayer</button>
-                            <button type="button" class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; line-height: 1; border-radius: 4px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3);" onclick="editSpell(${sp.id})" title="Modifier les propriétés de ce sort">✏️ Éditer</button>
-                            <button type="button" class="btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; line-height: 1; border-radius: 4px; opacity: 0.75;" onclick="deleteSpell(${sp.id})" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.75'" title="Supprimer définitivement ce sort">✕</button>
+                            <button type="button" class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; line-height: 1; border-radius: 4px; background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); display: inline-flex; align-items: center; gap: 0.2rem;" onclick="trySpell(${sp.id})" title="Lancer ce sort en direct dans le simulateur"><span class="material-symbols-outlined" style="font-size: 1.05rem;">swords</span><span>Essayer</span></button>
+                            <button type="button" class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; line-height: 1; border-radius: 4px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); display: inline-flex; align-items: center; gap: 0.2rem;" onclick="editSpell(${sp.id})" title="Modifier les propriétés de ce sort"><span class="material-symbols-outlined" style="font-size: 1.05rem;">edit</span><span>Éditer</span></button>
+                            <button type="button" class="btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; line-height: 1; border-radius: 4px; opacity: 0.75; display: inline-flex; align-items: center; justify-content: center;" onclick="deleteSpell(${sp.id})" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.75'" title="Supprimer définitivement ce sort"><span class="material-symbols-outlined" style="font-size: 1.05rem;">delete</span></button>
                         </div>
                     </div>
                     ${rankTitleBadge}
@@ -6109,7 +6429,28 @@
                 e.stopPropagation();
                 const isVisible = optionsContainer.style.display === 'block';
                 document.querySelectorAll('.custom-select-options').forEach(el => el.style.display = 'none');
-                optionsContainer.style.display = isVisible ? 'none' : 'block';
+
+                if (!isVisible) {
+                    // Position dropdown upwards if there is not enough space below
+                    const rect = trigger.getBoundingClientRect();
+                    const spaceBelow = window.innerHeight - rect.bottom;
+                    const dropdownHeight = 220; // matches max-height of optionsContainer
+
+                    if (spaceBelow < dropdownHeight && rect.top > dropdownHeight) {
+                        optionsContainer.style.top = 'auto';
+                        optionsContainer.style.bottom = '100%';
+                        optionsContainer.style.marginTop = '0';
+                        optionsContainer.style.marginBottom = '4px';
+                    } else {
+                        optionsContainer.style.top = '100%';
+                        optionsContainer.style.bottom = 'auto';
+                        optionsContainer.style.marginTop = '4px';
+                        optionsContainer.style.marginBottom = '0';
+                    }
+                    optionsContainer.style.display = 'block';
+                } else {
+                    optionsContainer.style.display = 'none';
+                }
                 optionsContainer.className = 'custom-select-options'; // tag for closing
             });
 
@@ -6290,7 +6631,7 @@
             document.getElementById('voieSelect').dispatchEvent(new Event('change'));
             document.getElementById('spiritSelect').value = sp.spiritualite ? sp.spiritualite.id : '';
             document.getElementById('spiritSelect').dispatchEvent(new Event('change'));
-            
+
             const isInspInput = document.getElementById('isInspiration');
             if (isInspInput) {
                 isInspInput.checked = sp.inspiration !== false;
@@ -6365,6 +6706,7 @@
             }
             renderSandboxSpells();
             renderSandboxSpellSelector();
+            populateHeroConfigSelectors();
 
             const overlay = document.getElementById('simulationModalOverlay');
             overlay.classList.add('active');
@@ -6379,6 +6721,134 @@
                 console.error(err);
                 document.getElementById('simulationLogsContainer').innerText = "❌ Erreur de communication avec le banc d'essai.";
             }
+        }
+
+        function toggleHeroConfig() {
+            const panel = document.getElementById('heroConfigPanel');
+            panel.classList.toggle('expanded');
+        }
+
+        function populateHeroConfigSelectors() {
+            const voieSelect = document.getElementById('heroConfigVoie');
+            const spiritSelect = document.getElementById('heroConfigSpiritualite');
+            if (!voieSelect || !spiritSelect || !metaData.voies) return;
+
+            // Sauvegarder les sélections actuelles
+            const currentVoie = voieSelect.value;
+            const currentSpirit = spiritSelect.value;
+
+            let voieHtml = '<option value="">— Aucune —</option>';
+            (metaData.voies || []).forEach(v => {
+                voieHtml += `<option value="${v.id}">${v.nom}</option>`;
+            });
+            voieSelect.innerHTML = voieHtml;
+
+            let spiritHtml = '<option value="">— Aucune —</option>';
+            (metaData.spiritualites || []).forEach(s => {
+                spiritHtml += `<option value="${s.id}">${s.nom}</option>`;
+            });
+            spiritSelect.innerHTML = spiritHtml;
+
+            // Restaurer les sélections
+            if (currentVoie) voieSelect.value = currentVoie;
+            if (currentSpirit) spiritSelect.value = currentSpirit;
+        }
+
+        async function configureSandboxHero() {
+            const voieId = document.getElementById('heroConfigVoie').value || null;
+            const voieLevel = parseInt(document.getElementById('heroConfigVoieLevel').value) || 1;
+            const spiritualiteId = document.getElementById('heroConfigSpiritualite').value || null;
+            const spiritualiteLevel = parseInt(document.getElementById('heroConfigSpiritLevel').value) || 1;
+            const healthMax = parseInt(document.getElementById('heroConfigHp').value) || 100;
+            const manaMax = parseInt(document.getElementById('heroConfigMana').value) || 100;
+            const power = parseInt(document.getElementById('heroConfigPower').value) || 0;
+            const armor = parseInt(document.getElementById('heroConfigArmor').value) || 0;
+            const resistance = parseInt(document.getElementById('heroConfigResistance').value) || 0;
+            const speed = parseInt(document.getElementById('heroConfigSpeed').value) || 0;
+            const crit = parseInt(document.getElementById('heroConfigCrit').value) || 0;
+
+            try {
+                const res = await fetch('/api/spells-editor/sandbox/configure', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        voieId: voieId ? parseInt(voieId) : null,
+                        voieLevel,
+                        spiritualiteId: spiritualiteId ? parseInt(spiritualiteId) : null,
+                        spiritualiteLevel,
+                        healthMax,
+                        manaMax,
+                        power,
+                        armor,
+                        resistance,
+                        speed,
+                        crit
+                    })
+                });
+                if (res.ok) {
+                    const state = await res.json();
+                    updateSandboxUI(state);
+                    // Fermer le panel de configuration après succès
+                    document.getElementById('heroConfigPanel').classList.remove('expanded');
+                } else {
+                    alert("Erreur lors de la configuration du héros.");
+                }
+            } catch (err) {
+                console.error(err);
+            }
+        }
+
+        function syncHeroConfigForm(state) {
+            const voieSelect = document.getElementById('heroConfigVoie');
+            const spiritSelect = document.getElementById('heroConfigSpiritualite');
+            if (voieSelect && state.heroVoieId != null) voieSelect.value = state.heroVoieId;
+            else if (voieSelect) voieSelect.value = '';
+            if (spiritSelect && state.heroSpiritualiteId != null) spiritSelect.value = state.heroSpiritualiteId;
+            else if (spiritSelect) spiritSelect.value = '';
+
+            const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
+            setVal('heroConfigVoieLevel', state.heroVoieLevel || 1);
+            setVal('heroConfigSpiritLevel', state.heroSpiritualiteLevel || 1);
+            setVal('heroConfigHp', state.heroHpMax || 100);
+            setVal('heroConfigMana', state.heroManaMax || 100);
+            setVal('heroConfigPower', state.heroPower || 0);
+            setVal('heroConfigArmor', state.heroArmor || 0);
+            setVal('heroConfigResistance', state.heroResistance || 0);
+            setVal('heroConfigSpeed', state.heroSpeed || 0);
+            setVal('heroConfigCrit', state.heroCrit || 0);
+        }
+
+        function renderHeroConfigBadges(state) {
+            const container = document.getElementById('heroConfigBadges');
+            if (!container) return;
+
+            let html = '';
+            if (state.heroVoieName) {
+                html += `<span class="hero-config-badge voie">
+                    <span class="material-symbols-outlined" style="font-size: 0.8rem;">route</span>
+                    ${state.heroVoieName} Lvl ${state.heroVoieLevel}
+                </span>`;
+            }
+            if (state.heroSpiritualiteName) {
+                html += `<span class="hero-config-badge spirit">
+                    <span class="material-symbols-outlined" style="font-size: 0.8rem;">self_improvement</span>
+                    ${state.heroSpiritualiteName} Lvl ${state.heroSpiritualiteLevel}
+                </span>`;
+            }
+            if (!state.heroVoieName && !state.heroSpiritualiteName) {
+                html += `<span style="font-size: 0.72rem; color: var(--text-muted); font-style: italic;">Aucune voie ni spiritualité configurée</span>`;
+            }
+
+            // Stats chips
+            html += `<div class="hero-stats-row">`;
+            html += `<span class="hero-stat-chip"><span class="material-symbols-outlined">bolt</span>${state.heroPower || 0} Pui</span>`;
+            html += `<span class="hero-stat-chip"><span class="material-symbols-outlined">shield</span>${state.heroArmor || 0} Arm</span>`;
+            html += `<span class="hero-stat-chip"><span class="material-symbols-outlined">auto_awesome</span>${state.heroResistance || 0} Rés</span>`;
+            if ((state.heroSpeed || 0) > 0) html += `<span class="hero-stat-chip"><span class="material-symbols-outlined">speed</span>${state.heroSpeed} Vit</span>`;
+            if ((state.heroCrit || 0) > 0) html += `<span class="hero-stat-chip"><span class="material-symbols-outlined">target</span>${state.heroCrit}% Crit</span>`;
+            html += `</div>`;
+
+            container.innerHTML = html;
         }
 
         function renderSandboxSpells() {
@@ -6838,6 +7308,10 @@
             const logsContainer = document.getElementById('simulationLogsContainer');
             logsContainer.innerText = state.rawLogs || "Aucun événement loggé.";
             logsContainer.scrollTop = logsContainer.scrollHeight;
+
+            // Sync hero configuration form and badges
+            syncHeroConfigForm(state);
+            renderHeroConfigBadges(state);
         }
 
         function closeSimulationModal() {

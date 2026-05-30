@@ -68,6 +68,8 @@ public class WebSpellCreationController {
         sandboxHero.setPower(25);
         sandboxHero.setArmor(10);
         sandboxHero.setResistance(10);
+        sandboxHero.setVoieLevel(1);
+        sandboxHero.setSpiritualiteLevel(1);
 
         sandboxMonster = new Personnage();
         sandboxMonster.setName("Monstre");
@@ -424,6 +426,19 @@ public class WebSpellCreationController {
         res.setMonsterViolenceInspiration(sandboxMonster.getPassiveState("violence_inspiration", 0));
         res.setMonsterViolenceExpiration(sandboxMonster.getPassiveState("violence_expiration", 0));
 
+        // Configuration du héros
+        res.setHeroVoieId(sandboxHero.getVoie() != null ? sandboxHero.getVoie().getId() : null);
+        res.setHeroVoieName(sandboxHero.getVoie() != null ? sandboxHero.getVoie().getNom() : null);
+        res.setHeroVoieLevel(sandboxHero.getVoieLevel());
+        res.setHeroSpiritualiteId(sandboxHero.getSpiritualite() != null ? sandboxHero.getSpiritualite().getId() : null);
+        res.setHeroSpiritualiteName(sandboxHero.getSpiritualite() != null ? sandboxHero.getSpiritualite().getNom() : null);
+        res.setHeroSpiritualiteLevel(sandboxHero.getSpiritualiteLevel());
+        res.setHeroPower(sandboxHero.getPower());
+        res.setHeroArmor(sandboxHero.getArmor());
+        res.setHeroResistance(sandboxHero.getResistance());
+        res.setHeroSpeed(sandboxHero.getSpeed());
+        res.setHeroCrit(sandboxHero.getCrit());
+
         res.setRawLogs(String.join("\n", sandboxLogs));
         return res;
     }
@@ -439,6 +454,45 @@ public class WebSpellCreationController {
         return ResponseEntity.ok(buildSandboxStateResponse());
     }
 
+    @PostMapping("/sandbox/configure")
+    public ResponseEntity<SandboxStateDto> configureSandbox(@RequestBody ConfigureHeroDto dto) {
+        initSandbox();
+
+        // Appliquer la voie
+        if (dto.getVoieId() != null) {
+            voieRepository.findById(dto.getVoieId()).ifPresent(sandboxHero::setVoie);
+        } else {
+            sandboxHero.setVoie(null);
+        }
+        sandboxHero.setVoieLevel(Math.max(1, Math.min(5, dto.getVoieLevel())));
+
+        // Appliquer la spiritualité
+        if (dto.getSpiritualiteId() != null) {
+            spiritualiteRepository.findById(dto.getSpiritualiteId()).ifPresent(sandboxHero::setSpiritualite);
+        } else {
+            sandboxHero.setSpiritualite(null);
+        }
+        sandboxHero.setSpiritualiteLevel(Math.max(1, Math.min(3, dto.getSpiritualiteLevel())));
+
+        // Appliquer les stats de base
+        sandboxHero.setHealthMax(Math.max(1, dto.getHealthMax()));
+        sandboxHero.setHealthCurrent(Math.min(sandboxHero.getHealthMax(), Math.max(1, dto.getHealthMax())));
+        sandboxHero.setManaMax(Math.max(0, dto.getManaMax()));
+        sandboxHero.setManaCurrent(Math.min(sandboxHero.getManaMax(), Math.max(0, dto.getManaMax())));
+        sandboxHero.setPower(Math.max(0, dto.getPower()));
+        sandboxHero.setArmor(Math.max(0, dto.getArmor()));
+        sandboxHero.setResistance(Math.max(0, dto.getResistance()));
+        sandboxHero.setSpeed(Math.max(0, dto.getSpeed()));
+        sandboxHero.setCrit(Math.max(0, Math.min(100, dto.getCrit())));
+
+        // Réinitialiser les passives states puisque la configuration a changé
+        sandboxHero.getPassiveStates().clear();
+
+        sandboxLogs.add("⚙️ Configuration du héros mise à jour.");
+
+        return ResponseEntity.ok(buildSandboxStateResponse());
+    }
+
     @PostMapping("/sandbox/cast/{spellId}")
     public ResponseEntity<SandboxStateDto> castSandboxSpell(@PathVariable @org.springframework.lang.NonNull Long spellId, @RequestParam(required = false) Integer choiceKey) {
         initSandbox();
@@ -447,10 +501,6 @@ public class WebSpellCreationController {
             return ResponseEntity.notFound().build();
         }
         Spell spell = opt.get();
-
-        // Mettre à jour dynamiquement la voie et la spiritualité du héros pour correspondre au sort
-        sandboxHero.setVoie(spell.getVoie());
-        sandboxHero.setSpiritualite(spell.getSpiritualite());
 
         java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
         java.io.PrintStream originalOut = System.out;
@@ -769,6 +819,19 @@ public class WebSpellCreationController {
         private java.util.List<ShieldState> heroShields;
         private java.util.List<BuffState> heroBuffs;
 
+        // Configuration du héros
+        private Long heroVoieId;
+        private String heroVoieName;
+        private int heroVoieLevel;
+        private Long heroSpiritualiteId;
+        private String heroSpiritualiteName;
+        private int heroSpiritualiteLevel;
+        private int heroPower;
+        private int heroArmor;
+        private int heroResistance;
+        private int heroSpeed;
+        private int heroCrit;
+
         private String monsterName;
         private int monsterHpMax;
         private int monsterHpCurrent;
@@ -789,6 +852,21 @@ public class WebSpellCreationController {
         private java.util.List<BuffState> monsterBuffs;
 
         private String rawLogs;
+    }
+
+    @Data
+    public static class ConfigureHeroDto {
+        private Long voieId;
+        private int voieLevel = 1;
+        private Long spiritualiteId;
+        private int spiritualiteLevel = 1;
+        private int healthMax = 100;
+        private int manaMax = 100;
+        private int power = 25;
+        private int armor = 10;
+        private int resistance = 10;
+        private int speed = 0;
+        private int crit = 0;
     }
 
     @Data

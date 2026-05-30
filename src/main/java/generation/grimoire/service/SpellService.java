@@ -52,6 +52,13 @@ public class SpellService {
         // Dans le cas d'un variant, on détermine lequel est sélectioné
         Spell toCast = selectVariant(spell, caster, target, choiceKey);
 
+        // 0) Vérifier les prérequis de voie/spiritualité et niveaux du personnage
+        String castError = caster.canCast(toCast);
+        if (castError != null) {
+            System.out.println("🚫 " + castError);
+            return;
+        }
+
         // 1) Enforce category casting limits
         SpellCastingType cType = toCast.getCastingType();
         if (cType == null) {

@@ -48,9 +48,13 @@ public class Personnage {
     @JoinColumn(name = "voie_id", nullable = true)
     private Voie voie;
 
+    private int voieLevel = 1;
+
     @ManyToOne
     @JoinColumn(name = "spiritualite_id", nullable = true)
     private Spiritualite spiritualite;
+
+    private int spiritualiteLevel = 1;
 
     // Liste des buffs/débuffs actifs (ici en mémoire, mais vous pouvez choisir de
     // les persister si besoin)
@@ -540,6 +544,40 @@ public class Personnage {
             return false;
         // Objects.equals gère le null-safe
         return java.util.Objects.equals(this.teamId, other.teamId);
+    }
+
+    /**
+     * Vérifie si ce personnage peut lancer le sort donné en fonction de sa voie,
+     * sa spiritualité et ses niveaux respectifs.
+     * <ul>
+     *   <li>Si le sort nécessite une voie, le personnage doit avoir la même voie et un niveau ≥ au niveau du sort.</li>
+     *   <li>Si le sort nécessite une spiritualité, le personnage doit avoir la même spiritualité et un niveau ≥ au niveau du sort.</li>
+     *   <li>Si le sort nécessite les deux, les deux conditions doivent être satisfaites.</li>
+     * </ul>
+     *
+     * @param spell le sort à vérifier
+     * @return un message d'erreur si le lancement est interdit, ou null si autorisé
+     */
+    public String canCast(generation.grimoire.entity.Spell spell) {
+        if (spell.getVoie() != null) {
+            if (this.voie == null || !this.voie.getId().equals(spell.getVoie().getId())) {
+                return this.name + " n'a pas la " + spell.getVoie().getNom() + " requise pour lancer " + spell.getNom() + ".";
+            }
+            if (this.voieLevel < spell.getNiveau()) {
+                return this.name + " a besoin de " + spell.getVoie().getNom() + " niveau " + spell.getNiveau()
+                        + " (actuel: " + this.voieLevel + ") pour lancer " + spell.getNom() + ".";
+            }
+        }
+        if (spell.getSpiritualite() != null) {
+            if (this.spiritualite == null || !this.spiritualite.getId().equals(spell.getSpiritualite().getId())) {
+                return this.name + " n'a pas la spiritualité " + spell.getSpiritualite().getNom() + " requise pour lancer " + spell.getNom() + ".";
+            }
+            if (this.spiritualiteLevel < spell.getNiveau()) {
+                return this.name + " a besoin de " + spell.getSpiritualite().getNom() + " niveau " + spell.getNiveau()
+                        + " (actuel: " + this.spiritualiteLevel + ") pour lancer " + spell.getNom() + ".";
+            }
+        }
+        return null; // Lancement autorisé
     }
 
     /** Alias pour la lisibilité dans les passifs. */
