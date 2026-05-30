@@ -1514,6 +1514,49 @@
             pointer-events: auto;
         }
 
+        .live-stats-panel {
+            position: absolute;
+            left: 1rem;
+            top: 50%;
+            transform: translateY(-50%);
+            background: rgba(15, 20, 30, 0.4);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1.2rem 0.6rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            z-index: 10;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5);
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease, transform 0.3s ease;
+        }
+        
+        .modal-overlay.active .live-stats-panel {
+            opacity: 1;
+            pointer-events: auto;
+        }
+        
+        .live-stat-item {
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 0.3rem;
+            color: #e2e8f0;
+        }
+        
+        .live-stat-item span.material-symbols-outlined {
+            font-size: 1.6rem;
+            filter: drop-shadow(0 0 5px currentColor);
+        }
+        
+        .live-stat-item .val {
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+
         .simulation-modal {
             background: rgba(20, 25, 35, 0.98);
             border: 1px solid var(--glass-border);
@@ -2970,6 +3013,30 @@
     <!-- Modale du Simulateur de Combat Live -->
     <!-- Modale du Banc d'Essai (Simulateur de Combat Stateful) -->
     <div class="modal-overlay" id="simulationModalOverlay">
+        <!-- Panneau des stats en temps réel (gauche) -->
+        <div id="heroLiveStatsPanel" class="live-stats-panel">
+            <div class="live-stat-item" title="Puissance">
+                <span class="material-symbols-outlined" style="color: #a855f7;">auto_awesome</span>
+                <div class="val" id="liveStatPower">0</div>
+            </div>
+            <div class="live-stat-item" title="Armure">
+                <span class="material-symbols-outlined" style="color: #3b82f6;">shield</span>
+                <div class="val" id="liveStatArmor">0</div>
+            </div>
+            <div class="live-stat-item" title="Résistance">
+                <span class="material-symbols-outlined" style="color: #10b981;">shield</span>
+                <div class="val" id="liveStatRes">0</div>
+            </div>
+            <div class="live-stat-item" title="Vitesse">
+                <span class="material-symbols-outlined" style="color: #f59e0b;">bolt</span>
+                <div class="val" id="liveStatSpeed">0</div>
+            </div>
+            <div class="live-stat-item" title="Critique">
+                <span class="material-symbols-outlined" style="color: #ef4444;">gps_fixed</span>
+                <div class="val" id="liveStatCrit">0%</div>
+            </div>
+        </div>
+
         <div class="simulation-modal">
             <div class="modal-header">
                 <div class="modal-title" style="display: flex; align-items: center; gap: 0.4rem;">
@@ -3025,35 +3092,35 @@
                                 <div class="config-section-title">Statistiques de base</div>
                                 <div class="config-row">
                                     <div class="config-field">
-                                        <label style="display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem;">favorite</span>PV Max</label>
+                                        <label style="display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem; color: #ec4899;">favorite</span>PV Max</label>
                                         <input type="number" id="heroConfigHp" min="1" value="100">
                                     </div>
                                     <div class="config-field">
-                                        <label style="display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem;">water_drop</span>Mana Max</label>
+                                        <label style="display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem; color: #38bdf8;">water_drop</span>Mana Max</label>
                                         <input type="number" id="heroConfigMana" min="0" value="100">
                                     </div>
                                 </div>
                                 <div class="config-row triple">
                                     <div class="config-field">
-                                        <label style="display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem;">auto_awesome</span>Puissance</label>
+                                        <label style="display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem; color: #a855f7;">auto_awesome</span>Puissance</label>
                                         <input type="number" id="heroConfigPower" min="0" value="25">
                                     </div>
                                     <div class="config-field">
-                                        <label style="display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem;">shield</span>Armure</label>
+                                        <label style="display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem; color: #3b82f6;">shield</span>Armure</label>
                                         <input type="number" id="heroConfigArmor" min="0" value="10">
                                     </div>
                                     <div class="config-field">
-                                        <label style="display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem;">security</span>Résistance</label>
+                                        <label style="display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem; color: #10b981;">shield</span>Résistance</label>
                                         <input type="number" id="heroConfigResistance" min="0" value="10">
                                     </div>
                                 </div>
                                 <div class="config-row">
                                     <div class="config-field">
-                                        <label style="display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem;">speed</span>Vitesse</label>
+                                        <label style="display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem; color: #f59e0b;">bolt</span>Vitesse</label>
                                         <input type="number" id="heroConfigSpeed" min="0" value="0">
                                     </div>
                                     <div class="config-field">
-                                        <label style="display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem;">track_changes</span>Critique (%)</label>
+                                        <label style="display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem; color: #ef4444;">gps_fixed</span>Critique (%)</label>
                                         <input type="number" id="heroConfigCrit" min="0" max="100" value="0">
                                     </div>
                                 </div>
@@ -6849,11 +6916,11 @@
 
             // Stats chips
             html += `<div class="hero-stats-row">`;
-            html += `<span class="hero-stat-chip"><span class="material-symbols-outlined">bolt</span>${state.heroPower || 0} Pui</span>`;
-            html += `<span class="hero-stat-chip"><span class="material-symbols-outlined">shield</span>${state.heroArmor || 0} Arm</span>`;
-            html += `<span class="hero-stat-chip"><span class="material-symbols-outlined">auto_awesome</span>${state.heroResistance || 0} Rés</span>`;
-            if ((state.heroSpeed || 0) > 0) html += `<span class="hero-stat-chip"><span class="material-symbols-outlined">speed</span>${state.heroSpeed} Vit</span>`;
-            if ((state.heroCrit || 0) > 0) html += `<span class="hero-stat-chip"><span class="material-symbols-outlined">target</span>${state.heroCrit}% Crit</span>`;
+            html += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #a855f7;">auto_awesome</span>${state.heroPower || 0} Pui</span>`;
+            html += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #3b82f6;">shield</span>${state.heroArmor || 0} Arm</span>`;
+            html += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #10b981;">shield</span>${state.heroResistance || 0} Rés</span>`;
+            if ((state.heroSpeed || 0) > 0) html += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #f59e0b;">bolt</span>${state.heroSpeed} Vit</span>`;
+            if ((state.heroCrit || 0) > 0) html += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #ef4444;">gps_fixed</span>${state.heroCrit}% Crit</span>`;
             html += `</div>`;
 
             container.innerHTML = html;
@@ -7320,6 +7387,23 @@
             // Sync hero configuration form and badges
             syncHeroConfigForm(state);
             renderHeroConfigBadges(state);
+            updateLiveHeroStats(state);
+        }
+
+        function updateLiveHeroStats(state) {
+            const setStat = (id, val, suffix = '') => {
+                const el = document.getElementById(id);
+                if (el) el.innerText = val + suffix;
+            };
+            setStat('liveStatPower', state.heroPower || 0);
+            setStat('liveStatArmor', state.heroArmor || 0);
+            setStat('liveStatRes', state.heroResistance || 0);
+            setStat('liveStatSpeed', state.heroSpeed || 0);
+            
+            const crit = (state.heroCritDerived !== null && state.heroCritDerived !== undefined) 
+                ? state.heroCritDerived 
+                : (state.heroCrit || 0);
+            setStat('liveStatCrit', crit, '%');
         }
 
         function closeSimulationModal() {
