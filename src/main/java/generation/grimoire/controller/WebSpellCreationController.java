@@ -433,11 +433,17 @@ public class WebSpellCreationController {
         res.setHeroSpiritualiteId(sandboxHero.getSpiritualite() != null ? sandboxHero.getSpiritualite().getId() : null);
         res.setHeroSpiritualiteName(sandboxHero.getSpiritualite() != null ? sandboxHero.getSpiritualite().getNom() : null);
         res.setHeroSpiritualiteLevel(sandboxHero.getSpiritualiteLevel());
-        res.setHeroPower(sandboxHero.getPower());
-        res.setHeroArmor(sandboxHero.getArmor());
-        res.setHeroResistance(sandboxHero.getResistance());
-        res.setHeroSpeed(sandboxHero.getSpeed());
-        res.setHeroCrit(sandboxHero.getCrit());
+        res.setHeroPower(sandboxHero.getEffectiveStat(generation.grimoire.enumeration.StatType.POWER));
+        res.setHeroArmor(sandboxHero.getEffectiveStat(generation.grimoire.enumeration.StatType.ARMURE));
+        res.setHeroResistance(sandboxHero.getEffectiveStat(generation.grimoire.enumeration.StatType.RESISTANCE));
+        res.setHeroSpeed(sandboxHero.getEffectiveStat(generation.grimoire.enumeration.StatType.SPEED));
+        res.setHeroCrit(sandboxHero.getEffectiveStat(generation.grimoire.enumeration.StatType.CRIT));
+        
+        res.setHeroBasePower(sandboxHero.getPower());
+        res.setHeroBaseArmor(sandboxHero.getArmor());
+        res.setHeroBaseResistance(sandboxHero.getResistance());
+        res.setHeroBaseSpeed(sandboxHero.getSpeed());
+        res.setHeroBaseCrit(sandboxHero.getCrit());
 
         res.setRawLogs(String.join("\n", sandboxLogs));
         return res;
@@ -831,6 +837,12 @@ public class WebSpellCreationController {
         private int heroResistance;
         private int heroSpeed;
         private int heroCrit;
+        
+        private int heroBasePower;
+        private int heroBaseArmor;
+        private int heroBaseResistance;
+        private int heroBaseSpeed;
+        private int heroBaseCrit;
 
         private String monsterName;
         private int monsterHpMax;

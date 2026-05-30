@@ -6886,11 +6886,11 @@
             setVal('heroConfigSpiritLevel', state.heroSpiritualiteLevel || 1);
             setVal('heroConfigHp', state.heroHpMax || 100);
             setVal('heroConfigMana', state.heroManaMax || 100);
-            setVal('heroConfigPower', state.heroPower || 0);
-            setVal('heroConfigArmor', state.heroArmor || 0);
-            setVal('heroConfigResistance', state.heroResistance || 0);
-            setVal('heroConfigSpeed', state.heroSpeed || 0);
-            setVal('heroConfigCrit', state.heroCrit || 0);
+            setVal('heroConfigPower', state.heroBasePower !== undefined ? state.heroBasePower : (state.heroPower || 0));
+            setVal('heroConfigArmor', state.heroBaseArmor !== undefined ? state.heroBaseArmor : (state.heroArmor || 0));
+            setVal('heroConfigResistance', state.heroBaseResistance !== undefined ? state.heroBaseResistance : (state.heroResistance || 0));
+            setVal('heroConfigSpeed', state.heroBaseSpeed !== undefined ? state.heroBaseSpeed : (state.heroSpeed || 0));
+            setVal('heroConfigCrit', state.heroBaseCrit !== undefined ? state.heroBaseCrit : (state.heroCrit || 0));
         }
 
         function renderHeroConfigBadges(state) {
@@ -6915,12 +6915,18 @@
             }
 
             // Stats chips
+            const pui = state.heroBasePower !== undefined ? state.heroBasePower : (state.heroPower || 0);
+            const arm = state.heroBaseArmor !== undefined ? state.heroBaseArmor : (state.heroArmor || 0);
+            const res = state.heroBaseResistance !== undefined ? state.heroBaseResistance : (state.heroResistance || 0);
+            const vit = state.heroBaseSpeed !== undefined ? state.heroBaseSpeed : (state.heroSpeed || 0);
+            const crit = state.heroBaseCrit !== undefined ? state.heroBaseCrit : (state.heroCrit || 0);
+            
             html += `<div class="hero-stats-row">`;
-            html += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #a855f7;">auto_awesome</span>${state.heroPower || 0} Pui</span>`;
-            html += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #3b82f6;">shield</span>${state.heroArmor || 0} Arm</span>`;
-            html += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #10b981;">shield</span>${state.heroResistance || 0} Rés</span>`;
-            if ((state.heroSpeed || 0) > 0) html += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #f59e0b;">bolt</span>${state.heroSpeed} Vit</span>`;
-            if ((state.heroCrit || 0) > 0) html += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #ef4444;">gps_fixed</span>${state.heroCrit}% Crit</span>`;
+            html += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #a855f7;">auto_awesome</span>${pui} Pui</span>`;
+            html += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #3b82f6;">shield</span>${arm} Arm</span>`;
+            html += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #10b981;">shield</span>${res} Rés</span>`;
+            if (vit > 0) html += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #f59e0b;">bolt</span>${vit} Vit</span>`;
+            if (crit > 0) html += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #ef4444;">gps_fixed</span>${crit}% Crit</span>`;
             html += `</div>`;
 
             container.innerHTML = html;

@@ -539,6 +539,21 @@ public class Personnage {
         return totalBonus;
     }
 
+    public int getEffectiveStat(StatType statType) {
+        int base = 0;
+        switch (statType) {
+            case POWER -> base = this.power;
+            case ARMURE -> base = this.armor;
+            case RESISTANCE -> base = this.resistance;
+            case SPEED -> base = this.speed;
+            case CRIT -> base = this.crit;
+            default -> base = 0;
+        }
+        double effective = base + getStatFlatBonus(statType);
+        effective *= Math.max(0, getStatBuffMultiplier(statType));
+        return (int) Math.round(effective);
+    }
+
     public boolean isAlly(Personnage other) {
         if (other == null)
             return false;
