@@ -4,8 +4,6 @@ import generation.grimoire.entity.Spell;
 import generation.grimoire.entity.personnage.Personnage;
 import generation.grimoire.entity.voie.passif.VoiePassiveEffect;
 import generation.grimoire.enumeration.DamageType;
-import generation.grimoire.event.GameEvent;
-import generation.grimoire.event.SpellCastEvent;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import lombok.Data;
@@ -45,7 +43,8 @@ public class TrahisonPassiveEffect extends VoiePassiveEffect {
         if (usedThisTurn == 0) {
             int extraDamage = (int) Math.round(baseDamage * BASE_BONUS_DAMAGE_RATIO);
             if (extraDamage > 0) {
-                System.out.println(attacker.getName() + " inflige " + extraDamage + " dégâts supplémentaires de base grâce à Trahison.");
+                System.out.println(attacker.getName() + " inflige " + extraDamage
+                        + " dégâts supplémentaires de base grâce à Trahison.");
                 target.takeDamage(extraDamage, DamageType.BRUT, attacker);
                 attacker.heal(extraDamage);
             }
@@ -55,7 +54,8 @@ public class TrahisonPassiveEffect extends VoiePassiveEffect {
         if (lowHpUsedThisTurn == 0 && isTargetUnderHalfHp(target)) {
             int extraDamage = (int) Math.round(baseDamage * LOW_HP_BONUS_DAMAGE_RATIO);
             if (extraDamage > 0) {
-                System.out.println(attacker.getName() + " inflige " + extraDamage + " dégâts supplémentaires (Cible <50% HP) grâce à Trahison.");
+                System.out.println(attacker.getName() + " inflige " + extraDamage
+                        + " dégâts supplémentaires (Cible <50% HP) grâce à Trahison.");
                 target.takeDamage(extraDamage, DamageType.BRUT, attacker);
                 attacker.heal(extraDamage);
             }
@@ -65,7 +65,8 @@ public class TrahisonPassiveEffect extends VoiePassiveEffect {
         if (debuffUsedThisTurn == 0 && target.hasDebuff()) {
             int extraDamage = (int) Math.round(baseDamage * DEBUFFED_TARGET_BONUS_DAMAGE_RATIO);
             if (extraDamage > 0) {
-                System.out.println(attacker.getName() + " inflige " + extraDamage + " dégâts supplémentaires (Cible avec Débuff) grâce à Trahison.");
+                System.out.println(attacker.getName() + " inflige " + extraDamage
+                        + " dégâts supplémentaires (Cible avec Débuff) grâce à Trahison.");
                 target.takeDamage(extraDamage, DamageType.BRUT, attacker);
                 attacker.heal(extraDamage);
             }

@@ -310,28 +310,32 @@ class SpellIntegrationTest {
         Voie voieConsolidation = new Voie();
         voieConsolidation.setNom("Voie de la Consolidation");
         generation.grimoire.entity.voie.passif.specific.ConsolidationPassiveEffect consoEffect = new generation.grimoire.entity.voie.passif.specific.ConsolidationPassiveEffect();
-        consoEffect.setBonusLevel(2); // Niveau investi
         voieConsolidation.setPassiveEffects(List.of(consoEffect));
         hero.setVoie(voieConsolidation);
 
-        // Armor de base du héros : 5
-        // 5 * (0.05 * 2) = 0.5 (arrondi à 0 car entier).
-        // Mettons l'armure du héros à 20 pour que le buff soit de 20 * 0.10 = 2.
-        hero.setArmor(20);
+        // D'abord un début de tour → buff par défaut +5% armure
+        spellService.startTurn(hero);
 
-        Spell buffSpell = new Spell();
-        buffSpell.setNom("Mur de Pierre");
-        buffSpell.setManaCost(10);
-        buffSpell.setVoie(voieConsolidation);
+        assertThat(hero.getActiveBuffs().stream()
+                .filter(b -> "CONSOLIDATION".equals(b.getSourceName()))
+                .count()).isEqualTo(1);
 
-        spellService.castSpell(buffSpell, hero, enemy, null);
+        // Lancer un sort de niveau 2 → remplace par +10% armure
+        Spell lvl2Spell = new Spell();
+        lvl2Spell.setNom("Mur de Pierre");
+        lvl2Spell.setManaCost(10);
+        lvl2Spell.setNiveau(2);
+        lvl2Spell.setVoie(voieConsolidation);
 
-        // La consolidation ajoute de l'armure en début de tour
-        consoEffect.onTurnStart(hero);
+        spellService.castSpell(lvl2Spell, hero, enemy, null);
 
-        assertThat(hero.getActiveBuffs()).hasSize(1);
-        assertThat(hero.getActiveBuffs().get(0).getStatAffected()).isEqualTo(StatType.ARMURE);
-        assertThat(hero.getActiveBuffs().get(0).getFlatValue()).isEqualTo(2); // +2 armure
+        // Le buff CONSOLIDATION doit être de type ARMURE avec modifier 1.10
+        var consoBuff = hero.getActiveBuffs().stream()
+                .filter(b -> "CONSOLIDATION".equals(b.getSourceName()))
+                .findFirst();
+        assertThat(consoBuff).isPresent();
+        assertThat(consoBuff.get().getStatAffected()).isEqualTo(StatType.ARMURE);
+        assertThat(consoBuff.get().getModifier()).isEqualTo(1.10);
     }
 
     @Test

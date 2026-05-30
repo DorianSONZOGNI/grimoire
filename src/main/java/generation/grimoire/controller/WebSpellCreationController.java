@@ -410,6 +410,12 @@ public class WebSpellCreationController {
         }
         res.setMonsterCritDerived(monsterCritDerived);
 
+        // Consolidation
+        res.setHeroHasConsolidation(sandboxHero.getVoie() != null && "Voie de la Consolidation".equals(sandboxHero.getVoie().getNom()));
+        res.setHeroConsolidationLevel(sandboxHero.getPassiveState("consolidation_active_level", 0));
+        res.setMonsterHasConsolidation(sandboxMonster.getVoie() != null && "Voie de la Consolidation".equals(sandboxMonster.getVoie().getNom()));
+        res.setMonsterConsolidationLevel(sandboxMonster.getPassiveState("consolidation_active_level", 0));
+
         res.setRawLogs(String.join("\n", sandboxLogs));
         return res;
     }
@@ -737,6 +743,8 @@ public class WebSpellCreationController {
         private boolean heroTrahisonBaseAvailable;
         private boolean heroTrahisonLowHpAvailable;
         private boolean heroTrahisonDebuffAvailable;
+        private boolean heroHasConsolidation;
+        private int heroConsolidationLevel;
         private java.util.List<ShieldState> heroShields;
         private java.util.List<BuffState> heroBuffs;
 
@@ -751,6 +759,8 @@ public class WebSpellCreationController {
         private boolean monsterTrahisonBaseAvailable;
         private boolean monsterTrahisonLowHpAvailable;
         private boolean monsterTrahisonDebuffAvailable;
+        private boolean monsterHasConsolidation;
+        private int monsterConsolidationLevel;
         private java.util.List<ShieldState> monsterShields;
         private java.util.List<BuffState> monsterBuffs;
 

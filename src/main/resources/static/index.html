@@ -6565,6 +6565,24 @@
                     </div>
                 `;
             }
+            if (state.heroHasConsolidation) {
+                const lvl = state.heroConsolidationLevel;
+                const consolidationLabels = {
+                    0: { icon: 'shield', text: '+5% Armure', title: 'Consolidation (défaut)' },
+                    1: { icon: 'speed', text: '+1 Vit', title: 'Consolidation Lvl 1' },
+                    2: { icon: 'shield', text: '+10% Armure', title: 'Consolidation Lvl 2' },
+                    3: { icon: 'auto_awesome', text: '+10% Résist.', title: 'Consolidation Lvl 3' },
+                    4: { icon: 'savings', text: '-20% Coût', title: 'Consolidation Lvl 4' },
+                    5: { icon: 'security', text: '+8% Arm/Rés', title: 'Consolidation Lvl 5' }
+                };
+                const info = consolidationLabels[lvl] || consolidationLabels[0];
+                heroShieldsHtml += `
+                    <div class="sandbox-status-badge consolidation" title="${info.title}" style="background: rgba(34, 197, 94, 0.25); color: #86efac; border: 1px solid #22c55e; box-shadow: 0 0 8px rgba(34, 197, 94, 0.3);">
+                        <span class="material-symbols-outlined" style="font-size: 0.95rem; color: #22c55e; vertical-align: middle;">${info.icon}</span>
+                        <span>${info.text}</span>
+                    </div>
+                `;
+            }
             heroShieldsContainer.innerHTML = heroShieldsHtml;
 
             const monsterShieldsContainer = document.getElementById('monsterShieldsContainer');
