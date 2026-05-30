@@ -1726,33 +1726,39 @@
             transition: all 0.2s ease;
         }
 
-        
-        .sandbox-spell-card { position: relative; }
+
+        .sandbox-spell-card {
+            position: relative;
+        }
+
         .spell-effects-trigger {
             position: relative;
             display: inline-flex;
             align-items: center;
             cursor: help;
         }
+
         #globalSpellTooltip {
             display: none;
             position: fixed;
             width: max-content;
             background: #1e293b;
-            border: 1px solid rgba(255,255,255,0.15);
+            border: 1px solid rgba(255, 255, 255, 0.15);
             border-radius: 8px;
             padding: 0.8rem;
             z-index: 999999;
-            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.8);
             flex-direction: column;
             gap: 0.3rem;
             font-size: 0.75rem;
             pointer-events: none;
             white-space: nowrap;
         }
+
         #globalSpellTooltip .effect-line {
             flex-wrap: nowrap !important;
         }
+
         .sandbox-spell-tooltip .effect-mini {
             display: flex;
             justify-content: space-between;
@@ -4849,7 +4855,7 @@
             }
         }
 
-        
+
         function getSpellEffectsSummaryHtml(sp) {
             let effectsSummaryHtml = '';
             if ((sp.effects && sp.effects.length > 0) || (sp.heatGenerated && sp.heatGenerated > 0)) {
@@ -5043,7 +5049,7 @@
             }
             return effectsSummaryHtml;
         }
-function getSpellCardHtml(sp) {
+        function getSpellCardHtml(sp) {
             let voieBadge = '';
             if (sp.voie) {
                 const vHex = getVoieButtonColor(sp.voie);
@@ -6989,7 +6995,6 @@ function getSpellCardHtml(sp) {
                 if (choiceKeys.length > 0) {
                     optionSelectorHtml = `
                         <div class="sandbox-spell-options">
-                            <span>Option :</span>
                             <select id="choice-select-${sp.id}">
                                 ${choiceKeys.map(k => `<option value="${k}">Option ${k}</option>`).join('')}
                             </select>
@@ -6997,9 +7002,26 @@ function getSpellCardHtml(sp) {
                     `;
                 }
 
-                let costDetails = `${sp.manaCost} Mana`;
-                if (sp.healCost > 0) costDetails += ` / ${sp.healCost} PV`;
-                if (sp.heatCost > 0) costDetails += ` / ${sp.heatCost} Chaleur`;
+                const getSrcIcon = (src) => {
+                    const s = src || '';
+                    if (s.includes('MANA')) return `<span class="material-symbols-outlined" style="font-size: 0.95rem; color: #38bdf8; vertical-align: middle;" title="${formatSrc(s)}">water_drop</span>`;
+                    if (s.includes('HEALTH') || s.includes('PV')) return `<span class="material-symbols-outlined" style="font-size: 0.95rem; color: #f43f5e; vertical-align: middle;" title="${formatSrc(s)}">bloodtype</span>`;
+                    if (s.includes('POWER') || s.includes('Puiss')) return `<span class="material-symbols-outlined" style="font-size: 0.95rem; color: #a855f7; vertical-align: middle;" title="${formatSrc(s)}">auto_awesome</span>`;
+                    return `(${formatSrc(s)})`;
+                };
+
+                let costDetailsHtml = [];
+                if (sp.manaCost > 0 || sp.percentManaCost > 0) {
+                    costDetailsHtml.push(`<span style="display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem; color: #38bdf8;" title="Mana">water_drop</span><span style="border-bottom: 1px solid rgba(56, 189, 248, 0.5); padding-bottom: 0.05rem;">${sp.manaCost}${sp.percentManaCost > 0 ? ` + ${sp.percentManaCost}% ${getSrcIcon(sp.percentManaCostSource || 'CASTER_MANA_MAX')}` : ''}</span></span>`);
+                }
+                if (sp.healCost > 0 || sp.percentHealCost > 0) {
+                    costDetailsHtml.push(`<span style="display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem; color: #f43f5e;" title="PV">bloodtype</span><span style="border-bottom: 1px solid rgba(244, 63, 94, 0.5); padding-bottom: 0.05rem;">${sp.healCost}${sp.percentHealCost > 0 ? ` + ${sp.percentHealCost}% ${getSrcIcon(sp.percentHealCostSource || 'CASTER_HEALTH_MAX')}` : ''}</span></span>`);
+                }
+                if (sp.heatCost > 0 || sp.percentHeatCost > 0) {
+                    costDetailsHtml.push(`<span style="display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem; color: #f97316;" title="Chaleur">local_fire_department</span><span style="border-bottom: 1px solid rgba(249, 115, 22, 0.5); padding-bottom: 0.05rem;">${sp.heatCost}${sp.percentHeatCost > 0 ? ` + ${sp.percentHeatCost}%` : ''}</span></span>`);
+                }
+                let costDetails = costDetailsHtml.join(' <span style="color:var(--glass-border); margin:0 0.3rem;">|</span> ');
+                if (costDetailsHtml.length === 0) costDetails = `<span style="display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem; color: #38bdf8;" title="Mana">water_drop</span><span style="border-bottom: 1px solid rgba(56, 189, 248, 0.5); padding-bottom: 0.05rem;">0</span></span>`;
 
                 let castingTypeHtml = '';
                 if (sp.castingType === 'INSTANTANE') castingTypeHtml = '<span class="material-symbols-outlined" style="font-size: 1.1rem; color: #f59e0b; margin-left: 0.3rem;" title="Action Instantanée">bolt</span>';
@@ -7039,7 +7061,7 @@ function getSpellCardHtml(sp) {
                         </div>
                         <div style="font-size: 0.8rem; color: var(--text-muted); display:flex; justify-content:space-between; align-items:center;">
                             <div style="display: flex; align-items: center; gap: 0.8rem;">
-                                <span>Coût: ${costDetails}</span>
+                                <span style="display:flex; align-items:center; gap:0.2rem;">${costDetails}</span>
                                 ${effectsSummary ? `
                                 <div class="spell-effects-trigger" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()">
                                     <span class="badge" style="background: rgba(255,255,255,0.08); color: #94a3b8; font-size: 0.7rem; padding: 0.1rem 0.4rem; cursor: help;">Effets ✦</span>
@@ -7474,7 +7496,7 @@ function getSpellCardHtml(sp) {
                 notif.classList.remove('show');
             }, 4000);
         }
-    
+
         function showGlobalTooltip(el) {
             let tooltip = document.getElementById('globalSpellTooltip');
             if (!tooltip) {
@@ -7484,17 +7506,17 @@ function getSpellCardHtml(sp) {
             }
             const dataEl = el.querySelector('.tooltip-data');
             if (!dataEl) return;
-            
+
             tooltip.innerHTML = dataEl.innerHTML;
             tooltip.style.display = 'flex';
-            
+
             const rect = el.getBoundingClientRect();
             let topPos = rect.top - tooltip.offsetHeight - 8;
             if (topPos < 10) topPos = rect.bottom + 8;
-            
+
             let leftPos = rect.right - tooltip.offsetWidth;
             if (leftPos < 10) leftPos = 10;
-            
+
             tooltip.style.top = topPos + 'px';
             tooltip.style.left = leftPos + 'px';
         }
