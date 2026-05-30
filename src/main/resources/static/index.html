@@ -3168,7 +3168,7 @@
         <!-- Panneau des stats en temps réel (gauche) -->
         <div id="heroLiveStatsPanel" class="live-stats-panel">
             <div class="live-stat-item" title="Puissance">
-                <span class="material-symbols-outlined" style="color: #a855f7;">stars</span>
+                <span class="material-symbols-outlined" style="color: #a855f7;">auto_awesome</span>
                 <div class="val" id="liveStatPower">0</div>
             </div>
             <div class="live-stat-item" title="Armure">
@@ -3269,7 +3269,7 @@
                                     <div class="config-field">
                                         <label style="display: flex; align-items: center; gap: 0.3rem;"><span
                                                 class="material-symbols-outlined"
-                                                style="font-size: 1rem; color: #a855f7;">stars</span>Puissance</label>
+                                                style="font-size: 1rem; color: #a855f7;">auto_awesome</span>Puissance</label>
                                         <input type="number" id="heroConfigPower" min="0" value="25">
                                     </div>
                                     <div class="config-field">
@@ -6589,7 +6589,7 @@
                     if (t.includes('critique')) return { icon: 'gps_fixed', color: '#ef4444' };
                     if (t.includes('armure')) return { icon: 'shield', color: '#3b82f6' };
                     if (t.includes('résistance') || t.includes('resistance')) return { icon: 'shield', color: '#10b981' };
-                    if (t.includes('puissance')) return { icon: 'stars', color: '#a855f7' };
+                    if (t.includes('puiss')) return { icon: 'auto_awesome', color: '#a855f7' };
                     if (t.includes('force')) return { icon: 'fitness_center', color: '#f43f5e' };
                     if (t.includes('brûlure') || t.includes('brulure')) return { icon: 'whatshot', color: '#f97316' };
                     if (t.includes('poison')) return { icon: 'skull', color: '#10b981' };
@@ -6607,7 +6607,7 @@
                         return { icon: 'explosion', color: '#b91c1c' };
                     }
                     if (t.includes('infligé') || t.includes('inflige')) {
-                        if (t.includes('magique')) return { icon: 'stars', color: '#a855f7' };
+                        if (t.includes('magique')) return { icon: 'auto_awesome', color: '#a855f7' };
                         if (t.includes('physique')) return { icon: 'swords', color: '#f43f5e' };
                         return { icon: 'bloodtype', color: '#ef4444' };
                     }
@@ -6620,27 +6620,28 @@
                     if (t.includes('pv') || t.includes('health') || t.includes('vie')) {
                         if (t.includes('max')) {
                             return { icon: 'favorite', color: isLanceur ? '#10b981' : '#f43f5e' };
-                        } else if (t.includes('actuel') || t.includes('curr') || t.includes('tour')) {
+                        } else if (t.includes('act') || t.includes('curr') || t.includes('tour')) {
                             return { icon: 'monitor_heart', color: isLanceur ? '#34d399' : '#ec4899' };
-                        } else if (t.includes('manquant') || t.includes('miss')) {
+                        } else if (t.includes('manq') || t.includes('miss')) {
                             return { icon: 'heart_broken', color: isLanceur ? '#059669' : '#b91c1c' };
                         }
                         return { icon: 'favorite', color: isLanceur ? '#10b981' : '#f43f5e' };
                     }
 
                     if (t.includes('mana')) {
+                        const manaColor = isLanceur ? '#1d4ed8' : '#22d3ee';
                         if (t.includes('max')) {
-                            return { icon: 'water_drop', color: isLanceur ? '#0284c7' : '#38bdf8' };
-                        } else if (t.includes('actuel') || t.includes('curr')) {
-                            return { icon: 'waves', color: isLanceur ? '#38bdf8' : '#22d3ee' };
-                        } else if (t.includes('manquant') || t.includes('miss')) {
-                            return { icon: 'opacity', color: isLanceur ? '#0369a1' : '#0891b2' };
+                            return { icon: 'water_drop', color: manaColor };
+                        } else if (t.includes('act') || t.includes('curr')) {
+                            return { icon: 'waves', color: manaColor };
+                        } else if (t.includes('manq') || t.includes('miss')) {
+                            return { icon: 'opacity', color: manaColor };
                         }
-                        return { icon: 'water_drop', color: isLanceur ? '#0284c7' : '#38bdf8' };
+                        return { icon: 'water_drop', color: manaColor };
                     }
 
-                    if (t.includes('puissance') || t.includes('power')) {
-                        return { icon: 'stars', color: isLanceur ? '#a855f7' : '#fb923c' };
+                    if (t.includes('puiss') || t.includes('power')) {
+                        return { icon: 'auto_awesome', color: isLanceur ? '#a855f7' : '#fb923c' };
                     }
 
                     return { icon: 'stars', color: '#8b5cf6' };
