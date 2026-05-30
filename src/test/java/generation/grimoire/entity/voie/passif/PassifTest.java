@@ -151,8 +151,12 @@ class PassifTest {
     @Test
     void shouldApplyViolencePassive() {
         ViolencePassiveEffect violence = new ViolencePassiveEffect();
+        generation.grimoire.entity.Voie voieViolence = new generation.grimoire.entity.Voie();
+        voieViolence.setNom("Voie de la Violence");
+        voieViolence.setPassiveEffects(java.util.List.of(violence));
 
         Spell inspiration = new Spell();
+        inspiration.setVoie(voieViolence);
         inspiration.setCategory(SpellCategory.INSPIRATION);
 
         violence.onSpellCast(hero, inspiration);
@@ -161,6 +165,7 @@ class PassifTest {
         assertThat(hero.getPassiveState("stat_flat_POWER", -1)).isEqualTo(0);
 
         Spell expiration = new Spell();
+        expiration.setVoie(voieViolence);
         expiration.setCategory(SpellCategory.EXPIRATION);
 
         violence.onSpellCast(hero, expiration);

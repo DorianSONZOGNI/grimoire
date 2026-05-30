@@ -416,6 +416,14 @@ public class WebSpellCreationController {
         res.setMonsterHasConsolidation(sandboxMonster.getVoie() != null && "Voie de la Consolidation".equals(sandboxMonster.getVoie().getNom()));
         res.setMonsterConsolidationLevel(sandboxMonster.getPassiveState("consolidation_active_level", 0));
 
+        // Violence
+        res.setHeroHasViolence(sandboxHero.getVoie() != null && "Voie de la Violence".equals(sandboxHero.getVoie().getNom()));
+        res.setHeroViolenceInspiration(sandboxHero.getPassiveState("violence_inspiration", 0));
+        res.setHeroViolenceExpiration(sandboxHero.getPassiveState("violence_expiration", 0));
+        res.setMonsterHasViolence(sandboxMonster.getVoie() != null && "Voie de la Violence".equals(sandboxMonster.getVoie().getNom()));
+        res.setMonsterViolenceInspiration(sandboxMonster.getPassiveState("violence_inspiration", 0));
+        res.setMonsterViolenceExpiration(sandboxMonster.getPassiveState("violence_expiration", 0));
+
         res.setRawLogs(String.join("\n", sandboxLogs));
         return res;
     }
@@ -533,6 +541,7 @@ public class WebSpellCreationController {
         spell.setChannelingDuration(dto.getChannelingDuration());
         spell.setAllowInstantDuringChanneling(dto.isAllowInstantDuringChanneling());
         spell.setHeatGenerated(dto.getHeatGenerated());
+        spell.setInspiration(dto.isInspiration());
 
         Long voieId = dto.getVoieId();
         if (voieId != null) {
@@ -540,6 +549,14 @@ public class WebSpellCreationController {
         } else {
             spell.setVoie(null);
         }
+
+        // Mettre à jour la catégorie du sort si c'est la Voie de la Violence
+        if (spell.getVoie() != null && "Voie de la Violence".equals(spell.getVoie().getNom())) {
+            spell.setCategory(dto.isInspiration() ? SpellCategory.INSPIRATION : SpellCategory.EXPIRATION);
+        } else {
+            spell.setCategory(SpellCategory.NOTHING);
+        }
+
         Long spiritualiteId = dto.getSpiritualiteId();
         if (spiritualiteId != null) {
             spiritualiteRepository.findById(spiritualiteId).ifPresent(spell::setSpiritualite);
@@ -690,6 +707,7 @@ public class WebSpellCreationController {
         private Long spiritualiteId;
         private int channelingDuration;
         private boolean allowInstantDuringChanneling = true;
+        private boolean inspiration;
         private List<EffectCreationDto> effects = new ArrayList<>();
     }
 
@@ -745,6 +763,9 @@ public class WebSpellCreationController {
         private boolean heroTrahisonDebuffAvailable;
         private boolean heroHasConsolidation;
         private int heroConsolidationLevel;
+        private boolean heroHasViolence;
+        private int heroViolenceInspiration;
+        private int heroViolenceExpiration;
         private java.util.List<ShieldState> heroShields;
         private java.util.List<BuffState> heroBuffs;
 
@@ -761,6 +782,9 @@ public class WebSpellCreationController {
         private boolean monsterTrahisonDebuffAvailable;
         private boolean monsterHasConsolidation;
         private int monsterConsolidationLevel;
+        private boolean monsterHasViolence;
+        private int monsterViolenceInspiration;
+        private int monsterViolenceExpiration;
         private java.util.List<ShieldState> monsterShields;
         private java.util.List<BuffState> monsterBuffs;
 

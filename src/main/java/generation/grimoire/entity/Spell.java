@@ -47,6 +47,8 @@ public class Spell {
     @Enumerated(EnumType.STRING)
     private SpellCategory category;
 
+    private boolean inspiration;
+
     @Enumerated(EnumType.STRING)
     private SpellCastingType castingType = SpellCastingType.BANAL;
 

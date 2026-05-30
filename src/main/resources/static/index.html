@@ -2512,6 +2512,19 @@
                 </div>
             </div>
 
+            <!-- Options spécifiques pour la Voie de la Violence -->
+            <div id="violenceConfig" class="form-row" style="display: none; margin-top: 1rem;">
+                <div class="form-group" style="flex-direction: row; align-items: center; gap: 0.5rem;">
+                    <label class="switch-container" style="display: flex; align-items: center; cursor: pointer;">
+                        <span class="switch">
+                            <input type="checkbox" id="isInspiration" checked onchange="updateViolenceLabel()">
+                            <span class="slider"></span>
+                        </span>
+                        <span id="violenceCategoryLabel" style="color: var(--text-main); font-size: 0.9rem; margin-left: 0.5rem; font-weight: 600;">Sort d'Inspiration (gagne +Critique)</span>
+                    </label>
+                </div>
+            </div>
+
 
 
 
@@ -3099,10 +3112,17 @@
         function updateSpecialVoieConfig() {
             const voieId = document.getElementById('voieSelect').value;
             let isDestruction = false;
+            let isViolence = false;
             if (voieId && metaData.voies) {
                 const v = metaData.voies.find(vo => vo.id == voieId);
-                if (v && v.nom && v.nom.toLowerCase().includes('destruction')) {
-                    isDestruction = true;
+                if (v && v.nom) {
+                    const lNom = v.nom.toLowerCase();
+                    if (lNom.includes('destruction')) {
+                        isDestruction = true;
+                    }
+                    if (lNom.includes('violence')) {
+                        isViolence = true;
+                    }
                 }
             }
 
@@ -3126,6 +3146,25 @@
                 if (hasHeat) {
                     currentEffects = currentEffects.filter(e => !heatTypes.includes(e.effectType));
                     renderEffects();
+                }
+            }
+
+            const violenceConfig = document.getElementById('violenceConfig');
+            if (violenceConfig) {
+                violenceConfig.style.display = isViolence ? 'block' : 'none';
+                updateViolenceLabel();
+            }
+        }
+
+        function updateViolenceLabel() {
+            const isInspInput = document.getElementById('isInspiration');
+            const isInsp = isInspInput ? isInspInput.checked : true;
+            const label = document.getElementById('violenceCategoryLabel');
+            if (label) {
+                if (isInsp) {
+                    label.innerHTML = `Sort d'Inspiration <span style="color: #67e8f9; font-size: 0.8rem; margin-left: 0.5rem;">(+Critique)</span>`;
+                } else {
+                    label.innerHTML = `Sort d'Expiration <span style="color: #f472b6; font-size: 0.8rem; margin-left: 0.5rem;">(+Puissance)</span>`;
                 }
             }
         }
@@ -4187,6 +4226,7 @@
                 heatGenerated: heatValue,
                 voieId: (document.getElementById('voieSelect').value && document.getElementById('voieSelect').value !== '0') ? parseInt(document.getElementById('voieSelect').value) : null,
                 spiritualiteId: (document.getElementById('spiritSelect').value && document.getElementById('spiritSelect').value !== '0') ? parseInt(document.getElementById('spiritSelect').value) : null,
+                inspiration: document.getElementById('isInspiration') ? document.getElementById('isInspiration').checked : false,
 
                 effects: currentEffects.map(e => ({
                     effectType: e.effectType,
@@ -4233,6 +4273,11 @@
                     if (allowInstantInput) allowInstantInput.checked = true;
                     document.getElementById('castingTypeSelect').value = 'BANAL';
                     document.getElementById('castingTypeSelect').dispatchEvent(new Event('change'));
+                    const isInspInput = document.getElementById('isInspiration');
+                    if (isInspInput) {
+                        isInspInput.checked = true;
+                        updateViolenceLabel();
+                    }
 
                     // Mettre à jour l'aperçu d'édition flottant
                     updateEditingPreview();
@@ -4388,6 +4433,14 @@
             if (sp.castingType === 'INSTANTANE') castBadge = `<span class="badge" style="background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid #f59e0b;">⚡ Instantané</span>`;
             else if (sp.castingType === 'CANALISE') castBadge = `<span class="badge" style="background: rgba(139, 92, 246, 0.2); color: #8b5cf6; border: 1px solid #8b5cf6;">🌀 Canalisé</span>`;
             else castBadge = `<span class="badge" style="background: rgba(100, 116, 139, 0.2); color: #94a3b8;">⏳ Banal</span>`;
+
+            if (sp.voie && sp.voie.nom && sp.voie.nom.toLowerCase().includes('violence')) {
+                if (sp.inspiration) {
+                    castBadge += ` <span class="badge" style="background: rgba(6, 182, 212, 0.2); color: #67e8f9; border: 1px solid #06b6d4;">💥 Inspiration</span>`;
+                } else {
+                    castBadge += ` <span class="badge" style="background: rgba(219, 39, 119, 0.2); color: #f472b6; border: 1px solid #db2777;">💥 Expiration</span>`;
+                }
+            }
 
             let effectsSummaryHtml = '';
             if ((sp.effects && sp.effects.length > 0) || (sp.heatGenerated && sp.heatGenerated > 0)) {
@@ -4706,6 +4759,11 @@
             if (allowInstantInput) allowInstantInput.checked = true;
             document.getElementById('castingTypeSelect').value = 'BANAL';
             document.getElementById('castingTypeSelect').dispatchEvent(new Event('change'));
+            const isInspInput = document.getElementById('isInspiration');
+            if (isInspInput) {
+                isInspInput.checked = true;
+                updateViolenceLabel();
+            }
 
             updateEditingPreview();
         }
@@ -6232,6 +6290,11 @@
             document.getElementById('voieSelect').dispatchEvent(new Event('change'));
             document.getElementById('spiritSelect').value = sp.spiritualite ? sp.spiritualite.id : '';
             document.getElementById('spiritSelect').dispatchEvent(new Event('change'));
+            
+            const isInspInput = document.getElementById('isInspiration');
+            if (isInspInput) {
+                isInspInput.checked = sp.inspiration !== false;
+            }
             updateSpecialVoieConfig();
 
 
@@ -6583,6 +6646,39 @@
                     </div>
                 `;
             }
+            if (state.heroHasViolence) {
+                const insp = state.heroViolenceInspiration;
+                const exp = state.heroViolenceExpiration;
+                let bg, border, color, icon, text, title;
+                if (insp > 0) {
+                    bg = 'rgba(6, 182, 212, 0.25)';
+                    border = '1px solid #06b6d4';
+                    color = '#67e8f9';
+                    icon = 'air';
+                    text = `Insp. ${insp}/5`;
+                    title = `Violence (Inspiration): +${insp * 2}% Critique`;
+                } else if (exp > 0) {
+                    bg = 'rgba(219, 39, 119, 0.25)';
+                    border = '1px solid #db2777';
+                    color = '#f472b6';
+                    icon = 'local_fire_department';
+                    text = `Exp. ${exp}/10`;
+                    title = `Violence (Expiration): +${exp * 2} Puissance`;
+                } else {
+                    bg = 'rgba(107, 114, 128, 0.15)';
+                    border = '1px dashed #6b7280';
+                    color = '#9ca3af';
+                    icon = 'explosion';
+                    text = 'Violence (0 stack)';
+                    title = 'Violence: Aucun cumul actif';
+                }
+                heroShieldsHtml += `
+                    <div class="sandbox-status-badge violence" title="${title}" style="background: ${bg}; color: ${color}; border: ${border}; box-shadow: 0 0 8px ${bg};">
+                        <span class="material-symbols-outlined" style="font-size: 0.95rem; color: ${color}; vertical-align: middle;">${icon}</span>
+                        <span>${text}</span>
+                    </div>
+                `;
+            }
             heroShieldsContainer.innerHTML = heroShieldsHtml;
 
             const monsterShieldsContainer = document.getElementById('monsterShieldsContainer');
@@ -6649,6 +6745,57 @@
                     <div class="sandbox-status-badge trahison-debuff" title="Bonus de Trahison contre cible débuffée" style="${debuffStyle}">
                         <span class="material-symbols-outlined" style="font-size: 0.95rem; vertical-align: middle;">trending_down</span>
                         <span>${debuffText}</span>
+                    </div>
+                `;
+            }
+            if (state.monsterHasConsolidation) {
+                const lvl = state.monsterConsolidationLevel;
+                const consolidationLabels = {
+                    0: { icon: 'shield', text: '+5% Armure', title: 'Consolidation (défaut)' },
+                    1: { icon: 'speed', text: '+1 Vit', title: 'Consolidation Lvl 1' },
+                    2: { icon: 'shield', text: '+10% Armure', title: 'Consolidation Lvl 2' },
+                    3: { icon: 'auto_awesome', text: '+10% Résist.', title: 'Consolidation Lvl 3' },
+                    4: { icon: 'savings', text: '-20% Coût', title: 'Consolidation Lvl 4' },
+                    5: { icon: 'security', text: '+8% Arm/Rés', title: 'Consolidation Lvl 5' }
+                };
+                const info = consolidationLabels[lvl] || consolidationLabels[0];
+                monsterShieldsHtml += `
+                    <div class="sandbox-status-badge consolidation" title="${info.title}" style="background: rgba(34, 197, 94, 0.25); color: #86efac; border: 1px solid #22c55e; box-shadow: 0 0 8px rgba(34, 197, 94, 0.3);">
+                        <span class="material-symbols-outlined" style="font-size: 0.95rem; color: #22c55e; vertical-align: middle;">${info.icon}</span>
+                        <span>${info.text}</span>
+                    </div>
+                `;
+            }
+            if (state.monsterHasViolence) {
+                const insp = state.monsterViolenceInspiration;
+                const exp = state.monsterViolenceExpiration;
+                let bg, border, color, icon, text, title;
+                if (insp > 0) {
+                    bg = 'rgba(6, 182, 212, 0.25)';
+                    border = '1px solid #06b6d4';
+                    color = '#67e8f9';
+                    icon = 'air';
+                    text = `Insp. ${insp}/5`;
+                    title = `Violence (Inspiration): +${insp * 2}% Critique`;
+                } else if (exp > 0) {
+                    bg = 'rgba(219, 39, 119, 0.25)';
+                    border = '1px solid #db2777';
+                    color = '#f472b6';
+                    icon = 'local_fire_department';
+                    text = `Exp. ${exp}/10`;
+                    title = `Violence (Expiration): +${exp * 2} Puissance`;
+                } else {
+                    bg = 'rgba(107, 114, 128, 0.15)';
+                    border = '1px dashed #6b7280';
+                    color = '#9ca3af';
+                    icon = 'explosion';
+                    text = 'Violence (0 stack)';
+                    title = 'Violence: Aucun cumul actif';
+                }
+                monsterShieldsHtml += `
+                    <div class="sandbox-status-badge violence" title="${title}" style="background: ${bg}; color: ${color}; border: ${border}; box-shadow: 0 0 8px ${bg};">
+                        <span class="material-symbols-outlined" style="font-size: 0.95rem; color: ${color}; vertical-align: middle;">${icon}</span>
+                        <span>${text}</span>
                     </div>
                 `;
             }
