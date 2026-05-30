@@ -1726,6 +1726,36 @@
             transition: all 0.2s ease;
         }
 
+        
+        .sandbox-spell-card { position: relative; }
+        .spell-effects-trigger {
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            cursor: help;
+        }
+        #globalSpellTooltip {
+            display: none;
+            position: fixed;
+            width: max-content;
+            max-width: 450px;
+            background: #1e293b;
+            border: 1px solid rgba(255,255,255,0.15);
+            border-radius: 8px;
+            padding: 0.8rem;
+            z-index: 999999;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.8);
+            flex-direction: column;
+            gap: 0.3rem;
+            font-size: 0.75rem;
+            pointer-events: none;
+        }
+        .sandbox-spell-tooltip .effect-mini {
+            display: flex;
+            justify-content: space-between;
+            color: #cbd5e1;
+        }
+
         .sandbox-spell-card:hover {
             background: rgba(255, 255, 255, 0.05);
             border-color: rgba(255, 255, 255, 0.15);
@@ -4816,40 +4846,8 @@
             }
         }
 
-        function getSpellCardHtml(sp) {
-            let voieBadge = '';
-            if (sp.voie) {
-                const vHex = getVoieButtonColor(sp.voie);
-                const vRgb = hexToRgb(vHex);
-                const vIcon = getVoieIcon(sp.voie.nom);
-                voieBadge = `<span class="badge" style="color: ${vHex}; border-color: rgba(${vRgb}, 0.3); background: rgba(${vRgb}, 0.05); display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size:1.1em;">${vIcon}</span>${sp.voie.nom}</span>`;
-            }
-
-            let spiritBadge = '';
-            if (sp.spiritualite) {
-                const sHex = getSpiritButtonColor(sp.spiritualite);
-                const sRgb = hexToRgb(sHex);
-                const sIcon = getSpiritIcon(sp.spiritualite.nom);
-                spiritBadge = `<span class="badge" style="color: ${sHex}; border-color: rgba(${sRgb}, 0.3); background: rgba(${sRgb}, 0.05); display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size:1.1em;">${sIcon}</span>${sp.spiritualite.nom}</span>`;
-            }
-
-            let castBadge = '';
-            if (sp.castingType === 'INSTANTANE') {
-                castBadge = `<span class="badge" style="display: inline-flex; align-items: center; gap: 0.2rem; background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.4);"><span class="material-symbols-outlined" style="font-size: 1.05rem;">bolt</span>Instantané</span>`;
-            } else if (sp.castingType === 'CANALISE') {
-                castBadge = `<span class="badge" style="display: inline-flex; align-items: center; gap: 0.2rem; background: rgba(139, 92, 246, 0.2); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.4);"><span class="material-symbols-outlined" style="font-size: 1.05rem;">cyclone</span>Canalisé</span>`;
-            } else {
-                castBadge = `<span class="badge" style="display: inline-flex; align-items: center; gap: 0.2rem; background: rgba(100, 116, 139, 0.2); color: #94a3b8; border: 1px solid rgba(100, 116, 139, 0.3);"><span class="material-symbols-outlined" style="font-size: 1.05rem;">hourglass_empty</span>Banal</span>`;
-            }
-
-            if (sp.voie && sp.voie.nom && sp.voie.nom.toLowerCase().includes('violence')) {
-                if (sp.inspiration) {
-                    castBadge += ` <span class="badge" style="display: inline-flex; align-items: center; gap: 0.2rem; background: rgba(6, 182, 212, 0.2); color: #67e8f9; border: 1px solid rgba(6, 182, 212, 0.4);"><span class="material-symbols-outlined" style="font-size: 1.05rem;">air</span>Inspiration</span>`;
-                } else {
-                    castBadge += ` <span class="badge" style="display: inline-flex; align-items: center; gap: 0.2rem; background: rgba(219, 39, 119, 0.2); color: #f472b6; border: 1px solid rgba(219, 39, 119, 0.4);"><span class="material-symbols-outlined" style="font-size: 1.05rem;">local_fire_department</span>Expiration</span>`;
-                }
-            }
-
+        
+        function getSpellEffectsSummaryHtml(sp) {
             let effectsSummaryHtml = '';
             if ((sp.effects && sp.effects.length > 0) || (sp.heatGenerated && sp.heatGenerated > 0)) {
                 effectsSummaryHtml = `<div class="spell-effects-summary">`;
@@ -5040,6 +5038,43 @@
                 }
                 effectsSummaryHtml += `</div>`;
             }
+            return effectsSummaryHtml;
+        }
+function getSpellCardHtml(sp) {
+            let voieBadge = '';
+            if (sp.voie) {
+                const vHex = getVoieButtonColor(sp.voie);
+                const vRgb = hexToRgb(vHex);
+                const vIcon = getVoieIcon(sp.voie.nom);
+                voieBadge = `<span class="badge" style="color: ${vHex}; border-color: rgba(${vRgb}, 0.3); background: rgba(${vRgb}, 0.05); display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size:1.1em;">${vIcon}</span>${sp.voie.nom}</span>`;
+            }
+
+            let spiritBadge = '';
+            if (sp.spiritualite) {
+                const sHex = getSpiritButtonColor(sp.spiritualite);
+                const sRgb = hexToRgb(sHex);
+                const sIcon = getSpiritIcon(sp.spiritualite.nom);
+                spiritBadge = `<span class="badge" style="color: ${sHex}; border-color: rgba(${sRgb}, 0.3); background: rgba(${sRgb}, 0.05); display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size:1.1em;">${sIcon}</span>${sp.spiritualite.nom}</span>`;
+            }
+
+            let castBadge = '';
+            if (sp.castingType === 'INSTANTANE') {
+                castBadge = `<span class="badge" style="display: inline-flex; align-items: center; gap: 0.2rem; background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.4);"><span class="material-symbols-outlined" style="font-size: 1.05rem;">bolt</span>Instantané</span>`;
+            } else if (sp.castingType === 'CANALISE') {
+                castBadge = `<span class="badge" style="display: inline-flex; align-items: center; gap: 0.2rem; background: rgba(139, 92, 246, 0.2); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.4);"><span class="material-symbols-outlined" style="font-size: 1.05rem;">cyclone</span>Canalisé</span>`;
+            } else {
+                castBadge = `<span class="badge" style="display: inline-flex; align-items: center; gap: 0.2rem; background: rgba(100, 116, 139, 0.2); color: #94a3b8; border: 1px solid rgba(100, 116, 139, 0.3);"><span class="material-symbols-outlined" style="font-size: 1.05rem;">hourglass_empty</span>Banal</span>`;
+            }
+
+            if (sp.voie && sp.voie.nom && sp.voie.nom.toLowerCase().includes('violence')) {
+                if (sp.inspiration) {
+                    castBadge += ` <span class="badge" style="display: inline-flex; align-items: center; gap: 0.2rem; background: rgba(6, 182, 212, 0.2); color: #67e8f9; border: 1px solid rgba(6, 182, 212, 0.4);"><span class="material-symbols-outlined" style="font-size: 1.05rem;">air</span>Inspiration</span>`;
+                } else {
+                    castBadge += ` <span class="badge" style="display: inline-flex; align-items: center; gap: 0.2rem; background: rgba(219, 39, 119, 0.2); color: #f472b6; border: 1px solid rgba(219, 39, 119, 0.4);"><span class="material-symbols-outlined" style="font-size: 1.05rem;">local_fire_department</span>Expiration</span>`;
+                }
+            }
+
+            let effectsSummaryHtml = getSpellEffectsSummaryHtml(sp);
 
             let rankTitleBadge = '';
             if (sp.voie && sp.voie.rankNames && sp.voie.rankNames[sp.niveau]) {
@@ -6963,12 +6998,36 @@
                 if (sp.healCost > 0) costDetails += ` / ${sp.healCost} PV`;
                 if (sp.heatCost > 0) costDetails += ` / ${sp.heatCost} Chaleur`;
 
+                let castingTypeHtml = '';
+                if (sp.castingType === 'INSTANTANE') castingTypeHtml = '<span class="material-symbols-outlined" style="font-size: 1.1rem; color: #f59e0b; margin-left: 0.3rem;" title="Action Instantanée">bolt</span>';
+                else if (sp.castingType === 'CANALISE') castingTypeHtml = '<span class="material-symbols-outlined" style="font-size: 1.1rem; color: #8b5cf6; margin-left: 0.3rem;" title="Action Canalisée">cyclone</span>';
+                else castingTypeHtml = '<span class="material-symbols-outlined" style="font-size: 1.1rem; color: #3b82f6; margin-left: 0.3rem;" title="Action Banale">hourglass_empty</span>';
+
+                let voieHtml = '';
+                if (sp.voie && sp.voie.nom) {
+                    const vColor = getVoieButtonColor(sp.voie);
+                    const vIcon = getVoieIcon(sp.voie.nom);
+                    voieHtml = `<span class="material-symbols-outlined" style="font-size: 1.1rem; color: ${vColor}; margin-left: 0.2rem;" title="${sp.voie.nom}">${vIcon}</span>`;
+                }
+
+                let spiritHtml = '';
+                if (sp.spiritualite && sp.spiritualite.nom) {
+                    const sColor = getSpiritButtonColor(sp.spiritualite);
+                    const sIcon = getSpiritIcon(sp.spiritualite.nom);
+                    spiritHtml = `<span class="material-symbols-outlined" style="font-size: 1.1rem; color: ${sColor}; margin-left: 0.2rem;" title="${sp.spiritualite.nom}">${sIcon}</span>`;
+                }
+
+                let effectsSummary = getSpellEffectsSummaryHtml(sp);
+
                 return `
-                    <div class="sandbox-spell-card" style="border-left: 3px solid ${titleColor};">
+                    <div class="sandbox-spell-card" style="border-left: 3px solid ${titleColor}; position: relative;">
                         <div class="sandbox-spell-header">
-                            <div class="sandbox-spell-title">
+                            <div class="sandbox-spell-title" style="display: flex; align-items: center; gap: 0.3rem;">
                                 <span style="color: ${titleColor}; font-weight: 600;">${sp.nom}</span>
                                 <span class="badge" style="font-size: 0.7rem; padding: 0.1rem 0.3rem;">Lvl ${sp.niveau}</span>
+                                ${castingTypeHtml}
+                                ${voieHtml}
+                                ${spiritHtml}
                             </div>
                             <div class="sandbox-spell-actions">
                                 <button type="button" class="btn" style="background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.4); font-size: 0.75rem; padding: 0.2rem 0.5rem; border-radius: 4px;" onclick="castSandboxSpell(${sp.id})">Lancer ✦</button>
@@ -6976,7 +7035,15 @@
                             </div>
                         </div>
                         <div style="font-size: 0.8rem; color: var(--text-muted); display:flex; justify-content:space-between; align-items:center;">
-                            <span>Coût: ${costDetails}</span>
+                            <div style="display: flex; align-items: center; gap: 0.8rem;">
+                                <span>Coût: ${costDetails}</span>
+                                ${effectsSummary ? `
+                                <div class="spell-effects-trigger" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()">
+                                    <span class="badge" style="background: rgba(255,255,255,0.08); color: #94a3b8; font-size: 0.7rem; padding: 0.1rem 0.4rem; cursor: help;">Effets ✦</span>
+                                    <template class="tooltip-data">${effectsSummary}</template>
+                                </div>
+                                ` : ''}
+                            </div>
                             ${optionSelectorHtml}
                         </div>
                     </div>
@@ -7403,6 +7470,35 @@
             setTimeout(() => {
                 notif.classList.remove('show');
             }, 4000);
+        }
+    
+        function showGlobalTooltip(el) {
+            let tooltip = document.getElementById('globalSpellTooltip');
+            if (!tooltip) {
+                tooltip = document.createElement('div');
+                tooltip.id = 'globalSpellTooltip';
+                document.body.appendChild(tooltip);
+            }
+            const dataEl = el.querySelector('.tooltip-data');
+            if (!dataEl) return;
+            
+            tooltip.innerHTML = dataEl.innerHTML;
+            tooltip.style.display = 'flex';
+            
+            const rect = el.getBoundingClientRect();
+            let topPos = rect.top - tooltip.offsetHeight - 8;
+            if (topPos < 10) topPos = rect.bottom + 8;
+            
+            let leftPos = rect.right - tooltip.offsetWidth;
+            if (leftPos < 10) leftPos = 10;
+            
+            tooltip.style.top = topPos + 'px';
+            tooltip.style.left = leftPos + 'px';
+        }
+
+        function hideGlobalTooltip() {
+            const tooltip = document.getElementById('globalSpellTooltip');
+            if (tooltip) tooltip.style.display = 'none';
         }
     </script>
 </body>
