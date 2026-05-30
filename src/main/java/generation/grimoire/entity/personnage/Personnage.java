@@ -142,6 +142,10 @@ public class Personnage {
     }
 
     public void takeDamage(int damage, DamageType damageType, Personnage caster) {
+        takeDamage(damage, damageType, caster, false);
+    }
+
+    public void takeDamage(int damage, DamageType damageType, Personnage caster, boolean isBurn) {
         if (damageType == DamageType.PHYSIC && caster != null) {
             if (caster.getVoie() != null && caster.getVoie().getPassiveEffects() != null) {
                 for (generation.grimoire.entity.voie.passif.VoiePassiveEffect p : caster.getVoie()
@@ -166,7 +170,8 @@ public class Personnage {
             }
             case MAGIC -> {
                 constant = 100;
-                yield effectiveResistance * Math.max(0, getStatBuffMultiplier(StatType.RESISTANCE));
+                double res = effectiveResistance * Math.max(0, getStatBuffMultiplier(StatType.RESISTANCE));
+                yield isBurn ? res * 2 : res;
             }
             default -> {
                 constant = 100;
@@ -335,6 +340,11 @@ public class Personnage {
         }
         System.out.println(name + " est soigné de " + finalHeal + " points (multiplier soin reçu: " + multiplier
                 + "). Vie actuelle : " + healthCurrent);
+
+        boolean removedPoison = activeBuffs.removeIf(b -> b.getStatAffected() == StatType.POISON && b.getFlatValue() > 0);
+        if (removedPoison) {
+            System.out.println("🌿 Le soin a purifié le Poison sur " + name + " !");
+        }
     }
 
     public void restoreMana(int manaAmount) {
@@ -441,6 +451,15 @@ public class Personnage {
         Iterator<BuffDebuffEffect> iterator = activeBuffs.iterator();
         while (iterator.hasNext()) {
             BuffDebuffEffect effect = iterator.next();
+            
+            if (effect.getStatAffected() == StatType.BURN && effect.getFlatValue() > 0) {
+                System.out.println("🔥 " + this.name + " subit " + effect.getFlatValue() + " dégâts de Brûlure !");
+                this.takeDamage(effect.getFlatValue(), DamageType.MAGIC, null, true);
+            } else if (effect.getStatAffected() == StatType.POISON && effect.getFlatValue() > 0) {
+                System.out.println("☠️ " + this.name + " subit " + effect.getFlatValue() + " dégâts de Poison !");
+                this.takeDamage(effect.getFlatValue(), DamageType.BRUT);
+            }
+
             effect.setDuration(effect.getDuration() - 1);
             if (effect.getDuration() <= 0) {
                 iterator.remove();
