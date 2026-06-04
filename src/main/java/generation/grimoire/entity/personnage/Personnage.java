@@ -607,7 +607,9 @@ public class Personnage {
      */
     public String canCast(generation.grimoire.entity.Spell spell) {
         if (spell.getVoie() != null) {
-            if (this.voie == null || !this.voie.getId().equals(spell.getVoie().getId())) {
+            boolean idMatch = this.voie != null && this.voie.getId() != null && spell.getVoie().getId() != null && this.voie.getId().equals(spell.getVoie().getId());
+            boolean nameMatch = this.voie != null && this.voie.getId() == null && spell.getVoie().getId() == null && this.voie.getNom() != null && this.voie.getNom().equals(spell.getVoie().getNom());
+            if (this.voie == null || (!idMatch && !nameMatch)) {
                 return this.name + " n'a pas la " + spell.getVoie().getNom() + " requise pour lancer " + spell.getNom() + ".";
             }
             if (this.voieLevel < spell.getNiveau()) {
@@ -616,7 +618,9 @@ public class Personnage {
             }
         }
         if (spell.getSpiritualite() != null) {
-            if (this.spiritualite == null || !this.spiritualite.getId().equals(spell.getSpiritualite().getId())) {
+            boolean idMatch = this.spiritualite != null && this.spiritualite.getId() != null && spell.getSpiritualite().getId() != null && this.spiritualite.getId().equals(spell.getSpiritualite().getId());
+            boolean nameMatch = this.spiritualite != null && this.spiritualite.getId() == null && spell.getSpiritualite().getId() == null && this.spiritualite.getNom() != null && this.spiritualite.getNom().equals(spell.getSpiritualite().getNom());
+            if (this.spiritualite == null || (!idMatch && !nameMatch)) {
                 return this.name + " n'a pas la spiritualité " + spell.getSpiritualite().getNom() + " requise pour lancer " + spell.getNom() + ".";
             }
             if (this.spiritualiteLevel < spell.getNiveau()) {

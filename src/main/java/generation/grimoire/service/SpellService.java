@@ -202,6 +202,189 @@ public class SpellService {
     }
 
     /**
+     * Version "groupe" de castSpell qui résout les destinataires en utilisant de vraies listes
+     * d'alliés et d'ennemis (pour le bac à sable).
+     */
+    public void castSpellGroup(Spell spell, Personnage caster, Personnage target,
+                               Personnage ally, java.util.List<Personnage> allAllies,
+                               java.util.List<Personnage> allEnemies, Integer choiceKey) {
+
+        Spell toCast = selectVariant(spell, caster, target, choiceKey);
+
+        String castError = caster.canCast(toCast);
+        if (castError != null) {
+            System.out.println("🚫 " + castError);
+            return;
+        }
+
+        SpellCastingType cType = toCast.getCastingType();
+        if (cType == null) cType = SpellCastingType.BANAL;
+
+        CastingTypeAdjustEvent castingEvent = new CastingTypeAdjustEvent(caster, target, toCast, cType);
+        passiveDispatcher.dispatch(caster, toCast, castingEvent);
+        cType = castingEvent.getCurrentType();
+
+        if (caster.getRemainingChannelingTurns() > 0) {
+            if (cType != SpellCastingType.INSTANTANE) {
+                System.out.println(caster.getName() + " ne peut pas lancer de sort banal ou canalisé pendant sa canalisation.");
+                return;
+            }
+            if (!caster.isAllowInstantDuringCurrentChanneling()) {
+                System.out.println(caster.getName() + " ne peut pas lancer de sort instantané pendant cette canalisation.");
+                return;
+            }
+        }
+
+        if (caster.isBanalSpellCastThisTurn()) {
+            System.out.println(caster.getName() + " a déjà lancé un sort banal ce tour-ci.");
+            return;
+        }
+
+        if (cType == SpellCastingType.INSTANTANE && caster.isInstantSpellCastThisTurn()) {
+            System.out.println(caster.getName() + " a déjà lancé un sort instantané ce tour-ci.");
+            return;
+        }
+
+        CanCastCheckEvent canCastEvent = new CanCastCheckEvent(caster, target, toCast);
+        passiveDispatcher.dispatch(caster, toCast, canCastEvent);
+        if (!canCastEvent.isAllowed()) return;
+
+        // Calcul des coûts
+        int actualManaCost = toCast.getManaCost();
+        if (toCast.getPercentManaCost() > 0) {
+            double manaBase = generation.grimoire.utils.StatCalculator.getSourceValue(
+                    toCast.getPercentManaCostSource() != null ? toCast.getPercentManaCostSource() : generation.grimoire.enumeration.Source.CASTER_MANA_MAX, caster, target);
+            actualManaCost += (int) (manaBase * toCast.getPercentManaCost() / 100);
+        }
+        int actualHealCost = toCast.getHealCost();
+        if (toCast.getPercentHealCost() > 0) {
+            double healBase = generation.grimoire.utils.StatCalculator.getSourceValue(
+                    toCast.getPercentHealCostSource() != null ? toCast.getPercentHealCostSource() : generation.grimoire.enumeration.Source.CASTER_HEALTH_MAX, caster, target);
+            actualHealCost += (int) (healBase * toCast.getPercentHealCost() / 100);
+        }
+        int actualHeatCost = toCast.getHeatCost();
+        if (toCast.getPercentHeatCost() > 0) {
+            actualHeatCost += (int) (100.0 * toCast.getPercentHeatCost() / 100.0);
+        }
+
+        int[] costs = { actualManaCost, actualHealCost, actualHeatCost };
+        SpellCostAdjustEvent costEvent = new SpellCostAdjustEvent(caster, target, toCast, costs);
+        passiveDispatcher.dispatch(caster, toCast, costEvent);
+        actualManaCost = costs[0];
+        actualHealCost = costs[1];
+        actualHeatCost = costs.length > 2 ? costs[2] : actualHeatCost;
+
+        if (caster.getManaCurrent() < actualManaCost) {
+            System.out.println("Mana insuffisant pour lancer le sort " + toCast.getNom());
+            return;
+        }
+        if (caster.getHealthCurrent() < actualHealCost) {
+            System.out.println("PV insuffisants pour lancer le sort " + toCast.getNom());
+            return;
+        }
+        int currentHeat = caster.getPassiveState("destruction_heat", 0);
+        if (currentHeat < actualHeatCost) {
+            System.out.println("Chaleur insuffisante pour lancer le sort " + toCast.getNom());
+            return;
+        }
+
+        caster.setManaCurrent(caster.getManaCurrent() - actualManaCost);
+        caster.setHealthCurrent(caster.getHealthCurrent() - actualHealCost);
+        caster.setPassiveState("destruction_heat", currentHeat - actualHeatCost);
+        System.out.println(caster.getName() + " dépense " + actualManaCost + " mana, " + actualHealCost
+                + " PV et " + actualHeatCost + " chaleur pour lancer " + toCast.getNom());
+
+        SpellCostPaidEvent costPaidEvent = new SpellCostPaidEvent(caster, target, toCast, actualManaCost, actualHealCost, actualHeatCost);
+        passiveDispatcher.dispatch(caster, toCast, costPaidEvent);
+
+        if (cType == SpellCastingType.INSTANTANE) {
+            caster.setInstantSpellCastThisTurn(true);
+        } else if (cType == SpellCastingType.BANAL) {
+            caster.setBanalSpellCastThisTurn(true);
+        } else if (cType == SpellCastingType.CANALISE) {
+            caster.setBanalSpellCastThisTurn(true);
+            caster.setRemainingChannelingTurns(toCast.getChannelingDuration());
+            caster.setAllowInstantDuringCurrentChanneling(toCast.isAllowInstantDuringChanneling());
+            caster.setChanneledSpell(toCast);
+            caster.setChannelingTarget(target);
+            caster.setChannelingChoiceKey(choiceKey);
+            System.out.println(caster.getName() + " commence à canaliser " + toCast.getNom() + " pour " + toCast.getChannelingDuration() + " tours.");
+        }
+
+        applyConsumableBuffs(toCast, caster, target);
+
+        // Appliquer les effets avec résolution de groupe
+        for (SpellEffect effect : toCast.getEffects()) {
+            if (effect.getRequiredChoiceKey() != null && !effect.getRequiredChoiceKey().equals(choiceKey)) {
+                continue;
+            }
+            if (toCast.getCastingType() == SpellCastingType.CANALISE) {
+                if (effect.getChannelingTurns() != null && !effect.getChannelingTurns().isEmpty()) {
+                    if (!effect.getChannelingTurns().contains(1)) {
+                        continue;
+                    }
+                }
+            }
+
+            java.util.List<Personnage> recipients = resolveRecipientsGroup(
+                    effect.getEffectTarget(), caster, target, ally, allAllies, allEnemies);
+
+            for (Personnage recipient : recipients) {
+                if (recipients.size() > 1) {
+                    System.out.println("  ↳ Application sur : " + recipient.getName());
+                }
+                effect.apply(caster, recipient);
+            }
+        }
+
+        SpellCastEvent spellCastEvent = new SpellCastEvent(caster, target, toCast);
+        passiveDispatcher.dispatch(caster, toCast, spellCastEvent);
+    }
+
+    /**
+     * Résout les destinataires d'un effet en utilisant de vraies listes de personnages
+     * au lieu de créer des simulés.
+     */
+    public static java.util.List<Personnage> resolveRecipientsGroup(
+            generation.grimoire.enumeration.EffectTarget targetType,
+            Personnage caster, Personnage target, Personnage ally,
+            java.util.List<Personnage> allAllies, java.util.List<Personnage> allEnemies) {
+
+        java.util.List<Personnage> recipients = new java.util.ArrayList<>();
+        if (targetType == null) {
+            if (target != null) recipients.add(target);
+            return recipients;
+        }
+        switch (targetType) {
+            case CASTER -> {
+                if (caster != null) recipients.add(caster);
+            }
+            case TARGET -> {
+                if (target != null) recipients.add(target);
+            }
+            case ALLY -> {
+                if (ally != null) recipients.add(ally);
+            }
+            case ALL_ALLIES -> {
+                if (allAllies != null) recipients.addAll(allAllies);
+            }
+            case ALL_ENEMIES -> {
+                if (allEnemies != null) {
+                    recipients.addAll(allEnemies);
+                    if (allEnemies.size() > 1) {
+                        System.out.println("💥 [Zone d'Effet] Le sort se propage à l'ensemble des ennemis !");
+                    }
+                }
+            }
+            case ALL_COMBATANTS -> {
+                if (allAllies != null) recipients.addAll(allAllies);
+                if (allEnemies != null) recipients.addAll(allEnemies);
+            }
+        }
+        return recipients.stream().distinct().toList();
+    }
+
+    /**
      * Sélectionne une variante du sort de base donné en fonction de conditions
      * spécifiques, de paramètres d'incantation
      * et de ciblage, ou d'une clé de variante choisie manuellement. La méthode

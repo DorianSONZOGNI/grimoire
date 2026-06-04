@@ -145,13 +145,16 @@ export function getSpellEffectsSummaryHtml(sp) {
                 };
                 const targetText = effectTargetLabels[target] || 'Cible';
 
-                const rawType = e.effectType || e.effect_type || '';
+                let rawType = e.effectType || e.effect_type || '';
+                if ((rawType === 'BUFF_DEBUFF' || rawType === 'BuffDebuffEffect') && (e.statAffected === 'POISON' || e.statAffected === 'BURN')) {
+                    rawType = e.statAffected;
+                }
                 const t = rawType.replace('Effect', '');
 
                 let isBad = false;
                 if (['DamageFixed', 'FIXED_DAMAGE', 'DamagePercentage', 'PERCENTAGE_DAMAGE', 'DamageOverTime', 'DOT'].includes(t)) {
                     isBad = true;
-                } else if (['BuffDebuff', 'BUFF_DEBUFF'].includes(t)) {
+                } else if (['BuffDebuff', 'BUFF_DEBUFF', 'POISON', 'BURN'].includes(t)) {
                     const inverseStats = ['DAMAGE_TAKEN_MAGIC', 'DAMAGE_TAKEN_PHYSIC', 'DAMAGE_TAKEN_BRUT', 'SHIELD_PIERCED', 'BURN', 'POISON'];
                     const isNegativeValue = e.modifier < 0 || e.flatValue < 0;
                     isBad = isNegativeValue;
@@ -197,9 +200,11 @@ export function getSpellEffectsSummaryHtml(sp) {
                     'HeatOverTimeEffect': 'Chaleur Tick',
                     'HEAT_OVER_TIME': 'Chaleur Tick',
                     'HeatEffect': 'Chaleur',
-                    'HEAT': 'Chaleur'
+                    'HEAT': 'Chaleur',
+                    'POISON': 'Poison',
+                    'BURN': 'Brûlure'
                 };
-                const eTypeStr = typeNames[e.effectType || e.effect_type] || (e.effectType || e.effect_type || 'Effet');
+                const eTypeStr = typeNames[rawType] || rawType || 'Effet';
 
                 const dt = (e.damageType || 'MAGIC').toLowerCase();
                 const dtStr = dt === 'magic' ? 'Magiques' : (dt === 'physic' ? 'Physiques' : 'Bruts');
@@ -215,16 +220,16 @@ export function getSpellEffectsSummaryHtml(sp) {
                 } else if (t === 'HealPercentage' || t === 'PERCENTAGE_HEAL') {
                     const pct = Math.round((e.percentage || 0) * 100);
                     detailsStr = `➔ rend ${pct}% de ${formatSrc(e.healSource || e.source)} en PV`;
-                } else if (t === 'BuffDebuff' || t === 'BUFF_DEBUFF') {
+                } else if (t === 'BuffDebuff' || t === 'BUFF_DEBUFF' || t === 'POISON' || t === 'BURN') {
                     let parts = [];
                     if (e.flatValue) {
-                        parts.push(`${e.flatValue > 0 ? '+' : ''}${e.flatValue} ${formatStat(e.statAffected)}`);
+                        parts.push(`${e.flatValue > 0 ? '+' : ''}${e.flatValue} ${formatStat(e.statAffected || e.effectType)}`);
                     }
                     if (e.modifier) {
                         const sign = e.modifier > 0 ? '+' : '';
-                        parts.push(`${sign}${Math.round(e.modifier * 100)}% ${formatStat(e.statAffected)}`);
+                        parts.push(`${sign}${Math.round(e.modifier * 100)}% ${formatStat(e.statAffected || e.effectType)}`);
                     }
-                    if (parts.length === 0) parts.push(`modifie ${formatStat(e.statAffected)}`);
+                    if (parts.length === 0) parts.push(`modifie ${formatStat(e.statAffected || e.effectType)}`);
                     const durStr = e.duration > 0 ? ` (${e.duration} tours)` : '';
                     detailsStr = `➔ ${parts.join(' et ')}${durStr}`;
                 } else if (t === 'DamageOverTime' || t === 'DOT') {
@@ -553,7 +558,11 @@ export function editSpell(id) {
     // Charger les effets rattachés
     state.currentEffects = (sp.effects || []).map((e, idx) => {
         const rawType = e.effectType || e.effect_type || '';
-        const effectType = javaClassToCode[rawType] || rawType;
+        let effectType = javaClassToCode[rawType] || rawType;
+
+        if (effectType === 'BUFF_DEBUFF' && (e.statAffected === 'POISON' || e.statAffected === 'BURN')) {
+            effectType = e.statAffected;
+        }
 
         let effectId = Date.now() + idx + Math.random();
 
@@ -570,7 +579,7 @@ export function editSpell(id) {
             duration: e.duration || 0,
             damageType: e.damageType || 'MAGIC',
             statAffected: e.statAffected || 'ARMURE',
-            source: effectType === 'BUFF_DEBUFF' ? (e.source || e.modifierSource || null) : (e.source || e.shieldSource || e.damageSource || e.healSource || e.manaSource || e.modifierSource || 'TARGET_HEALTH_MAX'),
+            source: (effectType === 'BUFF_DEBUFF' || effectType === 'POISON' || effectType === 'BURN') ? (e.source || e.modifierSource || null) : (e.source || e.shieldSource || e.damageSource || e.healSource || e.manaSource || e.modifierSource || 'TARGET_HEALTH_MAX'),
             requiredChoiceKey: e.requiredChoiceKey !== undefined ? e.requiredChoiceKey : null,
             channelingTurns: e.channelingTurns || [1]
         };

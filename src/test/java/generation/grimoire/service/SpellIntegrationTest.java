@@ -124,6 +124,7 @@ class SpellIntegrationTest {
     void testSpellWithVoiePassive_Trahison() {
         // Ajout de la Voie de Trahison au héros
         Voie voieTrahison = new Voie();
+        voieTrahison.setNom("Voie de la Trahison");
         TrahisonPassiveEffect trahisonEffect = new TrahisonPassiveEffect();
         voieTrahison.setPassiveEffects(List.of(trahisonEffect));
         hero.setVoie(voieTrahison);
@@ -312,6 +313,7 @@ class SpellIntegrationTest {
         generation.grimoire.entity.voie.passif.specific.ConsolidationPassiveEffect consoEffect = new generation.grimoire.entity.voie.passif.specific.ConsolidationPassiveEffect();
         voieConsolidation.setPassiveEffects(List.of(consoEffect));
         hero.setVoie(voieConsolidation);
+        hero.setVoieLevel(2);
 
         // D'abord un début de tour → buff par défaut +5% armure
         spellService.startTurn(hero);
@@ -344,6 +346,7 @@ class SpellIntegrationTest {
         esprit.setNom("Esprit");
         EspritPassiveEffect espritEffect = new EspritPassiveEffect();
         esprit.setPassiveEffects(List.of(espritEffect));
+        hero.setSpiritualite(esprit);
 
         Spell lightSpell = new Spell();
         lightSpell.setNom("Rayon Sacré");
@@ -370,6 +373,7 @@ class SpellIntegrationTest {
         tenebres.setNom("Ténèbres");
         TenebrePassiveEffect tenebresEffect = new TenebrePassiveEffect();
         tenebres.setPassiveEffects(List.of(tenebresEffect));
+        hero.setSpiritualite(tenebres);
 
         Spell darkSpell = new Spell();
         darkSpell.setNom("Orbe Noir");
@@ -396,6 +400,7 @@ class SpellIntegrationTest {
         karma.setNom("Karma");
         KarmaPassiveEffect karmaEffect = new KarmaPassiveEffect();
         karma.setPassiveEffects(List.of(karmaEffect));
+        hero.setSpiritualite(karma);
 
         Spell karmaSpell = new Spell();
         karmaSpell.setNom("Onde Karmique");
@@ -422,6 +427,7 @@ class SpellIntegrationTest {
         esprit.setNom("Esprit");
         EspritPassiveEffect espritEffect = new EspritPassiveEffect();
         esprit.setPassiveEffects(List.of(espritEffect));
+        hero.setSpiritualite(esprit);
 
         // Création d'un sort possédant à la fois la Voie et la Spiritualité
         Spell hybridSpell = new Spell();

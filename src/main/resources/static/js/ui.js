@@ -108,7 +108,10 @@ export function renderSourceOptions(arr, selectedVal) {
 
 export function renderStatOptions(arr, selectedVal) {
     if (!arr || !Array.isArray(arr)) return '';
-    return arr.map(s => {
+    return arr.filter(s => {
+        const val = typeof s === 'object' ? s.id || s : s;
+        return val !== 'POISON' && val !== 'BURN';
+    }).map(s => {
         const val = typeof s === 'object' ? s.id || s : s;
         return `<option value="${val}" ${val === selectedVal ? 'selected' : ''}>${formatStat(val)}</option>`;
     }).join('');

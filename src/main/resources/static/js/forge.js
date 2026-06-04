@@ -229,6 +229,10 @@ export function updateKarmaLabel() {
 }
 
 export function addEffectPanel(type) {
+    let stat = 'ARMURE';
+    if (type === 'POISON') stat = 'POISON';
+    if (type === 'BURN') stat = 'BURN';
+
     const effectObj = {
         id: Date.now() + Math.random(),
         effectType: type,
@@ -241,8 +245,8 @@ export function addEffectPanel(type) {
         modifier: 0.20,
         duration: 2,
         damageType: 'MAGIC',
-        statAffected: 'ARMURE',
-        source: type === 'BUFF_DEBUFF' ? null : 'TARGET_HEALTH_MAX',
+        statAffected: stat,
+        source: (type === 'BUFF_DEBUFF' || type === 'POISON' || type === 'BURN') ? null : 'TARGET_HEALTH_MAX',
         requiredChoiceKey: null,
         channelingTurns: [1]
     };
@@ -311,12 +315,14 @@ export function renderEffects() {
 
     state.currentEffects.forEach((eff, idx) => {
         const labelObj = state.metaData.effectTypes.find(t => t.type === eff.effectType);
-        const heatLabels = {
+        const customLabels = {
             'HEAT_FIXED': 'Chaleur Fixe',
             'HEAT_PERCENTAGE': 'Chaleur %',
-            'HEAT_OVER_TIME': 'Chaleur Tick'
+            'HEAT_OVER_TIME': 'Chaleur Tick',
+            'POISON': 'Poison',
+            'BURN': 'Brûlure'
         };
-        const typeLabel = labelObj ? labelObj.label : (heatLabels[eff.effectType] || eff.effectType);
+        const typeLabel = labelObj ? labelObj.label : (customLabels[eff.effectType] || eff.effectType);
 
         const isHeatEffect = eff.effectType.startsWith('HEAT');
         if (isHeatEffect) {
@@ -402,6 +408,25 @@ export function renderEffects() {
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Valeur Fixe (+/-)</label>
+                                <input type="number" value="${eff.flatValue}" onchange="updateEffectProp('${eff.id}', 'flatValue', this.value)">
+                            </div>
+                            <div class="form-group">
+                                <label>Multiplicateur (Ratio)</label>
+                                <input type="number" step="0.05" value="${eff.modifier}" onchange="updateEffectProp('${eff.id}', 'modifier', this.value)">
+                            </div>
+                        </div>
+                    `;
+        } else if (eff.effectType === 'POISON' || eff.effectType === 'BURN') {
+            fieldsHtml = `
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Durée (Tours)</label>
+                                <input type="number" value="${eff.duration}" onchange="updateEffectProp('${eff.id}', 'duration', this.value)">
+                            </div>
+                        </div>
+                        <div class="form-row">
+                            <div class="form-group">
+                                <label>Dégâts Fixes (+/-)</label>
                                 <input type="number" value="${eff.flatValue}" onchange="updateEffectProp('${eff.id}', 'flatValue', this.value)">
                             </div>
                             <div class="form-group">
@@ -602,6 +627,10 @@ export function renderEffects() {
             typeBadgeStyle = 'background: linear-gradient(135deg, rgba(56, 189, 248, 0.25), rgba(2, 132, 199, 0.4)); color: #7dd3fc; border: 1px solid #38bdf8; box-shadow: 0 0 12px rgba(56, 189, 248, 0.3); text-shadow: 0 0 5px rgba(0,0,0,0.8);';
         } else if (eff.effectType === 'BUFF_DEBUFF') {
             typeBadgeStyle = 'background: linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(180, 83, 9, 0.4)); color: #fde68a; border: 1px solid #f59e0b; box-shadow: 0 0 12px rgba(245, 158, 11, 0.3); text-shadow: 0 0 5px rgba(0,0,0,0.8);';
+        } else if (eff.effectType === 'POISON') {
+            typeBadgeStyle = 'background: linear-gradient(135deg, rgba(132, 204, 22, 0.25), rgba(77, 124, 15, 0.4)); color: #d9f99d; border: 1px solid #84cc16; box-shadow: 0 0 12px rgba(132, 204, 22, 0.3); text-shadow: 0 0 5px rgba(0,0,0,0.8);';
+        } else if (eff.effectType === 'BURN') {
+            typeBadgeStyle = 'background: linear-gradient(135deg, rgba(234, 88, 12, 0.25), rgba(154, 52, 18, 0.4)); color: #fed7aa; border: 1px solid #ea580c; box-shadow: 0 0 12px rgba(234, 88, 12, 0.3); text-shadow: 0 0 5px rgba(0,0,0,0.8);';
         } else if (eff.effectType === 'DOT') {
             typeBadgeStyle = 'background: linear-gradient(135deg, rgba(249, 115, 22, 0.25), rgba(194, 65, 12, 0.4)); color: #fdba74; border: 1px solid #f97316; box-shadow: 0 0 12px rgba(249, 115, 22, 0.3); text-shadow: 0 0 5px rgba(0,0,0,0.8);';
         } else if (eff.effectType === 'PURGE') {

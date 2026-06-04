@@ -17,8 +17,8 @@ export async function trySpell(id) {
     try {
         const res = await fetch('/api/spells-editor/sandbox/state');
         if (res.ok) {
-            const state = await res.json();
-            updateSandboxUI(state);
+            const data = await res.json();
+            updateSandboxUI(data);
         }
     } catch (err) {
         console.error(err);
@@ -36,7 +36,6 @@ export function populateHeroConfigSelectors() {
     const spiritSelect = document.getElementById('heroConfigSpiritualite');
     if (!voieSelect || !spiritSelect || !state.metaData.voies) return;
 
-    // Nettoyer les anciens custom-selects s'ils existent
     [voieSelect, spiritSelect].forEach(select => {
         if (select.dataset.customized) {
             if (select.nextElementSibling && select.nextElementSibling.tagName === 'DIV') {
@@ -47,7 +46,6 @@ export function populateHeroConfigSelectors() {
         }
     });
 
-    // Sauvegarder les sélections actuelles
     const currentVoie = voieSelect.value;
     const currentSpirit = spiritSelect.value;
 
@@ -63,68 +61,65 @@ export function populateHeroConfigSelectors() {
     });
     spiritSelect.innerHTML = spiritHtml;
 
-    // Restaurer les sélections
     if (currentVoie) voieSelect.value = currentVoie;
     if (currentSpirit) spiritSelect.value = currentSpirit;
 
-    // Ré-appliquer le custom select
     makeCustomSelect('heroConfigVoie');
     makeCustomSelect('heroConfigSpiritualite');
 }
 
-export function syncHeroConfigForm(state) {
+export function syncHeroConfigForm(hero) {
     const voieSelect = document.getElementById('heroConfigVoie');
     const spiritSelect = document.getElementById('heroConfigSpiritualite');
     if (voieSelect) {
-        if (state.heroVoieId != null) voieSelect.value = state.heroVoieId;
+        if (hero.voieId != null) voieSelect.value = hero.voieId;
         else voieSelect.value = '';
         voieSelect.dispatchEvent(new Event('change'));
     }
     if (spiritSelect) {
-        if (state.heroSpiritualiteId != null) spiritSelect.value = state.heroSpiritualiteId;
+        if (hero.spiritualiteId != null) spiritSelect.value = hero.spiritualiteId;
         else spiritSelect.value = '';
         spiritSelect.dispatchEvent(new Event('change'));
     }
 
     const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
-    setVal('heroConfigVoieLevel', state.heroVoieLevel || 1);
-    setVal('heroConfigSpiritLevel', state.heroSpiritualiteLevel || 1);
-    setVal('heroConfigHp', state.heroHpMax || 100);
-    setVal('heroConfigMana', state.heroManaMax || 100);
-    setVal('heroConfigPower', state.heroBasePower !== undefined ? state.heroBasePower : (state.heroPower || 0));
-    setVal('heroConfigArmor', state.heroBaseArmor !== undefined ? state.heroBaseArmor : (state.heroArmor || 0));
-    setVal('heroConfigResistance', state.heroBaseResistance !== undefined ? state.heroBaseResistance : (state.heroResistance || 0));
-    setVal('heroConfigSpeed', state.heroBaseSpeed !== undefined ? state.heroBaseSpeed : (state.heroSpeed || 0));
-    setVal('heroConfigCrit', state.heroBaseCrit !== undefined ? state.heroBaseCrit : (state.heroCrit || 0));
+    setVal('heroConfigVoieLevel', hero.voieLevel || 1);
+    setVal('heroConfigSpiritLevel', hero.spiritualiteLevel || 1);
+    setVal('heroConfigHp', hero.hpMax || 100);
+    setVal('heroConfigMana', hero.manaMax || 100);
+    setVal('heroConfigPower', hero.basePower !== undefined ? hero.basePower : (hero.power || 0));
+    setVal('heroConfigArmor', hero.baseArmor !== undefined ? hero.baseArmor : (hero.armor || 0));
+    setVal('heroConfigResistance', hero.baseResistance !== undefined ? hero.baseResistance : (hero.resistance || 0));
+    setVal('heroConfigSpeed', hero.baseSpeed !== undefined ? hero.baseSpeed : (hero.speed || 0));
+    setVal('heroConfigCrit', hero.baseCrit !== undefined ? hero.baseCrit : (hero.crit || 0));
 }
 
-export function renderHeroConfigBadges(state) {
+export function renderHeroConfigBadges(hero) {
     const container = document.getElementById('heroConfigBadges');
     if (!container) return;
 
     let html = '';
-    if (state.heroVoieName) {
+    if (hero.voieName) {
         html += `<span class="hero-config-badge voie">
                     <span class="material-symbols-outlined" style="font-size: 0.8rem;">route</span>
-                    ${state.heroVoieName} Lvl ${state.heroVoieLevel}
+                    ${hero.voieName} Lvl ${hero.voieLevel}
                 </span>`;
     }
-    if (state.heroSpiritualiteName) {
+    if (hero.spiritualiteName) {
         html += `<span class="hero-config-badge spirit">
                     <span class="material-symbols-outlined" style="font-size: 0.8rem;">self_improvement</span>
-                    ${state.heroSpiritualiteName} Lvl ${state.heroSpiritualiteLevel}
+                    ${hero.spiritualiteName} Lvl ${hero.spiritualiteLevel}
                 </span>`;
     }
-    if (!state.heroVoieName && !state.heroSpiritualiteName) {
+    if (!hero.voieName && !hero.spiritualiteName) {
         html += `<span style="font-size: 0.72rem; color: var(--text-muted); font-style: italic;">Aucune voie ni spiritualité configurée</span>`;
     }
 
-    // Stats chips
-    const pui = state.heroBasePower !== undefined ? state.heroBasePower : (state.heroPower || 0);
-    const arm = state.heroBaseArmor !== undefined ? state.heroBaseArmor : (state.heroArmor || 0);
-    const res = state.heroBaseResistance !== undefined ? state.heroBaseResistance : (state.heroResistance || 0);
-    const vit = state.heroBaseSpeed !== undefined ? state.heroBaseSpeed : (state.heroSpeed || 0);
-    const crit = state.heroBaseCrit !== undefined ? state.heroBaseCrit : (state.heroCrit || 0);
+    const pui = hero.basePower !== undefined ? hero.basePower : (hero.power || 0);
+    const arm = hero.baseArmor !== undefined ? hero.baseArmor : (hero.armor || 0);
+    const res = hero.baseResistance !== undefined ? hero.baseResistance : (hero.resistance || 0);
+    const vit = hero.baseSpeed !== undefined ? hero.baseSpeed : (hero.speed || 0);
+    const crit = hero.baseCrit !== undefined ? hero.baseCrit : (hero.crit || 0);
 
     html += `<div class="hero-stats-row">`;
     html += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #a855f7;">auto_awesome</span>${pui} Pui</span>`;
@@ -136,6 +131,8 @@ export function renderHeroConfigBadges(state) {
 
     container.innerHTML = html;
 }
+
+// ===== Spell Rendering (unchanged logic) =====
 
 export function renderSandboxSpells() {
     const container = document.getElementById('sandboxSpellsContainer');
@@ -152,7 +149,6 @@ export function renderSandboxSpells() {
 
         const titleColor = getSpellColor(sp);
 
-        // Scanner les requiredChoiceKey uniques des effets
         const effectsList = sp.effects || [];
         const choiceKeys = [...new Set(effectsList.map(e => e.requiredChoiceKey).filter(k => k != null))];
 
@@ -215,6 +211,10 @@ export function renderSandboxSpells() {
         }
 
         let effectsSummary = getSpellEffectsSummaryHtml(sp);
+
+        // Determine if spell needs target selection
+        const needsEnemyTarget = effectsList.some(e => (e.effectTarget || e.effect_target) === 'TARGET');
+        const needsAllyTarget = effectsList.some(e => (e.effectTarget || e.effect_target) === 'ALLY');
 
         return `
                     <div class="sandbox-spell-card" style="border-left: 3px solid ${titleColor}; position: relative;">
@@ -280,437 +280,252 @@ export function removeSpellFromSandbox(spellId) {
     renderSandboxSpellSelector();
 }
 
-export function updateSandboxUI(state) {
+// ===== Combatant Card Rendering =====
+
+function renderPassiveBadges(c) {
+    let html = '';
+
+    // Shields
+    html += (c.shields || []).map(s => `
+        <div class="sandbox-status-badge shield" title="Source: ${s.sourceName}">
+            <span class="material-symbols-outlined" style="font-size: 0.95rem;">shield</span>
+            <span>${s.amount} (${s.duration}t)</span>
+        </div>
+    `).join('');
+
+    // Heat
+    if (c.heat > 0) {
+        html += `<div class="sandbox-status-badge heat" title="Chaleur accumulée" style="background: rgba(239, 68, 68, 0.25); color: #fca5a5; border: 1px solid #ef4444; box-shadow: 0 0 8px rgba(239, 68, 68, 0.3);">
+            <span class="material-symbols-outlined" style="font-size: 0.95rem; color: #ef4444;">whatshot</span>
+            <span>${c.heat}°C / 100</span>
+        </div>`;
+    }
+
+    // Sûreté
+    if (c.surete > 0) {
+        html += `<div class="sandbox-status-badge surete" title="Points de sûreté" style="background: rgba(245, 158, 11, 0.25); color: #fde68a; border: 1px solid #f59e0b; box-shadow: 0 0 8px rgba(245, 158, 11, 0.3);">
+            <span class="material-symbols-outlined" style="font-size: 0.95rem; color: #f59e0b;">security</span>
+            <span>${c.surete}/100 Sûreté</span>
+        </div>`;
+    }
+
+    // Crit dérivé
+    if (c.critDerived !== null && c.critDerived !== undefined) {
+        const sign = c.critDerived >= 0 ? '+' : '';
+        html += `<div class="sandbox-status-badge raison" title="Critique dérivé (Raison)" style="background: rgba(59, 130, 246, 0.25); color: #93c5fd; border: 1px solid #3b82f6; box-shadow: 0 0 8px rgba(59, 130, 246, 0.3);">
+            <span class="material-symbols-outlined" style="font-size: 0.95rem; color: #3b82f6;">track_changes</span>
+            <span>${sign}${c.critDerived}% Critique</span>
+        </div>`;
+    }
+
+    // Trahison
+    if (c.hasTrahison) {
+        const mkBadge = (avail, title, icon, text) => {
+            const style = avail
+                ? "background: rgba(139, 92, 246, 0.25); color: #c084fc; border: 1px solid #8b5cf6; box-shadow: 0 0 8px rgba(139, 92, 246, 0.3);"
+                : "background: rgba(75, 85, 99, 0.15); color: #9ca3af; border: 1px dashed #4b5563; opacity: 0.6;";
+            return `<div class="sandbox-status-badge" title="${title}" style="${style}">
+                <span class="material-symbols-outlined" style="font-size: 0.95rem;">${icon}</span>
+                <span>${avail ? text : ''}</span>
+            </div>`;
+        };
+        html += mkBadge(c.trahisonBaseAvailable, 'Bonus de base de Trahison', c.trahisonBaseAvailable ? 'flash_on' : 'flash_off', '+10%');
+        html += mkBadge(c.trahisonLowHpAvailable, 'Trahison: Cible <50% PV', 'heart_broken', '+15%');
+        html += mkBadge(c.trahisonDebuffAvailable, 'Trahison: Cible débuffée', 'trending_down', '+10%');
+    }
+
+    // Consolidation
+    if (c.hasConsolidation) {
+        const labels = {
+            0: { icon: 'shield', text: '+5% Armure' }, 1: { icon: 'speed', text: '+1 Vit' },
+            2: { icon: 'shield', text: '+10% Armure' }, 3: { icon: 'auto_awesome', text: '+10% Résist.' },
+            4: { icon: 'savings', text: '-20% Coût' }, 5: { icon: 'security', text: '+8% Arm/Rés' }
+        };
+        const info = labels[c.consolidationLevel] || labels[0];
+        html += `<div class="sandbox-status-badge consolidation" title="Consolidation" style="background: rgba(34, 197, 94, 0.25); color: #86efac; border: 1px solid #22c55e; box-shadow: 0 0 8px rgba(34, 197, 94, 0.3);">
+            <span class="material-symbols-outlined" style="font-size: 0.95rem; color: #22c55e;">${info.icon}</span>
+            <span>${info.text}</span>
+        </div>`;
+    }
+
+    // Violence
+    if (c.hasViolence) {
+        let bg, border, color, icon, text, title;
+        if (c.violenceInspiration > 0) {
+            bg = 'rgba(6, 182, 212, 0.25)'; border = '1px solid #06b6d4'; color = '#67e8f9'; icon = 'air';
+            text = `Insp. ${c.violenceInspiration}/5`; title = `Violence (Inspiration): +${c.violenceInspiration * 2}% Critique`;
+        } else if (c.violenceExpiration > 0) {
+            bg = 'rgba(219, 39, 119, 0.25)'; border = '1px solid #db2777'; color = '#f472b6'; icon = 'local_fire_department';
+            text = `Exp. ${c.violenceExpiration}/10`; title = `Violence (Expiration): +${c.violenceExpiration * 2} Puissance`;
+        } else {
+            bg = 'rgba(107, 114, 128, 0.15)'; border = '1px dashed #6b7280'; color = '#9ca3af'; icon = 'explosion';
+            text = 'Violence (0)'; title = 'Violence: Aucun cumul actif';
+        }
+        html += `<div class="sandbox-status-badge violence" title="${title}" style="background: ${bg}; color: ${color}; border: ${border};">
+            <span class="material-symbols-outlined" style="font-size: 0.95rem; color: ${color};">${icon}</span>
+            <span>${text}</span>
+        </div>`;
+    }
+
+    // Karma
+    if (c.hasKarma) {
+        let bg, border, color, icon, text, title;
+        if (c.karmaLocked) {
+            bg = 'rgba(239, 68, 68, 0.25)'; border = '1px solid #ef4444'; color = '#f87171'; icon = 'block';
+            text = 'Karma Brisé'; title = 'La voie du Karma est verrouillée.';
+        } else if (c.karmaHarmony) {
+            bg = 'rgba(100, 116, 139, 0.25)'; border = '1px solid #cbd5e1'; color = '#cbd5e1'; icon = 'brightness_medium';
+            text = 'Harmonie'; title = 'Équilibre parfait !';
+        } else if (c.karmaGauge < 0) {
+            bg = 'rgba(147, 51, 234, 0.25)'; border = '1px solid #c084fc'; color = '#c084fc'; icon = 'dark_mode';
+            text = `Ténèbres (${Math.abs(c.karmaGauge)})`; title = `Karma: ${c.karmaGauge}`;
+        } else if (c.karmaGauge > 0) {
+            bg = 'rgba(234, 179, 8, 0.25)'; border = '1px solid #fde047'; color = '#fde047'; icon = 'light_mode';
+            text = `Lumière (${c.karmaGauge})`; title = `Karma: +${c.karmaGauge}`;
+        } else {
+            bg = 'rgba(107, 114, 128, 0.15)'; border = '1px dashed #6b7280'; color = '#9ca3af'; icon = 'balance';
+            text = 'Karma Neutre'; title = 'Neutre.';
+        }
+        html += `<div class="sandbox-status-badge karma" title="${title}" style="background: ${bg}; color: ${color}; border: ${border};">
+            <span class="material-symbols-outlined" style="font-size: 0.95rem; color: ${color};">${icon}</span>
+            <span>${text}</span>
+        </div>`;
+    }
+
+    return html;
+}
+
+function renderBuffsHtml(buffList) {
+    return (buffList || []).map(b => {
+        const inverseStats = ['DAMAGE_TAKEN_MAGIC', 'DAMAGE_TAKEN_PHYSIC', 'DAMAGE_TAKEN_BRUT', 'SHIELD_PIERCED', 'BURN', 'POISON'];
+        const isInverse = inverseStats.includes(b.statAffected);
+        const isNegativeValue = b.modifier < 0 || b.flatValue < 0;
+
+        let isBad = isNegativeValue;
+        if (isInverse) isBad = !isNegativeValue;
+
+        const badgeClass = isBad ? 'debuff' : 'buff';
+        const icon = isNegativeValue ? 'trending_down' : 'trending_up';
+
+        let text = '';
+        if (b.flatValue) text += `${b.flatValue > 0 ? '+' : ''}${b.flatValue} ${formatStat(b.statAffected)}`;
+        if (b.modifier) {
+            if (text) text += ' / ';
+            text += `${b.modifier > 0 ? '+' : ''}${Math.round(b.modifier * 100)}% ${formatStat(b.statAffected)}`;
+        }
+        if (!text) text = `Modif. de ${formatStat(b.statAffected)}`;
+
+        return `<div class="sandbox-status-badge ${badgeClass}" title="Source: ${b.sourceName}">
+            <span class="material-symbols-outlined" style="font-size: 0.95rem;">${icon}</span>
+            <span>${text} (${b.duration}t)</span>
+        </div>`;
+    }).join('');
+}
+
+function renderCombatantCard(c, team, isHero = false) {
+    const emoji = team === 'ally' ? '🧙‍♂️' : '👹';
+    const roleLabel = isHero ? ' (Lanceur)' : '';
+    const hpPct = Math.max(0, Math.min(100, (c.hpCurrent / c.hpMax) * 100));
+    let hpLabel = `${c.hpCurrent} / ${c.hpMax}`;
+    if (c.shieldTotal > 0) hpLabel += ` (+${c.shieldTotal} 🛡️)`;
+
+    const hasMana = c.manaMax > 0;
+    let manaHtml = '';
+    if (hasMana) {
+        const manaPct = Math.max(0, Math.min(100, (c.manaCurrent / c.manaMax) * 100));
+        manaHtml = `
+            <div class="gauge-container">
+                <div class="gauge-label"><span>Mana</span><span>${c.manaCurrent} / ${c.manaMax}</span></div>
+                <div class="gauge-track"><div class="gauge-fill mana" style="width: ${manaPct}%;"></div></div>
+            </div>`;
+    }
+
+    const canRemove = (team === 'ally' && !isHero) || (team === 'enemy');
+    const removeBtn = canRemove ? `<button type="button" class="btn-remove-combatant" onclick="removeSandboxCombatant('${team === 'ally' ? 'ALLY' : 'ENEMY'}', ${c.index})" title="Retirer">✕</button>` : '';
+
+    return `
+        <div class="combatant-card" data-team="${team}" data-index="${c.index}">
+            <div class="combatant-name">
+                <span>${emoji} ${c.name}${roleLabel}</span>
+                ${removeBtn}
+            </div>
+            ${isHero ? `<div id="heroConfigBadges" style="display: flex; flex-wrap: wrap; gap: 0.3rem; margin-bottom: 0.3rem;"></div>` : ''}
+            <div class="gauge-container">
+                <div class="gauge-label"><span>Santé (PV)</span><span>${hpLabel}</span></div>
+                <div class="gauge-track"><div class="gauge-fill hp" style="width: ${hpPct}%;"></div></div>
+            </div>
+            ${manaHtml}
+            <div class="sandbox-status-list">${renderPassiveBadges(c)}</div>
+            <div class="sandbox-status-list">${renderBuffsHtml(c.buffs)}</div>
+        </div>`;
+}
+
+// ===== Main UI Update =====
+
+export function updateSandboxUI(data) {
     // Update Turn
-    document.getElementById('sandboxTurnText').innerText = state.turnCount || 1;
+    document.getElementById('sandboxTurnText').innerText = data.turnCount || 1;
 
-    // Hero gauges
-    const heroHpPct = Math.max(0, Math.min(100, (state.heroHpCurrent / state.heroHpMax) * 100));
-    let heroHpLabel = `${state.heroHpCurrent} / ${state.heroHpMax}`;
-    if (state.heroShieldTotal > 0) {
-        heroHpLabel += ` (+${state.heroShieldTotal} 🛡️)`;
-    }
-    document.getElementById('heroHpText').innerText = heroHpLabel;
-    document.getElementById('heroHpFill').style.width = `${heroHpPct}%`;
-
-    const heroManaPct = Math.max(0, Math.min(100, (state.heroManaCurrent / state.heroManaMax) * 100));
-    document.getElementById('heroManaText').innerText = `${state.heroManaCurrent} / ${state.heroManaMax}`;
-    document.getElementById('heroManaFill').style.width = `${heroManaPct}%`;
-
-    // Monster gauge
-    const monsterHpPct = Math.max(0, Math.min(100, (state.monsterHpCurrent / state.monsterHpMax) * 100));
-    let monsterHpLabel = `${state.monsterHpCurrent} / ${state.monsterHpMax}`;
-    if (state.monsterShieldTotal > 0) {
-        monsterHpLabel += ` (+${state.monsterShieldTotal} 🛡️)`;
-    }
-    document.getElementById('monsterHpText').innerText = monsterHpLabel;
-    document.getElementById('monsterHpFill').style.width = `${monsterHpPct}%`;
-
-    // Render Shields & Heat
-    const heroShieldsContainer = document.getElementById('heroShieldsContainer');
-    let heroShieldsHtml = (state.heroShields || []).map(s => `
-                <div class="sandbox-status-badge shield" title="Source: ${s.sourceName}">
-                    <span class="material-symbols-outlined" style="font-size: 0.95rem;">shield</span>
-                    <span>${s.amount} (${s.duration}t)</span>
-                </div>
-            `).join('');
-    if (state.heroHeat > 0) {
-        heroShieldsHtml += `
-                    <div class="sandbox-status-badge heat" title="Chaleur accumulée" style="background: rgba(239, 68, 68, 0.25); color: #fca5a5; border: 1px solid #ef4444; box-shadow: 0 0 8px rgba(239, 68, 68, 0.3);">
-                        <span class="material-symbols-outlined" style="font-size: 0.95rem; color: #ef4444; vertical-align: middle;">whatshot</span>
-                        <span>${state.heroHeat}°C / 100</span>
-                    </div>
-                `;
-    }
-    if (state.heroSurete > 0) {
-        heroShieldsHtml += `
-                    <div class="sandbox-status-badge surete" title="Points de sûreté" style="background: rgba(245, 158, 11, 0.25); color: #fde68a; border: 1px solid #f59e0b; box-shadow: 0 0 8px rgba(245, 158, 11, 0.3);">
-                        <span class="material-symbols-outlined" style="font-size: 0.95rem; color: #f59e0b; vertical-align: middle;">security</span>
-                        <span>${state.heroSurete}/100 Sûreté</span>
-                    </div>
-                `;
-    }
-    if (state.heroCritDerived !== null && state.heroCritDerived !== undefined) {
-        const sign = state.heroCritDerived >= 0 ? '+' : '';
-        heroShieldsHtml += `
-                    <div class="sandbox-status-badge raison" title="Critique dérivé (Raison)" style="background: rgba(59, 130, 246, 0.25); color: #93c5fd; border: 1px solid #3b82f6; box-shadow: 0 0 8px rgba(59, 130, 246, 0.3);">
-                        <span class="material-symbols-outlined" style="font-size: 0.95rem; color: #3b82f6; vertical-align: middle;">track_changes</span>
-                        <span>${sign}${state.heroCritDerived}% Critique</span>
-                    </div>
-                `;
-    }
-    if (state.heroHasTrahison) {
-        const baseStyle = state.heroTrahisonBaseAvailable
-            ? "background: rgba(139, 92, 246, 0.25); color: #c084fc; border: 1px solid #8b5cf6; box-shadow: 0 0 8px rgba(139, 92, 246, 0.3);"
-            : "background: rgba(75, 85, 99, 0.15); color: #9ca3af; border: 1px dashed #4b5563; opacity: 0.6;";
-        const baseText = state.heroTrahisonBaseAvailable ? "+10%" : "";
-        const baseIcon = state.heroTrahisonBaseAvailable ? "flash_on" : "flash_off";
-        heroShieldsHtml += `
-                    <div class="sandbox-status-badge trahison-base" title="Bonus de base de Trahison (1er coup du tour)" style="${baseStyle}">
-                        <span class="material-symbols-outlined" style="font-size: 0.95rem; vertical-align: middle;">${baseIcon}</span>
-                        <span>${baseText}</span>
-                    </div>
-                `;
-
-        const lowHpStyle = state.heroTrahisonLowHpAvailable
-            ? "background: rgba(139, 92, 246, 0.25); color: #c084fc; border: 1px solid #8b5cf6; box-shadow: 0 0 8px rgba(139, 92, 246, 0.3);"
-            : "background: rgba(75, 85, 99, 0.15); color: #9ca3af; border: 1px dashed #4b5563; opacity: 0.6;";
-        const lowHpText = state.heroTrahisonLowHpAvailable ? "+15%" : "";
-        heroShieldsHtml += `
-                    <div class="sandbox-status-badge trahison-lowhp" title="Bonus de Trahison contre cible à moins de 50% PV" style="${lowHpStyle}">
-                        <span class="material-symbols-outlined" style="font-size: 0.95rem; vertical-align: middle;">heart_broken</span>
-                        <span>${lowHpText}</span>
-                    </div>
-                `;
-
-        const debuffStyle = state.heroTrahisonDebuffAvailable
-            ? "background: rgba(139, 92, 246, 0.25); color: #c084fc; border: 1px solid #8b5cf6; box-shadow: 0 0 8px rgba(139, 92, 246, 0.3);"
-            : "background: rgba(75, 85, 99, 0.15); color: #9ca3af; border: 1px dashed #4b5563; opacity: 0.6;";
-        const debuffText = state.heroTrahisonDebuffAvailable ? "+10%" : "";
-        heroShieldsHtml += `
-                    <div class="sandbox-status-badge trahison-debuff" title="Bonus de Trahison contre cible débuffée" style="${debuffStyle}">
-                        <span class="material-symbols-outlined" style="font-size: 0.95rem; vertical-align: middle;">trending_down</span>
-                        <span>${debuffText}</span>
-                    </div>
-                `;
-    }
-    if (state.heroHasConsolidation) {
-        const lvl = state.heroConsolidationLevel;
-        const consolidationLabels = {
-            0: { icon: 'shield', text: '+5% Armure', title: 'Consolidation (défaut)' },
-            1: { icon: 'speed', text: '+1 Vit', title: 'Consolidation Lvl 1' },
-            2: { icon: 'shield', text: '+10% Armure', title: 'Consolidation Lvl 2' },
-            3: { icon: 'auto_awesome', text: '+10% Résist.', title: 'Consolidation Lvl 3' },
-            4: { icon: 'savings', text: '-20% Coût', title: 'Consolidation Lvl 4' },
-            5: { icon: 'security', text: '+8% Arm/Rés', title: 'Consolidation Lvl 5' }
-        };
-        const info = consolidationLabels[lvl] || consolidationLabels[0];
-        heroShieldsHtml += `
-                    <div class="sandbox-status-badge consolidation" title="${info.title}" style="background: rgba(34, 197, 94, 0.25); color: #86efac; border: 1px solid #22c55e; box-shadow: 0 0 8px rgba(34, 197, 94, 0.3);">
-                        <span class="material-symbols-outlined" style="font-size: 0.95rem; color: #22c55e; vertical-align: middle;">${info.icon}</span>
-                        <span>${info.text}</span>
-                    </div>
-                `;
-    }
-    if (state.heroHasViolence) {
-        const insp = state.heroViolenceInspiration;
-        const exp = state.heroViolenceExpiration;
-        let bg, border, color, icon, text, title;
-        if (insp > 0) {
-            bg = 'rgba(6, 182, 212, 0.25)';
-            border = '1px solid #06b6d4';
-            color = '#67e8f9';
-            icon = 'air';
-            text = `Insp. ${insp}/5`;
-            title = `Violence (Inspiration): +${insp * 2}% Critique`;
-        } else if (exp > 0) {
-            bg = 'rgba(219, 39, 119, 0.25)';
-            border = '1px solid #db2777';
-            color = '#f472b6';
-            icon = 'local_fire_department';
-            text = `Exp. ${exp}/10`;
-            title = `Violence (Expiration): +${exp * 2} Puissance`;
-        } else {
-            bg = 'rgba(107, 114, 128, 0.15)';
-            border = '1px dashed #6b7280';
-            color = '#9ca3af';
-            icon = 'explosion';
-            text = 'Violence (0 stack)';
-            title = 'Violence: Aucun cumul actif';
+    // Render allies
+    const alliesContainer = document.getElementById('alliesContainer');
+    if (alliesContainer && data.allies) {
+        let html = '';
+        data.allies.forEach((c, i) => {
+            html += renderCombatantCard(c, 'ally', i === 0);
+        });
+        // Add ally button
+        if (data.allies.length < 4) {
+            html += `<button type="button" class="btn-add-combatant" onclick="addSandboxAlly()">
+                <span class="material-symbols-outlined" style="font-size: 1rem;">person_add</span>
+                <span>Ajouter un Allié</span>
+            </button>`;
         }
-        heroShieldsHtml += `
-                    <div class="sandbox-status-badge violence" title="${title}" style="background: ${bg}; color: ${color}; border: ${border}; box-shadow: 0 0 8px ${bg};">
-                        <span class="material-symbols-outlined" style="font-size: 0.95rem; color: ${color}; vertical-align: middle;">${icon}</span>
-                        <span>${text}</span>
-                    </div>
-                `;
+        alliesContainer.innerHTML = html;
     }
 
-    if (state.heroHasKarma) {
-        const gauge = state.heroKarmaGauge;
-        const isLocked = state.heroKarmaLocked;
-        const isHarmony = state.heroKarmaHarmony;
-        let bg, border, color, icon, text, title;
-
-        if (isLocked) {
-            bg = 'rgba(239, 68, 68, 0.25)';
-            border = '1px solid #ef4444';
-            color = '#f87171';
-            icon = 'block';
-            text = 'Karma Brisé';
-            title = 'La voie du Karma est définitivement verrouillée.';
-        } else if (isHarmony) {
-            bg = 'rgba(100, 116, 139, 0.25)';
-            border = '1px solid #cbd5e1';
-            color = '#cbd5e1';
-            icon = 'brightness_medium';
-            text = 'Harmonie';
-            title = 'Équilibre parfait atteint. Les effets karmiques sont amplifiés !';
-        } else if (gauge < 0) {
-            bg = 'rgba(147, 51, 234, 0.25)';
-            border = '1px solid #c084fc';
-            color = '#c084fc';
-            icon = 'dark_mode';
-            text = `Ténèbres (${Math.abs(gauge)})`;
-            title = `Le Karma penche vers les Ténèbres. Jauge: ${gauge}`;
-        } else if (gauge > 0) {
-            bg = 'rgba(234, 179, 8, 0.25)';
-            border = '1px solid #fde047';
-            color = '#fde047';
-            icon = 'light_mode';
-            text = `Lumière (${gauge})`;
-            title = `Le Karma penche vers la Lumière. Jauge: +${gauge}`;
-        } else {
-            bg = 'rgba(107, 114, 128, 0.15)';
-            border = '1px dashed #6b7280';
-            color = '#9ca3af';
-            icon = 'balance';
-            text = 'Karma Neutre';
-            title = 'Le Karma est neutre.';
+    // Render enemies
+    const enemiesContainer = document.getElementById('enemiesContainer');
+    if (enemiesContainer && data.enemies) {
+        let html = '';
+        data.enemies.forEach(c => {
+            html += renderCombatantCard(c, 'enemy', false);
+        });
+        if (data.enemies.length < 4) {
+            html += `<button type="button" class="btn-add-combatant enemy" onclick="addSandboxEnemy()">
+                <span class="material-symbols-outlined" style="font-size: 1rem;">group_add</span>
+                <span>Ajouter un Ennemi</span>
+            </button>`;
         }
-
-        heroShieldsHtml += `
-                    <div class="sandbox-status-badge karma" title="${title}" style="background: ${bg}; color: ${color}; border: ${border}; box-shadow: 0 0 8px ${bg};">
-                        <span class="material-symbols-outlined" style="font-size: 0.95rem; color: ${color}; vertical-align: middle;">${icon}</span>
-                        <span>${text}</span>
-                    </div>
-                `;
+        enemiesContainer.innerHTML = html;
     }
-    heroShieldsContainer.innerHTML = heroShieldsHtml;
-
-    const monsterShieldsContainer = document.getElementById('monsterShieldsContainer');
-    let monsterShieldsHtml = (state.monsterShields || []).map(s => `
-                <div class="sandbox-status-badge shield" title="Source: ${s.sourceName}">
-                    <span class="material-symbols-outlined" style="font-size: 0.95rem;">shield</span>
-                    <span>${s.amount} (${s.duration}t)</span>
-                </div>
-            `).join('');
-    if (state.monsterHeat > 0) {
-        monsterShieldsHtml += `
-                    <div class="sandbox-status-badge heat" title="Chaleur accumulée" style="background: rgba(239, 68, 68, 0.25); color: #fca5a5; border: 1px solid #ef4444; box-shadow: 0 0 8px rgba(239, 68, 68, 0.3);">
-                        <span class="material-symbols-outlined" style="font-size: 0.95rem; color: #ef4444; vertical-align: middle;">whatshot</span>
-                        <span>${state.monsterHeat}°C / 100</span>
-                    </div>
-                `;
-    }
-    if (state.monsterSurete > 0) {
-        monsterShieldsHtml += `
-                    <div class="sandbox-status-badge surete" title="Points de sûreté" style="background: rgba(245, 158, 11, 0.25); color: #fde68a; border: 1px solid #f59e0b; box-shadow: 0 0 8px rgba(245, 158, 11, 0.3);">
-                        <span class="material-symbols-outlined" style="font-size: 0.95rem; color: #f59e0b; vertical-align: middle;">security</span>
-                        <span>${state.monsterSurete}/100 Sûreté</span>
-                    </div>
-                `;
-    }
-    if (state.monsterCritDerived !== null && state.monsterCritDerived !== undefined) {
-        const sign = state.monsterCritDerived >= 0 ? '+' : '';
-        monsterShieldsHtml += `
-                    <div class="sandbox-status-badge raison" title="Critique dérivé (Raison)" style="background: rgba(59, 130, 246, 0.25); color: #93c5fd; border: 1px solid #3b82f6; box-shadow: 0 0 8px rgba(59, 130, 246, 0.3);">
-                        <span class="material-symbols-outlined" style="font-size: 0.95rem; color: #3b82f6; vertical-align: middle;">track_changes</span>
-                        <span>${sign}${state.monsterCritDerived}% Critique</span>
-                    </div>
-                `;
-    }
-    if (state.monsterHasTrahison) {
-        const baseStyle = state.monsterTrahisonBaseAvailable
-            ? "background: rgba(139, 92, 246, 0.25); color: #c084fc; border: 1px solid #8b5cf6; box-shadow: 0 0 8px rgba(139, 92, 246, 0.3);"
-            : "background: rgba(75, 85, 99, 0.15); color: #9ca3af; border: 1px dashed #4b5563; opacity: 0.6;";
-        const baseText = state.monsterTrahisonBaseAvailable ? "Trahison: 1er coup (+10%)" : "1er coup (Consommé)";
-        const baseIcon = state.monsterTrahisonBaseAvailable ? "flash_on" : "flash_off";
-        monsterShieldsHtml += `
-                    <div class="sandbox-status-badge trahison-base" title="Bonus de base de Trahison (1er coup du tour)" style="${baseStyle}">
-                        <span class="material-symbols-outlined" style="font-size: 0.95rem; vertical-align: middle;">${baseIcon}</span>
-                        <span>${baseText}</span>
-                    </div>
-                `;
-
-        const lowHpStyle = state.monsterTrahisonLowHpAvailable
-            ? "background: rgba(139, 92, 246, 0.25); color: #c084fc; border: 1px solid #8b5cf6; box-shadow: 0 0 8px rgba(139, 92, 246, 0.3);"
-            : "background: rgba(75, 85, 99, 0.15); color: #9ca3af; border: 1px dashed #4b5563; opacity: 0.6;";
-        const lowHpText = state.monsterTrahisonLowHpAvailable ? "Trahison: Cible <50% PV (+15%)" : "Cible <50% PV (Consommé)";
-        monsterShieldsHtml += `
-                    <div class="sandbox-status-badge trahison-lowhp" title="Bonus de Trahison contre cible à moins de 50% PV" style="${lowHpStyle}">
-                        <span class="material-symbols-outlined" style="font-size: 0.95rem; vertical-align: middle;">heart_broken</span>
-                        <span>${lowHpText}</span>
-                    </div>
-                `;
-
-        const debuffStyle = state.monsterTrahisonDebuffAvailable
-            ? "background: rgba(139, 92, 246, 0.25); color: #c084fc; border: 1px solid #8b5cf6; box-shadow: 0 0 8px rgba(139, 92, 246, 0.3);"
-            : "background: rgba(75, 85, 99, 0.15); color: #9ca3af; border: 1px dashed #4b5563; opacity: 0.6;";
-        const debuffText = state.monsterTrahisonDebuffAvailable ? "Trahison: Cible débuffée (+10%)" : "Cible débuffée (Consommé)";
-        monsterShieldsHtml += `
-                    <div class="sandbox-status-badge trahison-debuff" title="Bonus de Trahison contre cible débuffée" style="${debuffStyle}">
-                        <span class="material-symbols-outlined" style="font-size: 0.95rem; vertical-align: middle;">trending_down</span>
-                        <span>${debuffText}</span>
-                    </div>
-                `;
-    }
-    if (state.monsterHasConsolidation) {
-        const lvl = state.monsterConsolidationLevel;
-        const consolidationLabels = {
-            0: { icon: 'shield', text: '+5% Armure', title: 'Consolidation (défaut)' },
-            1: { icon: 'speed', text: '+1 Vit', title: 'Consolidation Lvl 1' },
-            2: { icon: 'shield', text: '+10% Armure', title: 'Consolidation Lvl 2' },
-            3: { icon: 'auto_awesome', text: '+10% Résist.', title: 'Consolidation Lvl 3' },
-            4: { icon: 'savings', text: '-20% Coût', title: 'Consolidation Lvl 4' },
-            5: { icon: 'security', text: '+8% Arm/Rés', title: 'Consolidation Lvl 5' }
-        };
-        const info = consolidationLabels[lvl] || consolidationLabels[0];
-        monsterShieldsHtml += `
-                    <div class="sandbox-status-badge consolidation" title="${info.title}" style="background: rgba(34, 197, 94, 0.25); color: #86efac; border: 1px solid #22c55e; box-shadow: 0 0 8px rgba(34, 197, 94, 0.3);">
-                        <span class="material-symbols-outlined" style="font-size: 0.95rem; color: #22c55e; vertical-align: middle;">${info.icon}</span>
-                        <span>${info.text}</span>
-                    </div>
-                `;
-    }
-    if (state.monsterHasViolence) {
-        const insp = state.monsterViolenceInspiration;
-        const exp = state.monsterViolenceExpiration;
-        let bg, border, color, icon, text, title;
-        if (insp > 0) {
-            bg = 'rgba(6, 182, 212, 0.25)';
-            border = '1px solid #06b6d4';
-            color = '#67e8f9';
-            icon = 'air';
-            text = `Insp. ${insp}/5`;
-            title = `Violence (Inspiration): +${insp * 2}% Critique`;
-        } else if (exp > 0) {
-            bg = 'rgba(219, 39, 119, 0.25)';
-            border = '1px solid #db2777';
-            color = '#f472b6';
-            icon = 'local_fire_department';
-            text = `Exp. ${exp}/10`;
-            title = `Violence (Expiration): +${exp * 2} Puissance`;
-        } else {
-            bg = 'rgba(107, 114, 128, 0.15)';
-            border = '1px dashed #6b7280';
-            color = '#9ca3af';
-            icon = 'explosion';
-            text = 'Violence (0 stack)';
-            title = 'Violence: Aucun cumul actif';
-        }
-        monsterShieldsHtml += `
-                    <div class="sandbox-status-badge violence" title="${title}" style="background: ${bg}; color: ${color}; border: ${border}; box-shadow: 0 0 8px ${bg};">
-                        <span class="material-symbols-outlined" style="font-size: 0.95rem; color: ${color}; vertical-align: middle;">${icon}</span>
-                        <span>${text}</span>
-                    </div>
-                `;
-    }
-
-    if (state.monsterHasKarma) {
-        const gauge = state.monsterKarmaGauge;
-        const isLocked = state.monsterKarmaLocked;
-        const isHarmony = state.monsterKarmaHarmony;
-        let bg, border, color, icon, text, title;
-
-        if (isLocked) {
-            bg = 'rgba(239, 68, 68, 0.25)';
-            border = '1px solid #ef4444';
-            color = '#f87171';
-            icon = 'block';
-            text = 'Karma Brisé';
-            title = 'La voie du Karma est définitivement verrouillée.';
-        } else if (isHarmony) {
-            bg = 'rgba(100, 116, 139, 0.25)';
-            border = '1px solid #cbd5e1';
-            color = '#cbd5e1';
-            icon = 'brightness_medium';
-            text = 'Harmonie';
-            title = 'Équilibre parfait atteint. Les effets karmiques sont amplifiés !';
-        } else if (gauge < 0) {
-            bg = 'rgba(147, 51, 234, 0.25)';
-            border = '1px solid #c084fc';
-            color = '#c084fc';
-            icon = 'dark_mode';
-            text = `Ténèbres (${Math.abs(gauge)})`;
-            title = `Le Karma penche vers les Ténèbres. Jauge: ${gauge}`;
-        } else if (gauge > 0) {
-            bg = 'rgba(234, 179, 8, 0.25)';
-            border = '1px solid #fde047';
-            color = '#fde047';
-            icon = 'light_mode';
-            text = `Lumière (${gauge})`;
-            title = `Le Karma penche vers la Lumière. Jauge: +${gauge}`;
-        } else {
-            bg = 'rgba(107, 114, 128, 0.15)';
-            border = '1px dashed #6b7280';
-            color = '#9ca3af';
-            icon = 'balance';
-            text = 'Karma Neutre';
-            title = 'Le Karma est neutre.';
-        }
-
-        monsterShieldsHtml += `
-                    <div class="sandbox-status-badge karma" title="${title}" style="background: ${bg}; color: ${color}; border: ${border}; box-shadow: 0 0 8px ${bg};">
-                        <span class="material-symbols-outlined" style="font-size: 0.95rem; color: ${color}; vertical-align: middle;">${icon}</span>
-                        <span>${text}</span>
-                    </div>
-                `;
-    }
-    monsterShieldsContainer.innerHTML = monsterShieldsHtml;
-
-    // Helper to render Buffs/Debuffs
-    const renderBuffsHtml = (buffList) => {
-        return (buffList || []).map(b => {
-            const inverseStats = ['DAMAGE_TAKEN_MAGIC', 'DAMAGE_TAKEN_PHYSIC', 'DAMAGE_TAKEN_BRUT', 'SHIELD_PIERCED', 'BURN', 'POISON'];
-            const isInverse = inverseStats.includes(b.statAffected);
-            const isNegativeValue = b.modifier < 0 || b.flatValue < 0;
-
-            let isBad = isNegativeValue;
-            if (isInverse) {
-                isBad = !isNegativeValue;
-            }
-
-            const badgeClass = isBad ? 'debuff' : 'buff';
-            const icon = isNegativeValue ? 'trending_down' : 'trending_up';
-
-            let text = '';
-            if (b.flatValue) {
-                text += `${b.flatValue > 0 ? '+' : ''}${b.flatValue} ${formatStat(b.statAffected)}`;
-            }
-            if (b.modifier) {
-                if (text) text += ' / ';
-                text += `${b.modifier > 0 ? '+' : ''}${Math.round(b.modifier * 100)}% ${formatStat(b.statAffected)}`;
-            }
-            if (!text) text = `Modif. de ${formatStat(b.statAffected)}`;
-
-            return `
-                        <div class="sandbox-status-badge ${badgeClass}" title="Source: ${b.sourceName}">
-                            <span class="material-symbols-outlined" style="font-size: 0.95rem;">${icon}</span>
-                            <span>${text} (${b.duration}t)</span>
-                        </div>
-                    `;
-        }).join('');
-    };
-
-    // Render Buffs
-    document.getElementById('heroBuffsContainer').innerHTML = renderBuffsHtml(state.heroBuffs);
-    document.getElementById('monsterBuffsContainer').innerHTML = renderBuffsHtml(state.monsterBuffs);
 
     // Render Logs
     const logsContainer = document.getElementById('simulationLogsContainer');
-    logsContainer.innerText = state.rawLogs || "Aucun événement loggé.";
+    logsContainer.innerText = data.rawLogs || "Aucun événement loggé.";
     logsContainer.scrollTop = logsContainer.scrollHeight;
 
-    // Sync hero configuration form and badges
-    syncHeroConfigForm(state);
-    renderHeroConfigBadges(state);
-    updateLiveHeroStats(state);
+    // Sync hero config
+    if (data.allies && data.allies.length > 0) {
+        const hero = data.allies[0];
+        syncHeroConfigForm(hero);
+        renderHeroConfigBadges(hero);
+        updateLiveHeroStats(hero);
+    }
 }
 
-export function updateLiveHeroStats(state) {
+export function updateLiveHeroStats(hero) {
     const setStat = (id, val, suffix = '') => {
         const el = document.getElementById(id);
         if (el) el.innerText = val + suffix;
     };
-    setStat('liveStatPower', state.heroPower || 0);
-    setStat('liveStatArmor', state.heroArmor || 0);
-    setStat('liveStatRes', state.heroResistance || 0);
-    setStat('liveStatSpeed', state.heroSpeed || 0);
+    setStat('liveStatPower', hero.power || 0);
+    setStat('liveStatArmor', hero.armor || 0);
+    setStat('liveStatRes', hero.resistance || 0);
+    setStat('liveStatSpeed', hero.speed || 0);
 
-    const crit = (state.heroCritDerived !== null && state.heroCritDerived !== undefined)
-        ? state.heroCritDerived
-        : (state.heroCrit || 0);
+    const crit = (hero.critDerived !== null && hero.critDerived !== undefined)
+        ? hero.critDerived
+        : (hero.crit || 0);
     setStat('liveStatCrit', crit, '%');
 }
 
@@ -718,3 +533,164 @@ export function closeSimulationModal() {
     document.getElementById('simulationModalOverlay').classList.remove('active');
 }
 
+// ===== Target Selection for Cast =====
+
+// State for pending cast
+let pendingCastSpellId = null;
+let pendingCastChoiceKey = null;
+let pendingTargetEnemyIndex = 0;
+let pendingTargetAllyIndex = 0;
+let pendingNeedsEnemy = false;
+let pendingNeedsAlly = false;
+
+export function initiateCast(spellId) {
+    const sp = state.loadedSpells.find(s => s.id === spellId);
+    if (!sp) return;
+
+    const effects = sp.effects || [];
+    const needsEnemy = effects.some(e => (e.effectTarget || e.effect_target) === 'TARGET');
+    const needsAlly = effects.some(e => (e.effectTarget || e.effect_target) === 'ALLY');
+
+    // Get choice key if applicable
+    const choiceSelect = document.getElementById(`choice-select-${spellId}`);
+    const choiceKey = choiceSelect ? parseInt(choiceSelect.value, 10) : null;
+
+    // Check if we need to ask the user to pick targets
+    const enemyCards = document.querySelectorAll('.combatant-card[data-team="enemy"]');
+    const allyCards = document.querySelectorAll('.combatant-card[data-team="ally"]');
+
+    const multiEnemy = needsEnemy && enemyCards.length > 1;
+    const multiAlly = needsAlly && allyCards.length > 1;
+
+    if (!multiEnemy && !multiAlly) {
+        // Direct cast — no selection needed
+        executeCast(spellId, choiceKey, 0, 0);
+        return;
+    }
+
+    // Enter target selection mode
+    pendingCastSpellId = spellId;
+    pendingCastChoiceKey = choiceKey;
+    pendingTargetEnemyIndex = 0;
+    pendingTargetAllyIndex = 0;
+    pendingNeedsEnemy = multiEnemy;
+    pendingNeedsAlly = multiAlly;
+
+    // Highlight selectable cards
+    if (multiEnemy) {
+        enemyCards.forEach(card => {
+            card.classList.add('target-selectable');
+            card.onclick = () => {
+                pendingTargetEnemyIndex = parseInt(card.dataset.index, 10);
+                enemyCards.forEach(c => c.classList.remove('target-selected'));
+                card.classList.add('target-selected');
+                checkAndConfirmCast();
+            };
+        });
+    }
+
+    if (multiAlly) {
+        allyCards.forEach(card => {
+            card.classList.add('target-selectable');
+            card.onclick = () => {
+                pendingTargetAllyIndex = parseInt(card.dataset.index, 10);
+                allyCards.forEach(c => c.classList.remove('target-selected'));
+                card.classList.add('target-selected');
+                checkAndConfirmCast();
+            };
+        });
+    }
+
+    // Show selection prompt
+    showTargetSelectionPrompt(multiEnemy, multiAlly);
+}
+
+function showTargetSelectionPrompt(needsEnemy, needsAlly) {
+    // Remove any existing prompt
+    const existing = document.getElementById('targetSelectionPrompt');
+    if (existing) existing.remove();
+
+    let msg = '🎯 Sélectionnez ';
+    if (needsEnemy && needsAlly) msg += 'un ennemi ET un allié';
+    else if (needsEnemy) msg += 'un ennemi';
+    else if (needsAlly) msg += 'un allié';
+    msg += ' cible, puis le sort sera lancé.';
+
+    const prompt = document.createElement('div');
+    prompt.id = 'targetSelectionPrompt';
+    prompt.style.cssText = 'background: linear-gradient(135deg, rgba(139, 92, 246, 0.25), rgba(99, 102, 241, 0.2)); border: 1px solid #8b5cf6; border-radius: 8px; padding: 0.6rem 1rem; margin-bottom: 0.5rem; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; font-size: 0.85rem; color: #c084fc;';
+    prompt.innerHTML = `
+        <span>${msg}</span>
+        <button type="button" onclick="cancelTargetSelection()" style="background: rgba(239,68,68,0.2); color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); padding: 0.2rem 0.6rem; border-radius: 4px; font-size: 0.75rem; cursor: pointer;">Annuler</button>
+    `;
+
+    const controls = document.querySelector('.sandbox-controls');
+    if (controls) controls.parentNode.insertBefore(prompt, controls);
+}
+
+function checkAndConfirmCast() {
+    const enemySelected = !pendingNeedsEnemy || document.querySelector('.combatant-card[data-team="enemy"].target-selected');
+    const allySelected = !pendingNeedsAlly || document.querySelector('.combatant-card[data-team="ally"].target-selected');
+
+    if (enemySelected && allySelected) {
+        const sId = pendingCastSpellId;
+        const cKey = pendingCastChoiceKey;
+        const eIdx = pendingTargetEnemyIndex;
+        const aIdx = pendingTargetAllyIndex;
+        
+        clearTargetSelection();
+        executeCast(sId, cKey, eIdx, aIdx);
+    }
+}
+
+export function cancelTargetSelection() {
+    clearTargetSelection();
+}
+
+function clearTargetSelection() {
+    document.querySelectorAll('.combatant-card').forEach(card => {
+        card.classList.remove('target-selectable', 'target-selected');
+        card.onclick = null;
+    });
+    const prompt = document.getElementById('targetSelectionPrompt');
+    if (prompt) prompt.remove();
+    pendingCastSpellId = null;
+}
+
+async function executeCast(spellId, choiceKey, enemyIndex, allyIndex) {
+    let url = `/api/spells-editor/sandbox/cast/${spellId}?targetEnemyIndex=${enemyIndex}&targetAllyIndex=${allyIndex}`;
+    if (choiceKey != null) url += `&choiceKey=${choiceKey}`;
+
+    try {
+        const res = await fetch(url, { method: 'POST' });
+        if (res.ok) {
+            const data = await res.json();
+            updateSandboxUI(data);
+        }
+    } catch (err) {
+        console.error(err);
+    }
+}
+
+// ===== Add/Remove Combatants =====
+
+export async function addSandboxAlly() {
+    try {
+        const res = await fetch('/api/spells-editor/sandbox/add-ally', { method: 'POST' });
+        if (res.ok) updateSandboxUI(await res.json());
+    } catch (err) { console.error(err); }
+}
+
+export async function addSandboxEnemy() {
+    try {
+        const res = await fetch('/api/spells-editor/sandbox/add-enemy', { method: 'POST' });
+        if (res.ok) updateSandboxUI(await res.json());
+    } catch (err) { console.error(err); }
+}
+
+export async function removeSandboxCombatant(team, index) {
+    try {
+        const res = await fetch(`/api/spells-editor/sandbox/remove-combatant?team=${team}&index=${index}`, { method: 'POST' });
+        if (res.ok) updateSandboxUI(await res.json());
+    } catch (err) { console.error(err); }
+}

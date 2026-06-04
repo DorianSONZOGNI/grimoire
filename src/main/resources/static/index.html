@@ -276,13 +276,22 @@
                         (MoT)
                     </button>
                     <button type="button" class="btn-effect-add buff" onclick="addEffectPanel('BUFF_DEBUFF')">
-                        <span class="material-symbols-outlined" style="font-size: 1.1rem;">shield</span> Buff / Débuff
+                        <span class="material-symbols-outlined">auto_awesome</span>
+                        Buff / Débuff
                     </button>
                     <button type="button" class="btn-effect-add buff" onclick="addEffectPanel('SHIELD')">
                         <span class="material-symbols-outlined" style="font-size: 1.1rem;">shield</span> Bouclier
                     </button>
                     <button type="button" class="btn-effect-add purge" onclick="addEffectPanel('PURGE')">
                         <span class="material-symbols-outlined" style="font-size: 1.1rem;">air</span> Purge / Dissip.
+                    </button>
+                    <button type="button" class="btn-effect-add poison" onclick="addEffectPanel('POISON')">
+                        <span class="material-symbols-outlined">science</span>
+                        Poison
+                    </button>
+                    <button type="button" class="btn-effect-add burn" onclick="addEffectPanel('BURN')">
+                        <span class="material-symbols-outlined">local_fire_department</span>
+                        Brûlure
                     </button>
 
                     <!-- Boutons de Chaleur (spécifique Voie de la Destruction) -->
@@ -631,44 +640,11 @@
                         </div>
                     </div>
 
-                    <!-- Héros -->
-                    <div class="combatant-card">
-                        <div class="combatant-name">
-                            <span>🧙‍♂️ Héros (Lanceur)</span>
-                        </div>
-                        <div id="heroConfigBadges"
-                            style="display: flex; flex-wrap: wrap; gap: 0.3rem; margin-bottom: 0.3rem;"></div>
-                        <div class="gauge-container">
-                            <div class="gauge-label"><span>Santé (PV)</span><span id="heroHpText">100 / 100</span></div>
-                            <div class="gauge-track">
-                                <div class="gauge-fill hp" id="heroHpFill" style="width: 100%;"></div>
-                            </div>
-                        </div>
-                        <div class="gauge-container">
-                            <div class="gauge-label"><span>Mana</span><span id="heroManaText">100 / 100</span></div>
-                            <div class="gauge-track">
-                                <div class="gauge-fill mana" id="heroManaFill" style="width: 100%;"></div>
-                            </div>
-                        </div>
-                        <div id="heroShieldsContainer" class="sandbox-status-list"></div>
-                        <div id="heroBuffsContainer" class="sandbox-status-list"></div>
-                    </div>
+                    <!-- Équipe Alliée -->
+                    <div id="alliesContainer" class="team-container"></div>
 
-                    <!-- Monstre -->
-                    <div class="combatant-card">
-                        <div class="combatant-name">
-                            <span>👹 Monstre (Cible)</span>
-                        </div>
-                        <div class="gauge-container">
-                            <div class="gauge-label"><span>Santé (PV)</span><span id="monsterHpText">200 / 200</span>
-                            </div>
-                            <div class="gauge-track">
-                                <div class="gauge-fill hp" id="monsterHpFill" style="width: 100%;"></div>
-                            </div>
-                        </div>
-                        <div id="monsterShieldsContainer" class="sandbox-status-list"></div>
-                        <div id="monsterBuffsContainer" class="sandbox-status-list"></div>
-                    </div>
+                    <!-- Équipe Ennemie -->
+                    <div id="enemiesContainer" class="team-container"></div>
                 </div>
 
                 <!-- Colonne de Droite : Sélection et Lancement de Sorts -->

@@ -67,6 +67,30 @@
             box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
         }
 
+.btn-effect-add.poison{
+            background: rgba(132, 204, 22, 0.1);
+            border-color: rgba(132, 204, 22, 0.3);
+            color: #d9f99d;
+        }
+
+.btn-effect-add.poison:hover{
+            background: rgba(132, 204, 22, 0.25);
+            border-color: #84cc16;
+            box-shadow: 0 4px 12px rgba(132, 204, 22, 0.2);
+        }
+
+.btn-effect-add.burn{
+            background: rgba(234, 88, 12, 0.1);
+            border-color: rgba(234, 88, 12, 0.3);
+            color: #fed7aa;
+        }
+
+.btn-effect-add.burn:hover{
+            background: rgba(234, 88, 12, 0.25);
+            border-color: #ea580c;
+            box-shadow: 0 4px 12px rgba(234, 88, 12, 0.2);
+        }
+
 .btn-effect-add.purge{
             background: rgba(255, 255, 255, 0.1);
             border-color: rgba(255, 255, 255, 0.3);

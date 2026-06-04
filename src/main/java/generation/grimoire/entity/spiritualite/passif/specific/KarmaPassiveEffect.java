@@ -124,11 +124,16 @@ public class KarmaPassiveEffect extends SpiritualitePassiveEffect {
 
     @Override
     public boolean canCastSpell(Personnage caster, Spell spell) {
-        if (spell.getSpiritualite() != null && spell.getSpiritualite().getId().equals(this.getSpiritualite().getId())) {
-            if (caster.getPassiveState("karma_locked", 0) == 1) {
-                System.out.println("🚫 " + caster.getName()
-                        + " ne peut plus lancer de sorts du Karma (Voie verrouillée par Corruption/Illumination).");
-                return false;
+        if (spell.getSpiritualite() != null && this.getSpiritualite() != null) {
+            boolean sameId = spell.getSpiritualite().getId() != null && this.getSpiritualite().getId() != null && spell.getSpiritualite().getId().equals(this.getSpiritualite().getId());
+            boolean sameName = spell.getSpiritualite().getNom() != null && this.getSpiritualite().getNom() != null && spell.getSpiritualite().getNom().equals(this.getSpiritualite().getNom());
+            
+            if (sameId || sameName) {
+                if (caster.getPassiveState("karma_locked", 0) == 1) {
+                    System.out.println("🚫 " + caster.getName()
+                            + " ne peut plus lancer de sorts du Karma (Voie verrouillée par Corruption/Illumination).");
+                    return false;
+                }
             }
         }
         return true;

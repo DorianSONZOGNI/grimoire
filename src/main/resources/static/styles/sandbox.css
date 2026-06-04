@@ -466,3 +466,90 @@
             box-shadow: 0 0 12px rgba(139, 92, 246, 0.3);
         }
 
+/* Group Combat Styles */
+.team-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    margin-bottom: 1rem;
+}
+
+.btn-add-combatant {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    width: 100%;
+    padding: 0.5rem;
+    background: rgba(16, 185, 129, 0.1);
+    color: #10b981;
+    border: 1px dashed rgba(16, 185, 129, 0.3);
+    border-radius: 8px;
+    font-size: 0.85rem;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: 'Outfit', sans-serif;
+}
+
+.btn-add-combatant:hover {
+    background: rgba(16, 185, 129, 0.2);
+    border-color: rgba(16, 185, 129, 0.5);
+}
+
+.btn-add-combatant.enemy {
+    background: rgba(239, 68, 68, 0.1);
+    color: #ef4444;
+    border-color: rgba(239, 68, 68, 0.3);
+}
+
+.btn-add-combatant.enemy:hover {
+    background: rgba(239, 68, 68, 0.2);
+    border-color: rgba(239, 68, 68, 0.5);
+}
+
+.btn-remove-combatant {
+    background: transparent;
+    color: var(--text-muted);
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0.2rem;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.btn-remove-combatant:hover {
+    background: rgba(239, 68, 68, 0.2);
+    color: #ef4444;
+}
+
+.target-selectable {
+    cursor: pointer;
+    position: relative;
+    box-shadow: 0 0 10px rgba(139, 92, 246, 0.2);
+    border-color: rgba(139, 92, 246, 0.4);
+}
+
+.target-selectable::after {
+    content: '';
+    position: absolute;
+    top: -2px; left: -2px; right: -2px; bottom: -2px;
+    border: 2px dashed rgba(139, 92, 246, 0.6);
+    border-radius: 12px;
+    animation: dash-spin 4s linear infinite;
+    pointer-events: none;
+}
+
+.target-selected {
+    background: rgba(139, 92, 246, 0.15) !important;
+    border-color: #8b5cf6 !important;
+    box-shadow: 0 0 15px rgba(139, 92, 246, 0.5) !important;
+    transform: scale(1.02);
+}
+
+@keyframes dash-spin {
+    to { stroke-dashoffset: -100; }
+}

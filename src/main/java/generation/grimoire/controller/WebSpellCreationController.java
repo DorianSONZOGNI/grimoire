@@ -46,38 +46,72 @@ public class WebSpellCreationController {
         this.spiritualiteRepository = spiritualiteRepository;
     }
 
-    private Personnage sandboxHero;
-    private Personnage sandboxMonster;
+    private List<Personnage> sandboxAllies = new ArrayList<>();
+    private List<Personnage> sandboxEnemies = new ArrayList<>();
     private int sandboxTurn = 1;
     private final java.util.List<String> sandboxLogs = new java.util.ArrayList<>();
 
+    /** Raccourci : le héros est toujours allies[0] */
+    private Personnage getSandboxHero() { return sandboxAllies.isEmpty() ? null : sandboxAllies.get(0); }
+    /** Raccourci : le monstre principal est toujours enemies[0] */
+    private Personnage getSandboxMonster() { return sandboxEnemies.isEmpty() ? null : sandboxEnemies.get(0); }
+
     private synchronized void initSandbox() {
-        if (sandboxHero == null) {
+        if (sandboxAllies.isEmpty()) {
             resetSandbox();
         }
     }
 
-    private synchronized void resetSandbox() {
-        sandboxHero = new Personnage();
-        sandboxHero.setName("Héros");
-        sandboxHero.setTeamId("HERO_TEAM");
-        sandboxHero.setHealthMax(100);
-        sandboxHero.setHealthCurrent(100);
-        sandboxHero.setManaMax(100);
-        sandboxHero.setManaCurrent(100);
-        sandboxHero.setPower(25);
-        sandboxHero.setArmor(10);
-        sandboxHero.setResistance(10);
-        sandboxHero.setVoieLevel(1);
-        sandboxHero.setSpiritualiteLevel(1);
+    private Personnage createDefaultAlly(String name) {
+        Personnage p = new Personnage();
+        p.setName(name);
+        p.setTeamId("HERO_TEAM");
+        p.setHealthMax(100);
+        p.setHealthCurrent(100);
+        p.setManaMax(50);
+        p.setManaCurrent(50);
+        p.setArmor(10);
+        p.setResistance(10);
+        return p;
+    }
 
-        sandboxMonster = new Personnage();
-        sandboxMonster.setName("Monstre");
-        sandboxMonster.setTeamId("MONSTER_TEAM");
-        sandboxMonster.setHealthMax(200);
-        sandboxMonster.setHealthCurrent(200);
-        sandboxMonster.setArmor(5);
-        sandboxMonster.setResistance(5);
+    private Personnage createDefaultEnemy(String name) {
+        Personnage p = new Personnage();
+        p.setName(name);
+        p.setTeamId("MONSTER_TEAM");
+        p.setHealthMax(200);
+        p.setHealthCurrent(200);
+        p.setArmor(5);
+        p.setResistance(5);
+        return p;
+    }
+
+    private synchronized void resetSandbox() {
+        sandboxAllies.clear();
+        sandboxEnemies.clear();
+
+        Personnage hero = new Personnage();
+        hero.setName("Héros");
+        hero.setTeamId("HERO_TEAM");
+        hero.setHealthMax(100);
+        hero.setHealthCurrent(100);
+        hero.setManaMax(100);
+        hero.setManaCurrent(100);
+        hero.setPower(25);
+        hero.setArmor(10);
+        hero.setResistance(10);
+        hero.setVoieLevel(1);
+        hero.setSpiritualiteLevel(1);
+        sandboxAllies.add(hero);
+
+        Personnage monster = new Personnage();
+        monster.setName("Monstre");
+        monster.setTeamId("MONSTER_TEAM");
+        monster.setHealthMax(200);
+        monster.setHealthCurrent(200);
+        monster.setArmor(5);
+        monster.setResistance(5);
+        sandboxEnemies.add(monster);
 
         sandboxLogs.clear();
         sandboxLogs.add("⚔️ Banc d'essai initialisé. Héros et Monstre sont prêts.");
@@ -331,147 +365,109 @@ public class WebSpellCreationController {
         return ResponseEntity.ok(res);
     }
 
+    private CombatantState buildCombatantState(Personnage p, int index) {
+        CombatantState cs = new CombatantState();
+        cs.setIndex(index);
+        cs.setName(p.getName());
+        cs.setHpMax(p.getHealthMax());
+        cs.setHpCurrent(p.getHealthCurrent());
+        cs.setManaMax(p.getManaMax());
+        cs.setManaCurrent(p.getManaCurrent());
+        cs.setShieldTotal(p.getTotalShield());
+
+        java.util.List<ShieldState> shields = new java.util.ArrayList<>();
+        if (p.getActiveShields() != null) {
+            for (ActiveShield s : p.getActiveShields()) {
+                shields.add(new ShieldState(s.getAmount(), s.getDuration(), s.getSourceName()));
+            }
+        }
+        cs.setShields(shields);
+
+        java.util.List<BuffState> buffs = new java.util.ArrayList<>();
+        if (p.getActiveBuffs() != null) {
+            for (BuffDebuffEffect b : p.getActiveBuffs()) {
+                String source = b.getSpell() != null ? b.getSpell().getNom()
+                        : (b.getSourceName() != null ? b.getSourceName() : "Effet");
+                buffs.add(new BuffState(b.getStatAffected().name(), b.getModifier(), b.getFlatValue(),
+                        b.getDuration(), source));
+            }
+        }
+        cs.setBuffs(buffs);
+
+        cs.setHeat(p.getPassiveState("destruction_heat", 0));
+        cs.setSurete(p.getPassiveState("surete_points", 0));
+
+        // Trahison
+        cs.setHasTrahison(p.getVoie() != null && "Voie de Trahison".equals(p.getVoie().getNom()));
+        cs.setTrahisonBaseAvailable(p.getPassiveState("trahison_used_this_turn", 0) == 0);
+        cs.setTrahisonLowHpAvailable(p.getPassiveState("trahison_low_hp_used_this_turn", 0) == 0);
+        cs.setTrahisonDebuffAvailable(p.getPassiveState("trahison_debuff_used_this_turn", 0) == 0);
+
+        // Crit dérivé (Raison)
+        Integer critDerived = null;
+        if (p.getVoie() != null && "Voie de la Raison".equals(p.getVoie().getNom())) {
+            int effectiveSpeed = p.getSpeed() + p.getStatFlatBonus(generation.grimoire.enumeration.StatType.SPEED);
+            critDerived = effectiveSpeed * 2;
+        }
+        cs.setCritDerived(critDerived);
+
+        // Consolidation
+        cs.setHasConsolidation(p.getVoie() != null && "Voie de la Consolidation".equals(p.getVoie().getNom()));
+        cs.setConsolidationLevel(p.getPassiveState("consolidation_active_level", 0));
+
+        // Violence
+        cs.setHasViolence(p.getVoie() != null && "Voie de la Violence".equals(p.getVoie().getNom()));
+        cs.setViolenceInspiration(p.getPassiveState("violence_inspiration", 0));
+        cs.setViolenceExpiration(p.getPassiveState("violence_expiration", 0));
+
+        // Karma
+        cs.setHasKarma(p.getSpiritualite() != null && p.getSpiritualite().getNom() != null
+                && p.getSpiritualite().getNom().toLowerCase().contains("karma"));
+        cs.setKarmaGauge(p.getPassiveState("karma_gauge", 0));
+        cs.setKarmaLocked(p.getPassiveState("karma_locked", 0) == 1);
+        cs.setKarmaHarmony(p.getPassiveState("karma_harmony", 0) == 1);
+
+        // Stats
+        cs.setPower(p.getEffectiveStat(generation.grimoire.enumeration.StatType.POWER));
+        cs.setArmor(p.getEffectiveStat(generation.grimoire.enumeration.StatType.ARMURE));
+        cs.setResistance(p.getEffectiveStat(generation.grimoire.enumeration.StatType.RESISTANCE));
+        cs.setSpeed(p.getEffectiveStat(generation.grimoire.enumeration.StatType.SPEED));
+        cs.setCrit(p.getEffectiveStat(generation.grimoire.enumeration.StatType.CRIT));
+
+        cs.setBasePower(p.getPower());
+        cs.setBaseArmor(p.getArmor());
+        cs.setBaseResistance(p.getResistance());
+        cs.setBaseSpeed(p.getSpeed());
+        cs.setBaseCrit(p.getCrit());
+
+        // Voie & Spiritualité info
+        cs.setVoieId(p.getVoie() != null ? p.getVoie().getId() : null);
+        cs.setVoieName(p.getVoie() != null ? p.getVoie().getNom() : null);
+        cs.setVoieLevel(p.getVoieLevel());
+        cs.setSpiritualiteId(p.getSpiritualite() != null ? p.getSpiritualite().getId() : null);
+        cs.setSpiritualiteName(p.getSpiritualite() != null ? p.getSpiritualite().getNom() : null);
+        cs.setSpiritualiteLevel(p.getSpiritualiteLevel());
+
+        return cs;
+    }
+
     private SandboxStateDto buildSandboxStateResponse() {
         initSandbox();
 
         SandboxStateDto res = new SandboxStateDto();
         res.setTurnCount(sandboxTurn);
-        res.setHeroName(sandboxHero.getName());
-        res.setHeroHpMax(sandboxHero.getHealthMax());
-        res.setHeroHpCurrent(sandboxHero.getHealthCurrent());
-        res.setHeroManaMax(sandboxHero.getManaMax());
-        res.setHeroManaCurrent(sandboxHero.getManaCurrent());
-        res.setHeroShieldTotal(sandboxHero.getTotalShield());
 
-        java.util.List<ShieldState> heroShields = new java.util.ArrayList<>();
-        if (sandboxHero.getActiveShields() != null) {
-            for (ActiveShield s : sandboxHero.getActiveShields()) {
-                heroShields.add(new ShieldState(s.getAmount(), s.getDuration(), s.getSourceName()));
-            }
+        java.util.List<CombatantState> allies = new java.util.ArrayList<>();
+        for (int i = 0; i < sandboxAllies.size(); i++) {
+            allies.add(buildCombatantState(sandboxAllies.get(i), i));
         }
-        res.setHeroShields(heroShields);
+        res.setAllies(allies);
 
-        java.util.List<BuffState> heroBuffs = new java.util.ArrayList<>();
-        if (sandboxHero.getActiveBuffs() != null) {
-            for (BuffDebuffEffect b : sandboxHero.getActiveBuffs()) {
-                String source = b.getSpell() != null ? b.getSpell().getNom()
-                        : (b.getSourceName() != null ? b.getSourceName() : "Effet");
-                heroBuffs.add(new BuffState(b.getStatAffected().name(), b.getModifier(), b.getFlatValue(),
-                        b.getDuration(), source));
-            }
+        java.util.List<CombatantState> enemies = new java.util.ArrayList<>();
+        for (int i = 0; i < sandboxEnemies.size(); i++) {
+            enemies.add(buildCombatantState(sandboxEnemies.get(i), i));
         }
-        res.setHeroBuffs(heroBuffs);
-
-        res.setMonsterName(sandboxMonster.getName());
-        res.setMonsterHpMax(sandboxMonster.getHealthMax());
-        res.setMonsterHpCurrent(sandboxMonster.getHealthCurrent());
-        res.setMonsterShieldTotal(sandboxMonster.getTotalShield());
-
-        java.util.List<ShieldState> monsterShields = new java.util.ArrayList<>();
-        if (sandboxMonster.getActiveShields() != null) {
-            for (ActiveShield s : sandboxMonster.getActiveShields()) {
-                monsterShields.add(new ShieldState(s.getAmount(), s.getDuration(), s.getSourceName()));
-            }
-        }
-        res.setMonsterShields(monsterShields);
-
-        java.util.List<BuffState> monsterBuffs = new java.util.ArrayList<>();
-        if (sandboxMonster.getActiveBuffs() != null) {
-            for (BuffDebuffEffect b : sandboxMonster.getActiveBuffs()) {
-                String source = b.getSpell() != null ? b.getSpell().getNom()
-                        : (b.getSourceName() != null ? b.getSourceName() : "Effet");
-                monsterBuffs.add(new BuffState(b.getStatAffected().name(), b.getModifier(), b.getFlatValue(),
-                        b.getDuration(), source));
-            }
-        }
-        res.setMonsterBuffs(monsterBuffs);
-
-        res.setHeroHeat(sandboxHero.getPassiveState("destruction_heat", 0));
-        res.setMonsterHeat(sandboxMonster.getPassiveState("destruction_heat", 0));
-
-        res.setHeroSurete(sandboxHero.getPassiveState("surete_points", 0));
-        res.setMonsterSurete(sandboxMonster.getPassiveState("surete_points", 0));
-
-        res.setHeroHasTrahison(
-                sandboxHero.getVoie() != null && "Voie de Trahison".equals(sandboxHero.getVoie().getNom()));
-        res.setHeroTrahisonBaseAvailable(sandboxHero.getPassiveState("trahison_used_this_turn", 0) == 0);
-        res.setHeroTrahisonLowHpAvailable(sandboxHero.getPassiveState("trahison_low_hp_used_this_turn", 0) == 0);
-        res.setHeroTrahisonDebuffAvailable(sandboxHero.getPassiveState("trahison_debuff_used_this_turn", 0) == 0);
-
-        res.setMonsterHasTrahison(
-                sandboxMonster.getVoie() != null && "Voie de Trahison".equals(sandboxMonster.getVoie().getNom()));
-        res.setMonsterTrahisonBaseAvailable(sandboxMonster.getPassiveState("trahison_used_this_turn", 0) == 0);
-        res.setMonsterTrahisonLowHpAvailable(sandboxMonster.getPassiveState("trahison_low_hp_used_this_turn", 0) == 0);
-        res.setMonsterTrahisonDebuffAvailable(sandboxMonster.getPassiveState("trahison_debuff_used_this_turn", 0) == 0);
-
-        // Calculer le critère dérivé de la Raison
-        Integer heroCritDerived = null;
-        if (sandboxHero.getVoie() != null && "Voie de la Raison".equals(sandboxHero.getVoie().getNom())) {
-            int effectiveSpeed = sandboxHero.getSpeed()
-                    + sandboxHero.getStatFlatBonus(generation.grimoire.enumeration.StatType.SPEED);
-            heroCritDerived = effectiveSpeed * 2;
-        }
-        res.setHeroCritDerived(heroCritDerived);
-
-        Integer monsterCritDerived = null;
-        if (sandboxMonster.getVoie() != null && "Voie de la Raison".equals(sandboxMonster.getVoie().getNom())) {
-            int effectiveSpeed = sandboxMonster.getSpeed()
-                    + sandboxMonster.getStatFlatBonus(generation.grimoire.enumeration.StatType.SPEED);
-            monsterCritDerived = effectiveSpeed * 2;
-        }
-        res.setMonsterCritDerived(monsterCritDerived);
-
-        // Consolidation
-        res.setHeroHasConsolidation(
-                sandboxHero.getVoie() != null && "Voie de la Consolidation".equals(sandboxHero.getVoie().getNom()));
-        res.setHeroConsolidationLevel(sandboxHero.getPassiveState("consolidation_active_level", 0));
-        res.setMonsterHasConsolidation(sandboxMonster.getVoie() != null
-                && "Voie de la Consolidation".equals(sandboxMonster.getVoie().getNom()));
-        res.setMonsterConsolidationLevel(sandboxMonster.getPassiveState("consolidation_active_level", 0));
-
-        // Violence
-        res.setHeroHasViolence(
-                sandboxHero.getVoie() != null && "Voie de la Violence".equals(sandboxHero.getVoie().getNom()));
-        res.setHeroViolenceInspiration(sandboxHero.getPassiveState("violence_inspiration", 0));
-        res.setHeroViolenceExpiration(sandboxHero.getPassiveState("violence_expiration", 0));
-        res.setMonsterHasViolence(
-                sandboxMonster.getVoie() != null && "Voie de la Violence".equals(sandboxMonster.getVoie().getNom()));
-        res.setMonsterViolenceInspiration(sandboxMonster.getPassiveState("violence_inspiration", 0));
-        res.setMonsterViolenceExpiration(sandboxMonster.getPassiveState("violence_expiration", 0));
-
-        // Karma
-        res.setHeroHasKarma(sandboxHero.getSpiritualite() != null && sandboxHero.getSpiritualite().getNom() != null
-                && sandboxHero.getSpiritualite().getNom().toLowerCase().contains("karma"));
-        res.setHeroKarmaGauge(sandboxHero.getPassiveState("karma_gauge", 0));
-        res.setHeroKarmaLocked(sandboxHero.getPassiveState("karma_locked", 0) == 1);
-        res.setHeroKarmaHarmony(sandboxHero.getPassiveState("karma_harmony", 0) == 1);
-
-        res.setMonsterHasKarma(
-                sandboxMonster.getSpiritualite() != null && sandboxMonster.getSpiritualite().getNom() != null
-                        && sandboxMonster.getSpiritualite().getNom().toLowerCase().contains("karma"));
-        res.setMonsterKarmaGauge(sandboxMonster.getPassiveState("karma_gauge", 0));
-        res.setMonsterKarmaLocked(sandboxMonster.getPassiveState("karma_locked", 0) == 1);
-        res.setMonsterKarmaHarmony(sandboxMonster.getPassiveState("karma_harmony", 0) == 1);
-
-        // Configuration du héros
-        res.setHeroVoieId(sandboxHero.getVoie() != null ? sandboxHero.getVoie().getId() : null);
-        res.setHeroVoieName(sandboxHero.getVoie() != null ? sandboxHero.getVoie().getNom() : null);
-        res.setHeroVoieLevel(sandboxHero.getVoieLevel());
-        res.setHeroSpiritualiteId(sandboxHero.getSpiritualite() != null ? sandboxHero.getSpiritualite().getId() : null);
-        res.setHeroSpiritualiteName(
-                sandboxHero.getSpiritualite() != null ? sandboxHero.getSpiritualite().getNom() : null);
-        res.setHeroSpiritualiteLevel(sandboxHero.getSpiritualiteLevel());
-        res.setHeroPower(sandboxHero.getEffectiveStat(generation.grimoire.enumeration.StatType.POWER));
-        res.setHeroArmor(sandboxHero.getEffectiveStat(generation.grimoire.enumeration.StatType.ARMURE));
-        res.setHeroResistance(sandboxHero.getEffectiveStat(generation.grimoire.enumeration.StatType.RESISTANCE));
-        res.setHeroSpeed(sandboxHero.getEffectiveStat(generation.grimoire.enumeration.StatType.SPEED));
-        res.setHeroCrit(sandboxHero.getEffectiveStat(generation.grimoire.enumeration.StatType.CRIT));
-
-        res.setHeroBasePower(sandboxHero.getPower());
-        res.setHeroBaseArmor(sandboxHero.getArmor());
-        res.setHeroBaseResistance(sandboxHero.getResistance());
-        res.setHeroBaseSpeed(sandboxHero.getSpeed());
-        res.setHeroBaseCrit(sandboxHero.getCrit());
+        res.setEnemies(enemies);
 
         res.setRawLogs(String.join("\n", sandboxLogs));
         return res;
@@ -488,9 +484,63 @@ public class WebSpellCreationController {
         return ResponseEntity.ok(buildSandboxStateResponse());
     }
 
+    @PostMapping("/sandbox/add-ally")
+    public ResponseEntity<SandboxStateDto> addAlly() {
+        initSandbox();
+        if (sandboxAllies.size() >= 4) {
+            sandboxLogs.add("⚠️ Maximum de 4 alliés atteint.");
+            return ResponseEntity.ok(buildSandboxStateResponse());
+        }
+        int num = sandboxAllies.size();
+        Personnage ally = createDefaultAlly("Allié " + num);
+        sandboxAllies.add(ally);
+        sandboxLogs.add("➕ " + ally.getName() + " a rejoint l'équipe alliée.");
+        return ResponseEntity.ok(buildSandboxStateResponse());
+    }
+
+    @PostMapping("/sandbox/add-enemy")
+    public ResponseEntity<SandboxStateDto> addEnemy() {
+        initSandbox();
+        if (sandboxEnemies.size() >= 4) {
+            sandboxLogs.add("⚠️ Maximum de 4 ennemis atteint.");
+            return ResponseEntity.ok(buildSandboxStateResponse());
+        }
+        int num = sandboxEnemies.size();
+        Personnage enemy = createDefaultEnemy("Ennemi " + (num + 1));
+        sandboxEnemies.add(enemy);
+        sandboxLogs.add("➕ " + enemy.getName() + " a rejoint l'équipe ennemie.");
+        return ResponseEntity.ok(buildSandboxStateResponse());
+    }
+
+    @PostMapping("/sandbox/remove-combatant")
+    public ResponseEntity<SandboxStateDto> removeCombatant(
+            @RequestParam String team,
+            @RequestParam int index) {
+        initSandbox();
+        if ("ALLY".equalsIgnoreCase(team)) {
+            if (index == 0) {
+                sandboxLogs.add("⚠️ Le Héros ne peut pas être retiré.");
+            } else if (index > 0 && index < sandboxAllies.size()) {
+                String name = sandboxAllies.get(index).getName();
+                sandboxAllies.remove(index);
+                sandboxLogs.add("➖ " + name + " a quitté l'équipe alliée.");
+            }
+        } else if ("ENEMY".equalsIgnoreCase(team)) {
+            if (sandboxEnemies.size() <= 1) {
+                sandboxLogs.add("⚠️ Il faut au moins un ennemi.");
+            } else if (index >= 0 && index < sandboxEnemies.size()) {
+                String name = sandboxEnemies.get(index).getName();
+                sandboxEnemies.remove(index);
+                sandboxLogs.add("➖ " + name + " a quitté l'équipe ennemie.");
+            }
+        }
+        return ResponseEntity.ok(buildSandboxStateResponse());
+    }
+
     @PostMapping("/sandbox/configure")
     public ResponseEntity<SandboxStateDto> configureSandbox(@RequestBody ConfigureHeroDto dto) {
         initSandbox();
+        Personnage sandboxHero = getSandboxHero();
 
         // Appliquer la voie
         Long voieId = dto.getVoieId();
@@ -532,7 +582,9 @@ public class WebSpellCreationController {
     @PostMapping("/sandbox/cast/{spellId}")
     public ResponseEntity<SandboxStateDto> castSandboxSpell(
             @PathVariable @org.springframework.lang.NonNull Long spellId,
-            @RequestParam(required = false) Integer choiceKey) {
+            @RequestParam(required = false) Integer choiceKey,
+            @RequestParam(required = false, defaultValue = "0") int targetEnemyIndex,
+            @RequestParam(required = false, defaultValue = "0") int targetAllyIndex) {
         initSandbox();
         java.util.Optional<Spell> opt = spellRepository.findById(spellId);
         if (opt.isEmpty()) {
@@ -540,15 +592,21 @@ public class WebSpellCreationController {
         }
         Spell spell = opt.get();
 
+        Personnage caster = getSandboxHero();
+        Personnage target = (targetEnemyIndex >= 0 && targetEnemyIndex < sandboxEnemies.size())
+                ? sandboxEnemies.get(targetEnemyIndex) : getSandboxMonster();
+        Personnage ally = (targetAllyIndex >= 0 && targetAllyIndex < sandboxAllies.size())
+                ? sandboxAllies.get(targetAllyIndex) : caster;
+
         java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
         java.io.PrintStream originalOut = System.out;
         try {
             java.io.PrintStream ps = new java.io.PrintStream(baos, true, java.nio.charset.StandardCharsets.UTF_8);
             System.setOut(ps);
 
-            System.out.println("\n🧙‍♂️ --- Action : " + sandboxHero.getName() + " lance " + spell.getNom() + " (Lvl "
+            System.out.println("\n🧙‍♂️ --- Action : " + caster.getName() + " lance " + spell.getNom() + " (Lvl "
                     + spell.getNiveau() + ") ---");
-            spellService.castSpell(spell, sandboxHero, sandboxMonster, choiceKey);
+            spellService.castSpellGroup(spell, caster, target, ally, sandboxAllies, sandboxEnemies, choiceKey);
 
             ps.flush();
         } catch (Exception e) {
@@ -575,15 +633,21 @@ public class WebSpellCreationController {
 
             System.out.println("\n🌀 --- FIN DU TOUR " + sandboxTurn + " ---");
 
+            Personnage hero = getSandboxHero();
             // Résoudre les canalisations actives du héros
-            if (sandboxHero.getRemainingChannelingTurns() > 0) {
-                spellService.tickChanneling(sandboxHero, sandboxMonster, sandboxHero.getChannelingChoiceKey());
+            if (hero.getRemainingChannelingTurns() > 0) {
+                Personnage channelingTarget = hero.getChannelingTarget();
+                if (channelingTarget == null) channelingTarget = getSandboxMonster();
+                spellService.tickChanneling(hero, channelingTarget, hero.getChannelingChoiceKey());
             }
 
-            // Déclencher le début du tour suivant pour le héros et le monstre (inclut les
-            // passifs, DoTs, HoTs, etc.)
-            spellService.startTurn(sandboxHero);
-            spellService.startTurn(sandboxMonster);
+            // Déclencher le début du tour suivant pour TOUS les personnages
+            for (Personnage p : sandboxAllies) {
+                spellService.startTurn(p);
+            }
+            for (Personnage p : sandboxEnemies) {
+                spellService.startTurn(p);
+            }
 
             sandboxTurn++;
             System.out.println("✨ Début du tour " + sandboxTurn + ". Prêt pour les actions.");
@@ -688,32 +752,6 @@ public class WebSpellCreationController {
                         hpe.setHealSource(eDto.getSource() != null ? eDto.getSource() : Source.TARGET_HEALTH_MAX);
                         effect = hpe;
                         break;
-                    case "BUFF_DEBUFF":
-                        BuffDebuffEffect bde = new BuffDebuffEffect();
-                        bde.setStatAffected(eDto.getStatAffected() != null ? eDto.getStatAffected() : StatType.ARMURE);
-                        bde.setFlatValue(eDto.getFlatValue());
-                        bde.setModifier(eDto.getModifier());
-                        bde.setDuration(eDto.getDuration());
-                        bde.setModifierSource(eDto.getSource());
-                        effect = bde;
-                        break;
-                    case "DOT":
-                        DamageOverTimeEffect dot = new DamageOverTimeEffect();
-                        dot.setPercentageDamagePerTick(eDto.getPercentage());
-                        dot.setFixedDamagePerTick(eDto.getDamage());
-                        dot.setDuration(eDto.getDuration());
-                        dot.setDamageType(eDto.getDamageType() != null ? eDto.getDamageType() : DamageType.MAGIC);
-                        dot.setDamageSource(eDto.getSource() != null ? eDto.getSource() : Source.TARGET_HEALTH_MAX);
-                        effect = dot;
-                        break;
-                    case "HOT":
-                        HealOverTimeEffect hot = new HealOverTimeEffect();
-                        hot.setPercentageHealPerTick(eDto.getPercentage());
-                        hot.setFixedHealPerTick(eDto.getHealAmount());
-                        hot.setDuration(eDto.getDuration());
-                        hot.setHealSource(eDto.getSource() != null ? eDto.getSource() : Source.TARGET_HEALTH_MAX);
-                        effect = hot;
-                        break;
                     case "FIXED_MANA":
                         ManaFixedEffect mfe = new ManaFixedEffect();
                         mfe.setManaAmount(eDto.getManaAmount());
@@ -722,27 +760,54 @@ public class WebSpellCreationController {
                     case "PERCENTAGE_MANA":
                         ManaPercentageEffect mpe = new ManaPercentageEffect();
                         mpe.setPercentage(eDto.getPercentage());
-                        mpe.setManaSource(eDto.getSource() != null ? eDto.getSource() : Source.TARGET_MANA_MAX);
+                        mpe.setManaSource(eDto.getSource() != null ? eDto.getSource() : Source.TARGET_HEALTH_MAX);
                         effect = mpe;
+                        break;
+                    case "BUFF_DEBUFF":
+                        BuffDebuffEffect bde = new BuffDebuffEffect();
+                        bde.setStatAffected(eDto.getStatAffected());
+                        bde.setFlatValue(eDto.getFlatValue());
+                        bde.setModifier(eDto.getModifier());
+                        bde.setDuration(eDto.getDuration());
+                        effect = bde;
+                        break;
+                    case "DOT":
+                        DamageOverTimeEffect dot = new DamageOverTimeEffect();
+                        dot.setFixedDamagePerTick(eDto.getDamage());
+                        dot.setPercentageDamagePerTick(eDto.getPercentage());
+                        dot.setDamageType(eDto.getDamageType() != null ? eDto.getDamageType() : DamageType.MAGIC);
+                        dot.setDuration(eDto.getDuration());
+                        dot.setDamageSource(eDto.getSource() != null ? eDto.getSource() : Source.TARGET_HEALTH_MAX);
+                        effect = dot;
+                        break;
+                    case "HOT":
+                        HealOverTimeEffect hot = new HealOverTimeEffect();
+                        hot.setFixedHealPerTick(eDto.getHealAmount());
+                        hot.setPercentageHealPerTick(eDto.getPercentage());
+                        hot.setDuration(eDto.getDuration());
+                        hot.setHealSource(eDto.getSource() != null ? eDto.getSource() : Source.TARGET_HEALTH_MAX);
+                        effect = hot;
                         break;
                     case "MOT":
                         ManaOverTimeEffect mot = new ManaOverTimeEffect();
-                        mot.setPercentageManaPerTick(eDto.getPercentage());
                         mot.setFixedManaPerTick(eDto.getManaAmount());
+                        mot.setPercentageManaPerTick(eDto.getPercentage());
                         mot.setDuration(eDto.getDuration());
-                        mot.setManaSource(eDto.getSource() != null ? eDto.getSource() : Source.TARGET_MANA_MAX);
+                        mot.setManaSource(eDto.getSource() != null ? eDto.getSource() : Source.TARGET_HEALTH_MAX);
                         effect = mot;
                         break;
                     case "PURGE":
-                        effect = new generation.grimoire.entity.spell.type.effect.PurgeEffect();
+                        PurgeEffect purge = new PurgeEffect();
+                        effect = purge;
                         break;
                     case "SHIELD":
-                        generation.grimoire.entity.spell.type.effect.ShieldEffect se = new generation.grimoire.entity.spell.type.effect.ShieldEffect();
-                        se.setFixedValue(eDto.getFlatValue());
-                        se.setPercentage(eDto.getPercentage());
-                        se.setDuration(eDto.getDuration());
-                        se.setShieldSource(eDto.getSource() != null ? eDto.getSource() : Source.TARGET_HEALTH_MAX);
-                        effect = se;
+                        ShieldEffect shield = new ShieldEffect();
+                        shield.setFixedValue(eDto.getFlatValue());
+                        shield.setPercentage(eDto.getPercentage());
+                        shield.setDuration(eDto.getDuration());
+                        shield.setShieldSource(
+                                eDto.getSource() != null ? eDto.getSource() : Source.TARGET_HEALTH_MAX);
+                        effect = shield;
                         break;
                     case "HEAT_FIXED":
                         generation.grimoire.entity.spell.type.effect.HeatFixedEffect heatFixed = new generation.grimoire.entity.spell.type.effect.HeatFixedEffect();
@@ -847,76 +912,46 @@ public class WebSpellCreationController {
     @Data
     public static class SandboxStateDto {
         private int turnCount;
-        private String heroName;
-        private int heroHpMax;
-        private int heroHpCurrent;
-        private int heroManaMax;
-        private int heroManaCurrent;
-        private int heroShieldTotal;
-        private int heroHeat;
-        private Integer heroCritDerived;
-        private int heroSurete;
-        private boolean heroHasTrahison;
-        private boolean heroTrahisonBaseAvailable;
-        private boolean heroTrahisonLowHpAvailable;
-        private boolean heroTrahisonDebuffAvailable;
-        private boolean heroHasConsolidation;
-        private int heroConsolidationLevel;
-        private boolean heroHasViolence;
-        private int heroViolenceInspiration;
-        private int heroViolenceExpiration;
-
-        private boolean heroHasKarma;
-        private int heroKarmaGauge;
-        private boolean heroKarmaLocked;
-        private boolean heroKarmaHarmony;
-        private java.util.List<ShieldState> heroShields;
-        private java.util.List<BuffState> heroBuffs;
-
-        // Configuration du héros
-        private Long heroVoieId;
-        private String heroVoieName;
-        private int heroVoieLevel;
-        private Long heroSpiritualiteId;
-        private String heroSpiritualiteName;
-        private int heroSpiritualiteLevel;
-        private int heroPower;
-        private int heroArmor;
-        private int heroResistance;
-        private int heroSpeed;
-        private int heroCrit;
-
-        private int heroBasePower;
-        private int heroBaseArmor;
-        private int heroBaseResistance;
-        private int heroBaseSpeed;
-        private int heroBaseCrit;
-
-        private String monsterName;
-        private int monsterHpMax;
-        private int monsterHpCurrent;
-        private int monsterShieldTotal;
-        private int monsterHeat;
-        private Integer monsterCritDerived;
-        private int monsterSurete;
-        private boolean monsterHasTrahison;
-        private boolean monsterTrahisonBaseAvailable;
-        private boolean monsterTrahisonLowHpAvailable;
-        private boolean monsterTrahisonDebuffAvailable;
-        private boolean monsterHasConsolidation;
-        private int monsterConsolidationLevel;
-        private boolean monsterHasViolence;
-        private int monsterViolenceInspiration;
-        private int monsterViolenceExpiration;
-
-        private boolean monsterHasKarma;
-        private int monsterKarmaGauge;
-        private boolean monsterKarmaLocked;
-        private boolean monsterKarmaHarmony;
-        private java.util.List<ShieldState> monsterShields;
-        private java.util.List<BuffState> monsterBuffs;
-
+        private java.util.List<CombatantState> allies;
+        private java.util.List<CombatantState> enemies;
         private String rawLogs;
+    }
+
+    @Data
+    public static class CombatantState {
+        private int index;
+        private String name;
+        private int hpMax, hpCurrent;
+        private int manaMax, manaCurrent;
+        private int shieldTotal;
+        private java.util.List<ShieldState> shields;
+        private java.util.List<BuffState> buffs;
+        private int heat;
+        private int surete;
+        private Integer critDerived;
+        // Trahison
+        private boolean hasTrahison, trahisonBaseAvailable, trahisonLowHpAvailable, trahisonDebuffAvailable;
+        // Consolidation
+        private boolean hasConsolidation;
+        private int consolidationLevel;
+        // Violence
+        private boolean hasViolence;
+        private int violenceInspiration, violenceExpiration;
+        // Karma
+        private boolean hasKarma;
+        private int karmaGauge;
+        private boolean karmaLocked, karmaHarmony;
+        // Stats effectives
+        private int power, armor, resistance, speed, crit;
+        // Stats de base
+        private int basePower, baseArmor, baseResistance, baseSpeed, baseCrit;
+        // Voie & Spiritualité
+        private Long voieId;
+        private String voieName;
+        private int voieLevel;
+        private Long spiritualiteId;
+        private String spiritualiteName;
+        private int spiritualiteLevel;
     }
 
     @Data
