@@ -1,7 +1,3 @@
-// ===================================================================
-// constants.js — Dictionnaires et mappings immuables
-// ===================================================================
-
 export const GLOBAL_STAT_LABELS = {
     'SPEED': 'Vitesse', 'MANA': 'Mana Max', 'HEALTH': 'PV Max', 'CRIT': 'Critique',
     'ARMURE': 'Armure', 'RESISTANCE': 'Résistance', 'POWER': 'Puissance Mag.', 'STRENGTH': 'Force Phys.',
@@ -25,7 +21,6 @@ export const GLOBAL_SRC_LABELS = {
     'CASTER_HEALTH_CURRENT': 'PV Act. Lanc.', 'TARGET_HEALTH_CURRENT': 'PV Act. Cib.'
 };
 
-// Map des noms de classes Java → codes attendus par le switch JS/Java
 export const javaClassToCode = {
     'DamageFixedEffect': 'FIXED_DAMAGE',
     'DamagePercentageEffect': 'PERCENTAGE_DAMAGE',

@@ -1,9 +1,10 @@
-// ===================================================================
-// forge.js — Formulaire de création / édition de sort
-// ===================================================================
+import { state } from './state.js';
+import { GLOBAL_STAT_LABELS, GLOBAL_SRC_LABELS, javaClassToCode } from './constants.js';
+import * as ui from './ui.js';
+import * as api from './api.js';
 
-import state from './state.js';
-import { renderOptions, renderSourceOptions, renderStatOptions } from './ui.js';
+import { renderFilteredSpells, getSpellEffectsSummaryHtml, getSpellCardHtml, cancelEditSpell, updateEditingPreview, getLvl5Origin, editSpell } from './grimoire.js';
+import { getVoieButtonColor, getSpiritButtonColor, resetFilters, renderOriginButtons, toggleFilterVoie, toggleFilterSpirit } from './filters.js';
 
 export function toggleChannelingFields() {
     const castingTypeSel = document.getElementById('castingTypeSelect');
@@ -137,6 +138,7 @@ export function updateViolenceLabel() {
     if (!btnInsp || !btnExp) return;
 
     if (isInsp) {
+        // Inspiration Active (Cyan Theme)
         btnInsp.style.background = 'linear-gradient(135deg, rgba(6, 182, 212, 0.15) 0%, rgba(8, 145, 178, 0.3) 100%)';
         btnInsp.style.border = '1px solid rgba(6, 182, 212, 0.4)';
         btnInsp.style.boxShadow = '0 0 12px rgba(6, 182, 212, 0.2)';
@@ -144,6 +146,7 @@ export function updateViolenceLabel() {
         btnInsp.style.opacity = '1';
         btnInsp.querySelector('.material-symbols-outlined').style.transform = 'scale(1.15)';
 
+        // Expiration Inactive
         btnExp.style.background = 'transparent';
         btnExp.style.border = '1px solid transparent';
         btnExp.style.boxShadow = 'none';
@@ -151,6 +154,7 @@ export function updateViolenceLabel() {
         btnExp.style.opacity = '0.6';
         btnExp.querySelector('.material-symbols-outlined').style.transform = 'scale(1)';
     } else {
+        // Expiration Active (Pink/Rose Theme)
         btnExp.style.background = 'linear-gradient(135deg, rgba(219, 39, 119, 0.15) 0%, rgba(190, 24, 74, 0.3) 100%)';
         btnExp.style.border = '1px solid rgba(219, 39, 119, 0.4)';
         btnExp.style.boxShadow = '0 0 12px rgba(219, 39, 119, 0.2)';
@@ -158,6 +162,7 @@ export function updateViolenceLabel() {
         btnExp.style.opacity = '1';
         btnExp.querySelector('.material-symbols-outlined').style.transform = 'scale(1.15) rotate(10deg)';
 
+        // Inspiration Inactive
         btnInsp.style.background = 'transparent';
         btnInsp.style.border = '1px solid transparent';
         btnInsp.style.boxShadow = 'none';
@@ -189,6 +194,7 @@ export function updateKarmaLabel() {
 
     if (!btnOff || !btnRes || !btnPro) return;
 
+    // Reset all
     [btnOff, btnRes, btnPro].forEach(btn => {
         btn.style.background = 'transparent';
         btn.style.border = '1px solid transparent';
@@ -304,7 +310,7 @@ export function renderEffects() {
     const duration = durationInput ? (parseInt(durationInput.value) || 1) : 1;
 
     state.currentEffects.forEach((eff, idx) => {
-        const labelObj = state.metaData.effectTypes && state.metaData.effectTypes.find(t => t.type === eff.effectType);
+        const labelObj = state.metaData.effectTypes.find(t => t.type === eff.effectType);
         const heatLabels = {
             'HEAT_FIXED': 'Chaleur Fixe',
             'HEAT_PERCENTAGE': 'Chaleur %',
@@ -320,16 +326,17 @@ export function renderEffects() {
 
         let fieldsHtml = '';
 
+        // Champs spécifiques en fonction du type
         if (eff.effectType === 'FIXED_DAMAGE') {
             fieldsHtml = `
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Dégâts</label>
-                                <input type="number" value="${eff.damage}" onchange="window.updateEffectProp('${eff.id}', 'damage', this.value)">
+                                <input type="number" value="${eff.damage}" onchange="updateEffectProp('${eff.id}', 'damage', this.value)">
                             </div>
                             <div class="form-group">
                                 <label>Type de Dégâts</label>
-                                <select class="custom-select-dynamic" id="damageType-${eff.id}" onchange="window.updateEffectProp('${eff.id}', 'damageType', this.value)">
+                                <select class="custom-select-dynamic" id="damageType-${eff.id}" onchange="updateEffectProp('${eff.id}', 'damageType', this.value)">
                                     ${renderOptions(state.metaData.damageTypes, eff.damageType)}
                                 </select>
                             </div>
@@ -340,18 +347,18 @@ export function renderEffects() {
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Ratio (ex: 0.10 pour 10%)</label>
-                                <input type="number" step="0.01" value="${eff.percentage}" onchange="window.updateEffectProp('${eff.id}', 'percentage', this.value)">
+                                <input type="number" step="0.01" value="${eff.percentage}" onchange="updateEffectProp('${eff.id}', 'percentage', this.value)">
                             </div>
                             <div class="form-group">
                                 <label>Type</label>
-                                <select class="custom-select-dynamic" id="damageType-${eff.id}" onchange="window.updateEffectProp('${eff.id}', 'damageType', this.value)">
+                                <select class="custom-select-dynamic" id="damageType-${eff.id}" onchange="updateEffectProp('${eff.id}', 'damageType', this.value)">
                                     ${renderOptions(state.metaData.damageTypes, eff.damageType)}
                                 </select>
                             </div>
                         </div>
                         <div class="form-group">
                             <label>Source du Ratio</label>
-                            <select class="custom-select-dynamic" id="ratioSource-${eff.id}" onchange="window.updateEffectProp('${eff.id}', 'source', this.value)">
+                            <select class="custom-select-dynamic" id="ratioSource-${eff.id}" onchange="updateEffectProp('${eff.id}', 'source', this.value)">
                                 ${renderSourceOptions(state.metaData.sources, eff.source)}
                             </select>
                         </div>
@@ -360,7 +367,7 @@ export function renderEffects() {
             fieldsHtml = `
                         <div class="form-group">
                             <label>Montant du Soin</label>
-                            <input type="number" value="${eff.healAmount}" onchange="window.updateEffectProp('${eff.id}', 'healAmount', this.value)">
+                            <input type="number" value="${eff.healAmount}" onchange="updateEffectProp('${eff.id}', 'healAmount', this.value)">
                         </div>
                     `;
         } else if (eff.effectType === 'PERCENTAGE_HEAL') {
@@ -368,11 +375,11 @@ export function renderEffects() {
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Ratio (ex: 0.20 pour 20%)</label>
-                                <input type="number" step="0.01" value="${eff.percentage}" onchange="window.updateEffectProp('${eff.id}', 'percentage', this.value)">
+                                <input type="number" step="0.01" value="${eff.percentage}" onchange="updateEffectProp('${eff.id}', 'percentage', this.value)">
                             </div>
                             <div class="form-group">
                                 <label>Source du Ratio</label>
-                                <select class="custom-select-dynamic" id="ratioSource-${eff.id}" onchange="window.updateEffectProp('${eff.id}', 'source', this.value)">
+                                <select class="custom-select-dynamic" id="ratioSource-${eff.id}" onchange="updateEffectProp('${eff.id}', 'source', this.value)">
                                     ${renderSourceOptions(state.metaData.sources, eff.source)}
                                 </select>
                             </div>
@@ -383,23 +390,23 @@ export function renderEffects() {
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Stat Affectée</label>
-                                <select class="custom-select-dynamic" id="statAffected-${eff.id}" onchange="window.updateEffectProp('${eff.id}', 'statAffected', this.value)">
+                                <select class="custom-select-dynamic" id="statAffected-${eff.id}" onchange="updateEffectProp('${eff.id}', 'statAffected', this.value)">
                                     ${renderStatOptions(state.metaData.statTypes, eff.statAffected)}
                                 </select>
                             </div>
                             <div class="form-group">
                                 <label>Durée (Tours)</label>
-                                <input type="number" value="${eff.duration}" onchange="window.updateEffectProp('${eff.id}', 'duration', this.value)">
+                                <input type="number" value="${eff.duration}" onchange="updateEffectProp('${eff.id}', 'duration', this.value)">
                             </div>
                         </div>
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Valeur Fixe (+/-)</label>
-                                <input type="number" value="${eff.flatValue}" onchange="window.updateEffectProp('${eff.id}', 'flatValue', this.value)">
+                                <input type="number" value="${eff.flatValue}" onchange="updateEffectProp('${eff.id}', 'flatValue', this.value)">
                             </div>
                             <div class="form-group">
                                 <label>Multiplicateur (Ratio)</label>
-                                <input type="number" step="0.05" value="${eff.modifier}" onchange="window.updateEffectProp('${eff.id}', 'modifier', this.value)">
+                                <input type="number" step="0.05" value="${eff.modifier}" onchange="updateEffectProp('${eff.id}', 'modifier', this.value)">
                             </div>
                         </div>
                     `;
@@ -408,28 +415,28 @@ export function renderEffects() {
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Dégâts Fixes / Tour</label>
-                                <input type="number" value="${eff.damage}" onchange="window.updateEffectProp('${eff.id}', 'damage', this.value)">
+                                <input type="number" value="${eff.damage}" onchange="updateEffectProp('${eff.id}', 'damage', this.value)">
                             </div>
                             <div class="form-group">
                                 <label>Ratio / Tour</label>
-                                <input type="number" step="0.01" value="${eff.percentage}" onchange="window.updateEffectProp('${eff.id}', 'percentage', this.value)">
+                                <input type="number" step="0.01" value="${eff.percentage}" onchange="updateEffectProp('${eff.id}', 'percentage', this.value)">
                             </div>
                         </div>
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Durée (Tours)</label>
-                                <input type="number" value="${eff.duration}" onchange="window.updateEffectProp('${eff.id}', 'duration', this.value)">
+                                <input type="number" value="${eff.duration}" onchange="updateEffectProp('${eff.id}', 'duration', this.value)">
                             </div>
                             <div class="form-group">
                                 <label>Type de Dégâts</label>
-                                <select class="custom-select-dynamic" id="damageType-${eff.id}" onchange="window.updateEffectProp('${eff.id}', 'damageType', this.value)">
+                                <select class="custom-select-dynamic" id="damageType-${eff.id}" onchange="updateEffectProp('${eff.id}', 'damageType', this.value)">
                                     ${renderOptions(state.metaData.damageTypes, eff.damageType)}
                                 </select>
                             </div>
                         </div>
                         <div class="form-group">
                             <label>Source du Ratio</label>
-                            <select class="custom-select-dynamic" id="ratioSource-${eff.id}" onchange="window.updateEffectProp('${eff.id}', 'source', this.value)">
+                            <select class="custom-select-dynamic" id="ratioSource-${eff.id}" onchange="updateEffectProp('${eff.id}', 'source', this.value)">
                                 ${renderSourceOptions(state.metaData.sources, eff.source)}
                             </select>
                         </div>
@@ -439,21 +446,21 @@ export function renderEffects() {
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Soins Fixes / Tour</label>
-                                <input type="number" value="${eff.healAmount}" onchange="window.updateEffectProp('${eff.id}', 'healAmount', this.value)">
+                                <input type="number" value="${eff.healAmount}" onchange="updateEffectProp('${eff.id}', 'healAmount', this.value)">
                             </div>
                             <div class="form-group">
                                 <label>Ratio / Tour</label>
-                                <input type="number" step="0.01" value="${eff.percentage}" onchange="window.updateEffectProp('${eff.id}', 'percentage', this.value)">
+                                <input type="number" step="0.01" value="${eff.percentage}" onchange="updateEffectProp('${eff.id}', 'percentage', this.value)">
                             </div>
                         </div>
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Durée (Tours)</label>
-                                <input type="number" value="${eff.duration}" onchange="window.updateEffectProp('${eff.id}', 'duration', this.value)">
+                                <input type="number" value="${eff.duration}" onchange="updateEffectProp('${eff.id}', 'duration', this.value)">
                             </div>
                             <div class="form-group">
                                 <label>Source du Ratio</label>
-                                <select class="custom-select-dynamic" id="ratioSource-${eff.id}" onchange="window.updateEffectProp('${eff.id}', 'source', this.value)">
+                                <select class="custom-select-dynamic" id="ratioSource-${eff.id}" onchange="updateEffectProp('${eff.id}', 'source', this.value)">
                                     ${renderSourceOptions(state.metaData.sources, eff.source)}
                                 </select>
                             </div>
@@ -463,7 +470,7 @@ export function renderEffects() {
             fieldsHtml = `
                         <div class="form-group">
                             <label>Montant de Mana</label>
-                            <input type="number" value="${eff.manaAmount || 0}" onchange="window.updateEffectProp('${eff.id}', 'manaAmount', this.value)">
+                            <input type="number" value="${eff.manaAmount || 0}" onchange="updateEffectProp('${eff.id}', 'manaAmount', this.value)">
                         </div>
                     `;
         } else if (eff.effectType === 'PERCENTAGE_MANA') {
@@ -471,11 +478,11 @@ export function renderEffects() {
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Ratio (ex: 0.15 pour 15%)</label>
-                                <input type="number" step="0.01" value="${eff.percentage}" onchange="window.updateEffectProp('${eff.id}', 'percentage', this.value)">
+                                <input type="number" step="0.01" value="${eff.percentage}" onchange="updateEffectProp('${eff.id}', 'percentage', this.value)">
                             </div>
                             <div class="form-group">
                                 <label>Source du Ratio</label>
-                                <select class="custom-select-dynamic" id="ratioSource-${eff.id}" onchange="window.updateEffectProp('${eff.id}', 'source', this.value)">
+                                <select class="custom-select-dynamic" id="ratioSource-${eff.id}" onchange="updateEffectProp('${eff.id}', 'source', this.value)">
                                     ${renderSourceOptions(state.metaData.sources, eff.source)}
                                 </select>
                             </div>
@@ -486,21 +493,21 @@ export function renderEffects() {
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Mana Fixe / Tour</label>
-                                <input type="number" value="${eff.manaAmount || 0}" onchange="window.updateEffectProp('${eff.id}', 'manaAmount', this.value)">
+                                <input type="number" value="${eff.manaAmount || 0}" onchange="updateEffectProp('${eff.id}', 'manaAmount', this.value)">
                             </div>
                             <div class="form-group">
                                 <label>Ratio / Tour</label>
-                                <input type="number" step="0.01" value="${eff.percentage}" onchange="window.updateEffectProp('${eff.id}', 'percentage', this.value)">
+                                <input type="number" step="0.01" value="${eff.percentage}" onchange="updateEffectProp('${eff.id}', 'percentage', this.value)">
                             </div>
                         </div>
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Durée (Tours)</label>
-                                <input type="number" value="${eff.duration}" onchange="window.updateEffectProp('${eff.id}', 'duration', this.value)">
+                                <input type="number" value="${eff.duration}" onchange="updateEffectProp('${eff.id}', 'duration', this.value)">
                             </div>
                             <div class="form-group">
                                 <label>Source du Ratio</label>
-                                <select class="custom-select-dynamic" id="ratioSource-${eff.id}" onchange="window.updateEffectProp('${eff.id}', 'source', this.value)">
+                                <select class="custom-select-dynamic" id="ratioSource-${eff.id}" onchange="updateEffectProp('${eff.id}', 'source', this.value)">
                                     ${renderSourceOptions(state.metaData.sources, eff.source)}
                                 </select>
                             </div>
@@ -511,21 +518,21 @@ export function renderEffects() {
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Valeur Fixe Bouclier</label>
-                                <input type="number" value="${eff.flatValue || 0}" onchange="window.updateEffectProp('${eff.id}', 'flatValue', this.value)">
+                                <input type="number" value="${eff.flatValue || 0}" onchange="updateEffectProp('${eff.id}', 'flatValue', this.value)">
                             </div>
                             <div class="form-group">
                                 <label>Ratio (ex: 0.10 pour 10%)</label>
-                                <input type="number" step="0.01" value="${eff.percentage || 0}" onchange="window.updateEffectProp('${eff.id}', 'percentage', this.value)">
+                                <input type="number" step="0.01" value="${eff.percentage || 0}" onchange="updateEffectProp('${eff.id}', 'percentage', this.value)">
                             </div>
                         </div>
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Durée (Tours)</label>
-                                <input type="number" value="${eff.duration || 0}" onchange="window.updateEffectProp('${eff.id}', 'duration', this.value)">
+                                <input type="number" value="${eff.duration || 0}" onchange="updateEffectProp('${eff.id}', 'duration', this.value)">
                             </div>
                             <div class="form-group">
                                 <label>Source du Ratio</label>
-                                <select class="custom-select-dynamic" id="ratioSource-${eff.id}" onchange="window.updateEffectProp('${eff.id}', 'source', this.value)">
+                                <select class="custom-select-dynamic" id="ratioSource-${eff.id}" onchange="updateEffectProp('${eff.id}', 'source', this.value)">
                                     ${renderSourceOptions(state.metaData.sources, eff.source)}
                                 </select>
                             </div>
@@ -541,7 +548,7 @@ export function renderEffects() {
             fieldsHtml = `
                         <div class="form-group">
                             <label>Montant de Chaleur Générée (Fixe)</label>
-                            <input type="number" min="0" value="${eff.flatValue || 0}" onchange="window.updateEffectProp('${eff.id}', 'flatValue', this.value)">
+                            <input type="number" min="0" value="${eff.flatValue || 0}" onchange="updateEffectProp('${eff.id}', 'flatValue', this.value)">
                         </div>
                     `;
         } else if (eff.effectType === 'HEAT_PERCENTAGE') {
@@ -549,11 +556,11 @@ export function renderEffects() {
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Ratio (ex: 0.10 pour 10%)</label>
-                                <input type="number" step="0.01" value="${eff.percentage}" onchange="window.updateEffectProp('${eff.id}', 'percentage', this.value)">
+                                <input type="number" step="0.01" value="${eff.percentage}" onchange="updateEffectProp('${eff.id}', 'percentage', this.value)">
                             </div>
                             <div class="form-group">
                                 <label>Source du Ratio</label>
-                                <select class="custom-select-dynamic" id="ratioSource-${eff.id}" onchange="window.updateEffectProp('${eff.id}', 'source', this.value)">
+                                <select class="custom-select-dynamic" id="ratioSource-${eff.id}" onchange="updateEffectProp('${eff.id}', 'source', this.value)">
                                     ${renderSourceOptions(state.metaData.sources, eff.source)}
                                 </select>
                             </div>
@@ -564,21 +571,21 @@ export function renderEffects() {
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Chaleur Fixe / Tour</label>
-                                <input type="number" value="${eff.flatValue}" onchange="window.updateEffectProp('${eff.id}', 'flatValue', this.value)">
+                                <input type="number" value="${eff.flatValue}" onchange="updateEffectProp('${eff.id}', 'flatValue', this.value)">
                             </div>
                             <div class="form-group">
                                 <label>Ratio / Tour</label>
-                                <input type="number" step="0.01" value="${eff.percentage}" onchange="window.updateEffectProp('${eff.id}', 'percentage', this.value)">
+                                <input type="number" step="0.01" value="${eff.percentage}" onchange="updateEffectProp('${eff.id}', 'percentage', this.value)">
                             </div>
                         </div>
                         <div class="form-row">
                             <div class="form-group">
                                 <label>Durée (Tours)</label>
-                                <input type="number" value="${eff.duration}" onchange="window.updateEffectProp('${eff.id}', 'duration', this.value)">
+                                <input type="number" value="${eff.duration}" onchange="updateEffectProp('${eff.id}', 'duration', this.value)">
                             </div>
                             <div class="form-group">
                                 <label>Source du Ratio</label>
-                                <select class="custom-select-dynamic" id="ratioSource-${eff.id}" onchange="window.updateEffectProp('${eff.id}', 'source', this.value)">
+                                <select class="custom-select-dynamic" id="ratioSource-${eff.id}" onchange="updateEffectProp('${eff.id}', 'source', this.value)">
                                     ${renderSourceOptions(state.metaData.sources, eff.source)}
                                 </select>
                             </div>
@@ -590,94 +597,106 @@ export function renderEffects() {
         if (['FIXED_DAMAGE', 'PERCENTAGE_DAMAGE'].includes(eff.effectType)) {
             typeBadgeStyle = 'background: linear-gradient(135deg, rgba(239, 68, 68, 0.25), rgba(185, 28, 28, 0.4)); color: #fca5a5; border: 1px solid #ef4444; box-shadow: 0 0 12px rgba(239, 68, 68, 0.3); text-shadow: 0 0 5px rgba(0,0,0,0.8);';
         } else if (['FIXED_HEAL', 'PERCENTAGE_HEAL', 'HOT'].includes(eff.effectType)) {
-            typeBadgeStyle = 'background: linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(5, 150, 105, 0.4)); color: #6ee7b7; border: 1px solid #10b981; box-shadow: 0 0 12px rgba(16, 185, 129, 0.3);';
+            typeBadgeStyle = 'background: linear-gradient(135deg, rgba(16, 185, 129, 0.25), rgba(4, 120, 87, 0.4)); color: #6ee7b7; border: 1px solid #10b981; box-shadow: 0 0 12px rgba(16, 185, 129, 0.3); text-shadow: 0 0 5px rgba(0,0,0,0.8);';
+        } else if (['FIXED_MANA', 'PERCENTAGE_MANA', 'MOT'].includes(eff.effectType)) {
+            typeBadgeStyle = 'background: linear-gradient(135deg, rgba(56, 189, 248, 0.25), rgba(2, 132, 199, 0.4)); color: #7dd3fc; border: 1px solid #38bdf8; box-shadow: 0 0 12px rgba(56, 189, 248, 0.3); text-shadow: 0 0 5px rgba(0,0,0,0.8);';
+        } else if (eff.effectType === 'BUFF_DEBUFF') {
+            typeBadgeStyle = 'background: linear-gradient(135deg, rgba(245, 158, 11, 0.25), rgba(180, 83, 9, 0.4)); color: #fde68a; border: 1px solid #f59e0b; box-shadow: 0 0 12px rgba(245, 158, 11, 0.3); text-shadow: 0 0 5px rgba(0,0,0,0.8);';
+        } else if (eff.effectType === 'DOT') {
+            typeBadgeStyle = 'background: linear-gradient(135deg, rgba(249, 115, 22, 0.25), rgba(194, 65, 12, 0.4)); color: #fdba74; border: 1px solid #f97316; box-shadow: 0 0 12px rgba(249, 115, 22, 0.3); text-shadow: 0 0 5px rgba(0,0,0,0.8);';
+        } else if (eff.effectType === 'PURGE') {
+            typeBadgeStyle = 'background: linear-gradient(135deg, rgba(16, 185, 129, 0.3), rgba(52, 211, 153, 0.5)); color: #a7f3d0; border: 1px solid #34d399; box-shadow: 0 0 12px rgba(52, 211, 153, 0.4); text-shadow: 0 0 5px rgba(0,0,0,0.8);';
+        } else if (eff.effectType === 'SHIELD') {
+            typeBadgeStyle = 'background: linear-gradient(135deg, rgba(6, 182, 212, 0.25), rgba(8, 145, 178, 0.4)); color: #a5f3fc; border: 1px solid #06b6d4; box-shadow: 0 0 12px rgba(6, 182, 212, 0.3); text-shadow: 0 0 5px rgba(0,0,0,0.8);';
+        } else if (['HEAT_FIXED', 'HEAT_PERCENTAGE', 'HEAT_OVER_TIME'].includes(eff.effectType)) {
+            typeBadgeStyle = 'background: linear-gradient(135deg, rgba(239, 68, 68, 0.25), rgba(185, 28, 28, 0.4)); color: #fca5a5; border: 1px solid #ef4444; box-shadow: 0 0 12px rgba(239, 68, 68, 0.3); text-shadow: 0 0 5px rgba(0,0,0,0.8);';
         }
 
-        let keyConfigHtml = '';
-        const levelVal = parseInt(document.getElementById('niveau').value) || 1;
-        if (levelVal >= 2) {
-            keyConfigHtml = `
-                        <div class="form-group" style="flex: 1;">
-                            <label style="color:#f59e0b; display:flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size:0.9rem;">alt_route</span>Touche Optionnelle (Optionnel)</label>
-                            <select class="custom-select-dynamic" id="keyChoice-${eff.id}" onchange="window.updateEffectProp('${eff.id}', 'requiredChoiceKey', this.value === '' ? null : this.value)" style="border-color: rgba(245,158,11,0.4); background: rgba(245,158,11,0.05);">
-                                <option value="" ${eff.requiredChoiceKey === null ? 'selected' : ''}>Toujours activé</option>
-                                <option value="A" ${eff.requiredChoiceKey === 'A' ? 'selected' : ''}>Option A</option>
-                                <option value="B" ${eff.requiredChoiceKey === 'B' ? 'selected' : ''}>Option B</option>
-                                <option value="C" ${eff.requiredChoiceKey === 'C' ? 'selected' : ''}>Option C</option>
-                            </select>
+        const deleteOrLinkedButton = `<button type="button" class="btn-danger" onclick="removeEffect('${eff.id}')">✕ Supprimer</button>`;
+
+        const targetSelectorHtml = isHeatEffect ? `
+                        <div style="display: flex; align-items: center; gap: 0.5rem; background: rgba(239, 68, 68, 0.08); padding: 0.6rem 0.8rem; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.25); margin-bottom: 0.5rem;">
+                            <span class="material-symbols-outlined" style="color: #fca5a5; font-size: 1.25rem;">person</span>
+                            <span style="font-size: 0.85rem; color: #fca5a5; font-weight: 600;">Cible : Lanceur (Chaleur générée)</span>
                         </div>
-                    `;
-        }
-
-        let channelConfigHtml = '';
-        if (isCanalise && !isHeatEffect) {
-            let pillsHtml = '';
-            for (let t = 1; t <= duration; t++) {
-                const isActive = eff.channelingTurns && eff.channelingTurns.includes(t);
-                pillsHtml += `<div class="turn-pill ${isActive ? 'active' : ''}" onclick="window.toggleEffectChannelingTurn('${eff.id}', ${t})">T${t}</div>`;
-            }
-
-            channelConfigHtml = `
-                        <div class="form-group" style="flex: 2; border-left: 1px solid rgba(255,255,255,0.1); padding-left: 1rem; margin-left: 0.5rem;">
-                            <label style="color:#a78bfa; display:flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size:0.9rem;">cyclone</span>Tours de déclenchement (Canalisation)</label>
-                            <div style="display:flex; gap:0.3rem; flex-wrap:wrap; margin-top:0.3rem;">
-                                ${pillsHtml}
+                ` : `
+                        <!-- Sélection de la cible de l'Effet -->
+                        <div style="display: flex; flex-direction: column; gap: 0.8rem; background: rgba(0,0,0,0.25); padding: 0.8rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                            <label style="color: #fff; font-weight: 600; font-size: 0.9rem;">Cible de l'Effet :</label>
+                            <div class="target-selector" style="flex-wrap: wrap; gap: 0.5rem;">
+                                <button type="button" class="target-btn ${eff.effectTarget === 'CASTER' ? 'active-caster' : ''}" onclick="setEffectTarget('${eff.id}', 'CASTER')" title="Affecte uniquement le lanceur du sort">
+                                    ✦ Lanceur
+                                </button>
+                                <button type="button" class="target-btn ${eff.effectTarget === 'ALLY' ? 'active-ally' : ''}" onclick="setEffectTarget('${eff.id}', 'ALLY')" title="Affecte un allié ciblé">
+                                    🛡️ Allié (Ciblé)
+                                </button>
+                                <button type="button" class="target-btn ${eff.effectTarget === 'TARGET' ? 'active-target' : ''}" onclick="setEffectTarget('${eff.id}', 'TARGET')" title="Affecte la cible ennemie principale">
+                                    🎯 Ennemi (Cible)
+                                </button>
+                                <button type="button" class="target-btn ${eff.effectTarget === 'ALL_ALLIES' ? 'active-caster' : ''}" onclick="setEffectTarget('${eff.id}', 'ALL_ALLIES')" title="Affecte le lanceur et tous ses alliés">
+                                    ✦+🛡️ Lanceur &amp; Alliés
+                                </button>
+                                <button type="button" class="target-btn ${eff.effectTarget === 'ALL_ENEMIES' ? 'active-target' : ''}" onclick="setEffectTarget('${eff.id}', 'ALL_ENEMIES')" title="Affecte tous les ennemis (zone)">
+                                    💥 Tous les Ennemis
+                                </button>
+                                <button type="button" class="target-btn" onclick="setEffectTarget('${eff.id}', 'ALL_COMBATANTS')" style="${eff.effectTarget === 'ALL_COMBATANTS' ? 'background: rgba(245,158,11,0.25); color: #fbbf24; border-color: #f59e0b;' : ''}" title="Affecte tout le monde (alliés et ennemis)">
+                                    🌐 Tout le Monde
+                                </button>
                             </div>
                         </div>
-                    `;
-        }
+                `;
 
-        let advancedConfigHtml = '';
-        if (keyConfigHtml || channelConfigHtml) {
-            advancedConfigHtml = `
-                        <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px solid rgba(255,255,255,0.05); display: flex; gap: 1rem; flex-wrap: wrap;">
-                            ${keyConfigHtml}
-                            ${channelConfigHtml}
-                        </div>
-                    `;
-        }
-
-        const effHtml = `
-                    <div class="effect-item">
+        const itemHtml = `
+                    <div class="effect-item target-${targetClass}">
                         <div class="effect-header">
                             <span class="effect-type-badge" style="${typeBadgeStyle}">${typeLabel}</span>
-                            ${!isHeatEffect ? `
-                            <div class="target-selector">
-                                <div class="target-option ${eff.effectTarget === 'CASTER' ? 'active' : ''}" onclick="window.setEffectTarget('${eff.id}', 'CASTER')">Moi</div>
-                                <div class="target-option ${eff.effectTarget === 'ALLY' ? 'active' : ''}" onclick="window.setEffectTarget('${eff.id}', 'ALLY')">Allié</div>
-                                <div class="target-option ${eff.effectTarget === 'TARGET' ? 'active' : ''}" onclick="window.setEffectTarget('${eff.id}', 'TARGET')">Cible</div>
-                                <div class="target-option ${eff.effectTarget === 'ALL_ENEMIES' ? 'active' : ''}" onclick="window.setEffectTarget('${eff.id}', 'ALL_ENEMIES')">Zone (Ennemis)</div>
-                                <div class="target-option ${eff.effectTarget === 'ALL_ALLIES' ? 'active' : ''}" onclick="window.setEffectTarget('${eff.id}', 'ALL_ALLIES')">Zone (Alliés)</div>
-                                <div class="target-option ${eff.effectTarget === 'ALL_COMBATANTS' ? 'active' : ''}" onclick="window.setEffectTarget('${eff.id}', 'ALL_COMBATANTS')">Zone Globale</div>
+                            ${deleteOrLinkedButton}
+                        </div>
+
+                        ${targetSelectorHtml}
+
+                            <!-- Option / Clé d'activation de la ligne d'effet -->
+                            <div style="display: flex; gap: 0.5rem; align-items: center; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px dashed rgba(255,255,255,0.05);">
+                                <label style="font-size: 0.8rem; color: #f59e0b; font-weight:600;">🔑 S'active uniquement si l'Option de sort choisie est :</label>
+                                <input type="number" value="${eff.requiredChoiceKey !== undefined && eff.requiredChoiceKey !== null ? eff.requiredChoiceKey : ''}" placeholder="Toutes (Par défaut)" style="width: 140px; font-size: 0.85rem; padding: 0.2rem 0.4rem; background: var(--glass-bg); color: #fff; border: 1px solid var(--glass-border); border-radius: 4px;" onchange="updateEffectProp('${eff.id}', 'requiredChoiceKey', this.value ? parseInt(this.value) : null)">
+                                <span style="font-size: 0.75rem; color: var(--text-muted);">Ex: 1 pour la ligne Soin, 2 pour la ligne Mana. Laissez vide pour s'activer toujours.</span>
+                            </div>
+
+                            <!-- Tour(s) d'activation de l'effet dans la canalisation (uniquement si le sort est canalisé) -->
+                            ${isCanalise ? `
+                            <div style="display: flex; flex-direction: column; gap: 0.4rem; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px dashed rgba(255,255,255,0.05);">
+                                <label style="font-size: 0.8rem; color: #a78bfa; font-weight: 600;">🌀 Activation par Tour de Canalisation :</label>
+                                <div style="display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center;">
+                                    ${Array.from({ length: duration }, (_, i) => i + 1).map(turn => {
+            const isActive = (eff.channelingTurns || []).includes(turn);
+            const btnBg = isActive ? 'var(--primary)' : 'rgba(255, 255, 255, 0.05)';
+            const btnColor = isActive ? '#fff' : 'var(--text-muted)';
+            const btnBorder = isActive ? '1px solid #fff' : '1px solid var(--glass-border)';
+            const btnShadow = isActive ? '0 0 8px var(--primary-glow)' : 'none';
+            return `
+                                            <button type="button" style="padding: 0.3rem 0.6rem; font-size: 0.8rem; border-radius: 4px; background: ${btnBg}; color: ${btnColor}; border: ${btnBorder}; box-shadow: ${btnShadow}; cursor: pointer; transition: all 0.2s;" onclick="toggleEffectChannelingTurn('${eff.id}', ${turn})">
+                                                Tour ${turn}
+                                            </button>
+                                        `;
+        }).join('')}
+                                    <span style="font-size: 0.75rem; color: var(--text-muted); margin-left: 0.5rem;">Sélectionnez les tours où cet effet se déclenche.</span>
+                                </div>
                             </div>
                             ` : ''}
-                            <span class="material-symbols-outlined btn-remove-effect" onclick="window.removeEffect('${eff.id}')" title="Supprimer cet effet">close</span>
                         </div>
+
+                        <hr style="border-color: var(--glass-border); margin: 0;">
+
                         ${fieldsHtml}
-                        ${advancedConfigHtml}
                     </div>
                 `;
-        container.innerHTML += effHtml;
+
+        container.innerHTML += itemHtml;
     });
 
-    const selects = container.querySelectorAll('select');
-    if (window.makeCustomSelect) {
-        selects.forEach(sel => window.makeCustomSelect(sel));
-    }
+    // Styliser les sélecteurs dynamiques customisés
+    container.querySelectorAll('.custom-select-dynamic').forEach(sel => {
+        makeCustomSelect(sel);
+    });
 }
 
-// Attach to window so onclick handlers in HTML string can use them
-window.toggleChannelingFields = toggleChannelingFields;
-window.updateRankTitle = updateRankTitle;
-window.updateSpecialVoieConfig = updateSpecialVoieConfig;
-window.updateSpecialSpiritConfig = updateSpecialSpiritConfig;
-window.setViolenceType = setViolenceType;
-window.updateViolenceLabel = updateViolenceLabel;
-window.setKarmaAlignment = setKarmaAlignment;
-window.updateKarmaLabel = updateKarmaLabel;
-window.addEffectPanel = addEffectPanel;
-window.removeEffect = removeEffect;
-window.setEffectTarget = setEffectTarget;
-window.updateEffectProp = updateEffectProp;
-window.toggleEffectChannelingTurn = toggleEffectChannelingTurn;
-window.renderEffects = renderEffects;

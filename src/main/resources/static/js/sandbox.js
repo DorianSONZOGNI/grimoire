@@ -1,10 +1,7 @@
-// ===================================================================
-// sandbox.js — Banc d'Essai (Simulateur de sorts)
-// ===================================================================
-
-import state from './state.js';
-import { formatSrc, formatStat, getSpellColor, getVoieButtonColor, getSpiritButtonColor, getVoieIcon, getSpiritIcon } from './ui.js';
-import { getSpellEffectsSummaryHtml } from './grimoire.js';
+import { state } from './state.js';
+import { GLOBAL_STAT_LABELS, GLOBAL_SRC_LABELS, javaClassToCode } from './constants.js';
+import * as ui from './ui.js';
+import * as api from './api.js';
 
 export async function trySpell(id) {
     if (!state.sandboxSpellIds.includes(id)) {
@@ -20,8 +17,8 @@ export async function trySpell(id) {
     try {
         const res = await fetch('/api/spells-editor/sandbox/state');
         if (res.ok) {
-            const stateData = await res.json();
-            updateSandboxUI(stateData);
+            const state = await res.json();
+            updateSandboxUI(state);
         }
     } catch (err) {
         console.error(err);
@@ -31,7 +28,7 @@ export async function trySpell(id) {
 
 export function toggleHeroConfig() {
     const panel = document.getElementById('heroConfigPanel');
-    if (panel) panel.classList.toggle('expanded');
+    panel.classList.toggle('expanded');
 }
 
 export function populateHeroConfigSelectors() {
@@ -39,6 +36,7 @@ export function populateHeroConfigSelectors() {
     const spiritSelect = document.getElementById('heroConfigSpiritualite');
     if (!voieSelect || !spiritSelect || !state.metaData.voies) return;
 
+    // Nettoyer les anciens custom-selects s'ils existent
     [voieSelect, spiritSelect].forEach(select => {
         if (select.dataset.customized) {
             if (select.nextElementSibling && select.nextElementSibling.tagName === 'DIV') {
@@ -49,6 +47,7 @@ export function populateHeroConfigSelectors() {
         }
     });
 
+    // Sauvegarder les sélections actuelles
     const currentVoie = voieSelect.value;
     const currentSpirit = spiritSelect.value;
 
@@ -64,110 +63,68 @@ export function populateHeroConfigSelectors() {
     });
     spiritSelect.innerHTML = spiritHtml;
 
+    // Restaurer les sélections
     if (currentVoie) voieSelect.value = currentVoie;
     if (currentSpirit) spiritSelect.value = currentSpirit;
 
-    if (window.makeCustomSelect) {
-        window.makeCustomSelect('heroConfigVoie');
-        window.makeCustomSelect('heroConfigSpiritualite');
-    }
+    // Ré-appliquer le custom select
+    makeCustomSelect('heroConfigVoie');
+    makeCustomSelect('heroConfigSpiritualite');
 }
 
-export async function configureSandboxHero() {
-    const voieId = document.getElementById('heroConfigVoie').value || null;
-    const voieLevel = parseInt(document.getElementById('heroConfigVoieLevel').value) || 1;
-    const spiritualiteId = document.getElementById('heroConfigSpiritualite').value || null;
-    const spiritualiteLevel = parseInt(document.getElementById('heroConfigSpiritLevel').value) || 1;
-    const healthMax = parseInt(document.getElementById('heroConfigHp').value) || 100;
-    const manaMax = parseInt(document.getElementById('heroConfigMana').value) || 100;
-    const power = parseInt(document.getElementById('heroConfigPower').value) || 0;
-    const armor = parseInt(document.getElementById('heroConfigArmor').value) || 0;
-    const resistance = parseInt(document.getElementById('heroConfigResistance').value) || 0;
-    const speed = parseInt(document.getElementById('heroConfigSpeed').value) || 0;
-    const crit = parseInt(document.getElementById('heroConfigCrit').value) || 0;
-
-    try {
-        const res = await fetch('/api/spells-editor/sandbox/configure', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                voieId: voieId ? parseInt(voieId) : null,
-                voieLevel,
-                spiritualiteId: spiritualiteId ? parseInt(spiritualiteId) : null,
-                spiritualiteLevel,
-                healthMax,
-                manaMax,
-                power,
-                armor,
-                resistance,
-                speed,
-                crit
-            })
-        });
-        if (res.ok) {
-            const stateData = await res.json();
-            updateSandboxUI(stateData);
-            document.getElementById('heroConfigPanel').classList.remove('expanded');
-        } else {
-            alert("Erreur lors de la configuration du héros.");
-        }
-    } catch (err) {
-        console.error(err);
-    }
-}
-
-export function syncHeroConfigForm(stateData) {
+export function syncHeroConfigForm(state) {
     const voieSelect = document.getElementById('heroConfigVoie');
     const spiritSelect = document.getElementById('heroConfigSpiritualite');
     if (voieSelect) {
-        if (stateData.heroVoieId != null) voieSelect.value = stateData.heroVoieId;
+        if (state.heroVoieId != null) voieSelect.value = state.heroVoieId;
         else voieSelect.value = '';
         voieSelect.dispatchEvent(new Event('change'));
     }
     if (spiritSelect) {
-        if (stateData.heroSpiritualiteId != null) spiritSelect.value = stateData.heroSpiritualiteId;
+        if (state.heroSpiritualiteId != null) spiritSelect.value = state.heroSpiritualiteId;
         else spiritSelect.value = '';
         spiritSelect.dispatchEvent(new Event('change'));
     }
 
     const setVal = (id, val) => { const el = document.getElementById(id); if (el) el.value = val; };
-    setVal('heroConfigVoieLevel', stateData.heroVoieLevel || 1);
-    setVal('heroConfigSpiritLevel', stateData.heroSpiritualiteLevel || 1);
-    setVal('heroConfigHp', stateData.heroHpMax || 100);
-    setVal('heroConfigMana', stateData.heroManaMax || 100);
-    setVal('heroConfigPower', stateData.heroBasePower !== undefined ? stateData.heroBasePower : (stateData.heroPower || 0));
-    setVal('heroConfigArmor', stateData.heroBaseArmor !== undefined ? stateData.heroBaseArmor : (stateData.heroArmor || 0));
-    setVal('heroConfigResistance', stateData.heroBaseResistance !== undefined ? stateData.heroBaseResistance : (stateData.heroResistance || 0));
-    setVal('heroConfigSpeed', stateData.heroBaseSpeed !== undefined ? stateData.heroBaseSpeed : (stateData.heroSpeed || 0));
-    setVal('heroConfigCrit', stateData.heroBaseCrit !== undefined ? stateData.heroBaseCrit : (stateData.heroCrit || 0));
+    setVal('heroConfigVoieLevel', state.heroVoieLevel || 1);
+    setVal('heroConfigSpiritLevel', state.heroSpiritualiteLevel || 1);
+    setVal('heroConfigHp', state.heroHpMax || 100);
+    setVal('heroConfigMana', state.heroManaMax || 100);
+    setVal('heroConfigPower', state.heroBasePower !== undefined ? state.heroBasePower : (state.heroPower || 0));
+    setVal('heroConfigArmor', state.heroBaseArmor !== undefined ? state.heroBaseArmor : (state.heroArmor || 0));
+    setVal('heroConfigResistance', state.heroBaseResistance !== undefined ? state.heroBaseResistance : (state.heroResistance || 0));
+    setVal('heroConfigSpeed', state.heroBaseSpeed !== undefined ? state.heroBaseSpeed : (state.heroSpeed || 0));
+    setVal('heroConfigCrit', state.heroBaseCrit !== undefined ? state.heroBaseCrit : (state.heroCrit || 0));
 }
 
-export function renderHeroConfigBadges(stateData) {
+export function renderHeroConfigBadges(state) {
     const container = document.getElementById('heroConfigBadges');
     if (!container) return;
 
     let html = '';
-    if (stateData.heroVoieName) {
+    if (state.heroVoieName) {
         html += `<span class="hero-config-badge voie">
                     <span class="material-symbols-outlined" style="font-size: 0.8rem;">route</span>
-                    ${stateData.heroVoieName} Lvl ${stateData.heroVoieLevel}
+                    ${state.heroVoieName} Lvl ${state.heroVoieLevel}
                 </span>`;
     }
-    if (stateData.heroSpiritualiteName) {
+    if (state.heroSpiritualiteName) {
         html += `<span class="hero-config-badge spirit">
                     <span class="material-symbols-outlined" style="font-size: 0.8rem;">self_improvement</span>
-                    ${stateData.heroSpiritualiteName} Lvl ${stateData.heroSpiritualiteLevel}
+                    ${state.heroSpiritualiteName} Lvl ${state.heroSpiritualiteLevel}
                 </span>`;
     }
-    if (!stateData.heroVoieName && !stateData.heroSpiritualiteName) {
+    if (!state.heroVoieName && !state.heroSpiritualiteName) {
         html += `<span style="font-size: 0.72rem; color: var(--text-muted); font-style: italic;">Aucune voie ni spiritualité configurée</span>`;
     }
 
-    const pui = stateData.heroBasePower !== undefined ? stateData.heroBasePower : (stateData.heroPower || 0);
-    const arm = stateData.heroBaseArmor !== undefined ? stateData.heroBaseArmor : (stateData.heroArmor || 0);
-    const res = stateData.heroBaseResistance !== undefined ? stateData.heroBaseResistance : (stateData.heroResistance || 0);
-    const vit = stateData.heroBaseSpeed !== undefined ? stateData.heroBaseSpeed : (stateData.heroSpeed || 0);
-    const crit = stateData.heroBaseCrit !== undefined ? stateData.heroBaseCrit : (stateData.heroCrit || 0);
+    // Stats chips
+    const pui = state.heroBasePower !== undefined ? state.heroBasePower : (state.heroPower || 0);
+    const arm = state.heroBaseArmor !== undefined ? state.heroBaseArmor : (state.heroArmor || 0);
+    const res = state.heroBaseResistance !== undefined ? state.heroBaseResistance : (state.heroResistance || 0);
+    const vit = state.heroBaseSpeed !== undefined ? state.heroBaseSpeed : (state.heroSpeed || 0);
+    const crit = state.heroBaseCrit !== undefined ? state.heroBaseCrit : (state.heroCrit || 0);
 
     html += `<div class="hero-stats-row">`;
     html += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #a855f7;">auto_awesome</span>${pui} Pui</span>`;
@@ -195,6 +152,7 @@ export function renderSandboxSpells() {
 
         const titleColor = getSpellColor(sp);
 
+        // Scanner les requiredChoiceKey uniques des effets
         const effectsList = sp.effects || [];
         const choiceKeys = [...new Set(effectsList.map(e => e.requiredChoiceKey).filter(k => k != null))];
 
@@ -269,15 +227,15 @@ export function renderSandboxSpells() {
                                 ${spiritHtml}
                             </div>
                             <div class="sandbox-spell-actions">
-                                <button type="button" class="btn" style="background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.4); font-size: 0.75rem; padding: 0.2rem 0.5rem; border-radius: 4px;" onclick="window.castSandboxSpell(${sp.id})">Lancer ✦</button>
-                                <button type="button" class="btn" style="background: rgba(239, 68, 68, 0.1); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.2); font-size: 0.75rem; padding: 0.2rem 0.4rem; border-radius: 4px;" onclick="window.removeSpellFromSandbox(${sp.id})">Retirer</button>
+                                <button type="button" class="btn" style="background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.4); font-size: 0.75rem; padding: 0.2rem 0.5rem; border-radius: 4px;" onclick="castSandboxSpell(${sp.id})">Lancer ✦</button>
+                                <button type="button" class="btn" style="background: rgba(239, 68, 68, 0.1); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.2); font-size: 0.75rem; padding: 0.2rem 0.4rem; border-radius: 4px;" onclick="removeSpellFromSandbox(${sp.id})">Retirer</button>
                             </div>
                         </div>
                         <div style="font-size: 0.8rem; color: var(--text-muted); display:flex; justify-content:space-between; align-items:center;">
                             <div style="display: flex; align-items: center; gap: 0.8rem;">
                                 <span style="display:flex; align-items:center; gap:0.2rem;">${costDetails}</span>
                                 ${effectsSummary ? `
-                                <div class="spell-effects-trigger" onmouseenter="window.showGlobalTooltip(this)" onmouseleave="window.hideGlobalTooltip()">
+                                <div class="spell-effects-trigger" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()">
                                     <span class="badge" style="background: rgba(255,255,255,0.08); color: #94a3b8; font-size: 0.7rem; padding: 0.1rem 0.4rem; cursor: help;">Effets ✦</span>
                                     <template class="tooltip-data">${effectsSummary}</template>
                                 </div>
@@ -322,116 +280,71 @@ export function removeSpellFromSandbox(spellId) {
     renderSandboxSpellSelector();
 }
 
-export async function castSandboxSpell(spellId) {
-    const choiceSelect = document.getElementById(`choice-select-${spellId}`);
-    const choiceKey = choiceSelect ? choiceSelect.value : '';
+export function updateSandboxUI(state) {
+    // Update Turn
+    document.getElementById('sandboxTurnText').innerText = state.turnCount || 1;
 
-    try {
-        let url = `/api/spells-editor/sandbox/cast/${spellId}`;
-        if (choiceKey) {
-            url += `?choiceKey=${choiceKey}`;
-        }
-        const res = await fetch(url, { method: 'POST' });
-        if (res.ok) {
-            const stateData = await res.json();
-            updateSandboxUI(stateData);
-        } else {
-            alert("Erreur lors du lancer du sort.");
-        }
-    } catch (err) {
-        console.error(err);
-    }
-}
-
-export async function passSandboxTurn() {
-    try {
-        const res = await fetch('/api/spells-editor/sandbox/pass-turn', { method: 'POST' });
-        if (res.ok) {
-            const stateData = await res.json();
-            updateSandboxUI(stateData);
-        } else {
-            alert("Erreur lors du passage du tour.");
-        }
-    } catch (err) {
-        console.error(err);
-    }
-}
-
-export async function resetSandbox() {
-    try {
-        const res = await fetch('/api/spells-editor/sandbox/reset', { method: 'POST' });
-        if (res.ok) {
-            const stateData = await res.json();
-            updateSandboxUI(stateData);
-        } else {
-            alert("Erreur lors de la réinitialisation.");
-        }
-    } catch (err) {
-        console.error(err);
-    }
-}
-
-export function updateSandboxUI(stateData) {
-    document.getElementById('sandboxTurnText').innerText = stateData.turnCount || 1;
-
-    const heroHpPct = Math.max(0, Math.min(100, (stateData.heroHpCurrent / stateData.heroHpMax) * 100));
-    let heroHpLabel = `${stateData.heroHpCurrent} / ${stateData.heroHpMax}`;
-    if (stateData.heroShieldTotal > 0) {
-        heroHpLabel += ` (+${stateData.heroShieldTotal} 🛡️)`;
+    // Hero gauges
+    const heroHpPct = Math.max(0, Math.min(100, (state.heroHpCurrent / state.heroHpMax) * 100));
+    let heroHpLabel = `${state.heroHpCurrent} / ${state.heroHpMax}`;
+    if (state.heroShieldTotal > 0) {
+        heroHpLabel += ` (+${state.heroShieldTotal} 🛡️)`;
     }
     document.getElementById('heroHpText').innerText = heroHpLabel;
     document.getElementById('heroHpFill').style.width = `${heroHpPct}%`;
 
-    const heroManaPct = Math.max(0, Math.min(100, (stateData.heroManaCurrent / stateData.heroManaMax) * 100));
-    document.getElementById('heroManaText').innerText = `${stateData.heroManaCurrent} / ${stateData.heroManaMax}`;
+    const heroManaPct = Math.max(0, Math.min(100, (state.heroManaCurrent / state.heroManaMax) * 100));
+    document.getElementById('heroManaText').innerText = `${state.heroManaCurrent} / ${state.heroManaMax}`;
     document.getElementById('heroManaFill').style.width = `${heroManaPct}%`;
 
-    const monsterHpPct = Math.max(0, Math.min(100, (stateData.monsterHpCurrent / stateData.monsterHpMax) * 100));
-    let monsterHpLabel = `${stateData.monsterHpCurrent} / ${stateData.monsterHpMax}`;
-    if (stateData.monsterShieldTotal > 0) {
-        monsterHpLabel += ` (+${stateData.monsterShieldTotal} 🛡️)`;
+    // Monster gauge
+    const monsterHpPct = Math.max(0, Math.min(100, (state.monsterHpCurrent / state.monsterHpMax) * 100));
+    let monsterHpLabel = `${state.monsterHpCurrent} / ${state.monsterHpMax}`;
+    if (state.monsterShieldTotal > 0) {
+        monsterHpLabel += ` (+${state.monsterShieldTotal} 🛡️)`;
     }
     document.getElementById('monsterHpText').innerText = monsterHpLabel;
     document.getElementById('monsterHpFill').style.width = `${monsterHpPct}%`;
 
+    // Render Shields & Heat
     const heroShieldsContainer = document.getElementById('heroShieldsContainer');
-    let heroShieldsHtml = (stateData.heroShields || []).map(s => `
+    let heroShieldsHtml = (state.heroShields || []).map(s => `
                 <div class="sandbox-status-badge shield" title="Source: ${s.sourceName}">
                     <span class="material-symbols-outlined" style="font-size: 0.95rem;">shield</span>
                     <span>${s.amount} (${s.duration}t)</span>
                 </div>
             `).join('');
-    if (stateData.heroHeat > 0) {
+    if (state.heroHeat > 0) {
         heroShieldsHtml += `
                     <div class="sandbox-status-badge heat" title="Chaleur accumulée" style="background: rgba(239, 68, 68, 0.25); color: #fca5a5; border: 1px solid #ef4444; box-shadow: 0 0 8px rgba(239, 68, 68, 0.3);">
                         <span class="material-symbols-outlined" style="font-size: 0.95rem; color: #ef4444; vertical-align: middle;">whatshot</span>
-                        <span>${stateData.heroHeat}°C / 100</span>
+                        <span>${state.heroHeat}°C / 100</span>
                     </div>
                 `;
     }
-    if (stateData.heroSurete > 0) {
+    if (state.heroSurete > 0) {
         heroShieldsHtml += `
                     <div class="sandbox-status-badge surete" title="Points de sûreté" style="background: rgba(245, 158, 11, 0.25); color: #fde68a; border: 1px solid #f59e0b; box-shadow: 0 0 8px rgba(245, 158, 11, 0.3);">
                         <span class="material-symbols-outlined" style="font-size: 0.95rem; color: #f59e0b; vertical-align: middle;">security</span>
-                        <span>${stateData.heroSurete}/100 Sûreté</span>
+                        <span>${state.heroSurete}/100 Sûreté</span>
                     </div>
                 `;
     }
-    if (stateData.heroCritDerived !== null && stateData.heroCritDerived !== undefined) {
-        const sign = stateData.heroCritDerived >= 0 ? '+' : '';
+    if (state.heroCritDerived !== null && state.heroCritDerived !== undefined) {
+        const sign = state.heroCritDerived >= 0 ? '+' : '';
         heroShieldsHtml += `
                     <div class="sandbox-status-badge raison" title="Critique dérivé (Raison)" style="background: rgba(59, 130, 246, 0.25); color: #93c5fd; border: 1px solid #3b82f6; box-shadow: 0 0 8px rgba(59, 130, 246, 0.3);">
                         <span class="material-symbols-outlined" style="font-size: 0.95rem; color: #3b82f6; vertical-align: middle;">track_changes</span>
-                        <span>${sign}${stateData.heroCritDerived}% Critique</span>
+                        <span>${sign}${state.heroCritDerived}% Critique</span>
                     </div>
                 `;
     }
-    if (stateData.heroHasTrahison) {
-        const baseStyle = stateData.heroTrahisonBaseAvailable
+    if (state.heroHasTrahison) {
+        const baseStyle = state.heroTrahisonBaseAvailable
             ? "background: rgba(139, 92, 246, 0.25); color: #c084fc; border: 1px solid #8b5cf6; box-shadow: 0 0 8px rgba(139, 92, 246, 0.3);"
             : "background: rgba(75, 85, 99, 0.15); color: #9ca3af; border: 1px dashed #4b5563; opacity: 0.6;";
-        const baseText = stateData.heroTrahisonBaseAvailable ? "+10%" : "";
-        const baseIcon = stateData.heroTrahisonBaseAvailable ? "flash_on" : "flash_off";
+        const baseText = state.heroTrahisonBaseAvailable ? "+10%" : "";
+        const baseIcon = state.heroTrahisonBaseAvailable ? "flash_on" : "flash_off";
         heroShieldsHtml += `
                     <div class="sandbox-status-badge trahison-base" title="Bonus de base de Trahison (1er coup du tour)" style="${baseStyle}">
                         <span class="material-symbols-outlined" style="font-size: 0.95rem; vertical-align: middle;">${baseIcon}</span>
@@ -439,10 +352,10 @@ export function updateSandboxUI(stateData) {
                     </div>
                 `;
 
-        const lowHpStyle = stateData.heroTrahisonLowHpAvailable
+        const lowHpStyle = state.heroTrahisonLowHpAvailable
             ? "background: rgba(139, 92, 246, 0.25); color: #c084fc; border: 1px solid #8b5cf6; box-shadow: 0 0 8px rgba(139, 92, 246, 0.3);"
             : "background: rgba(75, 85, 99, 0.15); color: #9ca3af; border: 1px dashed #4b5563; opacity: 0.6;";
-        const lowHpText = stateData.heroTrahisonLowHpAvailable ? "+15%" : "";
+        const lowHpText = state.heroTrahisonLowHpAvailable ? "+15%" : "";
         heroShieldsHtml += `
                     <div class="sandbox-status-badge trahison-lowhp" title="Bonus de Trahison contre cible à moins de 50% PV" style="${lowHpStyle}">
                         <span class="material-symbols-outlined" style="font-size: 0.95rem; vertical-align: middle;">heart_broken</span>
@@ -450,10 +363,10 @@ export function updateSandboxUI(stateData) {
                     </div>
                 `;
 
-        const debuffStyle = stateData.heroTrahisonDebuffAvailable
+        const debuffStyle = state.heroTrahisonDebuffAvailable
             ? "background: rgba(139, 92, 246, 0.25); color: #c084fc; border: 1px solid #8b5cf6; box-shadow: 0 0 8px rgba(139, 92, 246, 0.3);"
             : "background: rgba(75, 85, 99, 0.15); color: #9ca3af; border: 1px dashed #4b5563; opacity: 0.6;";
-        const debuffText = stateData.heroTrahisonDebuffAvailable ? "+10%" : "";
+        const debuffText = state.heroTrahisonDebuffAvailable ? "+10%" : "";
         heroShieldsHtml += `
                     <div class="sandbox-status-badge trahison-debuff" title="Bonus de Trahison contre cible débuffée" style="${debuffStyle}">
                         <span class="material-symbols-outlined" style="font-size: 0.95rem; vertical-align: middle;">trending_down</span>
@@ -461,8 +374,8 @@ export function updateSandboxUI(stateData) {
                     </div>
                 `;
     }
-    if (stateData.heroHasConsolidation) {
-        const lvl = stateData.heroConsolidationLevel;
+    if (state.heroHasConsolidation) {
+        const lvl = state.heroConsolidationLevel;
         const consolidationLabels = {
             0: { icon: 'shield', text: '+5% Armure', title: 'Consolidation (défaut)' },
             1: { icon: 'speed', text: '+1 Vit', title: 'Consolidation Lvl 1' },
@@ -479,9 +392,9 @@ export function updateSandboxUI(stateData) {
                     </div>
                 `;
     }
-    if (stateData.heroHasViolence) {
-        const insp = stateData.heroViolenceInspiration;
-        const exp = stateData.heroViolenceExpiration;
+    if (state.heroHasViolence) {
+        const insp = state.heroViolenceInspiration;
+        const exp = state.heroViolenceExpiration;
         let bg, border, color, icon, text, title;
         if (insp > 0) {
             bg = 'rgba(6, 182, 212, 0.25)';
@@ -513,10 +426,10 @@ export function updateSandboxUI(stateData) {
                 `;
     }
 
-    if (stateData.heroHasKarma) {
-        const gauge = stateData.heroKarmaGauge;
-        const isLocked = stateData.heroKarmaLocked;
-        const isHarmony = stateData.heroKarmaHarmony;
+    if (state.heroHasKarma) {
+        const gauge = state.heroKarmaGauge;
+        const isLocked = state.heroKarmaLocked;
+        const isHarmony = state.heroKarmaHarmony;
         let bg, border, color, icon, text, title;
 
         if (isLocked) {
@@ -566,43 +479,43 @@ export function updateSandboxUI(stateData) {
     heroShieldsContainer.innerHTML = heroShieldsHtml;
 
     const monsterShieldsContainer = document.getElementById('monsterShieldsContainer');
-    let monsterShieldsHtml = (stateData.monsterShields || []).map(s => `
+    let monsterShieldsHtml = (state.monsterShields || []).map(s => `
                 <div class="sandbox-status-badge shield" title="Source: ${s.sourceName}">
                     <span class="material-symbols-outlined" style="font-size: 0.95rem;">shield</span>
                     <span>${s.amount} (${s.duration}t)</span>
                 </div>
             `).join('');
-    if (stateData.monsterHeat > 0) {
+    if (state.monsterHeat > 0) {
         monsterShieldsHtml += `
                     <div class="sandbox-status-badge heat" title="Chaleur accumulée" style="background: rgba(239, 68, 68, 0.25); color: #fca5a5; border: 1px solid #ef4444; box-shadow: 0 0 8px rgba(239, 68, 68, 0.3);">
                         <span class="material-symbols-outlined" style="font-size: 0.95rem; color: #ef4444; vertical-align: middle;">whatshot</span>
-                        <span>${stateData.monsterHeat}°C / 100</span>
+                        <span>${state.monsterHeat}°C / 100</span>
                     </div>
                 `;
     }
-    if (stateData.monsterSurete > 0) {
+    if (state.monsterSurete > 0) {
         monsterShieldsHtml += `
                     <div class="sandbox-status-badge surete" title="Points de sûreté" style="background: rgba(245, 158, 11, 0.25); color: #fde68a; border: 1px solid #f59e0b; box-shadow: 0 0 8px rgba(245, 158, 11, 0.3);">
                         <span class="material-symbols-outlined" style="font-size: 0.95rem; color: #f59e0b; vertical-align: middle;">security</span>
-                        <span>${stateData.monsterSurete}/100 Sûreté</span>
+                        <span>${state.monsterSurete}/100 Sûreté</span>
                     </div>
                 `;
     }
-    if (stateData.monsterCritDerived !== null && stateData.monsterCritDerived !== undefined) {
-        const sign = stateData.monsterCritDerived >= 0 ? '+' : '';
+    if (state.monsterCritDerived !== null && state.monsterCritDerived !== undefined) {
+        const sign = state.monsterCritDerived >= 0 ? '+' : '';
         monsterShieldsHtml += `
                     <div class="sandbox-status-badge raison" title="Critique dérivé (Raison)" style="background: rgba(59, 130, 246, 0.25); color: #93c5fd; border: 1px solid #3b82f6; box-shadow: 0 0 8px rgba(59, 130, 246, 0.3);">
                         <span class="material-symbols-outlined" style="font-size: 0.95rem; color: #3b82f6; vertical-align: middle;">track_changes</span>
-                        <span>${sign}${stateData.monsterCritDerived}% Critique</span>
+                        <span>${sign}${state.monsterCritDerived}% Critique</span>
                     </div>
                 `;
     }
-    if (stateData.monsterHasTrahison) {
-        const baseStyle = stateData.monsterTrahisonBaseAvailable
+    if (state.monsterHasTrahison) {
+        const baseStyle = state.monsterTrahisonBaseAvailable
             ? "background: rgba(139, 92, 246, 0.25); color: #c084fc; border: 1px solid #8b5cf6; box-shadow: 0 0 8px rgba(139, 92, 246, 0.3);"
             : "background: rgba(75, 85, 99, 0.15); color: #9ca3af; border: 1px dashed #4b5563; opacity: 0.6;";
-        const baseText = stateData.monsterTrahisonBaseAvailable ? "Trahison: 1er coup (+10%)" : "1er coup (Consommé)";
-        const baseIcon = stateData.monsterTrahisonBaseAvailable ? "flash_on" : "flash_off";
+        const baseText = state.monsterTrahisonBaseAvailable ? "Trahison: 1er coup (+10%)" : "1er coup (Consommé)";
+        const baseIcon = state.monsterTrahisonBaseAvailable ? "flash_on" : "flash_off";
         monsterShieldsHtml += `
                     <div class="sandbox-status-badge trahison-base" title="Bonus de base de Trahison (1er coup du tour)" style="${baseStyle}">
                         <span class="material-symbols-outlined" style="font-size: 0.95rem; vertical-align: middle;">${baseIcon}</span>
@@ -610,10 +523,10 @@ export function updateSandboxUI(stateData) {
                     </div>
                 `;
 
-        const lowHpStyle = stateData.monsterTrahisonLowHpAvailable
+        const lowHpStyle = state.monsterTrahisonLowHpAvailable
             ? "background: rgba(139, 92, 246, 0.25); color: #c084fc; border: 1px solid #8b5cf6; box-shadow: 0 0 8px rgba(139, 92, 246, 0.3);"
             : "background: rgba(75, 85, 99, 0.15); color: #9ca3af; border: 1px dashed #4b5563; opacity: 0.6;";
-        const lowHpText = stateData.monsterTrahisonLowHpAvailable ? "Trahison: Cible <50% PV (+15%)" : "Cible <50% PV (Consommé)";
+        const lowHpText = state.monsterTrahisonLowHpAvailable ? "Trahison: Cible <50% PV (+15%)" : "Cible <50% PV (Consommé)";
         monsterShieldsHtml += `
                     <div class="sandbox-status-badge trahison-lowhp" title="Bonus de Trahison contre cible à moins de 50% PV" style="${lowHpStyle}">
                         <span class="material-symbols-outlined" style="font-size: 0.95rem; vertical-align: middle;">heart_broken</span>
@@ -621,10 +534,10 @@ export function updateSandboxUI(stateData) {
                     </div>
                 `;
 
-        const debuffStyle = stateData.monsterTrahisonDebuffAvailable
+        const debuffStyle = state.monsterTrahisonDebuffAvailable
             ? "background: rgba(139, 92, 246, 0.25); color: #c084fc; border: 1px solid #8b5cf6; box-shadow: 0 0 8px rgba(139, 92, 246, 0.3);"
             : "background: rgba(75, 85, 99, 0.15); color: #9ca3af; border: 1px dashed #4b5563; opacity: 0.6;";
-        const debuffText = stateData.monsterTrahisonDebuffAvailable ? "Trahison: Cible débuffée (+10%)" : "Cible débuffée (Consommé)";
+        const debuffText = state.monsterTrahisonDebuffAvailable ? "Trahison: Cible débuffée (+10%)" : "Cible débuffée (Consommé)";
         monsterShieldsHtml += `
                     <div class="sandbox-status-badge trahison-debuff" title="Bonus de Trahison contre cible débuffée" style="${debuffStyle}">
                         <span class="material-symbols-outlined" style="font-size: 0.95rem; vertical-align: middle;">trending_down</span>
@@ -632,8 +545,8 @@ export function updateSandboxUI(stateData) {
                     </div>
                 `;
     }
-    if (stateData.monsterHasConsolidation) {
-        const lvl = stateData.monsterConsolidationLevel;
+    if (state.monsterHasConsolidation) {
+        const lvl = state.monsterConsolidationLevel;
         const consolidationLabels = {
             0: { icon: 'shield', text: '+5% Armure', title: 'Consolidation (défaut)' },
             1: { icon: 'speed', text: '+1 Vit', title: 'Consolidation Lvl 1' },
@@ -650,9 +563,9 @@ export function updateSandboxUI(stateData) {
                     </div>
                 `;
     }
-    if (stateData.monsterHasViolence) {
-        const insp = stateData.monsterViolenceInspiration;
-        const exp = stateData.monsterViolenceExpiration;
+    if (state.monsterHasViolence) {
+        const insp = state.monsterViolenceInspiration;
+        const exp = state.monsterViolenceExpiration;
         let bg, border, color, icon, text, title;
         if (insp > 0) {
             bg = 'rgba(6, 182, 212, 0.25)';
@@ -684,10 +597,10 @@ export function updateSandboxUI(stateData) {
                 `;
     }
 
-    if (stateData.monsterHasKarma) {
-        const gauge = stateData.monsterKarmaGauge;
-        const isLocked = stateData.monsterKarmaLocked;
-        const isHarmony = stateData.monsterKarmaHarmony;
+    if (state.monsterHasKarma) {
+        const gauge = state.monsterKarmaGauge;
+        const isLocked = state.monsterKarmaLocked;
+        const isHarmony = state.monsterKarmaHarmony;
         let bg, border, color, icon, text, title;
 
         if (isLocked) {
@@ -736,11 +649,12 @@ export function updateSandboxUI(stateData) {
     }
     monsterShieldsContainer.innerHTML = monsterShieldsHtml;
 
+    // Helper to render Buffs/Debuffs
     const renderBuffsHtml = (buffList) => {
         return (buffList || []).map(b => {
             let isBad = b.modifier < 0 || b.flatValue < 0;
             if ((b.statAffected.startsWith('DAMAGE_TAKEN_') || b.statAffected === 'SHIELD_PIERCED') && (b.modifier > 0 || b.flatValue > 0)) {
-                isBad = true;
+                isBad = true; // Subir plus de dégâts ou avoir son bouclier percé est un debuff
             }
             const badgeClass = isBad ? 'debuff' : 'buff';
             const icon = isBad ? 'trending_down' : 'trending_up';
@@ -764,31 +678,34 @@ export function updateSandboxUI(stateData) {
         }).join('');
     };
 
-    document.getElementById('heroBuffsContainer').innerHTML = renderBuffsHtml(stateData.heroBuffs);
-    document.getElementById('monsterBuffsContainer').innerHTML = renderBuffsHtml(stateData.monsterBuffs);
+    // Render Buffs
+    document.getElementById('heroBuffsContainer').innerHTML = renderBuffsHtml(state.heroBuffs);
+    document.getElementById('monsterBuffsContainer').innerHTML = renderBuffsHtml(state.monsterBuffs);
 
+    // Render Logs
     const logsContainer = document.getElementById('simulationLogsContainer');
-    logsContainer.innerText = stateData.rawLogs || "Aucun événement loggé.";
+    logsContainer.innerText = state.rawLogs || "Aucun événement loggé.";
     logsContainer.scrollTop = logsContainer.scrollHeight;
 
-    syncHeroConfigForm(stateData);
-    renderHeroConfigBadges(stateData);
-    updateLiveHeroStats(stateData);
+    // Sync hero configuration form and badges
+    syncHeroConfigForm(state);
+    renderHeroConfigBadges(state);
+    updateLiveHeroStats(state);
 }
 
-export function updateLiveHeroStats(stateData) {
+export function updateLiveHeroStats(state) {
     const setStat = (id, val, suffix = '') => {
         const el = document.getElementById(id);
         if (el) el.innerText = val + suffix;
     };
-    setStat('liveStatPower', stateData.heroPower || 0);
-    setStat('liveStatArmor', stateData.heroArmor || 0);
-    setStat('liveStatRes', stateData.heroResistance || 0);
-    setStat('liveStatSpeed', stateData.heroSpeed || 0);
+    setStat('liveStatPower', state.heroPower || 0);
+    setStat('liveStatArmor', state.heroArmor || 0);
+    setStat('liveStatRes', state.heroResistance || 0);
+    setStat('liveStatSpeed', state.heroSpeed || 0);
 
-    const crit = (stateData.heroCritDerived !== null && stateData.heroCritDerived !== undefined)
-        ? stateData.heroCritDerived
-        : (stateData.heroCrit || 0);
+    const crit = (state.heroCritDerived !== null && state.heroCritDerived !== undefined)
+        ? state.heroCritDerived
+        : (state.heroCrit || 0);
     setStat('liveStatCrit', crit, '%');
 }
 
@@ -796,12 +713,3 @@ export function closeSimulationModal() {
     document.getElementById('simulationModalOverlay').classList.remove('active');
 }
 
-window.trySpell = trySpell;
-window.toggleHeroConfig = toggleHeroConfig;
-window.configureSandboxHero = configureSandboxHero;
-window.addSelectedSpellToSandbox = addSelectedSpellToSandbox;
-window.removeSpellFromSandbox = removeSpellFromSandbox;
-window.castSandboxSpell = castSandboxSpell;
-window.passSandboxTurn = passSandboxTurn;
-window.resetSandbox = resetSandbox;
-window.closeSimulationModal = closeSimulationModal;

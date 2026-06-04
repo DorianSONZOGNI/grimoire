@@ -1,512 +1,18 @@
-// ===================================================================
-// particles.js — Animations et effets visuels (particules, lvl 5, etc.)
-// ===================================================================
-
-export function playForgeAnimation() {
-    const btn = document.getElementById('submitSpellBtn');
-    if (!btn) return;
-
-    const voieSelect = document.getElementById('voieSelect');
-    const spiritSelect = document.getElementById('spiritSelect');
-    const voieName = (voieSelect.options[voieSelect.selectedIndex] || {}).text || '';
-    const spiritName = (spiritSelect.options[spiritSelect.selectedIndex] || {}).text || '';
-
-    const rect = btn.getBoundingClientRect();
-    const cx = rect.left + rect.width / 2;
-    const cy = rect.top + rect.height / 2;
-
-    const nom = (voieName + ' ' + spiritName).toLowerCase();
-
-    if (nom.includes('création') || nom.includes('creation')) {
-        btn.classList.add('creation-pulse');
-        setTimeout(() => btn.classList.remove('creation-pulse'), 700);
-
-        for (let i = 0; i < 18; i++) {
-            setTimeout(() => {
-                const p = document.createElement('div');
-
-                const isLeaf = Math.random() > 0.35;
-                p.className = isLeaf ? 'creation-leaf' : 'creation-spark';
-
-                const sx = rect.left + 8 + Math.random() * (rect.width - 16);
-                const sy = rect.bottom - 6 - Math.random() * rect.height * 0.45;
-
-                const size = isLeaf ? 7 + Math.random() * 9 : 3 + Math.random() * 5;
-
-                p.style.left = `${sx}px`;
-                p.style.top = `${sy}px`;
-                p.style.width = `${size}px`;
-                p.style.height = `${size}px`;
-
-                document.body.appendChild(p);
-
-                const dx = (Math.random() - 0.5) * 45;
-                const dy = -(25 + Math.random() * 55);
-                const rot = (Math.random() - 0.5) * 120;
-                const scale = isLeaf ? 1.2 + Math.random() * 0.8 : 0.2;
-
-                requestAnimationFrame(() => {
-                    p.style.transform = `translate(${dx}px, ${dy}px) rotate(${rot}deg) scale(${scale})`;
-                    p.style.opacity = '0';
-                });
-
-                setTimeout(() => p.remove(), 1100);
-            }, i * 45);
-        }
-    } else if (nom.includes('destruction')) {
-        btn.classList.add('destruction-shake');
-        setTimeout(() => btn.classList.remove('destruction-shake'), 350);
-
-        for (let i = 0; i < 34; i++) {
-            setTimeout(() => {
-                const p = document.createElement('div');
-
-                const sx = rect.left + Math.random() * rect.width;
-                const sy = rect.top + rect.height * (0.35 + Math.random() * 0.65);
-
-                const size = 5 + Math.random() * 12;
-                const isSmoke = Math.random() < 0.3;
-
-                p.className = isSmoke ? 'destruction-smoke' : 'destruction-spark';
-
-                p.style.left = `${sx}px`;
-                p.style.top = `${sy}px`;
-                p.style.width = `${size}px`;
-                p.style.height = `${size}px`;
-
-                document.body.appendChild(p);
-
-                const dx = (Math.random() - 0.5) * 90;
-                const dy = -(50 + Math.random() * 100);
-                const scale = isSmoke ? 2.8 + Math.random() * 1.5 : 0.2;
-
-                requestAnimationFrame(() => {
-                    p.style.transform = `translate(${dx}px, ${dy}px) scale(${scale}) rotate(${Math.random() * 360}deg)`;
-                    p.style.opacity = '0';
-                });
-
-                setTimeout(() => p.remove(), 1200);
-            }, i * 22);
-        }
-
-    } else if (nom.includes('sûreté') || nom.includes('surete')) {
-        for (let i = 0; i < 14; i++) {
-            setTimeout(() => {
-                const p = document.createElement('div');
-                p.textContent = '💧';
-                const startX = rect.left + Math.random() * rect.width;
-                p.style.cssText = `position:fixed;left:${startX}px;top:${rect.top - 60}px;font-size:${10 + Math.random() * 8}px;pointer-events:none;z-index:9999;transition:all 0.6s cubic-bezier(0.4,0,1,1);opacity:1;`;
-                document.body.appendChild(p);
-                requestAnimationFrame(() => {
-                    p.style.transform = `translateY(${60 + Math.random() * 20}px)`;
-                    p.style.opacity = '0';
-                });
-                setTimeout(() => p.remove(), 600);
-            }, i * 55);
-        }
-
-    } else if (nom.includes('trahison')) {
-        btn.classList.add('betrayal-glitch');
-        setTimeout(() => btn.classList.remove('betrayal-glitch'), 500);
-
-        createBetrayalSlash(rect.left - 18, rect.top + rect.height * 0.25, rect.width + 42, -14, 'left');
-
-        setTimeout(() => {
-            createBetrayalSlash(rect.right + 18, rect.top + rect.height * 0.72, rect.width + 42, 14, 'right');
-        }, 95);
-
-        for (let i = 0; i < 12; i++) {
-            setTimeout(() => {
-                const spark = document.createElement('div');
-                spark.className = 'betrayal-spark';
-
-                spark.style.left = `${cx}px`;
-                spark.style.top = `${cy}px`;
-
-                document.body.appendChild(spark);
-
-                const angle = Math.random() * Math.PI * 2;
-                const dist = 25 + Math.random() * 55;
-
-                requestAnimationFrame(() => {
-                    spark.style.transform = `
-                                translate(${Math.cos(angle) * dist}px, ${Math.sin(angle) * dist}px)
-                                scale(0.1)
-                            `;
-                    spark.style.opacity = '0';
-                });
-
-                setTimeout(() => spark.remove(), 600);
-            }, i * 18);
-        }
-    } else if (nom.includes('violence')) {
-        btn.classList.add('violence-shock');
-        setTimeout(() => btn.classList.remove('violence-shock'), 450);
-
-        const blast = document.createElement('div');
-        blast.className = 'violence-blast';
-        blast.style.left = `${cx - 8}px`;
-        blast.style.top = `${cy - 8}px`;
-        document.body.appendChild(blast);
-
-        requestAnimationFrame(() => {
-            blast.style.transform = 'scale(8)';
-            blast.style.opacity = '0';
-        });
-
-        setTimeout(() => blast.remove(), 650);
-
-        for (let i = 0; i < 34; i++) {
-            const p = document.createElement('div');
-            p.className = Math.random() < 0.75 ? 'violence-ember' : 'violence-smoke';
-
-            const size = 4 + Math.random() * 10;
-            p.style.left = `${cx}px`;
-            p.style.top = `${cy}px`;
-            p.style.width = `${size}px`;
-            p.style.height = `${size}px`;
-
-            document.body.appendChild(p);
-
-            const angle = Math.random() * Math.PI * 2;
-            const dist = 45 + Math.random() * 95;
-
-            requestAnimationFrame(() => {
-                p.style.transform = `
-                            translate(${Math.cos(angle) * dist}px, ${Math.sin(angle) * dist}px)
-                            scale(${Math.random() < 0.75 ? 0.15 : 2.2})
-                            rotate(${Math.random() * 360}deg)
-                        `;
-                p.style.opacity = '0';
-            });
-
-            setTimeout(() => p.remove(), 900);
-        }
-    } else if (nom.includes('consolidation')) {
-        btn.classList.add('consolidation-impact');
-        setTimeout(() => btn.classList.remove('consolidation-impact'), 650);
-
-        const wall = document.createElement('div');
-        const wallW = rect.width * 0.9;
-        const wallH = rect.height * 0.75;
-
-        wall.className = 'consolidation-wall';
-        wall.style.left = `${rect.left + rect.width * 0.05}px`;
-        wall.style.top = `${rect.bottom + 12}px`;
-        wall.style.width = `${wallW}px`;
-        wall.style.height = `${wallH}px`;
-
-        document.body.appendChild(wall);
-
-        requestAnimationFrame(() => {
-            wall.style.transform = `translateY(-${wallH + 18}px) scaleY(1)`;
-            wall.style.opacity = '1';
-        });
-
-        for (let i = 0; i < 16; i++) {
-            setTimeout(() => {
-                const shard = document.createElement('div');
-                shard.className = 'consolidation-shard';
-
-                const size = 4 + Math.random() * 8;
-                shard.style.width = `${size}px`;
-                shard.style.height = `${size}px`;
-                shard.style.left = `${rect.left + Math.random() * rect.width}px`;
-                shard.style.top = `${rect.bottom}px`;
-
-                document.body.appendChild(shard);
-
-                const dx = (Math.random() - 0.5) * 80;
-                const dy = -(15 + Math.random() * 45);
-
-                requestAnimationFrame(() => {
-                    shard.style.transform = `translate(${dx}px, ${dy}px) rotate(${Math.random() * 180}deg)`;
-                    shard.style.opacity = '0';
-                });
-
-                setTimeout(() => shard.remove(), 800);
-            }, i * 25);
-        }
-
-        setTimeout(() => {
-            wall.style.transform = `translateY(-${wallH + 18}px) scaleY(0.15)`;
-            wall.style.opacity = '0';
-            setTimeout(() => wall.remove(), 500);
-        }, 950);
-    } else if (nom.includes('raison')) {
-        const origTransform = btn.style.transform;
-        const origTransition = btn.style.transition;
-
-        for (let i = 0; i < 8; i++) {
-            setTimeout(() => {
-                const wind = document.createElement('div');
-                const w = 30 + Math.random() * 60;
-                wind.style.cssText = `
-                            position:fixed;
-                            left:${rect.left - w - 10}px;
-                            top:${rect.top + 4 + i * (rect.height / 8)}px;
-                            width:${w}px;
-                            height:${1 + Math.random()}px;
-                            background: linear-gradient(90deg, transparent, rgba(180,230,255,0.7), transparent);
-                            border-radius:2px;
-                            pointer-events:none;
-                            z-index:9999;
-                            opacity:0.8;
-                            transition: transform ${0.25 + Math.random() * 0.2}s ease-out, opacity 0.3s ease 0.15s;
-                        `;
-                document.body.appendChild(wind);
-                requestAnimationFrame(() => {
-                    wind.style.transform = `translateX(${rect.width + w + 30}px)`;
-                    wind.style.opacity = '0';
-                });
-                setTimeout(() => wind.remove(), 500);
-            }, i * 30);
-        }
-
-        btn.style.transition = 'transform 0.15s ease-in';
-        btn.style.transform = 'translateX(12px) rotate(1.5deg)';
-        setTimeout(() => {
-            btn.style.transition = 'transform 0.6s cubic-bezier(0.34,1.56,0.64,1)';
-            btn.style.transform = origTransform || '';
-            setTimeout(() => {
-                btn.style.transition = origTransition || '';
-            }, 600);
-        }, 150);
-
-    } else if (nom.includes('conviction')) {
-        const lavaColors = ['#ff4500', '#ff6a00', '#e8380d', '#ff8c00', '#c0392b'];
-        const nbStreams = 5 + Math.floor(Math.random() * 4);
-        for (let i = 0; i < nbStreams; i++) {
-            setTimeout(() => {
-                const stream = document.createElement('div');
-                const color = lavaColors[Math.floor(Math.random() * lavaColors.length)];
-                const w = 4 + Math.random() * 8;
-                const sx = rect.left + 8 + Math.random() * (rect.width - 16);
-                const duration = 1.2 + Math.random() * 1.2;
-                const finalLength = 20 + Math.random() * 45;
-
-                stream.style.cssText = `
-                            position:fixed;
-                            left:${sx}px;
-                            top:${rect.top}px;
-                            width:${w}px;
-                            height:0px;
-                            background: linear-gradient(180deg, #fff5 0%, ${color} 30%, #8b0000 100%);
-                            border-radius: 0 0 ${w / 2}px ${w / 2}px;
-                            box-shadow: 0 0 ${w + 4}px ${color}, 0 0 2px #fff;
-                            pointer-events:none;
-                            z-index:9999;
-                            opacity:0.95;
-                            transition: height ${duration}s cubic-bezier(0.4,0,0.6,1), opacity 0.4s ease ${duration - 0.2}s;
-                        `;
-                document.body.appendChild(stream);
-
-                requestAnimationFrame(() => {
-                    requestAnimationFrame(() => {
-                        stream.style.height = finalLength + 'px';
-                        setTimeout(() => {
-                            const drop = document.createElement('div');
-                            drop.style.cssText = `
-                                        position:fixed;
-                                        left:${sx + w / 2 - 4}px;
-                                        top:${rect.top + finalLength}px;
-                                        width:${w + 2}px;
-                                        height:${w + 2}px;
-                                        background:${color};
-                                        border-radius:50% 50% 50% 50% / 40% 40% 60% 60%;
-                                        box-shadow:0 0 8px ${color};
-                                        pointer-events:none;
-                                        z-index:9999;
-                                        opacity:1;
-                                        transition: transform ${0.6 + Math.random() * 0.4}s cubic-bezier(0.4,0,1,1), opacity 0.3s ease 0.5s;
-                                    `;
-                            document.body.appendChild(drop);
-                            requestAnimationFrame(() => {
-                                drop.style.transform = `translateY(${20 + Math.random() * 30}px) scaleY(1.5)`;
-                                drop.style.opacity = '0';
-                            });
-                            setTimeout(() => drop.remove(), 900);
-                        }, duration * 900);
-
-                        stream.style.opacity = '0';
-                        setTimeout(() => stream.remove(), (duration + 0.4) * 1000);
-                    });
-                });
-            }, i * 180);
-        }
-    } else if (nom.includes('esprit')) {
-        btn.style.transition = 'box-shadow 0.1s ease, background 0.1s ease';
-        const origBg = btn.style.background;
-        btn.style.boxShadow = '0 0 40px 15px #38bdf8, 0 0 80px 30px rgba(56,189,248,0.4)';
-        btn.style.background = 'rgba(56,189,248,0.6)';
-        setTimeout(() => {
-            btn.style.transition = 'box-shadow 0.5s ease, background 0.5s ease';
-            btn.style.boxShadow = '';
-            btn.style.background = origBg || '';
-        }, 120);
-
-        for (let i = 0; i < 20; i++) {
-            setTimeout(() => {
-                const p = document.createElement('div');
-                p.textContent = '✦';
-                p.style.cssText = `position:fixed;left:${cx}px;top:${cy}px;font-size:${6 + Math.random() * 10}px;color:#38bdf8;text-shadow:0 0 8px #38bdf8;pointer-events:none;z-index:9999;transition:all ${0.5 + Math.random() * 0.5}s ease-out;opacity:1;`;
-                document.body.appendChild(p);
-                const angle = Math.random() * Math.PI * 2;
-                const dist = 40 + Math.random() * 80;
-                requestAnimationFrame(() => {
-                    p.style.transform = `translate(${Math.cos(angle) * dist}px, ${Math.sin(angle) * dist}px) scale(0)`;
-                    p.style.opacity = '0';
-                });
-                setTimeout(() => p.remove(), 1000);
-            }, i * 20);
-        }
-
-    } else if (nom.includes('ténèbres') || nom.includes('tenebres')) {
-        btn.classList.add('darkness-pulse');
-        setTimeout(() => btn.classList.remove('darkness-pulse'), 900);
-
-        for (let i = 0; i < 22; i++) {
-            setTimeout(() => {
-                const p = document.createElement('div');
-
-                const isMist = Math.random() < 0.55;
-                p.className = isMist ? 'darkness-mist' : 'darkness-shard';
-
-                const size = isMist ? 18 + Math.random() * 34 : 5 + Math.random() * 10;
-
-                p.style.left = `${cx + (Math.random() - 0.5) * rect.width}px`;
-                p.style.top = `${cy + (Math.random() - 0.5) * rect.height}px`;
-                p.style.width = `${size}px`;
-                p.style.height = `${size}px`;
-
-                document.body.appendChild(p);
-
-                const angle = Math.random() * Math.PI * 2;
-                const dist = 25 + Math.random() * 75;
-
-                requestAnimationFrame(() => {
-                    p.style.transform = `
-                                translate(${Math.cos(angle) * dist}px, ${Math.sin(angle) * dist - 25}px)
-                                scale(${isMist ? 1.8 : 0.15})
-                                rotate(${(Math.random() - 0.5) * 180}deg)
-                            `;
-                    p.style.opacity = '0';
-                });
-
-                setTimeout(() => p.remove(), 1500);
-            }, i * 45);
-        }
-    } else if (nom.includes('karma')) {
-        btn.classList.add('karma-balance');
-        setTimeout(() => btn.classList.remove('karma-balance'), 1200);
-
-        const ring = document.createElement('div');
-        ring.className = 'karma-ring';
-        ring.style.left = `${cx - 34}px`;
-        ring.style.top = `${cy - 34}px`;
-
-        document.body.appendChild(ring);
-
-        requestAnimationFrame(() => {
-            ring.style.transform = 'scale(1.25) rotate(180deg)';
-            ring.style.opacity = '0';
-        });
-
-        for (let i = 0; i < 16; i++) {
-            setTimeout(() => {
-                const p = document.createElement('div');
-                p.className = 'karma-orb';
-
-                const angle = (i / 16) * Math.PI * 2;
-                const radius = 36 + Math.random() * 12;
-
-                p.style.left = `${cx}px`;
-                p.style.top = `${cy}px`;
-
-                document.body.appendChild(p);
-
-                requestAnimationFrame(() => {
-                    p.style.transform = `
-                                translate(${Math.cos(angle) * radius}px, ${Math.sin(angle) * radius}px)
-                                scale(0.15)
-                            `;
-                    p.style.opacity = '0';
-                });
-
-                setTimeout(() => p.remove(), 1000);
-            }, i * 25);
-        }
-
-        setTimeout(() => ring.remove(), 1200);
-    } else {
-        createSparkles(cx, cy, '#ffd700');
-    }
-
-    btn.style.transition = 'transform 0.15s ease';
-    btn.style.transform = 'scale(1.06)';
-    setTimeout(() => btn.style.transform = 'scale(1)', 200);
-}
-
-export function createBetrayalSlash(x, y, width, rotation, origin) {
-    const slash = document.createElement('div');
-    slash.className = 'betrayal-slash';
-
-    slash.style.left = `${x}px`;
-    slash.style.top = `${y}px`;
-    slash.style.width = '0px';
-    slash.style.transform = `rotate(${rotation}deg)`;
-    slash.style.transformOrigin = origin === 'left' ? 'left center' : 'right center';
-
-    document.body.appendChild(slash);
-
-    requestAnimationFrame(() => {
-        slash.style.width = `${width}px`;
-    });
-
-    setTimeout(() => {
-        slash.style.opacity = '0';
-        slash.style.filter = 'blur(4px)';
-        setTimeout(() => slash.remove(), 280);
-    }, 220);
-}
-
-export function createSparkles(x, y, color) {
-    for (let i = 0; i < 15; i++) {
-        const spark = document.createElement('div');
-        spark.style.position = 'fixed';
-        spark.style.left = x + 'px';
-        spark.style.top = y + 'px';
-        spark.style.width = '4px';
-        spark.style.height = '4px';
-        spark.style.borderRadius = '50%';
-        spark.style.backgroundColor = color === 'var(--text-muted)' ? '#fff' : color;
-        spark.style.boxShadow = `0 0 10px ${spark.style.backgroundColor}`;
-        spark.style.pointerEvents = 'none';
-        spark.style.zIndex = '9999';
-
-        const angle = Math.random() * Math.PI * 2;
-        const distance = 40 + Math.random() * 60;
-        const tx = Math.cos(angle) * distance;
-        const ty = Math.sin(angle) * distance - 20;
-
-        spark.style.transition = 'all 0.6s cubic-bezier(0.1, 0.8, 0.3, 1)';
-        document.body.appendChild(spark);
-
-        requestAnimationFrame(() => {
-            spark.style.transform = `translate(${tx}px, ${ty}px) scale(0)`;
-            spark.style.opacity = '0';
-        });
-
-        setTimeout(() => spark.remove(), 600);
-    }
-}
+import { state } from './state.js';
+import { GLOBAL_STAT_LABELS, GLOBAL_SRC_LABELS, javaClassToCode } from './constants.js';
+import * as ui from './ui.js';
+import * as api from './api.js';
+
+import { playForgeAnimation, createBetrayalSlash } from './animations.js';
 
 export function attachLvl5CardEffects(container) {
     const cards = container.querySelectorAll('.spell-card-lvl-5');
     cards.forEach(card => {
+        // Nettoyer les anciens listeners via cloneNode trick
         const fresh = card.cloneNode(true);
         card.parentNode.replaceChild(fresh, card);
 
+        // Déterminer la voie / spiritualité depuis les badges
         const badgeText = (fresh.querySelector('.spell-badges')?.innerText || '').toLowerCase();
         const origin = getLvl5Origin(badgeText);
 
@@ -515,22 +21,7 @@ export function attachLvl5CardEffects(container) {
     });
 }
 
-function getLvl5Origin(badgeText) {
-    if (badgeText.includes('consolidation')) return 'consolidation';
-    if (badgeText.includes('raison')) return 'raison';
-    if (badgeText.includes('sûreté') || badgeText.includes('surete')) return 'surete';
-    if (badgeText.includes('trahison')) return 'trahison';
-    if (badgeText.includes('conviction')) return 'conviction';
-    if (badgeText.includes('création') || badgeText.includes('creation')) return 'creation';
-    if (badgeText.includes('destruction')) return 'destruction';
-    if (badgeText.includes('violence')) return 'violence';
-    if (badgeText.includes('esprit')) return 'esprit';
-    if (badgeText.includes('ténèbres') || badgeText.includes('tenebres')) return 'tenebres';
-    if (badgeText.includes('karma')) return 'karma';
-    return 'generic';
-}
-
-function spellCardEnter(card, origin) {
+export function spellCardEnter(card, origin) {
     const enterCls = `lvl5-enter-${origin}`;
     card.classList.remove(enterCls);
     void card.offsetWidth;
@@ -554,7 +45,7 @@ function spellCardEnter(card, origin) {
     }
 }
 
-function spellCardLeave(card, origin) {
+export function spellCardLeave(card, origin) {
     const leaveCls = `lvl5-leave-${origin}`;
     card.classList.remove(leaveCls);
     void card.offsetWidth;
@@ -578,13 +69,7 @@ function spellCardLeave(card, origin) {
     }
 }
 
-function mkp() {
-    const el = document.createElement('div');
-    el.style.pointerEvents = 'none';
-    return el;
-}
-
-function fx_vent_enter(rect) {
+export function fx_vent_enter(rect) {
     for (let i = 0; i < 9; i++) {
         setTimeout(() => {
             const w = 35 + Math.random() * 55;
@@ -606,6 +91,7 @@ function fx_vent_enter(rect) {
             setTimeout(() => p.remove(), 500);
         }, i * 45);
     }
+    // quelques particules d'air qui tourbillonnent
     for (let i = 0; i < 5; i++) {
         setTimeout(() => {
             const p = mkp();
@@ -629,7 +115,8 @@ function fx_vent_enter(rect) {
     }
 }
 
-function fx_eau_enter(rect) {
+export function fx_eau_enter(rect) {
+    // Ondulation de surface
     for (let i = 0; i < 3; i++) {
         setTimeout(() => {
             const p = mkp();
@@ -652,6 +139,7 @@ function fx_eau_enter(rect) {
             setTimeout(() => p.remove(), 1000);
         }, i * 130);
     }
+    // Bulles qui montent
     for (let i = 0; i < 7; i++) {
         setTimeout(() => {
             const p = mkp();
@@ -677,7 +165,7 @@ function fx_eau_enter(rect) {
     }
 }
 
-function fx_poison_enter(rect) {
+export function fx_poison_enter(rect) {
     const poisonColors = ['#39d353', '#22c55e', '#4ade80', '#86efac', '#bbf7d0'];
     for (let i = 0; i < 12; i++) {
         setTimeout(() => {
@@ -704,6 +192,7 @@ function fx_poison_enter(rect) {
             setTimeout(() => p.remove(), 1200);
         }, i * 35);
     }
+    // brume verte centrale
     for (let i = 0; i < 4; i++) {
         setTimeout(() => {
             const p = mkp();
@@ -726,7 +215,7 @@ function fx_poison_enter(rect) {
     }
 }
 
-function fx_terre_enter(rect) {
+export function fx_terre_enter(rect) {
     const stoneColors = ['#92614a', '#a0886b', '#78503c', '#c8a47a', '#5c3d2e'];
     for (let i = 0; i < 10; i++) {
         setTimeout(() => {
@@ -754,6 +243,7 @@ function fx_terre_enter(rect) {
             setTimeout(() => p.remove(), 900);
         }, i * 40);
     }
+    // poussière lumineuse ocre
     for (let i = 0; i < 6; i++) {
         setTimeout(() => {
             const p = mkp();
@@ -777,7 +267,7 @@ function fx_terre_enter(rect) {
     }
 }
 
-function fx_lave_enter(rect) {
+export function fx_lave_enter(rect) {
     const lavaColors = ['#ff4500', '#ff6a00', '#ff8c00', '#e8380d', '#ffd700'];
     const streams = 5 + Math.floor(Math.random() * 4);
     for (let i = 0; i < streams; i++) {
@@ -802,6 +292,7 @@ function fx_lave_enter(rect) {
             requestAnimationFrame(() => requestAnimationFrame(() => {
                 stream.style.height = len + 'px';
                 setTimeout(() => {
+                    // goutte au bout
                     const drop = mkp();
                     drop.style.cssText = `
                                 position:fixed; pointer-events:none; z-index:9999;
@@ -825,8 +316,9 @@ function fx_lave_enter(rect) {
     }
 }
 
-function fx_plante_enter(rect) {
+export function fx_plante_enter(rect) {
     const greenColors = ['#10b981', '#34d399', '#6ee7b7', '#059669', '#86efac'];
+    // vrilles SVG-like (lignes courbées)
     for (let i = 0; i < 8; i++) {
         setTimeout(() => {
             const p = mkp();
@@ -852,6 +344,7 @@ function fx_plante_enter(rect) {
             setTimeout(() => p.remove(), 1200);
         }, i * 50);
     }
+    // feuilles
     for (let i = 0; i < 5; i++) {
         setTimeout(() => {
             const p = mkp();
@@ -878,7 +371,7 @@ function fx_plante_enter(rect) {
     }
 }
 
-function fx_feu_enter(rect) {
+export function fx_feu_enter(rect) {
     const fireColors = ['#ff4500', '#ff6a00', '#ffd700', '#ff8c00', '#ff2400', '#fff7a1'];
     for (let i = 0; i < 16; i++) {
         setTimeout(() => {
@@ -906,6 +399,7 @@ function fx_feu_enter(rect) {
             setTimeout(() => p.remove(), 900);
         }, i * 30);
     }
+    // étincelles
     for (let i = 0; i < 10; i++) {
         setTimeout(() => {
             const p = mkp();
@@ -929,9 +423,10 @@ function fx_feu_enter(rect) {
     }
 }
 
-function fx_explosion_enter(rect) {
+export function fx_explosion_enter(rect) {
     const cx = rect.left + rect.width / 2;
     const cy = rect.top + rect.height / 2;
+    // onde de choc
     const ring = mkp();
     ring.style.cssText = `
                 position:fixed; pointer-events:none; z-index:9999;
@@ -952,6 +447,7 @@ function fx_explosion_enter(rect) {
     });
     setTimeout(() => ring.remove(), 600);
 
+    // éclats de shrapnel
     const shrapColors = ['#a70740', '#d40756', '#ff4488', '#ff0000', '#ffd700'];
     for (let i = 0; i < 18; i++) {
         setTimeout(() => {
@@ -979,7 +475,7 @@ function fx_explosion_enter(rect) {
     }
 }
 
-function fx_esprit_enter(rect) {
+export function fx_esprit_enter(rect) {
     const cx = rect.left + rect.width / 2;
     const cy = rect.top + rect.height / 2;
     const orbColors = ['#38bdf8', '#7dd3fc', '#bae6fd', '#e0f2fe', '#fff'];
@@ -1010,6 +506,7 @@ function fx_esprit_enter(rect) {
             setTimeout(() => p.remove(), 1100);
         }, i * 50);
     }
+    // halo lumineux central
     const halo = mkp();
     halo.style.cssText = `
                 position:fixed; pointer-events:none; z-index:9998;
@@ -1028,7 +525,7 @@ function fx_esprit_enter(rect) {
     setTimeout(() => halo.remove(), 700);
 }
 
-function fx_tenebres_enter(rect) {
+export function fx_tenebres_enter(rect) {
     const darkColors = ['#c084fc', '#a855f7', '#7c3aed', '#4c1d95', '#2e1065'];
     for (let i = 0; i < 10; i++) {
         setTimeout(() => {
@@ -1054,6 +551,7 @@ function fx_tenebres_enter(rect) {
             setTimeout(() => p.remove(), 1400);
         }, i * 50);
     }
+    // flash de ténèbres
     const flash = mkp();
     flash.style.cssText = `
                 position:fixed; pointer-events:none; z-index:9997;
@@ -1071,7 +569,7 @@ function fx_tenebres_enter(rect) {
     setTimeout(() => flash.remove(), 500);
 }
 
-function fx_karma_enter(rect) {
+export function fx_karma_enter(rect) {
     const cx = rect.left + rect.width / 2;
     const cy = rect.top + rect.height / 2;
     const pairs = [
@@ -1102,6 +600,7 @@ function fx_karma_enter(rect) {
             setTimeout(() => p.remove(), 700);
         }, idx * 80);
     });
+    // spirale de petites orbes
     for (let i = 0; i < 8; i++) {
         setTimeout(() => {
             const p = mkp();
@@ -1127,7 +626,7 @@ function fx_karma_enter(rect) {
     }
 }
 
-function fx_generic_enter(rect) {
+export function fx_generic_enter(rect) {
     for (let i = 0; i < 8; i++) {
         setTimeout(() => {
             const p = mkp();
@@ -1152,7 +651,7 @@ function fx_generic_enter(rect) {
     }
 }
 
-function fx_vent_leave(rect) {
+export function fx_vent_leave(rect) {
     for (let i = 0; i < 5; i++) {
         setTimeout(() => {
             const p = mkp();
@@ -1176,7 +675,7 @@ function fx_vent_leave(rect) {
     }
 }
 
-function fx_eau_leave(rect) {
+export function fx_eau_leave(rect) {
     for (let i = 0; i < 12; i++) {
         setTimeout(() => {
             const p = mkp();
@@ -1202,8 +701,7 @@ function fx_eau_leave(rect) {
     }
 }
 
-// ☠️ POISON — Brume toxique lourde, poisseuse et lente
-function fx_poison_leave(rect) {
+export function fx_poison_leave(rect) {
     // Un peu plus de particules pour un effet plus dense
     const numParticles = 15;
 
@@ -1259,7 +757,7 @@ function fx_poison_leave(rect) {
     }
 }
 
-function fx_terre_leave(rect) {
+export function fx_terre_leave(rect) {
     const stoneColors = ['#92614a', '#a0886b', '#c8a47a', '#5c3d2e', '#d4b896'];
     for (let i = 0; i < 18; i++) {
         setTimeout(() => {
@@ -1288,7 +786,7 @@ function fx_terre_leave(rect) {
     }
 }
 
-function fx_lave_leave(rect) {
+export function fx_lave_leave(rect) {
     const emberColors = ['#ff4500', '#ff6a00', '#ff8c00', '#dc2626', '#7f1d1d'];
     for (let i = 0; i < 14; i++) {
         setTimeout(() => {
@@ -1315,8 +813,7 @@ function fx_lave_leave(rect) {
     }
 }
 
-// 🌱 PLANTE — Liane grimpante lente + nuage de pollen
-function fx_plante_leave(rect) {
+export function fx_plante_leave(rect) {
     // --- 1. La Liane qui pousse et s'enroule ---
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.style.cssText = `
@@ -1408,7 +905,8 @@ function fx_plante_leave(rect) {
     }
 }
 
-function fx_feu_leave(rect) {
+export function fx_feu_leave(rect) {
+    // cendres
     for (let i = 0; i < 14; i++) {
         setTimeout(() => {
             const p = mkp();
@@ -1433,7 +931,7 @@ function fx_feu_leave(rect) {
     }
 }
 
-function fx_explosion_leave(rect) {
+export function fx_explosion_leave(rect) {
     const debrisColors = ['#a70740', '#881337', '#f43f5e', '#fbbf24'];
     for (let i = 0; i < 14; i++) {
         setTimeout(() => {
@@ -1460,7 +958,7 @@ function fx_explosion_leave(rect) {
     }
 }
 
-function fx_esprit_leave(rect) {
+export function fx_esprit_leave(rect) {
     for (let i = 0; i < 10; i++) {
         setTimeout(() => {
             const p = mkp();
@@ -1485,7 +983,7 @@ function fx_esprit_leave(rect) {
     }
 }
 
-function fx_tenebres_leave(rect) {
+export function fx_tenebres_leave(rect) {
     for (let i = 0; i < 12; i++) {
         setTimeout(() => {
             const p = mkp();
@@ -1511,7 +1009,7 @@ function fx_tenebres_leave(rect) {
     }
 }
 
-function fx_karma_leave(rect) {
+export function fx_karma_leave(rect) {
     const cx = rect.left + rect.width / 2;
     const cy = rect.top + rect.height / 2;
     const orbs = [
@@ -1542,10 +1040,44 @@ function fx_karma_leave(rect) {
     });
 }
 
-function fx_generic_leave(rect) {
+export function fx_generic_leave(rect) {
     fx_vent_leave(rect);
 }
 
-window.createSparkles = createSparkles;
-window.playForgeAnimation = playForgeAnimation;
-window.attachLvl5CardEffects = attachLvl5CardEffects;
+export function mkp() {
+    const el = document.createElement('div');
+    el.style.pointerEvents = 'none';
+    return el;
+}
+
+export function createSparkles(x, y, color) {
+    for (let i = 0; i < 15; i++) {
+        const spark = document.createElement('div');
+        spark.style.position = 'fixed';
+        spark.style.left = x + 'px';
+        spark.style.top = y + 'px';
+        spark.style.width = '4px';
+        spark.style.height = '4px';
+        spark.style.borderRadius = '50%';
+        spark.style.backgroundColor = color === 'var(--text-muted)' ? '#fff' : color;
+        spark.style.boxShadow = `0 0 10px ${spark.style.backgroundColor}`;
+        spark.style.pointerEvents = 'none';
+        spark.style.zIndex = '9999';
+
+        const angle = Math.random() * Math.PI * 2;
+        const distance = 40 + Math.random() * 60;
+        const tx = Math.cos(angle) * distance;
+        const ty = Math.sin(angle) * distance - 20;
+
+        spark.style.transition = 'all 0.6s cubic-bezier(0.1, 0.8, 0.3, 1)';
+        document.body.appendChild(spark);
+
+        requestAnimationFrame(() => {
+            spark.style.transform = `translate(${tx}px, ${ty}px) scale(0)`;
+            spark.style.opacity = '0';
+        });
+
+        setTimeout(() => spark.remove(), 600);
+    }
+}
+

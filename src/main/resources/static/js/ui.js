@@ -1,12 +1,5 @@
-// ===================================================================
-// ui.js — Utilitaires UI réutilisables
-// ===================================================================
-
-import state from './state.js';
+import { state } from './state.js';
 import { GLOBAL_STAT_LABELS, GLOBAL_SRC_LABELS } from './constants.js';
-// TODO: import { createSparkles } from './particles.js';
-// temporairement:
-const createSparkles = window.createSparkles || function(){};
 
 export function formatStat(stat) {
     return GLOBAL_STAT_LABELS[stat] || stat;
@@ -39,7 +32,7 @@ export function updateDisplayModeUI() {
 
 export function toggleDisplayMode() {
     state.grimoireDisplayMode = state.grimoireDisplayMode === 'scroll' ? 'full' : 'scroll';
-    localStorage.setItem('grimoireDisplayMode', state.grimoireDisplayMode);
+    localStorage.setItem('state.grimoireDisplayMode', state.grimoireDisplayMode);
     updateDisplayModeUI();
 }
 
@@ -62,6 +55,10 @@ export function adjustGrimoireHeight() {
             const titleHeight = title ? title.offsetHeight : 0;
             const filtersHeight = filters ? filters.offsetHeight : 0;
 
+            // Gap is 1.5rem (24px) between children
+            // Padding is 2rem top + 2rem bottom = 64px
+            // Gaps: 2 * 24px = 48px
+            // Total offset = 112px
             const offset = 112;
 
             const targetHeight = forgeHeight - titleHeight - filtersHeight - offset;
@@ -119,11 +116,10 @@ export function renderStatOptions(arr, selectedVal) {
 
 export function getSpellColor(sp) {
     if (sp.voie && sp.voie.nom) {
-        // temporairement on utilise window si pas importé, à lier ensuite
-        return window.getVoieButtonColor ? window.getVoieButtonColor(sp.voie) : '#ffffff';
+        return getVoieButtonColor(sp.voie);
     }
     if (sp.spiritualite && sp.spiritualite.nom) {
-        return window.getSpiritButtonColor ? window.getSpiritButtonColor(sp.spiritualite) : '#ffffff';
+        return getSpiritButtonColor(sp.spiritualite);
     }
     return '#ffffff';
 }
@@ -204,11 +200,11 @@ export function makeCustomSelect(selectIdOrElement) {
     const getIconInfo = (id, text) => {
         if (id === 'voieSelect' || id === 'filterVoie' || id === 'heroConfigVoie') {
             if (text.includes('Aucune') || text.includes('Neutre')) return { icon: 'trip_origin', color: '#94a3b8' };
-            return { icon: getVoieIcon(text), color: window.getVoieButtonColor ? window.getVoieButtonColor({ nom: text }) : '#fff' };
+            return { icon: getVoieIcon(text), color: getVoieButtonColor({ nom: text }) };
         }
         if (id === 'spiritSelect' || id === 'filterSpirit' || id === 'heroConfigSpiritualite') {
             if (text.includes('Aucune') || text.includes('Neutre')) return { icon: 'trip_origin', color: '#94a3b8' };
-            return { icon: getSpiritIcon(text), color: window.getSpiritButtonColor ? window.getSpiritButtonColor({ nom: text }) : '#fff' };
+            return { icon: getSpiritIcon(text), color: getSpiritButtonColor({ nom: text }) };
         }
         if (id === 'niveau' || id === 'filterLevel') {
             const t = text.toLowerCase();
@@ -400,9 +396,10 @@ export function makeCustomSelect(selectIdOrElement) {
         document.querySelectorAll('.custom-select-options').forEach(el => el.style.display = 'none');
 
         if (!isVisible) {
+            // Position dropdown upwards if there is not enough space below
             const rect = trigger.getBoundingClientRect();
             const spaceBelow = window.innerHeight - rect.bottom;
-            const dropdownHeight = 220; 
+            const dropdownHeight = 220; // matches max-height of optionsContainer
 
             if (spaceBelow < dropdownHeight && rect.top > dropdownHeight) {
                 optionsContainer.style.top = 'auto';
@@ -419,7 +416,7 @@ export function makeCustomSelect(selectIdOrElement) {
         } else {
             optionsContainer.style.display = 'none';
         }
-        optionsContainer.className = 'custom-select-options'; 
+        optionsContainer.className = 'custom-select-options'; // tag for closing
     });
 
     document.addEventListener('click', (e) => {

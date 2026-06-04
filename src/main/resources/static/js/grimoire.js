@@ -1,20 +1,10 @@
-// ===================================================================
-// grimoire.js — Rendu du grimoire (panneau droit) et logique d'édition
-// ===================================================================
+import { state } from './state.js';
+import { GLOBAL_STAT_LABELS, GLOBAL_SRC_LABELS, javaClassToCode } from './constants.js';
+import * as ui from './ui.js';
+import * as api from './api.js';
 
-import state from './state.js';
-import { javaClassToCode } from './constants.js';
-import { formatStat, formatSrc, getSpellColor, hexToRgb, getVoieIcon, getSpiritIcon } from './ui.js';
-
-// Utilitaires de filtres (résolus plus tard ou via window temporairement)
-const getVoieButtonColor = window.getVoieButtonColor || function(){ return '#fff'; };
-const getSpiritButtonColor = window.getSpiritButtonColor || function(){ return '#fff'; };
-
-// Dépendances de sandbox.js et particles.js
-const trySpell = window.trySpell || function(){};
-const attachLvl5CardEffects = window.attachLvl5CardEffects || function(){};
-const spellCardEnter = window.spellCardEnter || function(){};
-const spellCardLeave = window.spellCardLeave || function(){};
+import { toggleChannelingFields, updateRankTitle, updateSpecialVoieConfig, updateSpecialSpiritConfig, setViolenceType, updateViolenceLabel, setKarmaAlignment, updateKarmaLabel, addEffectPanel, removeEffect, setEffectTarget, updateEffectProp, toggleEffectChannelingTurn, renderEffects } from './forge.js';
+import { getVoieButtonColor, getSpiritButtonColor, resetFilters, renderOriginButtons, toggleFilterVoie, toggleFilterSpirit } from './filters.js';
 
 export function renderFilteredSpells() {
     const container = document.getElementById('createdSpellsContainer');
@@ -25,18 +15,22 @@ export function renderFilteredSpells() {
         return;
     }
 
+    // Récupérer les valeurs des filtres
     const searchVal = (document.getElementById('filterSearch')?.value || '').toLowerCase().trim();
     const effectVal = document.getElementById('filterEffect')?.value || 'ALL';
     const levelVal = document.getElementById('filterLevel')?.value || 'ALL';
     const sortByVal = document.getElementById('sortBy')?.value || 'NEWEST';
 
+    // Filtrage multi-critères
     let filtered = state.loadedSpells.filter(sp => {
+        // Recherche textuelle (nom ou description)
         if (searchVal) {
             const matchNom = (sp.nom || '').toLowerCase().includes(searchVal);
             const matchDesc = (sp.description || '').toLowerCase().includes(searchVal);
             if (!matchNom && !matchDesc) return false;
         }
 
+        // Origine Spatiale via boutons uniques de sélection
         if (state.selectedFilterVoieId !== null) {
             if (!sp.voie || sp.voie.id != state.selectedFilterVoieId) return false;
         }
@@ -44,6 +38,7 @@ export function renderFilteredSpells() {
             if (!sp.spiritualite || sp.spiritualite.id != state.selectedFilterSpiritId) return false;
         }
 
+        // Type d'effet
         if (effectVal !== 'ALL') {
             if (!sp.effects || !sp.effects.some(e => {
                 const rawType = e.effectType || e.effect_type || '';
@@ -68,6 +63,7 @@ export function renderFilteredSpells() {
             }
         }
 
+        // Niveau
         if (levelVal !== 'ALL') {
             if (sp.niveau != levelVal) return false;
         }
@@ -75,7 +71,8 @@ export function renderFilteredSpells() {
         return true;
     });
 
-    filtered = [...filtered]; 
+    // Tri par critère
+    filtered = [...filtered]; // Copie locale
     filtered.sort((a, b) => {
         if (sortByVal === 'NEWEST') {
             return b.id - a.id;
@@ -109,12 +106,9 @@ export function renderFilteredSpells() {
         }
     }).join('');
 
+    // Attacher les effets lvl-5 après le rendu
     try {
-        if (window.attachLvl5CardEffects) {
-            window.attachLvl5CardEffects(container);
-        } else {
-            attachLvl5CardEffects(container);
-        }
+        attachLvl5CardEffects(container);
     } catch (e) {
         container.innerHTML += `<div style="color: red;">Erreur attachLvl5CardEffects : ${e.message}</div>`;
     }
@@ -317,8 +311,7 @@ export function getSpellEffectsSummaryHtml(sp) {
 export function getSpellCardHtml(sp) {
     let voieBadge = '';
     if (sp.voie) {
-        const getVBC = window.getVoieButtonColor || getVoieButtonColor;
-        const vHex = getVBC(sp.voie);
+        const vHex = getVoieButtonColor(sp.voie);
         const vRgb = hexToRgb(vHex);
         const vIcon = getVoieIcon(sp.voie.nom);
         voieBadge = `<span class="badge" style="color: ${vHex}; border-color: rgba(${vRgb}, 0.3); background: rgba(${vRgb}, 0.05); display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size:1.1em;">${vIcon}</span>${sp.voie.nom}</span>`;
@@ -326,8 +319,7 @@ export function getSpellCardHtml(sp) {
 
     let spiritBadge = '';
     if (sp.spiritualite) {
-        const getSBC = window.getSpiritButtonColor || getSpiritButtonColor;
-        const sHex = getSBC(sp.spiritualite);
+        const sHex = getSpiritButtonColor(sp.spiritualite);
         const sRgb = hexToRgb(sHex);
         const sIcon = getSpiritIcon(sp.spiritualite.nom);
         spiritBadge = `<span class="badge" style="color: ${sHex}; border-color: rgba(${sRgb}, 0.3); background: rgba(${sRgb}, 0.05); display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size:1.1em;">${sIcon}</span>${sp.spiritualite.nom}</span>`;
@@ -401,9 +393,9 @@ export function getSpellCardHtml(sp) {
                             </div>
                         </div>
                         <div style="display: flex; gap: 0.3rem; align-items: center; flex-wrap: wrap;">
-                            <button type="button" class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; line-height: 1; border-radius: 4px; background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); display: inline-flex; align-items: center; gap: 0.2rem;" onclick="window.trySpell(${sp.id})" title="Lancer ce sort en direct dans le simulateur"><span class="material-symbols-outlined" style="font-size: 1.05rem;">swords</span><span>Essayer</span></button>
-                            <button type="button" class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; line-height: 1; border-radius: 4px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); display: inline-flex; align-items: center; gap: 0.2rem;" onclick="window.editSpell(${sp.id})" title="Modifier les propriétés de ce sort"><span class="material-symbols-outlined" style="font-size: 1.05rem;">edit</span><span>Éditer</span></button>
-                            <button type="button" class="btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; line-height: 1; border-radius: 4px; opacity: 0.75; display: inline-flex; align-items: center; justify-content: center;" onclick="window.deleteSpell(${sp.id})" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.75'" title="Supprimer définitivement ce sort"><span class="material-symbols-outlined" style="font-size: 1.05rem;">delete</span></button>
+                            <button type="button" class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; line-height: 1; border-radius: 4px; background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); display: inline-flex; align-items: center; gap: 0.2rem;" onclick="trySpell(${sp.id})" title="Lancer ce sort en direct dans le simulateur"><span class="material-symbols-outlined" style="font-size: 1.05rem;">swords</span><span>Essayer</span></button>
+                            <button type="button" class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; line-height: 1; border-radius: 4px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); display: inline-flex; align-items: center; gap: 0.2rem;" onclick="editSpell(${sp.id})" title="Modifier les propriétés de ce sort"><span class="material-symbols-outlined" style="font-size: 1.05rem;">edit</span><span>Éditer</span></button>
+                            <button type="button" class="btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; line-height: 1; border-radius: 4px; opacity: 0.75; display: inline-flex; align-items: center; justify-content: center;" onclick="deleteSpell(${sp.id})" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.75'" title="Supprimer définitivement ce sort"><span class="material-symbols-outlined" style="font-size: 1.05rem;">delete</span></button>
                         </div>
                     </div>
                     ${rankTitleBadge}
@@ -440,9 +432,9 @@ export function cancelEditSpell() {
     document.getElementById('heatCost').value = 0;
     document.getElementById('percentHeatCost').value = 0;
     state.currentEffects = [];
-    
-    if (typeof window.renderEffects === 'function') window.renderEffects();
+    renderEffects();
 
+    // Réinitialiser les champs de canalisation
     const channelingDurInput = document.getElementById('channelingDuration');
     if (channelingDurInput) channelingDurInput.value = 1;
     const allowInstantInput = document.getElementById('allowInstantDuringChanneling');
@@ -452,7 +444,7 @@ export function cancelEditSpell() {
     const isInspInput = document.getElementById('isInspiration');
     if (isInspInput) {
         isInspInput.checked = true;
-        if (typeof window.updateViolenceLabel === 'function') window.updateViolenceLabel();
+        updateViolenceLabel();
     }
 
     updateEditingPreview();
@@ -468,6 +460,7 @@ export function updateEditingPreview() {
         if (sp) {
             cardBody.innerHTML = getSpellCardHtml(sp);
 
+            // Masquer les boutons d'action du sort dans le preview
             const headerActions = cardBody.querySelector('.spell-card-header div[style*="display: flex; gap: 0.3rem"]');
             if (headerActions) {
                 headerActions.style.display = 'none';
@@ -536,13 +529,16 @@ export function editSpell(id) {
     if (isInspInput) {
         isInspInput.checked = sp.inspiration !== false;
     }
-    
-    if (typeof window.updateSpecialVoieConfig === 'function') window.updateSpecialVoieConfig();
+    updateSpecialVoieConfig();
 
-    if (typeof window.updateRankTitle === 'function') {
-        window.updateRankTitle();
+
+
+    // Mettre à jour l'aperçu dynamique du rang
+    if (typeof updateRankTitle === 'function') {
+        updateRankTitle();
     }
 
+    // Charger les effets rattachés
     state.currentEffects = (sp.effects || []).map((e, idx) => {
         const rawType = e.effectType || e.effect_type || '';
         const effectType = javaClassToCode[rawType] || rawType;
@@ -568,6 +564,7 @@ export function editSpell(id) {
         };
     });
 
+    // Fallback pour la chaleur de la destruction si non présente dans les effets
     const isDest = sp.voie && sp.voie.nom && sp.voie.nom.toLowerCase().includes('destruction');
     const hasHeat = state.currentEffects.some(e => ['HEAT_FIXED', 'HEAT_PERCENTAGE', 'HEAT_OVER_TIME'].includes(e.effectType));
     if (isDest && !hasHeat && sp.heatGenerated && sp.heatGenerated > 0) {
@@ -581,15 +578,16 @@ export function editSpell(id) {
         });
     }
 
-    if (typeof window.renderEffects === 'function') window.renderEffects();
 
+    renderEffects();
+
+    // Mettre à jour l'indicateur d'action du bouton principal
     document.getElementById('submitSpellBtn').innerText = '💾 Mettre à jour le Sort';
 
+    // Mettre à jour l'aperçu flottant
     updateEditingPreview();
 
+    // Faire défiler la vue vers le haut en douceur
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
-window.renderFilteredSpells = renderFilteredSpells;
-window.editSpell = editSpell;
-window.cancelEditSpell = cancelEditSpell;
