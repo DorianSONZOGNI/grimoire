@@ -674,37 +674,46 @@
                         <div id="sandboxSpellsContainer" class="sandbox-spells-list"></div>
                     </div>
                 </div>
-            </div>
 
-            <!-- Panel de Contrôles du Tour -->
-            <div class="sandbox-controls">
-                <div class="sandbox-turn-indicator">
-                    <span class="material-symbols-outlined" style="color: var(--accent);">schedule</span>
-                    <span>Tour <span id="sandboxTurnText" style="color: var(--accent);">1</span></span>
-                </div>
-                <div style="display: flex; gap: 0.6rem;">
-                    <button type="button" class="btn"
-                        style="background: rgba(139, 92, 246, 0.2); color: #c084fc; border: 1px solid rgba(139, 92, 246, 0.4); display: flex; align-items: center; gap: 0.3rem; padding: 0.5rem 1rem; border-radius: 8px;"
-                        onclick="passSandboxTurn()">
-                        <span class="material-symbols-outlined" style="font-size: 1.15rem;">hourglass_top</span>
-                        <span>Finir le Tour</span>
-                    </button>
-                    <button type="button" class="btn"
-                        style="background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); display: flex; align-items: center; gap: 0.3rem; padding: 0.5rem 1rem; border-radius: 8px;"
-                        onclick="resetSandbox()">
-                        <span class="material-symbols-outlined" style="font-size: 1.15rem;">restart_alt</span>
-                        <span>Réinitialiser</span>
-                    </button>
-                </div>
-            </div>
+                <!-- Colonne de Droite : Contrôles et Console -->
+                <div class="sandbox-column" style="display: flex; flex-direction: column; gap: 1rem;">
+                    <div class="combatant-card" style="display: flex; flex-direction: column; gap: 1rem; flex: 1;">
+                        <div class="combatant-name" style="border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.4rem;">
+                            <span style="display: inline-flex; align-items: center; gap: 0.3rem; color: #e2e8f0;">
+                                <span class="material-symbols-outlined" style="font-size: 1.25rem; color: var(--accent); text-shadow: 0 0 8px rgba(139,92,246,0.5);">settings_applications</span>
+                                Commandes & Logs
+                            </span>
+                        </div>
+                        
+                        <div class="sandbox-controls" style="border-top: none; padding-top: 0; flex-direction: column; align-items: stretch; gap: 0.8rem;">
+                            <div class="sandbox-turn-indicator" style="justify-content: center; background: rgba(255,255,255,0.05); padding: 0.5rem; border-radius: 8px;">
+                                <span class="material-symbols-outlined" style="color: var(--accent);">schedule</span>
+                                <span>Tour <span id="sandboxTurnText" style="color: var(--accent);">1</span></span>
+                            </div>
+                            <div style="display: flex; flex-direction: column; gap: 0.6rem;">
+                                <button type="button" class="btn"
+                                    style="background: rgba(139, 92, 246, 0.2); color: #c084fc; border: 1px solid rgba(139, 92, 246, 0.4); display: flex; align-items: center; justify-content: center; gap: 0.3rem; padding: 0.6rem 1rem; border-radius: 8px;"
+                                    onclick="passSandboxTurn()">
+                                    <span class="material-symbols-outlined" style="font-size: 1.15rem;">hourglass_top</span>
+                                    <span>Finir le Tour</span>
+                                </button>
+                                <button type="button" class="btn"
+                                    style="background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); display: flex; align-items: center; justify-content: center; gap: 0.3rem; padding: 0.6rem 1rem; border-radius: 8px;"
+                                    onclick="resetSandbox()">
+                                    <span class="material-symbols-outlined" style="font-size: 1.15rem;">restart_alt</span>
+                                    <span>Réinitialiser</span>
+                                </button>
+                            </div>
+                        </div>
 
-            <div
-                style="font-size: 0.8rem; color: var(--text-muted); margin-bottom: -0.6rem; font-weight: 500; display: flex; align-items: center; gap: 0.3rem;">
-                <span class="material-symbols-outlined"
-                    style="font-size: 0.95rem; color: var(--primary);">terminal</span>
-                <span>Console d'événements du Banc d'Essai :</span>
+                        <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 500; display: flex; align-items: center; gap: 0.3rem; margin-top: 0.5rem;">
+                            <span class="material-symbols-outlined" style="font-size: 0.95rem; color: var(--primary);">terminal</span>
+                            <span>Console d'événements :</span>
+                        </div>
+                        <div class="sandbox-console" id="simulationLogsContainer" style="flex: 1; max-height: none; height: 0;"></div>
+                    </div>
+                </div>
             </div>
-            <div class="sandbox-console" id="simulationLogsContainer"></div>
         </div>
     </div>
     <script type="module" src="/js/app.js"></script>
