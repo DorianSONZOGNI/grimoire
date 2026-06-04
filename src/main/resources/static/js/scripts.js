@@ -2732,30 +2732,60 @@ function fx_eau_leave(rect) {
     }
 }
 
-// ☠️ POISON — brume verte toxique qui s'étale vers l'extérieur
+// ☠️ POISON — Brume toxique lourde, poisseuse et lente
 function fx_poison_leave(rect) {
-    for (let i = 0; i < 10; i++) {
+    // Un peu plus de particules pour un effet plus dense
+    const numParticles = 15;
+
+    for (let i = 0; i < numParticles; i++) {
+        // Spawn plus espacé dans le temps pour ralentir l'action
         setTimeout(() => {
-            const p = mkp();
-            const sz = 15 + Math.random() * 30;
-            const alpha = 0.3 + Math.random() * 0.3;
+            const p = mkp(); // Assurez-vous que mkp() crée bien l'élément DOM
+
+            // Tailles variées, légèrement plus grandes
+            const sz = 20 + Math.random() * 40;
+
+            // Couleurs plus riches (nuances dynamiques de vert toxique)
+            const hue = 100 + Math.random() * 50; // De vert jaunâtre à vert forêt
+            const alpha = 0.5 + Math.random() * 0.4;
+
             p.style.cssText = `
-                        position:fixed; pointer-events:none; z-index:9998;
-                        width:${sz}px; height:${sz}px; border-radius:50%;
-                        background:radial-gradient(circle, rgba(34,197,94,${alpha}) 0%, transparent 70%);
-                        left:${rect.left + Math.random() * rect.width - sz / 2}px;
-                        top:${rect.top + Math.random() * rect.height - sz / 2}px;
-                        opacity:0.8; transition:all ${0.8 + Math.random() * 0.6}s ease-out;
-                    `;
+                position: fixed; pointer-events: none; z-index: 9998;
+                width: ${sz}px; height: ${sz}px; border-radius: 50%;
+                /* Gradient complexe : coeur brillant et bords sombres poisseux */
+                background: radial-gradient(circle, hsla(${hue}, 90%, 50%, ${alpha}) 0%, hsla(${hue - 20}, 80%, 20%, ${alpha * 0.7}) 50%, transparent 80%);
+                left: ${rect.left + Math.random() * rect.width - sz / 2}px;
+                top: ${rect.top + Math.random() * rect.height - sz / 2}px;
+                opacity: 0.9;
+                /* Flou pour l'aspect brume épaisse et fusion des bulles */
+                filter: blur(${2 + Math.random() * 4}px);
+                mix-blend-mode: screen;
+                /* Transition beaucoup plus lente avec un effet de résistance visqueuse */
+                transition: transform ${2 + Math.random() * 1.5}s cubic-bezier(0.4, 0.0, 0.2, 1), 
+                            opacity ${2 + Math.random() * 1.5}s ease-in-out;
+            `;
+
             document.body.appendChild(p);
-            const dx = (Math.random() - 0.5) * 80;
-            const dy = (Math.random() - 0.5) * 60 - 10;
+
+            // Mouvement : le poison est lourd, il s'étale et "coule" vers le bas (gravité)
+            const dx = (Math.random() - 0.5) * 90;
+            const dy = (Math.random() * 70) - 10; // Majoritairement positif (vers le bas)
+
+            // L'échelle varie de façon asymétrique pour simuler une matière qui s'étire
+            const scaleX = 1.5 + Math.random();
+            const scaleY = 2 + Math.random() * 1.5;
+
             requestAnimationFrame(() => {
-                p.style.transform = `translate(${dx}px, ${dy}px) scale(3)`;
-                p.style.opacity = '0';
+                // Double RAF pour s'assurer que le navigateur applique bien la transition CSS
+                requestAnimationFrame(() => {
+                    p.style.transform = `translate(${dx}px, ${dy}px) scale(${scaleX}, ${scaleY})`;
+                    p.style.opacity = '0';
+                });
             });
-            setTimeout(() => p.remove(), 1500);
-        }, i * 40);
+
+            // On attend plus longtemps avant de détruire les éléments (environ 4 secondes)
+            setTimeout(() => p.remove(), 4000);
+        }, i * 90); // 90ms entre chaque particule
     }
 }
 
@@ -2817,31 +2847,96 @@ function fx_lave_leave(rect) {
     }
 }
 
-// 🌿 PLANTE — pollen et graines qui dérivent lentement
+// 🌱 PLANTE — Liane grimpante lente + nuage de pollen
 function fx_plante_leave(rect) {
+    // --- 1. La Liane qui pousse et s'enroule ---
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.style.cssText = `
+        position: fixed; pointer-events: none; z-index: 9998;
+        overflow: visible; width: 1px; height: 1px;
+        /* Départ : Coin inférieur droit de la carte */
+        left: ${rect.right - 10}px; 
+        top: ${rect.bottom}px;
+    `;
+
+    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+
+    // Paramètres d'amplitude
+    const w = 40 + Math.random() * 20; // Amplitude horizontale
+    const h = 30 + Math.random() * 20; // Amplitude verticale
+
+    // Trajectoire orientée vers le haut (-y) et la gauche (-x)
+    const d = `
+        M 0 0 
+        C ${-w} ${-h * 0.3}, ${-w * 1.5} ${-h * 0.7}, -10 ${-h} 
+        C ${w * 0.5} ${-h * 1.3}, ${-w} ${-h * 1.7}, -20 ${-h * 2}
+        C ${-w * 2} ${-h * 2.3}, ${-w * 2.5} ${-h * 2.7}, -40 ${-h * 3}
+    `;
+
+    path.setAttribute('d', d.trim());
+    path.setAttribute('fill', 'none');
+    path.setAttribute('stroke', '#10b981'); // Vert émeraude
+    path.setAttribute('stroke-width', '5');
+    path.setAttribute('stroke-linecap', 'round');
+    path.style.filter = 'drop-shadow(0px 0px 6px rgba(16, 185, 129, 0.6))';
+
+    svg.appendChild(path);
+    document.body.appendChild(svg);
+
+    // 1. Définition de l'état initial (Liane complètement masquée)
+    const length = path.getTotalLength();
+    path.style.strokeDasharray = length;
+    path.style.strokeDashoffset = length;
+
+    // 2. LE CORRECTIF : On force le navigateur à calculer cet état initial
+    path.getBoundingClientRect();
+
+    // 3. Application de la transition (liane qui pousse sur 2.5s, puis s'efface)
+    path.style.transition = 'stroke-dashoffset 2.5s ease-out, opacity 1s ease-in-out 2.5s';
+
+    // 4. Déclenchement de l'état final
+    path.style.strokeDashoffset = '0';
+    path.style.opacity = '0';
+
+    // Nettoyage retardé pour correspondre à la nouvelle lenteur (2.5s + 1s = 3.5s)
+    setTimeout(() => svg.remove(), 3600);
+
+
+    // --- 2. Le Pollen ---
     const pollenColors = ['#10b981', '#34d399', '#86efac', '#fef08a', '#d9f99d'];
+
     for (let i = 0; i < 14; i++) {
         setTimeout(() => {
             const p = mkp();
             const sz = 2 + Math.random() * 5;
             const c = pollenColors[Math.floor(Math.random() * pollenColors.length)];
+
             p.style.cssText = `
-                        position:fixed; pointer-events:none; z-index:9999;
-                        width:${sz}px; height:${sz}px; border-radius:50%;
-                        background:${c}; box-shadow:0 0 ${sz + 2}px ${c};
-                        left:${rect.left + Math.random() * rect.width}px;
-                        top:${rect.top + rect.height * 0.2 + Math.random() * rect.height * 0.6}px;
-                        opacity:0.8; transition:all ${1.0 + Math.random() * 0.8}s cubic-bezier(0.25,0.46,0.45,0.94);
-                    `;
+                position: fixed; pointer-events: none; z-index: 9999;
+                width: ${sz}px; height: ${sz}px; border-radius: 50%;
+                background: ${c}; box-shadow: 0 0 ${sz + 2}px ${c};
+                /* Le pollen spawn autour du bas droit */
+                left: ${rect.right - 20 + (Math.random() - 0.5) * 40}px;
+                top: ${rect.bottom - Math.random() * 40}px;
+                opacity: 0.9; 
+                transition: all ${1.5 + Math.random() * 1.5}s ease-out;
+            `;
+
             document.body.appendChild(p);
-            const dx = (Math.random() - 0.5) * 120;
-            const dy = -(20 + Math.random() * 60);
+
+            // Dispersion orientée vers la gauche (dx négatif) et le haut (dy négatif)
+            const dx = -(20 + Math.random() * 100);
+            const dy = -(60 + Math.random() * 100);
+
+            // Pour le pollen, le requestAnimationFrame reste suffisant car on anime transform/opacity
             requestAnimationFrame(() => {
                 p.style.transform = `translate(${dx}px, ${dy}px) scale(0.3) rotate(${Math.random() * 720}deg)`;
                 p.style.opacity = '0';
             });
-            setTimeout(() => p.remove(), 1900);
-        }, i * 45);
+
+            setTimeout(() => p.remove(), 3100);
+
+        }, i * 120);
     }
 }
 
