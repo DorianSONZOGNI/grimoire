@@ -301,6 +301,25 @@ function updateSpecialVoieConfig() {
     }
 }
 
+function updateSpecialSpiritConfig() {
+    const spiritId = document.getElementById('spiritSelect').value;
+    let isKarma = false;
+    if (spiritId && metaData.spiritualites) {
+        const s = metaData.spiritualites.find(sp => sp.id == spiritId);
+        if (s && s.nom) {
+            if (s.nom.toLowerCase().includes('karma')) {
+                isKarma = true;
+            }
+        }
+    }
+
+    const karmaConfig = document.getElementById('karmaConfig');
+    if (karmaConfig) {
+        karmaConfig.style.display = isKarma ? 'block' : 'none';
+        updateKarmaLabel();
+    }
+}
+
 function setViolenceType(isInspiration) {
     const input = document.getElementById('isInspiration');
     if (input) {
@@ -350,6 +369,62 @@ function updateViolenceLabel() {
         btnInsp.style.color = 'var(--text-muted)';
         btnInsp.style.opacity = '0.6';
         btnInsp.querySelector('.material-symbols-outlined').style.transform = 'scale(1)';
+    }
+}
+
+function setKarmaAlignment(alignment) {
+    const input = document.getElementById('karmaAlignment');
+    if (input) {
+        if (input.value === alignment) {
+            input.value = 'NONE'; // Toggle off
+        } else {
+            input.value = alignment;
+        }
+        updateKarmaLabel();
+    }
+}
+
+function updateKarmaLabel() {
+    const input = document.getElementById('karmaAlignment');
+    const alignment = input ? input.value : 'NONE';
+
+    const btnOff = document.getElementById('btnKarmaOffensive');
+    const btnRes = document.getElementById('btnKarmaRestorative');
+    const btnPro = document.getElementById('btnKarmaProtective');
+
+    if (!btnOff || !btnRes || !btnPro) return;
+
+    // Reset all
+    [btnOff, btnRes, btnPro].forEach(btn => {
+        btn.style.background = 'transparent';
+        btn.style.border = '1px solid transparent';
+        btn.style.boxShadow = 'none';
+        btn.style.color = 'var(--text-muted)';
+        btn.style.opacity = '0.6';
+        btn.querySelector('.material-symbols-outlined').style.transform = 'scale(1)';
+    });
+
+    if (alignment === 'OFFENSIVE') {
+        btnOff.style.background = 'linear-gradient(135deg, rgba(147, 51, 234, 0.15) 0%, rgba(126, 34, 206, 0.3) 100%)';
+        btnOff.style.border = '1px solid rgba(147, 51, 234, 0.4)';
+        btnOff.style.boxShadow = '0 0 12px rgba(147, 51, 234, 0.2)';
+        btnOff.style.color = '#c084fc';
+        btnOff.style.opacity = '1';
+        btnOff.querySelector('.material-symbols-outlined').style.transform = 'scale(1.15)';
+    } else if (alignment === 'RESTORATIVE') {
+        btnRes.style.background = 'linear-gradient(135deg, rgba(100, 116, 139, 0.15) 0%, rgba(71, 85, 105, 0.3) 100%)';
+        btnRes.style.border = '1px solid rgba(100, 116, 139, 0.4)';
+        btnRes.style.boxShadow = '0 0 12px rgba(100, 116, 139, 0.2)';
+        btnRes.style.color = '#cbd5e1';
+        btnRes.style.opacity = '1';
+        btnRes.querySelector('.material-symbols-outlined').style.transform = 'scale(1.15)';
+    } else if (alignment === 'PROTECTIVE') {
+        btnPro.style.background = 'linear-gradient(135deg, rgba(234, 179, 8, 0.15) 0%, rgba(202, 138, 4, 0.3) 100%)';
+        btnPro.style.border = '1px solid rgba(234, 179, 8, 0.4)';
+        btnPro.style.boxShadow = '0 0 12px rgba(234, 179, 8, 0.2)';
+        btnPro.style.color = '#fde047';
+        btnPro.style.opacity = '1';
+        btnPro.querySelector('.material-symbols-outlined').style.transform = 'scale(1.15)';
     }
 }
 
@@ -1367,6 +1442,7 @@ async function submitSpell() {
         voieId: (document.getElementById('voieSelect').value && document.getElementById('voieSelect').value !== '0') ? parseInt(document.getElementById('voieSelect').value) : null,
         spiritualiteId: (document.getElementById('spiritSelect').value && document.getElementById('spiritSelect').value !== '0') ? parseInt(document.getElementById('spiritSelect').value) : null,
         inspiration: document.getElementById('isInspiration') ? document.getElementById('isInspiration').checked : false,
+        karmaAlignment: document.getElementById('karmaAlignment') ? document.getElementById('karmaAlignment').value : 'NONE',
 
         effects: currentEffects.map(e => ({
             effectType: e.effectType,
@@ -1441,22 +1517,14 @@ async function loadSpells() {
         loadedSpells = spells;
         renderFilteredSpells();
     } catch (err) {
-        if (container) container.innerHTML = `<div class="empty-state" style="color:var(--danger);">Erreur de chargement des sorts.</div>`;
+        console.error(err);
+        if (container) container.innerHTML = `<div class="empty-state" style="color:var(--danger); text-align:left; padding:2rem;">Erreur de chargement des sorts.<br><br><b>${err.message}</b><br><pre>${err.stack}</pre></div>`;
     }
 }
 
 function renderFilteredSpells() {
     const container = document.getElementById('createdSpellsContainer');
     if (!container) return;
-
-    const srcLabels = {
-        'CASTER_POWER': 'Puiss. Lanceur', 'TARGET_POWER': 'Puiss. Cible', 'CASTER_MANA_MAX': 'Mana Max Lanc.',
-        'TARGET_MANA_MAX': 'Mana Max Cib.', 'CASTER_MANA_MISSING': 'Mana Manq. Lanc.', 'TARGET_MANA_MISSING': 'Mana Manq. Cib.',
-        'CASTER_MANA_CURRENT': 'Mana Act. Lanc.', 'TARGET_MANA_CURRENT': 'Mana Act. Cib.', 'CASTER_HEALTH_MAX': 'PV Max Lanc.',
-        'TARGET_HEALTH_MAX': 'PV Max Cib.', 'CASTER_HEALTH_MISSING': 'PV Manq. Lanc.', 'TARGET_HEALTH_MISSING': 'PV Manq. Cib.',
-        'CASTER_HEALTH_CURRENT': 'PV Act. Lanc.', 'TARGET_HEALTH_CURRENT': 'PV Act. Cib.'
-    };
-    const formatSrc = s => srcLabels[s] || s;
 
     if (!loadedSpells || loadedSpells.length === 0) {
         container.innerHTML = `<div class="empty-state">Le grimoire est vierge. Forgez le premier sort !</div>`;
@@ -1546,55 +1614,24 @@ function renderFilteredSpells() {
         return;
     }
 
-    container.innerHTML = filtered.map(sp => getSpellCardHtml(sp)).join('');
+    container.innerHTML = filtered.map(sp => {
+        try {
+            return getSpellCardHtml(sp);
+        } catch (e) {
+            return `<div style="color: red; padding: 1rem; border: 1px solid red;">Erreur de rendu pour le sort ${sp.id} : ${e.message}<br><pre>${e.stack}</pre></div>`;
+        }
+    }).join('');
 
     // Attacher les effets lvl-5 après le rendu
-    attachLvl5CardEffects(container);
+    try {
+        attachLvl5CardEffects(container);
+    } catch (e) {
+        container.innerHTML += `<div style="color: red;">Erreur attachLvl5CardEffects : ${e.message}</div>`;
+    }
 }
 
-function getSpellCardHtml(sp) {
-    let voieBadge = '';
-    if (sp.voie) {
-        const vHex = getVoieButtonColor(sp.voie);
-        const vRgb = hexToRgb(vHex);
-        const vIcon = getVoieIcon(sp.voie.nom);
-        voieBadge = `<span class="badge" style="color: ${vHex}; border-color: rgba(${vRgb}, 0.3); background: rgba(${vRgb}, 0.05); display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size:1.1em;">${vIcon}</span>${sp.voie.nom}</span>`;
-    }
 
-    let spiritBadge = '';
-    if (sp.spiritualite) {
-        const sHex = getSpiritButtonColor(sp.spiritualite);
-        const sRgb = hexToRgb(sHex);
-        const sIcon = getSpiritIcon(sp.spiritualite.nom);
-        spiritBadge = `<span class="badge" style="color: ${sHex}; border-color: rgba(${sRgb}, 0.3); background: rgba(${sRgb}, 0.05); display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size:1.1em;">${sIcon}</span>${sp.spiritualite.nom}</span>`;
-    }
-
-    let castBadge = '';
-    if (sp.castingType === 'INSTANTANE') {
-        castBadge = `<span class="badge" style="display: inline-flex; align-items: center; gap: 0.2rem; background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.4);"><span class="material-symbols-outlined" style="font-size: 1.05rem;">bolt</span>Instantané</span>`;
-    } else if (sp.castingType === 'CANALISE') {
-        castBadge = `<span class="badge" style="display: inline-flex; align-items: center; gap: 0.2rem; background: rgba(139, 92, 246, 0.2); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.4);"><span class="material-symbols-outlined" style="font-size: 1.05rem;">cyclone</span>Canalisé</span>`;
-    } else {
-        castBadge = `<span class="badge" style="display: inline-flex; align-items: center; gap: 0.2rem; background: rgba(100, 116, 139, 0.2); color: #94a3b8; border: 1px solid rgba(100, 116, 139, 0.3);"><span class="material-symbols-outlined" style="font-size: 1.05rem;">hourglass_empty</span>Banal</span>`;
-    }
-
-    if (sp.voie && sp.voie.nom && sp.voie.nom.toLowerCase().includes('violence')) {
-        if (sp.inspiration) {
-            castBadge += ` <span class="badge" style="display: inline-flex; align-items: center; gap: 0.2rem; background: rgba(6, 182, 212, 0.2); color: #67e8f9; border: 1px solid rgba(6, 182, 212, 0.4);"><span class="material-symbols-outlined" style="font-size: 1.05rem;">air</span>Inspiration</span>`;
-        } else {
-            castBadge += ` <span class="badge" style="display: inline-flex; align-items: center; gap: 0.2rem; background: rgba(219, 39, 119, 0.2); color: #f472b6; border: 1px solid rgba(219, 39, 119, 0.4);"><span class="material-symbols-outlined" style="font-size: 1.05rem;">local_fire_department</span>Expiration</span>`;
-        }
-    }
-    if (sp.spiritualite && sp.spiritualite.nom && sp.spiritualite.nom.toLowerCase().includes('karma')) {
-        if (sp.karmaAlignment === 'OFFENSIVE') {
-            castBadge += ` <span class="badge" style="display: inline-flex; align-items: center; gap: 0.2rem; background: rgba(147, 51, 234, 0.2); color: #c084fc; border: 1px solid rgba(147, 51, 234, 0.4);"><span class="material-symbols-outlined" style="font-size: 1.05rem;">dark_mode</span>Ténèbres</span>`;
-        } else if (sp.karmaAlignment === 'PROTECTIVE') {
-            castBadge += ` <span class="badge" style="display: inline-flex; align-items: center; gap: 0.2rem; background: rgba(234, 179, 8, 0.2); color: #fde047; border: 1px solid rgba(234, 179, 8, 0.4);"><span class="material-symbols-outlined" style="font-size: 1.05rem;">light_mode</span>Lumière</span>`;
-        } else if (sp.karmaAlignment === 'RESTORATIVE') {
-            castBadge += ` <span class="badge" style="display: inline-flex; align-items: center; gap: 0.2rem; background: rgba(100, 116, 139, 0.2); color: #cbd5e1; border: 1px solid rgba(100, 116, 139, 0.4);"><span class="material-symbols-outlined" style="font-size: 1.05rem;">brightness_medium</span>Harmonie</span>`;
-        }
-    }
-
+function getSpellEffectsSummaryHtml(sp) {
     let effectsSummaryHtml = '';
     if ((sp.effects && sp.effects.length > 0) || (sp.heatGenerated && sp.heatGenerated > 0)) {
         effectsSummaryHtml = `<div class="spell-effects-summary">`;
@@ -1785,6 +1822,52 @@ function getSpellCardHtml(sp) {
         }
         effectsSummaryHtml += `</div>`;
     }
+    return effectsSummaryHtml;
+}
+function getSpellCardHtml(sp) {
+    let voieBadge = '';
+    if (sp.voie) {
+        const vHex = getVoieButtonColor(sp.voie);
+        const vRgb = hexToRgb(vHex);
+        const vIcon = getVoieIcon(sp.voie.nom);
+        voieBadge = `<span class="badge" style="color: ${vHex}; border-color: rgba(${vRgb}, 0.3); background: rgba(${vRgb}, 0.05); display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size:1.1em;">${vIcon}</span>${sp.voie.nom}</span>`;
+    }
+
+    let spiritBadge = '';
+    if (sp.spiritualite) {
+        const sHex = getSpiritButtonColor(sp.spiritualite);
+        const sRgb = hexToRgb(sHex);
+        const sIcon = getSpiritIcon(sp.spiritualite.nom);
+        spiritBadge = `<span class="badge" style="color: ${sHex}; border-color: rgba(${sRgb}, 0.3); background: rgba(${sRgb}, 0.05); display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size:1.1em;">${sIcon}</span>${sp.spiritualite.nom}</span>`;
+    }
+
+    let castBadge = '';
+    if (sp.castingType === 'INSTANTANE') {
+        castBadge = `<span class="badge" style="display: inline-flex; align-items: center; gap: 0.2rem; background: rgba(245, 158, 11, 0.2); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.4);"><span class="material-symbols-outlined" style="font-size: 1.05rem;">bolt</span>Instantané</span>`;
+    } else if (sp.castingType === 'CANALISE') {
+        castBadge = `<span class="badge" style="display: inline-flex; align-items: center; gap: 0.2rem; background: rgba(139, 92, 246, 0.2); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.4);"><span class="material-symbols-outlined" style="font-size: 1.05rem;">cyclone</span>Canalisé</span>`;
+    } else {
+        castBadge = `<span class="badge" style="display: inline-flex; align-items: center; gap: 0.2rem; background: rgba(100, 116, 139, 0.2); color: #94a3b8; border: 1px solid rgba(100, 116, 139, 0.3);"><span class="material-symbols-outlined" style="font-size: 1.05rem;">hourglass_empty</span>Banal</span>`;
+    }
+
+    if (sp.voie && sp.voie.nom && sp.voie.nom.toLowerCase().includes('violence')) {
+        if (sp.inspiration) {
+            castBadge += ` <span class="badge" style="display: inline-flex; align-items: center; gap: 0.2rem; background: rgba(6, 182, 212, 0.2); color: #67e8f9; border: 1px solid rgba(6, 182, 212, 0.4);"><span class="material-symbols-outlined" style="font-size: 1.05rem;">air</span>Inspiration</span>`;
+        } else {
+            castBadge += ` <span class="badge" style="display: inline-flex; align-items: center; gap: 0.2rem; background: rgba(219, 39, 119, 0.2); color: #f472b6; border: 1px solid rgba(219, 39, 119, 0.4);"><span class="material-symbols-outlined" style="font-size: 1.05rem;">local_fire_department</span>Expiration</span>`;
+        }
+    }
+    if (sp.spiritualite && sp.spiritualite.nom && sp.spiritualite.nom.toLowerCase().includes('karma')) {
+        if (sp.karmaAlignment === 'OFFENSIVE') {
+            castBadge += ` <span class="badge" style="display: inline-flex; align-items: center; gap: 0.2rem; background: rgba(147, 51, 234, 0.2); color: #c084fc; border: 1px solid rgba(147, 51, 234, 0.4);"><span class="material-symbols-outlined" style="font-size: 1.05rem;">dark_mode</span>Ténèbres</span>`;
+        } else if (sp.karmaAlignment === 'PROTECTIVE') {
+            castBadge += ` <span class="badge" style="display: inline-flex; align-items: center; gap: 0.2rem; background: rgba(234, 179, 8, 0.2); color: #fde047; border: 1px solid rgba(234, 179, 8, 0.4);"><span class="material-symbols-outlined" style="font-size: 1.05rem;">light_mode</span>Lumière</span>`;
+        } else if (sp.karmaAlignment === 'RESTORATIVE') {
+            castBadge += ` <span class="badge" style="display: inline-flex; align-items: center; gap: 0.2rem; background: rgba(100, 116, 139, 0.2); color: #cbd5e1; border: 1px solid rgba(100, 116, 139, 0.4);"><span class="material-symbols-outlined" style="font-size: 1.05rem;">brightness_medium</span>Harmonie</span>`;
+        }
+    }
+
+    let effectsSummaryHtml = getSpellEffectsSummaryHtml(sp);
 
     let rankTitleBadge = '';
     if (sp.voie && sp.voie.rankNames && sp.voie.rankNames[sp.niveau]) {
@@ -1812,17 +1895,6 @@ function getSpellCardHtml(sp) {
         lvlIcon = '<span class="material-symbols-outlined" style="font-size: 1.05rem;">workspace_premium</span>';
     }
     const lvlBadge = `<span class="badge" style="display: inline-flex; align-items: center; gap: 0.2rem; ${lvlBadgeStyle}">${lvlIcon}Lvl ${sp.niveau}</span>`;
-
-    const formatSrc = s => {
-        const srcLabels = {
-            'CASTER_POWER': 'Puiss. Lanceur', 'TARGET_POWER': 'Puiss. Cible', 'CASTER_MANA_MAX': 'Mana Max Lanc.',
-            'TARGET_MANA_MAX': 'Mana Max Cib.', 'CASTER_MANA_MISSING': 'Mana Manq. Lanc.', 'TARGET_MANA_MISSING': 'Mana Manq. Cib.',
-            'CASTER_MANA_CURRENT': 'Mana Act. Lanc.', 'TARGET_MANA_CURRENT': 'Mana Act. Cib.', 'CASTER_HEALTH_MAX': 'PV Max Lanc.',
-            'TARGET_HEALTH_MAX': 'PV Max Cib.', 'CASTER_HEALTH_MISSING': 'PV Manq. Lanc.', 'TARGET_HEALTH_MISSING': 'PV Manq. Cib.',
-            'CASTER_HEALTH_CURRENT': 'PV Act. Lanc.', 'TARGET_HEALTH_CURRENT': 'PV Act. Cib.'
-        };
-        return srcLabels[s] || s;
-    };
 
     return `
                 <div class="spell-card spell-card-lvl-${isMaxLevel ? 5 : (sp.niveau || 1)}" style="--spell-color: ${titleColor}; --spell-rgb: ${titleRgb};">
@@ -3108,7 +3180,7 @@ function makeCustomSelect(selectIdOrElement) {
             if (t.includes('critique')) return { icon: 'gps_fixed', color: '#ef4444' };
             if (t.includes('armure')) return { icon: 'shield', color: '#3b82f6' };
             if (t.includes('résistance') || t.includes('resistance')) return { icon: 'shield', color: '#10b981' };
-            if (t.includes('puissance')) return { icon: 'auto_awesome', color: '#a855f7' };
+            if (t.includes('puiss')) return { icon: 'auto_awesome', color: '#a855f7' };
             if (t.includes('force')) return { icon: 'fitness_center', color: '#f43f5e' };
             if (t.includes('brûlure') || t.includes('brulure')) return { icon: 'whatshot', color: '#f97316' };
             if (t.includes('poison')) return { icon: 'skull', color: '#10b981' };
@@ -3139,30 +3211,31 @@ function makeCustomSelect(selectIdOrElement) {
             if (t.includes('pv') || t.includes('health') || t.includes('vie')) {
                 if (t.includes('max')) {
                     return { icon: 'favorite', color: isLanceur ? '#10b981' : '#f43f5e' };
-                } else if (t.includes('actuel') || t.includes('curr') || t.includes('tour')) {
+                } else if (t.includes('act') || t.includes('curr') || t.includes('tour')) {
                     return { icon: 'monitor_heart', color: isLanceur ? '#34d399' : '#ec4899' };
-                } else if (t.includes('manquant') || t.includes('miss')) {
+                } else if (t.includes('manq') || t.includes('miss')) {
                     return { icon: 'heart_broken', color: isLanceur ? '#059669' : '#b91c1c' };
                 }
                 return { icon: 'favorite', color: isLanceur ? '#10b981' : '#f43f5e' };
             }
 
             if (t.includes('mana')) {
+                const manaColor = isLanceur ? '#1d4ed8' : '#22d3ee';
                 if (t.includes('max')) {
-                    return { icon: 'water_drop', color: isLanceur ? '#0284c7' : '#38bdf8' };
-                } else if (t.includes('actuel') || t.includes('curr')) {
-                    return { icon: 'waves', color: isLanceur ? '#38bdf8' : '#22d3ee' };
-                } else if (t.includes('manquant') || t.includes('miss')) {
-                    return { icon: 'opacity', color: isLanceur ? '#0369a1' : '#0891b2' };
+                    return { icon: 'water_drop', color: manaColor };
+                } else if (t.includes('act') || t.includes('curr')) {
+                    return { icon: 'waves', color: manaColor };
+                } else if (t.includes('manq') || t.includes('miss')) {
+                    return { icon: 'opacity', color: manaColor };
                 }
-                return { icon: 'water_drop', color: isLanceur ? '#0284c7' : '#38bdf8' };
+                return { icon: 'water_drop', color: manaColor };
             }
 
-            if (t.includes('puissance') || t.includes('power')) {
+            if (t.includes('puiss') || t.includes('power')) {
                 return { icon: 'auto_awesome', color: isLanceur ? '#a855f7' : '#fb923c' };
             }
 
-            return { icon: 'auto_awesome', color: '#8b5cf6' };
+            return { icon: 'stars', color: '#8b5cf6' };
         }
         return { icon: 'radio_button_unchecked', color: 'var(--text-muted)' };
     };
@@ -3435,6 +3508,12 @@ function editSpell(id) {
 
     document.getElementById('voieSelect').value = sp.voie ? sp.voie.id : '';
     document.getElementById('voieSelect').dispatchEvent(new Event('change'));
+
+    const karmaInput = document.getElementById('karmaAlignment');
+    if (karmaInput) {
+        karmaInput.value = sp.karmaAlignment || 'NONE';
+    }
+
     document.getElementById('spiritSelect').value = sp.spiritualite ? sp.spiritualite.id : '';
     document.getElementById('spiritSelect').dispatchEvent(new Event('change'));
 
@@ -3539,6 +3618,17 @@ function populateHeroConfigSelectors() {
     const spiritSelect = document.getElementById('heroConfigSpiritualite');
     if (!voieSelect || !spiritSelect || !metaData.voies) return;
 
+    // Nettoyer les anciens custom-selects s'ils existent
+    [voieSelect, spiritSelect].forEach(select => {
+        if (select.dataset.customized) {
+            if (select.nextElementSibling && select.nextElementSibling.tagName === 'DIV') {
+                select.nextElementSibling.remove();
+            }
+            select.dataset.customized = "";
+            select.style.display = "";
+        }
+    });
+
     // Sauvegarder les sélections actuelles
     const currentVoie = voieSelect.value;
     const currentSpirit = spiritSelect.value;
@@ -3558,6 +3648,10 @@ function populateHeroConfigSelectors() {
     // Restaurer les sélections
     if (currentVoie) voieSelect.value = currentVoie;
     if (currentSpirit) spiritSelect.value = currentSpirit;
+
+    // Ré-appliquer le custom select
+    makeCustomSelect('heroConfigVoie');
+    makeCustomSelect('heroConfigSpiritualite');
 }
 
 async function configureSandboxHero() {
@@ -3692,7 +3786,6 @@ function renderSandboxSpells() {
         if (choiceKeys.length > 0) {
             optionSelectorHtml = `
                         <div class="sandbox-spell-options">
-                            <span>Option :</span>
                             <select id="choice-select-${sp.id}">
                                 ${choiceKeys.map(k => `<option value="${k}">Option ${k}</option>`).join('')}
                             </select>
@@ -3700,16 +3793,64 @@ function renderSandboxSpells() {
                     `;
         }
 
-        let costDetails = `${sp.manaCost} Mana`;
-        if (sp.healCost > 0) costDetails += ` / ${sp.healCost} PV`;
-        if (sp.heatCost > 0) costDetails += ` / ${sp.heatCost} Chaleur`;
+        const getSrcIcon = (src) => {
+            const s = src || '';
+            if (s.includes('MANA')) return `<span class="material-symbols-outlined" style="font-size: 0.95rem; color: #38bdf8; vertical-align: middle;" title="${formatSrc(s)}">water_drop</span>`;
+            if (s.includes('HEALTH') || s.includes('PV')) return `<span class="material-symbols-outlined" style="font-size: 0.95rem; color: #f43f5e; vertical-align: middle;" title="${formatSrc(s)}">bloodtype</span>`;
+            if (s.includes('POWER') || s.includes('Puiss')) return `<span class="material-symbols-outlined" style="font-size: 0.95rem; color: #a855f7; vertical-align: middle;" title="${formatSrc(s)}">auto_awesome</span>`;
+            return `(${formatSrc(s)})`;
+        };
+
+        let costDetailsHtml = [];
+        if (sp.manaCost > 0 || sp.percentManaCost > 0) {
+            costDetailsHtml.push(`<span style="display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem; color: #38bdf8;" title="Mana">water_drop</span><span style="border-bottom: 1px solid rgba(56, 189, 248, 0.5); padding-bottom: 0.05rem;">${sp.manaCost}${sp.percentManaCost > 0 ? ` + ${sp.percentManaCost}% ${getSrcIcon(sp.percentManaCostSource || 'CASTER_MANA_MAX')}` : ''}</span></span>`);
+        }
+        if (sp.healCost > 0 || sp.percentHealCost > 0) {
+            costDetailsHtml.push(`<span style="display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem; color: #f43f5e;" title="PV">bloodtype</span><span style="border-bottom: 1px solid rgba(244, 63, 94, 0.5); padding-bottom: 0.05rem;">${sp.healCost}${sp.percentHealCost > 0 ? ` + ${sp.percentHealCost}% ${getSrcIcon(sp.percentHealCostSource || 'CASTER_HEALTH_MAX')}` : ''}</span></span>`);
+        }
+        if (sp.heatCost > 0 || sp.percentHeatCost > 0) {
+            costDetailsHtml.push(`<span style="display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem; color: #f97316;" title="Chaleur">local_fire_department</span><span style="border-bottom: 1px solid rgba(249, 115, 22, 0.5); padding-bottom: 0.05rem;">${sp.heatCost}${sp.percentHeatCost > 0 ? ` + ${sp.percentHeatCost}%` : ''}</span></span>`);
+        }
+        let costDetails = costDetailsHtml.join(' <span style="color:var(--glass-border); margin:0 0.3rem;">|</span> ');
+        if (costDetailsHtml.length === 0) costDetails = `<span style="display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem; color: #38bdf8;" title="Mana">water_drop</span><span style="border-bottom: 1px solid rgba(56, 189, 248, 0.5); padding-bottom: 0.05rem;">0</span></span>`;
+
+        let castingTypeHtml = '';
+        if (sp.castingType === 'INSTANTANE') {
+            castingTypeHtml = '<span class="material-symbols-outlined" style="font-size: 1.1rem; color: #f59e0b; margin-left: 0.3rem;" title="Action Instantanée">bolt</span>';
+        } else if (sp.castingType === 'CANALISE') {
+            castingTypeHtml = '<span class="material-symbols-outlined" style="font-size: 1.1rem; color: #8b5cf6; margin-left: 0.3rem;" title="Action Canalisée">cyclone</span>';
+            castingTypeHtml += sp.allowInstantDuringChanneling ?
+                '<span class="material-symbols-outlined" style="font-size: 1.1rem; color: #f59e0b; margin-left: 0.2rem;" title="Instantanés autorisés pendant la canalisation">bolt</span>' :
+                '<span style="position: relative; display: inline-flex; align-items: center; justify-content: center; width: 1.1rem; height: 1.1rem; margin-left: 0.2rem;" title="Instantanés interdits pendant la canalisation"><span class="material-symbols-outlined" style="font-size: 1.1rem; color: #64748b;">bolt</span><span style="position: absolute; width: 100%; height: 2px; background: #ef4444; transform: rotate(-45deg);"></span></span>';
+        } else {
+            castingTypeHtml = '<span class="material-symbols-outlined" style="font-size: 1.1rem; color: #3b82f6; margin-left: 0.3rem;" title="Action Banale">hourglass_empty</span>';
+        }
+
+        let voieHtml = '';
+        if (sp.voie && sp.voie.nom) {
+            const vColor = getVoieButtonColor(sp.voie);
+            const vIcon = getVoieIcon(sp.voie.nom);
+            voieHtml = `<span class="material-symbols-outlined" style="font-size: 1.1rem; color: ${vColor}; margin-left: 0.2rem;" title="${sp.voie.nom}">${vIcon}</span>`;
+        }
+
+        let spiritHtml = '';
+        if (sp.spiritualite && sp.spiritualite.nom) {
+            const sColor = getSpiritButtonColor(sp.spiritualite);
+            const sIcon = getSpiritIcon(sp.spiritualite.nom);
+            spiritHtml = `<span class="material-symbols-outlined" style="font-size: 1.1rem; color: ${sColor}; margin-left: 0.2rem;" title="${sp.spiritualite.nom}">${sIcon}</span>`;
+        }
+
+        let effectsSummary = getSpellEffectsSummaryHtml(sp);
 
         return `
-                    <div class="sandbox-spell-card" style="border-left: 3px solid ${titleColor};">
+                    <div class="sandbox-spell-card" style="border-left: 3px solid ${titleColor}; position: relative;">
                         <div class="sandbox-spell-header">
-                            <div class="sandbox-spell-title">
+                            <div class="sandbox-spell-title" style="display: flex; align-items: center; gap: 0.3rem;">
                                 <span style="color: ${titleColor}; font-weight: 600;">${sp.nom}</span>
                                 <span class="badge" style="font-size: 0.7rem; padding: 0.1rem 0.3rem;">Lvl ${sp.niveau}</span>
+                                ${castingTypeHtml}
+                                ${voieHtml}
+                                ${spiritHtml}
                             </div>
                             <div class="sandbox-spell-actions">
                                 <button type="button" class="btn" style="background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.4); font-size: 0.75rem; padding: 0.2rem 0.5rem; border-radius: 4px;" onclick="castSandboxSpell(${sp.id})">Lancer ✦</button>
@@ -3717,7 +3858,15 @@ function renderSandboxSpells() {
                             </div>
                         </div>
                         <div style="font-size: 0.8rem; color: var(--text-muted); display:flex; justify-content:space-between; align-items:center;">
-                            <span>Coût: ${costDetails}</span>
+                            <div style="display: flex; align-items: center; gap: 0.8rem;">
+                                <span style="display:flex; align-items:center; gap:0.2rem;">${costDetails}</span>
+                                ${effectsSummary ? `
+                                <div class="spell-effects-trigger" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()">
+                                    <span class="badge" style="background: rgba(255,255,255,0.08); color: #94a3b8; font-size: 0.7rem; padding: 0.1rem 0.4rem; cursor: help;">Effets ✦</span>
+                                    <template class="tooltip-data">${effectsSummary}</template>
+                                </div>
+                                ` : ''}
+                            </div>
                             ${optionSelectorHtml}
                         </div>
                     </div>
@@ -3951,6 +4100,7 @@ function updateSandboxUI(state) {
                     </div>
                 `;
     }
+
     if (state.heroHasKarma) {
         const gauge = state.heroKarmaGauge;
         const isLocked = state.heroKarmaLocked;
@@ -4121,6 +4271,7 @@ function updateSandboxUI(state) {
                     </div>
                 `;
     }
+
     if (state.monsterHasKarma) {
         const gauge = state.monsterKarmaGauge;
         const isLocked = state.monsterKarmaLocked;
@@ -4244,4 +4395,33 @@ function showNotif(text) {
     setTimeout(() => {
         notif.classList.remove('show');
     }, 4000);
+}
+
+function showGlobalTooltip(el) {
+    let tooltip = document.getElementById('globalSpellTooltip');
+    if (!tooltip) {
+        tooltip = document.createElement('div');
+        tooltip.id = 'globalSpellTooltip';
+        document.body.appendChild(tooltip);
+    }
+    const dataEl = el.querySelector('.tooltip-data');
+    if (!dataEl) return;
+
+    tooltip.innerHTML = dataEl.innerHTML;
+    tooltip.style.display = 'flex';
+
+    const rect = el.getBoundingClientRect();
+    let topPos = rect.top - tooltip.offsetHeight - 8;
+    if (topPos < 10) topPos = rect.bottom + 8;
+
+    let leftPos = rect.right - tooltip.offsetWidth;
+    if (leftPos < 10) leftPos = 10;
+
+    tooltip.style.top = topPos + 'px';
+    tooltip.style.left = leftPos + 'px';
+}
+
+function hideGlobalTooltip() {
+    const tooltip = document.getElementById('globalSpellTooltip');
+    if (tooltip) tooltip.style.display = 'none';
 }
