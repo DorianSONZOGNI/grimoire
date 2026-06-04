@@ -22,14 +22,15 @@ export function attachLvl5CardEffects(container) {
 }
 
 export function spellCardEnter(card, origin) {
-    const enterCls = `lvl5-enter-${origin}`;
+    const baseOrigin = origin.startsWith('karma-') ? 'karma' : origin;
+    const enterCls = `lvl5-enter-${baseOrigin}`;
     card.classList.remove(enterCls);
     void card.offsetWidth;
     card.classList.add(enterCls);
     card.addEventListener('animationend', () => card.classList.remove(enterCls), { once: true });
 
     const rect = card.getBoundingClientRect();
-    switch (origin) {
+    switch (baseOrigin) {
         case 'raison': fx_vent_enter(rect); break;
         case 'surete': fx_eau_enter(rect); break;
         case 'trahison': fx_poison_enter(rect); break;
@@ -40,20 +41,21 @@ export function spellCardEnter(card, origin) {
         case 'violence': fx_explosion_enter(rect); break;
         case 'esprit': fx_esprit_enter(rect); break;
         case 'tenebres': fx_tenebres_enter(rect); break;
-        case 'karma': fx_karma_enter(rect); break;
+        case 'karma': fx_karma_enter(rect, origin); break;
         default: fx_generic_enter(rect);
     }
 }
 
 export function spellCardLeave(card, origin) {
-    const leaveCls = `lvl5-leave-${origin}`;
+    const baseOrigin = origin.startsWith('karma-') ? 'karma' : origin;
+    const leaveCls = `lvl5-leave-${baseOrigin}`;
     card.classList.remove(leaveCls);
     void card.offsetWidth;
     card.classList.add(leaveCls);
     card.addEventListener('animationend', () => card.classList.remove(leaveCls), { once: true });
 
     const rect = card.getBoundingClientRect();
-    switch (origin) {
+    switch (baseOrigin) {
         case 'raison': fx_vent_leave(rect); break;
         case 'surete': fx_eau_leave(rect); break;
         case 'trahison': fx_poison_leave(rect); break;
@@ -64,7 +66,7 @@ export function spellCardLeave(card, origin) {
         case 'violence': fx_explosion_leave(rect); break;
         case 'esprit': fx_esprit_leave(rect); break;
         case 'tenebres': fx_tenebres_leave(rect); break;
-        case 'karma': fx_karma_leave(rect); break;
+        case 'karma': fx_karma_leave(rect, origin); break;
         default: fx_generic_leave(rect);
     }
 }
@@ -569,14 +571,24 @@ export function fx_tenebres_enter(rect) {
     setTimeout(() => flash.remove(), 500);
 }
 
-export function fx_karma_enter(rect) {
+export function fx_karma_enter(rect, origin = 'karma') {
     const cx = rect.left + rect.width / 2;
     const cy = rect.top + rect.height / 2;
+
+    let col1 = '#fbbf24', col2 = '#e2e8f0', col3 = '#f59e0b', col4 = '#94a3b8';
+    if (origin === 'karma-tenebres') {
+        col1 = '#c084fc'; col2 = '#4c1d95'; col3 = '#9333ea'; col4 = '#2e1065';
+    } else if (origin === 'karma-lumiere') {
+        col1 = '#fef08a'; col2 = '#f59e0b'; col3 = '#fde047'; col4 = '#fbbf24';
+    } else if (origin === 'karma-harmonie') {
+        col1 = '#bae6fd'; col2 = '#cbd5e1'; col3 = '#38bdf8'; col4 = '#94a3b8';
+    }
+
     const pairs = [
-        { color: '#fbbf24', start: { x: rect.left - 30, y: cy } },
-        { color: '#e2e8f0', start: { x: rect.right + 30, y: cy } },
-        { color: '#f59e0b', start: { x: cx, y: rect.top - 30 } },
-        { color: '#94a3b8', start: { x: cx, y: rect.bottom + 30 } },
+        { color: col1, start: { x: rect.left - 30, y: cy } },
+        { color: col2, start: { x: rect.right + 30, y: cy } },
+        { color: col3, start: { x: cx, y: rect.top - 30 } },
+        { color: col4, start: { x: cx, y: rect.bottom + 30 } },
     ];
     pairs.forEach((pair, idx) => {
         setTimeout(() => {
@@ -605,7 +617,7 @@ export function fx_karma_enter(rect) {
         setTimeout(() => {
             const p = mkp();
             const isGold = i % 2 === 0;
-            const c = isGold ? '#fbbf24' : '#e2e8f0';
+            const c = isGold ? col1 : col2;
             const angle = (i / 8) * Math.PI * 2;
             const r = 40;
             p.style.cssText = `
@@ -1009,14 +1021,24 @@ export function fx_tenebres_leave(rect) {
     }
 }
 
-export function fx_karma_leave(rect) {
+export function fx_karma_leave(rect, origin = 'karma') {
     const cx = rect.left + rect.width / 2;
     const cy = rect.top + rect.height / 2;
+
+    let col1 = '#fbbf24', col2 = '#e2e8f0', col3 = '#f59e0b', col4 = '#94a3b8';
+    if (origin === 'karma-tenebres') {
+        col1 = '#c084fc'; col2 = '#4c1d95'; col3 = '#9333ea'; col4 = '#2e1065';
+    } else if (origin === 'karma-lumiere') {
+        col1 = '#fef08a'; col2 = '#f59e0b'; col3 = '#fde047'; col4 = '#fbbf24';
+    } else if (origin === 'karma-harmonie') {
+        col1 = '#bae6fd'; col2 = '#cbd5e1'; col3 = '#38bdf8'; col4 = '#94a3b8';
+    }
+
     const orbs = [
-        { c: '#fbbf24', tx: -60, ty: -20 },
-        { c: '#e2e8f0', tx: 60, ty: 20 },
-        { c: '#f59e0b', tx: 20, ty: -50 },
-        { c: '#94a3b8', tx: -20, ty: 50 },
+        { c: col1, tx: -60, ty: -20 },
+        { c: col2, tx: 60, ty: 20 },
+        { c: col3, tx: 20, ty: -50 },
+        { c: col4, tx: -20, ty: 50 },
     ];
     orbs.forEach((orb, idx) => {
         setTimeout(() => {

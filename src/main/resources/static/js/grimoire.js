@@ -485,8 +485,13 @@ export function getLvl5Origin(badgeText) {
     if (badgeText.includes('destruction')) return 'destruction';
     if (badgeText.includes('violence')) return 'violence';
     if (badgeText.includes('esprit')) return 'esprit';
+    if (badgeText.includes('karma')) {
+        if (badgeText.includes('ténèbres') || badgeText.includes('tenebres')) return 'karma-tenebres';
+        if (badgeText.includes('lumière') || badgeText.includes('lumiere')) return 'karma-lumiere';
+        if (badgeText.includes('harmonie')) return 'karma-harmonie';
+        return 'karma';
+    }
     if (badgeText.includes('ténèbres') || badgeText.includes('tenebres')) return 'tenebres';
-    if (badgeText.includes('karma')) return 'karma';
     return 'generic';
 }
 
