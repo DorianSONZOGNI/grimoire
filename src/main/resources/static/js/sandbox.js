@@ -88,6 +88,7 @@ export function syncHeroConfigForm(hero) {
     setVal('heroConfigHp', hero.hpMax || 100);
     setVal('heroConfigMana', hero.manaMax || 100);
     setVal('heroConfigPower', hero.basePower !== undefined ? hero.basePower : (hero.power || 0));
+    setVal('heroConfigStrength', hero.baseStrength !== undefined ? hero.baseStrength : (hero.strength || 0));
     setVal('heroConfigArmor', hero.baseArmor !== undefined ? hero.baseArmor : (hero.armor || 0));
     setVal('heroConfigResistance', hero.baseResistance !== undefined ? hero.baseResistance : (hero.resistance || 0));
     setVal('heroConfigSpeed', hero.baseSpeed !== undefined ? hero.baseSpeed : (hero.speed || 0));
@@ -116,6 +117,7 @@ export function renderHeroConfigBadges(hero) {
     }
 
     const pui = hero.basePower !== undefined ? hero.basePower : (hero.power || 0);
+    const forPhy = hero.baseStrength !== undefined ? hero.baseStrength : (hero.strength || 0);
     const arm = hero.baseArmor !== undefined ? hero.baseArmor : (hero.armor || 0);
     const res = hero.baseResistance !== undefined ? hero.baseResistance : (hero.resistance || 0);
     const vit = hero.baseSpeed !== undefined ? hero.baseSpeed : (hero.speed || 0);
@@ -123,6 +125,7 @@ export function renderHeroConfigBadges(hero) {
 
     html += `<div class="hero-stats-row">`;
     html += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #a855f7;">auto_awesome</span>${pui} Pui</span>`;
+    html += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #f43f5e;">fitness_center</span>${forPhy} For</span>`;
     html += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #3b82f6;">shield</span>${arm} Arm</span>`;
     html += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #10b981;">shield</span>${res} Rés</span>`;
     if (vit > 0) html += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #f59e0b;">bolt</span>${vit} Vit</span>`;
@@ -168,6 +171,7 @@ export function renderSandboxSpells() {
             if (s.includes('MANA')) return `<span class="material-symbols-outlined" style="font-size: 0.95rem; color: #38bdf8; vertical-align: middle;" title="${formatSrc(s)}">water_drop</span>`;
             if (s.includes('HEALTH') || s.includes('PV')) return `<span class="material-symbols-outlined" style="font-size: 0.95rem; color: #f43f5e; vertical-align: middle;" title="${formatSrc(s)}">bloodtype</span>`;
             if (s.includes('POWER') || s.includes('Puiss')) return `<span class="material-symbols-outlined" style="font-size: 0.95rem; color: #a855f7; vertical-align: middle;" title="${formatSrc(s)}">auto_awesome</span>`;
+            if (s.includes('PHYSICAL') || s.includes('Force Phy')) return `<span class="material-symbols-outlined" style="font-size: 0.95rem; color: #f43f5e; vertical-align: middle;" title="${formatSrc(s)}">fitness_center</span>`;
             return `(${formatSrc(s)})`;
         };
 
@@ -519,6 +523,7 @@ export function updateLiveHeroStats(hero) {
         if (el) el.innerText = val + suffix;
     };
     setStat('liveStatPower', hero.power || 0);
+    setStat('liveStatStrength', hero.strength || 0);
     setStat('liveStatArmor', hero.armor || 0);
     setStat('liveStatRes', hero.resistance || 0);
     setStat('liveStatSpeed', hero.speed || 0);

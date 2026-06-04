@@ -1,6 +1,6 @@
 import { state } from './state.js';
 import { GLOBAL_STAT_LABELS, GLOBAL_SRC_LABELS, javaClassToCode } from './constants.js';
-import * as ui from './ui.js';
+import * as ui from './ui.js?v=2';
 import * as api from './api.js';
 
 import { renderFilteredSpells, getSpellEffectsSummaryHtml, getSpellCardHtml, cancelEditSpell, updateEditingPreview, getLvl5Origin, editSpell } from './grimoire.js';

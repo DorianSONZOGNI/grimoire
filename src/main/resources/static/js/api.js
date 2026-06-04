@@ -1,6 +1,6 @@
 import { state } from './state.js';
 import { GLOBAL_STAT_LABELS, GLOBAL_SRC_LABELS, javaClassToCode } from './constants.js';
-import * as ui from './ui.js';
+import * as ui from './ui.js?v=2';
 import * as forge from './forge.js';
 import * as grimoire from './grimoire.js';
 import * as filters from './filters.js';
@@ -386,6 +386,7 @@ export async function configureSandboxHero() {
     const healthMax = parseInt(document.getElementById('heroConfigHp').value) || 100;
     const manaMax = parseInt(document.getElementById('heroConfigMana').value) || 100;
     const power = parseInt(document.getElementById('heroConfigPower').value) || 0;
+    const strength = parseInt(document.getElementById('heroConfigStrength').value) || 0;
     const armor = parseInt(document.getElementById('heroConfigArmor').value) || 0;
     const resistance = parseInt(document.getElementById('heroConfigResistance').value) || 0;
     const speed = parseInt(document.getElementById('heroConfigSpeed').value) || 0;
@@ -403,6 +404,7 @@ export async function configureSandboxHero() {
                 healthMax,
                 manaMax,
                 power,
+                strength,
                 armor,
                 resistance,
                 speed,

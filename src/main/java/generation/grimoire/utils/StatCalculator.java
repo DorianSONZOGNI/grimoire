@@ -22,6 +22,8 @@ public class StatCalculator {
         return switch (source) {
             case CASTER_POWER -> caster.getPower() + caster.getStatFlatBonus(StatType.POWER);
             case TARGET_POWER -> target.getPower() + target.getStatFlatBonus(StatType.POWER);
+            case CASTER_PHYSICAL_POWER -> caster.getStrength() + caster.getStatFlatBonus(StatType.STRENGTH);
+            case TARGET_PHYSICAL_POWER -> target.getStrength() + target.getStatFlatBonus(StatType.STRENGTH);
             case CASTER_MANA_MAX -> caster.getManaMax();
             case TARGET_MANA_MAX -> target.getManaMax();
             case TARGET_MANA_MISSING -> target.getManaMax() - target.getManaCurrent();

@@ -295,7 +295,7 @@ export function makeCustomSelect(selectIdOrElement) {
         }
         if (id && id.toLowerCase().includes('source')) {
             const t = text.toLowerCase();
-            const isLanceur = t.includes('lanceur') || t.includes('lanc');
+            const isLanceur = t.includes('lanceur') || t.includes('lanc') || t.includes('caster');
 
             if (t.includes('pv') || t.includes('health') || t.includes('vie')) {
                 if (t.includes('max')) {
@@ -318,6 +318,10 @@ export function makeCustomSelect(selectIdOrElement) {
                     return { icon: 'opacity', color: manaColor };
                 }
                 return { icon: 'water_drop', color: manaColor };
+            }
+
+            if (t.includes('force phy') || t.includes('physical')) {
+                return { icon: 'fitness_center', color: isLanceur ? '#f43f5e' : '#f97316' };
             }
 
             if (t.includes('puiss') || t.includes('power')) {

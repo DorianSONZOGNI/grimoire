@@ -39,6 +39,7 @@ public class Personnage {
     private int manaMax;
     private int manaCurrent;
     private int power;
+    private int strength;
     private int armor;
     private int resistance;
     private int crit;
@@ -575,6 +576,7 @@ public class Personnage {
         int base = 0;
         switch (statType) {
             case POWER -> base = this.power;
+            case STRENGTH -> base = this.strength;
             case ARMURE -> base = this.armor;
             case RESISTANCE -> base = this.resistance;
             case SPEED -> base = this.speed;
@@ -712,6 +714,7 @@ public class Personnage {
     public void adjustStat(StatType statType, int amount) {
         switch (statType) {
             case POWER -> power += amount;
+            case STRENGTH -> strength += amount;
             case ARMURE -> armor += amount;
             case RESISTANCE -> resistance += amount;
             case CRIT -> crit += amount;

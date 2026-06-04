@@ -98,6 +98,7 @@ public class WebSpellCreationController {
         hero.setManaMax(100);
         hero.setManaCurrent(100);
         hero.setPower(25);
+        hero.setStrength(10);
         hero.setArmor(10);
         hero.setResistance(10);
         hero.setVoieLevel(1);
@@ -312,6 +313,7 @@ public class WebSpellCreationController {
         hero.setManaMax(100);
         hero.setManaCurrent(100);
         hero.setPower(25);
+        hero.setStrength(10);
         hero.setArmor(10);
         hero.setResistance(10);
         hero.setVoie(spell.getVoie());
@@ -429,12 +431,14 @@ public class WebSpellCreationController {
 
         // Stats
         cs.setPower(p.getEffectiveStat(generation.grimoire.enumeration.StatType.POWER));
+        cs.setStrength(p.getEffectiveStat(generation.grimoire.enumeration.StatType.STRENGTH));
         cs.setArmor(p.getEffectiveStat(generation.grimoire.enumeration.StatType.ARMURE));
         cs.setResistance(p.getEffectiveStat(generation.grimoire.enumeration.StatType.RESISTANCE));
         cs.setSpeed(p.getEffectiveStat(generation.grimoire.enumeration.StatType.SPEED));
         cs.setCrit(p.getEffectiveStat(generation.grimoire.enumeration.StatType.CRIT));
 
         cs.setBasePower(p.getPower());
+        cs.setBaseStrength(p.getStrength());
         cs.setBaseArmor(p.getArmor());
         cs.setBaseResistance(p.getResistance());
         cs.setBaseSpeed(p.getSpeed());
@@ -566,6 +570,7 @@ public class WebSpellCreationController {
         sandboxHero.setManaMax(Math.max(0, dto.getManaMax()));
         sandboxHero.setManaCurrent(Math.min(sandboxHero.getManaMax(), Math.max(0, dto.getManaMax())));
         sandboxHero.setPower(Math.max(0, dto.getPower()));
+        sandboxHero.setStrength(Math.max(0, dto.getStrength()));
         sandboxHero.setArmor(Math.max(0, dto.getArmor()));
         sandboxHero.setResistance(Math.max(0, dto.getResistance()));
         sandboxHero.setSpeed(Math.max(0, dto.getSpeed()));
@@ -942,9 +947,9 @@ public class WebSpellCreationController {
         private int karmaGauge;
         private boolean karmaLocked, karmaHarmony;
         // Stats effectives
-        private int power, armor, resistance, speed, crit;
+        private int power, strength, armor, resistance, speed, crit;
         // Stats de base
-        private int basePower, baseArmor, baseResistance, baseSpeed, baseCrit;
+        private int basePower, baseStrength, baseArmor, baseResistance, baseSpeed, baseCrit;
         // Voie & Spiritualité
         private Long voieId;
         private String voieName;
@@ -963,6 +968,7 @@ public class WebSpellCreationController {
         private int healthMax = 100;
         private int manaMax = 100;
         private int power = 25;
+        private int strength = 10;
         private int armor = 10;
         private int resistance = 10;
         private int speed = 0;

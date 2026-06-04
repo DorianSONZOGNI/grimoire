@@ -4,6 +4,8 @@ package generation.grimoire.enumeration;
 public enum Source {
     CASTER_POWER,
     TARGET_POWER,
+    CASTER_PHYSICAL_POWER,
+    TARGET_PHYSICAL_POWER,
     CASTER_MANA_MAX,
     TARGET_MANA_MAX,
     CASTER_MANA_MISSING,
