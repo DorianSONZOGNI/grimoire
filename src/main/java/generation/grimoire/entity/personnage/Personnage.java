@@ -207,8 +207,11 @@ public class Personnage {
         // Calcul des dégâts après la réduction
         double finalDamage = damageAfterBuff * (1 - reductionFactor);
 
-        // S'assurer que les dégâts sont toujours au moins 1
+        // S'assurer que les dégâts sont toujours au moins 1 si les dégâts de base étaient > 0
         int effectiveDamage = (int) finalDamage;
+        if (damageAfterBuff > 0 && effectiveDamage < 1) {
+            effectiveDamage = 1;
+        }
 
         // Calculer la pénétration de bouclier (pourcentage et flat)
         double casterPenetrationPct = 0.0;
