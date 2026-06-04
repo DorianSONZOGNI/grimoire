@@ -227,7 +227,7 @@ export function renderSandboxSpells() {
                                 ${spiritHtml}
                             </div>
                             <div class="sandbox-spell-actions">
-                                <button type="button" class="btn" style="background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.4); font-size: 0.75rem; padding: 0.2rem 0.5rem; border-radius: 4px;" onclick="castSandboxSpell(${sp.id})">Lancer ✦</button>
+                                <button type="button" class="btn" style="background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.4); font-size: 0.75rem; padding: 0.2rem 0.5rem; border-radius: 4px;" onclick="initiateCast(${sp.id})">Lancer ✦</button>
                                 <button type="button" class="btn" style="background: rgba(239, 68, 68, 0.1); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.2); font-size: 0.75rem; padding: 0.2rem 0.4rem; border-radius: 4px;" onclick="removeSpellFromSandbox(${sp.id})">Retirer</button>
                             </div>
                         </div>
