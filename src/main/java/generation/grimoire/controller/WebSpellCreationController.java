@@ -86,7 +86,8 @@ public class WebSpellCreationController {
 
     @PostConstruct
     public void initStandardEntities() {
-        // Initialiser les Voies classiques si absentes, et y associer leurs passifs respectifs
+        // Initialiser les Voies classiques si absentes, et y associer leurs passifs
+        // respectifs
         String[] voies = { "Voie de la Raison", "Voie de la Sûreté", "Voie de Trahison", "Voie de la Consolidation",
                 "Voie de la Conviction", "Voie de la Création", "Voie de la Destruction", "Voie de la Violence" };
         for (String v : voies) {
@@ -341,7 +342,7 @@ public class WebSpellCreationController {
         res.setHeroManaMax(sandboxHero.getManaMax());
         res.setHeroManaCurrent(sandboxHero.getManaCurrent());
         res.setHeroShieldTotal(sandboxHero.getTotalShield());
-        
+
         java.util.List<ShieldState> heroShields = new java.util.ArrayList<>();
         if (sandboxHero.getActiveShields() != null) {
             for (ActiveShield s : sandboxHero.getActiveShields()) {
@@ -353,8 +354,10 @@ public class WebSpellCreationController {
         java.util.List<BuffState> heroBuffs = new java.util.ArrayList<>();
         if (sandboxHero.getActiveBuffs() != null) {
             for (BuffDebuffEffect b : sandboxHero.getActiveBuffs()) {
-                String source = b.getSpell() != null ? b.getSpell().getNom() : (b.getSourceName() != null ? b.getSourceName() : "Effet");
-                heroBuffs.add(new BuffState(b.getStatAffected().name(), b.getModifier(), b.getFlatValue(), b.getDuration(), source));
+                String source = b.getSpell() != null ? b.getSpell().getNom()
+                        : (b.getSourceName() != null ? b.getSourceName() : "Effet");
+                heroBuffs.add(new BuffState(b.getStatAffected().name(), b.getModifier(), b.getFlatValue(),
+                        b.getDuration(), source));
             }
         }
         res.setHeroBuffs(heroBuffs);
@@ -375,8 +378,10 @@ public class WebSpellCreationController {
         java.util.List<BuffState> monsterBuffs = new java.util.ArrayList<>();
         if (sandboxMonster.getActiveBuffs() != null) {
             for (BuffDebuffEffect b : sandboxMonster.getActiveBuffs()) {
-                String source = b.getSpell() != null ? b.getSpell().getNom() : (b.getSourceName() != null ? b.getSourceName() : "Effet");
-                monsterBuffs.add(new BuffState(b.getStatAffected().name(), b.getModifier(), b.getFlatValue(), b.getDuration(), source));
+                String source = b.getSpell() != null ? b.getSpell().getNom()
+                        : (b.getSourceName() != null ? b.getSourceName() : "Effet");
+                monsterBuffs.add(new BuffState(b.getStatAffected().name(), b.getModifier(), b.getFlatValue(),
+                        b.getDuration(), source));
             }
         }
         res.setMonsterBuffs(monsterBuffs);
@@ -387,12 +392,14 @@ public class WebSpellCreationController {
         res.setHeroSurete(sandboxHero.getPassiveState("surete_points", 0));
         res.setMonsterSurete(sandboxMonster.getPassiveState("surete_points", 0));
 
-        res.setHeroHasTrahison(sandboxHero.getVoie() != null && "Voie de Trahison".equals(sandboxHero.getVoie().getNom()));
+        res.setHeroHasTrahison(
+                sandboxHero.getVoie() != null && "Voie de Trahison".equals(sandboxHero.getVoie().getNom()));
         res.setHeroTrahisonBaseAvailable(sandboxHero.getPassiveState("trahison_used_this_turn", 0) == 0);
         res.setHeroTrahisonLowHpAvailable(sandboxHero.getPassiveState("trahison_low_hp_used_this_turn", 0) == 0);
         res.setHeroTrahisonDebuffAvailable(sandboxHero.getPassiveState("trahison_debuff_used_this_turn", 0) == 0);
 
-        res.setMonsterHasTrahison(sandboxMonster.getVoie() != null && "Voie de Trahison".equals(sandboxMonster.getVoie().getNom()));
+        res.setMonsterHasTrahison(
+                sandboxMonster.getVoie() != null && "Voie de Trahison".equals(sandboxMonster.getVoie().getNom()));
         res.setMonsterTrahisonBaseAvailable(sandboxMonster.getPassiveState("trahison_used_this_turn", 0) == 0);
         res.setMonsterTrahisonLowHpAvailable(sandboxMonster.getPassiveState("trahison_low_hp_used_this_turn", 0) == 0);
         res.setMonsterTrahisonDebuffAvailable(sandboxMonster.getPassiveState("trahison_debuff_used_this_turn", 0) == 0);
@@ -400,39 +407,48 @@ public class WebSpellCreationController {
         // Calculer le critère dérivé de la Raison
         Integer heroCritDerived = null;
         if (sandboxHero.getVoie() != null && "Voie de la Raison".equals(sandboxHero.getVoie().getNom())) {
-            int effectiveSpeed = sandboxHero.getSpeed() + sandboxHero.getStatFlatBonus(generation.grimoire.enumeration.StatType.SPEED);
+            int effectiveSpeed = sandboxHero.getSpeed()
+                    + sandboxHero.getStatFlatBonus(generation.grimoire.enumeration.StatType.SPEED);
             heroCritDerived = effectiveSpeed * 2;
         }
         res.setHeroCritDerived(heroCritDerived);
 
         Integer monsterCritDerived = null;
         if (sandboxMonster.getVoie() != null && "Voie de la Raison".equals(sandboxMonster.getVoie().getNom())) {
-            int effectiveSpeed = sandboxMonster.getSpeed() + sandboxMonster.getStatFlatBonus(generation.grimoire.enumeration.StatType.SPEED);
+            int effectiveSpeed = sandboxMonster.getSpeed()
+                    + sandboxMonster.getStatFlatBonus(generation.grimoire.enumeration.StatType.SPEED);
             monsterCritDerived = effectiveSpeed * 2;
         }
         res.setMonsterCritDerived(monsterCritDerived);
 
         // Consolidation
-        res.setHeroHasConsolidation(sandboxHero.getVoie() != null && "Voie de la Consolidation".equals(sandboxHero.getVoie().getNom()));
+        res.setHeroHasConsolidation(
+                sandboxHero.getVoie() != null && "Voie de la Consolidation".equals(sandboxHero.getVoie().getNom()));
         res.setHeroConsolidationLevel(sandboxHero.getPassiveState("consolidation_active_level", 0));
-        res.setMonsterHasConsolidation(sandboxMonster.getVoie() != null && "Voie de la Consolidation".equals(sandboxMonster.getVoie().getNom()));
+        res.setMonsterHasConsolidation(sandboxMonster.getVoie() != null
+                && "Voie de la Consolidation".equals(sandboxMonster.getVoie().getNom()));
         res.setMonsterConsolidationLevel(sandboxMonster.getPassiveState("consolidation_active_level", 0));
 
         // Violence
-        res.setHeroHasViolence(sandboxHero.getVoie() != null && "Voie de la Violence".equals(sandboxHero.getVoie().getNom()));
+        res.setHeroHasViolence(
+                sandboxHero.getVoie() != null && "Voie de la Violence".equals(sandboxHero.getVoie().getNom()));
         res.setHeroViolenceInspiration(sandboxHero.getPassiveState("violence_inspiration", 0));
         res.setHeroViolenceExpiration(sandboxHero.getPassiveState("violence_expiration", 0));
-        res.setMonsterHasViolence(sandboxMonster.getVoie() != null && "Voie de la Violence".equals(sandboxMonster.getVoie().getNom()));
+        res.setMonsterHasViolence(
+                sandboxMonster.getVoie() != null && "Voie de la Violence".equals(sandboxMonster.getVoie().getNom()));
         res.setMonsterViolenceInspiration(sandboxMonster.getPassiveState("violence_inspiration", 0));
         res.setMonsterViolenceExpiration(sandboxMonster.getPassiveState("violence_expiration", 0));
 
         // Karma
-        res.setHeroHasKarma(sandboxHero.getSpiritualite() != null && sandboxHero.getSpiritualite().getNom() != null && sandboxHero.getSpiritualite().getNom().toLowerCase().contains("karma"));
+        res.setHeroHasKarma(sandboxHero.getSpiritualite() != null && sandboxHero.getSpiritualite().getNom() != null
+                && sandboxHero.getSpiritualite().getNom().toLowerCase().contains("karma"));
         res.setHeroKarmaGauge(sandboxHero.getPassiveState("karma_gauge", 0));
         res.setHeroKarmaLocked(sandboxHero.getPassiveState("karma_locked", 0) == 1);
         res.setHeroKarmaHarmony(sandboxHero.getPassiveState("karma_harmony", 0) == 1);
 
-        res.setMonsterHasKarma(sandboxMonster.getSpiritualite() != null && sandboxMonster.getSpiritualite().getNom() != null && sandboxMonster.getSpiritualite().getNom().toLowerCase().contains("karma"));
+        res.setMonsterHasKarma(
+                sandboxMonster.getSpiritualite() != null && sandboxMonster.getSpiritualite().getNom() != null
+                        && sandboxMonster.getSpiritualite().getNom().toLowerCase().contains("karma"));
         res.setMonsterKarmaGauge(sandboxMonster.getPassiveState("karma_gauge", 0));
         res.setMonsterKarmaLocked(sandboxMonster.getPassiveState("karma_locked", 0) == 1);
         res.setMonsterKarmaHarmony(sandboxMonster.getPassiveState("karma_harmony", 0) == 1);
@@ -442,14 +458,15 @@ public class WebSpellCreationController {
         res.setHeroVoieName(sandboxHero.getVoie() != null ? sandboxHero.getVoie().getNom() : null);
         res.setHeroVoieLevel(sandboxHero.getVoieLevel());
         res.setHeroSpiritualiteId(sandboxHero.getSpiritualite() != null ? sandboxHero.getSpiritualite().getId() : null);
-        res.setHeroSpiritualiteName(sandboxHero.getSpiritualite() != null ? sandboxHero.getSpiritualite().getNom() : null);
+        res.setHeroSpiritualiteName(
+                sandboxHero.getSpiritualite() != null ? sandboxHero.getSpiritualite().getNom() : null);
         res.setHeroSpiritualiteLevel(sandboxHero.getSpiritualiteLevel());
         res.setHeroPower(sandboxHero.getEffectiveStat(generation.grimoire.enumeration.StatType.POWER));
         res.setHeroArmor(sandboxHero.getEffectiveStat(generation.grimoire.enumeration.StatType.ARMURE));
         res.setHeroResistance(sandboxHero.getEffectiveStat(generation.grimoire.enumeration.StatType.RESISTANCE));
         res.setHeroSpeed(sandboxHero.getEffectiveStat(generation.grimoire.enumeration.StatType.SPEED));
         res.setHeroCrit(sandboxHero.getEffectiveStat(generation.grimoire.enumeration.StatType.CRIT));
-        
+
         res.setHeroBasePower(sandboxHero.getPower());
         res.setHeroBaseArmor(sandboxHero.getArmor());
         res.setHeroBaseResistance(sandboxHero.getResistance());
@@ -476,16 +493,18 @@ public class WebSpellCreationController {
         initSandbox();
 
         // Appliquer la voie
-        if (dto.getVoieId() != null) {
-            voieRepository.findById(dto.getVoieId()).ifPresent(sandboxHero::setVoie);
+        Long voieId = dto.getVoieId();
+        if (voieId != null) {
+            voieRepository.findById(voieId).ifPresent(sandboxHero::setVoie);
         } else {
             sandboxHero.setVoie(null);
         }
         sandboxHero.setVoieLevel(Math.max(1, Math.min(5, dto.getVoieLevel())));
 
         // Appliquer la spiritualité
-        if (dto.getSpiritualiteId() != null) {
-            spiritualiteRepository.findById(dto.getSpiritualiteId()).ifPresent(sandboxHero::setSpiritualite);
+        Long spiritualiteId = dto.getSpiritualiteId();
+        if (spiritualiteId != null) {
+            spiritualiteRepository.findById(spiritualiteId).ifPresent(sandboxHero::setSpiritualite);
         } else {
             sandboxHero.setSpiritualite(null);
         }
@@ -511,7 +530,9 @@ public class WebSpellCreationController {
     }
 
     @PostMapping("/sandbox/cast/{spellId}")
-    public ResponseEntity<SandboxStateDto> castSandboxSpell(@PathVariable @org.springframework.lang.NonNull Long spellId, @RequestParam(required = false) Integer choiceKey) {
+    public ResponseEntity<SandboxStateDto> castSandboxSpell(
+            @PathVariable @org.springframework.lang.NonNull Long spellId,
+            @RequestParam(required = false) Integer choiceKey) {
         initSandbox();
         java.util.Optional<Spell> opt = spellRepository.findById(spellId);
         if (opt.isEmpty()) {
@@ -525,9 +546,10 @@ public class WebSpellCreationController {
             java.io.PrintStream ps = new java.io.PrintStream(baos, true, java.nio.charset.StandardCharsets.UTF_8);
             System.setOut(ps);
 
-            System.out.println("\n🧙‍♂️ --- Action : " + sandboxHero.getName() + " lance " + spell.getNom() + " (Lvl " + spell.getNiveau() + ") ---");
+            System.out.println("\n🧙‍♂️ --- Action : " + sandboxHero.getName() + " lance " + spell.getNom() + " (Lvl "
+                    + spell.getNiveau() + ") ---");
             spellService.castSpell(spell, sandboxHero, sandboxMonster, choiceKey);
-            
+
             ps.flush();
         } catch (Exception e) {
             System.out.println("❌ Erreur lors du lancer : " + e.getMessage());
@@ -552,13 +574,14 @@ public class WebSpellCreationController {
             System.setOut(ps);
 
             System.out.println("\n🌀 --- FIN DU TOUR " + sandboxTurn + " ---");
-            
+
             // Résoudre les canalisations actives du héros
             if (sandboxHero.getRemainingChannelingTurns() > 0) {
                 spellService.tickChanneling(sandboxHero, sandboxMonster, sandboxHero.getChannelingChoiceKey());
             }
 
-            // Déclencher le début du tour suivant pour le héros et le monstre (inclut les passifs, DoTs, HoTs, etc.)
+            // Déclencher le début du tour suivant pour le héros et le monstre (inclut les
+            // passifs, DoTs, HoTs, etc.)
             spellService.startTurn(sandboxHero);
             spellService.startTurn(sandboxMonster);
 
@@ -609,7 +632,7 @@ public class WebSpellCreationController {
         spell.setAllowInstantDuringChanneling(dto.isAllowInstantDuringChanneling());
         spell.setHeatGenerated(dto.getHeatGenerated());
         spell.setInspiration(dto.isInspiration());
-        
+
         if (dto.getKarmaAlignment() != null) {
             spell.setKarmaAlignment(dto.getKarmaAlignment());
         } else {
@@ -729,7 +752,8 @@ public class WebSpellCreationController {
                     case "HEAT_PERCENTAGE":
                         generation.grimoire.entity.spell.type.effect.HeatPercentageEffect heatPercentage = new generation.grimoire.entity.spell.type.effect.HeatPercentageEffect();
                         heatPercentage.setPercentage(eDto.getPercentage());
-                        heatPercentage.setSource(eDto.getSource() != null ? eDto.getSource() : Source.TARGET_HEALTH_MAX);
+                        heatPercentage
+                                .setSource(eDto.getSource() != null ? eDto.getSource() : Source.TARGET_HEALTH_MAX);
                         effect = heatPercentage;
                         break;
                     case "HEAT_OVER_TIME":
@@ -743,7 +767,8 @@ public class WebSpellCreationController {
                 }
 
                 if (effect != null) {
-                    effect.setEffectTarget(eDto.getEffectTarget() != null ? eDto.getEffectTarget() : EffectTarget.TARGET);
+                    effect.setEffectTarget(
+                            eDto.getEffectTarget() != null ? eDto.getEffectTarget() : EffectTarget.TARGET);
                     effect.setRequiredChoiceKey(eDto.getRequiredChoiceKey());
                     if (eDto.getChannelingTurns() != null) {
                         effect.setChannelingTurns(new java.util.ArrayList<>(eDto.getChannelingTurns()));
@@ -840,7 +865,7 @@ public class WebSpellCreationController {
         private boolean heroHasViolence;
         private int heroViolenceInspiration;
         private int heroViolenceExpiration;
-        
+
         private boolean heroHasKarma;
         private int heroKarmaGauge;
         private boolean heroKarmaLocked;
@@ -860,7 +885,7 @@ public class WebSpellCreationController {
         private int heroResistance;
         private int heroSpeed;
         private int heroCrit;
-        
+
         private int heroBasePower;
         private int heroBaseArmor;
         private int heroBaseResistance;
