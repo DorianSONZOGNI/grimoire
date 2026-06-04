@@ -559,8 +559,14 @@ export function initiateCast(spellId) {
     const enemyCards = document.querySelectorAll('.combatant-card[data-team="enemy"]');
     const allyCards = document.querySelectorAll('.combatant-card[data-team="ally"]');
 
+    const validAllyCards = Array.from(allyCards).filter(c => c.dataset.index !== "0");
     const multiEnemy = needsEnemy && enemyCards.length > 1;
-    const multiAlly = needsAlly && allyCards.length > 1;
+    const multiAlly = needsAlly && validAllyCards.length > 0;
+
+    if (needsAlly && validAllyCards.length === 0) {
+        alert("Ce sort nécessite un allié (autre que le lanceur) comme cible, mais aucun n'est disponible.");
+        return;
+    }
 
     if (!multiEnemy && !multiAlly) {
         // Direct cast — no selection needed
@@ -590,11 +596,11 @@ export function initiateCast(spellId) {
     }
 
     if (multiAlly) {
-        allyCards.forEach(card => {
+        validAllyCards.forEach(card => {
             card.classList.add('target-selectable');
             card.onclick = () => {
                 pendingTargetAllyIndex = parseInt(card.dataset.index, 10);
-                allyCards.forEach(c => c.classList.remove('target-selected'));
+                validAllyCards.forEach(c => c.classList.remove('target-selected'));
                 card.classList.add('target-selected');
                 checkAndConfirmCast();
             };

@@ -363,10 +363,12 @@ public class SpellService {
                 if (target != null) recipients.add(target);
             }
             case ALLY -> {
-                if (ally != null) recipients.add(ally);
+                if (ally != null && ally != caster) recipients.add(ally);
             }
             case ALL_ALLIES -> {
-                if (allAllies != null) recipients.addAll(allAllies);
+                if (allAllies != null) {
+                    recipients.addAll(allAllies);
+                }
             }
             case ALL_ENEMIES -> {
                 if (allEnemies != null) {
