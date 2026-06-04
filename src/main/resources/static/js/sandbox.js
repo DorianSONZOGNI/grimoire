@@ -652,12 +652,17 @@ export function updateSandboxUI(state) {
     // Helper to render Buffs/Debuffs
     const renderBuffsHtml = (buffList) => {
         return (buffList || []).map(b => {
-            let isBad = b.modifier < 0 || b.flatValue < 0;
-            if ((b.statAffected.startsWith('DAMAGE_TAKEN_') || b.statAffected === 'SHIELD_PIERCED') && (b.modifier > 0 || b.flatValue > 0)) {
-                isBad = true; // Subir plus de dégâts ou avoir son bouclier percé est un debuff
+            const inverseStats = ['DAMAGE_TAKEN_MAGIC', 'DAMAGE_TAKEN_PHYSIC', 'DAMAGE_TAKEN_BRUT', 'SHIELD_PIERCED', 'BURN', 'POISON'];
+            const isInverse = inverseStats.includes(b.statAffected);
+            const isNegativeValue = b.modifier < 0 || b.flatValue < 0;
+
+            let isBad = isNegativeValue;
+            if (isInverse) {
+                isBad = !isNegativeValue;
             }
+
             const badgeClass = isBad ? 'debuff' : 'buff';
-            const icon = isBad ? 'trending_down' : 'trending_up';
+            const icon = isNegativeValue ? 'trending_down' : 'trending_up';
 
             let text = '';
             if (b.flatValue) {

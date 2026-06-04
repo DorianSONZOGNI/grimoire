@@ -448,17 +448,29 @@ public class Personnage {
      * Met à jour la durée des buffs/débuffs actifs et retire ceux qui sont expirés.
      */
     public void updateBuffs() {
+        int totalBurnFlat = getStatFlatBonus(StatType.BURN);
+        if (totalBurnFlat > 0) {
+            double totalBurnMult = Math.max(0, getStatBuffMultiplier(StatType.BURN));
+            int effectiveBurn = (int) Math.round(totalBurnFlat * totalBurnMult);
+            if (effectiveBurn > 0) {
+                System.out.println("🔥 " + this.name + " subit " + effectiveBurn + " dégâts de Brûlure !");
+                this.takeDamage(effectiveBurn, DamageType.MAGIC, null, true);
+            }
+        }
+
+        int totalPoisonFlat = getStatFlatBonus(StatType.POISON);
+        if (totalPoisonFlat > 0) {
+            double totalPoisonMult = Math.max(0, getStatBuffMultiplier(StatType.POISON));
+            int effectivePoison = (int) Math.round(totalPoisonFlat * totalPoisonMult);
+            if (effectivePoison > 0) {
+                System.out.println("☠️ " + this.name + " subit " + effectivePoison + " dégâts de Poison !");
+                this.takeDamage(effectivePoison, DamageType.BRUT);
+            }
+        }
+
         Iterator<BuffDebuffEffect> iterator = activeBuffs.iterator();
         while (iterator.hasNext()) {
             BuffDebuffEffect effect = iterator.next();
-            
-            if (effect.getStatAffected() == StatType.BURN && effect.getFlatValue() > 0) {
-                System.out.println("🔥 " + this.name + " subit " + effect.getFlatValue() + " dégâts de Brûlure !");
-                this.takeDamage(effect.getFlatValue(), DamageType.MAGIC, null, true);
-            } else if (effect.getStatAffected() == StatType.POISON && effect.getFlatValue() > 0) {
-                System.out.println("☠️ " + this.name + " subit " + effect.getFlatValue() + " dégâts de Poison !");
-                this.takeDamage(effect.getFlatValue(), DamageType.BRUT);
-            }
 
             effect.setDuration(effect.getDuration() - 1);
             if (effect.getDuration() <= 0) {
@@ -529,10 +541,11 @@ public class Personnage {
     }
 
     public double getStatBuffMultiplier(StatType statType) {
-        return activeBuffs.stream()
+        double totalModifier = activeBuffs.stream()
                 .filter(buff -> buff.affectsStatType(statType) && buff.getFlatValue() == 0)
-                .map(BuffDebuffEffect::getModifier)
-                .reduce(1.0, (a, b) -> a * b);
+                .mapToDouble(BuffDebuffEffect::getModifier)
+                .sum();
+        return 1.0 + totalModifier;
     }
 
     public int getStatFlatBonus(StatType statType) {
@@ -621,7 +634,18 @@ public class Personnage {
 
     /** Alias pour la lisibilité dans les passifs. */
     public int getMaxHp() {
-        return healthMax;
+        return getHealthMax();
+    }
+
+    public int getHealthMax() {
+        int base = this.healthMax;
+        double effective = base + getStatFlatBonus(StatType.HEALTH);
+        effective *= Math.max(0, getStatBuffMultiplier(StatType.HEALTH));
+        return (int) Math.round(effective);
+    }
+
+    public int getHealthCurrent() {
+        return Math.min(this.healthCurrent, getHealthMax());
     }
 
     /**
@@ -746,7 +770,9 @@ public class Personnage {
                 max = p.adjustMaxMana(this, max);
             }
         }
-        return max;
+        double effective = max + getStatFlatBonus(StatType.MANA);
+        effective *= Math.max(0, getStatBuffMultiplier(StatType.MANA));
+        return (int) Math.round(effective);
     }
 
     public int getManaCurrent() {

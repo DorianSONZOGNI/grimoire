@@ -125,7 +125,7 @@ export function getSpellEffectsSummaryHtml(sp) {
         if (sp.heatGenerated && sp.heatGenerated > 0 && !hasHeatEffectInList) {
             effectsSummaryHtml += `
                         <div class="effect-line" style="display:flex; align-items:baseline; gap:0.3rem; flex-wrap:wrap;">
-                            <div class="indicator caster" style="flex-shrink:0;"></div>
+                            <div class="indicator" style="flex-shrink:0; background-color: #f97316;"></div>
                             <span style="font-weight:600; color:#fff;">[Lanceur]</span>
                             <span style="color:#ef4444; font-weight:500;">🔥 Chaleur</span>
                             <span style="color:#e2e8f0;">➔ génère ${sp.heatGenerated} Chaleur</span>
@@ -145,14 +145,25 @@ export function getSpellEffectsSummaryHtml(sp) {
                 };
                 const targetText = effectTargetLabels[target] || 'Cible';
 
-                let indicatorClass = 'target';
-                if (target === 'CASTER') {
-                    indicatorClass = 'caster';
-                } else if (target === 'ALLY' || target === 'ALL_ALLIES') {
-                    indicatorClass = 'ally';
-                } else if (target) {
-                    indicatorClass = target.toLowerCase().replace('_', '-');
+                const rawType = e.effectType || e.effect_type || '';
+                const t = rawType.replace('Effect', '');
+
+                let isBad = false;
+                if (['DamageFixed', 'FIXED_DAMAGE', 'DamagePercentage', 'PERCENTAGE_DAMAGE', 'DamageOverTime', 'DOT'].includes(t)) {
+                    isBad = true;
+                } else if (['BuffDebuff', 'BUFF_DEBUFF'].includes(t)) {
+                    const inverseStats = ['DAMAGE_TAKEN_MAGIC', 'DAMAGE_TAKEN_PHYSIC', 'DAMAGE_TAKEN_BRUT', 'SHIELD_PIERCED', 'BURN', 'POISON'];
+                    const isNegativeValue = e.modifier < 0 || e.flatValue < 0;
+                    isBad = isNegativeValue;
+                    if (e.statAffected && inverseStats.includes(e.statAffected)) {
+                        isBad = !isNegativeValue;
+                    }
                 }
+
+                let indicatorColor = isBad ? '#f43f5e' : '#10b981'; // Red for bad, green for good
+                if (['Shield', 'SHIELD'].includes(t)) indicatorColor = '#3b82f6';
+                if (['ManaFixed', 'FIXED_MANA', 'ManaPercentage', 'PERCENTAGE_MANA', 'ManaOverTime', 'MOT'].includes(t)) indicatorColor = '#38bdf8';
+                if (['HeatFixed', 'HEAT_FIXED', 'HeatPercentage', 'HEAT_PERCENTAGE', 'HeatOverTime', 'HEAT_OVER_TIME', 'Heat', 'HEAT'].includes(t)) indicatorColor = '#f97316';
 
                 const typeNames = {
                     'DamageFixedEffect': 'Dégâts Fixes',
@@ -194,9 +205,6 @@ export function getSpellEffectsSummaryHtml(sp) {
                 const dtStr = dt === 'magic' ? 'Magiques' : (dt === 'physic' ? 'Physiques' : 'Bruts');
 
                 let detailsStr = '';
-                const rawType = e.effectType || e.effect_type || '';
-                const t = rawType.replace('Effect', '');
-
                 if (t === 'DamageFixed' || t === 'FIXED_DAMAGE') {
                     detailsStr = `➔ inflige ${e.damage || 0} Dégâts ${dtStr}`;
                 } else if (t === 'DamagePercentage' || t === 'PERCENTAGE_DAMAGE') {
@@ -291,9 +299,8 @@ export function getSpellEffectsSummaryHtml(sp) {
                     }
                 }
 
-                effectsSummaryHtml += `
-                        <div class="effect-line" style="display:flex; align-items:baseline; gap:0.3rem; flex-wrap:wrap;">
-                            <div class="indicator ${indicatorClass}" style="flex-shrink:0;"></div>
+                effectsSummaryHtml += `<div style="display:flex; align-items:flex-start; gap:0.3rem;">
+                            <div class="indicator" style="flex-shrink:0; background-color: ${indicatorColor};"></div>
                             ${turnBadge}
                             ${keyBadge}
                             <span style="font-weight:600; color:#fff;">[${targetText}]</span>
