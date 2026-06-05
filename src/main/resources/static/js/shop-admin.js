@@ -199,7 +199,7 @@ document.getElementById('deleteConfirmBtn').addEventListener('click', async () =
 function renderVault() {
     // Sort allEquipments: rarity order, then name
     const rarityOrder = { 'RELIQUE': 0, 'EPIQUE': 1, 'LEGENDAIRE': 2, 'RARE': 3, 'COMMUN': 4 };
-    
+
     let sorted = [...allEquipments].sort((a, b) => {
         const rA = rarityOrder[a.rarity || 'COMMUN'];
         const rB = rarityOrder[b.rarity || 'COMMUN'];
@@ -241,10 +241,10 @@ function renderGrid(equipments) {
 
     const RARITY_LABELS = {
         COMMUN: { label: 'Commun', icon: 'lens' },
-        RARE: { label: 'Rare', icon: 'stars' },
-        LEGENDAIRE: { label: 'Légendaire', icon: 'military_tech' },
-        EPIQUE: { label: 'Épique', icon: 'diamond' },
-        RELIQUE: { label: 'Relique', icon: 'workspace_premium' }
+        RARE: { label: 'Rare', icon: 'adjust' },
+        LEGENDAIRE: { label: 'Légendaire', icon: 'workspace_premium' },
+        EPIQUE: { label: 'Épique', icon: 'whatshot' },
+        RELIQUE: { label: 'Relique', icon: 'webhook' }
     };
 
     let html = '';
@@ -265,7 +265,7 @@ function renderGrid(equipments) {
 
         items.forEach(eq => {
             const slotInfo = SLOT_LABELS[eq.slot] || { label: eq.slot, icon: 'help', color: '#94a3b8' };
-            
+
             const statsHtml = STAT_DEFS
                 .filter(s => eq[s.key] && eq[s.key] !== 0)
                 .map(s => {

@@ -386,7 +386,7 @@ export function getSpellCardHtml(sp) {
     const isMaxLevel = (sp.niveau === 5 && sp.voie) || (sp.niveau === 3 && sp.spiritualite && !sp.voie);
 
     let lvlBadgeStyle = 'background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: #f8fafc; font-weight: 500;';
-    let lvlIcon = '<span class="material-symbols-outlined" style="font-size: 1.05rem;">military_tech</span>';
+    let lvlIcon = '<span class="material-symbols-outlined" style="font-size: 1.05rem;">workspace_premium</span>';
     if (sp.niveau === 2) {
         lvlBadgeStyle = 'background: rgba(255,255,255,0.22); border: 1px solid rgba(255,255,255,0.5); color: #fff; font-weight: 600;';
     } else if (sp.niveau === 3 && !isMaxLevel) {
