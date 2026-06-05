@@ -41,11 +41,15 @@ export function renderFilteredSpells() {
         // Type d'effet
         if (effectVal !== 'ALL') {
             if (!sp.effects || !sp.effects.some(e => {
-                const rawType = e.effectType || e.effect_type || '';
-                const mappedType = javaClassToCode[rawType] || rawType;
+                let rawType = e.effectType || e.effect_type || '';
+                let mappedType = javaClassToCode[rawType] || rawType;
+
+                if (mappedType === 'BUFF_DEBUFF' && (e.statAffected === 'POISON' || e.statAffected === 'BURN')) {
+                    mappedType = e.statAffected;
+                }
 
                 if (effectVal === 'GROUP_DAMAGE') {
-                    return ['FIXED_DAMAGE', 'PERCENTAGE_DAMAGE', 'DOT'].includes(mappedType);
+                    return ['FIXED_DAMAGE', 'PERCENTAGE_DAMAGE', 'DOT', 'POISON', 'BURN'].includes(mappedType);
                 }
                 if (effectVal === 'GROUP_HEAL') {
                     return ['FIXED_HEAL', 'PERCENTAGE_HEAL', 'HOT'].includes(mappedType);
@@ -55,6 +59,10 @@ export function renderFilteredSpells() {
                 }
                 if (effectVal === 'GROUP_EFFECTS') {
                     return ['BUFF_DEBUFF', 'PURGE', 'SHIELD'].includes(mappedType);
+                }
+
+                if (effectVal === 'DOT') {
+                    return ['DOT', 'POISON', 'BURN'].includes(mappedType);
                 }
 
                 return mappedType === effectVal;

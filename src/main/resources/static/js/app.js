@@ -23,6 +23,7 @@ Object.assign(window, ui);
 window.addEventListener('DOMContentLoaded', async () => {
     ui.updateDisplayModeUI();
     ui.initResizeObserver();
+    sandbox.initSandboxSpellSearch();
     await api.fetchMeta();
     await api.loadSpells();
 });

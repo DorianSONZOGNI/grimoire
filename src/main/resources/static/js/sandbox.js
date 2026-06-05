@@ -116,22 +116,6 @@ export function renderHeroConfigBadges(hero) {
         html += `<span style="font-size: 0.72rem; color: var(--text-muted); font-style: italic;">Aucune voie ni spiritualité configurée</span>`;
     }
 
-    const pui = hero.basePower !== undefined ? hero.basePower : (hero.power || 0);
-    const forPhy = hero.baseStrength !== undefined ? hero.baseStrength : (hero.strength || 0);
-    const arm = hero.baseArmor !== undefined ? hero.baseArmor : (hero.armor || 0);
-    const res = hero.baseResistance !== undefined ? hero.baseResistance : (hero.resistance || 0);
-    const vit = hero.baseSpeed !== undefined ? hero.baseSpeed : (hero.speed || 0);
-    const crit = hero.baseCrit !== undefined ? hero.baseCrit : (hero.crit || 0);
-
-    html += `<div class="hero-stats-row">`;
-    html += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #a855f7;">auto_awesome</span>${pui} Pui</span>`;
-    html += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #f43f5e;">fitness_center</span>${forPhy} For</span>`;
-    html += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #3b82f6;">shield</span>${arm} Arm</span>`;
-    html += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #10b981;">shield</span>${res} Rés</span>`;
-    if (vit > 0) html += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #f59e0b;">bolt</span>${vit} Vit</span>`;
-    if (crit > 0) html += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #ef4444;">gps_fixed</span>${crit}% Crit</span>`;
-    html += `</div>`;
-
     container.innerHTML = html;
 }
 
@@ -253,29 +237,114 @@ export function renderSandboxSpells() {
 }
 
 export function renderSandboxSpellSelector() {
-    const select = document.getElementById('sandboxSpellSelect');
-    if (!select) return;
-
-    let html = '<option value="">-- Ajouter un sort au banc d\'essai --</option>';
-    state.loadedSpells.forEach(sp => {
-        if (!state.sandboxSpellIds.includes(sp.id)) {
-            html += `<option value="${sp.id}">${sp.nom} (Lvl ${sp.niveau})</option>`;
-        }
-    });
-    select.innerHTML = html;
+    updateSandboxSpellDropdown();
 }
 
-export function addSelectedSpellToSandbox() {
-    const select = document.getElementById('sandboxSpellSelect');
-    if (!select || !select.value) return;
+function updateSandboxSpellDropdown() {
+    const searchInput = document.getElementById('sandboxSpellSearch');
+    const dropdown = document.getElementById('sandboxSpellDropdown');
+    if (!searchInput || !dropdown) return;
 
-    const spellId = parseInt(select.value, 10);
+    const query = searchInput.value.toLowerCase().trim();
+    const availableSpells = state.loadedSpells.filter(sp => !state.sandboxSpellIds.includes(sp.id));
+    
+    if (availableSpells.length === 0) {
+        dropdown.innerHTML = `<div style="padding: 0.8rem; color: var(--text-muted); font-size: 0.85rem; text-align: center; font-style: italic;">Tous les sorts sont déjà dans le banc d'essai</div>`;
+        return;
+    }
+
+    const filtered = availableSpells.filter(sp => sp.nom.toLowerCase().includes(query) || (sp.description && sp.description.toLowerCase().includes(query)));
+
+    if (filtered.length === 0) {
+        dropdown.innerHTML = `<div style="padding: 0.8rem; color: var(--text-muted); font-size: 0.85rem; text-align: center; font-style: italic;">Aucun sort trouvé pour "${query}"</div>`;
+        return;
+    }
+
+    // Sort by Voie, then Spiritualite, then level, then name
+    filtered.sort((a, b) => {
+        const voieA = (a.voie && a.voie.nom) ? a.voie.nom : 'ZZZ_AucuneVoie'; // Push those without Voie to the end
+        const voieB = (b.voie && b.voie.nom) ? b.voie.nom : 'ZZZ_AucuneVoie';
+        
+        if (voieA !== voieB) {
+            return voieA.localeCompare(voieB);
+        }
+
+        const spiritA = (a.spiritualite && a.spiritualite.nom) ? a.spiritualite.nom : 'ZZZ_AucuneSpirit';
+        const spiritB = (b.spiritualite && b.spiritualite.nom) ? b.spiritualite.nom : 'ZZZ_AucuneSpirit';
+
+        if (spiritA !== spiritB) {
+            return spiritA.localeCompare(spiritB);
+        }
+
+        if (a.niveau !== b.niveau) {
+            return a.niveau - b.niveau;
+        }
+        return a.nom.localeCompare(b.nom);
+    });
+
+    let html = '';
+    filtered.forEach(sp => {
+        const color = ui.getSpellColor(sp);
+        let iconHtml = '';
+        if (sp.voie && sp.voie.nom) {
+            iconHtml = `<span class="material-symbols-outlined" style="font-size: 1.1rem; color: ${color};">${ui.getVoieIcon(sp.voie.nom)}</span>`;
+        } else if (sp.spiritualite && sp.spiritualite.nom) {
+            iconHtml = `<span class="material-symbols-outlined" style="font-size: 1.1rem; color: ${color};">${ui.getSpiritIcon(sp.spiritualite.nom)}</span>`;
+        } else {
+            iconHtml = `<span class="material-symbols-outlined" style="font-size: 1.1rem; color: #94a3b8;">auto_awesome</span>`;
+        }
+
+        html += `
+            <div class="sandbox-spell-dropdown-item" 
+                 onclick="addSpellToSandboxDirectly(${sp.id})"
+                 onmouseover="this.style.background='rgba(255,255,255,0.05)'; this.style.paddingLeft='1.2rem';"
+                 onmouseout="this.style.background='transparent'; this.style.paddingLeft='0.8rem';"
+                 style="padding: 0.6rem 0.8rem; cursor: pointer; display: flex; align-items: center; justify-content: space-between; border-bottom: 1px solid rgba(255,255,255,0.05); transition: all 0.2s;">
+                <div style="display: flex; align-items: center; gap: 0.6rem;">
+                    ${iconHtml}
+                    <span style="color: #e2e8f0; font-size: 0.85rem; font-weight: 500;">${sp.nom}</span>
+                </div>
+                <span class="badge" style="font-size: 0.7rem; background: rgba(255,255,255,0.1); color: #cbd5e1;">Lvl ${sp.niveau}</span>
+            </div>
+        `;
+    });
+    dropdown.innerHTML = html;
+}
+
+export function addSpellToSandboxDirectly(spellId) {
     if (!isNaN(spellId) && !state.sandboxSpellIds.includes(spellId)) {
         state.sandboxSpellIds.push(spellId);
         renderSandboxSpells();
         renderSandboxSpellSelector();
+        const searchInput = document.getElementById('sandboxSpellSearch');
+        if (searchInput) {
+            searchInput.value = '';
+            document.getElementById('sandboxSpellDropdown').style.display = 'none';
+        }
     }
-    select.value = "";
+}
+
+export function initSandboxSpellSearch() {
+    const searchInput = document.getElementById('sandboxSpellSearch');
+    const dropdown = document.getElementById('sandboxSpellDropdown');
+    const container = document.getElementById('sandboxSpellSearchContainer');
+    if (!searchInput || !dropdown || !container) return;
+
+    searchInput.addEventListener('focus', () => {
+        dropdown.style.display = 'block';
+        updateSandboxSpellDropdown();
+    });
+
+    searchInput.addEventListener('input', () => {
+        dropdown.style.display = 'block';
+        updateSandboxSpellDropdown();
+    });
+
+    document.addEventListener('click', (e) => {
+        if (e.target !== searchInput && !container.contains(e.target)) {
+            dropdown.style.display = 'none';
+        }
+    });
 }
 
 export function removeSpellFromSandbox(spellId) {
@@ -429,23 +498,35 @@ function renderBuffsHtml(buffList) {
 function renderCombatantCard(c, team, isHero = false) {
     const emoji = team === 'ally' ? '🧙‍♂️' : '👹';
     const roleLabel = isHero ? ' (Lanceur)' : '';
-    const hpPct = Math.max(0, Math.min(100, (c.hpCurrent / c.hpMax) * 100));
+    const hpPct = c.hpMax > 0 ? Math.max(0, Math.min(100, (c.hpCurrent / c.hpMax) * 100)) : 0;
     let hpLabel = `${c.hpCurrent} / ${c.hpMax}`;
     if (c.shieldTotal > 0) hpLabel += ` (+${c.shieldTotal} 🛡️)`;
 
-    const hasMana = c.manaMax > 0;
-    let manaHtml = '';
-    if (hasMana) {
-        const manaPct = Math.max(0, Math.min(100, (c.manaCurrent / c.manaMax) * 100));
-        manaHtml = `
-            <div class="gauge-container">
-                <div class="gauge-label"><span>Mana</span><span>${c.manaCurrent} / ${c.manaMax}</span></div>
-                <div class="gauge-track"><div class="gauge-fill mana" style="width: ${manaPct}%;"></div></div>
-            </div>`;
-    }
+    const manaPct = c.manaMax > 0 ? Math.max(0, Math.min(100, (c.manaCurrent / c.manaMax) * 100)) : 0;
+    let manaHtml = `
+        <div class="gauge-container">
+            <div class="gauge-label"><span>Mana</span><span>${c.manaCurrent} / ${c.manaMax}</span></div>
+            <div class="gauge-track"><div class="gauge-fill mana" style="width: ${manaPct}%;"></div></div>
+        </div>`;
 
     const canRemove = (team === 'ally' && !isHero) || (team === 'enemy');
     const removeBtn = canRemove ? `<button type="button" class="btn-remove-combatant" onclick="removeSandboxCombatant('${team === 'ally' ? 'ALLY' : 'ENEMY'}', ${c.index})" title="Retirer">✕</button>` : '';
+
+    const pui = c.power !== undefined ? c.power : 0;
+    const forPhy = c.strength !== undefined ? c.strength : 0;
+    const arm = c.armor !== undefined ? c.armor : 0;
+    const res = c.resistance !== undefined ? c.resistance : 0;
+    const vit = c.speed !== undefined ? c.speed : 0;
+    const crit = (c.critDerived !== null && c.critDerived !== undefined) ? c.critDerived : (c.crit || 0);
+
+    let statsHtml = `<div class="hero-stats-row" style="margin-bottom: 0.5rem; justify-content: flex-start;">`;
+    statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #a855f7;">auto_awesome</span>${pui} Pui</span>`;
+    statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #f43f5e;">fitness_center</span>${forPhy} For</span>`;
+    statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #3b82f6;">shield</span>${arm} Arm</span>`;
+    statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #10b981;">shield</span>${res} Rés</span>`;
+    if (vit > 0) statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #f59e0b;">bolt</span>${vit} Vit</span>`;
+    if (crit > 0) statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #ef4444;">gps_fixed</span>${crit}% Crit</span>`;
+    statsHtml += `</div>`;
 
     return `
         <div class="combatant-card" data-team="${team}" data-index="${c.index}">
@@ -454,6 +535,7 @@ function renderCombatantCard(c, team, isHero = false) {
                 ${removeBtn}
             </div>
             ${isHero ? `<div id="heroConfigBadges" style="display: flex; flex-wrap: wrap; gap: 0.3rem; margin-bottom: 0.3rem;"></div>` : ''}
+            ${statsHtml}
             <div class="gauge-container">
                 <div class="gauge-label"><span>Santé (PV)</span><span>${hpLabel}</span></div>
                 <div class="gauge-track"><div class="gauge-fill hp" style="width: ${hpPct}%;"></div></div>

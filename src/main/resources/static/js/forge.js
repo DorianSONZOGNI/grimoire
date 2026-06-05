@@ -653,23 +653,23 @@ export function renderEffects() {
                         <div style="display: flex; flex-direction: column; gap: 0.8rem; background: rgba(0,0,0,0.25); padding: 0.8rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
                             <label style="color: #fff; font-weight: 600; font-size: 0.9rem;">Cible de l'Effet :</label>
                             <div class="target-selector" style="flex-wrap: wrap; gap: 0.5rem;">
-                                <button type="button" class="target-btn ${eff.effectTarget === 'CASTER' ? 'active-caster' : ''}" onclick="setEffectTarget('${eff.id}', 'CASTER')" title="Affecte uniquement le lanceur du sort">
-                                    ✦ Lanceur
+                                <button type="button" class="target-btn target-caster-btn ${eff.effectTarget === 'CASTER' ? 'active' : ''}" onclick="setEffectTarget('${eff.id}', 'CASTER')" title="Affecte uniquement le lanceur du sort">
+                                    <span class="material-symbols-outlined">person</span> Lanceur
                                 </button>
-                                <button type="button" class="target-btn ${eff.effectTarget === 'ALLY' ? 'active-ally' : ''}" onclick="setEffectTarget('${eff.id}', 'ALLY')" title="Affecte un allié ciblé">
-                                    🛡️ Allié (Ciblé)
+                                <button type="button" class="target-btn target-ally-btn ${eff.effectTarget === 'ALLY' ? 'active' : ''}" onclick="setEffectTarget('${eff.id}', 'ALLY')" title="Affecte un allié ciblé">
+                                    <span class="material-symbols-outlined">shield</span> Allié (Ciblé)
                                 </button>
-                                <button type="button" class="target-btn ${eff.effectTarget === 'TARGET' ? 'active-target' : ''}" onclick="setEffectTarget('${eff.id}', 'TARGET')" title="Affecte la cible ennemie principale">
-                                    🎯 Ennemi (Cible)
+                                <button type="button" class="target-btn target-enemy-btn ${eff.effectTarget === 'TARGET' ? 'active' : ''}" onclick="setEffectTarget('${eff.id}', 'TARGET')" title="Affecte la cible ennemie principale">
+                                    <span class="material-symbols-outlined">my_location</span> Ennemi (Cible)
                                 </button>
-                                <button type="button" class="target-btn ${eff.effectTarget === 'ALL_ALLIES' ? 'active-caster' : ''}" onclick="setEffectTarget('${eff.id}', 'ALL_ALLIES')" title="Affecte le lanceur et tous ses alliés">
-                                    ✦+🛡️ Lanceur &amp; Alliés
+                                <button type="button" class="target-btn target-all-allies-btn ${eff.effectTarget === 'ALL_ALLIES' ? 'active' : ''}" onclick="setEffectTarget('${eff.id}', 'ALL_ALLIES')" title="Affecte le lanceur et tous ses alliés">
+                                    <span class="material-symbols-outlined">groups</span> Lanceur &amp; Alliés
                                 </button>
-                                <button type="button" class="target-btn ${eff.effectTarget === 'ALL_ENEMIES' ? 'active-target' : ''}" onclick="setEffectTarget('${eff.id}', 'ALL_ENEMIES')" title="Affecte tous les ennemis (zone)">
-                                    💥 Tous les Ennemis
+                                <button type="button" class="target-btn target-all-enemies-btn ${eff.effectTarget === 'ALL_ENEMIES' ? 'active' : ''}" onclick="setEffectTarget('${eff.id}', 'ALL_ENEMIES')" title="Affecte tous les ennemis (zone)">
+                                    <span class="material-symbols-outlined">local_fire_department</span> Tous les Ennemis
                                 </button>
-                                <button type="button" class="target-btn" onclick="setEffectTarget('${eff.id}', 'ALL_COMBATANTS')" style="${eff.effectTarget === 'ALL_COMBATANTS' ? 'background: rgba(245,158,11,0.25); color: #fbbf24; border-color: #f59e0b;' : ''}" title="Affecte tout le monde (alliés et ennemis)">
-                                    🌐 Tout le Monde
+                                <button type="button" class="target-btn target-everyone-btn ${eff.effectTarget === 'ALL_COMBATANTS' ? 'active' : ''}" onclick="setEffectTarget('${eff.id}', 'ALL_COMBATANTS')" title="Affecte tout le monde (alliés et ennemis)">
+                                    <span class="material-symbols-outlined">public</span> Tout le Monde
                                 </button>
                             </div>
                         </div>
@@ -686,7 +686,7 @@ export function renderEffects() {
 
                             <!-- Option / Clé d'activation de la ligne d'effet -->
                             <div style="display: flex; gap: 0.5rem; align-items: center; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px dashed rgba(255,255,255,0.05);">
-                                <label style="font-size: 0.8rem; color: #f59e0b; font-weight:600;">🔑 S'active uniquement si l'Option de sort choisie est :</label>
+                                <label style="font-size: 0.8rem; color: #f59e0b; font-weight:600; display:flex; align-items:center; gap:0.3rem;"><span class="material-symbols-outlined" style="font-size:1.1rem;">key</span> S'active uniquement si l'Option de sort choisie est :</label>
                                 <input type="number" value="${eff.requiredChoiceKey !== undefined && eff.requiredChoiceKey !== null ? eff.requiredChoiceKey : ''}" placeholder="Toutes (Par défaut)" style="width: 140px; font-size: 0.85rem; padding: 0.2rem 0.4rem; background: var(--glass-bg); color: #fff; border: 1px solid var(--glass-border); border-radius: 4px;" onchange="updateEffectProp('${eff.id}', 'requiredChoiceKey', this.value ? parseInt(this.value) : null)">
                                 <span style="font-size: 0.75rem; color: var(--text-muted);">Ex: 1 pour la ligne Soin, 2 pour la ligne Mana. Laissez vide pour s'activer toujours.</span>
                             </div>
@@ -694,7 +694,7 @@ export function renderEffects() {
                             <!-- Tour(s) d'activation de l'effet dans la canalisation (uniquement si le sort est canalisé) -->
                             ${isCanalise ? `
                             <div style="display: flex; flex-direction: column; gap: 0.4rem; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px dashed rgba(255,255,255,0.05);">
-                                <label style="font-size: 0.8rem; color: #a78bfa; font-weight: 600;">🌀 Activation par Tour de Canalisation :</label>
+                                <label style="font-size: 0.8rem; color: #a78bfa; font-weight: 600; display:flex; align-items:center; gap:0.3rem;"><span class="material-symbols-outlined" style="font-size:1.1rem;">cyclone</span> Activation par Tour de Canalisation :</label>
                                 <div style="display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center;">
                                     ${Array.from({ length: duration }, (_, i) => i + 1).map(turn => {
             const isActive = (eff.channelingTurns || []).includes(turn);
