@@ -6,5 +6,6 @@ public enum EquipmentSlot {
     ANNEAU_GAUCHE,
     ANNEAU_DROIT,
     BOTTES,
-    CAPE
+    CAPE,
+    CONSOMMABLE
 }
