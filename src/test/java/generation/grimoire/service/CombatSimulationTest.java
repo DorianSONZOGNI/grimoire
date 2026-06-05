@@ -72,8 +72,8 @@ class CombatSimulationTest {
         ally2.setTeamId("HEROES");
         ally2.setHealthMax(200);
         ally2.setHealthCurrent(200);
-        ally2.setManaMax(150);
-        ally2.setManaCurrent(150);
+        ally2.setManaMax(500);
+        ally2.setManaCurrent(500);
         ally2.setArmor(30);
 
         Voie voieSurete = new Voie();
@@ -84,7 +84,7 @@ class CombatSimulationTest {
 
         attackSpellAlly2 = new Spell();
         attackSpellAlly2.setNom("Châtiment Lumineux");
-        attackSpellAlly2.setManaCost(20);
+        attackSpellAlly2.setManaCost(100);
         attackSpellAlly2.setVoie(voieSurete);
         DamageFixedEffect dmg2 = new DamageFixedEffect();
         dmg2.setDamageType(DamageType.MAGIC);
@@ -93,7 +93,7 @@ class CombatSimulationTest {
 
         debuffSpellAlly2 = new Spell();
         debuffSpellAlly2.setNom("Sceau de Fragilité");
-        debuffSpellAlly2.setManaCost(25);
+        debuffSpellAlly2.setManaCost(100);
         debuffSpellAlly2.setVoie(voieSurete);
         BuffDebuffEffect debuff = new BuffDebuffEffect();
         debuff.setStatAffected(StatType.ARMURE);
@@ -232,8 +232,8 @@ class CombatSimulationTest {
         // Zane a pris des dégâts (boss attack T1 et T4 = 100 dégâts avant armure)
         assertThat(ally1.getHealthCurrent()).isLessThan(150);
 
-        // Elara a dépensé de la mana (T1:25, T2:20, T3:20, T4:20, T5:20 = 105 mana total)
-        assertThat(ally2.getManaCurrent()).isEqualTo(150 - 105);
+        // Elara a dépensé de la mana (T1:100, T2:100, T3:100, T4:100, T5:100 = 500 mana total)
+        assertThat(ally2.getManaCurrent()).isEqualTo(0);
         
         // La mécanique de heal de Trahison (Zane se soigne sur ses frappes physiques) a fait remonter sa vie
         // Sans le heal, il serait plus bas. On peut juste s'assurer que tout a tourné sans erreur.

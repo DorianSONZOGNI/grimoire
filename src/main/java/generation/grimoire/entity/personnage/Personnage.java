@@ -8,6 +8,7 @@ import generation.grimoire.entity.spell.type.effect.ConsumableSpellBuffDebuffEff
 import generation.grimoire.entity.spell.type.effect.DamageOverTimeEffect;
 import generation.grimoire.entity.spell.type.effect.HealOverTimeEffect;
 import generation.grimoire.entity.spell.type.effect.ManaOverTimeEffect;
+import generation.grimoire.entity.voie.passif.specific.TrahisonPassiveEffect;
 import generation.grimoire.enumeration.DamageType;
 import generation.grimoire.enumeration.StatType;
 import jakarta.persistence.*;
@@ -38,6 +39,7 @@ public class Personnage {
     private int manaMax;
     private int manaCurrent;
     private int power;
+    private int strength;
     private int armor;
     private int resistance;
     private int crit;
@@ -47,9 +49,13 @@ public class Personnage {
     @JoinColumn(name = "voie_id", nullable = true)
     private Voie voie;
 
+    private int voieLevel = 1;
+
     @ManyToOne
     @JoinColumn(name = "spiritualite_id", nullable = true)
     private Spiritualite spiritualite;
+
+    private int spiritualiteLevel = 1;
 
     // Liste des buffs/débuffs actifs (ici en mémoire, mais vous pouvez choisir de
     // les persister si besoin)
@@ -119,7 +125,8 @@ public class Personnage {
                 this.channelingChoiceKey = null;
                 System.out.println(name + " a terminé sa canalisation.");
             } else {
-                System.out.println(name + " continue de canaliser (tours restants : " + remainingChannelingTurns + ").");
+                System.out
+                        .println(name + " continue de canaliser (tours restants : " + remainingChannelingTurns + ").");
             }
         }
     }
@@ -136,6 +143,21 @@ public class Personnage {
     }
 
     public void takeDamage(int damage, DamageType damageType, Personnage caster) {
+        takeDamage(damage, damageType, caster, false);
+    }
+
+    public void takeDamage(int damage, DamageType damageType, Personnage caster, boolean isBurn) {
+        if (damageType == DamageType.PHYSIC && caster != null) {
+            if (caster.getVoie() != null && caster.getVoie().getPassiveEffects() != null) {
+                for (generation.grimoire.entity.voie.passif.VoiePassiveEffect p : caster.getVoie()
+                        .getPassiveEffects()) {
+                    if (p instanceof TrahisonPassiveEffect trahison) {
+                        trahison.onPhysicalHit(caster, this, damage);
+                    }
+                }
+            }
+        }
+
         double constant; // La constante K qui détermine la courbe.
 
         double effectiveArmor = this.armor + getStatFlatBonus(StatType.ARMURE);
@@ -149,7 +171,8 @@ public class Personnage {
             }
             case MAGIC -> {
                 constant = 100;
-                yield effectiveResistance * Math.max(0, getStatBuffMultiplier(StatType.RESISTANCE));
+                double res = effectiveResistance * Math.max(0, getStatBuffMultiplier(StatType.RESISTANCE));
+                yield isBurn ? res * 2 : res;
             }
             default -> {
                 constant = 100;
@@ -160,7 +183,8 @@ public class Personnage {
         // Calcul du facteur de réduction des dégâts (valeur entre 0 et 1)
         double reductionFactor = resistanceValue / (resistanceValue + constant);
 
-        // NOTE : si de multiples buffs sont donnés, cela fonctionne (buff phy, buff mag).
+        // NOTE : si de multiples buffs sont donnés, cela fonctionne (buff phy, buff
+        // mag).
         // NOTE : La vulnérabilité et la résistance fonctionnent en cumulé sur la cible,
         // mais pas encore la surpuissance (multiple sur le lanceur).
 
@@ -183,8 +207,11 @@ public class Personnage {
         // Calcul des dégâts après la réduction
         double finalDamage = damageAfterBuff * (1 - reductionFactor);
 
-        // S'assurer que les dégâts sont toujours au moins 1
+        // S'assurer que les dégâts sont toujours au moins 1 si les dégâts de base étaient > 0
         int effectiveDamage = (int) finalDamage;
+        if (damageAfterBuff > 0 && effectiveDamage < 1) {
+            effectiveDamage = 1;
+        }
 
         // Calculer la pénétration de bouclier (pourcentage et flat)
         double casterPenetrationPct = 0.0;
@@ -203,7 +230,8 @@ public class Personnage {
             targetPiercedPct = this.getStatBuffMultiplier(StatType.SHIELD_PIERCED);
         }
 
-        // Rétrocompatibilité avec les debuffs négatifs de SHIELD_PENETRATION sur la cible
+        // Rétrocompatibilité avec les debuffs négatifs de SHIELD_PENETRATION sur la
+        // cible
         double targetPenetrationPctDebuff = 0.0;
         boolean hasTargetPenDebuff = this.getActiveBuffs().stream()
                 .anyMatch(b -> b.affectsStatType(StatType.SHIELD_PENETRATION) && b.getFlatValue() == 0);
@@ -219,11 +247,10 @@ public class Personnage {
         int casterPenetrationFlat = caster != null ? caster.getStatFlatBonus(StatType.SHIELD_PENETRATION) : 0;
         int targetPiercedFlat = this.getStatFlatBonus(StatType.SHIELD_PIERCED);
         int targetPenetrationFlatDebuff = this.getStatFlatBonus(StatType.SHIELD_PENETRATION);
-        int targetPiercedFlatCombined = targetPiercedFlat + (targetPenetrationFlatDebuff < 0 ? -targetPenetrationFlatDebuff : 0);
+        int targetPiercedFlatCombined = targetPiercedFlat
+                + (targetPenetrationFlatDebuff < 0 ? -targetPenetrationFlatDebuff : 0);
 
         int totalBypassFlat = casterPenetrationFlat + targetPiercedFlatCombined;
-
-
 
         // Calculer le montant qui passe en dessous du bouclier
         int bypassDamage = 0;
@@ -267,7 +294,9 @@ public class Personnage {
 
                             shieldDamageFlat = Math.max(0, shieldDamageFlat - absorbed);
 
-                            System.out.println("🛡️ Le bouclier (" + shield.getSourceName() + ") absorbe " + absorbed + " dégâts (dégâts bruts consommés : " + rawConsumedInt + "). Reste : " + shield.getAmount() + " absorption.");
+                            System.out.println("🛡️ Le bouclier (" + shield.getSourceName() + ") absorbe " + absorbed
+                                    + " dégâts (dégâts bruts consommés : " + rawConsumedInt + "). Reste : "
+                                    + shield.getAmount() + " absorption.");
                             if (remainingDamage <= 0) {
                                 remainingDamage = 0;
                                 break;
@@ -278,13 +307,15 @@ public class Personnage {
             }
         }
 
-        // Appliquer les dégâts finaux (bypass + dégâts non absorbés par le bouclier) à la santé actuelle
+        // Appliquer les dégâts finaux (bypass + dégâts non absorbés par le bouclier) à
+        // la santé actuelle
         int totalDamageToHealth = bypassDamage + remainingDamage;
         this.healthCurrent -= totalDamageToHealth;
 
         // Affichage des informations
         if (bypassDamage > 0) {
-            System.out.println("🛡️ Perce-Bouclier / Bouclier Percé : " + bypassDamage + " dégâts passent en dessous du bouclier.");
+            System.out.println("🛡️ Perce-Bouclier / Bouclier Percé : " + bypassDamage
+                    + " dégâts passent en dessous du bouclier.");
         }
 
         // Affichage des informations
@@ -311,7 +342,13 @@ public class Personnage {
         if (this.healthCurrent > this.healthMax) {
             this.healthCurrent = this.healthMax;
         }
-        System.out.println(name + " est soigné de " + finalHeal + " points (multiplier soin reçu: " + multiplier + "). Vie actuelle : " + healthCurrent);
+        System.out.println(name + " est soigné de " + finalHeal + " points (multiplier soin reçu: " + multiplier
+                + "). Vie actuelle : " + healthCurrent);
+
+        boolean removedPoison = activeBuffs.removeIf(b -> b.getStatAffected() == StatType.POISON && b.getFlatValue() > 0);
+        if (removedPoison) {
+            System.out.println("🌿 Le soin a purifié le Poison sur " + name + " !");
+        }
     }
 
     public void restoreMana(int manaAmount) {
@@ -364,7 +401,6 @@ public class Personnage {
         }
     }
 
-
     public void addDamageOverTimeEffect(DamageOverTimeEffect effect) {
         activeDamageOverTimeEffects.add(effect);
     }
@@ -386,7 +422,8 @@ public class Personnage {
     }
 
     public void updateHeatOverTimeEffects() {
-        Iterator<generation.grimoire.entity.spell.type.effect.HeatOverTimeEffect> iterator = activeHeatOverTimeEffects.iterator();
+        Iterator<generation.grimoire.entity.spell.type.effect.HeatOverTimeEffect> iterator = activeHeatOverTimeEffects
+                .iterator();
         while (iterator.hasNext()) {
             generation.grimoire.entity.spell.type.effect.HeatOverTimeEffect hot = iterator.next();
             hot.tick(this);
@@ -415,9 +452,30 @@ public class Personnage {
      * Met à jour la durée des buffs/débuffs actifs et retire ceux qui sont expirés.
      */
     public void updateBuffs() {
+        int totalBurnFlat = getStatFlatBonus(StatType.BURN);
+        if (totalBurnFlat > 0) {
+            double totalBurnMult = Math.max(0, getStatBuffMultiplier(StatType.BURN));
+            int effectiveBurn = (int) Math.round(totalBurnFlat * totalBurnMult);
+            if (effectiveBurn > 0) {
+                System.out.println("🔥 " + this.name + " subit " + effectiveBurn + " dégâts de Brûlure !");
+                this.takeDamage(effectiveBurn, DamageType.MAGIC, null, true);
+            }
+        }
+
+        int totalPoisonFlat = getStatFlatBonus(StatType.POISON);
+        if (totalPoisonFlat > 0) {
+            double totalPoisonMult = Math.max(0, getStatBuffMultiplier(StatType.POISON));
+            int effectivePoison = (int) Math.round(totalPoisonFlat * totalPoisonMult);
+            if (effectivePoison > 0) {
+                System.out.println("☠️ " + this.name + " subit " + effectivePoison + " dégâts de Poison !");
+                this.takeDamage(effectivePoison, DamageType.BRUT);
+            }
+        }
+
         Iterator<BuffDebuffEffect> iterator = activeBuffs.iterator();
         while (iterator.hasNext()) {
             BuffDebuffEffect effect = iterator.next();
+
             effect.setDuration(effect.getDuration() - 1);
             if (effect.getDuration() <= 0) {
                 iterator.remove();
@@ -434,11 +492,13 @@ public class Personnage {
         double multiplier = getStatBuffMultiplier(StatType.SHIELD_RECEIVED);
         int finalAmount = (int) (amount * Math.max(0, multiplier));
         activeShields.add(new ActiveShield(finalAmount, duration, sourceName));
-        System.out.println(name + " reçoit un bouclier de " + finalAmount + " (multiplier bouclier reçu: " + multiplier + ") pour " + duration + " tours (" + sourceName + ").");
+        System.out.println(name + " reçoit un bouclier de " + finalAmount + " (multiplier bouclier reçu: " + multiplier
+                + ") pour " + duration + " tours (" + sourceName + ").");
     }
 
     public void updateShields() {
-        if (activeShields == null) return;
+        if (activeShields == null)
+            return;
         Iterator<ActiveShield> iterator = activeShields.iterator();
         while (iterator.hasNext()) {
             ActiveShield shield = iterator.next();
@@ -451,7 +511,8 @@ public class Personnage {
     }
 
     public int getTotalShield() {
-        if (activeShields == null) return 0;
+        if (activeShields == null)
+            return 0;
         return activeShields.stream().mapToInt(ActiveShield::getAmount).sum();
     }
 
@@ -484,10 +545,11 @@ public class Personnage {
     }
 
     public double getStatBuffMultiplier(StatType statType) {
-        return activeBuffs.stream()
+        double totalModifier = activeBuffs.stream()
                 .filter(buff -> buff.affectsStatType(statType) && buff.getFlatValue() == 0)
-                .map(BuffDebuffEffect::getModifier)
-                .reduce(1.0, (a, b) -> a * b);
+                .mapToDouble(BuffDebuffEffect::getModifier)
+                .sum();
+        return 1.0 + totalModifier;
     }
 
     public int getStatFlatBonus(StatType statType) {
@@ -496,22 +558,37 @@ public class Personnage {
                 .mapToInt(BuffDebuffEffect::getFlatValue)
                 .sum();
         int passiveBonus = getPassiveState("stat_flat_" + statType.name(), 0);
+        int totalBonus = buffBonus + passiveBonus;
 
-        if (statType == StatType.CRIT) {
-            int speedRatio = getPassiveState("stat_derive_CRIT_from_SPEED", 0);
-            if (speedRatio != 0) {
-                // To prevent infinite recursion if SPEED derived from CRIT, we only do one
-                // level
-                int effectiveSpeed = this.speed + activeBuffs.stream()
-                        .filter(buff -> buff.affectsStatType(StatType.SPEED) && buff.getFlatValue() != 0)
-                        .mapToInt(BuffDebuffEffect::getFlatValue)
-                        .sum()
-                        + getPassiveState("stat_flat_SPEED", 0);
-                passiveBonus += effectiveSpeed * speedRatio;
+        if (this.voie != null && this.voie.getPassiveEffects() != null) {
+            for (generation.grimoire.entity.voie.passif.VoiePassiveEffect p : this.voie.getPassiveEffects()) {
+                totalBonus = p.adjustFlatBonus(this, statType, totalBonus);
+            }
+        }
+        if (this.spiritualite != null && this.spiritualite.getPassiveEffects() != null) {
+            for (generation.grimoire.entity.spiritualite.passif.SpiritualitePassiveEffect p : this.spiritualite
+                    .getPassiveEffects()) {
+                totalBonus = p.adjustFlatBonus(this, statType, totalBonus);
             }
         }
 
-        return buffBonus + passiveBonus;
+        return totalBonus;
+    }
+
+    public int getEffectiveStat(StatType statType) {
+        int base = 0;
+        switch (statType) {
+            case POWER -> base = this.power;
+            case STRENGTH -> base = this.strength;
+            case ARMURE -> base = this.armor;
+            case RESISTANCE -> base = this.resistance;
+            case SPEED -> base = this.speed;
+            case CRIT -> base = this.crit;
+            default -> base = 0;
+        }
+        double effective = base + getStatFlatBonus(statType);
+        effective *= Math.max(0, getStatBuffMultiplier(statType));
+        return (int) Math.round(effective);
     }
 
     public boolean isAlly(Personnage other) {
@@ -521,6 +598,44 @@ public class Personnage {
         return java.util.Objects.equals(this.teamId, other.teamId);
     }
 
+    /**
+     * Vérifie si ce personnage peut lancer le sort donné en fonction de sa voie,
+     * sa spiritualité et ses niveaux respectifs.
+     * <ul>
+     *   <li>Si le sort nécessite une voie, le personnage doit avoir la même voie et un niveau ≥ au niveau du sort.</li>
+     *   <li>Si le sort nécessite une spiritualité, le personnage doit avoir la même spiritualité et un niveau ≥ au niveau du sort.</li>
+     *   <li>Si le sort nécessite les deux, les deux conditions doivent être satisfaites.</li>
+     * </ul>
+     *
+     * @param spell le sort à vérifier
+     * @return un message d'erreur si le lancement est interdit, ou null si autorisé
+     */
+    public String canCast(generation.grimoire.entity.Spell spell) {
+        if (spell.getVoie() != null) {
+            boolean idMatch = this.voie != null && this.voie.getId() != null && spell.getVoie().getId() != null && this.voie.getId().equals(spell.getVoie().getId());
+            boolean nameMatch = this.voie != null && this.voie.getId() == null && spell.getVoie().getId() == null && this.voie.getNom() != null && this.voie.getNom().equals(spell.getVoie().getNom());
+            if (this.voie == null || (!idMatch && !nameMatch)) {
+                return this.name + " n'a pas la " + spell.getVoie().getNom() + " requise pour lancer " + spell.getNom() + ".";
+            }
+            if (this.voieLevel < spell.getNiveau()) {
+                return this.name + " a besoin de " + spell.getVoie().getNom() + " niveau " + spell.getNiveau()
+                        + " (actuel: " + this.voieLevel + ") pour lancer " + spell.getNom() + ".";
+            }
+        }
+        if (spell.getSpiritualite() != null) {
+            boolean idMatch = this.spiritualite != null && this.spiritualite.getId() != null && spell.getSpiritualite().getId() != null && this.spiritualite.getId().equals(spell.getSpiritualite().getId());
+            boolean nameMatch = this.spiritualite != null && this.spiritualite.getId() == null && spell.getSpiritualite().getId() == null && this.spiritualite.getNom() != null && this.spiritualite.getNom().equals(spell.getSpiritualite().getNom());
+            if (this.spiritualite == null || (!idMatch && !nameMatch)) {
+                return this.name + " n'a pas la spiritualité " + spell.getSpiritualite().getNom() + " requise pour lancer " + spell.getNom() + ".";
+            }
+            if (this.spiritualiteLevel < spell.getNiveau()) {
+                return this.name + " a besoin de " + spell.getSpiritualite().getNom() + " niveau " + spell.getNiveau()
+                        + " (actuel: " + this.spiritualiteLevel + ") pour lancer " + spell.getNom() + ".";
+            }
+        }
+        return null; // Lancement autorisé
+    }
+
     /** Alias pour la lisibilité dans les passifs. */
     public int getCurrentHp() {
         return healthCurrent;
@@ -528,17 +643,51 @@ public class Personnage {
 
     /** Alias pour la lisibilité dans les passifs. */
     public int getMaxHp() {
-        return healthMax;
+        return getHealthMax();
+    }
+
+    public int getHealthMax() {
+        int base = this.healthMax;
+        double effective = base + getStatFlatBonus(StatType.HEALTH);
+        effective *= Math.max(0, getStatBuffMultiplier(StatType.HEALTH));
+        return (int) Math.round(effective);
+    }
+
+    public int getHealthCurrent() {
+        return Math.min(this.healthCurrent, getHealthMax());
     }
 
     /**
      * Retourne vrai si le personnage est actuellement sous l'effet d'au moins un
      * débuff
-     * (buff dont la valeur est négative ou modificateur < 1.0).
+     * (flat ou modificateur négatif/réduit, vulnérabilités, ou DoTs actifs).
      */
     public boolean hasDebuff() {
-        return activeBuffs.stream().anyMatch(b -> (b.getFlatValue() != 0 && b.getFlatValue() < 0) ||
-                (b.getFlatValue() == 0 && b.getModifier() < 1.0));
+        if (activeDamageOverTimeEffects != null && !activeDamageOverTimeEffects.isEmpty()) {
+            return true;
+        }
+        if (activeBuffs != null) {
+            for (BuffDebuffEffect b : activeBuffs) {
+                StatType stat = b.getStatAffected();
+                if (stat != null) {
+                    if (stat == StatType.DAMAGE_TAKEN_MAGIC ||
+                            stat == StatType.DAMAGE_TAKEN_PHYSIC ||
+                            stat == StatType.DAMAGE_TAKEN_BRUT ||
+                            stat == StatType.SHIELD_PIERCED ||
+                            stat == StatType.BURN ||
+                            stat == StatType.POISON) {
+                        if (b.getFlatValue() > 0 || (b.getFlatValue() == 0 && b.getModifier() > 1.0)) {
+                            return true;
+                        }
+                    } else {
+                        if (b.getFlatValue() < 0 || (b.getFlatValue() == 0 && b.getModifier() < 1.0)) {
+                            return true;
+                        }
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     public void applyFlatBuff(StatType statType, int flatValue) {
@@ -568,6 +717,7 @@ public class Personnage {
     public void adjustStat(StatType statType, int amount) {
         switch (statType) {
             case POWER -> power += amount;
+            case STRENGTH -> strength += amount;
             case ARMURE -> armor += amount;
             case RESISTANCE -> resistance += amount;
             case CRIT -> crit += amount;
@@ -588,6 +738,56 @@ public class Personnage {
         activeManaOverTimeEffects.clear();
         activeHeatOverTimeEffects.clear();
         System.out.println(name + " est purifié de tous ses bonus et malus !");
+    }
+
+    public void setVoie(Voie voie) {
+        this.voie = voie;
+        int max = getManaMax();
+        if (this.manaMax > max) {
+            this.manaMax = max;
+        }
+        if (this.manaCurrent > max) {
+            this.manaCurrent = max;
+        }
+    }
+
+    public void setManaMax(int manaMax) {
+        this.manaMax = manaMax;
+        int max = getManaMax();
+        if (this.manaMax > max) {
+            this.manaMax = max;
+        }
+        if (this.manaCurrent > this.manaMax) {
+            this.manaCurrent = this.manaMax;
+        }
+    }
+
+    public void setManaCurrent(int manaCurrent) {
+        int max = getManaMax();
+        this.manaCurrent = Math.max(0, Math.min(manaCurrent, max));
+    }
+
+    public int getManaMax() {
+        int max = this.manaMax;
+        if (this.voie != null && this.voie.getPassiveEffects() != null) {
+            for (generation.grimoire.entity.voie.passif.VoiePassiveEffect p : this.voie.getPassiveEffects()) {
+                max = p.adjustMaxMana(this, max);
+            }
+        }
+        if (this.spiritualite != null && this.spiritualite.getPassiveEffects() != null) {
+            for (generation.grimoire.entity.spiritualite.passif.SpiritualitePassiveEffect p : this.spiritualite
+                    .getPassiveEffects()) {
+                max = p.adjustMaxMana(this, max);
+            }
+        }
+        double effective = max + getStatFlatBonus(StatType.MANA);
+        effective *= Math.max(0, getStatBuffMultiplier(StatType.MANA));
+        return (int) Math.round(effective);
+    }
+
+    public int getManaCurrent() {
+        int max = getManaMax();
+        return Math.max(0, Math.min(this.manaCurrent, max));
     }
 
 }

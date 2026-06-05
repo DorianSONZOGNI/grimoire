@@ -109,7 +109,7 @@ public class SpellController {
         healResChoice.setChoiceKey(1);
         BuffDebuffEffect buffRes = new BuffDebuffEffect();
         buffRes.setStatAffected(StatType.RESISTANCE);
-        buffRes.setModifier(1.5); // +50% résistance
+        buffRes.setModifier(0.5); // +50% résistance
         buffRes.setDuration(3);
         healResChoice.addEffect(buffRes);
         HealFixedEffect healSelf = new HealFixedEffect();
@@ -215,7 +215,7 @@ public class SpellController {
         // ===== Buff de vulnérabilité (cible) =====
         BuffDebuffEffect buffVulne = new BuffDebuffEffect();
         buffVulne.setStatAffected(StatType.DAMAGE_TAKEN_MAGIC); // +100% dégâts magiques reçus
-        buffVulne.setModifier(2.0);
+        buffVulne.setModifier(1.0);
         buffVulne.setDuration(2);
         System.out.println("Avant buff - Multiplicateur : " + moine.getStatBuffMultiplier(StatType.DAMAGE_TAKEN_MAGIC));
         buffVulne.apply(mage, moine); // Appliquer le buff
@@ -232,7 +232,7 @@ public class SpellController {
         // ===== Buff de soin reçu (auto-appliqué) =====
         BuffDebuffEffect buffHealReceve = new BuffDebuffEffect();
         buffHealReceve.setStatAffected(StatType.HEALTH);
-        buffHealReceve.setModifier(1.10); // +10%
+        buffHealReceve.setModifier(0.10); // +10%
         buffHealReceve.setDuration(3);
         buffHealReceve.setModifierSource(Source.CASTER_POWER);
         buffHealReceve.apply(moine, moine);
@@ -266,7 +266,7 @@ public class SpellController {
         // ===== Buff de vulnérabilité (cible) =====
         BuffDebuffEffect buffVulne = new BuffDebuffEffect();
         buffVulne.setStatAffected(StatType.DAMAGE_TAKEN_MAGIC); // +100% dégâts magiques reçus
-        buffVulne.setModifier(2.0);
+        buffVulne.setModifier(1.0);
         buffVulne.setDuration(2);
         buffVulne.apply(mage, moine);
 
@@ -281,7 +281,7 @@ public class SpellController {
         // ===== Buff de soin reçu (auto-appliqué) =====
         BuffDebuffEffect buffHealReceve = new BuffDebuffEffect();
         buffHealReceve.setStatAffected(StatType.HEALTH);
-        buffHealReceve.setModifier(1.10); // +10%
+        buffHealReceve.setModifier(0.10); // +10%
         buffHealReceve.setDuration(3);
         buffHealReceve.setModifierSource(Source.CASTER_POWER);
         buffHealReceve.apply(moine, moine);

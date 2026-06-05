@@ -124,6 +124,7 @@ class SpellIntegrationTest {
     void testSpellWithVoiePassive_Trahison() {
         // Ajout de la Voie de Trahison au héros
         Voie voieTrahison = new Voie();
+        voieTrahison.setNom("Voie de la Trahison");
         TrahisonPassiveEffect trahisonEffect = new TrahisonPassiveEffect();
         voieTrahison.setPassiveEffects(List.of(trahisonEffect));
         hero.setVoie(voieTrahison);
@@ -161,10 +162,14 @@ class SpellIntegrationTest {
         voieSurete.setPassiveEffects(List.of(sureteEffect));
         hero.setVoie(voieSurete);
 
+        // Augmenter le mana pour supporter le coût de 100 mana
+        hero.setManaMax(500);
+        hero.setManaCurrent(500);
+
         // Sort de Sûreté
         Spell safeSpell = new Spell();
         safeSpell.setNom("Esprit Protectrice");
-        safeSpell.setManaCost(10);
+        safeSpell.setManaCost(100);
         safeSpell.setVoie(voieSurete);
 
         // Lance le sort 5 fois (5 * 20 points = 100 points -> déclenche le buff crit)
@@ -174,10 +179,10 @@ class SpellIntegrationTest {
         }
 
         // Vérifications
-        assertThat(hero.getManaCurrent()).isEqualTo(0); // 50 - (5*10) = 0
+        assertThat(hero.getManaCurrent()).isEqualTo(0); // 500 - (5*100) = 0
         assertThat(hero.getPassiveState("surete_points", -1)).isEqualTo(0); // Les points ont reset
 
-        // Un buff de critique a dû être appliqué
+        // Un buff de critique a dû être appliqué (pour le tour suivant)
         assertThat(hero.getActiveBuffs()).hasSize(1);
         assertThat(hero.getActiveBuffs().get(0).getStatAffected()).isEqualTo(StatType.CRIT);
         assertThat(hero.getActiveBuffs().get(0).getFlatValue()).isEqualTo(15);
@@ -205,12 +210,12 @@ class SpellIntegrationTest {
 
         // Le passif flag qu'un sort a été lancé
         assertThat(hero.getPassiveState("raison_cast_this_turn", 0)).isEqualTo(1);
-        assertThat(hero.getPassiveState("stat_derive_CRIT_from_SPEED", 0)).isEqualTo(2);
 
         // Au prochain tour, le héros gagne 1 stack de vitesse
         raisonEffect.onTurnStart(hero);
         assertThat(hero.getPassiveState("raison_speed_stacks", 0)).isEqualTo(1);
         assertThat(hero.getPassiveState("stat_flat_SPEED", 0)).isEqualTo(1);
+        assertThat(hero.getStatFlatBonus(StatType.CRIT)).isEqualTo(2);
     }
 
     @Test
@@ -306,28 +311,33 @@ class SpellIntegrationTest {
         Voie voieConsolidation = new Voie();
         voieConsolidation.setNom("Voie de la Consolidation");
         generation.grimoire.entity.voie.passif.specific.ConsolidationPassiveEffect consoEffect = new generation.grimoire.entity.voie.passif.specific.ConsolidationPassiveEffect();
-        consoEffect.setBonusLevel(2); // Niveau investi
         voieConsolidation.setPassiveEffects(List.of(consoEffect));
         hero.setVoie(voieConsolidation);
+        hero.setVoieLevel(2);
 
-        // Armor de base du héros : 5
-        // 5 * (0.05 * 2) = 0.5 (arrondi à 0 car entier).
-        // Mettons l'armure du héros à 20 pour que le buff soit de 20 * 0.10 = 2.
-        hero.setArmor(20);
+        // D'abord un début de tour → buff par défaut +5% armure
+        spellService.startTurn(hero);
 
-        Spell buffSpell = new Spell();
-        buffSpell.setNom("Mur de Pierre");
-        buffSpell.setManaCost(10);
-        buffSpell.setVoie(voieConsolidation);
+        assertThat(hero.getActiveBuffs().stream()
+                .filter(b -> "CONSOLIDATION".equals(b.getSourceName()))
+                .count()).isEqualTo(1);
 
-        spellService.castSpell(buffSpell, hero, enemy, null);
+        // Lancer un sort de niveau 2 → remplace par +10% armure
+        Spell lvl2Spell = new Spell();
+        lvl2Spell.setNom("Mur de Pierre");
+        lvl2Spell.setManaCost(10);
+        lvl2Spell.setNiveau(2);
+        lvl2Spell.setVoie(voieConsolidation);
 
-        // La consolidation ajoute de l'armure en début de tour
-        consoEffect.onTurnStart(hero);
+        spellService.castSpell(lvl2Spell, hero, enemy, null);
 
-        assertThat(hero.getActiveBuffs()).hasSize(1);
-        assertThat(hero.getActiveBuffs().get(0).getStatAffected()).isEqualTo(StatType.ARMURE);
-        assertThat(hero.getActiveBuffs().get(0).getFlatValue()).isEqualTo(2); // +2 armure
+        // Le buff CONSOLIDATION doit être de type ARMURE avec modifier 1.10
+        var consoBuff = hero.getActiveBuffs().stream()
+                .filter(b -> "CONSOLIDATION".equals(b.getSourceName()))
+                .findFirst();
+        assertThat(consoBuff).isPresent();
+        assertThat(consoBuff.get().getStatAffected()).isEqualTo(StatType.ARMURE);
+        assertThat(consoBuff.get().getModifier()).isEqualTo(1.10);
     }
 
     @Test
@@ -336,6 +346,7 @@ class SpellIntegrationTest {
         esprit.setNom("Esprit");
         EspritPassiveEffect espritEffect = new EspritPassiveEffect();
         esprit.setPassiveEffects(List.of(espritEffect));
+        hero.setSpiritualite(esprit);
 
         Spell lightSpell = new Spell();
         lightSpell.setNom("Rayon Sacré");
@@ -362,6 +373,7 @@ class SpellIntegrationTest {
         tenebres.setNom("Ténèbres");
         TenebrePassiveEffect tenebresEffect = new TenebrePassiveEffect();
         tenebres.setPassiveEffects(List.of(tenebresEffect));
+        hero.setSpiritualite(tenebres);
 
         Spell darkSpell = new Spell();
         darkSpell.setNom("Orbe Noir");
@@ -388,6 +400,7 @@ class SpellIntegrationTest {
         karma.setNom("Karma");
         KarmaPassiveEffect karmaEffect = new KarmaPassiveEffect();
         karma.setPassiveEffects(List.of(karmaEffect));
+        hero.setSpiritualite(karma);
 
         Spell karmaSpell = new Spell();
         karmaSpell.setNom("Onde Karmique");
@@ -414,6 +427,7 @@ class SpellIntegrationTest {
         esprit.setNom("Esprit");
         EspritPassiveEffect espritEffect = new EspritPassiveEffect();
         esprit.setPassiveEffects(List.of(espritEffect));
+        hero.setSpiritualite(esprit);
 
         // Création d'un sort possédant à la fois la Voie et la Spiritualité
         Spell hybridSpell = new Spell();
@@ -628,7 +642,8 @@ class SpellIntegrationTest {
         spell.setPercentHeatCost(20); // 20% of 100 heat max = 20 heat. Total cost = 15 + 20 = 35 heat.
         spell.setVoie(voieDestruction);
 
-        // Cast spell -> pays 10 mana and 35 heat. Hero should be left with 40 - 35 = 5 heat.
+        // Cast spell -> pays 10 mana and 35 heat. Hero should be left with 40 - 35 = 5
+        // heat.
         spellService.castSpell(spell, hero, enemy, null);
         assertThat(hero.getManaCurrent()).isEqualTo(40); // 50 - 10
         assertThat(hero.getPassiveState("destruction_heat", 0)).isEqualTo(5);
@@ -639,5 +654,205 @@ class SpellIntegrationTest {
         spellService.castSpell(spell, hero, enemy, null);
         assertThat(hero.getManaCurrent()).isEqualTo(40); // No change
         assertThat(hero.getPassiveState("destruction_heat", 0)).isEqualTo(30); // No change
+    }
+
+    @Test
+    void testConvictionPassive() {
+        Voie voieConviction = new Voie();
+        voieConviction.setNom("Voie de la Conviction");
+        generation.grimoire.entity.voie.passif.specific.ConvictionPassiveEffect convictionPassive = new generation.grimoire.entity.voie.passif.specific.ConvictionPassiveEffect();
+        voieConviction.setPassiveEffects(List.of(convictionPassive));
+
+        // 1. Assign Conviction to hero
+        hero.setVoie(voieConviction);
+
+        // Even if we try to set manaMax to 150, it should be capped at 100
+        hero.setManaMax(150);
+        assertThat(hero.getManaMax()).isEqualTo(100);
+
+        // Set mana to 50
+        hero.setManaCurrent(50);
+        assertThat(hero.getManaCurrent()).isEqualTo(50);
+
+        // 2. Trigger onTurnStart
+        convictionPassive.onTurnStart(hero);
+
+        // Mana should regenerate by 25 -> 75
+        assertThat(hero.getManaCurrent()).isEqualTo(75);
+
+        // Trigger onTurnStart again
+        convictionPassive.onTurnStart(hero);
+        // Mana should regenerate by 25 -> 100
+        assertThat(hero.getManaCurrent()).isEqualTo(100);
+
+        // Trigger onTurnStart again
+        convictionPassive.onTurnStart(hero);
+        // Mana should remain capped at 100
+        assertThat(hero.getManaCurrent()).isEqualTo(100);
+    }
+
+    @Test
+    void testTrahisonWithBanalInstantAndChanneledSpells() {
+        // Setup Trahison passive on Hero
+        Voie voieTrahison = new Voie();
+        voieTrahison.setNom("Voie de la Trahison");
+        TrahisonPassiveEffect trahisonEffect = new TrahisonPassiveEffect();
+        voieTrahison.setPassiveEffects(List.of(trahisonEffect));
+        hero.setVoie(voieTrahison);
+
+        // Reset states
+        trahisonEffect.onTurnStart(hero);
+
+        // 1. Cast Banal spell dealing physical damage
+        Spell banalSpell = new Spell();
+        banalSpell.setNom("Banal Strike");
+        banalSpell.setCastingType(generation.grimoire.enumeration.SpellCastingType.BANAL);
+        banalSpell.setManaCost(10);
+        banalSpell.setVoie(voieTrahison);
+
+        DamageFixedEffect dmgBanal = new DamageFixedEffect();
+        dmgBanal.setDamageType(DamageType.PHYSIC);
+        dmgBanal.setDamage(100);
+        banalSpell.getEffects().add(dmgBanal);
+
+        // Enemy starts at 200 HP
+        enemy.setHealthCurrent(200);
+
+        spellService.castSpell(banalSpell, hero, enemy, null);
+        // Expect Trahison base bonus to trigger: 100 base * 10% = 10 extra BRUT damage.
+        // Enemy receives 90 PHYSICAL damage (100 base reduced by 10 armor) + 10 BRUT
+        // damage = 100. HP should be 200 - 100 = 100.
+        assertThat(enemy.getHealthCurrent()).isEqualTo(100);
+        assertThat(hero.getPassiveState("trahison_used_this_turn", 0)).isEqualTo(1);
+
+        // 2. Reset turn to test Instant Spell
+        trahisonEffect.onTurnStart(hero);
+        hero.startTurn();
+        enemy.startTurn();
+        enemy.setHealthCurrent(200);
+
+        Spell instantSpell = new Spell();
+        instantSpell.setNom("Instant Strike");
+        instantSpell.setCastingType(generation.grimoire.enumeration.SpellCastingType.INSTANTANE);
+        instantSpell.setManaCost(10);
+        instantSpell.setVoie(voieTrahison);
+
+        DamageFixedEffect dmgInstant = new DamageFixedEffect();
+        dmgInstant.setDamageType(DamageType.PHYSIC);
+        dmgInstant.setDamage(100);
+        instantSpell.getEffects().add(dmgInstant);
+
+        spellService.castSpell(instantSpell, hero, enemy, null);
+        // Enemy should receive 90 PHYSICAL damage + 10 BRUT damage = 100 damage.
+        assertThat(enemy.getHealthCurrent()).isEqualTo(100);
+        assertThat(hero.getPassiveState("trahison_used_this_turn", 0)).isEqualTo(1);
+
+        // 3. Reset turn to test Channeled Spell
+        trahisonEffect.onTurnStart(hero);
+        hero.startTurn();
+        enemy.startTurn();
+        enemy.setHealthCurrent(200);
+
+        Spell channeledSpell = new Spell();
+        channeledSpell.setNom("Channeled Strike");
+        channeledSpell.setCastingType(generation.grimoire.enumeration.SpellCastingType.CANALISE);
+        channeledSpell.setManaCost(10);
+        channeledSpell.setChannelingDuration(3);
+        channeledSpell.setVoie(voieTrahison);
+
+        DamageFixedEffect dmgChanneled = new DamageFixedEffect();
+        dmgChanneled.setDamageType(DamageType.PHYSIC);
+        dmgChanneled.setDamage(100);
+        // Set effect to tick on turn 2
+        dmgChanneled.setChannelingTurns(List.of(2));
+        channeledSpell.getEffects().add(dmgChanneled);
+
+        // Initial cast on Turn 1 (no damage since dmgChanneled ticks on turn 2)
+        spellService.castSpell(channeledSpell, hero, enemy, null);
+        assertThat(enemy.getHealthCurrent()).isEqualTo(200);
+        assertThat(hero.getPassiveState("trahison_used_this_turn", 0)).isEqualTo(0);
+
+        // Tick channeling for Turn 2
+        // We simulate start of Turn 2 first to decrement/process remaining channeling
+        // turns on the hero
+        hero.startTurn();
+        enemy.startTurn();
+        // Reset Trahison state for Turn 2
+        trahisonEffect.onTurnStart(hero);
+        spellService.tickChanneling(hero, enemy, null);
+        // Turn 2 tick deals 100 PHYSICAL damage.
+        // Since Trahison hasn't been used this turn yet, it should trigger!
+        // 90 PHYSICAL + 10 BRUT = 100 damage.
+        assertThat(enemy.getHealthCurrent()).isEqualTo(100);
+        assertThat(hero.getPassiveState("trahison_used_this_turn", 0)).isEqualTo(1);
+    }
+
+    @Test
+    void testTrahisonDebuffDetection() {
+        // Setup Trahison passive on Hero
+        Voie voieTrahison = new Voie();
+        voieTrahison.setNom("Voie de la Trahison");
+        TrahisonPassiveEffect trahisonEffect = new TrahisonPassiveEffect();
+        voieTrahison.setPassiveEffects(List.of(trahisonEffect));
+        hero.setVoie(voieTrahison);
+
+        // Reset states
+        trahisonEffect.onTurnStart(hero);
+
+        // 1. Cast Banal spell dealing physical damage
+        Spell banalSpell = new Spell();
+        banalSpell.setNom("Banal Strike");
+        banalSpell.setCastingType(generation.grimoire.enumeration.SpellCastingType.BANAL);
+        banalSpell.setManaCost(10);
+        banalSpell.setVoie(voieTrahison);
+
+        DamageFixedEffect dmgBanal = new DamageFixedEffect();
+        dmgBanal.setDamageType(DamageType.PHYSIC);
+        dmgBanal.setDamage(100);
+        banalSpell.getEffects().add(dmgBanal);
+
+        // 2. Apply a DoT to the enemy
+        generation.grimoire.entity.spell.type.effect.DamageOverTimeEffect dot = new generation.grimoire.entity.spell.type.effect.DamageOverTimeEffect();
+        dot.setDamageType(DamageType.MAGIC);
+        dot.setFixedDamagePerTick(10);
+        dot.setDuration(3);
+        dot.apply(hero, enemy);
+
+        assertThat(enemy.hasDebuff()).isTrue();
+
+        // 3. Cast spell -> should trigger base + debuff bonus
+        enemy.setHealthCurrent(200);
+        spellService.castSpell(banalSpell, hero, enemy, null);
+        // Enemy has 10 armor -> 100 physical is reduced by 9% to 90.
+        // Trahison base bonus = 10 (100 * 10%).
+        // Trahison debuff bonus = 10 (100 * 10%).
+        // Total damage = 90 + 10 + 10 = 110. HP should be 200 - 110 = 90.
+        assertThat(enemy.getHealthCurrent()).isEqualTo(90);
+        assertThat(hero.getPassiveState("trahison_used_this_turn", 0)).isEqualTo(1);
+        assertThat(hero.getPassiveState("trahison_debuff_used_this_turn", 0)).isEqualTo(1);
+
+        // 4. Test with a vulnerability buff (e.g. DAMAGE_TAKEN_PHYSIC modifier > 1.0)
+        // Reset turn and states
+        trahisonEffect.onTurnStart(hero);
+        hero.startTurn();
+        enemy.startTurn();
+        enemy.purgeAllBuffsAndDebuffs(); // clear DoT
+        enemy.setHealthCurrent(200);
+
+        assertThat(enemy.hasDebuff()).isFalse();
+
+        // Apply vulnerability debuff
+        BuffDebuffEffect vuln = new BuffDebuffEffect();
+        vuln.setStatAffected(StatType.DAMAGE_TAKEN_PHYSIC);
+        vuln.setModifier(1.2); // taking +20% damage
+        vuln.setDuration(2);
+        enemy.getActiveBuffs().add(vuln);
+
+        assertThat(enemy.hasDebuff()).isTrue(); // should be true now!
+
+        // Cast spell -> should trigger base + debuff bonus
+        spellService.castSpell(banalSpell, hero, enemy, null);
+        assertThat(enemy.getHealthCurrent()).isLessThan(200);
+        assertThat(hero.getPassiveState("trahison_debuff_used_this_turn", 0)).isEqualTo(1);
     }
 }

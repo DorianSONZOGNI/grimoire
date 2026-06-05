@@ -1,0 +1,113 @@
+header{
+            padding: 2rem 5%;
+            border-bottom: 1px solid var(--glass-border);
+            background: rgba(11, 15, 25, 0.6);
+            backdrop-filter: blur(12px);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+        }
+
+.logo{
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.8rem;
+            font-weight: 700;
+            background: linear-gradient(to right, #a78bfa, #f472b6);
+            -webkit-background-clip: text;
+            background-clip: text;
+            -webkit-text-fill-color: transparent;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+.logo::before{
+            content: "✦";
+            font-size: 2rem;
+            color: var(--primary);
+        }
+
+main{
+            padding: 2rem 5%;
+            display: grid;
+            grid-template-columns: 1fr 1.2fr;
+            gap: 2.5rem;
+            max-width: 1600px;
+            margin: 0 auto;
+            width: 100%;
+        }
+
+@media (max-width: 1024px){
+            main {
+                grid-template-columns: 1fr;
+            }
+        }
+
+.panel{
+            background: var(--glass-bg);
+            border: 1px solid var(--glass-border);
+            border-radius: 16px;
+            padding: 2rem;
+            backdrop-filter: blur(16px);
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+            display: flex;
+            flex-direction: column;
+            gap: 1.5rem;
+            position: relative;
+            overflow: visible;
+            height: 100%;
+        }
+
+.panel::before{
+            content: "";
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(to right, var(--primary), var(--secondary));
+            border-top-left-radius: 16px;
+            border-top-right-radius: 16px;
+        }
+
+.panel-title{
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 600;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+@media (min-width: 1025px){
+            .spells-list {
+                max-height: none;
+                flex: 1 1 0%;
+                min-height: calc(100vh - 280px);
+            }
+        }
+
+.modal-header{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            border-bottom: 1px solid var(--glass-border);
+            padding-bottom: 0.8rem;
+        }
+
+@media (max-width: 768px){
+            .sandbox-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+@media (max-width: 768px){
+            .editing-preview-container {
+                left: 1rem;
+                right: 1rem;
+                width: auto;
+                bottom: 1rem;
+            }
+        }

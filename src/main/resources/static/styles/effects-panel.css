@@ -1,0 +1,232 @@
+.btn-effect-add{
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: var(--text-main);
+            border-radius: 8px;
+            padding: 0.6rem 0.5rem;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+        }
+
+.btn-effect-add:hover{
+            transform: translateY(-1px);
+        }
+
+/* Coloration logique par type */
+        .btn-effect-add.dmg{
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: #fca5a5;
+        }
+
+.btn-effect-add.dmg:hover{
+            background: rgba(239, 68, 68, 0.25);
+            border-color: #ef4444;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.2);
+        }
+
+.btn-effect-add.heal{
+            background: rgba(16, 185, 129, 0.1);
+            border-color: rgba(16, 185, 129, 0.3);
+            color: #6ee7b7;
+        }
+
+.btn-effect-add.heal:hover{
+            background: rgba(16, 185, 129, 0.25);
+            border-color: #10b981;
+            box-shadow: 0 4px 12px rgba(16, 185, 129, 0.2);
+        }
+
+.btn-effect-add.mana{
+            background: rgba(56, 189, 248, 0.1);
+            border-color: rgba(56, 189, 248, 0.3);
+            color: #7dd3fc;
+        }
+
+.btn-effect-add.mana:hover{
+            background: rgba(56, 189, 248, 0.25);
+            border-color: #38bdf8;
+            box-shadow: 0 4px 12px rgba(56, 189, 248, 0.2);
+        }
+
+.btn-effect-add.buff{
+            background: rgba(245, 158, 11, 0.1);
+            border-color: rgba(245, 158, 11, 0.3);
+            color: #fde68a;
+        }
+
+.btn-effect-add.buff:hover{
+            background: rgba(245, 158, 11, 0.25);
+            border-color: #f59e0b;
+            box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);
+        }
+
+.btn-effect-add.poison{
+            background: rgba(132, 204, 22, 0.1);
+            border-color: rgba(132, 204, 22, 0.3);
+            color: #d9f99d;
+        }
+
+.btn-effect-add.poison:hover{
+            background: rgba(132, 204, 22, 0.25);
+            border-color: #84cc16;
+            box-shadow: 0 4px 12px rgba(132, 204, 22, 0.2);
+        }
+
+.btn-effect-add.burn{
+            background: rgba(234, 88, 12, 0.1);
+            border-color: rgba(234, 88, 12, 0.3);
+            color: #fed7aa;
+        }
+
+.btn-effect-add.burn:hover{
+            background: rgba(234, 88, 12, 0.25);
+            border-color: #ea580c;
+            box-shadow: 0 4px 12px rgba(234, 88, 12, 0.2);
+        }
+
+.btn-effect-add.purge{
+            background: rgba(255, 255, 255, 0.1);
+            border-color: rgba(255, 255, 255, 0.3);
+            color: #ffffff;
+        }
+
+.btn-effect-add.purge:hover{
+            background: rgba(255, 255, 255, 0.25);
+            border-color: #ffffff;
+            box-shadow: 0 4px 12px rgba(255, 255, 255, 0.2);
+        }
+
+.effects-container{
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+.effect-item{
+            background: rgba(0, 0, 0, 0.2);
+            border: 1px solid var(--glass-border);
+            border-radius: 12px;
+            padding: 1.2rem;
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            position: relative;
+            animation: fadeIn 0.4s ease-out;
+            border-left: 4px solid var(--accent);
+        }
+
+.effect-item.target-caster{
+            border-left-color: var(--caster-color);
+        }
+
+.effect-item.target-target{
+            border-left-color: var(--target-color);
+        }
+
+.effect-item.target-ally{
+            border-left-color: #60a5fa;
+        }
+
+.effect-header{
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+.effect-type-badge{
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 0.9rem;
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            border: 1px solid var(--glass-border);
+        }
+
+.target-selector{
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 0.6rem;
+            border-radius: 8px;
+            border: 1px solid var(--glass-border);
+        }
+
+.target-btn{
+            background: rgba(255, 255, 255, 0.03);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            color: var(--text-muted);
+            padding: 0.4rem 0.8rem;
+            border-radius: 6px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+.target-btn .material-symbols-outlined {
+            font-size: 1.1rem;
+        }
+
+.target-btn:hover{
+            background: rgba(255, 255, 255, 0.08);
+            transform: translateY(-1px);
+        }
+
+.target-caster-btn.active, .target-all-allies-btn.active{
+            background: rgba(52, 211, 153, 0.15);
+            color: #34d399;
+            border: 1px solid rgba(52, 211, 153, 0.4);
+            box-shadow: 0 0 12px rgba(52, 211, 153, 0.2);
+        }
+
+.target-enemy-btn.active, .target-all-enemies-btn.active{
+            background: rgba(251, 113, 133, 0.15);
+            color: #fb7185;
+            border: 1px solid rgba(251, 113, 133, 0.4);
+            box-shadow: 0 0 12px rgba(251, 113, 133, 0.2);
+        }
+
+.target-ally-btn.active{
+            background: rgba(96, 165, 250, 0.15);
+            color: #60a5fa;
+            border: 1px solid rgba(96, 165, 250, 0.4);
+            box-shadow: 0 0 12px rgba(96, 165, 250, 0.2);
+        }
+
+.target-everyone-btn.active{
+            background: rgba(245, 158, 11, 0.15);
+            color: #fbbf24;
+            border: 1px solid rgba(245, 158, 11, 0.4);
+            box-shadow: 0 0 12px rgba(245, 158, 11, 0.2);
+        }
+
+.effect-line{
+            font-size: 0.85rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+.spell-effects-trigger{
+            position: relative;
+            display: inline-flex;
+            align-items: center;
+            cursor: help;
+        }
+
+#globalSpellTooltip .effect-line{
+            flex-wrap: nowrap !important;
+        }

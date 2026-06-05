@@ -55,8 +55,9 @@ class PersonnageTest {
         // reductionFactor = 100 / (100 + 100) = 0.5
         // finalDamage = 50 * (1 - 0.5) = 25
         enemy.takeDamage(50, DamageType.PHYSIC);
-        
-        // If it's a bug, health will be 125. If it's correct (subtraction), it should be 75.
+
+        // If it's a bug, health will be 125. If it's correct (subtraction), it should
+        // be 75.
         // Looking at the code, it seems it will be 125.
         assertThat(enemy.getHealthCurrent()).isEqualTo(75);
     }
@@ -89,7 +90,7 @@ class PersonnageTest {
     @Test
     void shouldBypassShieldIfCasterHasShieldPenetrationBuff() {
         enemy.addShield(50, 2, "ShieldSource");
-        
+
         BuffDebuffEffect penBuff = new BuffDebuffEffect();
         penBuff.setStatAffected(StatType.SHIELD_PENETRATION);
         penBuff.setModifier(2.0); // > 1.0 -> buff
@@ -98,7 +99,8 @@ class PersonnageTest {
 
         // armor = 100, constant = 100 -> reduction factor = 0.5
         // damage = 50 -> finalDamage = 25
-        // Since caster has shield penetration buff, it should ignore shield of 50 and deal 25 damage directly to enemy's health current.
+        // Since caster has shield penetration buff, it should ignore shield of 50 and
+        // deal 25 damage directly to enemy's health current.
         enemy.takeDamage(50, DamageType.PHYSIC, hero);
 
         assertThat(enemy.getTotalShield()).isEqualTo(50);
@@ -117,7 +119,8 @@ class PersonnageTest {
 
         // enemy armor = 100, constant = 100 -> reduction factor = 0.5
         // damage = 50 -> finalDamage = 25
-        // Since target has shield penetration debuff, it ignores shield and deals 25 damage to health.
+        // Since target has shield penetration debuff, it ignores shield and deals 25
+        // damage to health.
         enemy.takeDamage(50, DamageType.PHYSIC, hero);
 
         assertThat(enemy.getTotalShield()).isEqualTo(50);

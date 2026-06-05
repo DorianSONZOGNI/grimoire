@@ -39,15 +39,39 @@ class PassifTest {
     @Test
     void shouldApplyConsolidationPassive() {
         ConsolidationPassiveEffect consolidation = new ConsolidationPassiveEffect();
-        consolidation.setBonusLevel(2); // 10% bonus
 
+        // Tour 1 : pas de sort lancé au tour précédent → +5% armure par défaut
         consolidation.onTurnStart(hero);
 
-        // Armor is 50. 10% of 50 = 5. Should apply a +5 buff for 1 turn.
         assertThat(hero.getActiveBuffs()).hasSize(1);
         assertThat(hero.getActiveBuffs().get(0).getStatAffected()).isEqualTo(StatType.ARMURE);
-        assertThat(hero.getActiveBuffs().get(0).getFlatValue()).isEqualTo(5);
-        // Ensure getEffectiveArmor() works if we were to call takeDamage, but we just check the buff.
+        assertThat(hero.getActiveBuffs().get(0).getModifier()).isEqualTo(1.05);
+        assertThat(hero.getActiveBuffs().get(0).getFlatValue()).isEqualTo(0);
+
+        // Lancer un sort de niveau 3 → remplace par +10% résistance magique
+        Spell lvl3Spell = new Spell();
+        lvl3Spell.setNom("Sort Lvl 3");
+        lvl3Spell.setNiveau(3);
+        consolidation.onSpellCast(hero, lvl3Spell);
+
+        assertThat(hero.getActiveBuffs()).hasSize(1);
+        assertThat(hero.getActiveBuffs().get(0).getStatAffected()).isEqualTo(StatType.RESISTANCE);
+        assertThat(hero.getActiveBuffs().get(0).getModifier()).isEqualTo(1.10);
+
+        // Tour 2 : sort lancé au tour précédent, on ne remet pas le défaut
+        consolidation.onTurnStart(hero);
+        // Le flag a été reset, mais le buff de sort a été nettoyé et le défaut est re-appliqué
+        // car onTurnStart remet le flag à 0 APRÈS avoir vérifié
+        // En fait le castLastTurn vaut 1 (car on l'a mis à 1 via onSpellCast) donc pas de défaut
+        // Vérifions : aucun buff ne doit être ajouté (le sort a été lancé au tour précédent)
+        // Les anciens buffs sont supprimés par removeIf, et castLastTurn==1 => pas de buff par défaut
+        assertThat(hero.getActiveBuffs()).isEmpty();
+
+        // Tour 3 : pas de sort lancé → retour au +5% armure par défaut
+        consolidation.onTurnStart(hero);
+        assertThat(hero.getActiveBuffs()).hasSize(1);
+        assertThat(hero.getActiveBuffs().get(0).getStatAffected()).isEqualTo(StatType.ARMURE);
+        assertThat(hero.getActiveBuffs().get(0).getModifier()).isEqualTo(1.05);
     }
 
     @Test
@@ -69,6 +93,10 @@ class PassifTest {
     @Test
     void shouldApplyRaisonPassive() {
         RaisonPassiveEffect raison = new RaisonPassiveEffect();
+        generation.grimoire.entity.Voie voieRaison = new generation.grimoire.entity.Voie();
+        voieRaison.setNom("Voie de la Raison");
+        voieRaison.setPassiveEffects(java.util.List.of(raison));
+        hero.setVoie(voieRaison);
 
         hero.setSpeed(2); // Base speed 2
 
@@ -78,6 +106,7 @@ class PassifTest {
         // Base crit is 0, but because of Raison, it's speed * 2 = 4
         assertThat(hero.getStatFlatBonus(StatType.CRIT)).isEqualTo(4);
 
+        dummySpell.setVoie(voieRaison);
         raison.onSpellCast(hero, dummySpell);
 
         // Turn 2 begins. Spell was cast in T1, so it gains 1 speed stack.
@@ -103,6 +132,7 @@ class PassifTest {
         surete.onTurnStart(hero);
         assertThat(hero.getPassiveState("surete_points", -1)).isEqualTo(10);
 
+        dummySpell.setManaCost(100);
         // Cast 4 spells (4 * 20 = 80 points) -> Total 90 points
         for (int i = 0; i < 4; i++) {
             surete.onSpellCast(hero, dummySpell);
@@ -121,8 +151,12 @@ class PassifTest {
     @Test
     void shouldApplyViolencePassive() {
         ViolencePassiveEffect violence = new ViolencePassiveEffect();
+        generation.grimoire.entity.Voie voieViolence = new generation.grimoire.entity.Voie();
+        voieViolence.setNom("Voie de la Violence");
+        voieViolence.setPassiveEffects(java.util.List.of(violence));
 
         Spell inspiration = new Spell();
+        inspiration.setVoie(voieViolence);
         inspiration.setCategory(SpellCategory.INSPIRATION);
 
         violence.onSpellCast(hero, inspiration);
@@ -131,6 +165,7 @@ class PassifTest {
         assertThat(hero.getPassiveState("stat_flat_POWER", -1)).isEqualTo(0);
 
         Spell expiration = new Spell();
+        expiration.setVoie(voieViolence);
         expiration.setCategory(SpellCategory.EXPIRATION);
 
         violence.onSpellCast(hero, expiration);
@@ -209,8 +244,13 @@ class PassifTest {
         int hpAfterFirst = enemy.getHealthCurrent();
         assertThat(hpAfterFirst).isLessThan(100); // extra damage was applied
 
-        // Second hit: base already used, but debuff bonus is permanent (every hit)
+        // Second hit: base and debuff bonuses are already used, so no extra damage
         trahison.onPhysicalHit(hero, enemy, 100);
-        assertThat(enemy.getHealthCurrent()).isLessThan(hpAfterFirst); // debuff bonus still applies
+        assertThat(enemy.getHealthCurrent()).isEqualTo(hpAfterFirst); // debuff bonus is once per turn
+
+        // New turn resets; hit again
+        trahison.onTurnStart(hero);
+        trahison.onPhysicalHit(hero, enemy, 100);
+        assertThat(enemy.getHealthCurrent()).isLessThan(hpAfterFirst); // debuff bonus is available again!
     }
 }

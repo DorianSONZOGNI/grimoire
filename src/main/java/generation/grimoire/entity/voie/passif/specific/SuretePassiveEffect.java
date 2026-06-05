@@ -16,17 +16,17 @@ public class SuretePassiveEffect extends VoiePassiveEffect {
 
     @Override
     public void onSpellCast(Personnage personnage, Spell spell) {
-        // On ajoute, par exemple, 20 points par sort (représentant 20% du coût initial)
         int storedPoints = personnage.getPassiveState("surete_points", 0);
-        storedPoints += 20;
-        System.out.println(personnage.getName() + " stocke " + storedPoints + " points de sûreté.");
+        int pointsGained = (int) Math.round(spell.getManaCost() * 0.20);
+        storedPoints += pointsGained;
+        System.out.println(personnage.getName() + " stocke " + pointsGained + " points de sûreté (20% de " + spell.getManaCost() + " mana). Total: " + storedPoints + "/100");
         if (storedPoints >= 100) {
             System.out.println(personnage.getName() + " obtient +15% de critique pour le prochain tour (Sûreté).");
             
             generation.grimoire.entity.spell.type.effect.BuffDebuffEffect buff = new generation.grimoire.entity.spell.type.effect.BuffDebuffEffect();
             buff.setStatAffected(generation.grimoire.enumeration.StatType.CRIT);
             buff.setFlatValue(15);
-            buff.setDuration(1); // until next turn
+            buff.setDuration(2); // Active during next turn (decays from 2 to 1 at start of next turn)
             personnage.getActiveBuffs().add(buff);
             
             storedPoints -= 100;
@@ -47,7 +47,7 @@ public class SuretePassiveEffect extends VoiePassiveEffect {
             generation.grimoire.entity.spell.type.effect.BuffDebuffEffect buff = new generation.grimoire.entity.spell.type.effect.BuffDebuffEffect();
             buff.setStatAffected(generation.grimoire.enumeration.StatType.CRIT);
             buff.setFlatValue(25);
-            buff.setDuration(1);
+            buff.setDuration(1); // Active during the current turn (since turn start updates have already processed)
             personnage.getActiveBuffs().add(buff);
             
             storedPoints -= 100;

@@ -4,6 +4,7 @@ import generation.grimoire.enumeration.Source;
 import generation.grimoire.enumeration.SpellCategory;
 import generation.grimoire.enumeration.SpellCastingType;
 import generation.grimoire.enumeration.SpellCondition;
+import generation.grimoire.enumeration.KarmaAlignment;
 import generation.grimoire.enumeration.ZoneType;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -46,6 +47,11 @@ public class Spell {
 
     @Enumerated(EnumType.STRING)
     private SpellCategory category;
+
+    @Enumerated(EnumType.STRING)
+    private KarmaAlignment karmaAlignment = KarmaAlignment.NONE;
+
+    private boolean inspiration;
 
     @Enumerated(EnumType.STRING)
     private SpellCastingType castingType = SpellCastingType.BANAL;
