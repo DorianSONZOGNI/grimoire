@@ -39,7 +39,12 @@ public class PersonnageController {
         if (principal == null) {
             return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
         }
-        List<Personnage> all = personnageRepository.findByUser_Username(principal.getName());
+        boolean isAdmin = ((org.springframework.security.core.Authentication) principal).getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
+        
+        List<Personnage> all = isAdmin 
+                ? personnageRepository.findAll() 
+                : personnageRepository.findByUser_Username(principal.getName());
         List<Map<String, Object>> result = all.stream().map(this::toDto).toList();
         return ResponseEntity.ok(result);
     }
@@ -50,13 +55,15 @@ public class PersonnageController {
             return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
         }
         generation.grimoire.entity.auth.AppUser user = userRepository.findByUsername(principal.getName()).orElse(null);
+        boolean isAdmin = ((org.springframework.security.core.Authentication) principal).getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
 
         Personnage personnage;
         boolean isUpdate = false;
 
         if (dto.getId() != null && personnageService.existsById(dto.getId())) {
             personnage = personnageService.findByIdOrThrow(dto.getId());
-            if (personnage.getUser() != null && !personnage.getUser().getUsername().equals(principal.getName())) {
+            if (!isAdmin && personnage.getUser() != null && !personnage.getUser().getUsername().equals(principal.getName())) {
                 return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).build();
             }
             isUpdate = true;
@@ -110,8 +117,10 @@ public class PersonnageController {
         if (principal == null) {
             return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
         }
+        boolean isAdmin = ((org.springframework.security.core.Authentication) principal).getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
         Personnage personnage = personnageService.findByIdOrThrow(id);
-        if (personnage.getUser() != null && !personnage.getUser().getUsername().equals(principal.getName())) {
+        if (!isAdmin && personnage.getUser() != null && !personnage.getUser().getUsername().equals(principal.getName())) {
             return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).build();
         }
         if (personnageService.existsById(id)) {
@@ -125,6 +134,7 @@ public class PersonnageController {
         Map<String, Object> map = new HashMap<>();
         map.put("id", p.getId());
         map.put("name", p.getName());
+        map.put("ownerUsername", p.getUser() != null ? p.getUser().getUsername() : "Inconnu");
         
         // Base stats pour le formulaire d'édition
         map.put("healthMax", p.getBaseHealthMax());
