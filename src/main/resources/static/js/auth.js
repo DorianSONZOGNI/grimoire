@@ -90,7 +90,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-async function checkAuthStatus() {
+window.checkAuthStatus = async function checkAuthStatus() {
     const container = document.getElementById('authNavContainer');
     try {
         const res = await fetch('/api/auth/me', { credentials: 'same-origin' });
@@ -103,6 +103,10 @@ async function checkAuthStatus() {
                 <div style="display: flex; align-items: center; gap: 0.3rem; color: #10b981; font-weight: 500; font-size: 0.85rem;">
                     <span class="material-symbols-outlined" style="font-size: 1.1rem;">account_circle</span>
                     ${data.username}
+                </div>
+                <div style="display: flex; align-items: center; gap: 0.2rem; color: #f59e0b; font-weight: 600; font-size: 0.85rem; margin-left: 0.5rem;" title="Monnaie">
+                    <span class="material-symbols-outlined" style="font-size: 1.1rem;">monetization_on</span>
+                    ${data.monnaie !== undefined ? (data.monnaie % 1 === 0 ? data.monnaie : data.monnaie.toFixed(1)) : '0'}
                 </div>
                 <button onclick="logout()" style="background: transparent; border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; border-radius: 6px; padding: 0.25rem 0.5rem; cursor: pointer; display: flex; align-items: center; font-family: 'Outfit'; font-size: 0.8rem; margin-left: 0.5rem; transition: all 0.2s;">
                     <span class="material-symbols-outlined" style="font-size: 1rem;">logout</span>

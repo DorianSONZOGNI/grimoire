@@ -23,4 +23,7 @@ public class AppUser {
     @Column(nullable = false)
     private String role = "USER"; // ADMIN, USER
 
+    @Column(nullable = false)
+    private double monnaie = 0.0;
+
 }
