@@ -94,7 +94,34 @@ document.addEventListener('click', (e) => {
         labelEl.innerHTML = option.innerHTML;
         wrapper.classList.remove('open');
         
-        filterVault(); // Mettre à jour l'affichage au changement
+        if (hiddenInput.id === 'eqRarity') {
+            const val = hiddenInput.value;
+            const row = document.getElementById('eqSpecialEffectRow');
+            if (val === 'EPIQUE' || val === 'RELIQUE') {
+                row.style.display = 'grid';
+                const isEpic = val === 'EPIQUE';
+                const color = isEpic ? '#ef4444' : '#c084fc';
+                const bg = isEpic ? 'rgba(239, 68, 68, 0.05)' : 'rgba(168, 85, 247, 0.05)';
+                const border = isEpic ? '1px dashed rgba(239, 68, 68, 0.3)' : '1px dashed rgba(168, 85, 247, 0.3)';
+                const inputBorder = isEpic ? 'rgba(239, 68, 68, 0.3)' : 'rgba(192, 132, 252, 0.3)';
+                row.style.background = bg;
+                row.style.border = border;
+                document.getElementById('eqSpecialEffectLabelTitle').style.color = color;
+                document.getElementById('eqSpecialEffectValueTitle').style.color = color;
+                document.getElementById('eqSpecialEffectTrigger').style.borderColor = inputBorder;
+                document.getElementById('eqSpecialEffectValue').style.borderColor = inputBorder;
+            } else {
+                row.style.display = 'none';
+                document.getElementById('eqSpecialEffect').value = 'NONE';
+                document.getElementById('eqSpecialEffectLabel').innerHTML = '<span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">not_interested</span> Aucun';
+                document.getElementById('eqSpecialEffectValue').value = 0;
+            }
+            updateWeightUI();
+        } else if (hiddenInput.id.startsWith('eq') || hiddenInput.id === 'eqSpecialEffect') {
+            updateWeightUI();
+        } else {
+            filterVault(); // Mettre à jour l'affichage au changement
+        }
     }
 });
 
@@ -297,9 +324,12 @@ function renderGrid(equipments) {
                         </div>
                     </div>
                     <div class="vault-card-actions">
-                        <button class="vault-btn-delete" onclick="deleteEquipment(${eq.id})" title="Détruire l'objet">
+                        ${window.isAdmin ? `<button class="vault-btn-edit" onclick="editEquipment(${eq.id})" title="Modifier l'objet">
+                            <span class="material-symbols-outlined">edit</span>
+                        </button>` : ''}
+                        ${(window.isAdmin || eq.ownerUsername === window.currentUser?.username) ? `<button class="vault-btn-delete" onclick="deleteEquipment(${eq.id})" title="Détruire l'objet">
                             <span class="material-symbols-outlined">delete</span>
-                        </button>
+                        </button>` : ''}
                     </div>
                 </div>
                 
@@ -322,4 +352,324 @@ function renderGrid(equipments) {
 // Init
 window.addEventListener('DOMContentLoaded', () => {
     loadEquipments();
+    
+    // Listeners for Weight Calculation
+    const eqInputs = ['eqSlot', 'eqRarity', 'eqHp', 'eqMana', 'eqPower', 'eqStr', 'eqArmor', 'eqRes', 'eqSpeed', 'eqCrit', 'eqRegenHp', 'eqRegenMana', 'eqSpecialEffectValue'];
+    eqInputs.forEach(id => {
+        const el = document.getElementById(id);
+        if (el) {
+            el.addEventListener('input', updateWeightUI);
+            el.addEventListener('change', updateWeightUI);
+        }
+    });
+    
+    // Render create form slot select
+    const slotOptionsContainer = document.getElementById('eqSlotOptions');
+    if (slotOptionsContainer) {
+        const slots = ['CASQUE', 'PLASTRON', 'ANNEAU_GAUCHE', 'ANNEAU_DROIT', 'BOTTES', 'CAPE'];
+        slotOptionsContainer.innerHTML = slots.map(s => {
+            const info = SLOT_LABELS[s];
+            return `<div class="custom-option" data-value="${s}">
+                <span class="material-symbols-outlined cs-icon ${info.extraClass || ''}" style="color: ${info.color};">${info.icon}</span>
+                ${info.label}
+            </div>`;
+        }).join('');
+    }
 });
+
+window.addEventListener('authLoaded', () => {
+    const btnCreate = document.getElementById('btnCreateVaultEq');
+    if (btnCreate) {
+        btnCreate.style.display = window.isAdmin ? 'flex' : 'none';
+    }
+    // Re-render the grid in case equipments loaded before auth
+    if (allEquipments && allEquipments.length > 0) {
+        filterVault();
+    }
+});
+
+// ===== Equipment Creation / Edition =====
+
+let editingEquipmentId = null;
+
+window.openCreateEqModal = function() {
+    editingEquipmentId = null;
+    document.getElementById('equipModalTitle').innerHTML = 'Forger un objet';
+    document.getElementById('submitEquipmentBtn').innerHTML = '<span class="material-symbols-outlined" style="font-size: 1.2rem;">add</span> Forger';
+    resetEqForm();
+    document.getElementById('equipCreateModal').classList.add('show');
+    updateWeightUI();
+}
+
+window.closeCreateEqModal = function() {
+    document.getElementById('equipCreateModal').classList.remove('show');
+    resetEqForm();
+}
+
+function resetEqForm() {
+    document.getElementById('eqName').value = '';
+    document.getElementById('eqHp').value = 0;
+    document.getElementById('eqMana').value = 0;
+    document.getElementById('eqPower').value = 0;
+    document.getElementById('eqStr').value = 0;
+    document.getElementById('eqArmor').value = 0;
+    document.getElementById('eqRes').value = 0;
+    document.getElementById('eqSpeed').value = 0;
+    document.getElementById('eqCrit').value = 0;
+    document.getElementById('eqRegenHp').value = 0;
+    document.getElementById('eqRegenMana').value = 0;
+
+    // Reset Rarity
+    const rarityInput = document.getElementById('eqRarity');
+    if (rarityInput) {
+        rarityInput.value = 'COMMUN';
+        document.getElementById('eqRarityLabel').innerHTML = '<span class="cs-icon" style="color: #94a3b8; font-weight: bold;">C</span> Commun';
+        const row = document.getElementById('eqSpecialEffectRow');
+        if (row) row.style.display = 'none';
+    }
+
+    // Reset Special Effect
+    const effectInput = document.getElementById('eqSpecialEffect');
+    if (effectInput) {
+        effectInput.value = 'NONE';
+        document.getElementById('eqSpecialEffectLabel').innerHTML = '<span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">not_interested</span> Aucun';
+        document.getElementById('eqSpecialEffectValue').value = 0;
+    }
+
+    // Reset Slot
+    const slotInput = document.getElementById('eqSlot');
+    if (slotInput) {
+        slotInput.value = '';
+        document.getElementById('eqSlotLabel').innerHTML = 'Choisir un slot...';
+    }
+}
+
+window.editEquipment = function(id) {
+    editingEquipmentId = id;
+    const eq = allEquipments.find(e => e.id === id);
+    if (!eq) return;
+
+    document.getElementById('equipModalTitle').innerHTML = 'Modifier un objet';
+    document.getElementById('submitEquipmentBtn').innerHTML = '<span class="material-symbols-outlined" style="font-size: 1.2rem;">save</span> Enregistrer';
+    
+    document.getElementById('eqName').value = eq.name || '';
+    document.getElementById('eqHp').value = eq.bonusHealthMax || 0;
+    document.getElementById('eqMana').value = eq.bonusManaMax || 0;
+    document.getElementById('eqPower').value = eq.bonusPower || 0;
+    document.getElementById('eqStr').value = eq.bonusStrength || 0;
+    document.getElementById('eqArmor').value = eq.bonusArmor || 0;
+    document.getElementById('eqRes').value = eq.bonusResistance || 0;
+    document.getElementById('eqSpeed').value = eq.bonusSpeed || 0;
+    document.getElementById('eqCrit').value = eq.bonusCrit || 0;
+    document.getElementById('eqRegenHp').value = eq.regenHealthPerTurn || 0;
+    document.getElementById('eqRegenMana').value = eq.regenManaPerTurn || 0;
+
+    // Slot Setup
+    const slotInput = document.getElementById('eqSlot');
+    if (slotInput && eq.slot) {
+        slotInput.value = eq.slot;
+        const info = SLOT_LABELS[eq.slot];
+        if (info) {
+            document.getElementById('eqSlotLabel').innerHTML = `<span class="material-symbols-outlined cs-icon ${info.extraClass || ''}" style="color: ${info.color};">${info.icon}</span> ${info.label}`;
+        }
+    }
+
+    // Rarity Setup
+    const rarityInput = document.getElementById('eqRarity');
+    if (rarityInput && eq.rarity) {
+        rarityInput.value = eq.rarity;
+        const option = document.querySelector(`.custom-option.rarity-${eq.rarity}`);
+        if (option) {
+            document.getElementById('eqRarityLabel').innerHTML = option.innerHTML;
+        }
+
+        const row = document.getElementById('eqSpecialEffectRow');
+        if (eq.rarity === 'EPIQUE' || eq.rarity === 'RELIQUE') {
+            if (row) row.style.display = 'grid';
+            
+            const isEpic = eq.rarity === 'EPIQUE';
+            const color = isEpic ? '#ef4444' : '#c084fc';
+            const bg = isEpic ? 'rgba(239, 68, 68, 0.05)' : 'rgba(168, 85, 247, 0.05)';
+            const border = isEpic ? '1px dashed rgba(239, 68, 68, 0.3)' : '1px dashed rgba(168, 85, 247, 0.3)';
+            const inputBorder = isEpic ? 'rgba(239, 68, 68, 0.3)' : 'rgba(192, 132, 252, 0.3)';
+            
+            if(row) {
+                row.style.background = bg;
+                row.style.border = border;
+            }
+            
+            const labelTitle = document.getElementById('eqSpecialEffectLabelTitle');
+            if(labelTitle) labelTitle.style.color = color;
+            
+            const valueTitle = document.getElementById('eqSpecialEffectValueTitle');
+            if(valueTitle) valueTitle.style.color = color;
+            
+            const trigger = document.getElementById('eqSpecialEffectTrigger');
+            if(trigger) trigger.style.borderColor = inputBorder;
+            
+            const valInput = document.getElementById('eqSpecialEffectValue');
+            if(valInput) valInput.style.borderColor = inputBorder;
+
+        } else {
+            if (row) row.style.display = 'none';
+        }
+    }
+
+    // Effect Setup
+    const effectInput = document.getElementById('eqSpecialEffect');
+    if (effectInput && eq.specialEffect) {
+        effectInput.value = eq.specialEffect;
+        const option = document.querySelector(`.custom-option.effect-${eq.specialEffect}`);
+        if (option) {
+            document.getElementById('eqSpecialEffectLabel').innerHTML = option.innerHTML;
+        }
+    }
+
+    document.getElementById('eqSpecialEffectValue').value = eq.specialEffectValue || 0;
+
+    updateWeightUI();
+    document.getElementById('equipCreateModal').classList.add('show');
+}
+
+window.submitEquipment = async function() {
+    const name = document.getElementById('eqName').value.trim();
+    const slot = document.getElementById('eqSlot').value;
+    if (!name) { showNotif('Nom de l\'équipement obligatoire.', true); return; }
+    if (!slot) { showNotif('Slot obligatoire.', true); return; }
+    
+    const rarity = document.getElementById('eqRarity').value;
+    const maxWeight = (WEIGHT_LIMITS[slot] && WEIGHT_LIMITS[slot][rarity]) ? WEIGHT_LIMITS[slot][rarity] : 5;
+    const currentWeight = calculateEquipmentWeight();
+    if (currentWeight > maxWeight) {
+        showNotif('Le poids de cet équipement dépasse la limite autorisée !', true);
+        return;
+    }
+
+    let specialEffect = document.getElementById('eqSpecialEffect').value;
+    let specialEffectValue = parseInt(document.getElementById('eqSpecialEffectValue').value) || 0;
+
+    if (rarity !== 'EPIQUE' && rarity !== 'RELIQUE') {
+        specialEffect = 'NONE';
+        specialEffectValue = 0;
+    } else {
+        if (specialEffect === 'NONE') {
+            specialEffectValue = 0;
+        }
+    }
+
+    if (specialEffect !== 'NONE' && specialEffectValue <= 0) {
+        showNotif('La valeur de l\'effet spécial doit être strictement supérieure à 0.', true);
+        return;
+    }
+
+    const dto = {
+        id: editingEquipmentId,
+        name,
+        slot,
+        bonusHealthMax: parseInt(document.getElementById('eqHp').value) || 0,
+        bonusManaMax: parseInt(document.getElementById('eqMana').value) || 0,
+        bonusPower: parseInt(document.getElementById('eqPower').value) || 0,
+        bonusStrength: parseInt(document.getElementById('eqStr').value) || 0,
+        bonusArmor: parseInt(document.getElementById('eqArmor').value) || 0,
+        bonusResistance: parseInt(document.getElementById('eqRes').value) || 0,
+        bonusSpeed: parseInt(document.getElementById('eqSpeed').value) || 0,
+        bonusCrit: parseInt(document.getElementById('eqCrit').value) || 0,
+        regenHealthPerTurn: parseInt(document.getElementById('eqRegenHp').value) || 0,
+        regenManaPerTurn: parseInt(document.getElementById('eqRegenMana').value) || 0,
+        rarity,
+        specialEffect,
+        specialEffectValue,
+        personnageId: null, // Keep null when forged from vault
+    };
+
+    try {
+        const res = await fetch('/api/equipment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dto)
+        });
+        const data = await res.json();
+        if (!res.ok) {
+            showNotif(data.message || 'Erreur', true);
+            return;
+        }
+        
+        closeCreateEqModal();
+        showNotif(editingEquipmentId ? 'Équipement modifié !' : 'Équipement forgé !');
+        await loadEquipments();
+    } catch (e) {
+        console.error(e);
+        showNotif('Erreur réseau', true);
+    }
+}
+
+function calculateEquipmentWeight() {
+    let w = 0;
+    w += (parseInt(document.getElementById('eqHp').value) || 0) * 0.1;
+    w += (parseInt(document.getElementById('eqMana').value) || 0) * 0.1;
+    w += (parseInt(document.getElementById('eqPower').value) || 0) * 1.0;
+    w += (parseInt(document.getElementById('eqStr').value) || 0) * 1.0;
+    w += (parseInt(document.getElementById('eqArmor').value) || 0) * 1.0;
+    w += (parseInt(document.getElementById('eqRes').value) || 0) * 1.0;
+    w += (parseInt(document.getElementById('eqSpeed').value) || 0) * 1.5;
+    w += (parseInt(document.getElementById('eqCrit').value) || 0) * 1.5;
+    w += (parseInt(document.getElementById('eqRegenHp').value) || 0) * 2.0;
+    w += (parseInt(document.getElementById('eqRegenMana').value) || 0) * 2.0;
+    
+    // Add special effect weight if Epic/Relic
+    const rarity = document.getElementById('eqRarity').value;
+    if (rarity === 'EPIQUE' || rarity === 'RELIQUE') {
+        const specialEffect = document.getElementById('eqSpecialEffect').value;
+        const effectVal = parseInt(document.getElementById('eqSpecialEffectValue').value) || 0;
+        
+        if (specialEffect !== 'NONE' && effectVal > 0) {
+            let effectMultiplier = 1.0;
+            switch(specialEffect) {
+                case 'LIFESTEAL': effectMultiplier = 3.0; break;
+                case 'THORNS': effectMultiplier = 2.0; break;
+                case 'MANA_SHIELD': effectMultiplier = 2.5; break;
+                case 'CHEAT_DEATH': effectMultiplier = 5.0; break;
+                case 'CRIT_DAMAGE': effectMultiplier = 1.5; break;
+            }
+            w += effectVal * effectMultiplier;
+        }
+    }
+
+    return w;
+}
+
+window.updateWeightUI = function() {
+    const slot = document.getElementById('eqSlot').value;
+    const rarity = document.getElementById('eqRarity').value;
+    const w = calculateEquipmentWeight();
+    
+    const limitsForSlot = WEIGHT_LIMITS[slot] || {};
+    const maxW = limitsForSlot[rarity || 'COMMUN'] || 5;
+
+    const fillEl = document.getElementById('eqWeightFill');
+    const textEl = document.getElementById('eqWeightText');
+
+    if (textEl) {
+        const displayW = w % 1 === 0 ? w : w.toFixed(1);
+        textEl.innerText = `${displayW} / ${maxW}`;
+    }
+
+    if (fillEl) {
+        let pct = (w / maxW) * 100;
+        let color = '#10b981';
+
+        if (pct < 0) {
+            pct = Math.min(Math.abs(pct), 100);
+            color = '#3b82f6';
+        } else if (pct > 100) {
+            pct = 100;
+            color = '#ef4444';
+        } else if (pct > 80) {
+            color = '#f59e0b';
+        }
+
+        fillEl.style.width = pct + '%';
+        fillEl.style.background = color;
+        if(textEl) textEl.style.color = color;
+    }
+}
