@@ -175,18 +175,6 @@
                     Annuler
                 </button>
             </div>
-
-            <!-- Inventaire Placeholder -->
-            <div class="armory-inventory-section">
-                <div class="armory-inventory-title">
-                    <span class="material-symbols-outlined">inventory_2</span>
-                    Inventaire & Équipement
-                </div>
-                <div class="armory-inventory-placeholder">
-                    Sélectionnez un personnage pour gérer son équipement.<br>
-                    Cette fonctionnalité sera disponible prochainement.
-                </div>
-            </div>
         </div>
 
         <!-- Colonne Droite : Liste des Personnages -->
@@ -204,6 +192,86 @@
 
             <div class="armory-characters-grid" id="personnagesList">
                 <div class="armory-empty-state">Chargement...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Equipment Modal -->
+    <div class="equip-modal-overlay" id="equipModalOverlay" onclick="if(event.target===this) closeEquipModal()">
+        <div class="equip-modal">
+            <div class="equip-modal-header">
+                <div class="equip-modal-title">
+                    <span class="material-symbols-outlined" style="color: #f59e0b;">shield</span>
+                    <span id="equipModalTitle">Équipement</span>
+                </div>
+                <button class="equip-modal-close" onclick="closeEquipModal()">
+                    <span class="material-symbols-outlined" style="font-size: 1.1rem;">close</span>
+                </button>
+            </div>
+
+            <!-- Grille des 6 slots -->
+            <div class="equip-slots-grid" id="equipSlotsContainer"></div>
+
+            <!-- Formulaire de création d'équipement inline -->
+            <div class="equip-create-section">
+                <div class="equip-create-title">
+                    <span class="material-symbols-outlined">add_circle</span>
+                    Créer un nouvel équipement
+                </div>
+
+                <div class="eq-create-row">
+                    <div class="eq-create-field">
+                        <label>Nom</label>
+                        <input type="text" id="eqName" placeholder="Ex: Casque de Fer">
+                    </div>
+                    <div class="eq-create-field">
+                        <label>Slot</label>
+                        <select id="eqSlot"></select>
+                    </div>
+                </div>
+
+                <div class="eq-create-row quad">
+                    <div class="eq-create-field">
+                        <label>PV</label>
+                        <input type="number" id="eqHp" value="0">
+                    </div>
+                    <div class="eq-create-field">
+                        <label>Mana</label>
+                        <input type="number" id="eqMana" value="0">
+                    </div>
+                    <div class="eq-create-field">
+                        <label>Puissance</label>
+                        <input type="number" id="eqPower" value="0">
+                    </div>
+                    <div class="eq-create-field">
+                        <label>Force</label>
+                        <input type="number" id="eqStr" value="0">
+                    </div>
+                </div>
+
+                <div class="eq-create-row quad">
+                    <div class="eq-create-field">
+                        <label>Armure</label>
+                        <input type="number" id="eqArmor" value="0">
+                    </div>
+                    <div class="eq-create-field">
+                        <label>Résistance</label>
+                        <input type="number" id="eqRes" value="0">
+                    </div>
+                    <div class="eq-create-field">
+                        <label>Vitesse</label>
+                        <input type="number" id="eqSpeed" value="0">
+                    </div>
+                    <div class="eq-create-field">
+                        <label>Critique</label>
+                        <input type="number" id="eqCrit" value="0">
+                    </div>
+                </div>
+
+                <button type="button" class="eq-create-btn" onclick="submitEquipment()">
+                    <span class="material-symbols-outlined" style="font-size: 1rem;">add</span>
+                    Forger & Équiper
+                </button>
             </div>
         </div>
     </div>

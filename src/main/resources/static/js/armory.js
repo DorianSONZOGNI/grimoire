@@ -4,6 +4,28 @@ let voies = [];
 let spiritualites = [];
 let personnages = [];
 let editingId = null;
+let equipModalPersoId = null;
+let allEquipments = [];
+
+const SLOT_LABELS = {
+    CASQUE: { label: 'Casque', icon: 'hard_hat', color: '#a855f7' },
+    PLASTRON: { label: 'Plastron', icon: 'shield_person', color: '#3b82f6' },
+    ANNEAU_GAUCHE: { label: 'Anneau G.', icon: 'ring_volume', color: '#f59e0b' },
+    ANNEAU_DROIT: { label: 'Anneau D.', icon: 'ring_volume', color: '#f59e0b' },
+    BOTTES: { label: 'Bottes', icon: 'do_not_step', color: '#10b981' },
+    CAPE: { label: 'Cape', icon: 'apparel', color: '#ec4899' },
+};
+
+const STAT_DEFS = [
+    { key: 'bonusHealthMax', label: 'PV', icon: 'favorite', color: '#ec4899' },
+    { key: 'bonusManaMax', label: 'Mana', icon: 'water_drop', color: '#38bdf8' },
+    { key: 'bonusPower', label: 'Pui', icon: 'auto_awesome', color: '#a855f7' },
+    { key: 'bonusStrength', label: 'For', icon: 'fitness_center', color: '#f43f5e' },
+    { key: 'bonusArmor', label: 'Arm', icon: 'shield', color: '#3b82f6' },
+    { key: 'bonusResistance', label: 'Rés', icon: 'shield', color: '#10b981' },
+    { key: 'bonusSpeed', label: 'Vit', icon: 'bolt', color: '#f59e0b' },
+    { key: 'bonusCrit', label: 'Crit', icon: 'gps_fixed', color: '#ef4444' },
+];
 
 // ===== API =====
 
@@ -26,6 +48,16 @@ async function loadPersonnages() {
         renderPersonnages();
     } catch (e) {
         console.error('Erreur chargement personnages:', e);
+    }
+}
+
+async function loadAllEquipments() {
+    try {
+        const res = await fetch('/api/equipment');
+        allEquipments = await res.json();
+    } catch (e) {
+        console.error('Erreur chargement équipements:', e);
+        allEquipments = [];
     }
 }
 
@@ -53,7 +85,6 @@ async function submitPersonnage() {
         spiritualiteLevel: parseInt(document.getElementById('charSpiritLevel').value) || 1,
     };
 
-    // Convert empty string to null for IDs
     if (dto.voieId === '') dto.voieId = null;
     if (dto.spiritualiteId === '') dto.spiritualiteId = null;
     if (dto.voieId) dto.voieId = parseInt(dto.voieId);
@@ -84,6 +115,92 @@ async function deletePersonnage(id) {
         await loadPersonnages();
     } catch (e) {
         showNotif('Erreur lors de la suppression.', true);
+    }
+}
+
+// ===== Equipment API =====
+
+async function submitEquipment() {
+    const name = document.getElementById('eqName').value.trim();
+    const slot = document.getElementById('eqSlot').value;
+    if (!name) { showNotif('Nom de l\'équipement obligatoire.', true); return; }
+    if (!slot) { showNotif('Slot obligatoire.', true); return; }
+
+    const dto = {
+        name,
+        slot,
+        bonusHealthMax: parseInt(document.getElementById('eqHp').value) || 0,
+        bonusManaMax: parseInt(document.getElementById('eqMana').value) || 0,
+        bonusPower: parseInt(document.getElementById('eqPower').value) || 0,
+        bonusStrength: parseInt(document.getElementById('eqStr').value) || 0,
+        bonusArmor: parseInt(document.getElementById('eqArmor').value) || 0,
+        bonusResistance: parseInt(document.getElementById('eqRes').value) || 0,
+        bonusSpeed: parseInt(document.getElementById('eqSpeed').value) || 0,
+        bonusCrit: parseInt(document.getElementById('eqCrit').value) || 0,
+        personnageId: equipModalPersoId,
+    };
+
+    try {
+        const res = await fetch('/api/equipment', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(dto)
+        });
+        const data = await res.json();
+        showNotif(data.message || 'Équipement créé !');
+        // Reset equipment form
+        document.getElementById('eqName').value = '';
+        document.getElementById('eqHp').value = 0;
+        document.getElementById('eqMana').value = 0;
+        document.getElementById('eqPower').value = 0;
+        document.getElementById('eqStr').value = 0;
+        document.getElementById('eqArmor').value = 0;
+        document.getElementById('eqRes').value = 0;
+        document.getElementById('eqSpeed').value = 0;
+        document.getElementById('eqCrit').value = 0;
+        await loadAllEquipments();
+        renderEquipModal();
+        await loadPersonnages();
+    } catch (e) {
+        showNotif('Erreur création équipement.', true);
+    }
+}
+
+async function equipItem(equipmentId, personnageId) {
+    try {
+        const res = await fetch(`/api/equipment/${equipmentId}/equip/${personnageId}`, { method: 'POST' });
+        const data = await res.json();
+        showNotif(data.message);
+        await loadAllEquipments();
+        renderEquipModal();
+        await loadPersonnages();
+    } catch (e) {
+        showNotif('Erreur lors de l\'équipement.', true);
+    }
+}
+
+async function unequipItem(equipmentId) {
+    try {
+        const res = await fetch(`/api/equipment/${equipmentId}/unequip`, { method: 'POST' });
+        const data = await res.json();
+        showNotif(data.message);
+        await loadAllEquipments();
+        renderEquipModal();
+        await loadPersonnages();
+    } catch (e) {
+        showNotif('Erreur lors du déséquipement.', true);
+    }
+}
+
+async function deleteEquipment(id) {
+    try {
+        await fetch(`/api/equipment/${id}`, { method: 'DELETE' });
+        showNotif('Équipement supprimé.');
+        await loadAllEquipments();
+        renderEquipModal();
+        await loadPersonnages();
+    } catch (e) {
+        showNotif('Erreur suppression.', true);
     }
 }
 
@@ -135,6 +252,25 @@ function renderPersonnages() {
             badges = `<span style="font-size: 0.72rem; color: var(--text-muted); font-style: italic;">Aucune affiliation</span>`;
         }
 
+        // Equipment summary
+        const persoEquips = allEquipments.filter(e => e.personnage && e.personnage.id === p.id);
+        let equipHtml = '';
+        if (persoEquips.length > 0) {
+            equipHtml = `<div class="char-equip-row">` +
+                persoEquips.map(eq => {
+                    const slotInfo = SLOT_LABELS[eq.slot] || { label: eq.slot, icon: 'help', color: '#94a3b8' };
+                    const statsStr = STAT_DEFS
+                        .filter(s => eq[s.key] && eq[s.key] !== 0)
+                        .map(s => `+${eq[s.key]} ${s.label}`)
+                        .join(', ');
+                    return `<span class="char-equip-chip" title="${statsStr || 'Aucun bonus'}">
+                        <span class="material-symbols-outlined" style="font-size: 0.85rem; color: ${slotInfo.color};">${slotInfo.icon}</span>
+                        ${eq.name}
+                    </span>`;
+                }).join('') +
+            `</div>`;
+        }
+
         return `
             <div class="char-card">
                 <div class="char-card-header">
@@ -143,6 +279,9 @@ function renderPersonnages() {
                         ${p.name}
                     </div>
                     <div class="char-card-actions">
+                        <button class="char-btn-equip" onclick="openEquipModal(${p.id})" title="Gérer l'équipement">
+                            <span class="material-symbols-outlined" style="font-size: 0.95rem;">shield</span> Équiper
+                        </button>
                         <button class="char-btn-edit" onclick="editPersonnage(${p.id})" title="Éditer">
                             <span class="material-symbols-outlined" style="font-size: 0.95rem;">edit</span> Éditer
                         </button>
@@ -152,6 +291,7 @@ function renderPersonnages() {
                     </div>
                 </div>
                 <div class="char-card-badges">${badges}</div>
+                ${equipHtml}
                 <div class="char-card-stats">
                     <span class="char-stat-chip"><span class="material-symbols-outlined" style="color: #ec4899;">favorite</span>${p.healthMax} PV</span>
                     <span class="char-stat-chip"><span class="material-symbols-outlined" style="color: #38bdf8;">water_drop</span>${p.manaMax} Mana</span>
@@ -165,6 +305,92 @@ function renderPersonnages() {
             </div>`;
     }).join('');
 }
+
+// ===== Equipment Modal =====
+
+async function openEquipModal(persoId) {
+    equipModalPersoId = persoId;
+    await loadAllEquipments();
+    const overlay = document.getElementById('equipModalOverlay');
+    overlay.classList.add('active');
+    renderEquipModal();
+}
+
+function closeEquipModal() {
+    equipModalPersoId = null;
+    document.getElementById('equipModalOverlay').classList.remove('active');
+}
+
+function renderEquipModal() {
+    const perso = personnages.find(p => p.id === equipModalPersoId);
+    if (!perso) return;
+
+    document.getElementById('equipModalTitle').textContent = `Équipement de ${perso.name}`;
+
+    // Render slots
+    const slotsContainer = document.getElementById('equipSlotsContainer');
+    const slots = Object.keys(SLOT_LABELS);
+    const equippedItems = allEquipments.filter(e => e.personnage && e.personnage.id === perso.id);
+
+    slotsContainer.innerHTML = slots.map(slotKey => {
+        const slotInfo = SLOT_LABELS[slotKey];
+        const equipped = equippedItems.find(e => e.slot === slotKey);
+
+        if (equipped) {
+            const statsChips = STAT_DEFS
+                .filter(s => equipped[s.key] && equipped[s.key] !== 0)
+                .map(s => `<span class="eq-stat-mini"><span class="material-symbols-outlined" style="color:${s.color}; font-size:0.75rem;">${s.icon}</span>+${equipped[s.key]}</span>`)
+                .join('');
+
+            return `
+                <div class="equip-slot-card equipped">
+                    <div class="equip-slot-header">
+                        <span class="equip-slot-label">
+                            <span class="material-symbols-outlined" style="font-size: 1.1rem; color: ${slotInfo.color};">${slotInfo.icon}</span>
+                            ${slotInfo.label}
+                        </span>
+                        <button class="eq-unequip-btn" onclick="unequipItem(${equipped.id})" title="Retirer">
+                            <span class="material-symbols-outlined" style="font-size: 0.9rem;">close</span>
+                        </button>
+                    </div>
+                    <div class="equip-slot-item-name">${equipped.name}</div>
+                    <div class="equip-slot-stats">${statsChips || '<span style="opacity:0.4;">Aucun bonus</span>'}</div>
+                </div>`;
+        } else {
+            // Available items for this slot
+            const available = allEquipments.filter(e => e.slot === slotKey && !e.personnage);
+            let availableHtml = '';
+            if (available.length > 0) {
+                availableHtml = `<select class="eq-assign-select" onchange="if(this.value) equipItem(this.value, ${perso.id})">
+                    <option value="">Choisir...</option>
+                    ${available.map(a => `<option value="${a.id}">${a.name}</option>`).join('')}
+                </select>`;
+            } else {
+                availableHtml = `<span style="font-size: 0.72rem; color: #475569; font-style: italic;">Aucun disponible</span>`;
+            }
+
+            return `
+                <div class="equip-slot-card empty">
+                    <div class="equip-slot-header">
+                        <span class="equip-slot-label">
+                            <span class="material-symbols-outlined" style="font-size: 1.1rem; color: ${slotInfo.color}; opacity: 0.5;">${slotInfo.icon}</span>
+                            ${slotInfo.label}
+                        </span>
+                    </div>
+                    <div class="equip-slot-empty">Vide</div>
+                    ${availableHtml}
+                </div>`;
+        }
+    }).join('');
+
+    // Render create form slot select
+    const slotSelect = document.getElementById('eqSlot');
+    if (slotSelect) {
+        slotSelect.innerHTML = slots.map(s => `<option value="${s}">${SLOT_LABELS[s].label}</option>`).join('');
+    }
+}
+
+// ===== Form Helpers =====
 
 function editPersonnage(id) {
     const p = personnages.find(c => c.id === id);
@@ -193,7 +419,6 @@ function editPersonnage(id) {
         Mettre à jour`;
     document.getElementById('cancelBtn').style.display = 'inline-flex';
 
-    // Scroll to top
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -237,5 +462,6 @@ function showNotif(message, isError = false) {
 
 window.addEventListener('DOMContentLoaded', async () => {
     await fetchMeta();
+    await loadAllEquipments();
     await loadPersonnages();
 });

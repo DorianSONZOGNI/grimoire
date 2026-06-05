@@ -57,6 +57,9 @@ public class Personnage {
 
     private int spiritualiteLevel = 1;
 
+    @OneToMany(mappedBy = "personnage", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<generation.grimoire.entity.Equipment> equipments = new ArrayList<>();
+
     // Liste des buffs/débuffs actifs (ici en mémoire, mais vous pouvez choisir de
     // les persister si besoin)
     @Transient
