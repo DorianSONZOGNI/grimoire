@@ -11,6 +11,18 @@ export async function trySpell(id) {
     renderSandboxSpellSelector();
     populateHeroConfigSelectors();
 
+    // Fetch armory characters for selection if not already done
+    if (!state.armoryCharacters) {
+        try {
+            const res = await fetch('/api/personnages');
+            if (res.ok) state.armoryCharacters = await res.json();
+            else state.armoryCharacters = [];
+        } catch (e) {
+            console.error("Erreur char armory", e);
+            state.armoryCharacters = [];
+        }
+    }
+
     const overlay = document.getElementById('simulationModalOverlay');
     overlay.classList.add('active');
 
@@ -247,7 +259,7 @@ function updateSandboxSpellDropdown() {
 
     const query = searchInput.value.toLowerCase().trim();
     const availableSpells = state.loadedSpells.filter(sp => !state.sandboxSpellIds.includes(sp.id));
-    
+
     if (availableSpells.length === 0) {
         dropdown.innerHTML = `<div style="padding: 0.8rem; color: var(--text-muted); font-size: 0.85rem; text-align: center; font-style: italic;">Tous les sorts sont déjà dans le banc d'essai</div>`;
         return;
@@ -264,7 +276,7 @@ function updateSandboxSpellDropdown() {
     filtered.sort((a, b) => {
         const voieA = (a.voie && a.voie.nom) ? a.voie.nom : 'ZZZ_AucuneVoie'; // Push those without Voie to the end
         const voieB = (b.voie && b.voie.nom) ? b.voie.nom : 'ZZZ_AucuneVoie';
-        
+
         if (voieA !== voieB) {
             return voieA.localeCompare(voieB);
         }
@@ -552,6 +564,17 @@ export function updateSandboxUI(data) {
     // Update Turn
     document.getElementById('sandboxTurnText').innerText = data.turnCount || 1;
 
+    // Helper for char options
+    const charOptions = (state.armoryCharacters || []).map(c => `<option value="${c.id}">${c.name}</option>`).join('');
+
+    // Update Hero Select options
+    const heroSelect = document.getElementById('heroConfigCharacterSelect');
+    if (heroSelect && !heroSelect.dataset.populated) {
+        heroSelect.innerHTML = `<option value="">— Charger depuis l'Armurerie —</option>` + charOptions;
+        heroSelect.dataset.populated = 'true';
+        ui.makeCustomSelect('heroConfigCharacterSelect');
+    }
+
     // Render allies
     const alliesContainer = document.getElementById('alliesContainer');
     if (alliesContainer && data.allies) {
@@ -561,12 +584,20 @@ export function updateSandboxUI(data) {
         });
         // Add ally button
         if (data.allies.length < 4) {
-            html += `<button type="button" class="btn-add-combatant" onclick="addSandboxAlly()">
-                <span class="material-symbols-outlined" style="font-size: 1rem;">person_add</span>
-                <span>Ajouter un Allié</span>
-            </button>`;
+            html += `<div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                <select id="sandboxAddAllySelect" class="sandbox-combatant-select" style="flex: 1; background: #111827; border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; border-radius: 6px; padding: 0.4rem;">
+                    <option value="">— Créer un Allié —</option>
+                    ${charOptions}
+                </select>
+                <button type="button" class="btn-add-combatant" style="margin-top:0; padding: 0.4rem 0.8rem; background: var(--bg-tertiary); color: #fff; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px;" onclick="addSandboxAlly(document.getElementById('sandboxAddAllySelect').value)">
+                    <span class="material-symbols-outlined" style="font-size: 1rem;">person_add</span>
+                </button>
+            </div>`;
         }
         alliesContainer.innerHTML = html;
+        if (data.allies.length < 4) {
+            ui.makeCustomSelect('sandboxAddAllySelect');
+        }
     }
 
     // Render enemies
@@ -577,12 +608,20 @@ export function updateSandboxUI(data) {
             html += renderCombatantCard(c, 'enemy', false);
         });
         if (data.enemies.length < 4) {
-            html += `<button type="button" class="btn-add-combatant enemy" onclick="addSandboxEnemy()">
-                <span class="material-symbols-outlined" style="font-size: 1rem;">group_add</span>
-                <span>Ajouter un Ennemi</span>
-            </button>`;
+            html += `<div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                <select id="sandboxAddEnemySelect" class="sandbox-combatant-select" style="flex: 1; background: #111827; border: 1px solid rgba(255, 255, 255, 0.1); color: #fff; border-radius: 6px; padding: 0.4rem;">
+                    <option value="">— Créer un Ennemi —</option>
+                    ${charOptions}
+                </select>
+                <button type="button" class="btn-add-combatant enemy" style="margin-top:0; padding: 0.4rem 0.8rem; background: rgba(239, 68, 68, 0.1); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.2); border-radius: 6px;" onclick="addSandboxEnemy(document.getElementById('sandboxAddEnemySelect').value)">
+                    <span class="material-symbols-outlined" style="font-size: 1rem;">group_add</span>
+                </button>
+            </div>`;
         }
         enemiesContainer.innerHTML = html;
+        if (data.enemies.length < 4) {
+            ui.makeCustomSelect('sandboxAddEnemySelect');
+        }
     }
 
     // Render Logs
@@ -730,7 +769,7 @@ function checkAndConfirmCast() {
         const cKey = pendingCastChoiceKey;
         const eIdx = pendingTargetEnemyIndex;
         const aIdx = pendingTargetAllyIndex;
-        
+
         clearTargetSelection();
         executeCast(sId, cKey, eIdx, aIdx);
     }
@@ -767,16 +806,18 @@ async function executeCast(spellId, choiceKey, enemyIndex, allyIndex) {
 
 // ===== Add/Remove Combatants =====
 
-export async function addSandboxAlly() {
+export async function addSandboxAlly(personnageId) {
     try {
-        const res = await fetch('/api/spells-editor/sandbox/add-ally', { method: 'POST' });
+        const url = '/api/spells-editor/sandbox/add-ally' + (personnageId ? `?personnageId=${personnageId}` : '');
+        const res = await fetch(url, { method: 'POST' });
         if (res.ok) updateSandboxUI(await res.json());
     } catch (err) { console.error(err); }
 }
 
-export async function addSandboxEnemy() {
+export async function addSandboxEnemy(personnageId) {
     try {
-        const res = await fetch('/api/spells-editor/sandbox/add-enemy', { method: 'POST' });
+        const url = '/api/spells-editor/sandbox/add-enemy' + (personnageId ? `?personnageId=${personnageId}` : '');
+        const res = await fetch(url, { method: 'POST' });
         if (res.ok) updateSandboxUI(await res.json());
     } catch (err) { console.error(err); }
 }
@@ -787,3 +828,17 @@ export async function removeSandboxCombatant(team, index) {
         if (res.ok) updateSandboxUI(await res.json());
     } catch (err) { console.error(err); }
 }
+
+export async function loadSandboxHero(personnageId) {
+    if (!personnageId) return; // Ignore si vide
+    try {
+        const res = await fetch(`/api/spells-editor/sandbox/set-hero?personnageId=${personnageId}`, { method: 'POST' });
+        if (res.ok) updateSandboxUI(await res.json());
+        // Reset the select back to empty
+        const sel = document.getElementById('heroConfigCharacterSelect');
+        if (sel) sel.value = '';
+    } catch (err) { console.error(err); }
+}
+
+// Attach new global function
+window.loadSandboxHero = loadSandboxHero;
