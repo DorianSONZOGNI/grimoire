@@ -1,7 +1,7 @@
 let allEquipments = [];
 
 const SLOT_LABELS = {
-    CASQUE: { label: 'Casque', icon: 'masks', color: '#a855f7' },
+    CASQUE: { label: 'Casque', icon: 'masks', color: '#a855f7', extraClass: 'flip-icon' },
     PLASTRON: { label: 'Plastron', icon: 'shield', color: '#3b82f6' },
     ANNEAU_GAUCHE: { label: 'Anneau', icon: 'diamond', color: '#f59e0b' },
     ANNEAU_DROIT: { label: 'Anneau', icon: 'diamond', color: '#f59e0b' },
@@ -56,7 +56,7 @@ function calculateWeight(eq) {
     if (rarity === 'EPIQUE' || rarity === 'RELIQUE') {
         const specialEffect = eq.specialEffect;
         const effectVal = eq.specialEffectValue || 0;
-        
+
         if (specialEffect && specialEffect !== 'NONE' && effectVal > 0) {
             w += effectVal * 1.0;
         }
@@ -98,11 +98,11 @@ document.addEventListener('click', (e) => {
         const wrapper = option.closest('.custom-select-wrapper');
         const hiddenInput = wrapper.querySelector('input[type="hidden"]');
         const labelEl = wrapper.querySelector('.cs-label');
-        
+
         hiddenInput.value = option.getAttribute('data-value');
         labelEl.innerHTML = option.innerHTML;
         wrapper.classList.remove('open');
-        
+
         if (hiddenInput.id === 'eqRarity') {
             const val = hiddenInput.value;
             const row = document.getElementById('eqSpecialEffectRow');
@@ -139,7 +139,7 @@ async function loadEquipments() {
     try {
         const res = await fetch('/api/equipment');
         allEquipments = await res.json();
-        
+
         // Pré-calculer le poids pour le tri
         allEquipments.forEach(eq => {
             eq._weight = calculateWeight(eq);
@@ -172,7 +172,7 @@ function closeDeleteModal() {
 
 document.getElementById('deleteConfirmBtn').addEventListener('click', async () => {
     if (!equipmentToDelete) return;
-    
+
     const id = equipmentToDelete;
     closeDeleteModal();
 
@@ -204,7 +204,7 @@ function filterVault() {
     let filtered = allEquipments.filter(eq => {
         const matchName = !searchName || eq.name.toLowerCase().includes(searchName);
         const matchOwner = !searchOwner || (eq.ownerUsername && eq.ownerUsername.toLowerCase().includes(searchOwner));
-        
+
         let matchSlot = true;
         if (filterSlot) {
             if (filterSlot === 'ANNEAU') {
@@ -213,9 +213,9 @@ function filterVault() {
                 matchSlot = eq.slot === filterSlot;
             }
         }
-        
+
         const matchRarity = !filterRarity || eq.rarity === filterRarity;
-        
+
         let matchStatus = true;
         if (filterStatus === 'EQUIPPED') matchStatus = eq.personnage != null;
         if (filterStatus === 'AVAILABLE') matchStatus = eq.personnage == null;
@@ -227,7 +227,7 @@ function filterVault() {
     filtered.sort((a, b) => {
         if (sortVault === 'name_asc') return a.name.localeCompare(b.name);
         if (sortVault === 'name_desc') return b.name.localeCompare(a.name);
-        
+
         if (sortVault === 'rarity_desc') {
             const ra = RARITY_ORDER[a.rarity] || 0;
             const rb = RARITY_ORDER[b.rarity] || 0;
@@ -240,10 +240,10 @@ function filterVault() {
             if (ra !== rb) return ra - rb;
             return a._weight - b._weight;
         }
-        
+
         if (sortVault === 'weight_desc') return b._weight - a._weight;
         if (sortVault === 'weight_asc') return a._weight - b._weight;
-        
+
         return 0;
     });
 
@@ -264,7 +264,7 @@ function renderGrid(equipments) {
 
     container.innerHTML = equipments.map(eq => {
         const slotInfo = SLOT_LABELS[eq.slot] || { label: eq.slot, icon: 'help', color: '#94a3b8' };
-        
+
         const statsHtml = STAT_DEFS
             .filter(s => eq[s.key] && eq[s.key] !== 0)
             .map(s => {
@@ -294,7 +294,7 @@ function renderGrid(equipments) {
         }
 
         const rarityClass = eq.rarity ? `rarity-${eq.rarity}` : 'rarity-COMMUN';
-        
+
         let statusHtml = '';
         if (eq.personnage) {
             statusHtml = `<span class="vault-card-status status-equipped">
@@ -331,7 +331,7 @@ function renderGrid(equipments) {
                 <div class="vault-card-header">
                     <div class="vault-card-name-group">
                         <div class="vault-card-slot">
-                            <span class="material-symbols-outlined" style="font-size: 0.9rem; color: ${slotInfo.color};">${slotInfo.icon}</span>
+                            <span class="material-symbols-outlined ${slotInfo.extraClass || ''}" style="font-size: 0.9rem; color: ${slotInfo.color};">${slotInfo.icon}</span>
                             ${slotInfo.label} ${eq.rarity ? `<span style="opacity:0.5; margin-left:4px;">${eq.rarity}</span>` : ''}
                         </div>
                         <div class="vault-card-name">
@@ -368,7 +368,7 @@ function renderGrid(equipments) {
 // Init
 window.addEventListener('DOMContentLoaded', () => {
     loadEquipments();
-    
+
     // Listeners for Weight Calculation
     const eqInputs = ['eqSlot', 'eqRarity', 'eqHp', 'eqMana', 'eqPower', 'eqStr', 'eqArmor', 'eqRes', 'eqSpeed', 'eqCrit', 'eqRegenHp', 'eqRegenMana', 'eqSpecialEffectValue'];
     eqInputs.forEach(id => {
@@ -378,7 +378,7 @@ window.addEventListener('DOMContentLoaded', () => {
             el.addEventListener('change', updateWeightUI);
         }
     });
-    
+
     // Render create form slot select
     const slotOptionsContainer = document.getElementById('eqSlotOptions');
     if (slotOptionsContainer) {
@@ -398,7 +398,7 @@ window.addEventListener('authLoaded', () => {
     if (btnCreate) {
         btnCreate.style.display = window.isAdmin ? 'flex' : 'none';
     }
-    
+
     const searchOwnerContainer = document.getElementById('searchOwnerContainer');
     if (searchOwnerContainer) {
         searchOwnerContainer.style.display = window.isAdmin ? 'flex' : 'none';
@@ -414,7 +414,7 @@ window.addEventListener('authLoaded', () => {
 
 let editingEquipmentId = null;
 
-window.openCreateEqModal = function() {
+window.openCreateEqModal = function () {
     editingEquipmentId = null;
     document.getElementById('equipModalTitle').innerHTML = 'Forger un objet';
     document.getElementById('submitEquipmentBtn').innerHTML = '<span class="material-symbols-outlined" style="font-size: 1.2rem;">add</span> Forger';
@@ -423,7 +423,7 @@ window.openCreateEqModal = function() {
     updateWeightUI();
 }
 
-window.closeCreateEqModal = function() {
+window.closeCreateEqModal = function () {
     document.getElementById('equipCreateModal').classList.remove('show');
     resetEqForm();
 }
@@ -466,14 +466,14 @@ function resetEqForm() {
     }
 }
 
-window.editEquipment = function(id) {
+window.editEquipment = function (id) {
     editingEquipmentId = id;
     const eq = allEquipments.find(e => e.id === id);
     if (!eq) return;
 
     document.getElementById('equipModalTitle').innerHTML = 'Modifier un objet';
     document.getElementById('submitEquipmentBtn').innerHTML = '<span class="material-symbols-outlined" style="font-size: 1.2rem;">save</span> Enregistrer';
-    
+
     document.getElementById('eqName').value = eq.name || '';
     document.getElementById('eqHp').value = eq.bonusHealthMax || 0;
     document.getElementById('eqMana').value = eq.bonusManaMax || 0;
@@ -508,29 +508,29 @@ window.editEquipment = function(id) {
         const row = document.getElementById('eqSpecialEffectRow');
         if (eq.rarity === 'EPIQUE' || eq.rarity === 'RELIQUE') {
             if (row) row.style.display = 'grid';
-            
+
             const isEpic = eq.rarity === 'EPIQUE';
             const color = isEpic ? '#ef4444' : '#c084fc';
             const bg = isEpic ? 'rgba(239, 68, 68, 0.05)' : 'rgba(168, 85, 247, 0.05)';
             const border = isEpic ? '1px dashed rgba(239, 68, 68, 0.3)' : '1px dashed rgba(168, 85, 247, 0.3)';
             const inputBorder = isEpic ? 'rgba(239, 68, 68, 0.3)' : 'rgba(192, 132, 252, 0.3)';
-            
-            if(row) {
+
+            if (row) {
                 row.style.background = bg;
                 row.style.border = border;
             }
-            
+
             const labelTitle = document.getElementById('eqSpecialEffectLabelTitle');
-            if(labelTitle) labelTitle.style.color = color;
-            
+            if (labelTitle) labelTitle.style.color = color;
+
             const valueTitle = document.getElementById('eqSpecialEffectValueTitle');
-            if(valueTitle) valueTitle.style.color = color;
-            
+            if (valueTitle) valueTitle.style.color = color;
+
             const trigger = document.getElementById('eqSpecialEffectTrigger');
-            if(trigger) trigger.style.borderColor = inputBorder;
-            
+            if (trigger) trigger.style.borderColor = inputBorder;
+
             const valInput = document.getElementById('eqSpecialEffectValue');
-            if(valInput) valInput.style.borderColor = inputBorder;
+            if (valInput) valInput.style.borderColor = inputBorder;
 
         } else {
             if (row) row.style.display = 'none';
@@ -553,12 +553,12 @@ window.editEquipment = function(id) {
     document.getElementById('equipCreateModal').classList.add('show');
 }
 
-window.submitEquipment = async function() {
+window.submitEquipment = async function () {
     const name = document.getElementById('eqName').value.trim();
     const slot = document.getElementById('eqSlot').value;
     if (!name) { showNotif('Nom de l\'équipement obligatoire.', true); return; }
     if (!slot) { showNotif('Slot obligatoire.', true); return; }
-    
+
     const rarity = document.getElementById('eqRarity').value;
     const maxWeight = (WEIGHT_LIMITS[slot] && WEIGHT_LIMITS[slot][rarity]) ? WEIGHT_LIMITS[slot][rarity] : 5;
     const currentWeight = calculateEquipmentWeight();
@@ -615,7 +615,7 @@ window.submitEquipment = async function() {
             showNotif(data.message || 'Erreur', true);
             return;
         }
-        
+
         closeCreateEqModal();
         showNotif(editingEquipmentId ? 'Équipement modifié !' : 'Équipement forgé !');
         await loadEquipments();
@@ -637,13 +637,13 @@ function calculateEquipmentWeight() {
     w += (parseInt(document.getElementById('eqCrit').value) || 0) * 1.0;
     w += (parseInt(document.getElementById('eqRegenHp').value) || 0) * 1.0;
     w += (parseInt(document.getElementById('eqRegenMana').value) || 0) * 1.0;
-    
+
     // Add special effect weight if Epic/Relic
     const rarity = document.getElementById('eqRarity').value;
     if (rarity === 'EPIQUE' || rarity === 'RELIQUE') {
         const specialEffect = document.getElementById('eqSpecialEffect').value;
         const effectVal = parseInt(document.getElementById('eqSpecialEffectValue').value) || 0;
-        
+
         if (specialEffect !== 'NONE' && effectVal > 0) {
             w += effectVal * 1.0;
         }
@@ -651,11 +651,11 @@ function calculateEquipmentWeight() {
     return w;
 }
 
-window.updateWeightUI = function() {
+window.updateWeightUI = function () {
     const slot = document.getElementById('eqSlot').value;
     const rarity = document.getElementById('eqRarity').value;
     const w = calculateEquipmentWeight();
-    
+
     const limitsForSlot = WEIGHT_LIMITS[slot] || {};
     const maxW = limitsForSlot[rarity || 'COMMUN'] || 5;
 
@@ -683,6 +683,6 @@ window.updateWeightUI = function() {
 
         fillEl.style.width = pct + '%';
         fillEl.style.background = color;
-        if(textEl) textEl.style.color = color;
+        if (textEl) textEl.style.color = color;
     }
 }

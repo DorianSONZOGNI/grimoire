@@ -20,6 +20,14 @@ const STAT_DEFS = [
     { key: 'regenManaPerTurn', label: 'Mana/t', icon: 'cyclone', color: '#38bdf8' },
 ];
 
+const RARITY_COLORS = {
+    COMMUN: '#94a3b8',
+    RARE: '#3b82f6',
+    LEGENDAIRE: '#f59e0b',
+    EPIQUE: '#c084fc',
+    RELIQUE: '#ef4444'
+};
+
 let shopItems = [];
 let itemToBuy = null;
 
@@ -98,11 +106,12 @@ function generateStandHtml(eq) {
     const priceStr = eq.shopPrice !== undefined ? (eq.shopPrice % 1 === 0 ? eq.shopPrice : eq.shopPrice.toFixed(1)) : '?';
     const oldPriceStr = eq.originalPrice !== undefined ? (eq.originalPrice % 1 === 0 ? eq.originalPrice : eq.originalPrice.toFixed(1)) : '';
 
+    const rarityColor = RARITY_COLORS[eq.rarity] || '#ef4444';
     const promoBadge = isPromo ? `<div style="position: absolute; top: -10px; right: -10px; background: #ef4444; color: white; padding: 0.2rem 0.5rem; border-radius: 8px; font-size: 0.8rem; font-weight: bold; transform: rotate(15deg); box-shadow: 0 4px 6px rgba(0,0,0,0.3);">-20%</div>` : '';
     const oldPriceHtml = isPromo ? `<span style="text-decoration: line-through; color: #ef4444; font-size: 0.8rem; opacity: 0.7;">${oldPriceStr}</span>` : '';
 
     return `
-        <div class="shop-stand" style="${isPromo ? 'border: 1px solid #ef4444;' : ''}">
+        <div class="shop-stand" style="${isPromo ? `border: 1px solid ${rarityColor}; box-shadow: 0 0 10px ${rarityColor}40;` : ''}">
             ${promoBadge}
             <span class="material-symbols-outlined shop-stand-icon ${slotInfo.extraClass || ''}" style="color: ${slotInfo.color};">${slotInfo.icon}</span>
             <div class="shop-stand-name">${eq.name}</div>
@@ -185,9 +194,18 @@ function renderSpecials() {
     let html = '';
 
     if (discountItem) {
+        const rarity = discountItem.rarity || 'COMMUN';
+        const color = RARITY_COLORS[rarity] || '#ef4444';
+        
+        let r = 239, g = 68, b = 68;
+        if (color === '#94a3b8') { r = 148; g = 163; b = 184; }
+        else if (color === '#3b82f6') { r = 59; g = 130; b = 246; }
+        else if (color === '#f59e0b') { r = 245; g = 158; b = 11; }
+        else if (color === '#c084fc') { r = 192; g = 132; b = 252; }
+        
         html += `
-            <div class="shop-rarity-group" style="border-top: 3px solid #ef4444; background: rgba(239, 68, 68, 0.05);">
-                <div class="shop-rarity-title" style="color: #ef4444; border-color: rgba(239, 68, 68, 0.3);">PROMO DU JOUR</div>
+            <div class="shop-rarity-group" style="border-top: 3px solid ${color}; background: rgba(${r}, ${g}, ${b}, 0.05);">
+                <div class="shop-rarity-title" style="color: ${color}; border-color: rgba(${r}, ${g}, ${b}, 0.3);">PROMO DU JOUR</div>
                 ${generateStandHtml(discountItem)}
             </div>
         `;
