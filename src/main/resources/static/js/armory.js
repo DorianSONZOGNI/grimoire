@@ -447,6 +447,28 @@ function populateSelects() {
         }
     }
 }
+function getVoieColor(nom) {
+    if (!nom) return '#94a3b8';
+    const vNom = nom.toLowerCase();
+    if (vNom.includes('raison')) return '#3b82f6';
+    if (vNom.includes('sûreté') || vNom.includes('surete')) return '#00e5cc';
+    if (vNom.includes('trahison')) return '#ed5677';
+    if (vNom.includes('consolidation')) return '#99674c';
+    if (vNom.includes('conviction')) return '#b74c0b';
+    if (vNom.includes('création') || vNom.includes('creation')) return '#10b981';
+    if (vNom.includes('destruction')) return '#ff0000';
+    if (vNom.includes('violence')) return '#a70740';
+    return '#94a3b8';
+}
+
+function getSpiritColor(nom) {
+    if (!nom) return '#a78bfa';
+    const sNom = nom.toLowerCase();
+    if (sNom.includes('esprit')) return '#38bdf8';
+    if (sNom.includes('ténèbres') || sNom.includes('tenebres')) return '#c084fc';
+    if (sNom.includes('karma')) return '#e7d198';
+    return '#a78bfa';
+}
 
 function filterPersonnages() {
     renderPersonnages();
@@ -480,13 +502,15 @@ function renderPersonnages() {
     container.innerHTML = filtered.map(p => {
         let badges = '';
         if (p.voie) {
-            badges += `<span class="char-badge char-badge-voie">
+            const vColor = getVoieColor(p.voie.nom);
+            badges += `<span class="char-badge" style="color: ${vColor}; border-color: ${vColor}40; background: ${vColor}15;">
                 <span class="material-symbols-outlined" style="font-size: 0.8rem;">route</span>
                 ${p.voie.nom} Lvl ${p.voieLevel}
             </span>`;
         }
         if (p.spiritualite) {
-            badges += `<span class="char-badge char-badge-spirit">
+            const sColor = getSpiritColor(p.spiritualite.nom);
+            badges += `<span class="char-badge" style="color: ${sColor}; border-color: ${sColor}40; background: ${sColor}15;">
                 <span class="material-symbols-outlined" style="font-size: 0.8rem;">psychology</span>
                 ${p.spiritualite.nom} Lvl ${p.spiritualiteLevel}
             </span>`;
