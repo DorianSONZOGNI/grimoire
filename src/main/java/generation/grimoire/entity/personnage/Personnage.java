@@ -561,7 +561,25 @@ public class Personnage {
                 .mapToInt(BuffDebuffEffect::getFlatValue)
                 .sum();
         int passiveBonus = getPassiveState("stat_flat_" + statType.name(), 0);
-        int totalBonus = buffBonus + passiveBonus;
+        
+        int equipmentBonus = 0;
+        if (this.equipments != null) {
+            for (generation.grimoire.entity.Equipment eq : this.equipments) {
+                switch (statType) {
+                    case HEALTH -> equipmentBonus += eq.getBonusHealthMax();
+                    case MANA -> equipmentBonus += eq.getBonusManaMax();
+                    case POWER -> equipmentBonus += eq.getBonusPower();
+                    case STRENGTH -> equipmentBonus += eq.getBonusStrength();
+                    case ARMURE -> equipmentBonus += eq.getBonusArmor();
+                    case RESISTANCE -> equipmentBonus += eq.getBonusResistance();
+                    case SPEED -> equipmentBonus += eq.getBonusSpeed();
+                    case CRIT -> equipmentBonus += eq.getBonusCrit();
+                    default -> {}
+                }
+            }
+        }
+
+        int totalBonus = buffBonus + passiveBonus + equipmentBonus;
 
         if (this.voie != null && this.voie.getPassiveEffects() != null) {
             for (generation.grimoire.entity.voie.passif.VoiePassiveEffect p : this.voie.getPassiveEffects()) {
@@ -647,6 +665,10 @@ public class Personnage {
     /** Alias pour la lisibilité dans les passifs. */
     public int getMaxHp() {
         return getHealthMax();
+    }
+
+    public int getBaseHealthMax() {
+        return this.healthMax;
     }
 
     public int getHealthMax() {
@@ -768,6 +790,10 @@ public class Personnage {
     public void setManaCurrent(int manaCurrent) {
         int max = getManaMax();
         this.manaCurrent = Math.max(0, Math.min(manaCurrent, max));
+    }
+
+    public int getBaseManaMax() {
+        return this.manaMax;
     }
 
     public int getManaMax() {
