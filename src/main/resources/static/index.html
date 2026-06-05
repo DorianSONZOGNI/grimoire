@@ -43,8 +43,13 @@
                 onmouseover="this.style.color='#f59e0b'; this.style.borderColor='#f59e0b';"
                 onmouseout="this.style.color='var(--text-muted)'; this.style.borderColor='var(--glass-border)';">
                 <span class="material-symbols-outlined" style="font-size: 1.1rem;">money_bag</span>
-                Salle des coffres
+                Coffre
             </a>
+            
+            <div id="authNavContainer" style="display: flex; align-items: center; gap: 0.5rem; margin-left: 1rem; padding-left: 1rem; border-left: 1px solid var(--glass-border);">
+                <!-- Dynamiquement injected by auth.js -->
+                <span style="font-size: 0.85rem; color: var(--text-muted);">Chargement...</span>
+            </div>
         </div>
     </header>
 
@@ -809,6 +814,7 @@
         .vault-btn-confirm:hover { background: #dc2626; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4); }
     </style>
     <script type="module" src="/js/app.js?v=2"></script>
+    <script type="module" src="/js/auth.js"></script>
 </body>
 
 </html>
