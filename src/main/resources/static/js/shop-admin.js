@@ -1,7 +1,7 @@
 let allEquipments = [];
 
 const SLOT_LABELS = {
-    CASQUE: { label: 'Casque', icon: 'masks', color: '#a855f7' },
+    CASQUE: { label: 'Casque', icon: 'masks', color: '#a855f7', extraClass: 'flip-icon' },
     PLASTRON: { label: 'Plastron', icon: 'shield', color: '#3b82f6' },
     ANNEAU_GAUCHE: { label: 'Anneau', icon: 'diamond', color: '#f59e0b' },
     ANNEAU_DROIT: { label: 'Anneau', icon: 'diamond', color: '#f59e0b' },
@@ -299,7 +299,7 @@ function renderGrid(equipments) {
             html += `
                 <div class="shop-admin-row">
                     <div class="shop-admin-row-name">
-                        <span class="material-symbols-outlined" style="font-size: 1.4rem; color: ${slotInfo.color};" title="${slotInfo.label}">${slotInfo.icon}</span>
+                        <span class="material-symbols-outlined ${slotInfo.extraClass || ''}" style="font-size: 1.4rem; color: ${slotInfo.color};" title="${slotInfo.label}">${slotInfo.icon}</span>
                         ${eq.name}
                         ${window.isAdmin && eq.ownerUsername ? `<span style="font-size: 0.65rem; padding: 0.15rem 0.4rem; background: ${eq.ownerUsername === window.currentUser?.username ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.1)'}; color: ${eq.ownerUsername === window.currentUser?.username ? '#34d399' : '#cbd5e1'}; border-radius: 4px; border: 1px solid ${eq.ownerUsername === window.currentUser?.username ? 'rgba(16, 185, 129, 0.3)' : 'rgba(255, 255, 255, 0.1)'};"><span class="material-symbols-outlined" style="font-size: 0.7rem; vertical-align: middle; margin-right: 2px;">account_circle</span>${eq.ownerUsername}</span>` : ''}
                     </div>
