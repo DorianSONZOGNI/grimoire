@@ -229,35 +229,99 @@ async function deleteEquipment(id) {
 
 // ===== UI =====
 
+// Helpers for icons and colors
+function getVoieInfo(nom) {
+    if (!nom) return { icon: 'trip_origin', color: '#94a3b8' };
+    const n = nom.toLowerCase();
+    if (n.includes('raison')) return { icon: 'psychology', color: '#3b82f6' };
+    if (n.includes('sûreté') || n.includes('surete')) return { icon: 'water_drop', color: '#00e5cc' };
+    if (n.includes('trahison')) return { icon: 'visibility_off', color: '#ed5677' };
+    if (n.includes('consolidation')) return { icon: 'foundation', color: '#99674c' };
+    if (n.includes('conviction')) return { icon: 'volcano', color: '#b74c0b' };
+    if (n.includes('création') || n.includes('creation')) return { icon: 'eco', color: '#10b981' };
+    if (n.includes('destruction')) return { icon: 'local_fire_department', color: '#ff0000' };
+    if (n.includes('violence')) return { icon: 'explosion', color: '#a70740' };
+    return { icon: 'route', color: '#94a3b8' };
+}
+
+function getSpiritInfo(nom) {
+    if (!nom) return { icon: 'trip_origin', color: '#94a3b8' };
+    const n = nom.toLowerCase();
+    if (n.includes('esprit')) return { icon: 'blur_on', color: '#38bdf8' };
+    if (n.includes('ténèbres') || n.includes('tenebres')) return { icon: 'dark_mode', color: '#c084fc' };
+    if (n.includes('karma')) return { icon: 'all_inclusive', color: '#e7d198' };
+    return { icon: 'psychology', color: '#a78bfa' };
+}
+
 function populateSelects() {
-    const voieSelect = document.getElementById('charVoie');
-    const spiritSelect = document.getElementById('charSpirit');
+    const charVoieOptions = document.getElementById('charVoieOptions');
+    const charSpiritOptions = document.getElementById('charSpiritOptions');
+    const searchVoieOptions = document.getElementById('searchVoieOptions');
+    const searchSpiritOptions = document.getElementById('searchSpiritOptions');
 
-    voieSelect.innerHTML = '<option value="">— Aucune —</option>';
-    voies.forEach(v => {
-        voieSelect.innerHTML += `<option value="${v.id}">${v.nom}</option>`;
-    });
+    if (charVoieOptions) {
+        charVoieOptions.innerHTML = `<div class="custom-option" data-value=""><span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">trip_origin</span> — Aucune —</div>`;
+        voies.forEach(v => {
+            const info = getVoieInfo(v.nom);
+            charVoieOptions.innerHTML += `<div class="custom-option" data-value="${v.id}"><span class="material-symbols-outlined cs-icon" style="color: ${info.color};">${info.icon}</span> ${v.nom}</div>`;
+        });
+    }
 
-    spiritSelect.innerHTML = '<option value="">— Aucune —</option>';
-    spiritualites.forEach(s => {
-        spiritSelect.innerHTML += `<option value="${s.id}">${s.nom}</option>`;
-    });
+    if (searchVoieOptions) {
+        searchVoieOptions.innerHTML = `<div class="custom-option" data-value=""><span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">trip_origin</span> Toutes</div>`;
+        voies.forEach(v => {
+            const info = getVoieInfo(v.nom);
+            searchVoieOptions.innerHTML += `<div class="custom-option" data-value="${v.id}"><span class="material-symbols-outlined cs-icon" style="color: ${info.color};">${info.icon}</span> ${v.nom}</div>`;
+        });
+    }
+
+    if (charSpiritOptions) {
+        charSpiritOptions.innerHTML = `<div class="custom-option" data-value=""><span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">trip_origin</span> — Aucune —</div>`;
+        spiritualites.forEach(s => {
+            const info = getSpiritInfo(s.nom);
+            charSpiritOptions.innerHTML += `<div class="custom-option" data-value="${s.id}"><span class="material-symbols-outlined cs-icon" style="color: ${info.color};">${info.icon}</span> ${s.nom}</div>`;
+        });
+    }
+
+    if (searchSpiritOptions) {
+        searchSpiritOptions.innerHTML = `<div class="custom-option" data-value=""><span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">trip_origin</span> Toutes</div>`;
+        spiritualites.forEach(s => {
+            const info = getSpiritInfo(s.nom);
+            searchSpiritOptions.innerHTML += `<div class="custom-option" data-value="${s.id}"><span class="material-symbols-outlined cs-icon" style="color: ${info.color};">${info.icon}</span> ${s.nom}</div>`;
+        });
+    }
+}
+
+function filterPersonnages() {
+    renderPersonnages();
 }
 
 function renderPersonnages() {
     const container = document.getElementById('personnagesList');
     if (!container) return;
 
-    if (personnages.length === 0) {
+    // Filter logic
+    const searchName = document.getElementById('searchName') ? document.getElementById('searchName').value.toLowerCase() : '';
+    const searchVoie = document.getElementById('searchVoie') ? document.getElementById('searchVoie').value : '';
+    const searchSpirit = document.getElementById('searchSpirit') ? document.getElementById('searchSpirit').value : '';
+
+    const filtered = personnages.filter(p => {
+        const matchName = !searchName || (p.name && p.name.toLowerCase().includes(searchName));
+        const matchVoie = !searchVoie || (p.voie && p.voie.id == searchVoie);
+        const matchSpirit = !searchSpirit || (p.spiritualite && p.spiritualite.id == searchSpirit);
+        return matchName && matchVoie && matchSpirit;
+    });
+
+    if (filtered.length === 0) {
         container.innerHTML = `
             <div class="armory-empty-state">
                 <span class="material-symbols-outlined">person_off</span>
-                Aucun personnage créé. Forgez votre premier héros !
+                Aucun personnage ne correspond à la recherche.
             </div>`;
         return;
     }
 
-    container.innerHTML = personnages.map(p => {
+    container.innerHTML = filtered.map(p => {
         let badges = '';
         if (p.voie) {
             badges += `<span class="char-badge char-badge-voie">
@@ -558,6 +622,11 @@ document.addEventListener('click', (e) => {
         
         const event = new Event('change', { bubbles: true });
         hiddenInput.dispatchEvent(event);
+        
+        // Trigger specific logic for search
+        if (hiddenInput.id === 'searchVoie' || hiddenInput.id === 'searchSpirit') {
+            filterPersonnages();
+        }
     }
 });
 

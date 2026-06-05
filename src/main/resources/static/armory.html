@@ -62,9 +62,16 @@
                         <span class="material-symbols-outlined" style="color: #a855f7;">route</span>
                         Voie
                     </label>
-                    <select id="charVoie">
-                        <option value="">— Aucune —</option>
-                    </select>
+                    <div class="custom-select-wrapper" id="charVoieWrapper" tabindex="0">
+                        <div class="custom-select-trigger" id="charVoieTrigger">
+                            <span class="cs-label" id="charVoieLabel"><span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">trip_origin</span> — Aucune —</span>
+                            <span class="material-symbols-outlined cs-arrow" style="font-size: 1.1rem;">expand_more</span>
+                        </div>
+                        <div class="custom-select-options" id="charVoieOptions">
+                            <div class="custom-option" data-value=""><span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">trip_origin</span> — Aucune —</div>
+                        </div>
+                        <input type="hidden" id="charVoie" value="">
+                    </div>
                 </div>
                 <div class="armory-field">
                     <label for="charVoieLevel">
@@ -81,9 +88,16 @@
                         <span class="material-symbols-outlined" style="color: #fb923c;">psychology</span>
                         Spiritualité
                     </label>
-                    <select id="charSpirit">
-                        <option value="">— Aucune —</option>
-                    </select>
+                    <div class="custom-select-wrapper" id="charSpiritWrapper" tabindex="0">
+                        <div class="custom-select-trigger" id="charSpiritTrigger">
+                            <span class="cs-label" id="charSpiritLabel"><span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">trip_origin</span> — Aucune —</span>
+                            <span class="material-symbols-outlined cs-arrow" style="font-size: 1.1rem;">expand_more</span>
+                        </div>
+                        <div class="custom-select-options" id="charSpiritOptions">
+                            <div class="custom-option" data-value=""><span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">trip_origin</span> — Aucune —</div>
+                        </div>
+                        <input type="hidden" id="charSpirit" value="">
+                    </div>
                 </div>
                 <div class="armory-field">
                     <label for="charSpiritLevel">
@@ -188,6 +202,40 @@
                     <span class="material-symbols-outlined" style="font-size: 1rem;">refresh</span>
                     Actualiser
                 </button>
+            </div>
+
+            <!-- Search Bar -->
+            <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; background: rgba(0,0,0,0.2); padding: 0.8rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                <div class="armory-field" style="flex: 1.5; min-width: 150px;">
+                    <label style="font-size: 0.7rem; color: #64748b; margin-bottom: 0.2rem; display: block;"><span class="material-symbols-outlined" style="font-size: 0.9rem; vertical-align: bottom;">search</span> Prénom</label>
+                    <input type="text" id="searchName" placeholder="Ex: Lancelot..." oninput="filterPersonnages()" style="padding: 0.35rem 0.5rem; font-size: 0.8rem; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; color: #fff; width: 100%;">
+                </div>
+                <div class="armory-field" style="flex: 1; min-width: 120px;">
+                    <label style="font-size: 0.7rem; color: #64748b; margin-bottom: 0.2rem; display: block;"><span class="material-symbols-outlined" style="font-size: 0.9rem; vertical-align: bottom;">route</span> Voie</label>
+                    <div class="custom-select-wrapper" id="searchVoieWrapper" tabindex="0">
+                        <div class="custom-select-trigger" id="searchVoieTrigger">
+                            <span class="cs-label" id="searchVoieLabel"><span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">trip_origin</span> Toutes</span>
+                            <span class="material-symbols-outlined cs-arrow" style="font-size: 1.1rem;">expand_more</span>
+                        </div>
+                        <div class="custom-select-options" id="searchVoieOptions">
+                            <div class="custom-option" data-value=""><span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">trip_origin</span> Toutes</div>
+                        </div>
+                        <input type="hidden" id="searchVoie" value="">
+                    </div>
+                </div>
+                <div class="armory-field" style="flex: 1; min-width: 120px;">
+                    <label style="font-size: 0.7rem; color: #64748b; margin-bottom: 0.2rem; display: block;"><span class="material-symbols-outlined" style="font-size: 0.9rem; vertical-align: bottom;">psychology</span> Spiritualité</label>
+                    <div class="custom-select-wrapper" id="searchSpiritWrapper" tabindex="0">
+                        <div class="custom-select-trigger" id="searchSpiritTrigger">
+                            <span class="cs-label" id="searchSpiritLabel"><span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">trip_origin</span> Toutes</span>
+                            <span class="material-symbols-outlined cs-arrow" style="font-size: 1.1rem;">expand_more</span>
+                        </div>
+                        <div class="custom-select-options" id="searchSpiritOptions">
+                            <div class="custom-option" data-value=""><span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">trip_origin</span> Toutes</div>
+                        </div>
+                        <input type="hidden" id="searchSpirit" value="">
+                    </div>
+                </div>
             </div>
 
             <div class="armory-characters-grid" id="personnagesList">
