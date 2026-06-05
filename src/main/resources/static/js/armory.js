@@ -502,30 +502,29 @@ function renderPersonnages() {
 
     // Filter logic
     const searchName = document.getElementById('searchName') ? document.getElementById('searchName').value.toLowerCase() : '';
+    const searchOwner = document.getElementById('searchOwner') ? document.getElementById('searchOwner').value.toLowerCase() : '';
     const searchVoie = document.getElementById('searchVoie') ? document.getElementById('searchVoie').value : '';
     const searchSpirit = document.getElementById('searchSpirit') ? document.getElementById('searchSpirit').value : '';
-    const searchUser = document.getElementById('searchUser') ? document.getElementById('searchUser').value : '';
-    const sortMode = document.getElementById('charSort') ? document.getElementById('charSort').value : 'name';
 
     let filtered = personnages.filter(p => {
         const matchName = !searchName || (p.name && p.name.toLowerCase().includes(searchName));
+        const matchOwner = !searchOwner || (p.ownerUsername && p.ownerUsername.toLowerCase().includes(searchOwner));
         const matchVoie = !searchVoie || (p.voie && p.voie.id == searchVoie);
         const matchSpirit = !searchSpirit || (p.spiritualite && p.spiritualite.id == searchSpirit);
-        const matchUser = !searchUser || (p.ownerUsername && p.ownerUsername === searchUser);
-        return matchName && matchVoie && matchSpirit && matchUser;
+        return matchName && matchOwner && matchVoie && matchSpirit;
     });
     
-    // Sort logic
-    if (sortMode === 'name') {
-        filtered.sort((a, b) => a.name.localeCompare(b.name));
-    } else if (sortMode === 'user') {
-        filtered.sort((a, b) => {
+    // Sort logic: Sort by User then Name for admins, else by Name only
+    filtered.sort((a, b) => {
+        if (window.isAdmin) {
             const uA = a.ownerUsername || '';
             const uB = b.ownerUsername || '';
             if (uA === uB) return a.name.localeCompare(b.name);
             return uA.localeCompare(uB);
-        });
-    }
+        } else {
+            return a.name.localeCompare(b.name);
+        }
+    });
 
     if (filtered.length === 0) {
         container.innerHTML = `
@@ -1006,6 +1005,13 @@ window.addEventListener('DOMContentLoaded', async () => {
     await fetchMeta();
     await loadAllEquipments();
     await loadPersonnages();
+});
+
+window.addEventListener('authLoaded', () => {
+    const searchOwnerContainer = document.getElementById('searchOwnerContainer');
+    if (searchOwnerContainer) {
+        searchOwnerContainer.style.display = window.isAdmin ? 'flex' : 'none';
+    }
 });
 
 window.showEqTooltip = function(el) {

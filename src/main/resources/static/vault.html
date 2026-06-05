@@ -53,6 +53,11 @@
                         style="color: var(--text-muted); font-size: 1.2rem;">search</span>
                     <input type="text" id="searchItemName" placeholder="Rechercher un objet..." oninput="filterVault()">
                 </div>
+                <div id="searchOwnerContainer" class="search-bar" style="flex: 1; max-width: 250px; display: none;">
+                    <span class="material-symbols-outlined"
+                        style="color: var(--text-muted); font-size: 1.2rem;">person_search</span>
+                    <input type="text" id="searchOwnerName" placeholder="Nom de compte..." oninput="filterVault()">
+                </div>
                 <button id="btnCreateVaultEq" class="vault-btn-create" onclick="openCreateEqModal()" style="display: none; align-items: center; gap: 0.5rem; background: var(--primary); color: white; border: none; padding: 0 1rem; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.2s;">
                     <span class="material-symbols-outlined" style="font-size: 1.2rem;">add_circle</span>
                     Forger un Objet
@@ -498,7 +503,7 @@
         </div>
     </div>
 
-    <script src="/js/vault.js?v=7"></script>
+    <script src="/js/vault.js?v=9"></script>
     <script type="module" src="/js/auth.js"></script>
 </body>
 

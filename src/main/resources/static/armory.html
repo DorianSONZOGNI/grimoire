@@ -249,25 +249,15 @@
             <div
                 style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; background: rgba(0,0,0,0.2); padding: 0.8rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
                 
-                <!-- Sort Dropdown -->
-                <div class="armory-field" style="flex: 1; min-width: 120px;">
-                    <label style="font-size: 0.7rem; color: #64748b; margin-bottom: 0.2rem; display: block;"><span
-                            class="material-symbols-outlined"
-                            style="font-size: 0.9rem; vertical-align: bottom;">sort</span> Trier par</label>
-                    <select id="charSort" onchange="filterPersonnages()" style="padding: 0.35rem 0.5rem; font-size: 0.8rem; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; color: #fff; width: 100%;">
-                        <option value="name">Nom</option>
-                        <option value="user">Utilisateur</option>
-                    </select>
-                </div>
+                <!-- Trier par removed as per user request -->
                 
-                <!-- User Filter Dropdown (hidden by default) -->
-                <div class="armory-field" id="searchUserContainer" style="flex: 1; min-width: 120px; display: none;">
+                <!-- User Filter Input (hidden by default, for admins) -->
+                <div class="armory-field" id="searchOwnerContainer" style="flex: 1; min-width: 150px; display: none;">
                     <label style="font-size: 0.7rem; color: #64748b; margin-bottom: 0.2rem; display: block;"><span
                             class="material-symbols-outlined"
-                            style="font-size: 0.9rem; vertical-align: bottom;">person</span> Joueur</label>
-                    <select id="searchUser" onchange="filterPersonnages()" style="padding: 0.35rem 0.5rem; font-size: 0.8rem; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; color: #fff; width: 100%;">
-                        <option value="">Tous</option>
-                    </select>
+                            style="font-size: 0.9rem; vertical-align: bottom;">person_search</span> Nom de compte</label>
+                    <input type="text" id="searchOwner" placeholder="Ex: Admin..." oninput="filterPersonnages()"
+                        style="padding: 0.35rem 0.5rem; font-size: 0.8rem; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; color: #fff; width: 100%;">
                 </div>
                 <div class="armory-field" style="flex: 1.5; min-width: 150px;">
                     <label style="font-size: 0.7rem; color: #64748b; margin-bottom: 0.2rem; display: block;"><span
@@ -581,8 +571,8 @@
         .vault-btn-confirm:hover { background: #dc2626; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4); }
     </style>
 
-    <script src="/js/armory.js?v=5"></script>
-    <script type="module" src="/js/auth.js?v=5"></script>
+    <script src="/js/armory.js?v=8"></script>
+    <script type="module" src="/js/auth.js?v=8"></script>
 
 </body>
 
