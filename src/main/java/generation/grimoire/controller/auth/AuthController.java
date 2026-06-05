@@ -74,7 +74,10 @@ public class AuthController {
         res.put("username", auth.getName());
         res.put("roles", auth.getAuthorities());
         
-        userRepository.findByUsername(auth.getName()).ifPresent(u -> res.put("id", u.getId()));
+        userRepository.findByUsername(auth.getName()).ifPresent(u -> {
+            res.put("id", u.getId());
+            res.put("monnaie", u.getMonnaie());
+        });
 
         return ResponseEntity.ok(res);
     }

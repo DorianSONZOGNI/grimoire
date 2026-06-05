@@ -52,4 +52,27 @@ public class Equipment {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = true)
     private generation.grimoire.entity.auth.AppUser user;
+
+    public double calculateWeight() {
+        double w = 0.0;
+        w += this.bonusHealthMax * 0.2;
+        w += this.bonusManaMax * 0.2;
+        w += this.bonusPower * 2.0;
+        w += this.bonusStrength * 2.0;
+        w += this.bonusArmor * 1.0;
+        w += this.bonusResistance * 1.0;
+        w += this.bonusSpeed * 2.0;
+        w += this.bonusCrit * 1.0;
+        w += this.regenHealthPerTurn * 1.0;
+        w += this.regenManaPerTurn * 1.0;
+
+        if ((this.rarity == generation.grimoire.enumeration.EquipmentRarity.EPIQUE || 
+             this.rarity == generation.grimoire.enumeration.EquipmentRarity.RELIQUE) &&
+            this.specialEffect != generation.grimoire.enumeration.EquipmentEffectType.NONE && 
+            this.specialEffectValue > 0) {
+            
+            w += this.specialEffectValue * 1.0;
+        }
+        return w;
+    }
 }

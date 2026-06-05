@@ -267,8 +267,15 @@ public class EquipmentController {
             if (!isAdmin && equipment.getUser() != null && !equipment.getUser().getUsername().equals(principal.getName())) {
                 return ResponseEntity.status(403).build();
             }
+            
+            if (!isAdmin && equipment.getUser() != null) {
+                generation.grimoire.entity.auth.AppUser owner = equipment.getUser();
+                owner.setMonnaie(owner.getMonnaie() + equipment.calculateWeight());
+                userRepository.save(owner);
+            }
+
             equipmentRepository.deleteById(id);
-            return ResponseEntity.ok("Équipement supprimé.");
+            return ResponseEntity.ok("Équipement supprimé et monnaie ajoutée.");
         }
         return ResponseEntity.notFound().build();
     }

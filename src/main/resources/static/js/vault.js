@@ -40,19 +40,28 @@ const WEIGHT_LIMITS = {
 };
 
 function calculateWeight(eq) {
-    const hp = eq.bonusHealthMax || 0;
-    const mana = eq.bonusManaMax || 0;
-    const power = eq.bonusPower || 0;
-    const str = eq.bonusStrength || 0;
-    const armor = eq.bonusArmor || 0;
-    const res = eq.bonusResistance || 0;
-    const speed = eq.bonusSpeed || 0;
-    const crit = eq.bonusCrit || 0;
-    const regenHp = eq.regenHealthPerTurn || 0;
-    const regenMana = eq.regenManaPerTurn || 0;
-    const effectValue = eq.specialEffectValue || 0;
+    let w = 0;
+    w += (eq.bonusHealthMax || 0) * 0.2;
+    w += (eq.bonusManaMax || 0) * 0.2;
+    w += (eq.bonusPower || 0) * 2.0;
+    w += (eq.bonusStrength || 0) * 2.0;
+    w += (eq.bonusArmor || 0) * 1.0;
+    w += (eq.bonusResistance || 0) * 1.0;
+    w += (eq.bonusSpeed || 0) * 2.0;
+    w += (eq.bonusCrit || 0) * 1.0;
+    w += (eq.regenHealthPerTurn || 0) * 1.0;
+    w += (eq.regenManaPerTurn || 0) * 1.0;
 
-    return (hp / 5) + (mana / 5) + (power / 2) + (str / 2) + (armor / 2) + (res / 2) + (speed * 2) + crit + regenHp + regenMana + effectValue;
+    const rarity = eq.rarity;
+    if (rarity === 'EPIQUE' || rarity === 'RELIQUE') {
+        const specialEffect = eq.specialEffect;
+        const effectVal = eq.specialEffectValue || 0;
+        
+        if (specialEffect && specialEffect !== 'NONE' && effectVal > 0) {
+            w += effectVal * 1.0;
+        }
+    }
+    return w;
 }
 
 function showNotif(message, isError = false) {
@@ -150,6 +159,8 @@ function deleteEquipment(id) {
     const eq = allEquipments.find(e => e.id === id);
     if (eq) {
         document.getElementById('deleteTargetName').textContent = eq.name;
+        const weightStr = eq._weight % 1 === 0 ? eq._weight : eq._weight.toFixed(1);
+        document.getElementById('deleteConfirmBtn').innerHTML = `Oui, détruire pour ${weightStr} <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; margin-top: -2px;">monetization_on</span>`;
     }
     document.getElementById('deleteConfirmModal').classList.add('show');
 }
@@ -170,6 +181,9 @@ document.getElementById('deleteConfirmBtn').addEventListener('click', async () =
         if (res.ok) {
             showNotif('Équipement détruit.');
             await loadEquipments();
+            if (window.checkAuthStatus) {
+                window.checkAuthStatus();
+            }
         } else {
             showNotif('Erreur lors de la suppression.', true);
         }
@@ -613,16 +627,16 @@ window.submitEquipment = async function() {
 
 function calculateEquipmentWeight() {
     let w = 0;
-    w += (parseInt(document.getElementById('eqHp').value) || 0) * 0.1;
-    w += (parseInt(document.getElementById('eqMana').value) || 0) * 0.1;
-    w += (parseInt(document.getElementById('eqPower').value) || 0) * 1.0;
-    w += (parseInt(document.getElementById('eqStr').value) || 0) * 1.0;
+    w += (parseInt(document.getElementById('eqHp').value) || 0) * 0.2;
+    w += (parseInt(document.getElementById('eqMana').value) || 0) * 0.2;
+    w += (parseInt(document.getElementById('eqPower').value) || 0) * 2.0;
+    w += (parseInt(document.getElementById('eqStr').value) || 0) * 2.0;
     w += (parseInt(document.getElementById('eqArmor').value) || 0) * 1.0;
     w += (parseInt(document.getElementById('eqRes').value) || 0) * 1.0;
-    w += (parseInt(document.getElementById('eqSpeed').value) || 0) * 1.5;
-    w += (parseInt(document.getElementById('eqCrit').value) || 0) * 1.5;
-    w += (parseInt(document.getElementById('eqRegenHp').value) || 0) * 2.0;
-    w += (parseInt(document.getElementById('eqRegenMana').value) || 0) * 2.0;
+    w += (parseInt(document.getElementById('eqSpeed').value) || 0) * 2.0;
+    w += (parseInt(document.getElementById('eqCrit').value) || 0) * 1.0;
+    w += (parseInt(document.getElementById('eqRegenHp').value) || 0) * 1.0;
+    w += (parseInt(document.getElementById('eqRegenMana').value) || 0) * 1.0;
     
     // Add special effect weight if Epic/Relic
     const rarity = document.getElementById('eqRarity').value;
@@ -631,18 +645,9 @@ function calculateEquipmentWeight() {
         const effectVal = parseInt(document.getElementById('eqSpecialEffectValue').value) || 0;
         
         if (specialEffect !== 'NONE' && effectVal > 0) {
-            let effectMultiplier = 1.0;
-            switch(specialEffect) {
-                case 'LIFESTEAL': effectMultiplier = 3.0; break;
-                case 'THORNS': effectMultiplier = 2.0; break;
-                case 'MANA_SHIELD': effectMultiplier = 2.5; break;
-                case 'CHEAT_DEATH': effectMultiplier = 5.0; break;
-                case 'CRIT_DAMAGE': effectMultiplier = 1.5; break;
-            }
-            w += effectVal * effectMultiplier;
+            w += effectVal * 1.0;
         }
     }
-
     return w;
 }
 
