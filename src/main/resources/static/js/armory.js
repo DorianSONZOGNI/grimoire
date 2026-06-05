@@ -438,9 +438,23 @@ function renderEquipModal() {
     }).join('');
 
     // Render create form slot select
-    const slotSelect = document.getElementById('eqSlot');
-    if (slotSelect) {
-        slotSelect.innerHTML = slots.map(s => `<option value="${s}">${SLOT_LABELS[s].label}</option>`).join('');
+    const slotOptionsContainer = document.getElementById('eqSlotOptions');
+    if (slotOptionsContainer) {
+        slotOptionsContainer.innerHTML = slots.map(s => {
+            const info = SLOT_LABELS[s];
+            return `<div class="custom-option" data-value="${s}">
+                <span class="material-symbols-outlined cs-icon ${info.extraClass || ''}" style="color: ${info.color};">${info.icon}</span>
+                ${info.label}
+            </div>`;
+        }).join('');
+        
+        // Setup initial value
+        if (slots.length > 0) {
+            const firstSlot = slots[0];
+            const info = SLOT_LABELS[firstSlot];
+            document.getElementById('eqSlot').value = firstSlot;
+            document.getElementById('eqSlotLabel').innerHTML = `<span class="material-symbols-outlined cs-icon ${info.extraClass || ''}" style="color: ${info.color};">${info.icon}</span> ${info.label}`;
+        }
     }
 }
 
@@ -512,6 +526,41 @@ function showNotif(message, isError = false) {
     }, 3000);
 }
 
+// ===== Custom Select Logic (Event Delegation) =====
+document.addEventListener('click', (e) => {
+    // Fermer les dropdowns si on clique en dehors
+    if (!e.target.closest('.custom-select-wrapper')) {
+        document.querySelectorAll('.custom-select-wrapper.open').forEach(w => w.classList.remove('open'));
+    }
+
+    // Clic sur le trigger (ouvrir/fermer)
+    const trigger = e.target.closest('.custom-select-trigger');
+    if (trigger) {
+        const wrapper = trigger.closest('.custom-select-wrapper');
+        // Fermer les autres
+        document.querySelectorAll('.custom-select-wrapper.open').forEach(w => {
+            if (w !== wrapper) w.classList.remove('open');
+        });
+        wrapper.classList.toggle('open');
+        return;
+    }
+
+    // Clic sur une option
+    const option = e.target.closest('.custom-option');
+    if (option) {
+        const wrapper = option.closest('.custom-select-wrapper');
+        const hiddenInput = wrapper.querySelector('input[type="hidden"]');
+        const labelEl = wrapper.querySelector('.cs-label');
+        
+        hiddenInput.value = option.getAttribute('data-value');
+        labelEl.innerHTML = option.innerHTML;
+        wrapper.classList.remove('open');
+        
+        const event = new Event('change', { bubbles: true });
+        hiddenInput.dispatchEvent(event);
+    }
+});
+
 // ===== Init =====
 
 window.addEventListener('DOMContentLoaded', async () => {
@@ -523,10 +572,45 @@ window.addEventListener('DOMContentLoaded', async () => {
             const row = document.getElementById('eqSpecialEffectRow');
             if (val === 'EPIQUE' || val === 'RELIQUE') {
                 row.style.display = 'grid';
+                
+                // Colors based on rarity
+                const isEpic = val === 'EPIQUE';
+                const color = isEpic ? '#ef4444' : '#c084fc';
+                const bg = isEpic ? 'rgba(239, 68, 68, 0.05)' : 'rgba(168, 85, 247, 0.05)';
+                const border = isEpic ? '1px dashed rgba(239, 68, 68, 0.3)' : '1px dashed rgba(168, 85, 247, 0.3)';
+                const inputBorder = isEpic ? 'rgba(239, 68, 68, 0.3)' : 'rgba(192, 132, 252, 0.3)';
+                
+                row.style.background = bg;
+                row.style.border = border;
+                
+                const labelTitle = document.getElementById('eqSpecialEffectLabelTitle');
+                if(labelTitle) labelTitle.style.color = color;
+                
+                const valueTitle = document.getElementById('eqSpecialEffectValueTitle');
+                if(valueTitle) valueTitle.style.color = color;
+                
+                const trigger = document.getElementById('eqSpecialEffectTrigger');
+                if(trigger) trigger.style.borderColor = inputBorder;
+                
+                const valInput = document.getElementById('eqSpecialEffectValue');
+                if(valInput) valInput.style.borderColor = inputBorder;
+
             } else {
                 row.style.display = 'none';
-                document.getElementById('eqSpecialEffect').value = 'NONE';
-                document.getElementById('eqSpecialEffectValue').value = 0;
+                
+                // Reset hidden input for custom select
+                const effectInput = document.getElementById('eqSpecialEffect');
+                if (effectInput) {
+                    effectInput.value = 'NONE';
+                    // Update label manually since there's no native value changing
+                    const labelSpan = document.getElementById('eqSpecialEffectLabel');
+                    if (labelSpan) {
+                        labelSpan.innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">not_interested</span> Aucun`;
+                    }
+                }
+                
+                const valInput = document.getElementById('eqSpecialEffectValue');
+                if (valInput) valInput.value = 0;
             }
         });
     }
