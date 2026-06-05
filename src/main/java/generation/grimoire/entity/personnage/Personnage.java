@@ -152,6 +152,17 @@ public class Personnage {
         }
     }
 
+    public int getSpecialEffectValue(generation.grimoire.enumeration.EquipmentEffectType type) {
+        if (this.equipments == null) return 0;
+        int total = 0;
+        for (generation.grimoire.entity.Equipment eq : this.equipments) {
+            if (eq.getSpecialEffect() == type) {
+                total += eq.getSpecialEffectValue();
+            }
+        }
+        return total;
+    }
+
     /**
      * Applique des dégâts après calculs des résistance à ce personnage.
      * Calculs de résistance en fonction du DamageType.
@@ -281,6 +292,18 @@ public class Personnage {
         }
 
         int remainingDamage = effectiveDamage - bypassDamage;
+        
+        // MANA SHIELD
+        int manaShieldPct = getSpecialEffectValue(generation.grimoire.enumeration.EquipmentEffectType.MANA_SHIELD);
+        if (manaShieldPct > 0 && remainingDamage > 0) {
+            int manaAbsorb = Math.min(this.manaCurrent, (int) Math.ceil(remainingDamage * (manaShieldPct / 100.0)));
+            if (manaAbsorb > 0) {
+                this.manaCurrent -= manaAbsorb;
+                remainingDamage -= manaAbsorb;
+                System.out.println("🛡️ Bouclier de Mana absorbe " + manaAbsorb + " dégâts.");
+            }
+        }
+
         int absorbedByShields = 0;
 
         if (remainingDamage > 0) {
@@ -333,6 +356,24 @@ public class Personnage {
         int totalDamageToHealth = bypassDamage + remainingDamage;
         this.healthCurrent -= totalDamageToHealth;
 
+        // CHEAT DEATH
+        if (this.healthCurrent <= 0) {
+            int cheatDeathValue = getSpecialEffectValue(generation.grimoire.enumeration.EquipmentEffectType.CHEAT_DEATH);
+            if (cheatDeathValue > 0) {
+                this.healthCurrent = cheatDeathValue;
+                System.out.println("👼 Ange Gardien activé ! Le personnage survit avec " + cheatDeathValue + " PV.");
+                // Consomme l'effet pour la session/combat
+                if (this.equipments != null) {
+                    for (generation.grimoire.entity.Equipment eq : this.equipments) {
+                        if (eq.getSpecialEffect() == generation.grimoire.enumeration.EquipmentEffectType.CHEAT_DEATH) {
+                            eq.setSpecialEffect(generation.grimoire.enumeration.EquipmentEffectType.NONE);
+                            eq.setSpecialEffectValue(0);
+                        }
+                    }
+                }
+            }
+        }
+
         // Affichage des informations
         if (bypassDamage > 0) {
             System.out.println("🛡️ Perce-Bouclier / Bouclier Percé : " + bypassDamage
@@ -345,6 +386,26 @@ public class Personnage {
                 "absorbés par les boucliers : " + absorbedByShields + ", " +
                 "réduction de " + (int) (finalReductionFactor * 100) + "%), " +
                 "PV restants : " + this.healthCurrent);
+
+        // LIFESTEAL & THORNS
+        if (caster != null && totalDamageToHealth > 0) {
+            if (damageType == DamageType.PHYSIC) {
+                int thornsPct = getSpecialEffectValue(generation.grimoire.enumeration.EquipmentEffectType.THORNS);
+                if (thornsPct > 0) {
+                    int thornsDmg = (int) Math.ceil(totalDamageToHealth * (thornsPct / 100.0));
+                    System.out.println("🌵 Épines renvoie " + thornsDmg + " dégâts !");
+                    caster.takeDamage(thornsDmg, DamageType.BRUT);
+                }
+            }
+            if (damageType == DamageType.PHYSIC || damageType == DamageType.MAGIC) {
+                int lifestealPct = caster.getSpecialEffectValue(generation.grimoire.enumeration.EquipmentEffectType.LIFESTEAL);
+                if (lifestealPct > 0) {
+                    int healAmount = (int) Math.ceil(totalDamageToHealth * (lifestealPct / 100.0));
+                    System.out.println("🩸 Vol de vie : l'attaquant récupère " + healAmount + " PV.");
+                    caster.heal(healAmount);
+                }
+            }
+        }
 
         // Affichage pour le débogage
         System.out.println("reductionFactor : " + reductionFactor);

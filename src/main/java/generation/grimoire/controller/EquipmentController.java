@@ -75,6 +75,10 @@ public class EquipmentController {
         if (dto.getRarity() != null) {
             equipment.setRarity(dto.getRarity());
         }
+        if (dto.getSpecialEffect() != null) {
+            equipment.setSpecialEffect(dto.getSpecialEffect());
+        }
+        equipment.setSpecialEffectValue(dto.getSpecialEffectValue());
 
         // Assigner à un personnage si fourni
         if (dto.getPersonnageId() != null) {
@@ -203,6 +207,8 @@ public class EquipmentController {
         map.put("regenHealthPerTurn", e.getRegenHealthPerTurn());
         map.put("regenManaPerTurn", e.getRegenManaPerTurn());
         map.put("rarity", e.getRarity());
+        map.put("specialEffect", e.getSpecialEffect());
+        map.put("specialEffectValue", e.getSpecialEffectValue());
 
         if (e.getPersonnage() != null) {
             Map<String, Object> perso = new HashMap<>();
@@ -230,6 +236,8 @@ public class EquipmentController {
         private int regenHealthPerTurn = 0;
         private int regenManaPerTurn = 0;
         private generation.grimoire.enumeration.EquipmentRarity rarity;
+        private generation.grimoire.enumeration.EquipmentEffectType specialEffect;
+        private int specialEffectValue = 0;
         private Long personnageId;
     }
 }

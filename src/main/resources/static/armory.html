@@ -240,6 +240,24 @@
                     </div>
                 </div>
 
+                <div class="eq-create-row" id="eqSpecialEffectRow" style="display: none; background: rgba(168, 85, 247, 0.05); border: 1px dashed rgba(168, 85, 247, 0.3); padding: 0.8rem; border-radius: 8px; margin-bottom: 1rem;">
+                    <div class="eq-create-field">
+                        <label style="color: #c084fc;">Effet Spécial</label>
+                        <select id="eqSpecialEffect" style="border-color: rgba(192, 132, 252, 0.3);">
+                            <option value="NONE">Aucun</option>
+                            <option value="LIFESTEAL">Vol de Vie (%)</option>
+                            <option value="THORNS">Épines (Renvoi dégâts %)</option>
+                            <option value="MANA_SHIELD">Bouclier de Mana (%)</option>
+                            <option value="CHEAT_DEATH">Ange Gardien (Survit avec X PV)</option>
+                            <option value="CRIT_DAMAGE">Dégâts Critiques Bonus (%)</option>
+                        </select>
+                    </div>
+                    <div class="eq-create-field">
+                        <label style="color: #c084fc;">Puissance (Valeur)</label>
+                        <input type="number" id="eqSpecialEffectValue" value="0" style="border-color: rgba(192, 132, 252, 0.3);">
+                    </div>
+                </div>
+
                 <div class="eq-create-row quad">
                     <div class="eq-create-field">
                         <label>PV</label>
