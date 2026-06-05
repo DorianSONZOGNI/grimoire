@@ -45,7 +45,8 @@
                 <span class="material-symbols-outlined" style="font-size: 1.1rem;">settings</span>
                 Gestion Boutique
             </a>
-            <div id="authNavContainer" style="display: flex; align-items: center; gap: 0.5rem; margin-left: 1rem; padding-left: 1rem; border-left: 1px solid var(--glass-border);">
+            <div id="authNavContainer"
+                style="display: flex; align-items: center; gap: 0.5rem; margin-left: 1rem; padding-left: 1rem; border-left: 1px solid var(--glass-border);">
                 <span style="font-size: 0.85rem; color: var(--text-muted);">Chargement...</span>
             </div>
         </div>
@@ -66,7 +67,8 @@
                         style="color: var(--text-muted); font-size: 1.2rem;">person_search</span>
                     <input type="text" id="searchOwnerName" placeholder="Nom de compte..." oninput="filterVault()">
                 </div>
-                <button id="btnCreateVaultEq" class="vault-btn-create" onclick="openCreateEqModal()" style="display: none; align-items: center; gap: 0.5rem; background: var(--primary); color: white; border: none; padding: 0 1rem; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.2s;">
+                <button id="btnCreateVaultEq" class="vault-btn-create" onclick="openCreateEqModal()"
+                    style="display: none; align-items: center; gap: 0.5rem; background: var(--primary); color: white; border: none; padding: 0 1rem; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.2s;">
                     <span class="material-symbols-outlined" style="font-size: 1.2rem;">add_circle</span>
                     Forger un Objet
                 </button>
@@ -86,8 +88,9 @@
                     <div class="custom-select-options">
                         <div class="custom-option" data-value=""><span class="material-symbols-outlined cs-icon"
                                 style="color: #94a3b8;">category</span> Équipements</div>
-                        <div class="custom-option" data-value="CASQUE"><span class="material-symbols-outlined cs-icon"
-                                style="color: #a855f7;">masks</span> Casque</div>
+                        <div class="custom-option" data-value="CASQUE"><span
+                                class="material-symbols-outlined cs-icon flip-icon" style="color: #a855f7;">masks</span>
+                            Casque</div>
                         <div class="custom-option" data-value="PLASTRON"><span class="material-symbols-outlined cs-icon"
                                 style="color: #3b82f6;">shield</span> Plastron</div>
                         <div class="custom-option" data-value="ANNEAU"><span class="material-symbols-outlined cs-icon"
@@ -208,7 +211,10 @@
         /* Delete Confirmation Modal */
         .vault-modal-overlay {
             position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             background: rgba(15, 23, 42, 0.8);
             backdrop-filter: blur(8px);
             z-index: 10000;
@@ -219,10 +225,12 @@
             pointer-events: none;
             transition: opacity 0.3s ease;
         }
+
         .vault-modal-overlay.show {
             opacity: 1;
             pointer-events: all;
         }
+
         .vault-modal-content {
             background: rgba(30, 41, 59, 0.95);
             border: 1px solid rgba(239, 68, 68, 0.4);
@@ -232,21 +240,27 @@
             text-align: center;
             transform: translateY(20px) scale(0.95);
             transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05) inset;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
         }
+
         .vault-modal-overlay.show .vault-modal-content {
             transform: translateY(0) scale(1);
         }
+
         .vault-modal-icon {
-            width: 60px; height: 60px;
+            width: 60px;
+            height: 60px;
             border-radius: 50%;
             background: rgba(239, 68, 68, 0.1);
             color: #ef4444;
-            display: flex; align-items: center; justify-content: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
             margin: 0 auto 1.2rem auto;
             font-size: 2rem;
             border: 2px solid rgba(239, 68, 68, 0.2);
         }
+
         .vault-modal-title {
             font-size: 1.2rem;
             font-weight: 600;
@@ -254,19 +268,23 @@
             color: #fff;
             margin-bottom: 0.8rem;
         }
+
         .vault-modal-text {
             font-size: 0.9rem;
             color: #94a3b8;
             margin-bottom: 1.5rem;
             line-height: 1.5;
         }
+
         .vault-modal-actions {
-            display: flex; gap: 1rem;
+            display: flex;
+            gap: 1rem;
         }
+
         .vault-btn-cancel {
             flex: 1;
-            background: rgba(255,255,255,0.05);
-            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             color: #fff;
             padding: 0.6rem;
             border-radius: 8px;
@@ -274,7 +292,11 @@
             cursor: pointer;
             transition: all 0.2s ease;
         }
-        .vault-btn-cancel:hover { background: rgba(255,255,255,0.1); }
+
+        .vault-btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
         .vault-btn-confirm {
             flex: 1;
             background: #ef4444;
@@ -287,7 +309,12 @@
             transition: all 0.2s ease;
             box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
         }
-        .vault-btn-confirm:hover { background: #dc2626; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4); }
+
+        .vault-btn-confirm:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+        }
     </style>
 
     <div id="deleteConfirmModal" class="vault-modal-overlay">
@@ -296,7 +323,9 @@
                 <span class="material-symbols-outlined" style="font-size: 2rem;">warning</span>
             </div>
             <div class="vault-modal-title">Détruire l'équipement ?</div>
-            <div class="vault-modal-text">Êtes-vous sûr de vouloir détruire <strong id="deleteTargetName" style="color:#fff;">cet objet</strong> ? Cette action est définitive et l'objet sera perdu à jamais dans les abysses.</div>
+            <div class="vault-modal-text">Êtes-vous sûr de vouloir détruire <strong id="deleteTargetName"
+                    style="color:#fff;">cet objet</strong> ? Cette action est définitive et l'objet sera perdu à jamais
+                dans les abysses.</div>
             <div class="vault-modal-actions">
                 <button class="vault-btn-cancel" onclick="closeDeleteModal()">Annuler</button>
                 <button class="vault-btn-confirm" id="deleteConfirmBtn">Oui, détruire</button>
@@ -306,17 +335,21 @@
 
     <!-- Create/Edit Equipment Modal -->
     <div id="equipCreateModal" class="vault-modal-overlay">
-        <div class="equip-modal" style="background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; width: 90%; max-width: 600px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); position: relative;">
-            <div class="equip-modal-header" style="padding: 1.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.05); display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2);">
-                <div class="equip-modal-title" style="display: flex; align-items: center; gap: 0.8rem; font-size: 1.3rem; font-weight: 600; color: #fff; font-family: 'Outfit', sans-serif;">
+        <div class="equip-modal"
+            style="background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; width: 90%; max-width: 600px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); position: relative;">
+            <div class="equip-modal-header"
+                style="padding: 1.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.05); display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2);">
+                <div class="equip-modal-title"
+                    style="display: flex; align-items: center; gap: 0.8rem; font-size: 1.3rem; font-weight: 600; color: #fff; font-family: 'Outfit', sans-serif;">
                     <span class="material-symbols-outlined" style="color: #10b981;">build</span>
                     <span id="equipModalTitle">Forger un objet</span>
                 </div>
-                <button class="equip-modal-close" onclick="closeCreateEqModal()" style="background: none; border: none; color: #94a3b8; cursor: pointer; padding: 0.4rem; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">
+                <button class="equip-modal-close" onclick="closeCreateEqModal()"
+                    style="background: none; border: none; color: #94a3b8; cursor: pointer; padding: 0.4rem; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">
                     <span class="material-symbols-outlined" style="font-size: 1.5rem;">close</span>
                 </button>
             </div>
-            
+
             <div class="equip-modal-body" style="padding: 1.5rem; overflow-y: auto;">
                 <div class="equip-create-section">
                     <div class="eq-create-row quad">
@@ -393,15 +426,18 @@
                                             class="material-symbols-outlined cs-icon"
                                             style="color: #eab308;">cruelty_free</span> Épines (Renvoi dégâts %)</div>
                                     <div class="custom-option effect-MANA_SHIELD" data-value="MANA_SHIELD"><span
-                                            class="material-symbols-outlined cs-icon" style="color: #3b82f6;">shield</span>
+                                            class="material-symbols-outlined cs-icon"
+                                            style="color: #3b82f6;">shield</span>
                                         Bouclier de Mana (%)</div>
                                     <div class="custom-option effect-CHEAT_DEATH" data-value="CHEAT_DEATH"><span
                                             class="material-symbols-outlined cs-icon"
-                                            style="color: #fce7f3;">emoji_nature</span> Ange Gardien (Survit avec 5*X PV)
+                                            style="color: #fce7f3;">emoji_nature</span> Ange Gardien (Survit avec 5*X
+                                        PV)
                                     </div>
                                     <div class="custom-option effect-CRIT_DAMAGE" data-value="CRIT_DAMAGE"><span
                                             class="material-symbols-outlined cs-icon"
-                                            style="color: #f97316;">local_fire_department</span> Dégâts Critiques Bonus (%)
+                                            style="color: #f97316;">local_fire_department</span> Dégâts Critiques Bonus
+                                        (%)
                                     </div>
                                 </div>
                                 <input type="hidden" id="eqSpecialEffect" value="NONE">
@@ -471,13 +507,15 @@
                     <div class="eq-create-row">
                         <div class="eq-create-field">
                             <label><span class="material-symbols-outlined"
-                                    style="font-size: 1rem; vertical-align: bottom; color: #10b981;">healing</span> Régen PV
+                                    style="font-size: 1rem; vertical-align: bottom; color: #10b981;">healing</span>
+                                Régen PV
                                 / tour</label>
                             <input type="number" id="eqRegenHp" value="0" placeholder="Positif ou Négatif">
                         </div>
                         <div class="eq-create-field">
                             <label><span class="material-symbols-outlined"
-                                    style="font-size: 1rem; vertical-align: bottom; color: #38bdf8;">cyclone</span> Régen
+                                    style="font-size: 1rem; vertical-align: bottom; color: #38bdf8;">cyclone</span>
+                                Régen
                                 Mana / tour</label>
                             <input type="number" id="eqRegenMana" value="0" placeholder="Positif ou Négatif">
                         </div>
@@ -489,7 +527,8 @@
                             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
                             <span style="font-size: 0.85rem; color: #cbd5e1; font-weight: 500;"><span
                                     class="material-symbols-outlined"
-                                    style="font-size: 1rem; vertical-align: middle; margin-right: 4px;">scale</span>Poids de
+                                    style="font-size: 1rem; vertical-align: middle; margin-right: 4px;">scale</span>Poids
+                                de
                                 l'équipement</span>
                             <span id="eqWeightText" style="font-size: 0.85rem; font-weight: bold; color: #10b981;">0 /
                                 0</span>
@@ -502,7 +541,8 @@
                         </div>
                     </div>
 
-                    <button type="button" id="submitEquipmentBtn" class="eq-create-btn" onclick="submitEquipment()" style="width: 100%; padding: 0.8rem; border-radius: 8px; background: #10b981; color: white; border: none; font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: background 0.2s;">
+                    <button type="button" id="submitEquipmentBtn" class="eq-create-btn" onclick="submitEquipment()"
+                        style="width: 100%; padding: 0.8rem; border-radius: 8px; background: #10b981; color: white; border: none; font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: background 0.2s;">
                         <span class="material-symbols-outlined" style="font-size: 1.2rem;">add</span>
                         Forger
                     </button>
