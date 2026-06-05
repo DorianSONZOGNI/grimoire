@@ -142,6 +142,8 @@ async function submitEquipment() {
         regenHealthPerTurn: parseInt(document.getElementById('eqRegenHp').value) || 0,
         regenManaPerTurn: parseInt(document.getElementById('eqRegenMana').value) || 0,
         rarity: document.getElementById('eqRarity').value,
+        specialEffect: document.getElementById('eqSpecialEffect').value,
+        specialEffectValue: parseInt(document.getElementById('eqSpecialEffectValue').value) || 0,
         personnageId: equipModalPersoId,
     };
 
@@ -170,6 +172,9 @@ async function submitEquipment() {
         document.getElementById('eqRegenHp').value = 0;
         document.getElementById('eqRegenMana').value = 0;
         document.getElementById('eqRarity').value = 'COMMUN';
+        document.getElementById('eqSpecialEffect').value = 'NONE';
+        document.getElementById('eqSpecialEffectValue').value = 0;
+        document.getElementById('eqSpecialEffectRow').style.display = 'none';
         await loadAllEquipments();
         renderEquipModal();
         await loadPersonnages();
@@ -274,17 +279,22 @@ function renderPersonnages() {
         const persoEquips = allEquipments.filter(e => e.personnage && e.personnage.id === p.id);
         let equipHtml = '';
         if (persoEquips.length > 0) {
+            const slotOrder = ['CASQUE', 'PLASTRON', 'ANNEAU_GAUCHE', 'ANNEAU_DROIT', 'BOTTES', 'CAPE'];
             equipHtml = `<div class="char-equip-row">` +
-                persoEquips.map(eq => {
+                persoEquips.sort((a, b) => slotOrder.indexOf(a.slot) - slotOrder.indexOf(b.slot)).map(eq => {
                     const slotInfo = SLOT_LABELS[eq.slot] || { label: eq.slot, icon: 'help', color: '#94a3b8' };
                     const statsStr = STAT_DEFS
                         .filter(s => eq[s.key] && eq[s.key] !== 0)
                         .map(s => `${eq[s.key] > 0 ? '+' : ''}${eq[s.key]} ${s.label}`)
                         .join(', ');
                     const rarityClass = eq.rarity ? `rarity-${eq.rarity}` : '';
+                    let effectStar = '';
+                    if (eq.specialEffect && eq.specialEffect !== 'NONE') {
+                        effectStar = `<span class="material-symbols-outlined" style="font-size: 0.8rem; color: #c084fc; margin-left: 0.2rem;">auto_awesome</span>`;
+                    }
                     return `<span class="char-equip-chip ${rarityClass}" title="${statsStr || 'Aucun bonus'}">
                         <span class="material-symbols-outlined ${slotInfo.extraClass || ''}" style="font-size: 0.85rem; color: ${slotInfo.color};">${slotInfo.icon}</span>
-                        ${eq.name}
+                        ${eq.name}${effectStar}
                     </span>`;
                 }).join('') +
             `</div>`;
@@ -366,6 +376,22 @@ function renderEquipModal() {
                 })
                 .join('');
             const rarityClass = equipped.rarity ? `rarity-${equipped.rarity}` : '';
+            
+            let specialEffectHtml = '';
+            if (equipped.specialEffect && equipped.specialEffect !== 'NONE') {
+                const effectLabels = {
+                    'LIFESTEAL': 'Vol de Vie',
+                    'THORNS': 'Épines',
+                    'MANA_SHIELD': 'Bouclier de Mana',
+                    'CHEAT_DEATH': 'Ange Gardien',
+                    'CRIT_DAMAGE': 'Dégâts Critiques'
+                };
+                const label = effectLabels[equipped.specialEffect] || equipped.specialEffect;
+                specialEffectHtml = `<div style="margin-top: 0.3rem; font-size: 0.7rem; color: #c084fc; background: rgba(168, 85, 247, 0.1); padding: 0.1rem 0.4rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 0.2rem;">
+                    <span class="material-symbols-outlined" style="font-size: 0.8rem;">auto_awesome</span>
+                    ${label} : ${equipped.specialEffectValue}
+                </div>`;
+            }
 
             return `
                 <div class="equip-slot-card equipped">
@@ -379,7 +405,10 @@ function renderEquipModal() {
                         </button>
                     </div>
                     <div class="equip-slot-item-name ${rarityClass}">${equipped.name}</div>
-                    <div class="equip-slot-stats">${statsChips || '<span style="opacity:0.4;">Aucun bonus</span>'}</div>
+                    <div class="equip-slot-stats">
+                        ${statsChips || '<span style="opacity:0.4;">Aucun bonus</span>'}
+                        ${specialEffectHtml}
+                    </div>
                 </div>`;
         } else {
             // Available items for this slot
@@ -486,6 +515,22 @@ function showNotif(message, isError = false) {
 // ===== Init =====
 
 window.addEventListener('DOMContentLoaded', async () => {
+    // Écouteur pour la rareté
+    const eqRarity = document.getElementById('eqRarity');
+    if (eqRarity) {
+        eqRarity.addEventListener('change', (e) => {
+            const val = e.target.value;
+            const row = document.getElementById('eqSpecialEffectRow');
+            if (val === 'EPIQUE' || val === 'RELIQUE') {
+                row.style.display = 'grid';
+            } else {
+                row.style.display = 'none';
+                document.getElementById('eqSpecialEffect').value = 'NONE';
+                document.getElementById('eqSpecialEffectValue').value = 0;
+            }
+        });
+    }
+
     await fetchMeta();
     await loadAllEquipments();
     await loadPersonnages();

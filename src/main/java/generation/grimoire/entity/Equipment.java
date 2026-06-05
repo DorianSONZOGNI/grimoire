@@ -25,6 +25,12 @@ public class Equipment {
     @Column(nullable = false)
     private generation.grimoire.enumeration.EquipmentRarity rarity = generation.grimoire.enumeration.EquipmentRarity.COMMUN;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private generation.grimoire.enumeration.EquipmentEffectType specialEffect = generation.grimoire.enumeration.EquipmentEffectType.NONE;
+
+    private int specialEffectValue = 0;
+
     // Bonus de stats accordés par cet équipement
     private int bonusHealthMax = 0;
     private int bonusManaMax = 0;

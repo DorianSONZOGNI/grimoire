@@ -38,7 +38,7 @@ public class HealPercentageEffect extends HealEffect {
         double healGivenMultiplier = caster.getStatBuffMultiplier(StatType.HEAL_GIVEN);
         double healAmount = calculateHeal(sourceValue) * getAmplificationMultiplier() * Math.max(0, healGivenMultiplier);
         if (checkCriticalHit(caster)) {
-            healAmount *= 1.5;
+            healAmount *= getCriticalMultiplier(caster);
         }
         target.heal((int) healAmount);
         System.out.println(target.getName() + " est soigné de " + (int) healAmount +

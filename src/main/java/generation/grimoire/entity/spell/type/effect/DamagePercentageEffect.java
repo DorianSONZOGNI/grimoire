@@ -39,7 +39,7 @@ public class DamagePercentageEffect extends DamageEffect {
         damage *= getAmplificationMultiplier();
 
         if (checkCriticalHit(caster)) {
-            damage *= 1.5;
+            damage *= getCriticalMultiplier(caster);
         }
 
         // Appliquer les dégâts à la cible

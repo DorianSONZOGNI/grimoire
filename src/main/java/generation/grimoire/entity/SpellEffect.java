@@ -66,6 +66,20 @@ public abstract class SpellEffect {
         return isCrit;
     }
 
+    /**
+     * Calcule le multiplicateur de dégâts critiques (de base 1.5).
+     */
+    protected double getCriticalMultiplier(Personnage caster) {
+        double baseMultiplier = 1.5;
+        if (caster != null) {
+            int bonus = caster.getSpecialEffectValue(generation.grimoire.enumeration.EquipmentEffectType.CRIT_DAMAGE);
+            if (bonus > 0) {
+                baseMultiplier += (bonus / 100.0);
+            }
+        }
+        return baseMultiplier;
+    }
+
     @Transient
     public String getEffectType() {
         return this.getClass().getSimpleName();
