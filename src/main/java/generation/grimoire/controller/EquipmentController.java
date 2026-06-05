@@ -37,7 +37,7 @@ public class EquipmentController {
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
         
         List<Equipment> equipmentList = isAdmin ? equipmentRepository.findAll() : equipmentRepository.findByUser_Username(principal.getName());
-        return ResponseEntity.ok(equipmentList.stream().map(this::toDto).toList());
+        return ResponseEntity.ok(equipmentList.stream().filter(e -> !e.isShopTemplate()).map(this::toDto).toList());
     }
 
     /** Liste les équipements d'un personnage */
@@ -59,11 +59,11 @@ public class EquipmentController {
         if (principal == null) return ResponseEntity.status(401).build();
         boolean isAdmin = ((org.springframework.security.core.Authentication) principal).getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
-
-        List<Equipment> items = isAdmin 
-                ? equipmentRepository.findByPersonnageIsNull() 
-                : equipmentRepository.findByPersonnageIsNullAndUser_Username(principal.getName());
-        return ResponseEntity.ok(items.stream().map(this::toDto).toList());
+        return ResponseEntity.ok(
+                equipmentRepository.findByPersonnageIsNull().stream()
+                        .filter(e -> !e.isShopTemplate())
+                        .filter(e -> isAdmin || (e.getUser() != null && e.getUser().getUsername().equals(principal.getName())))
+                        .map(this::toDto).toList());
     }
 
     /** Créer ou mettre à jour un équipement */

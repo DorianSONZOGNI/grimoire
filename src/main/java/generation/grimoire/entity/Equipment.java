@@ -53,6 +53,12 @@ public class Equipment {
     @JoinColumn(name = "user_id", nullable = true)
     private generation.grimoire.entity.auth.AppUser user;
 
+    @Column(name = "owner_username")
+    private String ownerUsername;
+    
+    @Column(name = "is_shop_template", nullable = false)
+    private boolean isShopTemplate = false;
+
     public double calculateWeight() {
         double w = 0.0;
         w += this.bonusHealthMax * 0.2;
