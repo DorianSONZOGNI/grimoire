@@ -219,14 +219,24 @@
                     Créer un nouvel équipement
                 </div>
 
-                <div class="eq-create-row">
-                    <div class="eq-create-field">
+                <div class="eq-create-row quad">
+                    <div class="eq-create-field" style="grid-column: span 2;">
                         <label>Nom</label>
                         <input type="text" id="eqName" placeholder="Ex: Casque de Fer">
                     </div>
                     <div class="eq-create-field">
                         <label>Slot</label>
                         <select id="eqSlot"></select>
+                    </div>
+                    <div class="eq-create-field">
+                        <label>Rareté</label>
+                        <select id="eqRarity">
+                            <option value="COMMUN">Commun</option>
+                            <option value="RARE">Rare</option>
+                            <option value="LEGENDAIRE">Légendaire</option>
+                            <option value="EPIQUE">Épique (Max 1)</option>
+                            <option value="RELIQUE">Relique (Max 1)</option>
+                        </select>
                     </div>
                 </div>
 
@@ -265,6 +275,17 @@
                     <div class="eq-create-field">
                         <label>Critique</label>
                         <input type="number" id="eqCrit" value="0">
+                    </div>
+                </div>
+
+                <div class="eq-create-row">
+                    <div class="eq-create-field">
+                        <label>Régen PV / tour</label>
+                        <input type="number" id="eqRegenHp" value="0" placeholder="Positif ou Négatif">
+                    </div>
+                    <div class="eq-create-field">
+                        <label>Régen Mana / tour</label>
+                        <input type="number" id="eqRegenMana" value="0" placeholder="Positif ou Négatif">
                     </div>
                 </div>
 

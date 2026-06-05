@@ -25,6 +25,8 @@ const STAT_DEFS = [
     { key: 'bonusResistance', label: 'Rés', icon: 'shield', color: '#10b981' },
     { key: 'bonusSpeed', label: 'Vit', icon: 'bolt', color: '#f59e0b' },
     { key: 'bonusCrit', label: 'Crit', icon: 'gps_fixed', color: '#ef4444' },
+    { key: 'regenHealthPerTurn', label: 'PV/t', icon: 'healing', color: '#10b981' },
+    { key: 'regenManaPerTurn', label: 'Mana/t', icon: 'water_drop', color: '#38bdf8' },
 ];
 
 // ===== API =====
@@ -137,6 +139,9 @@ async function submitEquipment() {
         bonusResistance: parseInt(document.getElementById('eqRes').value) || 0,
         bonusSpeed: parseInt(document.getElementById('eqSpeed').value) || 0,
         bonusCrit: parseInt(document.getElementById('eqCrit').value) || 0,
+        regenHealthPerTurn: parseInt(document.getElementById('eqRegenHp').value) || 0,
+        regenManaPerTurn: parseInt(document.getElementById('eqRegenMana').value) || 0,
+        rarity: document.getElementById('eqRarity').value,
         personnageId: equipModalPersoId,
     };
 
@@ -147,6 +152,10 @@ async function submitEquipment() {
             body: JSON.stringify(dto)
         });
         const data = await res.json();
+        if (!res.ok) {
+            showNotif(data.message || 'Erreur', true);
+            return;
+        }
         showNotif(data.message || 'Équipement créé !');
         // Reset equipment form
         document.getElementById('eqName').value = '';
@@ -158,6 +167,9 @@ async function submitEquipment() {
         document.getElementById('eqRes').value = 0;
         document.getElementById('eqSpeed').value = 0;
         document.getElementById('eqCrit').value = 0;
+        document.getElementById('eqRegenHp').value = 0;
+        document.getElementById('eqRegenMana').value = 0;
+        document.getElementById('eqRarity').value = 'COMMUN';
         await loadAllEquipments();
         renderEquipModal();
         await loadPersonnages();
@@ -170,6 +182,12 @@ async function equipItem(equipmentId, personnageId) {
     try {
         const res = await fetch(`/api/equipment/${equipmentId}/equip/${personnageId}`, { method: 'POST' });
         const data = await res.json();
+        if (!res.ok) {
+            showNotif(data.message || 'Erreur', true);
+            // Reset dropdown
+            renderEquipModal();
+            return;
+        }
         showNotif(data.message);
         await loadAllEquipments();
         renderEquipModal();
@@ -261,9 +279,10 @@ function renderPersonnages() {
                     const slotInfo = SLOT_LABELS[eq.slot] || { label: eq.slot, icon: 'help', color: '#94a3b8' };
                     const statsStr = STAT_DEFS
                         .filter(s => eq[s.key] && eq[s.key] !== 0)
-                        .map(s => `+${eq[s.key]} ${s.label}`)
+                        .map(s => `${eq[s.key] > 0 ? '+' : ''}${eq[s.key]} ${s.label}`)
                         .join(', ');
-                    return `<span class="char-equip-chip" title="${statsStr || 'Aucun bonus'}">
+                    const rarityClass = eq.rarity ? `rarity-${eq.rarity}` : '';
+                    return `<span class="char-equip-chip ${rarityClass}" title="${statsStr || 'Aucun bonus'}">
                         <span class="material-symbols-outlined ${slotInfo.extraClass || ''}" style="font-size: 0.85rem; color: ${slotInfo.color};">${slotInfo.icon}</span>
                         ${eq.name}
                     </span>`;
@@ -339,8 +358,14 @@ function renderEquipModal() {
         if (equipped) {
             const statsChips = STAT_DEFS
                 .filter(s => equipped[s.key] && equipped[s.key] !== 0)
-                .map(s => `<span class="eq-stat-mini"><span class="material-symbols-outlined" style="color:${s.color}; font-size:0.75rem;">${s.icon}</span>+${equipped[s.key]}</span>`)
+                .map(s => {
+                    const val = equipped[s.key];
+                    const sign = val > 0 ? '+' : '';
+                    const isMalus = val < 0;
+                    return `<span class="eq-stat-mini ${isMalus ? 'malus' : ''}"><span class="material-symbols-outlined" style="color:${isMalus ? '#ef4444' : s.color}; font-size:0.75rem;">${s.icon}</span>${sign}${val}</span>`;
+                })
                 .join('');
+            const rarityClass = equipped.rarity ? `rarity-${equipped.rarity}` : '';
 
             return `
                 <div class="equip-slot-card equipped">
@@ -353,7 +378,7 @@ function renderEquipModal() {
                             <span class="material-symbols-outlined" style="font-size: 0.9rem;">close</span>
                         </button>
                     </div>
-                    <div class="equip-slot-item-name">${equipped.name}</div>
+                    <div class="equip-slot-item-name ${rarityClass}">${equipped.name}</div>
                     <div class="equip-slot-stats">${statsChips || '<span style="opacity:0.4;">Aucun bonus</span>'}</div>
                 </div>`;
         } else {
@@ -363,7 +388,7 @@ function renderEquipModal() {
             if (available.length > 0) {
                 availableHtml = `<select class="eq-assign-select" onchange="if(this.value) equipItem(this.value, ${perso.id})">
                     <option value="">Choisir...</option>
-                    ${available.map(a => `<option value="${a.id}">${a.name}</option>`).join('')}
+                    ${available.map(a => `<option value="${a.id}" class="${a.rarity ? 'rarity-' + a.rarity : ''}">${a.name} ${a.rarity ? '(' + a.rarity + ')' : ''}</option>`).join('')}
                 </select>`;
             } else {
                 availableHtml = `<span style="font-size: 0.72rem; color: #475569; font-style: italic;">Aucun disponible</span>`;
