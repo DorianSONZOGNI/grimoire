@@ -223,6 +223,7 @@ public class ShopController {
         consumable.setRarity(EquipmentRarity.COMMUN);
         consumable.setShopTemplate(false);
         consumable.setPersonnage(null); // Goes to vault
+        consumable.setUser(user);
         consumable.setOwnerUsername(user.getUsername());
         consumable.setBonusHealthMax(0);
         consumable.setBonusManaMax(0);
