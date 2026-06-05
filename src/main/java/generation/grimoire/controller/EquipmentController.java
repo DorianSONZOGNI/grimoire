@@ -118,7 +118,8 @@ public class EquipmentController {
     @PostMapping("/{equipmentId}/equip/{personnageId}")
     public ResponseEntity<Map<String, Object>> equip(
             @PathVariable Long equipmentId,
-            @PathVariable Long personnageId) {
+            @PathVariable Long personnageId,
+            @RequestParam(required = false) generation.grimoire.enumeration.EquipmentSlot targetSlot) {
 
         Equipment equipment = equipmentRepository.findById(equipmentId)
                 .orElseThrow(() -> new RuntimeException("Équipement non trouvé."));
@@ -128,6 +129,11 @@ public class EquipmentController {
             validateRarityLimit(personnage, equipment);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
+
+        // Si on précise un slot cible (ex: changer un anneau de main), on met à jour l'équipement
+        if (targetSlot != null) {
+            equipment.setSlot(targetSlot);
         }
 
         // Retirer l'ancien équipement du même slot

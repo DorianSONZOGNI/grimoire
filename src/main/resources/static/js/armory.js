@@ -266,9 +266,13 @@ async function submitEquipment() {
     }
 }
 
-async function equipItem(equipmentId, personnageId) {
+async function equipItem(equipmentId, personnageId, targetSlot = null) {
     try {
-        const res = await fetch(`/api/equipment/${equipmentId}/equip/${personnageId}`, { method: 'POST' });
+        let url = `/api/equipment/${equipmentId}/equip/${personnageId}`;
+        if (targetSlot) {
+            url += `?targetSlot=${targetSlot}`;
+        }
+        const res = await fetch(url, { method: 'POST' });
         const data = await res.json();
         if (!res.ok) {
             showNotif(data.message || 'Erreur', true);
@@ -589,10 +593,18 @@ function renderEquipModal() {
                 </div>`;
         } else {
             // Available items for this slot
-            const available = allEquipments.filter(e => e.slot === slotKey && !e.personnage);
+            let available = allEquipments.filter(e => e.slot === slotKey && !e.personnage);
+            
+            // Special case for rings: allow any ring in any ring slot
+            if (slotKey === 'ANNEAU_GAUCHE' || slotKey === 'ANNEAU_DROIT') {
+                available = allEquipments.filter(e => 
+                    (e.slot === 'ANNEAU_GAUCHE' || e.slot === 'ANNEAU_DROIT') && !e.personnage
+                );
+            }
+
             let availableHtml = '';
             if (available.length > 0) {
-                availableHtml = `<select class="eq-assign-select" onchange="if(this.value) equipItem(this.value, ${perso.id})">
+                availableHtml = `<select class="eq-assign-select" onchange="if(this.value) equipItem(this.value, ${perso.id}, '${slotKey}')">
                     <option value="">Choisir...</option>
                     ${available.map(a => `<option value="${a.id}" class="${a.rarity ? 'rarity-' + a.rarity : ''}">${a.name} ${a.rarity ? '(' + a.rarity + ')' : ''}</option>`).join('')}
                 </select>`;
