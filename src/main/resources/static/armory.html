@@ -226,83 +226,108 @@
                     </div>
                     <div class="eq-create-field">
                         <label>Slot</label>
-                        <select id="eqSlot"></select>
+                        <div class="custom-select-wrapper" id="eqSlotWrapper" tabindex="0">
+                            <div class="custom-select-trigger" id="eqSlotTrigger">
+                                <span class="cs-label" id="eqSlotLabel">Choisir un slot...</span>
+                                <span class="material-symbols-outlined cs-arrow" style="font-size: 1.1rem;">expand_more</span>
+                            </div>
+                            <div class="custom-select-options" id="eqSlotOptions"></div>
+                            <input type="hidden" id="eqSlot" value="">
+                        </div>
                     </div>
                     <div class="eq-create-field">
                         <label>Rareté</label>
-                        <select id="eqRarity">
-                            <option value="COMMUN">Commun</option>
-                            <option value="RARE">Rare</option>
-                            <option value="LEGENDAIRE">Légendaire</option>
-                            <option value="EPIQUE">Épique (Max 1)</option>
-                            <option value="RELIQUE">Relique (Max 1)</option>
-                        </select>
+                        <div class="custom-select-wrapper" id="eqRarityWrapper" tabindex="0">
+                            <div class="custom-select-trigger" id="eqRarityTrigger">
+                                <span class="cs-label" id="eqRarityLabel">
+                                    <span class="cs-icon" style="color: #94a3b8; font-weight: bold;">C</span> Commun
+                                </span>
+                                <span class="material-symbols-outlined cs-arrow" style="font-size: 1.1rem;">expand_more</span>
+                            </div>
+                            <div class="custom-select-options" id="eqRarityOptions">
+                                <div class="custom-option rarity-COMMUN" data-value="COMMUN" data-color="#94a3b8" data-letter="C"><span class="cs-icon" style="color: #94a3b8; font-weight: bold;">C</span> Commun</div>
+                                <div class="custom-option rarity-RARE" data-value="RARE" data-color="#22c55e" data-letter="R"><span class="cs-icon" style="color: #22c55e; font-weight: bold;">R</span> Rare</div>
+                                <div class="custom-option rarity-LEGENDAIRE" data-value="LEGENDAIRE" data-color="#eab308" data-letter="L"><span class="cs-icon" style="color: #eab308; font-weight: bold;">L</span> Légendaire</div>
+                                <div class="custom-option rarity-EPIQUE" data-value="EPIQUE" data-color="#ef4444" data-letter="E"><span class="cs-icon" style="color: #ef4444; font-weight: bold;">E</span> Épique (Max 1)</div>
+                                <div class="custom-option rarity-RELIQUE" data-value="RELIQUE" data-color="#a855f7" data-letter="R"><span class="cs-icon" style="color: #a855f7; font-weight: bold;">R</span> Relique (Max 1)</div>
+                            </div>
+                            <input type="hidden" id="eqRarity" value="COMMUN">
+                        </div>
                     </div>
                 </div>
 
                 <div class="eq-create-row" id="eqSpecialEffectRow" style="display: none; background: rgba(168, 85, 247, 0.05); border: 1px dashed rgba(168, 85, 247, 0.3); padding: 0.8rem; border-radius: 8px; margin-bottom: 1rem;">
                     <div class="eq-create-field">
-                        <label style="color: #c084fc;">Effet Spécial</label>
-                        <select id="eqSpecialEffect" style="border-color: rgba(192, 132, 252, 0.3);">
-                            <option value="NONE">Aucun</option>
-                            <option value="LIFESTEAL">Vol de Vie (%)</option>
-                            <option value="THORNS">Épines (Renvoi dégâts %)</option>
-                            <option value="MANA_SHIELD">Bouclier de Mana (%)</option>
-                            <option value="CHEAT_DEATH">Ange Gardien (Survit avec X PV)</option>
-                            <option value="CRIT_DAMAGE">Dégâts Critiques Bonus (%)</option>
-                        </select>
+                        <label id="eqSpecialEffectLabelTitle" style="color: #c084fc;">Effet Spécial</label>
+                        <div class="custom-select-wrapper" id="eqSpecialEffectWrapper" tabindex="0">
+                            <div class="custom-select-trigger" id="eqSpecialEffectTrigger" style="border-color: rgba(192, 132, 252, 0.3);">
+                                <span class="cs-label" id="eqSpecialEffectLabel">
+                                    <span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">not_interested</span> Aucun
+                                </span>
+                                <span class="material-symbols-outlined cs-arrow" style="font-size: 1.1rem;">expand_more</span>
+                            </div>
+                            <div class="custom-select-options" id="eqSpecialEffectOptions">
+                                <div class="custom-option effect-NONE" data-value="NONE"><span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">not_interested</span> Aucun</div>
+                                <div class="custom-option effect-LIFESTEAL" data-value="LIFESTEAL"><span class="material-symbols-outlined cs-icon" style="color: #ef4444;">water_drop</span> Vol de Vie (%)</div>
+                                <div class="custom-option effect-THORNS" data-value="THORNS"><span class="material-symbols-outlined cs-icon" style="color: #eab308;">cruelty_free</span> Épines (Renvoi dégâts %)</div>
+                                <div class="custom-option effect-MANA_SHIELD" data-value="MANA_SHIELD"><span class="material-symbols-outlined cs-icon" style="color: #3b82f6;">shield</span> Bouclier de Mana (%)</div>
+                                <div class="custom-option effect-CHEAT_DEATH" data-value="CHEAT_DEATH"><span class="material-symbols-outlined cs-icon" style="color: #fce7f3;">emoji_nature</span> Ange Gardien (Survit avec X PV)</div>
+                                <div class="custom-option effect-CRIT_DAMAGE" data-value="CRIT_DAMAGE"><span class="material-symbols-outlined cs-icon" style="color: #f97316;">local_fire_department</span> Dégâts Critiques Bonus (%)</div>
+                            </div>
+                            <input type="hidden" id="eqSpecialEffect" value="NONE">
+                        </div>
                     </div>
                     <div class="eq-create-field">
-                        <label style="color: #c084fc;">Puissance (Valeur)</label>
+                        <label id="eqSpecialEffectValueTitle" style="color: #c084fc;">Puissance (Valeur)</label>
                         <input type="number" id="eqSpecialEffectValue" value="0" style="border-color: rgba(192, 132, 252, 0.3);">
                     </div>
                 </div>
 
                 <div class="eq-create-row quad">
                     <div class="eq-create-field">
-                        <label>PV</label>
+                        <label><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: bottom; color: #ec4899;">favorite</span> PV</label>
                         <input type="number" id="eqHp" value="0">
                     </div>
                     <div class="eq-create-field">
-                        <label>Mana</label>
+                        <label><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: bottom; color: #38bdf8;">water_drop</span> Mana</label>
                         <input type="number" id="eqMana" value="0">
                     </div>
                     <div class="eq-create-field">
-                        <label>Puissance</label>
+                        <label><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: bottom; color: #a855f7;">auto_awesome</span> Puissance</label>
                         <input type="number" id="eqPower" value="0">
                     </div>
                     <div class="eq-create-field">
-                        <label>Force</label>
+                        <label><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: bottom; color: #f43f5e;">fitness_center</span> Force</label>
                         <input type="number" id="eqStr" value="0">
                     </div>
                 </div>
 
                 <div class="eq-create-row quad">
                     <div class="eq-create-field">
-                        <label>Armure</label>
+                        <label><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: bottom; color: #3b82f6;">shield</span> Armure</label>
                         <input type="number" id="eqArmor" value="0">
                     </div>
                     <div class="eq-create-field">
-                        <label>Résistance</label>
+                        <label><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: bottom; color: #10b981;">shield</span> Résistance</label>
                         <input type="number" id="eqRes" value="0">
                     </div>
                     <div class="eq-create-field">
-                        <label>Vitesse</label>
+                        <label><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: bottom; color: #f59e0b;">bolt</span> Vitesse</label>
                         <input type="number" id="eqSpeed" value="0">
                     </div>
                     <div class="eq-create-field">
-                        <label>Critique</label>
+                        <label><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: bottom; color: #ef4444;">gps_fixed</span> Critique</label>
                         <input type="number" id="eqCrit" value="0">
                     </div>
                 </div>
 
                 <div class="eq-create-row">
                     <div class="eq-create-field">
-                        <label>Régen PV / tour</label>
+                        <label><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: bottom; color: #10b981;">healing</span> Régen PV / tour</label>
                         <input type="number" id="eqRegenHp" value="0" placeholder="Positif ou Négatif">
                     </div>
                     <div class="eq-create-field">
-                        <label>Régen Mana / tour</label>
+                        <label><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: bottom; color: #38bdf8;">water_drop</span> Régen Mana / tour</label>
                         <input type="number" id="eqRegenMana" value="0" placeholder="Positif ou Négatif">
                     </div>
                 </div>
