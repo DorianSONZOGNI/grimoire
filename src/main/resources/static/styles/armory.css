@@ -797,6 +797,9 @@
     color: #fff;
     outline: none;
     font-family: 'Inter', sans-serif;
+    width: 100%;
+    box-sizing: border-box;
+    min-width: 0;
 }
 
 .eq-create-field input:focus,
