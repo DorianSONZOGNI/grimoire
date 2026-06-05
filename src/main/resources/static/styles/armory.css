@@ -599,6 +599,20 @@
     gap: 0.4rem;
 }
 
+/* ===== Rarity Colors ===== */
+.rarity-COMMUN { color: #cbd5e1 !important; text-shadow: 0 0 5px rgba(203, 213, 225, 0.3); }
+.rarity-RARE { color: #10b981 !important; text-shadow: 0 0 5px rgba(16, 185, 129, 0.4); }
+.rarity-LEGENDAIRE { color: #facc15 !important; text-shadow: 0 0 5px rgba(250, 204, 21, 0.4); }
+.rarity-EPIQUE { color: #ef4444 !important; text-shadow: 0 0 8px rgba(239, 68, 68, 0.6); font-weight: 700; }
+.rarity-RELIQUE { color: #a855f7 !important; text-shadow: 0 0 10px rgba(168, 85, 247, 0.7); font-weight: 800; }
+
+.equip-slot-item-name {
+    font-size: 0.82rem;
+    font-weight: 600;
+    color: #f8fafc;
+    margin-bottom: 0.4rem;
+}
+
 .equip-modal-close {
     background: transparent;
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -691,6 +705,12 @@
     background: rgba(255, 255, 255, 0.04);
     padding: 0.05rem 0.3rem;
     border-radius: 4px;
+}
+
+.eq-stat-mini.malus {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.05);
+    border: 1px solid rgba(239, 68, 68, 0.15);
 }
 
 .equip-slot-empty {

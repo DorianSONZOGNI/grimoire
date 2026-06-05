@@ -69,10 +69,22 @@ public class EquipmentController {
         equipment.setBonusResistance(dto.getBonusResistance());
         equipment.setBonusSpeed(dto.getBonusSpeed());
         equipment.setBonusCrit(dto.getBonusCrit());
+        equipment.setBonusCrit(dto.getBonusCrit());
+        equipment.setRegenHealthPerTurn(dto.getRegenHealthPerTurn());
+        equipment.setRegenManaPerTurn(dto.getRegenManaPerTurn());
+        if (dto.getRarity() != null) {
+            equipment.setRarity(dto.getRarity());
+        }
 
         // Assigner à un personnage si fourni
         if (dto.getPersonnageId() != null) {
             Personnage personnage = personnageService.findByIdOrThrow(dto.getPersonnageId());
+
+            try {
+                validateRarityLimit(personnage, equipment);
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+            }
 
             // Vérifier si le slot est déjà occupé
             equipmentRepository.findByPersonnageIdAndSlot(personnage.getId(), dto.getSlot())
@@ -107,6 +119,12 @@ public class EquipmentController {
         Equipment equipment = equipmentRepository.findById(equipmentId)
                 .orElseThrow(() -> new RuntimeException("Équipement non trouvé."));
         Personnage personnage = personnageService.findByIdOrThrow(personnageId);
+
+        try {
+            validateRarityLimit(personnage, equipment);
+        } catch (IllegalArgumentException e) {
+            return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+        }
 
         // Retirer l'ancien équipement du même slot
         equipmentRepository.findByPersonnageIdAndSlot(personnageId, equipment.getSlot())
@@ -148,6 +166,27 @@ public class EquipmentController {
         return ResponseEntity.notFound().build();
     }
 
+    private void validateRarityLimit(Personnage personnage, Equipment newEquipment) {
+        if (newEquipment.getRarity() == generation.grimoire.enumeration.EquipmentRarity.EPIQUE) {
+            boolean hasEpic = equipmentRepository.findByPersonnageId(personnage.getId()).stream()
+                    .anyMatch(e -> e.getRarity() == generation.grimoire.enumeration.EquipmentRarity.EPIQUE 
+                            && (newEquipment.getId() == null || !e.getId().equals(newEquipment.getId()))
+                            && e.getSlot() != newEquipment.getSlot()); // Ignorer si c'est pour remplacer le même slot
+            if (hasEpic) {
+                throw new IllegalArgumentException("Impossible d'équiper plus d'un objet Épique.");
+            }
+        }
+        if (newEquipment.getRarity() == generation.grimoire.enumeration.EquipmentRarity.RELIQUE) {
+            boolean hasRelic = equipmentRepository.findByPersonnageId(personnage.getId()).stream()
+                    .anyMatch(e -> e.getRarity() == generation.grimoire.enumeration.EquipmentRarity.RELIQUE 
+                            && (newEquipment.getId() == null || !e.getId().equals(newEquipment.getId()))
+                            && e.getSlot() != newEquipment.getSlot());
+            if (hasRelic) {
+                throw new IllegalArgumentException("Impossible d'équiper plus d'une Relique.");
+            }
+        }
+    }
+
     private Map<String, Object> toDto(Equipment e) {
         Map<String, Object> map = new HashMap<>();
         map.put("id", e.getId());
@@ -161,6 +200,9 @@ public class EquipmentController {
         map.put("bonusResistance", e.getBonusResistance());
         map.put("bonusSpeed", e.getBonusSpeed());
         map.put("bonusCrit", e.getBonusCrit());
+        map.put("regenHealthPerTurn", e.getRegenHealthPerTurn());
+        map.put("regenManaPerTurn", e.getRegenManaPerTurn());
+        map.put("rarity", e.getRarity());
 
         if (e.getPersonnage() != null) {
             Map<String, Object> perso = new HashMap<>();
@@ -185,6 +227,9 @@ public class EquipmentController {
         private int bonusResistance = 0;
         private int bonusSpeed = 0;
         private int bonusCrit = 0;
+        private int regenHealthPerTurn = 0;
+        private int regenManaPerTurn = 0;
+        private generation.grimoire.enumeration.EquipmentRarity rarity;
         private Long personnageId;
     }
 }

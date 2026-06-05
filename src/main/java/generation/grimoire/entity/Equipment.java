@@ -21,6 +21,10 @@ public class Equipment {
     @Column(nullable = false)
     private EquipmentSlot slot;
 
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false)
+    private generation.grimoire.enumeration.EquipmentRarity rarity = generation.grimoire.enumeration.EquipmentRarity.COMMUN;
+
     // Bonus de stats accordés par cet équipement
     private int bonusHealthMax = 0;
     private int bonusManaMax = 0;
@@ -30,6 +34,10 @@ public class Equipment {
     private int bonusResistance = 0;
     private int bonusSpeed = 0;
     private int bonusCrit = 0;
+
+    // Effets spéciaux par tour
+    private int regenHealthPerTurn = 0;
+    private int regenManaPerTurn = 0;
 
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "personnage_id", nullable = true)

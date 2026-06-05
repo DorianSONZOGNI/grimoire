@@ -132,6 +132,24 @@ public class Personnage {
                         .println(name + " continue de canaliser (tours restants : " + remainingChannelingTurns + ").");
             }
         }
+        
+        // Effets des équipements (Régen / Drain)
+        if (this.healthCurrent > 0 && this.equipments != null) {
+            int totalHpRegen = 0;
+            int totalManaRegen = 0;
+            for (generation.grimoire.entity.Equipment eq : this.equipments) {
+                totalHpRegen += eq.getRegenHealthPerTurn();
+                totalManaRegen += eq.getRegenManaPerTurn();
+            }
+            if (totalHpRegen > 0) {
+                this.heal(totalHpRegen);
+            } else if (totalHpRegen < 0) {
+                this.takeDamage(-totalHpRegen, generation.grimoire.enumeration.DamageType.BRUT);
+            }
+            if (totalManaRegen != 0) {
+                this.setManaCurrent(this.manaCurrent + totalManaRegen);
+            }
+        }
     }
 
     /**
