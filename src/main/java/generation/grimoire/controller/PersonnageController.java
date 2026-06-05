@@ -100,14 +100,27 @@ public class PersonnageController {
         Map<String, Object> map = new HashMap<>();
         map.put("id", p.getId());
         map.put("name", p.getName());
-        map.put("healthMax", p.getHealthMax());
-        map.put("manaMax", p.getManaMax());
+        
+        // Base stats pour le formulaire d'édition
+        map.put("healthMax", p.getBaseHealthMax());
+        map.put("manaMax", p.getBaseManaMax());
         map.put("power", p.getPower());
         map.put("strength", p.getStrength());
         map.put("armor", p.getArmor());
         map.put("resistance", p.getResistance());
         map.put("speed", p.getSpeed());
         map.put("crit", p.getCrit());
+        
+        // Total stats pour l'affichage (inclus équipements, buffs, passifs)
+        map.put("totalHealthMax", p.getHealthMax());
+        map.put("totalManaMax", p.getManaMax());
+        map.put("totalPower", p.getEffectiveStat(generation.grimoire.enumeration.StatType.POWER));
+        map.put("totalStrength", p.getEffectiveStat(generation.grimoire.enumeration.StatType.STRENGTH));
+        map.put("totalArmor", p.getEffectiveStat(generation.grimoire.enumeration.StatType.ARMURE));
+        map.put("totalResistance", p.getEffectiveStat(generation.grimoire.enumeration.StatType.RESISTANCE));
+        map.put("totalSpeed", p.getEffectiveStat(generation.grimoire.enumeration.StatType.SPEED));
+        map.put("totalCrit", p.getEffectiveStat(generation.grimoire.enumeration.StatType.CRIT));
+
         map.put("voieLevel", p.getVoieLevel());
         map.put("spiritualiteLevel", p.getSpiritualiteLevel());
 

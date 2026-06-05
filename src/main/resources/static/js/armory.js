@@ -8,12 +8,12 @@ let equipModalPersoId = null;
 let allEquipments = [];
 
 const SLOT_LABELS = {
-    CASQUE: { label: 'Casque', icon: 'hard_hat', color: '#a855f7' },
-    PLASTRON: { label: 'Plastron', icon: 'shield_person', color: '#3b82f6' },
-    ANNEAU_GAUCHE: { label: 'Anneau G.', icon: 'ring_volume', color: '#f59e0b' },
-    ANNEAU_DROIT: { label: 'Anneau D.', icon: 'ring_volume', color: '#f59e0b' },
-    BOTTES: { label: 'Bottes', icon: 'do_not_step', color: '#10b981' },
-    CAPE: { label: 'Cape', icon: 'apparel', color: '#ec4899' },
+    CASQUE: { label: 'Casque', icon: 'masks', color: '#a855f7', extraClass: 'flip-icon' },
+    PLASTRON: { label: 'Plastron', icon: 'shield', color: '#3b82f6' },
+    ANNEAU_GAUCHE: { label: 'Anneau G.', icon: 'diamond', color: '#f59e0b' },
+    ANNEAU_DROIT: { label: 'Anneau D.', icon: 'diamond', color: '#f59e0b' },
+    BOTTES: { label: 'Bottes', icon: 'footprint', color: '#10b981' },
+    CAPE: { label: 'Cape', icon: 'carpenter', color: '#ec4899' },
 };
 
 const STAT_DEFS = [
@@ -264,7 +264,7 @@ function renderPersonnages() {
                         .map(s => `+${eq[s.key]} ${s.label}`)
                         .join(', ');
                     return `<span class="char-equip-chip" title="${statsStr || 'Aucun bonus'}">
-                        <span class="material-symbols-outlined" style="font-size: 0.85rem; color: ${slotInfo.color};">${slotInfo.icon}</span>
+                        <span class="material-symbols-outlined ${slotInfo.extraClass || ''}" style="font-size: 0.85rem; color: ${slotInfo.color};">${slotInfo.icon}</span>
                         ${eq.name}
                     </span>`;
                 }).join('') +
@@ -293,14 +293,14 @@ function renderPersonnages() {
                 <div class="char-card-badges">${badges}</div>
                 ${equipHtml}
                 <div class="char-card-stats">
-                    <span class="char-stat-chip"><span class="material-symbols-outlined" style="color: #ec4899;">favorite</span>${p.healthMax} PV</span>
-                    <span class="char-stat-chip"><span class="material-symbols-outlined" style="color: #38bdf8;">water_drop</span>${p.manaMax} Mana</span>
-                    <span class="char-stat-chip"><span class="material-symbols-outlined" style="color: #a855f7;">auto_awesome</span>${p.power} Pui</span>
-                    <span class="char-stat-chip"><span class="material-symbols-outlined" style="color: #f43f5e;">fitness_center</span>${p.strength} For</span>
-                    <span class="char-stat-chip"><span class="material-symbols-outlined" style="color: #3b82f6;">shield</span>${p.armor} Arm</span>
-                    <span class="char-stat-chip"><span class="material-symbols-outlined" style="color: #10b981;">shield</span>${p.resistance} Rés</span>
-                    ${p.speed > 0 ? `<span class="char-stat-chip"><span class="material-symbols-outlined" style="color: #f59e0b;">bolt</span>${p.speed} Vit</span>` : ''}
-                    ${p.crit > 0 ? `<span class="char-stat-chip"><span class="material-symbols-outlined" style="color: #ef4444;">gps_fixed</span>${p.crit}% Crit</span>` : ''}
+                    <span class="char-stat-chip"><span class="material-symbols-outlined" style="color: #ec4899;">favorite</span>${p.totalHealthMax || p.healthMax} PV</span>
+                    <span class="char-stat-chip"><span class="material-symbols-outlined" style="color: #38bdf8;">water_drop</span>${p.totalManaMax || p.manaMax} Mana</span>
+                    <span class="char-stat-chip"><span class="material-symbols-outlined" style="color: #a855f7;">auto_awesome</span>${p.totalPower !== undefined ? p.totalPower : p.power} Pui</span>
+                    <span class="char-stat-chip"><span class="material-symbols-outlined" style="color: #f43f5e;">fitness_center</span>${p.totalStrength !== undefined ? p.totalStrength : p.strength} For</span>
+                    <span class="char-stat-chip"><span class="material-symbols-outlined" style="color: #3b82f6;">shield</span>${p.totalArmor !== undefined ? p.totalArmor : p.armor} Arm</span>
+                    <span class="char-stat-chip"><span class="material-symbols-outlined" style="color: #10b981;">shield</span>${p.totalResistance !== undefined ? p.totalResistance : p.resistance} Rés</span>
+                    ${(p.totalSpeed !== undefined ? p.totalSpeed : p.speed) > 0 ? `<span class="char-stat-chip"><span class="material-symbols-outlined" style="color: #f59e0b;">bolt</span>${p.totalSpeed !== undefined ? p.totalSpeed : p.speed} Vit</span>` : ''}
+                    ${(p.totalCrit !== undefined ? p.totalCrit : p.crit) > 0 ? `<span class="char-stat-chip"><span class="material-symbols-outlined" style="color: #ef4444;">gps_fixed</span>${p.totalCrit !== undefined ? p.totalCrit : p.crit}% Crit</span>` : ''}
                 </div>
             </div>`;
     }).join('');
@@ -346,7 +346,7 @@ function renderEquipModal() {
                 <div class="equip-slot-card equipped">
                     <div class="equip-slot-header">
                         <span class="equip-slot-label">
-                            <span class="material-symbols-outlined" style="font-size: 1.1rem; color: ${slotInfo.color};">${slotInfo.icon}</span>
+                            <span class="material-symbols-outlined ${slotInfo.extraClass || ''}" style="font-size: 1.1rem; color: ${slotInfo.color};">${slotInfo.icon}</span>
                             ${slotInfo.label}
                         </span>
                         <button class="eq-unequip-btn" onclick="unequipItem(${equipped.id})" title="Retirer">
@@ -373,7 +373,7 @@ function renderEquipModal() {
                 <div class="equip-slot-card empty">
                     <div class="equip-slot-header">
                         <span class="equip-slot-label">
-                            <span class="material-symbols-outlined" style="font-size: 1.1rem; color: ${slotInfo.color}; opacity: 0.5;">${slotInfo.icon}</span>
+                            <span class="material-symbols-outlined ${slotInfo.extraClass || ''}" style="font-size: 1.1rem; color: ${slotInfo.color}; opacity: 0.5;">${slotInfo.icon}</span>
                             ${slotInfo.label}
                         </span>
                     </div>

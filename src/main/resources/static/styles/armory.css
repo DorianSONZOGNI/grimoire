@@ -491,6 +491,11 @@
     background: linear-gradient(135deg, rgba(239, 68, 68, 0.95), rgba(220, 38, 38, 0.95));
 }
 
+.flip-icon {
+    transform: rotate(180deg) !important;
+    display: inline-block !important;
+}
+
 /* ===== Equip Button ===== */
 .char-btn-equip {
     color: #f59e0b;
