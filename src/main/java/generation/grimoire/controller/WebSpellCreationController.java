@@ -465,9 +465,7 @@ public class WebSpellCreationController {
         clone.setTeamId(teamPrefix + "_" + index);
         
         clone.setHealthMax(dbP.getBaseHealthMax());
-        clone.setHealthCurrent(dbP.getHealthMax());
         clone.setManaMax(dbP.getBaseManaMax());
-        clone.setManaCurrent(dbP.getManaMax());
         
         clone.setPower(dbP.getPower());
         clone.setStrength(dbP.getStrength());
@@ -484,6 +482,9 @@ public class WebSpellCreationController {
         if (dbP.getEquipments() != null) {
             clone.setEquipments(new java.util.ArrayList<>(dbP.getEquipments()));
         }
+
+        clone.setHealthCurrent(dbP.getHealthMax());
+        clone.setManaCurrent(dbP.getManaMax());
         
         return clone;
     }
