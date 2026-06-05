@@ -581,10 +581,10 @@ function renderPersonnages() {
                         <button class="char-btn-edit" onclick="editPersonnage(${p.id})" title="Éditer">
                             <span class="material-symbols-outlined" style="font-size: 0.95rem;">edit</span> Éditer
                         </button>
+                        ` : ''}
                         <button class="char-btn-delete" onclick="deletePersonnage(${p.id})" title="Supprimer">
                             <span class="material-symbols-outlined" style="font-size: 0.95rem;">delete</span>
                         </button>
-                        ` : ''}
                     </div>
                 </div>
                 <div class="char-card-badges">${badges}</div>
