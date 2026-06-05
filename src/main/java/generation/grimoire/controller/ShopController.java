@@ -27,14 +27,15 @@ public class ShopController {
     // --- DAILY SHOP ---
 
     @GetMapping("/daily")
-    public ResponseEntity<List<Map<String, Object>>> getDailyShop() {
+    public ResponseEntity<Map<String, Object>> getDailyShop() {
         List<Equipment> templates = equipmentRepository.findAll().stream()
                 .filter(Equipment::isShopTemplate)
                 .collect(Collectors.toList());
 
         List<Equipment> commons = templates.stream().filter(e -> e.getRarity() == EquipmentRarity.COMMUN).toList();
         List<Equipment> rares = templates.stream().filter(e -> e.getRarity() == EquipmentRarity.RARE).toList();
-        List<Equipment> legendaries = templates.stream().filter(e -> e.getRarity() == EquipmentRarity.LEGENDAIRE).toList();
+        List<Equipment> legendaries = templates.stream().filter(e -> e.getRarity() == EquipmentRarity.LEGENDAIRE)
+                .toList();
 
         // Seeded random based on today's date
         long seed = LocalDate.now().toEpochDay();
@@ -45,11 +46,51 @@ public class ShopController {
         dailySelection.addAll(pickRandom(rares, 1, random));
         dailySelection.addAll(pickRandom(legendaries, 1, random));
 
-        return ResponseEntity.ok(dailySelection.stream().map(this::toShopDto).toList());
+        // Promo
+        List<Equipment> remainingTemplates = new ArrayList<>(templates);
+        remainingTemplates.removeAll(dailySelection);
+        Equipment promoItem = null;
+        if (!remainingTemplates.isEmpty()) {
+            promoItem = remainingTemplates.get(random.nextInt(remainingTemplates.size()));
+        }
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("daily", dailySelection.stream().map(this::toShopDto).toList());
+
+        if (promoItem != null) {
+            Map<String, Object> promoDto = toShopDto(promoItem);
+            double originalPrice = (double) promoDto.get("shopPrice");
+            promoDto.put("originalPrice", originalPrice);
+            promoDto.put("shopPrice", Math.ceil(originalPrice * 0.8));
+            promoDto.put("isDiscount", true);
+            response.put("discount", promoDto);
+        }
+
+        // Consumables
+        List<Map<String, Object>> consumables = List.of(
+                createConsumable("Sac d'inventaire", 15, "money_bag", "bag"),
+                createConsumable("Clé", 25, "vpn_key", "key"),
+                createConsumable("Pain", 5, "bakery_dining", "bread"),
+                createConsumable("Potion de mana", 10, "water_drop", "potion"));
+        response.put("consumables", consumables);
+
+        return ResponseEntity.ok(response);
+    }
+
+    private Map<String, Object> createConsumable(String name, double price, String icon, String typeId) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("name", name);
+        map.put("shopPrice", price);
+        map.put("slot", "CONSOMMABLE");
+        map.put("iconId", icon); // Custom icon for display
+        map.put("typeId", typeId); // ID for purchasing
+        map.put("isConsumable", true);
+        return map;
     }
 
     private List<Equipment> pickRandom(List<Equipment> source, int count, Random random) {
-        if (source.isEmpty()) return new ArrayList<>();
+        if (source.isEmpty())
+            return new ArrayList<>();
         List<Equipment> copy = new ArrayList<>(source);
         Collections.shuffle(copy, random);
         return copy.subList(0, Math.min(count, copy.size()));
@@ -57,7 +98,8 @@ public class ShopController {
 
     @PostMapping("/buy/{templateId}")
     public ResponseEntity<?> buyItem(@PathVariable Long templateId, Principal principal) {
-        if (principal == null) return ResponseEntity.status(401).build();
+        if (principal == null)
+            return ResponseEntity.status(401).build();
 
         Equipment template = equipmentRepository.findById(templateId).orElse(null);
         if (template == null || !template.isShopTemplate()) {
@@ -67,24 +109,41 @@ public class ShopController {
         // Verify it's in today's selection
         long seed = LocalDate.now().toEpochDay();
         Random random = new Random(seed);
-        List<Equipment> allTemplates = equipmentRepository.findAll().stream().filter(Equipment::isShopTemplate).toList();
+        List<Equipment> allTemplates = equipmentRepository.findAll().stream().filter(Equipment::isShopTemplate)
+                .toList();
         List<Equipment> commons = allTemplates.stream().filter(e -> e.getRarity() == EquipmentRarity.COMMUN).toList();
         List<Equipment> rares = allTemplates.stream().filter(e -> e.getRarity() == EquipmentRarity.RARE).toList();
-        List<Equipment> legendaries = allTemplates.stream().filter(e -> e.getRarity() == EquipmentRarity.LEGENDAIRE).toList();
-        
+        List<Equipment> legendaries = allTemplates.stream().filter(e -> e.getRarity() == EquipmentRarity.LEGENDAIRE)
+                .toList();
+
         List<Equipment> dailySelection = new ArrayList<>();
         dailySelection.addAll(pickRandom(commons, 3, random));
         dailySelection.addAll(pickRandom(rares, 1, random));
         dailySelection.addAll(pickRandom(legendaries, 1, random));
 
-        if (dailySelection.stream().noneMatch(e -> e.getId().equals(templateId))) {
+        List<Equipment> remainingTemplates = new ArrayList<>(allTemplates);
+        remainingTemplates.removeAll(dailySelection);
+        Equipment promoItem = null;
+        if (!remainingTemplates.isEmpty()) {
+            promoItem = remainingTemplates.get(random.nextInt(remainingTemplates.size()));
+        }
+
+        boolean isDaily = dailySelection.stream().anyMatch(e -> e.getId().equals(templateId));
+        boolean isPromo = promoItem != null && promoItem.getId().equals(templateId);
+
+        if (!isDaily && !isPromo) {
             return ResponseEntity.badRequest().body(Map.of("message", "Cet objet n'est pas en vente aujourd'hui."));
         }
 
         AppUser user = userRepository.findByUsername(principal.getName()).orElse(null);
-        if (user == null) return ResponseEntity.status(401).build();
+        if (user == null)
+            return ResponseEntity.status(401).build();
 
         double price = calculateShopPrice(template);
+        if (isPromo) {
+            price = Math.ceil(price * 0.8);
+        }
+
         if (user.getMonnaie() < price) {
             return ResponseEntity.badRequest().body(Map.of("message", "Fonds insuffisants."));
         }
@@ -110,12 +169,72 @@ public class ShopController {
         clone.setRarity(template.getRarity());
         clone.setSpecialEffect(template.getSpecialEffect());
         clone.setSpecialEffectValue(template.getSpecialEffectValue());
-        
+
         clone.setShopTemplate(false);
         clone.setUser(user);
         clone.setOwnerUsername(user.getUsername());
-        
+
         equipmentRepository.save(clone);
+
+        return ResponseEntity.ok(Map.of("message", "Achat réussi !"));
+    }
+
+    @PostMapping("/buy/consumable/{type}")
+    public ResponseEntity<?> buyConsumable(@PathVariable String type, Principal principal) {
+        if (principal == null)
+            return ResponseEntity.status(401).build();
+        AppUser user = userRepository.findByUsername(principal.getName()).orElse(null);
+        if (user == null)
+            return ResponseEntity.status(401).build();
+
+        String name = "";
+        double price = 0;
+        switch (type.toLowerCase()) {
+            case "bag":
+                name = "Sac d'inventaire";
+                price = 15;
+                break;
+            case "key":
+                name = "Clé";
+                price = 25;
+                break;
+            case "bread":
+                name = "Pain";
+                price = 5;
+                break;
+            case "potion":
+                name = "Potion de mana";
+                price = 10;
+                break;
+            default:
+                return ResponseEntity.badRequest().body(Map.of("message", "Consommable inconnu."));
+        }
+
+        if (user.getMonnaie() < price) {
+            return ResponseEntity.badRequest().body(Map.of("message", "Fonds insuffisants."));
+        }
+
+        user.setMonnaie(user.getMonnaie() - price);
+        userRepository.save(user);
+
+        Equipment consumable = new Equipment();
+        consumable.setName(name);
+        consumable.setSlot(EquipmentSlot.CONSOMMABLE);
+        consumable.setRarity(EquipmentRarity.COMMUN);
+        consumable.setShopTemplate(false);
+        consumable.setPersonnage(null); // Goes to vault
+        consumable.setOwnerUsername(user.getUsername());
+        consumable.setBonusHealthMax(0);
+        consumable.setBonusManaMax(0);
+        consumable.setBonusPower(0);
+        consumable.setBonusStrength(0);
+        consumable.setBonusArmor(0);
+        consumable.setBonusResistance(0);
+        consumable.setBonusSpeed(0);
+        consumable.setBonusCrit(0);
+        consumable.setRegenHealthPerTurn(0);
+        consumable.setRegenManaPerTurn(0);
+        equipmentRepository.save(consumable);
 
         return ResponseEntity.ok(Map.of("message", "Achat réussi !"));
     }
@@ -124,7 +243,8 @@ public class ShopController {
 
     @GetMapping("/templates")
     public ResponseEntity<?> getTemplates(Principal principal) {
-        if (principal == null || !isAdmin(principal)) return ResponseEntity.status(403).build();
+        if (principal == null || !isAdmin(principal))
+            return ResponseEntity.status(403).build();
         List<Equipment> templates = equipmentRepository.findAll().stream()
                 .filter(Equipment::isShopTemplate)
                 .collect(Collectors.toList());
@@ -132,9 +252,11 @@ public class ShopController {
     }
 
     @PostMapping("/templates")
-    public ResponseEntity<?> createTemplate(@RequestBody generation.grimoire.controller.EquipmentController.EquipmentDto dto, Principal principal) {
-        if (principal == null || !isAdmin(principal)) return ResponseEntity.status(403).build();
-        
+    public ResponseEntity<?> createTemplate(
+            @RequestBody generation.grimoire.controller.EquipmentController.EquipmentDto dto, Principal principal) {
+        if (principal == null || !isAdmin(principal))
+            return ResponseEntity.status(403).build();
+
         Equipment eq = new Equipment();
         updateFromDto(eq, dto);
         eq.setShopTemplate(true);
@@ -143,11 +265,14 @@ public class ShopController {
     }
 
     @PutMapping("/templates/{id}")
-    public ResponseEntity<?> updateTemplate(@PathVariable Long id, @RequestBody generation.grimoire.controller.EquipmentController.EquipmentDto dto, Principal principal) {
-        if (principal == null || !isAdmin(principal)) return ResponseEntity.status(403).build();
-        
+    public ResponseEntity<?> updateTemplate(@PathVariable Long id,
+            @RequestBody generation.grimoire.controller.EquipmentController.EquipmentDto dto, Principal principal) {
+        if (principal == null || !isAdmin(principal))
+            return ResponseEntity.status(403).build();
+
         return equipmentRepository.findById(id).map(eq -> {
-            if (!eq.isShopTemplate()) return ResponseEntity.badRequest().body(Map.of("message", "Not a template"));
+            if (!eq.isShopTemplate())
+                return ResponseEntity.badRequest().body(Map.of("message", "Not a template"));
             updateFromDto(eq, dto);
             equipmentRepository.save(eq);
             return ResponseEntity.ok(toShopDto(eq));
@@ -156,8 +281,9 @@ public class ShopController {
 
     @DeleteMapping("/templates/{id}")
     public ResponseEntity<?> deleteTemplate(@PathVariable Long id, Principal principal) {
-        if (principal == null || !isAdmin(principal)) return ResponseEntity.status(403).build();
-        
+        if (principal == null || !isAdmin(principal))
+            return ResponseEntity.status(403).build();
+
         return equipmentRepository.findById(id).map(eq -> {
             if (eq.isShopTemplate()) {
                 equipmentRepository.delete(eq);
@@ -177,17 +303,26 @@ public class ShopController {
     private double calculateShopPrice(Equipment eq) {
         double weight = eq.calculateWeight();
         int multiplier = 1;
-        if (eq.getRarity() == EquipmentRarity.COMMUN) multiplier = 1;
-        else if (eq.getRarity() == EquipmentRarity.RARE) multiplier = 2;
-        else if (eq.getRarity() == EquipmentRarity.LEGENDAIRE) multiplier = 3;
-        else if (eq.getRarity() == EquipmentRarity.EPIQUE) multiplier = 5;
-        else if (eq.getRarity() == EquipmentRarity.RELIQUE) multiplier = 6;
+        if (eq.getRarity() == EquipmentRarity.COMMUN)
+            multiplier = 1;
+        else if (eq.getRarity() == EquipmentRarity.RARE)
+            multiplier = 2;
+        else if (eq.getRarity() == EquipmentRarity.LEGENDAIRE)
+            multiplier = 3;
+        else if (eq.getRarity() == EquipmentRarity.EPIQUE)
+            multiplier = 5;
+        else if (eq.getRarity() == EquipmentRarity.RELIQUE)
+            multiplier = 6;
 
         double slotMultiplier = 1.0;
-        if (eq.getSlot() == EquipmentSlot.PLASTRON) slotMultiplier = 1.1;
-        else if (eq.getSlot() == EquipmentSlot.ANNEAU_GAUCHE || eq.getSlot() == EquipmentSlot.ANNEAU_DROIT) slotMultiplier = 1.5;
-        else if (eq.getSlot() == EquipmentSlot.BOTTES) slotMultiplier = 0.9;
-        else if (eq.getSlot() == EquipmentSlot.CAPE) slotMultiplier = 1.2;
+        if (eq.getSlot() == EquipmentSlot.PLASTRON)
+            slotMultiplier = 1.1;
+        else if (eq.getSlot() == EquipmentSlot.ANNEAU_GAUCHE || eq.getSlot() == EquipmentSlot.ANNEAU_DROIT)
+            slotMultiplier = 1.5;
+        else if (eq.getSlot() == EquipmentSlot.BOTTES)
+            slotMultiplier = 0.9;
+        else if (eq.getSlot() == EquipmentSlot.CAPE)
+            slotMultiplier = 1.2;
 
         return Math.ceil(weight * 2 * multiplier * slotMultiplier);
     }
@@ -228,7 +363,7 @@ public class ShopController {
         eq.setBonusCrit(dto.getBonusCrit());
         eq.setRegenHealthPerTurn(dto.getRegenHealthPerTurn());
         eq.setRegenManaPerTurn(dto.getRegenManaPerTurn());
-        
+
         if (dto.getRarity() != null) {
             eq.setRarity(dto.getRarity());
         } else {

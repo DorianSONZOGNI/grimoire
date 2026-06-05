@@ -5,17 +5,175 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Grimoire - Boutique</title>
+    <link rel="icon" type="image/png" href="/favicon.svg">
     <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
     <link rel="stylesheet" href="/styles/variables.css">
     <link rel="stylesheet" href="/styles/components.css">
     <link rel="stylesheet" href="/styles/vault.css?v=3">
     <style>
-        .vault-grid {
-            display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-            gap: 1.5rem;
+        .shop-showcase {
+            display: flex !important;
+            flex-direction: row !important;
+            justify-content: flex-start !important;
+            /* Ensures scroll works left-to-right */
+            align-items: stretch !important;
+            gap: 2rem;
             margin-top: 1rem;
+            width: 100%;
+            overflow-x: auto;
+            padding-top: 1.5rem;
+            /* Prevents absolutely positioned top labels from being cropped */
+            padding-bottom: 1.5rem;
+            padding-left: 0.5rem;
+            padding-right: 0.5rem;
+            flex-wrap: nowrap !important;
+            -webkit-overflow-scrolling: touch;
+        }
+
+        .shop-rarity-group {
+            display: flex;
+            flex-direction: row;
+            gap: 1rem;
+            position: relative;
+            padding: 1.5rem;
+            border-radius: 16px;
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            flex-shrink: 0;
+            /* Prevents group from shrinking or wrapping its children */
+        }
+
+        .shop-rarity-group.group-COMMUN {
+            border-top: 3px solid #94a3b8;
+        }
+
+        .shop-rarity-group.group-RARE {
+            border-top: 3px solid #3b82f6;
+        }
+
+        .shop-rarity-group.group-LEGENDAIRE {
+            border-top: 3px solid #f59e0b;
+        }
+
+        .shop-rarity-title {
+            position: absolute;
+            top: -12px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #0f172a;
+            padding: 0 1rem;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.85rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.1em;
+            border-radius: 20px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            white-space: nowrap;
+        }
+
+        .group-COMMUN .shop-rarity-title {
+            color: #94a3b8;
+            border-color: rgba(148, 163, 184, 0.3);
+        }
+
+        .group-RARE .shop-rarity-title {
+            color: #3b82f6;
+            border-color: rgba(59, 130, 246, 0.3);
+        }
+
+        .group-LEGENDAIRE .shop-rarity-title {
+            color: #f59e0b;
+            border-color: rgba(245, 158, 11, 0.3);
+        }
+
+        .shop-stand {
+            flex: 0 0 200px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 1.2rem;
+            background: rgba(255, 255, 255, 0.03);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            transition: transform 0.2s, box-shadow 0.2s;
+            text-align: center;
+            position: relative;
+        }
+
+        .shop-stand:hover {
+            transform: translateY(-5px);
+            background: rgba(255, 255, 255, 0.05);
+            box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .shop-stand-icon {
+            font-size: 2.5rem;
+            margin-bottom: 0.5rem;
+        }
+
+        .shop-stand-name {
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 1.1rem;
+            color: #f8fafc;
+            margin-bottom: 0.5rem;
+            line-height: 1.2;
+            height: 2.6rem;
+            /* 2 lines max */
+            display: -webkit-box;
+            -webkit-line-clamp: 2;
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+        }
+
+        .shop-stand-stats {
+            display: flex;
+            flex-direction: column;
+            gap: 0.3rem;
+            width: 100%;
+            margin-bottom: 1rem;
+            flex-grow: 1;
+        }
+
+        .shop-stand-stat {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: #cbd5e1;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+        }
+
+        .shop-stand-stat.malus {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        .shop-stand-price {
+            width: 100%;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            gap: 0.3rem;
+            font-weight: bold;
+            color: #10b981;
+            font-size: 1.1rem;
+            padding: 0.6rem;
+            border-radius: 8px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-top: auto;
+        }
+
+        .shop-stand-price:hover {
+            background: #10b981;
+            color: #fff;
         }
     </style>
 </head>
@@ -58,20 +216,36 @@
                 style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 1rem;">
                 <div style="display: flex; align-items: center; gap: 1rem;">
                     <div
-                        style="width: 48px; height: 48px; border-radius: 12px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.2); display: flex; align-items: center; justify-content: center; color: #10b981;">
+                        style="width: 48px; height: 48px; border-radius: 12px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); display: flex; align-items: center; justify-content: center; color: #10b981;">
                         <span class="material-symbols-outlined" style="font-size: 1.8rem;">storefront</span>
                     </div>
                     <div>
-                        <h2 style="margin: 0; font-family: 'Outfit', sans-serif; font-size: 1.4rem; color: #fff;">
-                            Boutique du Jour</h2>
-                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;">Ces objets
-                            changent tous les jours à minuit.</div>
+                        <h2 style="margin: 0; font-family: 'Outfit', sans-serif; font-size: 1.5rem;">Boutique du Jour</h2>
+                        <div style="color: #94a3b8; font-size: 0.9rem;">Ces objets changent tous les jours à minuit.</div>
                     </div>
                 </div>
             </div>
 
-            <div id="shopGrid" class="vault-grid">
+            <div id="shopGrid" class="shop-showcase">
                 <div style="color: #94a3b8; font-style: italic;">Chargement de la boutique...</div>
+            </div>
+            
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; margin-top: 3rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 1rem;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div
+                        style="width: 48px; height: 48px; border-radius: 12px; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); display: flex; align-items: center; justify-content: center; color: #f59e0b;">
+                        <span class="material-symbols-outlined" style="font-size: 1.8rem;">local_offer</span>
+                    </div>
+                    <div>
+                        <h2 style="margin: 0; font-family: 'Outfit', sans-serif; font-size: 1.5rem;">Offres Spéciales & Fournitures</h2>
+                        <div style="color: #94a3b8; font-size: 0.9rem;">Promotions et objets utiles pour les expéditions.</div>
+                    </div>
+                </div>
+            </div>
+
+            <div id="specialsGrid" class="shop-showcase">
+                <div style="color: #94a3b8; font-style: italic;">Chargement des offres...</div>
             </div>
         </div>
     </div>
@@ -108,7 +282,7 @@
         </div>
     </div>
 
-    <script src="/js/shop.js?v=1"></script>
+    <script src="/js/shop.js?v=8"></script>
     <script type="module" src="/js/auth.js?v=10"></script>
 </body>
 
