@@ -360,8 +360,8 @@ public class Personnage {
         if (this.healthCurrent <= 0) {
             int cheatDeathValue = getSpecialEffectValue(generation.grimoire.enumeration.EquipmentEffectType.CHEAT_DEATH);
             if (cheatDeathValue > 0) {
-                this.healthCurrent = cheatDeathValue;
-                System.out.println("👼 Ange Gardien activé ! Le personnage survit avec " + cheatDeathValue + " PV.");
+                this.healthCurrent = cheatDeathValue * 5;
+                System.out.println("👼 Ange Gardien activé ! Le personnage survit avec " + (cheatDeathValue * 5) + " PV.");
                 // Consomme l'effet pour la session/combat
                 if (this.equipments != null) {
                     for (generation.grimoire.entity.Equipment eq : this.equipments) {

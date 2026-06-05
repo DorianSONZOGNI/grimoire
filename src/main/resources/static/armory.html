@@ -26,7 +26,7 @@
             Armurerie
         </div>
         <div style="display: flex; gap: 0.6rem; align-items: center;">
-            <div style="font-size: 0.9rem; color: var(--text-muted);">S'équiper pour ne pas finir troué
+            <div style="font-size: 0.9rem; color: var(--text-muted);">S'équiper pour ne pas finir troué !
             </div>
             <a href="/" class="armory-nav-link">
                 <span class="material-symbols-outlined" style="font-size: 1.1rem;">auto_awesome</span>
@@ -391,7 +391,7 @@
                                     Bouclier de Mana (%)</div>
                                 <div class="custom-option effect-CHEAT_DEATH" data-value="CHEAT_DEATH"><span
                                         class="material-symbols-outlined cs-icon"
-                                        style="color: #fce7f3;">emoji_nature</span> Ange Gardien (Survit avec X PV)
+                                        style="color: #fce7f3;">emoji_nature</span> Ange Gardien (Survit avec 5*X PV)
                                 </div>
                                 <div class="custom-option effect-CRIT_DAMAGE" data-value="CRIT_DAMAGE"><span
                                         class="material-symbols-outlined cs-icon"
@@ -477,7 +477,26 @@
                     </div>
                 </div>
 
-                <button type="button" class="eq-create-btn" onclick="submitEquipment()">
+                <div class="eq-weight-container"
+                    style="margin-bottom: 1rem; padding: 0.8rem; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+                        <span style="font-size: 0.85rem; color: #cbd5e1; font-weight: 500;"><span
+                                class="material-symbols-outlined"
+                                style="font-size: 1rem; vertical-align: middle; margin-right: 4px;">scale</span>Poids de
+                            l'équipement</span>
+                        <span id="eqWeightText" style="font-size: 0.85rem; font-weight: bold; color: #10b981;">0 /
+                            0</span>
+                    </div>
+                    <div class="gauge-track"
+                        style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;">
+                        <div id="eqWeightFill" class="gauge-fill hp"
+                            style="height: 100%; width: 0%; background: #10b981; transition: width 0.3s ease, background 0.3s ease;">
+                        </div>
+                    </div>
+                </div>
+
+                <button type="button" id="submitEquipmentBtn" class="eq-create-btn" onclick="submitEquipment()">
                     <span class="material-symbols-outlined" style="font-size: 1rem;">add</span>
                     Forger & Équiper
                 </button>
