@@ -30,6 +30,15 @@ const STAT_DEFS = [
     { key: 'regenManaPerTurn', label: 'Mana/t', icon: 'cyclone', color: '#38bdf8' },
 ];
 
+const WEIGHT_LIMITS = {
+    CASQUE: { COMMUN: 5, RARE: 9, LEGENDAIRE: 14, EPIQUE: 20, RELIQUE: 24 },
+    PLASTRON: { COMMUN: 8, RARE: 13, LEGENDAIRE: 20, EPIQUE: 26, RELIQUE: 30 },
+    ANNEAU_GAUCHE: { COMMUN: 2, RARE: 3, LEGENDAIRE: 5, EPIQUE: 7, RELIQUE: 8 },
+    ANNEAU_DROIT: { COMMUN: 2, RARE: 3, LEGENDAIRE: 5, EPIQUE: 7, RELIQUE: 8 },
+    BOTTES: { COMMUN: 4, RARE: 7, LEGENDAIRE: 11, EPIQUE: 16, RELIQUE: 20 },
+    CAPE: { COMMUN: 5, RARE: 9, LEGENDAIRE: 14, EPIQUE: 20, RELIQUE: 24 }
+};
+
 function calculateWeight(eq) {
     const hp = eq.bonusHealthMax || 0;
     const mana = eq.bonusManaMax || 0;
@@ -107,9 +116,28 @@ async function loadEquipments() {
     }
 }
 
-async function deleteEquipment(id) {
-    if (!confirm('Voulez-vous vraiment détruire cet équipement de manière permanente ?')) return;
+let equipmentToDelete = null;
+
+function deleteEquipment(id) {
+    equipmentToDelete = id;
+    const eq = allEquipments.find(e => e.id === id);
+    if (eq) {
+        document.getElementById('deleteTargetName').textContent = eq.name;
+    }
+    document.getElementById('deleteConfirmModal').classList.add('show');
+}
+
+function closeDeleteModal() {
+    document.getElementById('deleteConfirmModal').classList.remove('show');
+    equipmentToDelete = null;
+}
+
+document.getElementById('deleteConfirmBtn').addEventListener('click', async () => {
+    if (!equipmentToDelete) return;
     
+    const id = equipmentToDelete;
+    closeDeleteModal();
+
     try {
         const res = await fetch(`/api/equipment/${id}`, { method: 'DELETE' });
         if (res.ok) {
@@ -121,7 +149,7 @@ async function deleteEquipment(id) {
     } catch (e) {
         showNotif('Erreur réseau.', true);
     }
-}
+});
 
 // ===== Rendu =====
 function filterVault() {
@@ -239,6 +267,22 @@ function renderGrid(equipments) {
 
         const weightStr = eq._weight % 1 === 0 ? eq._weight : eq._weight.toFixed(1);
 
+        // Optimization Color Logic
+        let weightColor = '#94a3b8';
+        const limitsForSlot = WEIGHT_LIMITS[eq.slot] || {};
+        const maxWeight = limitsForSlot[eq.rarity || 'COMMUN'] || 5;
+
+        if (eq._weight <= 0) {
+            weightColor = '#ef4444'; // Red
+        } else if (eq._weight >= maxWeight) {
+            weightColor = '#10b981'; // Green
+        } else {
+            const percentage = eq._weight / maxWeight;
+            const step = Math.floor(percentage * 10); // 0 to 9
+            const hue = step * 12; // 0 to 108
+            weightColor = `hsl(${hue}, 80%, 55%)`;
+        }
+
         return `
             <div class="vault-card ${rarityClass}">
                 <div class="vault-card-header">
@@ -262,9 +306,9 @@ function renderGrid(equipments) {
                 ${effectHtml}
                 
                 <div class="vault-card-footer">
-                    <div class="vault-card-weight" title="Poids total calculé">
-                        <span class="material-symbols-outlined" style="font-size: 1rem;">scale</span>
-                        ${weightStr} pts
+                    <div class="vault-card-weight" title="Poids total / Poids Max (${maxWeight})">
+                        <span class="material-symbols-outlined" style="font-size: 1.1rem; color: ${weightColor};">scale</span>
+                        <span style="color: ${weightColor}; font-weight: 600;">${weightStr}</span> / ${maxWeight} pts
                     </div>
                     ${statusHtml}
                 </div>

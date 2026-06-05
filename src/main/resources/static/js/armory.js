@@ -179,8 +179,27 @@ async function submitPersonnage() {
     }
 }
 
-async function deletePersonnage(id) {
-    if (!confirm('Supprimer ce personnage ?')) return;
+let persoToDelete = null;
+
+function deletePersonnage(id) {
+    persoToDelete = id;
+    const p = personnages.find(p => p.id === id);
+    if (p) {
+        document.getElementById('deletePersoTargetName').textContent = p.name;
+    }
+    document.getElementById('deletePersonnageModal').classList.add('show');
+}
+
+window.closeDeletePersoModal = function() {
+    document.getElementById('deletePersonnageModal').classList.remove('show');
+    persoToDelete = null;
+};
+
+document.getElementById('deletePersoConfirmBtn').addEventListener('click', async () => {
+    if (!persoToDelete) return;
+    const id = persoToDelete;
+    closeDeletePersoModal();
+    
     try {
         await fetch(`/api/personnages/${id}`, { method: 'DELETE' });
         showNotif('Personnage supprimé.');
@@ -189,7 +208,7 @@ async function deletePersonnage(id) {
     } catch (e) {
         showNotif('Erreur lors de la suppression.', true);
     }
-}
+});
 
 // ===== Equipment API =====
 
@@ -670,11 +689,13 @@ function renderEquipModal() {
 // ===== Form Helpers =====
 
 function editPersonnage(id) {
-    const p = personnages.find(c => c.id === id);
+    editingId = id;
+    const p = personnages.find(x => x.id === id);
     if (!p) return;
 
-    editingId = p.id;
-    document.getElementById('charName').value = p.name || '';
+    document.getElementById('charFormPanel').classList.add('editing-mode');
+
+    document.getElementById('charName').value = p.name;
     document.getElementById('charHp').value = p.healthMax || 100;
     document.getElementById('charMana').value = p.manaMax || 100;
     document.getElementById('charPower').value = p.power || 0;
@@ -701,6 +722,7 @@ function editPersonnage(id) {
 
 function resetForm() {
     editingId = null;
+    document.getElementById('charFormPanel').classList.remove('editing-mode');
     document.getElementById('charName').value = '';
     document.getElementById('charHp').value = 100;
     document.getElementById('charMana').value = 100;

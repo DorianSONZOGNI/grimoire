@@ -446,6 +446,7 @@ export function getSpellCardHtml(sp) {
 
 export function cancelEditSpell() {
     state.editingSpellId = null;
+    document.getElementById('spellForgePanel').classList.remove('editing-mode');
     document.getElementById('submitSpellBtn').innerText = '✦ Forger le Sort';
     document.getElementById('nom').value = '';
     document.getElementById('description').value = '';
@@ -520,6 +521,7 @@ export function editSpell(id) {
     if (!sp) return;
 
     state.editingSpellId = sp.id;
+    document.getElementById('spellForgePanel').classList.add('editing-mode');
     document.getElementById('nom').value = sp.nom || '';
     document.getElementById('niveau').value = sp.niveau || 1;
     document.getElementById('niveau').dispatchEvent(new Event('change'));
