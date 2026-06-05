@@ -31,9 +31,10 @@
         <div style="display: flex; gap: 1rem; align-items: center;">
             <div style="font-size: 0.9rem; color: var(--text-muted);">Ne pas prononcer à voix haute le nom des sorts...
             </div>
-            <a href="/armory.html" style="display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.85rem; color: var(--text-muted); text-decoration: none; padding: 0.4rem 0.8rem; border: 1px solid var(--glass-border); border-radius: 8px; background: rgba(255,255,255,0.03); transition: all 0.2s ease;"
-               onmouseover="this.style.color='#f59e0b'; this.style.borderColor='#f59e0b';"
-               onmouseout="this.style.color='var(--text-muted)'; this.style.borderColor='var(--glass-border)';">
+            <a href="/armory.html"
+                style="display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.85rem; color: var(--text-muted); text-decoration: none; padding: 0.4rem 0.8rem; border: 1px solid var(--glass-border); border-radius: 8px; background: rgba(255,255,255,0.03); transition: all 0.2s ease;"
+                onmouseover="this.style.color='#f59e0b'; this.style.borderColor='#f59e0b';"
+                onmouseout="this.style.color='var(--text-muted)'; this.style.borderColor='var(--glass-border)';">
                 <span class="material-symbols-outlined" style="font-size: 1.1rem;">shield</span>
                 Armurerie
             </a>
@@ -60,7 +61,7 @@
                         <option value="4">Niveau 4</option>
                         <option value="5">Niveau 5</option>
                     </select>
-                    <div class="helper-text" id="lvl-helper">Niveaux : 1-3 (Spiritualité) / 1-5 (Voie)</div>
+                    <div class="helper-text" id="lvl-helper">Voie : 1-5 max / Spiritualité : 1-3 max</div>
                     <div id="rankTitleDisplay"
                         style="margin-top: 0.3rem; font-weight: 600; color: #10b981; font-size: 0.85rem; display: none;">
                     </div>
@@ -618,7 +619,8 @@
                                     <div class="config-field">
                                         <label style="display: flex; align-items: center; gap: 0.3rem;"><span
                                                 class="material-symbols-outlined"
-                                                style="font-size: 1rem; color: #f43f5e;">fitness_center</span>Force Phy.</label>
+                                                style="font-size: 1rem; color: #f43f5e;">fitness_center</span>Force
+                                            Phy.</label>
                                         <input type="number" id="heroConfigStrength" min="0" value="10">
                                     </div>
                                     <div class="config-field">
@@ -667,8 +669,7 @@
 
                 <!-- Colonne de Droite : Sélection et Lancement de Sorts -->
                 <div class="sandbox-column">
-                    <div class="combatant-card"
-                        style="flex: 1; display: flex; flex-direction: column; gap: 0.8rem;">
+                    <div class="combatant-card" style="flex: 1; display: flex; flex-direction: column; gap: 0.8rem;">
                         <div class="combatant-name"
                             style="border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.4rem;">
                             <span style="display: inline-flex; align-items: center; gap: 0.3rem; color: #e2e8f0;"><span
@@ -678,13 +679,16 @@
                         </div>
 
                         <!-- Sélecteur de Sorts (Recherche Intégrée) -->
-                        <div style="position: relative; width: 100%; margin-bottom: 0.5rem;" id="sandboxSpellSearchContainer">
-                            <span class="material-symbols-outlined" style="position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 1.2rem; pointer-events: none;">search</span>
-                            <input type="text" id="sandboxSpellSearch" placeholder="Rechercher un sort à essayer..." 
+                        <div style="position: relative; width: 100%; margin-bottom: 0.5rem;"
+                            id="sandboxSpellSearchContainer">
+                            <span class="material-symbols-outlined"
+                                style="position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%); color: var(--text-muted); font-size: 1.2rem; pointer-events: none;">search</span>
+                            <input type="text" id="sandboxSpellSearch" placeholder="Rechercher un sort à essayer..."
                                 style="width: 100%; background: #111827; border: 1px solid rgba(255, 255, 255, 0.15); color: #fff; font-size: 0.85rem; border-radius: 8px; padding: 0.6rem 0.6rem 0.6rem 2.4rem; outline: none; transition: all 0.2s; box-shadow: inset 0 2px 4px rgba(0,0,0,0.2);"
                                 onfocus="this.style.borderColor='var(--primary)'; this.style.boxShadow='0 0 0 2px rgba(16, 185, 129, 0.2)';"
                                 onblur="this.style.borderColor='rgba(255, 255, 255, 0.15)'; this.style.boxShadow='inset 0 2px 4px rgba(0,0,0,0.2)';">
-                            <div id="sandboxSpellDropdown" style="display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #1e293b; border: 1px solid var(--glass-border); border-radius: 8px; z-index: 999999; max-height: 250px; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
+                            <div id="sandboxSpellDropdown"
+                                style="display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #1e293b; border: 1px solid var(--glass-border); border-radius: 8px; z-index: 999999; max-height: 250px; overflow-y: auto; box-shadow: 0 10px 25px rgba(0,0,0,0.5);">
                                 <!-- Resultats de recherche injectés en JS -->
                             </div>
                         </div>
@@ -695,17 +699,23 @@
                 </div>
 
                 <!-- Colonne de Droite : Contrôles et Console -->
-                <div class="sandbox-column" style="display: flex; flex-direction: column; gap: 1rem; overflow-y: hidden;">
-                    <div class="combatant-card" style="display: flex; flex-direction: column; gap: 1rem; flex: 1; overflow-y: hidden;">
-                        <div class="combatant-name" style="border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.4rem;">
+                <div class="sandbox-column"
+                    style="display: flex; flex-direction: column; gap: 1rem; overflow-y: hidden;">
+                    <div class="combatant-card"
+                        style="display: flex; flex-direction: column; gap: 1rem; flex: 1; overflow-y: hidden;">
+                        <div class="combatant-name"
+                            style="border-bottom: 1px solid rgba(255,255,255,0.08); padding-bottom: 0.4rem;">
                             <span style="display: inline-flex; align-items: center; gap: 0.3rem; color: #e2e8f0;">
-                                <span class="material-symbols-outlined" style="font-size: 1.25rem; color: var(--accent); text-shadow: 0 0 8px rgba(139,92,246,0.5);">settings_applications</span>
+                                <span class="material-symbols-outlined"
+                                    style="font-size: 1.25rem; color: var(--accent); text-shadow: 0 0 8px rgba(139,92,246,0.5);">settings_applications</span>
                                 Commandes & Logs
                             </span>
                         </div>
-                        
-                        <div class="sandbox-controls" style="border-top: none; padding-top: 0; flex-direction: column; align-items: stretch; gap: 0.8rem;">
-                            <div class="sandbox-turn-indicator" style="justify-content: center; background: rgba(255,255,255,0.05); padding: 0.5rem; border-radius: 8px;">
+
+                        <div class="sandbox-controls"
+                            style="border-top: none; padding-top: 0; flex-direction: column; align-items: stretch; gap: 0.8rem;">
+                            <div class="sandbox-turn-indicator"
+                                style="justify-content: center; background: rgba(255,255,255,0.05); padding: 0.5rem; border-radius: 8px;">
                                 <span class="material-symbols-outlined" style="color: var(--accent);">schedule</span>
                                 <span>Tour <span id="sandboxTurnText" style="color: var(--accent);">1</span></span>
                             </div>
@@ -713,23 +723,28 @@
                                 <button type="button" class="btn"
                                     style="background: rgba(139, 92, 246, 0.2); color: #c084fc; border: 1px solid rgba(139, 92, 246, 0.4); display: flex; align-items: center; justify-content: center; gap: 0.3rem; padding: 0.6rem 1rem; border-radius: 8px;"
                                     onclick="passSandboxTurn()">
-                                    <span class="material-symbols-outlined" style="font-size: 1.15rem;">hourglass_top</span>
+                                    <span class="material-symbols-outlined"
+                                        style="font-size: 1.15rem;">hourglass_top</span>
                                     <span>Finir le Tour</span>
                                 </button>
                                 <button type="button" class="btn"
                                     style="background: rgba(239, 68, 68, 0.15); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); display: flex; align-items: center; justify-content: center; gap: 0.3rem; padding: 0.6rem 1rem; border-radius: 8px;"
                                     onclick="resetSandbox()">
-                                    <span class="material-symbols-outlined" style="font-size: 1.15rem;">restart_alt</span>
+                                    <span class="material-symbols-outlined"
+                                        style="font-size: 1.15rem;">restart_alt</span>
                                     <span>Réinitialiser</span>
                                 </button>
                             </div>
                         </div>
 
-                        <div style="font-size: 0.8rem; color: var(--text-muted); font-weight: 500; display: flex; align-items: center; gap: 0.3rem; margin-top: 0.5rem;">
-                            <span class="material-symbols-outlined" style="font-size: 0.95rem; color: var(--primary);">terminal</span>
+                        <div
+                            style="font-size: 0.8rem; color: var(--text-muted); font-weight: 500; display: flex; align-items: center; gap: 0.3rem; margin-top: 0.5rem;">
+                            <span class="material-symbols-outlined"
+                                style="font-size: 0.95rem; color: var(--primary);">terminal</span>
                             <span>Console d'événements :</span>
                         </div>
-                        <div class="sandbox-console" id="simulationLogsContainer" style="flex: 1; max-height: none; height: 0;"></div>
+                        <div class="sandbox-console" id="simulationLogsContainer"
+                            style="flex: 1; max-height: none; height: 0;"></div>
                     </div>
                 </div>
             </div>

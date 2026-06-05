@@ -78,7 +78,15 @@
                         <span class="material-symbols-outlined" style="color: #a855f7;">star</span>
                         Niveau Voie
                     </label>
-                    <input type="number" id="charVoieLevel" min="1" max="5" value="1">
+                    <div class="custom-select-wrapper" id="charVoieLevelWrapper" tabindex="0">
+                        <div class="custom-select-trigger" id="charVoieLevelTrigger">
+                            <span class="cs-label" id="charVoieLevelLabel"><span class="material-symbols-outlined cs-icon" style="color: #cbd5e1;">looks_one</span> Niveau 1</span>
+                            <span class="material-symbols-outlined cs-arrow" style="font-size: 1.1rem;">expand_more</span>
+                        </div>
+                        <div class="custom-select-options" id="charVoieLevelOptions">
+                        </div>
+                        <input type="hidden" id="charVoieLevel" value="1">
+                    </div>
                 </div>
             </div>
 
@@ -104,7 +112,15 @@
                         <span class="material-symbols-outlined" style="color: #fb923c;">star</span>
                         Niveau Spiritualité
                     </label>
-                    <input type="number" id="charSpiritLevel" min="1" max="3" value="1">
+                    <div class="custom-select-wrapper" id="charSpiritLevelWrapper" tabindex="0">
+                        <div class="custom-select-trigger" id="charSpiritLevelTrigger">
+                            <span class="cs-label" id="charSpiritLevelLabel"><span class="material-symbols-outlined cs-icon" style="color: #cbd5e1;">looks_one</span> Niveau 1</span>
+                            <span class="material-symbols-outlined cs-arrow" style="font-size: 1.1rem;">expand_more</span>
+                        </div>
+                        <div class="custom-select-options" id="charSpiritLevelOptions">
+                        </div>
+                        <input type="hidden" id="charSpiritLevel" value="1">
+                    </div>
                 </div>
             </div>
 
@@ -375,7 +391,7 @@
                         <input type="number" id="eqRegenHp" value="0" placeholder="Positif ou Négatif">
                     </div>
                     <div class="eq-create-field">
-                        <label><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: bottom; color: #38bdf8;">water_drop</span> Régen Mana / tour</label>
+                        <label><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: bottom; color: #38bdf8;">cyclone</span> Régen Mana / tour</label>
                         <input type="number" id="eqRegenMana" value="0" placeholder="Positif ou Négatif">
                     </div>
                 </div>

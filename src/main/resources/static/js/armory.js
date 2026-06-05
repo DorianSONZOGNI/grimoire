@@ -26,7 +26,7 @@ const STAT_DEFS = [
     { key: 'bonusSpeed', label: 'Vit', icon: 'bolt', color: '#f59e0b' },
     { key: 'bonusCrit', label: 'Crit', icon: 'gps_fixed', color: '#ef4444' },
     { key: 'regenHealthPerTurn', label: 'PV/t', icon: 'healing', color: '#10b981' },
-    { key: 'regenManaPerTurn', label: 'Mana/t', icon: 'water_drop', color: '#38bdf8' },
+    { key: 'regenManaPerTurn', label: 'Mana/t', icon: 'cyclone', color: '#38bdf8' },
 ];
 
 // ===== API =====
@@ -253,6 +253,17 @@ function getSpiritInfo(nom) {
     return { icon: 'psychology', color: '#a78bfa' };
 }
 
+function getLevelInfo(lvl) {
+    switch(parseInt(lvl)) {
+        case 1: return { icon: 'looks_one', color: '#cbd5e1' };
+        case 2: return { icon: 'looks_two', color: '#10b981' };
+        case 3: return { icon: 'looks_3', color: '#3b82f6' };
+        case 4: return { icon: 'looks_4', color: '#a855f7' };
+        case 5: return { icon: 'looks_5', color: '#f59e0b' };
+        default: return { icon: 'stairs', color: '#10b981' };
+    }
+}
+
 function populateSelects() {
     const charVoieOptions = document.getElementById('charVoieOptions');
     const charSpiritOptions = document.getElementById('charSpiritOptions');
@@ -289,6 +300,25 @@ function populateSelects() {
             const info = getSpiritInfo(s.nom);
             searchSpiritOptions.innerHTML += `<div class="custom-option" data-value="${s.id}"><span class="material-symbols-outlined cs-icon" style="color: ${info.color};">${info.icon}</span> ${s.nom}</div>`;
         });
+    }
+
+    // Populate Level Selects
+    const charVoieLevelOptions = document.getElementById('charVoieLevelOptions');
+    if (charVoieLevelOptions) {
+        charVoieLevelOptions.innerHTML = '';
+        for(let i = 1; i <= 5; i++) {
+            const info = getLevelInfo(i);
+            charVoieLevelOptions.innerHTML += `<div class="custom-option" data-value="${i}"><span class="material-symbols-outlined cs-icon" style="color: ${info.color};">${info.icon}</span> Niveau ${i}</div>`;
+        }
+    }
+
+    const charSpiritLevelOptions = document.getElementById('charSpiritLevelOptions');
+    if (charSpiritLevelOptions) {
+        charSpiritLevelOptions.innerHTML = '';
+        for(let i = 1; i <= 3; i++) {
+            const info = getLevelInfo(i);
+            charSpiritLevelOptions.innerHTML += `<div class="custom-option" data-value="${i}"><span class="material-symbols-outlined cs-icon" style="color: ${info.color};">${info.icon}</span> Niveau ${i}</div>`;
+        }
     }
 }
 
