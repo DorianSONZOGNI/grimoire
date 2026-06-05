@@ -259,8 +259,8 @@
     border-top: 2px solid #94a3b8;
 }
 .vault-card.rarity-RARE {
-    border-top: 2px solid #3b82f6;
-    background: linear-gradient(180deg, rgba(59, 130, 246, 0.05) 0%, rgba(30, 41, 59, 0.4) 30%);
+    border-top: 2px solid #10b981;
+    background: linear-gradient(180deg, rgba(16, 185, 129, 0.05) 0%, rgba(30, 41, 59, 0.4) 30%);
 }
 .vault-card.rarity-LEGENDAIRE {
     border-top: 2px solid #f59e0b;

@@ -79,6 +79,13 @@
     flex-direction: column;
     gap: 1.2rem;
     position: relative;
+    transition: all 0.3s ease;
+}
+
+.armory-form-panel.editing-mode {
+    background: rgba(30, 41, 59, 0.95);
+    border: 1px solid rgba(245, 158, 11, 0.5);
+    box-shadow: 0 0 30px rgba(245, 158, 11, 0.15), inset 0 0 20px rgba(245, 158, 11, 0.05);
 }
 
 .armory-form-panel::before {
