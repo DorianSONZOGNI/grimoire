@@ -181,6 +181,7 @@ document.getElementById('deleteConfirmBtn').addEventListener('click', async () =
 // ===== Rendu =====
 function filterVault() {
     const searchName = document.getElementById('searchItemName').value.toLowerCase();
+    const searchOwner = document.getElementById('searchOwnerName')?.value.toLowerCase() || '';
     const filterSlot = document.getElementById('filterSlot').value;
     const filterRarity = document.getElementById('filterRarity').value;
     const filterStatus = document.getElementById('filterStatus').value;
@@ -188,6 +189,7 @@ function filterVault() {
 
     let filtered = allEquipments.filter(eq => {
         const matchName = !searchName || eq.name.toLowerCase().includes(searchName);
+        const matchOwner = !searchOwner || (eq.ownerUsername && eq.ownerUsername.toLowerCase().includes(searchOwner));
         
         let matchSlot = true;
         if (filterSlot) {
@@ -204,7 +206,7 @@ function filterVault() {
         if (filterStatus === 'EQUIPPED') matchStatus = eq.personnage != null;
         if (filterStatus === 'AVAILABLE') matchStatus = eq.personnage == null;
 
-        return matchName && matchSlot && matchRarity && matchStatus;
+        return matchName && matchOwner && matchSlot && matchRarity && matchStatus;
     });
 
     // Sorting
@@ -382,6 +384,12 @@ window.addEventListener('authLoaded', () => {
     if (btnCreate) {
         btnCreate.style.display = window.isAdmin ? 'flex' : 'none';
     }
+    
+    const searchOwnerContainer = document.getElementById('searchOwnerContainer');
+    if (searchOwnerContainer) {
+        searchOwnerContainer.style.display = window.isAdmin ? 'flex' : 'none';
+    }
+
     // Re-render the grid in case equipments loaded before auth
     if (allEquipments && allEquipments.length > 0) {
         filterVault();
