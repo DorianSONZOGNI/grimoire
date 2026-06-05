@@ -16,7 +16,7 @@
         rel="stylesheet" />
     <link rel="stylesheet" href="/styles/variables.css">
     <link rel="stylesheet" href="/styles/components.css">
-    <link rel="stylesheet" href="/styles/vault.css">
+    <link rel="stylesheet" href="/styles/vault.css?v=2">
 </head>
 
 <body>
@@ -47,10 +47,16 @@
 
         <!-- Toolbar -->
         <div class="vault-toolbar">
-            <div class="search-bar">
-                <span class="material-symbols-outlined"
-                    style="color: var(--text-muted); font-size: 1.2rem;">search</span>
-                <input type="text" id="searchItemName" placeholder="Rechercher un objet..." oninput="filterVault()">
+            <div style="display: flex; gap: 1rem; flex: 1;">
+                <div class="search-bar" style="flex: 1;">
+                    <span class="material-symbols-outlined"
+                        style="color: var(--text-muted); font-size: 1.2rem;">search</span>
+                    <input type="text" id="searchItemName" placeholder="Rechercher un objet..." oninput="filterVault()">
+                </div>
+                <button id="btnCreateVaultEq" class="vault-btn-create" onclick="openCreateEqModal()" style="display: none; align-items: center; gap: 0.5rem; background: var(--primary); color: white; border: none; padding: 0 1rem; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.2s;">
+                    <span class="material-symbols-outlined" style="font-size: 1.2rem;">add_circle</span>
+                    Forger un Objet
+                </button>
             </div>
 
             <div class="filter-group">
@@ -285,7 +291,214 @@
         </div>
     </div>
 
-    <script src="/js/vault.js?v=3"></script>
+    <!-- Create/Edit Equipment Modal -->
+    <div id="equipCreateModal" class="vault-modal-overlay">
+        <div class="equip-modal" style="background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; width: 90%; max-width: 600px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); position: relative;">
+            <div class="equip-modal-header" style="padding: 1.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.05); display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2);">
+                <div class="equip-modal-title" style="display: flex; align-items: center; gap: 0.8rem; font-size: 1.3rem; font-weight: 600; color: #fff; font-family: 'Outfit', sans-serif;">
+                    <span class="material-symbols-outlined" style="color: #10b981;">build</span>
+                    <span id="equipModalTitle">Forger un objet</span>
+                </div>
+                <button class="equip-modal-close" onclick="closeCreateEqModal()" style="background: none; border: none; color: #94a3b8; cursor: pointer; padding: 0.4rem; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">
+                    <span class="material-symbols-outlined" style="font-size: 1.5rem;">close</span>
+                </button>
+            </div>
+            
+            <div class="equip-modal-body" style="padding: 1.5rem; overflow-y: auto;">
+                <div class="equip-create-section">
+                    <div class="eq-create-row quad">
+                        <div class="eq-create-field" style="grid-column: span 2;">
+                            <label>Nom</label>
+                            <input type="text" id="eqName" placeholder="Ex: Casque de Fer">
+                        </div>
+                        <div class="eq-create-field">
+                            <label>Slot</label>
+                            <div class="custom-select-wrapper" id="eqSlotWrapper" tabindex="0">
+                                <div class="custom-select-trigger" id="eqSlotTrigger">
+                                    <span class="cs-label" id="eqSlotLabel">Choisir un slot...</span>
+                                    <span class="material-symbols-outlined cs-arrow"
+                                        style="font-size: 1.1rem;">expand_more</span>
+                                </div>
+                                <div class="custom-select-options" id="eqSlotOptions"></div>
+                                <input type="hidden" id="eqSlot" value="">
+                            </div>
+                        </div>
+                        <div class="eq-create-field">
+                            <label>Rareté</label>
+                            <div class="custom-select-wrapper" id="eqRarityWrapper" tabindex="0">
+                                <div class="custom-select-trigger" id="eqRarityTrigger">
+                                    <span class="cs-label" id="eqRarityLabel">
+                                        <span class="cs-icon" style="color: #94a3b8; font-weight: bold;">C</span> Commun
+                                    </span>
+                                    <span class="material-symbols-outlined cs-arrow"
+                                        style="font-size: 1.1rem;">expand_more</span>
+                                </div>
+                                <div class="custom-select-options" id="eqRarityOptions">
+                                    <div class="custom-option rarity-COMMUN" data-value="COMMUN" data-color="#94a3b8"
+                                        data-letter="C"><span class="cs-icon"
+                                            style="color: #94a3b8; font-weight: bold;">C</span> Commun</div>
+                                    <div class="custom-option rarity-RARE" data-value="RARE" data-color="#22c55e"
+                                        data-letter="R"><span class="cs-icon"
+                                            style="color: #22c55e; font-weight: bold;">R</span> Rare</div>
+                                    <div class="custom-option rarity-LEGENDAIRE" data-value="LEGENDAIRE"
+                                        data-color="#eab308" data-letter="L"><span class="cs-icon"
+                                            style="color: #eab308; font-weight: bold;">L</span> Légendaire</div>
+                                    <div class="custom-option rarity-EPIQUE" data-value="EPIQUE" data-color="#ef4444"
+                                        data-letter="E"><span class="cs-icon"
+                                            style="color: #ef4444; font-weight: bold;">E</span> Épique (Max 1)</div>
+                                    <div class="custom-option rarity-RELIQUE" data-value="RELIQUE" data-color="#a855f7"
+                                        data-letter="R"><span class="cs-icon"
+                                            style="color: #a855f7; font-weight: bold;">R</span> Relique (Max 1)</div>
+                                </div>
+                                <input type="hidden" id="eqRarity" value="COMMUN">
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="eq-create-row" id="eqSpecialEffectRow"
+                        style="display: none; background: rgba(168, 85, 247, 0.05); border: 1px dashed rgba(168, 85, 247, 0.3); padding: 0.8rem; border-radius: 8px; margin-bottom: 1rem;">
+                        <div class="eq-create-field">
+                            <label id="eqSpecialEffectLabelTitle" style="color: #c084fc;">Effet Spécial</label>
+                            <div class="custom-select-wrapper" id="eqSpecialEffectWrapper" tabindex="0">
+                                <div class="custom-select-trigger" id="eqSpecialEffectTrigger"
+                                    style="border-color: rgba(192, 132, 252, 0.3);">
+                                    <span class="cs-label" id="eqSpecialEffectLabel">
+                                        <span class="material-symbols-outlined cs-icon"
+                                            style="color: #94a3b8;">not_interested</span> Aucun
+                                    </span>
+                                    <span class="material-symbols-outlined cs-arrow"
+                                        style="font-size: 1.1rem;">expand_more</span>
+                                </div>
+                                <div class="custom-select-options" id="eqSpecialEffectOptions">
+                                    <div class="custom-option effect-NONE" data-value="NONE"><span
+                                            class="material-symbols-outlined cs-icon"
+                                            style="color: #94a3b8;">not_interested</span> Aucun</div>
+                                    <div class="custom-option effect-LIFESTEAL" data-value="LIFESTEAL"><span
+                                            class="material-symbols-outlined cs-icon"
+                                            style="color: #ef4444;">water_drop</span> Vol de Vie (%)</div>
+                                    <div class="custom-option effect-THORNS" data-value="THORNS"><span
+                                            class="material-symbols-outlined cs-icon"
+                                            style="color: #eab308;">cruelty_free</span> Épines (Renvoi dégâts %)</div>
+                                    <div class="custom-option effect-MANA_SHIELD" data-value="MANA_SHIELD"><span
+                                            class="material-symbols-outlined cs-icon" style="color: #3b82f6;">shield</span>
+                                        Bouclier de Mana (%)</div>
+                                    <div class="custom-option effect-CHEAT_DEATH" data-value="CHEAT_DEATH"><span
+                                            class="material-symbols-outlined cs-icon"
+                                            style="color: #fce7f3;">emoji_nature</span> Ange Gardien (Survit avec 5*X PV)
+                                    </div>
+                                    <div class="custom-option effect-CRIT_DAMAGE" data-value="CRIT_DAMAGE"><span
+                                            class="material-symbols-outlined cs-icon"
+                                            style="color: #f97316;">local_fire_department</span> Dégâts Critiques Bonus (%)
+                                    </div>
+                                </div>
+                                <input type="hidden" id="eqSpecialEffect" value="NONE">
+                            </div>
+                        </div>
+                        <div class="eq-create-field">
+                            <label id="eqSpecialEffectValueTitle" style="color: #c084fc;">Puissance (Valeur)</label>
+                            <input type="number" id="eqSpecialEffectValue" value="0" min="1"
+                                style="border-color: rgba(192, 132, 252, 0.3);">
+                        </div>
+                    </div>
+
+                    <div class="eq-create-row quad">
+                        <div class="eq-create-field">
+                            <label><span class="material-symbols-outlined"
+                                    style="font-size: 1rem; vertical-align: bottom; color: #ec4899;">favorite</span>
+                                PV</label>
+                            <input type="number" id="eqHp" value="0">
+                        </div>
+                        <div class="eq-create-field">
+                            <label><span class="material-symbols-outlined"
+                                    style="font-size: 1rem; vertical-align: bottom; color: #38bdf8;">water_drop</span>
+                                Mana</label>
+                            <input type="number" id="eqMana" value="0">
+                        </div>
+                        <div class="eq-create-field">
+                            <label><span class="material-symbols-outlined"
+                                    style="font-size: 1rem; vertical-align: bottom; color: #a855f7;">auto_awesome</span>
+                                Puissance</label>
+                            <input type="number" id="eqPower" value="0">
+                        </div>
+                        <div class="eq-create-field">
+                            <label><span class="material-symbols-outlined"
+                                    style="font-size: 1rem; vertical-align: bottom; color: #f43f5e;">fitness_center</span>
+                                Force</label>
+                            <input type="number" id="eqStr" value="0">
+                        </div>
+                    </div>
+
+                    <div class="eq-create-row quad">
+                        <div class="eq-create-field">
+                            <label><span class="material-symbols-outlined"
+                                    style="font-size: 1rem; vertical-align: bottom; color: #3b82f6;">shield</span>
+                                Armure</label>
+                            <input type="number" id="eqArmor" value="0">
+                        </div>
+                        <div class="eq-create-field">
+                            <label><span class="material-symbols-outlined"
+                                    style="font-size: 1rem; vertical-align: bottom; color: #10b981;">shield</span>
+                                Résistance</label>
+                            <input type="number" id="eqRes" value="0">
+                        </div>
+                        <div class="eq-create-field">
+                            <label><span class="material-symbols-outlined"
+                                    style="font-size: 1rem; vertical-align: bottom; color: #f59e0b;">bolt</span>
+                                Vitesse</label>
+                            <input type="number" id="eqSpeed" value="0">
+                        </div>
+                        <div class="eq-create-field">
+                            <label><span class="material-symbols-outlined"
+                                    style="font-size: 1rem; vertical-align: bottom; color: #ef4444;">gps_fixed</span>
+                                Critique</label>
+                            <input type="number" id="eqCrit" value="0">
+                        </div>
+                    </div>
+
+                    <div class="eq-create-row">
+                        <div class="eq-create-field">
+                            <label><span class="material-symbols-outlined"
+                                    style="font-size: 1rem; vertical-align: bottom; color: #10b981;">healing</span> Régen PV
+                                / tour</label>
+                            <input type="number" id="eqRegenHp" value="0" placeholder="Positif ou Négatif">
+                        </div>
+                        <div class="eq-create-field">
+                            <label><span class="material-symbols-outlined"
+                                    style="font-size: 1rem; vertical-align: bottom; color: #38bdf8;">cyclone</span> Régen
+                                Mana / tour</label>
+                            <input type="number" id="eqRegenMana" value="0" placeholder="Positif ou Négatif">
+                        </div>
+                    </div>
+
+                    <div class="eq-weight-container"
+                        style="margin-bottom: 1rem; padding: 0.8rem; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                        <div
+                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+                            <span style="font-size: 0.85rem; color: #cbd5e1; font-weight: 500;"><span
+                                    class="material-symbols-outlined"
+                                    style="font-size: 1rem; vertical-align: middle; margin-right: 4px;">scale</span>Poids de
+                                l'équipement</span>
+                            <span id="eqWeightText" style="font-size: 0.85rem; font-weight: bold; color: #10b981;">0 /
+                                0</span>
+                        </div>
+                        <div class="gauge-track"
+                            style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;">
+                            <div id="eqWeightFill" class="gauge-fill hp"
+                                style="height: 100%; width: 0%; background: #10b981; transition: width 0.3s ease, background 0.3s ease;">
+                            </div>
+                        </div>
+                    </div>
+
+                    <button type="button" id="submitEquipmentBtn" class="eq-create-btn" onclick="submitEquipment()" style="width: 100%; padding: 0.8rem; border-radius: 8px; background: #10b981; color: white; border: none; font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: background 0.2s;">
+                        <span class="material-symbols-outlined" style="font-size: 1.2rem;">add</span>
+                        Forger
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/vault.js?v=7"></script>
     <script type="module" src="/js/auth.js"></script>
 </body>
 
