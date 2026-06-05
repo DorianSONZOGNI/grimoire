@@ -218,6 +218,7 @@ export async function submitSpell() {
 
             // Réinitialiser le formulaire et l'état d'édition
             state.editingSpellId = null;
+            document.getElementById('spellForgePanel').classList.remove('editing-mode');
             document.getElementById('submitSpellBtn').innerText = '✦ Forger le Sort';
             nomInput.value = '';
             document.getElementById('description').value = '';
@@ -353,15 +354,34 @@ export async function loadSpells() {
 
 
 
-export async function deleteSpell(id) {
-    if (!confirm("Êtes-vous sûr de vouloir supprimer définitivement ce sort ?")) return;
+let spellToDelete = null;
+
+export function deleteSpell(id) {
+    spellToDelete = id;
+    const s = state.loadedSpells.find(sp => sp.id === id);
+    if (s) {
+        document.getElementById('deleteSpellTargetName').textContent = s.nom;
+    }
+    document.getElementById('deleteSpellModal').classList.add('show');
+}
+
+window.closeDeleteSpellModal = function() {
+    document.getElementById('deleteSpellModal').classList.remove('show');
+    spellToDelete = null;
+};
+
+document.getElementById('deleteSpellConfirmBtn')?.addEventListener('click', async () => {
+    if (!spellToDelete) return;
+    const id = spellToDelete;
+    closeDeleteSpellModal();
+    
     try {
         const res = await deleteSpellAPI(id);
         if (res.ok) {
             const msg = await res.text();
-            showNotif(msg);
+            ui.showNotif(msg);
             if (state.editingSpellId === id) {
-                cancelEditSpell();
+                ui.cancelEditSpell();
             }
             await loadSpells();
         } else {
@@ -371,7 +391,7 @@ export async function deleteSpell(id) {
         console.error(err);
         alert("Erreur de connexion au serveur.");
     }
-}
+});
 
 
 

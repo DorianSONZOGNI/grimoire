@@ -19,7 +19,7 @@ public class DamageFixedEffect extends DamageEffect {
         double baseDamage = this.damage;
         double finalDamage = baseDamage * getAmplificationMultiplier();
         if (checkCriticalHit(caster)) {
-            finalDamage *= 1.5; // Multiplicateur de dégâts critiques
+            finalDamage *= getCriticalMultiplier(caster);
         }
         target.takeDamage((int) finalDamage, this.getDamageType(), caster);
     }

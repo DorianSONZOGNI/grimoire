@@ -35,15 +35,18 @@ public class WebSpellCreationController {
     private final SpellRepository spellRepository;
     private final VoieRepository voieRepository;
     private final SpiritualiteRepository spiritualiteRepository;
+    private final generation.grimoire.repository.PersonnageRepository personnageRepository;
 
     public WebSpellCreationController(SpellService spellService,
             SpellRepository spellRepository,
             VoieRepository voieRepository,
-            SpiritualiteRepository spiritualiteRepository) {
+            SpiritualiteRepository spiritualiteRepository,
+            generation.grimoire.repository.PersonnageRepository personnageRepository) {
         this.spellService = spellService;
         this.spellRepository = spellRepository;
         this.voieRepository = voieRepository;
         this.spiritualiteRepository = spiritualiteRepository;
+        this.personnageRepository = personnageRepository;
     }
 
     private List<Personnage> sandboxAllies = new ArrayList<>();
@@ -455,6 +458,37 @@ public class WebSpellCreationController {
         return cs;
     }
 
+    private Personnage clonePersonnageForSandbox(Personnage dbP, String teamPrefix, int index) {
+        Personnage clone = new Personnage();
+        clone.setId(dbP.getId());
+        clone.setName(dbP.getName());
+        clone.setTeamId(teamPrefix + "_" + index);
+        
+        clone.setHealthMax(dbP.getBaseHealthMax());
+        clone.setManaMax(dbP.getBaseManaMax());
+        
+        clone.setPower(dbP.getPower());
+        clone.setStrength(dbP.getStrength());
+        clone.setArmor(dbP.getArmor());
+        clone.setResistance(dbP.getResistance());
+        clone.setCrit(dbP.getCrit());
+        clone.setSpeed(dbP.getSpeed());
+        
+        clone.setVoie(dbP.getVoie());
+        clone.setVoieLevel(dbP.getVoieLevel());
+        clone.setSpiritualite(dbP.getSpiritualite());
+        clone.setSpiritualiteLevel(dbP.getSpiritualiteLevel());
+        
+        if (dbP.getEquipments() != null) {
+            clone.setEquipments(new java.util.ArrayList<>(dbP.getEquipments()));
+        }
+
+        clone.setHealthCurrent(dbP.getHealthMax());
+        clone.setManaCurrent(dbP.getManaMax());
+        
+        return clone;
+    }
+
     private SandboxStateDto buildSandboxStateResponse() {
         initSandbox();
 
@@ -488,29 +522,57 @@ public class WebSpellCreationController {
         return ResponseEntity.ok(buildSandboxStateResponse());
     }
 
+    @PostMapping("/sandbox/set-hero")
+    public ResponseEntity<SandboxStateDto> setHero(@RequestParam(required = false) Long personnageId) {
+        initSandbox();
+        if (personnageId != null && personnageRepository.existsById(personnageId)) {
+            Personnage dbHero = personnageRepository.findById(personnageId).orElseThrow();
+            Personnage clone = clonePersonnageForSandbox(dbHero, "ALLY", 0);
+            sandboxAllies.set(0, clone);
+            sandboxLogs.add("👑 " + clone.getName() + " est maintenant le Héros principal.");
+        } else {
+            Personnage defaultHero = createDefaultAlly("Lanceur (Héros)");
+            sandboxAllies.set(0, defaultHero);
+            sandboxLogs.add("👑 Le Héros principal a été réinitialisé.");
+        }
+        return ResponseEntity.ok(buildSandboxStateResponse());
+    }
+
     @PostMapping("/sandbox/add-ally")
-    public ResponseEntity<SandboxStateDto> addAlly() {
+    public ResponseEntity<SandboxStateDto> addAlly(@RequestParam(required = false) Long personnageId) {
         initSandbox();
         if (sandboxAllies.size() >= 4) {
             sandboxLogs.add("⚠️ Maximum de 4 alliés atteint.");
             return ResponseEntity.ok(buildSandboxStateResponse());
         }
         int num = sandboxAllies.size();
-        Personnage ally = createDefaultAlly("Allié " + num);
+        Personnage ally;
+        if (personnageId != null && personnageRepository.existsById(personnageId)) {
+            Personnage dbP = personnageRepository.findById(personnageId).orElseThrow();
+            ally = clonePersonnageForSandbox(dbP, "ALLY", num);
+        } else {
+            ally = createDefaultAlly("Allié " + num);
+        }
         sandboxAllies.add(ally);
         sandboxLogs.add("➕ " + ally.getName() + " a rejoint l'équipe alliée.");
         return ResponseEntity.ok(buildSandboxStateResponse());
     }
 
     @PostMapping("/sandbox/add-enemy")
-    public ResponseEntity<SandboxStateDto> addEnemy() {
+    public ResponseEntity<SandboxStateDto> addEnemy(@RequestParam(required = false) Long personnageId) {
         initSandbox();
         if (sandboxEnemies.size() >= 4) {
             sandboxLogs.add("⚠️ Maximum de 4 ennemis atteint.");
             return ResponseEntity.ok(buildSandboxStateResponse());
         }
         int num = sandboxEnemies.size();
-        Personnage enemy = createDefaultEnemy("Ennemi " + (num + 1));
+        Personnage enemy;
+        if (personnageId != null && personnageRepository.existsById(personnageId)) {
+            Personnage dbP = personnageRepository.findById(personnageId).orElseThrow();
+            enemy = clonePersonnageForSandbox(dbP, "ENEMY", num);
+        } else {
+            enemy = createDefaultEnemy("Ennemi " + (num + 1));
+        }
         sandboxEnemies.add(enemy);
         sandboxLogs.add("➕ " + enemy.getName() + " a rejoint l'équipe ennemie.");
         return ResponseEntity.ok(buildSandboxStateResponse());

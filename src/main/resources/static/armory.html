@@ -1,0 +1,562 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Armurerie — Grimoire</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="icon" type="image/png" href="/favicon.svg">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="/styles/variables.css">
+    <link rel="stylesheet" href="/styles/components.css">
+    <link rel="stylesheet" href="/styles/armory.css">
+</head>
+
+<body>
+
+    <header class="armory-header">
+        <div class="armory-logo">
+            <span class="material-symbols-outlined">shield</span>
+            Armurerie
+        </div>
+        <div style="display: flex; gap: 0.6rem; align-items: center;">
+            <div style="font-size: 0.9rem; color: var(--text-muted);">S'équiper pour ne pas finir troué !
+            </div>
+            <a href="/" class="armory-nav-link">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">auto_awesome</span>
+                Grimoire
+            </a>
+            <a href="/vault.html" class="armory-nav-link">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">money_bag</span>
+                Salle des coffres
+            </a>
+        </div>
+    </header>
+
+    <div class="armory-main">
+        <!-- Colonne Gauche : Formulaire de Création -->
+        <div class="armory-form-panel" id="charFormPanel">
+            <div class="armory-panel-title" id="formTitle">
+                <span class="material-symbols-outlined">person_add</span>
+                Créer un Personnage
+            </div>
+
+            <!-- Nom -->
+            <div class="armory-field">
+                <label for="charName">
+                    <span class="material-symbols-outlined" style="color: #f59e0b;">badge</span>
+                    Nom du personnage
+                </label>
+                <input type="text" id="charName" placeholder="Ex: Aldric le Sage, Sombria..." required>
+            </div>
+
+            <!-- Voie & Spiritualité -->
+            <div class="armory-section-title">
+                <span class="material-symbols-outlined" style="color: #a855f7;">auto_awesome</span>
+                Voie & Spiritualité
+            </div>
+
+            <div class="armory-form-row">
+                <div class="armory-field">
+                    <label for="charVoie">
+                        <span class="material-symbols-outlined" style="color: #a855f7;">route</span>
+                        Voie
+                    </label>
+                    <div class="custom-select-wrapper" id="charVoieWrapper" tabindex="0">
+                        <div class="custom-select-trigger" id="charVoieTrigger">
+                            <span class="cs-label" id="charVoieLabel"><span class="material-symbols-outlined cs-icon"
+                                    style="color: #94a3b8;">trip_origin</span> — Aucune —</span>
+                            <span class="material-symbols-outlined cs-arrow"
+                                style="font-size: 1.1rem;">expand_more</span>
+                        </div>
+                        <div class="custom-select-options" id="charVoieOptions">
+                            <div class="custom-option" data-value=""><span class="material-symbols-outlined cs-icon"
+                                    style="color: #94a3b8;">trip_origin</span> — Aucune —</div>
+                        </div>
+                        <input type="hidden" id="charVoie" value="">
+                    </div>
+                </div>
+                <div class="armory-field">
+                    <label for="charVoieLevel">
+                        <span class="material-symbols-outlined" style="color: #a855f7;">star</span>
+                        Niveau Voie
+                    </label>
+                    <div class="custom-select-wrapper" id="charVoieLevelWrapper" tabindex="0">
+                        <div class="custom-select-trigger" id="charVoieLevelTrigger">
+                            <span class="cs-label" id="charVoieLevelLabel"><span
+                                    class="material-symbols-outlined cs-icon" style="color: #cbd5e1;">looks_one</span>
+                                Niveau 1</span>
+                            <span class="material-symbols-outlined cs-arrow"
+                                style="font-size: 1.1rem;">expand_more</span>
+                        </div>
+                        <div class="custom-select-options" id="charVoieLevelOptions">
+                        </div>
+                        <input type="hidden" id="charVoieLevel" value="1">
+                    </div>
+                </div>
+            </div>
+
+            <div class="armory-form-row">
+                <div class="armory-field">
+                    <label for="charSpirit">
+                        <span class="material-symbols-outlined" style="color: #fb923c;">psychology</span>
+                        Spiritualité
+                    </label>
+                    <div class="custom-select-wrapper" id="charSpiritWrapper" tabindex="0">
+                        <div class="custom-select-trigger" id="charSpiritTrigger">
+                            <span class="cs-label" id="charSpiritLabel"><span class="material-symbols-outlined cs-icon"
+                                    style="color: #94a3b8;">trip_origin</span> — Aucune —</span>
+                            <span class="material-symbols-outlined cs-arrow"
+                                style="font-size: 1.1rem;">expand_more</span>
+                        </div>
+                        <div class="custom-select-options" id="charSpiritOptions">
+                            <div class="custom-option" data-value=""><span class="material-symbols-outlined cs-icon"
+                                    style="color: #94a3b8;">trip_origin</span> — Aucune —</div>
+                        </div>
+                        <input type="hidden" id="charSpirit" value="">
+                    </div>
+                </div>
+                <div class="armory-field">
+                    <label for="charSpiritLevel">
+                        <span class="material-symbols-outlined" style="color: #fb923c;">star</span>
+                        Niveau Spiritualité
+                    </label>
+                    <div class="custom-select-wrapper" id="charSpiritLevelWrapper" tabindex="0">
+                        <div class="custom-select-trigger" id="charSpiritLevelTrigger">
+                            <span class="cs-label" id="charSpiritLevelLabel"><span
+                                    class="material-symbols-outlined cs-icon" style="color: #cbd5e1;">looks_one</span>
+                                Niveau 1</span>
+                            <span class="material-symbols-outlined cs-arrow"
+                                style="font-size: 1.1rem;">expand_more</span>
+                        </div>
+                        <div class="custom-select-options" id="charSpiritLevelOptions">
+                        </div>
+                        <input type="hidden" id="charSpiritLevel" value="1">
+                    </div>
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="armory-section-title">
+                <span class="material-symbols-outlined" style="color: #10b981;">monitoring</span>
+                Statistiques de Base
+            </div>
+
+            <div class="armory-form-row">
+                <div class="armory-field">
+                    <label for="charHp">
+                        <span class="material-symbols-outlined" style="color: #ec4899;">favorite</span>
+                        PV Max
+                    </label>
+                    <input type="number" id="charHp" min="1" value="100">
+                </div>
+                <div class="armory-field">
+                    <label for="charMana">
+                        <span class="material-symbols-outlined" style="color: #38bdf8;">water_drop</span>
+                        Mana Max
+                    </label>
+                    <input type="number" id="charMana" min="0" value="100">
+                </div>
+            </div>
+
+            <div class="armory-form-row quad">
+                <div class="armory-field">
+                    <label for="charPower">
+                        <span class="material-symbols-outlined" style="color: #a855f7;">auto_awesome</span>
+                        Puissance
+                    </label>
+                    <input type="number" id="charPower" min="0" value="25">
+                </div>
+                <div class="armory-field">
+                    <label for="charStrength">
+                        <span class="material-symbols-outlined" style="color: #f43f5e;">fitness_center</span>
+                        Force
+                    </label>
+                    <input type="number" id="charStrength" min="0" value="10">
+                </div>
+                <div class="armory-field">
+                    <label for="charArmor">
+                        <span class="material-symbols-outlined" style="color: #3b82f6;">shield</span>
+                        Armure
+                    </label>
+                    <input type="number" id="charArmor" min="0" value="10">
+                </div>
+                <div class="armory-field">
+                    <label for="charResistance">
+                        <span class="material-symbols-outlined" style="color: #10b981;">shield</span>
+                        Résistance
+                    </label>
+                    <input type="number" id="charResistance" min="0" value="10">
+                </div>
+            </div>
+
+            <div class="armory-form-row">
+                <div class="armory-field">
+                    <label for="charSpeed">
+                        <span class="material-symbols-outlined" style="color: #f59e0b;">bolt</span>
+                        Vitesse
+                    </label>
+                    <input type="number" id="charSpeed" min="0" value="0">
+                </div>
+                <div class="armory-field">
+                    <label for="charCrit">
+                        <span class="material-symbols-outlined" style="color: #ef4444;">gps_fixed</span>
+                        Critique (%)
+                    </label>
+                    <input type="number" id="charCrit" min="0" max="100" value="0">
+                </div>
+            </div>
+
+            <!-- Boutons -->
+            <div style="display: flex; gap: 0.6rem; align-items: center;">
+                <button type="button" class="armory-submit-btn" id="submitBtn" onclick="submitPersonnage()">
+                    <span class="material-symbols-outlined" style="font-size: 1.1rem;">person_add</span>
+                    Forger le Personnage
+                </button>
+                <button type="button" class="armory-nav-link" id="cancelBtn" style="display: none;"
+                    onclick="resetForm()">
+                    Annuler
+                </button>
+            </div>
+        </div>
+
+        <!-- Colonne Droite : Liste des Personnages -->
+        <div class="armory-list-panel">
+            <div class="armory-panel-title" style="justify-content: space-between;">
+                <span style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span class="material-symbols-outlined" style="color: #3b82f6;">groups</span>
+                    Personnages
+                </span>
+                <button type="button" class="armory-nav-link" onclick="loadPersonnages()" style="font-size: 0.8rem;">
+                    <span class="material-symbols-outlined" style="font-size: 1rem;">refresh</span>
+                    Actualiser
+                </button>
+            </div>
+
+            <!-- Search Bar -->
+            <div
+                style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; background: rgba(0,0,0,0.2); padding: 0.8rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                <div class="armory-field" style="flex: 1.5; min-width: 150px;">
+                    <label style="font-size: 0.7rem; color: #64748b; margin-bottom: 0.2rem; display: block;"><span
+                            class="material-symbols-outlined"
+                            style="font-size: 0.9rem; vertical-align: bottom;">search</span> Prénom</label>
+                    <input type="text" id="searchName" placeholder="Ex: Lancelot..." oninput="filterPersonnages()"
+                        style="padding: 0.35rem 0.5rem; font-size: 0.8rem; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; color: #fff; width: 100%;">
+                </div>
+                <div class="armory-field" style="flex: 1; min-width: 120px;">
+                    <label style="font-size: 0.7rem; color: #64748b; margin-bottom: 0.2rem; display: block;"><span
+                            class="material-symbols-outlined"
+                            style="font-size: 0.9rem; vertical-align: bottom;">route</span> Voie</label>
+                    <div class="custom-select-wrapper" id="searchVoieWrapper" tabindex="0">
+                        <div class="custom-select-trigger" id="searchVoieTrigger">
+                            <span class="cs-label" id="searchVoieLabel"><span class="material-symbols-outlined cs-icon"
+                                    style="color: #94a3b8;">trip_origin</span> Toutes</span>
+                            <span class="material-symbols-outlined cs-arrow"
+                                style="font-size: 1.1rem;">expand_more</span>
+                        </div>
+                        <div class="custom-select-options" id="searchVoieOptions">
+                            <div class="custom-option" data-value=""><span class="material-symbols-outlined cs-icon"
+                                    style="color: #94a3b8;">trip_origin</span> Toutes</div>
+                        </div>
+                        <input type="hidden" id="searchVoie" value="">
+                    </div>
+                </div>
+                <div class="armory-field" style="flex: 1; min-width: 120px;">
+                    <label style="font-size: 0.7rem; color: #64748b; margin-bottom: 0.2rem; display: block;"><span
+                            class="material-symbols-outlined"
+                            style="font-size: 0.9rem; vertical-align: bottom;">psychology</span> Spiritualité</label>
+                    <div class="custom-select-wrapper" id="searchSpiritWrapper" tabindex="0">
+                        <div class="custom-select-trigger" id="searchSpiritTrigger">
+                            <span class="cs-label" id="searchSpiritLabel"><span
+                                    class="material-symbols-outlined cs-icon" style="color: #94a3b8;">trip_origin</span>
+                                Toutes</span>
+                            <span class="material-symbols-outlined cs-arrow"
+                                style="font-size: 1.1rem;">expand_more</span>
+                        </div>
+                        <div class="custom-select-options" id="searchSpiritOptions">
+                            <div class="custom-option" data-value=""><span class="material-symbols-outlined cs-icon"
+                                    style="color: #94a3b8;">trip_origin</span> Toutes</div>
+                        </div>
+                        <input type="hidden" id="searchSpirit" value="">
+                    </div>
+                </div>
+            </div>
+
+            <div class="armory-characters-grid" id="personnagesList">
+                <div class="armory-empty-state">Chargement...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Equipment Modal -->
+    <div class="equip-modal-overlay" id="equipModalOverlay" onclick="if(event.target===this) closeEquipModal()">
+        <div class="equip-modal">
+            <div class="equip-modal-header">
+                <div class="equip-modal-title">
+                    <span class="material-symbols-outlined" style="color: #f59e0b;">shield</span>
+                    <span id="equipModalTitle">Équipement</span>
+                </div>
+                <button class="equip-modal-close" onclick="closeEquipModal()">
+                    <span class="material-symbols-outlined" style="font-size: 1.1rem;">close</span>
+                </button>
+            </div>
+
+            <!-- Grille des 6 slots -->
+            <div class="equip-slots-grid" id="equipSlotsContainer"></div>
+
+            <!-- Formulaire de création d'équipement inline -->
+            <div class="equip-create-section">
+                <div class="equip-create-title">
+                    <span class="material-symbols-outlined">add_circle</span>
+                    Créer un nouvel équipement
+                </div>
+
+                <div class="eq-create-row quad">
+                    <div class="eq-create-field" style="grid-column: span 2;">
+                        <label>Nom</label>
+                        <input type="text" id="eqName" placeholder="Ex: Casque de Fer">
+                    </div>
+                    <div class="eq-create-field">
+                        <label>Slot</label>
+                        <div class="custom-select-wrapper" id="eqSlotWrapper" tabindex="0">
+                            <div class="custom-select-trigger" id="eqSlotTrigger">
+                                <span class="cs-label" id="eqSlotLabel">Choisir un slot...</span>
+                                <span class="material-symbols-outlined cs-arrow"
+                                    style="font-size: 1.1rem;">expand_more</span>
+                            </div>
+                            <div class="custom-select-options" id="eqSlotOptions"></div>
+                            <input type="hidden" id="eqSlot" value="">
+                        </div>
+                    </div>
+                    <div class="eq-create-field">
+                        <label>Rareté</label>
+                        <div class="custom-select-wrapper" id="eqRarityWrapper" tabindex="0">
+                            <div class="custom-select-trigger" id="eqRarityTrigger">
+                                <span class="cs-label" id="eqRarityLabel">
+                                    <span class="cs-icon" style="color: #94a3b8; font-weight: bold;">C</span> Commun
+                                </span>
+                                <span class="material-symbols-outlined cs-arrow"
+                                    style="font-size: 1.1rem;">expand_more</span>
+                            </div>
+                            <div class="custom-select-options" id="eqRarityOptions">
+                                <div class="custom-option rarity-COMMUN" data-value="COMMUN" data-color="#94a3b8"
+                                    data-letter="C"><span class="cs-icon"
+                                        style="color: #94a3b8; font-weight: bold;">C</span> Commun</div>
+                                <div class="custom-option rarity-RARE" data-value="RARE" data-color="#22c55e"
+                                    data-letter="R"><span class="cs-icon"
+                                        style="color: #22c55e; font-weight: bold;">R</span> Rare</div>
+                                <div class="custom-option rarity-LEGENDAIRE" data-value="LEGENDAIRE"
+                                    data-color="#eab308" data-letter="L"><span class="cs-icon"
+                                        style="color: #eab308; font-weight: bold;">L</span> Légendaire</div>
+                                <div class="custom-option rarity-EPIQUE" data-value="EPIQUE" data-color="#ef4444"
+                                    data-letter="E"><span class="cs-icon"
+                                        style="color: #ef4444; font-weight: bold;">E</span> Épique (Max 1)</div>
+                                <div class="custom-option rarity-RELIQUE" data-value="RELIQUE" data-color="#a855f7"
+                                    data-letter="R"><span class="cs-icon"
+                                        style="color: #a855f7; font-weight: bold;">R</span> Relique (Max 1)</div>
+                            </div>
+                            <input type="hidden" id="eqRarity" value="COMMUN">
+                        </div>
+                    </div>
+                </div>
+
+                <div class="eq-create-row" id="eqSpecialEffectRow"
+                    style="display: none; background: rgba(168, 85, 247, 0.05); border: 1px dashed rgba(168, 85, 247, 0.3); padding: 0.8rem; border-radius: 8px; margin-bottom: 1rem;">
+                    <div class="eq-create-field">
+                        <label id="eqSpecialEffectLabelTitle" style="color: #c084fc;">Effet Spécial</label>
+                        <div class="custom-select-wrapper" id="eqSpecialEffectWrapper" tabindex="0">
+                            <div class="custom-select-trigger" id="eqSpecialEffectTrigger"
+                                style="border-color: rgba(192, 132, 252, 0.3);">
+                                <span class="cs-label" id="eqSpecialEffectLabel">
+                                    <span class="material-symbols-outlined cs-icon"
+                                        style="color: #94a3b8;">not_interested</span> Aucun
+                                </span>
+                                <span class="material-symbols-outlined cs-arrow"
+                                    style="font-size: 1.1rem;">expand_more</span>
+                            </div>
+                            <div class="custom-select-options" id="eqSpecialEffectOptions">
+                                <div class="custom-option effect-NONE" data-value="NONE"><span
+                                        class="material-symbols-outlined cs-icon"
+                                        style="color: #94a3b8;">not_interested</span> Aucun</div>
+                                <div class="custom-option effect-LIFESTEAL" data-value="LIFESTEAL"><span
+                                        class="material-symbols-outlined cs-icon"
+                                        style="color: #ef4444;">water_drop</span> Vol de Vie (%)</div>
+                                <div class="custom-option effect-THORNS" data-value="THORNS"><span
+                                        class="material-symbols-outlined cs-icon"
+                                        style="color: #eab308;">cruelty_free</span> Épines (Renvoi dégâts %)</div>
+                                <div class="custom-option effect-MANA_SHIELD" data-value="MANA_SHIELD"><span
+                                        class="material-symbols-outlined cs-icon" style="color: #3b82f6;">shield</span>
+                                    Bouclier de Mana (%)</div>
+                                <div class="custom-option effect-CHEAT_DEATH" data-value="CHEAT_DEATH"><span
+                                        class="material-symbols-outlined cs-icon"
+                                        style="color: #fce7f3;">emoji_nature</span> Ange Gardien (Survit avec 5*X PV)
+                                </div>
+                                <div class="custom-option effect-CRIT_DAMAGE" data-value="CRIT_DAMAGE"><span
+                                        class="material-symbols-outlined cs-icon"
+                                        style="color: #f97316;">local_fire_department</span> Dégâts Critiques Bonus (%)
+                                </div>
+                            </div>
+                            <input type="hidden" id="eqSpecialEffect" value="NONE">
+                        </div>
+                    </div>
+                    <div class="eq-create-field">
+                        <label id="eqSpecialEffectValueTitle" style="color: #c084fc;">Puissance (Valeur)</label>
+                        <input type="number" id="eqSpecialEffectValue" value="0" min="1"
+                            style="border-color: rgba(192, 132, 252, 0.3);">
+                    </div>
+                </div>
+
+                <div class="eq-create-row quad">
+                    <div class="eq-create-field">
+                        <label><span class="material-symbols-outlined"
+                                style="font-size: 1rem; vertical-align: bottom; color: #ec4899;">favorite</span>
+                            PV</label>
+                        <input type="number" id="eqHp" value="0">
+                    </div>
+                    <div class="eq-create-field">
+                        <label><span class="material-symbols-outlined"
+                                style="font-size: 1rem; vertical-align: bottom; color: #38bdf8;">water_drop</span>
+                            Mana</label>
+                        <input type="number" id="eqMana" value="0">
+                    </div>
+                    <div class="eq-create-field">
+                        <label><span class="material-symbols-outlined"
+                                style="font-size: 1rem; vertical-align: bottom; color: #a855f7;">auto_awesome</span>
+                            Puissance</label>
+                        <input type="number" id="eqPower" value="0">
+                    </div>
+                    <div class="eq-create-field">
+                        <label><span class="material-symbols-outlined"
+                                style="font-size: 1rem; vertical-align: bottom; color: #f43f5e;">fitness_center</span>
+                            Force</label>
+                        <input type="number" id="eqStr" value="0">
+                    </div>
+                </div>
+
+                <div class="eq-create-row quad">
+                    <div class="eq-create-field">
+                        <label><span class="material-symbols-outlined"
+                                style="font-size: 1rem; vertical-align: bottom; color: #3b82f6;">shield</span>
+                            Armure</label>
+                        <input type="number" id="eqArmor" value="0">
+                    </div>
+                    <div class="eq-create-field">
+                        <label><span class="material-symbols-outlined"
+                                style="font-size: 1rem; vertical-align: bottom; color: #10b981;">shield</span>
+                            Résistance</label>
+                        <input type="number" id="eqRes" value="0">
+                    </div>
+                    <div class="eq-create-field">
+                        <label><span class="material-symbols-outlined"
+                                style="font-size: 1rem; vertical-align: bottom; color: #f59e0b;">bolt</span>
+                            Vitesse</label>
+                        <input type="number" id="eqSpeed" value="0">
+                    </div>
+                    <div class="eq-create-field">
+                        <label><span class="material-symbols-outlined"
+                                style="font-size: 1rem; vertical-align: bottom; color: #ef4444;">gps_fixed</span>
+                            Critique</label>
+                        <input type="number" id="eqCrit" value="0">
+                    </div>
+                </div>
+
+                <div class="eq-create-row">
+                    <div class="eq-create-field">
+                        <label><span class="material-symbols-outlined"
+                                style="font-size: 1rem; vertical-align: bottom; color: #10b981;">healing</span> Régen PV
+                            / tour</label>
+                        <input type="number" id="eqRegenHp" value="0" placeholder="Positif ou Négatif">
+                    </div>
+                    <div class="eq-create-field">
+                        <label><span class="material-symbols-outlined"
+                                style="font-size: 1rem; vertical-align: bottom; color: #38bdf8;">cyclone</span> Régen
+                            Mana / tour</label>
+                        <input type="number" id="eqRegenMana" value="0" placeholder="Positif ou Négatif">
+                    </div>
+                </div>
+
+                <div class="eq-weight-container"
+                    style="margin-bottom: 1rem; padding: 0.8rem; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                    <div
+                        style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
+                        <span style="font-size: 0.85rem; color: #cbd5e1; font-weight: 500;"><span
+                                class="material-symbols-outlined"
+                                style="font-size: 1rem; vertical-align: middle; margin-right: 4px;">scale</span>Poids de
+                            l'équipement</span>
+                        <span id="eqWeightText" style="font-size: 0.85rem; font-weight: bold; color: #10b981;">0 /
+                            0</span>
+                    </div>
+                    <div class="gauge-track"
+                        style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;">
+                        <div id="eqWeightFill" class="gauge-fill hp"
+                            style="height: 100%; width: 0%; background: #10b981; transition: width 0.3s ease, background 0.3s ease;">
+                        </div>
+                    </div>
+                </div>
+
+                <button type="button" id="submitEquipmentBtn" class="eq-create-btn" onclick="submitEquipment()">
+                    <span class="material-symbols-outlined" style="font-size: 1rem;">add</span>
+                    Forger & Équiper
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="armory-notif" id="armoryNotif"></div>
+
+    <!-- Delete Personnage Confirmation Modal -->
+    <div id="deletePersonnageModal" class="vault-modal-overlay">
+        <div class="vault-modal-content">
+            <div class="vault-modal-icon">
+                <span class="material-symbols-outlined" style="font-size: 2rem;">warning</span>
+            </div>
+            <div class="vault-modal-title">Supprimer le personnage ?</div>
+            <div class="vault-modal-text">Êtes-vous sûr de vouloir supprimer <strong id="deletePersoTargetName" style="color:#fff;">ce personnage</strong> ? Cette action est irréversible.</div>
+            <div class="vault-modal-actions">
+                <button class="vault-btn-cancel" onclick="closeDeletePersoModal()">Annuler</button>
+                <button class="vault-btn-confirm" id="deletePersoConfirmBtn">Oui, supprimer</button>
+            </div>
+        </div>
+    </div>
+    <style>
+        .vault-modal-overlay {
+            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(8px);
+            z-index: 100000; display: flex; align-items: center; justify-content: center;
+            opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+        }
+        .vault-modal-overlay.show { opacity: 1; pointer-events: all; }
+        .vault-modal-content {
+            background: rgba(30, 41, 59, 0.95); border: 1px solid rgba(239, 68, 68, 0.4);
+            border-radius: 16px; padding: 2rem; max-width: 400px; text-align: center;
+            transform: translateY(20px) scale(0.95); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 20px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05) inset;
+        }
+        .vault-modal-overlay.show .vault-modal-content { transform: translateY(0) scale(1); }
+        .vault-modal-icon {
+            width: 60px; height: 60px; border-radius: 50%; background: rgba(239, 68, 68, 0.1);
+            color: #ef4444; display: flex; align-items: center; justify-content: center;
+            margin: 0 auto 1.2rem auto; font-size: 2rem; border: 2px solid rgba(239, 68, 68, 0.2);
+        }
+        .vault-modal-title { font-size: 1.2rem; font-weight: 600; font-family: 'Outfit', sans-serif; color: #fff; margin-bottom: 0.8rem; }
+        .vault-modal-text { font-size: 0.9rem; color: #94a3b8; margin-bottom: 1.5rem; line-height: 1.5; }
+        .vault-modal-actions { display: flex; gap: 1rem; }
+        .vault-btn-cancel { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 0.6rem; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; }
+        .vault-btn-cancel:hover { background: rgba(255,255,255,0.1); }
+        .vault-btn-confirm { flex: 1; background: #ef4444; border: none; color: #fff; padding: 0.6rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); }
+        .vault-btn-confirm:hover { background: #dc2626; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4); }
+    </style>
+
+    <script src="/js/armory.js"></script>
+
+</body>
+
+</html>

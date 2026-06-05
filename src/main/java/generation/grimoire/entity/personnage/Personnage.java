@@ -57,6 +57,9 @@ public class Personnage {
 
     private int spiritualiteLevel = 1;
 
+    @OneToMany(mappedBy = "personnage", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    private List<generation.grimoire.entity.Equipment> equipments = new ArrayList<>();
+
     // Liste des buffs/débuffs actifs (ici en mémoire, mais vous pouvez choisir de
     // les persister si besoin)
     @Transient
@@ -129,6 +132,35 @@ public class Personnage {
                         .println(name + " continue de canaliser (tours restants : " + remainingChannelingTurns + ").");
             }
         }
+        
+        // Effets des équipements (Régen / Drain)
+        if (this.healthCurrent > 0 && this.equipments != null) {
+            int totalHpRegen = 0;
+            int totalManaRegen = 0;
+            for (generation.grimoire.entity.Equipment eq : this.equipments) {
+                totalHpRegen += eq.getRegenHealthPerTurn();
+                totalManaRegen += eq.getRegenManaPerTurn();
+            }
+            if (totalHpRegen > 0) {
+                this.heal(totalHpRegen);
+            } else if (totalHpRegen < 0) {
+                this.takeDamage(-totalHpRegen, generation.grimoire.enumeration.DamageType.BRUT);
+            }
+            if (totalManaRegen != 0) {
+                this.setManaCurrent(this.manaCurrent + totalManaRegen);
+            }
+        }
+    }
+
+    public int getSpecialEffectValue(generation.grimoire.enumeration.EquipmentEffectType type) {
+        if (this.equipments == null) return 0;
+        int total = 0;
+        for (generation.grimoire.entity.Equipment eq : this.equipments) {
+            if (eq.getSpecialEffect() == type) {
+                total += eq.getSpecialEffectValue();
+            }
+        }
+        return total;
     }
 
     /**
@@ -260,6 +292,18 @@ public class Personnage {
         }
 
         int remainingDamage = effectiveDamage - bypassDamage;
+        
+        // MANA SHIELD
+        int manaShieldPct = getSpecialEffectValue(generation.grimoire.enumeration.EquipmentEffectType.MANA_SHIELD);
+        if (manaShieldPct > 0 && remainingDamage > 0) {
+            int manaAbsorb = Math.min(this.manaCurrent, (int) Math.ceil(remainingDamage * (manaShieldPct / 100.0)));
+            if (manaAbsorb > 0) {
+                this.manaCurrent -= manaAbsorb;
+                remainingDamage -= manaAbsorb;
+                System.out.println("🛡️ Bouclier de Mana absorbe " + manaAbsorb + " dégâts.");
+            }
+        }
+
         int absorbedByShields = 0;
 
         if (remainingDamage > 0) {
@@ -312,6 +356,24 @@ public class Personnage {
         int totalDamageToHealth = bypassDamage + remainingDamage;
         this.healthCurrent -= totalDamageToHealth;
 
+        // CHEAT DEATH
+        if (this.healthCurrent <= 0) {
+            int cheatDeathValue = getSpecialEffectValue(generation.grimoire.enumeration.EquipmentEffectType.CHEAT_DEATH);
+            if (cheatDeathValue > 0) {
+                this.healthCurrent = cheatDeathValue * 5;
+                System.out.println("👼 Ange Gardien activé ! Le personnage survit avec " + (cheatDeathValue * 5) + " PV.");
+                // Consomme l'effet pour la session/combat
+                if (this.equipments != null) {
+                    for (generation.grimoire.entity.Equipment eq : this.equipments) {
+                        if (eq.getSpecialEffect() == generation.grimoire.enumeration.EquipmentEffectType.CHEAT_DEATH) {
+                            eq.setSpecialEffect(generation.grimoire.enumeration.EquipmentEffectType.NONE);
+                            eq.setSpecialEffectValue(0);
+                        }
+                    }
+                }
+            }
+        }
+
         // Affichage des informations
         if (bypassDamage > 0) {
             System.out.println("🛡️ Perce-Bouclier / Bouclier Percé : " + bypassDamage
@@ -324,6 +386,26 @@ public class Personnage {
                 "absorbés par les boucliers : " + absorbedByShields + ", " +
                 "réduction de " + (int) (finalReductionFactor * 100) + "%), " +
                 "PV restants : " + this.healthCurrent);
+
+        // LIFESTEAL & THORNS
+        if (caster != null && totalDamageToHealth > 0) {
+            if (damageType == DamageType.PHYSIC) {
+                int thornsPct = getSpecialEffectValue(generation.grimoire.enumeration.EquipmentEffectType.THORNS);
+                if (thornsPct > 0) {
+                    int thornsDmg = (int) Math.ceil(totalDamageToHealth * (thornsPct / 100.0));
+                    System.out.println("🌵 Épines renvoie " + thornsDmg + " dégâts !");
+                    caster.takeDamage(thornsDmg, DamageType.BRUT);
+                }
+            }
+            if (damageType == DamageType.PHYSIC || damageType == DamageType.MAGIC) {
+                int lifestealPct = caster.getSpecialEffectValue(generation.grimoire.enumeration.EquipmentEffectType.LIFESTEAL);
+                if (lifestealPct > 0) {
+                    int healAmount = (int) Math.ceil(totalDamageToHealth * (lifestealPct / 100.0));
+                    System.out.println("🩸 Vol de vie : l'attaquant récupère " + healAmount + " PV.");
+                    caster.heal(healAmount);
+                }
+            }
+        }
 
         // Affichage pour le débogage
         System.out.println("reductionFactor : " + reductionFactor);
@@ -558,7 +640,25 @@ public class Personnage {
                 .mapToInt(BuffDebuffEffect::getFlatValue)
                 .sum();
         int passiveBonus = getPassiveState("stat_flat_" + statType.name(), 0);
-        int totalBonus = buffBonus + passiveBonus;
+        
+        int equipmentBonus = 0;
+        if (this.equipments != null) {
+            for (generation.grimoire.entity.Equipment eq : this.equipments) {
+                switch (statType) {
+                    case HEALTH -> equipmentBonus += eq.getBonusHealthMax();
+                    case MANA -> equipmentBonus += eq.getBonusManaMax();
+                    case POWER -> equipmentBonus += eq.getBonusPower();
+                    case STRENGTH -> equipmentBonus += eq.getBonusStrength();
+                    case ARMURE -> equipmentBonus += eq.getBonusArmor();
+                    case RESISTANCE -> equipmentBonus += eq.getBonusResistance();
+                    case SPEED -> equipmentBonus += eq.getBonusSpeed();
+                    case CRIT -> equipmentBonus += eq.getBonusCrit();
+                    default -> {}
+                }
+            }
+        }
+
+        int totalBonus = buffBonus + passiveBonus + equipmentBonus;
 
         if (this.voie != null && this.voie.getPassiveEffects() != null) {
             for (generation.grimoire.entity.voie.passif.VoiePassiveEffect p : this.voie.getPassiveEffects()) {
@@ -644,6 +744,10 @@ public class Personnage {
     /** Alias pour la lisibilité dans les passifs. */
     public int getMaxHp() {
         return getHealthMax();
+    }
+
+    public int getBaseHealthMax() {
+        return this.healthMax;
     }
 
     public int getHealthMax() {
@@ -765,6 +869,10 @@ public class Personnage {
     public void setManaCurrent(int manaCurrent) {
         int max = getManaMax();
         this.manaCurrent = Math.max(0, Math.min(manaCurrent, max));
+    }
+
+    public int getBaseManaMax() {
+        return this.manaMax;
     }
 
     public int getManaMax() {

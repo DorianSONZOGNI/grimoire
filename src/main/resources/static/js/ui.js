@@ -219,6 +219,12 @@ export function makeCustomSelect(selectIdOrElement) {
             if (t.includes('5')) return { icon: 'looks_5', color: '#f59e0b' };
             return { icon: 'stairs', color: '#10b981' };
         }
+        if (id === 'heroConfigCharacterSelect' || id === 'sandboxAddAllySelect' || id === 'sandboxAddEnemySelect') {
+            const t = text.toLowerCase();
+            if (t.includes('générique') || t.includes('generique')) return { icon: 'person', color: '#94a3b8' };
+            if (t.includes('charger')) return { icon: 'download', color: '#94a3b8' };
+            return { icon: 'account_circle', color: '#10b981' };
+        }
         if (id === 'castingTypeSelect') {
             if (text.includes('Instant')) return { icon: 'bolt', color: '#f59e0b' };
             if (text.includes('Banal')) return { icon: 'hourglass_empty', color: '#3b82f6' };
