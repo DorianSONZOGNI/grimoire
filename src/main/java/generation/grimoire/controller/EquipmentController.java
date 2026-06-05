@@ -19,44 +19,60 @@ public class EquipmentController {
 
     private final EquipmentRepository equipmentRepository;
     private final PersonnageService personnageService;
+    private final generation.grimoire.repository.auth.UserRepository userRepository;
 
     public EquipmentController(EquipmentRepository equipmentRepository,
-                               PersonnageService personnageService) {
+                               PersonnageService personnageService,
+                               generation.grimoire.repository.auth.UserRepository userRepository) {
         this.equipmentRepository = equipmentRepository;
         this.personnageService = personnageService;
+        this.userRepository = userRepository;
     }
 
     /** Liste tous les équipements */
     @GetMapping
-    public ResponseEntity<List<Map<String, Object>>> getAll() {
-        return ResponseEntity.ok(equipmentRepository.findAll().stream().map(this::toDto).toList());
+    public ResponseEntity<List<Map<String, Object>>> getAll(java.security.Principal principal) {
+        if (principal == null) return ResponseEntity.status(401).build();
+        return ResponseEntity.ok(equipmentRepository.findByUser_Username(principal.getName()).stream().map(this::toDto).toList());
     }
 
     /** Liste les équipements d'un personnage */
     @GetMapping("/personnage/{personnageId}")
-    public ResponseEntity<List<Map<String, Object>>> getByPersonnage(@PathVariable Long personnageId) {
+    public ResponseEntity<List<Map<String, Object>>> getByPersonnage(@PathVariable Long personnageId, java.security.Principal principal) {
+        if (principal == null) return ResponseEntity.status(401).build();
+        // Optionnel : on pourrait vérifier si le personnage appartient à l'utilisateur
         return ResponseEntity.ok(
-                equipmentRepository.findByPersonnageId(personnageId).stream().map(this::toDto).toList());
+                equipmentRepository.findByPersonnageId(personnageId).stream()
+                        .filter(e -> e.getUser() != null && e.getUser().getUsername().equals(principal.getName()))
+                        .map(this::toDto).toList());
     }
 
     /** Liste les équipements non-assignés (inventaire libre) */
     @GetMapping("/unassigned")
-    public ResponseEntity<List<Map<String, Object>>> getUnassigned() {
+    public ResponseEntity<List<Map<String, Object>>> getUnassigned(java.security.Principal principal) {
+        if (principal == null) return ResponseEntity.status(401).build();
         return ResponseEntity.ok(
-                equipmentRepository.findByPersonnageIsNull().stream().map(this::toDto).toList());
+                equipmentRepository.findByPersonnageIsNullAndUser_Username(principal.getName()).stream().map(this::toDto).toList());
     }
 
     /** Créer ou mettre à jour un équipement */
     @PostMapping
-    public ResponseEntity<Map<String, Object>> createOrUpdate(@RequestBody EquipmentDto dto) {
+    public ResponseEntity<Map<String, Object>> createOrUpdate(@RequestBody EquipmentDto dto, java.security.Principal principal) {
+        if (principal == null) return ResponseEntity.status(401).build();
+        generation.grimoire.entity.auth.AppUser user = userRepository.findByUsername(principal.getName()).orElse(null);
+
         Equipment equipment;
         boolean isUpdate = false;
 
         if (dto.getId() != null && equipmentRepository.existsById(dto.getId())) {
             equipment = equipmentRepository.findById(dto.getId()).orElseThrow();
+            if (equipment.getUser() != null && !equipment.getUser().getUsername().equals(principal.getName())) {
+                return ResponseEntity.status(403).build();
+            }
             isUpdate = true;
         } else {
             equipment = new Equipment();
+            equipment.setUser(user);
         }
 
         equipment.setName(dto.getName());
@@ -119,11 +135,21 @@ public class EquipmentController {
     public ResponseEntity<Map<String, Object>> equip(
             @PathVariable Long equipmentId,
             @PathVariable Long personnageId,
-            @RequestParam(required = false) generation.grimoire.enumeration.EquipmentSlot targetSlot) {
+            @RequestParam(required = false) generation.grimoire.enumeration.EquipmentSlot targetSlot,
+            java.security.Principal principal) {
+        
+        if (principal == null) return ResponseEntity.status(401).build();
 
         Equipment equipment = equipmentRepository.findById(equipmentId)
                 .orElseThrow(() -> new RuntimeException("Équipement non trouvé."));
         Personnage personnage = personnageService.findByIdOrThrow(personnageId);
+
+        if (equipment.getUser() != null && !equipment.getUser().getUsername().equals(principal.getName())) {
+            return ResponseEntity.status(403).build();
+        }
+        if (personnage.getUser() != null && !personnage.getUser().getUsername().equals(principal.getName())) {
+            return ResponseEntity.status(403).build();
+        }
 
         try {
             validateRarityLimit(personnage, equipment);
@@ -153,9 +179,14 @@ public class EquipmentController {
 
     /** Déséquiper un objet */
     @PostMapping("/{equipmentId}/unequip")
-    public ResponseEntity<Map<String, Object>> unequip(@PathVariable Long equipmentId) {
+    public ResponseEntity<Map<String, Object>> unequip(@PathVariable Long equipmentId, java.security.Principal principal) {
+        if (principal == null) return ResponseEntity.status(401).build();
         Equipment equipment = equipmentRepository.findById(equipmentId)
                 .orElseThrow(() -> new RuntimeException("Équipement non trouvé."));
+
+        if (equipment.getUser() != null && !equipment.getUser().getUsername().equals(principal.getName())) {
+            return ResponseEntity.status(403).build();
+        }
 
         String charName = equipment.getPersonnage() != null ? equipment.getPersonnage().getName() : "Inconnu";
         equipment.setPersonnage(null);
@@ -168,8 +199,13 @@ public class EquipmentController {
 
     /** Supprimer un équipement */
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete(@PathVariable Long id) {
-        if (equipmentRepository.existsById(id)) {
+    public ResponseEntity<String> delete(@PathVariable Long id, java.security.Principal principal) {
+        if (principal == null) return ResponseEntity.status(401).build();
+        Equipment equipment = equipmentRepository.findById(id).orElse(null);
+        if (equipment != null) {
+            if (equipment.getUser() != null && !equipment.getUser().getUsername().equals(principal.getName())) {
+                return ResponseEntity.status(403).build();
+            }
             equipmentRepository.deleteById(id);
             return ResponseEntity.ok("Équipement supprimé.");
         }

@@ -17,34 +17,52 @@ import java.util.Map;
 public class PersonnageController {
 
     private final PersonnageService personnageService;
+    private final generation.grimoire.repository.PersonnageRepository personnageRepository;
+    private final generation.grimoire.repository.auth.UserRepository userRepository;
     private final VoieRepository voieRepository;
     private final SpiritualiteRepository spiritualiteRepository;
 
     public PersonnageController(PersonnageService personnageService,
+                                generation.grimoire.repository.PersonnageRepository personnageRepository,
+                                generation.grimoire.repository.auth.UserRepository userRepository,
                                 VoieRepository voieRepository,
                                 SpiritualiteRepository spiritualiteRepository) {
         this.personnageService = personnageService;
+        this.personnageRepository = personnageRepository;
+        this.userRepository = userRepository;
         this.voieRepository = voieRepository;
         this.spiritualiteRepository = spiritualiteRepository;
     }
 
     @GetMapping
-    public ResponseEntity<List<Map<String, Object>>> getAllPersonnages() {
-        List<Personnage> all = personnageService.findAll();
+    public ResponseEntity<List<Map<String, Object>>> getAllPersonnages(java.security.Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
+        }
+        List<Personnage> all = personnageRepository.findByUser_Username(principal.getName());
         List<Map<String, Object>> result = all.stream().map(this::toDto).toList();
         return ResponseEntity.ok(result);
     }
 
     @PostMapping
-    public ResponseEntity<Map<String, Object>> createOrUpdate(@RequestBody PersonnageCreationDto dto) {
+    public ResponseEntity<Map<String, Object>> createOrUpdate(@RequestBody PersonnageCreationDto dto, java.security.Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
+        }
+        generation.grimoire.entity.auth.AppUser user = userRepository.findByUsername(principal.getName()).orElse(null);
+
         Personnage personnage;
         boolean isUpdate = false;
 
         if (dto.getId() != null && personnageService.existsById(dto.getId())) {
             personnage = personnageService.findByIdOrThrow(dto.getId());
+            if (personnage.getUser() != null && !personnage.getUser().getUsername().equals(principal.getName())) {
+                return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).build();
+            }
             isUpdate = true;
         } else {
             personnage = new Personnage();
+            personnage.setUser(user);
         }
 
         personnage.setName(dto.getName());
@@ -88,7 +106,14 @@ public class PersonnageController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete(@PathVariable Long id) {
+    public ResponseEntity<String> delete(@PathVariable Long id, java.security.Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
+        }
+        Personnage personnage = personnageService.findByIdOrThrow(id);
+        if (personnage.getUser() != null && !personnage.getUser().getUsername().equals(principal.getName())) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).build();
+        }
         if (personnageService.existsById(id)) {
             personnageService.deleteById(id);
             return ResponseEntity.ok("Personnage supprimé.");
