@@ -641,12 +641,79 @@ function renderEquipModal() {
                 );
             }
 
+            // Sort by rarity (descending) then by name
+            const rarityOrder = {
+                'COMMUN': 0,
+                'RARE': 1,
+                'LEGENDAIRE': 2,
+                'EPIQUE': 3,
+                'RELIQUE': 4
+            };
+            available.sort((a, b) => {
+                const rA = a.rarity ? rarityOrder[a.rarity] || 0 : 0;
+                const rB = b.rarity ? rarityOrder[b.rarity] || 0 : 0;
+                if (rA !== rB) return rB - rA;
+                return a.name.localeCompare(b.name);
+            });
+
+
             let availableHtml = '';
             if (available.length > 0) {
-                availableHtml = `<select class="eq-assign-select" onchange="if(this.value) equipItem(this.value, ${perso.id}, '${slotKey}')">
-                    <option value="">Choisir...</option>
-                    ${available.map(a => `<option value="${a.id}" class="${a.rarity ? 'rarity-' + a.rarity : ''}">${a.name} ${a.rarity ? '(' + a.rarity + ')' : ''}</option>`).join('')}
-                </select>`;
+                availableHtml = `
+                <div class="custom-select-wrapper" tabindex="0" style="margin-top: 0.5rem; width: 100%;">
+                    <div class="custom-select-trigger" style="padding: 0.4rem 0.6rem; font-size: 0.8rem; border-color: rgba(255,255,255,0.1); background: rgba(0,0,0,0.2);">
+                        <span class="cs-label" style="color: var(--text-muted);">Choisir un équipement...</span>
+                        <span class="material-symbols-outlined cs-arrow" style="font-size: 1.1rem; color: var(--text-muted);">expand_more</span>
+                    </div>
+                    <div class="custom-select-options" style="font-size: 0.85rem;">
+                        <div class="custom-option" data-value=""><span style="color: var(--text-muted);">Choisir...</span></div>
+                        ${available.map(a => {
+                            const aStatsChips = STAT_DEFS
+                                .filter(s => a[s.key] && a[s.key] !== 0)
+                                .map(s => {
+                                    const val = a[s.key];
+                                    const sign = val > 0 ? '+' : '';
+                                    const isMalus = val < 0;
+                                    return `<span class="eq-stat-mini ${isMalus ? 'malus' : ''}"><span class="material-symbols-outlined" style="color:${isMalus ? '#ef4444' : s.color}; font-size:0.75rem;">${s.icon}</span>${sign}${val}</span>`;
+                                }).join('');
+
+                            let aSpecialEffectHtml = '';
+                            if (a.specialEffect && a.specialEffect !== 'NONE') {
+                                const effectLabels = {
+                                    'LIFESTEAL': 'Vol de Vie',
+                                    'THORNS': 'Épines',
+                                    'MANA_SHIELD': 'Bouclier de Mana',
+                                    'CHEAT_DEATH': 'Ange Gardien',
+                                    'CRIT_DAMAGE': 'Dégâts Critiques'
+                                };
+                                const label = effectLabels[a.specialEffect] || a.specialEffect;
+                                aSpecialEffectHtml = `<div style="margin-top: 0.3rem; font-size: 0.7rem; color: #c084fc; background: rgba(168, 85, 247, 0.1); padding: 0.1rem 0.4rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 0.2rem;">
+                                    <span class="material-symbols-outlined" style="font-size: 0.8rem;">auto_awesome</span>
+                                    ${label} : ${a.specialEffectValue}
+                                </div>`;
+                            }
+
+                            const tooltipHtml = `
+                                <div class="tooltip-data" style="display:none;">
+                                    <div style="font-weight: bold; margin-bottom: 0.3rem; font-size: 1rem;" class="${a.rarity ? 'rarity-' + a.rarity : ''}">${a.name} ${a.rarity ? '(' + a.rarity + ')' : ''}</div>
+                                    <div class="equip-slot-stats" style="flex-wrap: wrap;">
+                                        ${aStatsChips || '<span style="opacity:0.4;">Aucun bonus</span>'}
+                                        ${aSpecialEffectHtml}
+                                    </div>
+                                </div>
+                            `;
+
+                            return `
+                                <div class="custom-option" data-value="${a.id}" onmouseenter="showEqTooltip(this)" onmouseleave="hideEqTooltip()">
+                                    <span class="${a.rarity ? 'rarity-' + a.rarity : ''}">${a.name}</span>
+                                    ${a.rarity ? '<span style="font-size: 0.7rem; opacity: 0.5; margin-left: 0.3rem;">(' + a.rarity + ')</span>' : ''}
+                                    ${tooltipHtml}
+                                </div>
+                            `;
+                        }).join('')}
+                    </div>
+                    <input type="hidden" class="eq-assign-hidden" data-perso-id="${perso.id}" data-slot="${slotKey}" value="">
+                </div>`;
             } else {
                 availableHtml = `<span style="font-size: 0.72rem; color: #475569; font-style: italic;">Aucun disponible</span>`;
             }
@@ -794,6 +861,13 @@ document.addEventListener('click', (e) => {
         if (hiddenInput.id === 'searchVoie' || hiddenInput.id === 'searchSpirit') {
             filterPersonnages();
         }
+
+        // Trigger specific logic for equipment assign
+        if (hiddenInput.classList.contains('eq-assign-hidden')) {
+            if (hiddenInput.value) {
+                equipItem(hiddenInput.value, hiddenInput.dataset.persoId, hiddenInput.dataset.slot);
+            }
+        }
     }
 });
 
@@ -869,3 +943,33 @@ window.addEventListener('DOMContentLoaded', async () => {
     await loadAllEquipments();
     await loadPersonnages();
 });
+
+window.showEqTooltip = function(el) {
+    let tooltip = document.getElementById('globalSpellTooltip');
+    if (!tooltip) {
+        tooltip = document.createElement('div');
+        tooltip.id = 'globalSpellTooltip';
+        document.body.appendChild(tooltip);
+    }
+    const dataEl = el.querySelector('.tooltip-data');
+    if (!dataEl) return;
+
+    tooltip.innerHTML = dataEl.innerHTML;
+    tooltip.style.display = 'flex';
+
+    const rect = el.getBoundingClientRect();
+    let topPos = rect.top - tooltip.offsetHeight - 8;
+    if (topPos < 10) topPos = rect.bottom + 8;
+
+    let leftPos = rect.right - tooltip.offsetWidth;
+    if (leftPos < 10) leftPos = 10;
+
+    tooltip.style.top = topPos + 'px';
+    tooltip.style.left = leftPos + 'px';
+};
+
+window.hideEqTooltip = function() {
+    const tooltip = document.getElementById('globalSpellTooltip');
+    if (tooltip) tooltip.style.display = 'none';
+};
+
