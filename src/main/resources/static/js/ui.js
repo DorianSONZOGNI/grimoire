@@ -48,7 +48,7 @@ export function adjustGrimoireHeight() {
 
     if (window.innerWidth >= 1025) {
         if (state.grimoireDisplayMode === 'scroll') {
-            const forgeHeight = forgePanel.offsetHeight;
+            const forgeHeight = forgePanel.offsetHeight > 0 ? forgePanel.offsetHeight : window.innerHeight - 200;
 
             const title = grimoirePanel.querySelector('.panel-title');
 

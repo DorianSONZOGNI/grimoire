@@ -11,6 +11,11 @@
             /* compense le padding visuellement pour l'alignement */
         }
 
+.spells-list.full-mode {
+            max-height: none;
+            overflow-y: visible;
+        }
+
 .spells-list::-webkit-scrollbar{
             width: 6px;
         }

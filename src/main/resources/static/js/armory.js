@@ -1,5 +1,27 @@
 // ===== Armory Page JavaScript =====
 
+function applyRbac() {
+    if (window.currentUser !== undefined && !window.isAdmin) {
+        const baseStats = document.getElementById('baseStatsSection');
+        if (baseStats) baseStats.style.display = 'none';
+        
+        const voieLvl = document.getElementById('charVoieLevelWrapper');
+        if (voieLvl && voieLvl.parentElement) voieLvl.parentElement.style.display = 'none';
+        
+        const spiritLvl = document.getElementById('charSpiritLevelWrapper');
+        if (spiritLvl && spiritLvl.parentElement) spiritLvl.parentElement.style.display = 'none';
+        
+        const eqCreateSection = document.querySelector('.equip-create-section');
+        if (eqCreateSection) eqCreateSection.style.display = 'none';
+    }
+    
+    // Re-render characters to apply button visibility rules
+    if (personnages.length > 0) {
+        updateCharsList();
+    }
+}
+window.addEventListener('authLoaded', applyRbac);
+
 let voies = [];
 let spiritualites = [];
 let personnages = [];
@@ -555,12 +577,14 @@ function renderPersonnages() {
                         <button class="char-btn-equip" onclick="openEquipModal(${p.id})" title="Gérer l'équipement">
                             <span class="material-symbols-outlined" style="font-size: 0.95rem;">shield</span> Équiper
                         </button>
+                        ${window.isAdmin ? `
                         <button class="char-btn-edit" onclick="editPersonnage(${p.id})" title="Éditer">
                             <span class="material-symbols-outlined" style="font-size: 0.95rem;">edit</span> Éditer
                         </button>
                         <button class="char-btn-delete" onclick="deletePersonnage(${p.id})" title="Supprimer">
                             <span class="material-symbols-outlined" style="font-size: 0.95rem;">delete</span>
                         </button>
+                        ` : ''}
                     </div>
                 </div>
                 <div class="char-card-badges">${badges}</div>
