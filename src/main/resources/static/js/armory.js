@@ -208,6 +208,26 @@ async function submitEquipment() {
     }
 
 
+    let specialEffect = document.getElementById('eqSpecialEffect').value;
+    let specialEffectValue = parseInt(document.getElementById('eqSpecialEffectValue').value) || 0;
+
+    // Security: Only Epic and Relic can have special effects
+    if (rarity !== 'EPIQUE' && rarity !== 'RELIQUE') {
+        specialEffect = 'NONE';
+        specialEffectValue = 0;
+    } else {
+        // If they chose no effect on an Epic/Relic, we just ignore the value
+        if (specialEffect === 'NONE') {
+            specialEffectValue = 0;
+        }
+    }
+
+    // Security: Special effect value must be strictly positive
+    if (specialEffect !== 'NONE' && specialEffectValue <= 0) {
+        showNotif('La valeur de l\'effet spécial doit être strictement supérieure à 0.', true);
+        return;
+    }
+
     const dto = {
         name,
         slot,
@@ -221,9 +241,9 @@ async function submitEquipment() {
         bonusCrit: parseInt(document.getElementById('eqCrit').value) || 0,
         regenHealthPerTurn: parseInt(document.getElementById('eqRegenHp').value) || 0,
         regenManaPerTurn: parseInt(document.getElementById('eqRegenMana').value) || 0,
-        rarity: document.getElementById('eqRarity').value,
-        specialEffect: document.getElementById('eqSpecialEffect').value,
-        specialEffectValue: parseInt(document.getElementById('eqSpecialEffectValue').value) || 0,
+        rarity,
+        specialEffect,
+        specialEffectValue,
         personnageId: equipModalPersoId,
     };
 
