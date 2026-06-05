@@ -1,0 +1,492 @@
+/* ===== Armory Page Layout ===== */
+.armory-header {
+    padding: 1.5rem 5%;
+    border-bottom: 1px solid var(--glass-border);
+    background: rgba(11, 15, 25, 0.6);
+    backdrop-filter: blur(12px);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
+}
+
+.armory-logo {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.8rem;
+    font-weight: 700;
+    background: linear-gradient(to right, #f59e0b, #ef4444);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.armory-logo .material-symbols-outlined {
+    font-size: 2rem;
+    background: linear-gradient(to right, #f59e0b, #ef4444);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
+}
+
+.armory-nav-link {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    text-decoration: none;
+    padding: 0.4rem 0.8rem;
+    border: 1px solid var(--glass-border);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.03);
+    transition: all 0.2s ease;
+}
+
+.armory-nav-link:hover {
+    color: var(--primary);
+    border-color: var(--primary);
+    background: rgba(139, 92, 246, 0.08);
+}
+
+.armory-main {
+    padding: 2rem 5%;
+    display: grid;
+    grid-template-columns: 1fr 1.3fr;
+    gap: 2.5rem;
+    max-width: 1600px;
+    margin: 0 auto;
+    width: 100%;
+}
+
+@media (max-width: 1024px) {
+    .armory-main {
+        grid-template-columns: 1fr;
+    }
+}
+
+/* ===== Character Creation Form ===== */
+.armory-form-panel {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 2rem;
+    backdrop-filter: blur(16px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    position: relative;
+}
+
+.armory-form-panel::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(to right, #f59e0b, #ef4444);
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+}
+
+.armory-panel-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.3rem;
+    font-weight: 600;
+    color: var(--text-main);
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.armory-panel-title .material-symbols-outlined {
+    color: #f59e0b;
+}
+
+.armory-section-title {
+    font-size: 0.7rem;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.armory-section-title .material-symbols-outlined {
+    font-size: 1rem;
+}
+
+.armory-form-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem;
+}
+
+.armory-form-row.triple {
+    grid-template-columns: 1fr 1fr 1fr;
+}
+
+.armory-form-row.quad {
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+}
+
+@media (max-width: 600px) {
+    .armory-form-row,
+    .armory-form-row.triple,
+    .armory-form-row.quad {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.armory-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.armory-field label {
+    font-size: 0.78rem;
+    color: var(--text-muted);
+    font-weight: 500;
+    display: flex;
+    align-items: center;
+    gap: 0.25rem;
+}
+
+.armory-field label .material-symbols-outlined {
+    font-size: 1rem;
+}
+
+.armory-field input,
+.armory-field select {
+    padding: 0.5rem 0.7rem;
+    font-size: 0.85rem;
+    background: rgba(0, 0, 0, 0.35);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 8px;
+    color: #fff;
+    outline: none;
+    transition: border-color 0.2s, box-shadow 0.2s;
+    font-family: 'Inter', sans-serif;
+}
+
+.armory-field input:focus,
+.armory-field select:focus {
+    border-color: #f59e0b;
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.15);
+}
+
+.armory-field input[type="number"] {
+    width: 100%;
+}
+
+.armory-submit-btn {
+    padding: 0.7rem 1.5rem;
+    font-size: 0.95rem;
+    font-weight: 600;
+    font-family: 'Outfit', sans-serif;
+    color: #fff;
+    background: linear-gradient(135deg, #f59e0b, #ef4444);
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    transition: all 0.3s ease;
+    box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+    margin-top: 0.5rem;
+}
+
+.armory-submit-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 25px rgba(245, 158, 11, 0.45);
+}
+
+.armory-submit-btn:active {
+    transform: translateY(0);
+}
+
+/* ===== Character Cards List ===== */
+.armory-list-panel {
+    background: var(--glass-bg);
+    border: 1px solid var(--glass-border);
+    border-radius: 16px;
+    padding: 2rem;
+    backdrop-filter: blur(16px);
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+    display: flex;
+    flex-direction: column;
+    gap: 1.2rem;
+    position: relative;
+}
+
+.armory-list-panel::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    height: 3px;
+    background: linear-gradient(to right, #3b82f6, #8b5cf6);
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
+}
+
+.armory-characters-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+    max-height: calc(100vh - 300px);
+    overflow-y: auto;
+    padding-right: 0.3rem;
+}
+
+.armory-characters-grid::-webkit-scrollbar {
+    width: 4px;
+}
+
+.armory-characters-grid::-webkit-scrollbar-track {
+    background: transparent;
+}
+
+.armory-characters-grid::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 4px;
+}
+
+.char-card {
+    background: rgba(255, 255, 255, 0.02);
+    border: 1px solid rgba(255, 255, 255, 0.06);
+    border-radius: 12px;
+    padding: 1rem 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+    transition: all 0.25s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.char-card::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0;
+    bottom: 0;
+    width: 3px;
+    background: linear-gradient(to bottom, #f59e0b, #ef4444);
+    border-radius: 3px 0 0 3px;
+    opacity: 0.6;
+    transition: opacity 0.2s;
+}
+
+.char-card:hover {
+    border-color: rgba(255, 255, 255, 0.12);
+    background: rgba(255, 255, 255, 0.04);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.2);
+}
+
+.char-card:hover::before {
+    opacity: 1;
+}
+
+.char-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+}
+
+.char-card-name {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #f8fafc;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.char-card-name .material-symbols-outlined {
+    font-size: 1.2rem;
+    color: #f59e0b;
+}
+
+.char-card-actions {
+    display: flex;
+    gap: 0.3rem;
+}
+
+.char-card-actions button {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.75rem;
+    border-radius: 6px;
+    border: 1px solid;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    font-family: 'Inter', sans-serif;
+    transition: all 0.2s;
+    background: transparent;
+}
+
+.char-btn-edit {
+    color: #38bdf8;
+    border-color: rgba(56, 189, 248, 0.3) !important;
+}
+
+.char-btn-edit:hover {
+    background: rgba(56, 189, 248, 0.12) !important;
+}
+
+.char-btn-delete {
+    color: #f43f5e;
+    border-color: rgba(244, 63, 94, 0.3) !important;
+}
+
+.char-btn-delete:hover {
+    background: rgba(244, 63, 94, 0.12) !important;
+}
+
+.char-card-badges {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}
+
+.char-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    padding: 0.15rem 0.45rem;
+    border-radius: 6px;
+    font-size: 0.72rem;
+    font-weight: 600;
+    border: 1px solid;
+}
+
+.char-badge-voie {
+    color: #a855f7;
+    border-color: rgba(168, 85, 247, 0.3);
+    background: rgba(168, 85, 247, 0.08);
+}
+
+.char-badge-spirit {
+    color: #fb923c;
+    border-color: rgba(251, 146, 60, 0.3);
+    background: rgba(251, 146, 60, 0.08);
+}
+
+.char-card-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.35rem;
+}
+
+.char-stat-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    padding: 0.15rem 0.4rem;
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 5px;
+    font-size: 0.72rem;
+    font-weight: 500;
+    color: #cbd5e1;
+}
+
+.char-stat-chip .material-symbols-outlined {
+    font-size: 0.85rem;
+}
+
+/* ===== Inventory Placeholder ===== */
+.armory-inventory-section {
+    margin-top: 1rem;
+    padding: 1.5rem;
+    background: rgba(0, 0, 0, 0.15);
+    border: 1px dashed rgba(255, 255, 255, 0.08);
+    border-radius: 12px;
+    text-align: center;
+}
+
+.armory-inventory-title {
+    font-family: 'Outfit', sans-serif;
+    font-size: 1rem;
+    font-weight: 600;
+    color: var(--text-muted);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    margin-bottom: 0.5rem;
+}
+
+.armory-inventory-title .material-symbols-outlined {
+    font-size: 1.2rem;
+    color: #64748b;
+}
+
+.armory-inventory-placeholder {
+    font-size: 0.85rem;
+    color: #475569;
+    font-style: italic;
+}
+
+/* ===== Empty State ===== */
+.armory-empty-state {
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-muted);
+    font-size: 0.9rem;
+    font-style: italic;
+}
+
+.armory-empty-state .material-symbols-outlined {
+    font-size: 2.5rem;
+    display: block;
+    margin-bottom: 0.5rem;
+    opacity: 0.3;
+}
+
+/* ===== Notification ===== */
+.armory-notif {
+    position: fixed;
+    bottom: 2rem;
+    right: 2rem;
+    background: linear-gradient(135deg, rgba(16, 185, 129, 0.95), rgba(5, 150, 105, 0.95));
+    color: #fff;
+    padding: 0.8rem 1.4rem;
+    border-radius: 12px;
+    font-size: 0.9rem;
+    font-weight: 500;
+    box-shadow: 0 8px 30px rgba(0, 0, 0, 0.4);
+    transform: translateY(120%);
+    opacity: 0;
+    transition: all 0.4s cubic-bezier(0.22, 1, 0.36, 1);
+    z-index: 99999;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+    backdrop-filter: blur(8px);
+}
+
+.armory-notif.show {
+    transform: translateY(0);
+    opacity: 1;
+}
+
+.armory-notif.error {
+    background: linear-gradient(135deg, rgba(239, 68, 68, 0.95), rgba(220, 38, 38, 0.95));
+}
