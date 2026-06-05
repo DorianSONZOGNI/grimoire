@@ -96,6 +96,9 @@ async function checkAuthStatus() {
         const res = await fetch('/api/auth/me', { credentials: 'same-origin' });
         if (res.ok) {
             const data = await res.json();
+            window.currentUser = data;
+            window.isAdmin = data.roles && data.roles.some(r => r.authority === 'ADMIN' || r.authority === 'ROLE_ADMIN');
+            window.dispatchEvent(new Event('authLoaded'));
             container.innerHTML = `
                 <div style="display: flex; align-items: center; gap: 0.3rem; color: #10b981; font-weight: 500; font-size: 0.85rem;">
                     <span class="material-symbols-outlined" style="font-size: 1.1rem;">account_circle</span>
@@ -106,6 +109,9 @@ async function checkAuthStatus() {
                 </button>
             `;
         } else {
+            window.currentUser = null;
+            window.isAdmin = false;
+            window.dispatchEvent(new Event('authLoaded'));
             container.innerHTML = `
                 <a href="/login.html" style="color: #3b82f6; text-decoration: none; font-weight: 500; font-size: 0.85rem; padding: 0.3rem 0.6rem; border-radius: 6px; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); transition: all 0.2s;">
                     Se connecter
