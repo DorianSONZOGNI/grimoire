@@ -504,13 +504,28 @@ function renderPersonnages() {
     const searchName = document.getElementById('searchName') ? document.getElementById('searchName').value.toLowerCase() : '';
     const searchVoie = document.getElementById('searchVoie') ? document.getElementById('searchVoie').value : '';
     const searchSpirit = document.getElementById('searchSpirit') ? document.getElementById('searchSpirit').value : '';
+    const searchUser = document.getElementById('searchUser') ? document.getElementById('searchUser').value : '';
+    const sortMode = document.getElementById('charSort') ? document.getElementById('charSort').value : 'name';
 
-    const filtered = personnages.filter(p => {
+    let filtered = personnages.filter(p => {
         const matchName = !searchName || (p.name && p.name.toLowerCase().includes(searchName));
         const matchVoie = !searchVoie || (p.voie && p.voie.id == searchVoie);
         const matchSpirit = !searchSpirit || (p.spiritualite && p.spiritualite.id == searchSpirit);
-        return matchName && matchVoie && matchSpirit;
+        const matchUser = !searchUser || (p.ownerUsername && p.ownerUsername === searchUser);
+        return matchName && matchVoie && matchSpirit && matchUser;
     });
+    
+    // Sort logic
+    if (sortMode === 'name') {
+        filtered.sort((a, b) => a.name.localeCompare(b.name));
+    } else if (sortMode === 'user') {
+        filtered.sort((a, b) => {
+            const uA = a.ownerUsername || '';
+            const uB = b.ownerUsername || '';
+            if (uA === uB) return a.name.localeCompare(b.name);
+            return uA.localeCompare(uB);
+        });
+    }
 
     if (filtered.length === 0) {
         container.innerHTML = `
@@ -572,6 +587,7 @@ function renderPersonnages() {
                     <div class="char-card-name">
                         <span class="material-symbols-outlined">person</span>
                         ${p.name}
+                        ${window.isAdmin ? `<span style="margin-left: 0.5rem; font-size: 0.65rem; padding: 0.15rem 0.4rem; background: ${p.ownerUsername === window.currentUser?.username ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.1)'}; color: ${p.ownerUsername === window.currentUser?.username ? '#34d399' : '#cbd5e1'}; border-radius: 4px; border: 1px solid ${p.ownerUsername === window.currentUser?.username ? 'rgba(16, 185, 129, 0.3)' : 'rgba(255, 255, 255, 0.1)'}; white-space: nowrap;"><span class="material-symbols-outlined" style="font-size: 0.7rem; vertical-align: middle; margin-right: 2px;">account_circle</span>${p.ownerUsername}</span>` : ''}
                     </div>
                     <div class="char-card-actions">
                         <button class="char-btn-equip" onclick="openEquipModal(${p.id})" title="Gérer l'équipement">
