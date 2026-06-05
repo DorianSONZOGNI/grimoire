@@ -48,4 +48,8 @@ public class Equipment {
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "personnage_id", nullable = true)
     private generation.grimoire.entity.personnage.Personnage personnage;
+
+    @ManyToOne(fetch = FetchType.LAZY)
+    @JoinColumn(name = "user_id", nullable = true)
+    private generation.grimoire.entity.auth.AppUser user;
 }
