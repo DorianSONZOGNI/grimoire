@@ -18,4 +18,19 @@ public class PersonnageService {
                 .orElseThrow(() -> new EntityNotFoundException("Personnage non trouvé : " + id));
     }
 
+    public java.util.List<Personnage> findAll() {
+        return persoRepo.findAll();
+    }
+
+    public Personnage save(Personnage personnage) {
+        return persoRepo.save(personnage);
+    }
+
+    public void deleteById(Long id) {
+        persoRepo.deleteById(id);
+    }
+
+    public boolean existsById(Long id) {
+        return persoRepo.existsById(id);
+    }
 }

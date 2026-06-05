@@ -1,0 +1,147 @@
+package generation.grimoire.controller;
+
+import generation.grimoire.entity.personnage.Personnage;
+import generation.grimoire.repository.SpiritualiteRepository;
+import generation.grimoire.repository.VoieRepository;
+import generation.grimoire.service.PersonnageService;
+import lombok.Data;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.*;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+@RestController
+@RequestMapping("/api/personnages")
+public class PersonnageController {
+
+    private final PersonnageService personnageService;
+    private final VoieRepository voieRepository;
+    private final SpiritualiteRepository spiritualiteRepository;
+
+    public PersonnageController(PersonnageService personnageService,
+                                VoieRepository voieRepository,
+                                SpiritualiteRepository spiritualiteRepository) {
+        this.personnageService = personnageService;
+        this.voieRepository = voieRepository;
+        this.spiritualiteRepository = spiritualiteRepository;
+    }
+
+    @GetMapping
+    public ResponseEntity<List<Map<String, Object>>> getAllPersonnages() {
+        List<Personnage> all = personnageService.findAll();
+        List<Map<String, Object>> result = all.stream().map(this::toDto).toList();
+        return ResponseEntity.ok(result);
+    }
+
+    @PostMapping
+    public ResponseEntity<Map<String, Object>> createOrUpdate(@RequestBody PersonnageCreationDto dto) {
+        Personnage personnage;
+        boolean isUpdate = false;
+
+        if (dto.getId() != null && personnageService.existsById(dto.getId())) {
+            personnage = personnageService.findByIdOrThrow(dto.getId());
+            isUpdate = true;
+        } else {
+            personnage = new Personnage();
+        }
+
+        personnage.setName(dto.getName());
+        personnage.setHealthMax(Math.max(1, dto.getHealthMax()));
+        personnage.setHealthCurrent(Math.max(1, dto.getHealthMax()));
+        personnage.setManaMax(Math.max(0, dto.getManaMax()));
+        personnage.setManaCurrent(Math.max(0, dto.getManaMax()));
+        personnage.setPower(Math.max(0, dto.getPower()));
+        personnage.setStrength(Math.max(0, dto.getStrength()));
+        personnage.setArmor(Math.max(0, dto.getArmor()));
+        personnage.setResistance(Math.max(0, dto.getResistance()));
+        personnage.setSpeed(Math.max(0, dto.getSpeed()));
+        personnage.setCrit(Math.max(0, Math.min(100, dto.getCrit())));
+
+        // Voie
+        if (dto.getVoieId() != null) {
+            voieRepository.findById(dto.getVoieId()).ifPresent(personnage::setVoie);
+        } else {
+            personnage.setVoie(null);
+        }
+        personnage.setVoieLevel(Math.max(1, Math.min(5, dto.getVoieLevel())));
+
+        // Spiritualité
+        if (dto.getSpiritualiteId() != null) {
+            spiritualiteRepository.findById(dto.getSpiritualiteId()).ifPresent(personnage::setSpiritualite);
+        } else {
+            personnage.setSpiritualite(null);
+        }
+        personnage.setSpiritualiteLevel(Math.max(1, Math.min(3, dto.getSpiritualiteLevel())));
+
+        Personnage saved = personnageService.save(personnage);
+
+        String message = isUpdate
+                ? "Personnage \"" + saved.getName() + "\" mis à jour avec succès."
+                : "Personnage \"" + saved.getName() + "\" créé avec succès.";
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("message", message);
+        response.put("personnage", toDto(saved));
+        return ResponseEntity.ok(response);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<String> delete(@PathVariable Long id) {
+        if (personnageService.existsById(id)) {
+            personnageService.deleteById(id);
+            return ResponseEntity.ok("Personnage supprimé.");
+        }
+        return ResponseEntity.notFound().build();
+    }
+
+    private Map<String, Object> toDto(Personnage p) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("id", p.getId());
+        map.put("name", p.getName());
+        map.put("healthMax", p.getHealthMax());
+        map.put("manaMax", p.getManaMax());
+        map.put("power", p.getPower());
+        map.put("strength", p.getStrength());
+        map.put("armor", p.getArmor());
+        map.put("resistance", p.getResistance());
+        map.put("speed", p.getSpeed());
+        map.put("crit", p.getCrit());
+        map.put("voieLevel", p.getVoieLevel());
+        map.put("spiritualiteLevel", p.getSpiritualiteLevel());
+
+        if (p.getVoie() != null) {
+            Map<String, Object> voie = new HashMap<>();
+            voie.put("id", p.getVoie().getId());
+            voie.put("nom", p.getVoie().getNom());
+            map.put("voie", voie);
+        }
+        if (p.getSpiritualite() != null) {
+            Map<String, Object> spirit = new HashMap<>();
+            spirit.put("id", p.getSpiritualite().getId());
+            spirit.put("nom", p.getSpiritualite().getNom());
+            map.put("spiritualite", spirit);
+        }
+
+        return map;
+    }
+
+    @Data
+    public static class PersonnageCreationDto {
+        private Long id;
+        private String name;
+        private int healthMax = 100;
+        private int manaMax = 100;
+        private int power = 25;
+        private int strength = 10;
+        private int armor = 10;
+        private int resistance = 10;
+        private int speed = 0;
+        private int crit = 0;
+        private Long voieId;
+        private int voieLevel = 1;
+        private Long spiritualiteId;
+        private int spiritualiteLevel = 1;
+    }
+}

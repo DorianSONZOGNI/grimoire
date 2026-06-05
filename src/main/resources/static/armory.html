@@ -1,0 +1,218 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Armurerie — Grimoire</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="icon" type="image/png" href="/favicon.svg">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="/styles/variables.css">
+    <link rel="stylesheet" href="/styles/armory.css">
+</head>
+
+<body>
+
+    <header class="armory-header">
+        <div class="armory-logo">
+            <span class="material-symbols-outlined">shield</span>
+            Armurerie
+        </div>
+        <div style="display: flex; gap: 0.6rem; align-items: center;">
+            <a href="/" class="armory-nav-link">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">auto_awesome</span>
+                Grimoire
+            </a>
+        </div>
+    </header>
+
+    <div class="armory-main">
+        <!-- Colonne Gauche : Formulaire de Création -->
+        <div class="armory-form-panel">
+            <div class="armory-panel-title" id="formTitle">
+                <span class="material-symbols-outlined">person_add</span>
+                Créer un Personnage
+            </div>
+
+            <!-- Nom -->
+            <div class="armory-field">
+                <label for="charName">
+                    <span class="material-symbols-outlined" style="color: #f59e0b;">badge</span>
+                    Nom du personnage
+                </label>
+                <input type="text" id="charName" placeholder="Ex: Aldric le Sage, Sombria..." required>
+            </div>
+
+            <!-- Voie & Spiritualité -->
+            <div class="armory-section-title">
+                <span class="material-symbols-outlined" style="color: #a855f7;">auto_awesome</span>
+                Voie & Spiritualité
+            </div>
+
+            <div class="armory-form-row">
+                <div class="armory-field">
+                    <label for="charVoie">
+                        <span class="material-symbols-outlined" style="color: #a855f7;">route</span>
+                        Voie
+                    </label>
+                    <select id="charVoie">
+                        <option value="">— Aucune —</option>
+                    </select>
+                </div>
+                <div class="armory-field">
+                    <label for="charVoieLevel">
+                        <span class="material-symbols-outlined" style="color: #a855f7;">star</span>
+                        Niveau Voie
+                    </label>
+                    <input type="number" id="charVoieLevel" min="1" max="5" value="1">
+                </div>
+            </div>
+
+            <div class="armory-form-row">
+                <div class="armory-field">
+                    <label for="charSpirit">
+                        <span class="material-symbols-outlined" style="color: #fb923c;">psychology</span>
+                        Spiritualité
+                    </label>
+                    <select id="charSpirit">
+                        <option value="">— Aucune —</option>
+                    </select>
+                </div>
+                <div class="armory-field">
+                    <label for="charSpiritLevel">
+                        <span class="material-symbols-outlined" style="color: #fb923c;">star</span>
+                        Niveau Spiritualité
+                    </label>
+                    <input type="number" id="charSpiritLevel" min="1" max="3" value="1">
+                </div>
+            </div>
+
+            <!-- Stats -->
+            <div class="armory-section-title">
+                <span class="material-symbols-outlined" style="color: #10b981;">monitoring</span>
+                Statistiques de Base
+            </div>
+
+            <div class="armory-form-row">
+                <div class="armory-field">
+                    <label for="charHp">
+                        <span class="material-symbols-outlined" style="color: #ec4899;">favorite</span>
+                        PV Max
+                    </label>
+                    <input type="number" id="charHp" min="1" value="100">
+                </div>
+                <div class="armory-field">
+                    <label for="charMana">
+                        <span class="material-symbols-outlined" style="color: #38bdf8;">water_drop</span>
+                        Mana Max
+                    </label>
+                    <input type="number" id="charMana" min="0" value="100">
+                </div>
+            </div>
+
+            <div class="armory-form-row quad">
+                <div class="armory-field">
+                    <label for="charPower">
+                        <span class="material-symbols-outlined" style="color: #a855f7;">auto_awesome</span>
+                        Puissance
+                    </label>
+                    <input type="number" id="charPower" min="0" value="25">
+                </div>
+                <div class="armory-field">
+                    <label for="charStrength">
+                        <span class="material-symbols-outlined" style="color: #f43f5e;">fitness_center</span>
+                        Force
+                    </label>
+                    <input type="number" id="charStrength" min="0" value="10">
+                </div>
+                <div class="armory-field">
+                    <label for="charArmor">
+                        <span class="material-symbols-outlined" style="color: #3b82f6;">shield</span>
+                        Armure
+                    </label>
+                    <input type="number" id="charArmor" min="0" value="10">
+                </div>
+                <div class="armory-field">
+                    <label for="charResistance">
+                        <span class="material-symbols-outlined" style="color: #10b981;">shield</span>
+                        Résistance
+                    </label>
+                    <input type="number" id="charResistance" min="0" value="10">
+                </div>
+            </div>
+
+            <div class="armory-form-row">
+                <div class="armory-field">
+                    <label for="charSpeed">
+                        <span class="material-symbols-outlined" style="color: #f59e0b;">bolt</span>
+                        Vitesse
+                    </label>
+                    <input type="number" id="charSpeed" min="0" value="0">
+                </div>
+                <div class="armory-field">
+                    <label for="charCrit">
+                        <span class="material-symbols-outlined" style="color: #ef4444;">gps_fixed</span>
+                        Critique (%)
+                    </label>
+                    <input type="number" id="charCrit" min="0" max="100" value="0">
+                </div>
+            </div>
+
+            <!-- Boutons -->
+            <div style="display: flex; gap: 0.6rem; align-items: center;">
+                <button type="button" class="armory-submit-btn" id="submitBtn" onclick="submitPersonnage()">
+                    <span class="material-symbols-outlined" style="font-size: 1.1rem;">person_add</span>
+                    Forger le Personnage
+                </button>
+                <button type="button" class="armory-nav-link" id="cancelBtn" style="display: none;" onclick="resetForm()">
+                    Annuler
+                </button>
+            </div>
+
+            <!-- Inventaire Placeholder -->
+            <div class="armory-inventory-section">
+                <div class="armory-inventory-title">
+                    <span class="material-symbols-outlined">inventory_2</span>
+                    Inventaire & Équipement
+                </div>
+                <div class="armory-inventory-placeholder">
+                    Sélectionnez un personnage pour gérer son équipement.<br>
+                    Cette fonctionnalité sera disponible prochainement.
+                </div>
+            </div>
+        </div>
+
+        <!-- Colonne Droite : Liste des Personnages -->
+        <div class="armory-list-panel">
+            <div class="armory-panel-title" style="justify-content: space-between;">
+                <span style="display: flex; align-items: center; gap: 0.5rem;">
+                    <span class="material-symbols-outlined" style="color: #3b82f6;">groups</span>
+                    Personnages
+                </span>
+                <button type="button" class="armory-nav-link" onclick="loadPersonnages()" style="font-size: 0.8rem;">
+                    <span class="material-symbols-outlined" style="font-size: 1rem;">refresh</span>
+                    Actualiser
+                </button>
+            </div>
+
+            <div class="armory-characters-grid" id="personnagesList">
+                <div class="armory-empty-state">Chargement...</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Notification -->
+    <div class="armory-notif" id="armoryNotif"></div>
+
+    <script src="/js/armory.js"></script>
+
+</body>
+
+</html>
