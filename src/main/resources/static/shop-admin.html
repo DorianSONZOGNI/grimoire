@@ -6,8 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Grimoire - Gestion Boutique</title>
     <link rel="icon" type="image/png" href="/favicon.svg">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
     <link rel="stylesheet" href="/styles/variables.css">
     <link rel="stylesheet" href="/styles/components.css">
     <link rel="stylesheet" href="/styles/vault.css?v=3">
@@ -162,28 +164,27 @@
 </head>
 
 <body>
-    <header class="vault-header">
-        <div class="vault-logo" style="color: #f59e0b;">
-            <span class="material-symbols-outlined">settings</span>
-            Gestion Boutique
+    <header class="top-header">
+        <div class="page-logo">
+            <span class="material-symbols-outlined logo-icon-gradient logo-admin">settings</span>
+            <span class="logo-text-gradient logo-admin">Gestion Boutique</span>
         </div>
 
-        <div style="display: flex; gap: 0.6rem; align-items: center;">
+        <div class="header-actions">
             <div style="font-size: 0.9rem; color: var(--text-muted);">De l'or dans les mains</div>
-            <a href="/" class="vault-nav-link">
+            <a href="/" class="top-nav-link nav-grimoire">
                 <span class="material-symbols-outlined" style="font-size: 1.1rem;">auto_awesome</span> Grimoire
             </a>
-            <a href="/armory.html" class="vault-nav-link">
+            <a href="/armory.html" class="top-nav-link nav-armory">
                 <span class="material-symbols-outlined" style="font-size: 1.1rem;">shield</span> Armurerie
             </a>
-            <a href="/vault.html" class="vault-nav-link">
+            <a href="/vault.html" class="top-nav-link nav-vault">
                 <span class="material-symbols-outlined" style="font-size: 1.1rem;">money_bag</span> Salle des coffres
             </a>
-            <a href="/shop.html" class="vault-nav-link">
+            <a href="/shop.html" class="top-nav-link nav-shop">
                 <span class="material-symbols-outlined" style="font-size: 1.1rem;">storefront</span> Boutique
             </a>
-            <a href="/shop-admin.html" id="adminShopLink" class="vault-nav-link"
-                style="color: #f59e0b; border-color: rgba(245, 158, 11, 0.3);">
+            <a href="/shop-admin.html" id="adminShopLink" class="top-nav-link nav-admin active">
                 <span class="material-symbols-outlined" style="font-size: 1.1rem;">settings</span> Gestion Boutique
             </a>
             <div id="authNavContainer"
@@ -206,7 +207,7 @@
                         <h2 style="margin: 0; font-family: 'Outfit', sans-serif; font-size: 1.4rem; color: #fff;">
                             Gestion de la Boutique</h2>
                         <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;">Création et
-                            gestion des objets modèles pour la boutique</div>
+                            gestion des articles pour la boutique</div>
                     </div>
                 </div>
 
@@ -214,13 +215,13 @@
                     <button id="btnCreateVaultEq" onclick="openCreateEqModal()"
                         style="display: flex; align-items: center; gap: 0.5rem; background: #f59e0b; border: none; color: #1e293b; font-weight: 600; padding: 0.6rem 1rem; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);">
                         <span class="material-symbols-outlined" style="font-size: 1.2rem;">add</span>
-                        Forger un modèle
+                        Forger un article
                     </button>
                 </div>
             </div>
 
             <div id="vaultGrid" style="margin-top: 1rem;">
-                <div style="color: #94a3b8; font-style: italic;">Chargement des modèles...</div>
+                <div style="color: #94a3b8; font-style: italic;">Chargement des articles...</div>
             </div>
         </div>
     </div>
@@ -473,9 +474,9 @@
             </div>
             <div
                 style="font-size: 1.2rem; font-weight: 600; font-family: 'Outfit', sans-serif; color: #fff; margin-bottom: 0.8rem;">
-                Détruire le modèle ?</div>
+                Détruire l'article ?</div>
             <div style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 1.5rem; line-height: 1.5;">Êtes-vous sûr de
-                vouloir détruire <strong id="deleteTargetName" style="color:#fff;">ce modèle</strong> ? Cette action
+                vouloir détruire <strong id="deleteTargetName" style="color:#fff;">cet article</strong> ? Cette action
                 retirera cet objet du pool global du shop.</div>
             <div style="display: flex; gap: 1rem;">
                 <button onclick="closeDeleteModal()"

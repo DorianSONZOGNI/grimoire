@@ -26,38 +26,28 @@
 
 <body>
 
-    <header>
-        <div class="logo">Grimoire</div>
-        <div style="display: flex; gap: 1rem; align-items: center;">
+    <header class="top-header">
+        <div class="page-logo">
+            <span class="material-symbols-outlined logo-icon-gradient logo-grimoire">auto_awesome</span>
+            <span class="logo-text-gradient logo-grimoire">Grimoire</span>
+        </div>
+        <div class="header-actions">
             <div style="font-size: 0.9rem; color: var(--text-muted);">Ne pas prononcer à voix haute le nom des sorts...
             </div>
-            <a href="/armory.html"
-                style="display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.85rem; color: var(--text-muted); text-decoration: none; padding: 0.4rem 0.8rem; border: 1px solid var(--glass-border); border-radius: 8px; background: rgba(255,255,255,0.03); transition: all 0.2s ease;"
-                onmouseover="this.style.color='#f59e0b'; this.style.borderColor='#f59e0b';"
-                onmouseout="this.style.color='var(--text-muted)'; this.style.borderColor='var(--glass-border)';">
-                <span class="material-symbols-outlined" style="font-size: 1.1rem;">shield</span>
-                Armurerie
+            <a href="/" class="top-nav-link nav-grimoire active">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">auto_awesome</span> Grimoire
             </a>
-            <a href="/vault.html"
-                style="display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.85rem; color: var(--text-muted); text-decoration: none; padding: 0.4rem 0.8rem; border: 1px solid var(--glass-border); border-radius: 8px; background: rgba(255,255,255,0.03); transition: all 0.2s ease;"
-                onmouseover="this.style.color='#f59e0b'; this.style.borderColor='#f59e0b';"
-                onmouseout="this.style.color='var(--text-muted)'; this.style.borderColor='var(--glass-border)';">
-                <span class="material-symbols-outlined" style="font-size: 1.1rem;">money_bag</span>
-                Salle des coffres
+            <a href="/armory.html" class="top-nav-link nav-armory">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">shield</span> Armurerie
             </a>
-            <a href="/shop.html"
-                style="display: inline-flex; align-items: center; gap: 0.3rem; font-size: 0.85rem; color: var(--text-muted); text-decoration: none; padding: 0.4rem 0.8rem; border: 1px solid var(--glass-border); border-radius: 8px; background: rgba(255,255,255,0.03); transition: all 0.2s ease;"
-                onmouseover="this.style.color='#10b981'; this.style.borderColor='#10b981';"
-                onmouseout="this.style.color='var(--text-muted)'; this.style.borderColor='var(--glass-border)';">
-                <span class="material-symbols-outlined" style="font-size: 1.1rem;">storefront</span>
-                Boutique
+            <a href="/vault.html" class="top-nav-link nav-vault">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">money_bag</span> Salle des coffres
             </a>
-            <a href="/shop-admin.html" id="adminShopLink"
-                style="display: none; align-items: center; gap: 0.3rem; font-size: 0.85rem; color: var(--text-muted); text-decoration: none; padding: 0.4rem 0.8rem; border: 1px solid var(--glass-border); border-radius: 8px; background: rgba(255,255,255,0.03); transition: all 0.2s ease;"
-                onmouseover="this.style.color='#f59e0b'; this.style.borderColor='#f59e0b';"
-                onmouseout="this.style.color='var(--text-muted)'; this.style.borderColor='var(--glass-border)';">
-                <span class="material-symbols-outlined" style="font-size: 1.1rem;">settings</span>
-                Gestion Boutique
+            <a href="/shop.html" class="top-nav-link nav-shop">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">storefront</span> Boutique
+            </a>
+            <a href="/shop-admin.html" id="adminShopLink" class="top-nav-link nav-admin" style="display: none;">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">settings</span> Gestion Boutique
             </a>
 
             <div id="authNavContainer"

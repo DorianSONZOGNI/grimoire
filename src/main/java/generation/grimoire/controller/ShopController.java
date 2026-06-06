@@ -97,7 +97,7 @@ public class ShopController {
     }
 
     @PostMapping("/buy/{templateId}")
-    public ResponseEntity<?> buyItem(@PathVariable Long templateId, Principal principal) {
+    public ResponseEntity<?> buyItem(@PathVariable @org.springframework.lang.NonNull Long templateId, Principal principal) {
         if (principal == null)
             return ResponseEntity.status(401).build();
 
@@ -266,7 +266,7 @@ public class ShopController {
     }
 
     @PutMapping("/templates/{id}")
-    public ResponseEntity<?> updateTemplate(@PathVariable Long id,
+    public ResponseEntity<?> updateTemplate(@PathVariable @org.springframework.lang.NonNull Long id,
             @RequestBody generation.grimoire.controller.EquipmentController.EquipmentDto dto, Principal principal) {
         if (principal == null || !isAdmin(principal))
             return ResponseEntity.status(403).build();
@@ -281,7 +281,7 @@ public class ShopController {
     }
 
     @DeleteMapping("/templates/{id}")
-    public ResponseEntity<?> deleteTemplate(@PathVariable Long id, Principal principal) {
+    public ResponseEntity<?> deleteTemplate(@PathVariable @org.springframework.lang.NonNull Long id, Principal principal) {
         if (principal == null || !isAdmin(principal))
             return ResponseEntity.status(403).build();
 

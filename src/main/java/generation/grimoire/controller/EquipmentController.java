@@ -77,8 +77,8 @@ public class EquipmentController {
         Equipment equipment;
         boolean isUpdate = false;
 
-        if (dto.getId() != null && equipmentRepository.existsById(dto.getId())) {
-            equipment = equipmentRepository.findById(dto.getId()).orElseThrow();
+        if (dto.getId() != null && equipmentRepository.existsById(java.util.Objects.requireNonNull(dto.getId()))) {
+            equipment = equipmentRepository.findById(java.util.Objects.requireNonNull(dto.getId())).orElseThrow();
             if (!isAdmin && equipment.getUser() != null && !equipment.getUser().getUsername().equals(principal.getName())) {
                 return ResponseEntity.status(403).build();
             }
@@ -110,7 +110,7 @@ public class EquipmentController {
 
         // Assigner à un personnage si fourni
         if (dto.getPersonnageId() != null) {
-            Personnage personnage = personnageService.findByIdOrThrow(dto.getPersonnageId());
+            Personnage personnage = personnageService.findByIdOrThrow(java.util.Objects.requireNonNull(dto.getPersonnageId()));
 
             // Si l'admin forge pour un autre joueur, l'objet doit appartenir à ce joueur
             if (personnage.getUser() != null && (equipment.getUser() == null || equipment.getUser().getId().equals(currentUser.getId()))) {
@@ -150,8 +150,8 @@ public class EquipmentController {
     /** Équiper un objet sur un personnage (remplace l'ancien dans le même slot) */
     @PostMapping("/{equipmentId}/equip/{personnageId}")
     public ResponseEntity<Map<String, Object>> equip(
-            @PathVariable Long equipmentId,
-            @PathVariable Long personnageId,
+            @PathVariable @org.springframework.lang.NonNull Long equipmentId,
+            @PathVariable @org.springframework.lang.NonNull Long personnageId,
             @RequestParam(required = false) generation.grimoire.enumeration.EquipmentSlot targetSlot,
             java.security.Principal principal) {
         
@@ -236,7 +236,7 @@ public class EquipmentController {
 
     /** Déséquiper un objet */
     @PostMapping("/{equipmentId}/unequip")
-    public ResponseEntity<Map<String, Object>> unequip(@PathVariable Long equipmentId, java.security.Principal principal) {
+    public ResponseEntity<Map<String, Object>> unequip(@PathVariable @org.springframework.lang.NonNull Long equipmentId, java.security.Principal principal) {
         if (principal == null) return ResponseEntity.status(401).build();
         boolean isAdmin = ((org.springframework.security.core.Authentication) principal).getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
@@ -258,7 +258,7 @@ public class EquipmentController {
 
     /** Supprimer un équipement */
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete(@PathVariable Long id, java.security.Principal principal) {
+    public ResponseEntity<String> delete(@PathVariable @org.springframework.lang.NonNull Long id, java.security.Principal principal) {
         if (principal == null) return ResponseEntity.status(401).build();
         boolean isAdmin = ((org.springframework.security.core.Authentication) principal).getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));

@@ -22,15 +22,15 @@ public class PersonnageService {
         return persoRepo.findAll();
     }
 
-    public Personnage save(Personnage personnage) {
+    public Personnage save(@org.springframework.lang.NonNull Personnage personnage) {
         return persoRepo.save(personnage);
     }
 
-    public void deleteById(Long id) {
+    public void deleteById(@org.springframework.lang.NonNull Long id) {
         persoRepo.deleteById(id);
     }
 
-    public boolean existsById(Long id) {
+    public boolean existsById(@org.springframework.lang.NonNull Long id) {
         return persoRepo.existsById(id);
     }
 }

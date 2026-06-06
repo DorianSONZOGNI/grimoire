@@ -61,8 +61,8 @@ public class PersonnageController {
         Personnage personnage;
         boolean isUpdate = false;
 
-        if (dto.getId() != null && personnageService.existsById(dto.getId())) {
-            personnage = personnageService.findByIdOrThrow(dto.getId());
+        if (dto.getId() != null && personnageService.existsById(java.util.Objects.requireNonNull(dto.getId()))) {
+            personnage = personnageService.findByIdOrThrow(java.util.Objects.requireNonNull(dto.getId()));
             if (!isAdmin && personnage.getUser() != null && !personnage.getUser().getUsername().equals(principal.getName())) {
                 return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).build();
             }
@@ -86,7 +86,7 @@ public class PersonnageController {
 
         // Voie
         if (dto.getVoieId() != null) {
-            voieRepository.findById(dto.getVoieId()).ifPresent(personnage::setVoie);
+            voieRepository.findById(java.util.Objects.requireNonNull(dto.getVoieId())).ifPresent(personnage::setVoie);
         } else {
             personnage.setVoie(null);
         }
@@ -94,7 +94,7 @@ public class PersonnageController {
 
         // Spiritualité
         if (dto.getSpiritualiteId() != null) {
-            spiritualiteRepository.findById(dto.getSpiritualiteId()).ifPresent(personnage::setSpiritualite);
+            spiritualiteRepository.findById(java.util.Objects.requireNonNull(dto.getSpiritualiteId())).ifPresent(personnage::setSpiritualite);
         } else {
             personnage.setSpiritualite(null);
         }
@@ -113,7 +113,7 @@ public class PersonnageController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete(@PathVariable Long id, java.security.Principal principal) {
+    public ResponseEntity<String> delete(@PathVariable @org.springframework.lang.NonNull Long id, java.security.Principal principal) {
         if (principal == null) {
             return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
         }

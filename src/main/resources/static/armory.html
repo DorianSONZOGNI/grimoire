@@ -21,29 +21,28 @@
 
 <body>
 
-    <header class="armory-header">
-        <div class="armory-logo">
-            <span class="material-symbols-outlined">shield</span>
-            Armurerie
+    <header class="top-header">
+        <div class="page-logo">
+            <span class="material-symbols-outlined logo-icon-gradient logo-armory">shield</span>
+            <span class="logo-text-gradient logo-armory">Armurerie</span>
         </div>
-        <div style="display: flex; gap: 0.6rem; align-items: center;">
+        <div class="header-actions">
             <div style="font-size: 0.9rem; color: var(--text-muted);">S'équiper pour ne pas finir troué !
             </div>
-            <a href="/" class="armory-nav-link">
-                <span class="material-symbols-outlined" style="font-size: 1.1rem;">auto_awesome</span>
-                Grimoire
+            <a href="/" class="top-nav-link nav-grimoire">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">auto_awesome</span> Grimoire
             </a>
-            <a href="/vault.html" class="armory-nav-link">
-                <span class="material-symbols-outlined" style="font-size: 1.1rem;">money_bag</span>
-                Salle des coffres
+            <a href="/armory.html" class="top-nav-link nav-armory active">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">shield</span> Armurerie
             </a>
-            <a href="/shop.html" class="armory-nav-link" style="color: #10b981; border-color: rgba(16, 185, 129, 0.3);">
-                <span class="material-symbols-outlined" style="font-size: 1.1rem;">storefront</span>
-                Boutique
+            <a href="/vault.html" class="top-nav-link nav-vault">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">money_bag</span> Salle des coffres
             </a>
-            <a href="/shop-admin.html" id="adminShopLink" class="armory-nav-link" style="display: none;">
-                <span class="material-symbols-outlined" style="font-size: 1.1rem;">settings</span>
-                Gestion Boutique
+            <a href="/shop.html" class="top-nav-link nav-shop">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">storefront</span> Boutique
+            </a>
+            <a href="/shop-admin.html" id="adminShopLink" class="top-nav-link nav-admin" style="display: none;">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">settings</span> Gestion Boutique
             </a>
             <div id="authNavContainer"
                 style="display: flex; align-items: center; gap: 0.5rem; margin-left: 1rem; padding-left: 1rem; border-left: 1px solid var(--glass-border);">

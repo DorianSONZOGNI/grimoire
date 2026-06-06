@@ -6,8 +6,10 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Grimoire - Boutique</title>
     <link rel="icon" type="image/png" href="/favicon.svg">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined" rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
     <link rel="stylesheet" href="/styles/variables.css">
     <link rel="stylesheet" href="/styles/components.css">
     <link rel="stylesheet" href="/styles/vault.css?v=3">
@@ -130,6 +132,7 @@
             /* 2 lines max */
             display: -webkit-box;
             -webkit-line-clamp: 2;
+            line-clamp: 2;
             -webkit-box-orient: vertical;
             overflow: hidden;
         }
@@ -185,28 +188,27 @@
 </head>
 
 <body>
-    <header class="vault-header">
-        <div class="vault-logo" style="color: #10b981;">
-            <span class="material-symbols-outlined">storefront</span>
-            Boutique
+    <header class="top-header">
+        <div class="page-logo">
+            <span class="material-symbols-outlined logo-icon-gradient logo-shop">storefront</span>
+            <span class="logo-text-gradient logo-shop">Boutique</span>
         </div>
 
-        <div style="display: flex; gap: 0.6rem; align-items: center;">
+        <div class="header-actions">
             <div style="font-size: 0.9rem; color: var(--text-muted);">On ne touche que ce que l'on achète !</div>
-            <a href="/" class="vault-nav-link">
-                <span class="material-symbols-outlined" style="font-size: 1.1rem;">auto_awesome</span>
-                Grimoire
+            <a href="/" class="top-nav-link nav-grimoire">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">auto_awesome</span> Grimoire
             </a>
-            <a href="/armory.html" class="vault-nav-link">
+            <a href="/armory.html" class="top-nav-link nav-armory">
                 <span class="material-symbols-outlined" style="font-size: 1.1rem;">shield</span> Armurerie
             </a>
-            <a href="/vault.html" class="vault-nav-link">
+            <a href="/vault.html" class="top-nav-link nav-vault">
                 <span class="material-symbols-outlined" style="font-size: 1.1rem;">money_bag</span> Salle des coffres
             </a>
-            <a href="/shop.html" class="vault-nav-link" style="color: #10b981; border-color: rgba(16, 185, 129, 0.3);">
+            <a href="/shop.html" class="top-nav-link nav-shop active">
                 <span class="material-symbols-outlined" style="font-size: 1.1rem;">storefront</span> Boutique
             </a>
-            <a href="/shop-admin.html" id="adminShopLink" class="vault-nav-link" style="display: none;">
+            <a href="/shop-admin.html" id="adminShopLink" class="top-nav-link nav-admin" style="display: none;">
                 <span class="material-symbols-outlined" style="font-size: 1.1rem;">settings</span> Gestion Boutique
             </a>
             <div id="authNavContainer"
