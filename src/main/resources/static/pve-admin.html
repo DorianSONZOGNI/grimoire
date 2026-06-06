@@ -160,6 +160,11 @@
         .delete-btn:hover {
             background: rgba(239, 68, 68, 0.1);
         }
+
+        .editing-glow {
+            box-shadow: 0 0 20px rgba(56, 189, 248, 0.3) !important;
+            border-color: rgba(56, 189, 248, 0.5) !important;
+        }
     </style>
 </head>
 
@@ -214,7 +219,7 @@
 
             <div
                 style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 2rem; margin-bottom: 2rem; align-items: start;">
-                <section class="admin-section" style="margin: 0;">
+                <section class="admin-section" id="monsterFormPanel" style="margin: 0; transition: all 0.3s;">
                     <div class="admin-section-header">
                         <div class="admin-section-title">
                             <span class="material-symbols-outlined" style="color: #ef4444;">pest_control</span>
@@ -295,8 +300,9 @@
                                     <input type="number" id="mXp" class="form-control" value="20" required>
                                 </div>
                             </div>
-                            <div style="margin-top: 1.5rem;">
-                                <button type="submit" class="btn btn-primary">Créer le monstre</button>
+                            <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+                                <button type="submit" class="btn btn-primary" id="btnSubmitMonster">Créer le monstre</button>
+                                <button type="button" class="btn" id="btnCancelMonster" style="display: none; background: rgba(255,255,255,0.05); color: #f8fafc; border: 1px solid rgba(255,255,255,0.1); padding: 0.8rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;" onclick="cancelMonsterEdit()">Annuler</button>
                             </div>
                         </form>
                     </div>
@@ -356,7 +362,7 @@
 
             <div
                 style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 2rem; margin-bottom: 2rem; align-items: start;">
-                <section class="admin-section" style="margin: 0;">
+                <section class="admin-section" id="dungeonFormPanel" style="margin: 0; transition: all 0.3s;">
                     <div class="admin-section-header">
                         <div class="admin-section-title">
                             <span class="material-symbols-outlined" style="color: #ef4444;">castle</span>
@@ -411,8 +417,9 @@
                                     </div>
                                 </div>
                             </div>
-                            <div style="margin-top: 1.5rem;">
-                                <button type="submit" class="btn btn-primary">Créer le donjon</button>
+                            <div style="margin-top: 1.5rem; display: flex; gap: 1rem;">
+                                <button type="submit" class="btn btn-primary" id="btnSubmitDungeon">Créer le donjon</button>
+                                <button type="button" class="btn" id="btnCancelDungeon" style="display: none; background: rgba(255,255,255,0.05); color: #f8fafc; border: 1px solid rgba(255,255,255,0.1); padding: 0.8rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;" onclick="cancelDungeonEdit()">Annuler</button>
                             </div>
                         </form>
                     </div>

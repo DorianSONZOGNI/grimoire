@@ -60,9 +60,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             if (res.ok) {
                 alert(editingMonsterId ? 'Monstre modifié avec succès' : 'Monstre créé avec succès');
-                document.getElementById('monsterForm').reset();
-                editingMonsterId = null;
-                document.querySelector('#monsterForm button[type="submit"]').textContent = "Créer le monstre";
+                window.cancelMonsterEdit();
                 loadMonsters();
             } else {
                 alert("Erreur lors de l'enregistrement du monstre");
@@ -115,11 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
             });
             if (res.ok) {
                 alert(editingDungeonId ? 'Donjon modifié avec succès' : 'Donjon créé avec succès');
-                document.getElementById('dungeonForm').reset();
-                editingDungeonId = null;
-                selectedRooms = [];
-                renderRooms();
-                document.querySelector('#dungeonForm button[type="submit"]').textContent = "Créer le donjon";
+                window.cancelDungeonEdit();
                 loadDungeons();
             } else {
                 alert("Erreur lors de l'enregistrement du donjon");
@@ -467,13 +461,28 @@ async function editMonster(id) {
             document.getElementById('mGold').value = m.rewardGold;
             document.getElementById('mXp').value = m.rewardExp;
 
-            document.querySelector('#monsterForm button[type="submit"]').textContent = "Modifier le monstre";
+            document.getElementById('btnSubmitMonster').textContent = "Modifier le monstre";
+            document.getElementById('btnCancelMonster').style.display = 'block';
+            document.getElementById('monsterFormPanel').classList.add('editing-glow');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
     } catch (e) {
         console.error(e);
     }
 }
+
+window.cancelMonsterEdit = function() {
+    editingMonsterId = null;
+    document.getElementById('monsterForm').reset();
+    document.getElementById('mLevel').value = 1;
+    const lvlTrigger = document.getElementById('mLevelTrigger');
+    if (lvlTrigger) {
+        lvlTrigger.innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: #94a3b8; font-size: 1.1rem;">star</span> <span style="flex:1; text-align:center;">1</span>`;
+    }
+    document.getElementById('btnSubmitMonster').textContent = "Créer le monstre";
+    document.getElementById('btnCancelMonster').style.display = 'none';
+    document.getElementById('monsterFormPanel').classList.remove('editing-glow');
+};
 
 async function deleteMonster(id) {
     if (!confirm('Voulez-vous vraiment supprimer ce monstre ?')) return;
@@ -569,13 +578,27 @@ async function editDungeon(id) {
             });
             renderRooms();
 
-            document.querySelector('#dungeonForm button[type="submit"]').textContent = "Modifier le donjon";
-            window.scrollTo({ top: 0, behavior: 'smooth' });
+            renderRooms();
+
+            document.getElementById('btnSubmitDungeon').textContent = "Modifier le donjon";
+            document.getElementById('btnCancelDungeon').style.display = 'block';
+            document.getElementById('dungeonFormPanel').classList.add('editing-glow');
+            document.getElementById('dungeonFormPanel').scrollIntoView({ behavior: 'smooth' });
         }
     } catch (e) {
         console.error(e);
     }
 }
+
+window.cancelDungeonEdit = function() {
+    editingDungeonId = null;
+    document.getElementById('dungeonForm').reset();
+    selectedRooms = [];
+    renderRooms();
+    document.getElementById('btnSubmitDungeon').textContent = "Créer le donjon";
+    document.getElementById('btnCancelDungeon').style.display = 'none';
+    document.getElementById('dungeonFormPanel').classList.remove('editing-glow');
+};
 
 async function deleteDungeon(id) {
     if (!confirm('Voulez-vous vraiment supprimer ce donjon ?')) return;

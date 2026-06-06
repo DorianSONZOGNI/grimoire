@@ -80,37 +80,121 @@
             margin-bottom: 1.5rem;
         }
 
-        /* Modal Prep */
-        .prep-modal-overlay {
-            position: fixed;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0, 0, 0, 0.8);
-            backdrop-filter: blur(5px);
-            z-index: 100;
+        /* New Prep Interface Styles */
+        .prep-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 2rem;
+            padding-bottom: 1rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+        }
+        
+        .prep-layout {
+            display: grid;
+            grid-template-columns: 300px 1fr 300px;
+            gap: 2rem;
+            align-items: start;
+        }
+
+        .char-card {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 12px;
+            padding: 1rem;
+            margin-bottom: 1rem;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .char-card:hover {
+            background: rgba(30, 41, 59, 0.8);
+            border-color: rgba(56, 189, 248, 0.5);
+            transform: translateX(5px);
+        }
+
+        .char-card.selected {
+            background: rgba(14, 165, 233, 0.1);
+            border-color: #0ea5e9;
+            box-shadow: 0 0 15px rgba(14, 165, 233, 0.2);
+            transform: translateX(10px);
+        }
+
+        .char-avatar {
+            width: 48px;
+            height: 48px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #0ea5e9, #2563eb);
             display: flex;
             justify-content: center;
             align-items: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s;
+            font-size: 1.5rem;
+            color: white;
+            font-weight: bold;
         }
 
-        .prep-modal {
-            background: #0f172a;
-            border: 1px solid rgba(220, 38, 38, 0.4);
-            border-radius: 16px;
-            width: 90%;
-            max-width: 600px;
-            padding: 2rem;
-            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
-            transform: scale(0.95);
-            transition: transform 0.3s;
+        .stat-grid {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 1rem;
+            background: rgba(0, 0, 0, 0.2);
+            padding: 1.5rem;
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            margin-bottom: 2rem;
         }
 
-        .prep-modal.show {
-            opacity: 1;
-            pointer-events: all;
-            transform: scale(1);
+        .stat-item {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.95rem;
+        }
+
+        .equip-slot {
+            background: rgba(15, 23, 42, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            border-radius: 8px;
+            padding: 0.75rem;
+            margin-bottom: 0.5rem;
+            display: flex;
+            align-items: center;
+            gap: 1rem;
+        }
+
+        .equip-slot-icon {
+            width: 32px;
+            height: 32px;
+            border-radius: 6px;
+            background: rgba(0, 0, 0, 0.3);
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            color: #94a3b8;
+        }
+
+        .consumable-card {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px dashed rgba(255, 255, 255, 0.2);
+            border-radius: 8px;
+            padding: 1rem;
+            text-align: center;
+            cursor: pointer;
+            transition: all 0.2s;
+            margin-bottom: 0.5rem;
+        }
+        
+        .consumable-card:hover {
+            border-color: #10b981;
+            background: rgba(16, 185, 129, 0.05);
+        }
+
+        .consumable-card.selected {
+            border: 1px solid #10b981;
+            background: rgba(16, 185, 129, 0.1);
         }
 
         .form-control {
@@ -205,36 +289,77 @@
                 <!-- Rempli par JS -->
             </div>
         </div>
-    </main>
+        
+        <div id="prepInterface" style="display: none;">
+            <div class="prep-header">
+                <div>
+                    <h2 style="font-family: 'Outfit'; font-size: 2rem; color: #f8fafc; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <span class="material-symbols-outlined logo-icon-gradient logo-dungeon" style="font-size: 2.5rem;">swords</span>
+                        <span id="prepDungeonTitle">Préparation</span>
+                    </h2>
+                    <div id="prepDungeonDesc" style="color: var(--text-muted);">Préparez votre équipe et votre équipement avant de plonger.</div>
+                </div>
+                <button onclick="closePrepInterface()" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #f8fafc; padding: 0.8rem 1.5rem; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-family: 'Inter', sans-serif;">
+                    <span class="material-symbols-outlined" style="font-size: 1.2rem;">arrow_back</span> Retour
+                </button>
+            </div>
 
-    <!-- Modal de Préparation -->
-    <div class="prep-modal-overlay" id="prepModalOverlay">
-        <div class="prep-modal" id="prepModal">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem;">
-                <h3 style="font-family: 'Outfit'; font-size: 1.5rem; color: #f8fafc;" id="prepDungeonName">Nom du Donjon</h3>
-                <button onclick="closePrepModal()" style="background: transparent; border: none; color: var(--text-muted); cursor: pointer;"><span class="material-symbols-outlined">close</span></button>
-            </div>
-            
-            <div>
-                <label style="color: var(--text-muted); font-size: 0.9rem;">Choisissez votre personnage :</label>
-                <select id="charSelect" class="form-control">
-                    <option value="">Chargement...</option>
-                </select>
-            </div>
-            
-            <div style="background: rgba(255,255,255,0.02); padding: 1rem; border-radius: 8px; margin-bottom: 1.5rem; border: 1px solid rgba(255,255,255,0.05);">
-                <div style="font-size: 0.85rem; color: var(--text-muted); margin-bottom: 0.5rem;">Monstres à affronter :</div>
-                <div id="prepMonstersList" style="color: #ef4444; font-weight: 500;">
-                    <!-- Rempli par JS -->
+            <div class="prep-layout">
+                <!-- Colonne Gauche : Sélection Personnage -->
+                <div>
+                    <h3 style="font-family: 'Outfit'; font-size: 1.2rem; color: #f8fafc; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <span class="material-symbols-outlined" style="color: #0ea5e9;">group</span> Sélection du Héros
+                    </h3>
+                    <div id="prepCharList">
+                        <!-- Rempli par JS -->
+                    </div>
+                </div>
+
+                <!-- Colonne Centrale : Aperçu des Stats et Equipement -->
+                <div>
+                    <h3 style="font-family: 'Outfit'; font-size: 1.2rem; color: #f8fafc; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <span class="material-symbols-outlined" style="color: #a855f7;">analytics</span> Statistiques Totales
+                    </h3>
+                    
+                    <div id="prepStatGrid" class="stat-grid" style="display: none;">
+                        <!-- Rempli par JS -->
+                    </div>
+                    <div id="prepStatEmpty" style="text-align: center; color: var(--text-muted); padding: 3rem; background: rgba(0,0,0,0.2); border-radius: 12px; border: 1px dashed rgba(255,255,255,0.1); margin-bottom: 2rem;">
+                        Veuillez sélectionner un personnage pour voir ses statistiques.
+                    </div>
+
+                    <h3 style="font-family: 'Outfit'; font-size: 1.2rem; color: #f8fafc; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <span class="material-symbols-outlined" style="color: #f59e0b;">shield</span> Équipement Actuel
+                    </h3>
+                    <div id="prepEquipList">
+                        <div style="color: var(--text-muted); font-size: 0.9rem;">Aucun équipement à afficher.</div>
+                    </div>
+                </div>
+
+                <!-- Colonne Droite : Consommable & Bouton d'entrée -->
+                <div>
+                    <h3 style="font-family: 'Outfit'; font-size: 1.2rem; color: #f8fafc; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <span class="material-symbols-outlined" style="color: #10b981;">inventory_2</span> Consommable (Optionnel)
+                    </h3>
+                    <div id="prepConsumableList" style="margin-bottom: 2rem; max-height: 250px; overflow-y: auto; padding-right: 0.5rem;">
+                        <!-- Rempli par JS -->
+                    </div>
+
+                    <div style="background: rgba(220, 38, 38, 0.05); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(220, 38, 38, 0.2); margin-bottom: 1.5rem;">
+                        <div style="font-size: 0.9rem; color: #fca5a5; margin-bottom: 1rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Ennemis détectés</div>
+                        <div id="prepMonstersList" style="color: #ef4444; font-weight: 500;">
+                            <!-- Rempli par JS -->
+                        </div>
+                    </div>
+
+                    <button class="btn-fight" id="btnEnterDungeon" onclick="startCombat()" style="opacity: 0.5; pointer-events: none;">
+                        <span class="material-symbols-outlined">swords</span>
+                        ENTRER DANS LE DONJON
+                    </button>
                 </div>
             </div>
-            
-            <button class="btn-fight" onclick="startCombat()">
-                <span class="material-symbols-outlined">swords</span>
-                ENTRER DANS LE DONJON
-            </button>
         </div>
-    </div>
+    </main>
 
     <script src="/js/auth.js"></script>
     <script src="/js/dungeons.js"></script>
