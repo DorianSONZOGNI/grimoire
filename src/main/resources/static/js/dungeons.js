@@ -34,19 +34,40 @@ async function loadDungeons() {
             }
             
             dungeons.forEach(d => {
-                const monstersData = JSON.stringify(d.monsters).replace(/"/g, '&quot;');
+                let totalSalles = d.salles ? d.salles.length : 0;
+                let combats = 0, treasures = 0, events = 0, totalMobs = 0;
+                if (d.salles) {
+                    d.salles.forEach(s => {
+                        if (s.type === 'COMBAT') { 
+                            combats++; 
+                            totalMobs += (s.monsters ? s.monsters.length : 0); 
+                        }
+                        else if (s.type === 'TREASURE') { treasures++; }
+                        else if (s.type === 'EVENT') { events++; }
+                    });
+                }
+                
+                const sallesData = JSON.stringify(d.salles || []).replace(/"/g, '&quot;');
                 
                 list.innerHTML += `
-                    <div class="dungeon-card" onclick="openPrepModal(${d.id}, '${d.name.replace(/'/g, "\\'")}', '${monstersData}')">
+                    <div class="dungeon-card" onclick="openPrepModal(${d.id}, '${d.name.replace(/'/g, "\\'")}', '${sallesData}')">
                         <div class="dungeon-title">
                             <span class="material-symbols-outlined">castle</span>
                             ${d.name}
                         </div>
                         <div class="dungeon-level">Niveau ${d.recommendedLevel}</div>
                         <div class="dungeon-desc">${d.description || 'Affrontez les dangers qui rôdent.'}</div>
-                        <div style="color: #ef4444; font-size: 0.9rem; font-weight: 500; display: flex; align-items: center; gap: 0.3rem;">
-                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">pest_control</span>
-                            ${d.monsters ? d.monsters.length : 0} Monstre(s)
+                        <div style="font-size: 0.85rem; color: #f8fafc; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.1); display: grid; gap: 0.4rem;">
+                            <div><span style="font-weight: 600;">Salles totales :</span> ${totalSalles}</div>
+                            <div style="color: #ef4444; margin-left: 0.5rem; display: flex; align-items: center; gap: 0.3rem;">
+                                <span class="material-symbols-outlined" style="font-size: 1rem;">swords</span> Combats : ${combats} (avec ${totalMobs} mob${totalMobs > 1 ? 's' : ''})
+                            </div>
+                            <div style="color: #f59e0b; margin-left: 0.5rem; display: flex; align-items: center; gap: 0.3rem;">
+                                <span class="material-symbols-outlined" style="font-size: 1rem;">shopping_bag</span> Trésors : ${treasures}
+                            </div>
+                            <div style="color: #8b5cf6; margin-left: 0.5rem; display: flex; align-items: center; gap: 0.3rem;">
+                                <span class="material-symbols-outlined" style="font-size: 1rem;">auto_awesome</span> Événements : ${events}
+                            </div>
                         </div>
                     </div>
                 `;
@@ -79,16 +100,34 @@ async function loadCharacters() {
     }
 }
 
-window.openPrepModal = function(id, name, monstersData) {
+window.openPrepModal = function(id, name, sallesData) {
     currentDungeonId = id;
     document.getElementById('prepDungeonName').textContent = name;
     
-    const monsters = JSON.parse(monstersData || '[]');
+    const salles = JSON.parse(sallesData || '[]');
     const list = document.getElementById('prepMonstersList');
-    if (monsters.length === 0) {
-        list.innerHTML = "Aucun monstre configuré.";
+    
+    if (salles.length === 0) {
+        list.innerHTML = "Aucune salle configurée.";
     } else {
-        list.innerHTML = monsters.map(m => `• ${m.name} (PV: ${m.healthMax})`).join('<br>');
+        let html = '';
+        salles.forEach((s, index) => {
+            if (s.type === 'COMBAT') {
+                html += `<div style="margin-bottom: 0.5rem; color: #ef4444; font-weight: 600; display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem;">swords</span> Étape ${index + 1} : Combat</div>`;
+                if (!s.monsters || s.monsters.length === 0) {
+                    html += `<div style="margin-left: 1.5rem; color: #94a3b8; font-size: 0.85rem;">Aucun monstre</div>`;
+                } else {
+                    s.monsters.forEach(m => {
+                        html += `<div style="margin-left: 1.5rem; font-size: 0.85rem; color: #f8fafc;">• ${m.name} (Lvl ${m.level || 1} - PV: ${m.healthMax})</div>`;
+                    });
+                }
+            } else if (s.type === 'TREASURE') {
+                html += `<div style="margin-bottom: 0.5rem; color: #f59e0b; font-weight: 600; display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem;">shopping_bag</span> Étape ${index + 1} : Trésor</div>`;
+            } else if (s.type === 'EVENT') {
+                html += `<div style="margin-bottom: 0.5rem; color: #8b5cf6; font-weight: 600; display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem;">auto_awesome</span> Étape ${index + 1} : Événement</div>`;
+            }
+        });
+        list.innerHTML = html;
     }
     
     document.getElementById('prepModalOverlay').classList.add('show');

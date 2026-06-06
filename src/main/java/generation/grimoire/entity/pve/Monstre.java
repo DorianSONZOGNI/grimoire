@@ -23,6 +23,8 @@ public class Monstre {
     
     private String imageUrl;
 
+    private int level = 1;
+
     // Base stats similar to Personnage
     private int healthMax;
     private int manaMax;

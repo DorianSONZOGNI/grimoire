@@ -1,13 +1,11 @@
 package generation.grimoire.controller.pve;
 
 import generation.grimoire.DTO.pve.DonjonDTO;
-import generation.grimoire.DTO.pve.MonstreDTO;
 import generation.grimoire.entity.pve.Donjon;
 import generation.grimoire.entity.pve.Monstre;
 import generation.grimoire.service.pve.PvEAdminService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -83,13 +81,32 @@ public class PvEAdminController {
         entity.setDescription(dto.getDescription());
         entity.setImageUrl(dto.getImageUrl());
         entity.setRecommendedLevel(dto.getRecommendedLevel());
-        
-        if (dto.getMonsters() != null) {
-            List<Monstre> monsters = dto.getMonsters().stream()
-                .map(mDto -> pvEAdminService.getMonsterById(mDto.getId()))
-                .filter(m -> m != null)
-                .collect(Collectors.toList());
-            entity.setMonsters(monsters);
+
+        if (dto.getSalles() != null) {
+            List<generation.grimoire.entity.pve.Salle> salles = dto.getSalles().stream().map(sDto -> {
+                generation.grimoire.entity.pve.Salle s = new generation.grimoire.entity.pve.Salle();
+                s.setType(sDto.getType());
+                s.setEventText(sDto.getEventText());
+                s.setEventEffectAmount(sDto.getEventEffectAmount());
+                s.setTreasureGold(sDto.getTreasureGold());
+                s.setTreasureExp(sDto.getTreasureExp());
+
+                if (sDto.getMonsters() != null) {
+                    List<Monstre> monsters = sDto.getMonsters().stream()
+                            .map(mDto -> pvEAdminService.getMonsterById(mDto.getId()))
+                            .filter(m -> m != null)
+                            .collect(Collectors.toList());
+                    s.setMonsters(monsters);
+                }
+                return s;
+            }).collect(Collectors.toList());
+
+            // Clear and add to keep orphanRemoval working if there was an existing list
+            if (entity.getSalles() == null) {
+                entity.setSalles(new java.util.ArrayList<>());
+            }
+            entity.getSalles().clear();
+            entity.getSalles().addAll(salles);
         }
     }
 }

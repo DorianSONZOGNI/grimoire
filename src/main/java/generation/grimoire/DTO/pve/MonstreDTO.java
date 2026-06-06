@@ -8,6 +8,7 @@ public class MonstreDTO {
     private String name;
     private String description;
     private String imageUrl;
+    private int level;
     
     private int healthMax;
     private int manaMax;

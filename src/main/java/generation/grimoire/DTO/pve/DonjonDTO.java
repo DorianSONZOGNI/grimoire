@@ -11,5 +11,5 @@ public class DonjonDTO {
     private String imageUrl;
     private int recommendedLevel;
     
-    private List<MonstreDTO> monsters;
+    private List<SalleDTO> salles;
 }

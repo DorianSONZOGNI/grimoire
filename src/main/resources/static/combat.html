@@ -253,15 +253,49 @@
             100% { transform: translateY(-50px) scale(1.5); opacity: 0; }
         }
         
-        .shake {
-            animation: shake 0.5s cubic-bezier(.36,.07,.19,.97) both;
-        }
-
         @keyframes shake {
             10%, 90% { transform: translate3d(-1px, 0, 0); }
             20%, 80% { transform: translate3d(2px, 0, 0); }
             30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
             40%, 60% { transform: translate3d(4px, 0, 0); }
+        }
+        
+        .event-overlay {
+            position: absolute;
+            top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.95);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 90;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.5s;
+        }
+
+        .event-overlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+        
+        .enemy-card {
+            cursor: pointer;
+            border: 2px solid transparent;
+            transform: scale(0.95);
+            transition: all 0.2s;
+        }
+        
+        .enemy-card.selected {
+            border-color: #ef4444;
+            transform: scale(1);
+            box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
+        }
+        
+        .enemy-card.dead {
+            opacity: 0.3;
+            filter: grayscale(1);
+            pointer-events: none;
         }
     </style>
 </head>
@@ -313,30 +347,26 @@
             </div>
         </div>
 
-        <!-- Enemy -->
-        <div class="fighter fighter-enemy" id="enemyCard">
-            <div class="fighter-name" id="enemyName" style="color: #ef4444;">Monstre</div>
-            
-            <div class="health-bar-bg">
-                <div class="health-bar-fill" id="enemyHpFill" style="width: 100%;"></div>
-                <div class="health-text" id="enemyHpText">100 / 100</div>
-            </div>
-            
-            <div class="fighter-sprite enemy-sprite">
-                <span class="material-symbols-outlined" style="font-size: inherit;">pest_control</span>
-            </div>
-            
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.85rem; color: #94a3b8; text-align: left; background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 8px;">
-                <div id="enemyArmor">🛡️ Arm: 0</div>
-                <div id="enemyResist">✨ Rés: 0</div>
-            </div>
+        <!-- Enemies -->
+        <div id="enemiesContainer" style="display: flex; flex-direction: column; gap: 1rem; max-height: 80vh; overflow-y: auto; padding-right: 1rem;">
+            <!-- Rempli par JS -->
+        </div>
+
+        <!-- Room Event Overlay (Treasure/Event) -->
+        <div class="event-overlay" id="eventOverlay">
+            <span class="material-symbols-outlined" id="eventIcon" style="font-size: 5rem; margin-bottom: 1rem; color: #f59e0b;">money_bag</span>
+            <div class="result-title" id="eventTitle" style="font-size: 3rem; margin-bottom: 1rem;">Trésor !</div>
+            <p style="color: #94a3b8; font-size: 1.2rem; margin-bottom: 2rem; max-width: 600px; text-align: center;" id="eventDesc">Vous avez trouvé un trésor.</p>
+            <button class="action-btn" onclick="nextRoom()" style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; border-color: rgba(59, 130, 246, 0.4);">
+                Continuer
+            </button>
         </div>
 
         <div class="result-overlay" id="resultOverlay">
             <div class="result-title" id="resultTitle">VICTOIRE</div>
-            <p style="color: #94a3b8; font-size: 1.2rem; margin-bottom: 2rem;" id="resultDesc">Le monstre a été vaincu.</p>
-            <a href="/dungeons.html" class="action-btn" style="text-decoration: none;">
-                Retourner aux Donjons
+            <p style="color: #94a3b8; font-size: 1.2rem; margin-bottom: 2rem;" id="resultDesc">Le donjon a été complété.</p>
+            <a href="/vault.html" class="action-btn" style="text-decoration: none;">
+                Retourner à la page des donjons
             </a>
         </div>
 

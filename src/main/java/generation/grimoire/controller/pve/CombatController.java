@@ -40,9 +40,20 @@ public class CombatController {
     @PostMapping("/{sessionId}/action")
     public ResponseEntity<CombatSession> executeAction(
             @PathVariable String sessionId,
-            @RequestParam(required = false) Long spellId) {
+            @RequestParam(required = false) Long spellId,
+            @RequestParam(required = false) Integer targetIndex) {
         try {
-            CombatSession session = combatService.executeTurn(sessionId, spellId);
+            CombatSession session = combatService.executeTurn(sessionId, spellId, targetIndex);
+            return ResponseEntity.ok(session);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(null);
+        }
+    }
+
+    @PostMapping("/{sessionId}/next-room")
+    public ResponseEntity<CombatSession> nextRoom(@PathVariable String sessionId) {
+        try {
+            CombatSession session = combatService.proceedToNextRoom(sessionId);
             return ResponseEntity.ok(session);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(null);
