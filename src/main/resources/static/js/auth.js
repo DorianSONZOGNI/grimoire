@@ -138,3 +138,10 @@ window.logout = async function() {
         console.error("Logout failed", e);
     }
 };
+
+window.addEventListener('authLoaded', () => {
+    const adminShop = document.getElementById('adminShopLink');
+    const adminPvE = document.getElementById('adminPvELink');
+    if (adminShop) adminShop.style.display = window.isAdmin ? 'inline-flex' : 'none';
+    if (adminPvE) adminPvE.style.display = window.isAdmin ? 'inline-flex' : 'none';
+});

@@ -476,3 +476,7 @@
 .logo-shop { background-image: linear-gradient(to right, #6ee7b7, #10b981); }
 .logo-admin { background-image: linear-gradient(to right, #fdba74, #ea580c); }
 .header-actions { display: flex; gap: 0.8rem; align-items: center; }
+
+/* PvE Colors */
+.nav-dungeon:hover, .nav-dungeon.active { border-color: rgba(220, 38, 38, 0.5); background: rgba(220, 38, 38, 0.1); color: #f8fafc; }
+.logo-dungeon { background-image: linear-gradient(to right, #dc2626, #b91c1c); }
