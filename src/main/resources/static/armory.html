@@ -21,22 +21,33 @@
 
 <body>
 
-    <header class="armory-header">
-        <div class="armory-logo">
-            <span class="material-symbols-outlined">shield</span>
-            Armurerie
+    <header class="top-header">
+        <div class="page-logo">
+            <span class="material-symbols-outlined logo-icon-gradient logo-armory">shield</span>
+            <span class="logo-text-gradient logo-armory">Armurerie</span>
         </div>
-        <div style="display: flex; gap: 0.6rem; align-items: center;">
+        <div class="header-actions">
             <div style="font-size: 0.9rem; color: var(--text-muted);">S'équiper pour ne pas finir troué !
             </div>
-            <a href="/" class="armory-nav-link">
-                <span class="material-symbols-outlined" style="font-size: 1.1rem;">auto_awesome</span>
-                Grimoire
+            <a href="/" class="top-nav-link nav-grimoire">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">auto_awesome</span> Grimoire
             </a>
-            <a href="/vault.html" class="armory-nav-link">
-                <span class="material-symbols-outlined" style="font-size: 1.1rem;">money_bag</span>
-                Salle des coffres
+            <a href="/armory.html" class="top-nav-link nav-armory active">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">shield</span> Armurerie
             </a>
+            <a href="/vault.html" class="top-nav-link nav-vault">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">money_bag</span> Salle des coffres
+            </a>
+            <a href="/shop.html" class="top-nav-link nav-shop">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">storefront</span> Boutique
+            </a>
+            <a href="/shop-admin.html" id="adminShopLink" class="top-nav-link nav-admin" style="display: none;">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">settings</span> Gestion Boutique
+            </a>
+            <div id="authNavContainer"
+                style="display: flex; align-items: center; gap: 0.5rem; margin-left: 1rem; padding-left: 1rem; border-left: 1px solid var(--glass-border);">
+                <span style="font-size: 0.85rem; color: var(--text-muted);">Chargement...</span>
+            </div>
         </div>
     </header>
 
@@ -45,7 +56,7 @@
         <div class="armory-form-panel" id="charFormPanel">
             <div class="armory-panel-title" id="formTitle">
                 <span class="material-symbols-outlined">person_add</span>
-                Créer un Personnage
+                Recruter à la taverne
             </div>
 
             <!-- Nom -->
@@ -144,74 +155,77 @@
             </div>
 
             <!-- Stats -->
-            <div class="armory-section-title">
-                <span class="material-symbols-outlined" style="color: #10b981;">monitoring</span>
-                Statistiques de Base
-            </div>
+            <div id="baseStatsSection" style="display: flex; flex-direction: column; gap: 1.2rem;">
+                <div class="armory-section-title">
+                    <span class="material-symbols-outlined" style="color: #10b981;">monitoring</span>
+                    Statistiques de Base
+                </div>
 
-            <div class="armory-form-row">
-                <div class="armory-field">
-                    <label for="charHp">
-                        <span class="material-symbols-outlined" style="color: #ec4899;">favorite</span>
-                        PV Max
-                    </label>
-                    <input type="number" id="charHp" min="1" value="100">
+                <div class="armory-form-row">
+                    <div class="armory-field">
+                        <label for="charHp">
+                            <span class="material-symbols-outlined" style="color: #ec4899;">favorite</span>
+                            PV Max
+                        </label>
+                        <input type="number" id="charHp" min="1" value="100">
+                    </div>
+                    <div class="armory-field">
+                        <label for="charMana">
+                            <span class="material-symbols-outlined" style="color: #38bdf8;">water_drop</span>
+                            Mana Max
+                        </label>
+                        <input type="number" id="charMana" min="0" value="100">
+                    </div>
                 </div>
-                <div class="armory-field">
-                    <label for="charMana">
-                        <span class="material-symbols-outlined" style="color: #38bdf8;">water_drop</span>
-                        Mana Max
-                    </label>
-                    <input type="number" id="charMana" min="0" value="100">
-                </div>
-            </div>
 
-            <div class="armory-form-row quad">
-                <div class="armory-field">
-                    <label for="charPower">
-                        <span class="material-symbols-outlined" style="color: #a855f7;">auto_awesome</span>
-                        Puissance
-                    </label>
-                    <input type="number" id="charPower" min="0" value="25">
+                <div class="armory-form-row quad">
+                    <div class="armory-field">
+                        <label for="charPower">
+                            <span class="material-symbols-outlined" style="color: #a855f7;">auto_awesome</span>
+                            Puissance
+                        </label>
+                        <input type="number" id="charPower" min="0" value="25">
+                    </div>
+                    <div class="armory-field">
+                        <label for="charStrength">
+                            <span class="material-symbols-outlined" style="color: #f43f5e;">fitness_center</span>
+                            Force
+                        </label>
+                        <input type="number" id="charStrength" min="0" value="10">
+                    </div>
+                    <div class="armory-field">
+                        <label for="charArmor">
+                            <span class="material-symbols-outlined" style="color: #3b82f6;">shield</span>
+                            Armure
+                        </label>
+                        <input type="number" id="charArmor" min="0" value="10">
+                    </div>
+                    <div class="armory-field">
+                        <label for="charResistance">
+                            <span class="material-symbols-outlined" style="color: #10b981;">shield</span>
+                            Résistance
+                        </label>
+                        <input type="number" id="charResistance" min="0" value="10">
+                    </div>
                 </div>
-                <div class="armory-field">
-                    <label for="charStrength">
-                        <span class="material-symbols-outlined" style="color: #f43f5e;">fitness_center</span>
-                        Force
-                    </label>
-                    <input type="number" id="charStrength" min="0" value="10">
-                </div>
-                <div class="armory-field">
-                    <label for="charArmor">
-                        <span class="material-symbols-outlined" style="color: #3b82f6;">shield</span>
-                        Armure
-                    </label>
-                    <input type="number" id="charArmor" min="0" value="10">
-                </div>
-                <div class="armory-field">
-                    <label for="charResistance">
-                        <span class="material-symbols-outlined" style="color: #10b981;">shield</span>
-                        Résistance
-                    </label>
-                    <input type="number" id="charResistance" min="0" value="10">
-                </div>
-            </div>
 
-            <div class="armory-form-row">
-                <div class="armory-field">
-                    <label for="charSpeed">
-                        <span class="material-symbols-outlined" style="color: #f59e0b;">bolt</span>
-                        Vitesse
-                    </label>
-                    <input type="number" id="charSpeed" min="0" value="0">
+                <div class="armory-form-row">
+                    <div class="armory-field">
+                        <label for="charSpeed">
+                            <span class="material-symbols-outlined" style="color: #f59e0b;">bolt</span>
+                            Vitesse
+                        </label>
+                        <input type="number" id="charSpeed" min="0" value="0">
+                    </div>
+                    <div class="armory-field">
+                        <label for="charCrit">
+                            <span class="material-symbols-outlined" style="color: #ef4444;">gps_fixed</span>
+                            Critique (%)
+                        </label>
+                        <input type="number" id="charCrit" min="0" max="100" value="0">
+                    </div>
                 </div>
-                <div class="armory-field">
-                    <label for="charCrit">
-                        <span class="material-symbols-outlined" style="color: #ef4444;">gps_fixed</span>
-                        Critique (%)
-                    </label>
-                    <input type="number" id="charCrit" min="0" max="100" value="0">
-                </div>
+
             </div>
 
             <!-- Boutons -->
@@ -240,9 +254,20 @@
                 </button>
             </div>
 
-            <!-- Search Bar -->
             <div
                 style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; background: rgba(0,0,0,0.2); padding: 0.8rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+
+                <!-- Trier par removed as per user request -->
+
+                <!-- User Filter Input (hidden by default, for admins) -->
+                <div class="armory-field" id="searchOwnerContainer" style="flex: 1; min-width: 150px; display: none;">
+                    <label style="font-size: 0.7rem; color: #64748b; margin-bottom: 0.2rem; display: block;"><span
+                            class="material-symbols-outlined"
+                            style="font-size: 0.9rem; vertical-align: bottom;">person_search</span> Nom de
+                        compte</label>
+                    <input type="text" id="searchOwner" placeholder="Ex: Admin..." oninput="filterPersonnages()"
+                        style="padding: 0.35rem 0.5rem; font-size: 0.8rem; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; color: #fff; width: 100%;">
+                </div>
                 <div class="armory-field" style="flex: 1.5; min-width: 150px;">
                     <label style="font-size: 0.7rem; color: #64748b; margin-bottom: 0.2rem; display: block;"><span
                             class="material-symbols-outlined"
@@ -519,7 +544,8 @@
                 <span class="material-symbols-outlined" style="font-size: 2rem;">warning</span>
             </div>
             <div class="vault-modal-title">Supprimer le personnage ?</div>
-            <div class="vault-modal-text">Êtes-vous sûr de vouloir supprimer <strong id="deletePersoTargetName" style="color:#fff;">ce personnage</strong> ? Cette action est irréversible.</div>
+            <div class="vault-modal-text">Êtes-vous sûr de vouloir supprimer <strong id="deletePersoTargetName"
+                    style="color:#fff;">ce personnage</strong> ? Cette action est irréversible.</div>
             <div class="vault-modal-actions">
                 <button class="vault-btn-cancel" onclick="closeDeletePersoModal()">Annuler</button>
                 <button class="vault-btn-confirm" id="deletePersoConfirmBtn">Oui, supprimer</button>
@@ -528,34 +554,115 @@
     </div>
     <style>
         .vault-modal-overlay {
-            position: fixed; top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(15, 23, 42, 0.8); backdrop-filter: blur(8px);
-            z-index: 100000; display: flex; align-items: center; justify-content: center;
-            opacity: 0; pointer-events: none; transition: opacity 0.3s ease;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(8px);
+            z-index: 100000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
         }
-        .vault-modal-overlay.show { opacity: 1; pointer-events: all; }
+
+        .vault-modal-overlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
         .vault-modal-content {
-            background: rgba(30, 41, 59, 0.95); border: 1px solid rgba(239, 68, 68, 0.4);
-            border-radius: 16px; padding: 2rem; max-width: 400px; text-align: center;
-            transform: translateY(20px) scale(0.95); transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 20px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05) inset;
+            background: rgba(30, 41, 59, 0.95);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+            border-radius: 16px;
+            padding: 2rem;
+            max-width: 400px;
+            text-align: center;
+            transform: translateY(20px) scale(0.95);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
         }
-        .vault-modal-overlay.show .vault-modal-content { transform: translateY(0) scale(1); }
+
+        .vault-modal-overlay.show .vault-modal-content {
+            transform: translateY(0) scale(1);
+        }
+
         .vault-modal-icon {
-            width: 60px; height: 60px; border-radius: 50%; background: rgba(239, 68, 68, 0.1);
-            color: #ef4444; display: flex; align-items: center; justify-content: center;
-            margin: 0 auto 1.2rem auto; font-size: 2rem; border: 2px solid rgba(239, 68, 68, 0.2);
+            width: 60px;
+            height: 60px;
+            border-radius: 50%;
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.2rem auto;
+            font-size: 2rem;
+            border: 2px solid rgba(239, 68, 68, 0.2);
         }
-        .vault-modal-title { font-size: 1.2rem; font-weight: 600; font-family: 'Outfit', sans-serif; color: #fff; margin-bottom: 0.8rem; }
-        .vault-modal-text { font-size: 0.9rem; color: #94a3b8; margin-bottom: 1.5rem; line-height: 1.5; }
-        .vault-modal-actions { display: flex; gap: 1rem; }
-        .vault-btn-cancel { flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 0.6rem; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.2s ease; }
-        .vault-btn-cancel:hover { background: rgba(255,255,255,0.1); }
-        .vault-btn-confirm { flex: 1; background: #ef4444; border: none; color: #fff; padding: 0.6rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3); }
-        .vault-btn-confirm:hover { background: #dc2626; transform: translateY(-1px); box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4); }
+
+        .vault-modal-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            font-family: 'Outfit', sans-serif;
+            color: #fff;
+            margin-bottom: 0.8rem;
+        }
+
+        .vault-modal-text {
+            font-size: 0.9rem;
+            color: #94a3b8;
+            margin-bottom: 1.5rem;
+            line-height: 1.5;
+        }
+
+        .vault-modal-actions {
+            display: flex;
+            gap: 1rem;
+        }
+
+        .vault-btn-cancel {
+            flex: 1;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: #fff;
+            padding: 0.6rem;
+            border-radius: 8px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s ease;
+        }
+
+        .vault-btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .vault-btn-confirm {
+            flex: 1;
+            background: #ef4444;
+            border: none;
+            color: #fff;
+            padding: 0.6rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
+        }
+
+        .vault-btn-confirm:hover {
+            background: #dc2626;
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+        }
     </style>
 
-    <script src="/js/armory.js"></script>
+    <script src="/js/armory.js?v=8"></script>
+    <script type="module" src="/js/auth.js?v=10"></script>
 
 </body>
 

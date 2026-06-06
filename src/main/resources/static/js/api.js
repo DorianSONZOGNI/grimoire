@@ -7,6 +7,28 @@ import * as filters from './filters.js';
 import * as sandbox from './sandbox.js';
 import * as animations from './animations.js';
 
+let currentUser = undefined;
+
+export async function getCurrentUser() {
+    if (currentUser !== undefined) return currentUser;
+    try {
+        const res = await fetch('/api/auth/me', { credentials: 'same-origin' });
+        if (res.ok) {
+            currentUser = await res.json();
+            return currentUser;
+        }
+    } catch (e) {
+        console.warn("Failed to fetch current user", e);
+    }
+    currentUser = null;
+    return null;
+}
+
+export function isAdmin(user) {
+    if (!user || !user.roles) return false;
+    return user.roles.some(r => r.authority === 'ADMIN' || r.authority === 'ROLE_ADMIN');
+}
+
 export async function getMeta() {
     const res = await fetch('/api/spells-editor/meta');
     if (!res.ok) throw new Error("Failed to fetch meta");

@@ -386,7 +386,7 @@ export function getSpellCardHtml(sp) {
     const isMaxLevel = (sp.niveau === 5 && sp.voie) || (sp.niveau === 3 && sp.spiritualite && !sp.voie);
 
     let lvlBadgeStyle = 'background: rgba(255,255,255,0.15); border: 1px solid rgba(255,255,255,0.3); color: #f8fafc; font-weight: 500;';
-    let lvlIcon = '<span class="material-symbols-outlined" style="font-size: 1.05rem;">military_tech</span>';
+    let lvlIcon = '<span class="material-symbols-outlined" style="font-size: 1.05rem;">workspace_premium</span>';
     if (sp.niveau === 2) {
         lvlBadgeStyle = 'background: rgba(255,255,255,0.22); border: 1px solid rgba(255,255,255,0.5); color: #fff; font-weight: 600;';
     } else if (sp.niveau === 3 && !isMaxLevel) {
@@ -414,8 +414,10 @@ export function getSpellCardHtml(sp) {
                         </div>
                         <div style="display: flex; gap: 0.3rem; align-items: center; flex-wrap: wrap;">
                             <button type="button" class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; line-height: 1; border-radius: 4px; background: rgba(16, 185, 129, 0.15); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); display: inline-flex; align-items: center; gap: 0.2rem;" onclick="trySpell(${sp.id})" title="Lancer ce sort en direct dans le simulateur"><span class="material-symbols-outlined" style="font-size: 1.05rem;">swords</span><span>Essayer</span></button>
+                            ${api.isAdmin(window.currentUser) ? `
                             <button type="button" class="btn" style="padding: 0.25rem 0.5rem; font-size: 0.75rem; line-height: 1; border-radius: 4px; background: rgba(56, 189, 248, 0.15); color: #38bdf8; border: 1px solid rgba(56, 189, 248, 0.3); display: inline-flex; align-items: center; gap: 0.2rem;" onclick="editSpell(${sp.id})" title="Modifier les propriétés de ce sort"><span class="material-symbols-outlined" style="font-size: 1.05rem;">edit</span><span>Éditer</span></button>
                             <button type="button" class="btn-danger" style="padding: 0.25rem 0.5rem; font-size: 0.8rem; line-height: 1; border-radius: 4px; opacity: 0.75; display: inline-flex; align-items: center; justify-content: center;" onclick="deleteSpell(${sp.id})" onmouseover="this.style.opacity='1'" onmouseout="this.style.opacity='0.75'" title="Supprimer définitivement ce sort"><span class="material-symbols-outlined" style="font-size: 1.05rem;">delete</span></button>
+                            ` : ''}
                         </div>
                     </div>
                     ${rankTitleBadge}

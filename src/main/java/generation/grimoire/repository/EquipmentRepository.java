@@ -15,5 +15,9 @@ public interface EquipmentRepository extends JpaRepository<Equipment, Long> {
 
     Optional<Equipment> findByPersonnageIdAndSlot(Long personnageId, EquipmentSlot slot);
 
+    List<Equipment> findByPersonnageIsNullAndUser_Username(String username);
+
     List<Equipment> findByPersonnageIsNull();
+
+    List<Equipment> findByUser_Username(String username);
 }

@@ -57,7 +57,12 @@ public class Personnage {
 
     private int spiritualiteLevel = 1;
 
+    @ManyToOne
+    @JoinColumn(name = "user_id", nullable = true)
+    private generation.grimoire.entity.auth.AppUser user;
+
     @OneToMany(mappedBy = "personnage", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+
     private List<generation.grimoire.entity.Equipment> equipments = new ArrayList<>();
 
     // Liste des buffs/débuffs actifs (ici en mémoire, mais vous pouvez choisir de

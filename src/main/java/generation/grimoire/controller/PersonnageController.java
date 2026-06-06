@@ -17,34 +17,59 @@ import java.util.Map;
 public class PersonnageController {
 
     private final PersonnageService personnageService;
+    private final generation.grimoire.repository.PersonnageRepository personnageRepository;
+    private final generation.grimoire.repository.auth.UserRepository userRepository;
     private final VoieRepository voieRepository;
     private final SpiritualiteRepository spiritualiteRepository;
 
     public PersonnageController(PersonnageService personnageService,
+                                generation.grimoire.repository.PersonnageRepository personnageRepository,
+                                generation.grimoire.repository.auth.UserRepository userRepository,
                                 VoieRepository voieRepository,
                                 SpiritualiteRepository spiritualiteRepository) {
         this.personnageService = personnageService;
+        this.personnageRepository = personnageRepository;
+        this.userRepository = userRepository;
         this.voieRepository = voieRepository;
         this.spiritualiteRepository = spiritualiteRepository;
     }
 
     @GetMapping
-    public ResponseEntity<List<Map<String, Object>>> getAllPersonnages() {
-        List<Personnage> all = personnageService.findAll();
+    public ResponseEntity<List<Map<String, Object>>> getAllPersonnages(java.security.Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
+        }
+        boolean isAdmin = ((org.springframework.security.core.Authentication) principal).getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
+        
+        List<Personnage> all = isAdmin 
+                ? personnageRepository.findAll() 
+                : personnageRepository.findByUser_Username(principal.getName());
         List<Map<String, Object>> result = all.stream().map(this::toDto).toList();
         return ResponseEntity.ok(result);
     }
 
     @PostMapping
-    public ResponseEntity<Map<String, Object>> createOrUpdate(@RequestBody PersonnageCreationDto dto) {
+    public ResponseEntity<Map<String, Object>> createOrUpdate(@RequestBody PersonnageCreationDto dto, java.security.Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
+        }
+        generation.grimoire.entity.auth.AppUser user = userRepository.findByUsername(principal.getName()).orElse(null);
+        boolean isAdmin = ((org.springframework.security.core.Authentication) principal).getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
+
         Personnage personnage;
         boolean isUpdate = false;
 
-        if (dto.getId() != null && personnageService.existsById(dto.getId())) {
-            personnage = personnageService.findByIdOrThrow(dto.getId());
+        if (dto.getId() != null && personnageService.existsById(java.util.Objects.requireNonNull(dto.getId()))) {
+            personnage = personnageService.findByIdOrThrow(java.util.Objects.requireNonNull(dto.getId()));
+            if (!isAdmin && personnage.getUser() != null && !personnage.getUser().getUsername().equals(principal.getName())) {
+                return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).build();
+            }
             isUpdate = true;
         } else {
             personnage = new Personnage();
+            personnage.setUser(user);
         }
 
         personnage.setName(dto.getName());
@@ -61,7 +86,7 @@ public class PersonnageController {
 
         // Voie
         if (dto.getVoieId() != null) {
-            voieRepository.findById(dto.getVoieId()).ifPresent(personnage::setVoie);
+            voieRepository.findById(java.util.Objects.requireNonNull(dto.getVoieId())).ifPresent(personnage::setVoie);
         } else {
             personnage.setVoie(null);
         }
@@ -69,7 +94,7 @@ public class PersonnageController {
 
         // Spiritualité
         if (dto.getSpiritualiteId() != null) {
-            spiritualiteRepository.findById(dto.getSpiritualiteId()).ifPresent(personnage::setSpiritualite);
+            spiritualiteRepository.findById(java.util.Objects.requireNonNull(dto.getSpiritualiteId())).ifPresent(personnage::setSpiritualite);
         } else {
             personnage.setSpiritualite(null);
         }
@@ -88,7 +113,16 @@ public class PersonnageController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete(@PathVariable Long id) {
+    public ResponseEntity<String> delete(@PathVariable @org.springframework.lang.NonNull Long id, java.security.Principal principal) {
+        if (principal == null) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
+        }
+        boolean isAdmin = ((org.springframework.security.core.Authentication) principal).getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
+        Personnage personnage = personnageService.findByIdOrThrow(id);
+        if (!isAdmin && personnage.getUser() != null && !personnage.getUser().getUsername().equals(principal.getName())) {
+            return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).build();
+        }
         if (personnageService.existsById(id)) {
             personnageService.deleteById(id);
             return ResponseEntity.ok("Personnage supprimé.");
@@ -100,6 +134,7 @@ public class PersonnageController {
         Map<String, Object> map = new HashMap<>();
         map.put("id", p.getId());
         map.put("name", p.getName());
+        map.put("ownerUsername", p.getUser() != null ? p.getUser().getUsername() : "Inconnu");
         
         // Base stats pour le formulaire d'édition
         map.put("healthMax", p.getBaseHealthMax());

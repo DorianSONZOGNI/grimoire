@@ -25,5 +25,16 @@ window.addEventListener('DOMContentLoaded', async () => {
     ui.initResizeObserver();
     sandbox.initSandboxSpellSearch();
     await api.fetchMeta();
+    
+    // RBAC: Check user and update layout
+    const user = await api.getCurrentUser();
+    window.currentUser = user;
+    if (!api.isAdmin(user)) {
+        const forgePanel = document.getElementById('spellForgePanel');
+        if (forgePanel) forgePanel.style.display = 'none';
+        const mainEl = document.querySelector('main');
+        if (mainEl) mainEl.style.gridTemplateColumns = '1fr';
+    }
+
     await api.loadSpells();
 });

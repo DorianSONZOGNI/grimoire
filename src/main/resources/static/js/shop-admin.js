@@ -7,7 +7,6 @@ const SLOT_LABELS = {
     ANNEAU_DROIT: { label: 'Anneau', icon: 'diamond', color: '#f59e0b' },
     BOTTES: { label: 'Bottes', icon: 'footprint', color: '#10b981' },
     CAPE: { label: 'Cape', icon: 'carpenter', color: '#ec4899' },
-    CONSOMMABLE: { label: 'Consommable', icon: 'inventory_2', color: '#854c4c' },
 };
 
 const RARITY_ORDER = {
@@ -130,7 +129,7 @@ document.addEventListener('click', (e) => {
         } else if (hiddenInput.id.startsWith('eq') || hiddenInput.id === 'eqSpecialEffect') {
             updateWeightUI();
         } else {
-            filterVault(); // Mettre à jour l'affichage au changement
+            renderVault(); // Mettre à jour l'affichage au changement
         }
     }
 });
@@ -138,15 +137,18 @@ document.addEventListener('click', (e) => {
 // ===== API =====
 async function loadEquipments() {
     try {
-        const res = await fetch('/api/equipment');
+        const res = await fetch('/api/shop/templates');
+        if (!res.ok) {
+            if (res.status === 403 || res.status === 401) {
+                document.getElementById('vaultGrid').innerHTML = `<div style="color: #ef4444;"><span class="material-symbols-outlined">error</span> Accès refusé.</div>`;
+            }
+            return;
+        }
         allEquipments = await res.json();
-
-        // Pré-calculer le poids pour le tri
         allEquipments.forEach(eq => {
             eq._weight = calculateWeight(eq);
         });
-
-        filterVault();
+        renderVault();
     } catch (e) {
         console.error('Erreur chargement équipements:', e);
         document.getElementById('vaultGrid').innerHTML = `<div class="vault-empty-state" style="color: #ef4444;"><span class="material-symbols-outlined">error</span>Erreur de connexion.</div>`;
@@ -178,7 +180,7 @@ document.getElementById('deleteConfirmBtn').addEventListener('click', async () =
     closeDeleteModal();
 
     try {
-        const res = await fetch(`/api/equipment/${id}`, { method: 'DELETE' });
+        const res = await fetch(`/api/shop/templates/${id}`, { method: 'DELETE' });
         if (res.ok) {
             showNotif('Équipement détruit.');
             await loadEquipments();
@@ -194,61 +196,18 @@ document.getElementById('deleteConfirmBtn').addEventListener('click', async () =
 });
 
 // ===== Rendu =====
-function filterVault() {
-    const searchName = document.getElementById('searchItemName').value.toLowerCase();
-    const searchOwner = document.getElementById('searchOwnerName')?.value.toLowerCase() || '';
-    const filterSlot = document.getElementById('filterSlot').value;
-    const filterRarity = document.getElementById('filterRarity').value;
-    const filterStatus = document.getElementById('filterStatus').value;
-    const sortVault = document.getElementById('sortVault').value;
+function renderVault() {
+    // Sort allEquipments: rarity order, then name
+    const rarityOrder = { 'RELIQUE': 0, 'EPIQUE': 1, 'LEGENDAIRE': 2, 'RARE': 3, 'COMMUN': 4 };
 
-    let filtered = allEquipments.filter(eq => {
-        const matchName = !searchName || eq.name.toLowerCase().includes(searchName);
-        const matchOwner = !searchOwner || (eq.ownerUsername && eq.ownerUsername.toLowerCase().includes(searchOwner));
-
-        let matchSlot = true;
-        if (filterSlot) {
-            if (filterSlot === 'ANNEAU') {
-                matchSlot = (eq.slot === 'ANNEAU_GAUCHE' || eq.slot === 'ANNEAU_DROIT');
-            } else {
-                matchSlot = eq.slot === filterSlot;
-            }
-        }
-
-        const matchRarity = !filterRarity || eq.rarity === filterRarity;
-
-        let matchStatus = true;
-        if (filterStatus === 'EQUIPPED') matchStatus = eq.personnage != null;
-        if (filterStatus === 'AVAILABLE') matchStatus = eq.personnage == null;
-
-        return matchName && matchOwner && matchSlot && matchRarity && matchStatus;
+    let sorted = [...allEquipments].sort((a, b) => {
+        const rA = rarityOrder[a.rarity || 'COMMUN'];
+        const rB = rarityOrder[b.rarity || 'COMMUN'];
+        if (rA !== rB) return rA - rB;
+        return a.name.localeCompare(b.name);
     });
 
-    // Sorting
-    filtered.sort((a, b) => {
-        if (sortVault === 'name_asc') return a.name.localeCompare(b.name);
-        if (sortVault === 'name_desc') return b.name.localeCompare(a.name);
-
-        if (sortVault === 'rarity_desc') {
-            const ra = RARITY_ORDER[a.rarity] || 0;
-            const rb = RARITY_ORDER[b.rarity] || 0;
-            if (ra !== rb) return rb - ra;
-            return b._weight - a._weight; // Tie-breaker: weight
-        }
-        if (sortVault === 'rarity_asc') {
-            const ra = RARITY_ORDER[a.rarity] || 0;
-            const rb = RARITY_ORDER[b.rarity] || 0;
-            if (ra !== rb) return ra - rb;
-            return a._weight - b._weight;
-        }
-
-        if (sortVault === 'weight_desc') return b._weight - a._weight;
-        if (sortVault === 'weight_asc') return a._weight - b._weight;
-
-        return 0;
-    });
-
-    renderGrid(filtered);
+    renderGrid(sorted);
 }
 
 function renderGrid(equipments) {
@@ -263,107 +222,117 @@ function renderGrid(equipments) {
         return;
     }
 
-    container.innerHTML = equipments.map(eq => {
-        const slotInfo = SLOT_LABELS[eq.slot] || { label: eq.slot, icon: 'help', color: '#94a3b8' };
+    const groups = {
+        COMMUN: [],
+        RARE: [],
+        LEGENDAIRE: [],
+        EPIQUE: [],
+        RELIQUE: []
+    };
 
-        const statsHtml = STAT_DEFS
-            .filter(s => eq[s.key] && eq[s.key] !== 0)
-            .map(s => {
-                const val = eq[s.key];
-                const isMalus = val < 0;
-                const sign = val > 0 ? '+' : '';
-                return `<span class="vault-stat-chip ${isMalus ? 'malus' : ''}">
-                    <span class="material-symbols-outlined" style="color:${isMalus ? '#ef4444' : s.color}; font-size: 0.8rem;">${s.icon}</span>
-                    ${sign}${val}
+    equipments.forEach(eq => {
+        const rarity = eq.rarity || 'COMMUN';
+        if (groups[rarity]) {
+            groups[rarity].push(eq);
+        } else {
+            groups['COMMUN'].push(eq);
+        }
+    });
+
+    const RARITY_LABELS = {
+        COMMUN: { label: 'Commun', icon: 'lens' },
+        RARE: { label: 'Rare', icon: 'adjust' },
+        LEGENDAIRE: { label: 'Légendaire', icon: 'workspace_premium' },
+        EPIQUE: { label: 'Épique', icon: 'whatshot' },
+        RELIQUE: { label: 'Relique', icon: 'webhook' }
+    };
+
+    let html = '';
+
+    for (const [rarity, items] of Object.entries(groups)) {
+        if (items.length === 0) continue;
+
+        const rarityInfo = RARITY_LABELS[rarity];
+
+        html += `
+            <div class="shop-admin-section">
+                <div class="shop-admin-header rarity-${rarity}">
+                    <span class="material-symbols-outlined" style="font-size: 1.3rem;">${rarityInfo.icon}</span>
+                    ${rarityInfo.label}
+                </div>
+                <div class="shop-admin-list">
+        `;
+
+        items.forEach(eq => {
+            const slotInfo = SLOT_LABELS[eq.slot] || { label: eq.slot, icon: 'help', color: '#94a3b8' };
+
+            const statsHtml = STAT_DEFS
+                .filter(s => eq[s.key] && eq[s.key] !== 0)
+                .map(s => {
+                    const val = eq[s.key];
+                    const isMalus = val < 0;
+                    const sign = val > 0 ? '+' : '';
+                    return `<span class="stat-badge ${isMalus ? 'malus' : ''}">
+                        <span class="material-symbols-outlined" style="color:${isMalus ? '#ef4444' : s.color}; font-size: 0.8rem;">${s.icon}</span>
+                        ${sign}${val}
+                    </span>`;
+                }).join('');
+
+            let effectHtml = '';
+            if (eq.specialEffect && eq.specialEffect !== 'NONE') {
+                const effectLabels = {
+                    'LIFESTEAL': 'Vol de Vie',
+                    'THORNS': 'Épines',
+                    'MANA_SHIELD': 'Bouclier de Mana',
+                    'CHEAT_DEATH': 'Ange Gardien',
+                    'CRIT_DAMAGE': 'Dégâts Critiques'
+                };
+                const label = effectLabels[eq.specialEffect] || eq.specialEffect;
+                effectHtml = `<span class="stat-badge" style="background: rgba(168, 85, 247, 0.1); color: #c084fc;">
+                    <span class="material-symbols-outlined" style="font-size: 0.8rem;">auto_awesome</span>
+                    ${label} : ${eq.specialEffectValue}
                 </span>`;
-            }).join('');
+            }
 
-        let effectHtml = '';
-        if (eq.specialEffect && eq.specialEffect !== 'NONE') {
-            const effectLabels = {
-                'LIFESTEAL': 'Vol de Vie',
-                'THORNS': 'Épines',
-                'MANA_SHIELD': 'Bouclier de Mana',
-                'CHEAT_DEATH': 'Ange Gardien',
-                'CRIT_DAMAGE': 'Dégâts Critiques'
-            };
-            const label = effectLabels[eq.specialEffect] || eq.specialEffect;
-            effectHtml = `<div class="vault-card-effect">
-                <span class="material-symbols-outlined" style="font-size: 0.9rem;">auto_awesome</span>
-                ${label} : ${eq.specialEffectValue}
-            </div>`;
-        }
+            const displayPrice = eq.shopPrice !== undefined ? (eq.shopPrice % 1 === 0 ? eq.shopPrice : eq.shopPrice.toFixed(1)) : calculateShopPrice(eq._weight || 0, eq.rarity || 'COMMUN', eq.slot);
 
-        const rarityClass = eq.rarity ? `rarity-${eq.rarity}` : 'rarity-COMMUN';
-
-        let statusHtml = '';
-        if (eq.personnage) {
-            statusHtml = `<span class="vault-card-status status-equipped">
-                <span class="material-symbols-outlined" style="font-size: 0.9rem;">person</span>
-                ${eq.personnage.name}
-            </span>`;
-        } else {
-            statusHtml = `<span class="vault-card-status status-available">
-                <span class="material-symbols-outlined" style="font-size: 0.9rem;">check_circle</span>
-                Disponible
-            </span>`;
-        }
-
-        const weightStr = eq._weight % 1 === 0 ? eq._weight : eq._weight.toFixed(1);
-
-        // Optimization Color Logic
-        let weightColor = '#94a3b8';
-        const limitsForSlot = WEIGHT_LIMITS[eq.slot] || {};
-        const maxWeight = limitsForSlot[eq.rarity || 'COMMUN'] || 5;
-
-        if (eq._weight <= 0) {
-            weightColor = '#ef4444'; // Red
-        } else if (eq._weight >= maxWeight) {
-            weightColor = '#10b981'; // Green
-        } else {
-            const percentage = eq._weight / maxWeight;
-            const step = Math.floor(percentage * 10); // 0 to 9
-            const hue = step * 12; // 0 to 108
-            weightColor = `hsl(${hue}, 80%, 55%)`;
-        }
-
-        return `
-            <div class="vault-card ${rarityClass}">
-                <div class="vault-card-header">
-                    <div class="vault-card-name-group">
-                        <div class="vault-card-slot">
-                            <span class="material-symbols-outlined ${slotInfo.extraClass || ''}" style="font-size: 0.9rem; color: ${slotInfo.color};">${slotInfo.icon}</span>
-                            ${slotInfo.label} ${eq.rarity ? `<span style="opacity:0.5; margin-left:4px;">${eq.rarity}</span>` : ''}
-                        </div>
-                        <div class="vault-card-name">
-                            ${eq.name}
-                            ${window.isAdmin && eq.ownerUsername ? `<span style="margin-left: 0.5rem; font-size: 0.65rem; padding: 0.15rem 0.4rem; background: ${eq.ownerUsername === window.currentUser?.username ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.1)'}; color: ${eq.ownerUsername === window.currentUser?.username ? '#34d399' : '#cbd5e1'}; border-radius: 4px; border: 1px solid ${eq.ownerUsername === window.currentUser?.username ? 'rgba(16, 185, 129, 0.3)' : 'rgba(255, 255, 255, 0.1)'}; white-space: nowrap; vertical-align: middle;"><span class="material-symbols-outlined" style="font-size: 0.7rem; vertical-align: middle; margin-right: 2px;">account_circle</span>${eq.ownerUsername}</span>` : ''}
-                        </div>
+            html += `
+                <div class="shop-admin-row">
+                    <div class="shop-admin-row-name">
+                        <span class="material-symbols-outlined ${slotInfo.extraClass || ''}" style="font-size: 1.4rem; color: ${slotInfo.color};" title="${slotInfo.label}">${slotInfo.icon}</span>
+                        ${eq.name}
+                        ${window.isAdmin && eq.ownerUsername ? `<span style="font-size: 0.65rem; padding: 0.15rem 0.4rem; background: ${eq.ownerUsername === window.currentUser?.username ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.1)'}; color: ${eq.ownerUsername === window.currentUser?.username ? '#34d399' : '#cbd5e1'}; border-radius: 4px; border: 1px solid ${eq.ownerUsername === window.currentUser?.username ? 'rgba(16, 185, 129, 0.3)' : 'rgba(255, 255, 255, 0.1)'};"><span class="material-symbols-outlined" style="font-size: 0.7rem; vertical-align: middle; margin-right: 2px;">account_circle</span>${eq.ownerUsername}</span>` : ''}
                     </div>
-                    <div class="vault-card-actions">
-                        ${window.isAdmin ? `<button class="vault-btn-edit" onclick="editEquipment(${eq.id})" title="Modifier l'objet">
-                            <span class="material-symbols-outlined">edit</span>
+                    
+                    <div class="shop-admin-row-stats">
+                        ${statsHtml || '<span style="color:#64748b; font-style:italic;">Aucune stat</span>'}
+                        ${effectHtml}
+                    </div>
+
+                    <div class="shop-admin-row-price">
+                        ${displayPrice}
+                        <span class="material-symbols-outlined" style="font-size: 1.1rem;">monetization_on</span>
+                    </div>
+
+                    <div class="shop-admin-row-actions">
+                        ${window.isAdmin ? `<button class="vault-btn-edit" onclick="editEquipment(${eq.id})" title="Modifier l'objet" style="padding: 0.4rem; border-radius: 6px;">
+                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">edit</span>
                         </button>` : ''}
-                        ${(window.isAdmin || eq.ownerUsername === window.currentUser?.username) ? `<button class="vault-btn-delete" onclick="deleteEquipment(${eq.id})" title="Détruire l'objet">
-                            <span class="material-symbols-outlined">delete</span>
+                        ${(window.isAdmin || eq.ownerUsername === window.currentUser?.username) ? `<button class="vault-btn-delete" onclick="deleteEquipment(${eq.id})" title="Détruire l'objet" style="padding: 0.4rem; border-radius: 6px;">
+                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">delete</span>
                         </button>` : ''}
                     </div>
                 </div>
-                
-                <div class="vault-card-stats">
-                    ${statsHtml || '<span style="color:#64748b; font-size:0.85rem; font-style:italic;">Aucune statistique de base</span>'}
+            `;
+        });
+
+        html += `
                 </div>
-                ${effectHtml}
-                
-                <div class="vault-card-footer">
-                    <div class="vault-card-weight" title="Poids total / Poids Max (${maxWeight})">
-                        <span class="material-symbols-outlined" style="font-size: 1.1rem; color: ${weightColor};">scale</span>
-                        <span style="color: ${weightColor}; font-weight: 600;">${weightStr}</span> / ${maxWeight} pts
-                    </div>
-                    ${statusHtml}
-                </div>
-            </div>`;
-    }).join('');
+            </div>
+        `;
+    }
+
+    container.innerHTML = html;
 }
 
 // Init
@@ -407,7 +376,7 @@ window.addEventListener('authLoaded', () => {
 
     // Re-render the grid in case equipments loaded before auth
     if (allEquipments && allEquipments.length > 0) {
-        filterVault();
+        renderVault();
     }
 });
 
@@ -606,8 +575,15 @@ window.submitEquipment = async function () {
     };
 
     try {
-        const res = await fetch('/api/equipment', {
-            method: 'POST',
+        let url = '/api/shop/templates';
+        let method = 'POST';
+        if (editingEquipmentId) {
+            url += `/${editingEquipmentId}`;
+            method = 'PUT';
+        }
+
+        const res = await fetch(url, {
+            method: method,
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify(dto)
         });
@@ -651,6 +627,22 @@ function calculateEquipmentWeight() {
     }
     return w;
 }
+function calculateShopPrice(weight, rarity, slot) {
+    let multiplier = 1;
+    if (rarity === 'COMMUN') multiplier = 1;
+    else if (rarity === 'RARE') multiplier = 2;
+    else if (rarity === 'LEGENDAIRE') multiplier = 3;
+    else if (rarity === 'EPIQUE') multiplier = 5;
+    else if (rarity === 'RELIQUE') multiplier = 6;
+
+    let slotMultiplier = 1.0;
+    if (slot === 'PLASTRON') slotMultiplier = 1.1;
+    else if (slot === 'ANNEAU_GAUCHE' || slot === 'ANNEAU_DROIT') slotMultiplier = 1.5;
+    else if (slot === 'BOTTES') slotMultiplier = 0.9;
+    else if (slot === 'CAPE') slotMultiplier = 1.2;
+
+    return Math.ceil(weight * 2 * multiplier * slotMultiplier);
+}
 
 window.updateWeightUI = function () {
     const slot = document.getElementById('eqSlot').value;
@@ -685,5 +677,12 @@ window.updateWeightUI = function () {
         fillEl.style.width = pct + '%';
         fillEl.style.background = color;
         if (textEl) textEl.style.color = color;
+    }
+
+    const price = calculateShopPrice(w, rarity || 'COMMUN', slot);
+    const priceEl = document.getElementById('eqPriceText');
+    if (priceEl) {
+        const displayPrice = price % 1 === 0 ? price : price.toFixed(1);
+        priceEl.innerHTML = `${displayPrice} <span class="material-symbols-outlined" style="font-size: 1.2rem;">monetization_on</span>`;
     }
 }

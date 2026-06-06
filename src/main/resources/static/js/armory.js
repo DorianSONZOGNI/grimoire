@@ -1,5 +1,27 @@
 // ===== Armory Page JavaScript =====
 
+function applyRbac() {
+    if (window.currentUser !== undefined && !window.isAdmin) {
+        const baseStats = document.getElementById('baseStatsSection');
+        if (baseStats) baseStats.style.display = 'none';
+        
+        const voieLvl = document.getElementById('charVoieLevelWrapper');
+        if (voieLvl && voieLvl.parentElement) voieLvl.parentElement.style.display = 'none';
+        
+        const spiritLvl = document.getElementById('charSpiritLevelWrapper');
+        if (spiritLvl && spiritLvl.parentElement) spiritLvl.parentElement.style.display = 'none';
+        
+        const eqCreateSection = document.querySelector('.equip-create-section');
+        if (eqCreateSection) eqCreateSection.style.display = 'none';
+    }
+    
+    // Re-render characters to apply button visibility rules
+    if (personnages.length > 0) {
+        updateCharsList();
+    }
+}
+window.addEventListener('authLoaded', applyRbac);
+
 let voies = [];
 let spiritualites = [];
 let personnages = [];
@@ -480,14 +502,28 @@ function renderPersonnages() {
 
     // Filter logic
     const searchName = document.getElementById('searchName') ? document.getElementById('searchName').value.toLowerCase() : '';
+    const searchOwner = document.getElementById('searchOwner') ? document.getElementById('searchOwner').value.toLowerCase() : '';
     const searchVoie = document.getElementById('searchVoie') ? document.getElementById('searchVoie').value : '';
     const searchSpirit = document.getElementById('searchSpirit') ? document.getElementById('searchSpirit').value : '';
 
-    const filtered = personnages.filter(p => {
+    let filtered = personnages.filter(p => {
         const matchName = !searchName || (p.name && p.name.toLowerCase().includes(searchName));
+        const matchOwner = !searchOwner || (p.ownerUsername && p.ownerUsername.toLowerCase().includes(searchOwner));
         const matchVoie = !searchVoie || (p.voie && p.voie.id == searchVoie);
         const matchSpirit = !searchSpirit || (p.spiritualite && p.spiritualite.id == searchSpirit);
-        return matchName && matchVoie && matchSpirit;
+        return matchName && matchOwner && matchVoie && matchSpirit;
+    });
+    
+    // Sort logic: Sort by User then Name for admins, else by Name only
+    filtered.sort((a, b) => {
+        if (window.isAdmin) {
+            const uA = a.ownerUsername || '';
+            const uB = b.ownerUsername || '';
+            if (uA === uB) return a.name.localeCompare(b.name);
+            return uA.localeCompare(uB);
+        } else {
+            return a.name.localeCompare(b.name);
+        }
     });
 
     if (filtered.length === 0) {
@@ -550,14 +586,17 @@ function renderPersonnages() {
                     <div class="char-card-name">
                         <span class="material-symbols-outlined">person</span>
                         ${p.name}
+                        ${window.isAdmin ? `<span style="margin-left: 0.5rem; font-size: 0.65rem; padding: 0.15rem 0.4rem; background: ${p.ownerUsername === window.currentUser?.username ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.1)'}; color: ${p.ownerUsername === window.currentUser?.username ? '#34d399' : '#cbd5e1'}; border-radius: 4px; border: 1px solid ${p.ownerUsername === window.currentUser?.username ? 'rgba(16, 185, 129, 0.3)' : 'rgba(255, 255, 255, 0.1)'}; white-space: nowrap;"><span class="material-symbols-outlined" style="font-size: 0.7rem; vertical-align: middle; margin-right: 2px;">account_circle</span>${p.ownerUsername}</span>` : ''}
                     </div>
                     <div class="char-card-actions">
                         <button class="char-btn-equip" onclick="openEquipModal(${p.id})" title="Gérer l'équipement">
                             <span class="material-symbols-outlined" style="font-size: 0.95rem;">shield</span> Équiper
                         </button>
+                        ${window.isAdmin ? `
                         <button class="char-btn-edit" onclick="editPersonnage(${p.id})" title="Éditer">
                             <span class="material-symbols-outlined" style="font-size: 0.95rem;">edit</span> Éditer
                         </button>
+                        ` : ''}
                         <button class="char-btn-delete" onclick="deletePersonnage(${p.id})" title="Supprimer">
                             <span class="material-symbols-outlined" style="font-size: 0.95rem;">delete</span>
                         </button>
@@ -966,6 +1005,13 @@ window.addEventListener('DOMContentLoaded', async () => {
     await fetchMeta();
     await loadAllEquipments();
     await loadPersonnages();
+});
+
+window.addEventListener('authLoaded', () => {
+    const searchOwnerContainer = document.getElementById('searchOwnerContainer');
+    if (searchOwnerContainer) {
+        searchOwnerContainer.style.display = window.isAdmin ? 'flex' : 'none';
+    }
 });
 
 window.showEqTooltip = function(el) {

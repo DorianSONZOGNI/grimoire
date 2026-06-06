@@ -4,44 +4,187 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Salle des Coffres — Grimoire</title>
+    <title>Grimoire - Gestion Boutique</title>
+    <link rel="icon" type="image/png" href="/favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link rel="icon" type="image/png" href="/favicon.svg">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap"
-        rel="stylesheet">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
-        rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
     <link rel="stylesheet" href="/styles/variables.css">
     <link rel="stylesheet" href="/styles/components.css">
     <link rel="stylesheet" href="/styles/vault.css?v=3">
+    <style>
+        .vault-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 1.5rem;
+            margin-top: 1rem;
+        }
+
+        .shop-admin-section {
+            margin-top: 1rem;
+            margin-bottom: 2rem;
+            background: rgba(15, 23, 42, 0.4);
+            border-radius: 12px;
+            border: 1px solid rgba(255, 255, 255, 0.05);
+            overflow: hidden;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+        }
+
+        .shop-admin-header {
+            padding: 0.8rem 1.2rem;
+            font-family: 'Outfit', sans-serif;
+            font-weight: 600;
+            font-size: 1.1rem;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+        }
+
+        .shop-admin-header.rarity-COMMUN {
+            background: rgba(148, 163, 184, 0.1);
+            color: #94a3b8;
+            border-bottom-color: rgba(16, 185, 129, 0.2);
+        }
+
+        .shop-admin-header.rarity-RARE {
+            background: rgba(143, 246, 59, 0.1);
+            color: #218d00;
+            border-bottom-color: rgba(59, 130, 246, 0.2);
+        }
+
+        .shop-admin-header.rarity-LEGENDAIRE {
+            background: rgba(245, 158, 11, 0.1);
+            color: #f59e0b;
+            border-bottom-color: rgba(245, 158, 11, 0.2);
+        }
+
+        .shop-admin-header.rarity-EPIQUE {
+            background: rgba(239, 68, 68, 0.1);
+            color: #ef4444;
+            border-bottom-color: rgba(239, 68, 68, 0.2);
+        }
+
+        .shop-admin-header.rarity-RELIQUE {
+            background: rgba(168, 85, 247, 0.1);
+            color: #c084fc;
+            border-bottom-color: rgba(168, 85, 247, 0.2);
+        }
+
+        .shop-admin-row {
+            display: grid;
+            grid-template-columns: 2fr 4fr 1fr auto;
+            align-items: center;
+            padding: 0.8rem 1.2rem;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+            transition: background 0.2s;
+            gap: 1rem;
+        }
+
+        .shop-admin-row:last-child {
+            border-bottom: none;
+        }
+
+        .shop-admin-row:hover {
+            background: rgba(255, 255, 255, 0.03);
+        }
+
+        .shop-admin-row-name {
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            font-weight: 500;
+            color: #f8fafc;
+        }
+
+        .shop-admin-row-stats {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.4rem;
+            font-size: 0.8rem;
+            align-items: center;
+        }
+
+        .shop-admin-row-price {
+            display: flex;
+            align-items: center;
+            gap: 0.3rem;
+            font-weight: bold;
+            color: #f59e0b;
+            font-size: 0.95rem;
+            justify-content: flex-end;
+            background: rgba(245, 158, 11, 0.1);
+            padding: 0.2rem 0.6rem;
+            border-radius: 6px;
+            border: 1px solid rgba(245, 158, 11, 0.2);
+            white-space: nowrap;
+        }
+
+        .shop-admin-row-actions {
+            display: flex;
+            gap: 0.4rem;
+        }
+
+        .stat-badge {
+            background: rgba(255, 255, 255, 0.05);
+            padding: 0.1rem 0.4rem;
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            gap: 0.2rem;
+            color: #cbd5e1;
+        }
+
+        .stat-badge.malus {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        @media (max-width: 900px) {
+            .shop-admin-row {
+                grid-template-columns: 1fr;
+                gap: 0.5rem;
+            }
+
+            .shop-admin-row-price {
+                justify-content: flex-start;
+                width: max-content;
+            }
+        }
+
+        .flip-icon {
+            transform: scaleX(-1);
+            display: inline-block;
+            transform: rotate(180deg) !important;
+        }
+    </style>
 </head>
 
 <body>
-
     <header class="top-header">
         <div class="page-logo">
-            <span class="material-symbols-outlined logo-icon-gradient logo-vault">money_bag</span>
-            <span class="logo-text-gradient logo-vault">Salle des Coffres</span>
+            <span class="material-symbols-outlined logo-icon-gradient logo-admin">settings</span>
+            <span class="logo-text-gradient logo-admin">Gestion Boutique</span>
         </div>
+
         <div class="header-actions">
-            <div style="font-size: 0.9rem; color: var(--text-muted);">Un butin bien mérité.
-            </div>
+            <div style="font-size: 0.9rem; color: var(--text-muted);">De l'or dans les mains</div>
             <a href="/" class="top-nav-link nav-grimoire">
                 <span class="material-symbols-outlined" style="font-size: 1.1rem;">auto_awesome</span> Grimoire
             </a>
             <a href="/armory.html" class="top-nav-link nav-armory">
                 <span class="material-symbols-outlined" style="font-size: 1.1rem;">shield</span> Armurerie
             </a>
-            <a href="/vault.html" class="top-nav-link nav-vault active">
+            <a href="/vault.html" class="top-nav-link nav-vault">
                 <span class="material-symbols-outlined" style="font-size: 1.1rem;">money_bag</span> Salle des coffres
             </a>
             <a href="/shop.html" class="top-nav-link nav-shop">
                 <span class="material-symbols-outlined" style="font-size: 1.1rem;">storefront</span> Boutique
             </a>
-            <a href="/shop-admin.html" id="adminShopLink" class="top-nav-link nav-admin" style="display: none;">
+            <a href="/shop-admin.html" id="adminShopLink" class="top-nav-link nav-admin active">
                 <span class="material-symbols-outlined" style="font-size: 1.1rem;">settings</span> Gestion Boutique
             </a>
             <div id="authNavContainer"
@@ -52,286 +195,43 @@
     </header>
 
     <div class="vault-main">
-
-        <!-- Toolbar -->
-        <div class="vault-toolbar">
-            <div style="display: flex; gap: 1rem; flex: 1;">
-                <div class="search-bar" style="flex: 1;">
-                    <span class="material-symbols-outlined"
-                        style="color: var(--text-muted); font-size: 1.2rem;">search</span>
-                    <input type="text" id="searchItemName" placeholder="Rechercher un objet..." oninput="filterVault()">
-                </div>
-                <div id="searchOwnerContainer" class="search-bar" style="flex: 1; max-width: 250px; display: none;">
-                    <span class="material-symbols-outlined"
-                        style="color: var(--text-muted); font-size: 1.2rem;">person_search</span>
-                    <input type="text" id="searchOwnerName" placeholder="Nom de compte..." oninput="filterVault()">
-                </div>
-                <button id="btnCreateVaultEq" class="vault-btn-create" onclick="openCreateEqModal()"
-                    style="display: none; align-items: center; gap: 0.5rem; background: var(--primary); color: white; border: none; padding: 0 1rem; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.2s;">
-                    <span class="material-symbols-outlined" style="font-size: 1.2rem;">add_circle</span>
-                    Forger un Objet
-                </button>
-            </div>
-
-            <div class="filter-group">
-                <span class="material-symbols-outlined"
-                    style="color: var(--text-muted); font-size: 1.2rem;">filter_list</span>
-
-                <!-- Custom Select Slot -->
-                <div class="custom-select-wrapper" style="width: 160px; z-index: 100;">
-                    <div class="custom-select-trigger">
-                        <span class="cs-label"><span class="material-symbols-outlined cs-icon"
-                                style="color: #94a3b8;">category</span> Équipements</span>
-                        <span class="material-symbols-outlined">expand_more</span>
+        <div class="panel">
+            <div
+                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 1rem;">
+                <div style="display: flex; align-items: center; gap: 1rem;">
+                    <div
+                        style="width: 48px; height: 48px; border-radius: 12px; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.2); display: flex; align-items: center; justify-content: center; color: #f59e0b;">
+                        <span class="material-symbols-outlined" style="font-size: 1.8rem;">settings</span>
                     </div>
-                    <div class="custom-select-options">
-                        <div class="custom-option" data-value=""><span class="material-symbols-outlined cs-icon"
-                                style="color: #94a3b8;">category</span> Équipements</div>
-                        <div class="custom-option" data-value="CASQUE"><span
-                                class="material-symbols-outlined cs-icon flip-icon" style="color: #a855f7;">masks</span>
-                            Casque</div>
-                        <div class="custom-option" data-value="PLASTRON"><span class="material-symbols-outlined cs-icon"
-                                style="color: #3b82f6;">shield</span> Plastron</div>
-                        <div class="custom-option" data-value="ANNEAU"><span class="material-symbols-outlined cs-icon"
-                                style="color: #f59e0b;">diamond</span> Anneau</div>
-                        <div class="custom-option" data-value="BOTTES"><span class="material-symbols-outlined cs-icon"
-                                style="color: #10b981;">footprint</span> Bottes</div>
-                        <div class="custom-option" data-value="CAPE"><span class="material-symbols-outlined cs-icon"
-                                style="color: #ec4899;">carpenter</span> Cape</div>
-                        <div class="custom-option" data-value="CONSOMMABLE"><span
-                                class="material-symbols-outlined cs-icon" style="color: #854c4c;">inventory_2</span>
-                            Consommable</div>
+                    <div>
+                        <h2 style="margin: 0; font-family: 'Outfit', sans-serif; font-size: 1.4rem; color: #fff;">
+                            Gestion de la Boutique</h2>
+                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;">Création et
+                            gestion des articles pour la boutique</div>
                     </div>
-                    <input type="hidden" id="filterSlot" value="">
                 </div>
 
-                <!-- Custom Select Rarity -->
-                <div class="custom-select-wrapper" style="width: 150px; z-index: 99;">
-                    <div class="custom-select-trigger">
-                        <span class="cs-label"><span class="material-symbols-outlined cs-icon"
-                                style="color: #94a3b8;">star</span> Raretés</span>
-                        <span class="material-symbols-outlined">expand_more</span>
-                    </div>
-                    <div class="custom-select-options">
-                        <div class="custom-option" data-value=""><span class="material-symbols-outlined cs-icon"
-                                style="color: #94a3b8;">star</span> Raretés</div>
-                        <div class="custom-option" data-value="COMMUN"><span class="material-symbols-outlined cs-icon"
-                                style="color: #94a3b8;">trip_origin</span> Commun</div>
-                        <div class="custom-option" data-value="RARE"><span class="material-symbols-outlined cs-icon"
-                                style="color: #10b981;">adjust</span> Rare</div>
-                        <div class="custom-option" data-value="LEGENDAIRE"><span
-                                class="material-symbols-outlined cs-icon"
-                                style="color: #f59e0b;">workspace_premium</span> Légendaire</div>
-                        <div class="custom-option" data-value="EPIQUE"><span class="material-symbols-outlined cs-icon"
-                                style="color: #ef4444;">whatshot</span> Épique</div>
-                        <div class="custom-option" data-value="RELIQUE"><span class="material-symbols-outlined cs-icon"
-                                style="color: #c084fc;">webhook</span> Relique</div>
-                    </div>
-                    <input type="hidden" id="filterRarity" value="">
-                </div>
-
-                <!-- Custom Select Status -->
-                <div class="custom-select-wrapper" style="width: 140px; z-index: 98;">
-                    <div class="custom-select-trigger">
-                        <span class="cs-label"><span class="material-symbols-outlined cs-icon"
-                                style="color: #94a3b8;">all_match</span> Disponibilité</span>
-                        <span class="material-symbols-outlined">expand_more</span>
-                    </div>
-                    <div class="custom-select-options">
-                        <div class="custom-option" data-value=""><span class="material-symbols-outlined cs-icon"
-                                style="color: #94a3b8;">all_match</span> Disponibilité</div>
-                        <div class="custom-option" data-value="EQUIPPED"><span class="material-symbols-outlined cs-icon"
-                                style="color: #3b82f6;">person</span> Équipé</div>
-                        <div class="custom-option" data-value="AVAILABLE"><span
-                                class="material-symbols-outlined cs-icon" style="color: #10b981;">check_circle</span>
-                            Disponible</div>
-                    </div>
-                    <input type="hidden" id="filterStatus" value="">
-                </div>
-
-                <div style="width: 1px; height: 30px; background: rgba(255,255,255,0.1); margin: 0 0.5rem;"></div>
-
-                <span class="material-symbols-outlined" style="color: var(--text-muted); font-size: 1.2rem;">sort</span>
-
-                <!-- Custom Select Sort -->
-                <div class="custom-select-wrapper" style="width: 160px; z-index: 97;">
-                    <div class="custom-select-trigger">
-                        <span class="cs-label"><span class="material-symbols-outlined cs-icon"
-                                style="color: #94a3b8;">sort_by_alpha</span> Nom (A-Z)</span>
-                        <span class="material-symbols-outlined">expand_more</span>
-                    </div>
-                    <div class="custom-select-options">
-                        <div class="custom-option" data-value="name_asc"><span class="material-symbols-outlined cs-icon"
-                                style="color: #94a3b8;">sort_by_alpha</span> Nom (A-Z)</div>
-                        <div class="custom-option" data-value="name_desc"><span
-                                class="material-symbols-outlined cs-icon" style="color: #94a3b8;">sort_by_alpha</span>
-                            Nom (Z-A)</div>
-                        <div class="custom-option" data-value="rarity_desc"><span
-                                class="material-symbols-outlined cs-icon" style="color: #f59e0b;">stars</span> Rareté
-                            (Meilleurs)</div>
-                        <div class="custom-option" data-value="rarity_asc"><span
-                                class="material-symbols-outlined cs-icon" style="color: #94a3b8;">stars</span> Rareté
-                            (Pires)</div>
-                        <div class="custom-option" data-value="weight_desc"><span
-                                class="material-symbols-outlined cs-icon" style="color: #ef4444;">scale</span> Poids
-                            (Lourds)</div>
-                        <div class="custom-option" data-value="weight_asc"><span
-                                class="material-symbols-outlined cs-icon" style="color: #10b981;">scale</span> Poids
-                            (Légers)</div>
-                    </div>
-                    <input type="hidden" id="sortVault" value="name_asc">
+                <div style="display: flex; gap: 1rem;">
+                    <button id="btnCreateVaultEq" onclick="openCreateEqModal()"
+                        style="display: flex; align-items: center; gap: 0.5rem; background: #f59e0b; border: none; color: #1e293b; font-weight: 600; padding: 0.6rem 1rem; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2);">
+                        <span class="material-symbols-outlined" style="font-size: 1.2rem;">add</span>
+                        Forger un article
+                    </button>
                 </div>
             </div>
-        </div>
 
-        <!-- Grid -->
-        <div class="vault-grid" id="vaultGrid">
-            <div class="vault-empty-state">
-                <span class="material-symbols-outlined"
-                    style="font-size: 3rem; color: rgba(255,255,255,0.1);">hourglass_empty</span>
-                Chargement des coffres...
+            <div id="vaultGrid" style="margin-top: 1rem;">
+                <div style="color: #94a3b8; font-style: italic;">Chargement des articles...</div>
             </div>
         </div>
     </div>
 
-    <!-- Notifications -->
-    <div id="vaultNotif" class="armory-notif"
-        style="position: fixed; bottom: 20px; right: 20px; background: #10b981; color: #fff; padding: 1rem 1.5rem; border-radius: 8px; font-weight: 500; font-family: 'Inter', sans-serif; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transform: translateY(100px); opacity: 0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 9999; display: flex; align-items: center; gap: 0.5rem; border: 1px solid rgba(255,255,255,0.2);">
-        <span class="material-symbols-outlined">info</span>
-        <span id="vaultNotifText">Notification</span>
-    </div>
-    <style>
-        .armory-notif.show {
-            transform: translateY(0);
-            opacity: 1;
-        }
-
-        .armory-notif.error {
-            background: #ef4444;
-        }
-
-        /* Delete Confirmation Modal */
-        .vault-modal-overlay {
-            position: fixed;
-            top: 0;
-            left: 0;
-            right: 0;
-            bottom: 0;
-            background: rgba(15, 23, 42, 0.8);
-            backdrop-filter: blur(8px);
-            z-index: 10000;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            opacity: 0;
-            pointer-events: none;
-            transition: opacity 0.3s ease;
-        }
-
-        .vault-modal-overlay.show {
-            opacity: 1;
-            pointer-events: all;
-        }
-
-        .vault-modal-content {
-            background: rgba(30, 41, 59, 0.95);
-            border: 1px solid rgba(239, 68, 68, 0.4);
-            border-radius: 16px;
-            padding: 2rem;
-            max-width: 400px;
-            text-align: center;
-            transform: translateY(20px) scale(0.95);
-            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
-        }
-
-        .vault-modal-overlay.show .vault-modal-content {
-            transform: translateY(0) scale(1);
-        }
-
-        .vault-modal-icon {
-            width: 60px;
-            height: 60px;
-            border-radius: 50%;
-            background: rgba(239, 68, 68, 0.1);
-            color: #ef4444;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 1.2rem auto;
-            font-size: 2rem;
-            border: 2px solid rgba(239, 68, 68, 0.2);
-        }
-
-        .vault-modal-title {
-            font-size: 1.2rem;
-            font-weight: 600;
-            font-family: 'Outfit', sans-serif;
-            color: #fff;
-            margin-bottom: 0.8rem;
-        }
-
-        .vault-modal-text {
-            font-size: 0.9rem;
-            color: #94a3b8;
-            margin-bottom: 1.5rem;
-            line-height: 1.5;
-        }
-
-        .vault-modal-actions {
-            display: flex;
-            gap: 1rem;
-        }
-
-        .vault-btn-cancel {
-            flex: 1;
-            background: rgba(255, 255, 255, 0.05);
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            color: #fff;
-            padding: 0.6rem;
-            border-radius: 8px;
-            font-weight: 500;
-            cursor: pointer;
-            transition: all 0.2s ease;
-        }
-
-        .vault-btn-cancel:hover {
-            background: rgba(255, 255, 255, 0.1);
-        }
-
-        .vault-btn-confirm {
-            flex: 1;
-            background: #ef4444;
-            border: none;
-            color: #fff;
-            padding: 0.6rem;
-            border-radius: 8px;
-            font-weight: 600;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);
-        }
-
-        .vault-btn-confirm:hover {
-            background: #dc2626;
-            transform: translateY(-1px);
-            box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
-        }
-    </style>
-
-    <div id="deleteConfirmModal" class="vault-modal-overlay">
-        <div class="vault-modal-content">
-            <div class="vault-modal-icon">
-                <span class="material-symbols-outlined" style="font-size: 2rem;">warning</span>
-            </div>
-            <div class="vault-modal-title">Détruire l'équipement ?</div>
-            <div class="vault-modal-text">Êtes-vous sûr de vouloir détruire <strong id="deleteTargetName"
-                    style="color:#fff;">cet objet</strong> ? Cette action est définitive et l'objet sera perdu à jamais
-                dans les abysses.</div>
-            <div class="vault-modal-actions">
-                <button class="vault-btn-cancel" onclick="closeDeleteModal()">Annuler</button>
-                <button class="vault-btn-confirm" id="deleteConfirmBtn">Oui, détruire</button>
-            </div>
+    <!-- Notification Toast -->
+    <div id="vaultNotif"
+        style="position: fixed; bottom: 2rem; right: 2rem; background: #10b981; color: #fff; padding: 1rem 2rem; border-radius: 12px; font-weight: 500; font-family: 'Outfit', sans-serif; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3); transform: translateY(100px); opacity: 0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 9999;">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span class="material-symbols-outlined" style="font-size: 1.2rem;">info</span>
+            <span id="vaultNotifText">Action réussie</span>
         </div>
     </div>
 
@@ -543,6 +443,20 @@
                         </div>
                     </div>
 
+                    <div class="eq-price-container"
+                        style="margin-bottom: 1.5rem; padding: 0.8rem; background: rgba(245,158,11,0.05); border-radius: 8px; border: 1px dashed rgba(245,158,11,0.3);">
+                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                            <span style="font-size: 0.85rem; color: #cbd5e1; font-weight: 500;"><span
+                                    class="material-symbols-outlined"
+                                    style="font-size: 1rem; vertical-align: middle; margin-right: 4px; color: #f59e0b;">payments</span>Prix
+                                en boutique</span>
+                            <span id="eqPriceText"
+                                style="font-size: 1.1rem; font-weight: bold; color: #f59e0b; display: flex; align-items: center; gap: 0.2rem;">0
+                                <span class="material-symbols-outlined"
+                                    style="font-size: 1.2rem;">monetization_on</span></span>
+                        </div>
+                    </div>
+
                     <button type="button" id="submitEquipmentBtn" class="eq-create-btn" onclick="submitEquipment()"
                         style="width: 100%; padding: 0.8rem; border-radius: 8px; background: #10b981; color: white; border: none; font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: background 0.2s;">
                         <span class="material-symbols-outlined" style="font-size: 1.2rem;">add</span>
@@ -552,8 +466,29 @@
             </div>
         </div>
     </div>
+    <!-- Delete Confirmation Modal -->
+    <div id="deleteConfirmModal" class="vault-modal-overlay">
+        <div class="vault-modal-content small">
+            <div class="vault-modal-icon">
+                <span class="material-symbols-outlined" style="font-size: 2rem;">warning</span>
+            </div>
+            <div
+                style="font-size: 1.2rem; font-weight: 600; font-family: 'Outfit', sans-serif; color: #fff; margin-bottom: 0.8rem;">
+                Détruire l'article ?</div>
+            <div style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 1.5rem; line-height: 1.5;">Êtes-vous sûr de
+                vouloir détruire <strong id="deleteTargetName" style="color:#fff;">cet article</strong> ? Cette action
+                retirera cet objet du pool global du shop.</div>
+            <div style="display: flex; gap: 1rem;">
+                <button onclick="closeDeleteModal()"
+                    style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 0.6rem; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.2s ease;">Annuler</button>
+                <button id="deleteConfirmBtn"
+                    style="flex: 1; background: #ef4444; border: none; color: #fff; padding: 0.6rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);">Oui,
+                    supprimer</button>
+            </div>
+        </div>
+    </div>
 
-    <script src="/js/vault.js?v=12"></script>
+    <script src="/js/shop-admin.js?v=6"></script>
     <script type="module" src="/js/auth.js?v=10"></script>
 </body>
 

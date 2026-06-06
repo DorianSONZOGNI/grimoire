@@ -19,44 +19,73 @@ public class EquipmentController {
 
     private final EquipmentRepository equipmentRepository;
     private final PersonnageService personnageService;
+    private final generation.grimoire.repository.auth.UserRepository userRepository;
 
     public EquipmentController(EquipmentRepository equipmentRepository,
-                               PersonnageService personnageService) {
+                               PersonnageService personnageService,
+                               generation.grimoire.repository.auth.UserRepository userRepository) {
         this.equipmentRepository = equipmentRepository;
         this.personnageService = personnageService;
+        this.userRepository = userRepository;
     }
 
     /** Liste tous les équipements */
     @GetMapping
-    public ResponseEntity<List<Map<String, Object>>> getAll() {
-        return ResponseEntity.ok(equipmentRepository.findAll().stream().map(this::toDto).toList());
+    public ResponseEntity<List<Map<String, Object>>> getAll(java.security.Principal principal) {
+        if (principal == null) return ResponseEntity.status(401).build();
+        boolean isAdmin = ((org.springframework.security.core.Authentication) principal).getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
+        
+        List<Equipment> equipmentList = isAdmin ? equipmentRepository.findAll() : equipmentRepository.findByUser_Username(principal.getName());
+        return ResponseEntity.ok(equipmentList.stream().filter(e -> !e.isShopTemplate()).map(this::toDto).toList());
     }
 
     /** Liste les équipements d'un personnage */
     @GetMapping("/personnage/{personnageId}")
-    public ResponseEntity<List<Map<String, Object>>> getByPersonnage(@PathVariable Long personnageId) {
+    public ResponseEntity<List<Map<String, Object>>> getByPersonnage(@PathVariable Long personnageId, java.security.Principal principal) {
+        if (principal == null) return ResponseEntity.status(401).build();
+        boolean isAdmin = ((org.springframework.security.core.Authentication) principal).getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
+        // Optionnel : on pourrait vérifier si le personnage appartient à l'utilisateur
         return ResponseEntity.ok(
-                equipmentRepository.findByPersonnageId(personnageId).stream().map(this::toDto).toList());
+                equipmentRepository.findByPersonnageId(personnageId).stream()
+                        .filter(e -> isAdmin || (e.getUser() != null && e.getUser().getUsername().equals(principal.getName())))
+                        .map(this::toDto).toList());
     }
 
     /** Liste les équipements non-assignés (inventaire libre) */
     @GetMapping("/unassigned")
-    public ResponseEntity<List<Map<String, Object>>> getUnassigned() {
+    public ResponseEntity<List<Map<String, Object>>> getUnassigned(java.security.Principal principal) {
+        if (principal == null) return ResponseEntity.status(401).build();
+        boolean isAdmin = ((org.springframework.security.core.Authentication) principal).getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
         return ResponseEntity.ok(
-                equipmentRepository.findByPersonnageIsNull().stream().map(this::toDto).toList());
+                equipmentRepository.findByPersonnageIsNull().stream()
+                        .filter(e -> !e.isShopTemplate())
+                        .filter(e -> isAdmin || (e.getUser() != null && e.getUser().getUsername().equals(principal.getName())))
+                        .map(this::toDto).toList());
     }
 
     /** Créer ou mettre à jour un équipement */
     @PostMapping
-    public ResponseEntity<Map<String, Object>> createOrUpdate(@RequestBody EquipmentDto dto) {
+    public ResponseEntity<Map<String, Object>> createOrUpdate(@RequestBody EquipmentDto dto, java.security.Principal principal) {
+        if (principal == null) return ResponseEntity.status(401).build();
+        generation.grimoire.entity.auth.AppUser currentUser = userRepository.findByUsername(principal.getName()).orElse(null);
+        boolean isAdmin = ((org.springframework.security.core.Authentication) principal).getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
+
         Equipment equipment;
         boolean isUpdate = false;
 
-        if (dto.getId() != null && equipmentRepository.existsById(dto.getId())) {
-            equipment = equipmentRepository.findById(dto.getId()).orElseThrow();
+        if (dto.getId() != null && equipmentRepository.existsById(java.util.Objects.requireNonNull(dto.getId()))) {
+            equipment = equipmentRepository.findById(java.util.Objects.requireNonNull(dto.getId())).orElseThrow();
+            if (!isAdmin && equipment.getUser() != null && !equipment.getUser().getUsername().equals(principal.getName())) {
+                return ResponseEntity.status(403).build();
+            }
             isUpdate = true;
         } else {
             equipment = new Equipment();
+            equipment.setUser(currentUser);
         }
 
         equipment.setName(dto.getName());
@@ -68,7 +97,6 @@ public class EquipmentController {
         equipment.setBonusArmor(dto.getBonusArmor());
         equipment.setBonusResistance(dto.getBonusResistance());
         equipment.setBonusSpeed(dto.getBonusSpeed());
-        equipment.setBonusCrit(dto.getBonusCrit());
         equipment.setBonusCrit(dto.getBonusCrit());
         equipment.setRegenHealthPerTurn(dto.getRegenHealthPerTurn());
         equipment.setRegenManaPerTurn(dto.getRegenManaPerTurn());
@@ -82,7 +110,12 @@ public class EquipmentController {
 
         // Assigner à un personnage si fourni
         if (dto.getPersonnageId() != null) {
-            Personnage personnage = personnageService.findByIdOrThrow(dto.getPersonnageId());
+            Personnage personnage = personnageService.findByIdOrThrow(java.util.Objects.requireNonNull(dto.getPersonnageId()));
+
+            // Si l'admin forge pour un autre joueur, l'objet doit appartenir à ce joueur
+            if (personnage.getUser() != null && (equipment.getUser() == null || equipment.getUser().getId().equals(currentUser.getId()))) {
+                equipment.setUser(personnage.getUser());
+            }
 
             try {
                 validateRarityLimit(personnage, equipment);
@@ -100,7 +133,7 @@ public class EquipmentController {
                     });
 
             equipment.setPersonnage(personnage);
-        } else {
+        } else if (!isUpdate) {
             equipment.setPersonnage(null);
         }
 
@@ -117,13 +150,25 @@ public class EquipmentController {
     /** Équiper un objet sur un personnage (remplace l'ancien dans le même slot) */
     @PostMapping("/{equipmentId}/equip/{personnageId}")
     public ResponseEntity<Map<String, Object>> equip(
-            @PathVariable Long equipmentId,
-            @PathVariable Long personnageId,
-            @RequestParam(required = false) generation.grimoire.enumeration.EquipmentSlot targetSlot) {
+            @PathVariable @org.springframework.lang.NonNull Long equipmentId,
+            @PathVariable @org.springframework.lang.NonNull Long personnageId,
+            @RequestParam(required = false) generation.grimoire.enumeration.EquipmentSlot targetSlot,
+            java.security.Principal principal) {
+        
+        if (principal == null) return ResponseEntity.status(401).build();
+        boolean isAdmin = ((org.springframework.security.core.Authentication) principal).getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
 
         Equipment equipment = equipmentRepository.findById(equipmentId)
                 .orElseThrow(() -> new RuntimeException("Équipement non trouvé."));
         Personnage personnage = personnageService.findByIdOrThrow(personnageId);
+
+        if (!isAdmin && equipment.getUser() != null && !equipment.getUser().getUsername().equals(principal.getName())) {
+            return ResponseEntity.status(403).build();
+        }
+        if (!isAdmin && personnage.getUser() != null && !personnage.getUser().getUsername().equals(principal.getName())) {
+            return ResponseEntity.status(403).build();
+        }
 
         try {
             validateRarityLimit(personnage, equipment);
@@ -132,6 +177,44 @@ public class EquipmentController {
         }
 
         // Si on précise un slot cible (ex: changer un anneau de main), on met à jour l'équipement
+        generation.grimoire.enumeration.EquipmentSlot finalSlot = targetSlot != null ? targetSlot : equipment.getSlot();
+
+        // Si l'admin équipe un de ses propres objets sur le personnage d'un autre joueur, on duplique l'objet
+        if (isAdmin && equipment.getUser() != null && personnage.getUser() != null
+                && !equipment.getUser().getId().equals(personnage.getUser().getId())) {
+            
+            Equipment duplicate = new Equipment();
+            duplicate.setUser(personnage.getUser());
+            duplicate.setName(equipment.getName());
+            duplicate.setSlot(finalSlot);
+            duplicate.setBonusHealthMax(equipment.getBonusHealthMax());
+            duplicate.setBonusManaMax(equipment.getBonusManaMax());
+            duplicate.setBonusPower(equipment.getBonusPower());
+            duplicate.setBonusStrength(equipment.getBonusStrength());
+            duplicate.setBonusArmor(equipment.getBonusArmor());
+            duplicate.setBonusResistance(equipment.getBonusResistance());
+            duplicate.setBonusSpeed(equipment.getBonusSpeed());
+            duplicate.setBonusCrit(equipment.getBonusCrit());
+            duplicate.setRegenHealthPerTurn(equipment.getRegenHealthPerTurn());
+            duplicate.setRegenManaPerTurn(equipment.getRegenManaPerTurn());
+            duplicate.setRarity(equipment.getRarity());
+            duplicate.setSpecialEffect(equipment.getSpecialEffect());
+            duplicate.setSpecialEffectValue(equipment.getSpecialEffectValue());
+
+            equipmentRepository.findByPersonnageIdAndSlot(personnageId, finalSlot)
+                    .ifPresent(old -> {
+                        old.setPersonnage(null);
+                        equipmentRepository.save(old);
+                    });
+
+            duplicate.setPersonnage(personnage);
+            equipmentRepository.save(duplicate);
+
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", personnage.getName() + " équipe une copie de \"" + duplicate.getName() + "\".");
+            return ResponseEntity.ok(response);
+        }
+
         if (targetSlot != null) {
             equipment.setSlot(targetSlot);
         }
@@ -153,9 +236,16 @@ public class EquipmentController {
 
     /** Déséquiper un objet */
     @PostMapping("/{equipmentId}/unequip")
-    public ResponseEntity<Map<String, Object>> unequip(@PathVariable Long equipmentId) {
+    public ResponseEntity<Map<String, Object>> unequip(@PathVariable @org.springframework.lang.NonNull Long equipmentId, java.security.Principal principal) {
+        if (principal == null) return ResponseEntity.status(401).build();
+        boolean isAdmin = ((org.springframework.security.core.Authentication) principal).getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
         Equipment equipment = equipmentRepository.findById(equipmentId)
                 .orElseThrow(() -> new RuntimeException("Équipement non trouvé."));
+
+        if (!isAdmin && equipment.getUser() != null && !equipment.getUser().getUsername().equals(principal.getName())) {
+            return ResponseEntity.status(403).build();
+        }
 
         String charName = equipment.getPersonnage() != null ? equipment.getPersonnage().getName() : "Inconnu";
         equipment.setPersonnage(null);
@@ -168,10 +258,24 @@ public class EquipmentController {
 
     /** Supprimer un équipement */
     @DeleteMapping("/{id}")
-    public ResponseEntity<String> delete(@PathVariable Long id) {
-        if (equipmentRepository.existsById(id)) {
+    public ResponseEntity<String> delete(@PathVariable @org.springframework.lang.NonNull Long id, java.security.Principal principal) {
+        if (principal == null) return ResponseEntity.status(401).build();
+        boolean isAdmin = ((org.springframework.security.core.Authentication) principal).getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
+        Equipment equipment = equipmentRepository.findById(id).orElse(null);
+        if (equipment != null) {
+            if (!isAdmin && equipment.getUser() != null && !equipment.getUser().getUsername().equals(principal.getName())) {
+                return ResponseEntity.status(403).build();
+            }
+            
+            if (!isAdmin && equipment.getUser() != null) {
+                generation.grimoire.entity.auth.AppUser owner = equipment.getUser();
+                owner.setMonnaie(owner.getMonnaie() + equipment.calculateWeight());
+                userRepository.save(owner);
+            }
+
             equipmentRepository.deleteById(id);
-            return ResponseEntity.ok("Équipement supprimé.");
+            return ResponseEntity.ok("Équipement supprimé et monnaie ajoutée.");
         }
         return ResponseEntity.notFound().build();
     }
@@ -221,6 +325,10 @@ public class EquipmentController {
             perso.put("id", e.getPersonnage().getId());
             perso.put("name", e.getPersonnage().getName());
             map.put("personnage", perso);
+        }
+
+        if (e.getUser() != null) {
+            map.put("ownerUsername", e.getUser().getUsername());
         }
 
         return map;
