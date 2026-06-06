@@ -7,7 +7,7 @@ const SLOT_LABELS = {
     ANNEAU_DROIT: { label: 'Anneau', icon: 'diamond', color: '#f59e0b' },
     BOTTES: { label: 'Bottes', icon: 'footprint', color: '#10b981' },
     CAPE: { label: 'Cape', icon: 'carpenter', color: '#ec4899' },
-    CONSOMMABLE: { label: 'Consommable', icon: 'inventory_2', color: '#c084fc' },
+    CONSOMMABLE: { label: 'Consommable', icon: 'inventory_2', color: '#854c4c' },
 };
 
 const RARITY_ORDER = {
