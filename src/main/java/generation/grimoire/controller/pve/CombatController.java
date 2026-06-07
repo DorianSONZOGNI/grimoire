@@ -47,6 +47,7 @@ public class CombatController {
             CombatSession session = combatService.executeAction(sessionId, spellId, targetIndex, choiceKey);
             return ResponseEntity.ok(session);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.badRequest().body(null);
         }
     }
@@ -57,6 +58,7 @@ public class CombatController {
             CombatSession session = combatService.endTurn(sessionId);
             return ResponseEntity.ok(session);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.badRequest().body(null);
         }
     }

@@ -155,8 +155,11 @@ public class CombatService {
                 List<Personnage> allEnemies = session.getEnemies().stream().map(generation.grimoire.model.pve.ActiveMonster::getAsPersonnage).toList();
                 List<Personnage> allAllies = List.of(p);
                 
-                spellService.castSpellGroup(spellToCast, p, target, p, allAllies, allEnemies, choiceKey);
+                final Personnage finalTarget = target;
                 session.addLog(p.getName() + " lance " + spellToCast.getNom() + " !");
+                captureLogs(session, () -> {
+                    spellService.castSpellGroup(spellToCast, p, finalTarget, p, allAllies, allEnemies, choiceKey);
+                });
             }
         } else if (targetIndex != null && targetIndex >= 0 && targetIndex < session.getEnemies().size()) {
             if (p.isBanalSpellCastThisTurn()) {
@@ -166,10 +169,12 @@ public class CombatService {
             generation.grimoire.model.pve.ActiveMonster targetMonster = session.getEnemies().get(targetIndex);
             if (!targetMonster.isDead()) {
                 p.setBanalSpellCastThisTurn(true);
-                int playerDmg = p.getEffectiveStat(generation.grimoire.enumeration.StatType.STRENGTH);
-                int damageDone = Math.max(1, playerDmg - targetMonster.getBase().getArmor());
-                targetMonster.takeDamage(damageDone);
-                session.addLog(p.getName() + " attaque " + targetMonster.getBase().getName() + " et inflige " + damageDone + " dégâts !");
+                captureLogs(session, () -> {
+                    int playerDmg = p.getEffectiveStat(generation.grimoire.enumeration.StatType.STRENGTH);
+                    int damageDone = Math.max(1, playerDmg - targetMonster.getBase().getArmor());
+                    System.out.println(p.getName() + " attaque " + targetMonster.getBase().getName() + " et inflige " + damageDone + " dégâts !");
+                    targetMonster.takeDamage(damageDone);
+                });
             }
         }
         
@@ -203,30 +208,35 @@ public class CombatService {
         session.addLog("--- FIN DU TOUR " + session.getTurnNumber() + " ---");
         
         // Monsters turn
-        for (generation.grimoire.model.pve.ActiveMonster m : session.getEnemies()) {
-            if (!m.isDead()) {
-                int monsterDmg = m.getBase().getStrength();
-                int initialHp = p.getHealthCurrent();
-                p.takeDamage(monsterDmg, generation.grimoire.enumeration.DamageType.PHYSIC);
-                int finalHp = p.getHealthCurrent();
-                int damageTaken = initialHp - finalHp;
-                session.addLog(m.getBase().getName() + " vous attaque et inflige " + damageTaken + " dégâts !");
-                
-                if (p.getHealthCurrent() <= 0) {
-                    session.setFinished(true);
-                    session.setPlayerWon(false);
-                    session.addLog(p.getName() + " a été vaincu...");
-                    return session;
+        captureLogs(session, () -> {
+            for (generation.grimoire.model.pve.ActiveMonster m : session.getEnemies()) {
+                if (!m.isDead() && p.getHealthCurrent() > 0) {
+                    int monsterDmg = m.getBase().getStrength();
+                    int initialHp = p.getHealthCurrent();
+                    System.out.println(m.getBase().getName() + " vous attaque et inflige " + monsterDmg + " dégâts physiques initiaux.");
+                    p.takeDamage(monsterDmg, generation.grimoire.enumeration.DamageType.PHYSIC);
+                    
+                    if (p.getHealthCurrent() <= 0) {
+                        session.setFinished(true);
+                        session.setPlayerWon(false);
+                        System.out.println(p.getName() + " a été vaincu...");
+                    }
                 }
             }
+        });
+        
+        if (session.isFinished()) {
+            return session;
         }
         // Start next turn for everyone (ticks DoTs/HoTs)
-        spellService.startTurn(p);
-        for (generation.grimoire.model.pve.ActiveMonster m : session.getEnemies()) {
-            if (!m.isDead()) {
-                spellService.startTurn(m.getAsPersonnage());
+        captureLogs(session, () -> {
+            spellService.startTurn(p);
+            for (generation.grimoire.model.pve.ActiveMonster m : session.getEnemies()) {
+                if (!m.isDead()) {
+                    spellService.startTurn(m.getAsPersonnage());
+                }
             }
-        }
+        });
         
         if (p.getHealthCurrent() <= 0) {
             session.setFinished(true);
@@ -238,5 +248,31 @@ public class CombatService {
         session.setTurnNumber(session.getTurnNumber() + 1);
         session.addLog("--- TOUR " + session.getTurnNumber() + " ---");
         return session;
+    }
+
+    private interface ActionBlock {
+        void execute();
+    }
+
+    private void captureLogs(CombatSession session, ActionBlock block) {
+        java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
+        java.io.PrintStream originalOut = System.out;
+        try {
+            java.io.PrintStream ps = new java.io.PrintStream(baos, true, java.nio.charset.StandardCharsets.UTF_8);
+            System.setOut(ps);
+            block.execute();
+            ps.flush();
+        } catch (Exception e) {
+            session.addLog("❌ Erreur interne : " + e.getMessage());
+        } finally {
+            System.setOut(originalOut);
+        }
+        
+        String capturedLogs = baos.toString(java.nio.charset.StandardCharsets.UTF_8);
+        for (String line : capturedLogs.split("\n")) {
+            if (!line.trim().isEmpty()) {
+                session.addLog(line.trim());
+            }
+        }
     }
 }
