@@ -3,6 +3,7 @@ package generation.grimoire.model.pve;
 import generation.grimoire.entity.personnage.Personnage;
 import generation.grimoire.entity.pve.Donjon;
 import generation.grimoire.entity.pve.Salle;
+import generation.grimoire.entity.Spell;
 import lombok.Data;
 
 import java.util.ArrayList;
@@ -19,6 +20,8 @@ public class CombatSession {
     private int currentRoomIndex = 0;
     private Salle currentRoom;
     
+    private List<Spell> availableSpells = new ArrayList<>();
+
     // Valid only if currentRoom is COMBAT
     private List<ActiveMonster> enemies = new ArrayList<>();
     

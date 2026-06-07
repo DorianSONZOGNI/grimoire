@@ -41,9 +41,10 @@ public class CombatController {
     public ResponseEntity<CombatSession> executeAction(
             @PathVariable String sessionId,
             @RequestParam(required = false) Long spellId,
-            @RequestParam(required = false) Integer targetIndex) {
+            @RequestParam(required = false) Integer targetIndex,
+            @RequestParam(required = false) Integer choiceKey) {
         try {
-            CombatSession session = combatService.executeTurn(sessionId, spellId, targetIndex);
+            CombatSession session = combatService.executeTurn(sessionId, spellId, targetIndex, choiceKey);
             return ResponseEntity.ok(session);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(null);

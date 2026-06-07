@@ -274,7 +274,7 @@
         </div>
     </header>
 
-    <main class="vault-container" style="max-width: 1200px; margin: 0 auto; padding: 2rem;">
+    <main class="vault-container" style="width: 100%; max-width: 1200px; margin: 0 auto; padding: 2rem;">
         
         <div id="authWarning" style="display: none; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; padding: 1rem; border-radius: 8px; margin-bottom: 2rem; text-align: center;">
             <span class="material-symbols-outlined" style="vertical-align: middle; margin-right: 0.5rem;">error</span>
@@ -282,7 +282,9 @@
         </div>
 
         <div id="dungeonsContent" style="display: none;">
-            <h2 style="font-family: 'Outfit'; font-size: 2rem; color: #f8fafc; margin-bottom: 0.5rem;">Exploration</h2>
+            <h2 style="font-family: 'Outfit'; font-size: 2rem; margin-bottom: 0.5rem;">
+                <span class="logo-text-gradient logo-dungeon">Exploration</span>
+            </h2>
             <p style="color: var(--text-muted); margin-bottom: 2rem;">Choisissez un donjon à affronter. La mort n'est qu'un léger contretemps.</p>
             
             <div class="dungeons-grid" id="dungeonsList">
@@ -295,7 +297,7 @@
                 <div>
                     <h2 style="font-family: 'Outfit'; font-size: 2rem; color: #f8fafc; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
                         <span class="material-symbols-outlined logo-icon-gradient logo-dungeon" style="font-size: 2.5rem;">swords</span>
-                        <span id="prepDungeonTitle">Préparation</span>
+                        <span id="prepDungeonTitle" class="logo-text-gradient logo-dungeon">Préparation</span>
                     </h2>
                     <div id="prepDungeonDesc" style="color: var(--text-muted);">Préparez votre équipe et votre équipement avant de plonger.</div>
                 </div>
@@ -324,7 +326,7 @@
                     <div id="prepStatGrid" class="stat-grid" style="display: none;">
                         <!-- Rempli par JS -->
                     </div>
-                    <div id="prepStatEmpty" style="text-align: center; color: var(--text-muted); padding: 3rem; background: rgba(0,0,0,0.2); border-radius: 12px; border: 1px dashed rgba(255,255,255,0.1); margin-bottom: 2rem;">
+                    <div id="prepStatEmpty" style="display: flex; align-items: center; justify-content: center; height: 194px; text-align: center; color: var(--text-muted); padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 12px; border: 1px dashed rgba(255,255,255,0.1); margin-bottom: 2rem;">
                         Veuillez sélectionner un personnage pour voir ses statistiques.
                     </div>
 

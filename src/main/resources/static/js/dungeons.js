@@ -293,7 +293,7 @@ window.openPrepInterface = function (id, name, sallesData) {
 
     // Reset UI
     document.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected'));
-    document.getElementById('prepStatEmpty').style.display = 'block';
+    document.getElementById('prepStatEmpty').style.display = 'flex';
     document.getElementById('prepStatGrid').style.display = 'none';
     document.getElementById('prepEquipList').innerHTML = '<div style="color: var(--text-muted); font-size: 0.9rem;">Aucun équipement à afficher.</div>';
 
