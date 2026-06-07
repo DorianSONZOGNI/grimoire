@@ -125,7 +125,7 @@ public class CombatService {
         return session;
     }
 
-    public CombatSession executeTurn(String sessionId, Long spellId, Integer targetIndex, Integer choiceKey) {
+    public CombatSession executeAction(String sessionId, Long spellId, Integer targetIndex, Integer choiceKey) {
         CombatSession session = activeSessions.get(sessionId);
         if (session == null) throw new RuntimeException("Session introuvable");
         if (session.isFinished()) return session;
@@ -134,7 +134,6 @@ public class CombatService {
         }
         
         Personnage p = session.getPlayer();
-        session.addLog("--- TOUR " + session.getTurnNumber() + " ---");
         
         // Player Action
         if (spellId != null) {
@@ -160,8 +159,13 @@ public class CombatService {
                 session.addLog(p.getName() + " lance " + spellToCast.getNom() + " !");
             }
         } else if (targetIndex != null && targetIndex >= 0 && targetIndex < session.getEnemies().size()) {
+            if (p.isBanalSpellCastThisTurn()) {
+                 session.addLog(p.getName() + " a déjà effectué une action majeure (sort banal ou attaque) ce tour-ci.");
+                 return session; // don't do attack
+            }
             generation.grimoire.model.pve.ActiveMonster targetMonster = session.getEnemies().get(targetIndex);
             if (!targetMonster.isDead()) {
+                p.setBanalSpellCastThisTurn(true);
                 int playerDmg = p.getEffectiveStat(generation.grimoire.enumeration.StatType.STRENGTH);
                 int damageDone = Math.max(1, playerDmg - targetMonster.getBase().getArmor());
                 targetMonster.takeDamage(damageDone);
@@ -182,8 +186,21 @@ public class CombatService {
         
         if (session.areAllEnemiesDead()) {
             session.addLog("Combat terminé, vous avez vaincu tous les monstres !");
-            return session;
         }
+        
+        return session;
+    }
+
+    public CombatSession endTurn(String sessionId) {
+        CombatSession session = activeSessions.get(sessionId);
+        if (session == null) throw new RuntimeException("Session introuvable");
+        if (session.isFinished()) return session;
+        if (session.getCurrentRoom().getType() != generation.grimoire.enumeration.RoomType.COMBAT) {
+            throw new RuntimeException("Ce n'est pas une salle de combat !");
+        }
+        
+        Personnage p = session.getPlayer();
+        session.addLog("--- FIN DU TOUR " + session.getTurnNumber() + " ---");
         
         // Monsters turn
         for (generation.grimoire.model.pve.ActiveMonster m : session.getEnemies()) {
@@ -219,6 +236,7 @@ public class CombatService {
         }
 
         session.setTurnNumber(session.getTurnNumber() + 1);
+        session.addLog("--- TOUR " + session.getTurnNumber() + " ---");
         return session;
     }
 }

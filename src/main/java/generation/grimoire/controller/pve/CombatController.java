@@ -44,7 +44,17 @@ public class CombatController {
             @RequestParam(required = false) Integer targetIndex,
             @RequestParam(required = false) Integer choiceKey) {
         try {
-            CombatSession session = combatService.executeTurn(sessionId, spellId, targetIndex, choiceKey);
+            CombatSession session = combatService.executeAction(sessionId, spellId, targetIndex, choiceKey);
+            return ResponseEntity.ok(session);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(null);
+        }
+    }
+
+    @PostMapping("/{sessionId}/end-turn")
+    public ResponseEntity<CombatSession> endTurn(@PathVariable String sessionId) {
+        try {
+            CombatSession session = combatService.endTurn(sessionId);
             return ResponseEntity.ok(session);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(null);

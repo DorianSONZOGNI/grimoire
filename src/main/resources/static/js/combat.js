@@ -64,6 +64,8 @@ async function doAction(spellId = null) {
     }
     
     document.getElementById('btnAttack').disabled = true;
+    const btnEnd = document.getElementById('btnEndTurn');
+    if (btnEnd) btnEnd.disabled = true;
     const spellButtons = document.querySelectorAll('.spell-btn');
     spellButtons.forEach(btn => btn.disabled = true);
     
@@ -85,11 +87,43 @@ async function doAction(spellId = null) {
             updateUI(data);
             if (!data.finished && data.currentRoom.type === 'COMBAT') {
                 document.getElementById('btnAttack').disabled = false;
+                const btnEnd = document.getElementById('btnEndTurn');
+                if (btnEnd) btnEnd.disabled = false;
             }
         }, 600);
         
     } catch (e) {
         console.error(e);
+        document.getElementById('btnAttack').disabled = false;
+        const btnEnd = document.getElementById('btnEndTurn');
+        if (btnEnd) btnEnd.disabled = false;
+    }
+}
+
+async function endTurn() {
+    if (!sessionId || !currentSessionData) return;
+    
+    document.getElementById('btnEndTurn').disabled = true;
+    document.getElementById('btnAttack').disabled = true;
+    const spellButtons = document.querySelectorAll('.spell-btn');
+    spellButtons.forEach(btn => btn.disabled = true);
+    
+    try {
+        let url = `/api/pve/combat/${sessionId}/end-turn`;
+        const res = await fetch(url, { method: 'POST' });
+        const data = await res.json();
+        
+        setTimeout(() => {
+            updateUI(data);
+            if (!data.finished && data.currentRoom.type === 'COMBAT') {
+                document.getElementById('btnEndTurn').disabled = false;
+                document.getElementById('btnAttack').disabled = false;
+            }
+        }, 600);
+        
+    } catch (e) {
+        console.error(e);
+        document.getElementById('btnEndTurn').disabled = false;
         document.getElementById('btnAttack').disabled = false;
     }
 }
@@ -482,6 +516,8 @@ function renderSpells(spells) {
 
 function showResult(playerWon) {
     document.getElementById('btnAttack').disabled = true;
+    const btnEnd = document.getElementById('btnEndTurn');
+    if (btnEnd) btnEnd.disabled = true;
     document.getElementById('eventOverlay').classList.remove('show');
     
     setTimeout(() => {
