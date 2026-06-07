@@ -316,33 +316,84 @@ function renderBuffsHtml(buffList) {
         let text = '';
         if (b.flatValue) text += `${b.flatValue > 0 ? '+' : ''}${b.flatValue} ${formatStat(b.statAffected)}`;
         if (b.modifier) {
-            if (text) text += ' / ';
+            if (text) text += ' et ';
             text += `${b.modifier > 0 ? '+' : ''}${Math.round(b.modifier * 100)}% ${formatStat(b.statAffected)}`;
         }
-        if (!text) text = `Modif. de ${formatStat(b.statAffected)}`;
+        if (!text) text = `Modifie ${formatStat(b.statAffected)}`;
 
-        const entry = `• ${text} (${b.duration} tours)`;
+        const typeStr = (b.statAffected === 'POISON' || b.statAffected === 'BURN') ? formatStat(b.statAffected) : 'Buff/Débuff';
+        const indicatorColor = isBad ? '#f43f5e' : '#10b981';
+        
+        const entryHtml = `
+            <div style="display:flex; align-items:flex-start; gap:0.4rem; font-size:0.85rem;">
+                <div style="flex-shrink:0; background-color: ${indicatorColor}; width: 8px; height: 8px; border-radius: 50%; margin-top: 5px;"></div>
+                <span style="font-weight:600; color:#fff;">[Cible]</span>
+                <span style="color:#38bdf8; font-weight:500;">${typeStr}</span>
+                <span style="color:#e2e8f0;">➔ ${text} (${b.duration} tours)</span>
+            </div>
+        `;
 
-        if (isBad) badBuffs.push(entry);
-        else goodBuffs.push(entry);
+        if (isBad) badBuffs.push(entryHtml);
+        else goodBuffs.push(entryHtml);
     });
 
     let html = '';
+    const tooltipAttrs = 'onmouseenter="window.showTooltip ? window.showTooltip(this) : null" onmouseleave="window.hideTooltip ? window.hideTooltip() : null"';
+
     if (goodBuffs.length > 0) {
-        html += `<div class="sandbox-status-badge buff" title="[Buffs]\n${goodBuffs.join('\n')}">
+        html += `<div class="sandbox-status-badge buff" ${tooltipAttrs} style="cursor: help; position: relative;">
             <span class="material-symbols-outlined" style="font-size: 0.95rem;">trending_up</span>
             <span>Buffs (${goodBuffs.length})</span>
+            <template class="tooltip-data">
+                <div style="display: flex; flex-direction: column; gap: 0.3rem;">
+                    ${goodBuffs.join('')}
+                </div>
+            </template>
         </div>`;
     }
     if (badBuffs.length > 0) {
-        html += `<div class="sandbox-status-badge debuff" title="[Débuffs]\n${badBuffs.join('\n')}">
+        html += `<div class="sandbox-status-badge debuff" ${tooltipAttrs} style="cursor: help; position: relative;">
             <span class="material-symbols-outlined" style="font-size: 0.95rem;">trending_down</span>
             <span>Débuffs (${badBuffs.length})</span>
+            <template class="tooltip-data">
+                <div style="display: flex; flex-direction: column; gap: 0.3rem;">
+                    ${badBuffs.join('')}
+                </div>
+            </template>
         </div>`;
     }
 
     return html;
 }
+
+window.showTooltip = function(el) {
+    let tooltip = document.getElementById('globalSpellTooltip');
+    if (!tooltip) {
+        tooltip = document.createElement('div');
+        tooltip.id = 'globalSpellTooltip';
+        document.body.appendChild(tooltip);
+    }
+    const dataEl = el.querySelector('.tooltip-data');
+    if (!dataEl) return;
+
+    tooltip.innerHTML = dataEl.innerHTML;
+    tooltip.style.display = 'flex';
+
+    const rect = el.getBoundingClientRect();
+    let topPos = rect.top - tooltip.offsetHeight - 8;
+    if (topPos < 10) topPos = rect.bottom + 8;
+
+    let leftPos = rect.right - tooltip.offsetWidth;
+    if (leftPos < 10) leftPos = 10;
+
+    tooltip.style.top = topPos + 'px';
+    tooltip.style.left = leftPos + 'px';
+};
+
+window.hideTooltip = function() {
+    const tooltip = document.getElementById('globalSpellTooltip');
+    if (tooltip) tooltip.style.display = 'none';
+};
 
 function getSpellColor(spell) {
     if (spell.voie && spell.voie.nom) {
