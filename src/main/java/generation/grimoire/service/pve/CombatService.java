@@ -54,8 +54,11 @@ public class CombatService {
         CombatSession session = new CombatSession(sessionId, d, p);
         
         List<Spell> validSpells = new ArrayList<>();
+        System.out.println("DEBUG COMBAT START - Player: " + p.getName() + ", Voie: " + (p.getVoie() != null ? p.getVoie().getId() : "null") + ", Spirit: " + (p.getSpiritualite() != null ? p.getSpiritualite().getId() : "null"));
         for (Spell s : spellRepository.findAll()) {
-            if (p.canCast(s) == null) {
+            String castError = p.canCast(s);
+            System.out.println("DEBUG SPELL: " + s.getNom() + ", S.Voie: " + (s.getVoie() != null ? s.getVoie().getId() : "null") + ", S.Spirit: " + (s.getSpiritualite() != null ? s.getSpiritualite().getId() : "null") + ", canCast=" + castError);
+            if (castError == null) {
                 validSpells.add(s);
             }
         }
