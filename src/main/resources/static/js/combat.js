@@ -26,6 +26,13 @@ window.initiateCombatCast = initiateCombatCast;
 window.confirmCombatCast = confirmCombatCast;
 window.cancelCombatCast = cancelCombatCast;
 
+let currentSpellFilter = 'ALL';
+window.filterSpells = function(filter) {
+    currentSpellFilter = filter;
+    if (currentSessionData) {
+        renderSpells(currentSessionData.availableSpells);
+    }
+};
 document.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
     const dungeonId = urlParams.get('dungeonId');
@@ -165,7 +172,11 @@ async function doAction(spellId = null) {
     const btnEnd = document.getElementById('btnEndTurn');
     if (btnEnd) btnEnd.disabled = true;
     const spellButtons = document.querySelectorAll('.spell-btn');
-    spellButtons.forEach(btn => btn.disabled = true);
+    spellButtons.forEach(btn => {
+        btn.disabled = true;
+        btn.classList.add('disabled');
+        btn.style.pointerEvents = 'none';
+    });
     
     // Animation attack
     const playerCard = document.getElementById('playerCard');
@@ -204,7 +215,11 @@ async function endTurn() {
     document.getElementById('btnEndTurn').disabled = true;
     document.getElementById('btnAttack').disabled = true;
     const spellButtons = document.querySelectorAll('.spell-btn');
-    spellButtons.forEach(btn => btn.disabled = true);
+    spellButtons.forEach(btn => {
+        btn.disabled = true;
+        btn.classList.add('disabled');
+        btn.style.pointerEvents = 'none';
+    });
     
     try {
         let url = `/api/pve/combat/${sessionId}/end-turn`;
@@ -484,14 +499,64 @@ function renderBuffsHtml(buffList) {
 
 function renderSpells(spells) {
     const container = document.getElementById('spellsContainer');
+    const filterContainer = document.getElementById('spellFiltersBar');
     if (!container) return;
     
-    if (spells.length === 0) {
-        container.innerHTML = '<div style="color: var(--text-muted); font-size: 0.9rem; font-style: italic; align-self: center;">Aucun sort débloqué</div>';
+    // First, determine all available categories
+    let categories = new Set();
+    spells.forEach(sp => {
+        if (sp.voie && sp.voie.nom) categories.add('VOIE_' + sp.voie.nom);
+        if (sp.spiritualite && sp.spiritualite.nom) categories.add('SPIRIT_' + sp.spiritualite.nom);
+        if (sp.castingType) categories.add('CAST_' + sp.castingType);
+    });
+
+    if (filterContainer) {
+        let filterHtml = `<button class="filter-chip ${currentSpellFilter === 'ALL' ? 'active' : ''}" onclick="filterSpells('ALL')">Tous (${spells.length})</button>`;
+        
+        // Define display names
+        const catMap = {};
+        spells.forEach(sp => {
+            if (sp.voie && sp.voie.nom) catMap['VOIE_' + sp.voie.nom] = sp.voie.nom;
+            if (sp.spiritualite && sp.spiritualite.nom) catMap['SPIRIT_' + sp.spiritualite.nom] = sp.spiritualite.nom;
+            if (sp.castingType) {
+                if (sp.castingType === 'INSTANTANE') catMap['CAST_' + sp.castingType] = 'Instantané';
+                if (sp.castingType === 'CANALISE') catMap['CAST_' + sp.castingType] = 'Canalisé';
+            }
+        });
+
+        // Add filter buttons alphabetically
+        [...categories].sort().forEach(cat => {
+            if (catMap[cat]) {
+                const count = spells.filter(s => {
+                    if (cat.startsWith('VOIE_')) return s.voie && s.voie.nom === cat.replace('VOIE_', '');
+                    if (cat.startsWith('SPIRIT_')) return s.spiritualite && s.spiritualite.nom === cat.replace('SPIRIT_', '');
+                    if (cat.startsWith('CAST_')) return s.castingType === cat.replace('CAST_', '');
+                    return false;
+                }).length;
+                filterHtml += `<button class="filter-chip ${currentSpellFilter === cat ? 'active' : ''}" onclick="filterSpells('${cat}')">${catMap[cat]} (${count})</button>`;
+            }
+        });
+        filterContainer.innerHTML = filterHtml;
+    }
+
+    let filteredSpells = spells;
+    if (currentSpellFilter !== 'ALL') {
+        filteredSpells = spells.filter(sp => {
+            if (currentSpellFilter.startsWith('VOIE_')) return sp.voie && sp.voie.nom === currentSpellFilter.replace('VOIE_', '');
+            if (currentSpellFilter.startsWith('SPIRIT_')) return sp.spiritualite && sp.spiritualite.nom === currentSpellFilter.replace('SPIRIT_', '');
+            if (currentSpellFilter.startsWith('CAST_')) return sp.castingType === currentSpellFilter.replace('CAST_', '');
+            return false;
+        });
+    }
+
+    if (filteredSpells.length === 0) {
+        container.innerHTML = '<div style="color: var(--text-muted); font-size: 0.9rem; font-style: italic; align-self: center; padding: 1rem; width: 100%; text-align: center;">Aucun sort pour ce filtre</div>';
         return;
     }
     
-    container.innerHTML = spells.map(sp => {
+    const isLocked = document.getElementById('btnAttack') && document.getElementById('btnAttack').disabled;
+    
+    container.innerHTML = filteredSpells.map(sp => {
         const titleColor = getSpellColor(sp);
 
         const effectsList = sp.effects || [];
@@ -527,66 +592,63 @@ function renderSpells(spells) {
         if (sp.heatCost > 0 || sp.percentHeatCost > 0) {
             costDetailsHtml.push(`<span style="display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem; color: #f97316;" title="Chaleur">local_fire_department</span><span style="border-bottom: 1px solid rgba(249, 115, 22, 0.5); padding-bottom: 0.05rem;">${sp.heatCost}${sp.percentHeatCost > 0 ? ` + ${sp.percentHeatCost}%` : ''}</span></span>`);
         }
-        let costDetails = costDetailsHtml.join(' <span style="color:var(--glass-border); margin:0 0.3rem;">|</span> ');
-        if (costDetailsHtml.length === 0) costDetails = `<span style="display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem; color: #38bdf8;" title="Mana">water_drop</span><span style="border-bottom: 1px solid rgba(56, 189, 248, 0.5); padding-bottom: 0.05rem;">0</span></span>`;
+        let costDetails = costDetailsHtml.join('<span style="color:rgba(255,255,255,0.2); margin:0 0.2rem;">|</span>');
+        if (costDetailsHtml.length === 0) costDetails = `<span style="display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem; color: #38bdf8;" title="Mana">water_drop</span><span>0</span></span>`;
 
         let castingTypeHtml = '';
         if (sp.castingType === 'INSTANTANE') {
-            castingTypeHtml = '<span class="material-symbols-outlined" style="font-size: 1.1rem; color: #f59e0b; margin-left: 0.3rem;" title="Action Instantanée">bolt</span>';
+            castingTypeHtml = '<span class="material-symbols-outlined" style="font-size: 1rem; color: #f59e0b;" title="Action Instantanée">bolt</span>';
         } else if (sp.castingType === 'CANALISE') {
-            castingTypeHtml = '<span class="material-symbols-outlined" style="font-size: 1.1rem; color: #8b5cf6; margin-left: 0.3rem;" title="Action Canalisée">cyclone</span>';
+            castingTypeHtml = '<span class="material-symbols-outlined" style="font-size: 1rem; color: #8b5cf6;" title="Action Canalisée">cyclone</span>';
             castingTypeHtml += sp.allowInstantDuringChanneling ?
-                '<span class="material-symbols-outlined" style="font-size: 1.1rem; color: #f59e0b; margin-left: 0.2rem;" title="Instantanés autorisés pendant la canalisation">bolt</span>' :
-                '<span style="position: relative; display: inline-flex; align-items: center; justify-content: center; width: 1.1rem; height: 1.1rem; margin-left: 0.2rem;" title="Instantanés interdits pendant la canalisation"><span class="material-symbols-outlined" style="font-size: 1.1rem; color: #64748b;">bolt</span><span style="position: absolute; width: 100%; height: 2px; background: #ef4444; transform: rotate(-45deg);"></span></span>';
+                '<span class="material-symbols-outlined" style="font-size: 1rem; color: #f59e0b;" title="Instantanés autorisés pendant la canalisation">bolt</span>' :
+                '<span style="position: relative; display: inline-flex; align-items: center; justify-content: center; width: 1rem; height: 1rem;" title="Instantanés interdits pendant la canalisation"><span class="material-symbols-outlined" style="font-size: 1rem; color: #64748b;">bolt</span><span style="position: absolute; width: 100%; height: 2px; background: #ef4444; transform: rotate(-45deg);"></span></span>';
         } else {
-            castingTypeHtml = '<span class="material-symbols-outlined" style="font-size: 1.1rem; color: #3b82f6; margin-left: 0.3rem;" title="Action Banale">hourglass_empty</span>';
+            castingTypeHtml = '<span class="material-symbols-outlined" style="font-size: 1rem; color: #3b82f6;" title="Action Banale">hourglass_empty</span>';
         }
 
         let voieHtml = '';
         if (sp.voie && sp.voie.nom) {
             const vColor = getVoieButtonColor(sp.voie);
             const vIcon = ui.getVoieIcon(sp.voie.nom);
-            voieHtml = `<span class="material-symbols-outlined" style="font-size: 1.1rem; color: ${vColor}; margin-left: 0.2rem;" title="${sp.voie.nom}">${vIcon}</span>`;
+            voieHtml = `<span class="material-symbols-outlined" style="font-size: 1rem; color: ${vColor};" title="${sp.voie.nom}">${vIcon}</span>`;
         }
 
         let spiritHtml = '';
         if (sp.spiritualite && sp.spiritualite.nom) {
             const sColor = getSpiritButtonColor(sp.spiritualite);
             const sIcon = ui.getSpiritIcon(sp.spiritualite.nom);
-            spiritHtml = `<span class="material-symbols-outlined" style="font-size: 1.1rem; color: ${sColor}; margin-left: 0.2rem;" title="${sp.spiritualite.nom}">${sIcon}</span>`;
+            spiritHtml = `<span class="material-symbols-outlined" style="font-size: 1rem; color: ${sColor};" title="${sp.spiritualite.nom}">${sIcon}</span>`;
         }
 
         let effectsSummary = getSpellEffectsSummaryHtml(sp);
 
+        const tooltipAttrs = effectsSummary ? 'onmouseenter="window.showGlobalTooltip(this)" onmouseleave="window.hideGlobalTooltip()"' : '';
+        const lockedClass = isLocked ? 'disabled' : '';
+        const lockedStyle = isLocked ? 'pointer-events: none;' : '';
+
         return `
-                    <div class="sandbox-spell-card" style="border-left: 3px solid ${titleColor}; position: relative; min-width: 280px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
-                        <div class="sandbox-spell-header">
-                            <div class="sandbox-spell-title" style="display: flex; align-items: center; gap: 0.3rem;">
-                                <span style="color: ${titleColor}; font-weight: 600;">${sp.nom}</span>
-                                <span class="badge" style="font-size: 0.7rem; padding: 0.1rem 0.3rem;">Lvl ${sp.niveau}</span>
-                                ${castingTypeHtml}
-                                ${voieHtml}
-                                ${spiritHtml}
-                            </div>
-                            <div class="sandbox-spell-actions">
-                                <button type="button" class="btn spell-btn" style="background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.4); font-size: 0.75rem; padding: 0.2rem 0.5rem; border-radius: 4px;" onclick="initiateCombatCast(${sp.id})">Lancer ✦</button>
-                            </div>
-                        </div>
-                        <div style="font-size: 0.8rem; color: var(--text-muted); display:flex; justify-content:space-between; align-items:center;">
-                            <div style="display: flex; align-items: center; gap: 0.8rem;">
-                                <span style="display:flex; align-items:center; gap:0.2rem;">${costDetails}</span>
-                                ${effectsSummary ? `
-                                <div class="spell-effects-trigger" onmouseenter="window.showGlobalTooltip(this)" onmouseleave="window.hideGlobalTooltip()">
-                                    <span class="badge" style="background: rgba(255,255,255,0.08); color: #94a3b8; font-size: 0.7rem; padding: 0.1rem 0.4rem; cursor: help;">Effets ✦</span>
-                                    <template class="tooltip-data">${effectsSummary}</template>
-                                </div>
-                                ` : ''}
-                            </div>
-                            ${optionSelectorHtml}
-                        </div>
-                    </div>
-                `;
+            <div class="combat-spell-card spell-btn ${lockedClass}" style="border-top: 2px solid ${titleColor}; ${lockedStyle}" onclick="initiateCombatCast(${sp.id})" ${tooltipAttrs}>
+                <div class="combat-spell-header">
+                    <div class="combat-spell-name" title="${sp.nom}" style="color: ${titleColor};">${sp.nom}</div>
+                    <div class="combat-spell-level">Lvl ${sp.niveau}</div>
+                </div>
+                <div class="combat-spell-icons">
+                    ${castingTypeHtml}
+                    ${voieHtml}
+                    ${spiritHtml}
+                </div>
+                ${optionSelectorHtml ? `<div class="combat-spell-options" onclick="event.stopPropagation()">${optionSelectorHtml}</div>` : ''}
+                <div class="combat-spell-cost">
+                    ${costDetails}
+                </div>
+                ${effectsSummary ? `<template class="tooltip-data">${effectsSummary}</template>` : ''}
+            </div>
+        `;
     }).join('');
+    
+    // Reset scroll position on render
+    container.scrollTop = 0;
 }
 
 function showResult(playerWon) {
