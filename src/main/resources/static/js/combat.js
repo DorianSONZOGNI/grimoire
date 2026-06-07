@@ -87,8 +87,16 @@ function initiateCombatCast(spellId) {
     const sp = currentSessionData.availableSpells.find(s => s.id === spellId);
     if (!sp) return;
 
+    const choiceSelect = document.getElementById(`choice-select-${spellId}`);
+    const currentChoiceKey = choiceSelect ? choiceSelect.value : null;
+
     const effects = sp.effects || [];
-    const needsEnemy = effects.some(e => (e.effectTarget || e.effect_target) === 'TARGET');
+    const activeEffects = effects.filter(e => {
+        if (e.requiredChoiceKey == null) return true;
+        return String(e.requiredChoiceKey) === String(currentChoiceKey);
+    });
+
+    const needsEnemy = activeEffects.some(e => (e.effectTarget || e.effect_target) === 'TARGET');
 
     const enemyCards = document.querySelectorAll('.fighter-enemy:not(.dead)');
     const multiEnemy = needsEnemy && enemyCards.length > 1;
@@ -171,7 +179,7 @@ async function doAction(spellId = null) {
     document.getElementById('btnAttack').disabled = true;
     const btnEnd = document.getElementById('btnEndTurn');
     if (btnEnd) btnEnd.disabled = true;
-    const spellButtons = document.querySelectorAll('.spell-btn');
+    const spellButtons = document.querySelectorAll('.spell-btn, .filter-chip');
     spellButtons.forEach(btn => {
         btn.disabled = true;
         btn.classList.add('disabled');
@@ -214,7 +222,7 @@ async function endTurn() {
     
     document.getElementById('btnEndTurn').disabled = true;
     document.getElementById('btnAttack').disabled = true;
-    const spellButtons = document.querySelectorAll('.spell-btn');
+    const spellButtons = document.querySelectorAll('.spell-btn, .filter-chip');
     spellButtons.forEach(btn => {
         btn.disabled = true;
         btn.classList.add('disabled');
@@ -554,8 +562,6 @@ function renderSpells(spells) {
         return;
     }
     
-    const isLocked = document.getElementById('btnAttack') && document.getElementById('btnAttack').disabled;
-    
     container.innerHTML = filteredSpells.map(sp => {
         const titleColor = getSpellColor(sp);
 
@@ -624,11 +630,9 @@ function renderSpells(spells) {
         let effectsSummary = getSpellEffectsSummaryHtml(sp);
 
         const tooltipAttrs = effectsSummary ? 'onmouseenter="window.showGlobalTooltip(this)" onmouseleave="window.hideGlobalTooltip()"' : '';
-        const lockedClass = isLocked ? 'disabled' : '';
-        const lockedStyle = isLocked ? 'pointer-events: none;' : '';
 
         return `
-            <div class="combat-spell-card spell-btn ${lockedClass}" style="border-top: 2px solid ${titleColor}; ${lockedStyle}" onclick="initiateCombatCast(${sp.id})" ${tooltipAttrs}>
+            <div class="combat-spell-card spell-btn" style="border-top: 2px solid ${titleColor};" onclick="initiateCombatCast(${sp.id})" ${tooltipAttrs}>
                 <div class="combat-spell-header">
                     <div class="combat-spell-name" title="${sp.nom}" style="color: ${titleColor};">${sp.nom}</div>
                     <div class="combat-spell-level">Lvl ${sp.niveau}</div>
