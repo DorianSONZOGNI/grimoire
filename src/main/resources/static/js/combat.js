@@ -272,7 +272,7 @@ function generateFighterHtml(c, isHero) {
         </div>
         ${manaHtml}
         <div class="sandbox-status-list" style="justify-content: center;">${passiveBadges}</div>
-        <div class="sandbox-status-list" style="justify-content: center;">${renderBuffsHtml(c.buffs)}</div>
+        <div class="sandbox-status-list" style="justify-content: center;">${renderBuffsHtml(c.activeBuffs || c.buffs)}</div>
     `;
 }
 
@@ -301,16 +301,17 @@ function renderEnemies(enemies) {
 
 function renderBuffsHtml(buffList) {
     if (!buffList || buffList.length === 0) return '';
-    return buffList.map(b => {
+    
+    const goodBuffs = [];
+    const badBuffs = [];
+    
+    buffList.forEach(b => {
         const inverseStats = ['DAMAGE_TAKEN_MAGIC', 'DAMAGE_TAKEN_PHYSIC', 'DAMAGE_TAKEN_BRUT', 'SHIELD_PIERCED', 'BURN', 'POISON'];
         const isInverse = inverseStats.includes(b.statAffected);
         const isNegativeValue = b.modifier < 0 || b.flatValue < 0;
 
         let isBad = isNegativeValue;
         if (isInverse) isBad = !isNegativeValue;
-
-        const badgeClass = isBad ? 'debuff' : 'buff';
-        const icon = isNegativeValue ? 'trending_down' : 'trending_up';
 
         let text = '';
         if (b.flatValue) text += `${b.flatValue > 0 ? '+' : ''}${b.flatValue} ${formatStat(b.statAffected)}`;
@@ -320,11 +321,27 @@ function renderBuffsHtml(buffList) {
         }
         if (!text) text = `Modif. de ${formatStat(b.statAffected)}`;
 
-        return `<div class="sandbox-status-badge ${badgeClass}" title="Source: ${b.sourceName}">
-            <span class="material-symbols-outlined" style="font-size: 0.95rem;">${icon}</span>
-            <span>${text} (${b.duration}t)</span>
+        const entry = `• ${text} (${b.duration} tours)`;
+
+        if (isBad) badBuffs.push(entry);
+        else goodBuffs.push(entry);
+    });
+
+    let html = '';
+    if (goodBuffs.length > 0) {
+        html += `<div class="sandbox-status-badge buff" title="[Buffs]\n${goodBuffs.join('\n')}">
+            <span class="material-symbols-outlined" style="font-size: 0.95rem;">trending_up</span>
+            <span>Buffs (${goodBuffs.length})</span>
         </div>`;
-    }).join('');
+    }
+    if (badBuffs.length > 0) {
+        html += `<div class="sandbox-status-badge debuff" title="[Débuffs]\n${badBuffs.join('\n')}">
+            <span class="material-symbols-outlined" style="font-size: 0.95rem;">trending_down</span>
+            <span>Débuffs (${badBuffs.length})</span>
+        </div>`;
+    }
+
+    return html;
 }
 
 function getSpellColor(spell) {

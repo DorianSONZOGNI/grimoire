@@ -554,7 +554,7 @@ function renderCombatantCard(c, team, isHero = false) {
             </div>
             ${manaHtml}
             <div class="sandbox-status-list">${renderPassiveBadges(c)}</div>
-            <div class="sandbox-status-list">${renderBuffsHtml(c.buffs)}</div>
+            <div class="sandbox-status-list">${renderBuffsHtml(c.activeBuffs || c.buffs)}</div>
         </div>`;
 }
 
