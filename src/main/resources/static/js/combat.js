@@ -22,6 +22,9 @@ window.endTurn = endTurn;
 window.nextRoom = nextRoom;
 window.showGlobalTooltip = ui.showGlobalTooltip;
 window.hideGlobalTooltip = ui.hideGlobalTooltip;
+window.initiateCombatCast = initiateCombatCast;
+window.confirmCombatCast = confirmCombatCast;
+window.cancelCombatCast = cancelCombatCast;
 
 document.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -62,8 +65,82 @@ function selectTarget(index) {
     if (!currentSessionData || !currentSessionData.enemies[index]) return;
     if (currentSessionData.enemies[index].dead) return;
     
+    // Only allow manual selection if not currently casting a spell
+    if (pendingCastSpellId) return;
+    
     selectedTargetIndex = index;
     renderEnemies(currentSessionData.enemies);
+}
+
+// ===== Target Selection for Cast =====
+let pendingCastSpellId = null;
+
+function initiateCombatCast(spellId) {
+    if (!currentSessionData) return;
+    const sp = currentSessionData.availableSpells.find(s => s.id === spellId);
+    if (!sp) return;
+
+    const effects = sp.effects || [];
+    const needsEnemy = effects.some(e => (e.effectTarget || e.effect_target) === 'TARGET');
+
+    const enemyCards = document.querySelectorAll('.fighter-enemy:not(.dead)');
+    const multiEnemy = needsEnemy && enemyCards.length > 1;
+
+    if (!multiEnemy) {
+        // Direct cast
+        doAction(spellId);
+        return;
+    }
+
+    // Enter target selection mode
+    pendingCastSpellId = spellId;
+    
+    // Highlight enemies for selection
+    enemyCards.forEach(card => {
+        card.classList.add('target-selectable');
+        card.dataset.oldOnClick = card.getAttribute('onclick');
+        card.setAttribute('onclick', `confirmCombatCast(${card.dataset.index})`);
+    });
+    
+    showCombatTargetPrompt();
+}
+
+function showCombatTargetPrompt() {
+    const existing = document.getElementById('combatTargetPrompt');
+    if (existing) existing.remove();
+
+    const prompt = document.createElement('div');
+    prompt.id = 'combatTargetPrompt';
+    prompt.style.cssText = 'background: linear-gradient(135deg, rgba(220, 38, 38, 0.25), rgba(153, 27, 27, 0.2)); border: 1px solid #ef4444; border-radius: 8px; padding: 0.6rem 2rem; margin: 0 2rem 1rem 2rem; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; font-size: 1rem; color: #fca5a5;';
+    prompt.innerHTML = `
+        <span>🎯 Sélectionnez un ennemi cible pour lancer le sort.</span>
+        <button type="button" onclick="cancelCombatCast()" style="background: rgba(239,68,68,0.2); color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); padding: 0.4rem 1rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer; font-family: 'Outfit', sans-serif;">Annuler</button>
+    `;
+
+    const actionBar = document.getElementById('actionBar');
+    if (actionBar) actionBar.parentNode.insertBefore(prompt, actionBar);
+}
+
+function confirmCombatCast(enemyIndex) {
+    selectedTargetIndex = enemyIndex;
+    const spellId = pendingCastSpellId;
+    cancelCombatCast();
+    doAction(spellId);
+}
+
+function cancelCombatCast() {
+    const enemyCards = document.querySelectorAll('.fighter-enemy');
+    enemyCards.forEach(card => {
+        card.classList.remove('target-selectable');
+        if (card.dataset.oldOnClick) {
+            card.setAttribute('onclick', card.dataset.oldOnClick);
+        } else {
+            card.removeAttribute('onclick');
+        }
+    });
+    const prompt = document.getElementById('combatTargetPrompt');
+    if (prompt) prompt.remove();
+    pendingCastSpellId = null;
 }
 
 async function doAction(spellId = null) {
@@ -330,6 +407,7 @@ function renderEnemies(enemies) {
         
         const div = document.createElement('div');
         div.className = `fighter fighter-enemy enemy-card ${isSelected ? 'selected' : ''} ${activeMonster.dead ? 'dead' : ''}`;
+        div.dataset.index = index;
         div.onclick = () => selectTarget(index);
         
         div.innerHTML = generateFighterHtml(pMonster, false);
@@ -491,7 +569,7 @@ function renderSpells(spells) {
                                 ${spiritHtml}
                             </div>
                             <div class="sandbox-spell-actions">
-                                <button type="button" class="btn spell-btn" style="background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.4); font-size: 0.75rem; padding: 0.2rem 0.5rem; border-radius: 4px;" onclick="doAction(${sp.id})">Lancer ✦</button>
+                                <button type="button" class="btn spell-btn" style="background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.4); font-size: 0.75rem; padding: 0.2rem 0.5rem; border-radius: 4px;" onclick="initiateCombatCast(${sp.id})">Lancer ✦</button>
                             </div>
                         </div>
                         <div style="font-size: 0.8rem; color: var(--text-muted); display:flex; justify-content:space-between; align-items:center;">
