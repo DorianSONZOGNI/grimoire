@@ -1,6 +1,27 @@
+import * as ui from './ui.js';
+import { getSpellEffectsSummaryHtml } from './grimoire.js';
+import { getVoieButtonColor, getSpiritButtonColor } from './filters.js';
+
+function getSpellColor(sp) {
+    if (sp.voie && sp.voie.nom) {
+        return getVoieButtonColor(sp.voie);
+    }
+    if (sp.spiritualite && sp.spiritualite.nom) {
+        return getSpiritButtonColor(sp.spiritualite);
+    }
+    return '#ffffff';
+}
+
+
 let sessionId = null;
 let currentSessionData = null;
 let selectedTargetIndex = 0;
+
+window.doAction = doAction;
+window.endTurn = endTurn;
+window.nextRoom = nextRoom;
+window.showGlobalTooltip = ui.showGlobalTooltip;
+window.hideGlobalTooltip = ui.hideGlobalTooltip;
 
 document.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
@@ -221,24 +242,7 @@ function updateUI(data) {
     }
 }
 
-const GLOBAL_STAT_LABELS = {
-    'SPEED': 'Vitesse', 'MANA': 'Mana Max', 'HEALTH': 'PV Max', 'CRIT': 'Critique',
-    'ARMURE': 'Armure', 'RESISTANCE': 'Résistance', 'POWER': 'Puissance Mag.', 'STRENGTH': 'Force Phys.',
-    'BURN': 'Brûlure', 'POISON': 'Poison', 'DAMAGE_TAKEN_MAGIC': 'Dégâts Mag. Subis',
-    'DAMAGE_TAKEN_PHYSIC': 'Dégâts Phys. Subis', 'DAMAGE_TAKEN_BRUT': 'Dégâts Bruts Subis',
-    'DAMAGE_GIVEN_MAGIC': 'Dégâts Mag. Infligés', 'DAMAGE_GIVEN_PHYSIC': 'Dégâts Phys. Infligés',
-    'DAMAGE_GIVEN_BRUT': 'Dégâts Bruts Infligés',
-    'HEAL_RECEIVED': 'Soin Reçu', 'SHIELD_RECEIVED': 'Bouclier Reçu',
-    'HEAL_GIVEN': 'Soin Donné', 'SHIELD_GIVEN': 'Bouclier Donné',
-    'DAMAGE_GIVEN_MAGIC_TO_SHIELD': 'Dég. Mag. au Bouclier',
-    'DAMAGE_GIVEN_PHYSIC_TO_SHIELD': 'Dég. Phys. au Bouclier',
-    'SHIELD_PENETRATION': 'Perce-Bouclier',
-    'SHIELD_PIERCED': 'Bouclier Percé'
-};
-
-function formatStat(stat) {
-    return GLOBAL_STAT_LABELS[stat] || stat;
-}
+// Removed GLOBAL_STAT_LABELS and formatStat (imported from ui.js)
 
 function generateFighterHtml(c, isHero) {
     const roleLabel = isHero ? ' (Lanceur)' : '';
@@ -348,14 +352,14 @@ function renderBuffsHtml(buffList) {
         if (isInverse) isBad = !isNegativeValue;
 
         let text = '';
-        if (b.flatValue) text += `${b.flatValue > 0 ? '+' : ''}${b.flatValue} ${formatStat(b.statAffected)}`;
+        if (b.flatValue) text += `${b.flatValue > 0 ? '+' : ''}${b.flatValue} ${ui.formatStat(b.statAffected)}`;
         if (b.modifier) {
             if (text) text += ' et ';
-            text += `${b.modifier > 0 ? '+' : ''}${Math.round(b.modifier * 100)}% ${formatStat(b.statAffected)}`;
+            text += `${b.modifier > 0 ? '+' : ''}${Math.round(b.modifier * 100)}% ${ui.formatStat(b.statAffected)}`;
         }
-        if (!text) text = `Modifie ${formatStat(b.statAffected)}`;
+        if (!text) text = `Modifie ${ui.formatStat(b.statAffected)}`;
 
-        const typeStr = (b.statAffected === 'POISON' || b.statAffected === 'BURN') ? formatStat(b.statAffected) : 'Buff/Débuff';
+        const typeStr = (b.statAffected === 'POISON' || b.statAffected === 'BURN') ? ui.formatStat(b.statAffected) : 'Buff/Débuff';
         const indicatorColor = isBad ? '#f43f5e' : '#10b981';
         
         const entryHtml = `
@@ -372,7 +376,7 @@ function renderBuffsHtml(buffList) {
     });
 
     let html = '';
-    const tooltipAttrs = 'onmouseenter="window.showTooltip ? window.showTooltip(this) : null" onmouseleave="window.hideTooltip ? window.hideTooltip() : null"';
+    const tooltipAttrs = 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"';
 
     if (goodBuffs.length > 0) {
         html += `<div class="sandbox-status-badge buff" ${tooltipAttrs} style="cursor: help; position: relative;">
@@ -400,70 +404,6 @@ function renderBuffsHtml(buffList) {
     return html;
 }
 
-window.showTooltip = function(el) {
-    let tooltip = document.getElementById('globalSpellTooltip');
-    if (!tooltip) {
-        tooltip = document.createElement('div');
-        tooltip.id = 'globalSpellTooltip';
-        tooltip.onmouseenter = () => {
-            if (tooltip.hideTimeout) clearTimeout(tooltip.hideTimeout);
-        };
-        tooltip.onmouseleave = () => {
-            tooltip.style.display = 'none';
-        };
-        document.body.appendChild(tooltip);
-    }
-    if (tooltip.hideTimeout) clearTimeout(tooltip.hideTimeout);
-
-    const dataEl = el.querySelector('.tooltip-data');
-    if (!dataEl) return;
-
-    tooltip.innerHTML = dataEl.innerHTML;
-    tooltip.style.display = 'flex';
-    tooltip.style.maxHeight = '60vh';
-    tooltip.style.overflowY = 'auto';
-    tooltip.style.pointerEvents = 'auto';
-
-    const rect = el.getBoundingClientRect();
-    const tooltipHeight = tooltip.offsetHeight;
-    
-    let topPos = rect.top - tooltipHeight - 8;
-    if (topPos < 10) {
-        topPos = rect.bottom + 8;
-        if (topPos + tooltipHeight > window.innerHeight - 10) {
-            topPos = Math.max(10, window.innerHeight - tooltipHeight - 10);
-        }
-    }
-
-    let leftPos = rect.right - tooltip.offsetWidth;
-    if (leftPos < 10) leftPos = 10;
-
-    tooltip.style.top = topPos + 'px';
-    tooltip.style.left = leftPos + 'px';
-};
-
-window.hideTooltip = function() {
-    const tooltip = document.getElementById('globalSpellTooltip');
-    if (tooltip) {
-        tooltip.hideTimeout = setTimeout(() => {
-            tooltip.style.display = 'none';
-        }, 150);
-    }
-};
-
-function getSpellColor(spell) {
-    if (spell.voie && spell.voie.nom) {
-        const n = spell.voie.nom.toLowerCase();
-        if (n.includes('feu') || n.includes('pyro')) return '#ef4444';
-        if (n.includes('eau') || n.includes('hydro')) return '#3b82f6';
-        if (n.includes('terre') || n.includes('géo')) return '#eab308';
-        if (n.includes('vent') || n.includes('anémo')) return '#10b981';
-        if (n.includes('foudre') || n.includes('électro')) return '#8b5cf6';
-        return '#64748b';
-    }
-    return '#94a3b8';
-}
-
 function renderSpells(spells) {
     const container = document.getElementById('spellsContainer');
     if (!container) return;
@@ -473,45 +413,102 @@ function renderSpells(spells) {
         return;
     }
     
-    let html = '';
-    spells.forEach(sp => {
-        const color = getSpellColor(sp);
-        
-        // Choice Key if variants exist
-        let optionHtml = '';
-        const choiceKeys = [];
-        if (sp.effects) {
-            sp.effects.forEach(e => {
-                if (e.requiredChoiceKey != null && !choiceKeys.includes(e.requiredChoiceKey)) {
-                    choiceKeys.push(e.requiredChoiceKey);
-                }
-            });
-        }
-        
+    container.innerHTML = spells.map(sp => {
+        const titleColor = getSpellColor(sp);
+
+        const effectsList = sp.effects || [];
+        const choiceKeys = [...new Set(effectsList.map(e => e.requiredChoiceKey).filter(k => k != null))];
+
+        let optionSelectorHtml = '';
         if (choiceKeys.length > 0) {
-            optionHtml = `<select id="choice-select-${sp.id}" style="margin-bottom: 0.3rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; border-radius: 4px; font-size: 0.7rem; padding: 0.1rem;" onclick="event.stopPropagation()">
-                ${choiceKeys.map(k => `<option value="${k}">Option ${k}</option>`).join('')}
-            </select>`;
+            optionSelectorHtml = `
+                        <div class="sandbox-spell-options">
+                            <select id="choice-select-${sp.id}" onclick="event.stopPropagation()">
+                                ${choiceKeys.map(k => `<option value="${k}">Option ${k}</option>`).join('')}
+                            </select>
+                        </div>
+                    `;
         }
-        
-        let costs = [];
-        if (sp.manaCost > 0) costs.push(`<span style="color:#38bdf8;">${sp.manaCost} MP</span>`);
-        if (sp.healCost > 0) costs.push(`<span style="color:#f43f5e;">${sp.healCost} PV</span>`);
-        if (sp.heatCost > 0) costs.push(`<span style="color:#f97316;">${sp.heatCost} Ch</span>`);
-        const costStr = costs.join(' | ');
-        
-        html += `
-            <div style="display: flex; flex-direction: column; align-items: center; justify-content: flex-end;">
-                ${optionHtml}
-                <button class="action-btn spell-btn" onclick="doAction(${sp.id})" style="border-color: ${color}; flex-direction: column; padding: 0.5rem 1rem; gap: 0.2rem; min-width: 100px;">
-                    <span style="font-size: 0.9rem; font-weight: 600; color: #f8fafc;">${sp.nom}</span>
-                    <span style="font-size: 0.75rem; font-weight: normal; color: rgba(255,255,255,0.7);">${costStr}</span>
-                </button>
-            </div>
-        `;
-    });
-    
-    container.innerHTML = html;
+
+        const getSrcIcon = (src) => {
+            const s = src || '';
+            if (s.includes('MANA')) return `<span class="material-symbols-outlined" style="font-size: 0.95rem; color: #38bdf8; vertical-align: middle;" title="${ui.formatSrc(s)}">water_drop</span>`;
+            if (s.includes('HEALTH') || s.includes('PV')) return `<span class="material-symbols-outlined" style="font-size: 0.95rem; color: #f43f5e; vertical-align: middle;" title="${ui.formatSrc(s)}">bloodtype</span>`;
+            if (s.includes('POWER') || s.includes('Puiss')) return `<span class="material-symbols-outlined" style="font-size: 0.95rem; color: #a855f7; vertical-align: middle;" title="${ui.formatSrc(s)}">auto_awesome</span>`;
+            if (s.includes('PHYSICAL') || s.includes('Force Phy')) return `<span class="material-symbols-outlined" style="font-size: 0.95rem; color: #f43f5e; vertical-align: middle;" title="${ui.formatSrc(s)}">fitness_center</span>`;
+            return `(${ui.formatSrc(s)})`;
+        };
+
+        let costDetailsHtml = [];
+        if (sp.manaCost > 0 || sp.percentManaCost > 0) {
+            costDetailsHtml.push(`<span style="display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem; color: #38bdf8;" title="Mana">water_drop</span><span style="border-bottom: 1px solid rgba(56, 189, 248, 0.5); padding-bottom: 0.05rem;">${sp.manaCost}${sp.percentManaCost > 0 ? ` + ${sp.percentManaCost}% ${getSrcIcon(sp.percentManaCostSource || 'CASTER_MANA_MAX')}` : ''}</span></span>`);
+        }
+        if (sp.healCost > 0 || sp.percentHealCost > 0) {
+            costDetailsHtml.push(`<span style="display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem; color: #f43f5e;" title="PV">bloodtype</span><span style="border-bottom: 1px solid rgba(244, 63, 94, 0.5); padding-bottom: 0.05rem;">${sp.healCost}${sp.percentHealCost > 0 ? ` + ${sp.percentHealCost}% ${getSrcIcon(sp.percentHealCostSource || 'CASTER_HEALTH_MAX')}` : ''}</span></span>`);
+        }
+        if (sp.heatCost > 0 || sp.percentHeatCost > 0) {
+            costDetailsHtml.push(`<span style="display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem; color: #f97316;" title="Chaleur">local_fire_department</span><span style="border-bottom: 1px solid rgba(249, 115, 22, 0.5); padding-bottom: 0.05rem;">${sp.heatCost}${sp.percentHeatCost > 0 ? ` + ${sp.percentHeatCost}%` : ''}</span></span>`);
+        }
+        let costDetails = costDetailsHtml.join(' <span style="color:var(--glass-border); margin:0 0.3rem;">|</span> ');
+        if (costDetailsHtml.length === 0) costDetails = `<span style="display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem; color: #38bdf8;" title="Mana">water_drop</span><span style="border-bottom: 1px solid rgba(56, 189, 248, 0.5); padding-bottom: 0.05rem;">0</span></span>`;
+
+        let castingTypeHtml = '';
+        if (sp.castingType === 'INSTANTANE') {
+            castingTypeHtml = '<span class="material-symbols-outlined" style="font-size: 1.1rem; color: #f59e0b; margin-left: 0.3rem;" title="Action Instantanée">bolt</span>';
+        } else if (sp.castingType === 'CANALISE') {
+            castingTypeHtml = '<span class="material-symbols-outlined" style="font-size: 1.1rem; color: #8b5cf6; margin-left: 0.3rem;" title="Action Canalisée">cyclone</span>';
+            castingTypeHtml += sp.allowInstantDuringChanneling ?
+                '<span class="material-symbols-outlined" style="font-size: 1.1rem; color: #f59e0b; margin-left: 0.2rem;" title="Instantanés autorisés pendant la canalisation">bolt</span>' :
+                '<span style="position: relative; display: inline-flex; align-items: center; justify-content: center; width: 1.1rem; height: 1.1rem; margin-left: 0.2rem;" title="Instantanés interdits pendant la canalisation"><span class="material-symbols-outlined" style="font-size: 1.1rem; color: #64748b;">bolt</span><span style="position: absolute; width: 100%; height: 2px; background: #ef4444; transform: rotate(-45deg);"></span></span>';
+        } else {
+            castingTypeHtml = '<span class="material-symbols-outlined" style="font-size: 1.1rem; color: #3b82f6; margin-left: 0.3rem;" title="Action Banale">hourglass_empty</span>';
+        }
+
+        let voieHtml = '';
+        if (sp.voie && sp.voie.nom) {
+            const vColor = getVoieButtonColor(sp.voie);
+            const vIcon = ui.getVoieIcon(sp.voie.nom);
+            voieHtml = `<span class="material-symbols-outlined" style="font-size: 1.1rem; color: ${vColor}; margin-left: 0.2rem;" title="${sp.voie.nom}">${vIcon}</span>`;
+        }
+
+        let spiritHtml = '';
+        if (sp.spiritualite && sp.spiritualite.nom) {
+            const sColor = getSpiritButtonColor(sp.spiritualite);
+            const sIcon = ui.getSpiritIcon(sp.spiritualite.nom);
+            spiritHtml = `<span class="material-symbols-outlined" style="font-size: 1.1rem; color: ${sColor}; margin-left: 0.2rem;" title="${sp.spiritualite.nom}">${sIcon}</span>`;
+        }
+
+        let effectsSummary = getSpellEffectsSummaryHtml(sp);
+
+        return `
+                    <div class="sandbox-spell-card" style="border-left: 3px solid ${titleColor}; position: relative; min-width: 280px; box-shadow: 0 4px 10px rgba(0,0,0,0.3);">
+                        <div class="sandbox-spell-header">
+                            <div class="sandbox-spell-title" style="display: flex; align-items: center; gap: 0.3rem;">
+                                <span style="color: ${titleColor}; font-weight: 600;">${sp.nom}</span>
+                                <span class="badge" style="font-size: 0.7rem; padding: 0.1rem 0.3rem;">Lvl ${sp.niveau}</span>
+                                ${castingTypeHtml}
+                                ${voieHtml}
+                                ${spiritHtml}
+                            </div>
+                            <div class="sandbox-spell-actions">
+                                <button type="button" class="btn spell-btn" style="background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.4); font-size: 0.75rem; padding: 0.2rem 0.5rem; border-radius: 4px;" onclick="doAction(${sp.id})">Lancer ✦</button>
+                            </div>
+                        </div>
+                        <div style="font-size: 0.8rem; color: var(--text-muted); display:flex; justify-content:space-between; align-items:center;">
+                            <div style="display: flex; align-items: center; gap: 0.8rem;">
+                                <span style="display:flex; align-items:center; gap:0.2rem;">${costDetails}</span>
+                                ${effectsSummary ? `
+                                <div class="spell-effects-trigger" onmouseenter="window.showGlobalTooltip(this)" onmouseleave="window.hideGlobalTooltip()">
+                                    <span class="badge" style="background: rgba(255,255,255,0.08); color: #94a3b8; font-size: 0.7rem; padding: 0.1rem 0.4rem; cursor: help;">Effets ✦</span>
+                                    <template class="tooltip-data">${effectsSummary}</template>
+                                </div>
+                                ` : ''}
+                            </div>
+                            ${optionSelectorHtml}
+                        </div>
+                    </div>
+                `;
+    }).join('');
 }
 
 function showResult(playerWon) {

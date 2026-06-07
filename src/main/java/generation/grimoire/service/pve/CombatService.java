@@ -230,6 +230,14 @@ public class CombatService {
         }
         // Start next turn for everyone (ticks DoTs/HoTs)
         captureLogs(session, () -> {
+            if (p.getRemainingChannelingTurns() > 0) {
+                Personnage channelingTarget = p.getChannelingTarget();
+                if (channelingTarget == null && !session.getEnemies().isEmpty()) {
+                    channelingTarget = session.getEnemies().get(0).getAsPersonnage();
+                }
+                spellService.tickChanneling(p, channelingTarget, p.getChannelingChoiceKey());
+            }
+
             spellService.startTurn(p);
             for (generation.grimoire.model.pve.ActiveMonster m : session.getEnemies()) {
                 if (!m.isDead()) {

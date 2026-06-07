@@ -222,22 +222,22 @@ export function getSpellEffectsSummaryHtml(sp) {
                     detailsStr = `➔ inflige ${e.damage || 0} Dégâts ${dtStr}`;
                 } else if (t === 'DamagePercentage' || t === 'PERCENTAGE_DAMAGE') {
                     const pct = Math.round((e.percentage || 0) * 100);
-                    detailsStr = `➔ inflige ${pct}% de ${formatSrc(e.damageSource || e.source)} en Dégâts ${dtStr}`;
+                    detailsStr = `➔ inflige ${pct}% de ${ui.formatSrc(e.damageSource || e.source)} en Dégâts ${dtStr}`;
                 } else if (t === 'HealFixed' || t === 'FIXED_HEAL') {
                     detailsStr = `➔ rend ${e.healAmount || 0} PV`;
                 } else if (t === 'HealPercentage' || t === 'PERCENTAGE_HEAL') {
                     const pct = Math.round((e.percentage || 0) * 100);
-                    detailsStr = `➔ rend ${pct}% de ${formatSrc(e.healSource || e.source)} en PV`;
+                    detailsStr = `➔ rend ${pct}% de ${ui.formatSrc(e.healSource || e.source)} en PV`;
                 } else if (t === 'BuffDebuff' || t === 'BUFF_DEBUFF' || t === 'POISON' || t === 'BURN') {
                     let parts = [];
                     if (e.flatValue) {
-                        parts.push(`${e.flatValue > 0 ? '+' : ''}${e.flatValue} ${formatStat(e.statAffected || e.effectType)}`);
+                        parts.push(`${e.flatValue > 0 ? '+' : ''}${e.flatValue} ${ui.formatStat(e.statAffected || e.effectType)}`);
                     }
                     if (e.modifier) {
                         const sign = e.modifier > 0 ? '+' : '';
-                        parts.push(`${sign}${Math.round(e.modifier * 100)}% ${formatStat(e.statAffected || e.effectType)}`);
+                        parts.push(`${sign}${Math.round(e.modifier * 100)}% ${ui.formatStat(e.statAffected || e.effectType)}`);
                     }
-                    if (parts.length === 0) parts.push(`modifie ${formatStat(e.statAffected || e.effectType)}`);
+                    if (parts.length === 0) parts.push(`modifie ${ui.formatStat(e.statAffected || e.effectType)}`);
                     const durStr = e.duration > 0 ? ` (${e.duration} tours)` : '';
                     detailsStr = `➔ ${parts.join(' et ')}${durStr}`;
                 } else if (t === 'DamageOverTime' || t === 'DOT') {
@@ -245,7 +245,7 @@ export function getSpellEffectsSummaryHtml(sp) {
                     const fd = e.fixedDamagePerTick || e.damage || 0;
                     const pd = e.percentageDamagePerTick || e.percentage || 0;
                     if (fd) parts.push(`${fd}`);
-                    if (pd) parts.push(`${Math.round(pd * 100)}% ${formatSrc(e.damageSource || e.source)}`);
+                    if (pd) parts.push(`${Math.round(pd * 100)}% ${ui.formatSrc(e.damageSource || e.source)}`);
                     if (parts.length === 0) parts.push('0');
                     const durStr = e.duration > 0 ? ` sur ${e.duration} tours` : '';
                     detailsStr = `➔ DoT de ${parts.join(' + ')} Dégâts ${dtStr}/tour${durStr}`;
@@ -254,7 +254,7 @@ export function getSpellEffectsSummaryHtml(sp) {
                     const fh = e.fixedHealPerTick || e.healAmount || 0;
                     const ph = e.percentageHealPerTick || e.percentage || 0;
                     if (fh) parts.push(`${fh}`);
-                    if (ph) parts.push(`${Math.round(ph * 100)}% ${formatSrc(e.healSource || e.source || 'TARGET_HEALTH_MAX')}`);
+                    if (ph) parts.push(`${Math.round(ph * 100)}% ${ui.formatSrc(e.healSource || e.source || 'TARGET_HEALTH_MAX')}`);
                     if (parts.length === 0) parts.push('0');
                     const durStr = e.duration > 0 ? ` sur ${e.duration} tours` : '';
                     detailsStr = `➔ HoT de ${parts.join(' + ')} PV/tour${durStr}`;
@@ -262,13 +262,13 @@ export function getSpellEffectsSummaryHtml(sp) {
                     detailsStr = `➔ rend ${e.manaAmount || 0} Mana`;
                 } else if (t === 'ManaPercentage' || t === 'PERCENTAGE_MANA') {
                     const pct = Math.round((e.percentage || 0) * 100);
-                    detailsStr = `➔ rend ${pct}% de ${formatSrc(e.manaSource || e.source)} en Mana`;
+                    detailsStr = `➔ rend ${pct}% de ${ui.formatSrc(e.manaSource || e.source)} en Mana`;
                 } else if (t === 'ManaOverTime' || t === 'MOT') {
                     let parts = [];
                     const fm = e.fixedManaPerTick || e.manaAmount || 0;
                     const pm = e.percentageManaPerTick || e.percentage || 0;
                     if (fm) parts.push(`${fm}`);
-                    if (pm) parts.push(`${Math.round(pm * 100)}% ${formatSrc(e.manaSource || e.source || 'TARGET_MANA_MAX')}`);
+                    if (pm) parts.push(`${Math.round(pm * 100)}% ${ui.formatSrc(e.manaSource || e.source || 'TARGET_MANA_MAX')}`);
                     if (parts.length === 0) parts.push('0');
                     const durStr = e.duration > 0 ? ` sur ${e.duration} tours` : '';
                     detailsStr = `➔ MoT de ${parts.join(' + ')} Mana/tour${durStr}`;
@@ -279,7 +279,7 @@ export function getSpellEffectsSummaryHtml(sp) {
                     const fv = e.fixedValue || e.flatValue || 0;
                     const pv = e.percentage || 0;
                     if (fv) parts.push(`${fv}`);
-                    if (pv) parts.push(`${Math.round(pv * 100)}% ${formatSrc(e.shieldSource || e.source || 'TARGET_HEALTH_MAX')}`);
+                    if (pv) parts.push(`${Math.round(pv * 100)}% ${ui.formatSrc(e.shieldSource || e.source || 'TARGET_HEALTH_MAX')}`);
                     if (parts.length === 0) parts.push('0');
                     const durStr = e.duration > 0 ? ` sur ${e.duration} tours` : '';
                     detailsStr = `➔ Bouclier de ${parts.join(' + ')}${durStr}`;
