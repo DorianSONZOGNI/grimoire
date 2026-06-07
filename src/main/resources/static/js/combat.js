@@ -357,12 +357,36 @@ function generateFighterHtml(c, isHero) {
             <div class="gauge-track"><div class="gauge-fill mana" style="width: ${manaPct}%;"></div></div>
         </div>`;
 
-    const pui = c.power !== undefined ? c.power : 0;
-    const forPhy = c.strength !== undefined ? c.strength : 0;
-    const arm = c.armor !== undefined ? c.armor : 0;
-    const res = c.resistance !== undefined ? c.resistance : 0;
-    const vit = c.speed !== undefined ? c.speed : 0;
-    const crit = (c.critDerived !== null && c.critDerived !== undefined) ? c.critDerived : (c.crit || 0);
+    const getEffectiveStat = (statName) => {
+        let base = 0;
+        switch(statName) {
+            case 'POWER': base = c.power || 0; break;
+            case 'STRENGTH': base = c.strength || 0; break;
+            case 'ARMURE': base = c.armor || 0; break;
+            case 'RESISTANCE': base = c.resistance || 0; break;
+            case 'SPEED': base = c.speed || 0; break;
+            case 'CRIT': base = (c.critDerived !== null && c.critDerived !== undefined) ? c.critDerived : (c.crit || 0); break;
+        }
+        
+        let flatBonus = 0;
+        let multiplier = 1.0;
+        const buffs = c.activeBuffs || c.buffs || [];
+        buffs.forEach(b => {
+            if (b.statAffected === statName) {
+                if (b.flatValue) flatBonus += b.flatValue;
+                if (b.modifier) multiplier += b.modifier;
+            }
+        });
+        
+        return Math.round((base + flatBonus) * Math.max(0, multiplier));
+    };
+
+    const pui = getEffectiveStat('POWER');
+    const forPhy = getEffectiveStat('STRENGTH');
+    const arm = getEffectiveStat('ARMURE');
+    const res = getEffectiveStat('RESISTANCE');
+    const vit = getEffectiveStat('SPEED');
+    const crit = getEffectiveStat('CRIT');
 
     let statsHtml = `<div class="hero-stats-row" style="margin-bottom: 0.5rem; justify-content: center; display: flex; flex-wrap: wrap; gap: 0.3rem;">`;
     statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #a855f7;">auto_awesome</span>${pui} Pui</span>`;
