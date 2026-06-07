@@ -371,17 +371,35 @@ window.showTooltip = function(el) {
     if (!tooltip) {
         tooltip = document.createElement('div');
         tooltip.id = 'globalSpellTooltip';
+        tooltip.onmouseenter = () => {
+            if (tooltip.hideTimeout) clearTimeout(tooltip.hideTimeout);
+        };
+        tooltip.onmouseleave = () => {
+            tooltip.style.display = 'none';
+        };
         document.body.appendChild(tooltip);
     }
+    if (tooltip.hideTimeout) clearTimeout(tooltip.hideTimeout);
+
     const dataEl = el.querySelector('.tooltip-data');
     if (!dataEl) return;
 
     tooltip.innerHTML = dataEl.innerHTML;
     tooltip.style.display = 'flex';
+    tooltip.style.maxHeight = '60vh';
+    tooltip.style.overflowY = 'auto';
+    tooltip.style.pointerEvents = 'auto';
 
     const rect = el.getBoundingClientRect();
-    let topPos = rect.top - tooltip.offsetHeight - 8;
-    if (topPos < 10) topPos = rect.bottom + 8;
+    const tooltipHeight = tooltip.offsetHeight;
+    
+    let topPos = rect.top - tooltipHeight - 8;
+    if (topPos < 10) {
+        topPos = rect.bottom + 8;
+        if (topPos + tooltipHeight > window.innerHeight - 10) {
+            topPos = Math.max(10, window.innerHeight - tooltipHeight - 10);
+        }
+    }
 
     let leftPos = rect.right - tooltip.offsetWidth;
     if (leftPos < 10) leftPos = 10;
@@ -392,7 +410,11 @@ window.showTooltip = function(el) {
 
 window.hideTooltip = function() {
     const tooltip = document.getElementById('globalSpellTooltip');
-    if (tooltip) tooltip.style.display = 'none';
+    if (tooltip) {
+        tooltip.hideTimeout = setTimeout(() => {
+            tooltip.style.display = 'none';
+        }, 150);
+    }
 };
 
 function getSpellColor(spell) {
