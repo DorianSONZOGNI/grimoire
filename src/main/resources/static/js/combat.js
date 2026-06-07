@@ -115,19 +115,7 @@ function updateUI(data) {
     
     // Player
     const p = data.player;
-    document.getElementById('playerName').textContent = p.name;
-    document.getElementById('playerHpText').textContent = `${p.healthCurrent} / ${p.healthMax}`;
-    document.getElementById('playerHpFill').style.width = `${Math.max(0, (p.healthCurrent / p.healthMax) * 100)}%`;
-    document.getElementById('playerMpFill').style.width = `${Math.max(0, (p.manaCurrent / p.manaMax) * 100)}%`;
-    
-    document.getElementById('playerArmor').textContent = `🛡️ Arm: ${p.armor}`;
-    document.getElementById('playerResist').textContent = `✨ Rés: ${p.resistance}`;
-    
-    // Buffs player
-    const playerBuffsContainer = document.getElementById('playerBuffs');
-    if (playerBuffsContainer) {
-        playerBuffsContainer.innerHTML = renderBuffsHtml(p.buffs || []);
-    }
+    document.getElementById('playerCard').innerHTML = generateFighterHtml(p, true);
     
     // Render Spells
     if (data.availableSpells) {
@@ -199,6 +187,95 @@ function updateUI(data) {
     }
 }
 
+const GLOBAL_STAT_LABELS = {
+    'SPEED': 'Vitesse', 'MANA': 'Mana Max', 'HEALTH': 'PV Max', 'CRIT': 'Critique',
+    'ARMURE': 'Armure', 'RESISTANCE': 'Résistance', 'POWER': 'Puissance Mag.', 'STRENGTH': 'Force Phys.',
+    'BURN': 'Brûlure', 'POISON': 'Poison', 'DAMAGE_TAKEN_MAGIC': 'Dégâts Mag. Subis',
+    'DAMAGE_TAKEN_PHYSIC': 'Dégâts Phys. Subis', 'DAMAGE_TAKEN_BRUT': 'Dégâts Bruts Subis',
+    'DAMAGE_GIVEN_MAGIC': 'Dégâts Mag. Infligés', 'DAMAGE_GIVEN_PHYSIC': 'Dégâts Phys. Infligés',
+    'DAMAGE_GIVEN_BRUT': 'Dégâts Bruts Infligés',
+    'HEAL_RECEIVED': 'Soin Reçu', 'SHIELD_RECEIVED': 'Bouclier Reçu',
+    'HEAL_GIVEN': 'Soin Donné', 'SHIELD_GIVEN': 'Bouclier Donné',
+    'DAMAGE_GIVEN_MAGIC_TO_SHIELD': 'Dég. Mag. au Bouclier',
+    'DAMAGE_GIVEN_PHYSIC_TO_SHIELD': 'Dég. Phys. au Bouclier',
+    'SHIELD_PENETRATION': 'Perce-Bouclier',
+    'SHIELD_PIERCED': 'Bouclier Percé'
+};
+
+function formatStat(stat) {
+    return GLOBAL_STAT_LABELS[stat] || stat;
+}
+
+function generateFighterHtml(c, isHero) {
+    const roleLabel = isHero ? ' (Lanceur)' : '';
+    const hpPct = c.healthMax > 0 ? Math.max(0, Math.min(100, (c.healthCurrent / c.healthMax) * 100)) : 0;
+    let hpLabel = `${c.healthCurrent} / ${c.healthMax}`;
+    if (c.shieldTotal > 0) hpLabel += ` (+${c.shieldTotal} 🛡️)`;
+
+    const manaPct = c.manaMax > 0 ? Math.max(0, Math.min(100, (c.manaCurrent / c.manaMax) * 100)) : 0;
+    let manaHtml = `
+        <div class="gauge-container" style="margin-top: 0.5rem; text-align: left;">
+            <div class="gauge-label"><span>Mana</span><span>${c.manaCurrent} / ${c.manaMax}</span></div>
+            <div class="gauge-track"><div class="gauge-fill mana" style="width: ${manaPct}%;"></div></div>
+        </div>`;
+
+    const pui = c.power !== undefined ? c.power : 0;
+    const forPhy = c.strength !== undefined ? c.strength : 0;
+    const arm = c.armor !== undefined ? c.armor : 0;
+    const res = c.resistance !== undefined ? c.resistance : 0;
+    const vit = c.speed !== undefined ? c.speed : 0;
+    const crit = (c.critDerived !== null && c.critDerived !== undefined) ? c.critDerived : (c.crit || 0);
+
+    let statsHtml = `<div class="hero-stats-row" style="margin-bottom: 0.5rem; justify-content: center; display: flex; flex-wrap: wrap; gap: 0.3rem;">`;
+    statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #a855f7;">auto_awesome</span>${pui} Pui</span>`;
+    statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #f43f5e;">fitness_center</span>${forPhy} For</span>`;
+    statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #3b82f6;">shield</span>${arm} Arm</span>`;
+    statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #10b981;">shield</span>${res} Rés</span>`;
+    if (vit > 0) statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #f59e0b;">bolt</span>${vit} Vit</span>`;
+    if (crit > 0) statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #ef4444;">gps_fixed</span>${crit}% Crit</span>`;
+    statsHtml += `</div>`;
+
+    // Karma (if it exists)
+    let passiveBadges = '';
+    if (c.hasKarma) {
+        let bg, border, color, icon, text, title;
+        if (c.karmaLocked) {
+            bg = 'rgba(239, 68, 68, 0.25)'; border = '1px solid #ef4444'; color = '#f87171'; icon = 'block';
+            text = 'Karma Brisé';
+        } else if (c.karmaHarmony) {
+            bg = 'rgba(100, 116, 139, 0.25)'; border = '1px solid #cbd5e1'; color = '#cbd5e1'; icon = 'brightness_medium';
+            text = 'Harmonie';
+        } else if (c.karmaGauge < 0) {
+            bg = 'rgba(147, 51, 234, 0.25)'; border = '1px solid #c084fc'; color = '#c084fc'; icon = 'dark_mode';
+            text = `Ténèbres (${Math.abs(c.karmaGauge)})`;
+        } else if (c.karmaGauge > 0) {
+            bg = 'rgba(234, 179, 8, 0.25)'; border = '1px solid #fde047'; color = '#fde047'; icon = 'light_mode';
+            text = `Lumière (${c.karmaGauge})`;
+        } else {
+            bg = 'rgba(107, 114, 128, 0.15)'; border = '1px dashed #6b7280'; color = '#9ca3af'; icon = 'balance';
+            text = 'Karma Neutre';
+        }
+        passiveBadges += `<div class="sandbox-status-badge karma" style="background: ${bg}; color: ${color}; border: ${border};">
+            <span class="material-symbols-outlined" style="font-size: 0.95rem; color: ${color};">${icon}</span>
+            <span>${text}</span>
+        </div>`;
+    }
+
+    return `
+        <div class="fighter-name" style="color: ${isHero ? '#f8fafc' : '#ef4444'}; font-size: 1.2rem; display: flex; justify-content: center; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
+            ${isHero ? '🧙‍♂️' : '👹'} ${c.name}${roleLabel}
+        </div>
+        ${statsHtml}
+        <div class="gauge-container" style="text-align: left;">
+            <div class="gauge-label"><span>Santé (PV)</span><span>${hpLabel}</span></div>
+            <div class="gauge-track"><div class="gauge-fill hp" style="width: ${hpPct}%;"></div></div>
+        </div>
+        ${manaHtml}
+        <div class="sandbox-status-list" style="justify-content: center;">${passiveBadges}</div>
+        <div class="sandbox-status-list" style="justify-content: center;">${renderBuffsHtml(c.buffs)}</div>
+    `;
+}
+
 function renderEnemies(enemies) {
     const container = document.getElementById('enemiesContainer');
     container.innerHTML = '';
@@ -208,28 +285,16 @@ function renderEnemies(enemies) {
         const pMonster = activeMonster.asPersonnage || activeMonster; // Fallback just in case
         const isSelected = index === selectedTargetIndex && !activeMonster.dead;
         
-        const currentHp = typeof activeMonster.currentHp !== 'undefined' ? activeMonster.currentHp : pMonster.healthCurrent;
-        const maxHp = typeof activeMonster.maxHp !== 'undefined' ? activeMonster.maxHp : pMonster.healthMax;
+        // Use pMonster logic to override maxHp/currentHp if necessary
+        pMonster.name = m.name;
+        if (typeof activeMonster.currentHp !== 'undefined') pMonster.healthCurrent = activeMonster.currentHp;
+        if (typeof activeMonster.maxHp !== 'undefined') pMonster.healthMax = activeMonster.maxHp;
         
         const div = document.createElement('div');
         div.className = `fighter fighter-enemy enemy-card ${isSelected ? 'selected' : ''} ${activeMonster.dead ? 'dead' : ''}`;
         div.onclick = () => selectTarget(index);
         
-        div.innerHTML = `
-            <div class="fighter-name" style="color: #ef4444; font-size: 1.2rem;">${m.name}</div>
-            <div class="health-bar-bg" style="height: 15px;">
-                <div class="health-bar-fill" style="width: ${Math.max(0, (currentHp / maxHp) * 100)}%;"></div>
-                <div class="health-text" style="font-size: 0.7rem;">${currentHp} / ${maxHp}</div>
-            </div>
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; font-size: 0.75rem; color: #94a3b8; text-align: left; background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 8px;">
-                <div>🛡️ Arm: ${pMonster.armor || m.armor}</div>
-                <div>✨ Rés: ${pMonster.resistance || m.resistance}</div>
-            </div>
-            <div style="display: flex; flex-wrap: wrap; gap: 0.2rem; margin-top: 0.3rem;">
-                ${renderBuffsHtml(pMonster.buffs || [])}
-            </div>
-        `;
-        
+        div.innerHTML = generateFighterHtml(pMonster, false);
         container.appendChild(div);
     });
 }
@@ -245,20 +310,19 @@ function renderBuffsHtml(buffList) {
         if (isInverse) isBad = !isNegativeValue;
 
         const badgeClass = isBad ? 'debuff' : 'buff';
-        const color = isBad ? '#ef4444' : '#10b981';
-        const bg = isBad ? 'rgba(239, 68, 68, 0.2)' : 'rgba(16, 185, 129, 0.2)';
         const icon = isNegativeValue ? 'trending_down' : 'trending_up';
 
         let text = '';
-        if (b.flatValue) text += `${b.flatValue > 0 ? '+' : ''}${b.flatValue}`;
+        if (b.flatValue) text += `${b.flatValue > 0 ? '+' : ''}${b.flatValue} ${formatStat(b.statAffected)}`;
         if (b.modifier) {
             if (text) text += ' / ';
-            text += `${b.modifier > 0 ? '+' : ''}${Math.round(b.modifier * 100)}%`;
+            text += `${b.modifier > 0 ? '+' : ''}${Math.round(b.modifier * 100)}% ${formatStat(b.statAffected)}`;
         }
+        if (!text) text = `Modif. de ${formatStat(b.statAffected)}`;
 
-        return `<div title="${b.sourceName} (${b.duration}t)" style="background: ${bg}; color: ${color}; border: 1px solid ${color}; font-size: 0.6rem; padding: 0.1rem 0.3rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 0.1rem;">
-            <span class="material-symbols-outlined" style="font-size: 0.7rem;">${icon}</span>
-            <span>${text}</span>
+        return `<div class="sandbox-status-badge ${badgeClass}" title="Source: ${b.sourceName}">
+            <span class="material-symbols-outlined" style="font-size: 0.95rem;">${icon}</span>
+            <span>${text} (${b.duration}t)</span>
         </div>`;
     }).join('');
 }
