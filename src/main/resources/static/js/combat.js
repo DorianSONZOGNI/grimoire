@@ -27,7 +27,7 @@ window.confirmCombatCast = confirmCombatCast;
 window.cancelCombatCast = cancelCombatCast;
 
 let currentSpellFilter = 'ALL';
-window.filterSpells = function(filter) {
+window.filterSpells = function (filter) {
     currentSpellFilter = filter;
     if (currentSessionData) {
         renderSpells(currentSessionData.availableSpells);
@@ -37,13 +37,13 @@ document.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
     const dungeonId = urlParams.get('dungeonId');
     const characterId = urlParams.get('characterId');
-    
+
     if (!dungeonId || !characterId) {
         alert("Paramètres de combat manquants.");
         window.location.href = '/vault.html';
         return;
     }
-    
+
     startCombat(characterId, dungeonId);
 });
 
@@ -52,13 +52,13 @@ async function startCombat(characterId, dungeonId) {
         const res = await fetch(`/api/pve/combat/start?characterId=${characterId}&dungeonId=${dungeonId}`, {
             method: 'POST'
         });
-        
+
         if (!res.ok) {
             alert("Erreur lors de l'initialisation du donjon.");
             window.location.href = '/vault.html';
             return;
         }
-        
+
         const data = await res.json();
         sessionId = data.sessionId;
         updateUI(data);
@@ -71,10 +71,10 @@ async function startCombat(characterId, dungeonId) {
 function selectTarget(index) {
     if (!currentSessionData || !currentSessionData.enemies[index]) return;
     if (currentSessionData.enemies[index].dead) return;
-    
+
     // Only allow manual selection if not currently casting a spell
     if (pendingCastSpellId) return;
-    
+
     selectedTargetIndex = index;
     renderEnemies(currentSessionData.enemies);
 }
@@ -109,14 +109,14 @@ function initiateCombatCast(spellId) {
 
     // Enter target selection mode
     pendingCastSpellId = spellId;
-    
+
     // Highlight enemies for selection
     enemyCards.forEach(card => {
         card.classList.add('target-selectable');
         card.dataset.oldOnClick = card.getAttribute('onclick');
         card.setAttribute('onclick', `confirmCombatCast(${card.dataset.index})`);
     });
-    
+
     showCombatTargetPrompt();
 }
 
@@ -160,14 +160,14 @@ function cancelCombatCast() {
 
 async function doAction(spellId = null) {
     if (!sessionId || !currentSessionData) return;
-    
+
     // Ensure we have a valid target
     if (currentSessionData.enemies.length > 0 && currentSessionData.enemies[selectedTargetIndex].dead) {
         // Auto select first alive target
         selectedTargetIndex = currentSessionData.enemies.findIndex(e => !e.dead);
         if (selectedTargetIndex === -1) return; // All dead
     }
-    
+
     let choiceKey = null;
     if (spellId) {
         const choiceSelect = document.getElementById(`choice-select-${spellId}`);
@@ -175,7 +175,7 @@ async function doAction(spellId = null) {
             choiceKey = choiceSelect.value;
         }
     }
-    
+
     document.getElementById('btnAttack').disabled = true;
     const btnEnd = document.getElementById('btnEndTurn');
     if (btnEnd) btnEnd.disabled = true;
@@ -185,20 +185,20 @@ async function doAction(spellId = null) {
         btn.classList.add('disabled');
         btn.style.pointerEvents = 'none';
     });
-    
+
     // Animation attack
     const playerCard = document.getElementById('playerCard');
     playerCard.style.transform = 'translateX(50px)';
     setTimeout(() => { playerCard.style.transform = 'none'; }, 200);
-    
+
     try {
         let url = `/api/pve/combat/${sessionId}/action?targetIndex=${selectedTargetIndex}`;
         if (spellId) url += `&spellId=${spellId}`;
         if (choiceKey !== null) url += `&choiceKey=${choiceKey}`;
-        
+
         const res = await fetch(url, { method: 'POST' });
         const data = await res.json();
-        
+
         // Let user read log by adding a small delay before full UI update
         setTimeout(() => {
             updateUI(data);
@@ -208,7 +208,7 @@ async function doAction(spellId = null) {
                 if (btnEnd) btnEnd.disabled = false;
             }
         }, 600);
-        
+
     } catch (e) {
         console.error(e);
         document.getElementById('btnAttack').disabled = false;
@@ -219,7 +219,7 @@ async function doAction(spellId = null) {
 
 async function endTurn() {
     if (!sessionId || !currentSessionData) return;
-    
+
     document.getElementById('btnEndTurn').disabled = true;
     document.getElementById('btnAttack').disabled = true;
     const spellButtons = document.querySelectorAll('.spell-btn, .filter-chip');
@@ -228,12 +228,12 @@ async function endTurn() {
         btn.classList.add('disabled');
         btn.style.pointerEvents = 'none';
     });
-    
+
     try {
         let url = `/api/pve/combat/${sessionId}/end-turn`;
         const res = await fetch(url, { method: 'POST' });
         const data = await res.json();
-        
+
         setTimeout(() => {
             updateUI(data);
             if (!data.finished && data.currentRoom.type === 'COMBAT') {
@@ -241,7 +241,7 @@ async function endTurn() {
                 document.getElementById('btnAttack').disabled = false;
             }
         }, 600);
-        
+
     } catch (e) {
         console.error(e);
         document.getElementById('btnEndTurn').disabled = false;
@@ -252,7 +252,7 @@ async function endTurn() {
 async function nextRoom() {
     if (!sessionId) return;
     document.getElementById('eventOverlay').classList.remove('show');
-    
+
     try {
         const res = await fetch(`/api/pve/combat/${sessionId}/next-room`, { method: 'POST' });
         const data = await res.json();
@@ -264,26 +264,26 @@ async function nextRoom() {
 
 function updateUI(data) {
     currentSessionData = data;
-    
+
     document.getElementById('headerDungeonName').textContent = data.donjon.name + " - Étape " + (data.currentRoomIndex + 1);
     document.getElementById('turnCounter').textContent = data.turnNumber;
-    
+
     // Player
     const p = data.player;
     document.getElementById('playerCard').innerHTML = generateFighterHtml(p, true);
-    
+
     // Render Spells
     if (data.availableSpells) {
         renderSpells(data.availableSpells);
     }
-    
+
     // Auto-select first alive target if current is dead
     if (data.enemies && data.enemies.length > 0) {
         if (!data.enemies[selectedTargetIndex] || data.enemies[selectedTargetIndex].dead) {
             selectedTargetIndex = Math.max(0, data.enemies.findIndex(e => !e.dead));
         }
     }
-    
+
     // Room logic
     if (data.currentRoom) {
         if (data.currentRoom.type === 'COMBAT') {
@@ -294,12 +294,12 @@ function updateUI(data) {
             // TREASURE OR EVENT
             document.getElementById('btnAttack').disabled = true;
             document.getElementById('enemiesContainer').innerHTML = ''; // Clear enemies
-            
+
             const overlay = document.getElementById('eventOverlay');
             const icon = document.getElementById('eventIcon');
             const title = document.getElementById('eventTitle');
             const desc = document.getElementById('eventDesc');
-            
+
             if (data.currentRoom.type === 'TREASURE') {
                 icon.textContent = 'money_bag';
                 icon.style.color = '#f59e0b';
@@ -314,28 +314,28 @@ function updateUI(data) {
                 else if (data.currentRoom.eventEffectAmount < 0) effectText = `<br><br><span style="color:#ef4444;">(Dégâts : ${-data.currentRoom.eventEffectAmount} PV)</span>`;
                 desc.innerHTML = data.currentRoom.eventText + effectText;
             }
-            
+
             overlay.classList.add('show');
         }
     }
-    
+
     // Logs
     const logContainer = document.getElementById('combatLog');
     logContainer.innerHTML = '';
     data.combatLog.forEach(log => {
         const div = document.createElement('div');
         div.className = 'log-entry';
-        
+
         let text = log;
         text = text.replace(new RegExp(p.name, 'g'), `<span style="color:#10b981;font-weight:600;">${p.name}</span>`);
         text = text.replace(/inflige (\d+) dégâts/g, 'inflige <span style="color:#f59e0b;font-weight:bold;">$1</span> dégâts');
-        
+
         div.innerHTML = text;
         logContainer.appendChild(div);
     });
-    
+
     logContainer.scrollTop = logContainer.scrollHeight;
-    
+
     // Check finish
     if (data.finished) {
         showResult(data.playerWon);
@@ -359,7 +359,7 @@ function generateFighterHtml(c, isHero) {
 
     const getEffectiveStat = (statName) => {
         let base = 0;
-        switch(statName) {
+        switch (statName) {
             case 'POWER': base = c.power || 0; break;
             case 'STRENGTH': base = c.strength || 0; break;
             case 'ARMURE': base = c.armor || 0; break;
@@ -367,14 +367,14 @@ function generateFighterHtml(c, isHero) {
             case 'SPEED': base = c.speed || 0; break;
             case 'CRIT': base = (c.critDerived !== null && c.critDerived !== undefined) ? c.critDerived : (c.crit || 0); break;
         }
-        
+
         let flatBonus = 0;
         let multiplier = 1.0;
-        
+
         if (c.passiveStates && c.passiveStates['stat_flat_' + statName]) {
             flatBonus += c.passiveStates['stat_flat_' + statName];
         }
-        
+
         const buffs = c.activeBuffs || c.buffs || [];
         buffs.forEach(b => {
             if (b.statAffected === statName) {
@@ -382,7 +382,7 @@ function generateFighterHtml(c, isHero) {
                 if (b.modifier) multiplier += b.modifier;
             }
         });
-        
+
         return Math.round((base + flatBonus) * Math.max(0, multiplier));
     };
 
@@ -400,7 +400,7 @@ function generateFighterHtml(c, isHero) {
     statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #10b981;">shield</span>${res} Rés</span>`;
     statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #f59e0b;">bolt</span>${vit} Vit</span>`;
     statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #ef4444;">gps_fixed</span>${crit}% Crit</span>`;
-    
+
     if (c.voie && c.voie.nom && c.voie.nom.toLowerCase().includes('destruction')) {
         let heat = 0;
         if (c.passiveStates && c.passiveStates['destruction_heat'] !== undefined) {
@@ -408,7 +408,7 @@ function generateFighterHtml(c, isHero) {
         }
         statsHtml += `<span class="hero-stat-chip" title="Chaleur accumulée" style="border-color: rgba(249, 115, 22, 0.4);"><span class="material-symbols-outlined" style="color: #f97316;">local_fire_department</span>${heat}/100</span>`;
     }
-    
+
     if (c.voie && c.voie.nom && (c.voie.nom.toLowerCase().includes('surete') || c.voie.nom.toLowerCase().includes('sûreté'))) {
         let suretePoints = 0;
         if (c.passiveStates && c.passiveStates['surete_points'] !== undefined) {
@@ -444,11 +444,17 @@ function generateFighterHtml(c, isHero) {
         let styleLowHp = lowHpAvail ? 'border-color: rgba(168, 85, 247, 0.6); color: #c084fc;' : 'border-color: #4b5563; color: #6b7280; opacity: 0.5;';
         let styleDebuff = debuffAvail ? 'border-color: rgba(168, 85, 247, 0.6); color: #c084fc;' : 'border-color: #4b5563; color: #6b7280; opacity: 0.5;';
 
-        statsHtml += `<span class="hero-stat-chip" title="Attaque de base (+10% dégâts physiques)" style="${styleBase}"><span class="material-symbols-outlined" style="color: inherit;">bolt</span>+10%</span>`;
+        statsHtml += `<span class="hero-stat-chip" title="1er attaque physique du tour (+10% dégâts physiques)" style="${styleBase}"><span class="material-symbols-outlined" style="color: inherit;">bolt</span>+10%</span>`;
         statsHtml += `<span class="hero-stat-chip" title="Cible < 50% PV (+15% dégâts physiques)" style="${styleLowHp}"><span class="material-symbols-outlined" style="color: inherit;">heart_broken</span>+15%</span>`;
         statsHtml += `<span class="hero-stat-chip" title="Cible avec Débuff (+10% dégâts physiques)" style="${styleDebuff}"><span class="material-symbols-outlined" style="color: inherit;">trending_down</span>+10%</span>`;
     }
-    
+
+    if (c.voie && c.voie.nom && (c.voie.nom.toLowerCase().includes('création') || c.voie.nom.toLowerCase().includes('creation'))) {
+        let isAvail = !(c.passiveStates && c.passiveStates['creation_spells_cast'] > 0);
+        let styleCreation = isAvail ? 'border-color: rgba(16, 185, 129, 0.6); color: #10b981;' : 'border-color: #4b5563; color: #6b7280; opacity: 0.5;';
+        statsHtml += `<span class="hero-stat-chip" title="Bonus sur le premier sort" style="${styleCreation}"><span class="material-symbols-outlined" style="color: inherit;">auto_awesome</span>Graine</span>`;
+    }
+
     statsHtml += `</div>`;
 
     // Karma (if it exists)
@@ -495,22 +501,22 @@ function generateFighterHtml(c, isHero) {
 function renderEnemies(enemies) {
     const container = document.getElementById('enemiesContainer');
     container.innerHTML = '';
-    
+
     enemies.forEach((activeMonster, index) => {
         const m = activeMonster.base;
         const pMonster = activeMonster.asPersonnage || activeMonster; // Fallback just in case
         const isSelected = index === selectedTargetIndex && !activeMonster.dead;
-        
+
         // Use pMonster logic to override maxHp/currentHp if necessary
         pMonster.name = m.name;
         if (typeof activeMonster.currentHp !== 'undefined') pMonster.healthCurrent = activeMonster.currentHp;
         if (typeof activeMonster.maxHp !== 'undefined') pMonster.healthMax = activeMonster.maxHp;
-        
+
         const div = document.createElement('div');
         div.className = `fighter fighter-enemy enemy-card ${isSelected ? 'selected' : ''} ${activeMonster.dead ? 'dead' : ''}`;
         div.dataset.index = index;
         div.onclick = () => selectTarget(index);
-        
+
         div.innerHTML = generateFighterHtml(pMonster, false);
         container.appendChild(div);
     });
@@ -518,10 +524,10 @@ function renderEnemies(enemies) {
 
 function renderBuffsHtml(buffList) {
     if (!buffList || buffList.length === 0) return '';
-    
+
     const goodBuffs = [];
     const badBuffs = [];
-    
+
     buffList.forEach(b => {
         const inverseStats = ['DAMAGE_TAKEN_MAGIC', 'DAMAGE_TAKEN_PHYSIC', 'DAMAGE_TAKEN_BRUT', 'SHIELD_PIERCED', 'BURN', 'POISON'];
         const isInverse = inverseStats.includes(b.statAffected);
@@ -540,7 +546,7 @@ function renderBuffsHtml(buffList) {
 
         const typeStr = (b.statAffected === 'POISON' || b.statAffected === 'BURN') ? ui.formatStat(b.statAffected) : 'Buff/Débuff';
         const indicatorColor = isBad ? '#f43f5e' : '#10b981';
-        
+
         const entryHtml = `
             <div style="display:flex; align-items:flex-start; gap:0.4rem; font-size:0.85rem;">
                 <div style="flex-shrink:0; background-color: ${indicatorColor}; width: 8px; height: 8px; border-radius: 50%; margin-top: 5px;"></div>
@@ -587,7 +593,7 @@ function renderSpells(spells) {
     const container = document.getElementById('spellsContainer');
     const filterContainer = document.getElementById('spellFiltersBar');
     if (!container) return;
-    
+
     // First, determine all available categories
     let categories = new Set();
     spells.forEach(sp => {
@@ -598,7 +604,7 @@ function renderSpells(spells) {
 
     if (filterContainer) {
         let filterHtml = `<button class="filter-chip ${currentSpellFilter === 'ALL' ? 'active' : ''}" onclick="filterSpells('ALL')">Tous (${spells.length})</button>`;
-        
+
         // Define display names
         const catMap = {};
         spells.forEach(sp => {
@@ -639,7 +645,7 @@ function renderSpells(spells) {
         container.innerHTML = '<div style="color: var(--text-muted); font-size: 0.9rem; font-style: italic; align-self: center; padding: 1rem; width: 100%; text-align: center;">Aucun sort pour ce filtre</div>';
         return;
     }
-    
+
     container.innerHTML = filteredSpells.map(sp => {
         const titleColor = getSpellColor(sp);
 
@@ -728,7 +734,7 @@ function renderSpells(spells) {
             </div>
         `;
     }).join('');
-    
+
     // Reset scroll position on render
     container.scrollTop = 0;
 }
@@ -738,14 +744,14 @@ function showResult(playerWon) {
     const btnEnd = document.getElementById('btnEndTurn');
     if (btnEnd) btnEnd.disabled = true;
     document.getElementById('eventOverlay').classList.remove('show');
-    
+
     setTimeout(() => {
         const overlay = document.getElementById('resultOverlay');
         const title = document.getElementById('resultTitle');
         const desc = document.getElementById('resultDesc');
-        
+
         overlay.classList.add('show');
-        
+
         if (playerWon) {
             title.textContent = "VICTOIRE";
             title.className = "result-title victory";
