@@ -751,8 +751,9 @@ public class Personnage {
             if (this.voie != null || this.spiritualite != null) {
                 // Sauf exceptions explicites si besoin, mais le prompt disait "uniquement les sorts de sa voie"
                 // On va l'interdire SAUF si le nom du sort est l'attaque de base (pour la sécurité).
-                // Wait, dans Grimoire "auto" a Spirit=1. Et l'attaque de base par défaut ? 
-                // Je vais tout bloquer pour être sûr que "Actuellement on a accès a tout les sort" est résolu de manière violente et stricte.
+                if (spell.getNom() != null && spell.getNom().toLowerCase().contains("base")) {
+                    return null;
+                }
                 return this.name + " ne peut pas lancer de sorts génériques sans affinité.";
             }
         }

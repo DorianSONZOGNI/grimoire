@@ -26,6 +26,10 @@ public class TenebrePassiveEffect extends SpiritualitePassiveEffect {
 
     @Override
     public boolean canCastSpell(Personnage caster, Spell spell) {
+        if (spell.getNom() != null && spell.getNom().toLowerCase().contains("base")) {
+            return true;
+        }
+
         // Obligé d'avoir moins de 80% hp ou 80% mana
         boolean conditionHp = caster.getHealthCurrent() <= (caster.getHealthMax() * 0.80);
         boolean conditionMana = caster.getManaCurrent() <= (caster.getManaMax() * 0.80);
