@@ -705,12 +705,10 @@ function renderSpells(spells) {
         let optionSelectorHtml = '';
         if (choiceKeys.length > 0) {
             optionSelectorHtml = `
-                        <div class="sandbox-spell-options">
-                            <select id="choice-select-${sp.id}" onclick="event.stopPropagation()">
-                                ${choiceKeys.map(k => `<option value="${k}">Option ${k}</option>`).join('')}
-                            </select>
-                        </div>
-                    `;
+                <select class="spell-choice-mini" id="choice-select-${sp.id}" onclick="event.stopPropagation()" style="background: rgba(15, 23, 42, 0.8); color: #e2e8f0; border: 1px solid var(--glass-border); border-radius: 4px; padding: 0 0.2rem; font-size: 0.75rem; height: 1.2rem; margin-left: auto; outline: none; cursor: pointer;">
+                    ${choiceKeys.map(k => `<option value="${k}">${k}</option>`).join('')}
+                </select>
+            `;
         }
 
         const getSrcIcon = (src) => {
@@ -771,12 +769,12 @@ function renderSpells(spells) {
                     <div class="combat-spell-name" title="${sp.nom}" style="color: ${titleColor};">${sp.nom}</div>
                     <div class="combat-spell-level">Lvl ${sp.niveau}</div>
                 </div>
-                <div class="combat-spell-icons">
+                <div class="combat-spell-icons" style="display: flex; align-items: center; flex-wrap: wrap; gap: 0.3rem;">
                     ${castingTypeHtml}
                     ${voieHtml}
                     ${spiritHtml}
+                    ${optionSelectorHtml}
                 </div>
-                ${optionSelectorHtml ? `<div class="combat-spell-options" onclick="event.stopPropagation()">${optionSelectorHtml}</div>` : ''}
                 <div class="combat-spell-cost">
                     ${costDetails}
                 </div>
