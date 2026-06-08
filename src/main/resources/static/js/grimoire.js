@@ -176,6 +176,30 @@ export function getSpellEffectsSummaryHtml(sp) {
                 if (['ManaFixed', 'FIXED_MANA', 'ManaPercentage', 'PERCENTAGE_MANA', 'ManaOverTime', 'MOT'].includes(t)) indicatorColor = '#38bdf8';
                 if (['HeatFixed', 'HEAT_FIXED', 'HeatPercentage', 'HEAT_PERCENTAGE', 'HeatOverTime', 'HEAT_OVER_TIME', 'Heat', 'HEAT'].includes(t)) indicatorColor = '#f97316';
 
+                let iconName = 'stars';
+                if (['DamageFixed', 'FIXED_DAMAGE', 'DamagePercentage', 'PERCENTAGE_DAMAGE', 'DamageOverTime', 'DOT'].includes(t)) {
+                    const dt = (e.damageType || 'MAGIC').toLowerCase();
+                    if (dt === 'magic') {
+                        iconName = 'auto_awesome';
+                        indicatorColor = '#a855f7';
+                    } else if (dt === 'physic') {
+                        iconName = 'swords';
+                        indicatorColor = '#f43f5e';
+                    } else if (dt === 'brut') {
+                        iconName = 'bloodtype';
+                        indicatorColor = '#ef4444';
+                    } else {
+                        iconName = 'swords';
+                    }
+                }
+                if (['HealFixed', 'FIXED_HEAL', 'HealPercentage', 'PERCENTAGE_HEAL', 'HealOverTime', 'HOT'].includes(t)) iconName = 'favorite';
+                if (['ManaFixed', 'FIXED_MANA', 'ManaPercentage', 'PERCENTAGE_MANA', 'ManaOverTime', 'MOT'].includes(t)) iconName = 'water_drop';
+                if (['Shield', 'SHIELD'].includes(t)) iconName = 'security';
+                if (['HeatFixed', 'HEAT_FIXED', 'HeatPercentage', 'HEAT_PERCENTAGE', 'HeatOverTime', 'HEAT_OVER_TIME', 'Heat', 'HEAT', 'BURN'].includes(t)) iconName = 'local_fire_department';
+                if (t === 'POISON') iconName = 'coronavirus';
+                if (t === 'Purge' || t === 'PURGE') iconName = 'cleaning_services';
+                if (['BuffDebuff', 'BUFF_DEBUFF'].includes(t)) iconName = isBad ? 'trending_down' : 'trending_up';
+
                 const typeNames = {
                     'DamageFixedEffect': 'Dégâts Fixes',
                     'FIXED_DAMAGE': 'Dégâts Fixes',
@@ -215,14 +239,19 @@ export function getSpellEffectsSummaryHtml(sp) {
                 const eTypeStr = typeNames[rawType] || rawType || 'Effet';
 
                 const dt = (e.damageType || 'MAGIC').toLowerCase();
+                let dtColor = '#a855f7';
+                if (dt === 'physic') dtColor = '#f43f5e';
+                if (dt === 'brut') dtColor = '#ef4444';
+
                 const dtStr = dt === 'magic' ? 'Magiques' : (dt === 'physic' ? 'Physiques' : 'Bruts');
+                const dtHtml = `<span style="color: ${dtColor}; font-weight: bold;">${dtStr}</span>`;
 
                 let detailsStr = '';
                 if (t === 'DamageFixed' || t === 'FIXED_DAMAGE') {
-                    detailsStr = `➔ inflige ${e.damage || 0} Dégâts ${dtStr}`;
+                    detailsStr = `➔ inflige ${e.damage || 0} Dégâts ${dtHtml}`;
                 } else if (t === 'DamagePercentage' || t === 'PERCENTAGE_DAMAGE') {
                     const pct = Math.round((e.percentage || 0) * 100);
-                    detailsStr = `➔ inflige ${pct}% de ${ui.formatSrc(e.damageSource || e.source)} en Dégâts ${dtStr}`;
+                    detailsStr = `➔ inflige ${pct}% de ${ui.formatSrc(e.damageSource || e.source)} en Dégâts ${dtHtml}`;
                 } else if (t === 'HealFixed' || t === 'FIXED_HEAL') {
                     detailsStr = `➔ rend ${e.healAmount || 0} PV`;
                 } else if (t === 'HealPercentage' || t === 'PERCENTAGE_HEAL') {
@@ -248,7 +277,7 @@ export function getSpellEffectsSummaryHtml(sp) {
                     if (pd) parts.push(`${Math.round(pd * 100)}% ${ui.formatSrc(e.damageSource || e.source)}`);
                     if (parts.length === 0) parts.push('0');
                     const durStr = e.duration > 0 ? ` sur ${e.duration} tours` : '';
-                    detailsStr = `➔ DoT de ${parts.join(' + ')} Dégâts ${dtStr}/tour${durStr}`;
+                    detailsStr = `➔ DoT de ${parts.join(' + ')} Dégâts ${dtHtml}/tour${durStr}`;
                 } else if (t === 'HealOverTime' || t === 'HOT') {
                     let parts = [];
                     const fh = e.fixedHealPerTick || e.healAmount || 0;
@@ -312,8 +341,44 @@ export function getSpellEffectsSummaryHtml(sp) {
                     }
                 }
 
+                let statIconHtml = '';
+                if (['BuffDebuff', 'BUFF_DEBUFF'].includes(t) && e.statAffected) {
+                    const sa = e.statAffected.toUpperCase();
+                    let statIcon = { icon: 'star', color: '#94a3b8' };
+                    if (sa.includes('SPEED')) statIcon = { icon: 'bolt', color: '#f59e0b' };
+                    else if (sa.includes('MANA')) statIcon = { icon: 'water_drop', color: '#38bdf8' };
+                    else if (sa.includes('HEALTH') || sa.includes('HP') || sa.includes('LIFE')) statIcon = { icon: 'favorite', color: '#ec4899' };
+                    else if (sa.includes('CRIT')) statIcon = { icon: 'gps_fixed', color: '#ef4444' };
+                    else if (sa.includes('ARMOR') || sa.includes('ARMURE')) statIcon = { icon: 'shield', color: '#3b82f6' };
+                    else if (sa.includes('RESISTANCE')) statIcon = { icon: 'shield', color: '#10b981' };
+                    else if (sa.includes('PHYSICAL_POWER') || sa.includes('STRENGTH')) statIcon = { icon: 'fitness_center', color: '#f43f5e' };
+                    else if (sa.includes('POWER')) statIcon = { icon: 'auto_awesome', color: '#a855f7' };
+                    else if (sa.includes('HEAL_RECEIVED')) statIcon = { icon: 'health_and_safety', color: '#10b981' };
+                    else if (sa.includes('SHIELD_RECEIVED')) statIcon = { icon: 'security', color: '#06b6d4' };
+                    else if (sa.includes('HEAL_GIVEN')) statIcon = { icon: 'healing', color: '#34d399' };
+                    else if (sa.includes('SHIELD_GIVEN')) statIcon = { icon: 'add_moderator', color: '#22d3ee' };
+                    else if (sa === 'SHIELD_PIERCED') statIcon = { icon: 'heart_broken', color: '#ef4444' };
+                    else if (sa === 'SHIELD_PENETRATION') statIcon = { icon: 'heart_broken', color: '#fb923c' };
+                    else if (sa === 'DAMAGE_TAKEN_MAGIC') statIcon = { icon: 'explosion', color: '#a855f7' };
+                    else if (sa === 'DAMAGE_TAKEN_PHYSIC') statIcon = { icon: 'explosion', color: '#ef4444' };
+                    else if (sa === 'DAMAGE_TAKEN_BRUT') statIcon = { icon: 'explosion', color: '#b91c1c' };
+                    else if (sa === 'DAMAGE_GIVEN_MAGIC') statIcon = { icon: 'auto_awesome', color: '#a855f7' };
+                    else if (sa === 'DAMAGE_GIVEN_PHYSIC') statIcon = { icon: 'swords', color: '#f43f5e' };
+                    else if (sa === 'DAMAGE_GIVEN_BRUT') statIcon = { icon: 'bloodtype', color: '#ef4444' };
+                    else if (sa === 'DAMAGE_GIVEN_MAGIC_TO_SHIELD') statIcon = { icon: 'gavel', color: '#d946ef' };
+                    else if (sa === 'DAMAGE_GIVEN_PHYSIC_TO_SHIELD') statIcon = { icon: 'gavel', color: '#f43f5e' };
+                    else if (sa.includes('DAMAGE_TAKEN')) statIcon = { icon: 'explosion', color: '#ef4444' };
+                    else if (sa.includes('DAMAGE_GIVEN')) statIcon = { icon: 'swords', color: '#f43f5e' };
+                    else if (sa.includes('PIERCED') || sa.includes('PIERCING')) statIcon = { icon: 'heart_broken', color: '#fb923c' };
+
+                    if (sa !== 'POISON' && sa !== 'BURN') {
+                        statIconHtml = `<span class="material-symbols-outlined" style="flex-shrink:0; font-size:1.1rem; color:${statIcon.color}; margin-left:-0.1rem;">${statIcon.icon}</span>`;
+                    }
+                }
+
                 effectsSummaryHtml += `<div style="display:flex; align-items:flex-start; gap:0.3rem;">
-                            <div class="indicator" style="flex-shrink:0; background-color: ${indicatorColor};"></div>
+                            <span class="material-symbols-outlined" style="flex-shrink:0; font-size:1.1rem; color:${indicatorColor};">${iconName}</span>
+                            ${statIconHtml}
                             ${turnBadge}
                             ${keyBadge}
                             <span style="font-weight:600; color:#fff;">[${targetText}]</span>

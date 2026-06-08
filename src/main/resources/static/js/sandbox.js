@@ -505,9 +505,47 @@ function renderBuffsHtml(buffList) {
         const typeStr = (b.statAffected === 'POISON' || b.statAffected === 'BURN') ? formatStat(b.statAffected) : 'Buff/Débuff';
         const indicatorColor = isBad ? '#f43f5e' : '#10b981';
         
+        let iconName = isBad ? 'trending_down' : 'trending_up';
+        if (b.statAffected === 'POISON') iconName = 'coronavirus';
+        if (b.statAffected === 'BURN') iconName = 'local_fire_department';
+
+        let statIconHtml = '';
+        if (b.statAffected && b.statAffected !== 'POISON' && b.statAffected !== 'BURN') {
+            const sa = b.statAffected.toUpperCase();
+            let statIcon = { icon: 'star', color: '#94a3b8' };
+            if (sa.includes('SPEED')) statIcon = { icon: 'bolt', color: '#f59e0b' };
+            else if (sa.includes('MANA')) statIcon = { icon: 'water_drop', color: '#38bdf8' };
+            else if (sa.includes('HEALTH') || sa.includes('HP') || sa.includes('LIFE')) statIcon = { icon: 'favorite', color: '#ec4899' };
+            else if (sa.includes('CRIT')) statIcon = { icon: 'gps_fixed', color: '#ef4444' };
+            else if (sa.includes('ARMOR') || sa.includes('ARMURE')) statIcon = { icon: 'shield', color: '#3b82f6' };
+            else if (sa.includes('RESISTANCE')) statIcon = { icon: 'shield', color: '#10b981' };
+            else if (sa.includes('PHYSICAL_POWER') || sa.includes('STRENGTH')) statIcon = { icon: 'fitness_center', color: '#f43f5e' };
+            else if (sa.includes('POWER')) statIcon = { icon: 'auto_awesome', color: '#a855f7' };
+            else if (sa.includes('HEAL_RECEIVED')) statIcon = { icon: 'health_and_safety', color: '#10b981' };
+            else if (sa.includes('SHIELD_RECEIVED')) statIcon = { icon: 'security', color: '#06b6d4' };
+            else if (sa.includes('HEAL_GIVEN')) statIcon = { icon: 'healing', color: '#34d399' };
+            else if (sa.includes('SHIELD_GIVEN')) statIcon = { icon: 'add_moderator', color: '#22d3ee' };
+            else if (sa === 'SHIELD_PIERCED') statIcon = { icon: 'heart_broken', color: '#ef4444' };
+            else if (sa === 'SHIELD_PENETRATION') statIcon = { icon: 'heart_broken', color: '#fb923c' };
+            else if (sa === 'DAMAGE_TAKEN_MAGIC') statIcon = { icon: 'explosion', color: '#a855f7' };
+            else if (sa === 'DAMAGE_TAKEN_PHYSIC') statIcon = { icon: 'explosion', color: '#ef4444' };
+            else if (sa === 'DAMAGE_TAKEN_BRUT') statIcon = { icon: 'explosion', color: '#b91c1c' };
+            else if (sa === 'DAMAGE_GIVEN_MAGIC') statIcon = { icon: 'auto_awesome', color: '#a855f7' };
+            else if (sa === 'DAMAGE_GIVEN_PHYSIC') statIcon = { icon: 'swords', color: '#f43f5e' };
+            else if (sa === 'DAMAGE_GIVEN_BRUT') statIcon = { icon: 'bloodtype', color: '#ef4444' };
+            else if (sa === 'DAMAGE_GIVEN_MAGIC_TO_SHIELD') statIcon = { icon: 'gavel', color: '#d946ef' };
+            else if (sa === 'DAMAGE_GIVEN_PHYSIC_TO_SHIELD') statIcon = { icon: 'gavel', color: '#f43f5e' };
+            else if (sa.includes('DAMAGE_TAKEN')) statIcon = { icon: 'explosion', color: '#ef4444' };
+            else if (sa.includes('DAMAGE_GIVEN')) statIcon = { icon: 'swords', color: '#f43f5e' };
+            else if (sa.includes('PIERCED') || sa.includes('PIERCING')) statIcon = { icon: 'heart_broken', color: '#fb923c' };
+
+            statIconHtml = `<span class="material-symbols-outlined" style="flex-shrink:0; font-size:1.1rem; color:${statIcon.color}; margin-left:-0.1rem;">${statIcon.icon}</span>`;
+        }
+
         const entryHtml = `
             <div style="display:flex; align-items:flex-start; gap:0.4rem; font-size:0.85rem;">
-                <div style="flex-shrink:0; background-color: ${indicatorColor}; width: 8px; height: 8px; border-radius: 50%; margin-top: 5px;"></div>
+                <span class="material-symbols-outlined" style="flex-shrink:0; font-size:1.1rem; color:${indicatorColor};">${iconName}</span>
+                ${statIconHtml}
                 <span style="font-weight:600; color:#fff;">[Cible]</span>
                 <span style="color:#38bdf8; font-weight:500;">${typeStr}</span>
                 <span style="color:#e2e8f0;">➔ ${text} (${b.duration} tours)</span>
