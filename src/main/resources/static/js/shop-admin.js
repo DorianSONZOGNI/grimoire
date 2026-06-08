@@ -197,13 +197,19 @@ document.getElementById('deleteConfirmBtn').addEventListener('click', async () =
 
 // ===== Rendu =====
 function renderVault() {
-    // Sort allEquipments: rarity order, then name
+    // Sort allEquipments: rarity order, then slot, then name
     const rarityOrder = { 'RELIQUE': 0, 'EPIQUE': 1, 'LEGENDAIRE': 2, 'RARE': 3, 'COMMUN': 4 };
+    const slotOrder = { 'CASQUE': 1, 'PLASTRON': 2, 'ANNEAU_GAUCHE': 3, 'ANNEAU_DROIT': 3, 'BOTTES': 4, 'CAPE': 5 };
 
     let sorted = [...allEquipments].sort((a, b) => {
         const rA = rarityOrder[a.rarity || 'COMMUN'];
         const rB = rarityOrder[b.rarity || 'COMMUN'];
         if (rA !== rB) return rA - rB;
+        
+        const sA = slotOrder[a.slot] || 99;
+        const sB = slotOrder[b.slot] || 99;
+        if (sA !== sB) return sA - sB;
+
         return a.name.localeCompare(b.name);
     });
 
