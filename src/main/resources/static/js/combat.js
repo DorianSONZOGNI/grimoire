@@ -745,6 +745,22 @@ function renderSpells(spells) {
             castingTypeHtml = '<span class="material-symbols-outlined" style="font-size: 1rem; color: #3b82f6;" title="Action Banale">hourglass_empty</span>';
         }
 
+        let categoryHtml = '';
+        if (sp.category === 'INSPIRATION') {
+            categoryHtml = '<span class="material-symbols-outlined" style="font-size: 1rem; color: #10b981;" title="Sort d\'Inspiration">arrow_upward</span>';
+        } else if (sp.category === 'EXPIRATION') {
+            categoryHtml = '<span class="material-symbols-outlined" style="font-size: 1rem; color: #f43f5e;" title="Sort d\'Expiration">arrow_downward</span>';
+        }
+
+        let karmaAlignHtml = '';
+        if (sp.karmaAlignment === 'OFFENSIVE') {
+            karmaAlignHtml = '<span class="material-symbols-outlined" style="font-size: 1rem; color: #c084fc;" title="Sort des Ténèbres (Offensif)">dark_mode</span>';
+        } else if (sp.karmaAlignment === 'PROTECTIVE') {
+            karmaAlignHtml = '<span class="material-symbols-outlined" style="font-size: 1rem; color: #fde047;" title="Sort de Lumière (Protecteur)">light_mode</span>';
+        } else if (sp.karmaAlignment === 'RESTORATIVE') {
+            karmaAlignHtml = '<span class="material-symbols-outlined" style="font-size: 1rem; color: #cbd5e1;" title="Sort d\'Harmonie (Restaurateur)">brightness_medium</span>';
+        }
+
         let voieHtml = '';
         if (sp.voie && sp.voie.nom) {
             const vColor = getVoieButtonColor(sp.voie);
@@ -771,6 +787,8 @@ function renderSpells(spells) {
                 </div>
                 <div class="combat-spell-icons" style="display: flex; align-items: center; flex-wrap: wrap; gap: 0.3rem;">
                     ${castingTypeHtml}
+                    ${categoryHtml}
+                    ${karmaAlignHtml}
                     ${voieHtml}
                     ${spiritHtml}
                     ${optionSelectorHtml}
