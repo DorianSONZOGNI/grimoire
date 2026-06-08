@@ -404,6 +404,14 @@ function generateFighterHtml(c, isHero) {
         statsHtml += `<span class="hero-stat-chip" title="Chaleur accumulée" style="border-color: rgba(249, 115, 22, 0.4);"><span class="material-symbols-outlined" style="color: #f97316;">local_fire_department</span>${heat}/100</span>`;
     }
     
+    if (c.voie && c.voie.nom && (c.voie.nom.toLowerCase().includes('surete') || c.voie.nom.toLowerCase().includes('sûreté'))) {
+        let suretePoints = 0;
+        if (c.passiveStates && c.passiveStates['surete_points'] !== undefined) {
+            suretePoints = c.passiveStates['surete_points'];
+        }
+        statsHtml += `<span class="hero-stat-chip" title="Points de Sûreté" style="border-color: rgba(20, 184, 166, 0.4);"><span class="material-symbols-outlined" style="color: #14b8a6;">security</span>${suretePoints}</span>`;
+    }
+    
     statsHtml += `</div>`;
 
     // Karma (if it exists)
