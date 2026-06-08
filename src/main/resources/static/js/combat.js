@@ -503,6 +503,32 @@ function generateFighterHtml(c, isHero) {
         statsHtml += `<span class="hero-stat-chip" title="${title}" style="border-color: ${borderColor}; color: ${color};"><span class="material-symbols-outlined" style="color: inherit;">${icon}</span>${text}</span>`;
     }
 
+    const isEsprit = c.spiritualite && c.spiritualite.nom && c.spiritualite.nom.toLowerCase().includes('esprit');
+    if (isEsprit) {
+        const hp = c.hpCurrent !== undefined ? c.hpCurrent : c.healthCurrent;
+        const maxHp = c.hpMax !== undefined ? c.hpMax : c.healthMax;
+        const canCast = hp >= maxHp * 0.20 && c.manaCurrent >= c.manaMax * 0.20;
+        const color = canCast ? '#38bdf8' : '#ef4444';
+        const borderColor = canCast ? 'rgba(56, 189, 248, 0.4)' : 'rgba(239, 68, 68, 0.4)';
+        const icon = canCast ? 'psychology' : 'block';
+        const text = canCast ? 'Éveillé' : 'Bloqué';
+        const title = "Condition Esprit : >= 20% PV ET Mana";
+        statsHtml += `<span class="hero-stat-chip" title="${title}" style="border-color: ${borderColor}; color: ${color};"><span class="material-symbols-outlined" style="color: inherit;">${icon}</span>${text}</span>`;
+    }
+
+    const isTenebres = c.spiritualite && c.spiritualite.nom && (c.spiritualite.nom.toLowerCase().includes('ténèbres') || c.spiritualite.nom.toLowerCase().includes('tenebres'));
+    if (isTenebres) {
+        const hp = c.hpCurrent !== undefined ? c.hpCurrent : c.healthCurrent;
+        const maxHp = c.hpMax !== undefined ? c.hpMax : c.healthMax;
+        const canCast = hp <= maxHp * 0.80 || c.manaCurrent <= c.manaMax * 0.80;
+        const color = canCast ? '#c084fc' : '#ef4444';
+        const borderColor = canCast ? 'rgba(192, 132, 252, 0.4)' : 'rgba(239, 68, 68, 0.4)';
+        const icon = canCast ? 'nightlight_round' : 'block';
+        const text = canCast ? 'Assombri' : 'Bloqué';
+        const title = "Condition Ténèbres : <= 80% PV ou Mana";
+        statsHtml += `<span class="hero-stat-chip" title="${title}" style="border-color: ${borderColor}; color: ${color};"><span class="material-symbols-outlined" style="color: inherit;">${icon}</span>${text}</span>`;
+    }
+
     statsHtml += `</div>`;
     
     let passiveBadges = '';
