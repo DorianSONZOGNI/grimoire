@@ -492,13 +492,13 @@ function generateFighterHtml(c, isHero) {
             text = 'Harmonie'; title = "Karma en Harmonie";
         } else if (karmaGauge < 0) {
             borderColor = 'rgba(168, 85, 247, 0.4)'; color = '#c084fc'; icon = 'dark_mode';
-            text = `${karmaGauge}/4`; title = "Karma Ténèbres";
+            text = `${karmaGauge}/3`; title = "Karma Ténèbres";
         } else if (karmaGauge > 0) {
             borderColor = 'rgba(253, 224, 71, 0.4)'; color = '#fde047'; icon = 'light_mode';
-            text = `+${karmaGauge}/4`; title = "Karma Lumière";
+            text = `+${karmaGauge}/3`; title = "Karma Lumière";
         } else {
             borderColor = 'rgba(156, 163, 175, 0.4)'; color = '#9ca3af'; icon = 'balance';
-            text = `0/4`; title = "Karma Neutre";
+            text = `0/3`; title = "Karma Neutre";
         }
         statsHtml += `<span class="hero-stat-chip" title="${title}" style="border-color: ${borderColor}; color: ${color};"><span class="material-symbols-outlined" style="color: inherit;">${icon}</span>${text}</span>`;
     }
