@@ -370,6 +370,11 @@ function generateFighterHtml(c, isHero) {
         
         let flatBonus = 0;
         let multiplier = 1.0;
+        
+        if (c.passiveStates && c.passiveStates['stat_flat_' + statName]) {
+            flatBonus += c.passiveStates['stat_flat_' + statName];
+        }
+        
         const buffs = c.activeBuffs || c.buffs || [];
         buffs.forEach(b => {
             if (b.statAffected === statName) {
