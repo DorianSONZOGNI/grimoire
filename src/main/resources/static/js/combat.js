@@ -477,33 +477,35 @@ function generateFighterHtml(c, isHero) {
         statsHtml += `<span class="hero-stat-chip" title="${title}" style="border-color: ${borderColor}; color: ${color};"><span class="material-symbols-outlined" style="color: inherit;">${icon}</span>${text}</span>`;
     }
 
-    statsHtml += `</div>`;
+    const hasKarma = c.hasKarma || (c.spiritualite && c.spiritualite.nom && c.spiritualite.nom.toLowerCase().includes('karma'));
+    if (hasKarma) {
+        let karmaLocked = c.karmaLocked || (c.passiveStates && c.passiveStates['karma_locked'] === 1);
+        let karmaHarmony = c.karmaHarmony || (c.passiveStates && c.passiveStates['karma_harmony'] === 1);
+        let karmaGauge = c.karmaGauge !== undefined ? c.karmaGauge : (c.passiveStates && c.passiveStates['karma_gauge'] !== undefined ? c.passiveStates['karma_gauge'] : 0);
 
-    // Karma (if it exists)
-    let passiveBadges = '';
-    if (c.hasKarma) {
-        let bg, border, color, icon, text, title;
-        if (c.karmaLocked) {
-            bg = 'rgba(239, 68, 68, 0.25)'; border = '1px solid #ef4444'; color = '#f87171'; icon = 'block';
-            text = 'Karma Brisé';
-        } else if (c.karmaHarmony) {
-            bg = 'rgba(100, 116, 139, 0.25)'; border = '1px solid #cbd5e1'; color = '#cbd5e1'; icon = 'brightness_medium';
-            text = 'Harmonie';
-        } else if (c.karmaGauge < 0) {
-            bg = 'rgba(147, 51, 234, 0.25)'; border = '1px solid #c084fc'; color = '#c084fc'; icon = 'dark_mode';
-            text = `Ténèbres (${Math.abs(c.karmaGauge)})`;
-        } else if (c.karmaGauge > 0) {
-            bg = 'rgba(234, 179, 8, 0.25)'; border = '1px solid #fde047'; color = '#fde047'; icon = 'light_mode';
-            text = `Lumière (${c.karmaGauge})`;
+        let borderColor, color, icon, text, title;
+        if (karmaLocked) {
+            borderColor = 'rgba(239, 68, 68, 0.4)'; color = '#f87171'; icon = 'block';
+            text = 'Brisé'; title = "Karma Brisé (Voie désactivée)";
+        } else if (karmaHarmony) {
+            borderColor = 'rgba(100, 116, 139, 0.4)'; color = '#cbd5e1'; icon = 'brightness_medium';
+            text = 'Harmonie'; title = "Karma en Harmonie";
+        } else if (karmaGauge < 0) {
+            borderColor = 'rgba(168, 85, 247, 0.4)'; color = '#c084fc'; icon = 'dark_mode';
+            text = `${karmaGauge}/4`; title = "Karma Ténèbres";
+        } else if (karmaGauge > 0) {
+            borderColor = 'rgba(253, 224, 71, 0.4)'; color = '#fde047'; icon = 'light_mode';
+            text = `+${karmaGauge}/4`; title = "Karma Lumière";
         } else {
-            bg = 'rgba(107, 114, 128, 0.15)'; border = '1px dashed #6b7280'; color = '#9ca3af'; icon = 'balance';
-            text = 'Karma Neutre';
+            borderColor = 'rgba(156, 163, 175, 0.4)'; color = '#9ca3af'; icon = 'balance';
+            text = `0/4`; title = "Karma Neutre";
         }
-        passiveBadges += `<div class="sandbox-status-badge karma" style="background: ${bg}; color: ${color}; border: ${border};">
-            <span class="material-symbols-outlined" style="font-size: 0.95rem; color: ${color};">${icon}</span>
-            <span>${text}</span>
-        </div>`;
+        statsHtml += `<span class="hero-stat-chip" title="${title}" style="border-color: ${borderColor}; color: ${color};"><span class="material-symbols-outlined" style="color: inherit;">${icon}</span>${text}</span>`;
     }
+
+    statsHtml += `</div>`;
+    
+    let passiveBadges = '';
 
     return `
         <div class="fighter-name" style="color: ${isHero ? '#f8fafc' : '#ef4444'}; font-size: 1.2rem; display: flex; justify-content: center; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
