@@ -250,14 +250,15 @@
     border-top-right-radius: 16px;
 }
 
-.armory-characters-grid {
-    display: flex;
-    flex-direction: column;
-    gap: 0.8rem;
-    max-height: calc(100vh - 300px);
-    overflow-y: auto;
-    padding-right: 0.3rem;
-}
+    .armory-characters-grid {
+        display: flex;
+        flex-direction: column;
+        gap: 0.8rem;
+        flex: 1;
+        min-height: 0;
+        overflow-y: auto;
+        padding-right: 0.3rem;
+    }
 
 .armory-characters-grid::-webkit-scrollbar {
     width: 4px;
@@ -283,6 +284,7 @@
     transition: all 0.25s ease;
     position: relative;
     overflow: hidden;
+    flex-shrink: 0;
 }
 
 .char-card::before {
