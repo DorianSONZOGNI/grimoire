@@ -761,6 +761,16 @@ function renderSpells(spells) {
             karmaAlignHtml = '<span class="material-symbols-outlined" style="font-size: 1rem; color: #cbd5e1;" title="Sort d\'Harmonie (Restaurateur)">brightness_medium</span>';
         }
 
+        const generatesHeat = (sp.heatGenerated > 0) || (sp.effects && sp.effects.some(e => {
+            const rawType = e.effectType || e.effect_type || '';
+            return ['HEAT_FIXED', 'HeatFixedEffect', 'HEAT_PERCENTAGE', 'HeatPercentageEffect', 'HEAT_OVER_TIME', 'HeatOverTimeEffect', 'HEAT', 'HeatEffect'].includes(rawType);
+        }));
+
+        let heatGenHtml = '';
+        if (generatesHeat) {
+            heatGenHtml = `<span class="material-symbols-outlined" style="font-size: 1rem; color: #f97316;" title="Sort Générateur de Chaleur">local_fire_department</span>`;
+        }
+
         let voieHtml = '';
         if (sp.voie && sp.voie.nom) {
             const vColor = getVoieButtonColor(sp.voie);
@@ -789,6 +799,7 @@ function renderSpells(spells) {
                     ${castingTypeHtml}
                     ${categoryHtml}
                     ${karmaAlignHtml}
+                    ${heatGenHtml}
                     ${voieHtml}
                     ${spiritHtml}
                     ${optionSelectorHtml}
