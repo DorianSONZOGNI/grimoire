@@ -426,6 +426,14 @@ function generateFighterHtml(c, isHero) {
         statsHtml += `<span class="hero-stat-chip" title="Inspiration (Violence)" style="border-color: rgba(217, 70, 239, 0.4);"><span class="material-symbols-outlined" style="color: #d946ef;">air</span>${insp} Insp</span>`;
         statsHtml += `<span class="hero-stat-chip" title="Expiration (Violence)" style="border-color: rgba(220, 38, 38, 0.4);"><span class="material-symbols-outlined" style="color: #dc2626;">storm</span>${exp} Exp</span>`;
     }
+
+    if (c.voie && c.voie.nom && c.voie.nom.toLowerCase().includes('raison')) {
+        let raisonStacks = 0;
+        if (c.passiveStates && c.passiveStates['raison_speed_stacks'] !== undefined) {
+            raisonStacks = c.passiveStates['raison_speed_stacks'];
+        }
+        statsHtml += `<span class="hero-stat-chip" title="Cumuls de Vitesse (Raison)" style="border-color: rgba(234, 179, 8, 0.4);"><span class="material-symbols-outlined" style="color: #eab308;">speed</span>${raisonStacks}</span>`;
+    }
     
     statsHtml += `</div>`;
 
