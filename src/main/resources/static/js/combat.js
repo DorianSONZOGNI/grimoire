@@ -395,6 +395,15 @@ function generateFighterHtml(c, isHero) {
     statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #10b981;">shield</span>${res} Rés</span>`;
     statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #f59e0b;">bolt</span>${vit} Vit</span>`;
     statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #ef4444;">gps_fixed</span>${crit}% Crit</span>`;
+    
+    if (c.voie && c.voie.nom && c.voie.nom.toLowerCase().includes('destruction')) {
+        let heat = 0;
+        if (c.passiveStates && c.passiveStates['destruction_heat'] !== undefined) {
+            heat = c.passiveStates['destruction_heat'];
+        }
+        statsHtml += `<span class="hero-stat-chip" title="Chaleur accumulée" style="border-color: rgba(249, 115, 22, 0.4);"><span class="material-symbols-outlined" style="color: #f97316;">local_fire_department</span>${heat}/100</span>`;
+    }
+    
     statsHtml += `</div>`;
 
     // Karma (if it exists)
