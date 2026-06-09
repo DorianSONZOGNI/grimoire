@@ -21,13 +21,16 @@ public class ConvictionPassiveEffect extends VoiePassiveEffect {
 
     @Override
     public void onTurnStart(Personnage personnage) {
-        int newMana = Math.min(personnage.getManaCurrent() + 25, personnage.getManaMax());
+        int level = personnage.getVoieLevel();
+        int regenAmount = 25 + (Math.max(0, level - 1) * 5);
+        int newMana = Math.min(personnage.getManaCurrent() + regenAmount, personnage.getManaMax());
         personnage.setManaCurrent(newMana);
-        System.out.println(personnage.getName() + " régénère 25 mana (Conviction). Nouveau mana: " + newMana);
+        System.out.println(personnage.getName() + " régénère " + regenAmount + " mana (Conviction). Nouveau mana: " + newMana);
     }
 
     @Override
     public int adjustMaxMana(Personnage personnage, int currentMaxMana) {
-        return Math.min(currentMaxMana, 100);
+        int level = personnage.getVoieLevel();
+        return currentMaxMana + (Math.max(0, level - 1) * 25);
     }
 }

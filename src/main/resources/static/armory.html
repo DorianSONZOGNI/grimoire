@@ -35,6 +35,9 @@
             <a href="/armory.html" class="top-nav-link nav-armory active">
                 <span class="material-symbols-outlined" style="font-size: 1.1rem;">shield</span> Armurerie
             </a>
+            <a href="/dungeons.html" class="top-nav-link nav-dungeon">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">swords</span> Donjons
+            </a>
             <a href="/vault.html" class="top-nav-link nav-vault">
                 <span class="material-symbols-outlined" style="font-size: 1.1rem;">money_bag</span> Salle des coffres
             </a>
@@ -43,6 +46,9 @@
             </a>
             <a href="/shop-admin.html" id="adminShopLink" class="top-nav-link nav-admin" style="display: none;">
                 <span class="material-symbols-outlined" style="font-size: 1.1rem;">settings</span> Gestion Boutique
+            </a>
+            <a href="/pve-admin.html" id="adminPvELink" class="top-nav-link nav-admin" style="display: none;">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">admin_panel_settings</span> Gestion PvE
             </a>
             <div id="authNavContainer"
                 style="display: flex; align-items: center; gap: 0.5rem; margin-left: 1rem; padding-left: 1rem; border-left: 1px solid var(--glass-border);">
@@ -242,7 +248,8 @@
         </div>
 
         <!-- Colonne Droite : Liste des Personnages -->
-        <div class="armory-list-panel">
+        <div style="position: relative; height: 100%; min-height: 400px;">
+            <div class="armory-list-panel" style="position: absolute; inset: 0; margin: 0; overflow: hidden;">
             <div class="armory-panel-title" style="justify-content: space-between;">
                 <span style="display: flex; align-items: center; gap: 0.5rem;">
                     <span class="material-symbols-outlined" style="color: #3b82f6;">groups</span>
@@ -316,6 +323,7 @@
 
             <div class="armory-characters-grid" id="personnagesList">
                 <div class="armory-empty-state">Chargement...</div>
+            </div>
             </div>
         </div>
     </div>

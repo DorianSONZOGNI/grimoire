@@ -43,6 +43,7 @@ public class DamageOverTimeEffect extends DamageEffect {
     private generation.grimoire.enumeration.Source damageSource = generation.grimoire.enumeration.Source.TARGET_HEALTH_MAX;
 
     @jakarta.persistence.Transient
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private Personnage caster;
 
     /**

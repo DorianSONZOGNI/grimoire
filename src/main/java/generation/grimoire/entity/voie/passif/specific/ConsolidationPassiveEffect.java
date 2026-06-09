@@ -31,9 +31,21 @@ public class ConsolidationPassiveEffect extends VoiePassiveEffect {
             // Aucun sort lancé au tour précédent → buff par défaut +5% armure
             applyDefaultBuff(personnage);
             personnage.setPassiveState(STATE_ACTIVE_LEVEL, 0);
+        } else {
+            // Un sort a été lancé, on ré-applique le buff pour qu'il dure ce tour
+            int activeLevel = personnage.getPassiveState(STATE_ACTIVE_LEVEL, 0);
+            switch (activeLevel) {
+                case 1 -> applyLevel1(personnage);
+                case 2 -> applyLevel2(personnage);
+                case 3 -> applyLevel3(personnage);
+                case 4 -> applyLevel4(personnage);
+                case 5 -> applyLevel5(personnage);
+                default -> {
+                    applyDefaultBuff(personnage);
+                    personnage.setPassiveState(STATE_ACTIVE_LEVEL, 0);
+                }
+            }
         }
-        // Si un sort a été lancé, le buff de niveau est déjà en place via onSpellCast
-        // et sera ré-appliqué si un nouveau sort est lancé ce tour
 
         // Réinitialiser le flag pour ce nouveau tour
         personnage.setPassiveState(STATE_CAST_THIS_TURN, 0);
@@ -78,7 +90,7 @@ public class ConsolidationPassiveEffect extends VoiePassiveEffect {
     // ─── Buffs par défaut et par niveau ───
 
     private void applyDefaultBuff(Personnage personnage) {
-        addModifierBuff(personnage, StatType.ARMURE, 1.05);
+        addModifierBuff(personnage, StatType.ARMURE, 0.05);
         System.out.println(personnage.getName() + " bénéficie de +5% d'armure (Consolidation - par défaut).");
     }
 
@@ -90,13 +102,13 @@ public class ConsolidationPassiveEffect extends VoiePassiveEffect {
 
     /** Lvl 2 : +10% Armure */
     private void applyLevel2(Personnage personnage) {
-        addModifierBuff(personnage, StatType.ARMURE, 1.10);
+        addModifierBuff(personnage, StatType.ARMURE, 0.10);
         System.out.println(personnage.getName() + " bénéficie de +10% d'armure (Consolidation - Lvl 2).");
     }
 
     /** Lvl 3 : +10% Résistance magique */
     private void applyLevel3(Personnage personnage) {
-        addModifierBuff(personnage, StatType.RESISTANCE, 1.10);
+        addModifierBuff(personnage, StatType.RESISTANCE, 0.10);
         System.out.println(personnage.getName() + " bénéficie de +10% de résistance magique (Consolidation - Lvl 3).");
     }
 
@@ -108,8 +120,8 @@ public class ConsolidationPassiveEffect extends VoiePassiveEffect {
 
     /** Lvl 5 : +8% Armure et +8% Résistance magique */
     private void applyLevel5(Personnage personnage) {
-        addModifierBuff(personnage, StatType.ARMURE, 1.08);
-        addModifierBuff(personnage, StatType.RESISTANCE, 1.08);
+        addModifierBuff(personnage, StatType.ARMURE, 0.08);
+        addModifierBuff(personnage, StatType.RESISTANCE, 0.08);
         System.out.println(personnage.getName()
                 + " bénéficie de +8% d'armure et +8% de résistance magique (Consolidation - Lvl 5).");
     }

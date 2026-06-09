@@ -835,9 +835,34 @@ function editPersonnage(id) {
     document.getElementById('charSpeed').value = p.speed || 0;
     document.getElementById('charCrit').value = p.crit || 0;
     document.getElementById('charVoie').value = p.voie ? p.voie.id : '';
-    document.getElementById('charVoieLevel').value = p.voieLevel || 1;
+    if (p.voie) {
+        const info = getVoieInfo(p.voie.nom);
+        document.getElementById('charVoieLabel').innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: ${info.color};">${info.icon}</span> ${p.voie.nom}`;
+    } else {
+        document.getElementById('charVoieLabel').innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">trip_origin</span> — Aucune —`;
+    }
+
+    const vLvl = p.voieLevel || 1;
+    document.getElementById('charVoieLevel').value = vLvl;
+    const vLvlInfo = getLevelInfo(vLvl);
+    if (document.getElementById('charVoieLevelLabel')) {
+        document.getElementById('charVoieLevelLabel').innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: ${vLvlInfo.color};">${vLvlInfo.icon}</span> Niveau ${vLvl}`;
+    }
+
     document.getElementById('charSpirit').value = p.spiritualite ? p.spiritualite.id : '';
-    document.getElementById('charSpiritLevel').value = p.spiritualiteLevel || 1;
+    if (p.spiritualite) {
+        const info = getSpiritInfo(p.spiritualite.nom);
+        document.getElementById('charSpiritLabel').innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: ${info.color};">${info.icon}</span> ${p.spiritualite.nom}`;
+    } else {
+        document.getElementById('charSpiritLabel').innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">trip_origin</span> — Aucune —`;
+    }
+
+    const sLvl = p.spiritualiteLevel || 1;
+    document.getElementById('charSpiritLevel').value = sLvl;
+    const sLvlInfo = getLevelInfo(sLvl);
+    if (document.getElementById('charSpiritLevelLabel')) {
+        document.getElementById('charSpiritLevelLabel').innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: ${sLvlInfo.color};">${sLvlInfo.icon}</span> Niveau ${sLvl}`;
+    }
 
     document.getElementById('formTitle').innerHTML = `
         <span class="material-symbols-outlined">edit</span>
@@ -863,9 +888,22 @@ function resetForm() {
     document.getElementById('charSpeed').value = 0;
     document.getElementById('charCrit').value = 0;
     document.getElementById('charVoie').value = '';
+    document.getElementById('charVoieLabel').innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">trip_origin</span> — Aucune —`;
+    
     document.getElementById('charVoieLevel').value = 1;
+    const vLvlInfoReset = getLevelInfo(1);
+    if (document.getElementById('charVoieLevelLabel')) {
+        document.getElementById('charVoieLevelLabel').innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: ${vLvlInfoReset.color};">${vLvlInfoReset.icon}</span> Niveau 1`;
+    }
+
     document.getElementById('charSpirit').value = '';
+    document.getElementById('charSpiritLabel').innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">trip_origin</span> — Aucune —`;
+    
     document.getElementById('charSpiritLevel').value = 1;
+    const sLvlInfoReset = getLevelInfo(1);
+    if (document.getElementById('charSpiritLevelLabel')) {
+        document.getElementById('charSpiritLevelLabel').innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: ${sLvlInfoReset.color};">${sLvlInfoReset.icon}</span> Niveau 1`;
+    }
 
     document.getElementById('formTitle').innerHTML = `
         <span class="material-symbols-outlined">person_add</span>

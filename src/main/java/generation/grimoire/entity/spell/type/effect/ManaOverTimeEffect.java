@@ -32,6 +32,7 @@ public class ManaOverTimeEffect extends ManaEffect {
     private generation.grimoire.enumeration.Source manaSource = generation.grimoire.enumeration.Source.TARGET_MANA_MAX;
 
     @jakarta.persistence.Transient
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private Personnage caster;
 
     public void tick(Personnage target) {

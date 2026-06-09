@@ -2,6 +2,7 @@ package generation.grimoire.entity;
 
 import generation.grimoire.enumeration.EquipmentSlot;
 import jakarta.persistence.*;
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
@@ -45,10 +46,12 @@ public class Equipment {
     private int regenHealthPerTurn = 0;
     private int regenManaPerTurn = 0;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "personnage_id", nullable = true)
     private generation.grimoire.entity.personnage.Personnage personnage;
 
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = true)
     private generation.grimoire.entity.auth.AppUser user;

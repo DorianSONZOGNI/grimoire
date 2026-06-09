@@ -59,6 +59,7 @@ public class Personnage {
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = true)
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private generation.grimoire.entity.auth.AppUser user;
 
     @OneToMany(mappedBy = "personnage", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
@@ -716,7 +717,10 @@ public class Personnage {
      * @return un message d'erreur si le lancement est interdit, ou null si autorisé
      */
     public String canCast(generation.grimoire.entity.Spell spell) {
-        if (spell.getVoie() != null) {
+        boolean hasVoieReq = spell.getVoie() != null;
+        boolean hasSpiritReq = spell.getSpiritualite() != null;
+
+        if (hasVoieReq) {
             boolean idMatch = this.voie != null && this.voie.getId() != null && spell.getVoie().getId() != null && this.voie.getId().equals(spell.getVoie().getId());
             boolean nameMatch = this.voie != null && this.voie.getId() == null && spell.getVoie().getId() == null && this.voie.getNom() != null && this.voie.getNom().equals(spell.getVoie().getNom());
             if (this.voie == null || (!idMatch && !nameMatch)) {
@@ -727,7 +731,8 @@ public class Personnage {
                         + " (actuel: " + this.voieLevel + ") pour lancer " + spell.getNom() + ".";
             }
         }
-        if (spell.getSpiritualite() != null) {
+
+        if (hasSpiritReq) {
             boolean idMatch = this.spiritualite != null && this.spiritualite.getId() != null && spell.getSpiritualite().getId() != null && this.spiritualite.getId().equals(spell.getSpiritualite().getId());
             boolean nameMatch = this.spiritualite != null && this.spiritualite.getId() == null && spell.getSpiritualite().getId() == null && this.spiritualite.getNom() != null && this.spiritualite.getNom().equals(spell.getSpiritualite().getNom());
             if (this.spiritualite == null || (!idMatch && !nameMatch)) {
@@ -738,6 +743,21 @@ public class Personnage {
                         + " (actuel: " + this.spiritualiteLevel + ") pour lancer " + spell.getNom() + ".";
             }
         }
+
+        // Si le sort n'a ni Voie ni Spiritualité, c'est un sort générique.
+        // Si le personnage A une Voie ou une Spiritualité, on interdit l'accès aux sorts génériques
+        // pour respecter strictement "accès QU'AUX sorts de la voie de la raison" sauf "attaque basic"
+        if (!hasVoieReq && !hasSpiritReq) {
+            if (this.voie != null || this.spiritualite != null) {
+                // Sauf exceptions explicites si besoin, mais le prompt disait "uniquement les sorts de sa voie"
+                // On va l'interdire SAUF si le nom du sort est l'attaque de base (pour la sécurité).
+                if (spell.getNom() != null && spell.getNom().toLowerCase().contains("base")) {
+                    return null;
+                }
+                return this.name + " ne peut pas lancer de sorts génériques sans affinité.";
+            }
+        }
+
         return null; // Lancement autorisé
     }
 
