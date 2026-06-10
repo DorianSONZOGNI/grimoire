@@ -29,9 +29,10 @@ public class EspritPassiveEffect extends SpiritualitePassiveEffect {
         // Obligé d'avoir soit plus de 20% hp, soit 20% mana
         boolean hasEnoughHp = caster.getHealthCurrent() >= (caster.getHealthMax() * 0.20);
         boolean hasEnoughMana = caster.getManaCurrent() >= (caster.getManaMax() * 0.20);
-        
+
         if (!hasEnoughHp || !hasEnoughMana) {
-            System.out.println(caster.getName() + " n'a pas les prérequis d'Esprit (>= 20% HP ET >= 20% Mana) pour lancer " + spell.getNom());
+            System.out.println(caster.getName()
+                    + " n'a pas les prérequis d'Esprit (>= 20% HP ET >= 20% Mana) pour lancer " + spell.getNom());
             return false;
         }
         return true;

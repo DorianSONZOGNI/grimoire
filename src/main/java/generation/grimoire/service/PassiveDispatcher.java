@@ -67,9 +67,7 @@ public class PassiveDispatcher {
 
         // Passifs de la Spiritualité du personnage
         if (caster.getSpiritualite() != null && caster.getSpiritualite().getPassiveEffects() != null) {
-            if (spell == null || matchSpirit(caster.getSpiritualite(), spell.getSpiritualite())) {
-                result.addAll(caster.getSpiritualite().getPassiveEffects());
-            }
+            result.addAll(caster.getSpiritualite().getPassiveEffects());
         }
 
         // Passifs de la Spiritualité du sort (si différente de celle du personnage)
@@ -80,7 +78,7 @@ public class PassiveDispatcher {
                 }
             }
         }
-        
+
         // Passifs de la Voie du sort (si différente de celle du personnage)
         if (spell != null && spell.getVoie() != null) {
             if (!matchVoie(caster.getVoie(), spell.getVoie())) {
@@ -92,18 +90,23 @@ public class PassiveDispatcher {
 
         return result;
     }
-    
+
     private boolean matchVoie(generation.grimoire.entity.Voie v1, generation.grimoire.entity.Voie v2) {
-        if (v1 == null || v2 == null) return false;
+        if (v1 == null || v2 == null)
+            return false;
         boolean sameId = v1.getId() != null && v2.getId() != null && v1.getId().equals(v2.getId());
-        boolean sameName = v1.getId() == null && v2.getId() == null && v1.getNom() != null && v1.getNom().equals(v2.getNom());
+        boolean sameName = v1.getId() == null && v2.getId() == null && v1.getNom() != null
+                && v1.getNom().equals(v2.getNom());
         return sameId || sameName;
     }
 
-    private boolean matchSpirit(generation.grimoire.entity.Spiritualite s1, generation.grimoire.entity.Spiritualite s2) {
-        if (s1 == null || s2 == null) return false;
+    private boolean matchSpirit(generation.grimoire.entity.Spiritualite s1,
+            generation.grimoire.entity.Spiritualite s2) {
+        if (s1 == null || s2 == null)
+            return false;
         boolean sameId = s1.getId() != null && s2.getId() != null && s1.getId().equals(s2.getId());
-        boolean sameName = s1.getId() == null && s2.getId() == null && s1.getNom() != null && s1.getNom().equals(s2.getNom());
+        boolean sameName = s1.getId() == null && s2.getId() == null && s1.getNom() != null
+                && s1.getNom().equals(s2.getNom());
         return sameId || sameName;
     }
 }
