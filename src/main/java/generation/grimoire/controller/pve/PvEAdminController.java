@@ -6,6 +6,7 @@ import generation.grimoire.entity.pve.Monstre;
 import generation.grimoire.service.pve.PvEAdminService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
 import java.util.List;
@@ -26,14 +27,15 @@ public class PvEAdminController {
     }
 
     @PostMapping("/monsters")
-    public ResponseEntity<Monstre> createMonster(@RequestBody Monstre monstre) {
+    public ResponseEntity<Monstre> createMonster(@RequestBody @NonNull Monstre monstre) {
         return ResponseEntity.ok(pvEAdminService.createOrUpdateMonster(monstre));
     }
 
     @PutMapping("/monsters/{id}")
-    public ResponseEntity<Monstre> updateMonster(@PathVariable Long id, @RequestBody Monstre monstreDetails) {
-        Monstre existing = pvEAdminService.getMonsterById(id);
-        if (existing == null) {
+    public ResponseEntity<Monstre> updateMonster(@PathVariable @NonNull Long id, @RequestBody @NonNull Monstre monstreDetails) {
+        try {
+            pvEAdminService.getMonsterById(id);
+        } catch (java.util.NoSuchElementException e) {
             return ResponseEntity.notFound().build();
         }
         monstreDetails.setId(id);
@@ -41,7 +43,7 @@ public class PvEAdminController {
     }
 
     @DeleteMapping("/monsters/{id}")
-    public ResponseEntity<Void> deleteMonster(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteMonster(@PathVariable @NonNull Long id) {
         pvEAdminService.deleteMonster(id);
         return ResponseEntity.ok().build();
     }
@@ -54,24 +56,27 @@ public class PvEAdminController {
     }
 
     @PostMapping("/dungeons")
-    public ResponseEntity<Donjon> createDungeon(@RequestBody DonjonDTO donjonDTO) {
+    public ResponseEntity<Donjon> createDungeon(@RequestBody @NonNull DonjonDTO donjonDTO) {
         Donjon donjon = new Donjon();
         mapDonjonDtoToEntity(donjonDTO, donjon);
         return ResponseEntity.ok(pvEAdminService.createOrUpdateDungeon(donjon));
     }
 
     @PutMapping("/dungeons/{id}")
-    public ResponseEntity<Donjon> updateDungeon(@PathVariable Long id, @RequestBody DonjonDTO donjonDTO) {
-        Donjon existing = pvEAdminService.getDungeonById(id);
-        if (existing == null) {
+    public ResponseEntity<Donjon> updateDungeon(@PathVariable @NonNull Long id, @RequestBody @NonNull DonjonDTO donjonDTO) {
+        Donjon existing;
+        try {
+            existing = pvEAdminService.getDungeonById(id);
+        } catch (java.util.NoSuchElementException e) {
             return ResponseEntity.notFound().build();
         }
         mapDonjonDtoToEntity(donjonDTO, existing);
-        return ResponseEntity.ok(pvEAdminService.createOrUpdateDungeon(existing));
+        return ResponseEntity.ok(pvEAdminService.createOrUpdateDungeon(
+                java.util.Objects.requireNonNull(existing)));
     }
 
     @DeleteMapping("/dungeons/{id}")
-    public ResponseEntity<Void> deleteDungeon(@PathVariable Long id) {
+    public ResponseEntity<Void> deleteDungeon(@PathVariable @NonNull Long id) {
         pvEAdminService.deleteDungeon(id);
         return ResponseEntity.ok().build();
     }
@@ -93,7 +98,15 @@ public class PvEAdminController {
 
                 if (sDto.getMonsters() != null) {
                     List<Monstre> monsters = sDto.getMonsters().stream()
-                            .map(mDto -> pvEAdminService.getMonsterById(mDto.getId()))
+                            .filter(mDto -> mDto.getId() != null)
+                            .map(mDto -> {
+                                try {
+                                    return pvEAdminService.getMonsterById(
+                                            java.util.Objects.requireNonNull(mDto.getId()));
+                                } catch (java.util.NoSuchElementException e) {
+                                    return null;
+                                }
+                            })
                             .filter(m -> m != null)
                             .collect(Collectors.toList());
                     s.setMonsters(monsters);

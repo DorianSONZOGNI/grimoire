@@ -4,6 +4,7 @@ import generation.grimoire.model.pve.CombatSession;
 import generation.grimoire.service.pve.CombatService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
+import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
@@ -17,8 +18,8 @@ public class CombatController {
 
     @PostMapping("/start")
     public ResponseEntity<CombatSession> startCombat(
-            @RequestParam Long characterId, 
-            @RequestParam Long dungeonId,
+            @RequestParam @NonNull Long characterId, 
+            @RequestParam @NonNull Long dungeonId,
             Principal principal) {
         if (principal == null) return ResponseEntity.status(401).build();
         
