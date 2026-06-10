@@ -12,6 +12,7 @@ import generation.grimoire.service.SpellService;
 import generation.grimoire.entity.Spell;
 import generation.grimoire.entity.auth.AppUser;
 import lombok.RequiredArgsConstructor;
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -33,7 +34,7 @@ public class CombatService {
     // In-memory combat sessions
     private final Map<String, CombatSession> activeSessions = new ConcurrentHashMap<>();
 
-    public CombatSession startCombat(Long characterId, Long dungeonId, String username) {
+    public CombatSession startCombat(@NonNull Long characterId, @NonNull Long dungeonId, String username) {
         Personnage p = personnageRepository.findById(characterId).orElseThrow(() -> new RuntimeException("Personnage introuvable"));
         
         if (p.getUser() == null || !p.getUser().getUsername().equals(username)) {
