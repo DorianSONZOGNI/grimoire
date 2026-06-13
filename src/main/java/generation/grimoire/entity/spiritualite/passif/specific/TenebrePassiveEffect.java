@@ -30,6 +30,18 @@ public class TenebrePassiveEffect extends SpiritualitePassiveEffect {
             return true;
         }
 
+        // Ne vérifier la condition que pour les sorts de cette spiritualité
+        if (spell.getSpiritualite() == null || this.getSpiritualite() == null) {
+            return true;
+        }
+        boolean sameId = spell.getSpiritualite().getId() != null && this.getSpiritualite().getId() != null
+                && spell.getSpiritualite().getId().equals(this.getSpiritualite().getId());
+        boolean sameName = spell.getSpiritualite().getNom() != null && this.getSpiritualite().getNom() != null
+                && spell.getSpiritualite().getNom().equals(this.getSpiritualite().getNom());
+        if (!sameId && !sameName) {
+            return true; // Le sort n'est pas de cette spiritualité, ne pas bloquer
+        }
+
         // Obligé d'avoir moins de 80% hp ou 80% mana
         boolean conditionHp = caster.getHealthCurrent() <= (caster.getHealthMax() * 0.80);
         boolean conditionMana = caster.getManaCurrent() <= (caster.getManaMax() * 0.80);

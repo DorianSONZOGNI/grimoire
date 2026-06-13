@@ -21,6 +21,9 @@ public class CombatSession {
     private Salle currentRoom;
     
     private List<Spell> availableSpells = new ArrayList<>();
+    
+    /** Disponibilité de chaque sort (grisage côté frontend) */
+    private List<SpellAvailability> spellAvailability = new ArrayList<>();
 
     // Valid only if currentRoom is COMBAT
     private List<ActiveMonster> enemies = new ArrayList<>();

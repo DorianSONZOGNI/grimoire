@@ -4,13 +4,19 @@ import generation.grimoire.entity.personnage.Personnage;
 import generation.grimoire.entity.pve.Donjon;
 import generation.grimoire.entity.pve.Monstre;
 import generation.grimoire.model.pve.CombatSession;
+import generation.grimoire.model.pve.SpellAvailability;
 import generation.grimoire.repository.PersonnageRepository;
 import generation.grimoire.repository.auth.UserRepository;
 import generation.grimoire.repository.pve.DonjonRepository;
 import generation.grimoire.repository.SpellRepository;
 import generation.grimoire.service.SpellService;
+import generation.grimoire.service.PassiveDispatcher;
 import generation.grimoire.entity.Spell;
 import generation.grimoire.entity.auth.AppUser;
+import generation.grimoire.enumeration.SpellCastingType;
+import generation.grimoire.event.CastingTypeAdjustEvent;
+import generation.grimoire.event.CanCastCheckEvent;
+import generation.grimoire.event.SpellCostAdjustEvent;
 import lombok.RequiredArgsConstructor;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
@@ -30,6 +36,7 @@ public class CombatService {
     private final UserRepository userRepository;
     private final SpellRepository spellRepository;
     private final SpellService spellService;
+    private final PassiveDispatcher passiveDispatcher;
     
     // In-memory combat sessions
     private final Map<String, CombatSession> activeSessions = new ConcurrentHashMap<>();
@@ -68,6 +75,7 @@ public class CombatService {
         handleRoomStart(session);
         
         activeSessions.put(sessionId, session);
+        computeSpellAvailability(session);
         return session;
     }
 
@@ -123,6 +131,7 @@ public class CombatService {
             personnageRepository.save(p);
         }
         
+        computeSpellAvailability(session);
         return session;
     }
 
@@ -165,6 +174,7 @@ public class CombatService {
         } else if (targetIndex != null && targetIndex >= 0 && targetIndex < session.getEnemies().size()) {
             if (p.isBanalSpellCastThisTurn()) {
                  session.addLog(p.getName() + " a déjà effectué une action majeure (sort banal ou attaque) ce tour-ci.");
+                 computeSpellAvailability(session);
                  return session; // don't do attack
             }
             generation.grimoire.model.pve.ActiveMonster targetMonster = session.getEnemies().get(targetIndex);
@@ -194,6 +204,7 @@ public class CombatService {
             session.addLog("Combat terminé, vous avez vaincu tous les monstres !");
         }
         
+        computeSpellAvailability(session);
         return session;
     }
 
@@ -227,6 +238,7 @@ public class CombatService {
         });
         
         if (session.isFinished()) {
+            computeSpellAvailability(session);
             return session;
         }
         // Start next turn for everyone (ticks DoTs/HoTs)
@@ -251,12 +263,150 @@ public class CombatService {
             session.setFinished(true);
             session.setPlayerWon(false);
             session.addLog("Vous êtes tombé au combat (effets de début de tour).");
+            computeSpellAvailability(session);
             return session;
         }
 
         session.setTurnNumber(session.getTurnNumber() + 1);
         session.addLog("--- TOUR " + session.getTurnNumber() + " ---");
+        computeSpellAvailability(session);
         return session;
+    }
+
+    /**
+     * Calcule la disponibilité de chaque sort pour le joueur à l'état actuel du combat.
+     * Reproduit la logique de validation de SpellService.castSpellGroup() en mode lecture seule.
+     */
+    private void computeSpellAvailability(CombatSession session) {
+        List<SpellAvailability> result = new ArrayList<>();
+        Personnage p = session.getPlayer();
+
+        // Rendre System.out silencieux pendant ce calcul pour éviter le spam des passifs
+        java.io.PrintStream originalOut = System.out;
+        try {
+            System.setOut(new java.io.PrintStream(new java.io.OutputStream() {
+                public void write(int b) {}
+            }));
+            
+            for (Spell spell : session.getAvailableSpells()) {
+                SpellAvailability avail = checkSpellAvailability(spell, p);
+                result.add(avail);
+            }
+        } finally {
+            System.setOut(originalOut);
+        }
+
+        session.setSpellAvailability(result);
+    }
+
+    private SpellAvailability checkSpellAvailability(Spell spell, Personnage p) {
+        // 1) Déterminer le type de casting effectif (avec passif Création)
+        SpellCastingType cType = spell.getCastingType();
+        if (cType == null) cType = SpellCastingType.BANAL;
+
+        // Simuler CastingTypeAdjustEvent (Création: banal → instantané si 1er sort)
+        CastingTypeAdjustEvent castingEvent = new CastingTypeAdjustEvent(p, p, spell, cType);
+        passiveDispatcher.dispatch(p, spell, castingEvent);
+        cType = castingEvent.getCurrentType();
+
+        // 2) Vérifications des limites d'action du tour
+        // Rule A: Si canalisation en cours
+        if (p.getRemainingChannelingTurns() > 0) {
+            if (cType != SpellCastingType.INSTANTANE) {
+                return SpellAvailability.blocked(spell.getId(), "CHANNELING",
+                        "Canalisation en cours : seuls les sorts instantanés sont autorisés");
+            }
+            if (!p.isAllowInstantDuringCurrentChanneling()) {
+                return SpellAvailability.blocked(spell.getId(), "CHANNELING",
+                        "Cette canalisation interdit les sorts instantanés");
+            }
+        }
+
+        // Rule B: Si un sort banal ou une attaque a déjà été lancé ce tour
+        if (p.isBanalSpellCastThisTurn()) {
+            return SpellAvailability.blocked(spell.getId(), "ACTION_LIMIT",
+                    "Action majeure déjà effectuée ce tour (les sorts instantanés doivent être lancés avant)");
+        }
+
+        // Rule C: Si un sort instantané a déjà été lancé ce tour
+        if (cType == SpellCastingType.INSTANTANE && p.isInstantSpellCastThisTurn()) {
+            return SpellAvailability.blocked(spell.getId(), "ACTION_LIMIT",
+                    "Sort instantané déjà lancé ce tour");
+        }
+
+        // 3) Vérification des conditions de spiritualité (Esprit, Ténèbres, Karma)
+        CanCastCheckEvent canCastEvent = new CanCastCheckEvent(p, p, spell);
+        passiveDispatcher.dispatch(p, spell, canCastEvent);
+        if (!canCastEvent.isAllowed()) {
+            return SpellAvailability.blocked(spell.getId(), "CONDITION",
+                    getConditionTooltip(p, spell));
+        }
+
+        // 4) Calcul des coûts ajustés (passifs Création, Consolidation, Destruction, Karma Harmonie)
+        int actualManaCost = spell.getManaCost();
+        if (spell.getPercentManaCost() > 0) {
+            double manaBase = generation.grimoire.utils.StatCalculator.getSourceValue(
+                    spell.getPercentManaCostSource() != null ? spell.getPercentManaCostSource()
+                            : generation.grimoire.enumeration.Source.CASTER_MANA_MAX, p, p);
+            actualManaCost += (int) (manaBase * spell.getPercentManaCost() / 100);
+        }
+        int actualHealCost = spell.getHealCost();
+        if (spell.getPercentHealCost() > 0) {
+            double healBase = generation.grimoire.utils.StatCalculator.getSourceValue(
+                    spell.getPercentHealCostSource() != null ? spell.getPercentHealCostSource()
+                            : generation.grimoire.enumeration.Source.CASTER_HEALTH_MAX, p, p);
+            actualHealCost += (int) (healBase * spell.getPercentHealCost() / 100);
+        }
+        int actualHeatCost = spell.getHeatCost();
+        if (spell.getPercentHeatCost() > 0) {
+            actualHeatCost += (int) (100.0 * spell.getPercentHeatCost() / 100.0);
+        }
+
+        // Ajustement des coûts via les passifs (Création, Consolidation, Destruction, Karma)
+        int[] costs = { actualManaCost, actualHealCost, actualHeatCost };
+        SpellCostAdjustEvent costEvent = new SpellCostAdjustEvent(p, p, spell, costs);
+        passiveDispatcher.dispatch(p, spell, costEvent);
+        actualManaCost = costs[0];
+        actualHealCost = costs[1];
+        actualHeatCost = costs.length > 2 ? costs[2] : actualHeatCost;
+
+        // 5) Vérification des ressources
+        if (p.getManaCurrent() < actualManaCost) {
+            return SpellAvailability.blocked(spell.getId(), "RESOURCE",
+                    "Mana insuffisant (" + p.getManaCurrent() + "/" + actualManaCost + ")");
+        }
+        if (p.getHealthCurrent() < actualHealCost) {
+            return SpellAvailability.blocked(spell.getId(), "RESOURCE",
+                    "PV insuffisants (" + p.getHealthCurrent() + "/" + actualHealCost + ")");
+        }
+        int currentHeat = p.getPassiveState("destruction_heat", 0);
+        if (currentHeat < actualHeatCost) {
+            return SpellAvailability.blocked(spell.getId(), "RESOURCE",
+                    "Chaleur insuffisante (" + currentHeat + "/" + actualHeatCost + ")");
+        }
+
+        return SpellAvailability.available(spell.getId());
+    }
+
+    /**
+     * Génère un tooltip explicatif pour les conditions de spiritualité bloquantes.
+     */
+    private String getConditionTooltip(Personnage p, Spell spell) {
+        if (p.getSpiritualite() != null && p.getSpiritualite().getNom() != null) {
+            String spiritName = p.getSpiritualite().getNom().toLowerCase();
+            if (spiritName.contains("esprit")) {
+                return "Condition Esprit non remplie (≥ 20% PV ET Mana requis)";
+            }
+            if (spiritName.contains("ténèbres") || spiritName.contains("tenebres")) {
+                return "Condition Ténèbres non remplie (≤ 80% PV ou Mana requis)";
+            }
+            if (spiritName.contains("karma")) {
+                if (p.getPassiveState("karma_locked", 0) == 1) {
+                    return "Karma verrouillé (corruption ou illumination)";
+                }
+            }
+        }
+        return "Condition de lancement non remplie";
     }
 
     private interface ActionBlock {

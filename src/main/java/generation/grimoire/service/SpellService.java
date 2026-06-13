@@ -498,6 +498,12 @@ public class SpellService {
         int remaining = caster.getRemainingChannelingTurns();
         int currentTurn = duration - remaining + 1;
 
+        // Le T1 est déjà résolu au moment du cast (dans castSpellGroup).
+        // À la fin du tour de lancement, currentTurn vaut 1, on ne doit donc rien faire.
+        if (currentTurn == 1) {
+            return;
+        }
+
         System.out.println("🌀 [Canalisation] Résolution des effets pour le Tour " + currentTurn + " de " + channeledSpell.getNom());
 
         for (SpellEffect effect : channeledSpell.getEffects()) {
