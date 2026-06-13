@@ -204,6 +204,7 @@ window.endTurn = endTurn;
 window.nextRoom = nextRoom;
 window.openChest = openChest;
 window.acceptAlteration = acceptAlteration;
+window.buyMerchantItem = buyMerchantItem;
 window.showGlobalTooltip = ui.showGlobalTooltip;
 window.hideGlobalTooltip = ui.hideGlobalTooltip;
 window.initiateCombatCast = initiateCombatCast;
@@ -1009,7 +1010,7 @@ function updateUI(data) {
                             }
 
                             lootContainer.innerHTML += `
-                                <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid ${rarityColor}50; padding: 1rem; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; gap: 1rem; width: 100%; transition: all 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.4)';" onmouseout="this.style.transform='none'; this.style.boxShadow='none';">
+                                <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid ${rarityColor}50; padding: 1rem; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; gap: 1rem; width: 48%; min-width: 350px; flex: 1 1 auto; max-width: 500px; transition: all 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.4)';" onmouseout="this.style.transform='none'; this.style.boxShadow='none';">
                                     <div style="display: flex; align-items: center; gap: 1rem;">
                                         <div style="width: 48px; height: 48px; border-radius: 8px; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; border: 1px solid ${rarityColor}30;">
                                             ${iconHtml}
@@ -1021,7 +1022,7 @@ function updateUI(data) {
                                             </div>
                                         </div>
                                     </div>
-                                    <button id="btn_buy_${idx}" type="button" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 8px; padding: 0.6rem 1.2rem; font-weight: 700; font-size: 1rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s ease; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);" onclick="buyMerchantItem(${idx})" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='none'">
+                                    <button id="btn_buy_${idx}" type="button" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 8px; padding: 0.6rem 1.2rem; font-weight: 700; font-size: 1rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s ease; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);" onclick="if(confirm('Acheter cet objet ?')) buyMerchantItem(${idx})" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='none'">
                                         <span class="material-symbols-outlined" style="font-size: 1.2rem;">shopping_cart</span>
                                         Acheter
                                     </button>

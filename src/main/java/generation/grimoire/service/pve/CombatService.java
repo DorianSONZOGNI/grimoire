@@ -373,6 +373,17 @@ public class CombatService {
             if (acheteur.getSpecialItemQuantity(specialItemPriceName) < 1) {
                 throw new RuntimeException("Pas assez de " + specialItemPriceName + ".");
             }
+            if (user != null) {
+                List<Anomalie> userAnomalies = anomalieRepository.findByOwnerUsername(user.getUsername());
+                Anomalie toDestroy = userAnomalies.stream()
+                    .filter(a -> a.getName().equals(specialItemPriceName))
+                    .findFirst()
+                    .orElse(null);
+                if (toDestroy == null) {
+                    throw new RuntimeException("Vous ne possédez pas l'item spécial dans l'inventaire global : " + specialItemPriceName);
+                }
+                anomalieRepository.delete(toDestroy);
+            }
         }
         
         // Deduct price
@@ -386,8 +397,23 @@ public class CombatService {
         
         // Give item
         if (entry.getSpecialItemName() != null && !entry.getSpecialItemName().trim().isEmpty()) {
-            acheteur.addSpecialItem(entry.getSpecialItemName(), 1);
-            session.addLog(acheteur.getName() + " a acheté " + entry.getSpecialItemName() + ".");
+            String itemName = entry.getSpecialItemName();
+            acheteur.addSpecialItem(itemName, 1);
+            
+            if (user != null) {
+                Anomalie template = anomalieRepository.findFirstByName(itemName);
+                if (template != null) {
+                    Anomalie newAnomaly = new Anomalie();
+                    newAnomaly.setName(template.getName());
+                    newAnomaly.setDescription(template.getDescription());
+                    newAnomaly.setSpiritualite(template.getSpiritualite());
+                    newAnomaly.setOwnerUsername(user.getUsername());
+                    newAnomaly.setUser(user);
+                    anomalieRepository.save(newAnomaly);
+                }
+            }
+            
+            session.addLog(acheteur.getName() + " a acheté " + itemName + ".");
         } else if (entry.getEquipment() != null) {
             Equipment clone = new Equipment();
             Equipment template = entry.getEquipment();

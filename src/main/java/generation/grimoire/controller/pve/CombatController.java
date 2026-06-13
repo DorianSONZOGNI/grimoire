@@ -96,6 +96,7 @@ public class CombatController {
             CombatSession session = combatService.buyMerchantItem(sessionId, lootIndex, characterId);
             return ResponseEntity.ok(session);
         } catch (Exception e) {
+            e.printStackTrace();
             return ResponseEntity.badRequest().body(null);
         }
     }
