@@ -921,6 +921,7 @@ function updateUI(data) {
                     if (!data.roomEventCompleted && data.currentRoom.alterationType !== 'RIEN') {
                         let btnText = "Toucher";
                         let warningHtml = '';
+                        let specialItemHtml = '';
                         if (data.currentRoom.alterationType === 'VIE_XP') {
                             let parts = [];
                             
@@ -938,7 +939,7 @@ function updateUI(data) {
                             if (data.currentRoom.alterationRewardType === 'SPIRITUAL_XP' && spXp !== 0) {
                                 parts.push(spXp > 0 ? `+${spXp} XP Spirit` : `${spXp} XP Spirit`);
                             } else if (data.currentRoom.alterationRewardType === 'SPECIAL_ITEM') {
-                                parts.push(data.currentRoom.alterationSpecialItemReward || "Item spécial");
+                                specialItemHtml = `<div style="color: #d946ef; font-size: 0.85rem; margin-top: 0.5rem; text-align: center; background: rgba(217, 70, 239, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(217, 70, 239, 0.3);"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">star</span> <strong>Récompense :</strong> Vous obtiendrez l'item spécial "${data.currentRoom.alterationSpecialItemReward || 'Item'}" !</div>`;
                             }
                             
                             if (parts.length > 0) {
@@ -956,6 +957,7 @@ function updateUI(data) {
                         lootContainer.innerHTML = `
                             <div style="display: flex; flex-direction: column; align-items: center; max-width: 600px; width: 100%;">
                                 ${warningHtml}
+                                ${specialItemHtml}
                                 <div style="display: flex; gap: 1rem; margin-top: 1rem; justify-content: center; width: 100%;">
                                     <button class="btn" style="flex: 1; max-width: 250px; background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.3); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;" onclick="acceptAlteration()">${btnText}</button>
                                     <button class="btn" style="flex: 1; max-width: 250px; background: rgba(255, 255, 255, 0.05); color: #94a3b8; border: 1px solid rgba(255, 255, 255, 0.1); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;" onclick="nextRoom()">Ignorer et passer</button>
