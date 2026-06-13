@@ -418,6 +418,14 @@ public class Personnage {
         System.out.println("damageTakenMultiplier : " + damageTakenMultiplier);
     }
 
+    public int getTotalHealthMax() {
+        return this.healthMax + getStatFlatBonus(StatType.HEALTH);
+    }
+
+    public int getTotalManaMax() {
+        return this.manaMax + getStatFlatBonus(StatType.MANA);
+    }
+
     /**
      * Soigne ce personnage.
      *
@@ -427,8 +435,8 @@ public class Personnage {
         double multiplier = getStatBuffMultiplier(StatType.HEAL_RECEIVED);
         int finalHeal = (int) (healAmount * Math.max(0, multiplier));
         this.healthCurrent += finalHeal;
-        if (this.healthCurrent > this.healthMax) {
-            this.healthCurrent = this.healthMax;
+        if (this.healthCurrent > this.getTotalHealthMax()) {
+            this.healthCurrent = this.getTotalHealthMax();
         }
         System.out.println(name + " est soigné de " + finalHeal + " points (multiplier soin reçu: " + multiplier
                 + "). Vie actuelle : " + healthCurrent);
@@ -441,8 +449,8 @@ public class Personnage {
 
     public void restoreMana(int manaAmount) {
         this.manaCurrent += manaAmount;
-        if (this.manaCurrent > this.manaMax) {
-            this.manaCurrent = this.manaMax;
+        if (this.manaCurrent > this.getTotalManaMax()) {
+            this.manaCurrent = this.getTotalManaMax();
         }
         System.out.println(name + " régénère " + manaAmount + " mana. Mana actuelle : " + manaCurrent);
     }

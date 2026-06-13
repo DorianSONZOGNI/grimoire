@@ -54,9 +54,9 @@ public class CombatService {
             throw new RuntimeException("Ce donjon ne contient aucune salle.");
         }
         
-        p.setHealthCurrent(p.getHealthMax());
-        p.setManaCurrent(p.getManaMax());
         p.clearBuffs();
+        p.setHealthCurrent(p.getTotalHealthMax());
+        p.setManaCurrent(p.getTotalManaMax());
         
         String sessionId = UUID.randomUUID().toString();
         CombatSession session = new CombatSession(sessionId, d, p);

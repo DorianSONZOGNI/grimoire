@@ -446,11 +446,11 @@ public class SpellService {
                         return variant;
                     break;
                 case LOW_LIFE:
-                    if (target.getHealthCurrent() < target.getHealthMax() * 0.35)
+                    if (target.getHealthCurrent() < target.getTotalHealthMax() * 0.35)
                         return variant;
                     break;
                 case HIGH_LIFE:
-                    if (target.getHealthCurrent() > target.getHealthMax() * 0.65)
+                    if (target.getHealthCurrent() > target.getTotalHealthMax() * 0.65)
                         return variant;
                     break;
                 case HIGHER_RESISTANCE:
@@ -550,7 +550,7 @@ public class SpellService {
                 if (caster != null) {
                     Personnage simulatedAlly = new Personnage();
                     simulatedAlly.setName("Compagnon Allié");
-                    simulatedAlly.setHealthMax(caster.getHealthMax());
+                    simulatedAlly.setHealthMax(caster.getTotalHealthMax());
                     simulatedAlly.setHealthCurrent(caster.getHealthCurrent());
                     simulatedAlly.setTeamId(caster.getTeamId());
                     recipients.add(simulatedAlly);
@@ -561,7 +561,7 @@ public class SpellService {
                     recipients.add(caster);
                     Personnage simulatedAlly = new Personnage();
                     simulatedAlly.setName("Compagnon Allié");
-                    simulatedAlly.setHealthMax(caster.getHealthMax());
+                    simulatedAlly.setHealthMax(caster.getTotalHealthMax());
                     simulatedAlly.setHealthCurrent(caster.getHealthCurrent());
                     simulatedAlly.setTeamId(caster.getTeamId());
                     recipients.add(simulatedAlly);
@@ -578,7 +578,7 @@ public class SpellService {
                     recipients.add(caster);
                     Personnage simulatedAlly = new Personnage();
                     simulatedAlly.setName("Compagnon Allié");
-                    simulatedAlly.setHealthMax(caster.getHealthMax());
+                    simulatedAlly.setHealthMax(caster.getTotalHealthMax());
                     simulatedAlly.setHealthCurrent(caster.getHealthCurrent());
                     simulatedAlly.setTeamId(caster.getTeamId());
                     recipients.add(simulatedAlly);
