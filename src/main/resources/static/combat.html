@@ -804,6 +804,22 @@
             </button>
         </div>
 
+        <!-- Combat Victory Overlay -->
+        <div class="event-overlay" id="combatVictoryOverlay">
+            <span class="material-symbols-outlined" style="font-size: 5rem; margin-bottom: 1rem; color: #10b981;">emoji_events</span>
+            <div class="result-title" style="font-size: 3rem; margin-bottom: 1rem; color: #10b981;">Victoire !</div>
+            <p style="color: #94a3b8; font-size: 1.2rem; margin-bottom: 2rem; max-width: 600px; text-align: center;" id="combatVictoryDesc">
+                Le combat est terminé.
+            </p>
+            <div id="combatVictoryXpContainer" style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; margin-bottom: 2rem;">
+                <!-- Rempli par JS -->
+            </div>
+            <button class="action-btn" onclick="nextRoom()"
+                style="background: rgba(16, 185, 129, 0.2); color: #34d399; border-color: rgba(16, 185, 129, 0.4);">
+                Continuer l'exploration
+            </button>
+        </div>
+
         <div class="result-overlay" id="resultOverlay">
             <div class="result-title" id="resultTitle">VICTOIRE</div>
             <p style="color: #94a3b8; font-size: 1.2rem; margin-bottom: 2rem;" id="resultDesc">Le donjon a été complété.

@@ -381,6 +381,8 @@ async function endTurn() {
 async function nextRoom() {
     if (!sessionId) return;
     document.getElementById('eventOverlay').classList.remove('show');
+    const vicOverlay = document.getElementById('combatVictoryOverlay');
+    if (vicOverlay) vicOverlay.classList.remove('show');
 
     try {
         const res = await fetch(`/api/pve/combat/${sessionId}/next-room`, { method: 'POST' });
@@ -464,8 +466,57 @@ function updateUI(data) {
     if (data.currentRoom) {
         if (data.currentRoom.type === 'COMBAT') {
             document.getElementById('eventOverlay').classList.remove('show');
-            document.getElementById('btnAttack').disabled = false;
-            renderEnemies(data.enemies);
+            
+            const allEnemiesDead = data.enemies && data.enemies.length > 0 && data.enemies.every(e => e.dead || e.currentHp <= 0);
+            
+            if (allEnemiesDead && !data.finished) {
+                document.getElementById('btnAttack').disabled = true;
+                const vicOverlay = document.getElementById('combatVictoryOverlay');
+                if (vicOverlay) {
+                    vicOverlay.classList.add('show');
+                    const xpContainer = document.getElementById('combatVictoryXpContainer');
+                    if (xpContainer) {
+                        xpContainer.innerHTML = '';
+                        data.players.forEach(p => {
+                            // Using standard XP curve logic (for example)
+                            let level = 1;
+                            if (p.experience >= 1000) level = 5;
+                            else if (p.experience >= 600) level = 4;
+                            else if (p.experience >= 300) level = 3;
+                            else if (p.experience >= 100) level = 2;
+                            
+                            let currentLvlXp = 0;
+                            let nextLvlXp = 100;
+                            if (level === 2) { currentLvlXp = 100; nextLvlXp = 300; }
+                            else if (level === 3) { currentLvlXp = 300; nextLvlXp = 600; }
+                            else if (level === 4) { currentLvlXp = 600; nextLvlXp = 1000; }
+                            else if (level === 5) { currentLvlXp = 1000; nextLvlXp = p.experience; }
+                            
+                            let progress = 100;
+                            if (level < 5) {
+                                progress = ((p.experience - currentLvlXp) / (nextLvlXp - currentLvlXp)) * 100;
+                            }
+
+                            xpContainer.innerHTML += `
+                                <div style="background: rgba(0,0,0,0.4); padding: 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); text-align: center; width: 150px;">
+                                    <div style="color: #e2e8f0; font-weight: bold; margin-bottom: 0.5rem; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${p.name}</div>
+                                    <div style="color: #38bdf8; font-size: 0.9rem; margin-bottom: 0.5rem;">Niv. ${level}</div>
+                                    <div style="width: 100%; background: #334155; border-radius: 4px; height: 8px; overflow: hidden; margin-bottom: 0.3rem;">
+                                        <div style="height: 100%; width: ${Math.min(100, progress)}%; background: #10b981; transition: width 1s;"></div>
+                                    </div>
+                                    <div style="font-size: 0.8rem; color: #94a3b8;">${p.experience} / ${level === 5 ? 'MAX' : nextLvlXp} XP</div>
+                                </div>
+                            `;
+                        });
+                    }
+                }
+            } else {
+                const vicOverlay = document.getElementById('combatVictoryOverlay');
+                if (vicOverlay) vicOverlay.classList.remove('show');
+                
+                document.getElementById('btnAttack').disabled = false;
+                renderEnemies(data.enemies);
+            }
         } else {
             // TREASURE OR EVENT
             document.getElementById('btnAttack').disabled = true;

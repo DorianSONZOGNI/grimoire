@@ -378,7 +378,7 @@ public class Personnage {
         // Appliquer les dégâts finaux (bypass + dégâts non absorbés par le bouclier) à
         // la santé actuelle
         int totalDamageToHealth = bypassDamage + remainingDamage;
-        this.healthCurrent -= totalDamageToHealth;
+        this.healthCurrent = Math.max(0, this.healthCurrent - totalDamageToHealth);
 
         // CHEAT DEATH
         if (this.healthCurrent <= 0) {

@@ -103,8 +103,20 @@ public class CombatService {
             int gold = session.getCurrentRoom().getTreasureGold();
             int exp = session.getCurrentRoom().getTreasureExp();
             session.setTotalGoldAccumulated(session.getTotalGoldAccumulated() + gold);
-            session.setTotalExpAccumulated(session.getTotalExpAccumulated() + exp);
-            session.addLog("Vous avez ramassé " + gold + " Or et " + exp + " XP.");
+            
+            int expPerHero = exp / Math.max(1, session.getPlayers().size());
+            for(Personnage p : session.getPlayers()) {
+                p.setExperience(p.getExperience() + expPerHero);
+                personnageRepository.save(p);
+            }
+            if (gold > 0 && !session.getPlayers().isEmpty()) {
+                generation.grimoire.entity.auth.AppUser user = session.getPlayers().get(0).getUser();
+                if (user != null) {
+                    user.setMonnaie(user.getMonnaie() + gold);
+                    userRepository.save(user);
+                }
+            }
+            session.addLog("Vous avez ramassé " + gold + " Or et chaque héros gagne " + expPerHero + " XP.");
         } else if (session.getCurrentRoom().getType() == generation.grimoire.enumeration.RoomType.EVENT) {
             int effect = session.getCurrentRoom().getEventEffectAmount();
             for (Personnage p : session.getPlayers()) {
@@ -124,9 +136,11 @@ public class CombatService {
         if (session.isFinished()) {
             session.addLog("Félicitations, vous avez terminé le donjon !");
             if (!session.getPlayers().isEmpty()) {
-                AppUser user = session.getPlayers().get(0).getUser();
+                generation.grimoire.entity.auth.AppUser user = session.getPlayers().get(0).getUser();
                 if (user != null) {
-                    user.setMonnaie(user.getMonnaie() + session.getTotalGoldAccumulated());
+                    // Les golds sont déjà ajoutés à la volée pendant checkDeaths, 
+                    // mais pour les coffres au trésor, on ne les avait pas encore sauvegardés
+                    // Sauf si on le fait aussi pour les coffres ! On va juste sauvegarder.
                     userRepository.save(user);
                 }
                 for (Personnage p : session.getPlayers()) {
@@ -217,18 +231,42 @@ public class CombatService {
     }
 
     private void checkDeaths(CombatSession session) {
+        boolean allDeadBefore = session.areAllEnemiesDead();
+        int xpDrop = 0;
+        int goldDrop = 0;
         // Check dead enemies
         for (generation.grimoire.model.pve.ActiveMonster m : session.getEnemies()) {
-            if (m.isDead() && m.getCurrentHp() == 0 && m.getMaxHp() > 0) {
+            if (m.isDead() && m.getCurrentHp() <= 0 && m.getMaxHp() > 0) {
                 // We set maxHp to 0 to prevent re-awarding exp/gold next turn, hacky but works for now
                 m.setMaxHp(0); 
                 session.addLog(m.getBase().getName() + " est mort !");
-                session.setTotalExpAccumulated(session.getTotalExpAccumulated() + m.getBase().getRewardExp());
-                session.setTotalGoldAccumulated(session.getTotalGoldAccumulated() + m.getBase().getRewardGold());
+                xpDrop += m.getBase().getRewardExp();
+                goldDrop += m.getBase().getRewardGold();
             }
         }
         
-        if (session.areAllEnemiesDead()) {
+        if (xpDrop > 0 || goldDrop > 0) {
+            session.setTotalExpAccumulated(session.getTotalExpAccumulated() + xpDrop);
+            session.setTotalGoldAccumulated(session.getTotalGoldAccumulated() + goldDrop);
+            
+            int expPerHero = xpDrop / Math.max(1, session.getPlayers().size());
+            for (Personnage p : session.getPlayers()) {
+                p.setExperience(p.getExperience() + expPerHero);
+                personnageRepository.save(p);
+            }
+            if (goldDrop > 0 && !session.getPlayers().isEmpty()) {
+                generation.grimoire.entity.auth.AppUser user = session.getPlayers().get(0).getUser();
+                if (user != null) {
+                    user.setMonnaie(user.getMonnaie() + goldDrop);
+                    userRepository.save(user);
+                }
+                session.addLog("Les monstres vaincus ont lâché " + goldDrop + " Or. Chaque héros reçoit " + expPerHero + " XP.");
+            } else {
+                session.addLog("Chaque héros reçoit " + expPerHero + " XP.");
+            }
+        }
+        
+        if (!allDeadBefore && session.areAllEnemiesDead()) {
             session.addLog("Combat terminé, vous avez vaincu tous les monstres !");
         }
     }
@@ -295,24 +333,28 @@ public class CombatService {
                 session.addLog("--- Tour de l'ennemi " + m.getBase().getName() + " ---");
                 spellService.startTurn(m.getAsPersonnage());
                 
-                Personnage mp = m.getAsPersonnage();
-                if (mp.getRemainingChannelingTurns() > 0) {
-                    Personnage cTarget = mp.getChannelingTarget();
-                    if (cTarget == null && !session.getPlayers().isEmpty()) {
-                        cTarget = session.getPlayers().get(0);
-                    }
-                    spellService.tickChanneling(mp, cTarget, mp.getChannelingChoiceKey());
-                } else {
-                    List<Personnage> alivePlayers = session.getPlayers().stream().filter(pl -> pl.getHealthCurrent() > 0).toList();
-                    if (!alivePlayers.isEmpty()) {
-                        Personnage targetPlayer = alivePlayers.get(new java.util.Random().nextInt(alivePlayers.size()));
-                        int monsterDmg = m.getBase().getStrength();
-                        System.out.println(m.getBase().getName() + " attaque " + targetPlayer.getName() + " et inflige " + monsterDmg + " dégâts.");
-                        targetPlayer.takeDamage(monsterDmg, generation.grimoire.enumeration.DamageType.PHYSIC);
-                        if (targetPlayer.getHealthCurrent() <= 0) {
-                            System.out.println(targetPlayer.getName() + " a été vaincu...");
+                if (!m.isDead()) {
+                    Personnage mp = m.getAsPersonnage();
+                    if (mp.getRemainingChannelingTurns() > 0) {
+                        Personnage cTarget = mp.getChannelingTarget();
+                        if (cTarget == null && !session.getPlayers().isEmpty()) {
+                            cTarget = session.getPlayers().get(0);
+                        }
+                        spellService.tickChanneling(mp, cTarget, mp.getChannelingChoiceKey());
+                    } else {
+                        List<Personnage> alivePlayers = session.getPlayers().stream().filter(pl -> pl.getHealthCurrent() > 0).toList();
+                        if (!alivePlayers.isEmpty()) {
+                            Personnage targetPlayer = alivePlayers.get(new java.util.Random().nextInt(alivePlayers.size()));
+                            int monsterDmg = m.getBase().getStrength();
+                            System.out.println(m.getBase().getName() + " attaque " + targetPlayer.getName() + " et inflige " + monsterDmg + " dégâts.");
+                            targetPlayer.takeDamage(monsterDmg, generation.grimoire.enumeration.DamageType.PHYSIC);
+                            if (targetPlayer.getHealthCurrent() <= 0) {
+                                System.out.println(targetPlayer.getName() + " a été vaincu...");
+                            }
                         }
                     }
+                } else {
+                    session.addLog(m.getBase().getName() + " a succombé à ses blessures avant de pouvoir attaquer !");
                 }
                 checkDeaths(session);
             });
@@ -391,6 +433,12 @@ public class CombatService {
                 captureLogs(session, () -> {
                     spellService.startTurn(p);
                 });
+                
+                if (p.getHealthCurrent() <= 0) {
+                    session.addLog(p.getName() + " a succombé à ses blessures avant de pouvoir agir.");
+                    session.advanceTurnIndex();
+                    continue; // Skip this turn and check the next one
+                }
                 break;
             } else {
                 // It's a live monster! Stop here, the frontend will call auto-turn
