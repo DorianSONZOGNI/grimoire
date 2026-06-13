@@ -107,14 +107,63 @@ function initiateCombatCast(spellId) {
     const multiEnemy = needsEnemy && enemyCards.length > 1;
     const multiAlly = needsAlly && allyCards.length > 1;
 
-    if (!multiEnemy && !multiAlly) {
-        // Direct cast
-        doAction(spellId);
-        return;
-    }
-
-    // Enter target selection mode
+    cancelCombatCast(); // Clean previous state
     pendingCastSpellId = spellId;
+    
+    const cardEl = spellId ? document.getElementById(`spell-card-${spellId}`) : document.getElementById('btnAttack');
+    
+    // Disable all other buttons
+    document.querySelectorAll('.combat-spell-card, .action-btn, .filter-radio, .filter-chip').forEach(btn => {
+        if (btn !== cardEl) {
+            btn.classList.add('disabled');
+            btn.style.pointerEvents = 'none';
+        }
+    });
+
+    if (cardEl) cardEl.classList.add('pending-cast');
+
+    if (spellId !== null && cardEl) {
+        const overlay = document.createElement('div');
+        overlay.className = 'spell-cast-overlay';
+        overlay.style.cssText = `
+            position: absolute; top: 0; left: 0; right: 0; bottom: 0;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(2px);
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+            border-radius: inherit; z-index: 20; gap: 0.5rem;
+        `;
+        
+        if (multiEnemy || multiAlly) {
+            overlay.innerHTML = `
+                <span style="font-size: 0.9rem; font-weight: 600; color: #e2e8f0;">Sélectionnez une cible</span>
+                <button type="button" onclick="event.stopPropagation(); cancelCombatCast()" style="background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.4); padding: 0.3rem 0.8rem; border-radius: 4px; font-size: 0.8rem; cursor: pointer; font-family: 'Outfit', sans-serif;">Annuler</button>
+            `;
+        } else {
+            overlay.innerHTML = `
+                <div style="display: flex; gap: 0.5rem;">
+                    <button type="button" onclick="event.stopPropagation(); confirmCombatCast(null, 'direct')" style="background: rgba(16, 185, 129, 0.2); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.4); padding: 0.4rem 1rem; border-radius: 4px; font-size: 0.9rem; cursor: pointer; font-family: 'Outfit', sans-serif; font-weight: bold;">Lancer</button>
+                    <button type="button" onclick="event.stopPropagation(); cancelCombatCast()" style="background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.4); padding: 0.4rem 1rem; border-radius: 4px; font-size: 0.9rem; cursor: pointer; font-family: 'Outfit', sans-serif; font-weight: bold;">Annuler</button>
+                </div>
+            `;
+            if (needsEnemy) enemyCards.forEach(card => card.classList.add('target-highlight'));
+            if (needsAlly) allyCards.forEach(card => card.classList.add('target-highlight'));
+        }
+        cardEl.appendChild(overlay);
+    } else if (cardEl) {
+        // Attack button
+        cardEl.dataset.originalHtml = cardEl.innerHTML;
+        if (multiEnemy) {
+            cardEl.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;gap:0.3rem;"><span style="font-size:0.8rem; color:#e2e8f0;">Ciblez un ennemi</span> <button onclick="event.stopPropagation(); cancelCombatCast()" style="background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid rgba(239,68,68,0.4); padding: 0.2rem 0.6rem; border-radius:4px; cursor:pointer;">Annuler</button></div>`;
+        } else {
+            cardEl.innerHTML = `
+                <div style="display:flex;gap:0.5rem;">
+                    <button onclick="event.stopPropagation(); confirmCombatCast(null, 'direct')" style="background: rgba(16,185,129,0.2); color: #10b981; border: 1px solid rgba(16,185,129,0.4); padding: 0.2rem 0.6rem; border-radius:4px; cursor:pointer; font-weight:bold;">Lancer</button>
+                    <button onclick="event.stopPropagation(); cancelCombatCast()" style="background: rgba(239,68,68,0.2); color: #ef4444; border: 1px solid rgba(239,68,68,0.4); padding: 0.2rem 0.6rem; border-radius:4px; cursor:pointer; font-weight:bold;">Annuler</button>
+                </div>
+            `;
+            enemyCards.forEach(card => card.classList.add('target-highlight'));
+        }
+    }
 
     if (multiEnemy) {
         enemyCards.forEach(card => {
@@ -122,36 +171,14 @@ function initiateCombatCast(spellId) {
             card.dataset.oldOnClick = card.getAttribute('onclick');
             card.setAttribute('onclick', `confirmCombatCast(${card.dataset.index}, 'enemy')`);
         });
-        showCombatTargetPrompt('ennemi', 'rgba(220, 38, 38, 0.25)', 'rgba(153, 27, 27, 0.2)', '#ef4444', '#fca5a5', 'rgba(239,68,68,0.2)', 'rgba(239,68,68,0.3)');
     } else if (multiAlly) {
         allyCards.forEach(card => {
             card.classList.add('target-selectable');
             card.dataset.oldOnClick = card.getAttribute('onclick');
-            // ally card index in DOM or in currentSessionData.players?
-            // Wait, we need the original index. Let's get it from the dataset or the parent list index if available.
-            // In generateFighterHtml we didn't add dataset.index to players!
-            // I need to add dataset.index to player cards in updateUI.
             const idx = Array.from(card.parentNode.children).indexOf(card);
             card.setAttribute('onclick', `confirmCombatCast(${idx}, 'ally')`);
         });
-        showCombatTargetPrompt('allié', 'rgba(16, 185, 129, 0.25)', 'rgba(6, 95, 70, 0.2)', '#10b981', '#6ee7b7', 'rgba(16,185,129,0.2)', 'rgba(16,185,129,0.3)');
     }
-}
-
-function showCombatTargetPrompt(typeLabel, grad1, grad2, border, textCol, btnBg, btnBorder) {
-    const existing = document.getElementById('combatTargetPrompt');
-    if (existing) existing.remove();
-
-    const prompt = document.createElement('div');
-    prompt.id = 'combatTargetPrompt';
-    prompt.style.cssText = `background: linear-gradient(135deg, ${grad1}, ${grad2}); border: 1px solid ${border}; border-radius: 8px; padding: 0.6rem 2rem; margin: 0 2rem 1rem 2rem; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; font-size: 1rem; color: ${textCol};`;
-    prompt.innerHTML = `
-        <span>🎯 Sélectionnez un ${typeLabel} cible pour lancer le sort.</span>
-        <button type="button" onclick="cancelCombatCast()" style="background: ${btnBg}; color: ${textCol}; border: 1px solid ${btnBorder}; padding: 0.4rem 1rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer; font-family: 'Outfit', sans-serif;">Annuler</button>
-    `;
-
-    const actionBar = document.getElementById('actionBar');
-    if (actionBar) actionBar.parentNode.insertBefore(prompt, actionBar);
 }
 
 function confirmCombatCast(index, type) {
@@ -168,7 +195,7 @@ function confirmCombatCast(index, type) {
 function cancelCombatCast() {
     const enemyCards = document.querySelectorAll('.fighter-enemy');
     enemyCards.forEach(card => {
-        card.classList.remove('target-selectable');
+        card.classList.remove('target-selectable', 'target-highlight');
         if (card.dataset.oldOnClick) {
             card.setAttribute('onclick', card.dataset.oldOnClick);
         } else {
@@ -178,7 +205,7 @@ function cancelCombatCast() {
 
     const allyCards = document.querySelectorAll('.fighter-player');
     allyCards.forEach(card => {
-        card.classList.remove('target-selectable');
+        card.classList.remove('target-selectable', 'target-highlight');
         if (card.dataset.oldOnClick) {
             card.setAttribute('onclick', card.dataset.oldOnClick);
         } else {
@@ -188,6 +215,34 @@ function cancelCombatCast() {
 
     const prompt = document.getElementById('combatTargetPrompt');
     if (prompt) prompt.remove();
+
+    // Remove pending-cast styles and restore buttons
+    document.querySelectorAll('.pending-cast').forEach(el => {
+        el.classList.remove('pending-cast');
+        const overlay = el.querySelector('.spell-cast-overlay');
+        if (overlay) overlay.remove();
+        
+        // Restore original content if we replaced it (for attack button)
+        if (el.id === 'btnAttack' && el.dataset.originalHtml) {
+            el.innerHTML = el.dataset.originalHtml;
+        }
+    });
+    
+    // Enable all buttons
+    document.querySelectorAll('.combat-spell-card, .action-btn, .filter-radio').forEach(btn => {
+        btn.classList.remove('disabled');
+        btn.style.pointerEvents = 'auto';
+        btn.style.opacity = '1';
+    });
+    
+    // Attack button specific disable check
+    const btnAttack = document.getElementById('btnAttack');
+    if (btnAttack && currentSessionData && currentSessionData.activePlayer && currentSessionData.activePlayer.banalSpellCastThisTurn) {
+        btnAttack.classList.add('disabled');
+        btnAttack.style.pointerEvents = 'none';
+        btnAttack.style.opacity = '0.5';
+    }
+
     pendingCastSpellId = null;
 }
 
@@ -1134,7 +1189,7 @@ function renderSpellCard(sp) {
     }
 
     return `
-        <div class="combat-spell-card spell-btn${disabledClass}" style="border-top: 2px solid ${titleColor};" ${onClickAttr} ${tooltipAttrs}>
+        <div id="spell-card-${sp.id}" class="combat-spell-card spell-btn${disabledClass}" style="border-top: 2px solid ${titleColor};" ${onClickAttr} ${tooltipAttrs}>
             <div class="combat-spell-header">
                 <div class="combat-spell-name" title="${sp.nom}" style="color: ${titleColor};">${sp.nom}</div>
                 <div class="combat-spell-level">Lvl ${sp.niveau}</div>

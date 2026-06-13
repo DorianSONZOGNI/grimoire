@@ -82,6 +82,10 @@ public class CombatService {
         if (session.getCurrentRoom().getType() == generation.grimoire.enumeration.RoomType.COMBAT) {
             session.addLog("Vous entrez dans une salle de combat ! Préparez-vous.");
             session.setTurnNumber(1);
+            for (Personnage p : session.getPlayers()) {
+                p.setBanalSpellCastThisTurn(false);
+                p.setInstantSpellCastThisTurn(false);
+            }
             rollInitiative(session);
         } else if (session.getCurrentRoom().getType() == generation.grimoire.enumeration.RoomType.TREASURE) {
             session.addLog("Vous trouvez un trésor !");
@@ -240,6 +244,8 @@ public class CombatService {
         Personnage p = session.getActivePlayer();
         
         if (p != null) {
+            p.setBanalSpellCastThisTurn(false);
+            p.setInstantSpellCastThisTurn(false);
             captureLogs(session, () -> {
                 if (p.getRemainingChannelingTurns() > 0) {
                     Personnage channelingTarget = p.getChannelingTarget();
@@ -251,6 +257,7 @@ public class CombatService {
             });
         }
         session.advanceTurnIndex();
+        advanceToNextLiveTurn(session);
         
         if (session.isRoundFinished() && !session.areAllEnemiesDead() && !session.areAllPlayersDead()) {
             session.setTurnNumber(session.getTurnNumber() + 1);
@@ -312,6 +319,7 @@ public class CombatService {
         }
         
         session.advanceTurnIndex();
+        advanceToNextLiveTurn(session);
         
         if (session.areAllPlayersDead()) {
             session.setFinished(true);
@@ -365,7 +373,11 @@ public class CombatService {
             session.addLog(name + " | Init: " + e.getInitiativeScore() + " (Vitesse: " + e.getSpeedStat() + ")");
         }
         
-        // Process dead players turning at the very start of the round
+        advanceToNextLiveTurn(session);
+    }
+    
+    private void advanceToNextLiveTurn(CombatSession session) {
+        // Process dead entities and start player turn
         while (!session.isRoundFinished()) {
             generation.grimoire.model.pve.InitiativeEntry current = session.getTurnOrder().get(session.getCurrentTurnIndex());
             if (current.isPlayer() && session.getPlayers().get(current.getIndex()).getHealthCurrent() <= 0) {
@@ -439,6 +451,11 @@ public class CombatService {
     }
 
     private SpellAvailability checkSpellAvailability(Spell spell, Personnage p) {
+        String canCastError = p.canCast(spell);
+        if (canCastError != null) {
+            return SpellAvailability.blocked(spell.getId(), "CONDITION", canCastError);
+        }
+
         // 1) Déterminer le type de casting effectif (avec passif Création)
         SpellCastingType cType = spell.getCastingType();
         if (cType == null) cType = SpellCastingType.BANAL;

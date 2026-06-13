@@ -518,8 +518,17 @@ public class SpellService {
         int remaining = caster.getRemainingChannelingTurns();
         int currentTurn = duration - remaining + 1;
 
+        // Decrement remaining turns
+        int newRemaining = remaining - 1;
+        caster.setRemainingChannelingTurns(Math.max(0, newRemaining));
+        if (newRemaining <= 0) {
+            caster.setChanneledSpell(null);
+            caster.setChannelingTarget(null);
+            caster.setChannelingChoiceKey(null);
+        }
+
         // Le T1 est déjà résolu au moment du cast (dans castSpellGroup).
-        // À la fin du tour de lancement, currentTurn vaut 1, on ne doit donc rien faire.
+        // À la fin du tour de lancement, currentTurn vaut 1, on ne doit donc rien faire de plus.
         if (currentTurn == 1) {
             return;
         }
@@ -613,6 +622,7 @@ public class SpellService {
 
     public void startTurn(Personnage personnage) {
         personnage.startTurn();
+        personnage.setBanalSpellCastThisTurn(false);
         personnage.updateHealOverTimeEffects();
         personnage.updateManaOverTimeEffects();
         personnage.updateDamageOverTimeEffects();

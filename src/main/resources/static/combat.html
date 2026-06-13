@@ -389,6 +389,24 @@
             border-color: rgba(255, 255, 255, 0.25);
         }
 
+        .combat-spell-card.pending-cast, .action-btn.pending-cast {
+            border-color: #a855f7 !important;
+            box-shadow: 0 0 15px rgba(168, 85, 247, 0.4) !important;
+            background: rgba(30, 41, 59, 0.95) !important;
+        }
+
+        .combat-spell-card.disabled, .action-btn.disabled, .filter-radio.disabled {
+            opacity: 0.5;
+            pointer-events: none;
+            filter: grayscale(100%);
+        }
+
+        .target-highlight {
+            border-color: #a855f7 !important;
+            box-shadow: 0 0 20px rgba(168, 85, 247, 0.5) !important;
+            transform: scale(1.02) !important;
+        }
+
         .combat-spell-name {
             font-family: 'Outfit', sans-serif;
             font-weight: 700;
