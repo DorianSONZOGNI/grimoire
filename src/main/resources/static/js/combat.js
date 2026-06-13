@@ -506,13 +506,13 @@ function updateUI(data) {
                             let oldStats = getExpStats(oldExp);
 
                             xpContainer.innerHTML += `
-                                <div style="background: rgba(0,0,0,0.4); padding: 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); text-align: center; width: 150px;">
-                                    <div style="color: #e2e8f0; font-weight: bold; margin-bottom: 0.5rem; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${p.name}</div>
-                                    <div id="xp-lvl-${p.id}" style="color: #38bdf8; font-size: 0.9rem; margin-bottom: 0.5rem; font-weight: 600; transition: color 0.3s;">Niv. ${oldStats.level}</div>
-                                    <div style="width: 100%; background: #334155; border-radius: 4px; height: 8px; margin-bottom: 0.3rem;">
+                                <div id="xp-card-${p.id}" style="background: rgba(0,0,0,0.4); padding: 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); text-align: center; width: 150px; position: relative; overflow: hidden; transition: all 0.5s;">
+                                    <div style="color: #e2e8f0; font-weight: bold; margin-bottom: 0.5rem; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; position: relative; z-index: 2;">${p.name}</div>
+                                    <div id="xp-lvl-${p.id}" style="color: #38bdf8; font-size: 0.9rem; margin-bottom: 0.5rem; font-weight: 600; transition: color 0.3s, transform 0.3s; display: inline-block; position: relative; z-index: 2;">Niv. ${oldStats.level}</div>
+                                    <div style="width: 100%; background: #334155; border-radius: 4px; height: 8px; margin-bottom: 0.3rem; position: relative; z-index: 2;">
                                         <div id="xp-fill-${p.id}" style="height: 100%; width: ${Math.min(100, oldStats.progress)}%; background: #10b981; transition: box-shadow 0.3s;"></div>
                                     </div>
-                                    <div id="xp-text-${p.id}" style="font-size: 0.8rem; color: #94a3b8; font-family: monospace;">${oldExp} / ${oldStats.level === 5 ? 'MAX' : oldStats.nextLvlXp} XP</div>
+                                    <div id="xp-text-${p.id}" style="font-size: 0.8rem; color: #94a3b8; font-family: monospace; position: relative; z-index: 2;">${oldExp} / ${oldStats.level === 5 ? 'MAX' : oldStats.nextLvlXp} XP</div>
                                 </div>
                             `;
                             
@@ -538,11 +538,52 @@ function updateUI(data) {
                                         bar.style.width = Math.min(100, stats.progress) + "%";
                                         text.innerText = currentExp + " / " + (stats.level === 5 ? 'MAX' : stats.nextLvlXp) + " XP";
                                         
-                                        // Simple highlight on level up
+                                        // Level up effects!
                                         if (lvlText.innerText !== "Niv. " + stats.level) {
                                             lvlText.innerText = "Niv. " + stats.level;
                                             lvlText.style.color = "#f59e0b"; // gold highlight
-                                            setTimeout(() => lvlText.style.color = "#38bdf8", 800);
+                                            lvlText.style.transform = "scale(1.3)";
+                                            
+                                            const card = document.getElementById(`xp-card-${p.id}`);
+                                            if (card) {
+                                                card.style.boxShadow = "0 0 30px 10px rgba(245, 158, 11, 0.4)";
+                                                card.style.borderColor = "#f59e0b";
+                                                card.style.transform = "scale(1.05)";
+                                                
+                                                // Internal splash
+                                                const splash = document.createElement("div");
+                                                splash.style.position = "absolute";
+                                                splash.style.top = "0"; splash.style.left = "0"; splash.style.right = "0"; splash.style.bottom = "0";
+                                                splash.style.background = "radial-gradient(circle, rgba(245,158,11,0.6) 0%, rgba(245,158,11,0) 70%)";
+                                                splash.style.opacity = "1";
+                                                splash.style.transition = "opacity 0.8s ease-out, transform 0.8s ease-out";
+                                                splash.style.transform = "scale(0.5)";
+                                                splash.style.pointerEvents = "none";
+                                                splash.style.zIndex = "1";
+                                                card.appendChild(splash);
+                                                
+                                                // Trigger animation next frame
+                                                requestAnimationFrame(() => {
+                                                    splash.style.opacity = "0";
+                                                    splash.style.transform = "scale(2.5)";
+                                                });
+                                        
+                                                setTimeout(() => {
+                                                    if (card) {
+                                                        card.style.boxShadow = "none";
+                                                        card.style.borderColor = "rgba(255,255,255,0.1)";
+                                                        card.style.transform = "scale(1)";
+                                                    }
+                                                    if (splash.parentNode) splash.parentNode.removeChild(splash);
+                                                }, 800);
+                                            }
+                                            
+                                            setTimeout(() => {
+                                                if (lvlText) {
+                                                    lvlText.style.color = "#38bdf8";
+                                                    lvlText.style.transform = "scale(1)";
+                                                }
+                                            }, 800);
                                         }
                                     }
                                     
