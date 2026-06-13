@@ -344,6 +344,9 @@ public class CombatService {
         if (lootTable == null || lootIndex < 0 || lootIndex >= lootTable.size()) {
             throw new RuntimeException("Objet introuvable.");
         }
+        if (session.getPurchasedMerchantItems().contains(lootIndex)) {
+            throw new RuntimeException("Objet déjà acheté.");
+        }
         
         LootEntry entry = lootTable.get(lootIndex);
         
@@ -438,6 +441,7 @@ public class CombatService {
             session.addLog(acheteur.getName() + " a acheté " + clone.getName() + ".");
         }
         
+        session.getPurchasedMerchantItems().add(lootIndex);
         personnageRepository.save(acheteur);
         return session;
     }

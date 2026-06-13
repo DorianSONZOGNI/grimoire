@@ -8,6 +8,8 @@ import lombok.Data;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
+import java.util.HashSet;
 import java.util.stream.Collectors;
 
 @Data
@@ -36,6 +38,7 @@ public class CombatSession {
     private boolean isFinished = false;
     private boolean playerWon = false;
     private boolean roomEventCompleted = false;
+    private Set<Integer> purchasedMerchantItems = new HashSet<>();
     
     private int totalGoldAccumulated = 0;
     private int totalExpAccumulated = 0;
@@ -84,6 +87,7 @@ public class CombatSession {
     public void loadRoom(int index) {
         this.currentRoomIndex = index;
         this.roomEventCompleted = false;
+        this.purchasedMerchantItems.clear();
         if (donjon.getSalles() != null && index < donjon.getSalles().size()) {
             this.currentRoom = donjon.getSalles().get(index);
             // On laisse handleRoomStart gérer les ennemis et la re-fetch de la salle

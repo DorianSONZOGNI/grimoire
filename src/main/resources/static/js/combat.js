@@ -680,6 +680,64 @@ function closeBuyModal() {
 window.openBuyModal = openBuyModal;
 window.closeBuyModal = closeBuyModal;
 
+function generateEquipmentTooltipHTML(eq) {
+    if (!eq) return '';
+    const statsDef = [
+        { key: 'bonusHealthMax', label: 'PV', icon: 'favorite', color: '#ec4899' },
+        { key: 'bonusManaMax', label: 'Mana', icon: 'water_drop', color: '#38bdf8' },
+        { key: 'bonusPower', label: 'Pui', icon: 'auto_awesome', color: '#a855f7' },
+        { key: 'bonusStrength', label: 'For', icon: 'fitness_center', color: '#f43f5e' },
+        { key: 'bonusArmor', label: 'Arm', icon: 'shield', color: '#3b82f6' },
+        { key: 'bonusResistance', label: 'Rés', icon: 'shield', color: '#10b981' },
+        { key: 'bonusSpeed', label: 'Vit', icon: 'bolt', color: '#f59e0b' },
+        { key: 'bonusCrit', label: 'Crit', icon: 'gps_fixed', color: '#ef4444' },
+        { key: 'regenHealthPerTurn', label: 'PV/t', icon: 'healing', color: '#10b981' },
+        { key: 'regenManaPerTurn', label: 'Mana/t', icon: 'cyclone', color: '#38bdf8' },
+    ];
+    let statsHtml = statsDef
+        .filter(s => eq[s.key] && eq[s.key] !== 0)
+        .map(s => {
+            const val = eq[s.key];
+            const isMalus = val < 0;
+            const sign = val > 0 ? '+' : '';
+            return `<div style="display: flex; justify-content: space-between; gap: 1rem; margin-bottom: 0.3rem;">
+                <div style="display: flex; align-items: center; gap: 0.3rem; color: #94a3b8;">
+                    <span class="material-symbols-outlined" style="color:${isMalus ? '#ef4444' : s.color}; font-size: 1rem;">${s.icon}</span>
+                    ${s.label}
+                </div>
+                <span style="font-weight: 600; color: ${isMalus ? '#ef4444' : '#fff'};">${sign}${val}</span>
+            </div>`;
+        }).join('');
+        
+    let effectHtml = '';
+    if (eq.specialEffect && eq.specialEffect !== 'NONE') {
+        const effectLabels = {
+            'LIFESTEAL': 'Vol de Vie',
+            'THORNS': 'Épines',
+            'MANA_SHIELD': 'Bouclier de Mana',
+            'CHEAT_DEATH': 'Ange Gardien',
+            'CRIT_DAMAGE': 'Dégâts Critiques'
+        };
+        const label = effectLabels[eq.specialEffect] || eq.specialEffect;
+        effectHtml = `<div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
+            <div style="color: #c084fc; display: flex; align-items: center; justify-content: space-between; gap: 0.3rem;">
+                <div style="display: flex; align-items: center; gap: 0.3rem;">
+                    <span class="material-symbols-outlined" style="font-size: 1rem;">auto_awesome</span>
+                    ${label}
+                </div>
+                <span style="font-weight: 600; color: #fff;">${eq.specialEffectValue || ''}</span>
+            </div>
+        </div>`;
+    }
+
+    if (!statsHtml && !effectHtml) return `<div style="color: #94a3b8; font-style: italic; min-width: 150px; text-align: center; padding: 0.5rem;">Aucun attribut</div>`;
+
+    return `<div style="min-width: 150px; padding: 0.5rem;">
+        ${statsHtml}
+        ${effectHtml}
+    </div>`;
+}
+
 async function openChest() {
     if (!sessionId) return;
     try {
@@ -1035,8 +1093,36 @@ function updateUI(data) {
                                 priceHtml = `<span style="color: #10b981; display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem;">sell</span>Gratuit</span>`;
                             }
 
+                            let isPurchased = false;
+                            if (data.purchasedMerchantItems && data.purchasedMerchantItems.includes(idx)) {
+                                isPurchased = true;
+                            }
+
+                            let buttonHtml = '';
+                            if (isPurchased) {
+                                buttonHtml = `<button id="btn_buy_${idx}" type="button" style="background: linear-gradient(135deg, #ef4444, #b91c1c); color: white; border: none; border-radius: 8px; padding: 0.6rem 1.2rem; font-weight: 700; font-size: 1rem; cursor: not-allowed; display: flex; align-items: center; gap: 0.5rem; opacity: 0.7;">
+                                                  <span class="material-symbols-outlined" style="font-size: 1.2rem;">remove_shopping_cart</span>
+                                                  Vendu
+                                              </button>`;
+                            } else {
+                                buttonHtml = `<button id="btn_buy_${idx}" type="button" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 8px; padding: 0.6rem 1.2rem; font-weight: 700; font-size: 1rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s ease; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);" onclick="openBuyModal(${idx}, \`${nameHtml.replace(/'/g, "\\'").replace(/"/g, '&quot;')}\`)" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='none'">
+                                                  <span class="material-symbols-outlined" style="font-size: 1.2rem;">shopping_cart</span>
+                                                  Acheter
+                                              </button>`;
+                            }
+
+                            let tooltipDataHtml = '';
+                            if (entry.equipment) {
+                                tooltipDataHtml = generateEquipmentTooltipHTML(entry.equipment);
+                            } else if (entry.specialItemName) {
+                                tooltipDataHtml = `<div style="padding: 0.5rem; color: #d946ef; font-weight: 600; text-align: center; min-width: 150px;">Objet Spécial</div><div style="color: #94a3b8; text-align: center; font-size: 0.9rem;">Cet objet aura un effet unique !</div>`;
+                            }
+
+                            const tooltipAttrs = tooltipDataHtml ? 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"' : '';
+
                             lootContainer.innerHTML += `
-                                <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid ${rarityColor}50; padding: 1rem; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; gap: 1rem; width: 48%; min-width: 350px; flex: 1 1 auto; max-width: 500px; transition: all 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.4)';" onmouseout="this.style.transform='none'; this.style.boxShadow='none';">
+                                <div ${tooltipAttrs} style="background: rgba(15, 23, 42, 0.6); border: 1px solid ${rarityColor}50; padding: 1rem; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; gap: 1rem; width: 48%; min-width: 350px; flex: 1 1 auto; max-width: 500px; transition: all 0.2s ease; position: relative;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.4)';" onmouseout="this.style.transform='none'; this.style.boxShadow='none';">
+                                    ${tooltipDataHtml ? `<template class="tooltip-data">${tooltipDataHtml}</template>` : ''}
                                     <div style="display: flex; align-items: center; gap: 1rem;">
                                         <div style="width: 48px; height: 48px; border-radius: 8px; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; border: 1px solid ${rarityColor}30;">
                                             ${iconHtml}
@@ -1048,10 +1134,7 @@ function updateUI(data) {
                                             </div>
                                         </div>
                                     </div>
-                                    <button id="btn_buy_${idx}" type="button" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 8px; padding: 0.6rem 1.2rem; font-weight: 700; font-size: 1rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s ease; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);" onclick="openBuyModal(${idx}, \`${nameHtml.replace(/'/g, "\\'").replace(/"/g, '&quot;')}\`)" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='none'">
-                                        <span class="material-symbols-outlined" style="font-size: 1.2rem;">shopping_cart</span>
-                                        Acheter
-                                    </button>
+                                    ${buttonHtml}
                                 </div>
                             `;
                         });
