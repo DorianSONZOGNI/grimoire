@@ -69,13 +69,7 @@ async function startCombat(characterIds, dungeonId) {
     }
 }
 
-function selectTarget(index) {
-    if (!currentSessionData || currentSessionData.enemies.length <= index) return;
-    if (currentSessionData.enemies[index].dead) return;
 
-    selectedTargetIndex = index;
-    updateUI(currentSessionData);
-}
 
 // Ally target selection is now handled entirely within the combat prompt mode
 // ===== Target Selection for Cast =====
@@ -201,7 +195,7 @@ async function doAction(spellId = null) {
     if (!sessionId || !currentSessionData) return;
 
     // Ensure we have a valid target
-    if (currentSessionData.enemies.length > 0 && currentSessionData.enemies[selectedTargetIndex].dead) {
+    if (currentSessionData.enemies.length > 0 && (selectedTargetIndex === null || currentSessionData.enemies[selectedTargetIndex].dead)) {
         // Auto select first alive target
         selectedTargetIndex = currentSessionData.enemies.findIndex(e => !e.dead);
         if (selectedTargetIndex === -1) return; // All dead
@@ -733,7 +727,6 @@ function renderEnemies(enemies) {
         const div = document.createElement('div');
         div.className = `fighter fighter-enemy enemy-card ${isActive ? 'active' : ''} ${activeMonster.dead ? 'dead' : ''}`;
         div.dataset.index = index;
-        div.onclick = () => selectTarget(index);
         
         if (isActive) {
             div.style.borderColor = '#ef4444';
