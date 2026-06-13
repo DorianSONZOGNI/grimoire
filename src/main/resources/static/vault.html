@@ -587,22 +587,28 @@
             <div class="equip-modal-body" style="padding: 1.5rem; overflow-y: auto;">
                 <div class="equip-create-section">
                     <div class="eq-create-field" style="margin-bottom: 1rem;">
-                        <label>Nom de l'Anomalie</label>
-                        <input type="text" id="anomalieName" placeholder="Ex: Âme de Démon">
+                        <label for="anomalieName">Nom de l'Anomalie</label>
+                        <input type="text" id="anomalieName" placeholder="ex: Cœur de Ténèbres">
                     </div>
+            
+                    <div class="eq-create-field" style="margin-bottom: 1rem;">
+                        <label for="anomalieDescription">Description de l'Anomalie</label>
+                        <textarea id="anomalieDescription" placeholder="Une relique impie imprégnée d'une aura mystique..."></textarea>
+                    </div>
+            
                     <div class="eq-create-field" style="margin-bottom: 1.5rem;">
-                        <label>Spiritualité</label>
-                        <select id="anomalieSpiritualite" class="form-control" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px;">
+                        <label>Type de Spiritualité</label>
+                        <select id="anomalieSpiritualite">
                             <option value="TENEBRES">Ténèbres</option>
                             <option value="ESPRIT">Esprit</option>
                             <option value="KARMA">Karma</option>
                         </select>
                     </div>
 
-                    <button type="button" class="eq-create-btn" onclick="submitAnomalie()"
+                    <button type="button" id="submitAnomalieBtn" class="eq-create-btn" onclick="submitAnomalie()"
                         style="width: 100%; padding: 0.8rem; border-radius: 8px; background: #d946ef; color: white; border: none; font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: background 0.2s;">
-                        <span class="material-symbols-outlined" style="font-size: 1.2rem;">add</span>
-                        Créer l'Anomalie
+                        <span class="material-symbols-outlined" id="submitAnomalieBtnIcon" style="font-size: 1.2rem;">add</span>
+                        <span id="submitAnomalieBtnText">Créer l'Anomalie</span>
                     </button>
                 </div>
             </div>

@@ -410,7 +410,8 @@
 }
 
 .eq-create-field input,
-.eq-create-field select {
+.eq-create-field select,
+.eq-create-field textarea {
     padding: 0.35rem 0.5rem;
     font-size: 0.8rem;
     background: rgba(0, 0, 0, 0.3);
@@ -424,8 +425,14 @@
     min-width: 0;
 }
 
+.eq-create-field textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
 .eq-create-field input:focus,
-.eq-create-field select:focus {
+.eq-create-field select:focus,
+.eq-create-field textarea:focus {
     border-color: #f59e0b;
 }
 

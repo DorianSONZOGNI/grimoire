@@ -52,6 +52,20 @@ public class AnomalieController {
             return ResponseEntity.status(404).body("Utilisateur introuvable");
         }
 
+        if (anomalie.getId() != null) {
+            Optional<Anomalie> existingOpt = anomalieRepository.findById(anomalie.getId());
+            if (existingOpt.isPresent()) {
+                Anomalie existing = existingOpt.get();
+                if (!existing.getOwnerUsername().equals(username)) {
+                    return ResponseEntity.status(403).body("Ce n'est pas votre anomalie.");
+                }
+                existing.setName(anomalie.getName());
+                existing.setSpiritualite(anomalie.getSpiritualite());
+                existing.setDescription(anomalie.getDescription());
+                return ResponseEntity.ok(anomalieRepository.save(existing));
+            }
+        }
+
         anomalie.setOwnerUsername(username);
         anomalie.setUser(userOpt.get());
         

@@ -26,6 +26,9 @@ public class Anomalie {
 
     private String ownerUsername;
 
+    @Column(length = 1000)
+    private String description;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     @JsonIgnore

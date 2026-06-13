@@ -317,13 +317,16 @@ function renderGrid(equipments) {
                         </div>
                     </div>
                     <div class="vault-card-actions">
+                        ${window.isAdmin ? `<button class="vault-btn-edit" onclick="editAnomalie(${eq.id})" title="Modifier l'anomalie">
+                            <span class="material-symbols-outlined">edit</span>
+                        </button>` : ''}
                         ${(window.isAdmin || eq.ownerUsername === window.currentUser?.username) ? `<button class="vault-btn-delete" onclick="deleteAnomalie(${eq.id})" title="Détruire l'anomalie">
                             <span class="material-symbols-outlined">delete</span>
                         </button>` : ''}
                     </div>
                 </div>
                 <div class="vault-card-stats" style="color: #e879f9; font-size: 0.9rem; text-align: center; font-style: italic; background: rgba(217,70,239,0.05); border-radius: 8px; padding: 1rem; border: 1px dashed rgba(217,70,239,0.2);">
-                    Une relique impie imprégnée d'une aura mystique.
+                    ${eq.description || "Une relique impie imprégnée d'une aura mystique."}
                 </div>
                 <div class="vault-card-footer">
                     <div class="vault-card-weight"></div>
@@ -629,19 +632,51 @@ window.editEquipment = function (id) {
     document.getElementById('equipCreateModal').classList.add('show');
 }
 
+let editingAnomalieId = null;
+
 window.openCreateAnomalieModal = function () {
+    editingAnomalieId = null;
+    const titleEl = document.getElementById('anomalieModalTitle');
+    if (titleEl) titleEl.innerText = 'Créer une anomalie';
+    const btnTextEl = document.getElementById('submitAnomalieBtnText');
+    if (btnTextEl) btnTextEl.innerText = "Créer l'Anomalie";
+    const btnIconEl = document.getElementById('submitAnomalieBtnIcon');
+    if (btnIconEl) btnIconEl.innerText = "add";
+
     document.getElementById('anomalieName').value = '';
+    document.getElementById('anomalieDescription').value = '';
     document.getElementById('anomalieSpiritualite').value = 'TENEBRES';
+    document.getElementById('anomalieCreateModal').classList.add('show');
+};
+
+window.editAnomalie = function(id) {
+    editingAnomalieId = id;
+    const eq = allEquipments.find(e => e.id === id && e.isAnomalie);
+    if (!eq) return;
+
+    const titleEl = document.getElementById('anomalieModalTitle');
+    if (titleEl) titleEl.innerText = 'Modifier une anomalie';
+    const btnTextEl = document.getElementById('submitAnomalieBtnText');
+    if (btnTextEl) btnTextEl.innerText = "Enregistrer";
+    const btnIconEl = document.getElementById('submitAnomalieBtnIcon');
+    if (btnIconEl) btnIconEl.innerText = "save";
+
+    document.getElementById('anomalieName').value = eq.name || '';
+    document.getElementById('anomalieDescription').value = eq.description || '';
+    document.getElementById('anomalieSpiritualite').value = eq.spiritualite || 'TENEBRES';
+
     document.getElementById('anomalieCreateModal').classList.add('show');
 };
 
 window.closeCreateAnomalieModal = function () {
     document.getElementById('anomalieCreateModal').classList.remove('show');
+    editingAnomalieId = null;
 };
 
 window.submitAnomalie = async function () {
     const name = document.getElementById('anomalieName').value.trim();
     const spiritualite = document.getElementById('anomalieSpiritualite').value;
+    const description = document.getElementById('anomalieDescription').value.trim();
 
     if (!name) {
         showNotif("Veuillez entrer un nom pour l'anomalie.", true);
@@ -649,8 +684,10 @@ window.submitAnomalie = async function () {
     }
 
     const payload = {
+        id: editingAnomalieId,
         name: name,
-        spiritualite: spiritualite
+        spiritualite: spiritualite,
+        description: description
     };
 
     try {
@@ -666,12 +703,12 @@ window.submitAnomalie = async function () {
             return;
         }
 
-        showNotif("Anomalie créée avec succès !");
+        showNotif(editingAnomalieId ? "Anomalie modifiée avec succès !" : "Anomalie créée avec succès !");
         closeCreateAnomalieModal();
-        // Optionnel : Recharger la liste si on affichait les anomalies
+        await loadEquipments(); // Recharger les anomalies et équipements
     } catch (e) {
         console.error(e);
-        showNotif("Erreur lors de la création de l'anomalie.", true);
+        showNotif("Erreur lors de la sauvegarde de l'anomalie.", true);
     }
 };
 
