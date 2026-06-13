@@ -64,6 +64,12 @@ async function startCombat(characterIds, dungeonId) {
 
         const data = await res.json();
         sessionId = data.sessionId;
+        
+        // Initialize previous XP for the first room
+        data.players.forEach(p => {
+            previousPlayerXP[p.id] = p.experience;
+        });
+        
         updateUI(data);
     } catch (e) {
         console.error(e);
@@ -389,6 +395,12 @@ async function nextRoom() {
     try {
         const res = await fetch(`/api/pve/combat/${sessionId}/next-room`, { method: 'POST' });
         const data = await res.json();
+        
+        // Track the current XP so animations in new rooms start from this baseline
+        data.players.forEach(p => {
+            previousPlayerXP[p.id] = p.experience;
+        });
+        
         updateUI(data);
     } catch (e) {
         console.error(e);
@@ -441,13 +453,14 @@ async function openChest() {
                 return { level, currentLvlXp, nextLvlXp, progress };
             }
 
+            // First pass: Build HTML for all XP cards
+            let cardsHtml = '';
             data.players.forEach(p => {
                 let oldExp = previousPlayerXP[p.id] !== undefined ? previousPlayerXP[p.id] : p.experience;
-                let endExp = p.experience;
                 let oldStats = getExpStats(oldExp);
 
-                lootContainer.innerHTML += `
-                    <div id="chest-xp-card-${p.id}" style="background: rgba(0,0,0,0.4); padding: 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); text-align: center; width: 150px; position: relative; overflow: hidden; transition: all 0.5s;">
+                cardsHtml += `
+                    <div id="chest-xp-card-${p.id}" style="background: rgba(0,0,0,0.4); padding: 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); text-align: center; width: 150px; position: relative; overflow: hidden; transition: all 0.5s; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
                         <div style="color: #e2e8f0; font-weight: bold; margin-bottom: 0.5rem; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; position: relative; z-index: 2;">${p.name}</div>
                         <div id="chest-xp-lvl-${p.id}" style="color: #38bdf8; font-size: 0.9rem; margin-bottom: 0.5rem; font-weight: 600; transition: color 0.3s, transform 0.3s; display: inline-block; position: relative; z-index: 2;">Niv. ${oldStats.level}</div>
                         <div style="width: 100%; background: #334155; border-radius: 4px; height: 8px; margin-bottom: 0.3rem; position: relative; z-index: 2;">
@@ -456,6 +469,13 @@ async function openChest() {
                         <div id="chest-xp-text-${p.id}" style="font-size: 0.8rem; color: #94a3b8; font-family: monospace; position: relative; z-index: 2;">${oldExp} / ${oldStats.level === 5 ? 'MAX' : oldStats.nextLvlXp} XP</div>
                     </div>
                 `;
+            });
+            lootContainer.innerHTML = cardsHtml;
+
+            // Second pass: setup animations
+            data.players.forEach(p => {
+                let oldExp = previousPlayerXP[p.id] !== undefined ? previousPlayerXP[p.id] : p.experience;
+                let endExp = p.experience;
                 
                 // Animate XP
                 setTimeout(() => {
@@ -537,8 +557,21 @@ async function openChest() {
                         }
                     }
                     requestAnimationFrame(animate);
-                }, 100);
+                }, 600); // Wait for the cards to pop in before animating the bar
             });
+            
+            // Track previous XP for any subsequent actions in this room
+            data.players.forEach(p => {
+                previousPlayerXP[p.id] = p.experience;
+            });
+            
+            // Ensure popIn keyframes exist
+            if (!document.getElementById('chestAnimStyle')) {
+                const style = document.createElement('style');
+                style.id = 'chestAnimStyle';
+                style.innerHTML = `@keyframes popIn { to { opacity: 1; transform: scale(1); } }`;
+                document.head.appendChild(style);
+            }
             
             // Also show gained items (check logs for "Vous avez trouvé un objet")
             let gainedItemsHtml = '';
@@ -565,14 +598,6 @@ async function openChest() {
                 wrapper.style.marginTop = '1rem';
                 wrapper.style.width = '100%';
                 wrapper.innerHTML = gainedItemsHtml;
-                
-                // Add popIn keyframes dynamically if not exists
-                if (!document.getElementById('chestAnimStyle')) {
-                    const style = document.createElement('style');
-                    style.id = 'chestAnimStyle';
-                    style.innerHTML = `@keyframes popIn { to { opacity: 1; transform: scale(1); } }`;
-                    document.head.appendChild(style);
-                }
                 
                 lootContainer.appendChild(wrapper);
             }
