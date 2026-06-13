@@ -113,8 +113,22 @@ document.addEventListener('DOMContentLoaded', () => {
                         s.lootTable = r.lootTable;
                     }
                 } else if (r.type === 'EVENT') {
+                    s.eventSubType = r.eventSubType || 'ALTERATION';
                     s.eventText = r.eventText || "Événement mystérieux";
-                    s.eventEffectAmount = r.eventEffectAmount || 0;
+                    s.eventEffectAmount = r.eventEffectAmount || 0; // Legacy / Generic
+                    s.alterationType = r.alterationType || 'VIE_XP';
+                    s.alterationHpAmount = r.alterationHpAmount || 0;
+                    s.alterationExpAmount = r.alterationExpAmount || 0;
+                    s.alterationRewardType = r.alterationRewardType || 'SPIRITUAL_XP';
+                    s.alterationSpiritualXpReward = r.alterationSpiritualXpReward || 0;
+                    s.alterationSpecialItemReward = r.alterationSpecialItemReward || null;
+                    s.alterationRequiredItem = r.alterationRequiredItem || null;
+                    s.trapType = r.trapType || null;
+                    s.trapAmount = r.trapAmount || 0;
+                    s.doorOutcomes = r.doorOutcomes ? JSON.stringify(r.doorOutcomes) : null;
+                    if (r.lootTable) {
+                        s.lootTable = r.lootTable;
+                    }
                 }
                 return s;
             })
@@ -152,8 +166,14 @@ window.addRoom = function (type) {
         selectedRooms.push({ type: 'COMBAT', monsters: [] });
     } else if (type === 'TREASURE') {
         selectedRooms.push({ type: 'TREASURE', treasureGold: 50, treasureExp: 10 });
-    } else if (type === 'EVENT') {
-        selectedRooms.push({ type: 'EVENT', eventText: 'Un marchand ambulant', eventEffectAmount: 0 });
+    } else if (type === 'ALTERATION') {
+        selectedRooms.push({ type: 'EVENT', eventSubType: 'ALTERATION', eventText: 'Une aura mystérieuse émane des murs...', alterationType: 'VIE_XP', alterationHpAmount: 0, alterationExpAmount: 0, alterationRewardType: 'SPIRITUAL_XP', alterationSpiritualXpReward: 0, alterationSpecialItemReward: null, alterationRequiredItem: null });
+    } else if (type === 'RENCONTRE') {
+        selectedRooms.push({ type: 'EVENT', eventSubType: 'RENCONTRE', eventText: 'Un marchand ambulant vous interpelle...', lootTable: [] });
+    } else if (type === 'PIEGE') {
+        selectedRooms.push({ type: 'EVENT', eventSubType: 'PIEGE', eventText: 'Un piège se déclenche !', trapType: 'PV', trapAmount: 10 });
+    } else if (type === 'PORTE_ETRANGE') {
+        selectedRooms.push({ type: 'EVENT', eventSubType: 'PORTE_ETRANGE', eventText: 'Une porte étrange se dresse devant vous...', doorOutcomes: [] });
     }
     renderRooms();
 };
@@ -410,13 +430,191 @@ function renderRooms() {
                 ${lootHtml}
             `;
         } else if (room.type === 'EVENT') {
-            headerIcon = 'auto_awesome'; headerColor = '#8b5cf6'; headerTitle = "Salle d'Événement";
-            contentHtml = `
-                <div style="margin-top: 1rem;">
-                    <label style="font-size: 0.8rem; color: #94a3b8;">Texte de l'événement</label>
-                    <input type="text" class="form-control" value="${room.eventText}" onchange="updateRoomField(${rIndex}, 'eventText', this.value)">
-                </div>
-            `;
+            const subType = room.eventSubType || 'ALTERATION';
+            
+            if (subType === 'ALTERATION') {
+                headerIcon = 'blur_on'; headerColor = '#8b5cf6'; headerTitle = 'Altération';
+                const altType = room.alterationType || 'VIE_XP';
+                
+                contentHtml = `
+                    <div style="margin-top: 1rem;">
+                        <label style="font-size: 0.8rem; color: #94a3b8;">Texte de l'événement</label>
+                        <input type="text" class="form-control" value="${room.eventText || ''}" onchange="updateRoomField(${rIndex}, 'eventText', this.value)">
+                    </div>
+                    <div style="margin-top: 0.75rem;">
+                        <label style="font-size: 0.8rem; color: #94a3b8;">Possibilité offerte</label>
+                        <select class="form-control" onchange="updateRoomField(${rIndex}, 'alterationType', this.value); renderRooms();">
+                            <option value="VIE_XP" ${altType === 'VIE_XP' ? 'selected' : ''}>Don de vie et/ou d'xp</option>
+                            <option value="ITEM" ${altType === 'ITEM' ? 'selected' : ''}>Don d'un item spécial</option>
+                            <option value="RIEN" ${altType === 'RIEN' ? 'selected' : ''}>Ne rien faire</option>
+                        </select>
+                    </div>
+                `;
+                
+                if (altType === 'VIE_XP') {
+                    const rewType = room.alterationRewardType || 'SPIRITUAL_XP';
+                    contentHtml += `
+                    <div style="display: flex; gap: 1rem; margin-top: 0.75rem;">
+                        <div style="flex: 1;">
+                            <label style="font-size: 0.8rem; color: #94a3b8;">Effet PV (+ soin, - perte)</label>
+                            <input type="number" class="form-control" value="${room.alterationHpAmount || 0}" onchange="updateRoomField(${rIndex}, 'alterationHpAmount', parseInt(this.value))">
+                        </div>
+                        <div style="flex: 1;">
+                            <label style="font-size: 0.8rem; color: #94a3b8;">Effet XP (+ gain, - perte)</label>
+                            <input type="number" class="form-control" value="${room.alterationExpAmount || 0}" onchange="updateRoomField(${rIndex}, 'alterationExpAmount', parseInt(this.value))">
+                        </div>
+                    </div>
+                    <div style="margin-top: 0.75rem; background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 4px;">
+                        <label style="font-size: 0.8rem; color: #fbbf24;">Récompense en échange</label>
+                        <select class="form-control" onchange="updateRoomField(${rIndex}, 'alterationRewardType', this.value); renderRooms();" style="margin-bottom: 0.5rem;">
+                            <option value="SPIRITUAL_XP" ${rewType === 'SPIRITUAL_XP' ? 'selected' : ''}>XP de Spiritualité</option>
+                            <option value="SPECIAL_ITEM" ${rewType === 'SPECIAL_ITEM' ? 'selected' : ''}>Item Spécial</option>
+                        </select>
+                        ${rewType === 'SPIRITUAL_XP' ? `
+                            <label style="font-size: 0.8rem; color: #94a3b8;">Gain XP Spiritualité</label>
+                            <input type="number" class="form-control" value="${room.alterationSpiritualXpReward || 0}" onchange="updateRoomField(${rIndex}, 'alterationSpiritualXpReward', parseInt(this.value))">
+                        ` : `
+                            <label style="font-size: 0.8rem; color: #94a3b8;">ID de l'Item Spécial (à venir)</label>
+                            <input type="text" class="form-control" value="${room.alterationSpecialItemReward || ''}" onchange="updateRoomField(${rIndex}, 'alterationSpecialItemReward', this.value)" placeholder="ex: ITEM_SANG_DE_DEMON">
+                        `}
+                    </div>
+                    `;
+                } else if (altType === 'ITEM') {
+                    contentHtml += `
+                    <div style="margin-top: 0.75rem;">
+                        <label style="font-size: 0.8rem; color: #94a3b8;">Item Spécial Requis (que le joueur donne)</label>
+                        <input type="text" class="form-control" value="${room.alterationRequiredItem || ''}" onchange="updateRoomField(${rIndex}, 'alterationRequiredItem', this.value)" placeholder="ex: ITEM_FLEUR_NOIRE">
+                    </div>
+                    <div style="margin-top: 0.5rem;">
+                        <label style="font-size: 0.8rem; color: #fbbf24;">Récompense (XP Spiritualité)</label>
+                        <input type="number" class="form-control" value="${room.alterationSpiritualXpReward || 0}" onchange="updateRoomField(${rIndex}, 'alterationSpiritualXpReward', parseInt(this.value))">
+                    </div>
+                    `;
+                }
+            } else if (subType === 'RENCONTRE') {
+                headerIcon = 'storefront'; headerColor = '#10b981'; headerTitle = 'Rencontre';
+                
+                if (!room.lootTable) room.lootTable = [];
+                
+                let shopHtml = '<div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem;">';
+                if (room.lootTable.length === 0) {
+                    shopHtml += `<div style="font-size:0.8rem; color: #94a3b8;">Aucun objet en vente.</div>`;
+                } else {
+                    room.lootTable.forEach((loot, lIndex) => {
+                        const eq = allEquipments.find(x => x.id === loot.equipmentId);
+                        if (eq) {
+                            const slotInfo = SLOT_LABELS[eq.slot] || { label: eq.slot, icon: 'help', color: '#94a3b8' };
+                            const rarityColor = RARITY_COLORS[eq.rarity] || '#ef4444';
+                            const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
+                            shopHtml += `
+                                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); padding: 0.4rem 0.8rem; border-radius: 4px;">
+                                    <span style="font-size: 0.85rem; color: #f8fafc; display: flex; align-items: center; gap: 0.4rem;"><span class="material-symbols-outlined${extraClass}" style="font-size:1rem; color:${slotInfo.color};">${slotInfo.icon}</span> <span style="color:${rarityColor};">${eq.name}</span> <span style="color:#f59e0b; font-size:0.8rem;">(${loot.probability} Or)</span></span>
+                                    <button type="button" onclick="removeLootFromRoom(${rIndex}, ${lIndex})" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 0;"><span class="material-symbols-outlined" style="font-size: 1rem;">close</span></button>
+                                </div>
+                            `;
+                        }
+                    });
+                }
+                shopHtml += `</div>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; align-items: stretch; position: relative;">
+                        <div class="custom-select-wrapper" id="room_loot_select_wrapper_${rIndex}" style="flex: 2; z-index: ${100 - rIndex}; margin: 0;">
+                            <div class="custom-select-trigger" onclick="toggleLootSelect(${rIndex})" style="padding: 0.6rem 1rem; border-radius: 8px;">
+                                <span class="cs-label" id="room_loot_label_${rIndex}"><span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">category</span> Objet...</span>
+                                <span class="material-symbols-outlined">expand_more</span>
+                            </div>
+                            <div class="custom-select-options" id="room_loot_options_${rIndex}" style="max-height: 200px; overflow-y: auto;">
+                `;
+                allEquipments.forEach(eq => {
+                    const slotInfo = SLOT_LABELS[eq.slot] || { label: eq.slot, icon: 'help', color: '#94a3b8' };
+                    const rarityColor = RARITY_COLORS[eq.rarity] || '#ef4444';
+                    const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
+                    shopHtml += `<div class="custom-option" onclick="selectLootOption(${rIndex}, ${eq.id}, '${eq.name.replace(/'/g, "\\'")}', '${slotInfo.icon}', '${slotInfo.color}', '${rarityColor}', '${slotInfo.extraClass || ''}')"><span class="material-symbols-outlined cs-icon${extraClass}" style="color: ${slotInfo.color};">${slotInfo.icon}</span> <span style="color: ${rarityColor};">${eq.name}</span></div>`;
+                });
+                shopHtml += `
+                            </div>
+                            <input type="hidden" id="room_loot_select_${rIndex}" value="">
+                        </div>
+                        <input type="number" id="room_loot_prob_${rIndex}" class="form-control" style="flex: 1; min-width: 60px;" placeholder="Prix (Or)" step="1" min="0">
+                        <button type="button" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 0 1.2rem; font-size: 0.9rem; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 0.3rem;" onclick="addLootToRoom(${rIndex})">
+                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">add</span>
+                        </button>
+                    </div>
+                `;
+                
+                contentHtml = `
+                    <div style="margin-top: 1rem;">
+                        <label style="font-size: 0.8rem; color: #94a3b8;">Texte de l'événement</label>
+                        <input type="text" class="form-control" value="${room.eventText || ''}" onchange="updateRoomField(${rIndex}, 'eventText', this.value)">
+                    </div>
+                    ${shopHtml}
+                `;
+            } else if (subType === 'PIEGE') {
+                headerIcon = 'warning'; headerColor = '#f87171'; headerTitle = 'Piège';
+                contentHtml = `
+                    <div style="margin-top: 1rem;">
+                        <label style="font-size: 0.8rem; color: #94a3b8;">Texte du piège</label>
+                        <input type="text" class="form-control" value="${room.eventText || ''}" onchange="updateRoomField(${rIndex}, 'eventText', this.value)">
+                    </div>
+                    <div style="display: flex; gap: 1rem; margin-top: 0.75rem;">
+                        <div style="flex: 1;">
+                            <label style="font-size: 0.8rem; color: #94a3b8;">Type de piège</label>
+                            <select class="form-control" onchange="updateRoomField(${rIndex}, 'trapType', this.value)">
+                                <option value="PV" ${room.trapType === 'PV' ? 'selected' : ''}>Perte de PV</option>
+                                <option value="MANA" ${room.trapType === 'MANA' ? 'selected' : ''}>Perte de Mana</option>
+                                <option value="CORDE" ${room.trapType === 'CORDE' ? 'selected' : ''}>Nécessite une Corde</option>
+                            </select>
+                        </div>
+                        <div style="flex: 1;">
+                            <label style="font-size: 0.8rem; color: #94a3b8;">Montant</label>
+                            <input type="number" class="form-control" value="${room.trapAmount || 0}" onchange="updateRoomField(${rIndex}, 'trapAmount', parseInt(this.value))">
+                        </div>
+                    </div>
+                `;
+            } else if (subType === 'PORTE_ETRANGE') {
+                headerIcon = 'door_front'; headerColor = '#fbbf24'; headerTitle = 'Porte Étrange';
+                
+                if (!room.doorOutcomes) room.doorOutcomes = [];
+                
+                let outcomesHtml = '<div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem;">';
+                if (room.doorOutcomes.length === 0) {
+                    outcomesHtml += `<div style="font-size:0.8rem; color: #94a3b8;">Aucune issue configurée.</div>`;
+                } else {
+                    room.doorOutcomes.forEach((outcome, oIndex) => {
+                        const outcomeLabels = { 'BOSS': '👹 Boss', 'ITEM': '🎁 Item', 'AUTEL': '🕯️ Autel Sacrificiel', 'TRESOR': '💰 Trésor', 'PIEGE': '⚠️ Piège', 'RIEN': '🚪 Rien' };
+                        const label = outcomeLabels[outcome.type] || outcome.type;
+                        outcomesHtml += `
+                            <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); padding: 0.4rem 0.8rem; border-radius: 4px;">
+                                <span style="font-size: 0.85rem; color: #f8fafc;">${label} <span style="color:#fbbf24; font-size:0.8rem;">(${outcome.probability}%)</span></span>
+                                <button type="button" onclick="removeDoorOutcome(${rIndex}, ${oIndex})" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 0;"><span class="material-symbols-outlined" style="font-size: 1rem;">close</span></button>
+                            </div>
+                        `;
+                    });
+                }
+                outcomesHtml += `</div>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; align-items: stretch;">
+                        <select id="room_door_outcome_${rIndex}" class="form-control" style="flex: 2;">
+                            <option value="BOSS">👹 Boss</option>
+                            <option value="ITEM">🎁 Item</option>
+                            <option value="AUTEL">🕯️ Autel Sacrificiel</option>
+                            <option value="TRESOR">💰 Trésor</option>
+                            <option value="PIEGE">⚠️ Piège</option>
+                            <option value="RIEN">🚪 Rien</option>
+                        </select>
+                        <input type="number" id="room_door_prob_${rIndex}" class="form-control" style="flex: 1; min-width: 60px;" placeholder="Prob (%)" step="1" min="0" max="100">
+                        <button type="button" style="background: linear-gradient(135deg, #fbbf24, #d97706); color: white; border: none; padding: 0 1.2rem; font-size: 0.9rem; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 0.3rem;" onclick="addDoorOutcome(${rIndex})">
+                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">add</span>
+                        </button>
+                    </div>
+                `;
+                
+                contentHtml = `
+                    <div style="margin-top: 1rem;">
+                        <label style="font-size: 0.8rem; color: #94a3b8;">Texte de l'événement</label>
+                        <input type="text" class="form-control" value="${room.eventText || ''}" onchange="updateRoomField(${rIndex}, 'eventText', this.value)">
+                    </div>
+                    ${outcomesHtml}
+                `;
+            }
         }
 
         div.innerHTML = `
@@ -612,7 +810,7 @@ async function loadDungeons() {
 
             dungeons.forEach(d => {
                 let totalSalles = d.salles ? d.salles.length : 0;
-                let combats = 0, treasures = 0, events = 0, totalMobs = 0;
+                let combats = 0, treasures = 0, alterations = 0, rencontres = 0, pieges = 0, portes = 0, totalMobs = 0;
                 if (d.salles) {
                     d.salles.forEach(s => {
                         if (s.type === 'COMBAT') {
@@ -620,9 +818,20 @@ async function loadDungeons() {
                             totalMobs += (s.monsters ? s.monsters.length : 0);
                         }
                         else if (s.type === 'TREASURE') { treasures++; }
-                        else if (s.type === 'EVENT') { events++; }
+                        else if (s.type === 'EVENT') {
+                            if (s.eventSubType === 'RENCONTRE') rencontres++;
+                            else if (s.eventSubType === 'PIEGE') pieges++;
+                            else if (s.eventSubType === 'PORTE_ETRANGE') portes++;
+                            else alterations++;
+                        }
                     });
                 }
+
+                let eventDetails = '';
+                if (alterations > 0) eventDetails += `<span style="color: #8b5cf6; display: inline-flex; align-items: center; gap: 0.2rem; margin-right: 0.5rem;"><span class="material-symbols-outlined" style="font-size: 0.9rem;">blur_on</span>${alterations}</span>`;
+                if (rencontres > 0) eventDetails += `<span style="color: #10b981; display: inline-flex; align-items: center; gap: 0.2rem; margin-right: 0.5rem;"><span class="material-symbols-outlined" style="font-size: 0.9rem;">storefront</span>${rencontres}</span>`;
+                if (pieges > 0) eventDetails += `<span style="color: #f87171; display: inline-flex; align-items: center; gap: 0.2rem; margin-right: 0.5rem;"><span class="material-symbols-outlined" style="font-size: 0.9rem;">warning</span>${pieges}</span>`;
+                if (portes > 0) eventDetails += `<span style="color: #fbbf24; display: inline-flex; align-items: center; gap: 0.2rem; margin-right: 0.5rem;"><span class="material-symbols-outlined" style="font-size: 0.9rem;">door_front</span>${portes}</span>`;
 
                 list.innerHTML += `
                     <div class="monster-card">
@@ -642,9 +851,7 @@ async function loadDungeons() {
                             <div style="color: #f59e0b; margin-left: 0.5rem; display: flex; align-items: center; gap: 0.3rem;">
                                 <span class="material-symbols-outlined" style="font-size: 1rem;">shopping_bag</span> Trésors : ${treasures}
                             </div>
-                            <div style="color: #8b5cf6; margin-left: 0.5rem; display: flex; align-items: center; gap: 0.3rem;">
-                                <span class="material-symbols-outlined" style="font-size: 1rem;">auto_awesome</span> Event : ${events}
-                            </div>
+                            ${eventDetails ? `<div style="margin-left: 0.5rem; display: flex; align-items: center; gap: 0.3rem; flex-wrap: wrap;">Événements : ${eventDetails}</div>` : ''}
                         </div>
                     </div>
                 `;
@@ -685,8 +892,37 @@ async function editDungeon(id) {
                         room.lootTable = [];
                     }
                 } else if (s.type === 'EVENT') {
+                    room.eventSubType = s.eventSubType || 'ALTERATION';
                     room.eventText = s.eventText;
                     room.eventEffectAmount = s.eventEffectAmount;
+                    room.alterationType = s.alterationType || 'VIE_XP';
+                    room.alterationHpAmount = s.alterationHpAmount || 0;
+                    room.alterationExpAmount = s.alterationExpAmount || 0;
+                    room.alterationRewardType = s.alterationRewardType || 'SPIRITUAL_XP';
+                    room.alterationSpiritualXpReward = s.alterationSpiritualXpReward || 0;
+                    room.alterationSpecialItemReward = s.alterationSpecialItemReward || null;
+                    room.alterationRequiredItem = s.alterationRequiredItem || null;
+                    room.trapType = s.trapType;
+                    room.trapAmount = s.trapAmount || 0;
+                    
+                    if (s.doorOutcomes) {
+                        try {
+                            room.doorOutcomes = typeof s.doorOutcomes === 'string' ? JSON.parse(s.doorOutcomes) : s.doorOutcomes;
+                        } catch(e) {
+                            room.doorOutcomes = [];
+                        }
+                    } else {
+                        room.doorOutcomes = [];
+                    }
+                    
+                    if (s.lootTable) {
+                        room.lootTable = s.lootTable.map(l => ({
+                            equipmentId: l.equipment ? l.equipment.id : l.equipmentId,
+                            probability: l.probability
+                        }));
+                    } else {
+                        room.lootTable = [];
+                    }
                 }
                 return room;
             });
@@ -757,6 +993,25 @@ window.addLootToRoom = function(rIndex) {
 
 window.removeLootFromRoom = function(rIndex, lIndex) {
     selectedRooms[rIndex].lootTable.splice(lIndex, 1);
+    renderRooms();
+};
+
+window.addDoorOutcome = function(rIndex) {
+    const typeEl = document.getElementById('room_door_outcome_' + rIndex);
+    const probEl = document.getElementById('room_door_prob_' + rIndex);
+    const type = typeEl ? typeEl.value : '';
+    const prob = parseFloat(probEl ? probEl.value : 0);
+    if (!type || isNaN(prob) || prob < 0 || prob > 100) {
+        showNotif('Veuillez sélectionner un type et une probabilité (0-100).', true);
+        return;
+    }
+    if (!selectedRooms[rIndex].doorOutcomes) selectedRooms[rIndex].doorOutcomes = [];
+    selectedRooms[rIndex].doorOutcomes.push({ type, probability: prob });
+    renderRooms();
+};
+
+window.removeDoorOutcome = function(rIndex, oIndex) {
+    selectedRooms[rIndex].doorOutcomes.splice(oIndex, 1);
     renderRooms();
 };
 

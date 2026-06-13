@@ -165,7 +165,72 @@ public class CombatService {
                 }
             }
         }
+        
+        session.setRoomEventCompleted(true);
+        return session;
+    }
+    public CombatSession acceptAlteration(String sessionId) {
+        CombatSession session = activeSessions.get(sessionId);
+        if (session == null || session.isFinished()) return session;
+        if (session.getCurrentRoom().getType() != generation.grimoire.enumeration.RoomType.EVENT || 
+            session.getCurrentRoom().getEventSubType() != generation.grimoire.enumeration.EventSubType.ALTERATION) {
+            throw new RuntimeException("Ce n'est pas une salle d'altération !");
+        }
+        if (session.isRoomEventCompleted()) {
+            throw new RuntimeException("L'événement a déjà été résolu.");
+        }
 
+        generation.grimoire.entity.pve.Salle room = session.getCurrentRoom();
+        String altType = room.getAlterationType() != null ? room.getAlterationType() : "VIE_XP";
+        
+        if ("VIE_XP".equals(altType)) {
+            int effect = room.getAlterationHpAmount();
+            int expEffect = room.getAlterationExpAmount();
+            for (Personnage p : session.getPlayers()) {
+                if (p.getHealthCurrent() <= 0) continue;
+                if (effect > 0) p.heal(effect);
+                else if (effect < 0) p.takeDamage(-effect, generation.grimoire.enumeration.DamageType.BRUT);
+                
+                if (expEffect != 0) {
+                    p.setExperience(p.getExperience() + expEffect);
+                }
+                
+                if ("SPIRITUAL_XP".equals(room.getAlterationRewardType())) {
+                    int spXp = room.getAlterationSpiritualXpReward();
+                    if (spXp > 0) p.setSpiritualiteExperience(p.getSpiritualiteExperience() + spXp);
+                }
+                
+                personnageRepository.save(p);
+            }
+            
+            if (effect > 0) session.addLog("Vos héros sont soignés de " + effect + " PV.");
+            else if (effect < 0) session.addLog("Vos héros subissent " + (-effect) + " dégâts !");
+            
+            if (expEffect > 0) session.addLog("Vos héros gagnent " + expEffect + " XP.");
+            else if (expEffect < 0) session.addLog("Vos héros perdent " + (-expEffect) + " XP !");
+            
+            if ("SPIRITUAL_XP".equals(room.getAlterationRewardType()) && room.getAlterationSpiritualXpReward() > 0) {
+                session.addLog("Vos héros reçoivent " + room.getAlterationSpiritualXpReward() + " XP de Spiritualité !");
+            } else if ("SPECIAL_ITEM".equals(room.getAlterationRewardType())) {
+                session.addLog("Vous recevez l'Item Spécial : " + room.getAlterationSpecialItemReward() + " (à venir) !");
+            }
+            
+        } else if ("ITEM".equals(altType)) {
+            int spXp = room.getAlterationSpiritualXpReward();
+            for (Personnage p : session.getPlayers()) {
+                if (p.getHealthCurrent() <= 0) continue;
+                // TODO: Verify player has the item and remove it (alterationRequiredItem)
+                if (spXp > 0) {
+                    p.setSpiritualiteExperience(p.getSpiritualiteExperience() + spXp);
+                    personnageRepository.save(p);
+                }
+            }
+            session.addLog("Vous avez donné " + room.getAlterationRequiredItem() + " !");
+            if (spXp > 0) {
+                session.addLog("Vos héros reçoivent " + spXp + " XP de Spiritualité en échange !");
+            }
+        }
+        
         session.setRoomEventCompleted(true);
         return session;
     }
@@ -175,18 +240,39 @@ public class CombatService {
         if (session == null || session.isFinished()) return session;
         
         // If current room was treasure or event, apply it now before moving
-        if (session.getCurrentRoom().getType() == generation.grimoire.enumeration.RoomType.EVENT) {
-            int effect = session.getCurrentRoom().getEventEffectAmount();
-            for (Personnage p : session.getPlayers()) {
-                if (p.getHealthCurrent() <= 0) continue;
-                if (effect > 0) {
-                    p.heal(effect);
-                } else if (effect < 0) {
-                    p.takeDamage(-effect, generation.grimoire.enumeration.DamageType.BRUT);
+        if (session.getCurrentRoom().getType() == generation.grimoire.enumeration.RoomType.EVENT && !session.isRoomEventCompleted()) {
+            generation.grimoire.entity.pve.Salle room = session.getCurrentRoom();
+            generation.grimoire.enumeration.EventSubType subType = room.getEventSubType();
+            
+            if (subType == generation.grimoire.enumeration.EventSubType.ALTERATION) {
+                // If it's an alteration and we proceed without having accepted it, the player ignored it. We do nothing.
+            } else if (subType == generation.grimoire.enumeration.EventSubType.PIEGE) {
+                int effect = room.getTrapAmount();
+                if ("PV".equals(room.getTrapType())) {
+                    for (Personnage p : session.getPlayers()) {
+                        if (p.getHealthCurrent() > 0 && effect > 0) p.takeDamage(effect, generation.grimoire.enumeration.DamageType.BRUT);
+                    }
+                    session.addLog("Vos héros subissent " + effect + " dégâts du piège !");
+                } else if ("MANA".equals(room.getTrapType())) {
+                    for (Personnage p : session.getPlayers()) {
+                        if (p.getHealthCurrent() > 0 && effect > 0) p.setManaCurrent(Math.max(0, p.getManaCurrent() - effect));
+                    }
+                    session.addLog("Vos héros perdent " + effect + " de Mana à cause du piège !");
                 }
+            } else {
+                // Generic fallback
+                int effect = room.getEventEffectAmount();
+                for (Personnage p : session.getPlayers()) {
+                    if (p.getHealthCurrent() <= 0) continue;
+                    if (effect > 0) {
+                        p.heal(effect);
+                    } else if (effect < 0) {
+                        p.takeDamage(-effect, generation.grimoire.enumeration.DamageType.BRUT);
+                    }
+                }
+                if (effect > 0) session.addLog("Vos héros sont soignés de " + effect + " PV.");
+                else if (effect < 0) session.addLog("Vos héros subissent " + (-effect) + " dégâts !");
             }
-            if (effect > 0) session.addLog("Vos héros sont soignés de " + effect + " PV.");
-            else if (effect < 0) session.addLog("Vos héros subissent " + (-effect) + " dégâts !");
         }
         session.loadRoom(session.getCurrentRoomIndex() + 1);
         handleRoomStart(session);

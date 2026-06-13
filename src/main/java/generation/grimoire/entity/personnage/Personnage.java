@@ -74,6 +74,7 @@ public class Personnage {
     private Spiritualite spiritualite;
 
     private int spiritualiteLevel = 1;
+    private int spiritualiteExperience = 0;
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = true)

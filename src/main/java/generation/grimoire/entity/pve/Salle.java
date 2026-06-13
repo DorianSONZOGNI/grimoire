@@ -1,6 +1,7 @@
 package generation.grimoire.entity.pve;
 
 import generation.grimoire.enumeration.RoomType;
+import generation.grimoire.enumeration.EventSubType;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,6 +22,10 @@ public class Salle {
     @Enumerated(EnumType.STRING)
     private RoomType type;
 
+    // IF EVENT — sous-type
+    @Enumerated(EnumType.STRING)
+    private EventSubType eventSubType;
+
     // IF COMBAT
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
@@ -36,8 +41,25 @@ public class Salle {
 
     // IF EVENT
     private String eventText;
-    // Positive or negative effect amount
+    // Positive or negative effect amount (used by generic events)
     private int eventEffectAmount;
+
+    // IF ALTERATION
+    private String alterationType; // "VIE_XP", "ITEM", "RIEN"
+    private int alterationHpAmount;
+    private int alterationExpAmount;
+    private String alterationRewardType; // "SPIRITUAL_XP", "SPECIAL_ITEM"
+    private int alterationSpiritualXpReward;
+    private String alterationSpecialItemReward;
+    private String alterationRequiredItem;
+
+    // IF PIEGE
+    private String trapType; // "PV", "MANA", "CORDE"
+    private int trapAmount;
+
+    // IF PORTE_ETRANGE — outcomes as JSON string
+    @Column(columnDefinition = "TEXT")
+    private String doorOutcomes; // JSON: [{"type":"BOSS","probability":20},{"type":"ITEM","probability":50}]
 
     @OneToMany(mappedBy = "salle", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<LootEntry> lootTable = new ArrayList<>();

@@ -92,10 +92,21 @@ public class PvEAdminController {
             List<generation.grimoire.entity.pve.Salle> salles = dto.getSalles().stream().map(sDto -> {
                 generation.grimoire.entity.pve.Salle s = new generation.grimoire.entity.pve.Salle();
                 s.setType(sDto.getType());
+                s.setEventSubType(sDto.getEventSubType());
                 s.setEventText(sDto.getEventText());
                 s.setEventEffectAmount(sDto.getEventEffectAmount());
+                s.setAlterationType(sDto.getAlterationType());
+                s.setAlterationHpAmount(sDto.getAlterationHpAmount());
+                s.setAlterationExpAmount(sDto.getAlterationExpAmount());
+                s.setAlterationRewardType(sDto.getAlterationRewardType());
+                s.setAlterationSpiritualXpReward(sDto.getAlterationSpiritualXpReward());
+                s.setAlterationSpecialItemReward(sDto.getAlterationSpecialItemReward());
+                s.setAlterationRequiredItem(sDto.getAlterationRequiredItem());
                 s.setTreasureGold(sDto.getTreasureGold());
                 s.setTreasureExp(sDto.getTreasureExp());
+                s.setTrapType(sDto.getTrapType());
+                s.setTrapAmount(sDto.getTrapAmount());
+                s.setDoorOutcomes(sDto.getDoorOutcomes());
 
                 if (sDto.getMonsters() != null) {
                     List<Monstre> monsters = sDto.getMonsters().stream()

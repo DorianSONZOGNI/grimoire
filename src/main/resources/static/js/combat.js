@@ -424,6 +424,19 @@ async function nextRoom() {
     }
 }
 
+async function acceptAlteration() {
+    if (!sessionId) return;
+    try {
+        const res = await fetch(`/api/pve/combat/${sessionId}/alteration-accept`, {
+            method: 'POST'
+        });
+        const data = await res.json();
+        updateUI(data);
+    } catch (err) {
+        console.error(err);
+    }
+}
+
 async function openChest() {
     if (!sessionId) return;
     try {
@@ -936,17 +949,117 @@ function updateUI(data) {
                     lootContainer.innerHTML = ''; // reset
                 }
             } else if (data.currentRoom.type === 'EVENT') {
-                icon.textContent = 'auto_awesome';
-                icon.style.color = '#8b5cf6';
-                title.textContent = 'Événement';
-                let effectText = "";
-                if (data.currentRoom.eventEffectAmount > 0) effectText = `<br><br><span style="color:#10b981;">(Soin : ${data.currentRoom.eventEffectAmount} PV)</span>`;
-                else if (data.currentRoom.eventEffectAmount < 0) effectText = `<br><br><span style="color:#ef4444;">(Dégâts : ${-data.currentRoom.eventEffectAmount} PV)</span>`;
-                desc.innerHTML = data.currentRoom.eventText + effectText;
+                const subType = data.currentRoom.eventSubType || 'ALTERATION';
                 
-                btnOpen.style.display = 'none';
-                btnCont.style.display = 'block';
-                lootContainer.style.display = 'none';
+                if (subType === 'ALTERATION') {
+                    icon.textContent = 'blur_on';
+                    icon.style.color = '#8b5cf6';
+                    title.textContent = 'Altération';
+                    desc.innerHTML = data.currentRoom.eventText || 'Une force mystérieuse vous entoure...';
+                    
+                    btnOpen.style.display = 'none';
+                    
+                    if (!data.roomEventCompleted && data.currentRoom.alterationType !== 'RIEN') {
+                        let btnText = "Faire le don";
+                        if (data.currentRoom.alterationType === 'VIE_XP') {
+                            btnText = `Faire le don (${data.currentRoom.alterationHpAmount < 0 ? data.currentRoom.alterationHpAmount + ' PV' : '+' + data.currentRoom.alterationHpAmount + ' PV'})`;
+                        } else if (data.currentRoom.alterationType === 'ITEM') {
+                            btnText = `Faire le don (Donner ${data.currentRoom.alterationRequiredItem || 'un item'})`;
+                        }
+                        
+                        btnCont.style.display = 'none';
+                        lootContainer.style.display = 'flex';
+                        lootContainer.innerHTML = `
+                            <div style="display: flex; gap: 1rem; width: 100%; margin-top: 1rem;">
+                                <button class="btn" style="flex: 1; background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.3); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;" onclick="acceptAlteration()">${btnText}</button>
+                                <button class="btn" style="flex: 1; background: rgba(255, 255, 255, 0.05); color: #94a3b8; border: 1px solid rgba(255, 255, 255, 0.1); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;" onclick="continueEvent()">Ignorer et passer</button>
+                            </div>
+                        `;
+                    } else {
+                        btnCont.style.display = 'block';
+                        btnCont.textContent = 'Continuer';
+                        lootContainer.style.display = 'none';
+                    }
+                } else if (subType === 'RENCONTRE') {
+                    icon.textContent = 'storefront';
+                    icon.style.color = '#10b981';
+                    title.textContent = 'Rencontre';
+                    desc.innerHTML = data.currentRoom.eventText || 'Un marchand ambulant vous interpelle...';
+                    
+                    // Show items for sale (placeholder — buying logic to be added later)
+                    btnOpen.style.display = 'none';
+                    btnCont.style.display = 'block';
+                    
+                    if (data.currentRoom.lootTable && data.currentRoom.lootTable.length > 0) {
+                        lootContainer.style.display = 'flex';
+                        lootContainer.innerHTML = '';
+                        data.currentRoom.lootTable.forEach(entry => {
+                            if (entry.equipment) {
+                                const eq = entry.equipment;
+                                const slotInfo = SLOT_LABELS[eq.slot] || { icon: 'help', color: '#94a3b8' };
+                                const rarityColor = RARITY_COLORS[eq.rarity] || '#ef4444';
+                                const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
+                                lootContainer.innerHTML += `
+                                    <div style="background: rgba(0,0,0,0.4); border: 1px solid ${rarityColor}40; padding: 0.6rem 1rem; border-radius: 8px; display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem;">
+                                        <span class="material-symbols-outlined${extraClass}" style="color: ${slotInfo.color}; font-size: 1.1rem;">${slotInfo.icon}</span>
+                                        <span style="color: ${rarityColor}; font-weight: 600;">${eq.name}</span>
+                                        <span style="color: #f59e0b; font-size: 0.8rem; margin-left: auto; display: flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined" style="font-size: 0.9rem;">monetization_on</span>${entry.probability}</span>
+                                    </div>
+                                `;
+                            }
+                        });
+                    } else {
+                        lootContainer.style.display = 'none';
+                    }
+                } else if (subType === 'PIEGE') {
+                    icon.textContent = 'warning';
+                    icon.style.color = '#f87171';
+                    title.textContent = 'Piège !';
+                    
+                    let trapDesc = data.currentRoom.eventText || 'Un piège se déclenche !';
+                    const trapType = data.currentRoom.trapType || 'PV';
+                    const trapAmount = data.currentRoom.trapAmount || 0;
+                    
+                    if (trapType === 'PV') {
+                        trapDesc += `<br><br><span style="color:#ef4444;">⚠️ Perte de ${trapAmount} PV</span>`;
+                    } else if (trapType === 'MANA') {
+                        trapDesc += `<br><br><span style="color:#38bdf8;">⚠️ Perte de ${trapAmount} Mana</span>`;
+                    } else if (trapType === 'CORDE') {
+                        trapDesc += `<br><br><span style="color:#f59e0b;">🪢 Nécessite une Corde pour éviter le piège</span>`;
+                    }
+                    
+                    desc.innerHTML = trapDesc;
+                    btnOpen.style.display = 'none';
+                    btnCont.style.display = 'block';
+                    lootContainer.style.display = 'none';
+                } else if (subType === 'PORTE_ETRANGE') {
+                    icon.textContent = 'door_front';
+                    icon.style.color = '#fbbf24';
+                    title.textContent = 'Porte Étrange';
+                    desc.innerHTML = data.currentRoom.eventText || 'Une porte mystérieuse se dresse devant vous...';
+                    
+                    btnOpen.style.display = 'none';
+                    btnCont.style.display = 'block';
+                    lootContainer.style.display = 'none';
+                    
+                    // Show door outcomes info
+                    if (data.currentRoom.doorOutcomes) {
+                        let outcomes;
+                        try {
+                            outcomes = typeof data.currentRoom.doorOutcomes === 'string' ? JSON.parse(data.currentRoom.doorOutcomes) : data.currentRoom.doorOutcomes;
+                        } catch(e) { outcomes = []; }
+                        
+                        if (outcomes.length > 0) {
+                            lootContainer.style.display = 'flex';
+                            lootContainer.innerHTML = `
+                                <div style="color: #94a3b8; font-size: 0.85rem; text-align: center; width: 100%;">
+                                    <span style="color: #fbbf24; font-weight: 600;">Que se cache-t-il derrière ?</span><br>
+                                    Le résultat sera révélé si vous passez la porte...
+                                </div>
+                            `;
+                        }
+                    }
+                }
             }
 
             overlay.classList.add('show');
