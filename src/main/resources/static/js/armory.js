@@ -8,8 +8,8 @@ function applyRbac() {
         const xpField = document.getElementById('charExperience');
         if (xpField && xpField.parentElement) xpField.parentElement.style.display = 'none';
         
-        const spiritLvl = document.getElementById('charSpiritLevelWrapper');
-        if (spiritLvl && spiritLvl.parentElement) spiritLvl.parentElement.style.display = 'none';
+        const spiritExpField = document.getElementById('charSpiritExperience');
+        if (spiritExpField && spiritExpField.parentElement) spiritExpField.parentElement.style.display = 'none';
         
         const eqCreateSection = document.querySelector('.equip-create-section');
         if (eqCreateSection) eqCreateSection.style.display = 'none';
@@ -177,7 +177,7 @@ async function submitPersonnage() {
         voieId: document.getElementById('charVoie').value || null,
         experience: parseInt(document.getElementById('charExperience').value) || 0,
         spiritualiteId: document.getElementById('charSpirit').value || null,
-        spiritualiteLevel: parseInt(document.getElementById('charSpiritLevel').value) || 1,
+        spiritualiteExperience: parseInt(document.getElementById('charSpiritExperience').value) || 0,
     };
 
     if (dto.voieId === '') dto.voieId = null;
@@ -452,14 +452,7 @@ function populateSelects() {
 
 
 
-    const charSpiritLevelOptions = document.getElementById('charSpiritLevelOptions');
-    if (charSpiritLevelOptions) {
-        charSpiritLevelOptions.innerHTML = '';
-        for(let i = 1; i <= 3; i++) {
-            const info = getLevelInfo(i);
-            charSpiritLevelOptions.innerHTML += `<div class="custom-option" data-value="${i}"><span class="material-symbols-outlined cs-icon" style="color: ${info.color};">${info.icon}</span> Niveau ${i}</div>`;
-        }
-    }
+
 }
 function getVoieColor(nom) {
     if (!nom) return '#94a3b8';
@@ -608,11 +601,19 @@ function renderPersonnages() {
                 </div>
                 <div class="char-xp-container" style="margin-top: 0.5rem; display: flex; flex-direction: column; gap: 0.3rem;">
                     <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #cbd5e1; font-family: 'Inter', sans-serif; font-weight: 500;">
-                        <span>Expérience</span>
+                        <span>Expérience Voie</span>
                         <span>${p.experience} / ${p.nextLevelXp} XP</span>
                     </div>
                     <div style="width: 100%; height: 6px; background: rgba(0,0,0,0.4); border-radius: 3px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05);">
                         <div style="height: 100%; background: linear-gradient(90deg, #3b82f6, #8b5cf6); width: ${p.nextLevelXp > p.currentLevelXp ? Math.min(100, Math.max(0, ((p.experience - p.currentLevelXp) / (p.nextLevelXp - p.currentLevelXp)) * 100)) : 100}%; border-radius: 3px; box-shadow: 0 0 8px rgba(139, 92, 246, 0.5);"></div>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #cbd5e1; font-family: 'Inter', sans-serif; font-weight: 500; margin-top: 0.3rem;">
+                        <span>Expérience Spirituelle</span>
+                        <span>${p.spiritualiteExperience} / ${p.nextLevelSpiritXp} XP</span>
+                    </div>
+                    <div style="width: 100%; height: 6px; background: rgba(0,0,0,0.4); border-radius: 3px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05);">
+                        <div style="height: 100%; background: linear-gradient(90deg, #fb923c, #f59e0b); width: ${p.nextLevelSpiritXp > p.currentLevelSpiritXp ? Math.min(100, Math.max(0, ((p.spiritualiteExperience - p.currentLevelSpiritXp) / (p.nextLevelSpiritXp - p.currentLevelSpiritXp)) * 100)) : 100}%; border-radius: 3px; box-shadow: 0 0 8px rgba(245, 158, 11, 0.5);"></div>
                     </div>
                 </div>
             </div>`;
@@ -853,12 +854,7 @@ function editPersonnage(id) {
         document.getElementById('charSpiritLabel').innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">trip_origin</span> — Aucune —`;
     }
 
-    const sLvl = p.spiritualiteLevel || 1;
-    document.getElementById('charSpiritLevel').value = sLvl;
-    const sLvlInfo = getLevelInfo(sLvl);
-    if (document.getElementById('charSpiritLevelLabel')) {
-        document.getElementById('charSpiritLevelLabel').innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: ${sLvlInfo.color};">${sLvlInfo.icon}</span> Niveau ${sLvl}`;
-    }
+    document.getElementById('charSpiritExperience').value = p.spiritualiteExperience || 0;
 
     document.getElementById('formTitle').innerHTML = `
         <span class="material-symbols-outlined">edit</span>
@@ -891,11 +887,7 @@ function resetForm() {
     document.getElementById('charSpirit').value = '';
     document.getElementById('charSpiritLabel').innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">trip_origin</span> — Aucune —`;
     
-    document.getElementById('charSpiritLevel').value = 1;
-    const sLvlInfoReset = getLevelInfo(1);
-    if (document.getElementById('charSpiritLevelLabel')) {
-        document.getElementById('charSpiritLevelLabel').innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: ${sLvlInfoReset.color};">${sLvlInfoReset.icon}</span> Niveau 1`;
-    }
+    document.getElementById('charSpiritExperience').value = 0;
 
     document.getElementById('formTitle').innerHTML = `
         <span class="material-symbols-outlined">person_add</span>

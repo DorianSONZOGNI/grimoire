@@ -73,8 +73,19 @@ public class Personnage {
     @JoinColumn(name = "spiritualite_id", nullable = true)
     private Spiritualite spiritualite;
 
-    private int spiritualiteLevel = 1;
     private int spiritualiteExperience = 0;
+
+    public int getSpiritualiteLevel() {
+        if (spiritualiteExperience >= 300) return 3;
+        if (spiritualiteExperience >= 100) return 2;
+        return 1;
+    }
+
+    public void setSpiritualiteLevel(int level) {
+        if (level == 3) this.spiritualiteExperience = Math.max(this.spiritualiteExperience, 300);
+        else if (level == 2) this.spiritualiteExperience = Math.max(this.spiritualiteExperience, 100);
+        else if (level == 1) this.spiritualiteExperience = Math.max(this.spiritualiteExperience, 0);
+    }
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = true)
@@ -765,9 +776,9 @@ public class Personnage {
             if (this.spiritualite == null || (!idMatch && !nameMatch)) {
                 return this.name + " n'a pas la spiritualité " + spell.getSpiritualite().getNom() + " requise pour lancer " + spell.getNom() + ".";
             }
-            if (this.spiritualiteLevel < spell.getNiveau()) {
+            if (this.getSpiritualiteLevel() < spell.getNiveau()) {
                 return this.name + " a besoin de " + spell.getSpiritualite().getNom() + " niveau " + spell.getNiveau()
-                        + " (actuel: " + this.spiritualiteLevel + ") pour lancer " + spell.getNom() + ".";
+                        + " (actuel: " + this.getSpiritualiteLevel() + ") pour lancer " + spell.getNom() + ".";
             }
         }
 

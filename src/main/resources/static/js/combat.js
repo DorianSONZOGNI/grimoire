@@ -40,6 +40,7 @@ window.doAction = doAction;
 window.endTurn = endTurn;
 window.nextRoom = nextRoom;
 window.openChest = openChest;
+window.acceptAlteration = acceptAlteration;
 window.showGlobalTooltip = ui.showGlobalTooltip;
 window.hideGlobalTooltip = ui.hideGlobalTooltip;
 window.initiateCombatCast = initiateCombatCast;
@@ -972,7 +973,7 @@ function updateUI(data) {
                         lootContainer.innerHTML = `
                             <div style="display: flex; gap: 1rem; width: 100%; margin-top: 1rem;">
                                 <button class="btn" style="flex: 1; background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.3); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;" onclick="acceptAlteration()">${btnText}</button>
-                                <button class="btn" style="flex: 1; background: rgba(255, 255, 255, 0.05); color: #94a3b8; border: 1px solid rgba(255, 255, 255, 0.1); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;" onclick="continueEvent()">Ignorer et passer</button>
+                                <button class="btn" style="flex: 1; background: rgba(255, 255, 255, 0.05); color: #94a3b8; border: 1px solid rgba(255, 255, 255, 0.1); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;" onclick="nextRoom()">Ignorer et passer</button>
                             </div>
                         `;
                     } else {

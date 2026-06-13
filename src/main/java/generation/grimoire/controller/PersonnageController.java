@@ -103,6 +103,10 @@ public class PersonnageController {
             personnage.setSpiritualite(null);
         }
         personnage.setSpiritualiteLevel(Math.max(1, Math.min(3, dto.getSpiritualiteLevel())));
+        personnage.setSpiritualiteExperience(Math.max(0, dto.getSpiritualiteExperience()));
+        if (dto.getSpiritualiteLevel() > 1 && dto.getSpiritualiteExperience() == 0) {
+            personnage.setSpiritualiteLevel(Math.max(1, Math.min(3, dto.getSpiritualiteLevel())));
+        }
 
         Personnage saved = personnageService.save(personnage);
 
@@ -176,6 +180,17 @@ public class PersonnageController {
 
         map.put("voieLevel", p.getVoieLevel());
         map.put("spiritualiteLevel", p.getSpiritualiteLevel());
+        map.put("spiritualiteExperience", p.getSpiritualiteExperience());
+        
+        int currentLevelSpiritXp = 0;
+        int nextLevelSpiritXp = 100;
+        int spiritLevel = p.getSpiritualiteLevel();
+        if (spiritLevel == 1) { currentLevelSpiritXp = 0; nextLevelSpiritXp = 100; }
+        else if (spiritLevel == 2) { currentLevelSpiritXp = 100; nextLevelSpiritXp = 300; }
+        else if (spiritLevel == 3) { currentLevelSpiritXp = 300; nextLevelSpiritXp = 300; }
+        
+        map.put("currentLevelSpiritXp", currentLevelSpiritXp);
+        map.put("nextLevelSpiritXp", nextLevelSpiritXp);
 
         if (p.getVoie() != null) {
             Map<String, Object> voie = new HashMap<>();
@@ -210,5 +225,6 @@ public class PersonnageController {
         private int experience = 0;
         private Long spiritualiteId;
         private int spiritualiteLevel = 1;
+        private int spiritualiteExperience = 0;
     }
 }
