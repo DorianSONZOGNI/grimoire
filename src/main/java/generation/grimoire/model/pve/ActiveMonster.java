@@ -8,10 +8,12 @@ import lombok.Data;
 public class ActiveMonster {
     private Monstre base;
     private Personnage asPersonnage;
+    private static long nextId = -1;
 
     public ActiveMonster(Monstre base) {
         this.base = base;
         this.asPersonnage = new Personnage();
+        this.asPersonnage.setId(nextId--);
         this.asPersonnage.setName(base.getName());
         this.asPersonnage.setHealthMax(base.getHealthMax());
         this.asPersonnage.setHealthCurrent(base.getHealthMax());

@@ -136,7 +136,7 @@ public class CombatService {
         return session;
     }
 
-    public CombatSession executeAction(String sessionId, Long spellId, Integer targetIndex, Integer choiceKey) {
+    public CombatSession executeAction(String sessionId, Long spellId, Integer targetIndex, Integer allyTargetIndex, Integer choiceKey) {
         CombatSession session = activeSessions.get(sessionId);
         if (session == null) throw new RuntimeException("Session introuvable");
         if (session.isFinished()) return session;
@@ -164,13 +164,29 @@ public class CombatService {
                     target = p; // Default fallback, spellService logic resolves ALL_ENEMIES etc anyway
                 }
                 
+                Personnage allyTarget = p; // default
+                if (targetsAlly) {
+                    if (allyTargetIndex != null && allyTargetIndex >= 0 && allyTargetIndex < session.getPlayers().size()) {
+                        allyTarget = session.getPlayers().get(allyTargetIndex);
+                    } else {
+                        // Find first valid ally other than caster
+                        for (Personnage pl : session.getPlayers()) {
+                            if (pl.getHealthCurrent() > 0 && pl != p) {
+                                allyTarget = pl;
+                                break;
+                            }
+                        }
+                    }
+                }
+                
                 List<Personnage> allEnemies = session.getEnemies().stream().map(generation.grimoire.model.pve.ActiveMonster::getAsPersonnage).toList();
                 List<Personnage> allAllies = session.getPlayers().stream().filter(pl -> pl.getHealthCurrent() > 0).toList();
                 
                 final Personnage finalTarget = target;
+                final Personnage finalAlly = allyTarget;
                 session.addLog(p.getName() + " lance " + spellToCast.getNom() + " !");
                 captureLogs(session, () -> {
-                    spellService.castSpellGroup(spellToCast, p, finalTarget, p, allAllies, allEnemies, choiceKey);
+                    spellService.castSpellGroup(spellToCast, p, finalTarget, finalAlly, allAllies, allEnemies, choiceKey);
                 });
             }
         } else if (targetIndex != null && targetIndex >= 0 && targetIndex < session.getEnemies().size()) {

@@ -16,6 +16,7 @@ function getSpellColor(sp) {
 let sessionId = null;
 let currentSessionData = null;
 let selectedTargetIndex = 0;
+let selectedAllyIndex = -1;
 
 window.doAction = doAction;
 window.endTurn = endTurn;
@@ -69,16 +70,14 @@ async function startCombat(characterIds, dungeonId) {
 }
 
 function selectTarget(index) {
-    if (!currentSessionData || !currentSessionData.enemies[index]) return;
+    if (!currentSessionData || currentSessionData.enemies.length <= index) return;
     if (currentSessionData.enemies[index].dead) return;
-
-    // Only allow manual selection if not currently casting a spell
-    if (pendingCastSpellId) return;
-
+    
     selectedTargetIndex = index;
-    renderEnemies(currentSessionData.enemies);
+    updateUI(currentSessionData);
 }
 
+// Ally target selection is now handled entirely within the combat prompt mode
 // ===== Target Selection for Cast =====
 let pendingCastSpellId = null;
 
@@ -97,11 +96,15 @@ function initiateCombatCast(spellId) {
     });
 
     const needsEnemy = activeEffects.some(e => (e.effectTarget || e.effect_target) === 'TARGET');
+    const needsAlly = activeEffects.some(e => (e.effectTarget || e.effect_target) === 'ALLY');
 
     const enemyCards = document.querySelectorAll('.fighter-enemy:not(.dead)');
-    const multiEnemy = needsEnemy && enemyCards.length > 1;
+    const allyCards = document.querySelectorAll('.fighter-player:not(.dead):not(.active)');
 
-    if (!multiEnemy) {
+    const multiEnemy = needsEnemy && enemyCards.length > 1;
+    const multiAlly = needsAlly && allyCards.length > 1;
+
+    if (!multiEnemy && !multiAlly) {
         // Direct cast
         doAction(spellId);
         return;
@@ -110,34 +113,50 @@ function initiateCombatCast(spellId) {
     // Enter target selection mode
     pendingCastSpellId = spellId;
 
-    // Highlight enemies for selection
-    enemyCards.forEach(card => {
-        card.classList.add('target-selectable');
-        card.dataset.oldOnClick = card.getAttribute('onclick');
-        card.setAttribute('onclick', `confirmCombatCast(${card.dataset.index})`);
-    });
-
-    showCombatTargetPrompt();
+    if (multiEnemy) {
+        enemyCards.forEach(card => {
+            card.classList.add('target-selectable');
+            card.dataset.oldOnClick = card.getAttribute('onclick');
+            card.setAttribute('onclick', `confirmCombatCast(${card.dataset.index}, 'enemy')`);
+        });
+        showCombatTargetPrompt('ennemi', 'rgba(220, 38, 38, 0.25)', 'rgba(153, 27, 27, 0.2)', '#ef4444', '#fca5a5', 'rgba(239,68,68,0.2)', 'rgba(239,68,68,0.3)');
+    } else if (multiAlly) {
+        allyCards.forEach(card => {
+            card.classList.add('target-selectable');
+            card.dataset.oldOnClick = card.getAttribute('onclick');
+            // ally card index in DOM or in currentSessionData.players?
+            // Wait, we need the original index. Let's get it from the dataset or the parent list index if available.
+            // In generateFighterHtml we didn't add dataset.index to players!
+            // I need to add dataset.index to player cards in updateUI.
+            const idx = Array.from(card.parentNode.children).indexOf(card);
+            card.setAttribute('onclick', `confirmCombatCast(${idx}, 'ally')`);
+        });
+        showCombatTargetPrompt('allié', 'rgba(16, 185, 129, 0.25)', 'rgba(6, 95, 70, 0.2)', '#10b981', '#6ee7b7', 'rgba(16,185,129,0.2)', 'rgba(16,185,129,0.3)');
+    }
 }
 
-function showCombatTargetPrompt() {
+function showCombatTargetPrompt(typeLabel, grad1, grad2, border, textCol, btnBg, btnBorder) {
     const existing = document.getElementById('combatTargetPrompt');
     if (existing) existing.remove();
 
     const prompt = document.createElement('div');
     prompt.id = 'combatTargetPrompt';
-    prompt.style.cssText = 'background: linear-gradient(135deg, rgba(220, 38, 38, 0.25), rgba(153, 27, 27, 0.2)); border: 1px solid #ef4444; border-radius: 8px; padding: 0.6rem 2rem; margin: 0 2rem 1rem 2rem; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; font-size: 1rem; color: #fca5a5;';
+    prompt.style.cssText = `background: linear-gradient(135deg, ${grad1}, ${grad2}); border: 1px solid ${border}; border-radius: 8px; padding: 0.6rem 2rem; margin: 0 2rem 1rem 2rem; display: flex; align-items: center; justify-content: space-between; gap: 0.5rem; font-size: 1rem; color: ${textCol};`;
     prompt.innerHTML = `
-        <span>🎯 Sélectionnez un ennemi cible pour lancer le sort.</span>
-        <button type="button" onclick="cancelCombatCast()" style="background: rgba(239,68,68,0.2); color: #fca5a5; border: 1px solid rgba(239,68,68,0.3); padding: 0.4rem 1rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer; font-family: 'Outfit', sans-serif;">Annuler</button>
+        <span>🎯 Sélectionnez un ${typeLabel} cible pour lancer le sort.</span>
+        <button type="button" onclick="cancelCombatCast()" style="background: ${btnBg}; color: ${textCol}; border: 1px solid ${btnBorder}; padding: 0.4rem 1rem; border-radius: 4px; font-size: 0.85rem; cursor: pointer; font-family: 'Outfit', sans-serif;">Annuler</button>
     `;
 
     const actionBar = document.getElementById('actionBar');
     if (actionBar) actionBar.parentNode.insertBefore(prompt, actionBar);
 }
 
-function confirmCombatCast(enemyIndex) {
-    selectedTargetIndex = enemyIndex;
+function confirmCombatCast(index, type) {
+    if (type === 'enemy') {
+        selectedTargetIndex = index;
+    } else if (type === 'ally') {
+        selectedAllyIndex = index;
+    }
     const spellId = pendingCastSpellId;
     cancelCombatCast();
     doAction(spellId);
@@ -153,6 +172,17 @@ function cancelCombatCast() {
             card.removeAttribute('onclick');
         }
     });
+
+    const allyCards = document.querySelectorAll('.fighter-player');
+    allyCards.forEach(card => {
+        card.classList.remove('target-selectable');
+        if (card.dataset.oldOnClick) {
+            card.setAttribute('onclick', card.dataset.oldOnClick);
+        } else {
+            card.removeAttribute('onclick');
+        }
+    });
+
     const prompt = document.getElementById('combatTargetPrompt');
     if (prompt) prompt.remove();
     pendingCastSpellId = null;
@@ -195,6 +225,7 @@ async function doAction(spellId = null) {
 
     try {
         let url = `/api/pve/combat/${sessionId}/action?targetIndex=${selectedTargetIndex}`;
+        if (selectedAllyIndex !== -1) url += `&allyTargetIndex=${selectedAllyIndex}`;
         if (spellId) url += `&spellId=${spellId}`;
         if (choiceKey !== null) url += `&choiceKey=${choiceKey}`;
 
@@ -203,6 +234,7 @@ async function doAction(spellId = null) {
 
         // Let user read log by adding a small delay before full UI update
         setTimeout(() => {
+            selectedAllyIndex = -1; // Reset after action completes
             updateUI(data);
             if (!data.finished && data.currentRoom.type === 'COMBAT') {
                 document.getElementById('btnAttack').disabled = false;
@@ -277,10 +309,16 @@ function updateUI(data) {
         data.players.forEach((p, index) => {
             const isActive = index === data.currentActivePlayerIndex;
             const isDead = p.healthCurrent <= 0;
+            const isAllySelected = index === selectedAllyIndex;
             
             const div = document.createElement('div');
-            div.className = `fighter fighter-player ${isActive ? 'active' : ''} ${isDead ? 'dead' : ''}`;
-            if (isActive) {
+            div.className = `fighter fighter-player ${isActive ? 'active' : ''} ${isAllySelected ? 'selected-ally' : ''} ${isDead ? 'dead' : ''}`;
+            
+            if (isAllySelected) {
+                div.style.borderColor = '#10b981';
+                div.style.boxShadow = '0 0 20px rgba(16, 185, 129, 0.4)';
+                div.style.transform = 'scale(1.02)';
+            } else if (isActive) {
                 div.style.borderColor = '#38bdf8';
                 div.style.boxShadow = '0 0 20px rgba(56, 189, 248, 0.4)';
                 div.style.transform = 'scale(1.05)';

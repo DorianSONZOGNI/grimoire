@@ -148,8 +148,18 @@ public class SpellService {
         caster.setManaCurrent(caster.getManaCurrent() - actualManaCost);
         caster.setHealthCurrent(caster.getHealthCurrent() - actualHealCost);
         caster.setPassiveState("destruction_heat", currentHeat - actualHeatCost);
-        System.out.println(caster.getName() + " dépense " + actualManaCost + " mana, " + actualHealCost
-                + " PV et " + actualHeatCost + " chaleur pour lancer " + toCast.getNom());
+        
+        String costMsg = "";
+        if (actualManaCost > 0) costMsg += actualManaCost + " mana, ";
+        if (actualHealCost > 0) costMsg += actualHealCost + " PV, ";
+        if (actualHeatCost > 0) costMsg += actualHeatCost + " chaleur, ";
+        
+        if (!costMsg.isEmpty()) {
+            costMsg = costMsg.substring(0, costMsg.length() - 2);
+            int lastComma = costMsg.lastIndexOf(", ");
+            if (lastComma != -1) costMsg = costMsg.substring(0, lastComma) + " et " + costMsg.substring(lastComma + 2);
+            System.out.println(caster.getName() + " dépense " + costMsg + " pour lancer " + toCast.getNom());
+        }
 
         // Dispatch : hook post-paiement de coût
         SpellCostPaidEvent costPaidEvent = new SpellCostPaidEvent(caster, target, toCast, actualManaCost, actualHealCost, actualHeatCost);
@@ -291,8 +301,18 @@ public class SpellService {
         caster.setManaCurrent(caster.getManaCurrent() - actualManaCost);
         caster.setHealthCurrent(caster.getHealthCurrent() - actualHealCost);
         caster.setPassiveState("destruction_heat", currentHeat - actualHeatCost);
-        System.out.println(caster.getName() + " dépense " + actualManaCost + " mana, " + actualHealCost
-                + " PV et " + actualHeatCost + " chaleur pour lancer " + toCast.getNom());
+        
+        String costMsg2 = "";
+        if (actualManaCost > 0) costMsg2 += actualManaCost + " mana, ";
+        if (actualHealCost > 0) costMsg2 += actualHealCost + " PV, ";
+        if (actualHeatCost > 0) costMsg2 += actualHeatCost + " chaleur, ";
+        
+        if (!costMsg2.isEmpty()) {
+            costMsg2 = costMsg2.substring(0, costMsg2.length() - 2);
+            int lastComma = costMsg2.lastIndexOf(", ");
+            if (lastComma != -1) costMsg2 = costMsg2.substring(0, lastComma) + " et " + costMsg2.substring(lastComma + 2);
+            System.out.println(caster.getName() + " dépense " + costMsg2 + " pour lancer " + toCast.getNom());
+        }
 
         SpellCostPaidEvent costPaidEvent = new SpellCostPaidEvent(caster, target, toCast, actualManaCost, actualHealCost, actualHeatCost);
         passiveDispatcher.dispatch(caster, toCast, costPaidEvent);
