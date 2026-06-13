@@ -112,13 +112,13 @@ public class CombatController {
     }
 
     @PostMapping("/{sessionId}/alteration-accept")
-    public ResponseEntity<CombatSession> acceptAlteration(@PathVariable String sessionId) {
+    public ResponseEntity<?> acceptAlteration(@PathVariable String sessionId) {
         try {
             CombatSession session = combatService.acceptAlteration(sessionId);
             return ResponseEntity.ok(session);
         } catch (Exception e) {
             e.printStackTrace();
-            return ResponseEntity.badRequest().body(null);
+            return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
 }

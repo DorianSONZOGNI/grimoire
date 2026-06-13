@@ -18,6 +18,37 @@
     <link rel="stylesheet" href="/styles/components.css">
     <link rel="stylesheet" href="/styles/sandbox.css">
     <style>
+        .combat-notif {
+            position: fixed;
+            bottom: 2rem;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: rgba(15, 23, 42, 0.9);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            display: flex;
+            align-items: center;
+            gap: 0.8rem;
+            color: #f8fafc;
+            font-size: 0.95rem;
+            font-weight: 500;
+            opacity: 0;
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            z-index: 9999;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            pointer-events: none;
+        }
+
+        .combat-notif.show {
+            transform: translateX(-50%) translateY(0);
+            opacity: 1;
+        }
+
+        .combat-notif.error {
+            background: rgba(239, 68, 68, 0.9);
+            border-color: rgba(239, 68, 68, 0.4);
+        }
         body {
             background: #050505;
             overflow: hidden;
@@ -915,6 +946,11 @@
         </div>
 
 
+    </div>
+
+    <div id="combatNotif" class="combat-notif">
+        <span class="material-symbols-outlined notif-icon">info</span>
+        <span id="combatNotifText"></span>
     </div>
 
     <script type="module" src="/js/combat.js"></script>

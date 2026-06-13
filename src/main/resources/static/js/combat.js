@@ -217,6 +217,22 @@ window.filterSpells = function (filter) {
         renderSpells(currentSessionData.availableSpells);
     }
 };
+
+let hasAnimatedOpening = false;
+
+window.showNotif = function(message, isError = false) {
+    const notif = document.getElementById('combatNotif');
+    const text = document.getElementById('combatNotifText');
+    if (!notif || !text) return;
+    text.textContent = message;
+    notif.classList.remove('error');
+    if (isError) notif.classList.add('error');
+    notif.classList.add('show');
+    setTimeout(() => {
+        notif.classList.remove('show');
+    }, 3000);
+};
+
 document.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
     const dungeonId = urlParams.get('dungeonId');
@@ -596,6 +612,11 @@ async function acceptAlteration() {
         const res = await fetch(`/api/pve/combat/${sessionId}/alteration-accept`, {
             method: 'POST'
         });
+        if (!res.ok) {
+            const err = await res.text();
+            showNotif(err || "Action impossible", true);
+            return;
+        }
         const data = await res.json();
         updateUI(data);
         
@@ -899,6 +920,7 @@ function updateUI(data) {
                     
                     if (!data.roomEventCompleted && data.currentRoom.alterationType !== 'RIEN') {
                         let btnText = "Toucher";
+                        let warningHtml = '';
                         if (data.currentRoom.alterationType === 'VIE_XP') {
                             let parts = [];
                             
@@ -925,15 +947,19 @@ function updateUI(data) {
                                 btnText = `Toucher`;
                             }
                         } else if (data.currentRoom.alterationType === 'ITEM') {
-                            btnText = `Toucher (Donner ${data.currentRoom.alterationRequiredItem || 'un item'})`;
+                            btnText = `Donner (${data.currentRoom.alterationRequiredItem || 'un item'})`;
+                            warningHtml = `<div style="color: #ef4444; font-size: 0.85rem; margin-top: 0.5rem; text-align: center; background: rgba(239, 68, 68, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3);"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">warning</span> <strong>Attention :</strong> L'item "${data.currentRoom.alterationRequiredItem || 'spécial'}" sera définitivement détruit de l'inventaire d'un de vos héros s'il accepte cette offre.</div>`;
                         }
                         
                         btnCont.style.display = 'none';
                         lootContainer.style.display = 'flex';
                         lootContainer.innerHTML = `
-                            <div style="display: flex; gap: 1rem; width: 100%; margin-top: 1rem;">
-                                <button class="btn" style="flex: 1; background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.3); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;" onclick="acceptAlteration()">${btnText}</button>
-                                <button class="btn" style="flex: 1; background: rgba(255, 255, 255, 0.05); color: #94a3b8; border: 1px solid rgba(255, 255, 255, 0.1); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;" onclick="nextRoom()">Ignorer et passer</button>
+                            <div style="display: flex; flex-direction: column; align-items: center; max-width: 600px; width: 100%;">
+                                ${warningHtml}
+                                <div style="display: flex; gap: 1rem; margin-top: 1rem; justify-content: center; width: 100%;">
+                                    <button class="btn" style="flex: 1; max-width: 250px; background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.3); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;" onclick="acceptAlteration()">${btnText}</button>
+                                    <button class="btn" style="flex: 1; max-width: 250px; background: rgba(255, 255, 255, 0.05); color: #94a3b8; border: 1px solid rgba(255, 255, 255, 0.1); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;" onclick="nextRoom()">Ignorer et passer</button>
+                                </div>
                             </div>
                         `;
                     } else {

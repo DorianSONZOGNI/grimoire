@@ -13,6 +13,8 @@ import generation.grimoire.repository.EquipmentRepository;
 import generation.grimoire.service.SpellService;
 import generation.grimoire.service.PassiveDispatcher;
 import generation.grimoire.entity.Spell;
+import generation.grimoire.repository.AnomalieRepository;
+import generation.grimoire.entity.Anomalie;
 import generation.grimoire.entity.Equipment;
 import generation.grimoire.entity.pve.LootEntry;
 import generation.grimoire.entity.auth.AppUser;
@@ -41,6 +43,7 @@ public class CombatService {
     private final EquipmentRepository equipmentRepository;
     private final SpellService spellService;
     private final PassiveDispatcher passiveDispatcher;
+    private final AnomalieRepository anomalieRepository;
 
     // In-memory combat sessions
     private final Map<String, CombatSession> activeSessions = new ConcurrentHashMap<>();
@@ -254,17 +257,41 @@ public class CombatService {
             }
 
         } else if ("ITEM".equals(altType)) {
+            String requiredItemName = room.getAlterationRequiredItem();
+            if (requiredItemName == null || requiredItemName.isEmpty()) {
+                throw new RuntimeException("Aucun item requis pour cette altération.");
+            }
+
+            if (session.getPlayers().isEmpty()) {
+                throw new RuntimeException("Aucun joueur dans la session.");
+            }
+            AppUser user = session.getPlayers().get(0).getUser();
+            if (user == null) {
+                throw new RuntimeException("Utilisateur inconnu.");
+            }
+
+            List<Anomalie> userAnomalies = anomalieRepository.findByOwnerUsername(user.getUsername());
+            Anomalie toDestroy = userAnomalies.stream()
+                .filter(a -> a.getName().equals(requiredItemName))
+                .findFirst()
+                .orElse(null);
+
+            if (toDestroy == null) {
+                throw new RuntimeException("Vous ne possédez pas l'item spécial : " + requiredItemName);
+            }
+
+            anomalieRepository.delete(toDestroy);
+
             int spXp = room.getAlterationSpiritualXpReward();
             for (Personnage p : session.getPlayers()) {
                 if (p.getHealthCurrent() <= 0)
                     continue;
-                // TODO: Verify player has the item and remove it (alterationRequiredItem)
                 if (spXp > 0) {
                     p.setSpiritualiteExperience(p.getSpiritualiteExperience() + spXp);
                     personnageRepository.save(p);
                 }
             }
-            session.addLog("Vous avez donné " + room.getAlterationRequiredItem() + " !");
+            session.addLog("Vous avez sacrifié l'item : " + requiredItemName + " !");
             if (spXp > 0) {
                 session.addLog("Vos héros reçoivent " + spXp + " XP de Spiritualité en échange !");
             }
