@@ -423,8 +423,8 @@ function generateFighterHtml(c, isHero) {
             if (c.passiveStates['violence_inspiration'] !== undefined) insp = c.passiveStates['violence_inspiration'];
             if (c.passiveStates['violence_expiration'] !== undefined) exp = c.passiveStates['violence_expiration'];
         }
-        statsHtml += `<span class="hero-stat-chip" title="Inspiration (Violence)" style="border-color: rgba(217, 70, 239, 0.4);"><span class="material-symbols-outlined" style="color: #d946ef;">air</span>${insp} Insp</span>`;
-        statsHtml += `<span class="hero-stat-chip" title="Expiration (Violence)" style="border-color: rgba(220, 38, 38, 0.4);"><span class="material-symbols-outlined" style="color: #dc2626;">storm</span>${exp} Exp</span>`;
+        statsHtml += `<span class="hero-stat-chip" title="Inspiration (Violence)" style="border-color: rgba(220, 38, 38, 0.4);"><span class="material-symbols-outlined" style="color: #dc2626;">storm</span>${insp} Insp</span>`;
+        statsHtml += `<span class="hero-stat-chip" title="Expiration (Violence)" style="border-color: rgba(217, 70, 239, 0.4);"><span class="material-symbols-outlined" style="color: #d946ef;">air</span>${exp} Exp</span>`;
     }
 
     if (c.voie && c.voie.nom && c.voie.nom.toLowerCase().includes('raison')) {
@@ -785,9 +785,9 @@ function renderSpells(spells) {
 
         let categoryHtml = '';
         if (sp.category === 'INSPIRATION') {
-            categoryHtml = '<span class="material-symbols-outlined" style="font-size: 1rem; color: #10b981;" title="Sort d\'Inspiration">arrow_upward</span>';
+            categoryHtml = '<span class="material-symbols-outlined" style="font-size: 1rem; color: #dc2626;" title="Sort d\'Inspiration">storm</span>';
         } else if (sp.category === 'EXPIRATION') {
-            categoryHtml = '<span class="material-symbols-outlined" style="font-size: 1rem; color: #f43f5e;" title="Sort d\'Expiration">arrow_downward</span>';
+            categoryHtml = '<span class="material-symbols-outlined" style="font-size: 1rem; color: #d946ef;" title="Sort d\'Expiration">air</span>';
         }
 
         let karmaAlignHtml = '';

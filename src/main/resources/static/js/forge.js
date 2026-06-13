@@ -138,11 +138,11 @@ export function updateViolenceLabel() {
     if (!btnInsp || !btnExp) return;
 
     if (isInsp) {
-        // Inspiration Active (Cyan Theme)
-        btnInsp.style.background = 'linear-gradient(135deg, rgba(6, 182, 212, 0.15) 0%, rgba(8, 145, 178, 0.3) 100%)';
-        btnInsp.style.border = '1px solid rgba(6, 182, 212, 0.4)';
-        btnInsp.style.boxShadow = '0 0 12px rgba(6, 182, 212, 0.2)';
-        btnInsp.style.color = '#67e8f9';
+        // Inspiration Active (Red Theme)
+        btnInsp.style.background = 'linear-gradient(135deg, rgba(220, 38, 38, 0.15) 0%, rgba(185, 28, 28, 0.3) 100%)';
+        btnInsp.style.border = '1px solid rgba(220, 38, 38, 0.4)';
+        btnInsp.style.boxShadow = '0 0 12px rgba(220, 38, 38, 0.2)';
+        btnInsp.style.color = '#ef4444';
         btnInsp.style.opacity = '1';
         btnInsp.querySelector('.material-symbols-outlined').style.transform = 'scale(1.15)';
 
@@ -154,11 +154,11 @@ export function updateViolenceLabel() {
         btnExp.style.opacity = '0.6';
         btnExp.querySelector('.material-symbols-outlined').style.transform = 'scale(1)';
     } else {
-        // Expiration Active (Pink/Rose Theme)
-        btnExp.style.background = 'linear-gradient(135deg, rgba(219, 39, 119, 0.15) 0%, rgba(190, 24, 74, 0.3) 100%)';
-        btnExp.style.border = '1px solid rgba(219, 39, 119, 0.4)';
-        btnExp.style.boxShadow = '0 0 12px rgba(219, 39, 119, 0.2)';
-        btnExp.style.color = '#f472b6';
+        // Expiration Active (Purple Theme)
+        btnExp.style.background = 'linear-gradient(135deg, rgba(217, 70, 239, 0.15) 0%, rgba(192, 38, 211, 0.3) 100%)';
+        btnExp.style.border = '1px solid rgba(217, 70, 239, 0.4)';
+        btnExp.style.boxShadow = '0 0 12px rgba(217, 70, 239, 0.2)';
+        btnExp.style.color = '#d946ef';
         btnExp.style.opacity = '1';
         btnExp.querySelector('.material-symbols-outlined').style.transform = 'scale(1.15) rotate(10deg)';
 
