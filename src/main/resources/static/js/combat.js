@@ -17,6 +17,7 @@ let sessionId = null;
 let currentSessionData = null;
 let selectedTargetIndex = null;
 let selectedAllyIndex = -1;
+let previousPlayerXP = {};
 
 window.doAction = doAction;
 window.endTurn = endTurn;
@@ -477,36 +478,87 @@ function updateUI(data) {
                     const xpContainer = document.getElementById('combatVictoryXpContainer');
                     if (xpContainer) {
                         xpContainer.innerHTML = '';
-                        data.players.forEach(p => {
-                            // Using standard XP curve logic (for example)
+                        function getExpStats(exp) {
                             let level = 1;
-                            if (p.experience >= 1000) level = 5;
-                            else if (p.experience >= 600) level = 4;
-                            else if (p.experience >= 300) level = 3;
-                            else if (p.experience >= 100) level = 2;
+                            if (exp >= 1000) level = 5;
+                            else if (exp >= 600) level = 4;
+                            else if (exp >= 300) level = 3;
+                            else if (exp >= 100) level = 2;
                             
                             let currentLvlXp = 0;
                             let nextLvlXp = 100;
                             if (level === 2) { currentLvlXp = 100; nextLvlXp = 300; }
                             else if (level === 3) { currentLvlXp = 300; nextLvlXp = 600; }
                             else if (level === 4) { currentLvlXp = 600; nextLvlXp = 1000; }
-                            else if (level === 5) { currentLvlXp = 1000; nextLvlXp = p.experience; }
+                            else if (level === 5) { currentLvlXp = 1000; nextLvlXp = exp; }
                             
                             let progress = 100;
                             if (level < 5) {
-                                progress = ((p.experience - currentLvlXp) / (nextLvlXp - currentLvlXp)) * 100;
+                                progress = ((exp - currentLvlXp) / (nextLvlXp - currentLvlXp)) * 100;
                             }
+                            return { level, currentLvlXp, nextLvlXp, progress };
+                        }
+
+                        data.players.forEach(p => {
+                            let oldExp = previousPlayerXP[p.id] !== undefined ? previousPlayerXP[p.id] : p.experience;
+                            let endExp = p.experience;
+                            
+                            let oldStats = getExpStats(oldExp);
 
                             xpContainer.innerHTML += `
                                 <div style="background: rgba(0,0,0,0.4); padding: 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); text-align: center; width: 150px;">
                                     <div style="color: #e2e8f0; font-weight: bold; margin-bottom: 0.5rem; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${p.name}</div>
-                                    <div style="color: #38bdf8; font-size: 0.9rem; margin-bottom: 0.5rem;">Niv. ${level}</div>
-                                    <div style="width: 100%; background: #334155; border-radius: 4px; height: 8px; overflow: hidden; margin-bottom: 0.3rem;">
-                                        <div style="height: 100%; width: ${Math.min(100, progress)}%; background: #10b981; transition: width 1s;"></div>
+                                    <div id="xp-lvl-${p.id}" style="color: #38bdf8; font-size: 0.9rem; margin-bottom: 0.5rem; font-weight: 600; transition: color 0.3s;">Niv. ${oldStats.level}</div>
+                                    <div style="width: 100%; background: #334155; border-radius: 4px; height: 8px; margin-bottom: 0.3rem;">
+                                        <div id="xp-fill-${p.id}" style="height: 100%; width: ${Math.min(100, oldStats.progress)}%; background: #10b981; transition: box-shadow 0.3s;"></div>
                                     </div>
-                                    <div style="font-size: 0.8rem; color: #94a3b8;">${p.experience} / ${level === 5 ? 'MAX' : nextLvlXp} XP</div>
+                                    <div id="xp-text-${p.id}" style="font-size: 0.8rem; color: #94a3b8; font-family: monospace;">${oldExp} / ${oldStats.level === 5 ? 'MAX' : oldStats.nextLvlXp} XP</div>
                                 </div>
                             `;
+                            
+                            // Animate it!
+                            setTimeout(() => {
+                                let startTime = null;
+                                const duration = 1500;
+                                const bar = document.getElementById(`xp-fill-${p.id}`);
+                                const text = document.getElementById(`xp-text-${p.id}`);
+                                const lvlText = document.getElementById(`xp-lvl-${p.id}`);
+                                
+                                function animate(currentTime) {
+                                    if (!startTime) startTime = currentTime;
+                                    let t = (currentTime - startTime) / duration;
+                                    if (t > 1) t = 1;
+                                    
+                                    // Easing function (easeOutQuad)
+                                    let easeT = t * (2 - t);
+                                    let currentExp = Math.floor(oldExp + (endExp - oldExp) * easeT);
+                                    let stats = getExpStats(currentExp);
+                                    
+                                    if (bar && text && lvlText) {
+                                        bar.style.width = Math.min(100, stats.progress) + "%";
+                                        text.innerText = currentExp + " / " + (stats.level === 5 ? 'MAX' : stats.nextLvlXp) + " XP";
+                                        
+                                        // Simple highlight on level up
+                                        if (lvlText.innerText !== "Niv. " + stats.level) {
+                                            lvlText.innerText = "Niv. " + stats.level;
+                                            lvlText.style.color = "#f59e0b"; // gold highlight
+                                            setTimeout(() => lvlText.style.color = "#38bdf8", 800);
+                                        }
+                                    }
+                                    
+                                    if (t < 1) {
+                                        requestAnimationFrame(animate);
+                                    } else {
+                                        if (bar && oldExp !== endExp) {
+                                            bar.style.boxShadow = "0 0 15px 5px rgba(16, 185, 129, 0.6)";
+                                            setTimeout(() => {
+                                                if(bar) bar.style.boxShadow = "none";
+                                            }, 400);
+                                        }
+                                    }
+                                }
+                                requestAnimationFrame(animate);
+                            }, 600); // wait 600ms for overlay to appear
                         });
                     }
                 }
@@ -516,6 +568,11 @@ function updateUI(data) {
                 
                 document.getElementById('btnAttack').disabled = false;
                 renderEnemies(data.enemies);
+                
+                // Track previous XP to animate next time
+                data.players.forEach(p => {
+                    previousPlayerXP[p.id] = p.experience;
+                });
             }
         } else {
             // TREASURE OR EVENT
