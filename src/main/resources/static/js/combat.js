@@ -15,7 +15,7 @@ function getSpellColor(sp) {
 
 let sessionId = null;
 let currentSessionData = null;
-let selectedTargetIndex = 0;
+let selectedTargetIndex = null;
 let selectedAllyIndex = -1;
 
 window.doAction = doAction;
@@ -83,20 +83,29 @@ let pendingCastSpellId = null;
 
 function initiateCombatCast(spellId) {
     if (!currentSessionData) return;
-    const sp = currentSessionData.availableSpells.find(s => s.id === spellId);
-    if (!sp) return;
+    
+    let needsEnemy = false;
+    let needsAlly = false;
+    
+    if (spellId) {
+        const sp = currentSessionData.availableSpells.find(s => s.id === spellId);
+        if (!sp) return;
 
-    const choiceSelect = document.getElementById(`choice-select-${spellId}`);
-    const currentChoiceKey = choiceSelect ? choiceSelect.value : null;
+        const choiceSelect = document.getElementById(`choice-select-${spellId}`);
+        const currentChoiceKey = choiceSelect ? choiceSelect.value : null;
 
-    const effects = sp.effects || [];
-    const activeEffects = effects.filter(e => {
-        if (e.requiredChoiceKey == null) return true;
-        return String(e.requiredChoiceKey) === String(currentChoiceKey);
-    });
+        const effects = sp.effects || [];
+        const activeEffects = effects.filter(e => {
+            if (e.requiredChoiceKey == null) return true;
+            return String(e.requiredChoiceKey) === String(currentChoiceKey);
+        });
 
-    const needsEnemy = activeEffects.some(e => (e.effectTarget || e.effect_target) === 'TARGET');
-    const needsAlly = activeEffects.some(e => (e.effectTarget || e.effect_target) === 'ALLY');
+        needsEnemy = activeEffects.some(e => (e.effectTarget || e.effect_target) === 'TARGET');
+        needsAlly = activeEffects.some(e => (e.effectTarget || e.effect_target) === 'ALLY');
+    } else {
+        // Basic attack
+        needsEnemy = true;
+    }
 
     const enemyCards = document.querySelectorAll('.fighter-enemy:not(.dead)');
     const allyCards = document.querySelectorAll('.fighter-player:not(.dead):not(.active)');
@@ -358,9 +367,10 @@ function updateUI(data) {
     }
 
     // Auto-select first alive target if current is dead
-    if (data.enemies && data.enemies.length > 0) {
+    if (data.enemies && data.enemies.length > 0 && selectedTargetIndex !== null) {
         if (!data.enemies[selectedTargetIndex] || data.enemies[selectedTargetIndex].dead) {
-            selectedTargetIndex = Math.max(0, data.enemies.findIndex(e => !e.dead));
+            selectedTargetIndex = data.enemies.findIndex(e => !e.dead);
+            if (selectedTargetIndex === -1) selectedTargetIndex = null;
         }
     }
 
@@ -459,7 +469,21 @@ function updateUI(data) {
         }, 500); // Pause before attack animation
     } else {
         // Player turn: enable buttons
-        document.getElementById('btnAttack').disabled = false;
+        const btnAttack = document.getElementById('btnAttack');
+        if (btnAttack) {
+            const canAttack = data.activePlayer && !data.activePlayer.banalSpellCastThisTurn;
+            btnAttack.disabled = !canAttack;
+            if (!canAttack) {
+                btnAttack.classList.add('disabled');
+                btnAttack.style.pointerEvents = 'none';
+                btnAttack.style.opacity = '0.5';
+            } else {
+                btnAttack.classList.remove('disabled');
+                btnAttack.style.pointerEvents = 'auto';
+                btnAttack.style.opacity = '1';
+            }
+        }
+
         const btnEnd = document.getElementById('btnEndTurn');
         if (btnEnd) btnEnd.disabled = false;
     }
@@ -692,7 +716,6 @@ function renderEnemies(enemies) {
     enemies.forEach((activeMonster, index) => {
         const m = activeMonster.base;
         const pMonster = activeMonster.asPersonnage || activeMonster; // Fallback just in case
-        const isSelected = index === selectedTargetIndex && !activeMonster.dead;
         
         let isActive = false;
         if (currentSessionData && currentSessionData.turnOrder && currentSessionData.turnOrder.length > currentSessionData.currentTurnIndex && !currentSessionData.finished) {
@@ -708,7 +731,7 @@ function renderEnemies(enemies) {
         if (typeof activeMonster.maxHp !== 'undefined') pMonster.healthMax = activeMonster.maxHp;
 
         const div = document.createElement('div');
-        div.className = `fighter fighter-enemy enemy-card ${isSelected ? 'selected' : ''} ${isActive ? 'active' : ''} ${activeMonster.dead ? 'dead' : ''}`;
+        div.className = `fighter fighter-enemy enemy-card ${isActive ? 'active' : ''} ${activeMonster.dead ? 'dead' : ''}`;
         div.dataset.index = index;
         div.onclick = () => selectTarget(index);
         
@@ -716,8 +739,9 @@ function renderEnemies(enemies) {
             div.style.borderColor = '#ef4444';
             div.style.boxShadow = '0 0 20px rgba(239, 68, 68, 0.4)';
             div.style.transform = 'scale(1.05)';
-        } else if (!isSelected && !activeMonster.dead) {
-            div.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+        } else if (!activeMonster.dead) {
+            div.style.borderColor = 'rgba(220, 38, 38, 0.4)'; // Default enemy border
+            div.style.boxShadow = 'none';
             div.style.transform = 'scale(0.95)';
         }
 
