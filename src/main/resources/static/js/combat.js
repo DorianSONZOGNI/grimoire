@@ -110,7 +110,7 @@ function initiateCombatCast(spellId) {
         const hasAlly = targets.includes('ALLY');
         const hasAllEnemies = targets.includes('ALL_ENEMIES');
         const hasAllAllies = targets.includes('ALL_ALLIES');
-        const hasEveryone = targets.includes('EVERYONE');
+        const hasEveryone = targets.includes('ALL_COMBATANTS');
         const hasCaster = targets.includes('CASTER');
 
         needsEnemy = hasTarget || hasAllEnemies || hasEveryone;
@@ -167,7 +167,7 @@ function initiateCombatCast(spellId) {
             `;
             if (needsEnemy) enemyCards.forEach(card => card.classList.add('target-highlight'));
             if (needsAlly) allyCards.forEach(card => card.classList.add('target-highlight'));
-            if (targetType === 'LANCEUR') {
+            if (targetType === 'CASTER') {
                 const activeCard = document.querySelector('.fighter-player.active');
                 if (activeCard) activeCard.classList.add('target-highlight');
             }
@@ -207,7 +207,7 @@ function initiateCombatCast(spellId) {
         });
     }
     
-    if (targetType === 'LANCEUR') {
+    if (targetType === 'CASTER') {
         const activePlayerCard = document.querySelector('.fighter-player.active');
         if (activePlayerCard) {
             activePlayerCard.classList.add('target-selectable');
