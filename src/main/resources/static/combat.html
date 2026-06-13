@@ -790,6 +790,54 @@
             transform: scaleY(-1);
             display: inline-block;
         }
+
+        /* Modals */
+        .vault-modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(15, 23, 42, 0.8);
+            backdrop-filter: blur(8px);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+
+        .vault-modal-overlay.show {
+            opacity: 1;
+            pointer-events: all;
+        }
+
+        .vault-modal-content {
+            background: rgba(30, 41, 59, 0.95);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 16px;
+            padding: 2rem;
+            width: 100%;
+            max-width: 800px;
+            max-height: 90vh;
+            overflow-y: auto;
+            transform: translateY(20px) scale(0.95);
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+        }
+
+        .vault-modal-overlay.show .vault-modal-content {
+            transform: translateY(0) scale(1);
+        }
+
+        .vault-modal-content.small {
+            max-width: 400px;
+            text-align: center;
+            border-color: rgba(239, 68, 68, 0.4);
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+        }
     </style>
 </head>
 
@@ -951,6 +999,29 @@
     <div id="combatNotif" class="combat-notif">
         <span class="material-symbols-outlined notif-icon">info</span>
         <span id="combatNotifText"></span>
+    </div>
+
+    <!-- Buy Confirmation Modal -->
+    <div id="buyConfirmModal" class="vault-modal-overlay">
+        <div class="vault-modal-content small" style="border-color: rgba(245, 158, 11, 0.4); max-width: 400px; padding: 2rem;">
+            <div class="vault-modal-icon"
+                style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 2px solid rgba(245, 158, 11, 0.2); width: 64px; height: 64px; border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto;">
+                <span class="material-symbols-outlined" style="font-size: 2rem;">shopping_cart_checkout</span>
+            </div>
+            <div
+                style="font-size: 1.2rem; font-weight: 600; font-family: 'Outfit', sans-serif; color: #fff; margin-bottom: 0.8rem; text-align: center;">
+                Acheter cet objet ?</div>
+            <div style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 1.5rem; line-height: 1.5; text-align: center;">Êtes-vous sûr de
+                vouloir acheter <strong id="buyTargetName" style="color:#fff;">cet objet</strong> ? Il sera ajouté à
+                votre inventaire de combat (et dans vos objets).</div>
+            <div style="display: flex; gap: 1rem;">
+                <button onclick="window.closeBuyModal()"
+                    style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 0.6rem; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">Annuler</button>
+                <button id="buyConfirmBtn"
+                    style="flex: 1; background: #f59e0b; border: none; color: #fff; padding: 0.6rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);" onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter='none'">Oui,
+                    acheter</button>
+            </div>
+        </div>
     </div>
 
     <script type="module" src="/js/combat.js"></script>

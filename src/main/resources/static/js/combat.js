@@ -205,6 +205,8 @@ window.nextRoom = nextRoom;
 window.openChest = openChest;
 window.acceptAlteration = acceptAlteration;
 window.buyMerchantItem = buyMerchantItem;
+window.openBuyModal = openBuyModal;
+window.closeBuyModal = closeBuyModal;
 window.showGlobalTooltip = ui.showGlobalTooltip;
 window.hideGlobalTooltip = ui.hideGlobalTooltip;
 window.initiateCombatCast = initiateCombatCast;
@@ -654,6 +656,30 @@ async function buyMerchantItem(lootIndex) {
     }
 }
 
+function openBuyModal(idx, itemName) {
+    const modal = document.getElementById('buyConfirmModal');
+    const targetName = document.getElementById('buyTargetName');
+    const confirmBtn = document.getElementById('buyConfirmBtn');
+    if (modal && targetName && confirmBtn) {
+        targetName.innerHTML = itemName;
+        confirmBtn.onclick = function() {
+            closeBuyModal();
+            buyMerchantItem(idx);
+        };
+        modal.classList.add('show');
+    }
+}
+
+function closeBuyModal() {
+    const modal = document.getElementById('buyConfirmModal');
+    if (modal) {
+        modal.classList.remove('show');
+    }
+}
+
+window.openBuyModal = openBuyModal;
+window.closeBuyModal = closeBuyModal;
+
 async function openChest() {
     if (!sessionId) return;
     try {
@@ -1022,7 +1048,7 @@ function updateUI(data) {
                                             </div>
                                         </div>
                                     </div>
-                                    <button id="btn_buy_${idx}" type="button" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 8px; padding: 0.6rem 1.2rem; font-weight: 700; font-size: 1rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s ease; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);" onclick="if(confirm('Acheter cet objet ?')) buyMerchantItem(${idx})" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='none'">
+                                    <button id="btn_buy_${idx}" type="button" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 8px; padding: 0.6rem 1.2rem; font-weight: 700; font-size: 1rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s ease; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);" onclick="openBuyModal(${idx}, \`${nameHtml.replace(/'/g, "\\'").replace(/"/g, '&quot;')}\`)" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='none'">
                                         <span class="material-symbols-outlined" style="font-size: 1.2rem;">shopping_cart</span>
                                         Acheter
                                     </button>
