@@ -80,7 +80,14 @@ function initiateCombatCast(spellId) {
     
     let needsEnemy = false;
     let needsAlly = false;
+    let targetType = 'ENNEMI'; // default
     
+    const enemyCards = document.querySelectorAll('.fighter-enemy:not(.dead)');
+    const allyCards = document.querySelectorAll('.fighter-player:not(.dead)'); // Now includes active player!
+    
+    let requiresEnemySelection = false;
+    let requiresAllySelection = false;
+
     if (spellId) {
         const sp = currentSessionData.availableSpells.find(s => s.id === spellId);
         if (!sp) return;
@@ -94,18 +101,31 @@ function initiateCombatCast(spellId) {
             return String(e.requiredChoiceKey) === String(currentChoiceKey);
         });
 
-        needsEnemy = activeEffects.some(e => (e.effectTarget || e.effect_target) === 'TARGET');
-        needsAlly = activeEffects.some(e => (e.effectTarget || e.effect_target) === 'ALLY');
+        if (activeEffects.length > 0) {
+            targetType = activeEffects[0].effectTarget || activeEffects[0].effect_target;
+        }
+
+        const targets = activeEffects.map(e => e.effectTarget || e.effect_target);
+        const hasTarget = targets.includes('TARGET');
+        const hasAlly = targets.includes('ALLY');
+        const hasAllEnemies = targets.includes('ALL_ENEMIES');
+        const hasAllAllies = targets.includes('ALL_ALLIES');
+        const hasEveryone = targets.includes('EVERYONE');
+        const hasCaster = targets.includes('CASTER');
+
+        needsEnemy = hasTarget || hasAllEnemies || hasEveryone;
+        needsAlly = hasAlly || hasAllAllies || hasEveryone;
+        
+        requiresEnemySelection = hasTarget && enemyCards.length > 1;
+        requiresAllySelection = hasAlly && allyCards.length > 1;
     } else {
         // Basic attack
         needsEnemy = true;
+        requiresEnemySelection = enemyCards.length > 1;
     }
 
-    const enemyCards = document.querySelectorAll('.fighter-enemy:not(.dead)');
-    const allyCards = document.querySelectorAll('.fighter-player:not(.dead):not(.active)');
-
-    const multiEnemy = needsEnemy && enemyCards.length > 1;
-    const multiAlly = needsAlly && allyCards.length > 1;
+    const multiEnemy = requiresEnemySelection;
+    const multiAlly = requiresAllySelection;
 
     cancelCombatCast(); // Clean previous state
     pendingCastSpellId = spellId;
@@ -147,6 +167,10 @@ function initiateCombatCast(spellId) {
             `;
             if (needsEnemy) enemyCards.forEach(card => card.classList.add('target-highlight'));
             if (needsAlly) allyCards.forEach(card => card.classList.add('target-highlight'));
+            if (targetType === 'LANCEUR') {
+                const activeCard = document.querySelector('.fighter-player.active');
+                if (activeCard) activeCard.classList.add('target-highlight');
+            }
         }
         cardEl.appendChild(overlay);
     } else if (cardEl) {
@@ -165,19 +189,32 @@ function initiateCombatCast(spellId) {
         }
     }
 
-    if (multiEnemy) {
+    // ALWAYS make valid targets selectable, even if there's only 1 target
+    if (needsEnemy) {
         enemyCards.forEach(card => {
             card.classList.add('target-selectable');
             card.dataset.oldOnClick = card.getAttribute('onclick');
             card.setAttribute('onclick', `confirmCombatCast(${card.dataset.index}, 'enemy')`);
         });
-    } else if (multiAlly) {
+    }
+    
+    if (needsAlly) {
         allyCards.forEach(card => {
             card.classList.add('target-selectable');
             card.dataset.oldOnClick = card.getAttribute('onclick');
             const idx = Array.from(card.parentNode.children).indexOf(card);
             card.setAttribute('onclick', `confirmCombatCast(${idx}, 'ally')`);
         });
+    }
+    
+    if (targetType === 'LANCEUR') {
+        const activePlayerCard = document.querySelector('.fighter-player.active');
+        if (activePlayerCard) {
+            activePlayerCard.classList.add('target-selectable');
+            activePlayerCard.dataset.oldOnClick = activePlayerCard.getAttribute('onclick');
+            const idx = Array.from(activePlayerCard.parentNode.children).indexOf(activePlayerCard);
+            activePlayerCard.setAttribute('onclick', `confirmCombatCast(${idx}, 'ally')`);
+        }
     }
 }
 
