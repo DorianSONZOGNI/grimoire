@@ -587,7 +587,6 @@ function renderBuffsHtml(buffList) {
 
 function renderCombatantCard(c, team, isHero = false) {
     const emoji = team === 'ally' ? '🧙‍♂️' : '👹';
-    const roleLabel = isHero ? ' (Lanceur)' : '';
     const hpPct = c.hpMax > 0 ? Math.max(0, Math.min(100, (c.hpCurrent / c.hpMax) * 100)) : 0;
     let hpLabel = `${c.hpCurrent} / ${c.hpMax}`;
     if (c.shieldTotal > 0) hpLabel += ` (+${c.shieldTotal} 🛡️)`;
@@ -621,7 +620,7 @@ function renderCombatantCard(c, team, isHero = false) {
     return `
         <div class="combatant-card" data-team="${team}" data-index="${c.index}">
             <div class="combatant-name">
-                <span>${emoji} ${c.name}${roleLabel}</span>
+                <span>${emoji} ${c.name}</span>
                 ${removeBtn}
             </div>
             ${isHero ? `<div id="heroConfigBadges" style="display: flex; flex-wrap: wrap; gap: 0.3rem; margin-bottom: 0.3rem;"></div>` : ''}

@@ -409,7 +409,6 @@ function updateUI(data) {
 // Removed GLOBAL_STAT_LABELS and formatStat (imported from ui.js)
 
 function generateFighterHtml(c, isHero) {
-    const roleLabel = isHero ? ' (Lanceur)' : '';
     const hpPct = c.healthMax > 0 ? Math.max(0, Math.min(100, (c.healthCurrent / c.healthMax) * 100)) : 0;
     let hpLabel = `${c.healthCurrent} / ${c.healthMax}`;
     if (c.shieldTotal > 0) hpLabel += ` (+${c.shieldTotal} 🛡️)`;
@@ -597,9 +596,21 @@ function generateFighterHtml(c, isHero) {
 
     let passiveBadges = '';
 
+    let titleIconsHtml = '';
+    if (c.voie && c.voie.nom) {
+        const vColor = getVoieButtonColor(c.voie);
+        const vIcon = ui.getVoieIcon(c.voie.nom);
+        titleIconsHtml += `<span class="material-symbols-outlined" style="font-size: 1.2rem; color: ${vColor};" title="${c.voie.nom}">${vIcon}</span>`;
+    }
+    if (c.spiritualite && c.spiritualite.nom) {
+        const sColor = getSpiritButtonColor(c.spiritualite);
+        const sIcon = ui.getSpiritIcon(c.spiritualite.nom);
+        titleIconsHtml += `<span class="material-symbols-outlined" style="font-size: 1.2rem; color: ${sColor};" title="${c.spiritualite.nom}">${sIcon}</span>`;
+    }
+
     return `
         <div class="fighter-name" style="color: ${isHero ? '#f8fafc' : '#ef4444'}; font-size: 1.2rem; display: flex; justify-content: center; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-            ${isHero ? '🧙‍♂️' : '👹'} ${c.name}${roleLabel}
+            ${isHero ? '🧙‍♂️' : '👹'} ${titleIconsHtml} ${c.name}
         </div>
         ${statsHtml}
         <div class="gauge-container" style="text-align: left;">
@@ -848,11 +859,11 @@ function renderSpells(spells) {
     // Apply secondary filters
     const typeFilterEl = document.querySelector('input[name="filterCastingType"]:checked');
     const levelCheckboxes = Array.from(document.querySelectorAll('input[name="filterLevel"]:checked'));
-    
+
     if (typeFilterEl && typeFilterEl.value !== 'ALL') {
         filteredSpells = filteredSpells.filter(s => s.castingType === typeFilterEl.value);
     }
-    
+
     const isAllLevels = levelCheckboxes.some(cb => cb.value === 'ALL');
     if (!isAllLevels && levelCheckboxes.length > 0) {
         const selectedLevels = levelCheckboxes.map(cb => parseInt(cb.value, 10));
@@ -864,40 +875,45 @@ function renderSpells(spells) {
         return;
     }
 
-    // Group by Niveau
-    const levelsMap = new Map();
+    // Group spells by category instead of level
+    const groupsMap = new Map();
     filteredSpells.forEach(sp => {
-        const lvl = sp.niveau || 1;
-        if (!levelsMap.has(lvl)) levelsMap.set(lvl, []);
-        levelsMap.get(lvl).push(sp);
+        let groupKey = '';
+        if (currentSpellsTab === 'VOIE') {
+            if (sp.voie && sp.voie.nom) {
+                groupKey = sp.voie.nom.toLowerCase().startsWith('voie') ? sp.voie.nom : `Voie de ${sp.voie.nom}`;
+            } else {
+                groupKey = 'Autres';
+            }
+        } else if (currentSpellsTab === 'SPIRIT') {
+            if (sp.spiritualite && sp.spiritualite.nom) {
+                groupKey = sp.spiritualite.nom.toLowerCase().startsWith('spiritualité') || sp.spiritualite.nom.toLowerCase().startsWith('spiritualite') 
+                    ? sp.spiritualite.nom 
+                    : `Spiritualité de ${sp.spiritualite.nom}`;
+            } else {
+                groupKey = 'Autres';
+            }
+        } else {
+            groupKey = ''; // No title for ALL
+        }
+        
+        if (!groupsMap.has(groupKey)) groupsMap.set(groupKey, []);
+        groupsMap.get(groupKey).push(sp);
     });
 
-    // Sort levels ascending
-    const sortedLevels = Array.from(levelsMap.keys()).sort((a, b) => a - b);
-
     let html = '';
-    sortedLevels.forEach(lvl => {
-        const levelSpells = levelsMap.get(lvl);
-
-        let title = `Niveau ${lvl}`;
-        if (currentSpellsTab === 'VOIE') {
-            const voieNames = [...new Set(levelSpells.map(s => s.voie.nom))];
-            if (voieNames.length === 1) {
-                const vName = voieNames[0];
-                title = vName.toLowerCase().startsWith('voie') ? `${vName} - Niveau ${lvl}` : `Voie de ${vName} - Niveau ${lvl}`;
-            }
-            else title = `Voies - Niveau ${lvl}`;
-        } else if (currentSpellsTab === 'SPIRIT') {
-            const spiritNames = [...new Set(levelSpells.map(s => s.spiritualite.nom))];
-            if (spiritNames.length === 1) title = `Spiritualité de ${spiritNames[0]} - Niveau ${lvl}`;
-            else title = `Spiritualités - Niveau ${lvl}`;
-        }
+    const sortedGroups = Array.from(groupsMap.keys()).sort();
+    
+    sortedGroups.forEach(groupKey => {
+        const groupSpells = groupsMap.get(groupKey);
+        // Sort spells by level inside the group
+        groupSpells.sort((a, b) => (a.niveau || 1) - (b.niveau || 1));
 
         html += `
             <div class="csp-level-group">
-                <div class="csp-level-title">${title}</div>
+                ${groupKey ? `<div class="csp-level-title">${groupKey}</div>` : ''}
                 <div class="csp-grid">
-                    ${levelSpells.map(sp => renderSpellCard(sp)).join('')}
+                    ${groupSpells.map(sp => renderSpellCard(sp)).join('')}
                 </div>
             </div>
         `;
