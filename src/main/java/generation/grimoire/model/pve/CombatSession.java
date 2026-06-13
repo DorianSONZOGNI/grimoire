@@ -16,7 +16,10 @@ public class CombatSession {
     private Long dungeonId;
     private Donjon donjon;
     private List<Personnage> players = new ArrayList<>();
-    private int currentActivePlayerIndex = 0;
+    
+    // Initiative Queue
+    private List<InitiativeEntry> turnOrder = new ArrayList<>();
+    private int currentTurnIndex = 0;
     
     private int currentRoomIndex = 0;
     private Salle currentRoom;
@@ -48,30 +51,29 @@ public class CombatSession {
     }
     
     public Personnage getActivePlayer() {
-        if (players.isEmpty() || currentActivePlayerIndex >= players.size()) return null;
-        return players.get(currentActivePlayerIndex);
+        if (turnOrder.isEmpty() || currentTurnIndex >= turnOrder.size()) return null;
+        InitiativeEntry current = turnOrder.get(currentTurnIndex);
+        if (current.isPlayer() && current.getIndex() >= 0 && current.getIndex() < players.size()) {
+            return players.get(current.getIndex());
+        }
+        return null;
     }
     
-    public void nextActivePlayer() {
-        currentActivePlayerIndex++;
-        while(currentActivePlayerIndex < players.size() && players.get(currentActivePlayerIndex).getHealthCurrent() <= 0) {
-            currentActivePlayerIndex++;
+    public ActiveMonster getActiveEnemy() {
+        if (turnOrder.isEmpty() || currentTurnIndex >= turnOrder.size()) return null;
+        InitiativeEntry current = turnOrder.get(currentTurnIndex);
+        if (!current.isPlayer() && current.getIndex() >= 0 && current.getIndex() < enemies.size()) {
+            return enemies.get(current.getIndex());
         }
+        return null;
     }
     
-    public void resetActivePlayer() {
-        currentActivePlayerIndex = 0;
-        while(currentActivePlayerIndex < players.size() && players.get(currentActivePlayerIndex).getHealthCurrent() <= 0) {
-            currentActivePlayerIndex++;
-        }
+    public void advanceTurnIndex() {
+        currentTurnIndex++;
     }
     
-    public boolean isLastPlayerTurn() {
-        int next = currentActivePlayerIndex + 1;
-        while (next < players.size() && players.get(next).getHealthCurrent() <= 0) {
-            next++;
-        }
-        return next >= players.size();
+    public boolean isRoundFinished() {
+        return currentTurnIndex >= turnOrder.size();
     }
     
     public boolean areAllPlayersDead() {

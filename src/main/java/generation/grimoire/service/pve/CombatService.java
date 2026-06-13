@@ -81,9 +81,8 @@ public class CombatService {
         
         if (session.getCurrentRoom().getType() == generation.grimoire.enumeration.RoomType.COMBAT) {
             session.addLog("Vous entrez dans une salle de combat ! Préparez-vous.");
-            for (Personnage p : session.getPlayers()) {
-                if (p.getHealthCurrent() > 0) spellService.startTurn(p);
-            }
+            session.setTurnNumber(1);
+            rollInitiative(session);
         } else if (session.getCurrentRoom().getType() == generation.grimoire.enumeration.RoomType.TREASURE) {
             session.addLog("Vous trouvez un trésor !");
         } else if (session.getCurrentRoom().getType() == generation.grimoire.enumeration.RoomType.EVENT) {
@@ -207,6 +206,13 @@ public class CombatService {
             }
         }
         
+        checkDeaths(session);
+        
+        computeSpellAvailability(session);
+        return session;
+    }
+
+    private void checkDeaths(CombatSession session) {
         // Check dead enemies
         for (generation.grimoire.model.pve.ActiveMonster m : session.getEnemies()) {
             if (m.isDead() && m.getCurrentHp() == 0 && m.getMaxHp() > 0) {
@@ -221,9 +227,6 @@ public class CombatService {
         if (session.areAllEnemiesDead()) {
             session.addLog("Combat terminé, vous avez vaincu tous les monstres !");
         }
-        
-        computeSpellAvailability(session);
-        return session;
     }
 
     public CombatSession endTurn(String sessionId) {
@@ -247,60 +250,119 @@ public class CombatService {
                 }
             });
         }
+        session.advanceTurnIndex();
         
-        if (session.isLastPlayerTurn()) {
-            session.addLog("--- TOUR DES ENNEMIS (TOUR " + session.getTurnNumber() + ") ---");
-            
-            // Monsters turn
-            captureLogs(session, () -> {
-                for (generation.grimoire.model.pve.ActiveMonster m : session.getEnemies()) {
-                    if (!m.isDead()) {
-                        spellService.startTurn(m.getAsPersonnage());
-                    }
-                }
-                for (generation.grimoire.model.pve.ActiveMonster m : session.getEnemies()) {
-                    if (!m.isDead()) {
-                        Personnage mp = m.getAsPersonnage();
-                        if (mp.getRemainingChannelingTurns() > 0) {
-                            Personnage cTarget = mp.getChannelingTarget();
-                            if (cTarget == null && !session.getPlayers().isEmpty()) {
-                                cTarget = session.getPlayers().get(0);
-                            }
-                            spellService.tickChanneling(mp, cTarget, mp.getChannelingChoiceKey());
-                        } else {
-                            List<Personnage> alivePlayers = session.getPlayers().stream().filter(pl -> pl.getHealthCurrent() > 0).toList();
-                            if (!alivePlayers.isEmpty()) {
-                                Personnage targetPlayer = alivePlayers.get(new java.util.Random().nextInt(alivePlayers.size()));
-                                int monsterDmg = m.getBase().getStrength();
-                                System.out.println(m.getBase().getName() + " attaque " + targetPlayer.getName() + " et inflige " + monsterDmg + " dégâts.");
-                                targetPlayer.takeDamage(monsterDmg, generation.grimoire.enumeration.DamageType.PHYSIC);
-                                if (targetPlayer.getHealthCurrent() <= 0) {
-                                    System.out.println(targetPlayer.getName() + " a été vaincu...");
-                                }
-                            }
-                        }
-                    }
-                }
-            });
-            
-            if (session.areAllPlayersDead()) {
-                session.setFinished(true);
-                session.setPlayerWon(false);
-                session.addLog("Toute l'équipe a été vaincue...");
-            } else {
-                session.resetActivePlayer();
-                session.setTurnNumber(session.getTurnNumber() + 1);
-                session.addLog("--- DEBUT DU TOUR " + session.getTurnNumber() + " : " + session.getActivePlayer().getName() + " ---");
-                spellService.startTurn(session.getActivePlayer());
-            }
-        } else {
-            session.nextActivePlayer();
-            session.addLog("--- Tour de " + session.getActivePlayer().getName() + " ---");
-            spellService.startTurn(session.getActivePlayer());
-        }
+        captureLogs(session, () -> {
+            processAutoTurns(session);
+        });
         
         computeSpellAvailability(session);
         return session;
+    }
+
+    private void processAutoTurns(CombatSession session) {
+        while (!session.isRoundFinished() && !session.areAllPlayersDead() && !session.areAllEnemiesDead()) {
+            generation.grimoire.model.pve.InitiativeEntry current = session.getTurnOrder().get(session.getCurrentTurnIndex());
+            if (current.isPlayer()) {
+                Personnage p = session.getPlayers().get(current.getIndex());
+                if (p.getHealthCurrent() > 0) {
+                    session.addLog("--- Tour de " + p.getName() + " ---");
+                    spellService.startTurn(p);
+                    break; // Stop auto-processing, wait for player action
+                } else {
+                    session.advanceTurnIndex();
+                }
+            } else {
+                generation.grimoire.model.pve.ActiveMonster m = session.getEnemies().get(current.getIndex());
+                if (!m.isDead()) {
+                    session.addLog("--- Tour de l'ennemi " + m.getBase().getName() + " ---");
+                    spellService.startTurn(m.getAsPersonnage());
+                    
+                    Personnage mp = m.getAsPersonnage();
+                    if (mp.getRemainingChannelingTurns() > 0) {
+                        Personnage cTarget = mp.getChannelingTarget();
+                        if (cTarget == null && !session.getPlayers().isEmpty()) {
+                            cTarget = session.getPlayers().get(0);
+                        }
+                        spellService.tickChanneling(mp, cTarget, mp.getChannelingChoiceKey());
+                    } else {
+                        List<Personnage> alivePlayers = session.getPlayers().stream().filter(pl -> pl.getHealthCurrent() > 0).toList();
+                        if (!alivePlayers.isEmpty()) {
+                            Personnage targetPlayer = alivePlayers.get(new java.util.Random().nextInt(alivePlayers.size()));
+                            int monsterDmg = m.getBase().getStrength();
+                            System.out.println(m.getBase().getName() + " attaque " + targetPlayer.getName() + " et inflige " + monsterDmg + " dégâts.");
+                            targetPlayer.takeDamage(monsterDmg, generation.grimoire.enumeration.DamageType.PHYSIC);
+                            if (targetPlayer.getHealthCurrent() <= 0) {
+                                System.out.println(targetPlayer.getName() + " a été vaincu...");
+                            }
+                        }
+                    }
+                    checkDeaths(session);
+                }
+                session.advanceTurnIndex();
+            }
+        }
+        
+        if (session.areAllPlayersDead()) {
+            session.setFinished(true);
+            session.setPlayerWon(false);
+            session.addLog("Toute l'équipe a été vaincue...");
+        } else if (session.isRoundFinished() && !session.areAllEnemiesDead()) {
+            session.setTurnNumber(session.getTurnNumber() + 1);
+            rollInitiative(session);
+        }
+    }
+
+    private void rollInitiative(CombatSession session) {
+        session.getTurnOrder().clear();
+        session.setCurrentTurnIndex(0);
+        java.util.Random rnd = new java.util.Random();
+        
+        for (int i = 0; i < session.getPlayers().size(); i++) {
+            Personnage p = session.getPlayers().get(i);
+            if (p.getHealthCurrent() > 0) {
+                int speed = p.getEffectiveStat(generation.grimoire.enumeration.StatType.SPEED);
+                int score = calculateInitiativeScore(speed, rnd);
+                session.getTurnOrder().add(new generation.grimoire.model.pve.InitiativeEntry(true, i, score, speed, rnd.nextInt(100)));
+            }
+        }
+        
+        for (int i = 0; i < session.getEnemies().size(); i++) {
+            generation.grimoire.model.pve.ActiveMonster m = session.getEnemies().get(i);
+            if (!m.isDead()) {
+                int speed = m.getBase().getSpeed();
+                int score = calculateInitiativeScore(speed, rnd);
+                session.getTurnOrder().add(new generation.grimoire.model.pve.InitiativeEntry(false, i, score, speed, rnd.nextInt(100)));
+            }
+        }
+        
+        session.getTurnOrder().sort((a, b) -> {
+            if (a.getInitiativeScore() != b.getInitiativeScore()) {
+                return Integer.compare(b.getInitiativeScore(), a.getInitiativeScore());
+            }
+            if (a.getSpeedStat() != b.getSpeedStat()) {
+                return Integer.compare(b.getSpeedStat(), a.getSpeedStat());
+            }
+            return Integer.compare(b.getTieBreakerRoll(), a.getTieBreakerRoll());
+        });
+        
+        session.addLog("--- NOUVEAU ROUND (Tour " + session.getTurnNumber() + ") ---");
+        for (generation.grimoire.model.pve.InitiativeEntry e : session.getTurnOrder()) {
+            String name = e.isPlayer() ? session.getPlayers().get(e.getIndex()).getName() : session.getEnemies().get(e.getIndex()).getBase().getName();
+            session.addLog(name + " | Init: " + e.getInitiativeScore() + " (Vitesse: " + e.getSpeedStat() + ")");
+        }
+        
+        processAutoTurns(session);
+    }
+    
+    private int calculateInitiativeScore(int speed, java.util.Random rnd) {
+        int baseRoll = rnd.nextInt(10) + 1;
+        int flatBonus = Math.max(0, Math.min(speed, 5));
+        int extraRoll = 0;
+        if (speed > 5) {
+            extraRoll = rnd.nextInt(speed - 5) + 1;
+        }
+        return baseRoll + flatBonus + extraRoll;
     }
 
     /**

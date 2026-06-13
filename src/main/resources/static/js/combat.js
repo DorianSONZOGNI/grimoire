@@ -307,7 +307,14 @@ function updateUI(data) {
     if (playersContainer) {
         playersContainer.innerHTML = '';
         data.players.forEach((p, index) => {
-            const isActive = index === data.currentActivePlayerIndex;
+            let isActive = false;
+            if (data.turnOrder && data.turnOrder.length > data.currentTurnIndex) {
+                const currentTurn = data.turnOrder[data.currentTurnIndex];
+                if (currentTurn.player && currentTurn.index === index) {
+                    isActive = true;
+                }
+            }
+            
             const isDead = p.healthCurrent <= 0;
             const isAllySelected = index === selectedAllyIndex;
 
