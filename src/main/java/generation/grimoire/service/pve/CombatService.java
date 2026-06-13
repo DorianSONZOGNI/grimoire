@@ -46,7 +46,7 @@ public class CombatService {
 
         List<Personnage> players = new ArrayList<>();
         for (Long characterId : characterIds) {
-            Personnage p = personnageRepository.findById(characterId).orElseThrow(() -> new RuntimeException("Personnage introuvable"));
+            Personnage p = personnageRepository.findById(java.util.Objects.requireNonNull(characterId)).orElseThrow(() -> new RuntimeException("Personnage introuvable"));
             if (p.getUser() == null || !p.getUser().getUsername().equals(username)) {
                 throw new RuntimeException("Non autorisé");
             }
@@ -130,7 +130,7 @@ public class CombatService {
                     userRepository.save(user);
                 }
                 for (Personnage p : session.getPlayers()) {
-                    personnageRepository.save(p);
+                    personnageRepository.save(java.util.Objects.requireNonNull(p));
                 }
             }
         }

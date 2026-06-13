@@ -146,6 +146,21 @@
             padding-right: 0.5rem;
         }
 
+        .combat-log::-webkit-scrollbar {
+            width: 6px;
+        }
+        .combat-log::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.4);
+            border-radius: 4px;
+        }
+        .combat-log::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.2);
+            border-radius: 4px;
+        }
+        .combat-log::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.3);
+        }
+
         .log-entry {
             margin-bottom: 0.5rem;
             padding-bottom: 0.5rem;
@@ -529,12 +544,14 @@
         .result-title.victory {
             background: linear-gradient(to right, #f59e0b, #fbbf24);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
         .result-title.defeat {
             background: linear-gradient(to right, #ef4444, #b91c1c);
             -webkit-background-clip: text;
+            background-clip: text;
             -webkit-text-fill-color: transparent;
         }
 
