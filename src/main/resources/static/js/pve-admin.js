@@ -942,7 +942,10 @@ async function editDungeon(id) {
                     if (s.lootTable) {
                         room.lootTable = s.lootTable.map(l => ({
                             equipmentId: l.equipment ? l.equipment.id : l.equipmentId,
-                            probability: l.probability
+                            probability: l.probability,
+                            priceGold: l.priceGold,
+                            priceSpecialItemName: l.priceSpecialItemName,
+                            specialItemName: l.specialItemName
                         }));
                     } else {
                         room.lootTable = [];
@@ -974,7 +977,10 @@ async function editDungeon(id) {
                     if (s.lootTable) {
                         room.lootTable = s.lootTable.map(l => ({
                             equipmentId: l.equipment ? l.equipment.id : l.equipmentId,
-                            probability: l.probability
+                            probability: l.probability,
+                            priceGold: l.priceGold,
+                            priceSpecialItemName: l.priceSpecialItemName,
+                            specialItemName: l.specialItemName
                         }));
                     } else {
                         room.lootTable = [];

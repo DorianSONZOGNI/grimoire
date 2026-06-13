@@ -632,13 +632,8 @@ async function acceptAlteration() {
 }
 
 async function buyMerchantItem(lootIndex) {
-    if (!sessionId) return;
-    const charSelect = document.getElementById(`merchant_buyer_${lootIndex}`);
-    if (!charSelect || !charSelect.value) {
-        alert("Sélectionnez un héros pour acheter cet objet.");
-        return;
-    }
-    const charId = charSelect.value;
+    if (!sessionId || !currentSessionData || !currentSessionData.players || currentSessionData.players.length === 0) return;
+    const charId = currentSessionData.players[0].id;
     
     try {
         const btn = document.getElementById(`btn_buy_${lootIndex}`);
@@ -981,13 +976,6 @@ function updateUI(data) {
                         lootContainer.style.display = 'flex';
                         lootContainer.innerHTML = '';
                         
-                        let playerOptions = '';
-                        data.players.forEach(p => {
-                            if (p.healthCurrent > 0) {
-                                playerOptions += `<option value="${p.id}">${p.name} (${p.gold} Or)</option>`;
-                            }
-                        });
-
                         data.currentRoom.lootTable.forEach((entry, idx) => {
                             let nameHtml = '';
                             let iconHtml = '';
@@ -1007,33 +995,36 @@ function updateUI(data) {
                             }
 
                             let priceHtml = '';
-                            const goldPrice = entry.priceGold !== null ? entry.priceGold : entry.probability;
+                            const goldPrice = entry.priceGold != null ? entry.priceGold : (entry.probability || 0);
+                            
                             if (goldPrice > 0) {
-                                priceHtml += `<span style="color: #f59e0b; display: flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined" style="font-size: 1rem;">monetization_on</span>${goldPrice}</span>`;
+                                priceHtml += `<span style="color: #f59e0b; display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem;">monetization_on</span>${goldPrice}</span>`;
                             }
                             if (entry.priceSpecialItemName) {
-                                priceHtml += `<span style="color: #d946ef; display: flex; align-items: center; gap: 0.2rem; margin-left: 0.5rem;"><span class="material-symbols-outlined" style="font-size: 1rem;">star</span>1x ${entry.priceSpecialItemName}</span>`;
+                                priceHtml += `<span style="color: #d946ef; display: flex; align-items: center; gap: 0.3rem; margin-left: ${goldPrice > 0 ? '0.8rem' : '0'};"><span class="material-symbols-outlined" style="font-size: 1.1rem;">star</span>1x ${entry.priceSpecialItemName}</span>`;
+                            }
+                            
+                            if (priceHtml === '') {
+                                priceHtml = `<span style="color: #10b981; display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem;">sell</span>Gratuit</span>`;
                             }
 
                             lootContainer.innerHTML += `
-                                <div style="background: rgba(0,0,0,0.4); border: 1px solid ${rarityColor}40; padding: 0.8rem; border-radius: 8px; display: flex; flex-direction: column; gap: 0.8rem; width: 100%;">
-                                    <div style="display: flex; justify-content: space-between; align-items: center;">
-                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                <div style="background: rgba(15, 23, 42, 0.6); border: 1px solid ${rarityColor}50; padding: 1rem; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; gap: 1rem; width: 100%; transition: all 0.2s ease;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.4)';" onmouseout="this.style.transform='none'; this.style.boxShadow='none';">
+                                    <div style="display: flex; align-items: center; gap: 1rem;">
+                                        <div style="width: 48px; height: 48px; border-radius: 8px; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; border: 1px solid ${rarityColor}30;">
                                             ${iconHtml}
-                                            <span style="color: ${rarityColor}; font-weight: 600;">${nameHtml}</span>
                                         </div>
-                                        <div style="display: flex; align-items: center; font-size: 0.85rem; font-weight: 600;">
-                                            ${priceHtml}
+                                        <div style="display: flex; flex-direction: column; gap: 0.2rem;">
+                                            <span style="color: ${rarityColor}; font-weight: 700; font-size: 1.1rem; text-shadow: 0 0 10px ${rarityColor}40;">${nameHtml}</span>
+                                            <div style="display: flex; align-items: center; font-size: 0.9rem; font-weight: 600; background: rgba(0,0,0,0.3); padding: 0.2rem 0.6rem; border-radius: 4px; width: fit-content; margin-top: 0.2rem;">
+                                                ${priceHtml}
+                                            </div>
                                         </div>
                                     </div>
-                                    <div style="display: flex; gap: 0.5rem; align-items: stretch;">
-                                        <select id="merchant_buyer_${idx}" class="form-control" style="flex: 2; padding: 0.4rem;">
-                                            ${playerOptions}
-                                        </select>
-                                        <button id="btn_buy_${idx}" type="button" class="btn" style="flex: 1; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;" onclick="buyMerchantItem(${idx})">
-                                            Acheter
-                                        </button>
-                                    </div>
+                                    <button id="btn_buy_${idx}" type="button" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 8px; padding: 0.6rem 1.2rem; font-weight: 700; font-size: 1rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s ease; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);" onclick="buyMerchantItem(${idx})" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='none'">
+                                        <span class="material-symbols-outlined" style="font-size: 1.2rem;">shopping_cart</span>
+                                        Acheter
+                                    </button>
                                 </div>
                             `;
                         });
