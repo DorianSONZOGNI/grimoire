@@ -630,8 +630,8 @@ async function openChest() {
                 
                 if (goldAmount > 0) {
                     gainedItemsHtml = `
-                        <div style="background: rgba(0, 0, 0, 0.4); border: 1px solid #fde04780; padding: 0.8rem 1rem; border-radius: 8px; color: #fde047; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
-                            <span class="material-symbols-outlined" style="color: #fde047;">monetization_on</span> +${goldAmount} Or
+                        <div style="background: rgba(0, 0, 0, 0.4); border: 1px solid #f59e0b80; padding: 0.8rem 1rem; border-radius: 8px; color: #f59e0b; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
+                            <span class="material-symbols-outlined" style="color: #f59e0b;">monetization_on</span> +${goldAmount} Or
                         </div>
                     ` + gainedItemsHtml;
                 }
@@ -760,8 +760,8 @@ function updateUI(data) {
                         if (goldAmount > 0) {
                             xpContainer.innerHTML += `
                                 <div style="width: 100%; text-align: center; margin-bottom: 1rem; animation: popIn 0.5s ease-out forwards;">
-                                    <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(0,0,0,0.4); border: 1px solid #fde04780; padding: 0.5rem 1rem; border-radius: 8px; color: #fde047; font-weight: bold; font-size: 1.2rem;">
-                                        <span class="material-symbols-outlined" style="color: #fde047;">monetization_on</span> +${goldAmount} Or
+                                    <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(0,0,0,0.4); border: 1px solid #f59e0b80; padding: 0.5rem 1rem; border-radius: 8px; color: #f59e0b; font-weight: bold; font-size: 1.2rem;">
+                                        <span class="material-symbols-outlined" style="color: #f59e0b;">monetization_on</span> +${goldAmount} Or
                                     </div>
                                 </div>
                             `;
