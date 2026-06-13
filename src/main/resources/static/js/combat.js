@@ -803,8 +803,8 @@ function renderSpells(spells) {
         filteredSpells = spells.filter(s => s.voie != null);
     } else if (currentSpellsTab === 'SPIRIT') {
         filteredSpells = spells.filter(s => s.spiritualite != null);
-    } else if (currentSpellsTab === 'BASE') {
-        filteredSpells = spells.filter(s => s.voie == null && s.spiritualite == null);
+    } else if (currentSpellsTab === 'ALL') {
+        filteredSpells = spells;
     }
 
     // Update counts
@@ -812,8 +812,8 @@ function renderSpells(spells) {
     if (countVOIE) countVOIE.textContent = spells.filter(s => s.voie != null).length;
     const countSPIRIT = document.getElementById('countSPIRIT');
     if (countSPIRIT) countSPIRIT.textContent = spells.filter(s => s.spiritualite != null).length;
-    const countBASE = document.getElementById('countBASE');
-    if (countBASE) countBASE.textContent = spells.filter(s => s.voie == null && s.spiritualite == null).length;
+    const countALL = document.getElementById('countALL');
+    if (countALL) countALL.textContent = spells.length;
 
     if (filteredSpells.length === 0) {
         container.innerHTML = '<div style="color: #94a3b8; font-style: italic; padding: 2rem; text-align: center;">Aucun sort dans cette catégorie.</div>';
