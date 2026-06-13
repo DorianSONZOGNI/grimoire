@@ -20,6 +20,8 @@ import generation.grimoire.entity.Equipment;
 import generation.grimoire.entity.pve.LootEntry;
 import generation.grimoire.entity.auth.AppUser;
 import generation.grimoire.enumeration.SpellCastingType;
+import generation.grimoire.enumeration.MonsterType;
+import generation.grimoire.enumeration.MonsterBehavior;
 import generation.grimoire.event.CastingTypeAdjustEvent;
 import generation.grimoire.event.CanCastCheckEvent;
 import generation.grimoire.event.SpellCostAdjustEvent;
@@ -715,6 +717,16 @@ public class CombatService {
                 session.addLog("--- Tour de l'ennemi " + m.getBase().getName() + " ---");
                 spellService.startTurn(m.getAsPersonnage());
 
+                // === PASSIF TYPE : MORT_VIVANT — Régénération début de tour ===
+                MonsterType mType = m.getBase().getMonsterType();
+                if (mType == null) mType = MonsterType.NORMAL;
+                if (mType == MonsterType.MORT_VIVANT && !m.isDead()) {
+                    int regenAmount = (int) Math.ceil(m.getBase().getHealthMax() * 0.05);
+                    int newHp = Math.min(m.getBase().getHealthMax(), m.getAsPersonnage().getHealthCurrent() + regenAmount);
+                    m.getAsPersonnage().setHealthCurrent(newHp);
+                    session.addLog("\uD83D\uDC80 " + m.getBase().getName() + " se régénère de " + regenAmount + " PV (Mort-vivant).");
+                }
+
                 if (!m.isDead()) {
                     Personnage mp = m.getAsPersonnage();
                     if (mp.getRemainingChannelingTurns() > 0) {
@@ -727,12 +739,46 @@ public class CombatService {
                         List<Personnage> alivePlayers = session.getPlayers().stream()
                                 .filter(pl -> pl.getHealthCurrent() > 0).toList();
                         if (!alivePlayers.isEmpty()) {
-                            Personnage targetPlayer = alivePlayers
-                                    .get(new java.util.Random().nextInt(alivePlayers.size()));
-                            int monsterDmg = m.getBase().getStrength();
+                            // === RÉSOLUTION DU CIBLAGE (IA) ===
+                            MonsterBehavior behavior = m.getBase().getBehavior();
+                            if (behavior == null) behavior = MonsterBehavior.NORMAL;
+                            
+                            Personnage targetPlayer = resolveMonsterTarget(m, behavior, alivePlayers, session);
+                            
+                            // === RÉSOLUTION DES DÉGÂTS (TYPE) ===
+                            int monsterDmg;
+                            if (mType == MonsterType.HYBRIDE) {
+                                monsterDmg = Math.max(m.getBase().getStrength(), m.getBase().getPower());
+                            } else {
+                                monsterDmg = m.getBase().getStrength();
+                            }
+                            
+                            generation.grimoire.enumeration.DamageType dmgType = generation.grimoire.enumeration.DamageType.PHYSIC;
+                            if (behavior == MonsterBehavior.INSENSIBLE) {
+                                dmgType = generation.grimoire.enumeration.DamageType.BRUT;
+                            }
+                            
                             System.out.println(m.getBase().getName() + " attaque " + targetPlayer.getName()
                                     + " et inflige " + monsterDmg + " dégâts.");
-                            targetPlayer.takeDamage(monsterDmg, generation.grimoire.enumeration.DamageType.PHYSIC);
+                            targetPlayer.takeDamage(monsterDmg, dmgType);
+                            
+                            // === PASSIF TYPE : DEMON — 10% dégâts bruts supplémentaires ===
+                            if (mType == MonsterType.DEMON) {
+                                int brutDmg = (int) Math.ceil(monsterDmg * 0.10);
+                                if (brutDmg > 0) {
+                                    targetPlayer.takeDamage(brutDmg, generation.grimoire.enumeration.DamageType.BRUT);
+                                    session.addLog("\uD83D\uDD25 " + m.getBase().getName() + " inflige " + brutDmg + " dégâts bruts supplémentaires (Démon).");
+                                }
+                            }
+                            
+                            // === PASSIF TYPE : VAMPIRE — 20% vol de vie ===
+                            if (mType == MonsterType.VAMPIRE) {
+                                int healAmount = (int) Math.ceil(monsterDmg * 0.20);
+                                int newHp = Math.min(m.getBase().getHealthMax(), m.getAsPersonnage().getHealthCurrent() + healAmount);
+                                m.getAsPersonnage().setHealthCurrent(newHp);
+                                session.addLog("\uD83E\uDDDB " + m.getBase().getName() + " vole " + healAmount + " PV (Vampire).");
+                            }
+                            
                             if (targetPlayer.getHealthCurrent() <= 0) {
                                 System.out.println(targetPlayer.getName() + " a été vaincu...");
                             }
@@ -804,6 +850,82 @@ public class CombatService {
         }
 
         advanceToNextLiveTurn(session);
+        
+        // Clear leader forced targets at start of each round
+        for (generation.grimoire.model.pve.ActiveMonster am : session.getEnemies()) {
+            am.setLeaderForcedTargetId(null);
+        }
+    }
+
+    private Personnage resolveMonsterTarget(generation.grimoire.model.pve.ActiveMonster m, MonsterBehavior behavior,
+            List<Personnage> alivePlayers, CombatSession session) {
+        java.util.Random rnd = new java.util.Random();
+        
+        // If a leader has forced a target on us, use that
+        if (m.getLeaderForcedTargetId() != null) {
+            for (Personnage p : alivePlayers) {
+                if (p.getId().equals(m.getLeaderForcedTargetId())) {
+                    session.addLog("\uD83D\uDC51 " + m.getBase().getName() + " obéit au Leader et cible " + p.getName() + ".");
+                    return p;
+                }
+            }
+            // Leader target is dead, fall through to own behavior
+        }
+        
+        switch (behavior) {
+            case PREDATEUR -> {
+                // Lock onto a target, keep it until dead
+                if (m.getLockedTargetId() != null) {
+                    for (Personnage p : alivePlayers) {
+                        if (p.getId().equals(m.getLockedTargetId())) {
+                            session.addLog("\uD83D\uDC3A " + m.getBase().getName() + " continue de traquer " + p.getName() + " (Prédateur).");
+                            return p;
+                        }
+                    }
+                }
+                // Target dead or none, pick new one
+                Personnage newTarget = alivePlayers.get(rnd.nextInt(alivePlayers.size()));
+                m.setLockedTargetId(newTarget.getId());
+                session.addLog("\uD83D\uDC3A " + m.getBase().getName() + " verrouille " + newTarget.getName() + " comme proie (Prédateur).");
+                return newTarget;
+            }
+            case CORRUPTEUR -> {
+                // Target with highest mana
+                Personnage target = alivePlayers.stream()
+                        .max(java.util.Comparator.comparingInt(Personnage::getManaCurrent))
+                        .orElse(alivePlayers.get(0));
+                session.addLog("\uD83D\uDC1B " + m.getBase().getName() + " cible " + target.getName() + " (le plus de Mana - Corrupteur).");
+                return target;
+            }
+            case LEADER -> {
+                // Pick a target and force all allies to hit it too
+                Personnage target = alivePlayers.get(rnd.nextInt(alivePlayers.size()));
+                session.addLog("\uD83D\uDC51 " + m.getBase().getName() + " ordonne à tous les monstres de cibler " + target.getName() + " (Leader) !");
+                for (generation.grimoire.model.pve.ActiveMonster ally : session.getEnemies()) {
+                    if (ally != m && !ally.isDead()) {
+                        ally.setLeaderForcedTargetId(target.getId());
+                    }
+                }
+                return target;
+            }
+            case ASSASSIN -> {
+                // Target with lowest resistance
+                Personnage target = alivePlayers.stream()
+                        .min(java.util.Comparator.comparingInt(p -> p.getEffectiveStat(generation.grimoire.enumeration.StatType.RESISTANCE)))
+                        .orElse(alivePlayers.get(0));
+                session.addLog("\uD83D\uDDE1\uFE0F " + m.getBase().getName() + " vise " + target.getName() + " (la plus faible Résistance - Assassin).");
+                return target;
+            }
+            case INSENSIBLE -> {
+                // Random target, but damage type is handled in caller
+                Personnage target = alivePlayers.get(rnd.nextInt(alivePlayers.size()));
+                session.addLog("\uD83E\uDDA0 " + m.getBase().getName() + " frappe " + target.getName() + " avec des dégâts bruts (Insensible).");
+                return target;
+            }
+            default -> {
+                return alivePlayers.get(rnd.nextInt(alivePlayers.size()));
+            }
+        }
     }
 
     private void advanceToNextLiveTurn(CombatSession session) {

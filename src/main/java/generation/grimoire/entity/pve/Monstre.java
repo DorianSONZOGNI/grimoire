@@ -1,6 +1,8 @@
 package generation.grimoire.entity.pve;
 
 import generation.grimoire.enumeration.DamageType;
+import generation.grimoire.enumeration.MonsterType;
+import generation.grimoire.enumeration.MonsterBehavior;
 import generation.grimoire.enumeration.StatType;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -38,4 +40,10 @@ public class Monstre {
     // For simple AI logic / rewards
     private int rewardExp;
     private int rewardGold;
+    
+    @Enumerated(EnumType.STRING)
+    private MonsterType monsterType = MonsterType.NORMAL;
+    
+    @Enumerated(EnumType.STRING)
+    private MonsterBehavior behavior = MonsterBehavior.NORMAL;
 }

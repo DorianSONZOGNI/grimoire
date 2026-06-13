@@ -62,7 +62,9 @@ document.addEventListener('DOMContentLoaded', () => {
             armor: parseInt(document.getElementById('mArmor').value),
             resistance: parseInt(document.getElementById('mResist').value),
             rewardGold: parseInt(document.getElementById('mGold').value),
-            rewardExp: parseInt(document.getElementById('mXp').value)
+            rewardExp: parseInt(document.getElementById('mXp').value),
+            monsterType: document.getElementById('mType').value,
+            behavior: document.getElementById('mBehavior').value
         };
 
         try {
@@ -771,6 +773,10 @@ window.renderMonstersList = function() {
                 </button>
                 <div class="monster-card-title">${m.name} <span style="font-size: 0.8rem; background: rgba(255,255,255,0.1); padding: 0.2rem 0.4rem; border-radius: 4px; margin-left: 0.5rem;">Lvl ${m.level || 1}</span></div>
                 <div style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 0.5rem;">${m.description || ''}</div>
+                <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.5rem;">
+                    ${m.monsterType && m.monsterType !== 'NORMAL' ? `<span style="font-size: 0.75rem; background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 600;">${{'DEMON':'\uD83D\uDD25 D\u00e9mon','REPTILE':'\uD83E\uDD8E Reptile','MORT_VIVANT':'\uD83D\uDC80 Mort-vivant','HYBRIDE':'\uD83E\uDDEC Hybride','VAMPIRE':'\uD83E\uDDDB Vampire'}[m.monsterType] || m.monsterType}</span>` : ''}
+                    ${m.behavior && m.behavior !== 'NORMAL' ? `<span style="font-size: 0.75rem; background: rgba(139, 92, 246, 0.15); color: #8b5cf6; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(139, 92, 246, 0.3); font-weight: 600;">${{'PREDATEUR':'\uD83D\uDC3A Pr\u00e9dateur','CORRUPTEUR':'\uD83D\uDC1B Corrupteur','LEADER':'\uD83D\uDC51 Leader','ASSASSIN':'\uD83D\uDDE1\uFE0F Assassin','INSENSIBLE':'\uD83E\uDDA0 Insensible'}[m.behavior] || m.behavior}</span>` : ''}
+                </div>
                 <div class="monster-card-stats">
                     <span style="display: flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined" style="font-size: 1rem; color: #ec4899;">favorite</span> PV: ${m.healthMax}</span>
                     <span style="display: flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined" style="font-size: 1rem; color: #38bdf8;">water_drop</span> Mana: ${m.manaMax || 0}</span>
@@ -819,6 +825,8 @@ async function editMonster(id) {
             document.getElementById('mResist').value = m.resistance;
             document.getElementById('mGold').value = m.rewardGold;
             document.getElementById('mXp').value = m.rewardExp;
+            document.getElementById('mType').value = m.monsterType || 'NORMAL';
+            document.getElementById('mBehavior').value = m.behavior || 'NORMAL';
 
             document.getElementById('btnSubmitMonster').textContent = "Modifier le monstre";
             document.getElementById('btnCancelMonster').style.display = 'block';
@@ -841,6 +849,8 @@ window.cancelMonsterEdit = function() {
     document.getElementById('btnSubmitMonster').textContent = "Créer le monstre";
     document.getElementById('btnCancelMonster').style.display = 'none';
     document.getElementById('monsterFormPanel').classList.remove('editing-glow');
+    document.getElementById('mType').value = 'NORMAL';
+    document.getElementById('mBehavior').value = 'NORMAL';
 };
 
 async function deleteMonster(id) {

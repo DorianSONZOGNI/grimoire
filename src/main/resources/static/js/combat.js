@@ -1490,10 +1490,23 @@ function generateFighterHtml(c, isHero) {
         titleIconsHtml += `<span class="material-symbols-outlined" style="font-size: 1.2rem; color: ${sColor};" title="${c.spiritualite.nom}">${sIcon}</span>`;
     }
 
+    let monsterBadgesHtml = '';
+    if (!isHero) {
+        monsterBadgesHtml += `<div style="display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 0.5rem;">`;
+        if (c.monsterType && c.monsterType !== 'NORMAL') {
+            monsterBadgesHtml += `<span style="font-size: 0.75rem; background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 600;">${{'DEMON':'\uD83D\uDD25 D\u00e9mon','REPTILE':'\uD83E\uDD8E Reptile','MORT_VIVANT':'\uD83D\uDC80 Mort-vivant','HYBRIDE':'\uD83E\uDDEC Hybride','VAMPIRE':'\uD83E\uDDDB Vampire'}[c.monsterType] || c.monsterType}</span>`;
+        }
+        if (c.behavior && c.behavior !== 'NORMAL') {
+            monsterBadgesHtml += `<span style="font-size: 0.75rem; background: rgba(139, 92, 246, 0.15); color: #8b5cf6; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(139, 92, 246, 0.3); font-weight: 600;">${{'PREDATEUR':'\uD83D\uDC3A Pr\u00e9dateur','CORRUPTEUR':'\uD83D\uDC1B Corrupteur','LEADER':'\uD83D\uDC51 Leader','ASSASSIN':'\uD83D\uDDE1\uFE0F Assassin','INSENSIBLE':'\uD83E\uDDA0 Insensible'}[c.behavior] || c.behavior}</span>`;
+        }
+        monsterBadgesHtml += `</div>`;
+    }
+
     return `
         <div class="fighter-name" style="color: ${isHero ? '#f8fafc' : '#ef4444'}; font-size: 1.2rem; display: flex; justify-content: center; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
             ${isHero ? '🧙‍♂️' : '👹'} ${titleIconsHtml} ${c.name}
         </div>
+        ${monsterBadgesHtml}
         ${statsHtml}
         <div class="gauge-container" style="text-align: left;">
             <div class="gauge-label"><span>Santé (PV)</span><span>${hpLabel}</span></div>
@@ -1527,6 +1540,8 @@ function renderEnemies(enemies) {
 
         // Use pMonster logic to override maxHp/currentHp if necessary
         pMonster.name = m.name;
+        pMonster.monsterType = m.monsterType;
+        pMonster.behavior = m.behavior;
         if (typeof activeMonster.currentHp !== 'undefined') pMonster.healthCurrent = activeMonster.currentHp;
         if (typeof activeMonster.maxHp !== 'undefined') pMonster.healthMax = activeMonster.maxHp;
 
