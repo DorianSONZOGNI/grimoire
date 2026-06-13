@@ -570,7 +570,10 @@ function generateFighterHtml(c, isHero) {
         </div>
         ${manaHtml}
         <div class="sandbox-status-list" style="justify-content: center;">${passiveBadges}</div>
-        <div class="sandbox-status-list" style="justify-content: center;">${renderBuffsHtml(c.activeBuffs || c.buffs)}</div>
+        <div class="sandbox-status-list" style="justify-content: center;">
+            ${renderShieldsHtml(c.activeShields)}
+            ${renderBuffsHtml(c.activeBuffs || c.buffs)}
+        </div>
     `;
 }
 
@@ -596,6 +599,40 @@ function renderEnemies(enemies) {
         div.innerHTML = generateFighterHtml(pMonster, false);
         container.appendChild(div);
     });
+}
+
+function renderShieldsHtml(shieldList) {
+    if (!shieldList || shieldList.length === 0) return '';
+
+    const shieldEntries = [];
+    let totalShield = 0;
+
+    shieldList.forEach(s => {
+        totalShield += s.amount;
+        const entryHtml = `
+            <div style="display:flex; align-items:flex-start; gap:0.4rem; font-size:0.85rem;">
+                <span class="material-symbols-outlined" style="flex-shrink:0; font-size:1.1rem; color:#38bdf8;">security</span>
+                <span style="font-weight:600; color:#fff;">[${s.sourceName || 'Inconnu'}]</span>
+                <span style="color:#38bdf8; font-weight:500;">Bouclier</span>
+                <span style="color:#e2e8f0;">➔ ${s.amount} PV absorpt. (${s.duration} tours)</span>
+            </div>
+        `;
+        shieldEntries.push(entryHtml);
+    });
+
+    if (shieldEntries.length === 0) return '';
+
+    const tooltipAttrs = 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"';
+    
+    return `<div class="sandbox-status-badge buff" ${tooltipAttrs} style="cursor: help; position: relative; border-color: rgba(56, 189, 248, 0.4); color: #38bdf8; background: rgba(56, 189, 248, 0.1);">
+        <span class="material-symbols-outlined" style="font-size: 0.95rem;">shield</span>
+        <span>Boucliers (${totalShield})</span>
+        <template class="tooltip-data">
+            <div style="display: flex; flex-direction: column; gap: 0.3rem;">
+                ${shieldEntries.join('')}
+            </div>
+        </template>
+    </div>`;
 }
 
 function renderBuffsHtml(buffList) {
