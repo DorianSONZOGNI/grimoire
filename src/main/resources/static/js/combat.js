@@ -43,14 +43,14 @@ function getExpStats(exp) {
     else if (exp >= 600) level = 4;
     else if (exp >= 300) level = 3;
     else if (exp >= 100) level = 2;
-    
+
     let currentLvlXp = 0;
     let nextLvlXp = 100;
     if (level === 2) { currentLvlXp = 100; nextLvlXp = 300; }
     else if (level === 3) { currentLvlXp = 300; nextLvlXp = 600; }
     else if (level === 4) { currentLvlXp = 600; nextLvlXp = 1000; }
     else if (level === 5) { currentLvlXp = 1000; nextLvlXp = exp; }
-    
+
     let progress = 100;
     if (level < 5) {
         progress = ((exp - currentLvlXp) / (nextLvlXp - currentLvlXp)) * 100;
@@ -62,12 +62,12 @@ function getSpiritExpStats(exp) {
     let level = 1;
     if (exp >= 300) level = 3;
     else if (exp >= 100) level = 2;
-    
+
     let currentLvlXp = 0;
     let nextLvlXp = 100;
     if (level === 2) { currentLvlXp = 100; nextLvlXp = 300; }
     else if (level === 3) { currentLvlXp = 300; nextLvlXp = exp; }
-    
+
     let progress = 100;
     if (level < 3) {
         progress = ((exp - currentLvlXp) / (nextLvlXp - currentLvlXp)) * 100;
@@ -79,7 +79,7 @@ function renderAndAnimateXPCards(containerId, players, prefix) {
     const container = document.getElementById(containerId);
     if (!container) return;
     container.style.display = 'flex';
-    
+
     let cardsHtml = '';
     players.forEach(p => {
         let oldExp = previousPlayerXP[p.id] !== undefined ? previousPlayerXP[p.id] : p.experience;
@@ -106,34 +106,34 @@ function renderAndAnimateXPCards(containerId, players, prefix) {
             </div>
         `;
     });
-    
+
     container.innerHTML += cardsHtml;
-    
+
     players.forEach(p => {
         let oldExp = previousPlayerXP[p.id] !== undefined ? previousPlayerXP[p.id] : p.experience;
         let endExp = p.experience;
         let oldSpiritExp = previousPlayerSpiritXP[p.id] !== undefined ? previousPlayerSpiritXP[p.id] : (p.spiritualiteExperience || 0);
         let endSpiritExp = p.spiritualiteExperience || 0;
-        
+
         setTimeout(() => {
             let startTime = null;
             const duration = 1500;
-            
+
             const bar = document.getElementById(`${prefix}-xp-fill-${p.id}`);
             const text = document.getElementById(`${prefix}-xp-text-${p.id}`);
             const lvlText = document.getElementById(`${prefix}-xp-lvl-${p.id}`);
-            
+
             const spiritBar = document.getElementById(`${prefix}-spirit-fill-${p.id}`);
             const spiritText = document.getElementById(`${prefix}-spirit-text-${p.id}`);
             const spiritLvlText = document.getElementById(`${prefix}-spirit-lvl-${p.id}`);
-            
+
             function animate(currentTime) {
                 if (!startTime) startTime = currentTime;
                 let t = (currentTime - startTime) / duration;
                 if (t > 1) t = 1;
-                
+
                 let easeT = t * (2 - t);
-                
+
                 let currentExp = Math.floor(oldExp + (endExp - oldExp) * easeT);
                 let stats = getExpStats(currentExp);
                 if (bar && text && lvlText) {
@@ -150,7 +150,7 @@ function renderAndAnimateXPCards(containerId, players, prefix) {
                         }
                     }
                 }
-                
+
                 let currentSpiritExp = Math.floor(oldSpiritExp + (endSpiritExp - oldSpiritExp) * easeT);
                 let spiritStats = getSpiritExpStats(currentSpiritExp);
                 if (spiritBar && spiritText && spiritLvlText) {
@@ -167,24 +167,24 @@ function renderAndAnimateXPCards(containerId, players, prefix) {
                         }
                     }
                 }
-                
+
                 if (t < 1) {
                     requestAnimationFrame(animate);
                 } else {
                     if (bar && oldExp !== endExp) {
                         bar.style.boxShadow = "0 0 10px 2px rgba(16, 185, 129, 0.5)";
-                        setTimeout(() => { if(bar) bar.style.boxShadow = "none"; }, 500);
+                        setTimeout(() => { if (bar) bar.style.boxShadow = "none"; }, 500);
                     }
                     if (spiritBar && oldSpiritExp !== endSpiritExp) {
                         spiritBar.style.boxShadow = "0 0 10px 2px rgba(245, 158, 11, 0.5)";
-                        setTimeout(() => { if(spiritBar) spiritBar.style.boxShadow = "none"; }, 500);
+                        setTimeout(() => { if (spiritBar) spiritBar.style.boxShadow = "none"; }, 500);
                     }
                 }
             }
             requestAnimationFrame(animate);
         }, 600);
     });
-    
+
     // Ensure popIn keyframes exist
     if (!document.getElementById('chestAnimStyle')) {
         const style = document.createElement('style');
@@ -192,7 +192,7 @@ function renderAndAnimateXPCards(containerId, players, prefix) {
         style.innerHTML = `@keyframes popIn { to { opacity: 1; transform: scale(1); } }`;
         document.head.appendChild(style);
     }
-    
+
     players.forEach(p => {
         previousPlayerXP[p.id] = p.experience;
         previousPlayerSpiritXP[p.id] = p.spiritualiteExperience || 0;
@@ -223,7 +223,7 @@ window.filterSpells = function (filter) {
 
 let hasAnimatedOpening = false;
 
-window.showNotif = function(message, isError = false) {
+window.showNotif = function (message, isError = false) {
     const notif = document.getElementById('combatNotif');
     const text = document.getElementById('combatNotifText');
     if (!notif || !text) return;
@@ -264,13 +264,13 @@ async function startCombat(characterIds, dungeonId) {
 
         const data = await res.json();
         sessionId = data.sessionId;
-        
+
         // Initialize previous XP for the first room
         data.players.forEach(p => {
             previousPlayerXP[p.id] = p.experience;
             previousPlayerSpiritXP[p.id] = p.spiritualiteExperience || 0;
         });
-        
+
         updateUI(data);
     } catch (e) {
         console.error(e);
@@ -286,14 +286,14 @@ let pendingCastSpellId = null;
 
 function initiateCombatCast(spellId) {
     if (!currentSessionData) return;
-    
+
     let needsEnemy = false;
     let needsAlly = false;
     let targetType = 'ENNEMI'; // default
-    
+
     const enemyCards = document.querySelectorAll('.fighter-enemy:not(.dead)');
     const allyCards = document.querySelectorAll('.fighter-player:not(.dead)'); // Now includes active player!
-    
+
     let requiresEnemySelection = false;
     let requiresAllySelection = false;
 
@@ -324,7 +324,7 @@ function initiateCombatCast(spellId) {
 
         needsEnemy = hasTarget || hasAllEnemies || hasEveryone;
         needsAlly = hasAlly || hasAllAllies || hasEveryone;
-        
+
         requiresEnemySelection = hasTarget && enemyCards.length > 1;
         requiresAllySelection = hasAlly && allyCards.length > 1;
     } else {
@@ -338,9 +338,9 @@ function initiateCombatCast(spellId) {
 
     cancelCombatCast(); // Clean previous state
     pendingCastSpellId = spellId;
-    
+
     const cardEl = spellId ? document.getElementById(`spell-card-${spellId}`) : document.getElementById('btnAttack');
-    
+
     // Disable all other buttons
     document.querySelectorAll('.combat-spell-card, .action-btn, .filter-radio, .filter-chip').forEach(btn => {
         if (btn !== cardEl) {
@@ -361,7 +361,7 @@ function initiateCombatCast(spellId) {
             display: flex; flex-direction: column; align-items: center; justify-content: center;
             border-radius: inherit; z-index: 20; gap: 0.5rem;
         `;
-        
+
         if (multiEnemy || multiAlly) {
             overlay.innerHTML = `
                 <span style="font-size: 0.9rem; font-weight: 600; color: #e2e8f0;">Sélectionnez une cible</span>
@@ -406,7 +406,7 @@ function initiateCombatCast(spellId) {
             card.setAttribute('onclick', `confirmCombatCast(${card.dataset.index}, 'enemy')`);
         });
     }
-    
+
     if (needsAlly) {
         allyCards.forEach(card => {
             card.classList.add('target-selectable');
@@ -415,7 +415,7 @@ function initiateCombatCast(spellId) {
             card.setAttribute('onclick', `confirmCombatCast(${idx}, 'ally')`);
         });
     }
-    
+
     if (targetType === 'CASTER') {
         const activePlayerCard = document.querySelector('.fighter-player.active');
         if (activePlayerCard) {
@@ -467,20 +467,20 @@ function cancelCombatCast() {
         el.classList.remove('pending-cast');
         const overlay = el.querySelector('.spell-cast-overlay');
         if (overlay) overlay.remove();
-        
+
         // Restore original content if we replaced it (for attack button)
         if (el.id === 'btnAttack' && el.dataset.originalHtml) {
             el.innerHTML = el.dataset.originalHtml;
         }
     });
-    
+
     // Enable all buttons
     document.querySelectorAll('.combat-spell-card, .action-btn, .filter-radio').forEach(btn => {
         btn.classList.remove('disabled');
         btn.style.pointerEvents = 'auto';
         btn.style.opacity = '1';
     });
-    
+
     // Attack button specific disable check
     const btnAttack = document.getElementById('btnAttack');
     if (btnAttack && currentSessionData && currentSessionData.activePlayer && currentSessionData.activePlayer.banalSpellCastThisTurn) {
@@ -596,13 +596,13 @@ async function nextRoom() {
     try {
         const res = await fetch(`/api/pve/combat/${sessionId}/next-room`, { method: 'POST' });
         const data = await res.json();
-        
+
         // Track the current XP so animations in new rooms start from this baseline
         data.players.forEach(p => {
             previousPlayerXP[p.id] = p.experience;
             previousPlayerSpiritXP[p.id] = p.spiritualiteExperience || 0;
         });
-        
+
         updateUI(data);
     } catch (e) {
         console.error(e);
@@ -622,7 +622,7 @@ async function acceptAlteration() {
         }
         const data = await res.json();
         updateUI(data);
-        
+
         const lootContainer = document.getElementById('eventLootContainer');
         if (lootContainer) {
             lootContainer.innerHTML = '';
@@ -637,11 +637,11 @@ async function acceptAlteration() {
 async function buyMerchantItem(lootIndex) {
     if (!sessionId || !currentSessionData || !currentSessionData.players || currentSessionData.players.length === 0) return;
     const charId = currentSessionData.players[0].id;
-    
+
     try {
         const btn = document.getElementById(`btn_buy_${lootIndex}`);
         if (btn) btn.innerHTML = '<span class="material-symbols-outlined spin">sync</span>';
-        
+
         const res = await fetch(`/api/pve/combat/${sessionId}/merchant-buy?lootIndex=${lootIndex}&characterId=${charId}`, { method: 'POST' });
         if (!res.ok) {
             alert("Vous n'avez pas les ressources nécessaires, ou cet objet n'est plus disponible.");
@@ -650,7 +650,7 @@ async function buyMerchantItem(lootIndex) {
         }
         const data = await res.json();
         updateUI(data);
-    } catch(e) {
+    } catch (e) {
         console.error(e);
         alert("Erreur lors de l'achat.");
     }
@@ -662,7 +662,7 @@ function openBuyModal(idx, itemName) {
     const confirmBtn = document.getElementById('buyConfirmBtn');
     if (modal && targetName && confirmBtn) {
         targetName.innerHTML = itemName;
-        confirmBtn.onclick = function() {
+        confirmBtn.onclick = function () {
             closeBuyModal();
             buyMerchantItem(idx);
         };
@@ -708,7 +708,7 @@ function generateEquipmentTooltipHTML(eq) {
                 <span style="font-weight: 600; color: ${isMalus ? '#ef4444' : '#fff'};">${sign}${val}</span>
             </div>`;
         }).join('');
-        
+
     let effectHtml = '';
     if (eq.specialEffect && eq.specialEffect !== 'NONE') {
         const effectLabels = {
@@ -746,24 +746,24 @@ async function openChest() {
             btn.disabled = true;
             btn.innerHTML = `<span class="material-symbols-outlined spin">sync</span> Ouverture...`;
         }
-        
+
         const res = await fetch(`/api/pve/combat/${sessionId}/open-chest`, { method: 'POST' });
         if (!res.ok) {
             const err = await res.text();
             alert("Erreur : " + err);
             return;
         }
-        
+
         const data = await res.json();
-        
+
         // Handle custom animation for XP + Items in eventLootContainer
         const lootContainer = document.getElementById('eventLootContainer');
         if (lootContainer) {
             lootContainer.style.display = 'flex';
             lootContainer.innerHTML = '';
-            
 
-            
+
+
             // Also show gained items (check logs for "Vous avez trouvé un objet")
             let gainedItemsHtml = '';
             let goldAmount = 0;
@@ -778,12 +778,12 @@ async function openChest() {
                         break;
                     }
                 }
-                
+
                 chestLogs.forEach(log => {
                     const itemNameMatch = log.match(/Vous avez trouvé un objet : (.*) !/);
                     if (itemNameMatch) {
                         const eqName = itemNameMatch[1];
-                        
+
                         let eq = null;
                         if (data.currentRoom && data.currentRoom.lootTable) {
                             const entry = data.currentRoom.lootTable.find(l => l.equipment && l.equipment.name === eqName);
@@ -801,7 +801,7 @@ async function openChest() {
                         `;
                     }
                 });
-                
+
                 if (goldAmount > 0) {
                     gainedItemsHtml = `
                         <div style="background: rgba(0, 0, 0, 0.4); border: 1px solid #f59e0b80; padding: 0.8rem 1rem; border-radius: 8px; color: #f59e0b; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
@@ -819,11 +819,11 @@ async function openChest() {
                 wrapper.style.marginTop = '1rem';
                 wrapper.style.width = '100%';
                 wrapper.innerHTML = gainedItemsHtml;
-                
+
                 lootContainer.appendChild(wrapper);
             }
         }
-        
+
         // Then call updateUI
         updateUI(data);
 
@@ -862,7 +862,7 @@ function updateUI(data) {
                     isActive = true;
                 }
             }
-            
+
             const isDead = p.healthCurrent <= 0;
             const isAllySelected = index === selectedAllyIndex;
 
@@ -906,9 +906,9 @@ function updateUI(data) {
     if (data.currentRoom) {
         if (data.currentRoom.type === 'COMBAT') {
             document.getElementById('eventOverlay').classList.remove('show');
-            
+
             const allEnemiesDead = !data.enemies || data.enemies.length === 0 || data.enemies.every(e => e.dead || e.currentHp <= 0);
-            
+
             if (allEnemiesDead && !data.finished) {
                 document.getElementById('btnAttack').disabled = true;
                 const vicOverlay = document.getElementById('combatVictoryOverlay');
@@ -917,7 +917,7 @@ function updateUI(data) {
                     const xpContainer = document.getElementById('combatVictoryXpContainer');
                     if (xpContainer) {
                         xpContainer.innerHTML = '';
-                        
+
                         let goldAmount = 0;
                         if (data.combatLog) {
                             for (let i = data.combatLog.length - 1; i >= 0; i--) {
@@ -930,7 +930,7 @@ function updateUI(data) {
                                 if (log.includes("Vous entrez dans")) break;
                             }
                         }
-                        
+
                         if (goldAmount > 0) {
                             xpContainer.innerHTML += `
                                 <div style="width: 100%; text-align: center; margin-bottom: 1rem; animation: popIn 0.5s ease-out forwards;">
@@ -940,17 +940,17 @@ function updateUI(data) {
                                 </div>
                             `;
                         }
-                        
+
                         renderAndAnimateXPCards('combatVictoryXpContainer', data.players, 'vic');
                     }
                 }
             } else {
                 const vicOverlay = document.getElementById('combatVictoryOverlay');
                 if (vicOverlay) vicOverlay.classList.remove('show');
-                
+
                 document.getElementById('btnAttack').disabled = false;
                 renderEnemies(data.enemies);
-                
+
                 // Track previous XP to animate next time
                 data.players.forEach(p => {
                     previousPlayerXP[p.id] = p.experience;
@@ -974,7 +974,7 @@ function updateUI(data) {
                 icon.textContent = data.roomEventCompleted ? 'lock_open' : 'lock';
                 icon.style.color = '#f59e0b';
                 title.textContent = 'Salle des Trésors';
-                
+
                 if (data.roomEventCompleted) {
                     desc.textContent = `Vous avez ouvert le coffre !`;
                     btnOpen.style.display = 'none';
@@ -989,38 +989,38 @@ function updateUI(data) {
                 }
             } else if (data.currentRoom.type === 'EVENT') {
                 const subType = data.currentRoom.eventSubType || 'ALTERATION';
-                
+
                 if (subType === 'ALTERATION') {
                     icon.textContent = 'blur_on';
                     icon.style.color = '#8b5cf6';
                     title.textContent = 'Altération';
                     desc.innerHTML = data.currentRoom.eventText || 'Une force mystérieuse vous entoure...';
-                    
+
                     btnOpen.style.display = 'none';
-                    
+
                     if (!data.roomEventCompleted && data.currentRoom.alterationType !== 'RIEN') {
                         let btnText = "Toucher";
                         let warningHtml = '';
                         let specialItemHtml = '';
                         if (data.currentRoom.alterationType === 'VIE_XP') {
                             let parts = [];
-                            
+
                             let hp = data.currentRoom.alterationHpAmount || 0;
                             if (hp !== 0) {
                                 parts.push(hp > 0 ? `+${hp} PV` : `${hp} PV`);
                             }
-                            
+
                             let xp = data.currentRoom.alterationExpAmount || 0;
                             if (xp !== 0) {
                                 parts.push(xp > 0 ? `+${xp} XP` : `${xp} XP`);
                             }
-                            
+
                             if (data.currentRoom.alterationRewardType === 'SPIRITUAL_XP') {
                                 parts.push(`+${data.currentRoom.alterationSpiritualXpReward || 0} XP Spirit.`);
                             } else if (data.currentRoom.alterationRewardType === 'SPECIAL_ITEM') {
                                 specialItemHtml = `<div style="color: #d946ef; font-size: 0.85rem; margin-top: 0.5rem; text-align: center; background: rgba(217, 70, 239, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(217, 70, 239, 0.3);"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">star</span> <strong>Récompense :</strong> Vous obtiendrez l'item spécial "${data.currentRoom.alterationSpecialItemReward || 'Item'}" !</div>`;
                             }
-                            
+
                             if (parts.length > 0) {
                                 btnText = `Toucher (${parts.join(', ')})`;
                             } else {
@@ -1030,7 +1030,7 @@ function updateUI(data) {
                             btnText = `Donner l'item et Toucher`;
                             warningHtml = `<div style="color: #ef4444; font-size: 0.85rem; margin-top: 0.5rem; text-align: center; background: rgba(239, 68, 68, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3);"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">warning</span> <strong>Attention :</strong> L'item "${data.currentRoom.alterationRequiredItem || 'spécial'}" sera définitivement détruit de l'inventaire d'un de vos héros s'il accepte cette offre.</div>`;
                         }
-                        
+
                         btnCont.style.display = 'none';
                         lootContainer.style.display = 'flex';
                         lootContainer.innerHTML = `
@@ -1053,19 +1053,19 @@ function updateUI(data) {
                     icon.style.color = '#10b981';
                     title.textContent = 'Rencontre';
                     desc.innerHTML = data.currentRoom.eventText || 'Un marchand ambulant vous interpelle...';
-                    
+
                     btnOpen.style.display = 'none';
                     btnCont.style.display = 'block';
-                    
+
                     if (data.currentRoom.lootTable && data.currentRoom.lootTable.length > 0) {
                         lootContainer.style.display = 'flex';
                         lootContainer.innerHTML = '';
-                        
+
                         data.currentRoom.lootTable.forEach((entry, idx) => {
                             let nameHtml = '';
                             let iconHtml = '';
                             let rarityColor = '#10b981';
-                            
+
                             if (entry.specialItemName) {
                                 nameHtml = entry.specialItemName;
                                 iconHtml = '<span class="material-symbols-outlined" style="color: #d946ef; font-size: 1.2rem;">star</span>';
@@ -1081,14 +1081,14 @@ function updateUI(data) {
 
                             let priceHtml = '';
                             const goldPrice = entry.priceGold != null ? entry.priceGold : (entry.probability || 0);
-                            
+
                             if (goldPrice > 0) {
                                 priceHtml += `<span style="color: #f59e0b; display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem;">monetization_on</span>${goldPrice}</span>`;
                             }
                             if (entry.priceSpecialItemName) {
                                 priceHtml += `<span style="color: #d946ef; display: flex; align-items: center; gap: 0.3rem; margin-left: ${goldPrice > 0 ? '0.8rem' : '0'};"><span class="material-symbols-outlined" style="font-size: 1.1rem;">star</span>1x ${entry.priceSpecialItemName}</span>`;
                             }
-                            
+
                             if (priceHtml === '') {
                                 priceHtml = `<span style="color: #10b981; display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem;">sell</span>Gratuit</span>`;
                             }
@@ -1145,11 +1145,11 @@ function updateUI(data) {
                     icon.textContent = 'warning';
                     icon.style.color = '#f87171';
                     title.textContent = 'Piège !';
-                    
+
                     let trapDesc = data.currentRoom.eventText || 'Un piège se déclenche !';
                     const trapType = data.currentRoom.trapType || 'PV';
                     const trapAmount = data.currentRoom.trapAmount || 0;
-                    
+
                     if (trapType === 'PV') {
                         trapDesc += `<br><br><span style="color:#ef4444;">⚠️ Perte de ${trapAmount} PV</span>`;
                     } else if (trapType === 'MANA') {
@@ -1157,7 +1157,7 @@ function updateUI(data) {
                     } else if (trapType === 'CORDE') {
                         trapDesc += `<br><br><span style="color:#f59e0b;">🪢 Nécessite une Corde pour éviter le piège</span>`;
                     }
-                    
+
                     desc.innerHTML = trapDesc;
                     btnOpen.style.display = 'none';
                     btnCont.style.display = 'block';
@@ -1167,18 +1167,18 @@ function updateUI(data) {
                     icon.style.color = '#fbbf24';
                     title.textContent = 'Porte Étrange';
                     desc.innerHTML = data.currentRoom.eventText || 'Une porte mystérieuse se dresse devant vous...';
-                    
+
                     btnOpen.style.display = 'none';
                     btnCont.style.display = 'block';
                     lootContainer.style.display = 'none';
-                    
+
                     // Show door outcomes info
                     if (data.currentRoom.doorOutcomes) {
                         let outcomes;
                         try {
                             outcomes = typeof data.currentRoom.doorOutcomes === 'string' ? JSON.parse(data.currentRoom.doorOutcomes) : data.currentRoom.doorOutcomes;
-                        } catch(e) { outcomes = []; }
-                        
+                        } catch (e) { outcomes = []; }
+
                         if (outcomes.length > 0) {
                             lootContainer.style.display = 'flex';
                             lootContainer.innerHTML = `
@@ -1235,7 +1235,7 @@ function updateUI(data) {
             const activeEnemyCard = document.querySelector(`.fighter-enemy[data-index="${activeEnemyIndex}"]`);
             if (activeEnemyCard) {
                 activeEnemyCard.style.transform = 'translateX(-50px)';
-                setTimeout(() => { 
+                setTimeout(() => {
                     if (activeEnemyCard.classList.contains('active')) {
                         activeEnemyCard.style.transform = 'scale(1.05)';
                     } else {
@@ -1243,7 +1243,7 @@ function updateUI(data) {
                     }
                 }, 200);
             }
-            
+
             setTimeout(async () => {
                 try {
                     const res = await fetch(`/api/pve/combat/${sessionId}/auto-turn`, { method: 'POST' });
@@ -1494,10 +1494,30 @@ function generateFighterHtml(c, isHero) {
     if (!isHero) {
         monsterBadgesHtml += `<div style="display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 0.5rem;">`;
         if (c.monsterType && c.monsterType !== 'NORMAL') {
-            monsterBadgesHtml += `<span style="font-size: 0.75rem; background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 600;">${{'DEMON':'\uD83D\uDD25 D\u00e9mon','REPTILE':'\uD83E\uDD8E Reptile','MORT_VIVANT':'\uD83D\uDC80 Mort-vivant','HYBRIDE':'\uD83E\uDDEC Hybride','VAMPIRE':'\uD83E\uDDDB Vampire'}[c.monsterType] || c.monsterType}</span>`;
+            const typeTitles = {
+                'DEMON': 'Démon : 10% des dégâts infligés le sont en dégâts bruts supplémentaires.',
+                'REPTILE': 'Reptile : Réduit les dégâts physiques subis de 15%.',
+                'MORT_VIVANT': 'Mort-vivant : Régénère 5% de ses PV max au début de son tour.',
+                'HYBRIDE': 'Hybride : Utilise la plus haute valeur entre Force et Puissance pour attaquer.',
+                'VAMPIRE': 'Vampire : Se soigne de 20% des dégâts infligés.'
+            };
+            const tTitle = typeTitles[c.monsterType] || '';
+            const tIcon = { 'DEMON': 'local_fire_department', 'REPTILE': 'eco', 'MORT_VIVANT': 'skull', 'HYBRIDE': 'science', 'VAMPIRE': 'bloodtype' }[c.monsterType] || 'check_box_outline_blank';
+            const tLabel = { 'DEMON': 'Démon', 'REPTILE': 'Reptile', 'MORT_VIVANT': 'Mort-vivant', 'HYBRIDE': 'Hybride', 'VAMPIRE': 'Vampire' }[c.monsterType] || c.monsterType;
+            monsterBadgesHtml += `<span title="${tTitle}" style="cursor: help; font-size: 0.75rem; background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined" style="font-size: 0.9rem;">${tIcon}</span>${tLabel}</span>`;
         }
         if (c.behavior && c.behavior !== 'NORMAL') {
-            monsterBadgesHtml += `<span style="font-size: 0.75rem; background: rgba(139, 92, 246, 0.15); color: #8b5cf6; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(139, 92, 246, 0.3); font-weight: 600;">${{'PREDATEUR':'\uD83D\uDC3A Pr\u00e9dateur','CORRUPTEUR':'\uD83D\uDC1B Corrupteur','LEADER':'\uD83D\uDC51 Leader','ASSASSIN':'\uD83D\uDDE1\uFE0F Assassin','INSENSIBLE':'\uD83E\uDDA0 Insensible'}[c.behavior] || c.behavior}</span>`;
+            const behaviorTitles = {
+                'PREDATEUR': "Prédateur : Verrouille une cible et l'attaque jusqu'à sa mort.",
+                'CORRUPTEUR': "Corrupteur : Cible toujours le joueur avec le plus de Mana.",
+                'LEADER': "Leader : Ordonne à tous les autres monstres d'attaquer sa cible.",
+                'ASSASSIN': "Assassin : Vise systématiquement le joueur avec le moins de Résistance.",
+                'INSENSIBLE': "Insensible : Ses attaques infligent des dégâts bruts (ignore l'armure)."
+            };
+            const bTitle = behaviorTitles[c.behavior] || '';
+            const bIcon = { 'PREDATEUR': 'track_changes', 'CORRUPTEUR': 'blur_on', 'LEADER': 'stars', 'ASSASSIN': 'gps_fixed', 'INSENSIBLE': 'shield' }[c.behavior] || 'check_box_outline_blank';
+            const bLabel = { 'PREDATEUR': 'Prédateur', 'CORRUPTEUR': 'Corrupteur', 'LEADER': 'Leader', 'ASSASSIN': 'Assassin', 'INSENSIBLE': 'Insensible' }[c.behavior] || c.behavior;
+            monsterBadgesHtml += `<span title="${bTitle}" style="cursor: help; font-size: 0.75rem; background: rgba(139, 92, 246, 0.15); color: #8b5cf6; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(139, 92, 246, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined" style="font-size: 0.9rem;">${bIcon}</span>${bLabel}</span>`;
         }
         monsterBadgesHtml += `</div>`;
     }
@@ -1529,7 +1549,7 @@ function renderEnemies(enemies) {
     enemies.forEach((activeMonster, index) => {
         const m = activeMonster.base;
         const pMonster = activeMonster.asPersonnage || activeMonster; // Fallback just in case
-        
+
         let isActive = false;
         if (currentSessionData && currentSessionData.turnOrder && currentSessionData.turnOrder.length > currentSessionData.currentTurnIndex && !currentSessionData.finished) {
             const currentTurn = currentSessionData.turnOrder[currentSessionData.currentTurnIndex];
@@ -1548,7 +1568,7 @@ function renderEnemies(enemies) {
         const div = document.createElement('div');
         div.className = `fighter fighter-enemy enemy-card ${isActive ? 'active' : ''} ${activeMonster.dead ? 'dead' : ''}`;
         div.dataset.index = index;
-        
+
         if (isActive) {
             div.style.borderColor = '#ef4444';
             div.style.boxShadow = '0 0 20px rgba(239, 68, 68, 0.4)';
@@ -1801,8 +1821,8 @@ function renderSpells(spells) {
             }
         } else if (currentSpellsTab === 'SPIRIT') {
             if (sp.spiritualite && sp.spiritualite.nom) {
-                groupKey = sp.spiritualite.nom.toLowerCase().startsWith('spiritualité') || sp.spiritualite.nom.toLowerCase().startsWith('spiritualite') 
-                    ? sp.spiritualite.nom 
+                groupKey = sp.spiritualite.nom.toLowerCase().startsWith('spiritualité') || sp.spiritualite.nom.toLowerCase().startsWith('spiritualite')
+                    ? sp.spiritualite.nom
                     : `Spiritualité de ${sp.spiritualite.nom}`;
             } else {
                 groupKey = 'Autres';
@@ -1810,14 +1830,14 @@ function renderSpells(spells) {
         } else {
             groupKey = ''; // No title for ALL
         }
-        
+
         if (!groupsMap.has(groupKey)) groupsMap.set(groupKey, []);
         groupsMap.get(groupKey).push(sp);
     });
 
     let html = '';
     const sortedGroups = Array.from(groupsMap.keys()).sort();
-    
+
     sortedGroups.forEach(groupKey => {
         const groupSpells = groupsMap.get(groupKey);
         // Sort spells by level inside the group
@@ -1982,7 +2002,7 @@ function showResult(playerWon) {
     const overlay = document.getElementById('resultOverlay');
     const title = document.getElementById('resultTitle');
     const desc = document.getElementById('resultDesc');
-    
+
     if (playerWon) {
         title.textContent = "VICTOIRE";
         title.style.color = "#10b981";
@@ -1992,7 +2012,7 @@ function showResult(playerWon) {
         title.style.color = "#ef4444";
         desc.textContent = "Votre équipe a été anéantie.";
     }
-    
+
     overlay.classList.add('show');
 }
 
@@ -2000,7 +2020,7 @@ function showNotif(msg, isError = false) {
     const notif = document.getElementById('combatNotif');
     const notifText = document.getElementById('combatNotifText');
     const notifIcon = notif.querySelector('.notif-icon');
-    
+
     notifText.textContent = msg;
     if (isError) {
         notif.style.background = 'rgba(239, 68, 68, 0.9)';
@@ -2009,7 +2029,7 @@ function showNotif(msg, isError = false) {
         notif.style.background = 'rgba(16, 185, 129, 0.9)';
         notifIcon.textContent = 'check_circle';
     }
-    
+
     notif.classList.add('show');
     setTimeout(() => {
         notif.classList.remove('show');

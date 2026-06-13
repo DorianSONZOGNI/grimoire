@@ -261,6 +261,37 @@ window.selectLevelOption = function(lvl, color) {
     if (wrapper) wrapper.classList.remove('open');
 };
 
+window.toggleMonsterTypeSelect = function() {
+    const wrapper = document.getElementById('mTypeWrapper');
+    if (wrapper) wrapper.classList.toggle('open');
+};
+
+window.selectMonsterType = function(val, label, icon, color) {
+    document.getElementById('mType').value = val;
+    const trigger = document.getElementById('mTypeTrigger');
+    if (trigger) {
+        trigger.innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: ${color}; font-size: 1.1rem;">${icon}</span> <span style="flex:1; text-align:left;">${label}</span> <span class="material-symbols-outlined" style="color: #94a3b8; font-size: 1.2rem; pointer-events: none;">expand_more</span>`;
+    }
+    const wrapper = document.getElementById('mTypeWrapper');
+    if (wrapper) wrapper.classList.remove('open');
+};
+
+window.toggleMonsterBehaviorSelect = function() {
+    const wrapper = document.getElementById('mBehaviorWrapper');
+    if (wrapper) wrapper.classList.toggle('open');
+};
+
+window.selectMonsterBehavior = function(val, label, icon, color) {
+    document.getElementById('mBehavior').value = val;
+    const trigger = document.getElementById('mBehaviorTrigger');
+    if (trigger) {
+        trigger.innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: ${color}; font-size: 1.1rem;">${icon}</span> <span style="flex:1; text-align:left;">${label}</span> <span class="material-symbols-outlined" style="color: #94a3b8; font-size: 1.2rem; pointer-events: none;">expand_more</span>`;
+    }
+    const wrapper = document.getElementById('mBehaviorWrapper');
+    if (wrapper) wrapper.classList.remove('open');
+};
+
+
 window.selectFilterLevelOption = function(lvl, label, color, icon) {
     document.getElementById('monsterLevelFilter').value = lvl;
     const trigger = document.getElementById('mLevelFilterTrigger');
@@ -774,8 +805,8 @@ window.renderMonstersList = function() {
                 <div class="monster-card-title">${m.name} <span style="font-size: 0.8rem; background: rgba(255,255,255,0.1); padding: 0.2rem 0.4rem; border-radius: 4px; margin-left: 0.5rem;">Lvl ${m.level || 1}</span></div>
                 <div style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 0.5rem;">${m.description || ''}</div>
                 <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.5rem;">
-                    ${m.monsterType && m.monsterType !== 'NORMAL' ? `<span style="font-size: 0.75rem; background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 600;">${{'DEMON':'\uD83D\uDD25 D\u00e9mon','REPTILE':'\uD83E\uDD8E Reptile','MORT_VIVANT':'\uD83D\uDC80 Mort-vivant','HYBRIDE':'\uD83E\uDDEC Hybride','VAMPIRE':'\uD83E\uDDDB Vampire'}[m.monsterType] || m.monsterType}</span>` : ''}
-                    ${m.behavior && m.behavior !== 'NORMAL' ? `<span style="font-size: 0.75rem; background: rgba(139, 92, 246, 0.15); color: #8b5cf6; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(139, 92, 246, 0.3); font-weight: 600;">${{'PREDATEUR':'\uD83D\uDC3A Pr\u00e9dateur','CORRUPTEUR':'\uD83D\uDC1B Corrupteur','LEADER':'\uD83D\uDC51 Leader','ASSASSIN':'\uD83D\uDDE1\uFE0F Assassin','INSENSIBLE':'\uD83E\uDDA0 Insensible'}[m.behavior] || m.behavior}</span>` : ''}
+                    ${m.monsterType && m.monsterType !== 'NORMAL' ? `<span title="${{'DEMON':'Démon : 10% des dégâts infligés le sont en dégâts bruts supplémentaires.','REPTILE':'Reptile : Réduit les dégâts physiques subis de 15%.','MORT_VIVANT':'Mort-vivant : Régénère 5% de ses PV max au début de son tour.','HYBRIDE':'Hybride : Utilise la plus haute valeur entre Force et Puissance pour attaquer.','VAMPIRE':'Vampire : Se soigne de 20% des dégâts infligés.'}[m.monsterType] || ''}" style="cursor: help; font-size: 0.75rem; background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined" style="font-size: 0.9rem;">${{'DEMON':'local_fire_department','REPTILE':'eco','MORT_VIVANT':'skull','HYBRIDE':'science','VAMPIRE':'bloodtype'}[m.monsterType] || 'check_box_outline_blank'}</span>${{'DEMON':'Démon','REPTILE':'Reptile','MORT_VIVANT':'Mort-vivant','HYBRIDE':'Hybride','VAMPIRE':'Vampire'}[m.monsterType] || m.monsterType}</span>` : ''}
+                    ${m.behavior && m.behavior !== 'NORMAL' ? `<span title="${{'PREDATEUR':'Prédateur : Verrouille une cible et l&apos;attaque jusqu&apos;à sa mort.','CORRUPTEUR':'Corrupteur : Cible toujours le joueur avec le plus de Mana.','LEADER':'Leader : Ordonne à tous les autres monstres d&apos;attaquer sa cible.','ASSASSIN':'Assassin : Vise systématiquement le joueur avec le moins de Résistance.','INSENSIBLE':'Insensible : Ses attaques infligent des dégâts bruts (ignore l&apos;armure).'}[m.behavior] || ''}" style="cursor: help; font-size: 0.75rem; background: rgba(139, 92, 246, 0.15); color: #8b5cf6; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(139, 92, 246, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined" style="font-size: 0.9rem;">${{'PREDATEUR':'track_changes','CORRUPTEUR':'blur_on','LEADER':'stars','ASSASSIN':'gps_fixed','INSENSIBLE':'shield'}[m.behavior] || 'check_box_outline_blank'}</span>${{'PREDATEUR':'Prédateur','CORRUPTEUR':'Corrupteur','LEADER':'Leader','ASSASSIN':'Assassin','INSENSIBLE':'Insensible'}[m.behavior] || m.behavior}</span>` : ''}
                 </div>
                 <div class="monster-card-stats">
                     <span style="display: flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined" style="font-size: 1rem; color: #ec4899;">favorite</span> PV: ${m.healthMax}</span>
@@ -825,8 +856,31 @@ async function editMonster(id) {
             document.getElementById('mResist').value = m.resistance;
             document.getElementById('mGold').value = m.rewardGold;
             document.getElementById('mXp').value = m.rewardExp;
-            document.getElementById('mType').value = m.monsterType || 'NORMAL';
-            document.getElementById('mBehavior').value = m.behavior || 'NORMAL';
+            const mt = m.monsterType || 'NORMAL';
+            const mb = m.behavior || 'NORMAL';
+            
+            const tMap = {
+                'NORMAL': {l:'Normal', i:'check_box_outline_blank', c:'#94a3b8'},
+                'DEMON': {l:'Démon', i:'local_fire_department', c:'#ef4444'},
+                'REPTILE': {l:'Reptile', i:'eco', c:'#10b981'},
+                'MORT_VIVANT': {l:'Mort-vivant', i:'skull', c:'#94a3b8'},
+                'HYBRIDE': {l:'Hybride', i:'science', c:'#3b82f6'},
+                'VAMPIRE': {l:'Vampire', i:'bloodtype', c:'#e11d48'}
+            };
+            const bMap = {
+                'NORMAL': {l:'Normal', i:'check_box_outline_blank', c:'#94a3b8'},
+                'PREDATEUR': {l:'Prédateur', i:'track_changes', c:'#f59e0b'},
+                'CORRUPTEUR': {l:'Corrupteur', i:'blur_on', c:'#8b5cf6'},
+                'LEADER': {l:'Leader', i:'stars', c:'#fcd34d'},
+                'ASSASSIN': {l:'Assassin', i:'gps_fixed', c:'#ef4444'},
+                'INSENSIBLE': {l:'Insensible', i:'shield', c:'#9ca3af'}
+            };
+            
+            const tData = tMap[mt] || tMap['NORMAL'];
+            const bData = bMap[mb] || bMap['NORMAL'];
+            
+            window.selectMonsterType(mt, tData.l, tData.i, tData.c);
+            window.selectMonsterBehavior(mb, bData.l, bData.i, bData.c);
 
             document.getElementById('btnSubmitMonster').textContent = "Modifier le monstre";
             document.getElementById('btnCancelMonster').style.display = 'block';
@@ -849,8 +903,8 @@ window.cancelMonsterEdit = function() {
     document.getElementById('btnSubmitMonster').textContent = "Créer le monstre";
     document.getElementById('btnCancelMonster').style.display = 'none';
     document.getElementById('monsterFormPanel').classList.remove('editing-glow');
-    document.getElementById('mType').value = 'NORMAL';
-    document.getElementById('mBehavior').value = 'NORMAL';
+    window.selectMonsterType('NORMAL', 'Normal', 'check_box_outline_blank', '#94a3b8');
+    window.selectMonsterBehavior('NORMAL', 'Normal', 'check_box_outline_blank', '#94a3b8');
 };
 
 async function deleteMonster(id) {
