@@ -2,6 +2,23 @@ import * as ui from './ui.js';
 import { getSpellEffectsSummaryHtml } from './grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from './filters.js';
 
+const SLOT_LABELS = {
+    CASQUE: { label: 'Casque', icon: 'masks', color: '#a855f7', extraClass: 'flip-icon' },
+    PLASTRON: { label: 'Plastron', icon: 'shield', color: '#3b82f6' },
+    ANNEAU_GAUCHE: { label: 'Anneau Gauche', icon: 'diamond', color: '#f59e0b' },
+    ANNEAU_DROIT: { label: 'Anneau Droit', icon: 'diamond', color: '#f59e0b' },
+    BOTTES: { label: 'Bottes', icon: 'footprint', color: '#10b981' },
+    CAPE: { label: 'Cape', icon: 'carpenter', color: '#ec4899' }
+};
+
+const RARITY_COLORS = {
+    COMMUN: '#94a3b8',
+    RARE: '#3b82f6',
+    LEGENDAIRE: '#f59e0b',
+    EPIQUE: '#c084fc',
+    RELIQUE: '#ef4444'
+};
+
 function getSpellColor(sp) {
     if (sp.voie && sp.voie.nom) {
         return getVoieButtonColor(sp.voie);
@@ -581,9 +598,21 @@ async function openChest() {
                 newLogs.forEach(log => {
                     const itemNameMatch = log.match(/Vous avez trouvé un objet : (.*) !/);
                     if (itemNameMatch) {
+                        const eqName = itemNameMatch[1];
+                        
+                        let eq = null;
+                        if (data.currentRoom && data.currentRoom.lootTable) {
+                            const entry = data.currentRoom.lootTable.find(l => l.equipment && l.equipment.name === eqName);
+                            if (entry) eq = entry.equipment;
+                        }
+
+                        const slotInfo = eq ? (SLOT_LABELS[eq.slot] || { icon: 'help', color: '#94a3b8' }) : { icon: 'swords', color: '#f59e0b' };
+                        const rarityColor = eq ? (RARITY_COLORS[eq.rarity] || '#ef4444') : '#f59e0b';
+                        const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
+
                         gainedItemsHtml += `
-                            <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid #f59e0b; padding: 0.8rem 1rem; border-radius: 8px; color: #f59e0b; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
-                                <span class="material-symbols-outlined">swords</span> ${itemNameMatch[1]}
+                            <div style="background: rgba(0, 0, 0, 0.4); border: 1px solid ${rarityColor}80; padding: 0.8rem 1rem; border-radius: 8px; color: ${rarityColor}; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
+                                <span class="material-symbols-outlined${extraClass}" style="color: ${slotInfo.color};">${slotInfo.icon}</span> ${eqName}
                             </div>
                         `;
                     }

@@ -1,4 +1,21 @@
 let editingMonsterId = null;
+const SLOT_LABELS = {
+    CASQUE: { label: 'Casque', icon: 'masks', color: '#a855f7', extraClass: 'flip-icon' },
+    PLASTRON: { label: 'Plastron', icon: 'shield', color: '#3b82f6' },
+    ANNEAU_GAUCHE: { label: 'Anneau Gauche', icon: 'diamond', color: '#f59e0b' },
+    ANNEAU_DROIT: { label: 'Anneau Droit', icon: 'diamond', color: '#f59e0b' },
+    BOTTES: { label: 'Bottes', icon: 'footprint', color: '#10b981' },
+    CAPE: { label: 'Cape', icon: 'carpenter', color: '#ec4899' }
+};
+
+const RARITY_COLORS = {
+    COMMUN: '#94a3b8',
+    RARE: '#3b82f6',
+    LEGENDAIRE: '#f59e0b',
+    EPIQUE: '#c084fc',
+    RELIQUE: '#ef4444'
+};
+
 let editingDungeonId = null;
 let allMonsters = [];
 let allEquipments = [];
@@ -341,9 +358,12 @@ function renderRooms() {
                 room.lootTable.forEach((loot, lIndex) => {
                     const eq = allEquipments.find(x => x.id === loot.equipmentId);
                     if (eq) {
+                        const slotInfo = SLOT_LABELS[eq.slot] || { label: eq.slot, icon: 'help', color: '#94a3b8' };
+                        const rarityColor = RARITY_COLORS[eq.rarity] || '#ef4444';
+                        const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
                         lootHtml += `
                             <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); padding: 0.4rem 0.8rem; border-radius: 4px;">
-                                <span style="font-size: 0.85rem; color: #f8fafc; display: flex; align-items: center; gap: 0.4rem;"><span class="material-symbols-outlined" style="font-size:1rem; color:#f59e0b;">swords</span> ${eq.name} <span style="color:#94a3b8; font-size:0.8rem;">(${loot.probability}%)</span></span>
+                                <span style="font-size: 0.85rem; color: #f8fafc; display: flex; align-items: center; gap: 0.4rem;"><span class="material-symbols-outlined${extraClass}" style="font-size:1rem; color:${slotInfo.color};">${slotInfo.icon}</span> <span style="color:${rarityColor};">${eq.name}</span> <span style="color:#94a3b8; font-size:0.8rem;">(${loot.probability}%)</span></span>
                                 <button type="button" onclick="removeLootFromRoom(${rIndex}, ${lIndex})" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 0;"><span class="material-symbols-outlined" style="font-size: 1rem;">close</span></button>
                             </div>
                         `;
@@ -360,7 +380,10 @@ function renderRooms() {
                         <div class="custom-select-options" id="room_loot_options_${rIndex}" style="max-height: 200px; overflow-y: auto;">
             `;
             allEquipments.forEach(eq => {
-                lootHtml += `<div class="custom-option" onclick="selectLootOption(${rIndex}, ${eq.id}, '${eq.name.replace(/'/g, "\\'")}')"><span class="material-symbols-outlined cs-icon" style="color: #f59e0b;">swords</span> ${eq.name}</div>`;
+                const slotInfo = SLOT_LABELS[eq.slot] || { label: eq.slot, icon: 'help', color: '#94a3b8' };
+                const rarityColor = RARITY_COLORS[eq.rarity] || '#ef4444';
+                const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
+                lootHtml += `<div class="custom-option" onclick="selectLootOption(${rIndex}, ${eq.id}, '${eq.name.replace(/'/g, "\\'")}', '${slotInfo.icon}', '${slotInfo.color}', '${rarityColor}', '${slotInfo.extraClass || ''}')"><span class="material-symbols-outlined cs-icon${extraClass}" style="color: ${slotInfo.color};">${slotInfo.icon}</span> <span style="color: ${rarityColor};">${eq.name}</span></div>`;
             });
             lootHtml += `
                         </div>
@@ -424,10 +447,32 @@ async function loadMonsters() {
 
 async function loadEquipments() {
     try {
-        const res = await fetch('/api/shop/templates');
-        if (res.ok) {
-            allEquipments = await res.json();
-        }
+        const res1 = await fetch('/api/shop/templates');
+        const res2 = await fetch('/api/equipment');
+        
+        let templates = [];
+        let instances = [];
+        
+        if (res1.ok) templates = await res1.json();
+        if (res2.ok) instances = await res2.json();
+        
+        // Merge and deduplicate by name, preferring templates
+        let merged = [...templates, ...instances];
+        let map = new Map();
+        merged.forEach(eq => {
+            if (!map.has(eq.name)) {
+                map.set(eq.name, eq);
+            }
+        });
+        
+        // Sort by rarity, then name
+        const rarityOrder = { 'COMMUN': 1, 'RARE': 2, 'EPIQUE': 3, 'LEGENDAIRE': 4, 'RELIQUE': 5 };
+        allEquipments = Array.from(map.values()).sort((a, b) => {
+            const rA = rarityOrder[a.rarity] || 0;
+            const rB = rarityOrder[b.rarity] || 0;
+            if (rA !== rB) return rA - rB;
+            return a.name.localeCompare(b.name);
+        });
     } catch (e) {
         console.error(e);
     }
@@ -691,9 +736,10 @@ window.toggleLootSelect = function(rIndex) {
     }
 };
 
-window.selectLootOption = function(rIndex, eqId, eqName) {
+window.selectLootOption = function(rIndex, eqId, eqName, icon, iconColor, rarityColor, extraClass) {
     document.getElementById('room_loot_select_' + rIndex).value = eqId;
-    document.getElementById('room_loot_label_' + rIndex).innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: #f59e0b;">swords</span> ${eqName}`;
+    const cls = extraClass ? ` ${extraClass}` : '';
+    document.getElementById('room_loot_label_' + rIndex).innerHTML = `<span class="material-symbols-outlined cs-icon${cls}" style="color: ${iconColor};">${icon}</span> <span style="color: ${rarityColor};">${eqName}</span>`;
     document.getElementById('room_loot_select_wrapper_' + rIndex).classList.remove('open');
 };
 
