@@ -36,20 +36,20 @@ window.filterSpells = function (filter) {
 document.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
     const dungeonId = urlParams.get('dungeonId');
-    const characterId = urlParams.get('characterId');
+    const characterIds = urlParams.get('characterIds');
 
-    if (!dungeonId || !characterId) {
+    if (!dungeonId || !characterIds) {
         alert("Paramètres de combat manquants.");
         window.location.href = '/vault.html';
         return;
     }
 
-    startCombat(characterId, dungeonId);
+    startCombat(characterIds, dungeonId);
 });
 
-async function startCombat(characterId, dungeonId) {
+async function startCombat(characterIds, dungeonId) {
     try {
-        const res = await fetch(`/api/pve/combat/start?characterId=${characterId}&dungeonId=${dungeonId}`, {
+        const res = await fetch(`/api/pve/combat/start?characterIds=${characterIds}&dungeonId=${dungeonId}`, {
             method: 'POST'
         });
 
@@ -187,9 +187,11 @@ async function doAction(spellId = null) {
     });
 
     // Animation attack
-    const playerCard = document.getElementById('playerCard');
-    playerCard.style.transform = 'translateX(50px)';
-    setTimeout(() => { playerCard.style.transform = 'none'; }, 200);
+    const activePlayerCard = document.querySelector('.fighter-player.active');
+    if (activePlayerCard) {
+        activePlayerCard.style.transform = 'translateX(50px)';
+        setTimeout(() => { activePlayerCard.style.transform = 'none'; }, 200);
+    }
 
     try {
         let url = `/api/pve/combat/${sessionId}/action?targetIndex=${selectedTargetIndex}`;
@@ -268,9 +270,31 @@ function updateUI(data) {
     document.getElementById('headerDungeonName').textContent = data.donjon.name + " - Étape " + (data.currentRoomIndex + 1);
     document.getElementById('turnCounter').textContent = data.turnNumber;
 
-    // Player
-    const p = data.player;
-    document.getElementById('playerCard').innerHTML = generateFighterHtml(p, true);
+    // Players
+    const playersContainer = document.getElementById('playersContainer');
+    if (playersContainer) {
+        playersContainer.innerHTML = '';
+        data.players.forEach((p, index) => {
+            const isActive = index === data.currentActivePlayerIndex;
+            const isDead = p.healthCurrent <= 0;
+            
+            const div = document.createElement('div');
+            div.className = `fighter fighter-player ${isActive ? 'active' : ''} ${isDead ? 'dead' : ''}`;
+            if (isActive) {
+                div.style.borderColor = '#38bdf8';
+                div.style.boxShadow = '0 0 20px rgba(56, 189, 248, 0.4)';
+                div.style.transform = 'scale(1.05)';
+            } else if (isDead) {
+                div.style.opacity = '0.4';
+                div.style.filter = 'grayscale(1)';
+            } else {
+                div.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+                div.style.transform = 'scale(0.95)';
+            }
+            div.innerHTML = generateFighterHtml(p, true);
+            playersContainer.appendChild(div);
+        });
+    }
 
     // Render Spells
     if (data.availableSpells) {
@@ -327,7 +351,9 @@ function updateUI(data) {
         div.className = 'log-entry';
 
         let text = log;
-        text = text.replace(new RegExp(p.name, 'g'), `<span style="color:#10b981;font-weight:600;">${p.name}</span>`);
+        data.players.forEach(p => {
+            text = text.replace(new RegExp(p.name, 'g'), `<span style="color:#10b981;font-weight:600;">${p.name}</span>`);
+        });
         text = text.replace(/inflige (\d+) dégâts/g, 'inflige <span style="color:#f59e0b;font-weight:bold;">$1</span> dégâts');
 
         div.innerHTML = text;

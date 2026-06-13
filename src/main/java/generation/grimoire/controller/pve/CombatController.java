@@ -8,6 +8,7 @@ import org.springframework.lang.NonNull;
 import org.springframework.web.bind.annotation.*;
 
 import java.security.Principal;
+import java.util.List;
 
 @RestController
 @RequestMapping("/api/pve/combat")
@@ -18,13 +19,13 @@ public class CombatController {
 
     @PostMapping("/start")
     public ResponseEntity<CombatSession> startCombat(
-            @RequestParam @NonNull Long characterId, 
+            @RequestParam @NonNull List<Long> characterIds, 
             @RequestParam @NonNull Long dungeonId,
             Principal principal) {
         if (principal == null) return ResponseEntity.status(401).build();
         
         try {
-            CombatSession session = combatService.startCombat(characterId, dungeonId, principal.getName());
+            CombatSession session = combatService.startCombat(characterIds, dungeonId, principal.getName());
             return ResponseEntity.ok(session);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(null);

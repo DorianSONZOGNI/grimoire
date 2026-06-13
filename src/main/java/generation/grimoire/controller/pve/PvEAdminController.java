@@ -86,6 +86,7 @@ public class PvEAdminController {
         entity.setDescription(dto.getDescription());
         entity.setImageUrl(dto.getImageUrl());
         entity.setRecommendedLevel(dto.getRecommendedLevel());
+        entity.setMaxHeroes(dto.getMaxHeroes() > 0 ? dto.getMaxHeroes() : 1);
 
         if (dto.getSalles() != null) {
             List<generation.grimoire.entity.pve.Salle> salles = dto.getSalles().stream().map(sDto -> {

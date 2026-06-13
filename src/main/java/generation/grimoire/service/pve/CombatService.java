@@ -41,11 +41,19 @@ public class CombatService {
     // In-memory combat sessions
     private final Map<String, CombatSession> activeSessions = new ConcurrentHashMap<>();
 
-    public CombatSession startCombat(@NonNull Long characterId, @NonNull Long dungeonId, String username) {
-        Personnage p = personnageRepository.findById(characterId).orElseThrow(() -> new RuntimeException("Personnage introuvable"));
-        
-        if (p.getUser() == null || !p.getUser().getUsername().equals(username)) {
-            throw new RuntimeException("Non autorisé");
+    public CombatSession startCombat(@NonNull List<Long> characterIds, @NonNull Long dungeonId, String username) {
+        if (characterIds.isEmpty()) throw new RuntimeException("Aucun personnage sélectionné");
+
+        List<Personnage> players = new ArrayList<>();
+        for (Long characterId : characterIds) {
+            Personnage p = personnageRepository.findById(characterId).orElseThrow(() -> new RuntimeException("Personnage introuvable"));
+            if (p.getUser() == null || !p.getUser().getUsername().equals(username)) {
+                throw new RuntimeException("Non autorisé");
+            }
+            p.clearBuffs();
+            p.setHealthCurrent(p.getTotalHealthMax());
+            p.setManaCurrent(p.getTotalManaMax());
+            players.add(p);
         }
         
         Donjon d = donjonRepository.findById(dungeonId).orElseThrow(() -> new RuntimeException("Donjon introuvable"));
@@ -54,23 +62,8 @@ public class CombatService {
             throw new RuntimeException("Ce donjon ne contient aucune salle.");
         }
         
-        p.clearBuffs();
-        p.setHealthCurrent(p.getTotalHealthMax());
-        p.setManaCurrent(p.getTotalManaMax());
-        
         String sessionId = UUID.randomUUID().toString();
-        CombatSession session = new CombatSession(sessionId, d, p);
-        
-        List<Spell> validSpells = new ArrayList<>();
-        System.out.println("DEBUG COMBAT START - Player: " + p.getName() + ", Voie: " + (p.getVoie() != null ? p.getVoie().getId() : "null") + ", Spirit: " + (p.getSpiritualite() != null ? p.getSpiritualite().getId() : "null"));
-        for (Spell s : spellRepository.findAll()) {
-            String castError = p.canCast(s);
-            System.out.println("DEBUG SPELL: " + s.getNom() + ", S.Voie: " + (s.getVoie() != null ? s.getVoie().getId() : "null") + ", S.Spirit: " + (s.getSpiritualite() != null ? s.getSpiritualite().getId() : "null") + ", canCast=" + castError);
-            if (castError == null) {
-                validSpells.add(s);
-            }
-        }
-        session.setAvailableSpells(validSpells);
+        CombatSession session = new CombatSession(sessionId, d, players);
         
         handleRoomStart(session);
         
@@ -88,7 +81,9 @@ public class CombatService {
         
         if (session.getCurrentRoom().getType() == generation.grimoire.enumeration.RoomType.COMBAT) {
             session.addLog("Vous entrez dans une salle de combat ! Préparez-vous.");
-            spellService.startTurn(session.getPlayer());
+            for (Personnage p : session.getPlayers()) {
+                if (p.getHealthCurrent() > 0) spellService.startTurn(p);
+            }
         } else if (session.getCurrentRoom().getType() == generation.grimoire.enumeration.RoomType.TREASURE) {
             session.addLog("Vous trouvez un trésor !");
         } else if (session.getCurrentRoom().getType() == generation.grimoire.enumeration.RoomType.EVENT) {
@@ -109,26 +104,32 @@ public class CombatService {
             session.addLog("Vous avez ramassé " + gold + " Or et " + exp + " XP.");
         } else if (session.getCurrentRoom().getType() == generation.grimoire.enumeration.RoomType.EVENT) {
             int effect = session.getCurrentRoom().getEventEffectAmount();
-            if (effect > 0) {
-                session.getPlayer().heal(effect);
-                session.addLog("Vous êtes soigné de " + effect + " PV.");
-            } else if (effect < 0) {
-                session.getPlayer().takeDamage(-effect, generation.grimoire.enumeration.DamageType.BRUT);
-                session.addLog("Vous subissez " + (-effect) + " dégâts !");
+            for (Personnage p : session.getPlayers()) {
+                if (p.getHealthCurrent() <= 0) continue;
+                if (effect > 0) {
+                    p.heal(effect);
+                } else if (effect < 0) {
+                    p.takeDamage(-effect, generation.grimoire.enumeration.DamageType.BRUT);
+                }
             }
+            if (effect > 0) session.addLog("Vos héros sont soignés de " + effect + " PV.");
+            else if (effect < 0) session.addLog("Vos héros subissent " + (-effect) + " dégâts !");
         }
         session.loadRoom(session.getCurrentRoomIndex() + 1);
         handleRoomStart(session);
         
         if (session.isFinished()) {
             session.addLog("Félicitations, vous avez terminé le donjon !");
-            Personnage p = session.getPlayer();
-            AppUser user = p.getUser();
-            if (user != null) {
-                user.setMonnaie(user.getMonnaie() + session.getTotalGoldAccumulated());
-                userRepository.save(user);
+            if (!session.getPlayers().isEmpty()) {
+                AppUser user = session.getPlayers().get(0).getUser();
+                if (user != null) {
+                    user.setMonnaie(user.getMonnaie() + session.getTotalGoldAccumulated());
+                    userRepository.save(user);
+                }
+                for (Personnage p : session.getPlayers()) {
+                    personnageRepository.save(p);
+                }
             }
-            personnageRepository.save(p);
         }
         
         computeSpellAvailability(session);
@@ -143,7 +144,8 @@ public class CombatService {
             throw new RuntimeException("Ce n'est pas une salle de combat !");
         }
         
-        Personnage p = session.getPlayer();
+        Personnage p = session.getActivePlayer();
+        if (p == null) return session;
         
         // Player Action
         if (spellId != null) {
@@ -163,7 +165,7 @@ public class CombatService {
                 }
                 
                 List<Personnage> allEnemies = session.getEnemies().stream().map(generation.grimoire.model.pve.ActiveMonster::getAsPersonnage).toList();
-                List<Personnage> allAllies = List.of(p);
+                List<Personnage> allAllies = session.getPlayers().stream().filter(pl -> pl.getHealthCurrent() > 0).toList();
                 
                 final Personnage finalTarget = target;
                 session.addLog(p.getName() + " lance " + spellToCast.getNom() + " !");
@@ -216,59 +218,71 @@ public class CombatService {
             throw new RuntimeException("Ce n'est pas une salle de combat !");
         }
         
-        Personnage p = session.getPlayer();
-        session.addLog("--- FIN DU TOUR " + session.getTurnNumber() + " ---");
+        Personnage p = session.getActivePlayer();
         
-        // Monsters turn
-        captureLogs(session, () -> {
-            for (generation.grimoire.model.pve.ActiveMonster m : session.getEnemies()) {
-                if (!m.isDead() && p.getHealthCurrent() > 0) {
-                    int monsterDmg = m.getBase().getStrength();
-                    int initialHp = p.getHealthCurrent();
-                    System.out.println(m.getBase().getName() + " vous attaque et inflige " + monsterDmg + " dégâts physiques initiaux.");
-                    p.takeDamage(monsterDmg, generation.grimoire.enumeration.DamageType.PHYSIC);
-                    
-                    if (p.getHealthCurrent() <= 0) {
-                        session.setFinished(true);
-                        session.setPlayerWon(false);
-                        System.out.println(p.getName() + " a été vaincu...");
+        if (p != null) {
+            captureLogs(session, () -> {
+                if (p.getRemainingChannelingTurns() > 0) {
+                    Personnage channelingTarget = p.getChannelingTarget();
+                    if (channelingTarget == null && !session.getEnemies().isEmpty()) {
+                        channelingTarget = session.getEnemies().get(0).getAsPersonnage();
+                    }
+                    spellService.tickChanneling(p, channelingTarget, p.getChannelingChoiceKey());
+                }
+            });
+        }
+        
+        if (session.isLastPlayerTurn()) {
+            session.addLog("--- TOUR DES ENNEMIS (TOUR " + session.getTurnNumber() + ") ---");
+            
+            // Monsters turn
+            captureLogs(session, () -> {
+                for (generation.grimoire.model.pve.ActiveMonster m : session.getEnemies()) {
+                    if (!m.isDead()) {
+                        spellService.startTurn(m.getAsPersonnage());
                     }
                 }
-            }
-        });
-        
-        if (session.isFinished()) {
-            computeSpellAvailability(session);
-            return session;
-        }
-        // Start next turn for everyone (ticks DoTs/HoTs)
-        captureLogs(session, () -> {
-            if (p.getRemainingChannelingTurns() > 0) {
-                Personnage channelingTarget = p.getChannelingTarget();
-                if (channelingTarget == null && !session.getEnemies().isEmpty()) {
-                    channelingTarget = session.getEnemies().get(0).getAsPersonnage();
+                for (generation.grimoire.model.pve.ActiveMonster m : session.getEnemies()) {
+                    if (!m.isDead()) {
+                        Personnage mp = m.getAsPersonnage();
+                        if (mp.getRemainingChannelingTurns() > 0) {
+                            Personnage cTarget = mp.getChannelingTarget();
+                            if (cTarget == null && !session.getPlayers().isEmpty()) {
+                                cTarget = session.getPlayers().get(0);
+                            }
+                            spellService.tickChanneling(mp, cTarget, mp.getChannelingChoiceKey());
+                        } else {
+                            List<Personnage> alivePlayers = session.getPlayers().stream().filter(pl -> pl.getHealthCurrent() > 0).toList();
+                            if (!alivePlayers.isEmpty()) {
+                                Personnage targetPlayer = alivePlayers.get(new java.util.Random().nextInt(alivePlayers.size()));
+                                int monsterDmg = m.getBase().getStrength();
+                                System.out.println(m.getBase().getName() + " attaque " + targetPlayer.getName() + " et inflige " + monsterDmg + " dégâts.");
+                                targetPlayer.takeDamage(monsterDmg, generation.grimoire.enumeration.DamageType.PHYSIC);
+                                if (targetPlayer.getHealthCurrent() <= 0) {
+                                    System.out.println(targetPlayer.getName() + " a été vaincu...");
+                                }
+                            }
+                        }
+                    }
                 }
-                spellService.tickChanneling(p, channelingTarget, p.getChannelingChoiceKey());
+            });
+            
+            if (session.areAllPlayersDead()) {
+                session.setFinished(true);
+                session.setPlayerWon(false);
+                session.addLog("Toute l'équipe a été vaincue...");
+            } else {
+                session.resetActivePlayer();
+                session.setTurnNumber(session.getTurnNumber() + 1);
+                session.addLog("--- DEBUT DU TOUR " + session.getTurnNumber() + " : " + session.getActivePlayer().getName() + " ---");
+                spellService.startTurn(session.getActivePlayer());
             }
-
-            spellService.startTurn(p);
-            for (generation.grimoire.model.pve.ActiveMonster m : session.getEnemies()) {
-                if (!m.isDead()) {
-                    spellService.startTurn(m.getAsPersonnage());
-                }
-            }
-        });
-        
-        if (p.getHealthCurrent() <= 0) {
-            session.setFinished(true);
-            session.setPlayerWon(false);
-            session.addLog("Vous êtes tombé au combat (effets de début de tour).");
-            computeSpellAvailability(session);
-            return session;
+        } else {
+            session.nextActivePlayer();
+            session.addLog("--- Tour de " + session.getActivePlayer().getName() + " ---");
+            spellService.startTurn(session.getActivePlayer());
         }
-
-        session.setTurnNumber(session.getTurnNumber() + 1);
-        session.addLog("--- TOUR " + session.getTurnNumber() + " ---");
+        
         computeSpellAvailability(session);
         return session;
     }
@@ -278,10 +292,25 @@ public class CombatService {
      * Reproduit la logique de validation de SpellService.castSpellGroup() en mode lecture seule.
      */
     private void computeSpellAvailability(CombatSession session) {
-        List<SpellAvailability> result = new ArrayList<>();
-        Personnage p = session.getPlayer();
+        if (session.isFinished()) return;
+        List<generation.grimoire.model.pve.SpellAvailability> avails = new ArrayList<>();
+        Personnage p = session.getActivePlayer();
+        
+        if (p == null) {
+            session.setAvailableSpells(new ArrayList<>());
+            session.setSpellAvailability(avails);
+            return;
+        }
 
-        // Rendre System.out silencieux pendant ce calcul pour éviter le spam des passifs
+        // Update the list of available spells for this active player
+        List<Spell> validSpells = new ArrayList<>();
+        for (Spell s : spellRepository.findAll()) {
+            if (p.canCast(s) == null) {
+                validSpells.add(s);
+            }
+        }
+        session.setAvailableSpells(validSpells);
+
         java.io.PrintStream originalOut = System.out;
         try {
             System.setOut(new java.io.PrintStream(new java.io.OutputStream() {
@@ -290,13 +319,13 @@ public class CombatService {
             
             for (Spell spell : session.getAvailableSpells()) {
                 SpellAvailability avail = checkSpellAvailability(spell, p);
-                result.add(avail);
+                avails.add(avail);
             }
         } finally {
             System.setOut(originalOut);
         }
 
-        session.setSpellAvailability(result);
+        session.setSpellAvailability(avails);
     }
 
     private SpellAvailability checkSpellAvailability(Spell spell, Personnage p) {

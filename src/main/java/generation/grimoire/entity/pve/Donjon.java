@@ -24,6 +24,8 @@ public class Donjon {
     
     private int recommendedLevel;
     
+    private int maxHeroes = 1;
+    
     private String imageUrl;
 
     // For a simple novice dungeon, it's one combat. 

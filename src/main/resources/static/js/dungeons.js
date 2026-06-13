@@ -1,5 +1,6 @@
 let currentDungeonId = null;
-let selectedCharId = null;
+let selectedCharIds = [];
+let currentMaxHeroes = 1;
 let selectedConsumableId = null;
 let userCharacters = [];
 let availableConsumables = [];
@@ -54,7 +55,7 @@ async function loadDungeons() {
                 const sallesData = JSON.stringify(d.salles || []).replace(/"/g, '&quot;');
 
                 list.innerHTML += `
-                    <div class="dungeon-card" onclick="openPrepInterface(${d.id}, '${d.name.replace(/'/g, "\\'")}', '${sallesData}')">
+                    <div class="dungeon-card" onclick="openPrepInterface(${d.id}, '${d.name.replace(/'/g, "\\'")}', '${sallesData}', ${d.maxHeroes || 1})">
                         <div class="dungeon-title">
                             <span class="material-symbols-outlined">castle</span>
                             ${d.name}
@@ -190,18 +191,33 @@ window.selectConsumable = function (id) {
 };
 
 window.selectCharacter = async function (id) {
-    selectedCharId = id;
+    if (selectedCharIds.includes(id)) {
+        selectedCharIds = selectedCharIds.filter(cid => cid !== id);
+    } else {
+        if (selectedCharIds.length >= currentMaxHeroes) {
+            alert(`Ce donjon est limité à ${currentMaxHeroes} héros maximum.`);
+            return;
+        }
+        selectedCharIds.push(id);
+    }
 
     // Update visual selection
     document.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected'));
-    const card = document.getElementById('charCard_' + id);
-    if (card) card.classList.add('selected');
+    selectedCharIds.forEach(cid => {
+        const card = document.getElementById('charCard_' + cid);
+        if (card) card.classList.add('selected');
+    });
 
-    // Enable enter button
+    // Enable enter button if at least one character is selected
     const btn = document.getElementById('btnEnterDungeon');
     if (btn) {
-        btn.style.opacity = '1';
-        btn.style.pointerEvents = 'all';
+        if (selectedCharIds.length > 0) {
+            btn.style.opacity = '1';
+            btn.style.pointerEvents = 'all';
+        } else {
+            btn.style.opacity = '0.5';
+            btn.style.pointerEvents = 'none';
+        }
     }
 
     // Fetch character equipments
@@ -289,12 +305,13 @@ window.selectCharacter = async function (id) {
     }
 };
 
-window.openPrepInterface = function (id, name, sallesData) {
+window.openPrepInterface = function (id, name, sallesData, maxHeroes) {
     currentDungeonId = id;
-    selectedCharId = null;
+    selectedCharIds = [];
     selectedConsumableId = null;
+    currentMaxHeroes = maxHeroes || 1;
 
-    document.getElementById('prepDungeonTitle').textContent = name;
+    document.getElementById('prepDungeonTitle').textContent = `${name} (Max: ${currentMaxHeroes} héros)`;
 
     const salles = JSON.parse(sallesData || '[]');
     const list = document.getElementById('prepMonstersList');
@@ -344,17 +361,18 @@ window.closePrepInterface = function () {
     document.getElementById('prepInterface').style.display = 'none';
     document.getElementById('dungeonsContent').style.display = 'block';
     currentDungeonId = null;
-    selectedCharId = null;
+    selectedCharIds = [];
     selectedConsumableId = null;
 };
 
 window.startCombat = function () {
-    if (!selectedCharId) {
-        alert("Veuillez sélectionner un personnage.");
+    if (selectedCharIds.length === 0) {
+        alert("Veuillez sélectionner au moins un personnage.");
         return;
     }
 
-    let url = `/combat.html?dungeonId=${currentDungeonId}&characterId=${selectedCharId}`;
+    const charIdsStr = selectedCharIds.join(',');
+    let url = `/combat.html?dungeonId=${currentDungeonId}&characterIds=${charIdsStr}`;
     if (selectedConsumableId) {
         url += `&consumableId=${selectedConsumableId}`;
     }

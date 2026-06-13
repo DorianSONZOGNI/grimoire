@@ -10,6 +10,7 @@ public class DonjonDTO {
     private String description;
     private String imageUrl;
     private int recommendedLevel;
+    private int maxHeroes;
     
     private List<SalleDTO> salles;
 }

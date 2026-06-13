@@ -15,7 +15,8 @@ public class CombatSession {
     private String sessionId;
     private Long dungeonId;
     private Donjon donjon;
-    private Personnage player;
+    private List<Personnage> players = new ArrayList<>();
+    private int currentActivePlayerIndex = 0;
     
     private int currentRoomIndex = 0;
     private Salle currentRoom;
@@ -37,13 +38,44 @@ public class CombatSession {
     
     private List<String> combatLog = new ArrayList<>();
 
-    public CombatSession(String sessionId, Donjon donjon, Personnage player) {
+    public CombatSession(String sessionId, Donjon donjon, List<Personnage> players) {
         this.sessionId = sessionId;
         this.dungeonId = donjon.getId();
         this.donjon = donjon;
-        this.player = player;
+        this.players = players;
         
         loadRoom(0);
+    }
+    
+    public Personnage getActivePlayer() {
+        if (players.isEmpty() || currentActivePlayerIndex >= players.size()) return null;
+        return players.get(currentActivePlayerIndex);
+    }
+    
+    public void nextActivePlayer() {
+        currentActivePlayerIndex++;
+        while(currentActivePlayerIndex < players.size() && players.get(currentActivePlayerIndex).getHealthCurrent() <= 0) {
+            currentActivePlayerIndex++;
+        }
+    }
+    
+    public void resetActivePlayer() {
+        currentActivePlayerIndex = 0;
+        while(currentActivePlayerIndex < players.size() && players.get(currentActivePlayerIndex).getHealthCurrent() <= 0) {
+            currentActivePlayerIndex++;
+        }
+    }
+    
+    public boolean isLastPlayerTurn() {
+        int next = currentActivePlayerIndex + 1;
+        while (next < players.size() && players.get(next).getHealthCurrent() <= 0) {
+            next++;
+        }
+        return next >= players.size();
+    }
+    
+    public boolean areAllPlayersDead() {
+        return players.stream().allMatch(p -> p.getHealthCurrent() <= 0);
     }
     
     public void loadRoom(int index) {

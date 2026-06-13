@@ -82,6 +82,7 @@ document.addEventListener('DOMContentLoaded', () => {
             name: document.getElementById('dName').value,
             description: document.getElementById('dDesc').value,
             recommendedLevel: parseInt(document.getElementById('dLevel').value),
+            maxHeroes: parseInt(document.getElementById('dMaxHeroes').value) || 1,
             salles: selectedRooms.map(r => {
                 const s = { type: r.type };
                 if (r.type === 'COMBAT') {
@@ -562,6 +563,7 @@ async function editDungeon(id) {
             document.getElementById('dName').value = d.name;
             document.getElementById('dDesc').value = d.description || '';
             document.getElementById('dLevel').value = d.recommendedLevel;
+            document.getElementById('dMaxHeroes').value = d.maxHeroes || 1;
 
             selectedRooms = d.salles.map(s => {
                 const room = { type: s.type };
