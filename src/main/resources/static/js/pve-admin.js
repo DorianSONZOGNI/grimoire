@@ -19,6 +19,7 @@ const RARITY_COLORS = {
 let editingDungeonId = null;
 let allMonsters = [];
 let allEquipments = [];
+let allAnomalies = [];
 let selectedRooms = [];
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -36,6 +37,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
         loadMonsters();
         loadEquipments();
+        loadAnomalies();
         loadDungeons();
     };
 
@@ -474,8 +476,11 @@ function renderRooms() {
                             <label style="font-size: 0.8rem; color: #94a3b8;">Gain XP Spiritualité</label>
                             <input type="number" class="form-control" value="${room.alterationSpiritualXpReward || 0}" onchange="updateRoomField(${rIndex}, 'alterationSpiritualXpReward', parseInt(this.value))">
                         ` : `
-                            <label style="font-size: 0.8rem; color: #94a3b8;">ID de l'Item Spécial (à venir)</label>
-                            <input type="text" class="form-control" value="${room.alterationSpecialItemReward || ''}" onchange="updateRoomField(${rIndex}, 'alterationSpecialItemReward', this.value)" placeholder="ex: ITEM_SANG_DE_DEMON">
+                            <label style="font-size: 0.8rem; color: #94a3b8;">Item Spécial Donné en récompense</label>
+                            <select class="form-control" onchange="updateRoomField(${rIndex}, 'alterationSpecialItemReward', this.value)">
+                                <option value="">Choisir un item spécial...</option>
+                                ${allAnomalies.map(a => `<option value="${a.name}" ${room.alterationSpecialItemReward === a.name ? 'selected' : ''}>${a.name}</option>`).join('')}
+                            </select>
                         `}
                     </div>
                     `;
@@ -483,7 +488,10 @@ function renderRooms() {
                     contentHtml += `
                     <div style="margin-top: 0.75rem;">
                         <label style="font-size: 0.8rem; color: #94a3b8;">Item Spécial Requis (que le joueur donne)</label>
-                        <input type="text" class="form-control" value="${room.alterationRequiredItem || ''}" onchange="updateRoomField(${rIndex}, 'alterationRequiredItem', this.value)" placeholder="ex: ITEM_FLEUR_NOIRE">
+                        <select class="form-control" onchange="updateRoomField(${rIndex}, 'alterationRequiredItem', this.value)">
+                            <option value="">Choisir un item spécial...</option>
+                            ${allAnomalies.map(a => `<option value="${a.name}" ${room.alterationRequiredItem === a.name ? 'selected' : ''}>${a.name}</option>`).join('')}
+                        </select>
                     </div>
                     <div style="margin-top: 0.5rem;">
                         <label style="font-size: 0.8rem; color: #fbbf24;">Récompense (XP Spiritualité)</label>
@@ -559,11 +567,17 @@ function renderRooms() {
                             </div>
                             
                             <!-- Mode Spécial -->
-                            <input type="text" id="room_merchant_special_${rIndex}" class="form-control" style="flex: 2; display: none;" placeholder="Nom item spécial">
+                            <select id="room_merchant_special_${rIndex}" class="form-control" style="flex: 2; display: none;">
+                                <option value="">Choisir un item spécial...</option>
+                                ${allAnomalies.map(a => `<option value="${a.name}">${a.name}</option>`).join('')}
+                            </select>
                         </div>
                         <div style="display: flex; gap: 0.5rem; align-items: stretch; height: 38px;">
                             <input type="number" id="room_merchant_gold_${rIndex}" class="form-control" style="flex: 1;" placeholder="Prix (Or)" min="0">
-                            <input type="text" id="room_merchant_cost_item_${rIndex}" class="form-control" style="flex: 1;" placeholder="Prix Item Spécial (option)">
+                            <select id="room_merchant_cost_item_${rIndex}" class="form-control" style="flex: 1;">
+                                <option value="">Prix Item Spécial (option)</option>
+                                ${allAnomalies.map(a => `<option value="${a.name}">${a.name}</option>`).join('')}
+                            </select>
                             <button type="button" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 0 1.2rem; font-size: 0.9rem; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center;" onclick="addMerchantItemToRoom(${rIndex})">
                                 <span class="material-symbols-outlined" style="font-size: 1.1rem;">add</span>
                             </button>
@@ -667,6 +681,18 @@ async function loadMonsters() {
             const monsters = await res.json();
             allMonsters = monsters;
             renderMonstersList();
+        }
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+async function loadAnomalies() {
+    try {
+        const res = await fetch('/api/anomalies');
+        if (res.ok) {
+            allAnomalies = await res.json();
+            renderRooms();
         }
     } catch (e) {
         console.error(e);
