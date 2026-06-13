@@ -362,6 +362,14 @@
             </div>
         </div>
     </main>
+    <!-- Notification Toast -->
+    <div id="dungeonNotif"
+        style="position: fixed; bottom: 2rem; right: 2rem; background: #10b981; color: #fff; padding: 1rem 2rem; border-radius: 12px; font-weight: 500; font-family: 'Outfit', sans-serif; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3); transform: translateY(100px); opacity: 0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 9999;">
+        <div style="display: flex; align-items: center; gap: 0.5rem;">
+            <span class="material-symbols-outlined" id="dungeonNotifIcon" style="font-size: 1.2rem;">error</span>
+            <span id="dungeonNotifText">Action réussie</span>
+        </div>
+    </div>
 
     <script src="/js/auth.js"></script>
     <script src="/js/dungeons.js"></script>

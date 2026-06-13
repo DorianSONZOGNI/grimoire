@@ -25,6 +25,30 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
+function showNotif(message, isError = false) {
+    const notif = document.getElementById('dungeonNotif');
+    const text = document.getElementById('dungeonNotifText');
+    const icon = document.getElementById('dungeonNotifIcon');
+    text.textContent = message;
+    
+    if (isError) {
+        icon.textContent = 'error_outline';
+        notif.style.background = '#ef4444';
+        notif.style.boxShadow = '0 10px 25px rgba(239, 68, 68, 0.3)';
+    } else {
+        icon.textContent = 'check_circle';
+        notif.style.background = '#10b981';
+        notif.style.boxShadow = '0 10px 25px rgba(16, 185, 129, 0.3)';
+    }
+
+    notif.style.opacity = '1';
+    notif.style.transform = 'translateY(0)';
+    setTimeout(() => {
+        notif.style.opacity = '0';
+        notif.style.transform = 'translateY(100px)';
+    }, 3000);
+}
+
 async function loadDungeons() {
     try {
         const res = await fetch('/api/pve/dungeons');
@@ -195,7 +219,7 @@ window.selectCharacter = async function (id) {
         selectedCharIds = selectedCharIds.filter(cid => cid !== id);
     } else {
         if (selectedCharIds.length >= currentMaxHeroes) {
-            alert(`Ce donjon est limité à ${currentMaxHeroes} héros maximum.`);
+            showNotif(`Ce donjon est limité à ${currentMaxHeroes} héros maximum.`, true);
             return;
         }
         selectedCharIds.push(id);
@@ -367,7 +391,7 @@ window.closePrepInterface = function () {
 
 window.startCombat = function () {
     if (selectedCharIds.length === 0) {
-        alert("Veuillez sélectionner au moins un personnage.");
+        showNotif("Veuillez sélectionner au moins un personnage.", true);
         return;
     }
 
