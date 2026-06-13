@@ -778,208 +778,233 @@ function renderBuffsHtml(buffList) {
     return html;
 }
 
+let currentSpellsTab = 'VOIE';
+
+window.switchSpellTab = function(tab) {
+    currentSpellsTab = tab;
+    // Update tab UI
+    document.querySelectorAll('.csp-tab').forEach(t => t.classList.remove('active'));
+    const tabEl = document.querySelector(`.csp-tab[data-target="${tab}"]`);
+    if (tabEl) tabEl.classList.add('active');
+    
+    // Re-render
+    if (currentSessionData && currentSessionData.availableSpells) {
+        renderSpells(currentSessionData.availableSpells);
+    }
+}
+
 function renderSpells(spells) {
     const container = document.getElementById('spellsContainer');
-    const filterContainer = document.getElementById('spellFiltersBar');
     if (!container) return;
 
-    // First, determine all available categories
-    let categories = new Set();
-    spells.forEach(sp => {
-        if (sp.voie && sp.voie.nom) categories.add('VOIE_' + sp.voie.nom);
-        if (sp.spiritualite && sp.spiritualite.nom) categories.add('SPIRIT_' + sp.spiritualite.nom);
-        if (sp.castingType) categories.add('CAST_' + sp.castingType);
-    });
-
-    if (filterContainer) {
-        let filterHtml = `<button class="filter-chip ${currentSpellFilter === 'ALL' ? 'active' : ''}" onclick="filterSpells('ALL')">Tous (${spells.length})</button>`;
-
-        // Define display names
-        const catMap = {};
-        spells.forEach(sp => {
-            if (sp.voie && sp.voie.nom) catMap['VOIE_' + sp.voie.nom] = sp.voie.nom;
-            if (sp.spiritualite && sp.spiritualite.nom) catMap['SPIRIT_' + sp.spiritualite.nom] = sp.spiritualite.nom;
-            if (sp.castingType) {
-                if (sp.castingType === 'INSTANTANE') catMap['CAST_' + sp.castingType] = 'Instantané';
-                if (sp.castingType === 'CANALISE') catMap['CAST_' + sp.castingType] = 'Canalisé';
-            }
-        });
-
-        // Add filter buttons alphabetically
-        [...categories].sort().forEach(cat => {
-            if (catMap[cat]) {
-                const count = spells.filter(s => {
-                    if (cat.startsWith('VOIE_')) return s.voie && s.voie.nom === cat.replace('VOIE_', '');
-                    if (cat.startsWith('SPIRIT_')) return s.spiritualite && s.spiritualite.nom === cat.replace('SPIRIT_', '');
-                    if (cat.startsWith('CAST_')) return s.castingType === cat.replace('CAST_', '');
-                    return false;
-                }).length;
-                filterHtml += `<button class="filter-chip ${currentSpellFilter === cat ? 'active' : ''}" onclick="filterSpells('${cat}')">${catMap[cat]} (${count})</button>`;
-            }
-        });
-        filterContainer.innerHTML = filterHtml;
+    // Filter spells based on currentSpellsTab
+    let filteredSpells = [];
+    if (currentSpellsTab === 'VOIE') {
+        filteredSpells = spells.filter(s => s.voie != null);
+    } else if (currentSpellsTab === 'SPIRIT') {
+        filteredSpells = spells.filter(s => s.spiritualite != null);
+    } else if (currentSpellsTab === 'BASE') {
+        filteredSpells = spells.filter(s => s.voie == null && s.spiritualite == null);
     }
 
-    let filteredSpells = spells;
-    if (currentSpellFilter !== 'ALL') {
-        filteredSpells = spells.filter(sp => {
-            if (currentSpellFilter.startsWith('VOIE_')) return sp.voie && sp.voie.nom === currentSpellFilter.replace('VOIE_', '');
-            if (currentSpellFilter.startsWith('SPIRIT_')) return sp.spiritualite && sp.spiritualite.nom === currentSpellFilter.replace('SPIRIT_', '');
-            if (currentSpellFilter.startsWith('CAST_')) return sp.castingType === currentSpellFilter.replace('CAST_', '');
-            return false;
-        });
-    }
+    // Update counts
+    const countVOIE = document.getElementById('countVOIE');
+    if (countVOIE) countVOIE.textContent = spells.filter(s => s.voie != null).length;
+    const countSPIRIT = document.getElementById('countSPIRIT');
+    if (countSPIRIT) countSPIRIT.textContent = spells.filter(s => s.spiritualite != null).length;
+    const countBASE = document.getElementById('countBASE');
+    if (countBASE) countBASE.textContent = spells.filter(s => s.voie == null && s.spiritualite == null).length;
 
     if (filteredSpells.length === 0) {
-        container.innerHTML = '<div style="color: var(--text-muted); font-size: 0.9rem; font-style: italic; align-self: center; padding: 1rem; width: 100%; text-align: center;">Aucun sort pour ce filtre</div>';
+        container.innerHTML = '<div style="color: #94a3b8; font-style: italic; padding: 2rem; text-align: center;">Aucun sort dans cette catégorie.</div>';
         return;
     }
 
-    container.innerHTML = filteredSpells.map(sp => {
-        const titleColor = getSpellColor(sp);
+    // Group by Niveau
+    const levelsMap = new Map();
+    filteredSpells.forEach(sp => {
+        const lvl = sp.niveau || 1;
+        if (!levelsMap.has(lvl)) levelsMap.set(lvl, []);
+        levelsMap.get(lvl).push(sp);
+    });
 
-        const effectsList = sp.effects || [];
-        const choiceKeys = [...new Set(effectsList.map(e => e.requiredChoiceKey).filter(k => k != null))];
+    // Sort levels ascending
+    const sortedLevels = Array.from(levelsMap.keys()).sort((a, b) => a - b);
 
-        let optionSelectorHtml = '';
-        if (choiceKeys.length > 0) {
-            optionSelectorHtml = `
-                <select class="spell-choice-mini" id="choice-select-${sp.id}" onclick="event.stopPropagation()" style="background: rgba(15, 23, 42, 0.8); color: #e2e8f0; border: 1px solid var(--glass-border); border-radius: 4px; padding: 0 0.2rem; font-size: 0.75rem; height: 1.2rem; margin-left: auto; outline: none; cursor: pointer;">
-                    ${choiceKeys.map(k => `<option value="${k}">${k}</option>`).join('')}
-                </select>
-            `;
-        }
-
-        const getSrcIcon = (src) => {
-            const s = src || '';
-            if (s.includes('MANA')) return `<span class="material-symbols-outlined" style="font-size: 0.95rem; color: #38bdf8; vertical-align: middle;" title="${ui.formatSrc(s)}">water_drop</span>`;
-            if (s.includes('HEALTH') || s.includes('PV')) return `<span class="material-symbols-outlined" style="font-size: 0.95rem; color: #f43f5e; vertical-align: middle;" title="${ui.formatSrc(s)}">bloodtype</span>`;
-            if (s.includes('POWER') || s.includes('Puiss')) return `<span class="material-symbols-outlined" style="font-size: 0.95rem; color: #a855f7; vertical-align: middle;" title="${ui.formatSrc(s)}">auto_awesome</span>`;
-            if (s.includes('PHYSICAL') || s.includes('Force Phy')) return `<span class="material-symbols-outlined" style="font-size: 0.95rem; color: #f43f5e; vertical-align: middle;" title="${ui.formatSrc(s)}">fitness_center</span>`;
-            return `(${ui.formatSrc(s)})`;
-        };
-
-        let costDetailsHtml = [];
-        if (sp.manaCost > 0 || sp.percentManaCost > 0) {
-            costDetailsHtml.push(`<span style="display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem; color: #38bdf8;" title="Mana">water_drop</span><span style="border-bottom: 1px solid rgba(56, 189, 248, 0.5); padding-bottom: 0.05rem;">${sp.manaCost}${sp.percentManaCost > 0 ? ` + ${sp.percentManaCost}% ${getSrcIcon(sp.percentManaCostSource || 'CASTER_MANA_MAX')}` : ''}</span></span>`);
-        }
-        if (sp.healCost > 0 || sp.percentHealCost > 0) {
-            costDetailsHtml.push(`<span style="display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem; color: #f43f5e;" title="PV">bloodtype</span><span style="border-bottom: 1px solid rgba(244, 63, 94, 0.5); padding-bottom: 0.05rem;">${sp.healCost}${sp.percentHealCost > 0 ? ` + ${sp.percentHealCost}% ${getSrcIcon(sp.percentHealCostSource || 'CASTER_HEALTH_MAX')}` : ''}</span></span>`);
-        }
-        if (sp.heatCost > 0 || sp.percentHeatCost > 0) {
-            costDetailsHtml.push(`<span style="display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem; color: #f97316;" title="Chaleur">local_fire_department</span><span style="border-bottom: 1px solid rgba(249, 115, 22, 0.5); padding-bottom: 0.05rem;">${sp.heatCost}${sp.percentHeatCost > 0 ? ` + ${sp.percentHeatCost}%` : ''}</span></span>`);
-        }
-        let costDetails = costDetailsHtml.join('<span style="color:rgba(255,255,255,0.2); margin:0 0.2rem;">|</span>');
-        if (costDetailsHtml.length === 0) costDetails = `<span style="display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem; color: #38bdf8;" title="Mana">water_drop</span><span>0</span></span>`;
-
-        let castingTypeHtml = '';
-        if (sp.castingType === 'INSTANTANE') {
-            castingTypeHtml = '<span class="material-symbols-outlined" style="font-size: 1rem; color: #f59e0b;" title="Action Instantanée">bolt</span>';
-        } else if (sp.castingType === 'CANALISE') {
-            castingTypeHtml = '<span class="material-symbols-outlined" style="font-size: 1rem; color: #8b5cf6;" title="Action Canalisée">cyclone</span>';
-            castingTypeHtml += sp.allowInstantDuringChanneling ?
-                '<span class="material-symbols-outlined" style="font-size: 1rem; color: #f59e0b;" title="Instantanés autorisés pendant la canalisation">bolt</span>' :
-                '<span style="position: relative; display: inline-flex; align-items: center; justify-content: center; width: 1rem; height: 1rem;" title="Instantanés interdits pendant la canalisation"><span class="material-symbols-outlined" style="font-size: 1rem; color: #64748b;">bolt</span><span style="position: absolute; width: 100%; height: 2px; background: #ef4444; transform: rotate(-45deg);"></span></span>';
-        } else {
-            castingTypeHtml = '<span class="material-symbols-outlined" style="font-size: 1rem; color: #3b82f6;" title="Action Banale">hourglass_empty</span>';
-        }
-
-        let categoryHtml = '';
-        if (sp.category === 'INSPIRATION') {
-            categoryHtml = '<span class="material-symbols-outlined" style="font-size: 1rem; color: #dc2626;" title="Sort d\'Inspiration">storm</span>';
-        } else if (sp.category === 'EXPIRATION') {
-            categoryHtml = '<span class="material-symbols-outlined" style="font-size: 1rem; color: #d946ef;" title="Sort d\'Expiration">air</span>';
-        }
-
-        let karmaAlignHtml = '';
-        if (sp.karmaAlignment === 'OFFENSIVE') {
-            karmaAlignHtml = '<span class="material-symbols-outlined" style="font-size: 1rem; color: #c084fc;" title="Sort des Ténèbres (Offensif)">dark_mode</span>';
-        } else if (sp.karmaAlignment === 'PROTECTIVE') {
-            karmaAlignHtml = '<span class="material-symbols-outlined" style="font-size: 1rem; color: #fde047;" title="Sort de Lumière (Protecteur)">light_mode</span>';
-        } else if (sp.karmaAlignment === 'RESTORATIVE') {
-            karmaAlignHtml = '<span class="material-symbols-outlined" style="font-size: 1rem; color: #cbd5e1;" title="Sort d\'Harmonie (Restaurateur)">brightness_medium</span>';
-        }
-
-        const generatesHeat = (sp.heatGenerated > 0) || (sp.effects && sp.effects.some(e => {
-            const rawType = e.effectType || e.effect_type || '';
-            return ['HEAT_FIXED', 'HeatFixedEffect', 'HEAT_PERCENTAGE', 'HeatPercentageEffect', 'HEAT_OVER_TIME', 'HeatOverTimeEffect', 'HEAT', 'HeatEffect'].includes(rawType);
-        }));
-
-        let heatGenHtml = '';
-        if (generatesHeat) {
-            heatGenHtml = `<span class="material-symbols-outlined" style="font-size: 1rem; color: #f97316;" title="Sort Générateur de Chaleur">local_fire_department</span>`;
-        }
-
-        let voieHtml = '';
-        if (sp.voie && sp.voie.nom) {
-            const vColor = getVoieButtonColor(sp.voie);
-            const vIcon = ui.getVoieIcon(sp.voie.nom);
-            voieHtml = `<span class="material-symbols-outlined" style="font-size: 1rem; color: ${vColor};" title="${sp.voie.nom}">${vIcon}</span>`;
-        }
-
-        let spiritHtml = '';
-        if (sp.spiritualite && sp.spiritualite.nom) {
-            const sColor = getSpiritButtonColor(sp.spiritualite);
-            const sIcon = ui.getSpiritIcon(sp.spiritualite.nom);
-            spiritHtml = `<span class="material-symbols-outlined" style="font-size: 1rem; color: ${sColor};" title="${sp.spiritualite.nom}">${sIcon}</span>`;
-        }
-
-        let effectsSummary = getSpellEffectsSummaryHtml(sp);
-
-        const tooltipAttrs = effectsSummary ? 'onmouseenter="window.showGlobalTooltip(this)" onmouseleave="window.hideGlobalTooltip()"' : '';
-
-        // Check spell availability
-        const availabilityList = currentSessionData.spellAvailability || [];
-        const avail = availabilityList.find(a => a.spellId === sp.id);
-        const isCastable = !avail || avail.castable;
-        const disabledClass = isCastable ? '' : ' spell-disabled';
-        const onClickAttr = isCastable ? `onclick="initiateCombatCast(${sp.id})"` : '';
-
-        // Build disabled badge HTML
-        let disabledBadgeHtml = '';
-        if (!isCastable && avail) {
-            let badgeClass = 'badge-resource';
-            let badgeIcon = 'water_drop';
-            if (avail.reason === 'CONDITION') {
-                badgeClass = 'badge-condition';
-                badgeIcon = 'block';
-            } else if (avail.reason === 'ACTION_LIMIT') {
-                badgeClass = 'badge-action';
-                badgeIcon = 'hourglass_disabled';
-            } else if (avail.reason === 'CHANNELING') {
-                badgeClass = 'badge-channeling';
-                badgeIcon = 'cyclone';
+    let html = '';
+    sortedLevels.forEach(lvl => {
+        const levelSpells = levelsMap.get(lvl);
+        
+        let title = `Niveau ${lvl}`;
+        if (currentSpellsTab === 'VOIE') {
+            const voieNames = [...new Set(levelSpells.map(s => s.voie.nom))];
+            if (voieNames.length === 1) {
+                const vName = voieNames[0];
+                title = vName.toLowerCase().startsWith('voie') ? `${vName} - Niveau ${lvl}` : `Voie de ${vName} - Niveau ${lvl}`;
             }
-            disabledBadgeHtml = `<div class="spell-disabled-badge ${badgeClass}" title="${avail.tooltip || ''}"><span class="material-symbols-outlined">${badgeIcon}</span></div>`;
+            else title = `Voies - Niveau ${lvl}`;
+        } else if (currentSpellsTab === 'SPIRIT') {
+            const spiritNames = [...new Set(levelSpells.map(s => s.spiritualite.nom))];
+            if (spiritNames.length === 1) title = `Spiritualité de ${spiritNames[0]} - Niveau ${lvl}`;
+            else title = `Spiritualités - Niveau ${lvl}`;
         }
 
-        return `
-            <div class="combat-spell-card spell-btn${disabledClass}" style="border-top: 2px solid ${titleColor};" ${onClickAttr} ${tooltipAttrs}>
-                <div class="combat-spell-header">
-                    <div class="combat-spell-name" title="${sp.nom}" style="color: ${titleColor};">${sp.nom}</div>
-                    <div class="combat-spell-level">Lvl ${sp.niveau}</div>
+        html += `
+            <div class="csp-level-group">
+                <div class="csp-level-title">${title}</div>
+                <div class="csp-grid">
+                    ${levelSpells.map(sp => renderSpellCard(sp)).join('')}
                 </div>
-                <div class="combat-spell-icons" style="display: flex; align-items: center; flex-wrap: wrap; gap: 0.3rem;">
-                    ${castingTypeHtml}
-                    ${categoryHtml}
-                    ${karmaAlignHtml}
-                    ${heatGenHtml}
-                    ${voieHtml}
-                    ${spiritHtml}
-                    ${optionSelectorHtml}
-                </div>
-                <div class="combat-spell-cost">
-                    ${costDetails}
-                </div>
-                ${disabledBadgeHtml}
-                ${effectsSummary ? `<template class="tooltip-data">${effectsSummary}</template>` : ''}
             </div>
         `;
-    }).join('');
+    });
 
-    // Reset scroll position on render
-    container.scrollTop = 0;
+    container.innerHTML = html;
 }
+
+function renderSpellCard(sp) {
+    const titleColor = getSpellColor(sp);
+
+    const effectsList = sp.effects || [];
+    const choiceKeys = [...new Set(effectsList.map(e => e.requiredChoiceKey).filter(k => k != null))];
+
+    let optionSelectorHtml = '';
+    if (choiceKeys.length > 0) {
+        optionSelectorHtml = `
+            <select class="spell-choice-mini" id="choice-select-${sp.id}" onclick="event.stopPropagation()" style="background: rgba(15, 23, 42, 0.8); color: #e2e8f0; border: 1px solid var(--glass-border); border-radius: 4px; padding: 0 0.2rem; font-size: 0.75rem; height: 1.2rem; margin-left: auto; outline: none; cursor: pointer;">
+                ${choiceKeys.map(k => `<option value="${k}">${k}</option>`).join('')}
+            </select>
+        `;
+    }
+
+    const getSrcIcon = (src) => {
+        const s = src || '';
+        if (s.includes('MANA')) return `<span class="material-symbols-outlined" style="font-size: 0.95rem; color: #38bdf8; vertical-align: middle;" title="${ui.formatSrc(s)}">water_drop</span>`;
+        if (s.includes('HEALTH') || s.includes('PV')) return `<span class="material-symbols-outlined" style="font-size: 0.95rem; color: #f43f5e; vertical-align: middle;" title="${ui.formatSrc(s)}">bloodtype</span>`;
+        if (s.includes('POWER') || s.includes('Puiss')) return `<span class="material-symbols-outlined" style="font-size: 0.95rem; color: #a855f7; vertical-align: middle;" title="${ui.formatSrc(s)}">auto_awesome</span>`;
+        if (s.includes('PHYSICAL') || s.includes('Force Phy')) return `<span class="material-symbols-outlined" style="font-size: 0.95rem; color: #f43f5e; vertical-align: middle;" title="${ui.formatSrc(s)}">fitness_center</span>`;
+        return `(${ui.formatSrc(s)})`;
+    };
+
+    let costDetailsHtml = [];
+    if (sp.manaCost > 0 || sp.percentManaCost > 0) {
+        costDetailsHtml.push(`<span style="display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem; color: #38bdf8;" title="Mana">water_drop</span><span style="border-bottom: 1px solid rgba(56, 189, 248, 0.5); padding-bottom: 0.05rem;">${sp.manaCost}${sp.percentManaCost > 0 ? ` + ${sp.percentManaCost}% ${getSrcIcon(sp.percentManaCostSource || 'CASTER_MANA_MAX')}` : ''}</span></span>`);
+    }
+    if (sp.healCost > 0 || sp.percentHealCost > 0) {
+        costDetailsHtml.push(`<span style="display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem; color: #f43f5e;" title="PV">bloodtype</span><span style="border-bottom: 1px solid rgba(244, 63, 94, 0.5); padding-bottom: 0.05rem;">${sp.healCost}${sp.percentHealCost > 0 ? ` + ${sp.percentHealCost}% ${getSrcIcon(sp.percentHealCostSource || 'CASTER_HEALTH_MAX')}` : ''}</span></span>`);
+    }
+    if (sp.heatCost > 0 || sp.percentHeatCost > 0) {
+        costDetailsHtml.push(`<span style="display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem; color: #f97316;" title="Chaleur">local_fire_department</span><span style="border-bottom: 1px solid rgba(249, 115, 22, 0.5); padding-bottom: 0.05rem;">${sp.heatCost}${sp.percentHeatCost > 0 ? ` + ${sp.percentHeatCost}%` : ''}</span></span>`);
+    }
+    let costDetails = costDetailsHtml.join('<span style="color:rgba(255,255,255,0.2); margin:0 0.2rem;">|</span>');
+    if (costDetailsHtml.length === 0) costDetails = `<span style="display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem; color: #38bdf8;" title="Mana">water_drop</span><span>0</span></span>`;
+
+    let castingTypeHtml = '';
+    if (sp.castingType === 'INSTANTANE') {
+        castingTypeHtml = '<span class="material-symbols-outlined" style="font-size: 1rem; color: #f59e0b;" title="Action Instantanée">bolt</span>';
+    } else if (sp.castingType === 'CANALISE') {
+        castingTypeHtml = '<span class="material-symbols-outlined" style="font-size: 1rem; color: #8b5cf6;" title="Action Canalisée">cyclone</span>';
+        castingTypeHtml += sp.allowInstantDuringChanneling ?
+            '<span class="material-symbols-outlined" style="font-size: 1rem; color: #f59e0b;" title="Instantanés autorisés pendant la canalisation">bolt</span>' :
+            '<span style="position: relative; display: inline-flex; align-items: center; justify-content: center; width: 1rem; height: 1rem;" title="Instantanés interdits pendant la canalisation"><span class="material-symbols-outlined" style="font-size: 1rem; color: #64748b;">bolt</span><span style="position: absolute; width: 100%; height: 2px; background: #ef4444; transform: rotate(-45deg);"></span></span>';
+    } else {
+        castingTypeHtml = '<span class="material-symbols-outlined" style="font-size: 1rem; color: #3b82f6;" title="Action Banale">hourglass_empty</span>';
+    }
+
+    let categoryHtml = '';
+    if (sp.category === 'INSPIRATION') {
+        categoryHtml = '<span class="material-symbols-outlined" style="font-size: 1rem; color: #dc2626;" title="Sort d\'Inspiration">storm</span>';
+    } else if (sp.category === 'EXPIRATION') {
+        categoryHtml = '<span class="material-symbols-outlined" style="font-size: 1rem; color: #d946ef;" title="Sort d\'Expiration">air</span>';
+    }
+
+    let karmaAlignHtml = '';
+    if (sp.karmaAlignment === 'OFFENSIVE') {
+        karmaAlignHtml = '<span class="material-symbols-outlined" style="font-size: 1rem; color: #c084fc;" title="Sort des Ténèbres (Offensif)">dark_mode</span>';
+    } else if (sp.karmaAlignment === 'PROTECTIVE') {
+        karmaAlignHtml = '<span class="material-symbols-outlined" style="font-size: 1rem; color: #fde047;" title="Sort de Lumière (Protecteur)">light_mode</span>';
+    } else if (sp.karmaAlignment === 'RESTORATIVE') {
+        karmaAlignHtml = '<span class="material-symbols-outlined" style="font-size: 1rem; color: #cbd5e1;" title="Sort d\'Harmonie (Restaurateur)">brightness_medium</span>';
+    }
+
+    const generatesHeat = (sp.heatGenerated > 0) || (sp.effects && sp.effects.some(e => {
+        const rawType = e.effectType || e.effect_type || '';
+        return ['HEAT_FIXED', 'HeatFixedEffect', 'HEAT_PERCENTAGE', 'HeatPercentageEffect', 'HEAT_OVER_TIME', 'HeatOverTimeEffect', 'HEAT', 'HeatEffect'].includes(rawType);
+    }));
+
+    let heatGenHtml = '';
+    if (generatesHeat) {
+        heatGenHtml = `<span class="material-symbols-outlined" style="font-size: 1rem; color: #f97316;" title="Sort Générateur de Chaleur">local_fire_department</span>`;
+    }
+
+    let voieHtml = '';
+    if (sp.voie && sp.voie.nom) {
+        const vColor = getVoieButtonColor(sp.voie);
+        const vIcon = ui.getVoieIcon(sp.voie.nom);
+        voieHtml = `<span class="material-symbols-outlined" style="font-size: 1rem; color: ${vColor};" title="${sp.voie.nom}">${vIcon}</span>`;
+    }
+
+    let spiritHtml = '';
+    if (sp.spiritualite && sp.spiritualite.nom) {
+        const sColor = getSpiritButtonColor(sp.spiritualite);
+        const sIcon = ui.getSpiritIcon(sp.spiritualite.nom);
+        spiritHtml = `<span class="material-symbols-outlined" style="font-size: 1rem; color: ${sColor};" title="${sp.spiritualite.nom}">${sIcon}</span>`;
+    }
+
+    let effectsSummary = getSpellEffectsSummaryHtml(sp);
+
+    const tooltipAttrs = effectsSummary ? 'onmouseenter="window.showGlobalTooltip(this)" onmouseleave="window.hideGlobalTooltip()"' : '';
+
+    // Check spell availability
+    const availabilityList = currentSessionData.spellAvailability || [];
+    const avail = availabilityList.find(a => a.spellId === sp.id);
+    const isCastable = !avail || avail.castable;
+    const disabledClass = isCastable ? '' : ' spell-disabled';
+    const onClickAttr = isCastable ? `onclick="initiateCombatCast(${sp.id})"` : '';
+
+    // Build disabled badge HTML
+    let disabledBadgeHtml = '';
+    if (!isCastable && avail) {
+        let badgeClass = 'badge-resource';
+        let badgeIcon = 'water_drop';
+        if (avail.reason === 'CONDITION') {
+            badgeClass = 'badge-condition';
+            badgeIcon = 'block';
+        } else if (avail.reason === 'ACTION_LIMIT') {
+            badgeClass = 'badge-action';
+            badgeIcon = 'hourglass_disabled';
+        } else if (avail.reason === 'CHANNELING') {
+            badgeClass = 'badge-channeling';
+            badgeIcon = 'cyclone';
+        }
+        disabledBadgeHtml = `<div class="spell-disabled-badge ${badgeClass}" title="${avail.tooltip || ''}"><span class="material-symbols-outlined">${badgeIcon}</span></div>`;
+    }
+
+    return `
+        <div class="combat-spell-card spell-btn${disabledClass}" style="border-top: 2px solid ${titleColor};" ${onClickAttr} ${tooltipAttrs}>
+            <div class="combat-spell-header">
+                <div class="combat-spell-name" title="${sp.nom}" style="color: ${titleColor};">${sp.nom}</div>
+                <div class="combat-spell-level">Lvl ${sp.niveau}</div>
+            </div>
+            <div class="combat-spell-icons" style="display: flex; align-items: center; flex-wrap: wrap; gap: 0.3rem;">
+                ${castingTypeHtml}
+                ${categoryHtml}
+                ${karmaAlignHtml}
+                ${heatGenHtml}
+                ${voieHtml}
+                ${spiritHtml}
+                ${optionSelectorHtml}
+            </div>
+            <div class="combat-spell-cost">
+                ${costDetails}
+            </div>
+            ${disabledBadgeHtml}
+            ${effectsSummary ? `<template class="tooltip-data">${effectsSummary}</template>` : ''}
+        </div>
+    `;
+}
+
+
 
 function showResult(playerWon) {
     document.getElementById('btnAttack').disabled = true;
