@@ -8,6 +8,7 @@ const SLOT_LABELS = {
     BOTTES: { label: 'Bottes', icon: 'footprint', color: '#10b981' },
     CAPE: { label: 'Cape', icon: 'carpenter', color: '#ec4899' },
     CONSOMMABLE: { label: 'Consommable', icon: 'inventory_2', color: '#854c4c' },
+    ANOMALIE: { label: 'Anomalie', icon: 'star', color: '#d946ef' }
 };
 
 const RARITY_ORDER = {
@@ -41,6 +42,7 @@ const WEIGHT_LIMITS = {
 };
 
 function calculateWeight(eq) {
+    if (eq.isAnomalie) return 0;
     let w = 0;
     w += (eq.bonusHealthMax || 0) * 0.2;
     w += (eq.bonusManaMax || 0) * 0.2;
@@ -139,7 +141,21 @@ document.addEventListener('click', (e) => {
 async function loadEquipments() {
     try {
         const res = await fetch('/api/equipment');
-        allEquipments = await res.json();
+        let eqData = await res.json();
+
+        let anomaliesData = [];
+        try {
+            const aRes = await fetch('/api/anomalies');
+            if (aRes.ok) anomaliesData = await aRes.json();
+        } catch(e) { console.error('Erreur chargement anomalies:', e); }
+
+        anomaliesData.forEach(a => {
+            a.isAnomalie = true;
+            a.slot = 'ANOMALIE';
+            a.rarity = 'RELIQUE';
+        });
+
+        allEquipments = eqData.concat(anomaliesData);
 
         // Pré-calculer le poids pour le tri
         allEquipments.forEach(eq => {
@@ -154,10 +170,23 @@ async function loadEquipments() {
 }
 
 let equipmentToDelete = null;
+let anomalieToDelete = null;
 
-function deleteEquipment(id) {
+window.deleteAnomalie = function(id) {
+    anomalieToDelete = id;
+    equipmentToDelete = null;
+    const eq = allEquipments.find(e => e.id === id && e.isAnomalie);
+    if (eq) {
+        document.getElementById('deleteTargetName').textContent = eq.name;
+        document.getElementById('deleteConfirmBtn').innerHTML = `Oui, détruire l'anomalie`;
+    }
+    document.getElementById('deleteConfirmModal').classList.add('show');
+}
+
+window.deleteEquipment = function(id) {
     equipmentToDelete = id;
-    const eq = allEquipments.find(e => e.id === id);
+    anomalieToDelete = null;
+    const eq = allEquipments.find(e => e.id === id && !e.isAnomalie);
     if (eq) {
         document.getElementById('deleteTargetName').textContent = eq.name;
         const weightStr = eq._weight % 1 === 0 ? eq._weight : eq._weight.toFixed(1);
@@ -172,21 +201,30 @@ function closeDeleteModal() {
 }
 
 document.getElementById('deleteConfirmBtn').addEventListener('click', async () => {
-    if (!equipmentToDelete) return;
+    if (!equipmentToDelete && !anomalieToDelete) return;
 
-    const id = equipmentToDelete;
+    const idEq = equipmentToDelete;
+    const idAn = anomalieToDelete;
     closeDeleteModal();
 
     try {
-        const res = await fetch(`/api/equipment/${id}`, { method: 'DELETE' });
-        if (res.ok) {
-            showNotif('Équipement détruit.');
-            await loadEquipments();
-            if (window.checkAuthStatus) {
-                window.checkAuthStatus();
+        if (idEq) {
+            const res = await fetch(`/api/equipment/${idEq}`, { method: 'DELETE' });
+            if (res.ok) {
+                showNotif('Équipement détruit.');
+                await loadEquipments();
+                if (window.checkAuthStatus) window.checkAuthStatus();
+            } else {
+                showNotif('Erreur lors de la suppression.', true);
             }
-        } else {
-            showNotif('Erreur lors de la suppression.', true);
+        } else if (idAn) {
+            const res = await fetch(`/api/anomalies/${idAn}`, { method: 'DELETE' });
+            if (res.ok) {
+                showNotif('Anomalie détruite.');
+                await loadEquipments();
+            } else {
+                showNotif('Erreur lors de la suppression.', true);
+            }
         }
     } catch (e) {
         showNotif('Erreur réseau.', true);
@@ -264,6 +302,39 @@ function renderGrid(equipments) {
     }
 
     container.innerHTML = equipments.map(eq => {
+        if (eq.isAnomalie) {
+            return `
+            <div class="vault-card rarity-RELIQUE" style="border-color: #d946ef; box-shadow: 0 0 15px rgba(217,70,239,0.1);">
+                <div class="vault-card-header">
+                    <div class="vault-card-name-group">
+                        <div class="vault-card-slot">
+                            <span class="material-symbols-outlined" style="font-size: 0.9rem; color: #d946ef;">star</span>
+                            Anomalie <span style="opacity:0.5; margin-left:4px;">${eq.spiritualite}</span>
+                        </div>
+                        <div class="vault-card-name" style="color: #fdf4ff;">
+                            ${eq.name}
+                            ${window.isAdmin && eq.ownerUsername ? `<span style="margin-left: 0.5rem; font-size: 0.65rem; padding: 0.15rem 0.4rem; background: ${eq.ownerUsername === window.currentUser?.username ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.1)'}; color: ${eq.ownerUsername === window.currentUser?.username ? '#34d399' : '#cbd5e1'}; border-radius: 4px; border: 1px solid ${eq.ownerUsername === window.currentUser?.username ? 'rgba(16, 185, 129, 0.3)' : 'rgba(255, 255, 255, 0.1)'}; white-space: nowrap; vertical-align: middle;"><span class="material-symbols-outlined" style="font-size: 0.7rem; vertical-align: middle; margin-right: 2px;">account_circle</span>${eq.ownerUsername}</span>` : ''}
+                        </div>
+                    </div>
+                    <div class="vault-card-actions">
+                        ${(window.isAdmin || eq.ownerUsername === window.currentUser?.username) ? `<button class="vault-btn-delete" onclick="deleteAnomalie(${eq.id})" title="Détruire l'anomalie">
+                            <span class="material-symbols-outlined">delete</span>
+                        </button>` : ''}
+                    </div>
+                </div>
+                <div class="vault-card-stats" style="color: #e879f9; font-size: 0.9rem; text-align: center; font-style: italic; background: rgba(217,70,239,0.05); border-radius: 8px; padding: 1rem; border: 1px dashed rgba(217,70,239,0.2);">
+                    Une relique impie imprégnée d'une aura mystique.
+                </div>
+                <div class="vault-card-footer">
+                    <div class="vault-card-weight"></div>
+                    <span class="vault-card-status status-equipped" style="background: rgba(217,70,239,0.1); color: #e879f9;">
+                        <span class="material-symbols-outlined" style="font-size: 0.9rem;">person</span>
+                        Possédé
+                    </span>
+                </div>
+            </div>`;
+        }
+
         const slotInfo = SLOT_LABELS[eq.slot] || { label: eq.slot, icon: 'help', color: '#94a3b8' };
 
         const statsHtml = STAT_DEFS
@@ -396,10 +467,14 @@ window.addEventListener('DOMContentLoaded', () => {
 
 window.addEventListener('authLoaded', () => {
     const btnCreate = document.getElementById('btnCreateVaultEq');
+    const btnCreateAnomalie = document.getElementById('btnCreateAnomalie');
     if (btnCreate) {
         btnCreate.style.display = window.isAdmin ? 'flex' : 'none';
     }
-
+    if (btnCreateAnomalie) {
+        btnCreateAnomalie.style.display = window.isAdmin ? 'flex' : 'none';
+    }
+    
     const searchOwnerContainer = document.getElementById('searchOwnerContainer');
     if (searchOwnerContainer) {
         searchOwnerContainer.style.display = window.isAdmin ? 'flex' : 'none';
@@ -553,6 +628,52 @@ window.editEquipment = function (id) {
     updateWeightUI();
     document.getElementById('equipCreateModal').classList.add('show');
 }
+
+window.openCreateAnomalieModal = function () {
+    document.getElementById('anomalieName').value = '';
+    document.getElementById('anomalieSpiritualite').value = 'TENEBRES';
+    document.getElementById('anomalieCreateModal').classList.add('show');
+};
+
+window.closeCreateAnomalieModal = function () {
+    document.getElementById('anomalieCreateModal').classList.remove('show');
+};
+
+window.submitAnomalie = async function () {
+    const name = document.getElementById('anomalieName').value.trim();
+    const spiritualite = document.getElementById('anomalieSpiritualite').value;
+
+    if (!name) {
+        showNotif("Veuillez entrer un nom pour l'anomalie.", true);
+        return;
+    }
+
+    const payload = {
+        name: name,
+        spiritualite: spiritualite
+    };
+
+    try {
+        const res = await fetch('/api/anomalies', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(payload)
+        });
+
+        if (!res.ok) {
+            const err = await res.text();
+            showNotif("Erreur : " + err, true);
+            return;
+        }
+
+        showNotif("Anomalie créée avec succès !");
+        closeCreateAnomalieModal();
+        // Optionnel : Recharger la liste si on affichait les anomalies
+    } catch (e) {
+        console.error(e);
+        showNotif("Erreur lors de la création de l'anomalie.", true);
+    }
+};
 
 window.submitEquipment = async function () {
     const name = document.getElementById('eqName').value.trim();

@@ -126,19 +126,22 @@ public class PvEAdminController {
 
                 if (sDto.getLootTable() != null) {
                     List<generation.grimoire.entity.pve.LootEntry> lootEntries = sDto.getLootTable().stream()
-                            .filter(lDto -> lDto.getEquipmentId() != null)
                             .map(lDto -> {
-                                generation.grimoire.entity.Equipment eq = equipmentRepository.findById(lDto.getEquipmentId()).orElse(null);
-                                if (eq != null) {
-                                    generation.grimoire.entity.pve.LootEntry entry = new generation.grimoire.entity.pve.LootEntry();
-                                    entry.setSalle(s);
+                                generation.grimoire.entity.pve.LootEntry entry = new generation.grimoire.entity.pve.LootEntry();
+                                entry.setSalle(s);
+                                
+                                if (lDto.getEquipmentId() != null) {
+                                    generation.grimoire.entity.Equipment eq = equipmentRepository.findById(lDto.getEquipmentId()).orElse(null);
                                     entry.setEquipment(eq);
-                                    entry.setProbability(lDto.getProbability());
-                                    return entry;
                                 }
-                                return null;
+                                
+                                entry.setProbability(lDto.getProbability());
+                                entry.setSpecialItemName(lDto.getSpecialItemName());
+                                entry.setPriceGold(lDto.getPriceGold());
+                                entry.setPriceSpecialItemName(lDto.getPriceSpecialItemName());
+                                
+                                return entry;
                             })
-                            .filter(l -> l != null)
                             .collect(Collectors.toList());
                     s.setLootTable(lootEntries);
                 }

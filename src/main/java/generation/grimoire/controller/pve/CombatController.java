@@ -87,6 +87,19 @@ public class CombatController {
         }
     }
 
+    @PostMapping("/{sessionId}/merchant-buy")
+    public ResponseEntity<CombatSession> buyMerchantItem(
+            @PathVariable String sessionId,
+            @RequestParam int lootIndex,
+            @RequestParam Long characterId) {
+        try {
+            CombatSession session = combatService.buyMerchantItem(sessionId, lootIndex, characterId);
+            return ResponseEntity.ok(session);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(null);
+        }
+    }
+
     @PostMapping("/{sessionId}/open-chest")
     public ResponseEntity<CombatSession> openChest(@PathVariable String sessionId) {
         try {

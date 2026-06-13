@@ -26,4 +26,9 @@ public class LootEntry {
     private Equipment equipment;
 
     private double probability;
+    
+    // Nouveaux champs pour le Marchand (RENCONTRE)
+    private String specialItemName; // Si null, c'est un équipement. Sinon, c'est le nom de l'item spécial à vendre.
+    private Integer priceGold; // Le prix en Or
+    private String priceSpecialItemName; // Le prix en Item Spécial (nom de l'item requis, null si aucun)
 }

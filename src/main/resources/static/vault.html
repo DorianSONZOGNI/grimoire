@@ -77,6 +77,11 @@
                     <span class="material-symbols-outlined" style="font-size: 1.2rem;">add_circle</span>
                     Forger un Objet
                 </button>
+                <button id="btnCreateAnomalie" class="vault-btn-create" onclick="openCreateAnomalieModal()"
+                    style="display: none; align-items: center; gap: 0.5rem; background: #d946ef; color: white; border: none; padding: 0 1rem; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.2s;">
+                    <span class="material-symbols-outlined" style="font-size: 1.2rem;">star</span>
+                    Créer une Anomalie
+                </button>
             </div>
 
             <div class="filter-group">
@@ -107,6 +112,9 @@
                         <div class="custom-option" data-value="CONSOMMABLE"><span
                                 class="material-symbols-outlined cs-icon" style="color: #854c4c;">inventory_2</span>
                             Consommable</div>
+                        <div class="custom-option" data-value="ANOMALIE"><span
+                                class="material-symbols-outlined cs-icon" style="color: #d946ef;">star</span>
+                            Anomalies</div>
                     </div>
                     <input type="hidden" id="filterSlot" value="">
                 </div>
@@ -559,7 +567,49 @@
         </div>
     </div>
 
-    <script src="/js/vault.js?v=12"></script>
+    <!-- Create Anomalie Modal -->
+    <div id="anomalieCreateModal" class="vault-modal-overlay">
+        <div class="equip-modal"
+            style="background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(217, 70, 239, 0.3); border-radius: 16px; width: 90%; max-width: 400px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); position: relative;">
+            <div class="equip-modal-header"
+                style="padding: 1.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.05); display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2);">
+                <div class="equip-modal-title"
+                    style="display: flex; align-items: center; gap: 0.8rem; font-size: 1.3rem; font-weight: 600; color: #fff; font-family: 'Outfit', sans-serif;">
+                    <span class="material-symbols-outlined" style="color: #d946ef;">star</span>
+                    <span>Créer une Anomalie</span>
+                </div>
+                <button class="equip-modal-close" onclick="closeCreateAnomalieModal()"
+                    style="background: none; border: none; color: #94a3b8; cursor: pointer; padding: 0.4rem; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">
+                    <span class="material-symbols-outlined" style="font-size: 1.5rem;">close</span>
+                </button>
+            </div>
+
+            <div class="equip-modal-body" style="padding: 1.5rem; overflow-y: auto;">
+                <div class="equip-create-section">
+                    <div class="eq-create-field" style="margin-bottom: 1rem;">
+                        <label>Nom de l'Anomalie</label>
+                        <input type="text" id="anomalieName" placeholder="Ex: Âme de Démon">
+                    </div>
+                    <div class="eq-create-field" style="margin-bottom: 1.5rem;">
+                        <label>Spiritualité</label>
+                        <select id="anomalieSpiritualite" class="form-control" style="width: 100%; padding: 0.8rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); color: white; border-radius: 8px;">
+                            <option value="TENEBRES">Ténèbres</option>
+                            <option value="ESPRIT">Esprit</option>
+                            <option value="KARMA">Karma</option>
+                        </select>
+                    </div>
+
+                    <button type="button" class="eq-create-btn" onclick="submitAnomalie()"
+                        style="width: 100%; padding: 0.8rem; border-radius: 8px; background: #d946ef; color: white; border: none; font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: background 0.2s;">
+                        <span class="material-symbols-outlined" style="font-size: 1.2rem;">add</span>
+                        Créer l'Anomalie
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="/js/vault.js?v=13"></script>
     <script type="module" src="/js/auth.js?v=10"></script>
 </body>
 

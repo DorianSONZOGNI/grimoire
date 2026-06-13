@@ -18,6 +18,8 @@ import lombok.NoArgsConstructor;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 @Data
 @NoArgsConstructor
@@ -74,6 +76,29 @@ public class Personnage {
     private Spiritualite spiritualite;
 
     private int spiritualiteExperience = 0;
+    
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "personnage_special_items", joinColumns = @JoinColumn(name = "personnage_id"))
+    @MapKeyColumn(name = "item_name")
+    @Column(name = "quantity")
+    private Map<String, Integer> specialItems = new HashMap<>();
+
+    public int getSpecialItemQuantity(String itemName) {
+        return specialItems.getOrDefault(itemName, 0);
+    }
+
+    public void addSpecialItem(String itemName, int quantity) {
+        specialItems.put(itemName, getSpecialItemQuantity(itemName) + quantity);
+    }
+
+    public void removeSpecialItem(String itemName, int quantity) {
+        int current = getSpecialItemQuantity(itemName);
+        if (current >= quantity) {
+            specialItems.put(itemName, current - quantity);
+        } else {
+            specialItems.put(itemName, 0);
+        }
+    }
 
     public int getSpiritualiteLevel() {
         if (spiritualiteExperience >= 300) return 3;

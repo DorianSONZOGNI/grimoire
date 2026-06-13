@@ -501,28 +501,51 @@ function renderRooms() {
                     shopHtml += `<div style="font-size:0.8rem; color: #94a3b8;">Aucun objet en vente.</div>`;
                 } else {
                     room.lootTable.forEach((loot, lIndex) => {
-                        const eq = allEquipments.find(x => x.id === loot.equipmentId);
-                        if (eq) {
-                            const slotInfo = SLOT_LABELS[eq.slot] || { label: eq.slot, icon: 'help', color: '#94a3b8' };
-                            const rarityColor = RARITY_COLORS[eq.rarity] || '#ef4444';
-                            const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
-                            shopHtml += `
-                                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); padding: 0.4rem 0.8rem; border-radius: 4px;">
-                                    <span style="font-size: 0.85rem; color: #f8fafc; display: flex; align-items: center; gap: 0.4rem;"><span class="material-symbols-outlined${extraClass}" style="font-size:1rem; color:${slotInfo.color};">${slotInfo.icon}</span> <span style="color:${rarityColor};">${eq.name}</span> <span style="color:#f59e0b; font-size:0.8rem;">(${loot.probability} Or)</span></span>
-                                    <button type="button" onclick="removeLootFromRoom(${rIndex}, ${lIndex})" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 0;"><span class="material-symbols-outlined" style="font-size: 1rem;">close</span></button>
-                                </div>
-                            `;
+                        let nameHtml = '';
+                        if (loot.specialItemName) {
+                            nameHtml = `<span style="color:#d946ef; font-weight: 600;">${loot.specialItemName}</span>`;
+                        } else {
+                            const eq = allEquipments.find(x => x.id === loot.equipmentId);
+                            if (eq) {
+                                const slotInfo = SLOT_LABELS[eq.slot] || { label: eq.slot, icon: 'help', color: '#94a3b8' };
+                                const rarityColor = RARITY_COLORS[eq.rarity] || '#ef4444';
+                                const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
+                                nameHtml = `<span class="material-symbols-outlined${extraClass}" style="font-size:1rem; color:${slotInfo.color};">${slotInfo.icon}</span> <span style="color:${rarityColor};">${eq.name}</span>`;
+                            } else {
+                                nameHtml = `Inconnu`;
+                            }
                         }
+                        
+                        let priceHtml = '';
+                        if (loot.priceGold > 0) priceHtml += `<span style="color:#f59e0b; font-size:0.8rem; margin-left: 0.3rem;">(${loot.priceGold} Or)</span>`;
+                        else if (!loot.priceGold && loot.probability > 0) priceHtml += `<span style="color:#f59e0b; font-size:0.8rem; margin-left: 0.3rem;">(${loot.probability} Or)</span>`;
+                        if (loot.priceSpecialItemName) priceHtml += `<span style="color:#d946ef; font-size:0.8rem; margin-left: 0.3rem;">(1x ${loot.priceSpecialItemName})</span>`;
+                        
+                        shopHtml += `
+                            <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); padding: 0.4rem 0.8rem; border-radius: 4px;">
+                                <span style="font-size: 0.85rem; color: #f8fafc; display: flex; align-items: center; gap: 0.4rem;">
+                                    ${nameHtml} ${priceHtml}
+                                </span>
+                                <button type="button" onclick="removeLootFromRoom(${rIndex}, ${lIndex})" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 0;"><span class="material-symbols-outlined" style="font-size: 1rem;">close</span></button>
+                            </div>
+                        `;
                     });
                 }
                 shopHtml += `</div>
-                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; align-items: stretch; position: relative;">
-                        <div class="custom-select-wrapper" id="room_loot_select_wrapper_${rIndex}" style="flex: 2; z-index: ${100 - rIndex}; margin: 0;">
-                            <div class="custom-select-trigger" onclick="toggleLootSelect(${rIndex})" style="padding: 0.6rem 1rem; border-radius: 8px;">
-                                <span class="cs-label" id="room_loot_label_${rIndex}"><span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">category</span> Objet...</span>
-                                <span class="material-symbols-outlined">expand_more</span>
-                            </div>
-                            <div class="custom-select-options" id="room_loot_options_${rIndex}" style="max-height: 200px; overflow-y: auto;">
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem; background: rgba(0,0,0,0.2); padding: 0.8rem; border-radius: 6px;">
+                        <div style="display: flex; gap: 0.5rem; align-items: stretch; position: relative;">
+                            <select id="room_merchant_type_${rIndex}" class="form-control" style="flex: 1; max-width: 120px;" onchange="toggleMerchantItemType(${rIndex}, this.value)">
+                                <option value="EQ">Équipement</option>
+                                <option value="SPECIAL">Item Spécial</option>
+                            </select>
+                            
+                            <!-- Mode Equipement -->
+                            <div class="custom-select-wrapper" id="room_loot_select_wrapper_${rIndex}" style="flex: 2; z-index: ${100 - rIndex}; margin: 0;">
+                                <div class="custom-select-trigger" onclick="toggleLootSelect(${rIndex})" style="padding: 0.6rem 1rem; border-radius: 8px;">
+                                    <span class="cs-label" id="room_loot_label_${rIndex}"><span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">category</span> Objet...</span>
+                                    <span class="material-symbols-outlined">expand_more</span>
+                                </div>
+                                <div class="custom-select-options" id="room_loot_options_${rIndex}" style="max-height: 200px; overflow-y: auto;">
                 `;
                 allEquipments.forEach(eq => {
                     const slotInfo = SLOT_LABELS[eq.slot] || { label: eq.slot, icon: 'help', color: '#94a3b8' };
@@ -531,13 +554,20 @@ function renderRooms() {
                     shopHtml += `<div class="custom-option" onclick="selectLootOption(${rIndex}, ${eq.id}, '${eq.name.replace(/'/g, "\\'")}', '${slotInfo.icon}', '${slotInfo.color}', '${rarityColor}', '${slotInfo.extraClass || ''}')"><span class="material-symbols-outlined cs-icon${extraClass}" style="color: ${slotInfo.color};">${slotInfo.icon}</span> <span style="color: ${rarityColor};">${eq.name}</span></div>`;
                 });
                 shopHtml += `
+                                </div>
+                                <input type="hidden" id="room_loot_select_${rIndex}" value="">
                             </div>
-                            <input type="hidden" id="room_loot_select_${rIndex}" value="">
+                            
+                            <!-- Mode Spécial -->
+                            <input type="text" id="room_merchant_special_${rIndex}" class="form-control" style="flex: 2; display: none;" placeholder="Nom item spécial">
                         </div>
-                        <input type="number" id="room_loot_prob_${rIndex}" class="form-control" style="flex: 1; min-width: 60px;" placeholder="Prix (Or)" step="1" min="0">
-                        <button type="button" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 0 1.2rem; font-size: 0.9rem; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 0.3rem;" onclick="addLootToRoom(${rIndex})">
-                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">add</span>
-                        </button>
+                        <div style="display: flex; gap: 0.5rem; align-items: stretch; height: 38px;">
+                            <input type="number" id="room_merchant_gold_${rIndex}" class="form-control" style="flex: 1;" placeholder="Prix (Or)" min="0">
+                            <input type="text" id="room_merchant_cost_item_${rIndex}" class="form-control" style="flex: 1;" placeholder="Prix Item Spécial (option)">
+                            <button type="button" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 0 1.2rem; font-size: 0.9rem; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center;" onclick="addMerchantItemToRoom(${rIndex})">
+                                <span class="material-symbols-outlined" style="font-size: 1.1rem;">add</span>
+                            </button>
+                        </div>
                     </div>
                 `;
                 
@@ -977,6 +1007,51 @@ window.selectLootOption = function(rIndex, eqId, eqName, icon, iconColor, rarity
     const cls = extraClass ? ` ${extraClass}` : '';
     document.getElementById('room_loot_label_' + rIndex).innerHTML = `<span class="material-symbols-outlined cs-icon${cls}" style="color: ${iconColor};">${icon}</span> <span style="color: ${rarityColor};">${eqName}</span>`;
     document.getElementById('room_loot_select_wrapper_' + rIndex).classList.remove('open');
+};
+
+window.toggleMerchantItemType = function(rIndex, type) {
+    const eqWrapper = document.getElementById('room_loot_select_wrapper_' + rIndex);
+    const specInput = document.getElementById('room_merchant_special_' + rIndex);
+    if (type === 'EQ') {
+        eqWrapper.style.display = 'block';
+        specInput.style.display = 'none';
+    } else {
+        eqWrapper.style.display = 'none';
+        specInput.style.display = 'block';
+    }
+};
+
+window.addMerchantItemToRoom = function(rIndex) {
+    const type = document.getElementById('room_merchant_type_' + rIndex).value;
+    const goldCost = parseInt(document.getElementById('room_merchant_gold_' + rIndex).value) || 0;
+    const itemCost = document.getElementById('room_merchant_cost_item_' + rIndex).value.trim();
+    
+    if (!selectedRooms[rIndex].lootTable) selectedRooms[rIndex].lootTable = [];
+    
+    let newItem = {
+        probability: 0,
+        priceGold: goldCost > 0 ? goldCost : null,
+        priceSpecialItemName: itemCost ? itemCost : null
+    };
+
+    if (type === 'EQ') {
+        const eqId = document.getElementById('room_loot_select_' + rIndex).value;
+        if (!eqId) {
+            showNotif('Veuillez sélectionner un équipement.', true);
+            return;
+        }
+        newItem.equipmentId = parseInt(eqId);
+    } else {
+        const specName = document.getElementById('room_merchant_special_' + rIndex).value.trim();
+        if (!specName) {
+            showNotif('Veuillez entrer le nom de l\'item spécial.', true);
+            return;
+        }
+        newItem.specialItemName = specName;
+    }
+
+    selectedRooms[rIndex].lootTable.push(newItem);
+    renderRooms();
 };
 
 window.addLootToRoom = function(rIndex) {

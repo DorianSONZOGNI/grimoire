@@ -35,6 +35,169 @@ let currentSessionData = null;
 let selectedTargetIndex = null;
 let selectedAllyIndex = -1;
 let previousPlayerXP = {};
+let previousPlayerSpiritXP = {};
+
+function getExpStats(exp) {
+    let level = 1;
+    if (exp >= 1000) level = 5;
+    else if (exp >= 600) level = 4;
+    else if (exp >= 300) level = 3;
+    else if (exp >= 100) level = 2;
+    
+    let currentLvlXp = 0;
+    let nextLvlXp = 100;
+    if (level === 2) { currentLvlXp = 100; nextLvlXp = 300; }
+    else if (level === 3) { currentLvlXp = 300; nextLvlXp = 600; }
+    else if (level === 4) { currentLvlXp = 600; nextLvlXp = 1000; }
+    else if (level === 5) { currentLvlXp = 1000; nextLvlXp = exp; }
+    
+    let progress = 100;
+    if (level < 5) {
+        progress = ((exp - currentLvlXp) / (nextLvlXp - currentLvlXp)) * 100;
+    }
+    return { level, currentLvlXp, nextLvlXp, progress };
+}
+
+function getSpiritExpStats(exp) {
+    let level = 1;
+    if (exp >= 300) level = 3;
+    else if (exp >= 100) level = 2;
+    
+    let currentLvlXp = 0;
+    let nextLvlXp = 100;
+    if (level === 2) { currentLvlXp = 100; nextLvlXp = 300; }
+    else if (level === 3) { currentLvlXp = 300; nextLvlXp = exp; }
+    
+    let progress = 100;
+    if (level < 3) {
+        progress = ((exp - currentLvlXp) / (nextLvlXp - currentLvlXp)) * 100;
+    }
+    return { level, currentLvlXp, nextLvlXp, progress };
+}
+
+function renderAndAnimateXPCards(containerId, players, prefix) {
+    const container = document.getElementById(containerId);
+    if (!container) return;
+    container.style.display = 'flex';
+    
+    let cardsHtml = '';
+    players.forEach(p => {
+        let oldExp = previousPlayerXP[p.id] !== undefined ? previousPlayerXP[p.id] : p.experience;
+        let oldStats = getExpStats(oldExp);
+        let oldSpiritExp = previousPlayerSpiritXP[p.id] !== undefined ? previousPlayerSpiritXP[p.id] : (p.spiritualiteExperience || 0);
+        let oldSpiritStats = getSpiritExpStats(oldSpiritExp);
+
+        cardsHtml += `
+            <div id="${prefix}-xp-card-${p.id}" style="background: rgba(0,0,0,0.4); padding: 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); text-align: center; width: 180px; position: relative; overflow: hidden; transition: all 0.5s; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8); display: flex; flex-direction: column; gap: 0.3rem;">
+                <div style="color: #e2e8f0; font-weight: bold; margin-bottom: 0.3rem; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${p.name}</div>
+                
+                <div id="${prefix}-xp-lvl-${p.id}" style="color: #38bdf8; font-size: 0.8rem; font-weight: 600; transition: color 0.3s, transform 0.3s;">Voie Niv. ${oldStats.level}</div>
+                <div style="width: 100%; background: #334155; border-radius: 4px; height: 6px;">
+                    <div id="${prefix}-xp-fill-${p.id}" style="height: 100%; width: ${Math.min(100, oldStats.progress)}%; background: #10b981; transition: box-shadow 0.3s;"></div>
+                </div>
+                <div id="${prefix}-xp-text-${p.id}" style="font-size: 0.7rem; color: #94a3b8; font-family: monospace;">${oldExp} / ${oldStats.level === 5 ? 'MAX' : oldStats.nextLvlXp} XP</div>
+                
+                <div style="margin-top: 0.2rem;"></div>
+                <div id="${prefix}-spirit-lvl-${p.id}" style="color: #fb923c; font-size: 0.8rem; font-weight: 600; transition: color 0.3s, transform 0.3s;">Spirit Niv. ${oldSpiritStats.level}</div>
+                <div style="width: 100%; background: #334155; border-radius: 4px; height: 6px;">
+                    <div id="${prefix}-spirit-fill-${p.id}" style="height: 100%; width: ${Math.min(100, oldSpiritStats.progress)}%; background: #f59e0b; transition: box-shadow 0.3s;"></div>
+                </div>
+                <div id="${prefix}-spirit-text-${p.id}" style="font-size: 0.7rem; color: #94a3b8; font-family: monospace;">${oldSpiritExp} / ${oldSpiritStats.level === 3 ? 'MAX' : oldSpiritStats.nextLvlXp} XP</div>
+            </div>
+        `;
+    });
+    
+    container.innerHTML += cardsHtml;
+    
+    players.forEach(p => {
+        let oldExp = previousPlayerXP[p.id] !== undefined ? previousPlayerXP[p.id] : p.experience;
+        let endExp = p.experience;
+        let oldSpiritExp = previousPlayerSpiritXP[p.id] !== undefined ? previousPlayerSpiritXP[p.id] : (p.spiritualiteExperience || 0);
+        let endSpiritExp = p.spiritualiteExperience || 0;
+        
+        setTimeout(() => {
+            let startTime = null;
+            const duration = 1500;
+            
+            const bar = document.getElementById(`${prefix}-xp-fill-${p.id}`);
+            const text = document.getElementById(`${prefix}-xp-text-${p.id}`);
+            const lvlText = document.getElementById(`${prefix}-xp-lvl-${p.id}`);
+            
+            const spiritBar = document.getElementById(`${prefix}-spirit-fill-${p.id}`);
+            const spiritText = document.getElementById(`${prefix}-spirit-text-${p.id}`);
+            const spiritLvlText = document.getElementById(`${prefix}-spirit-lvl-${p.id}`);
+            
+            function animate(currentTime) {
+                if (!startTime) startTime = currentTime;
+                let t = (currentTime - startTime) / duration;
+                if (t > 1) t = 1;
+                
+                let easeT = t * (2 - t);
+                
+                let currentExp = Math.floor(oldExp + (endExp - oldExp) * easeT);
+                let stats = getExpStats(currentExp);
+                if (bar && text && lvlText) {
+                    bar.style.width = Math.min(100, stats.progress) + "%";
+                    text.innerText = currentExp + " / " + (stats.level === 5 ? 'MAX' : stats.nextLvlXp) + " XP";
+                    if (lvlText.innerText !== "Voie Niv. " + stats.level) {
+                        lvlText.innerText = "Voie Niv. " + stats.level;
+                        lvlText.style.color = "#f59e0b";
+                        lvlText.style.transform = "scale(1.2)";
+                        const card = document.getElementById(`${prefix}-xp-card-${p.id}`);
+                        if (card) {
+                            card.style.boxShadow = "0 0 20px 5px rgba(16, 185, 129, 0.4)";
+                            card.style.borderColor = "#10b981";
+                        }
+                    }
+                }
+                
+                let currentSpiritExp = Math.floor(oldSpiritExp + (endSpiritExp - oldSpiritExp) * easeT);
+                let spiritStats = getSpiritExpStats(currentSpiritExp);
+                if (spiritBar && spiritText && spiritLvlText) {
+                    spiritBar.style.width = Math.min(100, spiritStats.progress) + "%";
+                    spiritText.innerText = currentSpiritExp + " / " + (spiritStats.level === 3 ? 'MAX' : spiritStats.nextLvlXp) + " XP";
+                    if (spiritLvlText.innerText !== "Spirit Niv. " + spiritStats.level) {
+                        spiritLvlText.innerText = "Spirit Niv. " + spiritStats.level;
+                        spiritLvlText.style.color = "#f59e0b";
+                        spiritLvlText.style.transform = "scale(1.2)";
+                        const card = document.getElementById(`${prefix}-xp-card-${p.id}`);
+                        if (card) {
+                            card.style.boxShadow = "0 0 20px 5px rgba(245, 158, 11, 0.4)";
+                            card.style.borderColor = "#f59e0b";
+                        }
+                    }
+                }
+                
+                if (t < 1) {
+                    requestAnimationFrame(animate);
+                } else {
+                    if (bar && oldExp !== endExp) {
+                        bar.style.boxShadow = "0 0 10px 2px rgba(16, 185, 129, 0.5)";
+                        setTimeout(() => { if(bar) bar.style.boxShadow = "none"; }, 500);
+                    }
+                    if (spiritBar && oldSpiritExp !== endSpiritExp) {
+                        spiritBar.style.boxShadow = "0 0 10px 2px rgba(245, 158, 11, 0.5)";
+                        setTimeout(() => { if(spiritBar) spiritBar.style.boxShadow = "none"; }, 500);
+                    }
+                }
+            }
+            requestAnimationFrame(animate);
+        }, 600);
+    });
+    
+    // Ensure popIn keyframes exist
+    if (!document.getElementById('chestAnimStyle')) {
+        const style = document.createElement('style');
+        style.id = 'chestAnimStyle';
+        style.innerHTML = `@keyframes popIn { to { opacity: 1; transform: scale(1); } }`;
+        document.head.appendChild(style);
+    }
+    
+    players.forEach(p => {
+        previousPlayerXP[p.id] = p.experience;
+        previousPlayerSpiritXP[p.id] = p.spiritualiteExperience || 0;
+    });
+}
 
 window.doAction = doAction;
 window.endTurn = endTurn;
@@ -86,6 +249,7 @@ async function startCombat(characterIds, dungeonId) {
         // Initialize previous XP for the first room
         data.players.forEach(p => {
             previousPlayerXP[p.id] = p.experience;
+            previousPlayerSpiritXP[p.id] = p.spiritualiteExperience || 0;
         });
         
         updateUI(data);
@@ -417,6 +581,7 @@ async function nextRoom() {
         // Track the current XP so animations in new rooms start from this baseline
         data.players.forEach(p => {
             previousPlayerXP[p.id] = p.experience;
+            previousPlayerSpiritXP[p.id] = p.spiritualiteExperience || 0;
         });
         
         updateUI(data);
@@ -433,8 +598,42 @@ async function acceptAlteration() {
         });
         const data = await res.json();
         updateUI(data);
+        
+        const lootContainer = document.getElementById('eventLootContainer');
+        if (lootContainer) {
+            lootContainer.innerHTML = '';
+            renderAndAnimateXPCards('eventLootContainer', data.players, 'alt');
+            lootContainer.style.display = 'flex';
+        }
     } catch (err) {
         console.error(err);
+    }
+}
+
+async function buyMerchantItem(lootIndex) {
+    if (!sessionId) return;
+    const charSelect = document.getElementById(`merchant_buyer_${lootIndex}`);
+    if (!charSelect || !charSelect.value) {
+        alert("Sélectionnez un héros pour acheter cet objet.");
+        return;
+    }
+    const charId = charSelect.value;
+    
+    try {
+        const btn = document.getElementById(`btn_buy_${lootIndex}`);
+        if (btn) btn.innerHTML = '<span class="material-symbols-outlined spin">sync</span>';
+        
+        const res = await fetch(`/api/pve/combat/${sessionId}/merchant-buy?lootIndex=${lootIndex}&characterId=${charId}`, { method: 'POST' });
+        if (!res.ok) {
+            alert("Vous n'avez pas les ressources nécessaires, ou cet objet n'est plus disponible.");
+            if (btn) btn.innerHTML = 'Acheter';
+            return;
+        }
+        const data = await res.json();
+        updateUI(data);
+    } catch(e) {
+        console.error(e);
+        alert("Erreur lors de l'achat.");
     }
 }
 
@@ -462,147 +661,7 @@ async function openChest() {
             lootContainer.style.display = 'flex';
             lootContainer.innerHTML = '';
             
-            // Re-use the XP Stats function locally
-            function getExpStats(exp) {
-                let level = 1;
-                if (exp >= 1000) level = 5;
-                else if (exp >= 600) level = 4;
-                else if (exp >= 300) level = 3;
-                else if (exp >= 100) level = 2;
-                
-                let currentLvlXp = 0;
-                let nextLvlXp = 100;
-                if (level === 2) { currentLvlXp = 100; nextLvlXp = 300; }
-                else if (level === 3) { currentLvlXp = 300; nextLvlXp = 600; }
-                else if (level === 4) { currentLvlXp = 600; nextLvlXp = 1000; }
-                else if (level === 5) { currentLvlXp = 1000; nextLvlXp = exp; }
-                
-                let progress = 100;
-                if (level < 5) {
-                    progress = ((exp - currentLvlXp) / (nextLvlXp - currentLvlXp)) * 100;
-                }
-                return { level, currentLvlXp, nextLvlXp, progress };
-            }
 
-            // First pass: Build HTML for all XP cards
-            let cardsHtml = '';
-            data.players.forEach(p => {
-                let oldExp = previousPlayerXP[p.id] !== undefined ? previousPlayerXP[p.id] : p.experience;
-                let oldStats = getExpStats(oldExp);
-
-                cardsHtml += `
-                    <div id="chest-xp-card-${p.id}" style="background: rgba(0,0,0,0.4); padding: 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); text-align: center; width: 150px; position: relative; overflow: hidden; transition: all 0.5s; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
-                        <div style="color: #e2e8f0; font-weight: bold; margin-bottom: 0.5rem; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; position: relative; z-index: 2;">${p.name}</div>
-                        <div id="chest-xp-lvl-${p.id}" style="color: #38bdf8; font-size: 0.9rem; margin-bottom: 0.5rem; font-weight: 600; transition: color 0.3s, transform 0.3s; display: inline-block; position: relative; z-index: 2;">Niv. ${oldStats.level}</div>
-                        <div style="width: 100%; background: #334155; border-radius: 4px; height: 8px; margin-bottom: 0.3rem; position: relative; z-index: 2;">
-                            <div id="chest-xp-fill-${p.id}" style="height: 100%; width: ${Math.min(100, oldStats.progress)}%; background: #10b981; transition: box-shadow 0.3s;"></div>
-                        </div>
-                        <div id="chest-xp-text-${p.id}" style="font-size: 0.8rem; color: #94a3b8; font-family: monospace; position: relative; z-index: 2;">${oldExp} / ${oldStats.level === 5 ? 'MAX' : oldStats.nextLvlXp} XP</div>
-                    </div>
-                `;
-            });
-            lootContainer.innerHTML = cardsHtml;
-
-            // Second pass: setup animations
-            data.players.forEach(p => {
-                let oldExp = previousPlayerXP[p.id] !== undefined ? previousPlayerXP[p.id] : p.experience;
-                let endExp = p.experience;
-                
-                // Animate XP
-                setTimeout(() => {
-                    let startTime = null;
-                    const duration = 1500;
-                    const bar = document.getElementById(`chest-xp-fill-${p.id}`);
-                    const text = document.getElementById(`chest-xp-text-${p.id}`);
-                    const lvlText = document.getElementById(`chest-xp-lvl-${p.id}`);
-                    
-                    function animate(currentTime) {
-                        if (!startTime) startTime = currentTime;
-                        let t = (currentTime - startTime) / duration;
-                        if (t > 1) t = 1;
-                        
-                        let easeT = t * (2 - t);
-                        let currentExp = Math.floor(oldExp + (endExp - oldExp) * easeT);
-                        let stats = getExpStats(currentExp);
-                        
-                        if (bar && text && lvlText) {
-                            bar.style.width = Math.min(100, stats.progress) + "%";
-                            text.innerText = currentExp + " / " + (stats.level === 5 ? 'MAX' : stats.nextLvlXp) + " XP";
-                            
-                            // Level up effects!
-                            if (lvlText.innerText !== "Niv. " + stats.level) {
-                                lvlText.innerText = "Niv. " + stats.level;
-                                lvlText.style.color = "#f59e0b";
-                                lvlText.style.transform = "scale(1.3)";
-                                
-                                const card = document.getElementById(`chest-xp-card-${p.id}`);
-                                if (card) {
-                                    card.style.boxShadow = "0 0 30px 10px rgba(245, 158, 11, 0.4)";
-                                    card.style.borderColor = "#f59e0b";
-                                    card.style.transform = "scale(1.05)";
-                                    
-                                    const splash = document.createElement("div");
-                                    splash.style.position = "absolute";
-                                    splash.style.top = "0"; splash.style.left = "0"; splash.style.right = "0"; splash.style.bottom = "0";
-                                    splash.style.background = "radial-gradient(circle, rgba(245,158,11,0.6) 0%, rgba(245,158,11,0) 70%)";
-                                    splash.style.opacity = "1";
-                                    splash.style.transition = "opacity 0.8s ease-out, transform 0.8s ease-out";
-                                    splash.style.transform = "scale(0.5)";
-                                    splash.style.pointerEvents = "none";
-                                    splash.style.zIndex = "1";
-                                    card.appendChild(splash);
-                                    
-                                    requestAnimationFrame(() => {
-                                        splash.style.opacity = "0";
-                                        splash.style.transform = "scale(2.5)";
-                                    });
-                            
-                                    setTimeout(() => {
-                                        if (card) {
-                                            card.style.boxShadow = "none";
-                                            card.style.borderColor = "rgba(255,255,255,0.1)";
-                                            card.style.transform = "scale(1)";
-                                        }
-                                        if (splash.parentNode) splash.parentNode.removeChild(splash);
-                                    }, 800);
-                                }
-                                
-                                setTimeout(() => {
-                                    if (lvlText) {
-                                        lvlText.style.color = "#38bdf8";
-                                        lvlText.style.transform = "scale(1)";
-                                    }
-                                }, 800);
-                            }
-                        }
-                        
-                        if (t < 1) {
-                            requestAnimationFrame(animate);
-                        } else {
-                            if (bar && oldExp !== endExp) {
-                                bar.style.boxShadow = "0 0 15px 5px rgba(16, 185, 129, 0.6)";
-                                setTimeout(() => {
-                                    if(bar) bar.style.boxShadow = "none";
-                                }, 400);
-                            }
-                        }
-                    }
-                    requestAnimationFrame(animate);
-                }, 600); // Wait for the cards to pop in before animating the bar
-            });
-            
-            // Track previous XP for any subsequent actions in this room
-            data.players.forEach(p => {
-                previousPlayerXP[p.id] = p.experience;
-            });
-            
-            // Ensure popIn keyframes exist
-            if (!document.getElementById('chestAnimStyle')) {
-                const style = document.createElement('style');
-                style.id = 'chestAnimStyle';
-                style.innerHTML = `@keyframes popIn { to { opacity: 1; transform: scale(1); } }`;
-                document.head.appendChild(style);
-            }
             
             // Also show gained items (check logs for "Vous avez trouvé un objet")
             let gainedItemsHtml = '';
@@ -781,129 +840,7 @@ function updateUI(data) {
                             `;
                         }
                         
-                        function getExpStats(exp) {
-                            let level = 1;
-                            if (exp >= 1000) level = 5;
-                            else if (exp >= 600) level = 4;
-                            else if (exp >= 300) level = 3;
-                            else if (exp >= 100) level = 2;
-                            
-                            let currentLvlXp = 0;
-                            let nextLvlXp = 100;
-                            if (level === 2) { currentLvlXp = 100; nextLvlXp = 300; }
-                            else if (level === 3) { currentLvlXp = 300; nextLvlXp = 600; }
-                            else if (level === 4) { currentLvlXp = 600; nextLvlXp = 1000; }
-                            else if (level === 5) { currentLvlXp = 1000; nextLvlXp = exp; }
-                            
-                            let progress = 100;
-                            if (level < 5) {
-                                progress = ((exp - currentLvlXp) / (nextLvlXp - currentLvlXp)) * 100;
-                            }
-                            return { level, currentLvlXp, nextLvlXp, progress };
-                        }
-
-                        data.players.forEach(p => {
-                            let oldExp = previousPlayerXP[p.id] !== undefined ? previousPlayerXP[p.id] : p.experience;
-                            let endExp = p.experience;
-                            
-                            let oldStats = getExpStats(oldExp);
-
-                            xpContainer.innerHTML += `
-                                <div id="xp-card-${p.id}" style="background: rgba(0,0,0,0.4); padding: 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); text-align: center; width: 150px; position: relative; overflow: hidden; transition: all 0.5s;">
-                                    <div style="color: #e2e8f0; font-weight: bold; margin-bottom: 0.5rem; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; position: relative; z-index: 2;">${p.name}</div>
-                                    <div id="xp-lvl-${p.id}" style="color: #38bdf8; font-size: 0.9rem; margin-bottom: 0.5rem; font-weight: 600; transition: color 0.3s, transform 0.3s; display: inline-block; position: relative; z-index: 2;">Niv. ${oldStats.level}</div>
-                                    <div style="width: 100%; background: #334155; border-radius: 4px; height: 8px; margin-bottom: 0.3rem; position: relative; z-index: 2;">
-                                        <div id="xp-fill-${p.id}" style="height: 100%; width: ${Math.min(100, oldStats.progress)}%; background: #10b981; transition: box-shadow 0.3s;"></div>
-                                    </div>
-                                    <div id="xp-text-${p.id}" style="font-size: 0.8rem; color: #94a3b8; font-family: monospace; position: relative; z-index: 2;">${oldExp} / ${oldStats.level === 5 ? 'MAX' : oldStats.nextLvlXp} XP</div>
-                                </div>
-                            `;
-                            
-                            // Animate it!
-                            setTimeout(() => {
-                                let startTime = null;
-                                const duration = 1500;
-                                const bar = document.getElementById(`xp-fill-${p.id}`);
-                                const text = document.getElementById(`xp-text-${p.id}`);
-                                const lvlText = document.getElementById(`xp-lvl-${p.id}`);
-                                
-                                function animate(currentTime) {
-                                    if (!startTime) startTime = currentTime;
-                                    let t = (currentTime - startTime) / duration;
-                                    if (t > 1) t = 1;
-                                    
-                                    // Easing function (easeOutQuad)
-                                    let easeT = t * (2 - t);
-                                    let currentExp = Math.floor(oldExp + (endExp - oldExp) * easeT);
-                                    let stats = getExpStats(currentExp);
-                                    
-                                    if (bar && text && lvlText) {
-                                        bar.style.width = Math.min(100, stats.progress) + "%";
-                                        text.innerText = currentExp + " / " + (stats.level === 5 ? 'MAX' : stats.nextLvlXp) + " XP";
-                                        
-                                        // Level up effects!
-                                        if (lvlText.innerText !== "Niv. " + stats.level) {
-                                            lvlText.innerText = "Niv. " + stats.level;
-                                            lvlText.style.color = "#f59e0b"; // gold highlight
-                                            lvlText.style.transform = "scale(1.3)";
-                                            
-                                            const card = document.getElementById(`xp-card-${p.id}`);
-                                            if (card) {
-                                                card.style.boxShadow = "0 0 30px 10px rgba(245, 158, 11, 0.4)";
-                                                card.style.borderColor = "#f59e0b";
-                                                card.style.transform = "scale(1.05)";
-                                                
-                                                // Internal splash
-                                                const splash = document.createElement("div");
-                                                splash.style.position = "absolute";
-                                                splash.style.top = "0"; splash.style.left = "0"; splash.style.right = "0"; splash.style.bottom = "0";
-                                                splash.style.background = "radial-gradient(circle, rgba(245,158,11,0.6) 0%, rgba(245,158,11,0) 70%)";
-                                                splash.style.opacity = "1";
-                                                splash.style.transition = "opacity 0.8s ease-out, transform 0.8s ease-out";
-                                                splash.style.transform = "scale(0.5)";
-                                                splash.style.pointerEvents = "none";
-                                                splash.style.zIndex = "1";
-                                                card.appendChild(splash);
-                                                
-                                                // Trigger animation next frame
-                                                requestAnimationFrame(() => {
-                                                    splash.style.opacity = "0";
-                                                    splash.style.transform = "scale(2.5)";
-                                                });
-                                        
-                                                setTimeout(() => {
-                                                    if (card) {
-                                                        card.style.boxShadow = "none";
-                                                        card.style.borderColor = "rgba(255,255,255,0.1)";
-                                                        card.style.transform = "scale(1)";
-                                                    }
-                                                    if (splash.parentNode) splash.parentNode.removeChild(splash);
-                                                }, 800);
-                                            }
-                                            
-                                            setTimeout(() => {
-                                                if (lvlText) {
-                                                    lvlText.style.color = "#38bdf8";
-                                                    lvlText.style.transform = "scale(1)";
-                                                }
-                                            }, 800);
-                                        }
-                                    }
-                                    
-                                    if (t < 1) {
-                                        requestAnimationFrame(animate);
-                                    } else {
-                                        if (bar && oldExp !== endExp) {
-                                            bar.style.boxShadow = "0 0 15px 5px rgba(16, 185, 129, 0.6)";
-                                            setTimeout(() => {
-                                                if(bar) bar.style.boxShadow = "none";
-                                            }, 400);
-                                        }
-                                    }
-                                }
-                                requestAnimationFrame(animate);
-                            }, 600); // wait 600ms for overlay to appear
-                        });
+                        renderAndAnimateXPCards('combatVictoryXpContainer', data.players, 'vic');
                     }
                 }
             } else {
@@ -961,11 +898,34 @@ function updateUI(data) {
                     btnOpen.style.display = 'none';
                     
                     if (!data.roomEventCompleted && data.currentRoom.alterationType !== 'RIEN') {
-                        let btnText = "Faire le don";
+                        let btnText = "Toucher";
                         if (data.currentRoom.alterationType === 'VIE_XP') {
-                            btnText = `Faire le don (${data.currentRoom.alterationHpAmount < 0 ? data.currentRoom.alterationHpAmount + ' PV' : '+' + data.currentRoom.alterationHpAmount + ' PV'})`;
+                            let parts = [];
+                            
+                            let hp = data.currentRoom.alterationHpAmount || 0;
+                            if (hp !== 0) {
+                                parts.push(hp > 0 ? `+${hp} PV` : `${hp} PV`);
+                            }
+                            
+                            let xp = data.currentRoom.alterationExpAmount || 0;
+                            if (xp !== 0) {
+                                parts.push(xp > 0 ? `+${xp} XP` : `${xp} XP`);
+                            }
+                            
+                            let spXp = data.currentRoom.alterationSpiritualXpReward || 0;
+                            if (data.currentRoom.alterationRewardType === 'SPIRITUAL_XP' && spXp !== 0) {
+                                parts.push(spXp > 0 ? `+${spXp} XP Spirit` : `${spXp} XP Spirit`);
+                            } else if (data.currentRoom.alterationRewardType === 'SPECIAL_ITEM') {
+                                parts.push(data.currentRoom.alterationSpecialItemReward || "Item spécial");
+                            }
+                            
+                            if (parts.length > 0) {
+                                btnText = `Toucher (${parts.join(', ')})`;
+                            } else {
+                                btnText = `Toucher`;
+                            }
                         } else if (data.currentRoom.alterationType === 'ITEM') {
-                            btnText = `Faire le don (Donner ${data.currentRoom.alterationRequiredItem || 'un item'})`;
+                            btnText = `Toucher (Donner ${data.currentRoom.alterationRequiredItem || 'un item'})`;
                         }
                         
                         btnCont.style.display = 'none';
@@ -987,27 +947,68 @@ function updateUI(data) {
                     title.textContent = 'Rencontre';
                     desc.innerHTML = data.currentRoom.eventText || 'Un marchand ambulant vous interpelle...';
                     
-                    // Show items for sale (placeholder — buying logic to be added later)
                     btnOpen.style.display = 'none';
                     btnCont.style.display = 'block';
                     
                     if (data.currentRoom.lootTable && data.currentRoom.lootTable.length > 0) {
                         lootContainer.style.display = 'flex';
                         lootContainer.innerHTML = '';
-                        data.currentRoom.lootTable.forEach(entry => {
-                            if (entry.equipment) {
+                        
+                        let playerOptions = '';
+                        data.players.forEach(p => {
+                            if (p.healthCurrent > 0) {
+                                playerOptions += `<option value="${p.id}">${p.name} (${p.gold} Or)</option>`;
+                            }
+                        });
+
+                        data.currentRoom.lootTable.forEach((entry, idx) => {
+                            let nameHtml = '';
+                            let iconHtml = '';
+                            let rarityColor = '#10b981';
+                            
+                            if (entry.specialItemName) {
+                                nameHtml = entry.specialItemName;
+                                iconHtml = '<span class="material-symbols-outlined" style="color: #d946ef; font-size: 1.2rem;">star</span>';
+                                rarityColor = '#d946ef';
+                            } else if (entry.equipment) {
                                 const eq = entry.equipment;
                                 const slotInfo = SLOT_LABELS[eq.slot] || { icon: 'help', color: '#94a3b8' };
-                                const rarityColor = RARITY_COLORS[eq.rarity] || '#ef4444';
+                                rarityColor = RARITY_COLORS[eq.rarity] || '#ef4444';
                                 const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
-                                lootContainer.innerHTML += `
-                                    <div style="background: rgba(0,0,0,0.4); border: 1px solid ${rarityColor}40; padding: 0.6rem 1rem; border-radius: 8px; display: flex; align-items: center; gap: 0.5rem; font-size: 0.9rem;">
-                                        <span class="material-symbols-outlined${extraClass}" style="color: ${slotInfo.color}; font-size: 1.1rem;">${slotInfo.icon}</span>
-                                        <span style="color: ${rarityColor}; font-weight: 600;">${eq.name}</span>
-                                        <span style="color: #f59e0b; font-size: 0.8rem; margin-left: auto; display: flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined" style="font-size: 0.9rem;">monetization_on</span>${entry.probability}</span>
-                                    </div>
-                                `;
+                                nameHtml = eq.name;
+                                iconHtml = `<span class="material-symbols-outlined${extraClass}" style="color: ${slotInfo.color}; font-size: 1.2rem;">${slotInfo.icon}</span>`;
                             }
+
+                            let priceHtml = '';
+                            const goldPrice = entry.priceGold !== null ? entry.priceGold : entry.probability;
+                            if (goldPrice > 0) {
+                                priceHtml += `<span style="color: #f59e0b; display: flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined" style="font-size: 1rem;">monetization_on</span>${goldPrice}</span>`;
+                            }
+                            if (entry.priceSpecialItemName) {
+                                priceHtml += `<span style="color: #d946ef; display: flex; align-items: center; gap: 0.2rem; margin-left: 0.5rem;"><span class="material-symbols-outlined" style="font-size: 1rem;">star</span>1x ${entry.priceSpecialItemName}</span>`;
+                            }
+
+                            lootContainer.innerHTML += `
+                                <div style="background: rgba(0,0,0,0.4); border: 1px solid ${rarityColor}40; padding: 0.8rem; border-radius: 8px; display: flex; flex-direction: column; gap: 0.8rem; width: 100%;">
+                                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                                        <div style="display: flex; align-items: center; gap: 0.5rem;">
+                                            ${iconHtml}
+                                            <span style="color: ${rarityColor}; font-weight: 600;">${nameHtml}</span>
+                                        </div>
+                                        <div style="display: flex; align-items: center; font-size: 0.85rem; font-weight: 600;">
+                                            ${priceHtml}
+                                        </div>
+                                    </div>
+                                    <div style="display: flex; gap: 0.5rem; align-items: stretch;">
+                                        <select id="merchant_buyer_${idx}" class="form-control" style="flex: 2; padding: 0.4rem;">
+                                            ${playerOptions}
+                                        </select>
+                                        <button id="btn_buy_${idx}" type="button" class="btn" style="flex: 1; background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 6px; font-weight: 600; cursor: pointer;" onclick="buyMerchantItem(${idx})">
+                                            Acheter
+                                        </button>
+                                    </div>
+                                </div>
+                            `;
                         });
                     } else {
                         lootContainer.style.display = 'none';
@@ -1335,6 +1336,18 @@ function generateFighterHtml(c, isHero) {
 
     statsHtml += `</div>`;
 
+    let specialItemsHtml = '';
+    if (isHero && c.specialItems) {
+        const specialItemKeys = Object.keys(c.specialItems).filter(k => c.specialItems[k] > 0);
+        if (specialItemKeys.length > 0) {
+            specialItemsHtml = `<div style="margin-top: 0.5rem; display: flex; flex-wrap: wrap; gap: 0.3rem; justify-content: center;">`;
+            specialItemKeys.forEach(k => {
+                specialItemsHtml += `<span class="hero-stat-chip" title="Item Spécial : ${k}" style="border-color: rgba(217, 70, 239, 0.4); color: #d946ef;"><span class="material-symbols-outlined" style="color: inherit; font-size: 1rem;">star</span>${c.specialItems[k]}x ${k}</span>`;
+            });
+            specialItemsHtml += `</div>`;
+        }
+    }
+
     let passiveBadges = '';
 
     let titleIconsHtml = '';
@@ -1359,6 +1372,7 @@ function generateFighterHtml(c, isHero) {
             <div class="gauge-track"><div class="gauge-fill hp" style="width: ${hpPct}%;"></div></div>
         </div>
         ${manaHtml}
+        ${specialItemsHtml}
         <div class="sandbox-status-list" style="justify-content: center;">${passiveBadges}</div>
         <div class="sandbox-status-list" style="justify-content: center;">
             ${renderShieldsHtml(c.activeShields)}
