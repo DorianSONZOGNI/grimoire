@@ -827,7 +827,7 @@ function updateUI(data) {
         if (data.currentRoom.type === 'COMBAT') {
             document.getElementById('eventOverlay').classList.remove('show');
             
-            const allEnemiesDead = data.enemies && data.enemies.length > 0 && data.enemies.every(e => e.dead || e.currentHp <= 0);
+            const allEnemiesDead = !data.enemies || data.enemies.length === 0 || data.enemies.every(e => e.dead || e.currentHp <= 0);
             
             if (allEnemiesDead && !data.finished) {
                 document.getElementById('btnAttack').disabled = true;
@@ -935,9 +935,8 @@ function updateUI(data) {
                                 parts.push(xp > 0 ? `+${xp} XP` : `${xp} XP`);
                             }
                             
-                            let spXp = data.currentRoom.alterationSpiritualXpReward || 0;
-                            if (data.currentRoom.alterationRewardType === 'SPIRITUAL_XP' && spXp !== 0) {
-                                parts.push(spXp > 0 ? `+${spXp} XP Spirit` : `${spXp} XP Spirit`);
+                            if (data.currentRoom.alterationRewardType === 'SPIRITUAL_XP') {
+                                parts.push(`+${data.currentRoom.alterationSpiritualXpReward || 0} XP Spirit.`);
                             } else if (data.currentRoom.alterationRewardType === 'SPECIAL_ITEM') {
                                 specialItemHtml = `<div style="color: #d946ef; font-size: 0.85rem; margin-top: 0.5rem; text-align: center; background: rgba(217, 70, 239, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(217, 70, 239, 0.3);"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">star</span> <strong>Récompense :</strong> Vous obtiendrez l'item spécial "${data.currentRoom.alterationSpecialItemReward || 'Item'}" !</div>`;
                             }
@@ -948,7 +947,7 @@ function updateUI(data) {
                                 btnText = `Toucher`;
                             }
                         } else if (data.currentRoom.alterationType === 'ITEM') {
-                            btnText = `Donner (${data.currentRoom.alterationRequiredItem || 'un item'})`;
+                            btnText = `Donner l'item et Toucher`;
                             warningHtml = `<div style="color: #ef4444; font-size: 0.85rem; margin-top: 0.5rem; text-align: center; background: rgba(239, 68, 68, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3);"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">warning</span> <strong>Attention :</strong> L'item "${data.currentRoom.alterationRequiredItem || 'spécial'}" sera définitivement détruit de l'inventaire d'un de vos héros s'il accepte cette offre.</div>`;
                         }
                         
@@ -1863,29 +1862,40 @@ function renderSpellCard(sp) {
     `;
 }
 
-
-
 function showResult(playerWon) {
-    document.getElementById('btnAttack').disabled = true;
-    const btnEnd = document.getElementById('btnEndTurn');
-    if (btnEnd) btnEnd.disabled = true;
-    document.getElementById('eventOverlay').classList.remove('show');
+    const overlay = document.getElementById('resultOverlay');
+    const title = document.getElementById('resultTitle');
+    const desc = document.getElementById('resultDesc');
+    
+    if (playerWon) {
+        title.textContent = "VICTOIRE";
+        title.style.color = "#10b981";
+        desc.textContent = "Le donjon a été complété.";
+    } else {
+        title.textContent = "DÉFAITE";
+        title.style.color = "#ef4444";
+        desc.textContent = "Votre équipe a été anéantie.";
+    }
+    
+    overlay.classList.add('show');
+}
 
+function showNotif(msg, isError = false) {
+    const notif = document.getElementById('combatNotif');
+    const notifText = document.getElementById('combatNotifText');
+    const notifIcon = notif.querySelector('.notif-icon');
+    
+    notifText.textContent = msg;
+    if (isError) {
+        notif.style.background = 'rgba(239, 68, 68, 0.9)';
+        notifIcon.textContent = 'error';
+    } else {
+        notif.style.background = 'rgba(16, 185, 129, 0.9)';
+        notifIcon.textContent = 'check_circle';
+    }
+    
+    notif.classList.add('show');
     setTimeout(() => {
-        const overlay = document.getElementById('resultOverlay');
-        const title = document.getElementById('resultTitle');
-        const desc = document.getElementById('resultDesc');
-
-        overlay.classList.add('show');
-
-        if (playerWon) {
-            title.textContent = "VICTOIRE";
-            title.className = "result-title victory";
-            desc.textContent = "Le donjon a été complété.";
-        } else {
-            title.textContent = "DÉFAITE";
-            title.className = "result-title defeat";
-            desc.textContent = "Votre personnage est tombé au combat.";
-        }
-    }, 1000);
+        notif.classList.remove('show');
+    }, 3000);
 }

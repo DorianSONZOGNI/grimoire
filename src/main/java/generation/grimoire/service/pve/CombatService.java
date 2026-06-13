@@ -8,6 +8,7 @@ import generation.grimoire.model.pve.SpellAvailability;
 import generation.grimoire.repository.PersonnageRepository;
 import generation.grimoire.repository.auth.UserRepository;
 import generation.grimoire.repository.pve.DonjonRepository;
+import generation.grimoire.repository.pve.SalleRepository;
 import generation.grimoire.repository.SpellRepository;
 import generation.grimoire.repository.EquipmentRepository;
 import generation.grimoire.service.SpellService;
@@ -44,6 +45,7 @@ public class CombatService {
     private final SpellService spellService;
     private final PassiveDispatcher passiveDispatcher;
     private final AnomalieRepository anomalieRepository;
+    private final SalleRepository salleRepository;
 
     // In-memory combat sessions
     private final Map<String, CombatSession> activeSessions = new ConcurrentHashMap<>();
@@ -89,7 +91,18 @@ public class CombatService {
         if (session.getCurrentRoom() == null)
             return;
 
+        // Re-fetch la salle pour éviter les LazyInitializationException sur les listes de monstres et loots
+        generation.grimoire.entity.pve.Salle freshSalle = salleRepository.findById(session.getCurrentRoom().getId()).orElse(session.getCurrentRoom());
+        session.setCurrentRoom(freshSalle);
+
         if (session.getCurrentRoom().getType() == generation.grimoire.enumeration.RoomType.COMBAT) {
+            session.getEnemies().clear();
+            if (session.getCurrentRoom().getMonsters() != null) {
+                for (generation.grimoire.entity.pve.Monstre m : session.getCurrentRoom().getMonsters()) {
+                    generation.grimoire.model.pve.ActiveMonster am = new generation.grimoire.model.pve.ActiveMonster(m);
+                    session.getEnemies().add(am);
+                }
+            }
             session.addLog("Vous entrez dans une salle de combat ! Préparez-vous.");
             session.setTurnNumber(1);
             for (Personnage p : session.getPlayers()) {
@@ -98,8 +111,10 @@ public class CombatService {
             }
             rollInitiative(session);
         } else if (session.getCurrentRoom().getType() == generation.grimoire.enumeration.RoomType.TREASURE) {
+            session.getEnemies().clear();
             session.addLog("Vous trouvez un trésor !");
         } else if (session.getCurrentRoom().getType() == generation.grimoire.enumeration.RoomType.EVENT) {
+            session.getEnemies().clear();
             session.addLog("Événement : " + session.getCurrentRoom().getEventText());
         }
     }

@@ -86,14 +86,7 @@ public class CombatSession {
         this.roomEventCompleted = false;
         if (donjon.getSalles() != null && index < donjon.getSalles().size()) {
             this.currentRoom = donjon.getSalles().get(index);
-            
-            if (this.currentRoom.getType() == generation.grimoire.enumeration.RoomType.COMBAT) {
-                this.enemies = this.currentRoom.getMonsters().stream()
-                    .map(m -> new ActiveMonster(m))
-                    .collect(Collectors.toList());
-            } else {
-                this.enemies.clear();
-            }
+            // On laisse handleRoomStart gérer les ennemis et la re-fetch de la salle
         } else {
             // End of dungeon
             this.isFinished = true;

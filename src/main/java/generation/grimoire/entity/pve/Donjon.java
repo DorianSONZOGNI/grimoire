@@ -33,5 +33,6 @@ public class Donjon {
     // For now, let's keep it flexible with a list of encounters or simply a ManyToMany with monsters.
     @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
     @JoinColumn(name = "donjon_id")
+    @OrderColumn(name = "room_order")
     private List<Salle> salles = new ArrayList<>();
 }
