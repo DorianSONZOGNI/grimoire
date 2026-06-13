@@ -95,12 +95,43 @@ async function loadCharacters() {
                 return;
             }
 
+            const getVIcon = (nom) => {
+                const n = nom.toLowerCase();
+                if (n.includes('raison')) return { c: '#3b82f6', i: 'psychology' };
+                if (n.includes('sûreté') || n.includes('surete')) return { c: '#00e5cc', i: 'water_drop' };
+                if (n.includes('trahison')) return { c: '#ed5677', i: 'visibility_off' };
+                if (n.includes('consolidation')) return { c: '#99674c', i: 'foundation' };
+                if (n.includes('conviction')) return { c: '#b74c0b', i: 'volcano' };
+                if (n.includes('création') || n.includes('creation')) return { c: '#10b981', i: 'eco' };
+                if (n.includes('destruction')) return { c: '#ff0000', i: 'local_fire_department' };
+                if (n.includes('violence')) return { c: '#a70740', i: 'explosion' };
+                return { c: '#94a3b8', i: 'route' };
+            };
+            const getSIcon = (nom) => {
+                const n = nom.toLowerCase();
+                if (n.includes('esprit')) return { c: '#38bdf8', i: 'blur_on' };
+                if (n.includes('ténèbres') || n.includes('tenebres')) return { c: '#c084fc', i: 'dark_mode' };
+                if (n.includes('karma')) return { c: '#e7d198', i: 'all_inclusive' };
+                return { c: '#a78bfa', i: 'psychology' };
+            };
+
             userCharacters.forEach(c => {
+                let iconsHtml = '';
+                if (c.voie && c.voie.nom) {
+                    const vi = getVIcon(c.voie.nom);
+                    iconsHtml += `<span class="material-symbols-outlined" style="font-size: 1.1rem; color: ${vi.c}; margin-left: 0.5rem;" title="Voie : ${c.voie.nom}">${vi.i}</span>`;
+                }
+                if (c.spiritualite && c.spiritualite.nom) {
+                    const si = getSIcon(c.spiritualite.nom);
+                    iconsHtml += `<span class="material-symbols-outlined" style="font-size: 1.1rem; color: ${si.c}; margin-left: 0.3rem;" title="Spiritualité : ${c.spiritualite.nom}">${si.i}</span>`;
+                }
                 list.innerHTML += `
                     <div class="char-card" id="charCard_${c.id}" onclick="selectCharacter(${c.id})">
                         <div class="char-avatar">${c.name.charAt(0).toUpperCase()}</div>
                         <div>
-                            <div style="color: #f8fafc; font-weight: 600; font-family: 'Outfit'; font-size: 1.1rem;">${c.name}</div>
+                            <div style="color: #f8fafc; font-weight: 600; font-family: 'Outfit'; font-size: 1.1rem; display: flex; align-items: center;">
+                                ${c.name} ${iconsHtml}
+                            </div>
                             <div style="color: var(--text-muted); font-size: 0.85rem;">Niv. ${c.level || 1} • ${c.healthMax} PV max</div>
                         </div>
                     </div>

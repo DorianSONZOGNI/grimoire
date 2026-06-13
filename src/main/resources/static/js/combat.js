@@ -423,8 +423,8 @@ function generateFighterHtml(c, isHero) {
             if (c.passiveStates['violence_inspiration'] !== undefined) insp = c.passiveStates['violence_inspiration'];
             if (c.passiveStates['violence_expiration'] !== undefined) exp = c.passiveStates['violence_expiration'];
         }
-        statsHtml += `<span class="hero-stat-chip" title="Inspiration (Violence)" style="border-color: rgba(217, 70, 239, 0.4);"><span class="material-symbols-outlined" style="color: #d946ef;">air</span>${insp} Insp</span>`;
-        statsHtml += `<span class="hero-stat-chip" title="Expiration (Violence)" style="border-color: rgba(220, 38, 38, 0.4);"><span class="material-symbols-outlined" style="color: #dc2626;">storm</span>${exp} Exp</span>`;
+        statsHtml += `<span class="hero-stat-chip" title="Inspiration (Violence)" style="border-color: rgba(220, 38, 38, 0.4);"><span class="material-symbols-outlined" style="color: #dc2626;">storm</span>${insp} Insp</span>`;
+        statsHtml += `<span class="hero-stat-chip" title="Expiration (Violence)" style="border-color: rgba(217, 70, 239, 0.4);"><span class="material-symbols-outlined" style="color: #d946ef;">air</span>${exp} Exp</span>`;
     }
 
     if (c.voie && c.voie.nom && c.voie.nom.toLowerCase().includes('raison')) {
@@ -785,9 +785,9 @@ function renderSpells(spells) {
 
         let categoryHtml = '';
         if (sp.category === 'INSPIRATION') {
-            categoryHtml = '<span class="material-symbols-outlined" style="font-size: 1rem; color: #10b981;" title="Sort d\'Inspiration">arrow_upward</span>';
+            categoryHtml = '<span class="material-symbols-outlined" style="font-size: 1rem; color: #dc2626;" title="Sort d\'Inspiration">storm</span>';
         } else if (sp.category === 'EXPIRATION') {
-            categoryHtml = '<span class="material-symbols-outlined" style="font-size: 1rem; color: #f43f5e;" title="Sort d\'Expiration">arrow_downward</span>';
+            categoryHtml = '<span class="material-symbols-outlined" style="font-size: 1rem; color: #d946ef;" title="Sort d\'Expiration">air</span>';
         }
 
         let karmaAlignHtml = '';
@@ -827,8 +827,33 @@ function renderSpells(spells) {
 
         const tooltipAttrs = effectsSummary ? 'onmouseenter="window.showGlobalTooltip(this)" onmouseleave="window.hideGlobalTooltip()"' : '';
 
+        // Check spell availability
+        const availabilityList = currentSessionData.spellAvailability || [];
+        const avail = availabilityList.find(a => a.spellId === sp.id);
+        const isCastable = !avail || avail.castable;
+        const disabledClass = isCastable ? '' : ' spell-disabled';
+        const onClickAttr = isCastable ? `onclick="initiateCombatCast(${sp.id})"` : '';
+
+        // Build disabled badge HTML
+        let disabledBadgeHtml = '';
+        if (!isCastable && avail) {
+            let badgeClass = 'badge-resource';
+            let badgeIcon = 'water_drop';
+            if (avail.reason === 'CONDITION') {
+                badgeClass = 'badge-condition';
+                badgeIcon = 'block';
+            } else if (avail.reason === 'ACTION_LIMIT') {
+                badgeClass = 'badge-action';
+                badgeIcon = 'hourglass_disabled';
+            } else if (avail.reason === 'CHANNELING') {
+                badgeClass = 'badge-channeling';
+                badgeIcon = 'cyclone';
+            }
+            disabledBadgeHtml = `<div class="spell-disabled-badge ${badgeClass}" title="${avail.tooltip || ''}"><span class="material-symbols-outlined">${badgeIcon}</span></div>`;
+        }
+
         return `
-            <div class="combat-spell-card spell-btn" style="border-top: 2px solid ${titleColor};" onclick="initiateCombatCast(${sp.id})" ${tooltipAttrs}>
+            <div class="combat-spell-card spell-btn${disabledClass}" style="border-top: 2px solid ${titleColor};" ${onClickAttr} ${tooltipAttrs}>
                 <div class="combat-spell-header">
                     <div class="combat-spell-name" title="${sp.nom}" style="color: ${titleColor};">${sp.nom}</div>
                     <div class="combat-spell-level">Lvl ${sp.niveau}</div>
@@ -845,6 +870,7 @@ function renderSpells(spells) {
                 <div class="combat-spell-cost">
                     ${costDetails}
                 </div>
+                ${disabledBadgeHtml}
                 ${effectsSummary ? `<template class="tooltip-data">${effectsSummary}</template>` : ''}
             </div>
         `;

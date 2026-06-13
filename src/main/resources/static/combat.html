@@ -443,6 +443,83 @@
             filter: grayscale(1);
             pointer-events: none;
         }
+
+        /* ===== Disabled Spell Cards ===== */
+        .combat-spell-card.spell-disabled {
+            opacity: 0.45;
+            filter: grayscale(0.6);
+            cursor: not-allowed;
+            pointer-events: none;
+            transform: none !important;
+        }
+
+        .combat-spell-card.spell-disabled:hover {
+            transform: none !important;
+            box-shadow: 0 4px 10px rgba(0, 0, 0, 0.3);
+            background: rgba(15, 23, 42, 0.7);
+            border-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .spell-disabled-badge {
+            position: absolute;
+            bottom: 4px;
+            right: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            font-size: 0;
+            z-index: 5;
+        }
+
+        .spell-disabled-badge .material-symbols-outlined {
+            font-size: 1.1rem;
+        }
+
+        .spell-disabled-badge.badge-resource {
+            background: rgba(56, 189, 248, 0.15);
+            border: 1px solid rgba(56, 189, 248, 0.4);
+        }
+        .spell-disabled-badge.badge-resource .material-symbols-outlined {
+            color: #38bdf8;
+        }
+
+        .spell-disabled-badge.badge-condition {
+            background: rgba(239, 68, 68, 0.15);
+            border: 1px solid rgba(239, 68, 68, 0.4);
+        }
+        .spell-disabled-badge.badge-condition .material-symbols-outlined {
+            color: #ef4444;
+        }
+
+        .spell-disabled-badge.badge-action {
+            background: rgba(245, 158, 11, 0.15);
+            border: 1px solid rgba(245, 158, 11, 0.4);
+        }
+        .spell-disabled-badge.badge-action .material-symbols-outlined {
+            color: #f59e0b;
+        }
+
+        .spell-disabled-badge.badge-channeling {
+            background: rgba(139, 92, 246, 0.15);
+            border: 1px solid rgba(139, 92, 246, 0.4);
+        }
+        .spell-disabled-badge.badge-channeling .material-symbols-outlined {
+            color: #8b5cf6;
+        }
+
+        /* Cross-line effect for resource badge */
+        .spell-disabled-badge.badge-resource::after {
+            content: '';
+            position: absolute;
+            width: 70%;
+            height: 2px;
+            background: #ef4444;
+            transform: rotate(-45deg);
+            border-radius: 1px;
+        }
     </style>
 </head>
 

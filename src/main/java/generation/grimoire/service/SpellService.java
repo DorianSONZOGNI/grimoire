@@ -446,11 +446,11 @@ public class SpellService {
                         return variant;
                     break;
                 case LOW_LIFE:
-                    if (target.getHealthCurrent() < target.getHealthMax() * 0.35)
+                    if (target.getHealthCurrent() < target.getTotalHealthMax() * 0.35)
                         return variant;
                     break;
                 case HIGH_LIFE:
-                    if (target.getHealthCurrent() > target.getHealthMax() * 0.65)
+                    if (target.getHealthCurrent() > target.getTotalHealthMax() * 0.65)
                         return variant;
                     break;
                 case HIGHER_RESISTANCE:
@@ -498,6 +498,12 @@ public class SpellService {
         int remaining = caster.getRemainingChannelingTurns();
         int currentTurn = duration - remaining + 1;
 
+        // Le T1 est déjà résolu au moment du cast (dans castSpellGroup).
+        // À la fin du tour de lancement, currentTurn vaut 1, on ne doit donc rien faire.
+        if (currentTurn == 1) {
+            return;
+        }
+
         System.out.println("🌀 [Canalisation] Résolution des effets pour le Tour " + currentTurn + " de " + channeledSpell.getNom());
 
         for (SpellEffect effect : channeledSpell.getEffects()) {
@@ -544,7 +550,7 @@ public class SpellService {
                 if (caster != null) {
                     Personnage simulatedAlly = new Personnage();
                     simulatedAlly.setName("Compagnon Allié");
-                    simulatedAlly.setHealthMax(caster.getHealthMax());
+                    simulatedAlly.setHealthMax(caster.getTotalHealthMax());
                     simulatedAlly.setHealthCurrent(caster.getHealthCurrent());
                     simulatedAlly.setTeamId(caster.getTeamId());
                     recipients.add(simulatedAlly);
@@ -555,7 +561,7 @@ public class SpellService {
                     recipients.add(caster);
                     Personnage simulatedAlly = new Personnage();
                     simulatedAlly.setName("Compagnon Allié");
-                    simulatedAlly.setHealthMax(caster.getHealthMax());
+                    simulatedAlly.setHealthMax(caster.getTotalHealthMax());
                     simulatedAlly.setHealthCurrent(caster.getHealthCurrent());
                     simulatedAlly.setTeamId(caster.getTeamId());
                     recipients.add(simulatedAlly);
@@ -572,7 +578,7 @@ public class SpellService {
                     recipients.add(caster);
                     Personnage simulatedAlly = new Personnage();
                     simulatedAlly.setName("Compagnon Allié");
-                    simulatedAlly.setHealthMax(caster.getHealthMax());
+                    simulatedAlly.setHealthMax(caster.getTotalHealthMax());
                     simulatedAlly.setHealthCurrent(caster.getHealthCurrent());
                     simulatedAlly.setTeamId(caster.getTeamId());
                     recipients.add(simulatedAlly);
