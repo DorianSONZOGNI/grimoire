@@ -299,6 +299,17 @@ async function nextRoom() {
 function updateUI(data) {
     currentSessionData = data;
 
+    let isActiveEnemy = false;
+    let activeEnemyIndex = -1;
+
+    if (data.turnOrder && data.turnOrder.length > data.currentTurnIndex && !data.finished) {
+        const currentTurn = data.turnOrder[data.currentTurnIndex];
+        if (!currentTurn.player) {
+            isActiveEnemy = true;
+            activeEnemyIndex = currentTurn.index;
+        }
+    }
+
     document.getElementById('headerDungeonName').textContent = data.donjon.name + " - Étape " + (data.currentRoomIndex + 1);
     document.getElementById('turnCounter').textContent = data.turnNumber;
 
@@ -410,6 +421,47 @@ function updateUI(data) {
     // Check finish
     if (data.finished) {
         showResult(data.playerWon);
+    } else if (isActiveEnemy) {
+        // Disable UI
+        document.getElementById('btnAttack').disabled = true;
+        const btnEnd = document.getElementById('btnEndTurn');
+        if (btnEnd) btnEnd.disabled = true;
+        const spellButtons = document.querySelectorAll('.spell-btn, .filter-chip');
+        spellButtons.forEach(btn => {
+            btn.disabled = true;
+            btn.classList.add('disabled');
+            btn.style.pointerEvents = 'none';
+        });
+
+        // Trigger animation and auto-turn
+        setTimeout(() => {
+            const activeEnemyCard = document.querySelector(`.fighter-enemy[data-index="${activeEnemyIndex}"]`);
+            if (activeEnemyCard) {
+                activeEnemyCard.style.transform = 'translateX(-50px)';
+                setTimeout(() => { 
+                    if (activeEnemyCard.classList.contains('active')) {
+                        activeEnemyCard.style.transform = 'scale(1.05)';
+                    } else {
+                        activeEnemyCard.style.transform = 'none';
+                    }
+                }, 200);
+            }
+            
+            setTimeout(async () => {
+                try {
+                    const res = await fetch(`/api/pve/combat/${sessionId}/auto-turn`, { method: 'POST' });
+                    const newData = await res.json();
+                    updateUI(newData);
+                } catch (e) {
+                    console.error(e);
+                }
+            }, 600); // Fetch next turn
+        }, 500); // Pause before attack animation
+    } else {
+        // Player turn: enable buttons
+        document.getElementById('btnAttack').disabled = false;
+        const btnEnd = document.getElementById('btnEndTurn');
+        if (btnEnd) btnEnd.disabled = false;
     }
 }
 
@@ -641,6 +693,14 @@ function renderEnemies(enemies) {
         const m = activeMonster.base;
         const pMonster = activeMonster.asPersonnage || activeMonster; // Fallback just in case
         const isSelected = index === selectedTargetIndex && !activeMonster.dead;
+        
+        let isActive = false;
+        if (currentSessionData && currentSessionData.turnOrder && currentSessionData.turnOrder.length > currentSessionData.currentTurnIndex && !currentSessionData.finished) {
+            const currentTurn = currentSessionData.turnOrder[currentSessionData.currentTurnIndex];
+            if (!currentTurn.player && currentTurn.index === index) {
+                isActive = true;
+            }
+        }
 
         // Use pMonster logic to override maxHp/currentHp if necessary
         pMonster.name = m.name;
@@ -648,9 +708,18 @@ function renderEnemies(enemies) {
         if (typeof activeMonster.maxHp !== 'undefined') pMonster.healthMax = activeMonster.maxHp;
 
         const div = document.createElement('div');
-        div.className = `fighter fighter-enemy enemy-card ${isSelected ? 'selected' : ''} ${activeMonster.dead ? 'dead' : ''}`;
+        div.className = `fighter fighter-enemy enemy-card ${isSelected ? 'selected' : ''} ${isActive ? 'active' : ''} ${activeMonster.dead ? 'dead' : ''}`;
         div.dataset.index = index;
         div.onclick = () => selectTarget(index);
+        
+        if (isActive) {
+            div.style.borderColor = '#ef4444';
+            div.style.boxShadow = '0 0 20px rgba(239, 68, 68, 0.4)';
+            div.style.transform = 'scale(1.05)';
+        } else if (!isSelected && !activeMonster.dead) {
+            div.style.borderColor = 'rgba(255, 255, 255, 0.1)';
+            div.style.transform = 'scale(0.95)';
+        }
 
         div.innerHTML = generateFighterHtml(pMonster, false);
         container.appendChild(div);

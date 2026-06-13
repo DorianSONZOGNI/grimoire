@@ -252,56 +252,66 @@ public class CombatService {
         }
         session.advanceTurnIndex();
         
-        captureLogs(session, () -> {
-            processAutoTurns(session);
-        });
+        if (session.isRoundFinished() && !session.areAllEnemiesDead() && !session.areAllPlayersDead()) {
+            session.setTurnNumber(session.getTurnNumber() + 1);
+            rollInitiative(session);
+        }
         
         computeSpellAvailability(session);
         return session;
     }
 
-    private void processAutoTurns(CombatSession session) {
-        while (!session.isRoundFinished() && !session.areAllPlayersDead() && !session.areAllEnemiesDead()) {
-            generation.grimoire.model.pve.InitiativeEntry current = session.getTurnOrder().get(session.getCurrentTurnIndex());
-            if (current.isPlayer()) {
-                Personnage p = session.getPlayers().get(current.getIndex());
-                if (p.getHealthCurrent() > 0) {
-                    session.addLog("--- Tour de " + p.getName() + " ---");
-                    spellService.startTurn(p);
-                    break; // Stop auto-processing, wait for player action
+    public CombatSession processNextAutoTurn(String sessionId) {
+        CombatSession session = activeSessions.get(sessionId);
+        if (session == null || session.isFinished()) return session;
+        
+        if (session.isRoundFinished()) {
+            if (!session.areAllEnemiesDead() && !session.areAllPlayersDead()) {
+                session.setTurnNumber(session.getTurnNumber() + 1);
+                rollInitiative(session);
+            }
+            computeSpellAvailability(session);
+            return session;
+        }
+
+        generation.grimoire.model.pve.InitiativeEntry current = session.getTurnOrder().get(session.getCurrentTurnIndex());
+        
+        // Safety: if the current turn is a player, we shouldn't auto-process! We just return.
+        if (current.isPlayer()) {
+            computeSpellAvailability(session);
+            return session;
+        }
+
+        generation.grimoire.model.pve.ActiveMonster m = session.getEnemies().get(current.getIndex());
+        if (!m.isDead()) {
+            captureLogs(session, () -> {
+                session.addLog("--- Tour de l'ennemi " + m.getBase().getName() + " ---");
+                spellService.startTurn(m.getAsPersonnage());
+                
+                Personnage mp = m.getAsPersonnage();
+                if (mp.getRemainingChannelingTurns() > 0) {
+                    Personnage cTarget = mp.getChannelingTarget();
+                    if (cTarget == null && !session.getPlayers().isEmpty()) {
+                        cTarget = session.getPlayers().get(0);
+                    }
+                    spellService.tickChanneling(mp, cTarget, mp.getChannelingChoiceKey());
                 } else {
-                    session.advanceTurnIndex();
-                }
-            } else {
-                generation.grimoire.model.pve.ActiveMonster m = session.getEnemies().get(current.getIndex());
-                if (!m.isDead()) {
-                    session.addLog("--- Tour de l'ennemi " + m.getBase().getName() + " ---");
-                    spellService.startTurn(m.getAsPersonnage());
-                    
-                    Personnage mp = m.getAsPersonnage();
-                    if (mp.getRemainingChannelingTurns() > 0) {
-                        Personnage cTarget = mp.getChannelingTarget();
-                        if (cTarget == null && !session.getPlayers().isEmpty()) {
-                            cTarget = session.getPlayers().get(0);
-                        }
-                        spellService.tickChanneling(mp, cTarget, mp.getChannelingChoiceKey());
-                    } else {
-                        List<Personnage> alivePlayers = session.getPlayers().stream().filter(pl -> pl.getHealthCurrent() > 0).toList();
-                        if (!alivePlayers.isEmpty()) {
-                            Personnage targetPlayer = alivePlayers.get(new java.util.Random().nextInt(alivePlayers.size()));
-                            int monsterDmg = m.getBase().getStrength();
-                            System.out.println(m.getBase().getName() + " attaque " + targetPlayer.getName() + " et inflige " + monsterDmg + " dégâts.");
-                            targetPlayer.takeDamage(monsterDmg, generation.grimoire.enumeration.DamageType.PHYSIC);
-                            if (targetPlayer.getHealthCurrent() <= 0) {
-                                System.out.println(targetPlayer.getName() + " a été vaincu...");
-                            }
+                    List<Personnage> alivePlayers = session.getPlayers().stream().filter(pl -> pl.getHealthCurrent() > 0).toList();
+                    if (!alivePlayers.isEmpty()) {
+                        Personnage targetPlayer = alivePlayers.get(new java.util.Random().nextInt(alivePlayers.size()));
+                        int monsterDmg = m.getBase().getStrength();
+                        System.out.println(m.getBase().getName() + " attaque " + targetPlayer.getName() + " et inflige " + monsterDmg + " dégâts.");
+                        targetPlayer.takeDamage(monsterDmg, generation.grimoire.enumeration.DamageType.PHYSIC);
+                        if (targetPlayer.getHealthCurrent() <= 0) {
+                            System.out.println(targetPlayer.getName() + " a été vaincu...");
                         }
                     }
-                    checkDeaths(session);
                 }
-                session.advanceTurnIndex();
-            }
+                checkDeaths(session);
+            });
         }
+        
+        session.advanceTurnIndex();
         
         if (session.areAllPlayersDead()) {
             session.setFinished(true);
@@ -311,6 +321,9 @@ public class CombatService {
             session.setTurnNumber(session.getTurnNumber() + 1);
             rollInitiative(session);
         }
+        
+        computeSpellAvailability(session);
+        return session;
     }
 
     private void rollInitiative(CombatSession session) {
@@ -352,7 +365,26 @@ public class CombatService {
             session.addLog(name + " | Init: " + e.getInitiativeScore() + " (Vitesse: " + e.getSpeedStat() + ")");
         }
         
-        processAutoTurns(session);
+        // Process dead players turning at the very start of the round
+        while (!session.isRoundFinished()) {
+            generation.grimoire.model.pve.InitiativeEntry current = session.getTurnOrder().get(session.getCurrentTurnIndex());
+            if (current.isPlayer() && session.getPlayers().get(current.getIndex()).getHealthCurrent() <= 0) {
+                session.advanceTurnIndex();
+            } else if (!current.isPlayer() && session.getEnemies().get(current.getIndex()).isDead()) {
+                session.advanceTurnIndex();
+            } else if (current.isPlayer()) {
+                // It's a live player! Let's start their turn.
+                Personnage p = session.getPlayers().get(current.getIndex());
+                session.addLog("--- Tour de " + p.getName() + " ---");
+                captureLogs(session, () -> {
+                    spellService.startTurn(p);
+                });
+                break;
+            } else {
+                // It's a live monster! Stop here, the frontend will call auto-turn
+                break;
+            }
+        }
     }
     
     private int calculateInitiativeScore(int speed, java.util.Random rnd) {

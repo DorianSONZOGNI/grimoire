@@ -66,6 +66,17 @@ public class CombatController {
         }
     }
 
+    @PostMapping("/{sessionId}/auto-turn")
+    public ResponseEntity<CombatSession> autoTurn(@PathVariable String sessionId) {
+        try {
+            CombatSession session = combatService.processNextAutoTurn(sessionId);
+            return ResponseEntity.ok(session);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(null);
+        }
+    }
+
     @PostMapping("/{sessionId}/next-room")
     public ResponseEntity<CombatSession> nextRoom(@PathVariable String sessionId) {
         try {
