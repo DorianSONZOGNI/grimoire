@@ -592,10 +592,20 @@ async function openChest() {
             
             // Also show gained items (check logs for "Vous avez trouvé un objet")
             let gainedItemsHtml = '';
+            let goldAmount = 0;
             if (data.combatLog) {
-                // Determine new logs
-                const newLogs = data.combatLog.filter(log => log.includes("Vous avez trouvé un objet"));
-                newLogs.forEach(log => {
+                let chestLogs = [];
+                for (let i = data.combatLog.length - 1; i >= 0; i--) {
+                    const log = data.combatLog[i];
+                    chestLogs.unshift(log);
+                    if (log.includes("Vous avez ouvert le coffre !")) {
+                        const goldMatch = log.match(/trouvez (\d+) Or/);
+                        if (goldMatch) goldAmount = parseInt(goldMatch[1]);
+                        break;
+                    }
+                }
+                
+                chestLogs.forEach(log => {
                     const itemNameMatch = log.match(/Vous avez trouvé un objet : (.*) !/);
                     if (itemNameMatch) {
                         const eqName = itemNameMatch[1];
@@ -617,6 +627,14 @@ async function openChest() {
                         `;
                     }
                 });
+                
+                if (goldAmount > 0) {
+                    gainedItemsHtml = `
+                        <div style="background: rgba(0, 0, 0, 0.4); border: 1px solid #fde04780; padding: 0.8rem 1rem; border-radius: 8px; color: #fde047; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
+                            <span class="material-symbols-outlined" style="color: #fde047;">monetization_on</span> +${goldAmount} Or
+                        </div>
+                    ` + gainedItemsHtml;
+                }
             }
             if (gainedItemsHtml) {
                 const wrapper = document.createElement('div');
@@ -725,6 +743,30 @@ function updateUI(data) {
                     const xpContainer = document.getElementById('combatVictoryXpContainer');
                     if (xpContainer) {
                         xpContainer.innerHTML = '';
+                        
+                        let goldAmount = 0;
+                        if (data.combatLog) {
+                            for (let i = data.combatLog.length - 1; i >= 0; i--) {
+                                const log = data.combatLog[i];
+                                if (log.includes("Les monstres vaincus ont lâché")) {
+                                    const goldMatch = log.match(/lâché (\d+) Or/);
+                                    if (goldMatch) goldAmount = parseInt(goldMatch[1]);
+                                    break;
+                                }
+                                if (log.includes("Vous entrez dans")) break;
+                            }
+                        }
+                        
+                        if (goldAmount > 0) {
+                            xpContainer.innerHTML += `
+                                <div style="width: 100%; text-align: center; margin-bottom: 1rem; animation: popIn 0.5s ease-out forwards;">
+                                    <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(0,0,0,0.4); border: 1px solid #fde04780; padding: 0.5rem 1rem; border-radius: 8px; color: #fde047; font-weight: bold; font-size: 1.2rem;">
+                                        <span class="material-symbols-outlined" style="color: #fde047;">monetization_on</span> +${goldAmount} Or
+                                    </div>
+                                </div>
+                            `;
+                        }
+                        
                         function getExpStats(exp) {
                             let level = 1;
                             if (exp >= 1000) level = 5;
