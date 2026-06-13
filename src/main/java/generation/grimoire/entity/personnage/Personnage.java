@@ -49,7 +49,25 @@ public class Personnage {
     @JoinColumn(name = "voie_id", nullable = true)
     private Voie voie;
 
-    private int voieLevel = 1;
+    private int experience = 0;
+
+    public int getVoieLevel() {
+        if (experience >= 1000) return 5;
+        if (experience >= 600) return 4;
+        if (experience >= 300) return 3;
+        if (experience >= 100) return 2;
+        return 1;
+    }
+
+    public void setVoieLevel(int level) {
+        // Ignoré car calculé depuis l'expérience, mais laissé pour compatibilité avec certains setter implicites (ex: Jackson si besoin, ou si du code existant tente de le modifier)
+        // Si on force un setVoieLevel manuel (ex: admin), on pourrait affecter l'xp minimale correspondante :
+        if (level == 5) this.experience = Math.max(this.experience, 1000);
+        else if (level == 4) this.experience = Math.max(this.experience, 600);
+        else if (level == 3) this.experience = Math.max(this.experience, 300);
+        else if (level == 2) this.experience = Math.max(this.experience, 100);
+        else if (level == 1) this.experience = Math.max(this.experience, 0);
+    }
 
     @ManyToOne
     @JoinColumn(name = "spiritualite_id", nullable = true)
@@ -734,9 +752,9 @@ public class Personnage {
             if (this.voie == null || (!idMatch && !nameMatch)) {
                 return this.name + " n'a pas la " + spell.getVoie().getNom() + " requise pour lancer " + spell.getNom() + ".";
             }
-            if (this.voieLevel < spell.getNiveau()) {
+            if (this.getVoieLevel() < spell.getNiveau()) {
                 return this.name + " a besoin de " + spell.getVoie().getNom() + " niveau " + spell.getNiveau()
-                        + " (actuel: " + this.voieLevel + ") pour lancer " + spell.getNom() + ".";
+                        + " (actuel: " + this.getVoieLevel() + ") pour lancer " + spell.getNom() + ".";
             }
         }
 

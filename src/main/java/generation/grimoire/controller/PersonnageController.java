@@ -90,7 +90,11 @@ public class PersonnageController {
         } else {
             personnage.setVoie(null);
         }
-        personnage.setVoieLevel(Math.max(1, Math.min(5, dto.getVoieLevel())));
+        personnage.setExperience(Math.max(0, dto.getExperience()));
+        // Note: voieLevel est dérivé de l'expérience, mais pour garder la rétrocompatibilité ou un éventuel forçage :
+        if (dto.getVoieLevel() > 1 && dto.getExperience() == 0) {
+            personnage.setVoieLevel(Math.max(1, Math.min(5, dto.getVoieLevel())));
+        }
 
         // Spiritualité
         if (dto.getSpiritualiteId() != null) {
@@ -156,6 +160,20 @@ public class PersonnageController {
         map.put("totalSpeed", p.getEffectiveStat(generation.grimoire.enumeration.StatType.SPEED));
         map.put("totalCrit", p.getEffectiveStat(generation.grimoire.enumeration.StatType.CRIT));
 
+        map.put("experience", p.getExperience());
+        
+        int currentLevelXp = 0;
+        int nextLevelXp = 100;
+        int level = p.getVoieLevel();
+        if (level == 1) { currentLevelXp = 0; nextLevelXp = 100; }
+        else if (level == 2) { currentLevelXp = 100; nextLevelXp = 300; }
+        else if (level == 3) { currentLevelXp = 300; nextLevelXp = 600; }
+        else if (level == 4) { currentLevelXp = 600; nextLevelXp = 1000; }
+        else if (level == 5) { currentLevelXp = 1000; nextLevelXp = 1000; }
+        
+        map.put("currentLevelXp", currentLevelXp);
+        map.put("nextLevelXp", nextLevelXp);
+
         map.put("voieLevel", p.getVoieLevel());
         map.put("spiritualiteLevel", p.getSpiritualiteLevel());
 
@@ -189,6 +207,7 @@ public class PersonnageController {
         private int crit = 0;
         private Long voieId;
         private int voieLevel = 1;
+        private int experience = 0;
         private Long spiritualiteId;
         private int spiritualiteLevel = 1;
     }
