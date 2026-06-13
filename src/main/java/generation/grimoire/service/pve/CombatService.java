@@ -249,8 +249,23 @@ public class CombatService {
                     session.addLog(eligibleCount + " héros reçoivent " + room.getAlterationSpiritualXpReward()
                             + " XP de Spiritualité !");
                 } else if ("SPECIAL_ITEM".equals(room.getAlterationRewardType())) {
-                    session.addLog("L'équipe reçoit l'Item Spécial : " + room.getAlterationSpecialItemReward()
-                            + " (à venir) !");
+                    String itemName = room.getAlterationSpecialItemReward();
+                    Anomalie template = anomalieRepository.findFirstByName(itemName);
+                    if (template != null && !session.getPlayers().isEmpty()) {
+                        AppUser user = session.getPlayers().get(0).getUser();
+                        if (user != null) {
+                            Anomalie newAnomaly = new Anomalie();
+                            newAnomaly.setName(template.getName());
+                            newAnomaly.setDescription(template.getDescription());
+                            newAnomaly.setSpiritualite(template.getSpiritualite());
+                            newAnomaly.setOwnerUsername(user.getUsername());
+                            newAnomaly.setUser(user);
+                            anomalieRepository.save(newAnomaly);
+                            session.addLog("L'équipe reçoit l'Item Spécial : " + itemName + " !");
+                        }
+                    } else {
+                        session.addLog("L'item spécial '" + itemName + "' n'est plus disponible.");
+                    }
                 }
             } else {
                 session.addLog("Aucun héros n'avait les ressources nécessaires pour l'altération.");

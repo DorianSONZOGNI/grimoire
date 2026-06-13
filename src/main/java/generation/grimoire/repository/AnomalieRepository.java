@@ -6,4 +6,5 @@ import java.util.List;
 
 public interface AnomalieRepository extends JpaRepository<Anomalie, Long> {
     List<Anomalie> findByOwnerUsername(String ownerUsername);
+    Anomalie findFirstByName(String name);
 }
