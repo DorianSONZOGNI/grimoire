@@ -59,11 +59,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify(monstre)
             });
             if (res.ok) {
-                alert(editingMonsterId ? 'Monstre modifié avec succès' : 'Monstre créé avec succès');
+                showNotif(editingMonsterId ? 'Monstre modifié avec succès' : 'Monstre créé avec succès');
                 window.cancelMonsterEdit();
                 loadMonsters();
             } else {
-                alert("Erreur lors de l'enregistrement du monstre");
+                showNotif("Erreur lors de l'enregistrement du monstre", true);
             }
         } catch (err) {
             console.error(err);
@@ -74,7 +74,7 @@ document.addEventListener('DOMContentLoaded', () => {
         e.preventDefault();
 
         if (selectedRooms.length === 0) {
-            alert("Veuillez ajouter au moins une salle au donjon.");
+            showNotif("Veuillez ajouter au moins une salle au donjon.", true);
             return;
         }
 
@@ -113,11 +113,11 @@ document.addEventListener('DOMContentLoaded', () => {
                 body: JSON.stringify(donjon)
             });
             if (res.ok) {
-                alert(editingDungeonId ? 'Donjon modifié avec succès' : 'Donjon créé avec succès');
+                showNotif(editingDungeonId ? 'Donjon modifié avec succès' : 'Donjon créé avec succès');
                 window.cancelDungeonEdit();
                 loadDungeons();
             } else {
-                alert("Erreur lors de l'enregistrement du donjon");
+                showNotif("Erreur lors de l'enregistrement du donjon", true);
             }
         } catch (err) {
             console.error(err);
@@ -613,3 +613,15 @@ async function deleteDungeon(id) {
         console.error(e);
     }
 }
+
+window.showNotif = function(message, isError = false) {
+    const notif = document.getElementById('pveNotif');
+    if (!notif) return;
+    notif.textContent = message;
+    notif.classList.remove('error');
+    if (isError) notif.classList.add('error');
+    notif.classList.add('show');
+    setTimeout(() => {
+        notif.classList.remove('show');
+    }, 3000);
+};
