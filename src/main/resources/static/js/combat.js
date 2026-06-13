@@ -72,7 +72,7 @@ async function startCombat(characterIds, dungeonId) {
 function selectTarget(index) {
     if (!currentSessionData || currentSessionData.enemies.length <= index) return;
     if (currentSessionData.enemies[index].dead) return;
-    
+
     selectedTargetIndex = index;
     updateUI(currentSessionData);
 }
@@ -310,10 +310,10 @@ function updateUI(data) {
             const isActive = index === data.currentActivePlayerIndex;
             const isDead = p.healthCurrent <= 0;
             const isAllySelected = index === selectedAllyIndex;
-            
+
             const div = document.createElement('div');
             div.className = `fighter fighter-player ${isActive ? 'active' : ''} ${isAllySelected ? 'selected-ally' : ''} ${isDead ? 'dead' : ''}`;
-            
+
             if (isAllySelected) {
                 div.style.borderColor = '#10b981';
                 div.style.boxShadow = '0 0 20px rgba(16, 185, 129, 0.4)';
@@ -524,7 +524,7 @@ function generateFighterHtml(c, isHero) {
         if (c.passiveStates && c.passiveStates['consolidation_active_level'] !== undefined) {
             level = c.passiveStates['consolidation_active_level'];
         }
-        
+
         let icon = 'shield', color = '#9ca3af', borderColor = 'rgba(156, 163, 175, 0.4)', text = '+5% Armure', title = "Consolidation (Défaut)";
         if (level === 1) {
             icon = 'speed'; color = '#f59e0b'; borderColor = 'rgba(245, 158, 11, 0.4)'; text = '+1 Vit'; title = "Consolidation (Niveau 1)";
@@ -594,7 +594,7 @@ function generateFighterHtml(c, isHero) {
     }
 
     statsHtml += `</div>`;
-    
+
     let passiveBadges = '';
 
     return `
@@ -661,7 +661,7 @@ function renderShieldsHtml(shieldList) {
     if (shieldEntries.length === 0) return '';
 
     const tooltipAttrs = 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"';
-    
+
     return `<div class="sandbox-status-badge buff" ${tooltipAttrs} style="cursor: help; position: relative; border-color: rgba(56, 189, 248, 0.4); color: #38bdf8; background: rgba(56, 189, 248, 0.1);">
         <span class="material-symbols-outlined" style="font-size: 0.95rem;">shield</span>
         <span>Boucliers (${totalShield})</span>
@@ -780,14 +780,44 @@ function renderBuffsHtml(buffList) {
 
 let currentSpellsTab = 'VOIE';
 
-window.switchSpellTab = function(tab) {
+window.switchSpellTab = function (tab) {
     currentSpellsTab = tab;
     // Update tab UI
     document.querySelectorAll('.csp-tab').forEach(t => t.classList.remove('active'));
     const tabEl = document.querySelector(`.csp-tab[data-target="${tab}"]`);
     if (tabEl) tabEl.classList.add('active');
-    
+
+    // Reset secondary filters on tab change
+    const typeAll = document.querySelector('input[name="filterCastingType"][value="ALL"]');
+    if (typeAll) typeAll.checked = true;
+    const levelAll = document.querySelector('input[name="filterLevel"][value="ALL"]');
+    if (levelAll) levelAll.checked = true;
+
     // Re-render
+    if (currentSessionData && currentSessionData.availableSpells) {
+        renderSpells(currentSessionData.availableSpells);
+    }
+}
+
+window.applySpellFilters = function (clickedEl) {
+    if (clickedEl && clickedEl.name === 'filterLevel') {
+        if (clickedEl.value === 'ALL' && clickedEl.checked) {
+            // Uncheck all other levels
+            document.querySelectorAll('input[name="filterLevel"]:not([value="ALL"])').forEach(el => el.checked = false);
+        } else if (clickedEl.value !== 'ALL' && clickedEl.checked) {
+            // Uncheck ALL
+            const allEl = document.querySelector('input[name="filterLevel"][value="ALL"]');
+            if (allEl) allEl.checked = false;
+        }
+
+        // If everything is unchecked, check ALL automatically
+        const anyChecked = document.querySelector('input[name="filterLevel"]:checked');
+        if (!anyChecked) {
+            const allEl = document.querySelector('input[name="filterLevel"][value="ALL"]');
+            if (allEl) allEl.checked = true;
+        }
+    }
+
     if (currentSessionData && currentSessionData.availableSpells) {
         renderSpells(currentSessionData.availableSpells);
     }
@@ -815,6 +845,20 @@ function renderSpells(spells) {
     const countALL = document.getElementById('countALL');
     if (countALL) countALL.textContent = spells.length;
 
+    // Apply secondary filters
+    const typeFilterEl = document.querySelector('input[name="filterCastingType"]:checked');
+    const levelCheckboxes = Array.from(document.querySelectorAll('input[name="filterLevel"]:checked'));
+    
+    if (typeFilterEl && typeFilterEl.value !== 'ALL') {
+        filteredSpells = filteredSpells.filter(s => s.castingType === typeFilterEl.value);
+    }
+    
+    const isAllLevels = levelCheckboxes.some(cb => cb.value === 'ALL');
+    if (!isAllLevels && levelCheckboxes.length > 0) {
+        const selectedLevels = levelCheckboxes.map(cb => parseInt(cb.value, 10));
+        filteredSpells = filteredSpells.filter(s => selectedLevels.includes(s.niveau || 1));
+    }
+
     if (filteredSpells.length === 0) {
         container.innerHTML = '<div style="color: #94a3b8; font-style: italic; padding: 2rem; text-align: center;">Aucun sort dans cette catégorie.</div>';
         return;
@@ -834,7 +878,7 @@ function renderSpells(spells) {
     let html = '';
     sortedLevels.forEach(lvl => {
         const levelSpells = levelsMap.get(lvl);
-        
+
         let title = `Niveau ${lvl}`;
         if (currentSpellsTab === 'VOIE') {
             const voieNames = [...new Set(levelSpells.map(s => s.voie.nom))];

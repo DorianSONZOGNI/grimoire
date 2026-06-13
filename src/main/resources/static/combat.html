@@ -8,8 +8,12 @@
     <link rel="icon" type="image/png" href="/favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+        rel="stylesheet" />
     <link rel="stylesheet" href="/styles/variables.css">
     <link rel="stylesheet" href="/styles/components.css">
     <link rel="stylesheet" href="/styles/sandbox.css">
@@ -91,7 +95,7 @@
             font-size: 0.8rem;
             font-weight: 600;
             color: white;
-            text-shadow: 1px 1px 2px rgba(0,0,0,0.8);
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.8);
         }
 
         .mana-bar-bg {
@@ -114,9 +118,9 @@
         .fighter-sprite {
             font-size: 6rem;
             margin: 2rem 0;
-            color: rgba(255,255,255,0.8);
+            color: rgba(255, 255, 255, 0.8);
         }
-        
+
         .enemy-sprite {
             color: #ef4444;
         }
@@ -145,7 +149,7 @@
         .log-entry {
             margin-bottom: 0.5rem;
             padding-bottom: 0.5rem;
-            border-bottom: 1px solid rgba(255,255,255,0.05);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             line-height: 1.4;
         }
 
@@ -154,7 +158,7 @@
             background: linear-gradient(180deg, rgba(15, 23, 42, 0.95) 0%, rgba(9, 14, 23, 0.98) 100%);
             border-top: 1px solid rgba(255, 255, 255, 0.1);
             display: flex;
-            height: 210px;
+            height: 260px;
             width: 100%;
             position: relative;
             box-shadow: inset 0 20px 50px rgba(0, 0, 0, 0.5);
@@ -172,6 +176,7 @@
             background: radial-gradient(circle, rgba(56, 189, 248, 0.15) 0%, transparent 70%);
             pointer-events: none;
         }
+
         .combat-spells-panel::after {
             content: '';
             position: absolute;
@@ -245,6 +250,71 @@
             box-shadow: 0 0 15px rgba(16, 185, 129, 0.2);
         }
 
+        .csp-center-col {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            overflow: hidden;
+            position: relative;
+            z-index: 2;
+        }
+
+        .csp-filters {
+            background: rgba(0, 0, 0, 0.4);
+            border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+            padding: 0.5rem 1.5rem;
+            display: flex;
+            align-items: center;
+            gap: 2rem;
+            flex-shrink: 0;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.85rem;
+        }
+
+        .filter-label {
+            color: #94a3b8;
+            font-weight: 600;
+            margin-right: 0.5rem;
+        }
+
+        .filter-radio {
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+        }
+
+        .filter-radio input[type="radio"],
+        .filter-radio input[type="checkbox"] {
+            display: none;
+        }
+
+        .filter-radio span {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            padding: 0.2rem 0.6rem;
+            border-radius: 12px;
+            color: #cbd5e1;
+            transition: all 0.2s;
+        }
+
+        .filter-radio:hover span {
+            background: rgba(255, 255, 255, 0.1);
+        }
+
+        .filter-radio input[type="radio"]:checked + span,
+        .filter-radio input[type="checkbox"]:checked + span {
+            background: rgba(56, 189, 248, 0.2);
+            border-color: rgba(56, 189, 248, 0.5);
+            color: #38bdf8;
+            box-shadow: 0 0 8px rgba(56, 189, 248, 0.2);
+        }
+
         .csp-main {
             flex: 1;
             padding: 1.5rem;
@@ -254,13 +324,15 @@
             position: relative;
             z-index: 2;
         }
-        
+
         .csp-main::-webkit-scrollbar {
             width: 8px;
         }
+
         .csp-main::-webkit-scrollbar-track {
             background: rgba(0, 0, 0, 0.2);
         }
+
         .csp-main::-webkit-scrollbar-thumb {
             background: rgba(255, 255, 255, 0.1);
             border-radius: 4px;
@@ -285,7 +357,7 @@
             content: '';
             flex: 1;
             height: 1px;
-            background: linear-gradient(90deg, rgba(255,255,255,0.1) 0%, transparent 100%);
+            background: linear-gradient(90deg, rgba(255, 255, 255, 0.1) 0%, transparent 100%);
         }
 
         .csp-grid {
@@ -332,7 +404,7 @@
             display: flex;
             align-items: center;
             gap: 0.2rem;
-            background: rgba(0,0,0,0.2);
+            background: rgba(0, 0, 0, 0.2);
             padding: 0.15rem 0.3rem;
             border-radius: 4px;
             align-self: flex-start;
@@ -345,7 +417,7 @@
             gap: 0.2rem;
             font-size: 0.8rem;
             font-weight: 600;
-            background: rgba(0,0,0,0.3);
+            background: rgba(0, 0, 0, 0.3);
             padding: 0.2rem 0.4rem;
             border-radius: 6px;
             margin-top: auto;
@@ -353,8 +425,8 @@
 
         .combat-spell-options select {
             width: 100%;
-            background: rgba(0,0,0,0.4);
-            border: 1px solid rgba(255,255,255,0.1);
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(255, 255, 255, 0.1);
             color: #e2e8f0;
             border-radius: 4px;
             padding: 0.15rem;
@@ -407,8 +479,11 @@
 
         .result-overlay {
             position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
-            background: rgba(0,0,0,0.8);
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0, 0, 0, 0.8);
             backdrop-filter: blur(5px);
             display: flex;
             flex-direction: column;
@@ -430,7 +505,7 @@
             font-size: 4rem;
             font-weight: 700;
             margin-bottom: 2rem;
-            text-shadow: 0 0 20px rgba(255,255,255,0.2);
+            text-shadow: 0 0 20px rgba(255, 255, 255, 0.2);
         }
 
         .result-title.victory {
@@ -444,34 +519,61 @@
             -webkit-background-clip: text;
             -webkit-text-fill-color: transparent;
         }
-        
+
         .floating-damage {
             position: absolute;
             font-family: 'Outfit', sans-serif;
             font-size: 2rem;
             font-weight: 700;
             color: #ef4444;
-            text-shadow: 0 0 10px rgba(0,0,0,0.8);
+            text-shadow: 0 0 10px rgba(0, 0, 0, 0.8);
             pointer-events: none;
             animation: floatUp 1s ease-out forwards;
             z-index: 50;
         }
-        
+
         @keyframes floatUp {
-            0% { transform: translateY(0) scale(1); opacity: 1; }
-            100% { transform: translateY(-50px) scale(1.5); opacity: 0; }
+            0% {
+                transform: translateY(0) scale(1);
+                opacity: 1;
+            }
+
+            100% {
+                transform: translateY(-50px) scale(1.5);
+                opacity: 0;
+            }
         }
-        
+
         @keyframes shake {
-            10%, 90% { transform: translate3d(-1px, 0, 0); }
-            20%, 80% { transform: translate3d(2px, 0, 0); }
-            30%, 50%, 70% { transform: translate3d(-4px, 0, 0); }
-            40%, 60% { transform: translate3d(4px, 0, 0); }
+
+            10%,
+            90% {
+                transform: translate3d(-1px, 0, 0);
+            }
+
+            20%,
+            80% {
+                transform: translate3d(2px, 0, 0);
+            }
+
+            30%,
+            50%,
+            70% {
+                transform: translate3d(-4px, 0, 0);
+            }
+
+            40%,
+            60% {
+                transform: translate3d(4px, 0, 0);
+            }
         }
-        
+
         .event-overlay {
             position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             background: rgba(15, 23, 42, 0.95);
             display: flex;
             flex-direction: column;
@@ -487,20 +589,20 @@
             opacity: 1;
             pointer-events: all;
         }
-        
+
         .enemy-card {
             cursor: pointer;
             border: 2px solid transparent;
             transform: scale(0.95);
             transition: all 0.2s;
         }
-        
+
         .enemy-card.selected {
             border-color: #ef4444;
             transform: scale(1);
             box-shadow: 0 0 20px rgba(239, 68, 68, 0.4);
         }
-        
+
         .enemy-card.dead {
             opacity: 0.3;
             filter: grayscale(1);
@@ -545,6 +647,7 @@
             background: rgba(56, 189, 248, 0.15);
             border: 1px solid rgba(56, 189, 248, 0.4);
         }
+
         .spell-disabled-badge.badge-resource .material-symbols-outlined {
             color: #38bdf8;
         }
@@ -553,6 +656,7 @@
             background: rgba(239, 68, 68, 0.15);
             border: 1px solid rgba(239, 68, 68, 0.4);
         }
+
         .spell-disabled-badge.badge-condition .material-symbols-outlined {
             color: #ef4444;
         }
@@ -561,6 +665,7 @@
             background: rgba(245, 158, 11, 0.15);
             border: 1px solid rgba(245, 158, 11, 0.4);
         }
+
         .spell-disabled-badge.badge-action .material-symbols-outlined {
             color: #f59e0b;
         }
@@ -569,6 +674,7 @@
             background: rgba(139, 92, 246, 0.15);
             border: 1px solid rgba(139, 92, 246, 0.4);
         }
+
         .spell-disabled-badge.badge-channeling .material-symbols-outlined {
             color: #8b5cf6;
         }
@@ -599,14 +705,17 @@
         .combat-grid-container::-webkit-scrollbar {
             height: 8px;
         }
+
         .combat-grid-container::-webkit-scrollbar-track {
             background: rgba(15, 23, 42, 0.5);
             border-radius: 4px;
         }
+
         .combat-grid-container::-webkit-scrollbar-thumb {
             background: rgba(255, 255, 255, 0.2);
             border-radius: 4px;
         }
+
         .combat-grid-container::-webkit-scrollbar-thumb:hover {
             background: rgba(255, 255, 255, 0.3);
         }
@@ -626,14 +735,15 @@
     </div>
 
     <div class="combat-arena" id="arena">
-        
+
         <div id="playersContainer" class="combat-grid-container">
             <!-- Players dynamically generated by combat.js -->
         </div>
 
         <!-- Log -->
         <div class="combat-log-container">
-            <div style="font-family: 'Outfit'; font-weight: 600; color: #f8fafc; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem;">
+            <div
+                style="font-family: 'Outfit'; font-weight: 600; color: #f8fafc; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem;">
                 Journal de combat
             </div>
             <div class="combat-log" id="combatLog">
@@ -648,17 +758,21 @@
 
         <!-- Room Event Overlay (Treasure/Event) -->
         <div class="event-overlay" id="eventOverlay">
-            <span class="material-symbols-outlined" id="eventIcon" style="font-size: 5rem; margin-bottom: 1rem; color: #f59e0b;">money_bag</span>
+            <span class="material-symbols-outlined" id="eventIcon"
+                style="font-size: 5rem; margin-bottom: 1rem; color: #f59e0b;">money_bag</span>
             <div class="result-title" id="eventTitle" style="font-size: 3rem; margin-bottom: 1rem;">Trésor !</div>
-            <p style="color: #94a3b8; font-size: 1.2rem; margin-bottom: 2rem; max-width: 600px; text-align: center;" id="eventDesc">Vous avez trouvé un trésor.</p>
-            <button class="action-btn" onclick="nextRoom()" style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; border-color: rgba(59, 130, 246, 0.4);">
+            <p style="color: #94a3b8; font-size: 1.2rem; margin-bottom: 2rem; max-width: 600px; text-align: center;"
+                id="eventDesc">Vous avez trouvé un trésor.</p>
+            <button class="action-btn" onclick="nextRoom()"
+                style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; border-color: rgba(59, 130, 246, 0.4);">
                 Continuer
             </button>
         </div>
 
         <div class="result-overlay" id="resultOverlay">
             <div class="result-title" id="resultTitle">VICTOIRE</div>
-            <p style="color: #94a3b8; font-size: 1.2rem; margin-bottom: 2rem;" id="resultDesc">Le donjon a été complété.</p>
+            <p style="color: #94a3b8; font-size: 1.2rem; margin-bottom: 2rem;" id="resultDesc">Le donjon a été complété.
+            </p>
             <a href="/vault.html" class="action-btn" style="text-decoration: none;">
                 Retourner à la page des donjons
             </a>
@@ -683,25 +797,51 @@
             </button>
         </div>
 
-        <!-- Main Spells Area (Center) -->
-        <div class="csp-main" id="spellsContainer">
-            <!-- Filled dynamically by JS -->
+        <!-- Center Column -->
+        <div class="csp-center-col">
+            <!-- Filter Bar -->
+            <div class="csp-filters">
+                <div class="filter-group">
+                    <span class="filter-label">Type:</span>
+                    <label class="filter-radio"><input type="radio" name="filterCastingType" value="ALL" checked onchange="applySpellFilters(this)"><span>Tous</span></label>
+                    <label class="filter-radio"><input type="radio" name="filterCastingType" value="INSTANTANE" onchange="applySpellFilters(this)"><span>Instantané</span></label>
+                    <label class="filter-radio"><input type="radio" name="filterCastingType" value="BANAL" onchange="applySpellFilters(this)"><span>Banal</span></label>
+                    <label class="filter-radio"><input type="radio" name="filterCastingType" value="CANALISE" onchange="applySpellFilters(this)"><span>Canalisé</span></label>
+                </div>
+                <div class="filter-group">
+                    <span class="filter-label">Niveau:</span>
+                    <label class="filter-radio"><input type="checkbox" name="filterLevel" value="ALL" checked onchange="applySpellFilters(this)"><span>Tous</span></label>
+                    <label class="filter-radio"><input type="checkbox" name="filterLevel" value="1" onchange="applySpellFilters(this)"><span>1</span></label>
+                    <label class="filter-radio"><input type="checkbox" name="filterLevel" value="2" onchange="applySpellFilters(this)"><span>2</span></label>
+                    <label class="filter-radio"><input type="checkbox" name="filterLevel" value="3" onchange="applySpellFilters(this)"><span>3</span></label>
+                    <label class="filter-radio"><input type="checkbox" name="filterLevel" value="4" onchange="applySpellFilters(this)"><span>4</span></label>
+                    <label class="filter-radio"><input type="checkbox" name="filterLevel" value="5" onchange="applySpellFilters(this)"><span>5</span></label>
+                </div>
+            </div>
+
+            <!-- Main Spells Area -->
+            <div class="csp-main" id="spellsContainer">
+                <!-- Filled dynamically by JS -->
+            </div>
         </div>
 
         <!-- Sidebar Actions (Right) -->
         <div class="csp-sidebar csp-sidebar-right">
-            <button class="action-btn attack" id="btnAttack" onclick="doAction()" disabled style="width: 100%; justify-content: center; margin-bottom: 0.5rem; white-space: nowrap;">
+            <button class="action-btn attack" id="btnAttack" onclick="doAction()" disabled
+                style="width: 100%; justify-content: center; margin-bottom: 0.5rem; white-space: nowrap;">
                 <span class="material-symbols-outlined">swords</span>
                 Attaque
             </button>
-            
+
             <div style="flex: 1;"></div> <!-- Spacer -->
 
-            <button class="action-btn" id="btnEndTurn" onclick="endTurn()" style="background: rgba(139, 92, 246, 0.2); color: #c084fc; border-color: rgba(139, 92, 246, 0.4); width: 100%; justify-content: center; white-space: nowrap;">
+            <button class="action-btn" id="btnEndTurn" onclick="endTurn()"
+                style="background: rgba(139, 92, 246, 0.2); color: #c084fc; border-color: rgba(139, 92, 246, 0.4); width: 100%; justify-content: center; white-space: nowrap;">
                 <span class="material-symbols-outlined">hourglass_top</span>
                 Fin de Tour
             </button>
-            <a href="/dungeons.html" class="action-btn flee" style="text-decoration: none; width: 100%; justify-content: center; white-space: nowrap;">
+            <a href="/dungeons.html" class="action-btn flee"
+                style="text-decoration: none; width: 100%; justify-content: center; white-space: nowrap;">
                 <span class="material-symbols-outlined">directions_run</span>
                 Fuir
             </a>
@@ -712,4 +852,5 @@
 
     <script type="module" src="/js/combat.js"></script>
 </body>
+
 </html>
