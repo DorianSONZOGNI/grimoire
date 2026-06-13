@@ -86,4 +86,15 @@ public class CombatController {
             return ResponseEntity.badRequest().body(null);
         }
     }
+
+    @PostMapping("/{sessionId}/open-chest")
+    public ResponseEntity<CombatSession> openChest(@PathVariable String sessionId) {
+        try {
+            CombatSession session = combatService.openChest(sessionId);
+            return ResponseEntity.ok(session);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(null);
+        }
+    }
 }

@@ -16,4 +16,5 @@ public class SalleDTO {
     private int treasureExp;
     private String eventText;
     private int eventEffectAmount;
+    private List<LootEntryDTO> lootTable;
 }

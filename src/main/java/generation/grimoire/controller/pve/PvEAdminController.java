@@ -16,8 +16,8 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/admin/pve")
 @RequiredArgsConstructor
 public class PvEAdminController {
-
     private final PvEAdminService pvEAdminService;
+    private final generation.grimoire.repository.EquipmentRepository equipmentRepository;
 
     // --- MONSTERS ---
 
@@ -112,6 +112,26 @@ public class PvEAdminController {
                             .collect(Collectors.toList());
                     s.setMonsters(monsters);
                 }
+
+                if (sDto.getLootTable() != null) {
+                    List<generation.grimoire.entity.pve.LootEntry> lootEntries = sDto.getLootTable().stream()
+                            .filter(lDto -> lDto.getEquipmentId() != null)
+                            .map(lDto -> {
+                                generation.grimoire.entity.Equipment eq = equipmentRepository.findById(lDto.getEquipmentId()).orElse(null);
+                                if (eq != null) {
+                                    generation.grimoire.entity.pve.LootEntry entry = new generation.grimoire.entity.pve.LootEntry();
+                                    entry.setSalle(s);
+                                    entry.setEquipment(eq);
+                                    entry.setProbability(lDto.getProbability());
+                                    return entry;
+                                }
+                                return null;
+                            })
+                            .filter(l -> l != null)
+                            .collect(Collectors.toList());
+                    s.setLootTable(lootEntries);
+                }
+
                 return s;
             }).collect(Collectors.toList());
 

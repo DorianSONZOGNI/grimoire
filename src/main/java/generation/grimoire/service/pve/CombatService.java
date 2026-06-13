@@ -9,9 +9,12 @@ import generation.grimoire.repository.PersonnageRepository;
 import generation.grimoire.repository.auth.UserRepository;
 import generation.grimoire.repository.pve.DonjonRepository;
 import generation.grimoire.repository.SpellRepository;
+import generation.grimoire.repository.EquipmentRepository;
 import generation.grimoire.service.SpellService;
 import generation.grimoire.service.PassiveDispatcher;
 import generation.grimoire.entity.Spell;
+import generation.grimoire.entity.Equipment;
+import generation.grimoire.entity.pve.LootEntry;
 import generation.grimoire.entity.auth.AppUser;
 import generation.grimoire.enumeration.SpellCastingType;
 import generation.grimoire.event.CastingTypeAdjustEvent;
@@ -35,6 +38,7 @@ public class CombatService {
     private final DonjonRepository donjonRepository;
     private final UserRepository userRepository;
     private final SpellRepository spellRepository;
+    private final EquipmentRepository equipmentRepository;
     private final SpellService spellService;
     private final PassiveDispatcher passiveDispatcher;
     
@@ -94,30 +98,84 @@ public class CombatService {
         }
     }
 
+    public CombatSession openChest(String sessionId) {
+        CombatSession session = activeSessions.get(sessionId);
+        if (session == null || session.isFinished()) return session;
+        if (session.getCurrentRoom().getType() != generation.grimoire.enumeration.RoomType.TREASURE) {
+            throw new RuntimeException("Ce n'est pas une salle de trésor !");
+        }
+        if (session.isRoomEventCompleted()) {
+            throw new RuntimeException("Le coffre a déjà été ouvert.");
+        }
+
+        int gold = session.getCurrentRoom().getTreasureGold();
+        int exp = session.getCurrentRoom().getTreasureExp();
+        session.setTotalGoldAccumulated(session.getTotalGoldAccumulated() + gold);
+        
+        int expPerHero = exp / Math.max(1, session.getPlayers().size());
+        for(Personnage p : session.getPlayers()) {
+            p.setExperience(p.getExperience() + expPerHero);
+            personnageRepository.save(p);
+        }
+        
+        AppUser user = null;
+        if (!session.getPlayers().isEmpty()) {
+            user = session.getPlayers().get(0).getUser();
+            if (user != null && gold > 0) {
+                user.setMonnaie(user.getMonnaie() + gold);
+                userRepository.save(user);
+            }
+        }
+        
+        session.addLog("Vous avez ouvert le coffre ! Vous trouvez " + gold + " Or et chaque héros gagne " + expPerHero + " XP.");
+
+        // Loot table
+        java.util.Random rnd = new java.util.Random();
+        if (session.getCurrentRoom().getLootTable() != null && user != null) {
+            for (LootEntry entry : session.getCurrentRoom().getLootTable()) {
+                double roll = rnd.nextDouble() * 100.0;
+                if (roll <= entry.getProbability() && entry.getEquipment() != null) {
+                    Equipment template = entry.getEquipment();
+                    
+                    // Clone it
+                    Equipment clone = new Equipment();
+                    clone.setName(template.getName());
+                    clone.setSlot(template.getSlot());
+                    clone.setBonusHealthMax(template.getBonusHealthMax());
+                    clone.setBonusManaMax(template.getBonusManaMax());
+                    clone.setBonusPower(template.getBonusPower());
+                    clone.setBonusStrength(template.getBonusStrength());
+                    clone.setBonusArmor(template.getBonusArmor());
+                    clone.setBonusResistance(template.getBonusResistance());
+                    clone.setBonusSpeed(template.getBonusSpeed());
+                    clone.setBonusCrit(template.getBonusCrit());
+                    clone.setRegenHealthPerTurn(template.getRegenHealthPerTurn());
+                    clone.setRegenManaPerTurn(template.getRegenManaPerTurn());
+                    clone.setRarity(template.getRarity());
+                    clone.setSpecialEffect(template.getSpecialEffect());
+                    clone.setSpecialEffectValue(template.getSpecialEffectValue());
+                    
+                    clone.setShopTemplate(false);
+                    clone.setUser(user);
+                    clone.setOwnerUsername(user.getUsername());
+                    
+                    equipmentRepository.save(clone);
+                    
+                    session.addLog("Vous avez trouvé un objet : " + template.getName() + " !");
+                }
+            }
+        }
+
+        session.setRoomEventCompleted(true);
+        return session;
+    }
+
     public CombatSession proceedToNextRoom(String sessionId) {
         CombatSession session = activeSessions.get(sessionId);
         if (session == null || session.isFinished()) return session;
         
         // If current room was treasure or event, apply it now before moving
-        if (session.getCurrentRoom().getType() == generation.grimoire.enumeration.RoomType.TREASURE) {
-            int gold = session.getCurrentRoom().getTreasureGold();
-            int exp = session.getCurrentRoom().getTreasureExp();
-            session.setTotalGoldAccumulated(session.getTotalGoldAccumulated() + gold);
-            
-            int expPerHero = exp / Math.max(1, session.getPlayers().size());
-            for(Personnage p : session.getPlayers()) {
-                p.setExperience(p.getExperience() + expPerHero);
-                personnageRepository.save(p);
-            }
-            if (gold > 0 && !session.getPlayers().isEmpty()) {
-                generation.grimoire.entity.auth.AppUser user = session.getPlayers().get(0).getUser();
-                if (user != null) {
-                    user.setMonnaie(user.getMonnaie() + gold);
-                    userRepository.save(user);
-                }
-            }
-            session.addLog("Vous avez ramassé " + gold + " Or et chaque héros gagne " + expPerHero + " XP.");
-        } else if (session.getCurrentRoom().getType() == generation.grimoire.enumeration.RoomType.EVENT) {
+        if (session.getCurrentRoom().getType() == generation.grimoire.enumeration.RoomType.EVENT) {
             int effect = session.getCurrentRoom().getEventEffectAmount();
             for (Personnage p : session.getPlayers()) {
                 if (p.getHealthCurrent() <= 0) continue;

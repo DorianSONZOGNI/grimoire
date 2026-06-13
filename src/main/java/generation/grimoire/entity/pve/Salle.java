@@ -38,4 +38,7 @@ public class Salle {
     private String eventText;
     // Positive or negative effect amount
     private int eventEffectAmount;
+
+    @OneToMany(mappedBy = "salle", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<LootEntry> lootTable = new ArrayList<>();
 }

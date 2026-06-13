@@ -22,6 +22,7 @@ let previousPlayerXP = {};
 window.doAction = doAction;
 window.endTurn = endTurn;
 window.nextRoom = nextRoom;
+window.openChest = openChest;
 window.showGlobalTooltip = ui.showGlobalTooltip;
 window.hideGlobalTooltip = ui.hideGlobalTooltip;
 window.initiateCombatCast = initiateCombatCast;
@@ -394,6 +395,198 @@ async function nextRoom() {
     }
 }
 
+async function openChest() {
+    if (!sessionId) return;
+    try {
+        const btn = document.getElementById('btnOpenChest');
+        if (btn) {
+            btn.disabled = true;
+            btn.innerHTML = `<span class="material-symbols-outlined spin">sync</span> Ouverture...`;
+        }
+        
+        const res = await fetch(`/api/pve/combat/${sessionId}/open-chest`, { method: 'POST' });
+        if (!res.ok) {
+            const err = await res.text();
+            alert("Erreur : " + err);
+            return;
+        }
+        
+        const data = await res.json();
+        
+        // Handle custom animation for XP + Items in eventLootContainer
+        const lootContainer = document.getElementById('eventLootContainer');
+        if (lootContainer) {
+            lootContainer.style.display = 'flex';
+            lootContainer.innerHTML = '';
+            
+            // Re-use the XP Stats function locally
+            function getExpStats(exp) {
+                let level = 1;
+                if (exp >= 1000) level = 5;
+                else if (exp >= 600) level = 4;
+                else if (exp >= 300) level = 3;
+                else if (exp >= 100) level = 2;
+                
+                let currentLvlXp = 0;
+                let nextLvlXp = 100;
+                if (level === 2) { currentLvlXp = 100; nextLvlXp = 300; }
+                else if (level === 3) { currentLvlXp = 300; nextLvlXp = 600; }
+                else if (level === 4) { currentLvlXp = 600; nextLvlXp = 1000; }
+                else if (level === 5) { currentLvlXp = 1000; nextLvlXp = exp; }
+                
+                let progress = 100;
+                if (level < 5) {
+                    progress = ((exp - currentLvlXp) / (nextLvlXp - currentLvlXp)) * 100;
+                }
+                return { level, currentLvlXp, nextLvlXp, progress };
+            }
+
+            data.players.forEach(p => {
+                let oldExp = previousPlayerXP[p.id] !== undefined ? previousPlayerXP[p.id] : p.experience;
+                let endExp = p.experience;
+                let oldStats = getExpStats(oldExp);
+
+                lootContainer.innerHTML += `
+                    <div id="chest-xp-card-${p.id}" style="background: rgba(0,0,0,0.4); padding: 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); text-align: center; width: 150px; position: relative; overflow: hidden; transition: all 0.5s;">
+                        <div style="color: #e2e8f0; font-weight: bold; margin-bottom: 0.5rem; text-overflow: ellipsis; overflow: hidden; white-space: nowrap; position: relative; z-index: 2;">${p.name}</div>
+                        <div id="chest-xp-lvl-${p.id}" style="color: #38bdf8; font-size: 0.9rem; margin-bottom: 0.5rem; font-weight: 600; transition: color 0.3s, transform 0.3s; display: inline-block; position: relative; z-index: 2;">Niv. ${oldStats.level}</div>
+                        <div style="width: 100%; background: #334155; border-radius: 4px; height: 8px; margin-bottom: 0.3rem; position: relative; z-index: 2;">
+                            <div id="chest-xp-fill-${p.id}" style="height: 100%; width: ${Math.min(100, oldStats.progress)}%; background: #10b981; transition: box-shadow 0.3s;"></div>
+                        </div>
+                        <div id="chest-xp-text-${p.id}" style="font-size: 0.8rem; color: #94a3b8; font-family: monospace; position: relative; z-index: 2;">${oldExp} / ${oldStats.level === 5 ? 'MAX' : oldStats.nextLvlXp} XP</div>
+                    </div>
+                `;
+                
+                // Animate XP
+                setTimeout(() => {
+                    let startTime = null;
+                    const duration = 1500;
+                    const bar = document.getElementById(`chest-xp-fill-${p.id}`);
+                    const text = document.getElementById(`chest-xp-text-${p.id}`);
+                    const lvlText = document.getElementById(`chest-xp-lvl-${p.id}`);
+                    
+                    function animate(currentTime) {
+                        if (!startTime) startTime = currentTime;
+                        let t = (currentTime - startTime) / duration;
+                        if (t > 1) t = 1;
+                        
+                        let easeT = t * (2 - t);
+                        let currentExp = Math.floor(oldExp + (endExp - oldExp) * easeT);
+                        let stats = getExpStats(currentExp);
+                        
+                        if (bar && text && lvlText) {
+                            bar.style.width = Math.min(100, stats.progress) + "%";
+                            text.innerText = currentExp + " / " + (stats.level === 5 ? 'MAX' : stats.nextLvlXp) + " XP";
+                            
+                            // Level up effects!
+                            if (lvlText.innerText !== "Niv. " + stats.level) {
+                                lvlText.innerText = "Niv. " + stats.level;
+                                lvlText.style.color = "#f59e0b";
+                                lvlText.style.transform = "scale(1.3)";
+                                
+                                const card = document.getElementById(`chest-xp-card-${p.id}`);
+                                if (card) {
+                                    card.style.boxShadow = "0 0 30px 10px rgba(245, 158, 11, 0.4)";
+                                    card.style.borderColor = "#f59e0b";
+                                    card.style.transform = "scale(1.05)";
+                                    
+                                    const splash = document.createElement("div");
+                                    splash.style.position = "absolute";
+                                    splash.style.top = "0"; splash.style.left = "0"; splash.style.right = "0"; splash.style.bottom = "0";
+                                    splash.style.background = "radial-gradient(circle, rgba(245,158,11,0.6) 0%, rgba(245,158,11,0) 70%)";
+                                    splash.style.opacity = "1";
+                                    splash.style.transition = "opacity 0.8s ease-out, transform 0.8s ease-out";
+                                    splash.style.transform = "scale(0.5)";
+                                    splash.style.pointerEvents = "none";
+                                    splash.style.zIndex = "1";
+                                    card.appendChild(splash);
+                                    
+                                    requestAnimationFrame(() => {
+                                        splash.style.opacity = "0";
+                                        splash.style.transform = "scale(2.5)";
+                                    });
+                            
+                                    setTimeout(() => {
+                                        if (card) {
+                                            card.style.boxShadow = "none";
+                                            card.style.borderColor = "rgba(255,255,255,0.1)";
+                                            card.style.transform = "scale(1)";
+                                        }
+                                        if (splash.parentNode) splash.parentNode.removeChild(splash);
+                                    }, 800);
+                                }
+                                
+                                setTimeout(() => {
+                                    if (lvlText) {
+                                        lvlText.style.color = "#38bdf8";
+                                        lvlText.style.transform = "scale(1)";
+                                    }
+                                }, 800);
+                            }
+                        }
+                        
+                        if (t < 1) {
+                            requestAnimationFrame(animate);
+                        } else {
+                            if (bar && oldExp !== endExp) {
+                                bar.style.boxShadow = "0 0 15px 5px rgba(16, 185, 129, 0.6)";
+                                setTimeout(() => {
+                                    if(bar) bar.style.boxShadow = "none";
+                                }, 400);
+                            }
+                        }
+                    }
+                    requestAnimationFrame(animate);
+                }, 100);
+            });
+            
+            // Also show gained items (check logs for "Vous avez trouvé un objet")
+            let gainedItemsHtml = '';
+            if (data.combatLog) {
+                // Determine new logs
+                const newLogs = data.combatLog.filter(log => log.includes("Vous avez trouvé un objet"));
+                newLogs.forEach(log => {
+                    const itemNameMatch = log.match(/Vous avez trouvé un objet : (.*) !/);
+                    if (itemNameMatch) {
+                        gainedItemsHtml += `
+                            <div style="background: rgba(245, 158, 11, 0.1); border: 1px solid #f59e0b; padding: 0.8rem 1rem; border-radius: 8px; color: #f59e0b; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
+                                <span class="material-symbols-outlined">swords</span> ${itemNameMatch[1]}
+                            </div>
+                        `;
+                    }
+                });
+            }
+            if (gainedItemsHtml) {
+                const wrapper = document.createElement('div');
+                wrapper.style.display = 'flex';
+                wrapper.style.gap = '1rem';
+                wrapper.style.flexWrap = 'wrap';
+                wrapper.style.justifyContent = 'center';
+                wrapper.style.marginTop = '1rem';
+                wrapper.style.width = '100%';
+                wrapper.innerHTML = gainedItemsHtml;
+                
+                // Add popIn keyframes dynamically if not exists
+                if (!document.getElementById('chestAnimStyle')) {
+                    const style = document.createElement('style');
+                    style.id = 'chestAnimStyle';
+                    style.innerHTML = `@keyframes popIn { to { opacity: 1; transform: scale(1); } }`;
+                    document.head.appendChild(style);
+                }
+                
+                lootContainer.appendChild(wrapper);
+            }
+        }
+        
+        // Then call updateUI
+        updateUI(data);
+
+    } catch (e) {
+        console.error(e);
+        alert("Erreur lors de l'ouverture du coffre.");
+    }
+}
+
 function updateUI(data) {
     currentSessionData = data;
 
@@ -625,11 +818,27 @@ function updateUI(data) {
             const title = document.getElementById('eventTitle');
             const desc = document.getElementById('eventDesc');
 
+            const btnOpen = document.getElementById('btnOpenChest');
+            const btnCont = document.getElementById('btnContinueEvent');
+            const lootContainer = document.getElementById('eventLootContainer');
+
             if (data.currentRoom.type === 'TREASURE') {
-                icon.textContent = 'money_bag';
+                icon.textContent = data.roomEventCompleted ? 'lock_open' : 'lock';
                 icon.style.color = '#f59e0b';
-                title.textContent = 'Trésor !';
-                desc.textContent = `Vous avez trouvé ${data.currentRoom.treasureGold} Or et ${data.currentRoom.treasureExp} XP.`;
+                title.textContent = 'Salle des Trésors';
+                
+                if (data.roomEventCompleted) {
+                    desc.textContent = `Vous avez ouvert le coffre !`;
+                    btnOpen.style.display = 'none';
+                    btnCont.style.display = 'block';
+                    lootContainer.style.display = 'flex';
+                } else {
+                    desc.textContent = `Un coffre mystérieux se trouve au centre de la pièce...`;
+                    btnOpen.style.display = 'block';
+                    btnCont.style.display = 'none';
+                    lootContainer.style.display = 'none';
+                    lootContainer.innerHTML = ''; // reset
+                }
             } else if (data.currentRoom.type === 'EVENT') {
                 icon.textContent = 'auto_awesome';
                 icon.style.color = '#8b5cf6';
@@ -638,6 +847,10 @@ function updateUI(data) {
                 if (data.currentRoom.eventEffectAmount > 0) effectText = `<br><br><span style="color:#10b981;">(Soin : ${data.currentRoom.eventEffectAmount} PV)</span>`;
                 else if (data.currentRoom.eventEffectAmount < 0) effectText = `<br><br><span style="color:#ef4444;">(Dégâts : ${-data.currentRoom.eventEffectAmount} PV)</span>`;
                 desc.innerHTML = data.currentRoom.eventText + effectText;
+                
+                btnOpen.style.display = 'none';
+                btnCont.style.display = 'block';
+                lootContainer.style.display = 'none';
             }
 
             overlay.classList.add('show');

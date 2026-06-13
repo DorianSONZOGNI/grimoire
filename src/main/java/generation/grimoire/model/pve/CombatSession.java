@@ -35,6 +35,7 @@ public class CombatSession {
     private int turnNumber = 1;
     private boolean isFinished = false;
     private boolean playerWon = false;
+    private boolean roomEventCompleted = false;
     
     private int totalGoldAccumulated = 0;
     private int totalExpAccumulated = 0;
@@ -82,6 +83,7 @@ public class CombatSession {
     
     public void loadRoom(int index) {
         this.currentRoomIndex = index;
+        this.roomEventCompleted = false;
         if (donjon.getSalles() != null && index < donjon.getSalles().size()) {
             this.currentRoom = donjon.getSalles().get(index);
             

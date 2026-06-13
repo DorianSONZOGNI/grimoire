@@ -1,6 +1,7 @@
 let editingMonsterId = null;
 let editingDungeonId = null;
 let allMonsters = [];
+let allEquipments = [];
 let selectedRooms = [];
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -17,6 +18,7 @@ document.addEventListener('DOMContentLoaded', () => {
         document.getElementById('adminPvELink').style.display = 'inline-flex';
 
         loadMonsters();
+        loadEquipments();
         loadDungeons();
     };
 
@@ -90,6 +92,9 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else if (r.type === 'TREASURE') {
                     s.treasureGold = r.treasureGold || 0;
                     s.treasureExp = r.treasureExp || 0;
+                    if (r.lootTable) {
+                        s.lootTable = r.lootTable;
+                    }
                 } else if (r.type === 'EVENT') {
                     s.eventText = r.eventText || "Événement mystérieux";
                     s.eventEffectAmount = r.eventEffectAmount || 0;
@@ -326,6 +331,48 @@ function renderRooms() {
 
         } else if (room.type === 'TREASURE') {
             headerIcon = 'shopping_bag'; headerColor = '#f59e0b'; headerTitle = 'Salle de Trésor';
+            
+            if (!room.lootTable) room.lootTable = [];
+            
+            let lootHtml = '<div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem;">';
+            if (room.lootTable.length === 0) {
+                lootHtml += `<div style="font-size:0.8rem; color: #94a3b8;">Aucun loot configuré.</div>`;
+            } else {
+                room.lootTable.forEach((loot, lIndex) => {
+                    const eq = allEquipments.find(x => x.id === loot.equipmentId);
+                    if (eq) {
+                        lootHtml += `
+                            <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); padding: 0.4rem 0.8rem; border-radius: 4px;">
+                                <span style="font-size: 0.85rem; color: #f8fafc; display: flex; align-items: center; gap: 0.4rem;"><span class="material-symbols-outlined" style="font-size:1rem; color:#f59e0b;">swords</span> ${eq.name} <span style="color:#94a3b8; font-size:0.8rem;">(${loot.probability}%)</span></span>
+                                <button type="button" onclick="removeLootFromRoom(${rIndex}, ${lIndex})" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 0;"><span class="material-symbols-outlined" style="font-size: 1rem;">close</span></button>
+                            </div>
+                        `;
+                    }
+                });
+            }
+            lootHtml += `</div>
+                <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; align-items: stretch; position: relative;">
+                    <div class="custom-select-wrapper" id="room_loot_select_wrapper_${rIndex}" style="flex: 2; z-index: ${100 - rIndex}; margin: 0;">
+                        <div class="custom-select-trigger" onclick="toggleLootSelect(${rIndex})" style="padding: 0.6rem 1rem; border-radius: 8px;">
+                            <span class="cs-label" id="room_loot_label_${rIndex}"><span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">category</span> Objet...</span>
+                            <span class="material-symbols-outlined">expand_more</span>
+                        </div>
+                        <div class="custom-select-options" id="room_loot_options_${rIndex}" style="max-height: 200px; overflow-y: auto;">
+            `;
+            allEquipments.forEach(eq => {
+                lootHtml += `<div class="custom-option" onclick="selectLootOption(${rIndex}, ${eq.id}, '${eq.name.replace(/'/g, "\\'")}')"><span class="material-symbols-outlined cs-icon" style="color: #f59e0b;">swords</span> ${eq.name}</div>`;
+            });
+            lootHtml += `
+                        </div>
+                        <input type="hidden" id="room_loot_select_${rIndex}" value="">
+                    </div>
+                    <input type="number" id="room_loot_prob_${rIndex}" class="form-control" style="flex: 1; min-width: 60px;" placeholder="Prob (%)" step="0.1" min="0" max="100">
+                    <button type="button" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border: none; padding: 0 1.2rem; font-size: 0.9rem; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 0.3rem;" onclick="addLootToRoom(${rIndex})">
+                        <span class="material-symbols-outlined" style="font-size: 1.1rem;">add</span>
+                    </button>
+                </div>
+            `;
+            
             contentHtml = `
                 <div style="display: flex; gap: 1rem; margin-top: 1rem;">
                     <div style="flex: 1;">
@@ -337,6 +384,7 @@ function renderRooms() {
                         <input type="number" class="form-control" value="${room.treasureExp}" onchange="updateRoomField(${rIndex}, 'treasureExp', parseInt(this.value))">
                     </div>
                 </div>
+                ${lootHtml}
             `;
         } else if (room.type === 'EVENT') {
             headerIcon = 'auto_awesome'; headerColor = '#8b5cf6'; headerTitle = "Salle d'Événement";
@@ -368,6 +416,17 @@ async function loadMonsters() {
             const monsters = await res.json();
             allMonsters = monsters;
             renderMonstersList();
+        }
+    } catch (e) {
+        console.error(e);
+    }
+}
+
+async function loadEquipments() {
+    try {
+        const res = await fetch('/api/shop/templates');
+        if (res.ok) {
+            allEquipments = await res.json();
         }
     } catch (e) {
         console.error(e);
@@ -572,6 +631,14 @@ async function editDungeon(id) {
                 } else if (s.type === 'TREASURE') {
                     room.treasureGold = s.treasureGold;
                     room.treasureExp = s.treasureExp;
+                    if (s.lootTable) {
+                        room.lootTable = s.lootTable.map(l => ({
+                            equipmentId: l.equipment ? l.equipment.id : l.equipmentId,
+                            probability: l.probability
+                        }));
+                    } else {
+                        room.lootTable = [];
+                    }
                 } else if (s.type === 'EVENT') {
                     room.eventText = s.eventText;
                     room.eventEffectAmount = s.eventEffectAmount;
@@ -613,6 +680,39 @@ async function deleteDungeon(id) {
         console.error(e);
     }
 }
+
+window.toggleLootSelect = function(rIndex) {
+    const wrapper = document.getElementById('room_loot_select_wrapper_' + rIndex);
+    if (wrapper) {
+        document.querySelectorAll('.custom-select-wrapper').forEach(w => {
+            if (w !== wrapper) w.classList.remove('open');
+        });
+        wrapper.classList.toggle('open');
+    }
+};
+
+window.selectLootOption = function(rIndex, eqId, eqName) {
+    document.getElementById('room_loot_select_' + rIndex).value = eqId;
+    document.getElementById('room_loot_label_' + rIndex).innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: #f59e0b;">swords</span> ${eqName}`;
+    document.getElementById('room_loot_select_wrapper_' + rIndex).classList.remove('open');
+};
+
+window.addLootToRoom = function(rIndex) {
+    const eqId = document.getElementById('room_loot_select_' + rIndex).value;
+    const prob = parseFloat(document.getElementById('room_loot_prob_' + rIndex).value);
+    if (!eqId || isNaN(prob) || prob < 0 || prob > 100) {
+        showNotif('Veuillez sélectionner un équipement et une probabilité (0-100).', true);
+        return;
+    }
+    if (!selectedRooms[rIndex].lootTable) selectedRooms[rIndex].lootTable = [];
+    selectedRooms[rIndex].lootTable.push({ equipmentId: parseInt(eqId), probability: prob });
+    renderRooms();
+};
+
+window.removeLootFromRoom = function(rIndex, lIndex) {
+    selectedRooms[rIndex].lootTable.splice(lIndex, 1);
+    renderRooms();
+};
 
 window.showNotif = function(message, isError = false) {
     const notif = document.getElementById('pveNotif');
