@@ -67,7 +67,7 @@ async function loadDungeons() {
                 let combats = 0, treasures = 0, events = 0, totalMobs = 0;
                 if (d.salles) {
                     d.salles.forEach(s => {
-                        if (s.type === 'COMBAT') {
+                        if (s.type === 'COMBAT' || s.type === 'BOSS') {
                             combats++;
                             totalMobs += (s.monsters ? s.monsters.length : 0);
                         }
@@ -76,7 +76,7 @@ async function loadDungeons() {
                     });
                 }
 
-                const sallesData = encodeURIComponent(JSON.stringify(d.salles || []));
+                const sallesData = encodeURIComponent(JSON.stringify(d.salles || [])).replace(/'/g, "%27");
 
                 list.innerHTML += `
                     <div class="dungeon-card" onclick="openPrepInterface(${d.id}, '${d.name.replace(/'/g, "\\'")}', '${sallesData}', ${d.maxHeroes || 1})">
@@ -345,8 +345,8 @@ window.openPrepInterface = function (id, name, sallesData, maxHeroes) {
     } else {
         let html = '';
         salles.forEach((s, index) => {
-            if (s.type === 'COMBAT') {
-                html += `<div style="margin-bottom: 0.5rem; color: #ef4444; font-weight: 600; display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem;">swords</span> Étape ${index + 1} : Combat</div>`;
+            if (s.type === 'COMBAT' || s.type === 'BOSS') {
+                html += `<div style="margin-bottom: 0.5rem; color: #ef4444; font-weight: 600; display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem;">${s.type === 'BOSS' ? 'local_fire_department' : 'swords'}</span> Étape ${index + 1} : ${s.type === 'BOSS' ? 'Boss' : 'Combat'}</div>`;
                 if (!s.monsters || s.monsters.length === 0) {
                     html += `<div style="margin-left: 1.5rem; color: #94a3b8; font-size: 0.85rem;">Aucun monstre</div>`;
                 } else {

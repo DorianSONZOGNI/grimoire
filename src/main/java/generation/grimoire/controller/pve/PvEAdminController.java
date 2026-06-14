@@ -112,6 +112,7 @@ public class PvEAdminController {
                 s.setTrapDamageHpFixed(sDto.getTrapDamageHpFixed());
                 s.setTrapDamageManaFixed(sDto.getTrapDamageManaFixed());
                 s.setDoorOutcomes(sDto.getDoorOutcomes());
+                s.setGlobalBuffs(sDto.getGlobalBuffs());
 
                 if (sDto.getMonsters() != null) {
                     List<Monstre> monsters = sDto.getMonsters().stream()
@@ -163,3 +164,6 @@ public class PvEAdminController {
         }
     }
 }
+
+
+

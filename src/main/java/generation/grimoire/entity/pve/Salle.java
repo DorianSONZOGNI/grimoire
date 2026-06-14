@@ -59,13 +59,9 @@ public class Salle {
     private boolean trapHasRopeOption;
     
     // IF BOSS
-    private Integer bossGlobalBuffHpPct;
-    private Integer bossGlobalBuffShieldPct;
-    private Integer bossGlobalBuffShieldDuration;
-    private Integer bossGlobalBuffArmor;
-    private Integer bossGlobalBuffResistance;
-    private Integer bossGlobalBuffStatsDuration;
-    private String bossGlobalBuffOnHitEffect; // "POISON", "BRULURE" ou null
+    @Column(columnDefinition = "TEXT")
+    private String globalBuffs; // JSON list of boss global buffs
+    
     private Integer trapDamageHpPct;
     private Integer trapDamageManaPct;
     private Integer trapDamageHpFixed;

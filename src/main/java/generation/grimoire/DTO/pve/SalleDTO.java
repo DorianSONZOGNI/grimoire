@@ -33,5 +33,6 @@ public class SalleDTO {
     private Integer trapDamageHpFixed;
     private Integer trapDamageManaFixed;
     private String doorOutcomes;
+    private String globalBuffs;
     private List<LootEntryDTO> lootTable;
 }

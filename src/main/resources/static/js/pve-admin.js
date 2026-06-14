@@ -123,13 +123,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     s.monsters = r.monsters.map(mId => ({ id: mId }));
                 } else if (r.type === 'BOSS') {
                     s.monsters = r.monsters.map(mId => ({ id: mId }));
-                    s.bossGlobalBuffHpPct = r.bossGlobalBuffHpPct || 0;
-                    s.bossGlobalBuffShieldPct = r.bossGlobalBuffShieldPct || 0;
-                    s.bossGlobalBuffShieldDuration = r.bossGlobalBuffShieldDuration || 4;
-                    s.bossGlobalBuffArmor = r.bossGlobalBuffArmor || 0;
-                    s.bossGlobalBuffResistance = r.bossGlobalBuffResistance || 0;
-                    s.bossGlobalBuffStatsDuration = r.bossGlobalBuffStatsDuration || 4;
-                    s.bossGlobalBuffOnHitEffect = r.bossGlobalBuffOnHitEffect || '';
+                    s.globalBuffs = r.globalBuffs && r.globalBuffs.length > 0 ? JSON.stringify(r.globalBuffs) : null;
                 } else if (r.type === 'TREASURE') {
                     s.treasureGold = r.treasureGold || 0;
                     s.treasureExp = r.treasureExp || 0;
@@ -197,13 +191,7 @@ window.addRoom = function (type) {
         selectedRooms.push({ 
             type: 'BOSS', 
             monsters: [],
-            bossGlobalBuffHpPct: 0,
-            bossGlobalBuffShieldPct: 0,
-            bossGlobalBuffShieldDuration: 4,
-            bossGlobalBuffArmor: 0,
-            bossGlobalBuffResistance: 0,
-            bossGlobalBuffStatsDuration: 4,
-            bossGlobalBuffOnHitEffect: ''
+            globalBuffs: []
         });
     } else if (type === 'TREASURE') {
         selectedRooms.push({ type: 'TREASURE', treasureGold: 50, treasureExp: 10 });
@@ -477,46 +465,56 @@ function renderRooms() {
             `;
             
             // Global Buffs HTML
-            let buffsHtml = `
-                <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.75rem;">
-                    <div style="display: flex; gap: 1rem;">
-                        <div style="flex: 1;">
-                            <label style="font-size: 0.8rem; color: #94a3b8;">Bonus PV Max (%)</label>
-                            <input type="number" class="form-control" value="${room.bossGlobalBuffHpPct || 0}" onchange="updateRoomField(${rIndex}, 'bossGlobalBuffHpPct', parseInt(this.value) || 0)">
+            if (!room.globalBuffs) room.globalBuffs = [];
+            let buffsHtml = '<div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem;">';
+            if (room.globalBuffs.length === 0) {
+                buffsHtml += `<div style="font-size:0.8rem; color: #94a3b8;">Aucun buff global configuré.</div>`;
+            } else {
+                room.globalBuffs.forEach((buff, bIndex) => {
+                    let buffLabel = '';
+                    if (buff.type === 'HP_PCT') buffLabel = `+${buff.value}% PV Max`;
+                    else if (buff.type === 'SHIELD_PCT') buffLabel = `Bouclier ${buff.value}% PV Max (${buff.duration} tours)`;
+                    else if (buff.type === 'ARMOR_FLAT') buffLabel = `+${buff.value} Armure (${buff.duration} tours)`;
+                    else if (buff.type === 'RESIST_FLAT') buffLabel = `+${buff.value} Résistance (${buff.duration} tours)`;
+                    else if (buff.type === 'BURN_ON_HIT') buffLabel = `Brûlure au touché : ${buff.value} dgts (${buff.duration} tours)`;
+                    else if (buff.type === 'POISON_ON_HIT') buffLabel = `Poison au touché : ${buff.value} dgts (${buff.duration} tours)`;
+
+                    buffsHtml += `
+                        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); padding: 0.4rem 0.8rem; border-radius: 4px;">
+                            <span style="font-size: 0.85rem; color: #f8fafc; display: flex; align-items: center; gap: 0.4rem;">
+                                <span class="material-symbols-outlined" style="font-size: 1rem; color: #3b82f6;">upgrade</span>
+                                ${buffLabel}
+                            </span>
+                            <button type="button" onclick="removeGlobalBuffFromRoomBoss(${rIndex}, ${bIndex})" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 0;"><span class="material-symbols-outlined" style="font-size: 1rem;">close</span></button>
                         </div>
-                        <div style="flex: 1;">
-                            <label style="font-size: 0.8rem; color: #94a3b8;">Bouclier Initial (% PV Max)</label>
-                            <input type="number" class="form-control" value="${room.bossGlobalBuffShieldPct || 0}" onchange="updateRoomField(${rIndex}, 'bossGlobalBuffShieldPct', parseInt(this.value) || 0)">
-                        </div>
-                        <div style="flex: 1;">
-                            <label style="font-size: 0.8rem; color: #94a3b8;">Durée Bouclier (Tours)</label>
-                            <input type="number" class="form-control" value="${room.bossGlobalBuffShieldDuration || 4}" onchange="updateRoomField(${rIndex}, 'bossGlobalBuffShieldDuration', parseInt(this.value) || 4)">
-                        </div>
-                    </div>
-                    <div style="display: flex; gap: 1rem;">
-                        <div style="flex: 1;">
-                            <label style="font-size: 0.8rem; color: #94a3b8;">Bonus Armure</label>
-                            <input type="number" class="form-control" value="${room.bossGlobalBuffArmor || 0}" onchange="updateRoomField(${rIndex}, 'bossGlobalBuffArmor', parseInt(this.value) || 0)">
-                        </div>
-                        <div style="flex: 1;">
-                            <label style="font-size: 0.8rem; color: #94a3b8;">Bonus Résistance</label>
-                            <input type="number" class="form-control" value="${room.bossGlobalBuffResistance || 0}" onchange="updateRoomField(${rIndex}, 'bossGlobalBuffResistance', parseInt(this.value) || 0)">
-                        </div>
-                        <div style="flex: 1;">
-                            <label style="font-size: 0.8rem; color: #94a3b8;">Durée Stats (Tours)</label>
-                            <input type="number" class="form-control" value="${room.bossGlobalBuffStatsDuration || 4}" onchange="updateRoomField(${rIndex}, 'bossGlobalBuffStatsDuration', parseInt(this.value) || 4)">
-                        </div>
-                    </div>
-                    <div>
-                        <label style="font-size: 0.8rem; color: #94a3b8;">Effet Passif au touché (Poison / Brûlure)</label>
-                        <select class="form-control" onchange="updateRoomField(${rIndex}, 'bossGlobalBuffOnHitEffect', this.value)">
-                            <option value="" ${!room.bossGlobalBuffOnHitEffect ? 'selected' : ''}>Aucun</option>
-                            <option value="POISON" ${room.bossGlobalBuffOnHitEffect === 'POISON' ? 'selected' : ''}>Poison (5 dégâts bruts sur 3 tours)</option>
-                            <option value="BRULURE" ${room.bossGlobalBuffOnHitEffect === 'BRULURE' ? 'selected' : ''}>Brûlure (5 dégâts magiques sur 3 tours)</option>
-                        </select>
-                    </div>
+                    `;
+                });
+            }
+            buffsHtml += `</div>
+            <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; align-items: flex-end; position: relative; flex-wrap: wrap;">
+                <div style="flex: 2; min-width: 120px; display: flex; flex-direction: column; gap: 0.2rem;">
+                    <label style="font-size: 0.7rem; color: #94a3b8; margin: 0; padding-left: 0.2rem;">Type de buff</label>
+                    <select id="room_boss_buff_type_${rIndex}" class="form-control" style="font-size: 0.8rem; width: 100%;">
+                        <option value="HP_PCT">+ PV Max (%)</option>
+                        <option value="SHIELD_PCT">Bouclier (% PV)</option>
+                        <option value="ARMOR_FLAT">+ Armure</option>
+                        <option value="RESIST_FLAT">+ Résistance</option>
+                        <option value="BURN_ON_HIT">Brûlure au touché</option>
+                        <option value="POISON_ON_HIT">Poison au touché</option>
+                    </select>
                 </div>
-            `;
+                <div style="flex: 1; min-width: 60px; display: flex; flex-direction: column; gap: 0.2rem;">
+                    <label style="font-size: 0.7rem; color: #94a3b8; margin: 0; padding-left: 0.2rem;">Stat (Valeur)</label>
+                    <input type="number" id="room_boss_buff_val_${rIndex}" class="form-control" style="width: 100%;" value="10">
+                </div>
+                <div style="flex: 1; min-width: 60px; display: flex; flex-direction: column; gap: 0.2rem;">
+                    <label style="font-size: 0.7rem; color: #94a3b8; margin: 0; padding-left: 0.2rem;">Durée (Tours)</label>
+                    <input type="number" id="room_boss_buff_dur_${rIndex}" class="form-control" style="width: 100%;" value="4">
+                </div>
+                <button type="button" style="height: 38px; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; padding: 0 1.2rem; font-size: 0.9rem; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 0.3rem;" onclick="addGlobalBuffToRoomBoss(${rIndex})">
+                    <span class="material-symbols-outlined" style="font-size: 1.1rem;">add</span>
+                </button>
+            </div>`;
 
             contentHtml = `
                 ${monstersHtml}
@@ -1519,7 +1517,7 @@ async function loadDungeons() {
                 let combats = 0, treasures = 0, alterations = 0, rencontres = 0, pieges = 0, portes = 0, totalMobs = 0;
                 if (d.salles) {
                     d.salles.forEach(s => {
-                        if (s.type === 'COMBAT') {
+                        if (s.type === 'COMBAT' || s.type === 'BOSS') {
                             combats++;
                             totalMobs += (s.monsters ? s.monsters.length : 0);
                         }
@@ -1588,13 +1586,15 @@ async function editDungeon(id) {
                     room.monsters = s.monsters.map(m => m.id);
                 } else if (s.type === 'BOSS') {
                     room.monsters = s.monsters.map(m => m.id);
-                    room.bossGlobalBuffHpPct = s.bossGlobalBuffHpPct || 0;
-                    room.bossGlobalBuffShieldPct = s.bossGlobalBuffShieldPct || 0;
-                    room.bossGlobalBuffShieldDuration = s.bossGlobalBuffShieldDuration || 4;
-                    room.bossGlobalBuffArmor = s.bossGlobalBuffArmor || 0;
-                    room.bossGlobalBuffResistance = s.bossGlobalBuffResistance || 0;
-                    room.bossGlobalBuffStatsDuration = s.bossGlobalBuffStatsDuration || 4;
-                    room.bossGlobalBuffOnHitEffect = s.bossGlobalBuffOnHitEffect || '';
+                    if (s.globalBuffs) {
+                        try {
+                            room.globalBuffs = typeof s.globalBuffs === 'string' ? JSON.parse(s.globalBuffs) : s.globalBuffs;
+                        } catch (e) {
+                            room.globalBuffs = [];
+                        }
+                    } else {
+                        room.globalBuffs = [];
+                    }
                 } else if (s.type === 'TREASURE') {
                     room.treasureGold = s.treasureGold;
                     room.treasureExp = s.treasureExp;
@@ -2011,6 +2011,37 @@ window.removeMonsterFromBoss = function (rIndex, oIndex, mIndex) {
     const outcome = selectedRooms[rIndex].doorOutcomes[oIndex];
     if (outcome && outcome.monsters) {
         outcome.monsters.splice(mIndex, 1);
+        renderRooms();
+    }
+};
+
+window.addGlobalBuffToRoomBoss = function (rIndex) {
+    const typeEl = document.getElementById(`room_boss_buff_type_${rIndex}`);
+    const valEl = document.getElementById(`room_boss_buff_val_${rIndex}`);
+    const durEl = document.getElementById(`room_boss_buff_dur_${rIndex}`);
+    
+    if (!typeEl || !valEl || !durEl) return;
+    
+    const type = typeEl.value;
+    const val = parseInt(valEl.value) || 0;
+    const dur = parseInt(durEl.value) || 0;
+    
+    if (val <= 0) {
+        showNotif('La valeur doit être positive.', true);
+        return;
+    }
+    
+    const room = selectedRooms[rIndex];
+    if (!room.globalBuffs) room.globalBuffs = [];
+    room.globalBuffs.push({ type: type, value: val, duration: dur });
+    
+    renderRooms();
+};
+
+window.removeGlobalBuffFromRoomBoss = function (rIndex, bIndex) {
+    const room = selectedRooms[rIndex];
+    if (room && room.globalBuffs) {
+        room.globalBuffs.splice(bIndex, 1);
         renderRooms();
     }
 };

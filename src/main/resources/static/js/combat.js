@@ -921,7 +921,7 @@ function updateUI(data) {
 
     // Room logic
     if (data.currentRoom) {
-        if (data.currentRoom.type === 'COMBAT') {
+        if (data.currentRoom.type === 'COMBAT' || data.currentRoom.type === 'BOSS') {
             document.getElementById('eventOverlay').classList.remove('show');
 
             const allEnemiesDead = !data.enemies || data.enemies.length === 0 || data.enemies.every(e => e.dead || e.currentHp <= 0);

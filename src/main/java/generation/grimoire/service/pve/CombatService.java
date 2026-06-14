@@ -145,43 +145,50 @@ public class CombatService {
     private void applyBossGlobalBuffs(generation.grimoire.model.pve.ActiveMonster am,
             generation.grimoire.entity.pve.Salle room) {
         generation.grimoire.entity.personnage.Personnage p = am.getAsPersonnage();
+        String globalBuffsJson = room.getGlobalBuffs();
+        if (globalBuffsJson == null || globalBuffsJson.trim().isEmpty()) {
+            return;
+        }
 
-        if (room.getBossGlobalBuffHpPct() != null && room.getBossGlobalBuffHpPct() > 0) {
-            int bonusHp = (int) (p.getHealthMax() * (room.getBossGlobalBuffHpPct() / 100.0));
-            p.setHealthMax(p.getHealthMax() + bonusHp);
-            p.setHealthCurrent(p.getHealthCurrent() + bonusHp);
-        }
-        if (room.getBossGlobalBuffShieldPct() != null && room.getBossGlobalBuffShieldPct() > 0) {
-            int shield = (int) (p.getHealthMax() * (room.getBossGlobalBuffShieldPct() / 100.0));
-            int duration = room.getBossGlobalBuffShieldDuration() != null ? room.getBossGlobalBuffShieldDuration() : 99;
-            p.addShield(shield, duration, "Boss Shield");
-        }
-        if ((room.getBossGlobalBuffArmor() != null && room.getBossGlobalBuffArmor() > 0)
-                || (room.getBossGlobalBuffResistance() != null && room.getBossGlobalBuffResistance() > 0)) {
-            int duration = room.getBossGlobalBuffStatsDuration() != null ? room.getBossGlobalBuffStatsDuration() : 99;
-            if (room.getBossGlobalBuffArmor() != null && room.getBossGlobalBuffArmor() > 0) {
-                generation.grimoire.entity.spell.type.effect.BuffDebuffEffect armorBuff = new generation.grimoire.entity.spell.type.effect.BuffDebuffEffect();
-                armorBuff.setStatAffected(generation.grimoire.enumeration.StatType.ARMURE);
-                armorBuff.setFlatValue(room.getBossGlobalBuffArmor());
-                armorBuff.setDuration(duration);
-                p.getActiveBuffs().add(armorBuff);
+        try {
+            com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+            com.fasterxml.jackson.databind.JsonNode buffsNode = mapper.readTree(globalBuffsJson);
+            if (buffsNode.isArray()) {
+                for (com.fasterxml.jackson.databind.JsonNode buffNode : buffsNode) {
+                    String bType = buffNode.path("type").asText();
+                    int bVal = buffNode.path("value").asInt(0);
+                    int bDur = buffNode.path("duration").asInt(0);
+
+                    if ("HP_PCT".equals(bType)) {
+                        int bonusHp = (int) (p.getHealthMax() * (bVal / 100.0));
+                        p.setHealthMax(p.getHealthMax() + bonusHp);
+                        p.setHealthCurrent(p.getHealthCurrent() + bonusHp);
+                    } else if ("SHIELD_PCT".equals(bType)) {
+                        int shieldAmt = (int) (p.getHealthMax() * (bVal / 100.0));
+                        p.addShield(shieldAmt, bDur > 0 ? bDur : -1, "Buff Global Boss");
+                    } else if ("ARMOR_FLAT".equals(bType)) {
+                        generation.grimoire.entity.spell.type.effect.BuffDebuffEffect eff = new generation.grimoire.entity.spell.type.effect.BuffDebuffEffect();
+                        eff.setStatAffected(generation.grimoire.enumeration.StatType.ARMURE);
+                        eff.setFlatValue(bVal);
+                        eff.setDuration(bDur > 0 ? bDur : -1);
+                        p.getActiveBuffs().add(eff);
+                    } else if ("RESIST_FLAT".equals(bType)) {
+                        generation.grimoire.entity.spell.type.effect.BuffDebuffEffect eff = new generation.grimoire.entity.spell.type.effect.BuffDebuffEffect();
+                        eff.setStatAffected(generation.grimoire.enumeration.StatType.RESISTANCE);
+                        eff.setFlatValue(bVal);
+                        eff.setDuration(bDur > 0 ? bDur : -1);
+                        p.getActiveBuffs().add(eff);
+                    } else if ("BURN_ON_HIT".equals(bType)) {
+                        p.getPassiveStates().put("BURN_ON_HIT", bVal);
+                        p.getPassiveStates().put("BURN_ON_HIT_DURATION", bDur > 0 ? bDur : 3);
+                    } else if ("POISON_ON_HIT".equals(bType)) {
+                        p.getPassiveStates().put("POISON_ON_HIT", bVal);
+                        p.getPassiveStates().put("POISON_ON_HIT_DURATION", bDur > 0 ? bDur : 3);
+                    }
+                }
             }
-            if (room.getBossGlobalBuffResistance() != null && room.getBossGlobalBuffResistance() > 0) {
-                generation.grimoire.entity.spell.type.effect.BuffDebuffEffect resBuff = new generation.grimoire.entity.spell.type.effect.BuffDebuffEffect();
-                resBuff.setStatAffected(generation.grimoire.enumeration.StatType.RESISTANCE);
-                resBuff.setFlatValue(room.getBossGlobalBuffResistance());
-                resBuff.setDuration(duration);
-                p.getActiveBuffs().add(resBuff);
-            }
-        }
-        if (room.getBossGlobalBuffOnHitEffect() != null && !room.getBossGlobalBuffOnHitEffect().isEmpty()) {
-            if ("BRULURE".equalsIgnoreCase(room.getBossGlobalBuffOnHitEffect())) {
-                p.getPassiveStates().put("BURN_ON_HIT", 5); // 5 dégâts par défaut
-                p.getPassiveStates().put("BURN_ON_HIT_DURATION", 3);
-            } else if ("POISON".equalsIgnoreCase(room.getBossGlobalBuffOnHitEffect())) {
-                p.getPassiveStates().put("POISON_ON_HIT", 5); // 5 dégâts par défaut
-                p.getPassiveStates().put("POISON_ON_HIT_DURATION", 3);
-            }
+        } catch (Exception e) {
+            e.printStackTrace();
         }
     }
 
