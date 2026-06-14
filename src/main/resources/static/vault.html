@@ -48,7 +48,8 @@
                 <span class="material-symbols-outlined" style="font-size: 1.1rem;">settings</span> Gestion Boutique
             </a>
             <a href="/pve-admin.html" id="adminPvELink" class="top-nav-link nav-admin" style="display: none;">
-                <span class="material-symbols-outlined" style="font-size: 1.1rem;">admin_panel_settings</span> Gestion PvE
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">admin_panel_settings</span> Gestion
+                PvE
             </a>
             <div id="authNavContainer"
                 style="display: flex; align-items: center; gap: 0.5rem; margin-left: 1rem; padding-left: 1rem; border-left: 1px solid var(--glass-border);">
@@ -112,8 +113,8 @@
                         <div class="custom-option" data-value="CONSOMMABLE"><span
                                 class="material-symbols-outlined cs-icon" style="color: #854c4c;">inventory_2</span>
                             Consommable</div>
-                        <div class="custom-option" data-value="ANOMALIE"><span
-                                class="material-symbols-outlined cs-icon" style="color: #d946ef;">star</span>
+                        <div class="custom-option" data-value="ANOMALIE"><span class="material-symbols-outlined cs-icon"
+                                style="color: #d946ef;">star</span>
                             Anomalies</div>
                     </div>
                     <input type="hidden" id="filterSlot" value="">
@@ -590,43 +591,83 @@
                         <label for="anomalieName">Nom de l'Anomalie</label>
                         <input type="text" id="anomalieName" placeholder="ex: Cœur de Ténèbres">
                     </div>
-            
+
                     <div class="eq-create-field" style="margin-bottom: 1rem;">
                         <label for="anomalieDescription">Description de l'Anomalie</label>
-                        <textarea id="anomalieDescription" placeholder="Une relique impie imprégnée d'une aura mystique..."></textarea>
+                        <textarea id="anomalieDescription"
+                            placeholder="Une relique impie imprégnée d'une aura mystique..."></textarea>
                     </div>
-            
+
                     <div class="eq-create-field" style="margin-bottom: 1rem;">
                         <label>Type de Spiritualité</label>
                         <div class="custom-select-wrapper" id="anomalieSpiritualiteWrapper" tabindex="0">
                             <div class="custom-select-trigger" id="anomalieSpiritualiteTrigger">
                                 <span class="cs-label" id="anomalieSpiritualiteLabel">
-                                    <span class="material-symbols-outlined cs-icon" style="color: #d946ef;">dark_mode</span> Ténèbres
+                                    <span class="material-symbols-outlined cs-icon"
+                                        style="color: #d946ef;">dark_mode</span> Ténèbres
                                 </span>
-                                <span class="material-symbols-outlined cs-arrow" style="font-size: 1.1rem;">expand_more</span>
+                                <span class="material-symbols-outlined cs-arrow"
+                                    style="font-size: 1.1rem;">expand_more</span>
                             </div>
                             <div class="custom-select-options" id="anomalieSpiritualiteOptions">
-                                <div class="custom-option" data-value="TENEBRES"><span class="material-symbols-outlined cs-icon" style="color: #d946ef;">dark_mode</span> Ténèbres</div>
-                                <div class="custom-option" data-value="ESPRIT"><span class="material-symbols-outlined cs-icon" style="color: #3b82f6;">blur_on</span> Esprit</div>
-                                <div class="custom-option" data-value="KARMA"><span class="material-symbols-outlined cs-icon" style="color: #f59e0b;">all_inclusive</span> Karma</div>
+                                <div class="custom-option" data-value="TENEBRES"><span
+                                        class="material-symbols-outlined cs-icon"
+                                        style="color: #d946ef;">dark_mode</span> Ténèbres</div>
+                                <div class="custom-option" data-value="ESPRIT"><span
+                                        class="material-symbols-outlined cs-icon" style="color: #3b82f6;">blur_on</span>
+                                    Esprit</div>
+                                <div class="custom-option" data-value="KARMA"><span
+                                        class="material-symbols-outlined cs-icon"
+                                        style="color: #f59e0b;">all_inclusive</span> Karma</div>
                             </div>
                             <input type="hidden" id="anomalieSpiritualite" value="TENEBRES">
                         </div>
                     </div>
 
+                    <div style="margin-bottom: 1.5rem; display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.2); padding: 0.8rem 1rem; border-radius: 8px; border: 1px solid rgba(217, 70, 239, 0.2);">
+                        <div style="display: flex; flex-direction: column; gap: 0.2rem;">
+                            <span style="font-size: 0.9rem; color: #f8fafc; font-weight: 500; display: flex; align-items: center; gap: 0.4rem;">
+                                <span class="material-symbols-outlined" id="anomalieMagicToggleIcon" style="color: #d946ef; font-size: 1.1rem;">star</span> 
+                                <span id="anomalieMagicToggleText">Objet Magique</span>
+                            </span>
+                            <span style="font-size: 0.75rem; color: #94a3b8;">Désactivez pour en faire un Matériau.</span>
+                        </div>
+                        <label style="position: relative; display: block; width: 40px; height: 24px; margin: 0; flex-shrink: 0;">
+                            <input type="checkbox" id="anomalieMagicToggle" style="opacity: 0; width: 0; height: 0;" checked
+                                onchange="
+                                    this.nextElementSibling.style.backgroundColor = this.checked ? '#d946ef' : 'rgba(255, 255, 255, 0.1)';
+                                    this.nextElementSibling.children[0].style.transform = this.checked ? 'translateX(16px)' : 'translateX(0)';
+                                    document.getElementById('anomalieMagicToggleText').innerText = this.checked ? 'Objet Magique' : 'Matériau';
+                                    document.getElementById('anomalieMagicToggleIcon').innerText = this.checked ? 'star' : 'category';
+                                    document.getElementById('anomalieMagicToggleIcon').style.color = this.checked ? '#d946ef' : '#94a3b8';
+                                ">
+                            <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: #d946ef; transition: .3s; border-radius: 24px;">
+                                <span style="position: absolute; content: ''; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; transform: translateX(16px); box-shadow: 0 2px 4px rgba(0,0,0,0.2);"></span>
+                            </span>
+                        </label>
+                    </div>
+
                     <div class="eq-create-field" style="margin-bottom: 1.5rem;">
-                        <label>Niveau (Multiplicateur)</label>
+                        <label>Niveau</label>
                         <div class="custom-select-wrapper" id="anomalieLevelWrapper" tabindex="0">
                             <div class="custom-select-trigger" id="anomalieLevelTrigger">
                                 <span class="cs-label" id="anomalieLevelLabel">
-                                    <span class="material-symbols-outlined cs-icon" style="color: #10b981;">looks_one</span> Niveau 1
+                                    <span class="material-symbols-outlined cs-icon"
+                                        style="color: #10b981;">looks_one</span> Niveau 1
                                 </span>
-                                <span class="material-symbols-outlined cs-arrow" style="font-size: 1.1rem;">expand_more</span>
+                                <span class="material-symbols-outlined cs-arrow"
+                                    style="font-size: 1.1rem;">expand_more</span>
                             </div>
                             <div class="custom-select-options" id="anomalieLevelOptions">
-                                <div class="custom-option" data-value="1"><span class="material-symbols-outlined cs-icon" style="color: #10b981;">looks_one</span> Niveau 1</div>
-                                <div class="custom-option" data-value="2"><span class="material-symbols-outlined cs-icon" style="color: #3b82f6;">looks_two</span> Niveau 2</div>
-                                <div class="custom-option" data-value="3"><span class="material-symbols-outlined cs-icon" style="color: #a855f7;">looks_3</span> Niveau 3</div>
+                                <div class="custom-option" data-value="1"><span
+                                        class="material-symbols-outlined cs-icon"
+                                        style="color: #10b981;">looks_one</span> Niveau 1</div>
+                                <div class="custom-option" data-value="2"><span
+                                        class="material-symbols-outlined cs-icon"
+                                        style="color: #3b82f6;">looks_two</span> Niveau 2</div>
+                                <div class="custom-option" data-value="3"><span
+                                        class="material-symbols-outlined cs-icon" style="color: #a855f7;">looks_3</span>
+                                    Niveau 3</div>
                             </div>
                             <input type="hidden" id="anomalieLevel" value="1">
                         </div>
@@ -634,7 +675,8 @@
 
                     <button type="button" id="submitAnomalieBtn" class="eq-create-btn" onclick="submitAnomalie()"
                         style="width: 100%; padding: 0.8rem; border-radius: 8px; background: #d946ef; color: white; border: none; font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: background 0.2s;">
-                        <span class="material-symbols-outlined" id="submitAnomalieBtnIcon" style="font-size: 1.2rem;">add</span>
+                        <span class="material-symbols-outlined" id="submitAnomalieBtnIcon"
+                            style="font-size: 1.2rem;">add</span>
                         <span id="submitAnomalieBtnText">Créer l'Anomalie</span>
                     </button>
                 </div>

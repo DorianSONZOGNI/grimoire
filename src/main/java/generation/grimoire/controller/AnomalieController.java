@@ -63,6 +63,7 @@ public class AnomalieController {
                 existing.setSpiritualite(anomalie.getSpiritualite());
                 existing.setDescription(anomalie.getDescription());
                 existing.setLevel(anomalie.getLevel() != null ? anomalie.getLevel() : 1);
+                existing.setMagicObject(anomalie.isMagicObject());
                 return ResponseEntity.ok(anomalieRepository.save(existing));
             }
         }

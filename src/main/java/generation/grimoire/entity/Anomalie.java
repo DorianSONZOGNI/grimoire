@@ -32,6 +32,9 @@ public class Anomalie {
     @Column(nullable = false)
     private Integer level = 1;
 
+    @Column(nullable = false, columnDefinition = "boolean default true")
+    private boolean isMagicObject = true;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     @JsonIgnore

@@ -303,13 +303,15 @@ function renderGrid(equipments) {
 
     container.innerHTML = equipments.map(eq => {
         if (eq.isAnomalie) {
+            const typeStr = eq.magicObject !== false ? "Objet Magique" : "Matériau";
+            const typeIcon = eq.magicObject !== false ? "star" : "category";
             return `
             <div class="vault-card rarity-RELIQUE" style="border-color: #d946ef; box-shadow: 0 0 15px rgba(217,70,239,0.1);">
                 <div class="vault-card-header">
                     <div class="vault-card-name-group">
                         <div class="vault-card-slot">
-                            <span class="material-symbols-outlined" style="font-size: 0.9rem; color: #d946ef;">star</span>
-                            Anomalie <span style="opacity:0.5; margin-left:4px;">${eq.spiritualite}</span> <span style="opacity:0.5; margin-left:4px;">(Niv. ${eq.level || 1})</span>
+                            <span class="material-symbols-outlined" style="font-size: 0.9rem; color: #d946ef;">${typeIcon}</span>
+                            ${typeStr} <span style="opacity:0.5; margin-left:4px;">${eq.spiritualite}</span> <span style="opacity:0.5; margin-left:4px;">(Niv. ${eq.level || 1})</span>
                         </div>
                         <div class="vault-card-name" style="color: #fdf4ff;">
                             ${eq.name}
@@ -647,6 +649,14 @@ window.openCreateAnomalieModal = function () {
     document.getElementById('anomalieDescription').value = '';
     document.getElementById('anomalieSpiritualite').value = 'TENEBRES';
     document.getElementById('anomalieLevel').value = 1;
+    
+    const toggleMagic = document.getElementById('anomalieMagicToggle');
+    if (toggleMagic) {
+        toggleMagic.checked = true;
+        // Trigger onchange manually
+        toggleMagic.dispatchEvent(new Event('change'));
+    }
+
     document.getElementById('anomalieCreateModal').classList.add('show');
 };
 
@@ -667,6 +677,14 @@ window.editAnomalie = function(id) {
     document.getElementById('anomalieSpiritualite').value = eq.spiritualite || 'TENEBRES';
     document.getElementById('anomalieLevel').value = eq.level || 1;
 
+    const isMagic = eq.magicObject !== false;
+    const toggleMagic = document.getElementById('anomalieMagicToggle');
+    if (toggleMagic) {
+        toggleMagic.checked = isMagic;
+        // Trigger onchange manually to update UI
+        toggleMagic.dispatchEvent(new Event('change'));
+    }
+
     document.getElementById('anomalieCreateModal').classList.add('show');
 };
 
@@ -679,6 +697,8 @@ window.submitAnomalie = async function () {
     const name = document.getElementById('anomalieName').value.trim();
     const spiritualite = document.getElementById('anomalieSpiritualite').value;
     const description = document.getElementById('anomalieDescription').value.trim();
+    const toggleMagic = document.getElementById('anomalieMagicToggle');
+    const isMagicObject = toggleMagic ? toggleMagic.checked : true;
 
     if (!name) {
         showNotif("Veuillez entrer un nom pour l'anomalie.", true);
@@ -690,7 +710,8 @@ window.submitAnomalie = async function () {
         name: name,
         spiritualite: spiritualite,
         description: description,
-        level: parseInt(document.getElementById('anomalieLevel').value) || 1
+        level: parseInt(document.getElementById('anomalieLevel').value) || 1,
+        magicObject: isMagicObject
     };
 
     try {
