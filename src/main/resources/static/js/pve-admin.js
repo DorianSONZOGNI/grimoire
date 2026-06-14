@@ -522,10 +522,28 @@ function renderRooms() {
                             <input type="number" class="form-control" value="${room.alterationSpiritualXpReward || 0}" onchange="updateRoomField(${rIndex}, 'alterationSpiritualXpReward', parseInt(this.value))">
                         ` : `
                             <label style="font-size: 0.8rem; color: #94a3b8;">Item Spécial Donné en récompense</label>
-                            <select class="form-control" onchange="updateRoomField(${rIndex}, 'alterationSpecialItemReward', this.value)">
-                                <option value="">Choisir un item spécial...</option>
-                                ${allAnomalies.map(a => `<option value="${a.name}" ${room.alterationSpecialItemReward === a.name ? 'selected' : ''}>${a.name}</option>`).join('')}
-                            </select>
+                            ${(() => {
+                                const selAnomalie = allAnomalies.find(a => a.name === room.alterationSpecialItemReward);
+                                let selHtml = '<span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">star</span> Choisir une anomalie...';
+                                if (selAnomalie) {
+                                    const color = selAnomalie.spiritualite === 'TENEBRES' ? '#d946ef' : selAnomalie.spiritualite === 'ESPRIT' ? '#3b82f6' : selAnomalie.spiritualite === 'KARMA' ? '#f59e0b' : '#94a3b8';
+                                    selHtml = `<span class="material-symbols-outlined cs-icon" style="color: ${color};">star</span> ${selAnomalie.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${selAnomalie.level || 1})</span>`;
+                                }
+                                return `
+                                <div class="custom-select-wrapper" id="room_alt_reward_wrapper_${rIndex}" style="margin-top: 0.2rem; z-index: ${100 - rIndex};">
+                                    <div class="custom-select-trigger" onclick="document.getElementById('room_alt_reward_wrapper_${rIndex}').classList.toggle('open')" style="padding: 0.5rem; font-size: 0.85rem; border-radius: 8px;">
+                                        <span class="cs-label" id="room_alt_reward_label_${rIndex}">${selHtml}</span>
+                                        <span class="material-symbols-outlined">expand_more</span>
+                                    </div>
+                                    <div class="custom-select-options" style="max-height: 200px; overflow-y: auto;">
+                                        ${allAnomalies.map(a => {
+                                            const color = a.spiritualite === 'TENEBRES' ? '#d946ef' : a.spiritualite === 'ESPRIT' ? '#3b82f6' : a.spiritualite === 'KARMA' ? '#f59e0b' : '#94a3b8';
+                                            return `<div class="custom-option" onclick="updateRoomField(${rIndex}, 'alterationSpecialItemReward', '${a.name.replace(/'/g, "\\'")}')"><span class="material-symbols-outlined cs-icon" style="color: ${color};">star</span> ${a.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${a.level || 1})</span></div>`;
+                                        }).join('')}
+                                    </div>
+                                </div>
+                                `;
+                            })()}
                         `}
                     </div>
                     `;
@@ -533,10 +551,28 @@ function renderRooms() {
                     contentHtml += `
                     <div style="margin-top: 0.75rem;">
                         <label style="font-size: 0.8rem; color: #94a3b8;">Item Spécial Requis (que le joueur donne)</label>
-                        <select class="form-control" onchange="updateRoomField(${rIndex}, 'alterationRequiredItem', this.value)">
-                            <option value="">Choisir un item spécial...</option>
-                            ${allAnomalies.map(a => `<option value="${a.name}" ${room.alterationRequiredItem === a.name ? 'selected' : ''}>${a.name}</option>`).join('')}
-                        </select>
+                        ${(() => {
+                            const selAnomalie = allAnomalies.find(a => a.name === room.alterationRequiredItem);
+                            let selHtml = '<span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">star</span> Choisir une anomalie...';
+                            if (selAnomalie) {
+                                const color = selAnomalie.spiritualite === 'TENEBRES' ? '#d946ef' : selAnomalie.spiritualite === 'ESPRIT' ? '#3b82f6' : selAnomalie.spiritualite === 'KARMA' ? '#f59e0b' : '#94a3b8';
+                                selHtml = `<span class="material-symbols-outlined cs-icon" style="color: ${color};">star</span> ${selAnomalie.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${selAnomalie.level || 1})</span>`;
+                            }
+                            return `
+                            <div class="custom-select-wrapper" id="room_alt_req_wrapper_${rIndex}" style="margin-top: 0.2rem; z-index: ${100 - rIndex};">
+                                <div class="custom-select-trigger" onclick="document.getElementById('room_alt_req_wrapper_${rIndex}').classList.toggle('open')" style="padding: 0.5rem; font-size: 0.85rem; border-radius: 8px;">
+                                    <span class="cs-label" id="room_alt_req_label_${rIndex}">${selHtml}</span>
+                                    <span class="material-symbols-outlined">expand_more</span>
+                                </div>
+                                <div class="custom-select-options" style="max-height: 200px; overflow-y: auto;">
+                                    ${allAnomalies.map(a => {
+                                        const color = a.spiritualite === 'TENEBRES' ? '#d946ef' : a.spiritualite === 'ESPRIT' ? '#3b82f6' : a.spiritualite === 'KARMA' ? '#f59e0b' : '#94a3b8';
+                                        return `<div class="custom-option" onclick="updateRoomField(${rIndex}, 'alterationRequiredItem', '${a.name.replace(/'/g, "\\'")}')"><span class="material-symbols-outlined cs-icon" style="color: ${color};">star</span> ${a.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${a.level || 1})</span></div>`;
+                                    }).join('')}
+                                </div>
+                            </div>
+                            `;
+                        })()}
                     </div>
                     <div style="margin-top: 0.5rem;">
                         <label style="font-size: 0.8rem; color: #fbbf24;">Récompense (XP Spiritualité)</label>
@@ -812,10 +848,65 @@ function renderRooms() {
                                     </button>
                                 </div>
                             `;
+                            if (!outcome.globalBuffs) outcome.globalBuffs = [];
+                            let buffsHtml = '<div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem;">';
+                            if (outcome.globalBuffs.length === 0) {
+                                buffsHtml += `<div style="font-size:0.8rem; color: #94a3b8;">Aucun buff global configuré.</div>`;
+                            } else {
+                                outcome.globalBuffs.forEach((buff, bIndex) => {
+                                    let buffLabel = '';
+                                    if (buff.type === 'HP_PCT') buffLabel = `+${buff.value}% PV Max`;
+                                    else if (buff.type === 'SHIELD_PCT') buffLabel = `Bouclier ${buff.value}% PV Max (${buff.duration} tours)`;
+                                    else if (buff.type === 'ARMOR_FLAT') buffLabel = `+${buff.value} Armure (${buff.duration} tours)`;
+                                    else if (buff.type === 'RESIST_FLAT') buffLabel = `+${buff.value} Résistance (${buff.duration} tours)`;
+                                    else if (buff.type === 'BURN_ON_HIT') buffLabel = `Brûlure au touché : ${buff.value} dgts (${buff.duration} tours)`;
+                                    else if (buff.type === 'POISON_ON_HIT') buffLabel = `Poison au touché : ${buff.value} dgts (${buff.duration} tours)`;
+
+                                    buffsHtml += `
+                                        <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); padding: 0.4rem 0.8rem; border-radius: 4px;">
+                                            <span style="font-size: 0.85rem; color: #f8fafc; display: flex; align-items: center; gap: 0.4rem;">
+                                                <span class="material-symbols-outlined" style="font-size: 1rem; color: #3b82f6;">upgrade</span>
+                                                ${buffLabel}
+                                            </span>
+                                            <button type="button" onclick="removeGlobalBuffFromBoss(${rIndex}, ${oIndex}, ${bIndex})" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 0;"><span class="material-symbols-outlined" style="font-size: 1rem;">close</span></button>
+                                        </div>
+                                    `;
+                                });
+                            }
+                            buffsHtml += `</div>
+                            <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; align-items: flex-end; position: relative; flex-wrap: wrap;">
+                                <div style="flex: 2; min-width: 120px; display: flex; flex-direction: column; gap: 0.2rem;">
+                                    <label style="font-size: 0.7rem; color: #94a3b8; margin: 0; padding-left: 0.2rem;">Type de buff</label>
+                                    <select id="room_door_boss_buff_type_${rIndex}_${oIndex}" class="form-control" style="font-size: 0.8rem; width: 100%;">
+                                        <option value="HP_PCT">+ PV Max (%)</option>
+                                        <option value="SHIELD_PCT">Bouclier (% PV)</option>
+                                        <option value="ARMOR_FLAT">+ Armure</option>
+                                        <option value="RESIST_FLAT">+ Résistance</option>
+                                        <option value="BURN_ON_HIT">Brûlure au touché</option>
+                                        <option value="POISON_ON_HIT">Poison au touché</option>
+                                    </select>
+                                </div>
+                                <div style="flex: 1; min-width: 60px; display: flex; flex-direction: column; gap: 0.2rem;">
+                                    <label style="font-size: 0.7rem; color: #94a3b8; margin: 0; padding-left: 0.2rem;">Stat (Valeur)</label>
+                                    <input type="number" id="room_door_boss_buff_val_${rIndex}_${oIndex}" class="form-control" style="width: 100%;" value="10">
+                                </div>
+                                <div style="flex: 1; min-width: 60px; display: flex; flex-direction: column; gap: 0.2rem;">
+                                    <label style="font-size: 0.7rem; color: #94a3b8; margin: 0; padding-left: 0.2rem;">Durée (Tours)</label>
+                                    <input type="number" id="room_door_boss_buff_dur_${rIndex}_${oIndex}" class="form-control" style="width: 100%;" value="4">
+                                </div>
+                                <button type="button" style="height: 38px; background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; padding: 0 1.2rem; font-size: 0.9rem; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 0.3rem;" onclick="addGlobalBuffToBoss(${rIndex}, ${oIndex})">
+                                    <span class="material-symbols-outlined" style="font-size: 1.1rem;">add</span>
+                                </button>
+                            </div>`;
+
                             extraHtml = `
                                 <div style="margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px dashed rgba(255,255,255,0.15); width: 100%;">
                                     <label style="font-size: 0.8rem; color: #ef4444;">Configuration du Boss</label>
                                     ${monstersHtml}
+                                </div>
+                                <div style="margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px dashed rgba(255,255,255,0.15); width: 100%;">
+                                    <label style="font-size: 0.8rem; color: #3b82f6;">Buffs Globaux du Boss</label>
+                                    ${buffsHtml}
                                 </div>
                             `;
                         } else if (outcome.type === 'ITEM') {
@@ -1506,16 +1597,16 @@ window.toggleMerchantSpecialSelect = function (rIndex) {
     }
 };
 
-window.selectMerchantSpecial = function (rIndex, value, labelStr, color = '#d946ef') {
+window.selectMerchantSpecial = function (rIndex, value, labelStr, color = '#d946ef', level = 1) {
     const select = document.getElementById(`room_merchant_special_${rIndex}`);
     if (select) select.value = value;
 
     const label = document.getElementById(`room_merchant_special_label_${rIndex}`);
     if (label) {
         if (!value) {
-            label.innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">diamond</span> ${labelStr}`;
+            label.innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">star</span> ${labelStr}`;
         } else {
-            label.innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: ${color};">diamond</span> ${labelStr}`;
+            label.innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: ${color};">star</span> ${labelStr} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${level})</span>`;
         }
     }
 
@@ -1532,16 +1623,16 @@ window.toggleMerchantCostSelect = function (rIndex) {
     }
 };
 
-window.selectMerchantCost = function (rIndex, value, labelStr, color = '#f472b6') {
+window.selectMerchantCost = function (rIndex, value, labelStr, color = '#f472b6', level = 1) {
     const select = document.getElementById(`room_merchant_cost_item_${rIndex}`);
     if (select) select.value = value;
 
     const label = document.getElementById(`room_merchant_cost_label_${rIndex}`);
     if (label) {
         if (!value) {
-            label.innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">diamond</span> ${labelStr}`;
+            label.innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">star</span> ${labelStr}`;
         } else {
-            label.innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: ${color};">diamond</span> ${labelStr}`;
+            label.innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: ${color};">star</span> ${labelStr} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${level})</span>`;
         }
     }
 
@@ -1769,6 +1860,40 @@ window.removeMonsterFromBoss = function (rIndex, oIndex, mIndex) {
     const outcome = selectedRooms[rIndex].doorOutcomes[oIndex];
     if (outcome && outcome.monsters) {
         outcome.monsters.splice(mIndex, 1);
+        renderRooms();
+    }
+};
+
+window.addGlobalBuffToBoss = function (rIndex, oIndex) {
+    const typeEl = document.getElementById(`room_door_boss_buff_type_${rIndex}_${oIndex}`);
+    const valEl = document.getElementById(`room_door_boss_buff_val_${rIndex}_${oIndex}`);
+    const durEl = document.getElementById(`room_door_boss_buff_dur_${rIndex}_${oIndex}`);
+    
+    if (!typeEl || !valEl || !durEl) return;
+    
+    const type = typeEl.value;
+    const val = parseInt(valEl.value) || 0;
+    const dur = parseInt(durEl.value) || 0;
+    
+    if (val <= 0) {
+        showNotif('La valeur doit être positive.', true);
+        return;
+    }
+    
+    const outcome = selectedRooms[rIndex].doorOutcomes[oIndex];
+    if (!outcome.globalBuffs) outcome.globalBuffs = [];
+    outcome.globalBuffs.push({ type: type, value: val, duration: dur });
+    
+    // reset inputs partially
+    valEl.value = '';
+    
+    renderRooms();
+};
+
+window.removeGlobalBuffFromBoss = function (rIndex, oIndex, bIndex) {
+    const outcome = selectedRooms[rIndex].doorOutcomes[oIndex];
+    if (outcome && outcome.globalBuffs) {
+        outcome.globalBuffs.splice(bIndex, 1);
         renderRooms();
     }
 };

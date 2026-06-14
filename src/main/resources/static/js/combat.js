@@ -202,10 +202,8 @@ function renderAndAnimateXPCards(containerId, players, prefix) {
 window.doAction = doAction;
 window.endTurn = endTurn;
 window.nextRoom = nextRoom;
+window.openStrangeDoor = openStrangeDoor;
 window.openChest = openChest;
-window.acceptAlteration = acceptAlteration;
-window.useRope = useRope;
-window.buyMerchantItem = buyMerchantItem;
 window.openBuyModal = openBuyModal;
 window.closeBuyModal = closeBuyModal;
 window.showGlobalTooltip = ui.showGlobalTooltip;
@@ -607,6 +605,30 @@ async function nextRoom() {
         updateUI(data);
     } catch (e) {
         console.error(e);
+        showNotif("Erreur lors du passage à la salle suivante", true);
+    }
+}
+
+async function openStrangeDoor() {
+    if (!sessionId) return;
+    document.getElementById('eventOverlay').classList.remove('show');
+    const vicOverlay = document.getElementById('combatVictoryOverlay');
+    if (vicOverlay) vicOverlay.classList.remove('show');
+
+    try {
+        const res = await fetch(`/api/pve/combat/${sessionId}/open-strange-door`, { method: 'POST' });
+        const data = await res.json();
+
+        // Track the current XP so animations in new rooms start from this baseline
+        data.players.forEach(p => {
+            previousPlayerXP[p.id] = p.experience;
+            previousPlayerSpiritXP[p.id] = p.spiritualiteExperience || 0;
+        });
+
+        updateUI(data);
+    } catch (e) {
+        console.error(e);
+        showNotif("Erreur lors de l'ouverture de la porte", true);
     }
 }
 
@@ -991,10 +1013,6 @@ function updateUI(data) {
             const btnCont = document.getElementById('btnContinueEvent');
             const lootContainer = document.getElementById('eventLootContainer');
 
-            if (data.currentRoom.type === 'TREASURE') {
-                icon.textContent = data.roomEventCompleted ? 'lock_open' : 'lock';
-                icon.style.color = '#f59e0b';
-                title.textContent = 'Salle des Trésors';
 
                 if (data.roomEventCompleted) {
                     desc.textContent = `Vous avez ouvert le coffre !`;
@@ -1177,13 +1195,23 @@ function updateUI(data) {
                         btnCont.textContent = 'Continuer';
                         lootContainer.style.display = 'none';
                     } else {
-                        const trapType = data.currentRoom.trapType || 'PV';
-                        const trapAmount = data.currentRoom.trapAmount || 0;
+                        let trapDetails = [];
+                        if (data.currentRoom.trapDamageHpPct > 0) trapDetails.push(`<span style="color:#ef4444;">${data.currentRoom.trapDamageHpPct}% PV Max</span>`);
+                        if (data.currentRoom.trapDamageManaPct > 0) trapDetails.push(`<span style="color:#38bdf8;">${data.currentRoom.trapDamageManaPct}% Mana Max</span>`);
+                        if (data.currentRoom.trapDamageHpFixed > 0) trapDetails.push(`<span style="color:#ef4444;">${data.currentRoom.trapDamageHpFixed} PV</span>`);
+                        if (data.currentRoom.trapDamageManaFixed > 0) trapDetails.push(`<span style="color:#38bdf8;">${data.currentRoom.trapDamageManaFixed} Mana</span>`);
+                        
+                        // Legacy support
+                        if (trapDetails.length === 0 && data.currentRoom.trapAmount > 0) {
+                            if (data.currentRoom.trapType === 'PV') {
+                                trapDetails.push(`<span style="color:#ef4444;">${data.currentRoom.trapAmount} PV</span>`);
+                            } else if (data.currentRoom.trapType === 'MANA') {
+                                trapDetails.push(`<span style="color:#38bdf8;">${data.currentRoom.trapAmount} Mana</span>`);
+                            }
+                        }
 
-                        if (trapType === 'PV') {
-                            trapDesc += `<br><br><span style="color:#ef4444;">⚠️ Perte de ${trapAmount} PV</span>`;
-                        } else if (trapType === 'MANA') {
-                            trapDesc += `<br><br><span style="color:#38bdf8;">⚠️ Perte de ${trapAmount} Mana</span>`;
+                        if (trapDetails.length > 0) {
+                            trapDesc += `<br><br>⚠️ Perte de : ` + trapDetails.join(' et ');
                         }
 
                         desc.innerHTML = trapDesc;
@@ -1214,6 +1242,8 @@ function updateUI(data) {
 
                     btnOpen.style.display = 'none';
                     btnCont.style.display = 'block';
+                    btnCont.textContent = 'Passer la porte';
+                    btnCont.onclick = openStrangeDoor;
                     lootContainer.style.display = 'none';
 
                     // Show door outcomes info

@@ -87,6 +87,17 @@ public class CombatController {
         }
     }
 
+    @PostMapping("/{sessionId}/open-strange-door")
+    public ResponseEntity<CombatSession> openStrangeDoor(@PathVariable String sessionId) {
+        try {
+            CombatSession session = combatService.openStrangeDoor(sessionId);
+            return ResponseEntity.ok(session);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(null);
+        }
+    }
+
     @PostMapping("/{sessionId}/merchant-buy")
     public ResponseEntity<CombatSession> buyMerchantItem(
             @PathVariable String sessionId,

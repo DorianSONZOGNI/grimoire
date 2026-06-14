@@ -48,6 +48,8 @@ public class CombatService {
     private final PassiveDispatcher passiveDispatcher;
     private final AnomalieRepository anomalieRepository;
     private final SalleRepository salleRepository;
+    private final generation.grimoire.repository.pve.MonstreRepository monstreRepository;
+    private final com.fasterxml.jackson.databind.ObjectMapper objectMapper;
 
     // In-memory combat sessions
     private final Map<String, CombatSession> activeSessions = new ConcurrentHashMap<>();
@@ -580,6 +582,163 @@ public class CombatService {
         return session;
     }
 
+    public CombatSession openStrangeDoor(String sessionId) {
+        CombatSession session = activeSessions.get(sessionId);
+        if (session == null || session.isFinished())
+            return session;
+        if (session.getCurrentRoom().getType() != generation.grimoire.enumeration.RoomType.EVENT ||
+                session.getCurrentRoom().getEventSubType() != generation.grimoire.enumeration.EventSubType.PORTE_ETRANGE) {
+            throw new RuntimeException("Ce n'est pas une Porte Étrange !");
+        }
+        if (session.isRoomEventCompleted()) {
+            throw new RuntimeException("La porte a déjà été passée.");
+        }
+
+        generation.grimoire.entity.pve.Salle room = session.getCurrentRoom();
+        String json = room.getDoorOutcomes();
+        if (json == null || json.isEmpty() || "[]".equals(json)) {
+            session.addLog("La porte était une simple illusion... Rien ne se passe.");
+            session.setRoomEventCompleted(true);
+            return session;
+        }
+
+        try {
+            com.fasterxml.jackson.databind.JsonNode outcomesNode = objectMapper.readTree(json);
+            if (!outcomesNode.isArray() || outcomesNode.size() == 0) {
+                session.addLog("La porte était une simple illusion... Rien ne se passe.");
+                session.setRoomEventCompleted(true);
+                return session;
+            }
+
+            int totalProb = 0;
+            for (com.fasterxml.jackson.databind.JsonNode outcome : outcomesNode) {
+                totalProb += outcome.path("probability").asInt(0);
+            }
+
+            if (totalProb <= 0) {
+                session.addLog("La porte est bloquée à jamais.");
+                session.setRoomEventCompleted(true);
+                return session;
+            }
+
+            java.util.Random rnd = new java.util.Random();
+            int roll = rnd.nextInt(totalProb);
+            int currentSum = 0;
+            com.fasterxml.jackson.databind.JsonNode selectedOutcome = null;
+
+            for (com.fasterxml.jackson.databind.JsonNode outcome : outcomesNode) {
+                currentSum += outcome.path("probability").asInt(0);
+                if (roll < currentSum) {
+                    selectedOutcome = outcome;
+                    break;
+                }
+            }
+
+            if (selectedOutcome == null) selectedOutcome = outcomesNode.get(0);
+
+            String type = selectedOutcome.path("type").asText("");
+            
+            if ("BOSS".equals(type)) {
+                room.setType(generation.grimoire.enumeration.RoomType.COMBAT);
+                room.setEventSubType(null);
+                if (room.getMonsters() == null) {
+                    room.setMonsters(new ArrayList<>());
+                } else {
+                    room.getMonsters().clear();
+                }
+                
+                com.fasterxml.jackson.databind.JsonNode monstersNode = selectedOutcome.path("monsters");
+                if (monstersNode.isArray()) {
+                    for (com.fasterxml.jackson.databind.JsonNode mIdNode : monstersNode) {
+                        Long mId = mIdNode.asLong();
+                        generation.grimoire.entity.pve.Monstre m = monstreRepository.findById(mId).orElse(null);
+                        if (m != null) room.getMonsters().add(m);
+                    }
+                }
+                
+                // Initialize enemies based on updated room monsters
+                handleRoomStart(session);
+                
+                // Apply global buffs
+                com.fasterxml.jackson.databind.JsonNode buffsNode = selectedOutcome.path("globalBuffs");
+                if (buffsNode.isArray() && !session.getEnemies().isEmpty()) {
+                    for (com.fasterxml.jackson.databind.JsonNode buffNode : buffsNode) {
+                        String bType = buffNode.path("type").asText();
+                        int bVal = buffNode.path("value").asInt(0);
+                        int bDur = buffNode.path("duration").asInt(0);
+                        
+                        for (generation.grimoire.model.pve.ActiveMonster am : session.getEnemies()) {
+                            if ("HP_PCT".equals(bType)) {
+                                int bonus = (int)(am.getMaxHp() * (bVal / 100.0));
+                                am.setMaxHp(am.getMaxHp() + bonus);
+                                am.getAsPersonnage().setHealthCurrent(am.getAsPersonnage().getHealthCurrent() + bonus);
+                            } else if ("SHIELD_PCT".equals(bType)) {
+                                int shieldAmt = (int)(am.getMaxHp() * (bVal / 100.0));
+                                am.getAsPersonnage().addShield(shieldAmt, bDur > 0 ? bDur : -1, "Buff Global");
+                            } else if ("ARMOR_FLAT".equals(bType)) {
+                                generation.grimoire.entity.spell.type.effect.BuffDebuffEffect eff = new generation.grimoire.entity.spell.type.effect.BuffDebuffEffect();
+                                eff.setStatAffected(generation.grimoire.enumeration.StatType.ARMURE);
+                                eff.setFlatValue(bVal);
+                                eff.setDuration(bDur > 0 ? bDur : -1);
+                                am.getAsPersonnage().getActiveBuffs().add(eff);
+                            } else if ("RESIST_FLAT".equals(bType)) {
+                                generation.grimoire.entity.spell.type.effect.BuffDebuffEffect eff = new generation.grimoire.entity.spell.type.effect.BuffDebuffEffect();
+                                eff.setStatAffected(generation.grimoire.enumeration.StatType.RESISTANCE);
+                                eff.setFlatValue(bVal);
+                                eff.setDuration(bDur > 0 ? bDur : -1);
+                                am.getAsPersonnage().getActiveBuffs().add(eff);
+                            } else if ("BURN_ON_HIT".equals(bType)) {
+                                am.getAsPersonnage().setPassiveState("BURN_ON_HIT", bVal);
+                                am.getAsPersonnage().setPassiveState("BURN_ON_HIT_DURATION", bDur > 0 ? bDur : 3);
+                            } else if ("POISON_ON_HIT".equals(bType)) {
+                                am.getAsPersonnage().setPassiveState("POISON_ON_HIT", bVal);
+                                am.getAsPersonnage().setPassiveState("POISON_ON_HIT_DURATION", bDur > 0 ? bDur : 3);
+                            }
+                        }
+                    }
+                }
+                
+                session.addLog("Vous avez ouvert la porte... Un puissant Boss vous attend !");
+            } else if ("ITEM".equals(type)) {
+                session.addLog("Vous avez ouvert la porte et trouvé une salle remplie de trésors !");
+                room.setType(generation.grimoire.enumeration.RoomType.TREASURE);
+                room.setEventSubType(null);
+                room.setTreasureGold(0);
+                room.setTreasureExp(0);
+            } else if ("AUTEL".equals(type)) {
+                session.addLog("Vous avez ouvert la porte... Un autel sacrificiel s'y trouve.");
+                room.setEventSubType(generation.grimoire.enumeration.EventSubType.ALTERATION);
+                room.setAlterationType("VIE_XP");
+                String spirituality = selectedOutcome.path("altarSpirituality").asText("TENEBRES");
+                room.setEventText("Un autel mystique (" + spirituality + ") réclame une offrande.");
+            } else if ("TRESOR".equals(type)) {
+                session.addLog("Vous avez ouvert la porte et trouvé une montagne d'or !");
+                room.setType(generation.grimoire.enumeration.RoomType.TREASURE);
+                room.setEventSubType(null);
+                room.setTreasureGold(100);
+                room.setTreasureExp(50);
+            } else if ("PIEGE".equals(type)) {
+                session.addLog("Vous avez ouvert la porte... et déclenché un piège mortel !");
+                room.setEventSubType(generation.grimoire.enumeration.EventSubType.PIEGE);
+                room.setTrapType("PV");
+                room.setTrapDamageHpPct(15);
+                room.setTrapDamageManaPct(15);
+                room.setTrapDamageHpFixed(0);
+                room.setTrapDamageManaFixed(0);
+            } else {
+                session.addLog("Vous avez ouvert la porte... Il n'y a absolument rien derrière.");
+                session.setRoomEventCompleted(true);
+            }
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            session.addLog("La porte refuse de s'ouvrir.");
+            session.setRoomEventCompleted(true);
+        }
+
+        return session;
+    }
+
     public CombatSession executeAction(String sessionId, Long spellId, Integer targetIndex, Integer allyTargetIndex,
             Integer choiceKey) {
         CombatSession session = activeSessions.get(sessionId);
@@ -823,6 +982,29 @@ public class CombatService {
                             System.out.println(m.getBase().getName() + " attaque " + targetPlayer.getName()
                                     + " et inflige " + monsterDmg + " dégâts.");
                             targetPlayer.takeDamage(monsterDmg, dmgType);
+                            
+                            // Check for ON_HIT passive effects (BURN, POISON)
+                            int burnDmg = m.getAsPersonnage().getPassiveState("BURN_ON_HIT", 0);
+                            if (burnDmg > 0) {
+                                int burnDur = m.getAsPersonnage().getPassiveState("BURN_ON_HIT_DURATION", 3);
+                                generation.grimoire.entity.spell.type.effect.DamageOverTimeEffect dot = new generation.grimoire.entity.spell.type.effect.DamageOverTimeEffect();
+                                dot.setFixedDamagePerTick(burnDmg);
+                                dot.setDuration(burnDur);
+                                dot.setDamageType(generation.grimoire.enumeration.DamageType.MAGIC);
+                                targetPlayer.getActiveDamageOverTimeEffects().add(dot);
+                                session.addLog("🔥 " + targetPlayer.getName() + " s'embrase au contact ! (" + burnDmg + " dégâts par tour)");
+                            }
+                            
+                            int poisonDmg = m.getAsPersonnage().getPassiveState("POISON_ON_HIT", 0);
+                            if (poisonDmg > 0) {
+                                int poisonDur = m.getAsPersonnage().getPassiveState("POISON_ON_HIT_DURATION", 3);
+                                generation.grimoire.entity.spell.type.effect.DamageOverTimeEffect dot = new generation.grimoire.entity.spell.type.effect.DamageOverTimeEffect();
+                                dot.setFixedDamagePerTick(poisonDmg);
+                                dot.setDuration(poisonDur);
+                                dot.setDamageType(generation.grimoire.enumeration.DamageType.BRUT);
+                                targetPlayer.getActiveDamageOverTimeEffects().add(dot);
+                                session.addLog("☠️ " + targetPlayer.getName() + " est empoisonné au contact ! (" + poisonDmg + " dégâts par tour)");
+                            }
                             
                             // === PASSIF TYPE : DEMON — 10% dégâts bruts supplémentaires ===
                             if (mType == MonsterType.DEMON) {
