@@ -773,7 +773,52 @@ function renderRooms() {
                         const conf = outcomeConfig[outcome.type] || { icon: 'help', color: '#94a3b8', text: outcome.type };
                         
                         let extraHtml = '';
-                        if (outcome.type === 'ITEM') {
+                        if (outcome.type === 'BOSS') {
+                            if (!outcome.monsters) outcome.monsters = [];
+                            let monstersHtml = '<div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem;">';
+                            if (outcome.monsters.length === 0) {
+                                monstersHtml += `<div style="font-size:0.8rem; color: #94a3b8;">Aucun boss configuré.</div>`;
+                            } else {
+                                outcome.monsters.forEach((mId, mIndex) => {
+                                    const m = allMonsters.find(x => x.id === mId);
+                                    if (m) {
+                                        monstersHtml += `
+                                            <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); padding: 0.4rem 0.8rem; border-radius: 4px;">
+                                                <span style="font-size: 0.85rem; color: #f8fafc; display: flex; align-items: center; gap: 0.4rem;"><span style="font-size: 0.75rem; background: rgba(255,255,255,0.1); padding: 0.1rem 0.3rem; border-radius: 3px; color: #94a3b8;">Lvl ${m.level || 1}</span> ${m.name}</span>
+                                                <button type="button" onclick="removeMonsterFromBoss(${rIndex}, ${oIndex}, ${mIndex})" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 0;"><span class="material-symbols-outlined" style="font-size: 1rem;">close</span></button>
+                                            </div>
+                                        `;
+                                    }
+                                });
+                            }
+                            monstersHtml += `</div>
+                                <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; align-items: stretch; position: relative;">
+                                    <div class="custom-select-wrapper" id="room_door_boss_wrapper_${rIndex}_${oIndex}" style="flex: 1; z-index: ${150 - (rIndex * 10 + oIndex * 3)}; margin: 0;">
+                                        <div class="custom-select-trigger" onclick="toggleDoorBossSelect(${rIndex}, ${oIndex})" style="padding: 0.6rem 1rem; border-radius: 8px;">
+                                            <span class="cs-label" id="room_door_boss_label_${rIndex}_${oIndex}"><span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">pest_control</span> Sélectionner un boss...</span>
+                                            <span class="material-symbols-outlined">expand_more</span>
+                                        </div>
+                                        <div class="custom-select-options" id="room_door_boss_options_${rIndex}_${oIndex}" style="max-height: 200px; overflow-y: auto;">
+                                            ${allMonsters.map(m => `
+                                                <div class="custom-option" onclick="selectDoorBossOption(${rIndex}, ${oIndex}, ${m.id}, '${m.name.replace(/'/g, "\\'")}', ${m.level || 1})">
+                                                    <span class="material-symbols-outlined cs-icon" style="color: #ef4444;">pest_control</span> ${m.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${m.level || 1})</span>
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                        <input type="hidden" id="room_door_boss_select_${rIndex}_${oIndex}" value="">
+                                    </div>
+                                    <button type="button" style="background: linear-gradient(135deg, #ef4444, #b91c1c); color: white; border: none; padding: 0 1.2rem; font-size: 0.9rem; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 0.3rem;" onclick="addMonsterToBoss(${rIndex}, ${oIndex})">
+                                        <span class="material-symbols-outlined" style="font-size: 1.1rem;">add</span>
+                                    </button>
+                                </div>
+                            `;
+                            extraHtml = `
+                                <div style="margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px dashed rgba(255,255,255,0.15); width: 100%;">
+                                    <label style="font-size: 0.8rem; color: #ef4444;">Configuration du Boss</label>
+                                    ${monstersHtml}
+                                </div>
+                            `;
+                        } else if (outcome.type === 'ITEM') {
                             extraHtml = doorLootHtml;
                         } else if (outcome.type === 'AUTEL') {
                             if (!outcome.altarSpirituality) outcome.altarSpirituality = 'TENEBRES';
@@ -1679,6 +1724,52 @@ window.toggleAltarTreasureSelect = function (rIndex, oIndex) {
             if (el !== wrapper) el.classList.remove('open');
         });
         wrapper.classList.toggle('open');
+    }
+};
+
+window.toggleDoorBossSelect = function (rIndex, oIndex) {
+    const wrapper = document.getElementById(`room_door_boss_wrapper_${rIndex}_${oIndex}`);
+    if (wrapper) {
+        document.querySelectorAll('.custom-select-wrapper.open').forEach(el => {
+            if (el !== wrapper) el.classList.remove('open');
+        });
+        wrapper.classList.toggle('open');
+    }
+};
+
+window.selectDoorBossOption = function (rIndex, oIndex, val, label, level) {
+    const input = document.getElementById(`room_door_boss_select_${rIndex}_${oIndex}`);
+    if (input) input.value = val;
+    const triggerLabel = document.getElementById(`room_door_boss_label_${rIndex}_${oIndex}`);
+    if (triggerLabel) triggerLabel.innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: #ef4444;">pest_control</span> ${label} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${level})</span>`;
+    const wrapper = document.getElementById(`room_door_boss_wrapper_${rIndex}_${oIndex}`);
+    if (wrapper) wrapper.classList.remove('open');
+};
+
+window.addMonsterToBoss = function (rIndex, oIndex) {
+    const input = document.getElementById(`room_door_boss_select_${rIndex}_${oIndex}`);
+    if (!input || !input.value) {
+        showNotif('Veuillez sélectionner un boss.', true);
+        return;
+    }
+    const mId = parseInt(input.value);
+    const outcome = selectedRooms[rIndex].doorOutcomes[oIndex];
+    if (!outcome.monsters) outcome.monsters = [];
+    outcome.monsters.push(mId);
+    
+    // Clear selection
+    input.value = '';
+    const triggerLabel = document.getElementById(`room_door_boss_label_${rIndex}_${oIndex}`);
+    if (triggerLabel) triggerLabel.innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">pest_control</span> Sélectionner un boss...`;
+    
+    renderRooms();
+};
+
+window.removeMonsterFromBoss = function (rIndex, oIndex, mIndex) {
+    const outcome = selectedRooms[rIndex].doorOutcomes[oIndex];
+    if (outcome && outcome.monsters) {
+        outcome.monsters.splice(mIndex, 1);
+        renderRooms();
     }
 };
 
