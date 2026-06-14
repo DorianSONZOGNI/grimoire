@@ -349,6 +349,14 @@ public class SpellService {
             java.util.List<Personnage> recipients = resolveRecipientsGroup(
                     effect.getEffectTarget(), caster, target, ally, allAllies, allEnemies);
 
+            // Correctif: Les effets de chaleur doivent TOUJOURS s'appliquer au lanceur,
+            // même si le sort cible un allié (pour éviter que l'allié reçoive la chaleur en multi).
+            if (effect instanceof generation.grimoire.entity.spell.type.effect.HeatOverTimeEffect
+                    || effect instanceof generation.grimoire.entity.spell.type.effect.HeatFixedEffect
+                    || effect instanceof generation.grimoire.entity.spell.type.effect.HeatPercentageEffect) {
+                recipients = java.util.Collections.singletonList(caster);
+            }
+
             for (Personnage recipient : recipients) {
                 if (recipients.size() > 1) {
                     System.out.println("  ↳ Application sur : " + recipient.getName());
