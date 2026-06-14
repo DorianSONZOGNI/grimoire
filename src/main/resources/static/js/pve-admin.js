@@ -803,7 +803,7 @@ function renderRooms() {
                 }
                 doorLootHtml += `</div>
                     <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; align-items: stretch; position: relative;">
-                        <div class="custom-select-wrapper" id="room_loot_select_wrapper_${rIndex}" style="flex: 2; z-index: ${100 - rIndex}; margin: 0;">
+                        <div class="custom-select-wrapper" id="room_loot_select_wrapper_${rIndex}" style="flex: 2; z-index: ${90 - rIndex}; margin: 0;">
                             <div class="custom-select-trigger" onclick="toggleLootSelect(${rIndex})" style="padding: 0.6rem 1rem; border-radius: 8px;">
                                 <span class="cs-label" id="room_loot_label_${rIndex}"><span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">category</span> Objet...</span>
                                 <span class="material-symbols-outlined">expand_more</span>
