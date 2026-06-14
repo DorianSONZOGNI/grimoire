@@ -596,13 +596,40 @@
                         <textarea id="anomalieDescription" placeholder="Une relique impie imprégnée d'une aura mystique..."></textarea>
                     </div>
             
-                    <div class="eq-create-field" style="margin-bottom: 1.5rem;">
+                    <div class="eq-create-field" style="margin-bottom: 1rem;">
                         <label>Type de Spiritualité</label>
-                        <select id="anomalieSpiritualite">
-                            <option value="TENEBRES">Ténèbres</option>
-                            <option value="ESPRIT">Esprit</option>
-                            <option value="KARMA">Karma</option>
-                        </select>
+                        <div class="custom-select-wrapper" id="anomalieSpiritualiteWrapper" tabindex="0">
+                            <div class="custom-select-trigger" id="anomalieSpiritualiteTrigger">
+                                <span class="cs-label" id="anomalieSpiritualiteLabel">
+                                    <span class="material-symbols-outlined cs-icon" style="color: #d946ef;">dark_mode</span> Ténèbres
+                                </span>
+                                <span class="material-symbols-outlined cs-arrow" style="font-size: 1.1rem;">expand_more</span>
+                            </div>
+                            <div class="custom-select-options" id="anomalieSpiritualiteOptions">
+                                <div class="custom-option" data-value="TENEBRES"><span class="material-symbols-outlined cs-icon" style="color: #d946ef;">dark_mode</span> Ténèbres</div>
+                                <div class="custom-option" data-value="ESPRIT"><span class="material-symbols-outlined cs-icon" style="color: #3b82f6;">blur_on</span> Esprit</div>
+                                <div class="custom-option" data-value="KARMA"><span class="material-symbols-outlined cs-icon" style="color: #f59e0b;">all_inclusive</span> Karma</div>
+                            </div>
+                            <input type="hidden" id="anomalieSpiritualite" value="TENEBRES">
+                        </div>
+                    </div>
+
+                    <div class="eq-create-field" style="margin-bottom: 1.5rem;">
+                        <label>Niveau (Multiplicateur)</label>
+                        <div class="custom-select-wrapper" id="anomalieLevelWrapper" tabindex="0">
+                            <div class="custom-select-trigger" id="anomalieLevelTrigger">
+                                <span class="cs-label" id="anomalieLevelLabel">
+                                    <span class="material-symbols-outlined cs-icon" style="color: #10b981;">looks_one</span> Niveau 1
+                                </span>
+                                <span class="material-symbols-outlined cs-arrow" style="font-size: 1.1rem;">expand_more</span>
+                            </div>
+                            <div class="custom-select-options" id="anomalieLevelOptions">
+                                <div class="custom-option" data-value="1"><span class="material-symbols-outlined cs-icon" style="color: #10b981;">looks_one</span> Niveau 1</div>
+                                <div class="custom-option" data-value="2"><span class="material-symbols-outlined cs-icon" style="color: #3b82f6;">looks_two</span> Niveau 2</div>
+                                <div class="custom-option" data-value="3"><span class="material-symbols-outlined cs-icon" style="color: #a855f7;">looks_3</span> Niveau 3</div>
+                            </div>
+                            <input type="hidden" id="anomalieLevel" value="1">
+                        </div>
                     </div>
 
                     <button type="button" id="submitAnomalieBtn" class="eq-create-btn" onclick="submitAnomalie()"

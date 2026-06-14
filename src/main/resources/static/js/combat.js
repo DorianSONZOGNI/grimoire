@@ -1474,7 +1474,7 @@ function generateFighterHtml(c, isHero) {
             borderColor = 'rgba(253, 224, 71, 0.4)'; color = '#fde047'; icon = 'light_mode';
             text = `+${karmaGauge}/3`; title = "Karma Lumière";
         } else {
-            borderColor = 'rgba(156, 163, 175, 0.4)'; color = '#9ca3af'; icon = 'balance';
+            borderColor = 'rgba(156, 163, 175, 0.4)'; color = '#9ca3af'; icon = 'all_inclusive';
             text = `0/3`; title = "Karma Neutre";
         }
         statsHtml += `<span class="hero-stat-chip" title="${title}" style="border-color: ${borderColor}; color: ${color};"><span class="material-symbols-outlined" style="color: inherit;">${icon}</span>${text}</span>`;
@@ -1487,7 +1487,7 @@ function generateFighterHtml(c, isHero) {
         const canCast = hp >= maxHp * 0.20 && c.manaCurrent >= c.manaMax * 0.20;
         const color = canCast ? '#38bdf8' : '#ef4444';
         const borderColor = canCast ? 'rgba(56, 189, 248, 0.4)' : 'rgba(239, 68, 68, 0.4)';
-        const icon = canCast ? 'psychology' : 'block';
+        const icon = canCast ? 'blur_on' : 'block';
         const text = canCast ? 'Éveillé' : 'Bloqué';
         const title = "Condition Esprit : >= 20% PV ET Mana";
         statsHtml += `<span class="hero-stat-chip" title="${title}" style="border-color: ${borderColor}; color: ${color};"><span class="material-symbols-outlined" style="color: inherit;">${icon}</span>${text}</span>`;

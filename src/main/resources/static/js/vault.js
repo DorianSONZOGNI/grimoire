@@ -309,7 +309,7 @@ function renderGrid(equipments) {
                     <div class="vault-card-name-group">
                         <div class="vault-card-slot">
                             <span class="material-symbols-outlined" style="font-size: 0.9rem; color: #d946ef;">star</span>
-                            Anomalie <span style="opacity:0.5; margin-left:4px;">${eq.spiritualite}</span>
+                            Anomalie <span style="opacity:0.5; margin-left:4px;">${eq.spiritualite}</span> <span style="opacity:0.5; margin-left:4px;">(Niv. ${eq.level || 1})</span>
                         </div>
                         <div class="vault-card-name" style="color: #fdf4ff;">
                             ${eq.name}
@@ -646,6 +646,7 @@ window.openCreateAnomalieModal = function () {
     document.getElementById('anomalieName').value = '';
     document.getElementById('anomalieDescription').value = '';
     document.getElementById('anomalieSpiritualite').value = 'TENEBRES';
+    document.getElementById('anomalieLevel').value = 1;
     document.getElementById('anomalieCreateModal').classList.add('show');
 };
 
@@ -664,6 +665,7 @@ window.editAnomalie = function(id) {
     document.getElementById('anomalieName').value = eq.name || '';
     document.getElementById('anomalieDescription').value = eq.description || '';
     document.getElementById('anomalieSpiritualite').value = eq.spiritualite || 'TENEBRES';
+    document.getElementById('anomalieLevel').value = eq.level || 1;
 
     document.getElementById('anomalieCreateModal').classList.add('show');
 };
@@ -687,7 +689,8 @@ window.submitAnomalie = async function () {
         id: editingAnomalieId,
         name: name,
         spiritualite: spiritualite,
-        description: description
+        description: description,
+        level: parseInt(document.getElementById('anomalieLevel').value) || 1
     };
 
     try {

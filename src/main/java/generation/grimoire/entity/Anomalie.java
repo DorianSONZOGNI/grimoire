@@ -29,6 +29,9 @@ public class Anomalie {
     @Column(length = 1000)
     private String description;
 
+    @Column(nullable = false)
+    private Integer level = 1;
+
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id")
     @JsonIgnore
