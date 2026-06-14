@@ -53,6 +53,11 @@ public class Salle {
     private String alterationSpecialItemReward;
     private String alterationRequiredItem;
 
+    // IF AUTEL (Altar)
+    private String altarRequiredSpirituality; // e.g. "TENEBRES", "ESPRIT", "KARMA"
+    private String altarRewardType; // "GOLD", "ITEM", "XP"
+    private int altarRewardValue; // Value of Gold/XP, or Equipment ID
+
     // IF PIEGE
     private String trapType; // "PV", "MANA"
     private int trapAmount;

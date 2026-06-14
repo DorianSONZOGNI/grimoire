@@ -19,11 +19,12 @@ public class CombatController {
 
     @PostMapping("/start")
     public ResponseEntity<CombatSession> startCombat(
-            @RequestParam @NonNull List<Long> characterIds, 
+            @RequestParam @NonNull List<Long> characterIds,
             @RequestParam @NonNull Long dungeonId,
             Principal principal) {
-        if (principal == null) return ResponseEntity.status(401).build();
-        
+        if (principal == null)
+            return ResponseEntity.status(401).build();
+
         try {
             CombatSession session = combatService.startCombat(characterIds, dungeonId, principal.getName());
             return ResponseEntity.ok(session);
@@ -35,7 +36,8 @@ public class CombatController {
     @GetMapping("/{sessionId}")
     public ResponseEntity<CombatSession> getCombatStatus(@PathVariable String sessionId) {
         CombatSession session = combatService.getSession(sessionId);
-        if (session == null) return ResponseEntity.notFound().build();
+        if (session == null)
+            return ResponseEntity.notFound().build();
         return ResponseEntity.ok(session);
     }
 
@@ -47,7 +49,8 @@ public class CombatController {
             @RequestParam(required = false) Integer allyTargetIndex,
             @RequestParam(required = false) Integer choiceKey) {
         try {
-            CombatSession session = combatService.executeAction(sessionId, spellId, targetIndex, allyTargetIndex, choiceKey);
+            CombatSession session = combatService.executeAction(sessionId, spellId, targetIndex, allyTargetIndex,
+                    choiceKey);
             return ResponseEntity.ok(session);
         } catch (Exception e) {
             e.printStackTrace();
@@ -124,15 +127,18 @@ public class CombatController {
     }
 
     @PostMapping("/{sessionId}/alteration-accept")
-    public ResponseEntity<?> acceptAlteration(@PathVariable String sessionId) {
+    public ResponseEntity<?> acceptAlteration(
+            @PathVariable String sessionId,
+            @RequestParam(required = false) Long anomalyId) {
         try {
-            CombatSession session = combatService.acceptAlteration(sessionId);
+            CombatSession session = combatService.acceptAlteration(sessionId, anomalyId);
             return ResponseEntity.ok(session);
         } catch (Exception e) {
             e.printStackTrace();
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
     @PostMapping("/{sessionId}/use-rope")
     public ResponseEntity<?> useRope(@PathVariable String sessionId) {
         try {

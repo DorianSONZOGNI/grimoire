@@ -272,7 +272,7 @@ public class CombatService {
         return session;
     }
 
-    public CombatSession acceptAlteration(String sessionId) {
+    public CombatSession acceptAlteration(String sessionId, Long anomalyId) {
         CombatSession session = activeSessions.get(sessionId);
         if (session == null || session.isFinished())
             return session;
@@ -417,6 +417,82 @@ public class CombatService {
             session.addLog("Vous avez sacrifié l'item : " + requiredItemName + " !");
             if (spXp > 0) {
                 session.addLog("Vos héros reçoivent " + spXp + " XP de Spiritualité en échange !");
+            }
+        } else if ("AUTEL".equals(altType)) {
+            if (anomalyId == null) {
+                throw new RuntimeException("Aucune anomalie sélectionnée pour le sacrifice.");
+            }
+            
+            if (session.getPlayers().isEmpty()) {
+                throw new RuntimeException("Aucun joueur dans la session.");
+            }
+            AppUser user = session.getPlayers().get(0).getUser();
+            if (user == null) {
+                throw new RuntimeException("Utilisateur inconnu.");
+            }
+            
+            Anomalie toDestroy = anomalieRepository.findById(anomalyId)
+                    .orElseThrow(() -> new RuntimeException("Anomalie introuvable."));
+                    
+            if (!toDestroy.getOwnerUsername().equals(user.getUsername())) {
+                throw new RuntimeException("Cette anomalie ne vous appartient pas.");
+            }
+            
+            if (!toDestroy.isMagicObject()) {
+                throw new RuntimeException("Vous ne pouvez sacrifier que des objets magiques, pas des matériaux.");
+            }
+            
+            String reqSp = room.getAltarRequiredSpirituality();
+            if (reqSp != null && toDestroy.getSpiritualite() != null && !toDestroy.getSpiritualite().name().equals(reqSp)) {
+                throw new RuntimeException("L'autel réclame une offrande de spiritualité " + reqSp + ".");
+            }
+            
+            String anomalyName = toDestroy.getName();
+            anomalieRepository.delete(toDestroy);
+            session.addLog("Vous avez sacrifié l'anomalie : " + anomalyName + " sur l'autel.");
+            
+            String rewardType = room.getAltarRewardType();
+            int rewardValue = room.getAltarRewardValue();
+            
+            if ("GOLD".equals(rewardType)) {
+                user.setMonnaie(user.getMonnaie() + rewardValue);
+                userRepository.save(user);
+                session.addLog("L'autel vous récompense de " + rewardValue + " Or !");
+            } else if ("XP".equals(rewardType)) {
+                for (Personnage p : session.getPlayers()) {
+                    if (p.getHealthCurrent() > 0) {
+                        p.setExperience(p.getExperience() + rewardValue);
+                        personnageRepository.save(p);
+                    }
+                }
+                session.addLog("L'autel accorde " + rewardValue + " XP à tous les héros !");
+            } else if ("ITEM".equals(rewardType)) {
+                generation.grimoire.entity.Equipment template = equipmentRepository.findById((long) rewardValue).orElse(null);
+                if (template != null) {
+                    generation.grimoire.entity.Equipment clone = new generation.grimoire.entity.Equipment();
+                    clone.setName(template.getName());
+                    clone.setSlot(template.getSlot());
+                    clone.setBonusHealthMax(template.getBonusHealthMax());
+                    clone.setBonusManaMax(template.getBonusManaMax());
+                    clone.setBonusPower(template.getBonusPower());
+                    clone.setBonusStrength(template.getBonusStrength());
+                    clone.setBonusArmor(template.getBonusArmor());
+                    clone.setBonusResistance(template.getBonusResistance());
+                    clone.setBonusSpeed(template.getBonusSpeed());
+                    clone.setBonusCrit(template.getBonusCrit());
+                    clone.setRegenHealthPerTurn(template.getRegenHealthPerTurn());
+                    clone.setRegenManaPerTurn(template.getRegenManaPerTurn());
+                    clone.setRarity(template.getRarity());
+                    clone.setSpecialEffect(template.getSpecialEffect());
+                    clone.setSpecialEffectValue(template.getSpecialEffectValue());
+
+                    clone.setShopTemplate(false);
+                    clone.setUser(user);
+                    clone.setOwnerUsername(user.getUsername());
+
+                    equipmentRepository.save(clone);
+                    session.addLog("L'autel vous a offert un équipement : " + template.getName() + " !");
+                }
             }
         }
 
@@ -825,9 +901,12 @@ public class CombatService {
             } else if ("AUTEL".equals(type)) {
                 session.addLog("Vous avez ouvert la porte... Un autel sacrificiel s'y trouve.");
                 room.setEventSubType(generation.grimoire.enumeration.EventSubType.ALTERATION);
-                room.setAlterationType("VIE_XP");
+                room.setAlterationType("AUTEL");
                 String spirituality = selectedOutcome.path("altarSpirituality").asText("TENEBRES");
-                room.setEventText("Un autel mystique (" + spirituality + ") réclame une offrande.");
+                room.setAltarRequiredSpirituality(spirituality);
+                room.setAltarRewardType(selectedOutcome.path("altarRewardType").asText("GOLD"));
+                room.setAltarRewardValue(selectedOutcome.path("altarRewardValue").asInt(100));
+                room.setEventText("Un autel mystique (" + spirituality + ") réclame une offrande magique.");
             } else if ("TRESOR".equals(type)) {
                 session.addLog("Vous avez ouvert la porte et trouvé une montagne d'or !");
                 room.setType(generation.grimoire.enumeration.RoomType.TREASURE);
