@@ -1638,16 +1638,6 @@ function generateFighterHtml(c, isHero) {
     statsHtml += `</div>`;
 
     let specialItemsHtml = '';
-    if (isHero && c.specialItems) {
-        const specialItemKeys = Object.keys(c.specialItems).filter(k => c.specialItems[k] > 0);
-        if (specialItemKeys.length > 0) {
-            specialItemsHtml = `<div style="margin-top: 0.5rem; display: flex; flex-wrap: wrap; gap: 0.3rem; justify-content: center;">`;
-            specialItemKeys.forEach(k => {
-                specialItemsHtml += `<span class="hero-stat-chip" title="Item Spécial : ${k}" style="border-color: rgba(217, 70, 239, 0.4); color: #d946ef;"><span class="material-symbols-outlined" style="color: inherit; font-size: 1rem;">star</span>${c.specialItems[k]}x ${k}</span>`;
-            });
-            specialItemsHtml += `</div>`;
-        }
-    }
 
     let passiveBadges = '';
 
