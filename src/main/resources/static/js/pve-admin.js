@@ -780,12 +780,62 @@ function renderRooms() {
                     </div>
                 `;
 
+                if (!room.lootTable) room.lootTable = [];
+
+                let doorLootHtml = `<div style="margin-top: 1rem;"><label style="font-size: 0.8rem; color: #94a3b8;">Loot possible si l'issue "Item" est choisie</label><div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">`;
+                if (room.lootTable.length === 0) {
+                    doorLootHtml += `<div style="font-size:0.8rem; color: #94a3b8;">Aucun loot configuré.</div>`;
+                } else {
+                    room.lootTable.forEach((loot, lIndex) => {
+                        const eq = allEquipments.find(x => x.id === loot.equipmentId);
+                        if (eq) {
+                            const slotInfo = SLOT_LABELS[eq.slot] || { label: eq.slot, icon: 'help', color: '#94a3b8' };
+                            const rarityColor = RARITY_COLORS[eq.rarity] || '#ef4444';
+                            const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
+                            doorLootHtml += `
+                                <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); padding: 0.4rem 0.8rem; border-radius: 4px;">
+                                    <span style="font-size: 0.85rem; color: #f8fafc; display: flex; align-items: center; gap: 0.4rem;"><span class="material-symbols-outlined${extraClass}" style="font-size:1rem; color:${slotInfo.color};">${slotInfo.icon}</span> <span style="color:${rarityColor};">${eq.name}</span> <span style="color:#94a3b8; font-size:0.8rem;">(${loot.probability}%)</span></span>
+                                    <button type="button" onclick="removeLootFromRoom(${rIndex}, ${lIndex})" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 0;"><span class="material-symbols-outlined" style="font-size: 1rem;">close</span></button>
+                                </div>
+                            `;
+                        }
+                    });
+                }
+                doorLootHtml += `</div>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; align-items: stretch; position: relative;">
+                        <div class="custom-select-wrapper" id="room_loot_select_wrapper_${rIndex}" style="flex: 2; z-index: ${100 - rIndex}; margin: 0;">
+                            <div class="custom-select-trigger" onclick="toggleLootSelect(${rIndex})" style="padding: 0.6rem 1rem; border-radius: 8px;">
+                                <span class="cs-label" id="room_loot_label_${rIndex}"><span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">category</span> Objet...</span>
+                                <span class="material-symbols-outlined">expand_more</span>
+                            </div>
+                            <div class="custom-select-options" id="room_loot_options_${rIndex}" style="max-height: 200px; overflow-y: auto;">
+                `;
+                allEquipments.forEach(eq => {
+                    const slotInfo = SLOT_LABELS[eq.slot] || { label: eq.slot, icon: 'help', color: '#94a3b8' };
+                    const rarityColor = RARITY_COLORS[eq.rarity] || '#ef4444';
+                    const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
+                    doorLootHtml += `<div class="custom-option" onclick="selectLootOption(${rIndex}, ${eq.id}, '${eq.name.replace(/'/g, "\\'")}', '${slotInfo.icon}', '${slotInfo.color}', '${rarityColor}', '${slotInfo.extraClass || ''}')"><span class="material-symbols-outlined cs-icon${extraClass}" style="color: ${slotInfo.color};">${slotInfo.icon}</span> <span style="color: ${rarityColor};">${eq.name}</span></div>`;
+                });
+                doorLootHtml += `
+                            </div>
+                            <input type="hidden" id="room_loot_select_${rIndex}" value="">
+                        </div>
+                        <input type="number" id="room_loot_prob_${rIndex}" class="form-control" style="flex: 1; min-width: 60px;" placeholder="Prob (%)" step="0.1" min="0" max="100">
+                        <button type="button" style="background: linear-gradient(135deg, #f59e0b, #d97706); color: white; border: none; padding: 0 1.2rem; font-size: 0.9rem; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 0.3rem;" onclick="addLootToRoom(${rIndex})">
+                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">add</span>
+                        </button>
+                    </div></div>
+                `;
+
+                const hasItemOutcome = room.doorOutcomes.some(o => o.type === 'ITEM');
+
                 contentHtml = `
                     <div style="margin-top: 1rem;">
                         <label style="font-size: 0.8rem; color: #94a3b8;">Texte de l'événement</label>
                         <input type="text" class="form-control" value="${room.eventText || ''}" onchange="updateRoomField(${rIndex}, 'eventText', this.value)">
                     </div>
                     ${outcomesHtml}
+                    ${hasItemOutcome ? doorLootHtml : ''}
                 `;
             }
         }
