@@ -965,7 +965,13 @@ function updateUI(data) {
                     btnCont.style.display = 'block';
                     lootContainer.style.display = 'flex';
                     
-                    if (lootContainer.innerHTML.trim() === '') {
+                    // Allow filling if it contains only comments or whitespace
+                    if (!lootContainer.dataset.filled) {
+                        lootContainer.dataset.filled = 'true';
+                        lootContainer.innerHTML = ''; // Clear comments
+
+                        renderAndAnimateXPCards('eventLootContainer', data.players, 'treasure');
+
                         let gainedItemsHtml = '';
                         let goldAmount = 0;
                         let expAmount = 0;
@@ -1003,14 +1009,6 @@ function updateUI(data) {
                                 }
                             });
 
-                            if (expAmount > 0) {
-                                gainedItemsHtml = `
-                                    <div style="background: rgba(0, 0, 0, 0.4); border: 1px solid #3b82f680; padding: 0.8rem 1rem; border-radius: 8px; color: #3b82f6; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
-                                        <span class="material-symbols-outlined" style="color: #3b82f6;">stars</span> +${expAmount} XP
-                                    </div>
-                                ` + gainedItemsHtml;
-                            }
-
                             if (goldAmount > 0) {
                                 gainedItemsHtml = `
                                     <div style="background: rgba(0, 0, 0, 0.4); border: 1px solid #f59e0b80; padding: 0.8rem 1rem; border-radius: 8px; color: #f59e0b; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
@@ -1020,8 +1018,10 @@ function updateUI(data) {
                             }
                         }
                         
+                        // We removed the custom HTML XP block because renderAndAnimateXPCards does it beautifully.
+
                         // If no items/gold/xp but we opened a chest, show something at least
-                        if (!gainedItemsHtml) {
+                        if (!gainedItemsHtml && expAmount === 0) {
                             gainedItemsHtml = `
                                 <div style="background: rgba(0, 0, 0, 0.4); border: 1px solid #94a3b880; padding: 0.8rem 1rem; border-radius: 8px; color: #94a3b8; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
                                     Le coffre était vide...
@@ -1047,6 +1047,7 @@ function updateUI(data) {
                     btnCont.style.display = 'none';
                     lootContainer.style.display = 'none';
                     lootContainer.innerHTML = ''; // reset
+                    delete lootContainer.dataset.filled;
                 }
             } else if (data.currentRoom.type === 'EVENT') {
                 const subType = data.currentRoom.eventSubType || 'ALTERATION';
