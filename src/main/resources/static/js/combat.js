@@ -1168,7 +1168,7 @@ function updateUI(data) {
                     title.textContent = 'Piège !';
 
                     let trapDesc = data.currentRoom.eventText || 'Un piège se déclenche !';
-                    
+
                     if (data.roomEventCompleted) {
                         trapDesc += `<br><br><span style="color:#10b981;">🪢 Piège évité grâce à une Corde !</span>`;
                         desc.innerHTML = trapDesc;
@@ -1546,7 +1546,7 @@ function generateFighterHtml(c, isHero) {
                 'VAMPIRE': 'Vampire : Se soigne de 20% des dégâts infligés.'
             };
             const tTitle = typeTitles[c.monsterType] || '';
-            const tIcon = { 'DEMON': 'local_fire_department', 'REPTILE': 'eco', 'MORT_VIVANT': 'skull', 'HYBRIDE': 'science', 'VAMPIRE': 'bloodtype' }[c.monsterType] || 'check_box_outline_blank';
+            const tIcon = { 'DEMON': 'local_fire_department', 'REPTILE': 'grass', 'MORT_VIVANT': 'skull', 'HYBRIDE': 'network_node', 'VAMPIRE': 'bloodtype' }[c.monsterType] || 'check_box_outline_blank';
             const tLabel = { 'DEMON': 'Démon', 'REPTILE': 'Reptile', 'MORT_VIVANT': 'Mort-vivant', 'HYBRIDE': 'Hybride', 'VAMPIRE': 'Vampire' }[c.monsterType] || c.monsterType;
             monsterBadgesHtml += `<span title="${tTitle}" style="cursor: help; font-size: 0.75rem; background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined" style="font-size: 0.9rem;">${tIcon}</span>${tLabel}</span>`;
         }
@@ -1559,7 +1559,7 @@ function generateFighterHtml(c, isHero) {
                 'INSENSIBLE': "Insensible : Ses attaques infligent des dégâts bruts (ignore l'armure)."
             };
             const bTitle = behaviorTitles[c.behavior] || '';
-            const bIcon = { 'PREDATEUR': 'track_changes', 'CORRUPTEUR': 'blur_on', 'LEADER': 'stars', 'ASSASSIN': 'gps_fixed', 'INSENSIBLE': 'shield' }[c.behavior] || 'check_box_outline_blank';
+            const bIcon = { 'PREDATEUR': 'track_changes', 'CORRUPTEUR': 'allergy', 'LEADER': 'crown', 'ASSASSIN': 'gps_fixed', 'INSENSIBLE': 'shield' }[c.behavior] || 'check_box_outline_blank';
             const bLabel = { 'PREDATEUR': 'Prédateur', 'CORRUPTEUR': 'Corrupteur', 'LEADER': 'Leader', 'ASSASSIN': 'Assassin', 'INSENSIBLE': 'Insensible' }[c.behavior] || c.behavior;
             monsterBadgesHtml += `<span title="${bTitle}" style="cursor: help; font-size: 0.75rem; background: rgba(139, 92, 246, 0.15); color: #8b5cf6; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(139, 92, 246, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined" style="font-size: 0.9rem;">${bIcon}</span>${bLabel}</span>`;
         }
