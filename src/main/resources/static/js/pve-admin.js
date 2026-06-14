@@ -715,74 +715,11 @@ function renderRooms() {
                 headerIcon = 'door_front'; headerColor = '#fbbf24'; headerTitle = 'Porte Étrange';
 
                 if (!room.doorOutcomes) room.doorOutcomes = [];
-
-                let outcomesHtml = '<div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem;">';
-                if (room.doorOutcomes.length === 0) {
-                    outcomesHtml += `<div style="font-size:0.8rem; color: #94a3b8;">Aucune issue configurée.</div>`;
-                } else {
-                    room.doorOutcomes.forEach((outcome, oIndex) => {
-                        const outcomeConfig = {
-                            'BOSS': { icon: 'sentiment_extremely_dissatisfied', color: '#ef4444', text: 'Boss' },
-                            'ITEM': { icon: 'redeem', color: '#8b5cf6', text: 'Item' },
-                            'AUTEL': { icon: 'hand_bones', color: '#f97316', text: 'Autel Sacrificiel' },
-                            'TRESOR': { icon: 'crown', color: '#eab308', text: 'Trésor' },
-                            'PIEGE': { icon: 'bomb', color: '#f87171', text: 'Piège' },
-                            'RIEN': { icon: 'door_front', color: '#94a3b8', text: 'Rien' }
-                        };
-                        const conf = outcomeConfig[outcome.type] || { icon: 'help', color: '#94a3b8', text: outcome.type };
-                        outcomesHtml += `
-                            <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); padding: 0.4rem 0.8rem; border-radius: 4px;">
-                                <span style="font-size: 0.85rem; color: #f8fafc; display: flex; align-items: center; gap: 0.4rem;">
-                                    <span class="material-symbols-outlined" style="color: ${conf.color}; font-size: 1.1rem;">${conf.icon}</span> 
-                                    ${conf.text} 
-                                    <span style="color:#fbbf24; font-size:0.8rem; margin-left: 0.2rem;">(${outcome.probability}%)</span>
-                                </span>
-                                <button type="button" onclick="removeDoorOutcome(${rIndex}, ${oIndex})" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 0;"><span class="material-symbols-outlined" style="font-size: 1rem;">close</span></button>
-                            </div>
-                        `;
-                    });
-                }
-                outcomesHtml += `</div>
-                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; align-items: stretch;">
-                        <div class="custom-select-wrapper" id="room_door_outcome_wrapper_${rIndex}" style="flex: 2; z-index: ${100 - rIndex}; margin: 0;">
-                            <div class="custom-select-trigger" onclick="toggleDoorOutcomeSelect(${rIndex})" style="padding: 0.6rem 1rem; border-radius: 8px;">
-                                <span class="cs-label" id="room_door_outcome_label_${rIndex}">
-                                    <span class="material-symbols-outlined cs-icon" style="color: #ef4444; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">sentiment_extremely_dissatisfied</span> Boss
-                                </span>
-                                <span class="material-symbols-outlined">expand_more</span>
-                            </div>
-                            <div class="custom-select-options" id="room_door_outcome_options_${rIndex}">
-                                <div class="custom-option" onclick="selectDoorOutcome(${rIndex}, 'BOSS', '<span class=\\'material-symbols-outlined cs-icon\\' style=\\'color: #ef4444; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;\\'>sentiment_extremely_dissatisfied</span> Boss')">
-                                    <span class="material-symbols-outlined cs-icon" style="color: #ef4444; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">sentiment_extremely_dissatisfied</span> Boss
-                                </div>
-                                <div class="custom-option" onclick="selectDoorOutcome(${rIndex}, 'ITEM', '<span class=\\'material-symbols-outlined cs-icon\\' style=\\'color: #8b5cf6; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;\\'>redeem</span> Item')">
-                                    <span class="material-symbols-outlined cs-icon" style="color: #8b5cf6; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">redeem</span> Item
-                                </div>
-                                <div class="custom-option" onclick="selectDoorOutcome(${rIndex}, 'AUTEL', '<span class=\\'material-symbols-outlined cs-icon\\' style=\\'color: #f97316; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;\\'>hand_bones</span> Autel Sacrificiel')">
-                                    <span class="material-symbols-outlined cs-icon" style="color: #f97316; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">hand_bones</span> Autel Sacrificiel
-                                </div>
-                                <div class="custom-option" onclick="selectDoorOutcome(${rIndex}, 'TRESOR', '<span class=\\'material-symbols-outlined cs-icon\\' style=\\'color: #eab308; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;\\'>crown</span> Trésor')">
-                                    <span class="material-symbols-outlined cs-icon" style="color: #eab308; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">crown</span> Trésor
-                                </div>
-                                <div class="custom-option" onclick="selectDoorOutcome(${rIndex}, 'PIEGE', '<span class=\\'material-symbols-outlined cs-icon\\' style=\\'color: #f87171; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;\\'>bomb</span> Piège')">
-                                    <span class="material-symbols-outlined cs-icon" style="color: #f87171; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">bomb</span> Piège
-                                </div>
-                                <div class="custom-option" onclick="selectDoorOutcome(${rIndex}, 'RIEN', '<span class=\\'material-symbols-outlined cs-icon\\' style=\\'color: #94a3b8; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;\\'>door_front</span> Rien')">
-                                    <span class="material-symbols-outlined cs-icon" style="color: #94a3b8; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">door_front</span> Rien
-                                </div>
-                            </div>
-                            <input type="hidden" id="room_door_outcome_${rIndex}" value="BOSS">
-                        </div>
-                        <input type="number" id="room_door_prob_${rIndex}" class="form-control" style="flex: 1; min-width: 60px;" placeholder="Prob (%)" step="1" min="0" max="100">
-                        <button type="button" style="background: linear-gradient(135deg, #fbbf24, #d97706); color: white; border: none; padding: 0 1.2rem; font-size: 0.9rem; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 0.3rem;" onclick="addDoorOutcome(${rIndex})">
-                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">add</span>
-                        </button>
-                    </div>
-                `;
-
                 if (!room.lootTable) room.lootTable = [];
 
-                let doorLootHtml = `<div style="margin-top: 1rem;"><label style="font-size: 0.8rem; color: #94a3b8;">Loot possible si l'issue "Item" est choisie</label><div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">`;
+                let doorLootHtml = `<div style="margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px dashed rgba(255,255,255,0.15); width: 100%;">
+                    <label style="font-size: 0.8rem; color: #8b5cf6;">Loot possible si l'issue "Item" est choisie</label>
+                    <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem;">`;
                 if (room.lootTable.length === 0) {
                     doorLootHtml += `<div style="font-size:0.8rem; color: #94a3b8;">Aucun loot configuré.</div>`;
                 } else {
@@ -827,7 +764,78 @@ function renderRooms() {
                     </div></div>
                 `;
 
-                const hasItemOutcome = room.doorOutcomes.some(o => o.type === 'ITEM');
+                let outcomesHtml = '<div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem;">';
+                if (room.doorOutcomes.length === 0) {
+                    outcomesHtml += `<div style="font-size:0.8rem; color: #94a3b8;">Aucune issue configurée.</div>`;
+                } else {
+                    room.doorOutcomes.forEach((outcome, oIndex) => {
+                        const outcomeConfig = {
+                            'BOSS': { icon: 'sentiment_extremely_dissatisfied', color: '#ef4444', text: 'Boss' },
+                            'ITEM': { icon: 'redeem', color: '#8b5cf6', text: 'Item' },
+                            'AUTEL': { icon: 'hand_bones', color: '#f97316', text: 'Autel Sacrificiel' },
+                            'TRESOR': { icon: 'crown', color: '#eab308', text: 'Trésor' },
+                            'PIEGE': { icon: 'bomb', color: '#f87171', text: 'Piège' },
+                            'RIEN': { icon: 'door_front', color: '#94a3b8', text: 'Rien' }
+                        };
+                        const conf = outcomeConfig[outcome.type] || { icon: 'help', color: '#94a3b8', text: outcome.type };
+                        
+                        let extraHtml = '';
+                        if (outcome.type === 'ITEM') {
+                            extraHtml = doorLootHtml;
+                        }
+
+                        outcomesHtml += `
+                            <div style="display: flex; flex-direction: column; background: rgba(0,0,0,0.3); padding: 0.6rem 0.8rem; border-radius: 6px; border: 1px solid rgba(255,255,255,0.05);">
+                                <div style="display: flex; justify-content: space-between; align-items: center;">
+                                    <span style="font-size: 0.85rem; color: #f8fafc; display: flex; align-items: center; gap: 0.4rem;">
+                                        <span class="material-symbols-outlined" style="color: ${conf.color}; font-size: 1.1rem;">${conf.icon}</span> 
+                                        ${conf.text} 
+                                        <span style="color:#fbbf24; font-size:0.8rem; margin-left: 0.2rem;">(${outcome.probability}%)</span>
+                                    </span>
+                                    <button type="button" onclick="removeDoorOutcome(${rIndex}, ${oIndex})" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 0;"><span class="material-symbols-outlined" style="font-size: 1rem;">close</span></button>
+                                </div>
+                                ${extraHtml}
+                            </div>
+                        `;
+                    });
+                }
+                outcomesHtml += `</div>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; align-items: stretch;">
+                        <div class="custom-select-wrapper" id="room_door_outcome_wrapper_${rIndex}" style="flex: 2; z-index: ${100 - rIndex}; margin: 0;">
+                            <div class="custom-select-trigger" onclick="toggleDoorOutcomeSelect(${rIndex})" style="padding: 0.6rem 1rem; border-radius: 8px;">
+                                <span class="cs-label" id="room_door_outcome_label_${rIndex}">
+                                    <span class="material-symbols-outlined cs-icon" style="color: #ef4444; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">sentiment_extremely_dissatisfied</span> Boss
+                                </span>
+                                <span class="material-symbols-outlined">expand_more</span>
+                            </div>
+                            <div class="custom-select-options" id="room_door_outcome_options_${rIndex}">
+                                <div class="custom-option" onclick="selectDoorOutcome(${rIndex}, 'BOSS', '<span class=\\'material-symbols-outlined cs-icon\\' style=\\'color: #ef4444; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;\\'>sentiment_extremely_dissatisfied</span> Boss')">
+                                    <span class="material-symbols-outlined cs-icon" style="color: #ef4444; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">sentiment_extremely_dissatisfied</span> Boss
+                                </div>
+                                <div class="custom-option" onclick="selectDoorOutcome(${rIndex}, 'ITEM', '<span class=\\'material-symbols-outlined cs-icon\\' style=\\'color: #8b5cf6; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;\\'>redeem</span> Item')">
+                                    <span class="material-symbols-outlined cs-icon" style="color: #8b5cf6; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">redeem</span> Item
+                                </div>
+                                <div class="custom-option" onclick="selectDoorOutcome(${rIndex}, 'AUTEL', '<span class=\\'material-symbols-outlined cs-icon\\' style=\\'color: #f97316; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;\\'>hand_bones</span> Autel Sacrificiel')">
+                                    <span class="material-symbols-outlined cs-icon" style="color: #f97316; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">hand_bones</span> Autel Sacrificiel
+                                </div>
+                                <div class="custom-option" onclick="selectDoorOutcome(${rIndex}, 'TRESOR', '<span class=\\'material-symbols-outlined cs-icon\\' style=\\'color: #eab308; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;\\'>crown</span> Trésor')">
+                                    <span class="material-symbols-outlined cs-icon" style="color: #eab308; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">crown</span> Trésor
+                                </div>
+                                <div class="custom-option" onclick="selectDoorOutcome(${rIndex}, 'PIEGE', '<span class=\\'material-symbols-outlined cs-icon\\' style=\\'color: #f87171; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;\\'>bomb</span> Piège')">
+                                    <span class="material-symbols-outlined cs-icon" style="color: #f87171; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">bomb</span> Piège
+                                </div>
+                                <div class="custom-option" onclick="selectDoorOutcome(${rIndex}, 'RIEN', '<span class=\\'material-symbols-outlined cs-icon\\' style=\\'color: #94a3b8; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;\\'>door_front</span> Rien')">
+                                    <span class="material-symbols-outlined cs-icon" style="color: #94a3b8; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">door_front</span> Rien
+                                </div>
+                            </div>
+                            <input type="hidden" id="room_door_outcome_${rIndex}" value="BOSS">
+                        </div>
+                        <input type="number" id="room_door_prob_${rIndex}" class="form-control" style="flex: 1; min-width: 60px;" placeholder="Prob (%)" step="1" min="0" max="100">
+                        <button type="button" style="background: linear-gradient(135deg, #fbbf24, #d97706); color: white; border: none; padding: 0 1.2rem; font-size: 0.9rem; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 0.3rem;" onclick="addDoorOutcome(${rIndex})">
+                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">add</span>
+                        </button>
+                    </div>
+                `;
 
                 contentHtml = `
                     <div style="margin-top: 1rem;">
@@ -835,7 +843,6 @@ function renderRooms() {
                         <input type="text" class="form-control" value="${room.eventText || ''}" onchange="updateRoomField(${rIndex}, 'eventText', this.value)">
                     </div>
                     ${outcomesHtml}
-                    ${hasItemOutcome ? doorLootHtml : ''}
                 `;
             }
         }
