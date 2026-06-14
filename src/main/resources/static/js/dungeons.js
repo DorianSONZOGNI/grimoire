@@ -30,7 +30,7 @@ function showNotif(message, isError = false) {
     const text = document.getElementById('dungeonNotifText');
     const icon = document.getElementById('dungeonNotifIcon');
     text.textContent = message;
-    
+
     if (isError) {
         icon.textContent = 'error_outline';
         notif.style.background = '#ef4444';
