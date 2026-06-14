@@ -230,7 +230,7 @@ document.addEventListener('click', (e) => {
     }
 });
 
-window.toggleLevelSelect = function() {
+window.toggleLevelSelect = function () {
     const wrapper = document.getElementById('mLevelWrapper');
     if (wrapper) {
         // close other open wrappers
@@ -241,7 +241,7 @@ window.toggleLevelSelect = function() {
     }
 };
 
-window.toggleFilterLevelSelect = function() {
+window.toggleFilterLevelSelect = function () {
     const wrapper = document.getElementById('mLevelFilterWrapper');
     if (wrapper) {
         // close other open wrappers
@@ -252,7 +252,7 @@ window.toggleFilterLevelSelect = function() {
     }
 };
 
-window.selectLevelOption = function(lvl, color) {
+window.selectLevelOption = function (lvl, color) {
     document.getElementById('mLevel').value = lvl;
     const trigger = document.getElementById('mLevelTrigger');
     if (trigger) {
@@ -262,12 +262,12 @@ window.selectLevelOption = function(lvl, color) {
     if (wrapper) wrapper.classList.remove('open');
 };
 
-window.toggleMonsterTypeSelect = function() {
+window.toggleMonsterTypeSelect = function () {
     const wrapper = document.getElementById('mTypeWrapper');
     if (wrapper) wrapper.classList.toggle('open');
 };
 
-window.selectMonsterType = function(val, label, icon, color) {
+window.selectMonsterType = function (val, label, icon, color) {
     document.getElementById('mType').value = val;
     const trigger = document.getElementById('mTypeTrigger');
     if (trigger) {
@@ -277,12 +277,12 @@ window.selectMonsterType = function(val, label, icon, color) {
     if (wrapper) wrapper.classList.remove('open');
 };
 
-window.toggleMonsterBehaviorSelect = function() {
+window.toggleMonsterBehaviorSelect = function () {
     const wrapper = document.getElementById('mBehaviorWrapper');
     if (wrapper) wrapper.classList.toggle('open');
 };
 
-window.selectMonsterBehavior = function(val, label, icon, color) {
+window.selectMonsterBehavior = function (val, label, icon, color) {
     document.getElementById('mBehavior').value = val;
     const trigger = document.getElementById('mBehaviorTrigger');
     if (trigger) {
@@ -293,7 +293,7 @@ window.selectMonsterBehavior = function(val, label, icon, color) {
 };
 
 
-window.selectFilterLevelOption = function(lvl, label, color, icon) {
+window.selectFilterLevelOption = function (lvl, label, color, icon) {
     document.getElementById('monsterLevelFilter').value = lvl;
     const trigger = document.getElementById('mLevelFilterTrigger');
     if (trigger) {
@@ -301,11 +301,11 @@ window.selectFilterLevelOption = function(lvl, label, color, icon) {
     }
     const wrapper = document.getElementById('mLevelFilterWrapper');
     if (wrapper) wrapper.classList.remove('open');
-    
+
     if (window.renderMonstersList) window.renderMonstersList();
 };
 
-window.toggleSortSelect = function() {
+window.toggleSortSelect = function () {
     const wrapper = document.getElementById('mSortWrapper');
     if (wrapper) {
         // close other open wrappers
@@ -316,7 +316,7 @@ window.toggleSortSelect = function() {
     }
 };
 
-window.selectSortOption = function(val, label, icon, color) {
+window.selectSortOption = function (val, label, icon, color) {
     document.getElementById('monsterSort').value = val;
     const trigger = document.getElementById('mSortTrigger');
     if (trigger) {
@@ -326,7 +326,7 @@ window.selectSortOption = function(val, label, icon, color) {
     }
     const wrapper = document.getElementById('mSortWrapper');
     if (wrapper) wrapper.classList.remove('open');
-    
+
     if (window.renderMonstersList) window.renderMonstersList();
 };
 
@@ -404,9 +404,9 @@ function renderRooms() {
 
         } else if (room.type === 'TREASURE') {
             headerIcon = 'shopping_bag'; headerColor = '#f59e0b'; headerTitle = 'Salle de Trésor';
-            
+
             if (!room.lootTable) room.lootTable = [];
-            
+
             let lootHtml = '<div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem;">';
             if (room.lootTable.length === 0) {
                 lootHtml += `<div style="font-size:0.8rem; color: #94a3b8;">Aucun loot configuré.</div>`;
@@ -451,7 +451,7 @@ function renderRooms() {
                     </button>
                 </div>
             `;
-            
+
             contentHtml = `
                 <div style="display: flex; gap: 1rem; margin-top: 1rem;">
                     <div style="flex: 1;">
@@ -467,11 +467,11 @@ function renderRooms() {
             `;
         } else if (room.type === 'EVENT') {
             const subType = room.eventSubType || 'ALTERATION';
-            
+
             if (subType === 'ALTERATION') {
                 headerIcon = 'blur_on'; headerColor = '#8b5cf6'; headerTitle = 'Altération';
                 const altType = room.alterationType || 'VIE_XP';
-                
+
                 contentHtml = `
                     <div style="margin-top: 1rem;">
                         <label style="font-size: 0.8rem; color: #94a3b8;">Texte de l'événement</label>
@@ -486,7 +486,7 @@ function renderRooms() {
                         </select>
                     </div>
                 `;
-                
+
                 if (altType === 'VIE_XP') {
                     const rewType = room.alterationRewardType || 'SPIRITUAL_XP';
                     contentHtml += `
@@ -535,9 +535,9 @@ function renderRooms() {
                 }
             } else if (subType === 'RENCONTRE') {
                 headerIcon = 'storefront'; headerColor = '#10b981'; headerTitle = 'Rencontre';
-                
+
                 if (!room.lootTable) room.lootTable = [];
-                
+
                 let shopHtml = '<div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem;">';
                 if (room.lootTable.length === 0) {
                     shopHtml += `<div style="font-size:0.8rem; color: #94a3b8;">Aucun objet en vente.</div>`;
@@ -557,12 +557,12 @@ function renderRooms() {
                                 nameHtml = `Inconnu`;
                             }
                         }
-                        
+
                         let priceHtml = '';
                         if (loot.priceGold > 0) priceHtml += `<span style="color:#f59e0b; font-size:0.8rem; margin-left: 0.3rem;">(${loot.priceGold} Or)</span>`;
                         else if (!loot.priceGold && loot.probability > 0) priceHtml += `<span style="color:#f59e0b; font-size:0.8rem; margin-left: 0.3rem;">(${loot.probability} Or)</span>`;
                         if (loot.priceSpecialItemName) priceHtml += `<span style="color:#d946ef; font-size:0.8rem; margin-left: 0.3rem;">(1x ${loot.priceSpecialItemName})</span>`;
-                        
+
                         shopHtml += `
                             <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); padding: 0.4rem 0.8rem; border-radius: 4px;">
                                 <span style="font-size: 0.85rem; color: #f8fafc; display: flex; align-items: center; gap: 0.4rem;">
@@ -616,9 +616,9 @@ function renderRooms() {
                                 <div class="custom-select-options" id="room_merchant_special_options_${rIndex}" style="max-height: 200px; overflow-y: auto;">
                                     <div class="custom-option" onclick="selectMerchantSpecial(${rIndex}, '', 'Choisir un item spécial...')"><span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">diamond</span> Choisir un item spécial...</div>
                                     ${allAnomalies.map(a => {
-                                        const color = a.spiritualite === 'TENEBRES' ? '#d946ef' : a.spiritualite === 'ESPRIT' ? '#3b82f6' : a.spiritualite === 'KARMA' ? '#f59e0b' : '#94a3b8';
-                                        return `<div class="custom-option" onclick="selectMerchantSpecial(${rIndex}, '${a.name.replace(/'/g, "\\'")}', '${a.name.replace(/'/g, "\\'")}', '${color}')"><span class="material-symbols-outlined cs-icon" style="color: ${color};">diamond</span> ${a.name}</div>`;
-                                    }).join('')}
+                    const color = a.spiritualite === 'TENEBRES' ? '#d946ef' : a.spiritualite === 'ESPRIT' ? '#3b82f6' : a.spiritualite === 'KARMA' ? '#f59e0b' : '#94a3b8';
+                    return `<div class="custom-option" onclick="selectMerchantSpecial(${rIndex}, '${a.name.replace(/'/g, "\\'")}', '${a.name.replace(/'/g, "\\'")}', '${color}')"><span class="material-symbols-outlined cs-icon" style="color: ${color};">diamond</span> ${a.name}</div>`;
+                }).join('')}
                                 </div>
                                 <input type="hidden" id="room_merchant_special_${rIndex}" value="">
                             </div>
@@ -633,9 +633,9 @@ function renderRooms() {
                                 <div class="custom-select-options" id="room_merchant_cost_options_${rIndex}" style="max-height: 200px; overflow-y: auto;">
                                     <div class="custom-option" onclick="selectMerchantCost(${rIndex}, '', 'Item spécial')"><span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">diamond</span> Item spécial</div>
                                     ${allAnomalies.map(a => {
-                                        const color = a.spiritualite === 'TENEBRES' ? '#d946ef' : a.spiritualite === 'ESPRIT' ? '#3b82f6' : a.spiritualite === 'KARMA' ? '#f59e0b' : '#94a3b8';
-                                        return `<div class="custom-option" onclick="selectMerchantCost(${rIndex}, '${a.name.replace(/'/g, "\\'")}', '${a.name.replace(/'/g, "\\'")}', '${color}')"><span class="material-symbols-outlined cs-icon" style="color: ${color};">diamond</span> ${a.name}</div>`;
-                                    }).join('')}
+                    const color = a.spiritualite === 'TENEBRES' ? '#d946ef' : a.spiritualite === 'ESPRIT' ? '#3b82f6' : a.spiritualite === 'KARMA' ? '#f59e0b' : '#94a3b8';
+                    return `<div class="custom-option" onclick="selectMerchantCost(${rIndex}, '${a.name.replace(/'/g, "\\'")}', '${a.name.replace(/'/g, "\\'")}', '${color}')"><span class="material-symbols-outlined cs-icon" style="color: ${color};">diamond</span> ${a.name}</div>`;
+                }).join('')}
                                 </div>
                                 <input type="hidden" id="room_merchant_cost_item_${rIndex}" value="">
                             </div>
@@ -645,7 +645,7 @@ function renderRooms() {
                         </div>
                     </div>
                 `;
-                
+
                 contentHtml = `
                     <div style="margin-top: 1rem;">
                         <label style="font-size: 0.8rem; color: #94a3b8;">Texte de l'événement</label>
@@ -702,19 +702,30 @@ function renderRooms() {
                 `;
             } else if (subType === 'PORTE_ETRANGE') {
                 headerIcon = 'door_front'; headerColor = '#fbbf24'; headerTitle = 'Porte Étrange';
-                
+
                 if (!room.doorOutcomes) room.doorOutcomes = [];
-                
+
                 let outcomesHtml = '<div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem;">';
                 if (room.doorOutcomes.length === 0) {
                     outcomesHtml += `<div style="font-size:0.8rem; color: #94a3b8;">Aucune issue configurée.</div>`;
                 } else {
                     room.doorOutcomes.forEach((outcome, oIndex) => {
-                        const outcomeLabels = { 'BOSS': '👹 Boss', 'ITEM': '🎁 Item', 'AUTEL': '🕯️ Autel Sacrificiel', 'TRESOR': '💰 Trésor', 'PIEGE': '⚠️ Piège', 'RIEN': '🚪 Rien' };
-                        const label = outcomeLabels[outcome.type] || outcome.type;
+                        const outcomeConfig = {
+                            'BOSS': { icon: 'sentiment_extremely_dissatisfied', color: '#ef4444', text: 'Boss' },
+                            'ITEM': { icon: 'redeem', color: '#8b5cf6', text: 'Item' },
+                            'AUTEL': { icon: 'hand_bones', color: '#f97316', text: 'Autel Sacrificiel' },
+                            'TRESOR': { icon: 'crown', color: '#eab308', text: 'Trésor' },
+                            'PIEGE': { icon: 'bomb', color: '#f87171', text: 'Piège' },
+                            'RIEN': { icon: 'door_front', color: '#94a3b8', text: 'Rien' }
+                        };
+                        const conf = outcomeConfig[outcome.type] || { icon: 'help', color: '#94a3b8', text: outcome.type };
                         outcomesHtml += `
                             <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); padding: 0.4rem 0.8rem; border-radius: 4px;">
-                                <span style="font-size: 0.85rem; color: #f8fafc;">${label} <span style="color:#fbbf24; font-size:0.8rem;">(${outcome.probability}%)</span></span>
+                                <span style="font-size: 0.85rem; color: #f8fafc; display: flex; align-items: center; gap: 0.4rem;">
+                                    <span class="material-symbols-outlined" style="color: ${conf.color}; font-size: 1.1rem;">${conf.icon}</span> 
+                                    ${conf.text} 
+                                    <span style="color:#fbbf24; font-size:0.8rem; margin-left: 0.2rem;">(${outcome.probability}%)</span>
+                                </span>
                                 <button type="button" onclick="removeDoorOutcome(${rIndex}, ${oIndex})" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 0;"><span class="material-symbols-outlined" style="font-size: 1rem;">close</span></button>
                             </div>
                         `;
@@ -722,21 +733,42 @@ function renderRooms() {
                 }
                 outcomesHtml += `</div>
                     <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; align-items: stretch;">
-                        <select id="room_door_outcome_${rIndex}" class="form-control" style="flex: 2;">
-                            <option value="BOSS">👹 Boss</option>
-                            <option value="ITEM">🎁 Item</option>
-                            <option value="AUTEL">🕯️ Autel Sacrificiel</option>
-                            <option value="TRESOR">💰 Trésor</option>
-                            <option value="PIEGE">⚠️ Piège</option>
-                            <option value="RIEN">🚪 Rien</option>
-                        </select>
+                        <div class="custom-select-wrapper" id="room_door_outcome_wrapper_${rIndex}" style="flex: 2; z-index: ${100 - rIndex}; margin: 0;">
+                            <div class="custom-select-trigger" onclick="toggleDoorOutcomeSelect(${rIndex})" style="padding: 0.6rem 1rem; border-radius: 8px;">
+                                <span class="cs-label" id="room_door_outcome_label_${rIndex}">
+                                    <span class="material-symbols-outlined cs-icon" style="color: #ef4444; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">sentiment_extremely_dissatisfied</span> Boss
+                                </span>
+                                <span class="material-symbols-outlined">expand_more</span>
+                            </div>
+                            <div class="custom-select-options" id="room_door_outcome_options_${rIndex}">
+                                <div class="custom-option" onclick="selectDoorOutcome(${rIndex}, 'BOSS', '<span class=\\'material-symbols-outlined cs-icon\\' style=\\'color: #ef4444; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;\\'>sentiment_extremely_dissatisfied</span> Boss')">
+                                    <span class="material-symbols-outlined cs-icon" style="color: #ef4444; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">sentiment_extremely_dissatisfied</span> Boss
+                                </div>
+                                <div class="custom-option" onclick="selectDoorOutcome(${rIndex}, 'ITEM', '<span class=\\'material-symbols-outlined cs-icon\\' style=\\'color: #8b5cf6; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;\\'>redeem</span> Item')">
+                                    <span class="material-symbols-outlined cs-icon" style="color: #8b5cf6; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">redeem</span> Item
+                                </div>
+                                <div class="custom-option" onclick="selectDoorOutcome(${rIndex}, 'AUTEL', '<span class=\\'material-symbols-outlined cs-icon\\' style=\\'color: #f97316; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;\\'>hand_bones</span> Autel Sacrificiel')">
+                                    <span class="material-symbols-outlined cs-icon" style="color: #f97316; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">hand_bones</span> Autel Sacrificiel
+                                </div>
+                                <div class="custom-option" onclick="selectDoorOutcome(${rIndex}, 'TRESOR', '<span class=\\'material-symbols-outlined cs-icon\\' style=\\'color: #eab308; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;\\'>crown</span> Trésor')">
+                                    <span class="material-symbols-outlined cs-icon" style="color: #eab308; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">crown</span> Trésor
+                                </div>
+                                <div class="custom-option" onclick="selectDoorOutcome(${rIndex}, 'PIEGE', '<span class=\\'material-symbols-outlined cs-icon\\' style=\\'color: #f87171; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;\\'>bomb</span> Piège')">
+                                    <span class="material-symbols-outlined cs-icon" style="color: #f87171; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">bomb</span> Piège
+                                </div>
+                                <div class="custom-option" onclick="selectDoorOutcome(${rIndex}, 'RIEN', '<span class=\\'material-symbols-outlined cs-icon\\' style=\\'color: #94a3b8; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;\\'>door_front</span> Rien')">
+                                    <span class="material-symbols-outlined cs-icon" style="color: #94a3b8; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">door_front</span> Rien
+                                </div>
+                            </div>
+                            <input type="hidden" id="room_door_outcome_${rIndex}" value="BOSS">
+                        </div>
                         <input type="number" id="room_door_prob_${rIndex}" class="form-control" style="flex: 1; min-width: 60px;" placeholder="Prob (%)" step="1" min="0" max="100">
                         <button type="button" style="background: linear-gradient(135deg, #fbbf24, #d97706); color: white; border: none; padding: 0 1.2rem; font-size: 0.9rem; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 0.3rem;" onclick="addDoorOutcome(${rIndex})">
                             <span class="material-symbols-outlined" style="font-size: 1.1rem;">add</span>
                         </button>
                     </div>
                 `;
-                
+
                 contentHtml = `
                     <div style="margin-top: 1rem;">
                         <label style="font-size: 0.8rem; color: #94a3b8;">Texte de l'événement</label>
@@ -789,13 +821,13 @@ async function loadEquipments() {
     try {
         const res1 = await fetch('/api/shop/templates');
         const res2 = await fetch('/api/equipment');
-        
+
         let templates = [];
         let instances = [];
-        
+
         if (res1.ok) templates = await res1.json();
         if (res2.ok) instances = await res2.json();
-        
+
         // Merge and deduplicate by name, preferring templates
         let merged = [...templates, ...instances];
         let map = new Map();
@@ -804,7 +836,7 @@ async function loadEquipments() {
                 map.set(eq.name, eq);
             }
         });
-        
+
         // Sort by rarity, then name
         const rarityOrder = { 'COMMUN': 1, 'RARE': 2, 'EPIQUE': 3, 'LEGENDAIRE': 4, 'RELIQUE': 5 };
         allEquipments = Array.from(map.values()).sort((a, b) => {
@@ -818,33 +850,33 @@ async function loadEquipments() {
     }
 }
 
-window.renderMonstersList = function() {
+window.renderMonstersList = function () {
     const list = document.getElementById('monstersList');
     if (!list) return;
-    
+
     let filtered = [...allMonsters];
     const search = document.getElementById('monsterSearch');
     if (search && search.value) {
         const q = search.value.toLowerCase();
         filtered = filtered.filter(m => m.name.toLowerCase().includes(q) || (m.description && m.description.toLowerCase().includes(q)));
     }
-    
+
     const searchLvl = document.getElementById('monsterLevelFilter');
     if (searchLvl && searchLvl.value) {
         const lvl = parseInt(searchLvl.value);
         filtered = filtered.filter(m => (m.level || 1) === lvl);
     }
-    
+
     const sort = document.getElementById('monsterSort');
     if (sort) {
-        switch(sort.value) {
-            case 'name_asc': filtered.sort((a,b) => a.name.localeCompare(b.name)); break;
-            case 'name_desc': filtered.sort((a,b) => b.name.localeCompare(a.name)); break;
-            case 'lvl_desc': filtered.sort((a,b) => (b.level||1) - (a.level||1)); break;
-            case 'lvl_asc': filtered.sort((a,b) => (a.level||1) - (b.level||1)); break;
+        switch (sort.value) {
+            case 'name_asc': filtered.sort((a, b) => a.name.localeCompare(b.name)); break;
+            case 'name_desc': filtered.sort((a, b) => b.name.localeCompare(a.name)); break;
+            case 'lvl_desc': filtered.sort((a, b) => (b.level || 1) - (a.level || 1)); break;
+            case 'lvl_asc': filtered.sort((a, b) => (a.level || 1) - (b.level || 1)); break;
         }
     }
-    
+
     list.innerHTML = '';
     filtered.forEach(m => {
         list.innerHTML += `
@@ -858,8 +890,8 @@ window.renderMonstersList = function() {
                 <div class="monster-card-title">${m.name} <span style="font-size: 0.8rem; background: rgba(255,255,255,0.1); padding: 0.2rem 0.4rem; border-radius: 4px; margin-left: 0.5rem;">Lvl ${m.level || 1}</span></div>
                 <div style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 0.5rem;">${m.description || ''}</div>
                 <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.5rem;">
-                    ${m.monsterType && m.monsterType !== 'NORMAL' ? `<span title="${{'DEMON':'Démon : 10% des dégâts infligés le sont en dégâts bruts supplémentaires.','REPTILE':'Reptile : Réduit les dégâts physiques subis de 15%.','MORT_VIVANT':'Mort-vivant : Régénère 5% de ses PV max au début de son tour.','HYBRIDE':'Hybride : Utilise la plus haute valeur entre Force et Puissance pour attaquer.','VAMPIRE':'Vampire : Se soigne de 20% des dégâts infligés.'}[m.monsterType] || ''}" style="cursor: help; font-size: 0.75rem; background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined" style="font-size: 0.9rem;">${{'DEMON':'local_fire_department','REPTILE':'eco','MORT_VIVANT':'skull','HYBRIDE':'science','VAMPIRE':'bloodtype'}[m.monsterType] || 'check_box_outline_blank'}</span>${{'DEMON':'Démon','REPTILE':'Reptile','MORT_VIVANT':'Mort-vivant','HYBRIDE':'Hybride','VAMPIRE':'Vampire'}[m.monsterType] || m.monsterType}</span>` : ''}
-                    ${m.behavior && m.behavior !== 'NORMAL' ? `<span title="${{'PREDATEUR':'Prédateur : Verrouille une cible et l&apos;attaque jusqu&apos;à sa mort.','CORRUPTEUR':'Corrupteur : Cible toujours le joueur avec le plus de Mana.','LEADER':'Leader : Ordonne à tous les autres monstres d&apos;attaquer sa cible.','ASSASSIN':'Assassin : Vise systématiquement le joueur avec le moins de Résistance.','INSENSIBLE':'Insensible : Ses attaques infligent des dégâts bruts (ignore l&apos;armure).'}[m.behavior] || ''}" style="cursor: help; font-size: 0.75rem; background: rgba(139, 92, 246, 0.15); color: #8b5cf6; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(139, 92, 246, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined" style="font-size: 0.9rem;">${{'PREDATEUR':'track_changes','CORRUPTEUR':'blur_on','LEADER':'stars','ASSASSIN':'gps_fixed','INSENSIBLE':'shield'}[m.behavior] || 'check_box_outline_blank'}</span>${{'PREDATEUR':'Prédateur','CORRUPTEUR':'Corrupteur','LEADER':'Leader','ASSASSIN':'Assassin','INSENSIBLE':'Insensible'}[m.behavior] || m.behavior}</span>` : ''}
+                    ${m.monsterType && m.monsterType !== 'NORMAL' ? `<span title="${{ 'DEMON': 'Démon : 10% des dégâts infligés le sont en dégâts bruts supplémentaires.', 'REPTILE': 'Reptile : Réduit les dégâts physiques subis de 15%.', 'MORT_VIVANT': 'Mort-vivant : Régénère 5% de ses PV max au début de son tour.', 'HYBRIDE': 'Hybride : Utilise la plus haute valeur entre Force et Puissance pour attaquer.', 'VAMPIRE': 'Vampire : Se soigne de 20% des dégâts infligés.' }[m.monsterType] || ''}" style="cursor: help; font-size: 0.75rem; background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined" style="font-size: 0.9rem;">${{ 'DEMON': 'rib_cage', 'REPTILE': 'eco', 'MORT_VIVANT': 'skull', 'HYBRIDE': 'science', 'VAMPIRE': 'bloodtype' }[m.monsterType] || 'check_box_outline_blank'}</span>${{ 'DEMON': 'Démon', 'REPTILE': 'Reptile', 'MORT_VIVANT': 'Mort-vivant', 'HYBRIDE': 'Hybride', 'VAMPIRE': 'Vampire' }[m.monsterType] || m.monsterType}</span>` : ''}
+                    ${m.behavior && m.behavior !== 'NORMAL' ? `<span title="${{ 'PREDATEUR': 'Prédateur : Verrouille une cible et l&apos;attaque jusqu&apos;à sa mort.', 'CORRUPTEUR': 'Corrupteur : Cible toujours le joueur avec le plus de Mana.', 'LEADER': 'Leader : Ordonne à tous les autres monstres d&apos;attaquer sa cible.', 'ASSASSIN': 'Assassin : Vise systématiquement le joueur avec le moins de Résistance.', 'INSENSIBLE': 'Insensible : Ses attaques infligent des dégâts bruts (ignore l&apos;armure).' }[m.behavior] || ''}" style="cursor: help; font-size: 0.75rem; background: rgba(139, 92, 246, 0.15); color: #8b5cf6; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(139, 92, 246, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined" style="font-size: 0.9rem;">${{ 'PREDATEUR': 'track_changes', 'CORRUPTEUR': 'blur_on', 'LEADER': 'stars', 'ASSASSIN': 'gps_fixed', 'INSENSIBLE': 'shield' }[m.behavior] || 'check_box_outline_blank'}</span>${{ 'PREDATEUR': 'Prédateur', 'CORRUPTEUR': 'Corrupteur', 'LEADER': 'Leader', 'ASSASSIN': 'Assassin', 'INSENSIBLE': 'Insensible' }[m.behavior] || m.behavior}</span>` : ''}
                 </div>
                 <div class="monster-card-stats">
                     <span style="display: flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined" style="font-size: 1rem; color: #ec4899;">favorite</span> PV: ${m.healthMax}</span>
@@ -897,8 +929,8 @@ async function editMonster(id) {
             if (lvl === 3) color = '#3b82f6';
             if (lvl === 4) color = '#a855f7';
             if (lvl === 5) color = '#f59e0b';
-            if(lvlTrigger) lvlTrigger.innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: ${color}; font-size: 1.1rem;">star</span> <span style="flex:1; text-align:center;">${lvl}</span>`;
-            
+            if (lvlTrigger) lvlTrigger.innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: ${color}; font-size: 1.1rem;">star</span> <span style="flex:1; text-align:center;">${lvl}</span>`;
+
             document.getElementById('mHp').value = m.healthMax;
             document.getElementById('mMana').value = m.manaMax || 0;
             document.getElementById('mSpeed').value = m.speed;
@@ -911,27 +943,27 @@ async function editMonster(id) {
             document.getElementById('mXp').value = m.rewardExp;
             const mt = m.monsterType || 'NORMAL';
             const mb = m.behavior || 'NORMAL';
-            
+
             const tMap = {
-                'NORMAL': {l:'Normal', i:'check_box_outline_blank', c:'#94a3b8'},
-                'DEMON': {l:'Démon', i:'local_fire_department', c:'#ef4444'},
-                'REPTILE': {l:'Reptile', i:'eco', c:'#10b981'},
-                'MORT_VIVANT': {l:'Mort-vivant', i:'skull', c:'#94a3b8'},
-                'HYBRIDE': {l:'Hybride', i:'science', c:'#3b82f6'},
-                'VAMPIRE': {l:'Vampire', i:'bloodtype', c:'#e11d48'}
+                'NORMAL': { l: 'Normal', i: 'check_box_outline_blank', c: '#94a3b8' },
+                'DEMON': { l: 'Démon', i: 'rib_cage', c: '#ef4444' },
+                'REPTILE': { l: 'Reptile', i: 'eco', c: '#10b981' },
+                'MORT_VIVANT': { l: 'Mort-vivant', i: 'skull', c: '#94a3b8' },
+                'HYBRIDE': { l: 'Hybride', i: 'science', c: '#3b82f6' },
+                'VAMPIRE': { l: 'Vampire', i: 'bloodtype', c: '#e11d48' }
             };
             const bMap = {
-                'NORMAL': {l:'Normal', i:'check_box_outline_blank', c:'#94a3b8'},
-                'PREDATEUR': {l:'Prédateur', i:'track_changes', c:'#f59e0b'},
-                'CORRUPTEUR': {l:'Corrupteur', i:'blur_on', c:'#8b5cf6'},
-                'LEADER': {l:'Leader', i:'stars', c:'#fcd34d'},
-                'ASSASSIN': {l:'Assassin', i:'gps_fixed', c:'#ef4444'},
-                'INSENSIBLE': {l:'Insensible', i:'shield', c:'#9ca3af'}
+                'NORMAL': { l: 'Normal', i: 'check_box_outline_blank', c: '#94a3b8' },
+                'PREDATEUR': { l: 'Prédateur', i: 'track_changes', c: '#f59e0b' },
+                'CORRUPTEUR': { l: 'Corrupteur', i: 'blur_on', c: '#8b5cf6' },
+                'LEADER': { l: 'Leader', i: 'stars', c: '#fcd34d' },
+                'ASSASSIN': { l: 'Assassin', i: 'gps_fixed', c: '#ef4444' },
+                'INSENSIBLE': { l: 'Insensible', i: 'shield', c: '#9ca3af' }
             };
-            
+
             const tData = tMap[mt] || tMap['NORMAL'];
             const bData = bMap[mb] || bMap['NORMAL'];
-            
+
             window.selectMonsterType(mt, tData.l, tData.i, tData.c);
             window.selectMonsterBehavior(mb, bData.l, bData.i, bData.c);
 
@@ -945,7 +977,7 @@ async function editMonster(id) {
     }
 }
 
-window.cancelMonsterEdit = function() {
+window.cancelMonsterEdit = function () {
     editingMonsterId = null;
     document.getElementById('monsterForm').reset();
     document.getElementById('mLevel').value = 1;
@@ -1081,17 +1113,17 @@ async function editDungeon(id) {
                     room.trapType = s.trapType;
                     room.trapAmount = s.trapAmount || 0;
                     room.trapHasRopeOption = s.trapHasRopeOption || false;
-                    
+
                     if (s.doorOutcomes) {
                         try {
                             room.doorOutcomes = typeof s.doorOutcomes === 'string' ? JSON.parse(s.doorOutcomes) : s.doorOutcomes;
-                        } catch(e) {
+                        } catch (e) {
                             room.doorOutcomes = [];
                         }
                     } else {
                         room.doorOutcomes = [];
                     }
-                    
+
                     if (s.lootTable) {
                         room.lootTable = s.lootTable.map(l => ({
                             equipmentId: l.equipment ? l.equipment.id : l.equipmentId,
@@ -1120,7 +1152,7 @@ async function editDungeon(id) {
     }
 }
 
-window.cancelDungeonEdit = function() {
+window.cancelDungeonEdit = function () {
     editingDungeonId = null;
     document.getElementById('dungeonForm').reset();
     selectedRooms = [];
@@ -1142,7 +1174,7 @@ async function deleteDungeon(id) {
     }
 }
 
-window.toggleLootSelect = function(rIndex) {
+window.toggleLootSelect = function (rIndex) {
     const wrapper = document.getElementById('room_loot_select_wrapper_' + rIndex);
     if (wrapper) {
         document.querySelectorAll('.custom-select-wrapper').forEach(w => {
@@ -1152,14 +1184,14 @@ window.toggleLootSelect = function(rIndex) {
     }
 };
 
-window.selectLootOption = function(rIndex, eqId, eqName, icon, iconColor, rarityColor, extraClass) {
+window.selectLootOption = function (rIndex, eqId, eqName, icon, iconColor, rarityColor, extraClass) {
     document.getElementById('room_loot_select_' + rIndex).value = eqId;
     const cls = extraClass ? ` ${extraClass}` : '';
     document.getElementById('room_loot_label_' + rIndex).innerHTML = `<span class="material-symbols-outlined cs-icon${cls}" style="color: ${iconColor};">${icon}</span> <span style="color: ${rarityColor};">${eqName}</span>`;
     document.getElementById('room_loot_select_wrapper_' + rIndex).classList.remove('open');
 };
 
-window.toggleMerchantItemType = function(rIndex, type) {
+window.toggleMerchantItemType = function (rIndex, type) {
     const eqWrapper = document.getElementById('room_loot_select_wrapper_' + rIndex);
     const specInput = document.getElementById('room_merchant_special_wrapper_' + rIndex);
     if (type === 'EQ') {
@@ -1171,7 +1203,7 @@ window.toggleMerchantItemType = function(rIndex, type) {
     }
 };
 
-window.toggleMerchantTypeSelect = function(rIndex) {
+window.toggleMerchantTypeSelect = function (rIndex) {
     const wrapper = document.getElementById(`room_merchant_type_wrapper_${rIndex}`);
     if (wrapper) {
         document.querySelectorAll('.custom-select-wrapper').forEach(w => {
@@ -1181,18 +1213,18 @@ window.toggleMerchantTypeSelect = function(rIndex) {
     }
 };
 
-window.selectMerchantType = function(rIndex, value, labelStr) {
+window.selectMerchantType = function (rIndex, value, labelStr) {
     const select = document.getElementById(`room_merchant_type_${rIndex}`);
     if (select) select.value = value;
-    
+
     const label = document.getElementById(`room_merchant_type_label_${rIndex}`);
     if (label) label.innerHTML = labelStr;
-    
+
     document.getElementById(`room_merchant_type_wrapper_${rIndex}`).classList.remove('open');
     toggleMerchantItemType(rIndex, value);
 };
 
-window.toggleMerchantSpecialSelect = function(rIndex) {
+window.toggleMerchantSpecialSelect = function (rIndex) {
     const wrapper = document.getElementById(`room_merchant_special_wrapper_${rIndex}`);
     if (wrapper) {
         document.querySelectorAll('.custom-select-wrapper').forEach(w => {
@@ -1202,10 +1234,10 @@ window.toggleMerchantSpecialSelect = function(rIndex) {
     }
 };
 
-window.selectMerchantSpecial = function(rIndex, value, labelStr, color = '#d946ef') {
+window.selectMerchantSpecial = function (rIndex, value, labelStr, color = '#d946ef') {
     const select = document.getElementById(`room_merchant_special_${rIndex}`);
     if (select) select.value = value;
-    
+
     const label = document.getElementById(`room_merchant_special_label_${rIndex}`);
     if (label) {
         if (!value) {
@@ -1214,11 +1246,11 @@ window.selectMerchantSpecial = function(rIndex, value, labelStr, color = '#d946e
             label.innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: ${color};">diamond</span> ${labelStr}`;
         }
     }
-    
+
     document.getElementById(`room_merchant_special_wrapper_${rIndex}`).classList.remove('open');
 };
 
-window.toggleMerchantCostSelect = function(rIndex) {
+window.toggleMerchantCostSelect = function (rIndex) {
     const wrapper = document.getElementById(`room_merchant_cost_item_wrapper_${rIndex}`);
     if (wrapper) {
         document.querySelectorAll('.custom-select-wrapper').forEach(w => {
@@ -1228,10 +1260,10 @@ window.toggleMerchantCostSelect = function(rIndex) {
     }
 };
 
-window.selectMerchantCost = function(rIndex, value, labelStr, color = '#f472b6') {
+window.selectMerchantCost = function (rIndex, value, labelStr, color = '#f472b6') {
     const select = document.getElementById(`room_merchant_cost_item_${rIndex}`);
     if (select) select.value = value;
-    
+
     const label = document.getElementById(`room_merchant_cost_label_${rIndex}`);
     if (label) {
         if (!value) {
@@ -1240,17 +1272,17 @@ window.selectMerchantCost = function(rIndex, value, labelStr, color = '#f472b6')
             label.innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: ${color};">diamond</span> ${labelStr}`;
         }
     }
-    
+
     document.getElementById(`room_merchant_cost_item_wrapper_${rIndex}`).classList.remove('open');
 };
 
-window.addMerchantItemToRoom = function(rIndex) {
+window.addMerchantItemToRoom = function (rIndex) {
     const type = document.getElementById('room_merchant_type_' + rIndex).value;
     const goldCost = parseInt(document.getElementById('room_merchant_gold_' + rIndex).value) || 0;
     const itemCost = document.getElementById('room_merchant_cost_item_' + rIndex).value.trim();
-    
+
     if (!selectedRooms[rIndex].lootTable) selectedRooms[rIndex].lootTable = [];
-    
+
     let newItem = {
         probability: 0,
         priceGold: goldCost > 0 ? goldCost : null,
@@ -1277,7 +1309,7 @@ window.addMerchantItemToRoom = function(rIndex) {
     renderRooms();
 };
 
-window.addLootToRoom = function(rIndex) {
+window.addLootToRoom = function (rIndex) {
     const eqId = document.getElementById('room_loot_select_' + rIndex).value;
     const prob = parseFloat(document.getElementById('room_loot_prob_' + rIndex).value);
     if (!eqId || isNaN(prob) || prob < 0 || prob > 100) {
@@ -1289,12 +1321,12 @@ window.addLootToRoom = function(rIndex) {
     renderRooms();
 };
 
-window.removeLootFromRoom = function(rIndex, lIndex) {
+window.removeLootFromRoom = function (rIndex, lIndex) {
     selectedRooms[rIndex].lootTable.splice(lIndex, 1);
     renderRooms();
 };
 
-window.addDoorOutcome = function(rIndex) {
+window.addDoorOutcome = function (rIndex) {
     const typeEl = document.getElementById('room_door_outcome_' + rIndex);
     const probEl = document.getElementById('room_door_prob_' + rIndex);
     const type = typeEl ? typeEl.value : '';
@@ -1308,12 +1340,12 @@ window.addDoorOutcome = function(rIndex) {
     renderRooms();
 };
 
-window.removeDoorOutcome = function(rIndex, oIndex) {
+window.removeDoorOutcome = function (rIndex, oIndex) {
     selectedRooms[rIndex].doorOutcomes.splice(oIndex, 1);
     renderRooms();
 };
 
-window.showNotif = function(message, isError = false) {
+window.showNotif = function (message, isError = false) {
     const notif = document.getElementById('pveNotif');
     if (!notif) return;
     notif.textContent = message;
@@ -1325,7 +1357,7 @@ window.showNotif = function(message, isError = false) {
     }, 3000);
 };
 
-window.toggleTrapTypeSelect = function(rIndex) {
+window.toggleTrapTypeSelect = function (rIndex) {
     const wrapper = document.getElementById(`room_trap_type_wrapper_${rIndex}`);
     if (wrapper) {
         document.querySelectorAll('.custom-select-wrapper.open').forEach(el => {
@@ -1335,10 +1367,29 @@ window.toggleTrapTypeSelect = function(rIndex) {
     }
 };
 
-window.selectTrapType = function(rIndex, val, label) {
+window.selectTrapType = function (rIndex, val, label) {
     updateRoomField(rIndex, 'trapType', val);
     const triggerLabel = document.getElementById(`room_trap_type_label_${rIndex}`);
     if (triggerLabel) triggerLabel.innerHTML = label;
     const wrapper = document.getElementById(`room_trap_type_wrapper_${rIndex}`);
+    if (wrapper) wrapper.classList.remove('open');
+};
+
+window.toggleDoorOutcomeSelect = function (rIndex) {
+    const wrapper = document.getElementById(`room_door_outcome_wrapper_${rIndex}`);
+    if (wrapper) {
+        document.querySelectorAll('.custom-select-wrapper.open').forEach(el => {
+            if (el !== wrapper) el.classList.remove('open');
+        });
+        wrapper.classList.toggle('open');
+    }
+};
+
+window.selectDoorOutcome = function (rIndex, val, label) {
+    const input = document.getElementById(`room_door_outcome_${rIndex}`);
+    if (input) input.value = val;
+    const triggerLabel = document.getElementById(`room_door_outcome_label_${rIndex}`);
+    if (triggerLabel) triggerLabel.innerHTML = label;
+    const wrapper = document.getElementById(`room_door_outcome_wrapper_${rIndex}`);
     if (wrapper) wrapper.classList.remove('open');
 };
