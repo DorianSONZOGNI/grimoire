@@ -514,20 +514,31 @@ public class CombatService {
                 // If it's an alteration and we proceed without having accepted it, the player
                 // ignored it. We do nothing.
             } else if (subType == generation.grimoire.enumeration.EventSubType.PIEGE) {
-                int effect = room.getTrapAmount();
-                if ("PV".equals(room.getTrapType())) {
-                    for (Personnage p : session.getPlayers()) {
-                        if (p.getHealthCurrent() > 0 && effect > 0)
-                            p.takeDamage(effect, generation.grimoire.enumeration.DamageType.BRUT);
-                    }
-                    session.addLog("Vos héros subissent " + effect + " dégâts du piège !");
-                } else if ("MANA".equals(room.getTrapType())) {
-                    for (Personnage p : session.getPlayers()) {
-                        if (p.getHealthCurrent() > 0 && effect > 0)
-                            p.setManaCurrent(Math.max(0, p.getManaCurrent() - effect));
-                    }
-                    session.addLog("Vos héros perdent " + effect + " de Mana à cause du piège !");
+                int hpPct = room.getTrapDamageHpPct() != null ? room.getTrapDamageHpPct() : 0;
+                int manaPct = room.getTrapDamageManaPct() != null ? room.getTrapDamageManaPct() : 0;
+                int hpFixed = room.getTrapDamageHpFixed() != null ? room.getTrapDamageHpFixed() : 0;
+                int manaFixed = room.getTrapDamageManaFixed() != null ? room.getTrapDamageManaFixed() : 0;
+                
+                // Fallback for old rooms
+                if (hpPct == 0 && manaPct == 0 && hpFixed == 0 && manaFixed == 0 && room.getTrapAmount() > 0) {
+                    if ("PV".equals(room.getTrapType())) hpFixed = room.getTrapAmount();
+                    else if ("MANA".equals(room.getTrapType())) manaFixed = room.getTrapAmount();
                 }
+
+                for (Personnage p : session.getPlayers()) {
+                    if (p.getHealthCurrent() > 0) {
+                        int hpDmg = hpFixed + (int) (p.getHealthMax() * (hpPct / 100.0));
+                        int manaDmg = manaFixed + (int) (p.getManaMax() * (manaPct / 100.0));
+                        
+                        if (hpDmg > 0) p.takeDamage(hpDmg, generation.grimoire.enumeration.DamageType.BRUT);
+                        if (manaDmg > 0) p.setManaCurrent(Math.max(0, p.getManaCurrent() - manaDmg));
+                    }
+                }
+                
+                String log = "Vos héros tombent dans un piège !";
+                if (hpPct > 0 || hpFixed > 0) log += " Ils perdent des PV.";
+                if (manaPct > 0 || manaFixed > 0) log += " Ils perdent du Mana.";
+                session.addLog(log);
             } else {
                 // Generic fallback
                 int effect = room.getEventEffectAmount();

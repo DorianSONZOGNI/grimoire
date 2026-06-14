@@ -57,6 +57,11 @@ public class Salle {
     private String trapType; // "PV", "MANA"
     private int trapAmount;
     private boolean trapHasRopeOption;
+    
+    private Integer trapDamageHpPct;
+    private Integer trapDamageManaPct;
+    private Integer trapDamageHpFixed;
+    private Integer trapDamageManaFixed;
 
     // IF PORTE_ETRANGE — outcomes as JSON string
     @Column(columnDefinition = "TEXT")
