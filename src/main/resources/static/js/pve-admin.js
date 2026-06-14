@@ -662,21 +662,41 @@ function renderRooms() {
                     </div>
                     <div style="display: flex; gap: 1rem; margin-top: 0.75rem;">
                         <div style="flex: 1;">
-                            <label style="font-size: 0.8rem; color: #94a3b8;">Type de piège</label>
-                            <select class="form-control" onchange="updateRoomField(${rIndex}, 'trapType', this.value)">
-                                <option value="PV" ${room.trapType === 'PV' ? 'selected' : ''}>Perte de PV</option>
-                                <option value="MANA" ${room.trapType === 'MANA' ? 'selected' : ''}>Perte de Mana</option>
-                            </select>
+                            <label style="font-size: 0.8rem; color: #94a3b8; display: block; margin-bottom: 0.4rem;">Type de piège</label>
+                            <div class="custom-select-wrapper" id="room_trap_type_wrapper_${rIndex}" style="flex: 1; z-index: ${100 - rIndex}; margin: 0;">
+                                <div class="custom-select-trigger" onclick="toggleTrapTypeSelect(${rIndex})" style="padding: 0.6rem 1rem; border-radius: 8px;">
+                                    <span class="cs-label" id="room_trap_type_label_${rIndex}">
+                                        <span class="material-symbols-outlined cs-icon" style="color: ${room.trapType === 'MANA' ? '#3b82f6' : '#ef4444'}; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">${room.trapType === 'MANA' ? 'water_drop' : 'favorite'}</span> ${room.trapType === 'MANA' ? 'Perte de Mana' : 'Perte de PV'}
+                                    </span>
+                                    <span class="material-symbols-outlined">expand_more</span>
+                                </div>
+                                <div class="custom-select-options" id="room_trap_type_options_${rIndex}">
+                                    <div class="custom-option" onclick="selectTrapType(${rIndex}, 'PV', '<span class=\\'material-symbols-outlined cs-icon\\' style=\\'color: #ef4444; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;\\'>favorite</span> Perte de PV')">
+                                        <span class="material-symbols-outlined cs-icon" style="color: #ef4444; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">favorite</span> Perte de PV
+                                    </div>
+                                    <div class="custom-option" onclick="selectTrapType(${rIndex}, 'MANA', '<span class=\\'material-symbols-outlined cs-icon\\' style=\\'color: #3b82f6; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;\\'>water_drop</span> Perte de Mana')">
+                                        <span class="material-symbols-outlined cs-icon" style="color: #3b82f6; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">water_drop</span> Perte de Mana
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                         <div style="flex: 1;">
-                            <label style="font-size: 0.8rem; color: #94a3b8;">Montant</label>
+                            <label style="font-size: 0.8rem; color: #94a3b8; display: block; margin-bottom: 0.4rem;">Montant</label>
                             <input type="number" class="form-control" value="${room.trapAmount || 0}" onchange="updateRoomField(${rIndex}, 'trapAmount', parseInt(this.value))">
                         </div>
                     </div>
-                    <div style="margin-top: 0.75rem;">
-                        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: #f8fafc; cursor: pointer;">
-                            <input type="checkbox" ${room.trapHasRopeOption ? 'checked' : ''} onchange="updateRoomField(${rIndex}, 'trapHasRopeOption', this.checked)" style="accent-color: #f59e0b; width: 16px; height: 16px;">
-                            Possibilité d'utiliser une Corde pour éviter le piège
+                    <div style="margin-top: 1rem; display: flex; align-items: center; justify-content: space-between; background: rgba(0,0,0,0.2); padding: 0.8rem 1rem; border-radius: 8px; border: 1px solid rgba(245, 158, 11, 0.2);">
+                        <div style="display: flex; flex-direction: column; gap: 0.2rem;">
+                            <span style="font-size: 0.9rem; color: #f8fafc; font-weight: 500; display: flex; align-items: center; gap: 0.4rem;">
+                                <span class="material-symbols-outlined" style="color: #f59e0b; font-size: 1.1rem;">auto_fix</span> Option Corde d'évitement
+                            </span>
+                            <span style="font-size: 0.75rem; color: #94a3b8;">Permet aux héros d'utiliser une Corde pour ignorer ce piège.</span>
+                        </div>
+                        <label style="position: relative; display: block; width: 40px; height: 24px; margin: 0; flex-shrink: 0;">
+                            <input type="checkbox" style="opacity: 0; width: 0; height: 0;" ${room.trapHasRopeOption ? 'checked' : ''} onchange="updateRoomField(${rIndex}, 'trapHasRopeOption', this.checked); this.nextElementSibling.style.backgroundColor = this.checked ? '#f59e0b' : 'rgba(255, 255, 255, 0.1)'; this.nextElementSibling.children[0].style.transform = this.checked ? 'translateX(16px)' : 'translateX(0)';">
+                            <span style="position: absolute; cursor: pointer; top: 0; left: 0; right: 0; bottom: 0; background-color: ${room.trapHasRopeOption ? '#f59e0b' : 'rgba(255, 255, 255, 0.1)'}; transition: .3s; border-radius: 24px;">
+                                <span style="position: absolute; content: ''; height: 18px; width: 18px; left: 3px; bottom: 3px; background-color: white; transition: .3s; border-radius: 50%; transform: ${room.trapHasRopeOption ? 'translateX(16px)' : 'translateX(0)'}; box-shadow: 0 2px 4px rgba(0,0,0,0.2);"></span>
+                            </span>
                         </label>
                     </div>
                 `;
@@ -1303,4 +1323,22 @@ window.showNotif = function(message, isError = false) {
     setTimeout(() => {
         notif.classList.remove('show');
     }, 3000);
+};
+
+window.toggleTrapTypeSelect = function(rIndex) {
+    const wrapper = document.getElementById(`room_trap_type_wrapper_${rIndex}`);
+    if (wrapper) {
+        document.querySelectorAll('.custom-select-wrapper.open').forEach(el => {
+            if (el !== wrapper) el.classList.remove('open');
+        });
+        wrapper.classList.toggle('open');
+    }
+};
+
+window.selectTrapType = function(rIndex, val, label) {
+    updateRoomField(rIndex, 'trapType', val);
+    const triggerLabel = document.getElementById(`room_trap_type_label_${rIndex}`);
+    if (triggerLabel) triggerLabel.innerHTML = label;
+    const wrapper = document.getElementById(`room_trap_type_wrapper_${rIndex}`);
+    if (wrapper) wrapper.classList.remove('open');
 };
