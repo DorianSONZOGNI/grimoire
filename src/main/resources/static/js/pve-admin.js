@@ -101,6 +101,17 @@ document.addEventListener('DOMContentLoaded', () => {
             return;
         }
 
+        for (let i = 0; i < selectedRooms.length; i++) {
+            const r = selectedRooms[i];
+            if (r.type === 'EVENT' && r.eventSubType === 'PORTE_ETRANGE') {
+                const total = (r.doorOutcomes || []).reduce((sum, o) => sum + o.probability, 0);
+                if (total > 100) {
+                    showNotif(`La salle ${i + 1} (Porte Étrange) a un total de probabilité de ${total}% (Maximum 100%).`, true);
+                    return;
+                }
+            }
+        }
+
         const donjon = {
             name: document.getElementById('dName').value,
             description: document.getElementById('dDesc').value,
@@ -1331,11 +1342,18 @@ window.addDoorOutcome = function (rIndex) {
     const probEl = document.getElementById('room_door_prob_' + rIndex);
     const type = typeEl ? typeEl.value : '';
     const prob = parseFloat(probEl ? probEl.value : 0);
-    if (!type || isNaN(prob) || prob < 0 || prob > 100) {
-        showNotif('Veuillez sélectionner un type et une probabilité (0-100).', true);
+    if (!type || isNaN(prob) || prob <= 0 || prob > 100) {
+        showNotif('Veuillez sélectionner un type et une probabilité (1-100).', true);
         return;
     }
     if (!selectedRooms[rIndex].doorOutcomes) selectedRooms[rIndex].doorOutcomes = [];
+
+    const currentTotal = selectedRooms[rIndex].doorOutcomes.reduce((sum, o) => sum + o.probability, 0);
+    if (currentTotal + prob > 100) {
+        showNotif(`Impossible : le total dépasse 100% (actuel: ${currentTotal}%). Reste disponible : ${100 - currentTotal}%`, true);
+        return;
+    }
+
     selectedRooms[rIndex].doorOutcomes.push({ type, probability: prob });
     renderRooms();
 };
