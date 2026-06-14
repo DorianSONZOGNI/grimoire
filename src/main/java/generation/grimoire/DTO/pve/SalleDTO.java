@@ -28,6 +28,10 @@ public class SalleDTO {
     private String trapType;
     private int trapAmount;
     private boolean trapHasRopeOption;
+    private Integer trapDamageHpPct;
+    private Integer trapDamageManaPct;
+    private Integer trapDamageHpFixed;
+    private Integer trapDamageManaFixed;
     private String doorOutcomes;
     private List<LootEntryDTO> lootTable;
 }

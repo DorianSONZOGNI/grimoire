@@ -673,13 +673,6 @@ async function acceptAlteration() {
         }
         const data = await res.json();
         updateUI(data);
-
-        const lootContainer = document.getElementById('eventLootContainer');
-        if (lootContainer) {
-            lootContainer.innerHTML = '';
-            renderAndAnimateXPCards('eventLootContainer', data.players, 'alt');
-            lootContainer.style.display = 'flex';
-        }
     } catch (e) {
         console.error(e);
         showNotif("Erreur lors de l'altération", true);
@@ -1148,7 +1141,50 @@ function updateUI(data) {
                     } else {
                         btnCont.style.display = 'block';
                         btnCont.textContent = 'Continuer';
-                        lootContainer.style.display = 'none';
+                        
+                        if (!lootContainer.dataset.filled) {
+                            lootContainer.dataset.filled = 'true';
+                            lootContainer.innerHTML = ''; // Clear previous content
+
+                            renderAndAnimateXPCards('eventLootContainer', data.players, 'alt');
+
+                            let gainedItemsHtml = '';
+                            if (data.combatLog) {
+                                for (let i = data.combatLog.length - 1; i >= 0; i--) {
+                                    const log = data.combatLog[i];
+                                    
+                                    const lostMatch = log.match(/sacrifi. l'item : (.*) !/);
+                                    if (lostMatch) {
+                                        gainedItemsHtml += `
+                                            <div style="background: rgba(0, 0, 0, 0.4); border: 1px solid #ef444480; padding: 0.8rem 1rem; border-radius: 8px; color: #ef4444; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
+                                                <span class="material-symbols-outlined" style="color: #ef4444;">star</span> -1 ${lostMatch[1]}
+                                            </div>
+                                        `;
+                                    }
+                                    
+                                    const gainedMatch = log.match(/re.oit l'Item Sp.cial : (.*) !/);
+                                    if (gainedMatch) {
+                                        gainedItemsHtml += `
+                                            <div style="background: rgba(0, 0, 0, 0.4); border: 1px solid #d946ef80; padding: 0.8rem 1rem; border-radius: 8px; color: #d946ef; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
+                                                <span class="material-symbols-outlined" style="color: #d946ef;">star</span> +1 ${gainedMatch[1]}
+                                            </div>
+                                        `;
+                                    }
+                                    
+                                    if (log.includes("Vous entrez dans")) break;
+                                }
+                            }
+
+                            if (gainedItemsHtml) {
+                                lootContainer.innerHTML += `
+                                    <div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; margin-top: 1rem; width: 100%;">
+                                        ${gainedItemsHtml}
+                                    </div>
+                                `;
+                            }
+                        }
+                        
+                        lootContainer.style.display = 'flex';
                     }
                 } else if (subType === 'RENCONTRE') {
                     icon.textContent = 'storefront';

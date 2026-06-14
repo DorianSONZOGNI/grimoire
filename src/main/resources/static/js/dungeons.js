@@ -76,7 +76,7 @@ async function loadDungeons() {
                     });
                 }
 
-                const sallesData = JSON.stringify(d.salles || []).replace(/"/g, '&quot;').replace(/'/g, "\\'");
+                const sallesData = encodeURIComponent(JSON.stringify(d.salles || []));
 
                 list.innerHTML += `
                     <div class="dungeon-card" onclick="openPrepInterface(${d.id}, '${d.name.replace(/'/g, "\\'")}', '${sallesData}', ${d.maxHeroes || 1})">
@@ -337,7 +337,7 @@ window.openPrepInterface = function (id, name, sallesData, maxHeroes) {
 
     document.getElementById('prepDungeonTitle').textContent = `${name} (Max: ${currentMaxHeroes} héros)`;
 
-    const salles = JSON.parse(sallesData || '[]');
+    const salles = JSON.parse(decodeURIComponent(sallesData) || '[]');
     const list = document.getElementById('prepMonstersList');
 
     if (salles.length === 0) {

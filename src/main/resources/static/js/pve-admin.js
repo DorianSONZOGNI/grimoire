@@ -150,6 +150,10 @@ document.addEventListener('DOMContentLoaded', () => {
                     s.trapType = r.trapType || null;
                     s.trapAmount = r.trapAmount || 0;
                     s.trapHasRopeOption = r.trapHasRopeOption || false;
+                    s.trapDamageHpPct = r.trapDamageHpPct || 0;
+                    s.trapDamageManaPct = r.trapDamageManaPct || 0;
+                    s.trapDamageHpFixed = r.trapDamageHpFixed || 0;
+                    s.trapDamageManaFixed = r.trapDamageManaFixed || 0;
                     s.doorOutcomes = r.doorOutcomes ? JSON.stringify(r.doorOutcomes) : null;
                     if (r.lootTable) {
                         s.lootTable = r.lootTable;
@@ -731,21 +735,21 @@ function renderRooms() {
                 }
                 shopHtml += `</div>
                     <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem; background: rgba(0,0,0,0.2); padding: 0.8rem; border-radius: 6px;">
-                        <div style="display: flex; gap: 0.5rem; align-items: stretch; position: relative;">
-                            <div class="custom-select-wrapper" id="room_merchant_type_wrapper_${rIndex}" style="flex: 1; max-width: 120px; z-index: ${100 - rIndex}; margin: 0;">
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem; position: relative;">
+                            <div class="custom-select-wrapper" id="room_merchant_type_wrapper_${rIndex}" style="width: 100%; z-index: ${102 - rIndex}; margin: 0;">
                                 <div class="custom-select-trigger" onclick="toggleMerchantTypeSelect(${rIndex})" style="padding: 0.6rem 1rem; border-radius: 8px;">
-                                    <span class="cs-label" id="room_merchant_type_label_${rIndex}">Équipement</span>
+                                    <span class="cs-label" id="room_merchant_type_label_${rIndex}"><span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">category</span> Équipement</span>
                                     <span class="material-symbols-outlined">expand_more</span>
                                 </div>
                                 <div class="custom-select-options" id="room_merchant_type_options_${rIndex}">
-                                    <div class="custom-option" onclick="selectMerchantType(${rIndex}, 'EQ', 'Équipement')">Équipement</div>
-                                    <div class="custom-option" onclick="selectMerchantType(${rIndex}, 'SPECIAL', 'Item Spécial')">Item Spécial</div>
+                                    <div class="custom-option" onclick="selectMerchantType(${rIndex}, 'EQ', '<span class=\\'material-symbols-outlined cs-icon\\' style=\\'color: #94a3b8;\\'>category</span> Équipement')"><span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">category</span> Équipement</div>
+                                    <div class="custom-option" onclick="selectMerchantType(${rIndex}, 'SPECIAL', '<span class=\\'material-symbols-outlined cs-icon\\' style=\\'color: #d946ef;\\'>diamond</span> Item Spécial')"><span class="material-symbols-outlined cs-icon" style="color: #d946ef;">diamond</span> Item Spécial</div>
                                 </div>
                                 <input type="hidden" id="room_merchant_type_${rIndex}" value="EQ">
                             </div>
                             
                             <!-- Mode Equipement -->
-                            <div class="custom-select-wrapper" id="room_loot_select_wrapper_${rIndex}" style="flex: 2; z-index: ${100 - rIndex}; margin: 0;">
+                            <div class="custom-select-wrapper" id="room_loot_select_wrapper_${rIndex}" style="width: 100%; z-index: ${101 - rIndex}; margin: 0;">
                                 <div class="custom-select-trigger" onclick="toggleLootSelect(${rIndex})" style="padding: 0.6rem 1rem; border-radius: 8px;">
                                     <span class="cs-label" id="room_loot_label_${rIndex}"><span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">category</span> Objet...</span>
                                     <span class="material-symbols-outlined">expand_more</span>
@@ -764,7 +768,7 @@ function renderRooms() {
                             </div>
                             
                             <!-- Mode Spécial -->
-                            <div class="custom-select-wrapper" id="room_merchant_special_wrapper_${rIndex}" style="flex: 2; display: none; z-index: ${100 - rIndex}; margin: 0;">
+                            <div class="custom-select-wrapper" id="room_merchant_special_wrapper_${rIndex}" style="width: 100%; display: none; z-index: ${101 - rIndex}; margin: 0;">
                                 <div class="custom-select-trigger" onclick="toggleMerchantSpecialSelect(${rIndex})" style="padding: 0.6rem 1rem; border-radius: 8px;">
                                     <span class="cs-label" id="room_merchant_special_label_${rIndex}"><span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">diamond</span> Choisir un item spécial...</span>
                                     <span class="material-symbols-outlined">expand_more</span>
@@ -779,24 +783,30 @@ function renderRooms() {
                                 <input type="hidden" id="room_merchant_special_${rIndex}" value="">
                             </div>
                         </div>
-                        <div style="display: flex; gap: 0.5rem; align-items: stretch; height: 38px;">
-                            <input type="number" id="room_merchant_gold_${rIndex}" class="form-control" style="flex: 1;" placeholder="Prix (Or)" min="0">
-                            <div class="custom-select-wrapper" id="room_merchant_cost_item_wrapper_${rIndex}" style="flex: 1.5; z-index: ${99 - rIndex}; margin: 0;">
-                                <div class="custom-select-trigger" onclick="toggleMerchantCostSelect(${rIndex})" style="padding: 0.6rem 1rem; border-radius: 8px;">
-                                    <span class="cs-label" id="room_merchant_cost_label_${rIndex}"><span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">diamond</span> Item spécial</span>
-                                    <span class="material-symbols-outlined">expand_more</span>
-                                </div>
-                                <div class="custom-select-options" id="room_merchant_cost_options_${rIndex}" style="max-height: 200px; overflow-y: auto;">
-                                    <div class="custom-option" onclick="selectMerchantCost(${rIndex}, '', 'Item spécial')"><span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">diamond</span> Item spécial</div>
-                                    ${allAnomalies.map(a => {
+                        <div style="display: flex; flex-direction: column; gap: 0.8rem; margin-top: 0.8rem;">
+                            <div>
+                                <label style="font-size: 0.8rem; color: #94a3b8; display: block; margin-bottom: 0.3rem;">Prix en Or</label>
+                                <input type="number" id="room_merchant_gold_${rIndex}" class="form-control" style="width: 100%; margin: 0;" placeholder="0" min="0">
+                            </div>
+                            <div style="position: relative; z-index: ${99 - rIndex};">
+                                <label style="font-size: 0.8rem; color: #94a3b8; display: block; margin-bottom: 0.3rem;">Ou Prix en Item Spécial</label>
+                                <div class="custom-select-wrapper" id="room_merchant_cost_item_wrapper_${rIndex}" style="width: 100%; margin: 0;">
+                                    <div class="custom-select-trigger" onclick="toggleMerchantCostSelect(${rIndex})" style="padding: 0.6rem 1rem; border-radius: 8px;">
+                                        <span class="cs-label" id="room_merchant_cost_label_${rIndex}"><span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">diamond</span> Sélectionner (Optionnel)</span>
+                                        <span class="material-symbols-outlined">expand_more</span>
+                                    </div>
+                                    <div class="custom-select-options" id="room_merchant_cost_options_${rIndex}" style="max-height: 200px; overflow-y: auto;">
+                                        <div class="custom-option" onclick="selectMerchantCost(${rIndex}, '', 'Sélectionner (Optionnel)')"><span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">diamond</span> Sélectionner (Optionnel)</div>
+                                        ${allAnomalies.map(a => {
                     const color = a.spiritualite === 'TENEBRES' ? '#d946ef' : a.spiritualite === 'ESPRIT' ? '#3b82f6' : a.spiritualite === 'KARMA' ? '#f59e0b' : '#94a3b8';
                     return `<div class="custom-option" onclick="selectMerchantCost(${rIndex}, '${a.name.replace(/'/g, "\\'")}', '${a.name.replace(/'/g, "\\'")}', '${color}')"><span class="material-symbols-outlined cs-icon" style="color: ${color};">diamond</span> ${a.name}</div>`;
                 }).join('')}
+                                    </div>
+                                    <input type="hidden" id="room_merchant_cost_item_${rIndex}" value="">
                                 </div>
-                                <input type="hidden" id="room_merchant_cost_item_${rIndex}" value="">
                             </div>
-                            <button type="button" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 0 1.2rem; font-size: 0.9rem; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center;" onclick="addMerchantItemToRoom(${rIndex})">
-                                <span class="material-symbols-outlined" style="font-size: 1.1rem;">add</span>
+                            <button type="button" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 0.8rem; font-size: 0.95rem; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center; width: 100%; transition: all 0.2s ease; margin-top: 0.5rem;" onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter='none'" onclick="addMerchantItemToRoom(${rIndex})">
+                                <span class="material-symbols-outlined" style="font-size: 1.2rem; margin-right: 0.5rem;">add_shopping_cart</span> Ajouter cet objet
                             </button>
                         </div>
                     </div>
@@ -1594,6 +1604,10 @@ async function editDungeon(id) {
                     room.trapType = s.trapType;
                     room.trapAmount = s.trapAmount || 0;
                     room.trapHasRopeOption = s.trapHasRopeOption || false;
+                    room.trapDamageHpPct = s.trapDamageHpPct || 0;
+                    room.trapDamageManaPct = s.trapDamageManaPct || 0;
+                    room.trapDamageHpFixed = s.trapDamageHpFixed || 0;
+                    room.trapDamageManaFixed = s.trapDamageManaFixed || 0;
 
                     if (s.doorOutcomes) {
                         try {

@@ -107,6 +107,10 @@ public class PvEAdminController {
                 s.setTrapType(sDto.getTrapType());
                 s.setTrapAmount(sDto.getTrapAmount());
                 s.setTrapHasRopeOption(sDto.isTrapHasRopeOption());
+                s.setTrapDamageHpPct(sDto.getTrapDamageHpPct());
+                s.setTrapDamageManaPct(sDto.getTrapDamageManaPct());
+                s.setTrapDamageHpFixed(sDto.getTrapDamageHpFixed());
+                s.setTrapDamageManaFixed(sDto.getTrapDamageManaFixed());
                 s.setDoorOutcomes(sDto.getDoorOutcomes());
 
                 if (sDto.getMonsters() != null) {
