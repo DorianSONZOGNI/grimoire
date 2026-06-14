@@ -517,13 +517,17 @@ function cancelCombatCast() {
 }
 
 async function doAction(spellId = null) {
-    if (!sessionId || !currentSessionData) return;
+    if (!sessionId || !currentSessionData || isProcessing) return;
+    isProcessing = true;
 
     // Ensure we have a valid target
     if (currentSessionData.enemies.length > 0 && (selectedTargetIndex === null || currentSessionData.enemies[selectedTargetIndex].dead)) {
         // Auto select first alive target
         selectedTargetIndex = currentSessionData.enemies.findIndex(e => !e.dead);
-        if (selectedTargetIndex === -1) return; // All dead
+        if (selectedTargetIndex === -1) {
+            isProcessing = false;
+            return; // All dead
+        }
     }
 
     let choiceKey = null;
@@ -534,15 +538,7 @@ async function doAction(spellId = null) {
         }
     }
 
-    document.getElementById('btnAttack').disabled = true;
-    const btnEnd = document.getElementById('btnEndTurn');
-    if (btnEnd) btnEnd.disabled = true;
-    const spellButtons = document.querySelectorAll('.spell-btn, .filter-chip');
-    spellButtons.forEach(btn => {
-        btn.disabled = true;
-        btn.classList.add('disabled');
-        btn.style.pointerEvents = 'none';
-    });
+    setButtonsProcessing(true);
 
     // Animation attack
     const activePlayerCard = document.querySelector('.fighter-player.active');
@@ -564,25 +560,22 @@ async function doAction(spellId = null) {
         setTimeout(() => {
             selectedAllyIndex = -1; // Reset after action completes
             updateUI(data);
+            isProcessing = false;
+            setButtonsProcessing(false);
         }, 600);
 
     } catch (e) {
         console.error(e);
-        updateUI(currentSessionData);
+        showNotif("Erreur de connexion", true);
+        isProcessing = false;
+        setButtonsProcessing(false);
     }
 }
 
 async function endTurn() {
-    if (!sessionId || !currentSessionData) return;
-
-    document.getElementById('btnEndTurn').disabled = true;
-    document.getElementById('btnAttack').disabled = true;
-    const spellButtons = document.querySelectorAll('.spell-btn, .filter-chip');
-    spellButtons.forEach(btn => {
-        btn.disabled = true;
-        btn.classList.add('disabled');
-        btn.style.pointerEvents = 'none';
-    });
+    if (!sessionId || !currentSessionData || isProcessing) return;
+    isProcessing = true;
+    setButtonsProcessing(true);
 
     try {
         let url = `/api/pve/combat/${sessionId}/end-turn`;
@@ -591,11 +584,15 @@ async function endTurn() {
 
         setTimeout(() => {
             updateUI(data);
+            isProcessing = false;
+            setButtonsProcessing(false);
         }, 600);
 
     } catch (e) {
         console.error(e);
-        updateUI(currentSessionData);
+        showNotif("Erreur de connexion", true);
+        isProcessing = false;
+        setButtonsProcessing(false);
     }
 }
 
@@ -674,6 +671,7 @@ async function acceptAlteration() {
             const err = await res.text();
             showNotif(err || "Action impossible", true);
             isProcessing = false;
+            setButtonsProcessing(false);
             return;
         }
         const data = await res.json();
@@ -713,7 +711,9 @@ async function useRope() {
 }
 
 async function buyMerchantItem(lootIndex) {
-    if (!sessionId || !currentSessionData || !currentSessionData.players || currentSessionData.players.length === 0) return;
+    if (!sessionId || !currentSessionData || !currentSessionData.players || currentSessionData.players.length === 0 || isProcessing) return;
+    isProcessing = true;
+    setButtonsProcessing(true);
     const charId = currentSessionData.players[0].id;
 
     try {
@@ -731,6 +731,9 @@ async function buyMerchantItem(lootIndex) {
     } catch (e) {
         console.error(e);
         alert("Erreur lors de l'achat.");
+    } finally {
+        isProcessing = false;
+        setButtonsProcessing(false);
     }
 }
 
@@ -1107,6 +1110,7 @@ function updateUI(data) {
                     btnOpen.style.display = 'none';
 
                     if (!data.roomEventCompleted && data.currentRoom.alterationType !== 'RIEN') {
+                        delete lootContainer.dataset.filled;
                         let btnText = "Toucher";
                         let warningHtml = '';
                         let specialItemHtml = '';
@@ -1143,6 +1147,31 @@ function updateUI(data) {
                             } else if (data.currentRoom.alterationRewardType === 'SPECIAL_ITEM') {
                                 specialItemHtml = `<div style="color: #d946ef; font-size: 0.85rem; margin-top: 0.5rem; text-align: center; background: rgba(217, 70, 239, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(217, 70, 239, 0.3);"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">star</span> <strong>Récompense :</strong> Vous obtiendrez l'item spécial "${data.currentRoom.alterationSpecialItemReward || 'Item'}" !</div>`;
                             }
+
+                            specialItemHtml += `<div id="itemAlterationCheckContainer" style="margin-top: 1rem; text-align: center; width: 100%;">
+                                <span class="material-symbols-outlined spin">sync</span> Vérification de votre inventaire...
+                            </div>`;
+                            fetch('/api/anomalies').then(res => res.json()).then(anomalies => {
+                                const container = document.getElementById('itemAlterationCheckContainer');
+                                if (!container) return;
+                                const reqItem = data.currentRoom.alterationRequiredItem;
+                                const ownsItem = anomalies.some(a => a.name === reqItem);
+                                if (!ownsItem) {
+                                    container.innerHTML = `<div style="color: #ef4444; font-weight: bold; background: rgba(239,68,68,0.1); padding: 0.5rem; border-radius: 6px;">Vous ne possédez pas cet item.</div>`;
+                                    const btn = document.getElementById('btnAcceptAlteration');
+                                    if (btn) {
+                                        btn.disabled = true;
+                                        btn.style.opacity = '0.5';
+                                        btn.style.cursor = 'not-allowed';
+                                    }
+                                } else {
+                                    container.innerHTML = '';
+                                }
+                            }).catch(err => {
+                                console.error(err);
+                                const container = document.getElementById('itemAlterationCheckContainer');
+                                if (container) container.innerHTML = `<div style="color: #ef4444;">Erreur lors du chargement de l'inventaire.</div>`;
+                            });
                         } else if (data.currentRoom.alterationType === 'AUTEL') {
                             btnText = `Sacrifier l'Objet`;
                             let spColor = data.currentRoom.altarRequiredSpirituality === 'TENEBRES' ? '#d946ef' : data.currentRoom.altarRequiredSpirituality === 'ESPRIT' ? '#3b82f6' : '#f59e0b';
