@@ -875,7 +875,7 @@ function renderRooms() {
                                 else if (selAnomalie.spiritualite === 'ESPRIT') selAnColor = '#3b82f6';
                                 else if (selAnomalie.spiritualite === 'KARMA') selAnColor = '#f59e0b';
                             }
-                            const selAnHtml = selAnomalie ? `<span class="material-symbols-outlined cs-icon" style="color: ${selAnColor}; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">star</span>${selAnomalie.name}` : 'Aucune anomalie disponible';
+                            const selAnHtml = selAnomalie ? `<span class="material-symbols-outlined cs-icon" style="color: ${selAnColor}; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">star</span>${selAnomalie.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${selAnomalie.level || 1})</span>` : 'Aucune anomalie disponible';
 
                             extraHtml = `
                                 <div style="margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px dashed rgba(255,255,255,0.15); width: 100%;">
