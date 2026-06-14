@@ -789,13 +789,26 @@ function renderRooms() {
 
                             let rewardValueHtml = '';
                             if (outcome.altarRewardType === 'ITEM') {
+                                const selEq = allEquipments.find(e => e.id == outcome.altarRewardValue) || allEquipments[0];
                                 rewardValueHtml = `
-                                    <select class="form-control" onchange="updateAltarField(${rIndex}, ${oIndex}, 'altarRewardValue', this.value)" style="padding: 0.5rem; font-size: 0.85rem;">
-                                        ${allEquipments.map(eq => `<option value="${eq.id}" ${outcome.altarRewardValue == eq.id ? 'selected' : ''}>${eq.name}</option>`).join('')}
-                                    </select>
+                                    <div class="custom-select-wrapper" id="altar_rewardval_wrapper_${rIndex}_${oIndex}" style="margin-top: 0.2rem; z-index: ${90 - rIndex};">
+                                        <div class="custom-select-trigger" onclick="toggleAltarRewardValSelect(${rIndex}, ${oIndex})" style="padding: 0.5rem; font-size: 0.85rem; border-radius: 8px;">
+                                            <span class="cs-label" id="altar_rewardval_label_${rIndex}_${oIndex}">
+                                                ${selEq ? selEq.name : 'Choisir un objet'}
+                                            </span>
+                                            <span class="material-symbols-outlined">expand_more</span>
+                                        </div>
+                                        <div class="custom-select-options" id="altar_rewardval_options_${rIndex}_${oIndex}" style="max-height: 200px; overflow-y: auto;">
+                                            ${allEquipments.map(eq => `
+                                                <div class="custom-option" onclick="updateAltarField(${rIndex}, ${oIndex}, 'altarRewardValue', ${eq.id})">
+                                                    ${eq.name}
+                                                </div>
+                                            `).join('')}
+                                        </div>
+                                    </div>
                                 `;
                             } else {
-                                rewardValueHtml = `<input type="number" class="form-control" value="${outcome.altarRewardValue}" onchange="updateAltarField(${rIndex}, ${oIndex}, 'altarRewardValue', this.value)" style="padding: 0.5rem; font-size: 0.85rem;" min="1">`;
+                                rewardValueHtml = `<input type="number" class="form-control" value="${outcome.altarRewardValue}" onchange="updateAltarField(${rIndex}, ${oIndex}, 'altarRewardValue', this.value)" style="padding: 0.5rem; font-size: 0.85rem; margin-top: 0.2rem;" min="1">`;
                             }
 
                             extraHtml = `
@@ -804,19 +817,47 @@ function renderRooms() {
                                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 0.5rem;">
                                         <div>
                                             <label style="font-size: 0.75rem; color: #94a3b8;">Spiritualité acceptée</label>
-                                            <select class="form-control" onchange="updateAltarField(${rIndex}, ${oIndex}, 'altarSpirituality', this.value)" style="padding: 0.5rem; font-size: 0.85rem;">
-                                                <option value="TENEBRES" ${outcome.altarSpirituality === 'TENEBRES' ? 'selected' : ''}>Ténèbres</option>
-                                                <option value="ESPRIT" ${outcome.altarSpirituality === 'ESPRIT' ? 'selected' : ''}>Esprit</option>
-                                                <option value="KARMA" ${outcome.altarSpirituality === 'KARMA' ? 'selected' : ''}>Karma</option>
-                                            </select>
+                                            <div class="custom-select-wrapper" id="altar_spirituality_wrapper_${rIndex}_${oIndex}" style="margin-top: 0.2rem; z-index: ${92 - rIndex};">
+                                                <div class="custom-select-trigger" onclick="toggleAltarSpiritualitySelect(${rIndex}, ${oIndex})" style="padding: 0.5rem; font-size: 0.85rem; border-radius: 8px;">
+                                                    <span class="cs-label" id="altar_spirituality_label_${rIndex}_${oIndex}">
+                                                        ${outcome.altarSpirituality === 'ESPRIT' ? '<span class="material-symbols-outlined cs-icon" style="color: #3b82f6; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">blur_on</span> Esprit' : outcome.altarSpirituality === 'KARMA' ? '<span class="material-symbols-outlined cs-icon" style="color: #f59e0b; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">all_inclusive</span> Karma' : '<span class="material-symbols-outlined cs-icon" style="color: #d946ef; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">dark_mode</span> Ténèbres'}
+                                                    </span>
+                                                    <span class="material-symbols-outlined">expand_more</span>
+                                                </div>
+                                                <div class="custom-select-options" id="altar_spirituality_options_${rIndex}_${oIndex}">
+                                                    <div class="custom-option" onclick="updateAltarField(${rIndex}, ${oIndex}, 'altarSpirituality', 'TENEBRES')">
+                                                        <span class="material-symbols-outlined cs-icon" style="color: #d946ef; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">dark_mode</span> Ténèbres
+                                                    </div>
+                                                    <div class="custom-option" onclick="updateAltarField(${rIndex}, ${oIndex}, 'altarSpirituality', 'ESPRIT')">
+                                                        <span class="material-symbols-outlined cs-icon" style="color: #3b82f6; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">blur_on</span> Esprit
+                                                    </div>
+                                                    <div class="custom-option" onclick="updateAltarField(${rIndex}, ${oIndex}, 'altarSpirituality', 'KARMA')">
+                                                        <span class="material-symbols-outlined cs-icon" style="color: #f59e0b; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">all_inclusive</span> Karma
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                         <div>
                                             <label style="font-size: 0.75rem; color: #94a3b8;">Type de récompense</label>
-                                            <select class="form-control" onchange="updateAltarField(${rIndex}, ${oIndex}, 'altarRewardType', this.value)" style="padding: 0.5rem; font-size: 0.85rem;">
-                                                <option value="GOLD" ${outcome.altarRewardType === 'GOLD' ? 'selected' : ''}>Or (Gold)</option>
-                                                <option value="XP" ${outcome.altarRewardType === 'XP' ? 'selected' : ''}>XP Spiritualité</option>
-                                                <option value="ITEM" ${outcome.altarRewardType === 'ITEM' ? 'selected' : ''}>Équipement</option>
-                                            </select>
+                                            <div class="custom-select-wrapper" id="altar_reward_wrapper_${rIndex}_${oIndex}" style="margin-top: 0.2rem; z-index: ${91 - rIndex};">
+                                                <div class="custom-select-trigger" onclick="toggleAltarRewardSelect(${rIndex}, ${oIndex})" style="padding: 0.5rem; font-size: 0.85rem; border-radius: 8px;">
+                                                    <span class="cs-label" id="altar_reward_label_${rIndex}_${oIndex}">
+                                                        ${outcome.altarRewardType === 'XP' ? '<span class="material-symbols-outlined cs-icon" style="color: #38bdf8; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">auto_awesome</span> XP Spiritualité' : outcome.altarRewardType === 'ITEM' ? '<span class="material-symbols-outlined cs-icon" style="color: #8b5cf6; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">redeem</span> Équipement' : '<span class="material-symbols-outlined cs-icon" style="color: #eab308; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">monetization_on</span> Or (Gold)'}
+                                                    </span>
+                                                    <span class="material-symbols-outlined">expand_more</span>
+                                                </div>
+                                                <div class="custom-select-options" id="altar_reward_options_${rIndex}_${oIndex}">
+                                                    <div class="custom-option" onclick="updateAltarField(${rIndex}, ${oIndex}, 'altarRewardType', 'GOLD')">
+                                                        <span class="material-symbols-outlined cs-icon" style="color: #eab308; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">monetization_on</span> Or (Gold)
+                                                    </div>
+                                                    <div class="custom-option" onclick="updateAltarField(${rIndex}, ${oIndex}, 'altarRewardType', 'XP')">
+                                                        <span class="material-symbols-outlined cs-icon" style="color: #38bdf8; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">auto_awesome</span> XP Spiritualité
+                                                    </div>
+                                                    <div class="custom-option" onclick="updateAltarField(${rIndex}, ${oIndex}, 'altarRewardType', 'ITEM')">
+                                                        <span class="material-symbols-outlined cs-icon" style="color: #8b5cf6; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">redeem</span> Équipement
+                                                    </div>
+                                                </div>
+                                            </div>
                                         </div>
                                         <div style="grid-column: span 2;">
                                             <label style="font-size: 0.75rem; color: #94a3b8;">Valeur de la récompense</label>
@@ -1525,3 +1566,40 @@ window.selectDoorOutcome = function (rIndex, val, label) {
     const wrapper = document.getElementById(`room_door_outcome_wrapper_${rIndex}`);
     if (wrapper) wrapper.classList.remove('open');
 };
+
+window.toggleAltarSpiritualitySelect = function (rIndex, oIndex) {
+    const wrapper = document.getElementById(`altar_spirituality_wrapper_${rIndex}_${oIndex}`);
+    if (wrapper) {
+        document.querySelectorAll('.custom-select-wrapper.open').forEach(el => {
+            if (el !== wrapper) el.classList.remove('open');
+        });
+        wrapper.classList.toggle('open');
+    }
+};
+
+window.toggleAltarRewardSelect = function (rIndex, oIndex) {
+    const wrapper = document.getElementById(`altar_reward_wrapper_${rIndex}_${oIndex}`);
+    if (wrapper) {
+        document.querySelectorAll('.custom-select-wrapper.open').forEach(el => {
+            if (el !== wrapper) el.classList.remove('open');
+        });
+        wrapper.classList.toggle('open');
+    }
+};
+
+window.toggleAltarRewardValSelect = function (rIndex, oIndex) {
+    const wrapper = document.getElementById(`altar_rewardval_wrapper_${rIndex}_${oIndex}`);
+    if (wrapper) {
+        document.querySelectorAll('.custom-select-wrapper.open').forEach(el => {
+            if (el !== wrapper) el.classList.remove('open');
+        });
+        wrapper.classList.toggle('open');
+    }
+};
+
+// Add click outside listener
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.custom-select-wrapper')) {
+        document.querySelectorAll('.custom-select-wrapper.open').forEach(w => w.classList.remove('open'));
+    }
+});
