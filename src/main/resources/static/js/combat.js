@@ -1,4 +1,4 @@
-﻿import * as ui from './ui.js';
+import * as ui from './ui.js';
 import { getSpellEffectsSummaryHtml } from './grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from './filters.js';
 
@@ -1039,9 +1039,17 @@ function updateUI(data) {
                                     const slotInfo = eq ? (SLOT_LABELS[eq.slot] || { icon: 'help', color: '#94a3b8' }) : { icon: 'swords', color: '#f59e0b' };
                                     const rarityColor = eq ? (RARITY_COLORS[eq.rarity] || '#ef4444') : '#f59e0b';
                                     const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
+                                    
+                                    let tooltipDataHtml = '';
+                                    if (eq && typeof generateEquipmentTooltipHTML === 'function') {
+                                        tooltipDataHtml = generateEquipmentTooltipHTML(eq);
+                                    }
+                                    const tooltipAttrs = tooltipDataHtml ? 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"' : '';
+                                    
                                     gainedItemsHtml += `
-                                        <div style="background: rgba(0, 0, 0, 0.4); border: 1px solid ${rarityColor}80; padding: 0.8rem 1rem; border-radius: 8px; color: ${rarityColor}; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
-                                            <span class="material-symbols-outlined${extraClass}" style="color: ${slotInfo.color};">${slotInfo.icon}</span> ${eqName}
+                                        <div ${tooltipAttrs} style="position: relative; cursor: ${tooltipDataHtml ? 'help' : 'default'}; background: rgba(0, 0, 0, 0.4); border: 1px solid ${rarityColor}80; padding: 0.8rem 1rem; border-radius: 8px; color: ${rarityColor}; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
+                                            ${tooltipDataHtml ? `<template class="tooltip-data">${tooltipDataHtml}</template>` : ''}
+                                            <span class="material-symbols-outlined${extraClass}" style="color: ${slotInfo.color};">${slotInfo.icon}</span> <span style="${tooltipDataHtml ? `border-bottom: 1px dashed ${rarityColor};` : ''}">${eqName}</span>
                                         </div>
                                     `;
                                 }
@@ -1103,36 +1111,61 @@ function updateUI(data) {
                         let warningHtml = '';
                         let specialItemHtml = '';
                         if (data.currentRoom.alterationType === 'VIE_XP') {
-                            let parts = [];
-
                             let hp = data.currentRoom.alterationHpAmount || 0;
-                            if (hp !== 0) {
-                                parts.push(hp > 0 ? `+${hp} PV` : `${hp} PV`);
+                            let xp = data.currentRoom.alterationExpAmount || 0;
+                            
+                            warningHtml = '';
+                            if (hp < 0) {
+                                warningHtml += `<div style="color: #ef4444; font-size: 0.85rem; margin-top: 0.5rem; text-align: center; background: rgba(239, 68, 68, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3);"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">favorite</span> <strong>Coût :</strong> ${hp} PV (par héros)</div>`;
+                            } else if (hp > 0) {
+                                warningHtml += `<div style="color: #10b981; font-size: 0.85rem; margin-top: 0.5rem; text-align: center; background: rgba(16, 185, 129, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.3);"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">favorite</span> <strong>Gain :</strong> +${hp} PV (par héros)</div>`;
                             }
 
-                            let xp = data.currentRoom.alterationExpAmount || 0;
-                            if (xp !== 0) {
-                                parts.push(xp > 0 ? `+${xp} XP` : `${xp} XP`);
+                            if (xp > 0) {
+                                warningHtml += `<div style="color: #38bdf8; font-size: 0.85rem; margin-top: 0.5rem; text-align: center; background: rgba(56, 189, 248, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.3);"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">star</span> <strong>Récompense :</strong> +${xp} XP de Voie (par héros)</div>`;
+                            } else if (xp < 0) {
+                                warningHtml += `<div style="color: #ef4444; font-size: 0.85rem; margin-top: 0.5rem; text-align: center; background: rgba(239, 68, 68, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3);"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">star</span> <strong>Perte :</strong> ${xp} XP de Voie (par héros)</div>`;
                             }
 
                             if (data.currentRoom.alterationRewardType === 'SPIRITUAL_XP') {
-                                parts.push(`+${data.currentRoom.alterationSpiritualXpReward || 0} XP Spirit.`);
+                                specialItemHtml = `<div style="color: #c084fc; font-size: 0.85rem; margin-top: 0.5rem; text-align: center; background: rgba(192, 132, 252, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(192, 132, 252, 0.3);"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">star</span> <strong>Récompense :</strong> Vous obtiendrez +${data.currentRoom.alterationSpiritualXpReward || 0} XP Spirituel !</div>`;
                             } else if (data.currentRoom.alterationRewardType === 'SPECIAL_ITEM') {
                                 specialItemHtml = `<div style="color: #d946ef; font-size: 0.85rem; margin-top: 0.5rem; text-align: center; background: rgba(217, 70, 239, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(217, 70, 239, 0.3);"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">star</span> <strong>Récompense :</strong> Vous obtiendrez l'item spécial "${data.currentRoom.alterationSpecialItemReward || 'Item'}" !</div>`;
                             }
 
-                            if (parts.length > 0) {
-                                btnText = `Toucher (${parts.join(', ')})`;
-                            } else {
-                                btnText = `Toucher`;
-                            }
+                            btnText = `Accepter`;
                         } else if (data.currentRoom.alterationType === 'ITEM') {
                             btnText = `Donner l'item et Toucher`;
                             warningHtml = `<div style="color: #ef4444; font-size: 0.85rem; margin-top: 0.5rem; text-align: center; background: rgba(239, 68, 68, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3);"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">warning</span> <strong>Attention :</strong> L'item "${data.currentRoom.alterationRequiredItem || 'spécial'}" sera définitivement détruit de l'inventaire d'un de vos héros s'il accepte cette offre.</div>`;
+                            
+                            if (data.currentRoom.alterationRewardType === 'SPIRITUAL_XP') {
+                                specialItemHtml = `<div style="color: #38bdf8; font-size: 0.85rem; margin-top: 0.5rem; text-align: center; background: rgba(56, 189, 248, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.3);"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">star</span> <strong>Récompense :</strong> Vous obtiendrez +${data.currentRoom.alterationSpiritualXpReward || 0} XP Spirituel !</div>`;
+                            } else if (data.currentRoom.alterationRewardType === 'SPECIAL_ITEM') {
+                                specialItemHtml = `<div style="color: #d946ef; font-size: 0.85rem; margin-top: 0.5rem; text-align: center; background: rgba(217, 70, 239, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(217, 70, 239, 0.3);"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">star</span> <strong>Récompense :</strong> Vous obtiendrez l'item spécial "${data.currentRoom.alterationSpecialItemReward || 'Item'}" !</div>`;
+                            }
                         } else if (data.currentRoom.alterationType === 'AUTEL') {
                             btnText = `Sacrifier l'Objet`;
                             let spColor = data.currentRoom.altarRequiredSpirituality === 'TENEBRES' ? '#d946ef' : data.currentRoom.altarRequiredSpirituality === 'ESPRIT' ? '#3b82f6' : '#f59e0b';
                             warningHtml = `<div style="color: ${spColor}; font-size: 0.85rem; margin-top: 0.5rem; text-align: center; background: ${spColor}1A; padding: 0.5rem; border-radius: 6px; border: 1px solid ${spColor}4D;"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">warning</span> <strong>Offrande :</strong> Cet autel réclame le sacrifice d'un <strong>Objet Magique</strong> de spiritualité <strong>${data.currentRoom.altarRequiredSpirituality}</strong>.</div>`;
+
+                            let altarRewardHtml = '';
+                            if (data.currentRoom.altarRewardType === 'GOLD') {
+                                altarRewardHtml = `<div style="color: #fbbf24; font-weight: bold; margin-top: 0.5rem; text-align: center; background: rgba(251, 191, 36, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(251, 191, 36, 0.3);"><span class="material-symbols-outlined" style="vertical-align: middle; font-size: 1.1rem; margin-right: 0.2rem;">paid</span> <strong>Récompense :</strong> +${data.currentRoom.altarRewardValue} Or</div>`;
+                            } else if (data.currentRoom.altarRewardType === 'XP') {
+                                altarRewardHtml = `<div style="color: #38bdf8; font-weight: bold; margin-top: 0.5rem; text-align: center; background: rgba(56, 189, 248, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.3);"><span class="material-symbols-outlined" style="vertical-align: middle; font-size: 1.1rem; margin-right: 0.2rem;">star</span> <strong>Récompense :</strong> +${data.currentRoom.altarRewardValue} XP de Spiritualité (pour le groupe)</div>`;
+                            } else if (data.currentRoom.altarRewardType === 'ITEM') {
+                                const eq = data.currentRoom.altarRewardEquipment;
+                                if (eq) {
+                                    const rarityColors = { 'COMMUN': '#94a3b8', 'RARE': '#38bdf8', 'EPIQUE': '#c084fc', 'LEGENDAIRE': '#fbbf24' };
+                                    const rarityColor = rarityColors[eq.rarity] || '#94a3b8';
+                                    const tooltipDataHtml = typeof generateEquipmentTooltipHTML === 'function' ? generateEquipmentTooltipHTML(eq) : '';
+                                    const tooltipAttrs = tooltipDataHtml ? 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"' : '';
+                                    altarRewardHtml = `<div style="margin-top: 0.5rem; text-align: center; background: rgba(192, 132, 252, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(192, 132, 252, 0.3);"><span style="color: #cbd5e1; margin-right: 0.5rem;"><strong>Récompense :</strong></span> <span ${tooltipAttrs} style="color: ${rarityColor}; font-weight: bold; cursor: help; border-bottom: 1px dashed ${rarityColor}; position: relative;">${eq.name}${tooltipDataHtml ? `<template class="tooltip-data">${tooltipDataHtml}</template>` : ''}</span></div>`;
+                                } else {
+                                    altarRewardHtml = `<div style="color: #c084fc; font-weight: bold; margin-top: 0.5rem; text-align: center; background: rgba(192, 132, 252, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(192, 132, 252, 0.3);"><span class="material-symbols-outlined" style="vertical-align: middle; font-size: 1.1rem; margin-right: 0.2rem;">star</span> <strong>Récompense :</strong> Équipement mystère</div>`;
+                                }
+                            }
+                            warningHtml += altarRewardHtml;
 
                             specialItemHtml = `<div id="altarAnomalySelectContainer" style="margin-top: 1rem; text-align: center; width: 100%;">
                                 <span class="material-symbols-outlined spin">sync</span> Chargement de vos objets magiques...

@@ -57,6 +57,8 @@ public class Salle {
     private String altarRequiredSpirituality; // e.g. "TENEBRES", "ESPRIT", "KARMA"
     private String altarRewardType; // "GOLD", "ITEM", "XP"
     private int altarRewardValue; // Value of Gold/XP, or Equipment ID
+    @jakarta.persistence.Transient
+    private generation.grimoire.entity.Equipment altarRewardEquipment;
 
     // IF PIEGE
     private String trapType; // "PV", "MANA"

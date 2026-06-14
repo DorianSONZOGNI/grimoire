@@ -461,11 +461,11 @@ public class CombatService {
             } else if ("XP".equals(rewardType)) {
                 for (Personnage p : session.getPlayers()) {
                     if (p.getHealthCurrent() > 0) {
-                        p.setExperience(p.getExperience() + rewardValue);
+                        p.setSpiritualiteExperience(p.getSpiritualiteExperience() + rewardValue);
                         personnageRepository.save(p);
                     }
                 }
-                session.addLog("L'autel accorde " + rewardValue + " XP à tous les héros !");
+                session.addLog("L'autel accorde " + rewardValue + " XP de Spiritualité à tous les héros !");
             } else if ("ITEM".equals(rewardType)) {
                 generation.grimoire.entity.Equipment template = equipmentRepository.findById((long) rewardValue).orElse(null);
                 if (template != null) {
@@ -904,8 +904,14 @@ public class CombatService {
                 room.setAlterationType("AUTEL");
                 String spirituality = selectedOutcome.path("altarSpirituality").asText("TENEBRES");
                 room.setAltarRequiredSpirituality(spirituality);
-                room.setAltarRewardType(selectedOutcome.path("altarRewardType").asText("GOLD"));
-                room.setAltarRewardValue(selectedOutcome.path("altarRewardValue").asInt(100));
+                String rewardType = selectedOutcome.path("altarRewardType").asText("GOLD");
+                room.setAltarRewardType(rewardType);
+                int rewardValue = selectedOutcome.path("altarRewardValue").asInt(100);
+                room.setAltarRewardValue(rewardValue);
+                if ("ITEM".equals(rewardType)) {
+                    generation.grimoire.entity.Equipment eq = equipmentRepository.findById((long) rewardValue).orElse(null);
+                    room.setAltarRewardEquipment(eq);
+                }
                 room.setEventText("Un autel mystique (" + spirituality + ") réclame une offrande magique.");
             } else if ("TRESOR".equals(type)) {
                 session.addLog("Vous avez ouvert la porte et trouvé une montagne d'or !");
