@@ -603,11 +603,21 @@ function renderRooms() {
                     </div>
                     <div style="margin-top: 0.75rem;">
                         <label style="font-size: 0.8rem; color: #94a3b8;">Possibilité offerte</label>
-                        <select class="form-control" onchange="updateRoomField(${rIndex}, 'alterationType', this.value); renderRooms();">
-                            <option value="VIE_XP" ${altType === 'VIE_XP' ? 'selected' : ''}>Don de vie et/ou d'xp</option>
-                            <option value="ITEM" ${altType === 'ITEM' ? 'selected' : ''}>Don d'un item spécial</option>
-                            <option value="RIEN" ${altType === 'RIEN' ? 'selected' : ''}>Ne rien faire</option>
-                        </select>
+                        <div class="custom-select-wrapper" id="room_alt_type_wrapper_${rIndex}" style="width: 100%; z-index: ${102 - rIndex}; margin: 0; margin-top: 0.2rem;">
+                            <div class="custom-select-trigger" onclick="const w = document.getElementById('room_alt_type_wrapper_${rIndex}'); document.querySelectorAll('.custom-select-wrapper.open').forEach(el => { if(el !== w) el.classList.remove('open'); }); w.classList.toggle('open');" style="padding: 0.6rem 1rem; border-radius: 8px;">
+                                <span class="cs-label" id="room_alt_type_label_${rIndex}">
+                                    ${altType === 'VIE_XP' ? '<span class="material-symbols-outlined cs-icon" style="color: #ef4444;">favorite</span> Don de vie et/ou d\'xp' : 
+                                      (altType === 'ITEM' ? '<span class="material-symbols-outlined cs-icon" style="color: #d946ef;">diamond</span> Don d\'un item spécial' : 
+                                      '<span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">block</span> Ne rien faire')}
+                                </span>
+                                <span class="material-symbols-outlined">expand_more</span>
+                            </div>
+                            <div class="custom-select-options" id="room_alt_type_options_${rIndex}">
+                                <div class="custom-option" onclick="updateRoomField(${rIndex}, 'alterationType', 'VIE_XP'); renderRooms();"><span class="material-symbols-outlined cs-icon" style="color: #ef4444;">favorite</span> Don de vie et/ou d'xp</div>
+                                <div class="custom-option" onclick="updateRoomField(${rIndex}, 'alterationType', 'ITEM'); renderRooms();"><span class="material-symbols-outlined cs-icon" style="color: #d946ef;">diamond</span> Don d'un item spécial</div>
+                                <div class="custom-option" onclick="updateRoomField(${rIndex}, 'alterationType', 'RIEN'); renderRooms();"><span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">block</span> Ne rien faire</div>
+                            </div>
+                        </div>
                     </div>
                 `;
 
@@ -626,10 +636,19 @@ function renderRooms() {
                     </div>
                     <div style="margin-top: 0.75rem; background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 4px;">
                         <label style="font-size: 0.8rem; color: #fbbf24;">Récompense en échange</label>
-                        <select class="form-control" onchange="updateRoomField(${rIndex}, 'alterationRewardType', this.value); renderRooms();" style="margin-bottom: 0.5rem;">
-                            <option value="SPIRITUAL_XP" ${rewType === 'SPIRITUAL_XP' ? 'selected' : ''}>XP de Spiritualité</option>
-                            <option value="SPECIAL_ITEM" ${rewType === 'SPECIAL_ITEM' ? 'selected' : ''}>Item Spécial</option>
-                        </select>
+                        <div class="custom-select-wrapper" id="room_alt_reward_type_wrapper_${rIndex}" style="width: 100%; z-index: ${101 - rIndex}; margin: 0; margin-top: 0.2rem; margin-bottom: 0.5rem;">
+                            <div class="custom-select-trigger" onclick="const w = document.getElementById('room_alt_reward_type_wrapper_${rIndex}'); document.querySelectorAll('.custom-select-wrapper.open').forEach(el => { if(el !== w) el.classList.remove('open'); }); w.classList.toggle('open');" style="padding: 0.6rem 1rem; border-radius: 8px;">
+                                <span class="cs-label" id="room_alt_reward_type_label_${rIndex}">
+                                    ${rewType === 'SPIRITUAL_XP' ? '<span class="material-symbols-outlined cs-icon" style="color: #8b5cf6;">blur_on</span> XP de Spiritualité' : 
+                                      '<span class="material-symbols-outlined cs-icon" style="color: #d946ef;">diamond</span> Item Spécial'}
+                                </span>
+                                <span class="material-symbols-outlined">expand_more</span>
+                            </div>
+                            <div class="custom-select-options" id="room_alt_reward_type_options_${rIndex}">
+                                <div class="custom-option" onclick="updateRoomField(${rIndex}, 'alterationRewardType', 'SPIRITUAL_XP'); renderRooms();"><span class="material-symbols-outlined cs-icon" style="color: #8b5cf6;">blur_on</span> XP de Spiritualité</div>
+                                <div class="custom-option" onclick="updateRoomField(${rIndex}, 'alterationRewardType', 'SPECIAL_ITEM'); renderRooms();"><span class="material-symbols-outlined cs-icon" style="color: #d946ef;">diamond</span> Item Spécial</div>
+                            </div>
+                        </div>
                         ${rewType === 'SPIRITUAL_XP' ? `
                             <label style="font-size: 0.8rem; color: #94a3b8;">Gain XP Spiritualité</label>
                             <input type="number" class="form-control" value="${room.alterationSpiritualXpReward || 0}" onchange="updateRoomField(${rIndex}, 'alterationSpiritualXpReward', parseInt(this.value))">
