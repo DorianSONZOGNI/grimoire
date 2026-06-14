@@ -76,7 +76,7 @@ async function loadDungeons() {
                     });
                 }
 
-                const sallesData = JSON.stringify(d.salles || []).replace(/"/g, '&quot;');
+                const sallesData = JSON.stringify(d.salles || []).replace(/"/g, '&quot;').replace(/'/g, "\\'");
 
                 list.innerHTML += `
                     <div class="dungeon-card" onclick="openPrepInterface(${d.id}, '${d.name.replace(/'/g, "\\'")}', '${sallesData}', ${d.maxHeroes || 1})">

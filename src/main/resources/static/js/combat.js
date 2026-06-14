@@ -32,6 +32,22 @@ function getSpellColor(sp) {
 
 let sessionId = null;
 let currentSessionData = null;
+let isProcessing = false;
+
+function setButtonsProcessing(isProc) {
+    const buttons = document.querySelectorAll('.action-btn, .btn');
+    buttons.forEach(btn => {
+        btn.disabled = isProc;
+        if (isProc) {
+            btn.style.opacity = '0.5';
+            btn.style.pointerEvents = 'none';
+        } else {
+            btn.style.opacity = '';
+            btn.style.pointerEvents = '';
+        }
+    });
+}
+
 let selectedTargetIndex = null;
 let selectedAllyIndex = -1;
 let previousPlayerXP = {};
@@ -87,7 +103,7 @@ function renderAndAnimateXPCards(containerId, players, prefix) {
         let oldSpiritExp = previousPlayerSpiritXP[p.id] !== undefined ? previousPlayerSpiritXP[p.id] : (p.spiritualiteExperience || 0);
         let oldSpiritStats = getSpiritExpStats(oldSpiritExp);
 
-        cardsHtml += `
+        let cardsHtmlPart = `
             <div id="${prefix}-xp-card-${p.id}" style="background: rgba(0,0,0,0.4); padding: 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); text-align: center; width: 180px; position: relative; overflow: hidden; transition: all 0.5s; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8); display: flex; flex-direction: column; gap: 0.3rem;">
                 <div style="color: #e2e8f0; font-weight: bold; margin-bottom: 0.3rem; text-overflow: ellipsis; overflow: hidden; white-space: nowrap;">${p.name}</div>
                 
@@ -96,15 +112,21 @@ function renderAndAnimateXPCards(containerId, players, prefix) {
                     <div id="${prefix}-xp-fill-${p.id}" style="height: 100%; width: ${Math.min(100, oldStats.progress)}%; background: #10b981; transition: box-shadow 0.3s;"></div>
                 </div>
                 <div id="${prefix}-xp-text-${p.id}" style="font-size: 0.7rem; color: #94a3b8; font-family: monospace;">${oldExp} / ${oldStats.level === 5 ? 'MAX' : oldStats.nextLvlXp} XP</div>
-                
+        `;
+
+        if (oldSpiritExp > 0 || (p.spiritualiteExperience || 0) > 0 || prefix === 'treasure') {
+            cardsHtmlPart += `
                 <div style="margin-top: 0.2rem;"></div>
                 <div id="${prefix}-spirit-lvl-${p.id}" style="color: #fb923c; font-size: 0.8rem; font-weight: 600; transition: color 0.3s, transform 0.3s;">Spirit Niv. ${oldSpiritStats.level}</div>
                 <div style="width: 100%; background: #334155; border-radius: 4px; height: 6px;">
                     <div id="${prefix}-spirit-fill-${p.id}" style="height: 100%; width: ${Math.min(100, oldSpiritStats.progress)}%; background: #f59e0b; transition: box-shadow 0.3s;"></div>
                 </div>
                 <div id="${prefix}-spirit-text-${p.id}" style="font-size: 0.7rem; color: #94a3b8; font-family: monospace;">${oldSpiritExp} / ${oldSpiritStats.level === 3 ? 'MAX' : oldSpiritStats.nextLvlXp} XP</div>
-            </div>
-        `;
+            `;
+        }
+
+        cardsHtmlPart += `</div>`;
+        cardsHtml += cardsHtmlPart;
     });
 
     container.innerHTML += cardsHtml;
@@ -542,18 +564,11 @@ async function doAction(spellId = null) {
         setTimeout(() => {
             selectedAllyIndex = -1; // Reset after action completes
             updateUI(data);
-            if (!data.finished && data.currentRoom.type === 'COMBAT') {
-                document.getElementById('btnAttack').disabled = false;
-                const btnEnd = document.getElementById('btnEndTurn');
-                if (btnEnd) btnEnd.disabled = false;
-            }
         }, 600);
 
     } catch (e) {
         console.error(e);
-        document.getElementById('btnAttack').disabled = false;
-        const btnEnd = document.getElementById('btnEndTurn');
-        if (btnEnd) btnEnd.disabled = false;
+        updateUI(currentSessionData);
     }
 }
 
@@ -576,21 +591,19 @@ async function endTurn() {
 
         setTimeout(() => {
             updateUI(data);
-            if (!data.finished && data.currentRoom.type === 'COMBAT') {
-                document.getElementById('btnEndTurn').disabled = false;
-                document.getElementById('btnAttack').disabled = false;
-            }
         }, 600);
 
     } catch (e) {
         console.error(e);
-        document.getElementById('btnEndTurn').disabled = false;
-        document.getElementById('btnAttack').disabled = false;
+        updateUI(currentSessionData);
     }
 }
 
 async function nextRoom() {
-    if (!sessionId) return;
+    if (!sessionId || isProcessing) return;
+    isProcessing = true;
+    setButtonsProcessing(true);
+    
     document.getElementById('eventOverlay').classList.remove('show');
     const vicOverlay = document.getElementById('combatVictoryOverlay');
     if (vicOverlay) vicOverlay.classList.remove('show');
@@ -609,11 +622,17 @@ async function nextRoom() {
     } catch (e) {
         console.error(e);
         showNotif("Erreur lors du passage à la salle suivante", true);
+    } finally {
+        isProcessing = false;
+        setButtonsProcessing(false);
     }
 }
 
 async function openStrangeDoor() {
-    if (!sessionId) return;
+    if (!sessionId || isProcessing) return;
+    isProcessing = true;
+    setButtonsProcessing(true);
+
     document.getElementById('eventOverlay').classList.remove('show');
     const vicOverlay = document.getElementById('combatVictoryOverlay');
     if (vicOverlay) vicOverlay.classList.remove('show');
@@ -632,11 +651,16 @@ async function openStrangeDoor() {
     } catch (e) {
         console.error(e);
         showNotif("Erreur lors de l'ouverture de la porte", true);
+    } finally {
+        isProcessing = false;
+        setButtonsProcessing(false);
     }
 }
 
 async function acceptAlteration() {
-    if (!sessionId) return;
+    if (!sessionId || isProcessing) return;
+    isProcessing = true;
+    setButtonsProcessing(true);
     try {
         const res = await fetch(`/api/pve/combat/${sessionId}/alteration-accept`, {
             method: 'POST'
@@ -644,6 +668,7 @@ async function acceptAlteration() {
         if (!res.ok) {
             const err = await res.text();
             showNotif(err || "Action impossible", true);
+            isProcessing = false;
             return;
         }
         const data = await res.json();
@@ -658,11 +683,16 @@ async function acceptAlteration() {
     } catch (e) {
         console.error(e);
         showNotif("Erreur lors de l'altération", true);
+    } finally {
+        isProcessing = false;
+        setButtonsProcessing(false);
     }
 }
 
 async function useRope() {
-    if (!sessionId) return;
+    if (!sessionId || isProcessing) return;
+    isProcessing = true;
+    setButtonsProcessing(true);
     try {
         const res = await fetch(`/api/pve/combat/${sessionId}/use-rope`, {
             method: 'POST'
@@ -670,6 +700,7 @@ async function useRope() {
         if (!res.ok) {
             const err = await res.text();
             showNotif(err || "Action impossible", true);
+            isProcessing = false;
             return;
         }
         const data = await res.json();
@@ -677,6 +708,9 @@ async function useRope() {
     } catch (e) {
         console.error(e);
         showNotif("Erreur lors de l'utilisation de la corde", true);
+    } finally {
+        isProcessing = false;
+        setButtonsProcessing(false);
     }
 }
 
@@ -785,7 +819,9 @@ function generateEquipmentTooltipHTML(eq) {
 }
 
 async function openChest() {
-    if (!sessionId) return;
+    if (!sessionId || isProcessing) return;
+    isProcessing = true;
+    setButtonsProcessing(true);
     try {
         const btn = document.getElementById('btnOpenChest');
         if (btn) {
@@ -797,6 +833,7 @@ async function openChest() {
         if (!res.ok) {
             const err = await res.text();
             alert("Erreur : " + err);
+            isProcessing = false;
             return;
         }
 
@@ -814,6 +851,9 @@ async function openChest() {
     } catch (e) {
         console.error(e);
         alert("Erreur lors de l'ouverture du coffre.");
+    } finally {
+        isProcessing = false;
+        setButtonsProcessing(false);
     }
 }
 

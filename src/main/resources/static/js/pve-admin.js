@@ -647,7 +647,7 @@ function renderRooms() {
                                     <div class="custom-select-options" style="max-height: 200px; overflow-y: auto;">
                                         ${allAnomalies.map(a => {
                                             const color = a.spiritualite === 'TENEBRES' ? '#d946ef' : a.spiritualite === 'ESPRIT' ? '#3b82f6' : a.spiritualite === 'KARMA' ? '#f59e0b' : '#94a3b8';
-                                            return `<div class="custom-option" onclick="updateRoomField(${rIndex}, 'alterationSpecialItemReward', '${a.name.replace(/'/g, "\\'")}')"><span class="material-symbols-outlined cs-icon" style="color: ${color};">star</span> ${a.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${a.level || 1})</span></div>`;
+                                            return `<div class="custom-option" onclick="updateRoomField(${rIndex}, 'alterationSpecialItemReward', '${a.name.replace(/'/g, "\\'")}'); renderRooms();"><span class="material-symbols-outlined cs-icon" style="color: ${color};">star</span> ${a.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${a.level || 1})</span></div>`;
                                         }).join('')}
                                     </div>
                                 </div>
@@ -676,7 +676,7 @@ function renderRooms() {
                                 <div class="custom-select-options" style="max-height: 200px; overflow-y: auto;">
                                     ${allAnomalies.map(a => {
                                         const color = a.spiritualite === 'TENEBRES' ? '#d946ef' : a.spiritualite === 'ESPRIT' ? '#3b82f6' : a.spiritualite === 'KARMA' ? '#f59e0b' : '#94a3b8';
-                                        return `<div class="custom-option" onclick="updateRoomField(${rIndex}, 'alterationRequiredItem', '${a.name.replace(/'/g, "\\'")}')"><span class="material-symbols-outlined cs-icon" style="color: ${color};">star</span> ${a.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${a.level || 1})</span></div>`;
+                                        return `<div class="custom-option" onclick="updateRoomField(${rIndex}, 'alterationRequiredItem', '${a.name.replace(/'/g, "\\'")}'); renderRooms();"><span class="material-symbols-outlined cs-icon" style="color: ${color};">star</span> ${a.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${a.level || 1})</span></div>`;
                                     }).join('')}
                                 </div>
                             </div>

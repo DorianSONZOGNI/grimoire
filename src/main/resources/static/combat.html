@@ -1007,11 +1007,11 @@
                 <span class="material-symbols-outlined">hourglass_top</span>
                 Fin de Tour
             </button>
-            <a href="/dungeons.html" class="action-btn flee"
-                style="text-decoration: none; width: 100%; justify-content: center; white-space: nowrap;">
+            <button onclick="document.getElementById('fleeConfirmModal').classList.add('show')" class="action-btn flee"
+                style="width: 100%; justify-content: center; white-space: nowrap;">
                 <span class="material-symbols-outlined">directions_run</span>
                 Fuir
-            </a>
+            </button>
         </div>
 
 
@@ -1020,6 +1020,36 @@
     <div id="combatNotif" class="combat-notif">
         <span class="material-symbols-outlined notif-icon">info</span>
         <span id="combatNotifText"></span>
+    </div>
+
+    <!-- Target Selection Context Menu -->
+    <div id="targetContextMenu" class="context-menu" style="display: none;"></div>
+
+    <div id="fleeConfirmModal" class="vault-modal-overlay">
+        <div class="vault-modal-content small"
+            style="border-color: rgba(239, 68, 68, 0.4); max-width: 400px; padding: 2rem;">
+            <div class="vault-modal-icon"
+                style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 2px solid rgba(239, 68, 68, 0.2); width: 64px; height: 64px; border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto;">
+                <span class="material-symbols-outlined" style="font-size: 2rem;">directions_run</span>
+            </div>
+            <div style="font-size: 1.2rem; font-weight: 600; font-family: 'Outfit', sans-serif; color: #fff; margin-bottom: 0.8rem; text-align: center;">
+                Fuir le donjon ?
+            </div>
+            <div style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 1.5rem; line-height: 1.5; text-align: center;">
+                Êtes-vous sûr de vouloir abandonner l'exploration et fuir ? Toute progression dans ce donjon sera perdue.
+            </div>
+            <div style="display: flex; gap: 1rem;">
+                <button onclick="document.getElementById('fleeConfirmModal').classList.remove('show')"
+                    style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 0.6rem; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.2s ease;"
+                    onmouseover="this.style.background='rgba(255,255,255,0.1)'"
+                    onmouseout="this.style.background='rgba(255,255,255,0.05)'">Annuler</button>
+                <a href="/dungeons.html"
+                    style="text-decoration: none; display: flex; align-items: center; justify-content: center; flex: 1; background: #ef4444; border: none; color: #fff; padding: 0.6rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);"
+                    onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter='none'">
+                    Oui, fuir
+                </a>
+            </div>
+        </div>
     </div>
 
     <!-- Buy Confirmation Modal -->

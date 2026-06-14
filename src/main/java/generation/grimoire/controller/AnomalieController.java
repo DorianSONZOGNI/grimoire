@@ -53,7 +53,7 @@ public class AnomalieController {
         }
 
         if (anomalie.getId() != null) {
-            Optional<Anomalie> existingOpt = anomalieRepository.findById(anomalie.getId());
+            Optional<Anomalie> existingOpt = anomalieRepository.findById(java.util.Objects.requireNonNull(anomalie.getId()));
             if (existingOpt.isPresent()) {
                 Anomalie existing = existingOpt.get();
                 if (!existing.getOwnerUsername().equals(username)) {
@@ -81,7 +81,7 @@ public class AnomalieController {
             return ResponseEntity.status(401).body("Non autorisé");
         }
         
-        Optional<Anomalie> opt = anomalieRepository.findById(id);
+        Optional<Anomalie> opt = anomalieRepository.findById(java.util.Objects.requireNonNull(id));
         if (opt.isPresent()) {
             Anomalie a = opt.get();
             if (a.getOwnerUsername().equals(username)) {

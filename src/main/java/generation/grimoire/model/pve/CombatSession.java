@@ -10,7 +10,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
-import java.util.stream.Collectors;
 
 @Data
 public class CombatSession {
@@ -18,31 +17,31 @@ public class CombatSession {
     private Long dungeonId;
     private Donjon donjon;
     private List<Personnage> players = new ArrayList<>();
-    
+
     // Initiative Queue
     private List<InitiativeEntry> turnOrder = new ArrayList<>();
     private int currentTurnIndex = 0;
-    
+
     private int currentRoomIndex = 0;
     private Salle currentRoom;
-    
+
     private List<Spell> availableSpells = new ArrayList<>();
-    
+
     /** Disponibilité de chaque sort (grisage côté frontend) */
     private List<SpellAvailability> spellAvailability = new ArrayList<>();
 
     // Valid only if currentRoom is COMBAT
     private List<ActiveMonster> enemies = new ArrayList<>();
-    
+
     private int turnNumber = 1;
     private boolean isFinished = false;
     private boolean playerWon = false;
     private boolean roomEventCompleted = false;
     private Set<Integer> purchasedMerchantItems = new HashSet<>();
-    
+
     private int totalGoldAccumulated = 0;
     private int totalExpAccumulated = 0;
-    
+
     private List<String> combatLog = new ArrayList<>();
 
     public CombatSession(String sessionId, Donjon donjon, List<Personnage> players) {
@@ -50,40 +49,42 @@ public class CombatSession {
         this.dungeonId = donjon.getId();
         this.donjon = donjon;
         this.players = players;
-        
+
         loadRoom(0);
     }
-    
+
     public Personnage getActivePlayer() {
-        if (turnOrder.isEmpty() || currentTurnIndex >= turnOrder.size()) return null;
+        if (turnOrder.isEmpty() || currentTurnIndex >= turnOrder.size())
+            return null;
         InitiativeEntry current = turnOrder.get(currentTurnIndex);
         if (current.isPlayer() && current.getIndex() >= 0 && current.getIndex() < players.size()) {
             return players.get(current.getIndex());
         }
         return null;
     }
-    
+
     public ActiveMonster getActiveEnemy() {
-        if (turnOrder.isEmpty() || currentTurnIndex >= turnOrder.size()) return null;
+        if (turnOrder.isEmpty() || currentTurnIndex >= turnOrder.size())
+            return null;
         InitiativeEntry current = turnOrder.get(currentTurnIndex);
         if (!current.isPlayer() && current.getIndex() >= 0 && current.getIndex() < enemies.size()) {
             return enemies.get(current.getIndex());
         }
         return null;
     }
-    
+
     public void advanceTurnIndex() {
         currentTurnIndex++;
     }
-    
+
     public boolean isRoundFinished() {
         return currentTurnIndex >= turnOrder.size();
     }
-    
+
     public boolean areAllPlayersDead() {
         return players.stream().allMatch(p -> p.getHealthCurrent() <= 0);
     }
-    
+
     public void loadRoom(int index) {
         this.currentRoomIndex = index;
         this.roomEventCompleted = false;
@@ -101,7 +102,7 @@ public class CombatSession {
     public void addLog(String message) {
         this.combatLog.add(message);
     }
-    
+
     public boolean areAllEnemiesDead() {
         return enemies.stream().allMatch(ActiveMonster::isDead);
     }

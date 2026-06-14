@@ -132,7 +132,7 @@ public class PvEAdminController {
                                 entry.setSalle(s);
                                 
                                 if (lDto.getEquipmentId() != null) {
-                                    generation.grimoire.entity.Equipment eq = equipmentRepository.findById(lDto.getEquipmentId()).orElse(null);
+                                    generation.grimoire.entity.Equipment eq = equipmentRepository.findById(java.util.Objects.requireNonNull(lDto.getEquipmentId())).orElse(null);
                                     entry.setEquipment(eq);
                                 }
                                 
