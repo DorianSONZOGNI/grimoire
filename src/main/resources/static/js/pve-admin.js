@@ -575,10 +575,17 @@ function renderRooms() {
                 shopHtml += `</div>
                     <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem; background: rgba(0,0,0,0.2); padding: 0.8rem; border-radius: 6px;">
                         <div style="display: flex; gap: 0.5rem; align-items: stretch; position: relative;">
-                            <select id="room_merchant_type_${rIndex}" class="form-control" style="flex: 1; max-width: 120px;" onchange="toggleMerchantItemType(${rIndex}, this.value)">
-                                <option value="EQ">Équipement</option>
-                                <option value="SPECIAL">Item Spécial</option>
-                            </select>
+                            <div class="custom-select-wrapper" id="room_merchant_type_wrapper_${rIndex}" style="flex: 1; max-width: 120px; z-index: ${100 - rIndex}; margin: 0;">
+                                <div class="custom-select-trigger" onclick="toggleMerchantTypeSelect(${rIndex})" style="padding: 0.6rem 1rem; border-radius: 8px;">
+                                    <span class="cs-label" id="room_merchant_type_label_${rIndex}">Équipement</span>
+                                    <span class="material-symbols-outlined">expand_more</span>
+                                </div>
+                                <div class="custom-select-options" id="room_merchant_type_options_${rIndex}">
+                                    <div class="custom-option" onclick="selectMerchantType(${rIndex}, 'EQ', 'Équipement')">Équipement</div>
+                                    <div class="custom-option" onclick="selectMerchantType(${rIndex}, 'SPECIAL', 'Item Spécial')">Item Spécial</div>
+                                </div>
+                                <input type="hidden" id="room_merchant_type_${rIndex}" value="EQ">
+                            </div>
                             
                             <!-- Mode Equipement -->
                             <div class="custom-select-wrapper" id="room_loot_select_wrapper_${rIndex}" style="flex: 2; z-index: ${100 - rIndex}; margin: 0;">
@@ -600,17 +607,37 @@ function renderRooms() {
                             </div>
                             
                             <!-- Mode Spécial -->
-                            <select id="room_merchant_special_${rIndex}" class="form-control" style="flex: 2; display: none;">
-                                <option value="">Choisir un item spécial...</option>
-                                ${allAnomalies.map(a => `<option value="${a.name}">${a.name}</option>`).join('')}
-                            </select>
+                            <div class="custom-select-wrapper" id="room_merchant_special_wrapper_${rIndex}" style="flex: 2; display: none; z-index: ${100 - rIndex}; margin: 0;">
+                                <div class="custom-select-trigger" onclick="toggleMerchantSpecialSelect(${rIndex})" style="padding: 0.6rem 1rem; border-radius: 8px;">
+                                    <span class="cs-label" id="room_merchant_special_label_${rIndex}"><span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">diamond</span> Choisir un item spécial...</span>
+                                    <span class="material-symbols-outlined">expand_more</span>
+                                </div>
+                                <div class="custom-select-options" id="room_merchant_special_options_${rIndex}" style="max-height: 200px; overflow-y: auto;">
+                                    <div class="custom-option" onclick="selectMerchantSpecial(${rIndex}, '', 'Choisir un item spécial...')"><span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">diamond</span> Choisir un item spécial...</div>
+                                    ${allAnomalies.map(a => {
+                                        const color = a.spiritualite === 'TENEBRES' ? '#d946ef' : a.spiritualite === 'ESPRIT' ? '#3b82f6' : a.spiritualite === 'KARMA' ? '#f59e0b' : '#94a3b8';
+                                        return `<div class="custom-option" onclick="selectMerchantSpecial(${rIndex}, '${a.name.replace(/'/g, "\\'")}', '${a.name.replace(/'/g, "\\'")}', '${color}')"><span class="material-symbols-outlined cs-icon" style="color: ${color};">diamond</span> ${a.name}</div>`;
+                                    }).join('')}
+                                </div>
+                                <input type="hidden" id="room_merchant_special_${rIndex}" value="">
+                            </div>
                         </div>
                         <div style="display: flex; gap: 0.5rem; align-items: stretch; height: 38px;">
                             <input type="number" id="room_merchant_gold_${rIndex}" class="form-control" style="flex: 1;" placeholder="Prix (Or)" min="0">
-                            <select id="room_merchant_cost_item_${rIndex}" class="form-control" style="flex: 1;">
-                                <option value="">Prix Item Spécial (option)</option>
-                                ${allAnomalies.map(a => `<option value="${a.name}">${a.name}</option>`).join('')}
-                            </select>
+                            <div class="custom-select-wrapper" id="room_merchant_cost_item_wrapper_${rIndex}" style="flex: 1.5; z-index: ${99 - rIndex}; margin: 0;">
+                                <div class="custom-select-trigger" onclick="toggleMerchantCostSelect(${rIndex})" style="padding: 0.6rem 1rem; border-radius: 8px;">
+                                    <span class="cs-label" id="room_merchant_cost_label_${rIndex}"><span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">diamond</span> Item spécial</span>
+                                    <span class="material-symbols-outlined">expand_more</span>
+                                </div>
+                                <div class="custom-select-options" id="room_merchant_cost_options_${rIndex}" style="max-height: 200px; overflow-y: auto;">
+                                    <div class="custom-option" onclick="selectMerchantCost(${rIndex}, '', 'Item spécial')"><span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">diamond</span> Item spécial</div>
+                                    ${allAnomalies.map(a => {
+                                        const color = a.spiritualite === 'TENEBRES' ? '#d946ef' : a.spiritualite === 'ESPRIT' ? '#3b82f6' : a.spiritualite === 'KARMA' ? '#f59e0b' : '#94a3b8';
+                                        return `<div class="custom-option" onclick="selectMerchantCost(${rIndex}, '${a.name.replace(/'/g, "\\'")}', '${a.name.replace(/'/g, "\\'")}', '${color}')"><span class="material-symbols-outlined cs-icon" style="color: ${color};">diamond</span> ${a.name}</div>`;
+                                    }).join('')}
+                                </div>
+                                <input type="hidden" id="room_merchant_cost_item_${rIndex}" value="">
+                            </div>
                             <button type="button" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; padding: 0 1.2rem; font-size: 0.9rem; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; justify-content: center;" onclick="addMerchantItemToRoom(${rIndex})">
                                 <span class="material-symbols-outlined" style="font-size: 1.1rem;">add</span>
                             </button>
@@ -1107,7 +1134,7 @@ window.selectLootOption = function(rIndex, eqId, eqName, icon, iconColor, rarity
 
 window.toggleMerchantItemType = function(rIndex, type) {
     const eqWrapper = document.getElementById('room_loot_select_wrapper_' + rIndex);
-    const specInput = document.getElementById('room_merchant_special_' + rIndex);
+    const specInput = document.getElementById('room_merchant_special_wrapper_' + rIndex);
     if (type === 'EQ') {
         eqWrapper.style.display = 'block';
         specInput.style.display = 'none';
@@ -1115,6 +1142,79 @@ window.toggleMerchantItemType = function(rIndex, type) {
         eqWrapper.style.display = 'none';
         specInput.style.display = 'block';
     }
+};
+
+window.toggleMerchantTypeSelect = function(rIndex) {
+    const wrapper = document.getElementById(`room_merchant_type_wrapper_${rIndex}`);
+    if (wrapper) {
+        document.querySelectorAll('.custom-select-wrapper').forEach(w => {
+            if (w !== wrapper) w.classList.remove('open');
+        });
+        wrapper.classList.toggle('open');
+    }
+};
+
+window.selectMerchantType = function(rIndex, value, labelStr) {
+    const select = document.getElementById(`room_merchant_type_${rIndex}`);
+    if (select) select.value = value;
+    
+    const label = document.getElementById(`room_merchant_type_label_${rIndex}`);
+    if (label) label.innerHTML = labelStr;
+    
+    document.getElementById(`room_merchant_type_wrapper_${rIndex}`).classList.remove('open');
+    toggleMerchantItemType(rIndex, value);
+};
+
+window.toggleMerchantSpecialSelect = function(rIndex) {
+    const wrapper = document.getElementById(`room_merchant_special_wrapper_${rIndex}`);
+    if (wrapper) {
+        document.querySelectorAll('.custom-select-wrapper').forEach(w => {
+            if (w !== wrapper) w.classList.remove('open');
+        });
+        wrapper.classList.toggle('open');
+    }
+};
+
+window.selectMerchantSpecial = function(rIndex, value, labelStr, color = '#d946ef') {
+    const select = document.getElementById(`room_merchant_special_${rIndex}`);
+    if (select) select.value = value;
+    
+    const label = document.getElementById(`room_merchant_special_label_${rIndex}`);
+    if (label) {
+        if (!value) {
+            label.innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">diamond</span> ${labelStr}`;
+        } else {
+            label.innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: ${color};">diamond</span> ${labelStr}`;
+        }
+    }
+    
+    document.getElementById(`room_merchant_special_wrapper_${rIndex}`).classList.remove('open');
+};
+
+window.toggleMerchantCostSelect = function(rIndex) {
+    const wrapper = document.getElementById(`room_merchant_cost_item_wrapper_${rIndex}`);
+    if (wrapper) {
+        document.querySelectorAll('.custom-select-wrapper').forEach(w => {
+            if (w !== wrapper) w.classList.remove('open');
+        });
+        wrapper.classList.toggle('open');
+    }
+};
+
+window.selectMerchantCost = function(rIndex, value, labelStr, color = '#f472b6') {
+    const select = document.getElementById(`room_merchant_cost_item_${rIndex}`);
+    if (select) select.value = value;
+    
+    const label = document.getElementById(`room_merchant_cost_label_${rIndex}`);
+    if (label) {
+        if (!value) {
+            label.innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">diamond</span> ${labelStr}`;
+        } else {
+            label.innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: ${color};">diamond</span> ${labelStr}`;
+        }
+    }
+    
+    document.getElementById(`room_merchant_cost_item_wrapper_${rIndex}`).classList.remove('open');
 };
 
 window.addMerchantItemToRoom = function(rIndex) {
