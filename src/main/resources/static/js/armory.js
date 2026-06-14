@@ -5,11 +5,11 @@ function applyRbac() {
         const baseStats = document.getElementById('baseStatsSection');
         if (baseStats) baseStats.style.display = 'none';
         
-        const voieLvl = document.getElementById('charVoieLevelWrapper');
-        if (voieLvl && voieLvl.parentElement) voieLvl.parentElement.style.display = 'none';
+        const xpField = document.getElementById('charExperience');
+        if (xpField && xpField.parentElement) xpField.parentElement.style.display = 'none';
         
-        const spiritLvl = document.getElementById('charSpiritLevelWrapper');
-        if (spiritLvl && spiritLvl.parentElement) spiritLvl.parentElement.style.display = 'none';
+        const spiritExpField = document.getElementById('charSpiritExperience');
+        if (spiritExpField && spiritExpField.parentElement) spiritExpField.parentElement.style.display = 'none';
         
         const eqCreateSection = document.querySelector('.equip-create-section');
         if (eqCreateSection) eqCreateSection.style.display = 'none';
@@ -175,9 +175,9 @@ async function submitPersonnage() {
         speed: parseInt(document.getElementById('charSpeed').value) || 0,
         crit: parseInt(document.getElementById('charCrit').value) || 0,
         voieId: document.getElementById('charVoie').value || null,
-        voieLevel: parseInt(document.getElementById('charVoieLevel').value) || 1,
+        experience: parseInt(document.getElementById('charExperience').value) || 0,
         spiritualiteId: document.getElementById('charSpirit').value || null,
-        spiritualiteLevel: parseInt(document.getElementById('charSpiritLevel').value) || 1,
+        spiritualiteExperience: parseInt(document.getElementById('charSpiritExperience').value) || 0,
     };
 
     if (dto.voieId === '') dto.voieId = null;
@@ -450,24 +450,9 @@ function populateSelects() {
         });
     }
 
-    // Populate Level Selects
-    const charVoieLevelOptions = document.getElementById('charVoieLevelOptions');
-    if (charVoieLevelOptions) {
-        charVoieLevelOptions.innerHTML = '';
-        for(let i = 1; i <= 5; i++) {
-            const info = getLevelInfo(i);
-            charVoieLevelOptions.innerHTML += `<div class="custom-option" data-value="${i}"><span class="material-symbols-outlined cs-icon" style="color: ${info.color};">${info.icon}</span> Niveau ${i}</div>`;
-        }
-    }
 
-    const charSpiritLevelOptions = document.getElementById('charSpiritLevelOptions');
-    if (charSpiritLevelOptions) {
-        charSpiritLevelOptions.innerHTML = '';
-        for(let i = 1; i <= 3; i++) {
-            const info = getLevelInfo(i);
-            charSpiritLevelOptions.innerHTML += `<div class="custom-option" data-value="${i}"><span class="material-symbols-outlined cs-icon" style="color: ${info.color};">${info.icon}</span> Niveau ${i}</div>`;
-        }
-    }
+
+
 }
 function getVoieColor(nom) {
     if (!nom) return '#94a3b8';
@@ -613,6 +598,23 @@ function renderPersonnages() {
                     <span class="char-stat-chip"><span class="material-symbols-outlined" style="color: #10b981;">shield</span>${p.totalResistance !== undefined ? p.totalResistance : p.resistance} Rés</span>
                     ${(p.totalSpeed !== undefined ? p.totalSpeed : p.speed) > 0 ? `<span class="char-stat-chip"><span class="material-symbols-outlined" style="color: #f59e0b;">bolt</span>${p.totalSpeed !== undefined ? p.totalSpeed : p.speed} Vit</span>` : ''}
                     ${(p.totalCrit !== undefined ? p.totalCrit : p.crit) > 0 ? `<span class="char-stat-chip"><span class="material-symbols-outlined" style="color: #ef4444;">gps_fixed</span>${p.totalCrit !== undefined ? p.totalCrit : p.crit}% Crit</span>` : ''}
+                </div>
+                <div class="char-xp-container" style="margin-top: 0.5rem; display: flex; flex-direction: column; gap: 0.3rem;">
+                    <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #cbd5e1; font-family: 'Inter', sans-serif; font-weight: 500;">
+                        <span>Expérience Voie</span>
+                        <span>${p.experience} / ${p.nextLevelXp} XP</span>
+                    </div>
+                    <div style="width: 100%; height: 6px; background: rgba(0,0,0,0.4); border-radius: 3px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05);">
+                        <div style="height: 100%; background: linear-gradient(90deg, #3b82f6, #8b5cf6); width: ${p.nextLevelXp > p.currentLevelXp ? Math.min(100, Math.max(0, ((p.experience - p.currentLevelXp) / (p.nextLevelXp - p.currentLevelXp)) * 100)) : 100}%; border-radius: 3px; box-shadow: 0 0 8px rgba(139, 92, 246, 0.5);"></div>
+                    </div>
+                    
+                    <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #cbd5e1; font-family: 'Inter', sans-serif; font-weight: 500; margin-top: 0.3rem;">
+                        <span>Expérience Spirituelle</span>
+                        <span>${p.spiritualiteExperience} / ${p.nextLevelSpiritXp} XP</span>
+                    </div>
+                    <div style="width: 100%; height: 6px; background: rgba(0,0,0,0.4); border-radius: 3px; overflow: hidden; border: 1px solid rgba(255,255,255,0.05);">
+                        <div style="height: 100%; background: linear-gradient(90deg, #fb923c, #f59e0b); width: ${p.nextLevelSpiritXp > p.currentLevelSpiritXp ? Math.min(100, Math.max(0, ((p.spiritualiteExperience - p.currentLevelSpiritXp) / (p.nextLevelSpiritXp - p.currentLevelSpiritXp)) * 100)) : 100}%; border-radius: 3px; box-shadow: 0 0 8px rgba(245, 158, 11, 0.5);"></div>
+                    </div>
                 </div>
             </div>`;
     }).join('');
@@ -842,12 +844,7 @@ function editPersonnage(id) {
         document.getElementById('charVoieLabel').innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">trip_origin</span> — Aucune —`;
     }
 
-    const vLvl = p.voieLevel || 1;
-    document.getElementById('charVoieLevel').value = vLvl;
-    const vLvlInfo = getLevelInfo(vLvl);
-    if (document.getElementById('charVoieLevelLabel')) {
-        document.getElementById('charVoieLevelLabel').innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: ${vLvlInfo.color};">${vLvlInfo.icon}</span> Niveau ${vLvl}`;
-    }
+    document.getElementById('charExperience').value = p.experience || 0;
 
     document.getElementById('charSpirit').value = p.spiritualite ? p.spiritualite.id : '';
     if (p.spiritualite) {
@@ -857,12 +854,7 @@ function editPersonnage(id) {
         document.getElementById('charSpiritLabel').innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">trip_origin</span> — Aucune —`;
     }
 
-    const sLvl = p.spiritualiteLevel || 1;
-    document.getElementById('charSpiritLevel').value = sLvl;
-    const sLvlInfo = getLevelInfo(sLvl);
-    if (document.getElementById('charSpiritLevelLabel')) {
-        document.getElementById('charSpiritLevelLabel').innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: ${sLvlInfo.color};">${sLvlInfo.icon}</span> Niveau ${sLvl}`;
-    }
+    document.getElementById('charSpiritExperience').value = p.spiritualiteExperience || 0;
 
     document.getElementById('formTitle').innerHTML = `
         <span class="material-symbols-outlined">edit</span>
@@ -890,20 +882,12 @@ function resetForm() {
     document.getElementById('charVoie').value = '';
     document.getElementById('charVoieLabel').innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">trip_origin</span> — Aucune —`;
     
-    document.getElementById('charVoieLevel').value = 1;
-    const vLvlInfoReset = getLevelInfo(1);
-    if (document.getElementById('charVoieLevelLabel')) {
-        document.getElementById('charVoieLevelLabel').innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: ${vLvlInfoReset.color};">${vLvlInfoReset.icon}</span> Niveau 1`;
-    }
+    document.getElementById('charExperience').value = 0;
 
     document.getElementById('charSpirit').value = '';
     document.getElementById('charSpiritLabel').innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">trip_origin</span> — Aucune —`;
     
-    document.getElementById('charSpiritLevel').value = 1;
-    const sLvlInfoReset = getLevelInfo(1);
-    if (document.getElementById('charSpiritLevelLabel')) {
-        document.getElementById('charSpiritLevelLabel').innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: ${sLvlInfoReset.color};">${sLvlInfoReset.icon}</span> Niveau 1`;
-    }
+    document.getElementById('charSpiritExperience').value = 0;
 
     document.getElementById('formTitle').innerHTML = `
         <span class="material-symbols-outlined">person_add</span>

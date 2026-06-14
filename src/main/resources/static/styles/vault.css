@@ -279,18 +279,22 @@
 .vault-card.rarity-COMMUN {
     border-top: 2px solid #94a3b8;
 }
+
 .vault-card.rarity-RARE {
     border-top: 2px solid #10b981;
     background: linear-gradient(180deg, rgba(16, 185, 129, 0.05) 0%, rgba(30, 41, 59, 0.4) 30%);
 }
+
 .vault-card.rarity-LEGENDAIRE {
     border-top: 2px solid #f59e0b;
     background: linear-gradient(180deg, rgba(245, 158, 11, 0.05) 0%, rgba(30, 41, 59, 0.4) 30%);
 }
+
 .vault-card.rarity-EPIQUE {
     border-top: 2px solid #ef4444;
     background: linear-gradient(180deg, rgba(239, 68, 68, 0.05) 0%, rgba(30, 41, 59, 0.4) 30%);
 }
+
 .vault-card.rarity-RELIQUE {
     border-top: 2px solid #c084fc;
     background: linear-gradient(180deg, rgba(192, 132, 252, 0.05) 0%, rgba(30, 41, 59, 0.4) 30%);
@@ -302,6 +306,7 @@
     user-select: none;
     width: 100%;
 }
+
 .custom-select-trigger {
     background: rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.08);
@@ -318,9 +323,12 @@
     height: 100%;
     min-height: 28px;
 }
-.custom-select-trigger:hover, .custom-select-wrapper.open .custom-select-trigger {
+
+.custom-select-trigger:hover,
+.custom-select-wrapper.open .custom-select-trigger {
     border-color: #f59e0b;
 }
+
 .custom-select-options {
     position: absolute;
     top: calc(100% + 5px);
@@ -329,18 +337,37 @@
     background: #0f172a;
     border: 1px solid rgba(255, 255, 255, 0.1);
     border-radius: 6px;
-    box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
     z-index: 100;
     display: none;
-    max-height: 200px;
-    overflow-y: auto;
 }
+
+.custom-select-options::-webkit-scrollbar {
+    width: 6px;
+}
+
+.custom-select-options::-webkit-scrollbar-track {
+    background: transparent;
+    border-radius: 6px;
+}
+
+.custom-select-options::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.15);
+    border-radius: 6px;
+}
+
+.custom-select-options::-webkit-scrollbar-thumb:hover {
+    background: rgba(255, 255, 255, 0.25);
+}
+
 .custom-select-wrapper.open .custom-select-options {
     display: block;
 }
+
 .custom-select-wrapper.open .cs-arrow {
     transform: rotate(180deg);
 }
+
 .custom-option {
     padding: 0.4rem 0.6rem;
     cursor: pointer;
@@ -349,17 +376,21 @@
     gap: 0.5rem;
     font-size: 0.8rem;
     transition: background 0.2s ease;
-    border-bottom: 1px solid rgba(255,255,255,0.02);
+    border-bottom: 1px solid rgba(255, 255, 255, 0.02);
 }
+
 .custom-option:last-child {
     border-bottom: none;
 }
+
 .custom-option:hover {
     background: rgba(245, 158, 11, 0.15);
 }
+
 .cs-icon {
     font-size: 1rem;
 }
+
 .cs-label {
     display: flex;
     align-items: center;
@@ -397,7 +428,8 @@
 }
 
 .eq-create-field input,
-.eq-create-field select {
+.eq-create-field select,
+.eq-create-field textarea {
     padding: 0.35rem 0.5rem;
     font-size: 0.8rem;
     background: rgba(0, 0, 0, 0.3);
@@ -411,8 +443,14 @@
     min-width: 0;
 }
 
+.eq-create-field textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
 .eq-create-field input:focus,
-.eq-create-field select:focus {
+.eq-create-field select:focus,
+.eq-create-field textarea:focus {
     border-color: #f59e0b;
 }
 
@@ -425,7 +463,10 @@
 /* Modals */
 .vault-modal-overlay {
     position: fixed;
-    top: 0; left: 0; right: 0; bottom: 0;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
     background: rgba(15, 23, 42, 0.8);
     backdrop-filter: blur(8px);
     z-index: 10000;
@@ -436,10 +477,12 @@
     pointer-events: none;
     transition: opacity 0.3s ease;
 }
+
 .vault-modal-overlay.show {
     opacity: 1;
     pointer-events: all;
 }
+
 .vault-modal-content {
     background: var(--bg-card, rgba(30, 41, 59, 0.95));
     border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.1));
@@ -451,14 +494,16 @@
     overflow-y: auto;
     transform: translateY(20px) scale(0.95);
     transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.5);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
 }
+
 .vault-modal-overlay.show .vault-modal-content {
     transform: translateY(0) scale(1);
 }
+
 .vault-modal-content.small {
     max-width: 400px;
     text-align: center;
     border-color: rgba(239, 68, 68, 0.4);
-    box-shadow: 0 20px 40px rgba(0,0,0,0.5), 0 0 0 1px rgba(255,255,255,0.05) inset;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
 }

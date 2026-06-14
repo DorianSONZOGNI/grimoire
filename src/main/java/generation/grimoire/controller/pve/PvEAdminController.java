@@ -16,8 +16,8 @@ import java.util.stream.Collectors;
 @RequestMapping("/api/admin/pve")
 @RequiredArgsConstructor
 public class PvEAdminController {
-
     private final PvEAdminService pvEAdminService;
+    private final generation.grimoire.repository.EquipmentRepository equipmentRepository;
 
     // --- MONSTERS ---
 
@@ -86,15 +86,33 @@ public class PvEAdminController {
         entity.setDescription(dto.getDescription());
         entity.setImageUrl(dto.getImageUrl());
         entity.setRecommendedLevel(dto.getRecommendedLevel());
+        entity.setMaxHeroes(dto.getMaxHeroes() > 0 ? dto.getMaxHeroes() : 1);
 
         if (dto.getSalles() != null) {
             List<generation.grimoire.entity.pve.Salle> salles = dto.getSalles().stream().map(sDto -> {
                 generation.grimoire.entity.pve.Salle s = new generation.grimoire.entity.pve.Salle();
                 s.setType(sDto.getType());
+                s.setEventSubType(sDto.getEventSubType());
                 s.setEventText(sDto.getEventText());
                 s.setEventEffectAmount(sDto.getEventEffectAmount());
+                s.setAlterationType(sDto.getAlterationType());
+                s.setAlterationHpAmount(sDto.getAlterationHpAmount());
+                s.setAlterationExpAmount(sDto.getAlterationExpAmount());
+                s.setAlterationRewardType(sDto.getAlterationRewardType());
+                s.setAlterationSpiritualXpReward(sDto.getAlterationSpiritualXpReward());
+                s.setAlterationSpecialItemReward(sDto.getAlterationSpecialItemReward());
+                s.setAlterationRequiredItem(sDto.getAlterationRequiredItem());
                 s.setTreasureGold(sDto.getTreasureGold());
                 s.setTreasureExp(sDto.getTreasureExp());
+                s.setTrapType(sDto.getTrapType());
+                s.setTrapAmount(sDto.getTrapAmount());
+                s.setTrapHasRopeOption(sDto.isTrapHasRopeOption());
+                s.setTrapDamageHpPct(sDto.getTrapDamageHpPct());
+                s.setTrapDamageManaPct(sDto.getTrapDamageManaPct());
+                s.setTrapDamageHpFixed(sDto.getTrapDamageHpFixed());
+                s.setTrapDamageManaFixed(sDto.getTrapDamageManaFixed());
+                s.setDoorOutcomes(sDto.getDoorOutcomes());
+                s.setGlobalBuffs(sDto.getGlobalBuffs());
 
                 if (sDto.getMonsters() != null) {
                     List<Monstre> monsters = sDto.getMonsters().stream()
@@ -111,6 +129,29 @@ public class PvEAdminController {
                             .collect(Collectors.toList());
                     s.setMonsters(monsters);
                 }
+
+                if (sDto.getLootTable() != null) {
+                    List<generation.grimoire.entity.pve.LootEntry> lootEntries = sDto.getLootTable().stream()
+                            .map(lDto -> {
+                                generation.grimoire.entity.pve.LootEntry entry = new generation.grimoire.entity.pve.LootEntry();
+                                entry.setSalle(s);
+                                
+                                if (lDto.getEquipmentId() != null) {
+                                    generation.grimoire.entity.Equipment eq = equipmentRepository.findById(java.util.Objects.requireNonNull(lDto.getEquipmentId())).orElse(null);
+                                    entry.setEquipment(eq);
+                                }
+                                
+                                entry.setProbability(lDto.getProbability());
+                                entry.setSpecialItemName(lDto.getSpecialItemName());
+                                entry.setPriceGold(lDto.getPriceGold());
+                                entry.setPriceSpecialItemName(lDto.getPriceSpecialItemName());
+                                
+                                return entry;
+                            })
+                            .collect(Collectors.toList());
+                    s.setLootTable(lootEntries);
+                }
+
                 return s;
             }).collect(Collectors.toList());
 
@@ -123,3 +164,6 @@ public class PvEAdminController {
         }
     }
 }
+
+
+

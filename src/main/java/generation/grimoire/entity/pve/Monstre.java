@@ -1,7 +1,7 @@
 package generation.grimoire.entity.pve;
 
-import generation.grimoire.enumeration.DamageType;
-import generation.grimoire.enumeration.StatType;
+import generation.grimoire.enumeration.MonsterType;
+import generation.grimoire.enumeration.MonsterBehavior;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -17,10 +17,10 @@ public class Monstre {
     private Long id;
 
     private String name;
-    
+
     @Column(columnDefinition = "TEXT")
     private String description;
-    
+
     private String imageUrl;
 
     private int level = 1;
@@ -34,8 +34,14 @@ public class Monstre {
     private int resistance;
     private int crit;
     private int speed;
-    
+
     // For simple AI logic / rewards
     private int rewardExp;
     private int rewardGold;
+
+    @Enumerated(EnumType.STRING)
+    private MonsterType monsterType = MonsterType.NORMAL;
+
+    @Enumerated(EnumType.STRING)
+    private MonsterBehavior behavior = MonsterBehavior.NORMAL;
 }

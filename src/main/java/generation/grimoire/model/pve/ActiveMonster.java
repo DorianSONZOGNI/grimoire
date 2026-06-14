@@ -8,10 +8,17 @@ import lombok.Data;
 public class ActiveMonster {
     private Monstre base;
     private Personnage asPersonnage;
+    private static long nextId = -1;
+    
+    // For PREDATEUR behavior: locked target
+    private Long lockedTargetId;
+    // For LEADER behavior: forced target for this round
+    private Long leaderForcedTargetId;
 
     public ActiveMonster(Monstre base) {
         this.base = base;
         this.asPersonnage = new Personnage();
+        this.asPersonnage.setId(nextId--);
         this.asPersonnage.setName(base.getName());
         this.asPersonnage.setHealthMax(base.getHealthMax());
         this.asPersonnage.setHealthCurrent(base.getHealthMax());
@@ -43,6 +50,10 @@ public class ActiveMonster {
     }
 
     public void takeDamage(int damage) {
+        // PASSIF TYPE : REPTILE — 15% de réduction des dégâts physiques
+        if (this.base.getMonsterType() == generation.grimoire.enumeration.MonsterType.REPTILE) {
+            damage = (int) Math.ceil(damage * 0.85);
+        }
         this.asPersonnage.setHealthCurrent(Math.max(0, this.asPersonnage.getHealthCurrent() - damage));
     }
 }

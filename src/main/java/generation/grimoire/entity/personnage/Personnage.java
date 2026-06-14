@@ -18,6 +18,8 @@ import lombok.NoArgsConstructor;
 import java.util.ArrayList;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map;
+import java.util.HashMap;
 
 @Data
 @NoArgsConstructor
@@ -49,13 +51,66 @@ public class Personnage {
     @JoinColumn(name = "voie_id", nullable = true)
     private Voie voie;
 
-    private int voieLevel = 1;
+    private int experience = 0;
+
+    public int getVoieLevel() {
+        if (experience >= 1000) return 5;
+        if (experience >= 600) return 4;
+        if (experience >= 300) return 3;
+        if (experience >= 100) return 2;
+        return 1;
+    }
+
+    public void setVoieLevel(int level) {
+        // Ignoré car calculé depuis l'expérience, mais laissé pour compatibilité avec certains setter implicites (ex: Jackson si besoin, ou si du code existant tente de le modifier)
+        // Si on force un setVoieLevel manuel (ex: admin), on pourrait affecter l'xp minimale correspondante :
+        if (level == 5) this.experience = Math.max(this.experience, 1000);
+        else if (level == 4) this.experience = Math.max(this.experience, 600);
+        else if (level == 3) this.experience = Math.max(this.experience, 300);
+        else if (level == 2) this.experience = Math.max(this.experience, 100);
+        else if (level == 1) this.experience = Math.max(this.experience, 0);
+    }
 
     @ManyToOne
     @JoinColumn(name = "spiritualite_id", nullable = true)
     private Spiritualite spiritualite;
 
-    private int spiritualiteLevel = 1;
+    private int spiritualiteExperience = 0;
+    
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "personnage_special_items", joinColumns = @JoinColumn(name = "personnage_id"))
+    @MapKeyColumn(name = "item_name")
+    @Column(name = "quantity")
+    private Map<String, Integer> specialItems = new HashMap<>();
+
+    public int getSpecialItemQuantity(String itemName) {
+        return specialItems.getOrDefault(itemName, 0);
+    }
+
+    public void addSpecialItem(String itemName, int quantity) {
+        specialItems.put(itemName, getSpecialItemQuantity(itemName) + quantity);
+    }
+
+    public void removeSpecialItem(String itemName, int quantity) {
+        int current = getSpecialItemQuantity(itemName);
+        if (current >= quantity) {
+            specialItems.put(itemName, current - quantity);
+        } else {
+            specialItems.put(itemName, 0);
+        }
+    }
+
+    public int getSpiritualiteLevel() {
+        if (spiritualiteExperience >= 300) return 3;
+        if (spiritualiteExperience >= 100) return 2;
+        return 1;
+    }
+
+    public void setSpiritualiteLevel(int level) {
+        if (level == 3) this.spiritualiteExperience = Math.max(this.spiritualiteExperience, 300);
+        else if (level == 2) this.spiritualiteExperience = Math.max(this.spiritualiteExperience, 100);
+        else if (level == 1) this.spiritualiteExperience = Math.max(this.spiritualiteExperience, 0);
+    }
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = true)
@@ -360,7 +415,7 @@ public class Personnage {
         // Appliquer les dégâts finaux (bypass + dégâts non absorbés par le bouclier) à
         // la santé actuelle
         int totalDamageToHealth = bypassDamage + remainingDamage;
-        this.healthCurrent -= totalDamageToHealth;
+        this.healthCurrent = Math.max(0, this.healthCurrent - totalDamageToHealth);
 
         // CHEAT DEATH
         if (this.healthCurrent <= 0) {
@@ -442,8 +497,9 @@ public class Personnage {
                 + "). Vie actuelle : " + healthCurrent);
 
         boolean removedPoison = activeBuffs.removeIf(b -> b.getStatAffected() == StatType.POISON && b.getFlatValue() > 0);
-        if (removedPoison) {
-            System.out.println("🌿 Le soin a purifié le Poison sur " + name + " !");
+        boolean removedPoisonDot = activeDamageOverTimeEffects.removeIf(dot -> Boolean.TRUE.equals(dot.getPoison()));
+        if (removedPoison || removedPoisonDot) {
+            System.out.println("💧 Le soin a purifié le Poison sur " + name + " !");
         }
     }
 
@@ -734,9 +790,9 @@ public class Personnage {
             if (this.voie == null || (!idMatch && !nameMatch)) {
                 return this.name + " n'a pas la " + spell.getVoie().getNom() + " requise pour lancer " + spell.getNom() + ".";
             }
-            if (this.voieLevel < spell.getNiveau()) {
+            if (this.getVoieLevel() < spell.getNiveau()) {
                 return this.name + " a besoin de " + spell.getVoie().getNom() + " niveau " + spell.getNiveau()
-                        + " (actuel: " + this.voieLevel + ") pour lancer " + spell.getNom() + ".";
+                        + " (actuel: " + this.getVoieLevel() + ") pour lancer " + spell.getNom() + ".";
             }
         }
 
@@ -746,9 +802,9 @@ public class Personnage {
             if (this.spiritualite == null || (!idMatch && !nameMatch)) {
                 return this.name + " n'a pas la spiritualité " + spell.getSpiritualite().getNom() + " requise pour lancer " + spell.getNom() + ".";
             }
-            if (this.spiritualiteLevel < spell.getNiveau()) {
+            if (this.getSpiritualiteLevel() < spell.getNiveau()) {
                 return this.name + " a besoin de " + spell.getSpiritualite().getNom() + " niveau " + spell.getNiveau()
-                        + " (actuel: " + this.spiritualiteLevel + ") pour lancer " + spell.getNom() + ".";
+                        + " (actuel: " + this.getSpiritualiteLevel() + ") pour lancer " + spell.getNom() + ".";
             }
         }
 

@@ -148,8 +148,18 @@ public class SpellService {
         caster.setManaCurrent(caster.getManaCurrent() - actualManaCost);
         caster.setHealthCurrent(caster.getHealthCurrent() - actualHealCost);
         caster.setPassiveState("destruction_heat", currentHeat - actualHeatCost);
-        System.out.println(caster.getName() + " dépense " + actualManaCost + " mana, " + actualHealCost
-                + " PV et " + actualHeatCost + " chaleur pour lancer " + toCast.getNom());
+        
+        String costMsg = "";
+        if (actualManaCost > 0) costMsg += actualManaCost + " mana, ";
+        if (actualHealCost > 0) costMsg += actualHealCost + " PV, ";
+        if (actualHeatCost > 0) costMsg += actualHeatCost + " chaleur, ";
+        
+        if (!costMsg.isEmpty()) {
+            costMsg = costMsg.substring(0, costMsg.length() - 2);
+            int lastComma = costMsg.lastIndexOf(", ");
+            if (lastComma != -1) costMsg = costMsg.substring(0, lastComma) + " et " + costMsg.substring(lastComma + 2);
+            System.out.println(caster.getName() + " dépense " + costMsg + " pour lancer " + toCast.getNom());
+        }
 
         // Dispatch : hook post-paiement de coût
         SpellCostPaidEvent costPaidEvent = new SpellCostPaidEvent(caster, target, toCast, actualManaCost, actualHealCost, actualHeatCost);
@@ -291,8 +301,18 @@ public class SpellService {
         caster.setManaCurrent(caster.getManaCurrent() - actualManaCost);
         caster.setHealthCurrent(caster.getHealthCurrent() - actualHealCost);
         caster.setPassiveState("destruction_heat", currentHeat - actualHeatCost);
-        System.out.println(caster.getName() + " dépense " + actualManaCost + " mana, " + actualHealCost
-                + " PV et " + actualHeatCost + " chaleur pour lancer " + toCast.getNom());
+        
+        String costMsg2 = "";
+        if (actualManaCost > 0) costMsg2 += actualManaCost + " mana, ";
+        if (actualHealCost > 0) costMsg2 += actualHealCost + " PV, ";
+        if (actualHeatCost > 0) costMsg2 += actualHeatCost + " chaleur, ";
+        
+        if (!costMsg2.isEmpty()) {
+            costMsg2 = costMsg2.substring(0, costMsg2.length() - 2);
+            int lastComma = costMsg2.lastIndexOf(", ");
+            if (lastComma != -1) costMsg2 = costMsg2.substring(0, lastComma) + " et " + costMsg2.substring(lastComma + 2);
+            System.out.println(caster.getName() + " dépense " + costMsg2 + " pour lancer " + toCast.getNom());
+        }
 
         SpellCostPaidEvent costPaidEvent = new SpellCostPaidEvent(caster, target, toCast, actualManaCost, actualHealCost, actualHeatCost);
         passiveDispatcher.dispatch(caster, toCast, costPaidEvent);
@@ -328,6 +348,14 @@ public class SpellService {
 
             java.util.List<Personnage> recipients = resolveRecipientsGroup(
                     effect.getEffectTarget(), caster, target, ally, allAllies, allEnemies);
+
+            // Correctif: Les effets de chaleur doivent TOUJOURS s'appliquer au lanceur,
+            // même si le sort cible un allié (pour éviter que l'allié reçoive la chaleur en multi).
+            if (effect instanceof generation.grimoire.entity.spell.type.effect.HeatOverTimeEffect
+                    || effect instanceof generation.grimoire.entity.spell.type.effect.HeatFixedEffect
+                    || effect instanceof generation.grimoire.entity.spell.type.effect.HeatPercentageEffect) {
+                recipients = java.util.Collections.singletonList(caster);
+            }
 
             for (Personnage recipient : recipients) {
                 if (recipients.size() > 1) {
@@ -498,8 +526,17 @@ public class SpellService {
         int remaining = caster.getRemainingChannelingTurns();
         int currentTurn = duration - remaining + 1;
 
+        // Decrement remaining turns
+        int newRemaining = remaining - 1;
+        caster.setRemainingChannelingTurns(Math.max(0, newRemaining));
+        if (newRemaining <= 0) {
+            caster.setChanneledSpell(null);
+            caster.setChannelingTarget(null);
+            caster.setChannelingChoiceKey(null);
+        }
+
         // Le T1 est déjà résolu au moment du cast (dans castSpellGroup).
-        // À la fin du tour de lancement, currentTurn vaut 1, on ne doit donc rien faire.
+        // À la fin du tour de lancement, currentTurn vaut 1, on ne doit donc rien faire de plus.
         if (currentTurn == 1) {
             return;
         }
@@ -593,6 +630,7 @@ public class SpellService {
 
     public void startTurn(Personnage personnage) {
         personnage.startTurn();
+        personnage.setBanalSpellCastThisTurn(false);
         personnage.updateHealOverTimeEffects();
         personnage.updateManaOverTimeEffects();
         personnage.updateDamageOverTimeEffects();

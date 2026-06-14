@@ -1,6 +1,7 @@
 package generation.grimoire.entity.pve;
 
 import generation.grimoire.enumeration.RoomType;
+import generation.grimoire.enumeration.EventSubType;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
@@ -21,6 +22,10 @@ public class Salle {
     @Enumerated(EnumType.STRING)
     private RoomType type;
 
+    // IF EVENT — sous-type
+    @Enumerated(EnumType.STRING)
+    private EventSubType eventSubType;
+
     // IF COMBAT
     @ManyToMany(fetch = FetchType.LAZY)
     @JoinTable(
@@ -36,6 +41,43 @@ public class Salle {
 
     // IF EVENT
     private String eventText;
-    // Positive or negative effect amount
+    // Positive or negative effect amount (used by generic events)
     private int eventEffectAmount;
+
+    // IF ALTERATION
+    private String alterationType; // "VIE_XP", "ITEM", "RIEN"
+    private int alterationHpAmount;
+    private int alterationExpAmount;
+    private String alterationRewardType; // "SPIRITUAL_XP", "SPECIAL_ITEM"
+    private int alterationSpiritualXpReward;
+    private String alterationSpecialItemReward;
+    private String alterationRequiredItem;
+
+    // IF AUTEL (Altar)
+    private String altarRequiredSpirituality; // e.g. "TENEBRES", "ESPRIT", "KARMA"
+    private String altarRewardType; // "GOLD", "ITEM", "XP"
+    private int altarRewardValue; // Value of Gold/XP, or Equipment ID
+    @jakarta.persistence.Transient
+    private generation.grimoire.entity.Equipment altarRewardEquipment;
+
+    // IF PIEGE
+    private String trapType; // "PV", "MANA"
+    private int trapAmount;
+    private boolean trapHasRopeOption;
+    
+    // IF BOSS
+    @Column(columnDefinition = "TEXT")
+    private String globalBuffs; // JSON list of boss global buffs
+    
+    private Integer trapDamageHpPct;
+    private Integer trapDamageManaPct;
+    private Integer trapDamageHpFixed;
+    private Integer trapDamageManaFixed;
+
+    // IF PORTE_ETRANGE — outcomes as JSON string
+    @Column(columnDefinition = "TEXT")
+    private String doorOutcomes; // JSON: [{"type":"BOSS","probability":20},{"type":"ITEM","probability":50}]
+
+    @OneToMany(mappedBy = "salle", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<LootEntry> lootTable = new ArrayList<>();
 }
