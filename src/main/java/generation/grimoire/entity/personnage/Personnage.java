@@ -497,8 +497,9 @@ public class Personnage {
                 + "). Vie actuelle : " + healthCurrent);
 
         boolean removedPoison = activeBuffs.removeIf(b -> b.getStatAffected() == StatType.POISON && b.getFlatValue() > 0);
-        if (removedPoison) {
-            System.out.println("🌿 Le soin a purifié le Poison sur " + name + " !");
+        boolean removedPoisonDot = activeDamageOverTimeEffects.removeIf(dot -> Boolean.TRUE.equals(dot.getPoison()));
+        if (removedPoison || removedPoisonDot) {
+            System.out.println("💧 Le soin a purifié le Poison sur " + name + " !");
         }
     }
 

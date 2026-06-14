@@ -163,27 +163,33 @@ public class CombatService {
                         int bonusHp = (int) (p.getHealthMax() * (bVal / 100.0));
                         p.setHealthMax(p.getHealthMax() + bonusHp);
                         p.setHealthCurrent(p.getHealthCurrent() + bonusHp);
+                        p.getPassiveStates().put("BOSS_BUFF_HP", bVal);
                     } else if ("SHIELD_PCT".equals(bType)) {
                         int shieldAmt = (int) (p.getHealthMax() * (bVal / 100.0));
                         p.addShield(shieldAmt, bDur > 0 ? bDur : -1, "Buff Global Boss");
+                        p.getPassiveStates().put("BOSS_BUFF_SHIELD", bVal);
                     } else if ("ARMOR_FLAT".equals(bType)) {
                         generation.grimoire.entity.spell.type.effect.BuffDebuffEffect eff = new generation.grimoire.entity.spell.type.effect.BuffDebuffEffect();
                         eff.setStatAffected(generation.grimoire.enumeration.StatType.ARMURE);
                         eff.setFlatValue(bVal);
                         eff.setDuration(bDur > 0 ? bDur : -1);
                         p.getActiveBuffs().add(eff);
+                        p.getPassiveStates().put("BOSS_BUFF_ARMOR", bVal);
                     } else if ("RESIST_FLAT".equals(bType)) {
                         generation.grimoire.entity.spell.type.effect.BuffDebuffEffect eff = new generation.grimoire.entity.spell.type.effect.BuffDebuffEffect();
                         eff.setStatAffected(generation.grimoire.enumeration.StatType.RESISTANCE);
                         eff.setFlatValue(bVal);
                         eff.setDuration(bDur > 0 ? bDur : -1);
                         p.getActiveBuffs().add(eff);
+                        p.getPassiveStates().put("BOSS_BUFF_RESIST", bVal);
                     } else if ("BURN_ON_HIT".equals(bType)) {
                         p.getPassiveStates().put("BURN_ON_HIT", bVal);
                         p.getPassiveStates().put("BURN_ON_HIT_DURATION", bDur > 0 ? bDur : 3);
+                        p.getPassiveStates().put("BOSS_BUFF_BURN", bVal);
                     } else if ("POISON_ON_HIT".equals(bType)) {
                         p.getPassiveStates().put("POISON_ON_HIT", bVal);
                         p.getPassiveStates().put("POISON_ON_HIT_DURATION", bDur > 0 ? bDur : 3);
+                        p.getPassiveStates().put("BOSS_BUFF_POISON", bVal);
                     }
                 }
             }
@@ -750,8 +756,19 @@ public class CombatService {
                     }
                 }
 
-                // Initialize enemies based on updated room monsters
-                handleRoomStart(session);
+                // Initialize enemies based on updated room monsters manually to avoid overwriting from DB in handleRoomStart
+                session.getEnemies().clear();
+                for (generation.grimoire.entity.pve.Monstre m : room.getMonsters()) {
+                    generation.grimoire.model.pve.ActiveMonster am = new generation.grimoire.model.pve.ActiveMonster(m);
+                    session.getEnemies().add(am);
+                }
+                
+                session.setTurnNumber(1);
+                for (Personnage p : session.getPlayers()) {
+                    p.setBanalSpellCastThisTurn(false);
+                    p.setInstantSpellCastThisTurn(false);
+                }
+                rollInitiative(session);
 
                 // Apply global buffs
                 com.fasterxml.jackson.databind.JsonNode buffsNode = selectedOutcome.path("globalBuffs");
@@ -766,27 +783,33 @@ public class CombatService {
                                 int bonus = (int) (am.getMaxHp() * (bVal / 100.0));
                                 am.setMaxHp(am.getMaxHp() + bonus);
                                 am.getAsPersonnage().setHealthCurrent(am.getAsPersonnage().getHealthCurrent() + bonus);
+                                am.getAsPersonnage().getPassiveStates().put("BOSS_BUFF_HP", bVal);
                             } else if ("SHIELD_PCT".equals(bType)) {
                                 int shieldAmt = (int) (am.getMaxHp() * (bVal / 100.0));
                                 am.getAsPersonnage().addShield(shieldAmt, bDur > 0 ? bDur : -1, "Buff Global");
+                                am.getAsPersonnage().getPassiveStates().put("BOSS_BUFF_SHIELD", bVal);
                             } else if ("ARMOR_FLAT".equals(bType)) {
                                 generation.grimoire.entity.spell.type.effect.BuffDebuffEffect eff = new generation.grimoire.entity.spell.type.effect.BuffDebuffEffect();
                                 eff.setStatAffected(generation.grimoire.enumeration.StatType.ARMURE);
                                 eff.setFlatValue(bVal);
                                 eff.setDuration(bDur > 0 ? bDur : -1);
                                 am.getAsPersonnage().getActiveBuffs().add(eff);
+                                am.getAsPersonnage().getPassiveStates().put("BOSS_BUFF_ARMOR", bVal);
                             } else if ("RESIST_FLAT".equals(bType)) {
                                 generation.grimoire.entity.spell.type.effect.BuffDebuffEffect eff = new generation.grimoire.entity.spell.type.effect.BuffDebuffEffect();
                                 eff.setStatAffected(generation.grimoire.enumeration.StatType.RESISTANCE);
                                 eff.setFlatValue(bVal);
                                 eff.setDuration(bDur > 0 ? bDur : -1);
                                 am.getAsPersonnage().getActiveBuffs().add(eff);
+                                am.getAsPersonnage().getPassiveStates().put("BOSS_BUFF_RESIST", bVal);
                             } else if ("BURN_ON_HIT".equals(bType)) {
                                 am.getAsPersonnage().setPassiveState("BURN_ON_HIT", bVal);
                                 am.getAsPersonnage().setPassiveState("BURN_ON_HIT_DURATION", bDur > 0 ? bDur : 3);
+                                am.getAsPersonnage().getPassiveStates().put("BOSS_BUFF_BURN", bVal);
                             } else if ("POISON_ON_HIT".equals(bType)) {
                                 am.getAsPersonnage().setPassiveState("POISON_ON_HIT", bVal);
                                 am.getAsPersonnage().setPassiveState("POISON_ON_HIT_DURATION", bDur > 0 ? bDur : 3);
+                                am.getAsPersonnage().getPassiveStates().put("BOSS_BUFF_POISON", bVal);
                             }
                         }
                     }
@@ -830,6 +853,7 @@ public class CombatService {
             session.setRoomEventCompleted(true);
         }
 
+        computeSpellAvailability(session);
         return session;
     }
 
@@ -840,7 +864,7 @@ public class CombatService {
             throw new RuntimeException("Session introuvable");
         if (session.isFinished())
             return session;
-        if (session.getCurrentRoom().getType() != generation.grimoire.enumeration.RoomType.COMBAT) {
+        if (session.getCurrentRoom().getType() != generation.grimoire.enumeration.RoomType.COMBAT && session.getCurrentRoom().getType() != generation.grimoire.enumeration.RoomType.BOSS) {
             throw new RuntimeException("Ce n'est pas une salle de combat !");
         }
 
@@ -971,7 +995,7 @@ public class CombatService {
             throw new RuntimeException("Session introuvable");
         if (session.isFinished())
             return session;
-        if (session.getCurrentRoom().getType() != generation.grimoire.enumeration.RoomType.COMBAT) {
+        if (session.getCurrentRoom().getType() != generation.grimoire.enumeration.RoomType.COMBAT && session.getCurrentRoom().getType() != generation.grimoire.enumeration.RoomType.BOSS) {
             throw new RuntimeException("Ce n'est pas une salle de combat !");
         }
 
@@ -1089,6 +1113,7 @@ public class CombatService {
                                 dot.setFixedDamagePerTick(burnDmg);
                                 dot.setDuration(burnDur);
                                 dot.setDamageType(generation.grimoire.enumeration.DamageType.MAGIC);
+                                dot.setBurn(true);
                                 targetPlayer.getActiveDamageOverTimeEffects().add(dot);
                                 session.addLog("🔥 " + targetPlayer.getName() + " s'embrase au contact ! (" + burnDmg
                                         + " dégâts par tour)");
@@ -1101,8 +1126,9 @@ public class CombatService {
                                 dot.setFixedDamagePerTick(poisonDmg);
                                 dot.setDuration(poisonDur);
                                 dot.setDamageType(generation.grimoire.enumeration.DamageType.BRUT);
+                                dot.setPoison(true);
                                 targetPlayer.getActiveDamageOverTimeEffects().add(dot);
-                                session.addLog("☠️ " + targetPlayer.getName() + " est empoisonné au contact ! ("
+                                session.addLog("🦠 " + targetPlayer.getName() + " est empoisonné au contact ! ("
                                         + poisonDmg + " dégâts par tour)");
                             }
 

@@ -39,6 +39,14 @@ public class DamageOverTimeEffect extends DamageEffect {
      */
     private DamageType damageType;
 
+    private Boolean poison = false;
+    private Boolean burn = false;
+
+    public DamageOverTimeEffect() {
+        super();
+        this.setEffectTarget(generation.grimoire.enumeration.EffectTarget.TARGET);
+    }
+
     @Enumerated(jakarta.persistence.EnumType.STRING)
     private generation.grimoire.enumeration.Source damageSource = generation.grimoire.enumeration.Source.TARGET_HEALTH_MAX;
 
@@ -68,7 +76,7 @@ public class DamageOverTimeEffect extends DamageEffect {
                 totalDamage = (int) (totalDamage * 1.5);
             }
 
-            target.takeDamage(totalDamage, damageType, caster);
+            target.takeDamage(totalDamage, damageType, caster, burn != null && burn);
             duration--;
 
             System.out.println(target.getName() + " subit " + totalDamage
@@ -89,6 +97,8 @@ public class DamageOverTimeEffect extends DamageEffect {
         clone.setDuration(this.duration);
         clone.setDamageType(this.damageType);
         clone.setDamageSource(this.damageSource);
+        clone.setPoison(this.poison);
+        clone.setBurn(this.burn);
         return clone;
     }
 

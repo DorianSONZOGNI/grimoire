@@ -1655,7 +1655,20 @@ function generateFighterHtml(c, isHero) {
 
     let monsterBadgesHtml = '';
     if (!isHero) {
-        monsterBadgesHtml += `<div style="display: flex; gap: 0.5rem; justify-content: center; margin-bottom: 0.5rem;">`;
+        monsterBadgesHtml += `<div style="display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; margin-bottom: 0.5rem;">`;
+        
+        if (c.passiveStates) {
+          const hasArmorBuff = (c.activeBuffs || c.buffs || []).some(b => b.statAffected === 'ARMURE' && b.flatValue === c.passiveStates['BOSS_BUFF_ARMOR']);
+          const hasResistBuff = (c.activeBuffs || c.buffs || []).some(b => b.statAffected === 'RESISTANCE' && b.flatValue === c.passiveStates['BOSS_BUFF_RESIST']);
+
+          if (c.passiveStates['BOSS_BUFF_HP']) monsterBadgesHtml += `<span title="+${c.passiveStates['BOSS_BUFF_HP']}% PV Max (Boss Buff)" style="cursor: help; font-size: 0.75rem; background: rgba(16, 185, 129, 0.15); color: #10b981; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined" style="font-size: 0.9rem;">favorite</span>+${c.passiveStates['BOSS_BUFF_HP']}% PV</span>`;
+          if (c.passiveStates['BOSS_BUFF_SHIELD'] && c.shieldTotal > 0) monsterBadgesHtml += `<span title="+${c.passiveStates['BOSS_BUFF_SHIELD']}% Bouclier (Boss Buff)" style="cursor: help; font-size: 0.75rem; background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined" style="font-size: 0.9rem;">shield</span>+${c.passiveStates['BOSS_BUFF_SHIELD']}% Boucl.</span>`;
+          if (c.passiveStates['BOSS_BUFF_ARMOR'] && hasArmorBuff) monsterBadgesHtml += `<span title="+${c.passiveStates['BOSS_BUFF_ARMOR']} Armure (Boss Buff)" style="cursor: help; font-size: 0.75rem; background: rgba(139, 92, 246, 0.15); color: #8b5cf6; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(139, 92, 246, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined" style="font-size: 0.9rem;">security</span>+${c.passiveStates['BOSS_BUFF_ARMOR']} Arm.</span>`;
+          if (c.passiveStates['BOSS_BUFF_RESIST'] && hasResistBuff) monsterBadgesHtml += `<span title="+${c.passiveStates['BOSS_BUFF_RESIST']} Résistance (Boss Buff)" style="cursor: help; font-size: 0.75rem; background: rgba(217, 70, 239, 0.15); color: #d946ef; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(217, 70, 239, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined" style="font-size: 0.9rem;">health_and_safety</span>+${c.passiveStates['BOSS_BUFF_RESIST']} Rés.</span>`;
+          if (c.passiveStates['BOSS_BUFF_BURN']) monsterBadgesHtml += `<span title="Brûlure sur coup (Boss Buff)" style="cursor: help; font-size: 0.75rem; background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined" style="font-size: 0.9rem;">local_fire_department</span>Brûlure</span>`;
+          if (c.passiveStates['BOSS_BUFF_POISON']) monsterBadgesHtml += `<span title="Poison sur coup (Boss Buff)" style="cursor: help; font-size: 0.75rem; background: rgba(34, 197, 94, 0.15); color: #22c55e; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(34, 197, 94, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined" style="font-size: 0.9rem;">pest_control</span>Poison</span>`;
+        }
+
         if (c.monsterType && c.monsterType !== 'NORMAL') {
             const typeTitles = {
                 'DEMON': 'Démon : 10% des dégâts infligés le sont en dégâts bruts supplémentaires.',
@@ -1667,6 +1680,7 @@ function generateFighterHtml(c, isHero) {
             const tTitle = typeTitles[c.monsterType] || '';
             const tIcon = { 'DEMON': 'local_fire_department', 'REPTILE': 'grass', 'MORT_VIVANT': 'skull', 'HYBRIDE': 'network_node', 'VAMPIRE': 'bloodtype' }[c.monsterType] || 'check_box_outline_blank';
             const tLabel = { 'DEMON': 'Démon', 'REPTILE': 'Reptile', 'MORT_VIVANT': 'Mort-vivant', 'HYBRIDE': 'Hybride', 'VAMPIRE': 'Vampire' }[c.monsterType] || c.monsterType;
+            
             monsterBadgesHtml += `<span title="${tTitle}" style="cursor: help; font-size: 0.75rem; background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined" style="font-size: 0.9rem;">${tIcon}</span>${tLabel}</span>`;
         }
         if (c.behavior && c.behavior !== 'NORMAL') {
@@ -1701,6 +1715,7 @@ function generateFighterHtml(c, isHero) {
         <div class="sandbox-status-list" style="justify-content: center;">
             ${renderShieldsHtml(c.activeShields)}
             ${renderBuffsHtml(c.activeBuffs || c.buffs)}
+            ${renderDotsHtml(c.activeDamageOverTimeEffects)}
         </div>
     `;
 }
@@ -2197,4 +2212,60 @@ function showNotif(msg, isError = false) {
     setTimeout(() => {
         notif.classList.remove('show');
     }, 3000);
+}
+
+function renderDotsHtml(dotList) {
+    if (!dotList || dotList.length === 0) return '';
+    
+    let totalDmg = 0;
+    const dotEntries = [];
+    dotList.forEach(d => {
+        totalDmg += d.fixedDamagePerTick || 0;
+        let dTypeStr = "Brut";
+        if (d.damageType === "PHYSIC") dTypeStr = "Physique";
+        else if (d.damageType === "MAGIC") dTypeStr = "Magique";
+        else if (d.damageType === "BRUT") dTypeStr = "Brut";
+
+        let icon = "bloodtype";
+        let color = "#ef4444";
+        let nameStr = d.sourceName || "Affliction";
+
+        if (d.burn) { 
+            icon = "local_fire_department"; 
+            color = "#f97316"; 
+            nameStr = "Brûlure"; 
+        } else if (d.poison) { 
+            icon = "pest_control"; 
+            color = "#22c55e"; 
+            nameStr = "Poison"; 
+        } else {
+            if (d.damageType === "MAGIC") { icon = "local_fire_department"; color = "#f97316"; }
+            if (dTypeStr === "Brut") { icon = "pest_control"; color = "#22c55e"; }
+        }
+
+        dotEntries.push(`
+            <div style="display:flex; align-items:flex-start; gap:0.4rem; font-size:0.85rem;">
+                <span class="material-symbols-outlined" style="flex-shrink:0; font-size:1.1rem; color:${color};">${icon}</span>
+                <span style="font-weight:600; color:#fff;">[${nameStr}]</span>
+                <span style="color:${color}; font-weight:500;">${d.fixedDamagePerTick} Dégâts ${dTypeStr}</span>
+                <span style="color:#e2e8f0;">⏳ (${d.duration} tours)</span>
+            </div>
+        `);
+    });
+
+    if (dotEntries.length === 0) return '';
+
+    const tooltipAttrs = 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"';
+
+    return `
+        <div class="status-badge status-dot" ${tooltipAttrs} style="display:inline-flex; align-items:center; gap:0.3rem; border: 1px solid rgba(239, 68, 68, 0.3); background: rgba(239, 68, 68, 0.1); color: #ef4444; border-radius: 6px; padding: 0.15rem 0.5rem; cursor: help;">
+            <span class="material-symbols-outlined" style="font-size:1rem;">bloodtype</span> DoT (${dotList.length})
+            <template class="tooltip-data">
+                <div style="font-weight:600; margin-bottom:0.5rem; color:#f8fafc; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:0.3rem;">Dégâts sur la durée</div>
+                <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                    ${dotEntries.join('')}
+                </div>
+            </template>
+        </div>
+    `;
 }
