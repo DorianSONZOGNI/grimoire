@@ -204,6 +204,9 @@ window.endTurn = endTurn;
 window.nextRoom = nextRoom;
 window.openStrangeDoor = openStrangeDoor;
 window.openChest = openChest;
+window.acceptAlteration = acceptAlteration;
+window.useRope = useRope;
+window.buyMerchantItem = buyMerchantItem;
 window.openBuyModal = openBuyModal;
 window.closeBuyModal = closeBuyModal;
 window.showGlobalTooltip = ui.showGlobalTooltip;
@@ -799,72 +802,10 @@ async function openChest() {
 
         const data = await res.json();
 
-        // Handle custom animation for XP + Items in eventLootContainer
-        const lootContainer = document.getElementById('eventLootContainer');
-        if (lootContainer) {
-            lootContainer.style.display = 'flex';
-            lootContainer.innerHTML = '';
-
-
-
-            // Also show gained items (check logs for "Vous avez trouvé un objet")
-            let gainedItemsHtml = '';
-            let goldAmount = 0;
-            if (data.combatLog) {
-                let chestLogs = [];
-                for (let i = data.combatLog.length - 1; i >= 0; i--) {
-                    const log = data.combatLog[i];
-                    chestLogs.unshift(log);
-                    if (log.includes("Vous avez ouvert le coffre !")) {
-                        const goldMatch = log.match(/trouvez (\d+) Or/);
-                        if (goldMatch) goldAmount = parseInt(goldMatch[1]);
-                        break;
-                    }
-                }
-
-                chestLogs.forEach(log => {
-                    const itemNameMatch = log.match(/Vous avez trouvé un objet : (.*) !/);
-                    if (itemNameMatch) {
-                        const eqName = itemNameMatch[1];
-
-                        let eq = null;
-                        if (data.currentRoom && data.currentRoom.lootTable) {
-                            const entry = data.currentRoom.lootTable.find(l => l.equipment && l.equipment.name === eqName);
-                            if (entry) eq = entry.equipment;
-                        }
-
-                        const slotInfo = eq ? (SLOT_LABELS[eq.slot] || { icon: 'help', color: '#94a3b8' }) : { icon: 'swords', color: '#f59e0b' };
-                        const rarityColor = eq ? (RARITY_COLORS[eq.rarity] || '#ef4444') : '#f59e0b';
-                        const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
-
-                        gainedItemsHtml += `
-                            <div style="background: rgba(0, 0, 0, 0.4); border: 1px solid ${rarityColor}80; padding: 0.8rem 1rem; border-radius: 8px; color: ${rarityColor}; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
-                                <span class="material-symbols-outlined${extraClass}" style="color: ${slotInfo.color};">${slotInfo.icon}</span> ${eqName}
-                            </div>
-                        `;
-                    }
-                });
-
-                if (goldAmount > 0) {
-                    gainedItemsHtml = `
-                        <div style="background: rgba(0, 0, 0, 0.4); border: 1px solid #f59e0b80; padding: 0.8rem 1rem; border-radius: 8px; color: #f59e0b; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
-                            <span class="material-symbols-outlined" style="color: #f59e0b;">monetization_on</span> +${goldAmount} Or
-                        </div>
-                    ` + gainedItemsHtml;
-                }
-            }
-            if (gainedItemsHtml) {
-                const wrapper = document.createElement('div');
-                wrapper.style.display = 'flex';
-                wrapper.style.gap = '1rem';
-                wrapper.style.flexWrap = 'wrap';
-                wrapper.style.justifyContent = 'center';
-                wrapper.style.marginTop = '1rem';
-                wrapper.style.width = '100%';
-                wrapper.innerHTML = gainedItemsHtml;
-
-                lootContainer.appendChild(wrapper);
-            }
+        // Handle button UI reset if it was in loading state
+        if (btn) {
+            btn.disabled = false;
+            btn.innerHTML = `<span class="material-symbols-outlined">lock_open</span> Ouvrir le coffre`;
         }
 
         // Then call updateUI
@@ -1013,12 +954,93 @@ function updateUI(data) {
             const btnCont = document.getElementById('btnContinueEvent');
             const lootContainer = document.getElementById('eventLootContainer');
 
+            if (data.currentRoom.type === 'TREASURE') {
+                icon.textContent = data.roomEventCompleted ? 'lock_open' : 'lock';
+                icon.style.color = '#f59e0b';
+                title.textContent = 'Salle des Trésors';
 
                 if (data.roomEventCompleted) {
                     desc.textContent = `Vous avez ouvert le coffre !`;
                     btnOpen.style.display = 'none';
                     btnCont.style.display = 'block';
                     lootContainer.style.display = 'flex';
+                    
+                    if (lootContainer.innerHTML.trim() === '') {
+                        let gainedItemsHtml = '';
+                        let goldAmount = 0;
+                        let expAmount = 0;
+                        if (data.combatLog) {
+                            let chestLogs = [];
+                            for (let i = data.combatLog.length - 1; i >= 0; i--) {
+                                const log = data.combatLog[i];
+                                chestLogs.unshift(log);
+                                if (log.includes("Vous avez ouvert le coffre !")) {
+                                    const goldMatch = log.match(/trouvez (\d+) Or/);
+                                    if (goldMatch) goldAmount = parseInt(goldMatch[1]);
+                                    const expMatch = log.match(/gagne (\d+) XP/);
+                                    if (expMatch) expAmount = parseInt(expMatch[1]);
+                                    break;
+                                }
+                            }
+
+                            chestLogs.forEach(log => {
+                                const itemNameMatch = log.match(/Vous avez trouvé un objet : (.*) !/);
+                                if (itemNameMatch) {
+                                    const eqName = itemNameMatch[1];
+                                    let eq = null;
+                                    if (data.currentRoom && data.currentRoom.lootTable) {
+                                        const entry = data.currentRoom.lootTable.find(l => l.equipment && l.equipment.name === eqName);
+                                        if (entry) eq = entry.equipment;
+                                    }
+                                    const slotInfo = eq ? (SLOT_LABELS[eq.slot] || { icon: 'help', color: '#94a3b8' }) : { icon: 'swords', color: '#f59e0b' };
+                                    const rarityColor = eq ? (RARITY_COLORS[eq.rarity] || '#ef4444') : '#f59e0b';
+                                    const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
+                                    gainedItemsHtml += `
+                                        <div style="background: rgba(0, 0, 0, 0.4); border: 1px solid ${rarityColor}80; padding: 0.8rem 1rem; border-radius: 8px; color: ${rarityColor}; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
+                                            <span class="material-symbols-outlined${extraClass}" style="color: ${slotInfo.color};">${slotInfo.icon}</span> ${eqName}
+                                        </div>
+                                    `;
+                                }
+                            });
+
+                            if (expAmount > 0) {
+                                gainedItemsHtml = `
+                                    <div style="background: rgba(0, 0, 0, 0.4); border: 1px solid #3b82f680; padding: 0.8rem 1rem; border-radius: 8px; color: #3b82f6; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
+                                        <span class="material-symbols-outlined" style="color: #3b82f6;">stars</span> +${expAmount} XP
+                                    </div>
+                                ` + gainedItemsHtml;
+                            }
+
+                            if (goldAmount > 0) {
+                                gainedItemsHtml = `
+                                    <div style="background: rgba(0, 0, 0, 0.4); border: 1px solid #f59e0b80; padding: 0.8rem 1rem; border-radius: 8px; color: #f59e0b; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
+                                        <span class="material-symbols-outlined" style="color: #f59e0b;">monetization_on</span> +${goldAmount} Or
+                                    </div>
+                                ` + gainedItemsHtml;
+                            }
+                        }
+                        
+                        // If no items/gold/xp but we opened a chest, show something at least
+                        if (!gainedItemsHtml) {
+                            gainedItemsHtml = `
+                                <div style="background: rgba(0, 0, 0, 0.4); border: 1px solid #94a3b880; padding: 0.8rem 1rem; border-radius: 8px; color: #94a3b8; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
+                                    Le coffre était vide...
+                                </div>
+                            `;
+                        }
+
+                        if (gainedItemsHtml) {
+                            const wrapper = document.createElement('div');
+                            wrapper.style.display = 'flex';
+                            wrapper.style.gap = '1rem';
+                            wrapper.style.flexWrap = 'wrap';
+                            wrapper.style.justifyContent = 'center';
+                            wrapper.style.marginTop = '1rem';
+                            wrapper.style.width = '100%';
+                            wrapper.innerHTML = gainedItemsHtml;
+                            lootContainer.appendChild(wrapper);
+                        }
+                    }
                 } else {
                     desc.textContent = `Un coffre mystérieux se trouve au centre de la pièce...`;
                     btnOpen.style.display = 'block';
@@ -1077,8 +1099,8 @@ function updateUI(data) {
                                 ${warningHtml}
                                 ${specialItemHtml}
                                 <div style="display: flex; gap: 1rem; margin-top: 1rem; justify-content: center; width: 100%;">
-                                    <button class="btn" style="flex: 1; max-width: 250px; background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.3); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;" onclick="acceptAlteration()">${btnText}</button>
-                                    <button class="btn" style="flex: 1; max-width: 250px; background: rgba(255, 255, 255, 0.05); color: #94a3b8; border: 1px solid rgba(255, 255, 255, 0.1); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;" onclick="nextRoom()">Ignorer et passer</button>
+                                    <button type="button" class="btn" style="flex: 1; max-width: 250px; background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.3); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;" onclick="event.preventDefault(); acceptAlteration();">${btnText}</button>
+                                    <button type="button" class="btn" style="flex: 1; max-width: 250px; background: rgba(255, 255, 255, 0.05); color: #94a3b8; border: 1px solid rgba(255, 255, 255, 0.1); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;" onclick="event.preventDefault(); nextRoom();">Ignorer et passer</button>
                                 </div>
                             </div>
                         `;
@@ -1222,8 +1244,8 @@ function updateUI(data) {
                             lootContainer.innerHTML = `
                                 <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
                                     <div style="display: flex; gap: 1rem; margin-top: 1rem; justify-content: center; width: 100%;">
-                                        <button class="btn" style="flex: 1; max-width: 250px; background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;" onclick="useRope()">Utiliser une Corde</button>
-                                        <button class="btn" style="flex: 1; max-width: 250px; background: rgba(255, 255, 255, 0.05); color: #94a3b8; border: 1px solid rgba(255, 255, 255, 0.1); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;" onclick="nextRoom()">Subir le piège et passer</button>
+                                        <button type="button" class="btn" style="flex: 1; max-width: 250px; background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;" onclick="event.preventDefault(); useRope();">Utiliser une Corde</button>
+                                        <button type="button" class="btn" style="flex: 1; max-width: 250px; background: rgba(255, 255, 255, 0.05); color: #94a3b8; border: 1px solid rgba(255, 255, 255, 0.1); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;" onclick="event.preventDefault(); nextRoom();">Subir le piège et passer</button>
                                     </div>
                                 </div>
                             `;

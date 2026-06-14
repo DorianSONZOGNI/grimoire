@@ -121,6 +121,15 @@ document.addEventListener('DOMContentLoaded', () => {
                 const s = { type: r.type };
                 if (r.type === 'COMBAT') {
                     s.monsters = r.monsters.map(mId => ({ id: mId }));
+                } else if (r.type === 'BOSS') {
+                    s.monsters = r.monsters.map(mId => ({ id: mId }));
+                    s.bossGlobalBuffHpPct = r.bossGlobalBuffHpPct || 0;
+                    s.bossGlobalBuffShieldPct = r.bossGlobalBuffShieldPct || 0;
+                    s.bossGlobalBuffShieldDuration = r.bossGlobalBuffShieldDuration || 4;
+                    s.bossGlobalBuffArmor = r.bossGlobalBuffArmor || 0;
+                    s.bossGlobalBuffResistance = r.bossGlobalBuffResistance || 0;
+                    s.bossGlobalBuffStatsDuration = r.bossGlobalBuffStatsDuration || 4;
+                    s.bossGlobalBuffOnHitEffect = r.bossGlobalBuffOnHitEffect || '';
                 } else if (r.type === 'TREASURE') {
                     s.treasureGold = r.treasureGold || 0;
                     s.treasureExp = r.treasureExp || 0;
@@ -180,6 +189,18 @@ document.addEventListener('DOMContentLoaded', () => {
 window.addRoom = function (type) {
     if (type === 'COMBAT') {
         selectedRooms.push({ type: 'COMBAT', monsters: [] });
+    } else if (type === 'BOSS') {
+        selectedRooms.push({ 
+            type: 'BOSS', 
+            monsters: [],
+            bossGlobalBuffHpPct: 0,
+            bossGlobalBuffShieldPct: 0,
+            bossGlobalBuffShieldDuration: 4,
+            bossGlobalBuffArmor: 0,
+            bossGlobalBuffResistance: 0,
+            bossGlobalBuffStatsDuration: 4,
+            bossGlobalBuffOnHitEffect: ''
+        });
     } else if (type === 'TREASURE') {
         selectedRooms.push({ type: 'TREASURE', treasureGold: 50, treasureExp: 10 });
     } else if (type === 'ALTERATION') {
@@ -412,6 +433,94 @@ function renderRooms() {
                 </div>
             `;
             contentHtml = monstersHtml;
+
+        } else if (room.type === 'BOSS') {
+            headerIcon = 'local_fire_department'; headerColor = '#e11d48'; headerTitle = 'Salle de Boss';
+
+            // Monsters inside the room
+            let monstersHtml = '<div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem;">';
+            if (room.monsters.length === 0) {
+                monstersHtml += `<div style="font-size:0.8rem; color: #94a3b8;">Aucun monstre configuré pour le boss.</div>`;
+            } else {
+                room.monsters.forEach((mId, mIndex) => {
+                    const m = allMonsters.find(x => x.id === mId);
+                    if (m) {
+                        monstersHtml += `
+                            <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); padding: 0.4rem 0.8rem; border-radius: 4px;">
+                                <span style="font-size: 0.85rem; color: #f8fafc; display: flex; align-items: center; gap: 0.4rem;"><span style="font-size: 0.75rem; background: rgba(255,255,255,0.1); padding: 0.1rem 0.3rem; border-radius: 3px; color: #94a3b8;">Lvl ${m.level || 1}</span> ${m.name}</span>
+                                <button type="button" onclick="removeMonsterFromRoom(${rIndex}, ${mIndex})" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 0;"><span class="material-symbols-outlined" style="font-size: 1rem;">close</span></button>
+                            </div>
+                        `;
+                    }
+                });
+            }
+            monstersHtml += `</div>
+                <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; align-items: stretch; position: relative;">
+                    <div class="custom-select-wrapper" id="room_select_wrapper_${rIndex}" style="flex: 1; z-index: ${100 - rIndex}; margin: 0;">
+                        <div class="custom-select-trigger" onclick="toggleMonsterSelect(${rIndex})" style="padding: 0.6rem 1rem; border-radius: 8px;">
+                            <span class="cs-label" id="room_select_label_${rIndex}"><span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">pest_control</span> Sélectionner un boss/monstre...</span>
+                            <span class="material-symbols-outlined">expand_more</span>
+                        </div>
+                        <div class="custom-select-options" id="room_select_options_${rIndex}" style="max-height: 200px; overflow-y: auto;">
+                            ${optionsHtml}
+                        </div>
+                        <input type="hidden" id="room_monster_select_${rIndex}" value="">
+                    </div>
+                    <button type="button" style="background: linear-gradient(135deg, #e11d48, #be123c); color: white; border: none; padding: 0 1.2rem; font-size: 0.9rem; font-weight: 600; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 0.3rem;" onclick="addMonsterToRoom(${rIndex})">
+                        <span class="material-symbols-outlined" style="font-size: 1.1rem;">add</span> Ajouter
+                    </button>
+                </div>
+            `;
+            
+            // Global Buffs HTML
+            let buffsHtml = `
+                <div style="margin-top: 1rem; display: flex; flex-direction: column; gap: 0.75rem;">
+                    <div style="display: flex; gap: 1rem;">
+                        <div style="flex: 1;">
+                            <label style="font-size: 0.8rem; color: #94a3b8;">Bonus PV Max (%)</label>
+                            <input type="number" class="form-control" value="${room.bossGlobalBuffHpPct || 0}" onchange="updateRoomField(${rIndex}, 'bossGlobalBuffHpPct', parseInt(this.value) || 0)">
+                        </div>
+                        <div style="flex: 1;">
+                            <label style="font-size: 0.8rem; color: #94a3b8;">Bouclier Initial (% PV Max)</label>
+                            <input type="number" class="form-control" value="${room.bossGlobalBuffShieldPct || 0}" onchange="updateRoomField(${rIndex}, 'bossGlobalBuffShieldPct', parseInt(this.value) || 0)">
+                        </div>
+                        <div style="flex: 1;">
+                            <label style="font-size: 0.8rem; color: #94a3b8;">Durée Bouclier (Tours)</label>
+                            <input type="number" class="form-control" value="${room.bossGlobalBuffShieldDuration || 4}" onchange="updateRoomField(${rIndex}, 'bossGlobalBuffShieldDuration', parseInt(this.value) || 4)">
+                        </div>
+                    </div>
+                    <div style="display: flex; gap: 1rem;">
+                        <div style="flex: 1;">
+                            <label style="font-size: 0.8rem; color: #94a3b8;">Bonus Armure</label>
+                            <input type="number" class="form-control" value="${room.bossGlobalBuffArmor || 0}" onchange="updateRoomField(${rIndex}, 'bossGlobalBuffArmor', parseInt(this.value) || 0)">
+                        </div>
+                        <div style="flex: 1;">
+                            <label style="font-size: 0.8rem; color: #94a3b8;">Bonus Résistance</label>
+                            <input type="number" class="form-control" value="${room.bossGlobalBuffResistance || 0}" onchange="updateRoomField(${rIndex}, 'bossGlobalBuffResistance', parseInt(this.value) || 0)">
+                        </div>
+                        <div style="flex: 1;">
+                            <label style="font-size: 0.8rem; color: #94a3b8;">Durée Stats (Tours)</label>
+                            <input type="number" class="form-control" value="${room.bossGlobalBuffStatsDuration || 4}" onchange="updateRoomField(${rIndex}, 'bossGlobalBuffStatsDuration', parseInt(this.value) || 4)">
+                        </div>
+                    </div>
+                    <div>
+                        <label style="font-size: 0.8rem; color: #94a3b8;">Effet Passif au touché (Poison / Brûlure)</label>
+                        <select class="form-control" onchange="updateRoomField(${rIndex}, 'bossGlobalBuffOnHitEffect', this.value)">
+                            <option value="" ${!room.bossGlobalBuffOnHitEffect ? 'selected' : ''}>Aucun</option>
+                            <option value="POISON" ${room.bossGlobalBuffOnHitEffect === 'POISON' ? 'selected' : ''}>Poison (5 dégâts bruts sur 3 tours)</option>
+                            <option value="BRULURE" ${room.bossGlobalBuffOnHitEffect === 'BRULURE' ? 'selected' : ''}>Brûlure (5 dégâts magiques sur 3 tours)</option>
+                        </select>
+                    </div>
+                </div>
+            `;
+
+            contentHtml = `
+                ${monstersHtml}
+                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed rgba(255,255,255,0.15);">
+                    <label style="font-size: 0.8rem; color: #3b82f6;">Buffs Globaux du Boss</label>
+                    ${buffsHtml}
+                </div>
+            `;
 
         } else if (room.type === 'TREASURE') {
             headerIcon = 'shopping_bag'; headerColor = '#f59e0b'; headerTitle = 'Salle de Trésor';
@@ -1448,6 +1557,15 @@ async function editDungeon(id) {
                 const room = { type: s.type };
                 if (s.type === 'COMBAT') {
                     room.monsters = s.monsters.map(m => m.id);
+                } else if (s.type === 'BOSS') {
+                    room.monsters = s.monsters.map(m => m.id);
+                    room.bossGlobalBuffHpPct = s.bossGlobalBuffHpPct || 0;
+                    room.bossGlobalBuffShieldPct = s.bossGlobalBuffShieldPct || 0;
+                    room.bossGlobalBuffShieldDuration = s.bossGlobalBuffShieldDuration || 4;
+                    room.bossGlobalBuffArmor = s.bossGlobalBuffArmor || 0;
+                    room.bossGlobalBuffResistance = s.bossGlobalBuffResistance || 0;
+                    room.bossGlobalBuffStatsDuration = s.bossGlobalBuffStatsDuration || 4;
+                    room.bossGlobalBuffOnHitEffect = s.bossGlobalBuffOnHitEffect || '';
                 } else if (s.type === 'TREASURE') {
                     room.treasureGold = s.treasureGold;
                     room.treasureExp = s.treasureExp;

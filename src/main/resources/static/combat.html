@@ -49,6 +49,7 @@
             background: rgba(239, 68, 68, 0.9);
             border-color: rgba(239, 68, 68, 0.4);
         }
+
         body {
             background: #050505;
             overflow: hidden;
@@ -180,14 +181,17 @@
         .combat-log::-webkit-scrollbar {
             width: 6px;
         }
+
         .combat-log::-webkit-scrollbar-track {
             background: rgba(15, 23, 42, 0.4);
             border-radius: 4px;
         }
+
         .combat-log::-webkit-scrollbar-thumb {
             background: rgba(255, 255, 255, 0.2);
             border-radius: 4px;
         }
+
         .combat-log::-webkit-scrollbar-thumb:hover {
             background: rgba(255, 255, 255, 0.3);
         }
@@ -353,8 +357,8 @@
             background: rgba(255, 255, 255, 0.1);
         }
 
-        .filter-radio input[type="radio"]:checked + span,
-        .filter-radio input[type="checkbox"]:checked + span {
+        .filter-radio input[type="radio"]:checked+span,
+        .filter-radio input[type="checkbox"]:checked+span {
             background: rgba(56, 189, 248, 0.2);
             border-color: rgba(56, 189, 248, 0.5);
             color: #38bdf8;
@@ -435,13 +439,16 @@
             border-color: rgba(255, 255, 255, 0.25);
         }
 
-        .combat-spell-card.pending-cast, .action-btn.pending-cast {
+        .combat-spell-card.pending-cast,
+        .action-btn.pending-cast {
             border-color: #a855f7 !important;
             box-shadow: 0 0 15px rgba(168, 85, 247, 0.4) !important;
             background: rgba(30, 41, 59, 0.95) !important;
         }
 
-        .combat-spell-card.disabled, .action-btn.disabled, .filter-radio.disabled {
+        .combat-spell-card.disabled,
+        .action-btn.disabled,
+        .filter-radio.disabled {
             opacity: 0.5;
             pointer-events: none;
             filter: grayscale(100%);
@@ -785,7 +792,7 @@
         .combat-grid-container::-webkit-scrollbar-thumb:hover {
             background: rgba(255, 255, 255, 0.3);
         }
-        
+
         .flip-icon {
             transform: scaleY(-1);
             display: inline-block;
@@ -882,11 +889,12 @@
             <div class="result-title" id="eventTitle" style="font-size: 3rem; margin-bottom: 1rem;">Trésor !</div>
             <p style="color: #94a3b8; font-size: 1.2rem; margin-bottom: 2rem; max-width: 600px; text-align: center;"
                 id="eventDesc">Vous avez trouvé un trésor.</p>
-                
-            <div id="eventLootContainer" style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; margin-bottom: 2rem;">
+
+            <div id="eventLootContainer"
+                style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; margin-bottom: 2rem;">
                 <!-- Rempli par JS (Items / XP animation) -->
             </div>
-            
+
             <div id="eventActionContainer" style="display: flex; gap: 1rem;">
                 <button class="action-btn" id="btnOpenChest" onclick="openChest()"
                     style="background: rgba(245, 158, 11, 0.2); color: #f59e0b; border-color: rgba(245, 158, 11, 0.4); display: none;">
@@ -901,12 +909,15 @@
 
         <!-- Combat Victory Overlay -->
         <div class="event-overlay" id="combatVictoryOverlay">
-            <span class="material-symbols-outlined" style="font-size: 5rem; margin-bottom: 1rem; color: #10b981;">emoji_events</span>
+            <span class="material-symbols-outlined"
+                style="font-size: 5rem; margin-bottom: 1rem; color: #10b981;">emoji_events</span>
             <div class="result-title" style="font-size: 3rem; margin-bottom: 1rem; color: #10b981;">Victoire !</div>
-            <p style="color: #94a3b8; font-size: 1.2rem; margin-bottom: 2rem; max-width: 600px; text-align: center;" id="combatVictoryDesc">
+            <p style="color: #94a3b8; font-size: 1.2rem; margin-bottom: 2rem; max-width: 600px; text-align: center;"
+                id="combatVictoryDesc">
                 Le combat est terminé.
             </p>
-            <div id="combatVictoryXpContainer" style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; margin-bottom: 2rem;">
+            <div id="combatVictoryXpContainer"
+                style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; margin-bottom: 2rem;">
                 <!-- Rempli par JS -->
             </div>
             <button class="action-btn" onclick="nextRoom()"
@@ -919,7 +930,7 @@
             <div class="result-title" id="resultTitle">VICTOIRE</div>
             <p style="color: #94a3b8; font-size: 1.2rem; margin-bottom: 2rem;" id="resultDesc">Le donjon a été complété.
             </p>
-            <a href="/vault.html" class="action-btn" style="text-decoration: none;">
+            <a href="/dungeons.html" class="action-btn" style="text-decoration: none;">
                 Retourner à la page des donjons
             </a>
         </div>
@@ -949,19 +960,29 @@
             <div class="csp-filters">
                 <div class="filter-group">
                     <span class="filter-label">Type:</span>
-                    <label class="filter-radio"><input type="radio" name="filterCastingType" value="ALL" checked onchange="applySpellFilters(this)"><span>Tous</span></label>
-                    <label class="filter-radio"><input type="radio" name="filterCastingType" value="INSTANTANE" onchange="applySpellFilters(this)"><span>Instantané</span></label>
-                    <label class="filter-radio"><input type="radio" name="filterCastingType" value="BANAL" onchange="applySpellFilters(this)"><span>Banal</span></label>
-                    <label class="filter-radio"><input type="radio" name="filterCastingType" value="CANALISE" onchange="applySpellFilters(this)"><span>Canalisé</span></label>
+                    <label class="filter-radio"><input type="radio" name="filterCastingType" value="ALL" checked
+                            onchange="applySpellFilters(this)"><span>Tous</span></label>
+                    <label class="filter-radio"><input type="radio" name="filterCastingType" value="INSTANTANE"
+                            onchange="applySpellFilters(this)"><span>Instantané</span></label>
+                    <label class="filter-radio"><input type="radio" name="filterCastingType" value="BANAL"
+                            onchange="applySpellFilters(this)"><span>Banal</span></label>
+                    <label class="filter-radio"><input type="radio" name="filterCastingType" value="CANALISE"
+                            onchange="applySpellFilters(this)"><span>Canalisé</span></label>
                 </div>
                 <div class="filter-group">
                     <span class="filter-label">Niveau:</span>
-                    <label class="filter-radio"><input type="checkbox" name="filterLevel" value="ALL" checked onchange="applySpellFilters(this)"><span>Tous</span></label>
-                    <label class="filter-radio"><input type="checkbox" name="filterLevel" value="1" onchange="applySpellFilters(this)"><span>1</span></label>
-                    <label class="filter-radio"><input type="checkbox" name="filterLevel" value="2" onchange="applySpellFilters(this)"><span>2</span></label>
-                    <label class="filter-radio"><input type="checkbox" name="filterLevel" value="3" onchange="applySpellFilters(this)"><span>3</span></label>
-                    <label class="filter-radio"><input type="checkbox" name="filterLevel" value="4" onchange="applySpellFilters(this)"><span>4</span></label>
-                    <label class="filter-radio"><input type="checkbox" name="filterLevel" value="5" onchange="applySpellFilters(this)"><span>5</span></label>
+                    <label class="filter-radio"><input type="checkbox" name="filterLevel" value="ALL" checked
+                            onchange="applySpellFilters(this)"><span>Tous</span></label>
+                    <label class="filter-radio"><input type="checkbox" name="filterLevel" value="1"
+                            onchange="applySpellFilters(this)"><span>1</span></label>
+                    <label class="filter-radio"><input type="checkbox" name="filterLevel" value="2"
+                            onchange="applySpellFilters(this)"><span>2</span></label>
+                    <label class="filter-radio"><input type="checkbox" name="filterLevel" value="3"
+                            onchange="applySpellFilters(this)"><span>3</span></label>
+                    <label class="filter-radio"><input type="checkbox" name="filterLevel" value="4"
+                            onchange="applySpellFilters(this)"><span>4</span></label>
+                    <label class="filter-radio"><input type="checkbox" name="filterLevel" value="5"
+                            onchange="applySpellFilters(this)"><span>5</span></label>
                 </div>
             </div>
 
@@ -1003,7 +1024,8 @@
 
     <!-- Buy Confirmation Modal -->
     <div id="buyConfirmModal" class="vault-modal-overlay">
-        <div class="vault-modal-content small" style="border-color: rgba(245, 158, 11, 0.4); max-width: 400px; padding: 2rem;">
+        <div class="vault-modal-content small"
+            style="border-color: rgba(245, 158, 11, 0.4); max-width: 400px; padding: 2rem;">
             <div class="vault-modal-icon"
                 style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 2px solid rgba(245, 158, 11, 0.2); width: 64px; height: 64px; border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto;">
                 <span class="material-symbols-outlined" style="font-size: 2rem;">shopping_cart_checkout</span>
@@ -1011,14 +1033,19 @@
             <div
                 style="font-size: 1.2rem; font-weight: 600; font-family: 'Outfit', sans-serif; color: #fff; margin-bottom: 0.8rem; text-align: center;">
                 Acheter cet objet ?</div>
-            <div style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 1.5rem; line-height: 1.5; text-align: center;">Êtes-vous sûr de
+            <div
+                style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 1.5rem; line-height: 1.5; text-align: center;">
+                Êtes-vous sûr de
                 vouloir acheter <strong id="buyTargetName" style="color:#fff;">cet objet</strong> ? Il sera ajouté à
                 votre inventaire de combat (et dans vos objets).</div>
             <div style="display: flex; gap: 1rem;">
                 <button onclick="window.closeBuyModal()"
-                    style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 0.6rem; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.2s ease;" onmouseover="this.style.background='rgba(255,255,255,0.1)'" onmouseout="this.style.background='rgba(255,255,255,0.05)'">Annuler</button>
+                    style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 0.6rem; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.2s ease;"
+                    onmouseover="this.style.background='rgba(255,255,255,0.1)'"
+                    onmouseout="this.style.background='rgba(255,255,255,0.05)'">Annuler</button>
                 <button id="buyConfirmBtn"
-                    style="flex: 1; background: #f59e0b; border: none; color: #fff; padding: 0.6rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);" onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter='none'">Oui,
+                    style="flex: 1; background: #f59e0b; border: none; color: #fff; padding: 0.6rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);"
+                    onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter='none'">Oui,
                     acheter</button>
             </div>
         </div>

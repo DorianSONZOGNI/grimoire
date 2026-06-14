@@ -58,6 +58,14 @@ public class Salle {
     private int trapAmount;
     private boolean trapHasRopeOption;
     
+    // IF BOSS
+    private Integer bossGlobalBuffHpPct;
+    private Integer bossGlobalBuffShieldPct;
+    private Integer bossGlobalBuffShieldDuration;
+    private Integer bossGlobalBuffArmor;
+    private Integer bossGlobalBuffResistance;
+    private Integer bossGlobalBuffStatsDuration;
+    private String bossGlobalBuffOnHitEffect; // "POISON", "BRULURE" ou null
     private Integer trapDamageHpPct;
     private Integer trapDamageManaPct;
     private Integer trapDamageHpFixed;

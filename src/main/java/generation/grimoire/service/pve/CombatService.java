@@ -99,15 +99,24 @@ public class CombatService {
         generation.grimoire.entity.pve.Salle freshSalle = salleRepository.findById(session.getCurrentRoom().getId()).orElse(session.getCurrentRoom());
         session.setCurrentRoom(freshSalle);
 
-        if (session.getCurrentRoom().getType() == generation.grimoire.enumeration.RoomType.COMBAT) {
+        if (session.getCurrentRoom().getType() == generation.grimoire.enumeration.RoomType.COMBAT || session.getCurrentRoom().getType() == generation.grimoire.enumeration.RoomType.BOSS) {
             session.getEnemies().clear();
             if (session.getCurrentRoom().getMonsters() != null) {
                 for (generation.grimoire.entity.pve.Monstre m : session.getCurrentRoom().getMonsters()) {
                     generation.grimoire.model.pve.ActiveMonster am = new generation.grimoire.model.pve.ActiveMonster(m);
+                    
+                    if (session.getCurrentRoom().getType() == generation.grimoire.enumeration.RoomType.BOSS) {
+                        applyBossGlobalBuffs(am, session.getCurrentRoom());
+                    }
+                    
                     session.getEnemies().add(am);
                 }
             }
-            session.addLog("Vous entrez dans une salle de combat ! Préparez-vous.");
+            if (session.getCurrentRoom().getType() == generation.grimoire.enumeration.RoomType.BOSS) {
+                session.addLog("Vous entrez dans une salle de BOSS ! Préparez-vous à un affrontement mortel.");
+            } else {
+                session.addLog("Vous entrez dans une salle de combat ! Préparez-vous.");
+            }
             session.setTurnNumber(1);
             for (Personnage p : session.getPlayers()) {
                 p.setBanalSpellCastThisTurn(false);
@@ -120,6 +129,47 @@ public class CombatService {
         } else if (session.getCurrentRoom().getType() == generation.grimoire.enumeration.RoomType.EVENT) {
             session.getEnemies().clear();
             session.addLog("Événement : " + session.getCurrentRoom().getEventText());
+        }
+    }
+
+    private void applyBossGlobalBuffs(generation.grimoire.model.pve.ActiveMonster am, generation.grimoire.entity.pve.Salle room) {
+        generation.grimoire.entity.personnage.Personnage p = am.getAsPersonnage();
+        
+        if (room.getBossGlobalBuffHpPct() != null && room.getBossGlobalBuffHpPct() > 0) {
+            int bonusHp = (int)(p.getHealthMax() * (room.getBossGlobalBuffHpPct() / 100.0));
+            p.setHealthMax(p.getHealthMax() + bonusHp);
+            p.setHealthCurrent(p.getHealthCurrent() + bonusHp);
+        }
+        if (room.getBossGlobalBuffShieldPct() != null && room.getBossGlobalBuffShieldPct() > 0) {
+            int shield = (int)(p.getHealthMax() * (room.getBossGlobalBuffShieldPct() / 100.0));
+            int duration = room.getBossGlobalBuffShieldDuration() != null ? room.getBossGlobalBuffShieldDuration() : 99;
+            p.addShield(shield, duration, "Boss Shield");
+        }
+        if ((room.getBossGlobalBuffArmor() != null && room.getBossGlobalBuffArmor() > 0) || (room.getBossGlobalBuffResistance() != null && room.getBossGlobalBuffResistance() > 0)) {
+            int duration = room.getBossGlobalBuffStatsDuration() != null ? room.getBossGlobalBuffStatsDuration() : 99;
+            if (room.getBossGlobalBuffArmor() != null && room.getBossGlobalBuffArmor() > 0) {
+                generation.grimoire.entity.spell.type.effect.BuffDebuffEffect armorBuff = new generation.grimoire.entity.spell.type.effect.BuffDebuffEffect();
+                armorBuff.setStatAffected(generation.grimoire.enumeration.StatType.ARMURE);
+                armorBuff.setFlatValue(room.getBossGlobalBuffArmor());
+                armorBuff.setDuration(duration);
+                p.getActiveBuffs().add(armorBuff);
+            }
+            if (room.getBossGlobalBuffResistance() != null && room.getBossGlobalBuffResistance() > 0) {
+                generation.grimoire.entity.spell.type.effect.BuffDebuffEffect resBuff = new generation.grimoire.entity.spell.type.effect.BuffDebuffEffect();
+                resBuff.setStatAffected(generation.grimoire.enumeration.StatType.RESISTANCE);
+                resBuff.setFlatValue(room.getBossGlobalBuffResistance());
+                resBuff.setDuration(duration);
+                p.getActiveBuffs().add(resBuff);
+            }
+        }
+        if (room.getBossGlobalBuffOnHitEffect() != null && !room.getBossGlobalBuffOnHitEffect().isEmpty()) {
+            if ("BRULURE".equalsIgnoreCase(room.getBossGlobalBuffOnHitEffect())) {
+                p.getPassiveStates().put("BURN_ON_HIT", 5); // 5 dégâts par défaut
+                p.getPassiveStates().put("BURN_ON_HIT_DURATION", 3);
+            } else if ("POISON".equalsIgnoreCase(room.getBossGlobalBuffOnHitEffect())) {
+                p.getPassiveStates().put("POISON_ON_HIT", 5); // 5 dégâts par défaut
+                p.getPassiveStates().put("POISON_ON_HIT_DURATION", 3);
+            }
         }
     }
 
