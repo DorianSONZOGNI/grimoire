@@ -204,6 +204,7 @@ window.endTurn = endTurn;
 window.nextRoom = nextRoom;
 window.openChest = openChest;
 window.acceptAlteration = acceptAlteration;
+window.useRope = useRope;
 window.buyMerchantItem = buyMerchantItem;
 window.openBuyModal = openBuyModal;
 window.closeBuyModal = closeBuyModal;
@@ -629,8 +630,28 @@ async function acceptAlteration() {
             renderAndAnimateXPCards('eventLootContainer', data.players, 'alt');
             lootContainer.style.display = 'flex';
         }
-    } catch (err) {
-        console.error(err);
+    } catch (e) {
+        console.error(e);
+        showNotif("Erreur lors de l'altération", true);
+    }
+}
+
+async function useRope() {
+    if (!sessionId) return;
+    try {
+        const res = await fetch(`/api/pve/combat/${sessionId}/use-rope`, {
+            method: 'POST'
+        });
+        if (!res.ok) {
+            const err = await res.text();
+            showNotif(err || "Action impossible", true);
+            return;
+        }
+        const data = await res.json();
+        updateUI(data);
+    } catch (e) {
+        console.error(e);
+        showNotif("Erreur lors de l'utilisation de la corde", true);
     }
 }
 
@@ -1147,21 +1168,44 @@ function updateUI(data) {
                     title.textContent = 'Piège !';
 
                     let trapDesc = data.currentRoom.eventText || 'Un piège se déclenche !';
-                    const trapType = data.currentRoom.trapType || 'PV';
-                    const trapAmount = data.currentRoom.trapAmount || 0;
+                    
+                    if (data.roomEventCompleted) {
+                        trapDesc += `<br><br><span style="color:#10b981;">🪢 Piège évité grâce à une Corde !</span>`;
+                        desc.innerHTML = trapDesc;
+                        btnOpen.style.display = 'none';
+                        btnCont.style.display = 'block';
+                        btnCont.textContent = 'Continuer';
+                        lootContainer.style.display = 'none';
+                    } else {
+                        const trapType = data.currentRoom.trapType || 'PV';
+                        const trapAmount = data.currentRoom.trapAmount || 0;
 
-                    if (trapType === 'PV') {
-                        trapDesc += `<br><br><span style="color:#ef4444;">⚠️ Perte de ${trapAmount} PV</span>`;
-                    } else if (trapType === 'MANA') {
-                        trapDesc += `<br><br><span style="color:#38bdf8;">⚠️ Perte de ${trapAmount} Mana</span>`;
-                    } else if (trapType === 'CORDE') {
-                        trapDesc += `<br><br><span style="color:#f59e0b;">🪢 Nécessite une Corde pour éviter le piège</span>`;
+                        if (trapType === 'PV') {
+                            trapDesc += `<br><br><span style="color:#ef4444;">⚠️ Perte de ${trapAmount} PV</span>`;
+                        } else if (trapType === 'MANA') {
+                            trapDesc += `<br><br><span style="color:#38bdf8;">⚠️ Perte de ${trapAmount} Mana</span>`;
+                        }
+
+                        desc.innerHTML = trapDesc;
+                        btnOpen.style.display = 'none';
+
+                        if (data.currentRoom.trapHasRopeOption) {
+                            lootContainer.style.display = 'flex';
+                            lootContainer.innerHTML = `
+                                <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
+                                    <div style="display: flex; gap: 1rem; margin-top: 1rem; justify-content: center; width: 100%;">
+                                        <button class="btn" style="flex: 1; max-width: 250px; background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;" onclick="useRope()">Utiliser une Corde</button>
+                                        <button class="btn" style="flex: 1; max-width: 250px; background: rgba(255, 255, 255, 0.05); color: #94a3b8; border: 1px solid rgba(255, 255, 255, 0.1); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;" onclick="nextRoom()">Subir le piège et passer</button>
+                                    </div>
+                                </div>
+                            `;
+                            btnCont.style.display = 'none';
+                        } else {
+                            btnCont.style.display = 'block';
+                            btnCont.textContent = 'Subir le piège et passer';
+                            lootContainer.style.display = 'none';
+                        }
                     }
-
-                    desc.innerHTML = trapDesc;
-                    btnOpen.style.display = 'none';
-                    btnCont.style.display = 'block';
-                    lootContainer.style.display = 'none';
                 } else if (subType === 'PORTE_ETRANGE') {
                     icon.textContent = 'door_front';
                     icon.style.color = '#fbbf24';

@@ -122,4 +122,14 @@ public class CombatController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+    @PostMapping("/{sessionId}/use-rope")
+    public ResponseEntity<?> useRope(@PathVariable String sessionId) {
+        try {
+            CombatSession session = combatService.useRope(sessionId);
+            return ResponseEntity.ok(session);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }

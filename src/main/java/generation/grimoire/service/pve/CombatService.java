@@ -333,6 +333,57 @@ public class CombatService {
         return session;
     }
 
+    public CombatSession useRope(String sessionId) {
+        CombatSession session = activeSessions.get(sessionId);
+        if (session == null || session.isFinished()) return session;
+        
+        if (session.getCurrentRoom().getType() != generation.grimoire.enumeration.RoomType.EVENT || 
+            session.getCurrentRoom().getEventSubType() != generation.grimoire.enumeration.EventSubType.PIEGE) {
+            throw new RuntimeException("Ce n'est pas un piège !");
+        }
+        
+        if (!session.getCurrentRoom().isTrapHasRopeOption()) {
+            throw new RuntimeException("Vous ne pouvez pas utiliser de corde ici.");
+        }
+        
+        if (session.isRoomEventCompleted()) {
+            throw new RuntimeException("L'événement a déjà été résolu.");
+        }
+        
+        boolean hasRope = false;
+        Personnage ropeOwner = null;
+        for (Personnage p : session.getPlayers()) {
+            if (p.getSpecialItemQuantity("Corde") > 0) {
+                hasRope = true;
+                ropeOwner = p;
+                break;
+            }
+        }
+        
+        if (!hasRope) {
+            throw new RuntimeException("Aucun héros ne possède de Corde !");
+        }
+        
+        ropeOwner.removeSpecialItem("Corde", 1);
+        personnageRepository.save(ropeOwner);
+        
+        generation.grimoire.entity.auth.AppUser user = ropeOwner.getUser();
+        if (user != null) {
+            List<generation.grimoire.entity.Anomalie> userAnomalies = anomalieRepository.findByOwnerUsername(user.getUsername());
+            generation.grimoire.entity.Anomalie toDestroy = userAnomalies.stream()
+                .filter(a -> a.getName().equalsIgnoreCase("Corde"))
+                .findFirst()
+                .orElse(null);
+            if (toDestroy != null) {
+                anomalieRepository.delete(toDestroy);
+            }
+        }
+        
+        session.addLog(ropeOwner.getName() + " utilise une Corde pour éviter le piège !");
+        session.setRoomEventCompleted(true);
+        return session;
+    }
+
     public CombatSession buyMerchantItem(String sessionId, int lootIndex, Long characterId) {
         CombatSession session = activeSessions.get(sessionId);
         if (session == null || session.isFinished()) {

@@ -129,6 +129,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     s.alterationRequiredItem = r.alterationRequiredItem || null;
                     s.trapType = r.trapType || null;
                     s.trapAmount = r.trapAmount || 0;
+                    s.trapHasRopeOption = r.trapHasRopeOption || false;
                     s.doorOutcomes = r.doorOutcomes ? JSON.stringify(r.doorOutcomes) : null;
                     if (r.lootTable) {
                         s.lootTable = r.lootTable;
@@ -175,7 +176,7 @@ window.addRoom = function (type) {
     } else if (type === 'RENCONTRE') {
         selectedRooms.push({ type: 'EVENT', eventSubType: 'RENCONTRE', eventText: 'Un marchand ambulant vous interpelle...', lootTable: [] });
     } else if (type === 'PIEGE') {
-        selectedRooms.push({ type: 'EVENT', eventSubType: 'PIEGE', eventText: 'Un piège se déclenche !', trapType: 'PV', trapAmount: 10 });
+        selectedRooms.push({ type: 'EVENT', eventSubType: 'PIEGE', eventText: 'Un piège se déclenche !', trapType: 'PV', trapAmount: 10, trapHasRopeOption: false });
     } else if (type === 'PORTE_ETRANGE') {
         selectedRooms.push({ type: 'EVENT', eventSubType: 'PORTE_ETRANGE', eventText: 'Une porte étrange se dresse devant vous...', doorOutcomes: [] });
     }
@@ -665,13 +666,18 @@ function renderRooms() {
                             <select class="form-control" onchange="updateRoomField(${rIndex}, 'trapType', this.value)">
                                 <option value="PV" ${room.trapType === 'PV' ? 'selected' : ''}>Perte de PV</option>
                                 <option value="MANA" ${room.trapType === 'MANA' ? 'selected' : ''}>Perte de Mana</option>
-                                <option value="CORDE" ${room.trapType === 'CORDE' ? 'selected' : ''}>Nécessite une Corde</option>
                             </select>
                         </div>
                         <div style="flex: 1;">
                             <label style="font-size: 0.8rem; color: #94a3b8;">Montant</label>
                             <input type="number" class="form-control" value="${room.trapAmount || 0}" onchange="updateRoomField(${rIndex}, 'trapAmount', parseInt(this.value))">
                         </div>
+                    </div>
+                    <div style="margin-top: 0.75rem;">
+                        <label style="display: flex; align-items: center; gap: 0.5rem; font-size: 0.85rem; color: #f8fafc; cursor: pointer;">
+                            <input type="checkbox" ${room.trapHasRopeOption ? 'checked' : ''} onchange="updateRoomField(${rIndex}, 'trapHasRopeOption', this.checked)" style="accent-color: #f59e0b; width: 16px; height: 16px;">
+                            Possibilité d'utiliser une Corde pour éviter le piège
+                        </label>
                     </div>
                 `;
             } else if (subType === 'PORTE_ETRANGE') {
@@ -1054,6 +1060,7 @@ async function editDungeon(id) {
                     room.alterationRequiredItem = s.alterationRequiredItem || null;
                     room.trapType = s.trapType;
                     room.trapAmount = s.trapAmount || 0;
+                    room.trapHasRopeOption = s.trapHasRopeOption || false;
                     
                     if (s.doorOutcomes) {
                         try {

@@ -54,8 +54,9 @@ public class Salle {
     private String alterationRequiredItem;
 
     // IF PIEGE
-    private String trapType; // "PV", "MANA", "CORDE"
+    private String trapType; // "PV", "MANA"
     private int trapAmount;
+    private boolean trapHasRopeOption;
 
     // IF PORTE_ETRANGE — outcomes as JSON string
     @Column(columnDefinition = "TEXT")

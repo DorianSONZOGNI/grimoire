@@ -27,6 +27,7 @@ public class SalleDTO {
     private String alterationRequiredItem;
     private String trapType;
     private int trapAmount;
+    private boolean trapHasRopeOption;
     private String doorOutcomes;
     private List<LootEntryDTO> lootTable;
 }
