@@ -791,7 +791,7 @@ function renderRooms() {
                             if (outcome.altarRewardType === 'ITEM') {
                                 const selEq = allEquipments.find(e => e.id == outcome.altarRewardValue) || allEquipments[0];
                                 rewardValueHtml = `
-                                    <div class="custom-select-wrapper" id="altar_rewardval_wrapper_${rIndex}_${oIndex}" style="margin-top: 0.2rem; z-index: ${90 - rIndex};">
+                                    <div class="custom-select-wrapper" id="altar_rewardval_wrapper_${rIndex}_${oIndex}" style="margin-top: 0.2rem; z-index: ${150 - (rIndex * 10 + oIndex * 3)};">
                                         <div class="custom-select-trigger" onclick="toggleAltarRewardValSelect(${rIndex}, ${oIndex})" style="padding: 0.5rem; font-size: 0.85rem; border-radius: 8px;">
                                             <span class="cs-label" id="altar_rewardval_label_${rIndex}_${oIndex}">
                                                 ${selEq ? selEq.name : 'Choisir un objet'}
@@ -817,7 +817,7 @@ function renderRooms() {
                                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 0.5rem;">
                                         <div>
                                             <label style="font-size: 0.75rem; color: #94a3b8;">Spiritualité acceptée</label>
-                                            <div class="custom-select-wrapper" id="altar_spirituality_wrapper_${rIndex}_${oIndex}" style="margin-top: 0.2rem; z-index: ${92 - rIndex};">
+                                            <div class="custom-select-wrapper" id="altar_spirituality_wrapper_${rIndex}_${oIndex}" style="margin-top: 0.2rem; z-index: ${152 - (rIndex * 10 + oIndex * 3)};">
                                                 <div class="custom-select-trigger" onclick="toggleAltarSpiritualitySelect(${rIndex}, ${oIndex})" style="padding: 0.5rem; font-size: 0.85rem; border-radius: 8px;">
                                                     <span class="cs-label" id="altar_spirituality_label_${rIndex}_${oIndex}">
                                                         ${outcome.altarSpirituality === 'ESPRIT' ? '<span class="material-symbols-outlined cs-icon" style="color: #3b82f6; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">blur_on</span> Esprit' : outcome.altarSpirituality === 'KARMA' ? '<span class="material-symbols-outlined cs-icon" style="color: #f59e0b; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">all_inclusive</span> Karma' : '<span class="material-symbols-outlined cs-icon" style="color: #d946ef; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">dark_mode</span> Ténèbres'}
@@ -839,7 +839,7 @@ function renderRooms() {
                                         </div>
                                         <div>
                                             <label style="font-size: 0.75rem; color: #94a3b8;">Type de récompense</label>
-                                            <div class="custom-select-wrapper" id="altar_reward_wrapper_${rIndex}_${oIndex}" style="margin-top: 0.2rem; z-index: ${91 - rIndex};">
+                                            <div class="custom-select-wrapper" id="altar_reward_wrapper_${rIndex}_${oIndex}" style="margin-top: 0.2rem; z-index: ${151 - (rIndex * 10 + oIndex * 3)};">
                                                 <div class="custom-select-trigger" onclick="toggleAltarRewardSelect(${rIndex}, ${oIndex})" style="padding: 0.5rem; font-size: 0.85rem; border-radius: 8px;">
                                                     <span class="cs-label" id="altar_reward_label_${rIndex}_${oIndex}">
                                                         ${outcome.altarRewardType === 'XP' ? '<span class="material-symbols-outlined cs-icon" style="color: #38bdf8; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">auto_awesome</span> XP Spiritualité' : outcome.altarRewardType === 'ITEM' ? '<span class="material-symbols-outlined cs-icon" style="color: #8b5cf6; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">redeem</span> Équipement' : '<span class="material-symbols-outlined cs-icon" style="color: #eab308; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">monetization_on</span> Or (Gold)'}
@@ -866,6 +866,43 @@ function renderRooms() {
                                     </div>
                                 </div>
                             `;
+                        } else if (outcome.type === 'TRESOR') {
+                            if (!outcome.treasureAnomalieId) outcome.treasureAnomalieId = allAnomalies.length > 0 ? allAnomalies[0].id : '';
+                            const selAnomalie = allAnomalies.find(a => a.id == outcome.treasureAnomalieId) || allAnomalies[0];
+                            let selAnColor = '#94a3b8';
+                            if (selAnomalie) {
+                                if (selAnomalie.spiritualite === 'TENEBRES') selAnColor = '#d946ef';
+                                else if (selAnomalie.spiritualite === 'ESPRIT') selAnColor = '#3b82f6';
+                                else if (selAnomalie.spiritualite === 'KARMA') selAnColor = '#f59e0b';
+                            }
+                            const selAnHtml = selAnomalie ? `<span class="material-symbols-outlined cs-icon" style="color: ${selAnColor}; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">star</span>${selAnomalie.name}` : 'Aucune anomalie disponible';
+
+                            extraHtml = `
+                                <div style="margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px dashed rgba(255,255,255,0.15); width: 100%;">
+                                    <label style="font-size: 0.8rem; color: #eab308;">Anomalie (Trésor)</label>
+                                    <div class="custom-select-wrapper" id="altar_treasure_wrapper_${rIndex}_${oIndex}" style="margin-top: 0.2rem; z-index: ${150 - (rIndex * 10 + oIndex * 3)};">
+                                        <div class="custom-select-trigger" onclick="toggleAltarTreasureSelect(${rIndex}, ${oIndex})" style="padding: 0.5rem; font-size: 0.85rem; border-radius: 8px;">
+                                            <span class="cs-label" id="altar_treasure_label_${rIndex}_${oIndex}">
+                                                ${selAnHtml}
+                                            </span>
+                                            <span class="material-symbols-outlined">expand_more</span>
+                                        </div>
+                                        <div class="custom-select-options" id="altar_treasure_options_${rIndex}_${oIndex}" style="max-height: 200px; overflow-y: auto;">
+                                            ${allAnomalies.map(an => {
+                                                let anColor = '#94a3b8';
+                                                if (an.spiritualite === 'TENEBRES') anColor = '#d946ef';
+                                                else if (an.spiritualite === 'ESPRIT') anColor = '#3b82f6';
+                                                else if (an.spiritualite === 'KARMA') anColor = '#f59e0b';
+                                                return `
+                                                <div class="custom-option" onclick="updateAltarField(${rIndex}, ${oIndex}, 'treasureAnomalieId', ${an.id})">
+                                                    <span class="material-symbols-outlined cs-icon" style="color: ${anColor}; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">star</span>${an.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${an.level || 1})</span>
+                                                </div>
+                                                `;
+                                            }).join('')}
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
                         }
 
                         outcomesHtml += `
@@ -885,7 +922,7 @@ function renderRooms() {
                 }
                 outcomesHtml += `</div>
                     <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem; align-items: stretch;">
-                        <div class="custom-select-wrapper" id="room_door_outcome_wrapper_${rIndex}" style="flex: 2; z-index: ${100 - rIndex}; margin: 0;">
+                        <div class="custom-select-wrapper" id="room_door_outcome_wrapper_${rIndex}" style="flex: 2; z-index: ${50 - rIndex}; margin: 0;">
                             <div class="custom-select-trigger" onclick="toggleDoorOutcomeSelect(${rIndex})" style="padding: 0.6rem 1rem; border-radius: 8px;">
                                 <span class="cs-label" id="room_door_outcome_label_${rIndex}">
                                     <span class="material-symbols-outlined cs-icon" style="color: #ef4444; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">sentiment_extremely_dissatisfied</span> Boss
@@ -1589,6 +1626,16 @@ window.toggleAltarRewardSelect = function (rIndex, oIndex) {
 
 window.toggleAltarRewardValSelect = function (rIndex, oIndex) {
     const wrapper = document.getElementById(`altar_rewardval_wrapper_${rIndex}_${oIndex}`);
+    if (wrapper) {
+        document.querySelectorAll('.custom-select-wrapper.open').forEach(el => {
+            if (el !== wrapper) el.classList.remove('open');
+        });
+        wrapper.classList.toggle('open');
+    }
+};
+
+window.toggleAltarTreasureSelect = function (rIndex, oIndex) {
+    const wrapper = document.getElementById(`altar_treasure_wrapper_${rIndex}_${oIndex}`);
     if (wrapper) {
         document.querySelectorAll('.custom-select-wrapper.open').forEach(el => {
             if (el !== wrapper) el.classList.remove('open');
