@@ -782,6 +782,49 @@ function renderRooms() {
                         let extraHtml = '';
                         if (outcome.type === 'ITEM') {
                             extraHtml = doorLootHtml;
+                        } else if (outcome.type === 'AUTEL') {
+                            if (!outcome.altarSpirituality) outcome.altarSpirituality = 'TENEBRES';
+                            if (!outcome.altarRewardType) outcome.altarRewardType = 'GOLD';
+                            if (outcome.altarRewardValue === undefined) outcome.altarRewardValue = 100;
+
+                            let rewardValueHtml = '';
+                            if (outcome.altarRewardType === 'ITEM') {
+                                rewardValueHtml = `
+                                    <select class="form-control" onchange="updateAltarField(${rIndex}, ${oIndex}, 'altarRewardValue', this.value)" style="padding: 0.5rem; font-size: 0.85rem;">
+                                        ${allEquipments.map(eq => `<option value="${eq.id}" ${outcome.altarRewardValue == eq.id ? 'selected' : ''}>${eq.name}</option>`).join('')}
+                                    </select>
+                                `;
+                            } else {
+                                rewardValueHtml = `<input type="number" class="form-control" value="${outcome.altarRewardValue}" onchange="updateAltarField(${rIndex}, ${oIndex}, 'altarRewardValue', this.value)" style="padding: 0.5rem; font-size: 0.85rem;" min="1">`;
+                            }
+
+                            extraHtml = `
+                                <div style="margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px dashed rgba(255,255,255,0.15); width: 100%;">
+                                    <label style="font-size: 0.8rem; color: #f97316;">Configuration du Sacrifice</label>
+                                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 0.5rem;">
+                                        <div>
+                                            <label style="font-size: 0.75rem; color: #94a3b8;">Spiritualité acceptée</label>
+                                            <select class="form-control" onchange="updateAltarField(${rIndex}, ${oIndex}, 'altarSpirituality', this.value)" style="padding: 0.5rem; font-size: 0.85rem;">
+                                                <option value="TENEBRES" ${outcome.altarSpirituality === 'TENEBRES' ? 'selected' : ''}>Ténèbres</option>
+                                                <option value="ESPRIT" ${outcome.altarSpirituality === 'ESPRIT' ? 'selected' : ''}>Esprit</option>
+                                                <option value="KARMA" ${outcome.altarSpirituality === 'KARMA' ? 'selected' : ''}>Karma</option>
+                                            </select>
+                                        </div>
+                                        <div>
+                                            <label style="font-size: 0.75rem; color: #94a3b8;">Type de récompense</label>
+                                            <select class="form-control" onchange="updateAltarField(${rIndex}, ${oIndex}, 'altarRewardType', this.value)" style="padding: 0.5rem; font-size: 0.85rem;">
+                                                <option value="GOLD" ${outcome.altarRewardType === 'GOLD' ? 'selected' : ''}>Or (Gold)</option>
+                                                <option value="XP" ${outcome.altarRewardType === 'XP' ? 'selected' : ''}>XP Spiritualité</option>
+                                                <option value="ITEM" ${outcome.altarRewardType === 'ITEM' ? 'selected' : ''}>Équipement</option>
+                                            </select>
+                                        </div>
+                                        <div style="grid-column: span 2;">
+                                            <label style="font-size: 0.75rem; color: #94a3b8;">Valeur de la récompense</label>
+                                            ${rewardValueHtml}
+                                        </div>
+                                    </div>
+                                </div>
+                            `;
                         }
 
                         outcomesHtml += `
@@ -1417,6 +1460,20 @@ window.addDoorOutcome = function (rIndex) {
 
 window.removeDoorOutcome = function (rIndex, oIndex) {
     selectedRooms[rIndex].doorOutcomes.splice(oIndex, 1);
+    renderRooms();
+};
+
+window.updateAltarField = function (rIndex, oIndex, field, value) {
+    const outcome = selectedRooms[rIndex].doorOutcomes[oIndex];
+    if (field === 'altarRewardType') {
+        outcome.altarRewardType = value;
+        outcome.altarRewardValue = value === 'ITEM' ? (allEquipments.length > 0 ? allEquipments[0].id : '') : 100;
+    } else {
+        if (field === 'altarRewardValue' && outcome.altarRewardType !== 'ITEM') {
+            value = parseInt(value) || 0;
+        }
+        outcome[field] = value;
+    }
     renderRooms();
 };
 
