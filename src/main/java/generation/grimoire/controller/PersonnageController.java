@@ -58,10 +58,11 @@ public class PersonnageController {
         boolean isAdmin = ((org.springframework.security.core.Authentication) principal).getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
 
-        Personnage personnage;
-        boolean isUpdate = false;
+        try {
+            Personnage personnage;
+            boolean isUpdate = false;
 
-        if (dto.getId() != null && personnageService.existsById(java.util.Objects.requireNonNull(dto.getId()))) {
+            if (dto.getId() != null && personnageService.existsById(java.util.Objects.requireNonNull(dto.getId()))) {
             personnage = personnageService.findByIdOrThrow(java.util.Objects.requireNonNull(dto.getId()));
             if (!isAdmin && personnage.getUser() != null && !personnage.getUser().getUsername().equals(principal.getName())) {
                 return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).build();
@@ -108,16 +109,22 @@ public class PersonnageController {
             personnage.setSpiritualiteLevel(Math.max(1, Math.min(3, dto.getSpiritualiteLevel())));
         }
 
-        Personnage saved = personnageService.save(personnage);
+            Personnage saved = personnageService.save(personnage);
 
-        String message = isUpdate
-                ? "Personnage \"" + saved.getName() + "\" mis à jour avec succès."
-                : "Personnage \"" + saved.getName() + "\" créé avec succès.";
+            String message = isUpdate
+                    ? "Personnage \"" + saved.getName() + "\" mis à jour avec succès."
+                    : "Personnage \"" + saved.getName() + "\" créé avec succès.";
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("message", message);
-        response.put("personnage", toDto(saved));
-        return ResponseEntity.ok(response);
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", message);
+            response.put("personnage", toDto(saved));
+            return ResponseEntity.ok(response);
+        } catch (Throwable e) {
+            e.printStackTrace();
+            Map<String, Object> errorResp = new HashMap<>();
+            errorResp.put("message", "Erreur serveur: " + e.getMessage() + " | " + e.getClass().getName());
+            return ResponseEntity.status(500).body(errorResp);
+        }
     }
 
     @DeleteMapping("/{id}")
@@ -145,8 +152,8 @@ public class PersonnageController {
         map.put("ownerUsername", p.getUser() != null ? p.getUser().getUsername() : "Inconnu");
         
         // Base stats pour le formulaire d'édition
-        map.put("healthMax", p.getBaseHealthMax());
-        map.put("manaMax", p.getBaseManaMax());
+        map.put("healthMax", p.getHealthMax());
+        map.put("manaMax", p.getManaMax());
         map.put("power", p.getPower());
         map.put("strength", p.getStrength());
         map.put("armor", p.getArmor());
@@ -155,8 +162,8 @@ public class PersonnageController {
         map.put("crit", p.getCrit());
         
         // Total stats pour l'affichage (inclus équipements, buffs, passifs)
-        map.put("totalHealthMax", p.getHealthMax());
-        map.put("totalManaMax", p.getManaMax());
+        map.put("totalHealthMax", p.getTotalHealthMax());
+        map.put("totalManaMax", p.getTotalManaMax());
         map.put("totalPower", p.getEffectiveStat(generation.grimoire.enumeration.StatType.POWER));
         map.put("totalStrength", p.getEffectiveStat(generation.grimoire.enumeration.StatType.STRENGTH));
         map.put("totalArmor", p.getEffectiveStat(generation.grimoire.enumeration.StatType.ARMURE));

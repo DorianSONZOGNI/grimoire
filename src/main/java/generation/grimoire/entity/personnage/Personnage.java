@@ -53,6 +53,8 @@ public class Personnage {
 
     private int experience = 0;
 
+    @Access(AccessType.PROPERTY)
+    @Column(name = "voie_level", nullable = false)
     public int getVoieLevel() {
         if (experience >= 1000) return 5;
         if (experience >= 600) return 4;
@@ -100,6 +102,8 @@ public class Personnage {
         }
     }
 
+    @Access(AccessType.PROPERTY)
+    @Column(name = "spiritualite_level", nullable = false)
     public int getSpiritualiteLevel() {
         if (spiritualiteExperience >= 300) return 3;
         if (spiritualiteExperience >= 100) return 2;
