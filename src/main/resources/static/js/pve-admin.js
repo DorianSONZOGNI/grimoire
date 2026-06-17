@@ -124,6 +124,8 @@ document.addEventListener('DOMContentLoaded', () => {
                 } else if (r.type === 'BOSS') {
                     s.monsters = r.monsters.map(mId => ({ id: mId }));
                     s.globalBuffs = r.globalBuffs && r.globalBuffs.length > 0 ? JSON.stringify(r.globalBuffs) : null;
+                    s.bossRewardSpiritualXp = r.bossRewardSpiritualXp || 0;
+                    s.bossRewardGold = r.bossRewardGold || 0;
                 } else if (r.type === 'TREASURE') {
                     s.treasureGold = r.treasureGold || 0;
                     s.treasureExp = r.treasureExp || 0;
@@ -191,7 +193,9 @@ window.addRoom = function (type) {
         selectedRooms.push({ 
             type: 'BOSS', 
             monsters: [],
-            globalBuffs: []
+            globalBuffs: [],
+            bossRewardSpiritualXp: 0,
+            bossRewardGold: 0
         });
     } else if (type === 'TREASURE') {
         selectedRooms.push({ type: 'TREASURE', treasureGold: 50, treasureExp: 10 });
@@ -521,6 +525,28 @@ function renderRooms() {
                 <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed rgba(255,255,255,0.15);">
                     <label style="font-size: 0.8rem; color: #3b82f6;">Buffs Globaux du Boss</label>
                     ${buffsHtml}
+                </div>
+                <div style="margin-top: 1rem; padding-top: 1rem; border-top: 1px dashed rgba(255,255,255,0.15);">
+                    <label style="font-size: 0.8rem; color: #e11d48; display: flex; align-items: center; gap: 0.3rem; margin-bottom: 0.6rem;">
+                        <span class="material-symbols-outlined" style="font-size: 1rem;">emoji_events</span>
+                        Récompenses de fin de combat (Boss vaincu)
+                    </label>
+                    <div style="display: flex; gap: 1rem;">
+                        <div style="flex: 1;">
+                            <label style="font-size: 0.75rem; color: #8b5cf6; display: flex; align-items: center; gap: 0.3rem; margin-bottom: 0.3rem;">
+                                <span class="material-symbols-outlined" style="font-size: 0.9rem;">blur_on</span>
+                                XP Spiritualité (total, partagé)
+                            </label>
+                            <input type="number" class="form-control" min="0" value="${room.bossRewardSpiritualXp || 0}" onchange="updateRoomField(${rIndex}, 'bossRewardSpiritualXp', parseInt(this.value) || 0)">
+                        </div>
+                        <div style="flex: 1;">
+                            <label style="font-size: 0.75rem; color: #f59e0b; display: flex; align-items: center; gap: 0.3rem; margin-bottom: 0.3rem;">
+                                <span class="material-symbols-outlined" style="font-size: 0.9rem;">paid</span>
+                                Or bonus
+                            </label>
+                            <input type="number" class="form-control" min="0" value="${room.bossRewardGold || 0}" onchange="updateRoomField(${rIndex}, 'bossRewardGold', parseInt(this.value) || 0)">
+                        </div>
+                    </div>
                 </div>
             `;
 
@@ -1595,6 +1621,8 @@ async function editDungeon(id) {
                     } else {
                         room.globalBuffs = [];
                     }
+                    room.bossRewardSpiritualXp = s.bossRewardSpiritualXp || 0;
+                    room.bossRewardGold = s.bossRewardGold || 0;
                 } else if (s.type === 'TREASURE') {
                     room.treasureGold = s.treasureGold;
                     room.treasureExp = s.treasureExp;
