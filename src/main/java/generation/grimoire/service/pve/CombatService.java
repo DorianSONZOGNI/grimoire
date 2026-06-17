@@ -1076,6 +1076,10 @@ public class CombatService {
             if (session.getCurrentRoom().getType() == generation.grimoire.enumeration.RoomType.BOSS) {
                 int bossSpXp = session.getCurrentRoom().getBossRewardSpiritualXp();
                 int bossGold = session.getCurrentRoom().getBossRewardGold();
+                System.out.println("[BOSS REWARDS] SalleId=" + session.getCurrentRoom().getId()
+                        + " | bossRewardSpiritualXp=" + bossSpXp
+                        + " | bossRewardGold=" + bossGold
+                        + " | nbPlayers=" + session.getPlayers().size());
 
                 if (bossSpXp > 0 && !session.getPlayers().isEmpty()) {
                     int spXpPerHero = bossSpXp / Math.max(1, session.getPlayers().size());
@@ -1083,6 +1087,7 @@ public class CombatService {
                         p.setSpiritualiteExperience(p.getSpiritualiteExperience() + spXpPerHero);
                         personnageRepository.save(p);
                     }
+                    session.setBossBonusSpiritualXp(bossSpXp);
                     session.addLog("🔮 Le Boss vaincu octroie " + bossSpXp + " XP Spiritualité, partagé entre " + session.getPlayers().size() + " héros (" + spXpPerHero + " chacun).");
                 }
 
@@ -1093,6 +1098,7 @@ public class CombatService {
                         userRepository.save(user);
                     }
                     session.setTotalGoldAccumulated(session.getTotalGoldAccumulated() + bossGold);
+                    session.setBossBonusGold(bossGold);
                     session.addLog("💰 Le Boss vaincu octroie " + bossGold + " Or supplémentaires !");
                 }
             }

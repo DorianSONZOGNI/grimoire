@@ -943,6 +943,7 @@ function updateUI(data) {
                     if (xpContainer) {
                         xpContainer.innerHTML = '';
 
+                        // Gold from monster drops (existing logic, unchanged)
                         let goldAmount = 0;
                         if (data.combatLog) {
                             for (let i = data.combatLog.length - 1; i >= 0; i--) {
@@ -958,9 +959,38 @@ function updateUI(data) {
 
                         if (goldAmount > 0) {
                             xpContainer.innerHTML += `
-                                <div style="width: 100%; text-align: center; margin-bottom: 1rem; animation: popIn 0.5s ease-out forwards;">
+                                <div style="width: 100%; text-align: center; margin-bottom: 0.5rem; animation: popIn 0.5s ease-out forwards;">
                                     <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(0,0,0,0.4); border: 1px solid #f59e0b80; padding: 0.5rem 1rem; border-radius: 8px; color: #f59e0b; font-weight: bold; font-size: 1.2rem;">
                                         <span class="material-symbols-outlined" style="color: #f59e0b;">monetization_on</span> +${goldAmount} Or
+                                    </div>
+                                </div>
+                            `;
+                        }
+
+                        // Boss bonus gold (new)
+                        const bossBonusGold = data.bossBonusGold || 0;
+                        if (bossBonusGold > 0) {
+                            xpContainer.innerHTML += `
+                                <div style="width: 100%; text-align: center; margin-bottom: 0.5rem; animation: popIn 0.6s ease-out forwards;">
+                                    <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(0,0,0,0.4); border: 1px solid #e11d4880; padding: 0.5rem 1rem; border-radius: 8px; color: #fbbf24; font-weight: bold; font-size: 1.1rem;">
+                                        <span class="material-symbols-outlined" style="color: #e11d48;">local_fire_department</span>
+                                        <span style="color: #e11d48; margin-right: 0.2rem;">BOSS</span> +${bossBonusGold} Or
+                                    </div>
+                                </div>
+                            `;
+                        }
+
+                        // Boss bonus spiritual XP (new)
+                        const bossBonusSpiritXp = data.bossBonusSpiritualXp || 0;
+                        if (bossBonusSpiritXp > 0) {
+                            const perHero = Math.floor(bossBonusSpiritXp / Math.max(1, (data.players || []).length));
+                            xpContainer.innerHTML += `
+                                <div style="width: 100%; text-align: center; margin-bottom: 0.5rem; animation: popIn 0.7s ease-out forwards;">
+                                    <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(0,0,0,0.4); border: 1px solid #8b5cf680; padding: 0.5rem 1rem; border-radius: 8px; color: #8b5cf6; font-weight: bold; font-size: 1.1rem;">
+                                        <span class="material-symbols-outlined" style="color: #e11d48;">local_fire_department</span>
+                                        <span style="color: #e11d48; margin-right: 0.2rem;">BOSS</span>
+                                        <span class="material-symbols-outlined" style="color: #8b5cf6;">blur_on</span>
+                                        +${perHero} XP Spiritualité / héros
                                     </div>
                                 </div>
                             `;
