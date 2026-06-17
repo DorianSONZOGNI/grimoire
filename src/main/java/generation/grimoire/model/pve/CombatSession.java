@@ -41,6 +41,8 @@ public class CombatSession {
 
     private int totalGoldAccumulated = 0;
     private int totalExpAccumulated = 0;
+    private int bossBonusSpiritualXp = 0;   // XP Spiritualité bonus boss (total distribué)
+    private int bossBonusGold = 0;           // Or bonus boss
 
     private List<String> combatLog = new ArrayList<>();
 

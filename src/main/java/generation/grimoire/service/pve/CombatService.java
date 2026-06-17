@@ -1071,6 +1071,37 @@ public class CombatService {
 
         if (!allDeadBefore && session.areAllEnemiesDead()) {
             session.addLog("Combat terminé, vous avez vaincu tous les monstres !");
+
+            // Boss end-of-combat bonus rewards
+            if (session.getCurrentRoom().getType() == generation.grimoire.enumeration.RoomType.BOSS) {
+                int bossSpXp = session.getCurrentRoom().getBossRewardSpiritualXp();
+                int bossGold = session.getCurrentRoom().getBossRewardGold();
+                System.out.println("[BOSS REWARDS] SalleId=" + session.getCurrentRoom().getId()
+                        + " | bossRewardSpiritualXp=" + bossSpXp
+                        + " | bossRewardGold=" + bossGold
+                        + " | nbPlayers=" + session.getPlayers().size());
+
+                if (bossSpXp > 0 && !session.getPlayers().isEmpty()) {
+                    int spXpPerHero = bossSpXp / Math.max(1, session.getPlayers().size());
+                    for (Personnage p : session.getPlayers()) {
+                        p.setSpiritualiteExperience(p.getSpiritualiteExperience() + spXpPerHero);
+                        personnageRepository.save(p);
+                    }
+                    session.setBossBonusSpiritualXp(bossSpXp);
+                    session.addLog("🔮 Le Boss vaincu octroie " + bossSpXp + " XP Spiritualité, partagé entre " + session.getPlayers().size() + " héros (" + spXpPerHero + " chacun).");
+                }
+
+                if (bossGold > 0 && !session.getPlayers().isEmpty()) {
+                    generation.grimoire.entity.auth.AppUser user = session.getPlayers().get(0).getUser();
+                    if (user != null) {
+                        user.setMonnaie(user.getMonnaie() + bossGold);
+                        userRepository.save(user);
+                    }
+                    session.setTotalGoldAccumulated(session.getTotalGoldAccumulated() + bossGold);
+                    session.setBossBonusGold(bossGold);
+                    session.addLog("💰 Le Boss vaincu octroie " + bossGold + " Or supplémentaires !");
+                }
+            }
         }
     }
 

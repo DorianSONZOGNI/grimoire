@@ -68,6 +68,8 @@ public class Salle {
     // IF BOSS
     @Column(columnDefinition = "TEXT")
     private String globalBuffs; // JSON list of boss global buffs
+    private int bossRewardSpiritualXp; // Spiritual XP awarded on boss defeat, split per hero
+    private int bossRewardGold;        // Gold awarded on boss defeat (to the team)
     
     private Integer trapDamageHpPct;
     private Integer trapDamageManaPct;
