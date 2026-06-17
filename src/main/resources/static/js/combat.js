@@ -995,6 +995,11 @@ function updateUI(data) {
             const btnCont = document.getElementById('btnContinueEvent');
             const lootContainer = document.getElementById('eventLootContainer');
 
+            // Reset default onclick to prevent previous events (like PORTE_ETRANGE) from overriding it
+            if (btnCont) {
+                btnCont.onclick = nextRoom;
+            }
+
             if (data.currentRoom.type === 'TREASURE') {
                 icon.textContent = data.roomEventCompleted ? 'lock_open' : 'lock';
                 icon.style.color = '#f59e0b';
