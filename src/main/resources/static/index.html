@@ -67,42 +67,6 @@
 
     <main>
         <div class="magic-rock"></div>
-        <style>
-            .magic-rock {
-                /* 1. Dimensions d'une seule frame (colonne complète) */
-                width: 78px;
-                height: 192px;
-
-                /* 2. Source de l'image */
-                background-image: url('images/magic-rock.png');
-
-                /* 3. Rendu Pixel Art net */
-                image-rendering: pixelated;
-                transform: scale(1);
-
-                /* --- 4. POSITIONNEMENT HAUT GAUCHE --- */
-                position: fixed;
-                /* Fixe par rapport à l'écran, ne bouge pas au scroll */
-                top: 10%;
-                /* Marge en haut */
-                left: 5%;
-                /* Marge à gauche */
-                z-index: 50;
-                /* Assure qu'il est au-dessus du décor */
-                pointer-events: none;
-                /* Empêche le sprite de bloquer tes clics en dessous */
-
-                /* 5. L'animation : durée d'1 seconde, 6 sauts nets, en boucle */
-                animation: rock_spin 1s steps(6) infinite;
-            }
-
-            @keyframes rock_spin {
-                to {
-                    /* Décalage total : 6 frames de 78px = 468px */
-                    background-position: -468px 0;
-                }
-            }
-        </style>
         <!-- Colonne Gauche : Paramètres de Base du Sort -->
         <div class="panel" id="spellForgePanel">
             <div class="panel-title">Forge des Âmes</div>
@@ -941,6 +905,41 @@
             background: #dc2626;
             transform: translateY(-1px);
             box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+        }
+
+        .magic-rock {
+            /* 1. Dimensions d'une seule frame (colonne complète) */
+            width: 78px;
+            height: 192px;
+
+            /* 2. Source de l'image */
+            background-image: url('images/magic-rock.png');
+
+            /* 3. Rendu Pixel Art net */
+            image-rendering: pixelated;
+            transform: scale(1);
+
+            /* --- 4. POSITIONNEMENT HAUT GAUCHE --- */
+            position: fixed;
+            /* Fixe par rapport à l'écran, ne bouge pas au scroll */
+            top: 10%;
+            /* Marge en haut */
+            left: 5%;
+            /* Marge à gauche */
+            z-index: 50;
+            /* Assure qu'il est au-dessus du décor */
+            pointer-events: none;
+            /* Empêche le sprite de bloquer tes clics en dessous */
+
+            /* 5. L'animation : durée d'1 seconde, 6 sauts nets, en boucle */
+            animation: rock_spin 1s steps(6) infinite;
+        }
+
+        @keyframes rock_spin {
+            to {
+                /* Décalage total : 6 frames de 78px = 468px */
+                background-position: -468px 0;
+            }
         }
     </style>
     <script type="module" src="/js/app.js?v=4"></script>

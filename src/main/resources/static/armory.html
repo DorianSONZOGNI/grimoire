@@ -48,7 +48,8 @@
                 <span class="material-symbols-outlined" style="font-size: 1.1rem;">settings</span> Gestion Boutique
             </a>
             <a href="/pve-admin.html" id="adminPvELink" class="top-nav-link nav-admin" style="display: none;">
-                <span class="material-symbols-outlined" style="font-size: 1.1rem;">admin_panel_settings</span> Gestion PvE
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">admin_panel_settings</span> Gestion
+                PvE
             </a>
             <div id="authNavContainer"
                 style="display: flex; align-items: center; gap: 0.5rem; margin-left: 1rem; padding-left: 1rem; border-left: 1px solid var(--glass-border);">
@@ -228,80 +229,85 @@
         <!-- Colonne Droite : Liste des Personnages -->
         <div style="position: relative; height: 100%; min-height: 400px;">
             <div class="armory-list-panel" style="position: absolute; inset: 0; margin: 0; overflow: hidden;">
-            <div class="armory-panel-title" style="justify-content: space-between;">
-                <span style="display: flex; align-items: center; gap: 0.5rem;">
-                    <span class="material-symbols-outlined" style="color: #3b82f6;">groups</span>
-                    Personnages
-                </span>
-                <button type="button" class="armory-nav-link" onclick="loadPersonnages()" style="font-size: 0.8rem;">
-                    <span class="material-symbols-outlined" style="font-size: 1rem;">refresh</span>
-                    Actualiser
-                </button>
-            </div>
-
-            <div
-                style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; background: rgba(0,0,0,0.2); padding: 0.8rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-
-                <!-- Trier par removed as per user request -->
-
-                <!-- User Filter Input (hidden by default, for admins) -->
-                <div class="armory-field" id="searchOwnerContainer" style="flex: 1; min-width: 150px; display: none;">
-                    <label style="font-size: 0.7rem; color: #64748b; margin-bottom: 0.2rem; display: block;"><span
-                            class="material-symbols-outlined"
-                            style="font-size: 0.9rem; vertical-align: bottom;">person_search</span> Nom de
-                        compte</label>
-                    <input type="text" id="searchOwner" placeholder="Ex: Admin..." oninput="filterPersonnages()"
-                        style="padding: 0.35rem 0.5rem; font-size: 0.8rem; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; color: #fff; width: 100%;">
+                <div class="armory-panel-title" style="justify-content: space-between;">
+                    <span style="display: flex; align-items: center; gap: 0.5rem;">
+                        <span class="material-symbols-outlined" style="color: #3b82f6;">groups</span>
+                        Personnages
+                    </span>
+                    <button type="button" class="armory-nav-link" onclick="loadPersonnages()"
+                        style="font-size: 0.8rem;">
+                        <span class="material-symbols-outlined" style="font-size: 1rem;">refresh</span>
+                        Actualiser
+                    </button>
                 </div>
-                <div class="armory-field" style="flex: 1.5; min-width: 150px;">
-                    <label style="font-size: 0.7rem; color: #64748b; margin-bottom: 0.2rem; display: block;"><span
-                            class="material-symbols-outlined"
-                            style="font-size: 0.9rem; vertical-align: bottom;">search</span> Prénom</label>
-                    <input type="text" id="searchName" placeholder="Ex: Lancelot..." oninput="filterPersonnages()"
-                        style="padding: 0.35rem 0.5rem; font-size: 0.8rem; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; color: #fff; width: 100%;">
-                </div>
-                <div class="armory-field" style="flex: 1; min-width: 120px;">
-                    <label style="font-size: 0.7rem; color: #64748b; margin-bottom: 0.2rem; display: block;"><span
-                            class="material-symbols-outlined"
-                            style="font-size: 0.9rem; vertical-align: bottom;">route</span> Voie</label>
-                    <div class="custom-select-wrapper" id="searchVoieWrapper" tabindex="0">
-                        <div class="custom-select-trigger" id="searchVoieTrigger">
-                            <span class="cs-label" id="searchVoieLabel"><span class="material-symbols-outlined cs-icon"
-                                    style="color: #94a3b8;">trip_origin</span> Toutes</span>
-                            <span class="material-symbols-outlined cs-arrow"
-                                style="font-size: 1.1rem;">expand_more</span>
+
+                <div
+                    style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; background: rgba(0,0,0,0.2); padding: 0.8rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+
+                    <!-- Trier par removed as per user request -->
+
+                    <!-- User Filter Input (hidden by default, for admins) -->
+                    <div class="armory-field" id="searchOwnerContainer"
+                        style="flex: 1; min-width: 150px; display: none;">
+                        <label style="font-size: 0.7rem; color: #64748b; margin-bottom: 0.2rem; display: block;"><span
+                                class="material-symbols-outlined"
+                                style="font-size: 0.9rem; vertical-align: bottom;">person_search</span> Nom de
+                            compte</label>
+                        <input type="text" id="searchOwner" placeholder="Ex: Admin..." oninput="filterPersonnages()"
+                            style="padding: 0.35rem 0.5rem; font-size: 0.8rem; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; color: #fff; width: 100%;">
+                    </div>
+                    <div class="armory-field" style="flex: 1.5; min-width: 150px;">
+                        <label style="font-size: 0.7rem; color: #64748b; margin-bottom: 0.2rem; display: block;"><span
+                                class="material-symbols-outlined"
+                                style="font-size: 0.9rem; vertical-align: bottom;">search</span> Prénom</label>
+                        <input type="text" id="searchName" placeholder="Ex: Lancelot..." oninput="filterPersonnages()"
+                            style="padding: 0.35rem 0.5rem; font-size: 0.8rem; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; color: #fff; width: 100%;">
+                    </div>
+                    <div class="armory-field" style="flex: 1; min-width: 120px;">
+                        <label style="font-size: 0.7rem; color: #64748b; margin-bottom: 0.2rem; display: block;"><span
+                                class="material-symbols-outlined"
+                                style="font-size: 0.9rem; vertical-align: bottom;">route</span> Voie</label>
+                        <div class="custom-select-wrapper" id="searchVoieWrapper" tabindex="0">
+                            <div class="custom-select-trigger" id="searchVoieTrigger">
+                                <span class="cs-label" id="searchVoieLabel"><span
+                                        class="material-symbols-outlined cs-icon"
+                                        style="color: #94a3b8;">trip_origin</span> Toutes</span>
+                                <span class="material-symbols-outlined cs-arrow"
+                                    style="font-size: 1.1rem;">expand_more</span>
+                            </div>
+                            <div class="custom-select-options" id="searchVoieOptions">
+                                <div class="custom-option" data-value=""><span class="material-symbols-outlined cs-icon"
+                                        style="color: #94a3b8;">trip_origin</span> Toutes</div>
+                            </div>
+                            <input type="hidden" id="searchVoie" value="">
                         </div>
-                        <div class="custom-select-options" id="searchVoieOptions">
-                            <div class="custom-option" data-value=""><span class="material-symbols-outlined cs-icon"
-                                    style="color: #94a3b8;">trip_origin</span> Toutes</div>
+                    </div>
+                    <div class="armory-field" style="flex: 1; min-width: 120px;">
+                        <label style="font-size: 0.7rem; color: #64748b; margin-bottom: 0.2rem; display: block;"><span
+                                class="material-symbols-outlined"
+                                style="font-size: 0.9rem; vertical-align: bottom;">psychology</span>
+                            Spiritualité</label>
+                        <div class="custom-select-wrapper" id="searchSpiritWrapper" tabindex="0">
+                            <div class="custom-select-trigger" id="searchSpiritTrigger">
+                                <span class="cs-label" id="searchSpiritLabel"><span
+                                        class="material-symbols-outlined cs-icon"
+                                        style="color: #94a3b8;">trip_origin</span>
+                                    Toutes</span>
+                                <span class="material-symbols-outlined cs-arrow"
+                                    style="font-size: 1.1rem;">expand_more</span>
+                            </div>
+                            <div class="custom-select-options" id="searchSpiritOptions">
+                                <div class="custom-option" data-value=""><span class="material-symbols-outlined cs-icon"
+                                        style="color: #94a3b8;">trip_origin</span> Toutes</div>
+                            </div>
+                            <input type="hidden" id="searchSpirit" value="">
                         </div>
-                        <input type="hidden" id="searchVoie" value="">
                     </div>
                 </div>
-                <div class="armory-field" style="flex: 1; min-width: 120px;">
-                    <label style="font-size: 0.7rem; color: #64748b; margin-bottom: 0.2rem; display: block;"><span
-                            class="material-symbols-outlined"
-                            style="font-size: 0.9rem; vertical-align: bottom;">psychology</span> Spiritualité</label>
-                    <div class="custom-select-wrapper" id="searchSpiritWrapper" tabindex="0">
-                        <div class="custom-select-trigger" id="searchSpiritTrigger">
-                            <span class="cs-label" id="searchSpiritLabel"><span
-                                    class="material-symbols-outlined cs-icon" style="color: #94a3b8;">trip_origin</span>
-                                Toutes</span>
-                            <span class="material-symbols-outlined cs-arrow"
-                                style="font-size: 1.1rem;">expand_more</span>
-                        </div>
-                        <div class="custom-select-options" id="searchSpiritOptions">
-                            <div class="custom-option" data-value=""><span class="material-symbols-outlined cs-icon"
-                                    style="color: #94a3b8;">trip_origin</span> Toutes</div>
-                        </div>
-                        <input type="hidden" id="searchSpirit" value="">
-                    </div>
-                </div>
-            </div>
 
-            <div class="armory-characters-grid" id="personnagesList">
-                <div class="armory-empty-state">Chargement...</div>
-            </div>
+                <div class="armory-characters-grid" id="personnagesList">
+                    <div class="armory-empty-state">Chargement...</div>
+                </div>
             </div>
         </div>
     </div>
@@ -519,7 +525,11 @@
             </div>
         </div>
     </div>
-
+    <div class="blacksmith-cycle">
+        <div class="blacksmith work2"></div>
+        <div class="blacksmith work1"></div>
+        <div class="blacksmith bored"></div>
+    </div>
     <!-- Notification -->
     <div class="armory-notif" id="armoryNotif"></div>
 
@@ -644,6 +654,145 @@
             background: #dc2626;
             transform: translateY(-1px);
             box-shadow: 0 6px 16px rgba(239, 68, 68, 0.4);
+        }
+
+        /* =========================================
+   ANIMATION DU FORGERON (NOUVEAU CYCLE 8.2s)
+   Vitesse : 0.2s/frame | Ordre : W1(5x), W2(1x), B(1x)
+   Corrigé pour cutoff : hard cut à 0.1% buffer
+   ========================================= */
+
+        /* 1. Le conteneur principal (Inchangé) */
+        .blacksmith-cycle {
+            position: fixed;
+            bottom: 50px;
+            right: 50px;
+            z-index: 50;
+            pointer-events: none;
+            width: 32px;
+            height: 32px;
+            transform: scale(4);
+        }
+
+        /* 2. La base commune (Inchangé) */
+        .blacksmith {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 32px;
+            height: 32px;
+            image-rendering: pixelated;
+            opacity: 0;
+            visibility: hidden;
+            /* Ajouté pour garantir un cut net */
+        }
+
+        /* 3. Configuration des états (Nouvelles Durées : 0.2s/frame) */
+
+        /* work1 (5 frames) : boucle interne 1s. Visibility sur 8.2s. */
+        .blacksmith.work1 {
+            background-image: url('images/forgeron-work-1.png');
+            animation:
+                anim_work1 1.0s steps(5) infinite,
+                /* 5 frames x 0.2s = 1s */
+                vis_work1 8.2s linear infinite;
+            /* Durée totale 8.2s */
+        }
+
+        /* work2 (6 frames) : boucle interne 1.2s. Visibility sur 8.2s. */
+        .blacksmith.work2 {
+            background-image: url('images/forgeron-work-2.png');
+            animation:
+                anim_work2 1.2s steps(6) infinite,
+                /* 6 frames x 0.2s = 1.2s */
+                vis_work2 8.2s linear infinite;
+        }
+
+        /* bored (10 frames) : boucle interne 2.0s. Visibility sur 8.2s. */
+        .blacksmith.bored {
+            background-image: url('images/forgeron-bored.png');
+            animation:
+                anim_bored 2.0s steps(10) infinite,
+                /* 10 frames x 0.2s = 2s */
+                vis_bored 8.2s linear infinite;
+        }
+
+        /* 4. Keyframes de défilement (Spritesheets) (Inchangés) */
+        @keyframes anim_work1 {
+            to {
+                background-position: -160px 0;
+            }
+        }
+
+        @keyframes anim_work2 {
+            to {
+                background-position: -192px 0;
+            }
+        }
+
+        @keyframes anim_bored {
+            to {
+                background-position: -320px 0;
+            }
+        }
+
+        /* 5. Keyframes du Chronomètre de Visibilité (Maths Corrigées sur 8.2s) */
+
+        /* --- ÉTAPE 1 : work1 (5.0s sur 8.2s = 60.97%) --- */
+        @keyframes vis_work1 {
+
+            0%,
+            60.9% {
+                opacity: 1;
+                visibility: visible;
+            }
+
+            61.0%,
+            100% {
+                opacity: 0;
+                visibility: hidden;
+            }
+        }
+
+        /* --- ÉTAPE 2 : work2 (1.2s, finit à 6.2s sur 8.2s = 75.61%) --- */
+        @keyframes vis_work2 {
+
+            0%,
+            60.9% {
+                opacity: 0;
+                visibility: hidden;
+            }
+
+            61.0%,
+            75.6% {
+                opacity: 1;
+                visibility: visible;
+            }
+
+            /* 'linear' garantit 1.2s de lecture */
+            75.7%,
+            100% {
+                opacity: 0;
+                visibility: hidden;
+            }
+        }
+
+        /* --- ÉTAPE 3 : bored (2.0s, finit à 8.2s sur 8.2s = 100.0%) --- */
+        @keyframes vis_bored {
+
+            0%,
+            75.6% {
+                opacity: 0;
+                visibility: hidden;
+            }
+
+            75.7%,
+            100% {
+                opacity: 1;
+                visibility: visible;
+            }
+
+            /* linear + cutoff précis garantissent 2.0s de lecture complète */
         }
     </style>
 
