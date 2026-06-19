@@ -8,8 +8,12 @@
     <link rel="icon" type="image/png" href="/favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet" />
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+        rel="stylesheet" />
     <link rel="stylesheet" href="/styles/variables.css">
     <link rel="stylesheet" href="/styles/components.css">
     <link rel="stylesheet" href="/styles/vault.css?v=3">
@@ -35,7 +39,10 @@
         .dungeon-card::before {
             content: '';
             position: absolute;
-            top: 0; left: 0; right: 0; bottom: 0;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
             background: radial-gradient(circle at top right, rgba(220, 38, 38, 0.1), transparent 70%);
             z-index: 0;
         }
@@ -46,7 +53,7 @@
             box-shadow: 0 10px 30px -5px rgba(220, 38, 38, 0.3);
         }
 
-        .dungeon-card > * {
+        .dungeon-card>* {
             position: relative;
             z-index: 1;
         }
@@ -89,7 +96,7 @@
             padding-bottom: 1rem;
             border-bottom: 1px solid rgba(255, 255, 255, 0.1);
         }
-        
+
         .prep-layout {
             display: grid;
             grid-template-columns: 300px 1fr 300px;
@@ -186,7 +193,7 @@
             transition: all 0.2s;
             margin-bottom: 0.5rem;
         }
-        
+
         .consumable-card:hover {
             border-color: #10b981;
             background: rgba(16, 185, 129, 0.05);
@@ -233,6 +240,37 @@
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(220, 38, 38, 0.6);
         }
+
+        .character-agis {
+            /* Dimensions et rendu (inchangés) */
+            width: 224px;
+            height: 240px;
+            background-image: url('images/Agis_Idle.png');
+            image-rendering: pixelated;
+            transform: scale(1);
+
+            /* --- NOUVEAU POSITIONNEMENT --- */
+            position: fixed;
+            /* Fixe l'élément par rapport à l'écran */
+            top: 25%;
+            /* Laisse une petite marge en haut */
+            right: 20px;
+            /* Laisse une petite marge à droite */
+            z-index: 50;
+            /* S'assure qu'il passe au-dessus des autres éléments */
+
+            /* ASTUCE : Empêche l'image de bloquer les clics sur les éléments en dessous */
+            pointer-events: none;
+
+            /* Animation (inchangée) */
+            animation: agis_long_anim 1.5s steps(15) infinite;
+        }
+
+        @keyframes agis_long_anim {
+            to {
+                background-position: -3360px 0;
+            }
+        }
     </style>
 </head>
 
@@ -264,7 +302,8 @@
                 <span class="material-symbols-outlined" style="font-size: 1.1rem;">settings</span> Gestion Boutique
             </a>
             <a href="/pve-admin.html" id="adminPvELink" class="top-nav-link nav-admin" style="display: none;">
-                <span class="material-symbols-outlined" style="font-size: 1.1rem;">admin_panel_settings</span> Gestion PvE
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">admin_panel_settings</span> Gestion
+                PvE
             </a>
 
             <div id="authNavContainer"
@@ -275,8 +314,9 @@
     </header>
 
     <main class="vault-container" style="width: 100%; max-width: 1200px; margin: 0 auto; padding: 2rem;">
-        
-        <div id="authWarning" style="display: none; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; padding: 1rem; border-radius: 8px; margin-bottom: 2rem; text-align: center;">
+
+        <div id="authWarning"
+            style="display: none; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; padding: 1rem; border-radius: 8px; margin-bottom: 2rem; text-align: center;">
             <span class="material-symbols-outlined" style="vertical-align: middle; margin-right: 0.5rem;">error</span>
             Vous devez être connecté pour entrer dans un donjon.
         </div>
@@ -285,23 +325,28 @@
             <h2 style="font-family: 'Outfit'; font-size: 2rem; margin-bottom: 0.5rem;">
                 <span class="logo-text-gradient logo-dungeon">Exploration</span>
             </h2>
-            <p style="color: var(--text-muted); margin-bottom: 2rem;">Choisissez un donjon à affronter. La mort n'est qu'un léger contretemps.</p>
-            
+            <p style="color: var(--text-muted); margin-bottom: 2rem;">Choisissez un donjon à affronter. La mort n'est
+                qu'un léger contretemps.</p>
+
             <div class="dungeons-grid" id="dungeonsList">
                 <!-- Rempli par JS -->
             </div>
         </div>
-        
+
         <div id="prepInterface" style="display: none;">
             <div class="prep-header">
                 <div>
-                    <h2 style="font-family: 'Outfit'; font-size: 2rem; color: #f8fafc; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
-                        <span class="material-symbols-outlined logo-icon-gradient logo-dungeon" style="font-size: 2.5rem;">swords</span>
+                    <h2
+                        style="font-family: 'Outfit'; font-size: 2rem; color: #f8fafc; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <span class="material-symbols-outlined logo-icon-gradient logo-dungeon"
+                            style="font-size: 2.5rem;">swords</span>
                         <span id="prepDungeonTitle" class="logo-text-gradient logo-dungeon">Préparation</span>
                     </h2>
-                    <div id="prepDungeonDesc" style="color: var(--text-muted);">Préparez votre équipe et votre équipement avant de plonger.</div>
+                    <div id="prepDungeonDesc" style="color: var(--text-muted);">Préparez votre équipe et votre
+                        équipement avant de plonger.</div>
                 </div>
-                <button onclick="closePrepInterface()" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #f8fafc; padding: 0.8rem 1.5rem; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-family: 'Inter', sans-serif;">
+                <button onclick="closePrepInterface()"
+                    style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #f8fafc; padding: 0.8rem 1.5rem; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-family: 'Inter', sans-serif;">
                     <span class="material-symbols-outlined" style="font-size: 1.2rem;">arrow_back</span> Retour
                 </button>
             </div>
@@ -309,7 +354,8 @@
             <div class="prep-layout">
                 <!-- Colonne Gauche : Sélection Personnage -->
                 <div>
-                    <h3 style="font-family: 'Outfit'; font-size: 1.2rem; color: #f8fafc; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <h3
+                        style="font-family: 'Outfit'; font-size: 1.2rem; color: #f8fafc; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
                         <span class="material-symbols-outlined" style="color: #0ea5e9;">group</span> Sélection du Héros
                     </h3>
                     <div id="prepCharList">
@@ -319,18 +365,22 @@
 
                 <!-- Colonne Centrale : Aperçu des Stats et Equipement -->
                 <div>
-                    <h3 style="font-family: 'Outfit'; font-size: 1.2rem; color: #f8fafc; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
-                        <span class="material-symbols-outlined" style="color: #a855f7;">analytics</span> Statistiques Totales
+                    <h3
+                        style="font-family: 'Outfit'; font-size: 1.2rem; color: #f8fafc; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <span class="material-symbols-outlined" style="color: #a855f7;">analytics</span> Statistiques
+                        Totales
                     </h3>
-                    
+
                     <div id="prepStatGrid" class="stat-grid" style="display: none;">
                         <!-- Rempli par JS -->
                     </div>
-                    <div id="prepStatEmpty" style="display: flex; align-items: center; justify-content: center; height: 194px; width: 100%; text-align: center; color: var(--text-muted); padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 12px; border: 1px dashed rgba(255,255,255,0.1); margin-bottom: 2rem; box-sizing: border-box;">
+                    <div id="prepStatEmpty"
+                        style="display: flex; align-items: center; justify-content: center; height: 194px; width: 100%; text-align: center; color: var(--text-muted); padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 12px; border: 1px dashed rgba(255,255,255,0.1); margin-bottom: 2rem; box-sizing: border-box;">
                         Veuillez sélectionner un personnage pour voir ses statistiques.
                     </div>
 
-                    <h3 style="font-family: 'Outfit'; font-size: 1.2rem; color: #f8fafc; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
+                    <h3
+                        style="font-family: 'Outfit'; font-size: 1.2rem; color: #f8fafc; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
                         <span class="material-symbols-outlined" style="color: #f59e0b;">shield</span> Équipement Actuel
                     </h3>
                     <div id="prepEquipList">
@@ -340,27 +390,35 @@
 
                 <!-- Colonne Droite : Consommable & Bouton d'entrée -->
                 <div>
-                    <h3 style="font-family: 'Outfit'; font-size: 1.2rem; color: #f8fafc; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
-                        <span class="material-symbols-outlined" style="color: #10b981;">inventory_2</span> Consommable (Optionnel)
+                    <h3
+                        style="font-family: 'Outfit'; font-size: 1.2rem; color: #f8fafc; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
+                        <span class="material-symbols-outlined" style="color: #10b981;">inventory_2</span> Consommable
+                        (Optionnel)
                     </h3>
-                    <div id="prepConsumableList" style="margin-bottom: 2rem; max-height: 250px; overflow-y: auto; padding-right: 0.5rem;">
+                    <div id="prepConsumableList"
+                        style="margin-bottom: 2rem; max-height: 250px; overflow-y: auto; padding-right: 0.5rem;">
                         <!-- Rempli par JS -->
                     </div>
 
-                    <div style="background: rgba(220, 38, 38, 0.05); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(220, 38, 38, 0.2); margin-bottom: 1.5rem;">
-                        <div style="font-size: 0.9rem; color: #fca5a5; margin-bottom: 1rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Ennemis détectés</div>
+                    <div
+                        style="background: rgba(220, 38, 38, 0.05); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(220, 38, 38, 0.2); margin-bottom: 1.5rem;">
+                        <div
+                            style="font-size: 0.9rem; color: #fca5a5; margin-bottom: 1rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
+                            Ennemis détectés</div>
                         <div id="prepMonstersList" style="color: #ef4444; font-weight: 500;">
                             <!-- Rempli par JS -->
                         </div>
                     </div>
 
-                    <button class="btn-fight" id="btnEnterDungeon" onclick="startCombat()" style="opacity: 0.5; pointer-events: none;">
+                    <button class="btn-fight" id="btnEnterDungeon" onclick="startCombat()"
+                        style="opacity: 0.5; pointer-events: none;">
                         <span class="material-symbols-outlined">swords</span>
                         ENTRER DANS LE DONJON
                     </button>
                 </div>
             </div>
         </div>
+        <div class="character-agis"></div>
     </main>
     <!-- Notification Toast -->
     <div id="dungeonNotif"
@@ -374,4 +432,5 @@
     <script src="/js/auth.js"></script>
     <script src="/js/dungeons.js"></script>
 </body>
+
 </html>
