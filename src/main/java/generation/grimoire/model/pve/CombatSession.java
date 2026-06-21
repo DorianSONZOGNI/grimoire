@@ -38,6 +38,9 @@ public class CombatSession {
     private boolean isFinished = false;
     private boolean playerWon = false;
     private boolean roomEventCompleted = false;
+
+    // Track players who died and already lost XP
+    private java.util.Set<Long> penalizedDeadPlayers = new java.util.HashSet<>();
     private Set<Integer> purchasedMerchantItems = new HashSet<>();
 
     private int totalGoldAccumulated = 0;

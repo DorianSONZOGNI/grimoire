@@ -1113,6 +1113,31 @@ public class CombatService {
     }
 
     private void checkDeaths(CombatSession session) {
+        // Check dead players
+        for (Personnage p : session.getPlayers()) {
+            if (p.getHealthCurrent() <= 0 && p.getId() != null && !session.getPenalizedDeadPlayers().contains(p.getId())) {
+                session.getPenalizedDeadPlayers().add(p.getId());
+                
+                int penalty = 0;
+                switch (p.getVoieLevel()) {
+                    case 1: penalty = 10; break;
+                    case 2: penalty = 30; break;
+                    case 3: penalty = 80; break;
+                    case 4: penalty = 125; break;
+                    case 5: penalty = 160; break;
+                    default: penalty = 10; break;
+                }
+                
+                Personnage dbPersonnage = personnageRepository.findById(p.getId()).orElse(null);
+                if (dbPersonnage != null) {
+                    dbPersonnage.setExperience(Math.max(0, dbPersonnage.getExperience() - penalty));
+                    personnageRepository.save(dbPersonnage);
+                    p.setExperience(dbPersonnage.getExperience());
+                    session.addLog("☠️ " + p.getName() + " succombe à ses blessures et perd " + penalty + " XP normal...");
+                }
+            }
+        }
+
         // Check if all enemies were already processed (maxHp set to 0) before this
         // call.
         // We use maxHp == 0 instead of isDead() because isDead() checks healthCurrent
@@ -1399,7 +1424,11 @@ public class CombatService {
                 ? session.getDonjon().getSalles().size()
                 : 1;
         int penaltyGold = 10 * roomsCount;
-        int penaltyXp = 10 * roomsCount;
+        int penaltyXpTotal = 10 * roomsCount;
+        int nbHeroes = Math.max(1, session.getPlayers().size());
+        int penaltyXpPerPlayer = penaltyXpTotal / nbHeroes;
+
+        boolean goldDeducted = false;
 
         for (Personnage p : session.getPlayers()) {
             Long playerId = p.getId();
@@ -1411,13 +1440,16 @@ public class CombatService {
             Personnage dbPersonnage = personnageRepository.findById(playerId).orElse(null);
 
             if (dbPersonnage != null) {
-                dbPersonnage.setExperience(Math.max(0, dbPersonnage.getExperience() - penaltyXp));
+                dbPersonnage.setExperience(Math.max(0, dbPersonnage.getExperience() - penaltyXpPerPlayer));
                 personnageRepository.save(dbPersonnage);
 
-                generation.grimoire.entity.auth.AppUser user = dbPersonnage.getUser();
-                if (user != null) {
-                    user.setMonnaie(Math.max(0, user.getMonnaie() - penaltyGold));
-                    userRepository.save(user);
+                if (!goldDeducted) {
+                    generation.grimoire.entity.auth.AppUser user = dbPersonnage.getUser();
+                    if (user != null) {
+                        user.setMonnaie(Math.max(0, user.getMonnaie() - penaltyGold));
+                        userRepository.save(user);
+                        goldDeducted = true;
+                    }
                 }
 
                 p.setExperience(dbPersonnage.getExperience());

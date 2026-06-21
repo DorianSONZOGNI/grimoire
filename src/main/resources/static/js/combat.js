@@ -26,6 +26,53 @@ const RARITY_COLORS = {
     RELIQUE: '#ef4444'
 };
 
+let lastCombatLogCount = 0;
+
+function showFloatingTextOnElement(el, text, color) {
+    const wrapper = document.createElement('div');
+    const rect = el.getBoundingClientRect();
+    wrapper.style.position = 'fixed';
+    wrapper.style.left = (rect.left + rect.width / 2) + 'px';
+    wrapper.style.top = (rect.top + rect.height / 2) + 'px';
+    wrapper.style.transform = 'translate(-50%, -50%)';
+    wrapper.style.zIndex = '9999';
+    wrapper.style.pointerEvents = 'none';
+
+    const floater = document.createElement('div');
+    floater.className = 'floating-damage';
+    floater.innerHTML = text;
+    floater.style.color = color || '#ef4444';
+    
+    wrapper.appendChild(floater);
+    document.body.appendChild(wrapper);
+
+    setTimeout(() => {
+        if(wrapper.parentNode) wrapper.parentNode.removeChild(wrapper);
+    }, 3000);
+}
+
+function processNewDeathLogs(combatLogs) {
+    if (!combatLogs) return;
+    if (combatLogs.length < lastCombatLogCount) {
+        lastCombatLogCount = 0; // Combat was reset
+    }
+    for (let i = lastCombatLogCount; i < combatLogs.length; i++) {
+        const log = combatLogs[i];
+        const match = log.match(/☠️ (.*?) succombe à ses blessures et perd (\d+) XP/);
+        if (match) {
+            const heroName = match[1];
+            const xpLost = match[2];
+            const heroCards = document.querySelectorAll('.fighter-player');
+            heroCards.forEach(card => {
+                if (card.innerHTML.includes(heroName)) {
+                    showFloatingTextOnElement(card, `-${xpLost} XP`, '#f87171');
+                }
+            });
+        }
+    }
+    lastCombatLogCount = combatLogs.length;
+}
+
 function getSpellColor(sp) {
     if (sp.voie && sp.voie.nom) {
         return getVoieButtonColor(sp.voie);
@@ -932,11 +979,12 @@ function updateUI(data) {
     // Update flee penalty text
     const fleePenaltySpan = document.getElementById('fleePenaltyText');
     if (fleePenaltySpan && data.players && data.donjon && data.donjon.salles) {
-        const nbHeroes = data.players.length;
-        const nbRooms = data.donjon.salles.length;
-        const xpLoss = 10 * nbRooms * nbHeroes;
-        const goldLoss = 10 * nbRooms * nbHeroes;
-        fleePenaltySpan.innerHTML = `Perte d'xp et Or : <span style="color: #f87171;">-${xpLoss} XP normal</span> et <span style="color: #fbbf24;">-${goldLoss} Or</span>.`;
+        const nbHeroes = Math.max(1, data.players.length);
+        const nbRooms = Math.max(1, data.donjon.salles.length);
+        const totalXpLoss = 10 * nbRooms;
+        const xpLossPerHero = Math.floor(totalXpLoss / nbHeroes);
+        const goldLoss = 10 * nbRooms;
+        fleePenaltySpan.innerHTML = `Perte d'xp et Or : <span style="color: #f87171;">-${xpLossPerHero} XP normal</span> (par perso) et <span style="color: #fbbf24;">-${goldLoss} Or</span> (au total).`;
     }
 
     // Players
@@ -1813,6 +1861,8 @@ function updateUI(data) {
         const btnEnd = document.getElementById('btnEndTurn');
         if (btnEnd) btnEnd.disabled = false;
     }
+
+    processNewDeathLogs(data.combatLog);
 }
 
 // Removed GLOBAL_STAT_LABELS and formatStat (imported from ui.js)
