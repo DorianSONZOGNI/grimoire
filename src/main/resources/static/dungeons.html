@@ -187,8 +187,10 @@
             background: rgba(15, 23, 42, 0.6);
             border: 1px dashed rgba(255, 255, 255, 0.2);
             border-radius: 8px;
-            padding: 1rem;
-            text-align: center;
+            padding: 0.5rem 0.75rem;
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
             cursor: pointer;
             transition: all 0.2s;
             margin-bottom: 0.5rem;
@@ -202,6 +204,25 @@
         .consumable-card.selected {
             border: 1px solid #10b981;
             background: rgba(16, 185, 129, 0.1);
+        }
+
+        /* --- JOLIE SCROLLBAR --- */
+        #prepConsumableList::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        #prepConsumableList::-webkit-scrollbar-track {
+            background: rgba(15, 23, 42, 0.4);
+            border-radius: 4px;
+        }
+
+        #prepConsumableList::-webkit-scrollbar-thumb {
+            background: rgba(148, 163, 184, 0.3);
+            border-radius: 4px;
+        }
+
+        #prepConsumableList::-webkit-scrollbar-thumb:hover {
+            background: rgba(148, 163, 184, 0.5);
         }
 
         .form-control {
