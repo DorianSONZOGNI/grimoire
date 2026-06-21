@@ -1435,10 +1435,25 @@ function updateUI(data) {
                             let iconHtml = '';
                             let rarityColor = '#10b981';
 
+                            const CATEGORY_ICONS = {
+                                'PIERRE': 'landslide', 'METAL': 'hardware', 'COEUR': 'favorite',
+                                'ORBE': 'lens', 'CRISTAL': 'diamond', 'PLUME': 'history_edu',
+                                'ECAILLE': 'waves', 'AUTRE': 'category'
+                            };
+
                             if (entry.specialItemName) {
                                 nameHtml = entry.specialItemName;
-                                iconHtml = '<span class="material-symbols-outlined" style="color: #d946ef; font-size: 1.2rem;">star</span>';
                                 rarityColor = '#d946ef';
+                                let catIcon = 'star';
+                                if (window.allAnomaliesCombat) {
+                                    const an = window.allAnomaliesCombat.find(a => a.name === entry.specialItemName);
+                                    if (an) {
+                                        if (an.spiritualite === 'ESPRIT') rarityColor = '#38bdf8';
+                                        else if (an.spiritualite === 'KARMA') rarityColor = '#f59e0b';
+                                        catIcon = an.category ? (CATEGORY_ICONS[an.category] || 'category') : 'star';
+                                    }
+                                }
+                                iconHtml = `<span class="material-symbols-outlined" style="color: ${rarityColor}; font-size: 1.2rem;">${catIcon}</span>`;
                             } else if (entry.equipment) {
                                 const eq = entry.equipment;
                                 const slotInfo = SLOT_LABELS[eq.slot] || { icon: 'help', color: '#94a3b8' };
@@ -1455,7 +1470,17 @@ function updateUI(data) {
                                 priceHtml += `<span style="color: #f59e0b; display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem;">monetization_on</span>${goldPrice}</span>`;
                             }
                             if (entry.priceSpecialItemName) {
-                                priceHtml += `<span style="color: #d946ef; display: flex; align-items: center; gap: 0.3rem; margin-left: ${goldPrice > 0 ? '0.8rem' : '0'};"><span class="material-symbols-outlined" style="font-size: 1.1rem;">star</span>1x ${entry.priceSpecialItemName}</span>`;
+                                let priceColor = '#d946ef';
+                                let priceIcon = 'star';
+                                if (window.allAnomaliesCombat) {
+                                    const anPrice = window.allAnomaliesCombat.find(a => a.name === entry.priceSpecialItemName);
+                                    if (anPrice) {
+                                        if (anPrice.spiritualite === 'ESPRIT') priceColor = '#38bdf8';
+                                        else if (anPrice.spiritualite === 'KARMA') priceColor = '#f59e0b';
+                                        priceIcon = anPrice.category ? (CATEGORY_ICONS[anPrice.category] || 'category') : 'star';
+                                    }
+                                }
+                                priceHtml += `<span style="color: ${priceColor}; display: flex; align-items: center; gap: 0.3rem; margin-left: ${goldPrice > 0 ? '0.8rem' : '0'};"><span class="material-symbols-outlined" style="font-size: 1.1rem;">${priceIcon}</span>1x ${entry.priceSpecialItemName}</span>`;
                             }
 
                             if (priceHtml === '') {
@@ -1484,7 +1509,19 @@ function updateUI(data) {
                             if (entry.equipment) {
                                 tooltipDataHtml = generateEquipmentTooltipHTML(entry.equipment);
                             } else if (entry.specialItemName) {
-                                tooltipDataHtml = `<div style="padding: 0.5rem; color: #d946ef; font-weight: 600; text-align: center; min-width: 150px;">Objet Spécial</div><div style="color: #94a3b8; text-align: center; font-size: 0.9rem;">Cet objet aura un effet unique !</div>`;
+                                let tooltipTitle = 'Objet Spécial';
+                                let tooltipDesc = 'Cet objet aura un effet unique !';
+                                let tColor = '#d946ef';
+                                if (window.allAnomaliesCombat) {
+                                    const an = window.allAnomaliesCombat.find(a => a.name === entry.specialItemName);
+                                    if (an) {
+                                        tooltipTitle = 'Anomalie';
+                                        if (an.description) tooltipDesc = an.description;
+                                        if (an.spiritualite === 'ESPRIT') tColor = '#38bdf8';
+                                        else if (an.spiritualite === 'KARMA') tColor = '#f59e0b';
+                                    }
+                                }
+                                tooltipDataHtml = `<div style="padding: 0.5rem; color: ${tColor}; font-weight: 600; text-align: center; min-width: 150px;">${tooltipTitle}</div><div style="color: #94a3b8; text-align: center; font-size: 0.9rem;">${tooltipDesc}</div>`;
                             }
 
                             const tooltipAttrs = tooltipDataHtml ? 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"' : '';
