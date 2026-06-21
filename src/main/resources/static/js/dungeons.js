@@ -442,9 +442,13 @@ window.startCombat = async function () {
         return;
     }
 
-    if (window.currentDungeonEntryCost > 0 && window.currentUser && window.currentUser.monnaie < window.currentDungeonEntryCost) {
-        showNotif(`Fonds insuffisants. Il vous faut ${window.currentDungeonEntryCost} Or.`, true);
-        return;
+    if (window.currentDungeonEntryCost > 0) {
+        if (window.currentUser && window.currentUser.monnaie < window.currentDungeonEntryCost) {
+            showNotif(`Fonds insuffisants. Il vous faut ${window.currentDungeonEntryCost} Or.`, true);
+            return;
+        }
+        const confirmed = await showEntryModal(window.currentDungeonEntryCost);
+        if (!confirmed) return;
     }
 
     const charIdsStr = selectedCharIds.join(',');
@@ -517,3 +521,43 @@ window.closeUnlockModal = function () {
     document.getElementById('unlockModal').classList.remove('active');
 };
 
+function showEntryModal(cost) {
+    return new Promise((resolve) => {
+        const overlay = document.getElementById('entryModal');
+        const costEl = document.getElementById('entryModalCost');
+        const confirmBtn = document.getElementById('entryModalConfirmBtn');
+
+        costEl.textContent = cost;
+        overlay.classList.add('active');
+
+        const onConfirm = () => {
+            cleanup();
+            resolve(true);
+        };
+        const onCancel = () => {
+            cleanup();
+            resolve(false);
+        };
+        const onOverlayClick = (e) => {
+            if (e.target === overlay) onCancel();
+        };
+        const onKeydown = (e) => {
+            if (e.key === 'Escape') onCancel();
+        };
+
+        function cleanup() {
+            overlay.classList.remove('active');
+            confirmBtn.removeEventListener('click', onConfirm);
+            overlay.removeEventListener('click', onOverlayClick);
+            document.removeEventListener('keydown', onKeydown);
+        }
+
+        confirmBtn.addEventListener('click', onConfirm);
+        overlay.addEventListener('click', onOverlayClick);
+        document.addEventListener('keydown', onKeydown);
+    });
+}
+
+window.closeEntryModal = function () {
+    document.getElementById('entryModal').classList.remove('active');
+};

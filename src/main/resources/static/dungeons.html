@@ -411,6 +411,77 @@
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(245, 158, 11, 0.5);
         }
+        /* --- ENTRY COST MODAL --- */
+        .entry-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .entry-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .entry-modal {
+            background: linear-gradient(145deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95));
+            border: 1px solid rgba(220, 38, 38, 0.3);
+            border-radius: 20px;
+            padding: 2.5rem;
+            max-width: 420px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5), 0 0 80px rgba(220, 38, 38, 0.1);
+            transform: scale(0.85) translateY(20px);
+            transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .entry-overlay.active .entry-modal {
+            transform: scale(1) translateY(0);
+        }
+        .entry-modal-icon {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(220, 38, 38, 0.2), rgba(185, 28, 28, 0.1));
+            border: 2px solid rgba(220, 38, 38, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            animation: entry-pulse 2s ease-in-out infinite;
+        }
+        @keyframes entry-pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.3); }
+            50% { box-shadow: 0 0 20px 8px rgba(220, 38, 38, 0.15); }
+        }
+        .entry-btn-confirm {
+            flex: 1;
+            padding: 0.8rem;
+            border-radius: 10px;
+            border: none;
+            background: linear-gradient(135deg, #ef4444, #b91c1c);
+            color: white;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
+        }
+        .entry-btn-confirm:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(220, 38, 38, 0.5);
+        }
     </style>
 </head>
 
@@ -592,6 +663,28 @@
                 <button class="unlock-btn-confirm" id="unlockModalConfirmBtn">
                     <span class="material-symbols-outlined" style="font-size: 1.1rem;">lock_open</span>
                     Débloquer
+                </button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Entry Cost Modal -->
+    <div class="entry-overlay" id="entryModal">
+        <div class="entry-modal">
+            <div class="entry-modal-icon">
+                <span class="material-symbols-outlined" style="font-size: 2.2rem; color: #ef4444;">swords</span>
+            </div>
+            <div class="unlock-modal-title">Entrer dans le donjon ?</div>
+            <div class="unlock-modal-desc">Le co&ucirc;t d'entr&eacute;e sera d&eacute;duit de votre Or. Ce co&ucirc;t est pr&eacute;lev&eacute; &agrave; <strong style="color: #f8fafc;">chaque tentative</strong>.</div>
+            <div class="unlock-modal-cost" style="border-color: rgba(220, 38, 38, 0.25); background: rgba(220, 38, 38, 0.1); color: #fca5a5;">
+                <span class="material-symbols-outlined" style="font-size: 1.3rem;">monetization_on</span>
+                <span id="entryModalCost">0</span> Or
+            </div>
+            <div class="unlock-modal-actions">
+                <button class="unlock-btn-cancel" onclick="closeEntryModal()">Annuler</button>
+                <button class="entry-btn-confirm" id="entryModalConfirmBtn">
+                    <span class="material-symbols-outlined" style="font-size: 1.1rem;">swords</span>
+                    Payer &amp; Entrer
                 </button>
             </div>
         </div>
