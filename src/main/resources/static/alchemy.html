@@ -122,6 +122,9 @@
                 <span class="material-symbols-outlined" style="font-size: 1.1rem;">admin_panel_settings</span> Admin
                 PvE
             </a>
+            <a href="/alchemy-admin.html" id="adminAlchemyLink" class="top-nav-link nav-admin" style="display: none;">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">science</span> Admin Alchimie
+            </a>
 
             <div id="authNavContainer"
                 style="display: flex; align-items: center; gap: 0.5rem; margin-left: 1rem; padding-left: 1rem; border-left: 1px solid var(--glass-border);">
@@ -131,27 +134,274 @@
         </div>
     </header>
 
-    <main>
+    <main style="display: block;">
         <div class="magic-rock"></div>
 
-        <div class="alchemy-main">
-            <div class="alchemy-title">
-                <span class="material-symbols-outlined">science</span>
-                Laboratoire Alchimique
-            </div>
-
-            <div class="alchemy-panel">
-                <span class="material-symbols-outlined"
-                    style="font-size: 4rem; color: rgba(16, 185, 129, 0.5);">experiment</span>
-                <div class="alchemy-empty-state">
-                    Les chaudrons sont froids et les cornues attendent leurs élixirs...<br>
-                    Le laboratoire alchimique est actuellement en cours de préparation.
+        <div class="alchemy-main" style="max-width: 1400px; margin: 2rem auto; flex-direction: row; gap: 2rem; align-items: stretch; justify-content: center;">
+            
+            <!-- Left: List of recipes -->
+            <div class="panel" style="flex: 1; max-width: 450px;">
+                <div class="panel-title">
+                    <span class="material-symbols-outlined" style="color: #a855f7;">menu_book</span>
+                    Recettes Connues
+                </div>
+                <div id="playerRecipesList" style="display: flex; flex-direction: column; gap: 1rem; max-height: 70vh; overflow-y: auto;">
+                    <p style="color: var(--text-muted); text-align: center; margin-top: 2rem;">Chargement du Grimoire Alchimique...</p>
                 </div>
             </div>
+
+            <!-- Right: The Cauldron / Crafting Area -->
+            <div class="alchemy-panel" style="flex: 2; display: flex; justify-content: center; align-items: center; min-height: 500px;" id="cauldronPanel">
+                <div style="text-align: center; color: var(--text-muted);">
+                    <span class="material-symbols-outlined" style="font-size: 4rem; color: rgba(16, 185, 129, 0.3);">experiment</span>
+                    <p style="margin-top: 1rem;">Sélectionnez une recette dans le grimoire à gauche pour l'étudier.</p>
+                </div>
+            </div>
+            
         </div>
+
     </main>
 
     <script src="/js/auth.js"></script>
+    <script>
+        let allRecipes = [];
+        let selectedRecipe = null;
+
+        document.addEventListener('authLoaded', () => {
+            if (window.currentUser) {
+                loadPlayerRecipes();
+            }
+        });
+
+        async function loadPlayerRecipes() {
+            try {
+                const res = await fetch('/api/alchemy/recipes');
+                allRecipes = await res.json();
+                renderRecipesList();
+            } catch (e) {
+                console.error("Erreur chargement recettes:", e);
+            }
+        }
+
+        function renderRecipesList() {
+            const container = document.getElementById('playerRecipesList');
+            container.innerHTML = '';
+            if (allRecipes.length === 0) {
+                container.innerHTML = "<p style='color: var(--text-muted); text-align:center;'>Aucune recette disponible pour le moment.</p>";
+                return;
+            }
+
+            allRecipes.forEach(r => {
+                const div = document.createElement('div');
+                div.style.background = 'rgba(0,0,0,0.3)';
+                div.style.border = '1px solid var(--glass-border)';
+                div.style.borderRadius = '12px';
+                div.style.padding = '1rem';
+                div.style.cursor = 'pointer';
+                div.style.transition = 'all 0.2s';
+                
+                div.onmouseover = () => div.style.borderColor = '#10b981';
+                div.onmouseout = () => { if (selectedRecipe?.id !== r.id) div.style.borderColor = 'var(--glass-border)'; };
+                div.onclick = () => selectRecipe(r, div);
+
+                div.innerHTML = `
+                    <h4 style="margin: 0; color: #06b6d4; display:flex; align-items:center; gap:0.5rem;">
+                        <span class="material-symbols-outlined" style="font-size:1.2rem;">science</span>
+                        ${r.name}
+                    </h4>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${r.description || ''}</p>
+                `;
+                container.appendChild(div);
+            });
+        }
+
+        function selectRecipe(recipe, element) {
+            selectedRecipe = recipe;
+            // Reset borders
+            Array.from(document.getElementById('playerRecipesList').children).forEach(c => {
+                c.style.borderColor = 'var(--glass-border)';
+                c.style.background = 'rgba(0,0,0,0.3)';
+            });
+            element.style.borderColor = '#10b981';
+            element.style.background = 'rgba(16, 185, 129, 0.1)';
+
+            renderCauldron(recipe);
+        }
+
+        function renderCauldron(r) {
+            const container = document.getElementById('cauldronPanel');
+            
+            let reqsHTML = '';
+            if (r.costGold > 0) {
+                reqsHTML += `<div style="display:flex; align-items:center; gap:0.5rem; background:rgba(0,0,0,0.4); padding:0.5rem 1rem; border-radius:8px; border:1px solid rgba(245, 158, 11, 0.3);">
+                    <span class="material-symbols-outlined" style="color: #f59e0b;">monetization_on</span>
+                    <span style="color: #f59e0b; font-weight:600;">${r.costGold} Or</span>
+                </div>`;
+            }
+            if (r.costSpiritXp > 0) {
+                reqsHTML += `<div style="display:flex; align-items:center; gap:0.5rem; background:rgba(0,0,0,0.4); padding:0.5rem 1rem; border-radius:8px; border:1px solid rgba(16, 185, 129, 0.3);">
+                    <span class="material-symbols-outlined" style="color: #10b981;">star</span>
+                    <span style="color: #10b981; font-weight:600;">${r.costSpiritXp} XP Spirit.</span>
+                </div>`;
+            }
+
+            if (r.requiredAnomalies) {
+                for(const [name, qty] of Object.entries(r.requiredAnomalies)) {
+                    reqsHTML += `<div style="display:flex; align-items:center; gap:0.5rem; background:rgba(0,0,0,0.4); padding:0.5rem 1rem; border-radius:8px; border:1px solid rgba(168, 85, 247, 0.3);">
+                        <span class="material-symbols-outlined" style="color: #a855f7;">auto_awesome</span>
+                        <span>${qty}x ${name}</span>
+                    </div>`;
+                }
+            }
+            if (r.requiredConsumables) {
+                for(const [name, qty] of Object.entries(r.requiredConsumables)) {
+                    reqsHTML += `<div style="display:flex; align-items:center; gap:0.5rem; background:rgba(0,0,0,0.4); padding:0.5rem 1rem; border-radius:8px; border:1px solid rgba(59, 130, 246, 0.3);">
+                        <span class="material-symbols-outlined" style="color: #3b82f6;">water_drop</span>
+                        <span>${qty}x ${name}</span>
+                    </div>`;
+                }
+            }
+
+            // Character selector if needed for Spirit XP
+            let crafterSelectHTML = '';
+            if (r.costSpiritXp > 0) {
+                crafterSelectHTML = `
+                    <div style="margin-top: 1.5rem; text-align:left; width: 100%;">
+                        <label style="color: #10b981; font-weight: 600; font-size: 0.9rem;">Sélectionnez le personnage canalisant (pour l'XP) :</label>
+                        <select id="crafterSelect" style="width:100%; padding: 0.6rem; margin-top: 0.5rem; background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); color: #fff; border-radius: 8px;">
+                            <option value="">Chargement de vos personnages...</option>
+                        </select>
+                    </div>
+                `;
+                fetchUserCharacters();
+            }
+
+            container.innerHTML = `
+                <div style="width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; text-align: left;">
+                    <div style="margin-bottom: 2rem; text-align:center;">
+                        <span class="material-symbols-outlined" style="font-size: 3rem; color: #06b6d4;">experiment</span>
+                        <h2 style="margin: 0.5rem 0 0 0; color: #fff; font-size: 1.8rem;">${r.name}</h2>
+                        <p style="color: var(--text-muted); font-size: 1rem; max-width: 500px; margin: 0.5rem auto;">${r.description || ''}</p>
+                    </div>
+
+                    <div style="width: 100%; max-width: 500px; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); border-radius: 12px; padding: 1.5rem;">
+                        <h3 style="margin-top: 0; color: #e2e8f0; font-size: 1.1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem;">Ingrédients Requis</h3>
+                        <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem;">
+                            ${reqsHTML || '<span style="color:var(--text-muted);">Aucun coût matériel.</span>'}
+                        </div>
+                        
+                        ${crafterSelectHTML}
+                    </div>
+
+                    <div style="margin-top: 1.5rem; display: flex; align-items: center; gap: 1rem;">
+                        <span class="material-symbols-outlined" style="color: #10b981; font-size: 2rem;">arrow_downward</span>
+                    </div>
+
+                    <div style="width: 100%; max-width: 500px; background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(6,182,212,0.1)); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 12px; padding: 1.5rem; margin-top: 1rem; text-align: center;">
+                        <span style="display:block; font-size: 0.85rem; color: #10b981; text-transform: uppercase; font-weight: 700; letter-spacing: 1px; margin-bottom: 0.5rem;">Résultat Attendu</span>
+                        <strong style="font-size: 1.3rem; color: #fff;">${r.rewardQuantity}x ${r.rewardName} ${r.rewardLevel > 1 ? '(Niv. '+r.rewardLevel+')' : ''}</strong>
+                    </div>
+
+                    <button class="btn" style="margin-top: 2.5rem; padding: 1rem 3rem; font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg, #10b981, #06b6d4); border:none; box-shadow: 0 4px 15px rgba(16,185,129,0.4);" onclick="craftSelected()">
+                        <span class="material-symbols-outlined">science</span>
+                        Transmuter
+                    </button>
+                    <div id="craftMessage" style="margin-top: 1rem; font-weight: 600; text-align: center;"></div>
+                </div>
+            `;
+        }
+
+        async function fetchUserCharacters() {
+            try {
+                // Check where user characters endpoint is... usually /api/personnages or similar.
+                const res = await fetch('/api/personnages');
+                if(res.ok) {
+                    const chars = await res.json();
+                    const sel = document.getElementById('crafterSelect');
+                    if(sel) {
+                        sel.innerHTML = '<option value="">-- Choisir un personnage --</option>';
+                        chars.forEach(c => {
+                            sel.innerHTML += `<option value="${c.id}">${c.name} (XP Spirit: ${c.spiritualiteExperience || 0})</option>`;
+                        });
+                    }
+                }
+            } catch(e) {
+                console.warn(e);
+            }
+        }
+
+        async function craftSelected() {
+            if (!selectedRecipe) return;
+            const msg = document.getElementById('craftMessage');
+            msg.innerText = "Transmutation en cours...";
+            msg.style.color = "var(--text-muted)";
+
+            let url = `/api/alchemy/craft/${selectedRecipe.id}`;
+            if (selectedRecipe.costSpiritXp > 0) {
+                const sel = document.getElementById('crafterSelect');
+                if(!sel || !sel.value) {
+                    msg.innerText = "Veuillez sélectionner un personnage pour dépenser l'XP.";
+                    msg.style.color = "#ef4444";
+                    return;
+                }
+                url += `?personnageId=${sel.value}`;
+            }
+
+            try {
+                const res = await fetch(url, { method: 'POST' });
+                const text = await res.text();
+                if (res.ok) {
+                    msg.innerText = text;
+                    msg.style.color = "#10b981";
+                    
+                    // Add cool particle animation if desired
+                    createMagicParticles();
+
+                    // Refresh user data (gold) in header
+                    if (window.checkAuthStatus) {
+                        window.checkAuthStatus();
+                    }
+                } else {
+                    msg.innerText = "Échec : " + text;
+                    msg.style.color = "#ef4444";
+                }
+            } catch(e) {
+                msg.innerText = "Erreur de connexion.";
+                msg.style.color = "#ef4444";
+            }
+        }
+
+        function createMagicParticles() {
+            const panel = document.getElementById('cauldronPanel');
+            for(let i = 0; i < 30; i++) {
+                const p = document.createElement('div');
+                p.style.position = 'absolute';
+                p.style.width = '8px';
+                p.style.height = '8px';
+                p.style.background = Math.random() > 0.5 ? '#10b981' : '#06b6d4';
+                p.style.borderRadius = '50%';
+                p.style.boxShadow = `0 0 10px ${p.style.background}`;
+                p.style.left = '50%';
+                p.style.top = '50%';
+                p.style.transition = 'all 1s cubic-bezier(0.25, 1, 0.5, 1)';
+                p.style.opacity = '1';
+                p.style.pointerEvents = 'none';
+                
+                panel.appendChild(p);
+
+                setTimeout(() => {
+                    const angle = Math.random() * Math.PI * 2;
+                    const dist = 100 + Math.random() * 150;
+                    p.style.transform = `translate(${Math.cos(angle) * dist}px, ${Math.sin(angle) * dist}px) scale(0)`;
+                    p.style.opacity = '0';
+                }, 10);
+
+                setTimeout(() => {
+                    p.remove();
+                }, 1000);
+            }
+        }
+    </script>
 </body>
 
 </html>

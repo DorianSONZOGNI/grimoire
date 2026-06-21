@@ -1,0 +1,320 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Alchimie - Grimoire</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="icon" type="image/png" href="/favicon.svg">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="/styles/variables.css?v=4">
+    <link rel="stylesheet" href="/styles/layout.css?v=4">
+    <link rel="stylesheet" href="/styles/forms.css?v=4">
+    <link rel="stylesheet" href="/styles/components.css?v=4">
+    <style>
+        .req-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .req-item {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+    </style>
+</head>
+
+<body>
+
+    <header class="top-header">
+        <div class="page-logo">
+            <span class="material-symbols-outlined logo-icon-gradient logo-grimoire">auto_awesome</span>
+            <span class="logo-text-gradient logo-grimoire">Grimoire</span>
+        </div>
+        <div class="header-actions">
+            <a href="/" class="top-nav-link nav-grimoire">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">auto_awesome</span> Grimoire
+            </a>
+            <a href="/armory.html" class="top-nav-link nav-armory">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">shield</span> Armurerie
+            </a>
+            <a href="/dungeons.html" class="top-nav-link nav-dungeon">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">swords</span> Donjons
+            </a>
+            <a href="/vault.html" class="top-nav-link nav-vault">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">money_bag</span> Coffres
+            </a>
+            <a href="/shop.html" class="top-nav-link nav-shop">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">storefront</span> Boutique
+            </a>
+            <a href="/alchemy.html" class="top-nav-link nav-alchemy">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">science</span> Alchimie
+            </a>
+            <a href="/shop-admin.html" id="adminShopLink" class="top-nav-link nav-admin">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">settings</span> Admin Boutique
+            </a>
+            <a href="/pve-admin.html" id="adminPvELink" class="top-nav-link nav-admin">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">admin_panel_settings</span> Admin PvE
+            </a>
+            <a href="/alchemy-admin.html" id="adminAlchemyLink" class="top-nav-link nav-admin active">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">science</span> Admin Alchimie
+            </a>
+        </div>
+    </header>
+
+    <main style="display: block;">
+        <div class="magic-rock"></div>
+        <div class="form-container" style="max-width: 1200px; margin: 2rem auto; display: flex; gap: 2rem; align-items: flex-start;">
+            
+            <div class="panel" style="flex: 1;">
+                <div class="panel-title">
+                    <span class="material-symbols-outlined" style="color: #06b6d4;">science</span>
+                    Créer une Recette Alchimique
+                </div>
+                
+                <form id="recipeForm">
+                    <div class="form-group">
+                        <label>Nom de la recette</label>
+                        <input type="text" id="recipeName" required placeholder="Ex: Transmutation Majeure">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="recipeDesc" rows="2" placeholder="Ex: Convertit de vieilles anomalies en un golem puissant."></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label style="color: #f59e0b;"><span class="material-symbols-outlined" style="font-size: 1rem;">monetization_on</span> Coût Or</label>
+                            <input type="number" id="costGold" value="0" min="0" step="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label style="color: #10b981;"><span class="material-symbols-outlined" style="font-size: 1rem;">star</span> Coût XP Spirit</label>
+                            <input type="number" id="costSpirit" value="0" min="0">
+                        </div>
+                    </div>
+
+                    <hr style="border-color: var(--glass-border); margin: 1.5rem 0;">
+
+                    <div class="form-group">
+                        <label>Ingrédients : Anomalies</label>
+                        <div id="reqAnomaliesList" class="req-list"></div>
+                        <button type="button" class="btn btn-secondary" onclick="addRequirement('anomalie')">+ Ajouter Anomalie requise</button>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 1rem;">
+                        <label>Ingrédients : Consommables</label>
+                        <div id="reqConsumablesList" class="req-list"></div>
+                        <button type="button" class="btn btn-secondary" onclick="addRequirement('consumable')">+ Ajouter Consommable requis</button>
+                    </div>
+
+                    <hr style="border-color: var(--glass-border); margin: 1.5rem 0;">
+
+                    <div class="panel-title" style="font-size: 1.1rem; margin-bottom: 1rem;">
+                        <span class="material-symbols-outlined" style="color: #a855f7;">auto_awesome</span>
+                        Résultat de la Transmutation
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Type de récompense</label>
+                            <select id="rewardType" required>
+                                <option value="GIVE_ANOMALY">Donner Anomalie</option>
+                                <option value="GIVE_CONSUMABLE">Donner Consommable</option>
+                                <option value="UPGRADE_ANOMALY">Améliorer Anomalie (Génère une Nvl Anomalie)</option>
+                                <option value="UNLOCK_FEATURE">Déblocage / Secret</option>
+                                <option value="OTHER">Autre (Texte)</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label>Nom de l'objet (Résultat)</label>
+                            <input type="text" id="rewardName" required placeholder="Ex: Potion de Soin Majeure">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Quantité</label>
+                            <input type="number" id="rewardQty" value="1" min="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Niveau (Pour les Anomalies)</label>
+                            <input type="number" id="rewardLevel" value="1" min="1">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn" style="margin-top: 2rem; width: 100%;">Enregistrer la recette</button>
+                    <div id="formMsg" style="margin-top: 1rem; font-weight: bold; text-align: center;"></div>
+                </form>
+            </div>
+
+            <div class="panel" style="flex: 1;">
+                <div class="panel-title">
+                    <span class="material-symbols-outlined" style="color: #10b981;">list</span>
+                    Recettes Existantes
+                </div>
+                <div id="recipesList" style="display: flex; flex-direction: column; gap: 1rem;">
+                    Chargement...
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script src="/js/auth.js"></script>
+    <script>
+        document.addEventListener('authLoaded', () => {
+            if (!window.isAdmin) {
+                document.body.innerHTML = "<h2 style='color:red;text-align:center;margin-top:50px;'>Accès Refusé : Réservé aux Admins</h2>";
+                return;
+            }
+            loadRecipes();
+        });
+
+        function addRequirement(type) {
+            const list = document.getElementById(type === 'anomalie' ? 'reqAnomaliesList' : 'reqConsumablesList');
+            const div = document.createElement('div');
+            div.className = 'req-item';
+            div.innerHTML = `
+                <input type="text" placeholder="Nom exact de l'objet" class="req-name" style="flex: 2;">
+                <input type="number" value="1" min="1" class="req-qty" style="flex: 1;">
+                <button type="button" class="btn-danger" style="padding: 0.4rem;" onclick="this.parentElement.remove()">X</button>
+            `;
+            list.appendChild(div);
+        }
+
+        async function loadRecipes() {
+            try {
+                const res = await fetch('/api/alchemy/recipes');
+                const data = await res.json();
+                const container = document.getElementById('recipesList');
+                container.innerHTML = '';
+                if(data.length === 0) {
+                    container.innerHTML = "<p style='color: var(--text-muted);'>Aucune recette définie.</p>";
+                    return;
+                }
+                data.forEach(r => {
+                    const div = document.createElement('div');
+                    div.style.background = 'rgba(0,0,0,0.3)';
+                    div.style.border = '1px solid var(--glass-border)';
+                    div.style.borderRadius = '8px';
+                    div.style.padding = '1rem';
+                    
+                    let reqs = [];
+                    if(r.costGold > 0) reqs.push(`${r.costGold} Or`);
+                    if(r.costSpiritXp > 0) reqs.push(`${r.costSpiritXp} XP Spirit`);
+                    
+                    if(r.requiredAnomalies) {
+                        for(const [k,v] of Object.entries(r.requiredAnomalies)) {
+                            reqs.push(`${v}x [A] ${k}`);
+                        }
+                    }
+                    if(r.requiredConsumables) {
+                        for(const [k,v] of Object.entries(r.requiredConsumables)) {
+                            reqs.push(`${v}x [C] ${k}`);
+                        }
+                    }
+
+                    div.innerHTML = `
+                        <div style="display:flex; justify-content:space-between; align-items:start;">
+                            <div>
+                                <h4 style="margin: 0; color: #06b6d4;">${r.name}</h4>
+                                <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0.3rem 0;">${r.description || ''}</p>
+                            </div>
+                            <button class="btn-danger" style="padding:0.3rem 0.6rem; font-size:0.8rem;" onclick="deleteRecipe(${r.id})">Supprimer</button>
+                        </div>
+                        <div style="font-size: 0.85rem; margin-top: 0.5rem;">
+                            <strong>Coût :</strong> <span style="color: #ef4444;">${reqs.length > 0 ? reqs.join(', ') : 'Gratuit'}</span>
+                        </div>
+                        <div style="font-size: 0.85rem; margin-top: 0.3rem;">
+                            <strong>Résultat :</strong> <span style="color: #10b981;">${r.rewardType} - ${r.rewardQuantity}x ${r.rewardName} (Niv. ${r.rewardLevel})</span>
+                        </div>
+                    `;
+                    container.appendChild(div);
+                });
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        document.getElementById('recipeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const msg = document.getElementById('formMsg');
+            msg.innerText = "Création...";
+            msg.style.color = "var(--text-muted)";
+
+            const recipe = {
+                name: document.getElementById('recipeName').value,
+                description: document.getElementById('recipeDesc').value,
+                costGold: parseFloat(document.getElementById('costGold').value) || 0,
+                costSpiritXp: parseFloat(document.getElementById('costSpirit').value) || 0,
+                rewardType: document.getElementById('rewardType').value,
+                rewardName: document.getElementById('rewardName').value,
+                rewardQuantity: parseInt(document.getElementById('rewardQty').value) || 1,
+                rewardLevel: parseInt(document.getElementById('rewardLevel').value) || 1,
+                requiredAnomalies: {},
+                requiredConsumables: {}
+            };
+
+            const anoms = document.getElementById('reqAnomaliesList').children;
+            for(let a of anoms) {
+                const name = a.querySelector('.req-name').value.trim();
+                const qty = parseInt(a.querySelector('.req-qty').value);
+                if(name && qty > 0) recipe.requiredAnomalies[name] = qty;
+            }
+
+            const cons = document.getElementById('reqConsumablesList').children;
+            for(let c of cons) {
+                const name = c.querySelector('.req-name').value.trim();
+                const qty = parseInt(c.querySelector('.req-qty').value);
+                if(name && qty > 0) recipe.requiredConsumables[name] = qty;
+            }
+
+            try {
+                const res = await fetch('/api/alchemy/admin/recipe', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(recipe)
+                });
+                if(res.ok) {
+                    msg.innerText = "Recette créée avec succès !";
+                    msg.style.color = "#10b981";
+                    document.getElementById('recipeForm').reset();
+                    document.getElementById('reqAnomaliesList').innerHTML = '';
+                    document.getElementById('reqConsumablesList').innerHTML = '';
+                    loadRecipes();
+                } else {
+                    const err = await res.text();
+                    msg.innerText = "Erreur: " + err;
+                    msg.style.color = "#ef4444";
+                }
+            } catch(e) {
+                msg.innerText = "Erreur réseau.";
+                msg.style.color = "#ef4444";
+            }
+        });
+
+        async function deleteRecipe(id) {
+            if(!confirm("Supprimer cette recette ?")) return;
+            try {
+                await fetch('/api/alchemy/admin/recipe/' + id, { method: 'DELETE' });
+                loadRecipes();
+            } catch(e) {
+                alert("Erreur de suppression");
+            }
+        }
+    </script>
+</body>
+
+</html>
