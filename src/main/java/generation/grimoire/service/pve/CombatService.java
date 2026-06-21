@@ -53,7 +53,8 @@ public class CombatService {
     // In-memory combat sessions
     private final Map<String, CombatSession> activeSessions = new ConcurrentHashMap<>();
 
-    public CombatSession startCombat(@NonNull List<Long> characterIds, @NonNull Long dungeonId, List<Long> consumableIds, String username) {
+    public CombatSession startCombat(@NonNull List<Long> characterIds, @NonNull Long dungeonId,
+            List<Long> consumableIds, String username) {
         if (characterIds.isEmpty())
             throw new RuntimeException("Aucun personnage sélectionné");
 
@@ -81,11 +82,13 @@ public class CombatService {
 
         if (consumableIds != null && !consumableIds.isEmpty()) {
             for (Long cid : consumableIds) {
-                equipmentRepository.findById(cid).ifPresent(eq -> {
-                    if (eq.getOwnerUsername() != null && eq.getOwnerUsername().equals(username)) {
-                        session.getActiveConsumables().add(eq);
-                    }
-                });
+                if (cid != null) { // <-- Added null check
+                    equipmentRepository.findById(cid).ifPresent(eq -> {
+                        if (eq.getOwnerUsername() != null && eq.getOwnerUsername().equals(username)) {
+                            session.getActiveConsumables().add(eq);
+                        }
+                    });
+                }
             }
         }
 
@@ -233,7 +236,8 @@ public class CombatService {
             }
             session.getActiveConsumables().remove(key);
             equipmentRepository.delete(key);
-            session.addLog("Vous utilisez une Clé pour ouvrir les compartiments secrets du coffre ! (+10% de chance de butin)");
+            session.addLog(
+                    "Vous utilisez une Clé pour ouvrir les compartiments secrets du coffre ! (+10% de chance de butin)");
         }
 
         int gold = session.getCurrentRoom().getTreasureGold();
@@ -570,7 +574,8 @@ public class CombatService {
 
     public CombatSession consumeItem(String sessionId, Long consumableId, Long targetCharacterId, String username) {
         CombatSession session = getSession(sessionId);
-        if (session == null) throw new RuntimeException("Session introuvable");
+        if (session == null)
+            throw new RuntimeException("Session introuvable");
 
         generation.grimoire.entity.Equipment toConsume = null;
         for (generation.grimoire.entity.Equipment eq : session.getActiveConsumables()) {
@@ -579,7 +584,8 @@ public class CombatService {
                 break;
             }
         }
-        if (toConsume == null) throw new RuntimeException("Consommable non trouvé dans le combat");
+        if (toConsume == null)
+            throw new RuntimeException("Consommable non trouvé dans le combat");
 
         generation.grimoire.entity.personnage.Personnage target = null;
         for (generation.grimoire.entity.personnage.Personnage p : session.getPlayers()) {
@@ -588,7 +594,8 @@ public class CombatService {
                 break;
             }
         }
-        if (target == null) throw new RuntimeException("Cible introuvable");
+        if (target == null)
+            throw new RuntimeException("Cible introuvable");
 
         String itemName = toConsume.getName();
         if ("Pain".equalsIgnoreCase(itemName)) {
@@ -1385,26 +1392,34 @@ public class CombatService {
     @org.springframework.transaction.annotation.Transactional
     public void fleeCombat(String sessionId) {
         CombatSession session = activeSessions.get(sessionId);
-        if (session == null || session.isFinished()) return;
+        if (session == null || session.isFinished())
+            return;
 
-        int roomsCount = (session.getDonjon() != null && session.getDonjon().getSalles() != null) 
-                         ? session.getDonjon().getSalles().size() : 1;
+        int roomsCount = (session.getDonjon() != null && session.getDonjon().getSalles() != null)
+                ? session.getDonjon().getSalles().size()
+                : 1;
         int penaltyGold = 10 * roomsCount;
         int penaltyXp = 10 * roomsCount;
 
         for (Personnage p : session.getPlayers()) {
-            Personnage dbPersonnage = personnageRepository.findById(p.getId()).orElse(null);
+            Long playerId = p.getId();
+
+            if (playerId == null) {
+                continue;
+            }
+
+            Personnage dbPersonnage = personnageRepository.findById(playerId).orElse(null);
+
             if (dbPersonnage != null) {
                 dbPersonnage.setExperience(Math.max(0, dbPersonnage.getExperience() - penaltyXp));
                 personnageRepository.save(dbPersonnage);
-                
+
                 generation.grimoire.entity.auth.AppUser user = dbPersonnage.getUser();
                 if (user != null) {
                     user.setMonnaie(Math.max(0, user.getMonnaie() - penaltyGold));
                     userRepository.save(user);
                 }
-                
-                // Update the in-memory object too
+
                 p.setExperience(dbPersonnage.getExperience());
             }
         }
@@ -1773,8 +1788,10 @@ public class CombatService {
             }
         }
     }
+
     private void consumeAnomalie(AppUser user, generation.grimoire.entity.Anomalie toDestroy) {
-        if (toDestroy == null) return;
+        if (toDestroy == null)
+            return;
         if (user != null && "ADMIN".equals(user.getRole())) {
             long count = anomalieRepository.findByOwnerUsername(user.getUsername()).stream()
                     .filter(a -> toDestroy.getName() != null && toDestroy.getName().equals(a.getName()))
