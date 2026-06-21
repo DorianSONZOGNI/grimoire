@@ -148,15 +148,36 @@
                     <div class="form-row">
                         <div class="form-group">
                             <label>Type de récompense</label>
-                            <select id="rewardType" required>
-                                <option value="GIVE_ANOMALY">Donner Anomalie</option>
-                                <option value="GIVE_CONSUMABLE">Donner Consommable</option>
-                                <option value="UPGRADE_ANOMALY">Améliorer Anomalie (Génère une Nvl Anomalie)</option>
-                                <option value="UNLOCK_FEATURE">Déblocage / Secret</option>
-                                <option value="OTHER">Autre (Texte)</option>
-                            </select>
+                            <div class="custom-select-wrapper" style="width: 100%; z-index: 10;">
+                                <div class="custom-select-trigger" style="background: rgba(15,23,42,0.6); padding: 0.6rem; border-radius: 8px;">
+                                    <span class="cs-label" style="font-size: 0.9rem;">
+                                        <span class="material-symbols-outlined cs-icon" style="color: #a855f7;">star</span>
+                                        Donner Anomalie
+                                    </span>
+                                    <span class="material-symbols-outlined" style="color: #64748b; font-size: 1.1rem;">expand_more</span>
+                                </div>
+                                <div class="custom-select-options custom-options">
+                                    <div class="custom-option" data-value="GIVE_ANOMALY">
+                                        <span class="material-symbols-outlined cs-icon" style="color: #a855f7;">star</span>
+                                        Donner Anomalie
+                                    </div>
+                                    <div class="custom-option" data-value="GIVE_CONSUMABLE">
+                                        <span class="material-symbols-outlined cs-icon" style="color: #10b981;">inventory_2</span>
+                                        Donner Consommable
+                                    </div>
+                                    <div class="custom-option" data-value="UNLOCK_FEATURE">
+                                        <span class="material-symbols-outlined cs-icon" style="color: #f59e0b;">key</span>
+                                        Déblocage / Secret
+                                    </div>
+                                    <div class="custom-option" data-value="GIVE_SPIRIT_XP">
+                                        <span class="material-symbols-outlined cs-icon" style="color: #38bdf8;">self_improvement</span>
+                                        Gagner XP Spiritualité
+                                    </div>
+                                </div>
+                                <input type="hidden" id="rewardType" value="GIVE_ANOMALY">
+                            </div>
                         </div>
-                        <div class="form-group">
+                        <div class="form-group" id="rewardNameContainer">
                             <label>Nom de l'objet (Résultat)</label>
                             <input type="text" id="rewardName" required placeholder="Ex: Potion de Soin Majeure">
                         </div>
@@ -221,6 +242,7 @@
                 hiddenInput.value = option.getAttribute('data-value');
                 labelEl.innerHTML = option.innerHTML;
                 wrapper.classList.remove('open');
+                hiddenInput.dispatchEvent(new Event('change'));
             }
         });
 
@@ -284,6 +306,76 @@
                 }
             }
             debugDiv.innerHTML = `Items chargés : ${allAnomalies.length} anomalies, ${allConsumables.length} consommables. (Veuillez faire un Ctrl+F5 si vous ne voyez pas vos objets)`;
+            
+            updateRewardNameInput();
+        }
+
+        function updateRewardNameInput() {
+            const type = document.getElementById('rewardType').value;
+            const container = document.getElementById('rewardNameContainer');
+            if (!container) return;
+
+            let optionsHtml = '';
+            let displayLabel = 'Choisir un objet...';
+
+            if (type === 'GIVE_ANOMALY') {
+                allAnomalies.forEach(a => {
+                    const catIcon = a.category ? (CATEGORY_ICONS[a.category] || 'category') : 'star';
+                    const spiriColor = a.spiritualite ? getSpiritualiteColor(a.spiritualite) : '#a855f7';
+                    optionsHtml += `<div class="custom-option" data-value="${a.name}">
+                                        <span class="material-symbols-outlined cs-icon" style="color: ${spiriColor};">${catIcon}</span>
+                                        ${a.name}
+                                    </div>`;
+                });
+                container.innerHTML = `
+                    <label>Nom de l'objet (Résultat)</label>
+                    <div class="custom-select-wrapper" style="width: 100%; z-index: 9;">
+                        <div class="custom-select-trigger" style="background: rgba(15,23,42,0.6); padding: 0.6rem; border-radius: 8px;">
+                            <span class="cs-label" style="font-size: 0.9rem;">${displayLabel}</span>
+                            <span class="material-symbols-outlined" style="color: #64748b; font-size: 1.1rem;">expand_more</span>
+                        </div>
+                        <div class="custom-select-options custom-options">
+                            ${optionsHtml}
+                        </div>
+                        <input type="hidden" id="rewardName" value="" required>
+                    </div>
+                `;
+            } else if (type === 'GIVE_CONSUMABLE') {
+                allConsumables.forEach(c => {
+                    optionsHtml += `<div class="custom-option" data-value="${c.name}">
+                                        <span class="material-symbols-outlined cs-icon" style="color: #10b981;">inventory_2</span>
+                                        ${c.name}
+                                    </div>`;
+                });
+                container.innerHTML = `
+                    <label>Nom de l'objet (Résultat)</label>
+                    <div class="custom-select-wrapper" style="width: 100%; z-index: 9;">
+                        <div class="custom-select-trigger" style="background: rgba(15,23,42,0.6); padding: 0.6rem; border-radius: 8px;">
+                            <span class="cs-label" style="font-size: 0.9rem;">${displayLabel}</span>
+                            <span class="material-symbols-outlined" style="color: #64748b; font-size: 1.1rem;">expand_more</span>
+                        </div>
+                        <div class="custom-select-options custom-options">
+                            ${optionsHtml}
+                        </div>
+                        <input type="hidden" id="rewardName" value="" required>
+                    </div>
+                `;
+            } else if (type === 'GIVE_SPIRIT_XP') {
+                container.innerHTML = `
+                    <label>Nom de l'objet (Résultat)</label>
+                    <div class="custom-select-wrapper disabled" style="width: 100%; opacity: 0.5; pointer-events: none;">
+                        <div class="custom-select-trigger" style="background: rgba(15,23,42,0.6); padding: 0.6rem; border-radius: 8px;">
+                            <span class="cs-label" style="font-size: 0.9rem;">- XP Spiritualité -</span>
+                        </div>
+                        <input type="hidden" id="rewardName" value="XP Spiritualité">
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `
+                    <label>Nom de l'objet / Secret (Résultat)</label>
+                    <input type="text" id="rewardName" required placeholder="Ex: Secret du feu" class="form-control" style="width: 100%; padding: 0.6rem; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); color: white; border-radius: 8px;">
+                `;
+            }
         }
 
         function getSpiritualiteColor(sp) {
@@ -430,6 +522,8 @@
                 console.error(e);
             }
         }
+
+        document.getElementById('rewardType').addEventListener('change', updateRewardNameInput);
 
         document.getElementById('recipeForm').addEventListener('submit', async (e) => {
             e.preventDefault();

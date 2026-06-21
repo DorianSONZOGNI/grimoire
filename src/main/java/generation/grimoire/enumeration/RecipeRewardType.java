@@ -5,5 +5,6 @@ public enum RecipeRewardType {
     GIVE_CONSUMABLE,
     UPGRADE_ANOMALY,
     UNLOCK_FEATURE,
-    OTHER
+    OTHER,
+    GIVE_SPIRIT_XP
 }
