@@ -84,167 +84,442 @@
             background-size: 448px 224px;
             image-rendering: pixelated;
 
-            /* Une seule animation maître qui gère tout sur 21 secondes ! */
-            animation: fox_master_timeline 21.0s infinite;
+            /* On force "step-end" globalement : ZÉRO interpolation, zéro bug de frame ! */
+            animation: fox_master_timeline 21.0s step-end infinite;
         }
 
         /* ==============================================================
-   LA MASTER TIMELINE (21.0s)
-   Chaque micro-pourcentage (ex: 4.761%) sert à "rembobiner" 
-   le sprite instantanément pour relancer une boucle propre.
+   LA MASTER TIMELINE ULTIME (21.0s - 105 frames)
+   Chaque ligne correspond à une boucle parfaite de l'animation.
    ============================================================== */
         @keyframes fox_master_timeline {
 
             /* --- SEQ 1: Ligne 1, Attend (3 boucles de 5 frames) --- */
-            0% {
+            0.000% {
                 background-position: 0px 0px;
-                animation-timing-function: steps(5);
             }
 
-            4.76% {
-                background-position: -160px 0px;
+            0.952% {
+                background-position: -32px 0px;
+            }
+
+            1.904% {
+                background-position: -64px 0px;
+            }
+
+            2.857% {
+                background-position: -96px 0px;
+            }
+
+            3.809% {
+                background-position: -128px 0px;
             }
 
             4.761% {
                 background-position: 0px 0px;
-                animation-timing-function: steps(5);
             }
 
-            9.52% {
-                background-position: -160px 0px;
+            5.714% {
+                background-position: -32px 0px;
             }
 
-            9.521% {
+            6.666% {
+                background-position: -64px 0px;
+            }
+
+            7.619% {
+                background-position: -96px 0px;
+            }
+
+            8.571% {
+                background-position: -128px 0px;
+            }
+
+            9.523% {
                 background-position: 0px 0px;
-                animation-timing-function: steps(5);
             }
 
-            14.28% {
-                background-position: -160px 0px;
+            10.476% {
+                background-position: -32px 0px;
+            }
+
+            11.428% {
+                background-position: -64px 0px;
+            }
+
+            12.380% {
+                background-position: -96px 0px;
+            }
+
+            13.333% {
+                background-position: -128px 0px;
             }
 
             /* --- SEQ 2: Ligne 2, Tourne la tête (1 boucle de 14 frames) --- */
-            14.281% {
+            14.285% {
                 background-position: 0px -32px;
-                animation-timing-function: steps(14);
             }
 
-            27.61% {
-                background-position: -448px -32px;
+            15.238% {
+                background-position: -32px -32px;
+            }
+
+            16.190% {
+                background-position: -64px -32px;
+            }
+
+            17.142% {
+                background-position: -96px -32px;
+            }
+
+            18.095% {
+                background-position: -128px -32px;
+            }
+
+            19.047% {
+                background-position: -160px -32px;
+            }
+
+            20.000% {
+                background-position: -192px -32px;
+            }
+
+            20.952% {
+                background-position: -224px -32px;
+            }
+
+            21.904% {
+                background-position: -256px -32px;
+            }
+
+            22.857% {
+                background-position: -288px -32px;
+            }
+
+            23.809% {
+                background-position: -320px -32px;
+            }
+
+            24.761% {
+                background-position: -352px -32px;
+            }
+
+            25.714% {
+                background-position: -384px -32px;
+            }
+
+            26.666% {
+                background-position: -416px -32px;
             }
 
             /* --- SEQ 3: Ligne 1, Attend (2 boucles de 5 frames) --- */
-            27.611% {
+            27.619% {
                 background-position: 0px 0px;
-                animation-timing-function: steps(5);
             }
 
-            32.38% {
-                background-position: -160px 0px;
+            28.571% {
+                background-position: -32px 0px;
             }
 
-            32.381% {
+            29.523% {
+                background-position: -64px 0px;
+            }
+
+            30.476% {
+                background-position: -96px 0px;
+            }
+
+            31.428% {
+                background-position: -128px 0px;
+            }
+
+            32.380% {
                 background-position: 0px 0px;
-                animation-timing-function: steps(5);
             }
 
-            37.14% {
-                background-position: -160px 0px;
+            33.333% {
+                background-position: -32px 0px;
+            }
+
+            34.285% {
+                background-position: -64px 0px;
+            }
+
+            35.238% {
+                background-position: -96px 0px;
+            }
+
+            36.190% {
+                background-position: -128px 0px;
             }
 
             /* --- SEQ 4: Ligne 3, Course (3 boucles de 8 frames) --- */
-            37.141% {
+            37.142% {
                 background-position: 0px -64px;
-                animation-timing-function: steps(8);
             }
 
-            44.76% {
-                background-position: -256px -64px;
+            38.095% {
+                background-position: -32px -64px;
+            }
+
+            39.047% {
+                background-position: -64px -64px;
+            }
+
+            40.000% {
+                background-position: -96px -64px;
+            }
+
+            40.952% {
+                background-position: -128px -64px;
+            }
+
+            41.904% {
+                background-position: -160px -64px;
+            }
+
+            42.857% {
+                background-position: -192px -64px;
+            }
+
+            43.809% {
+                background-position: -224px -64px;
             }
 
             44.761% {
                 background-position: 0px -64px;
-                animation-timing-function: steps(8);
             }
 
-            52.38% {
-                background-position: -256px -64px;
+            45.714% {
+                background-position: -32px -64px;
             }
 
-            52.381% {
+            46.666% {
+                background-position: -64px -64px;
+            }
+
+            47.619% {
+                background-position: -96px -64px;
+            }
+
+            48.571% {
+                background-position: -128px -64px;
+            }
+
+            49.523% {
+                background-position: -160px -64px;
+            }
+
+            50.476% {
+                background-position: -192px -64px;
+            }
+
+            51.428% {
+                background-position: -224px -64px;
+            }
+
+            52.380% {
                 background-position: 0px -64px;
-                animation-timing-function: steps(8);
             }
 
-            60.00% {
-                background-position: -256px -64px;
+            53.333% {
+                background-position: -32px -64px;
+            }
+
+            54.285% {
+                background-position: -64px -64px;
+            }
+
+            55.238% {
+                background-position: -96px -64px;
+            }
+
+            56.190% {
+                background-position: -128px -64px;
+            }
+
+            57.142% {
+                background-position: -160px -64px;
+            }
+
+            58.095% {
+                background-position: -192px -64px;
+            }
+
+            59.047% {
+                background-position: -224px -64px;
             }
 
             /* --- SEQ 5: Ligne 4, Jump (1 boucle de 11 frames) --- */
-            60.001% {
+            60.000% {
                 background-position: 0px -96px;
-                animation-timing-function: steps(11);
             }
 
-            70.47% {
-                background-position: -352px -96px;
+            60.952% {
+                background-position: -32px -96px;
             }
 
-            /* --- SEQ 6: Ligne 4, Se couche (1 boucle de 3 frames) --- */
-            70.471% {
-                background-position: 0px -96px;
-                animation-timing-function: steps(3);
+            61.904% {
+                background-position: -64px -96px;
             }
 
-            73.33% {
+            62.857% {
                 background-position: -96px -96px;
             }
 
+            63.809% {
+                background-position: -128px -96px;
+            }
+
+            64.761% {
+                background-position: -160px -96px;
+            }
+
+            65.714% {
+                background-position: -192px -96px;
+            }
+
+            66.666% {
+                background-position: -224px -96px;
+            }
+
+            67.619% {
+                background-position: -256px -96px;
+            }
+
+            68.571% {
+                background-position: -288px -96px;
+            }
+
+            69.523% {
+                background-position: -320px -96px;
+            }
+
+            /* --- SEQ 6: Ligne 4, Se couche (1 boucle de 3 frames) --- */
+            70.476% {
+                background-position: 0px -96px;
+            }
+
+            71.428% {
+                background-position: -32px -96px;
+            }
+
+            72.380% {
+                background-position: -64px -96px;
+            }
+
             /* --- SEQ 7: Ligne 6, Dort (4 boucles de 6 frames) --- */
-            73.331% {
+            73.333% {
                 background-position: 0px -160px;
-                animation-timing-function: steps(6);
             }
 
-            79.04% {
-                background-position: -192px -160px;
+            74.285% {
+                background-position: -32px -160px;
             }
 
-            79.041% {
+            75.238% {
+                background-position: -64px -160px;
+            }
+
+            76.190% {
+                background-position: -96px -160px;
+            }
+
+            77.142% {
+                background-position: -128px -160px;
+            }
+
+            78.095% {
+                background-position: -160px -160px;
+            }
+
+            79.047% {
                 background-position: 0px -160px;
-                animation-timing-function: steps(6);
             }
 
-            84.76% {
-                background-position: -192px -160px;
+            80.000% {
+                background-position: -32px -160px;
+            }
+
+            80.952% {
+                background-position: -64px -160px;
+            }
+
+            81.904% {
+                background-position: -96px -160px;
+            }
+
+            82.857% {
+                background-position: -128px -160px;
+            }
+
+            83.809% {
+                background-position: -160px -160px;
             }
 
             84.761% {
                 background-position: 0px -160px;
-                animation-timing-function: steps(6);
             }
 
-            90.47% {
-                background-position: -192px -160px;
+            85.714% {
+                background-position: -32px -160px;
             }
 
-            90.471% {
+            86.666% {
+                background-position: -64px -160px;
+            }
+
+            87.619% {
+                background-position: -96px -160px;
+            }
+
+            88.571% {
+                background-position: -128px -160px;
+            }
+
+            89.523% {
+                background-position: -160px -160px;
+            }
+
+            90.476% {
                 background-position: 0px -160px;
-                animation-timing-function: steps(6);
             }
 
-            96.18% {
-                background-position: -192px -160px;
+            91.428% {
+                background-position: -32px -160px;
+            }
+
+            92.380% {
+                background-position: -64px -160px;
+            }
+
+            93.333% {
+                background-position: -96px -160px;
+            }
+
+            94.285% {
+                background-position: -128px -160px;
+            }
+
+            95.238% {
+                background-position: -160px -160px;
             }
 
             /* --- SEQ 8: Ligne 4, Se relève (frames 8 à 11) --- */
-            96.181% {
+            96.190% {
                 background-position: -224px -96px;
-                animation-timing-function: steps(4);
             }
 
-            100% {
-                background-position: -352px -96px;
+            97.142% {
+                background-position: -256px -96px;
+            }
+
+            98.095% {
+                background-position: -288px -96px;
+            }
+
+            99.047% {
+                background-position: -320px -96px;
             }
         }
     </style>
