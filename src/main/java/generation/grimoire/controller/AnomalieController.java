@@ -59,6 +59,7 @@ public class AnomalieController {
                     Anomalie newAno = new Anomalie();
                     newAno.setName(template.getName());
                     newAno.setSpiritualite(template.getSpiritualite());
+                    newAno.setCategory(template.getCategory());
                     newAno.setDescription(template.getDescription());
                     newAno.setLevel(template.getLevel() != null ? template.getLevel() : 1);
                     newAno.setMagicObject(template.isMagicObject());

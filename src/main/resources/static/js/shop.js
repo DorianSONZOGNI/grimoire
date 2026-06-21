@@ -159,8 +159,21 @@ function generateStandHtml(eq) {
                         let anos = [];
                         for(const [n, q] of Object.entries(eq.priceAnomalies)) { 
                             let aTemp = allAnomalies.find(a => a.name === n);
+                            
+                            const CATEGORY_ICONS = {
+                                'PIERRE': 'landslide',
+                                'METAL': 'hardware',
+                                'COEUR': 'favorite',
+                                'ORBE': 'lens',
+                                'CRISTAL': 'diamond',
+                                'PLUME': 'history_edu',
+                                'ECAILLE': 'waves',
+                                'AUTRE': 'category'
+                            };
+                            const catIcon = aTemp && aTemp.category ? (CATEGORY_ICONS[aTemp.category] || 'category') : 'star';
+
                             anos.push(`<span class="anomaly-badge">
-                                <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">auto_awesome</span> ${q}
+                                <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">${catIcon}</span> ${q}
                                 <div class="anomaly-tooltip">
                                     <div class="anomaly-tooltip-title">${aTemp ? aTemp.name : n}</div>
                                     <div style="display: flex; gap: 6px; margin: 6px 0; flex-wrap: wrap;">
@@ -168,7 +181,7 @@ function generateStandHtml(eq) {
                                             Lvl ${aTemp ? aTemp.level || 1 : 1}
                                         </span>
                                         <span style="border: 1px solid ${getTypeColor(aTemp && aTemp.magicObject)}; color: ${getTypeColor(aTemp && aTemp.magicObject)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; display: flex; align-items: center; gap: 4px;">
-                                            <span class="material-symbols-outlined" style="font-size: 0.9rem;">${aTemp && aTemp.magicObject ? 'auto_awesome' : 'category'}</span>
+                                            <span class="material-symbols-outlined" style="font-size: 0.9rem;">${catIcon}</span>
                                             ${aTemp && aTemp.magicObject ? 'Objet Magique' : 'Matériau'}
                                         </span>
                                         ${aTemp && aTemp.spiritualite ? 

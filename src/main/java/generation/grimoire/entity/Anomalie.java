@@ -1,5 +1,6 @@
 package generation.grimoire.entity;
 
+import generation.grimoire.enumeration.AnomalieCategory;
 import generation.grimoire.enumeration.SpiritualiteType;
 import generation.grimoire.entity.auth.AppUser;
 import jakarta.persistence.*;
@@ -23,6 +24,10 @@ public class Anomalie {
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
     private SpiritualiteType spiritualite;
+
+    @Enumerated(EnumType.STRING)
+    @Column(nullable = false, columnDefinition = "varchar(255) default 'AUTRE'")
+    private AnomalieCategory category = AnomalieCategory.AUTRE;
 
     private String ownerUsername;
 
