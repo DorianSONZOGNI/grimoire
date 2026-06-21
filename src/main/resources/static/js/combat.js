@@ -240,6 +240,31 @@ window.openBuyModal = openBuyModal;
 window.closeBuyModal = closeBuyModal;
 window.showGlobalTooltip = ui.showGlobalTooltip;
 window.hideGlobalTooltip = ui.hideGlobalTooltip;
+
+window.fleeCombatAction = async function() {
+    try {
+        const btn = document.querySelector('#fleeConfirmModal button:last-child');
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = "Fuite...";
+        }
+        const res = await fetch(`/api/pve/combat/${sessionId}/flee`, { method: 'POST' });
+        if (!res.ok) {
+            const err = await res.text();
+            alert("Erreur lors de la fuite : " + err);
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = "Oui, fuir";
+            }
+            return;
+        }
+        window.location.href = '/dungeons.html';
+    } catch (e) {
+        console.error(e);
+        window.location.href = '/dungeons.html';
+    }
+};
+
 window.initiateCombatCast = initiateCombatCast;
 window.confirmCombatCast = confirmCombatCast;
 window.cancelCombatCast = cancelCombatCast;
@@ -903,6 +928,16 @@ function updateUI(data) {
 
     document.getElementById('headerDungeonName').textContent = data.donjon.name + " - Étape " + (data.currentRoomIndex + 1);
     document.getElementById('turnCounter').textContent = data.turnNumber;
+
+    // Update flee penalty text
+    const fleePenaltySpan = document.getElementById('fleePenaltyText');
+    if (fleePenaltySpan && data.players && data.donjon && data.donjon.salles) {
+        const nbHeroes = data.players.length;
+        const nbRooms = data.donjon.salles.length;
+        const xpLoss = 10 * nbRooms * nbHeroes;
+        const goldLoss = 10 * nbRooms * nbHeroes;
+        fleePenaltySpan.innerHTML = `Perte d'xp et Or : <span style="color: #f87171;">-${xpLoss} XP normal</span> et <span style="color: #fbbf24;">-${goldLoss} Or</span>.`;
+    }
 
     // Players
     const playersContainer = document.getElementById('playersContainer');

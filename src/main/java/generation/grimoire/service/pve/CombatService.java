@@ -1382,6 +1382,38 @@ public class CombatService {
         return session;
     }
 
+    @org.springframework.transaction.annotation.Transactional
+    public void fleeCombat(String sessionId) {
+        CombatSession session = activeSessions.get(sessionId);
+        if (session == null || session.isFinished()) return;
+
+        int roomsCount = (session.getDonjon() != null && session.getDonjon().getSalles() != null) 
+                         ? session.getDonjon().getSalles().size() : 1;
+        int penaltyGold = 10 * roomsCount;
+        int penaltyXp = 10 * roomsCount;
+
+        for (Personnage p : session.getPlayers()) {
+            Personnage dbPersonnage = personnageRepository.findById(p.getId()).orElse(null);
+            if (dbPersonnage != null) {
+                dbPersonnage.setExperience(Math.max(0, dbPersonnage.getExperience() - penaltyXp));
+                personnageRepository.save(dbPersonnage);
+                
+                generation.grimoire.entity.auth.AppUser user = dbPersonnage.getUser();
+                if (user != null) {
+                    user.setMonnaie(Math.max(0, user.getMonnaie() - penaltyGold));
+                    userRepository.save(user);
+                }
+                
+                // Update the in-memory object too
+                p.setExperience(dbPersonnage.getExperience());
+            }
+        }
+
+        session.setFinished(true);
+        session.setPlayerWon(false);
+        activeSessions.remove(sessionId);
+    }
+
     private void rollInitiative(CombatSession session) {
         session.getTurnOrder().clear();
         session.setCurrentTurnIndex(0);

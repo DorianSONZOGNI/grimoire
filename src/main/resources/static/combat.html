@@ -1182,17 +1182,19 @@
                 style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 1.5rem; line-height: 1.5; text-align: center;">
                 Êtes-vous sûr de vouloir abandonner l'exploration et fuir ? Toute progression dans ce donjon sera
                 perdue.
+                <br><br>
+                <span id="fleePenaltyText" style="color: #ef4444; font-weight: bold;">Pénalité de fuite : calcul en cours...</span>
             </div>
             <div style="display: flex; gap: 1rem;">
                 <button onclick="document.getElementById('fleeConfirmModal').classList.remove('show')"
                     style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 0.6rem; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.2s ease;"
                     onmouseover="this.style.background='rgba(255,255,255,0.1)'"
                     onmouseout="this.style.background='rgba(255,255,255,0.05)'">Annuler</button>
-                <a href="/dungeons.html"
-                    style="text-decoration: none; display: flex; align-items: center; justify-content: center; flex: 1; background: #ef4444; border: none; color: #fff; padding: 0.6rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);"
+                <button onclick="window.fleeCombatAction()"
+                    style="display: flex; align-items: center; justify-content: center; flex: 1; background: #ef4444; border: none; color: #fff; padding: 0.6rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);"
                     onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter='none'">
                     Oui, fuir
-                </a>
+                </button>
             </div>
         </div>
     </div>

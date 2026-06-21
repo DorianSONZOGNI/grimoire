@@ -70,8 +70,16 @@ public class CombatController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
-
-
+    @PostMapping("/{sessionId}/flee")
+    public ResponseEntity<?> fleeCombat(@PathVariable("sessionId") String sessionId) {
+        try {
+            combatService.fleeCombat(sessionId);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 
     @PostMapping("/{sessionId}/auto-turn")
     public ResponseEntity<?> autoTurn(@PathVariable("sessionId") String sessionId) {
