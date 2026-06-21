@@ -832,18 +832,23 @@ function generateEquipmentTooltipHTML(eq) {
     </div>`;
 }
 
-async function openChest() {
+async function openChest(useKey = false) {
     if (!sessionId || isProcessing) return;
     isProcessing = true;
     setButtonsProcessing(true);
     try {
         const btn = document.getElementById('btnOpenChest');
-        if (btn) {
-            btn.disabled = true;
+        const btnKey = document.getElementById('btnOpenChestKey');
+        if (btn) btn.disabled = true;
+        if (btnKey) btnKey.disabled = true;
+        
+        if (useKey && btnKey) {
+            btnKey.innerHTML = `<span class="material-symbols-outlined spin">sync</span> Ouverture...`;
+        } else if (!useKey && btn) {
             btn.innerHTML = `<span class="material-symbols-outlined spin">sync</span> Ouverture...`;
         }
 
-        const res = await fetch(`/api/pve/combat/${sessionId}/open-chest`, { method: 'POST' });
+        const res = await fetch(`/api/pve/combat/${sessionId}/open-chest?useKey=${useKey}`, { method: 'POST' });
         if (!res.ok) {
             const err = await res.text();
             alert("Erreur : " + err);
@@ -857,6 +862,10 @@ async function openChest() {
         if (btn) {
             btn.disabled = false;
             btn.innerHTML = `<span class="material-symbols-outlined">lock_open</span> Ouvrir le coffre`;
+        }
+        if (btnKey) {
+            btnKey.disabled = false;
+            btnKey.innerHTML = `<span class="material-symbols-outlined">vpn_key</span> Ouvrir (Clé : +10% de butin)`;
         }
 
         // Then call updateUI
@@ -1081,6 +1090,7 @@ function updateUI(data) {
                 if (data.roomEventCompleted) {
                     desc.textContent = `Vous avez ouvert le coffre !`;
                     btnOpen.style.display = 'none';
+                    if (document.getElementById('btnOpenChestKey')) document.getElementById('btnOpenChestKey').style.display = 'none';
                     btnCont.style.display = 'block';
                     lootContainer.style.display = 'flex';
 
@@ -1183,6 +1193,12 @@ function updateUI(data) {
                     lootContainer.style.display = 'none';
                     lootContainer.innerHTML = ''; // reset
                     delete lootContainer.dataset.filled;
+                    
+                    const btnKey = document.getElementById('btnOpenChestKey');
+                    if (btnKey) {
+                        const hasKey = data.activeConsumables && data.activeConsumables.some(eq => eq.name === 'Clé');
+                        btnKey.style.display = hasKey ? 'block' : 'none';
+                    }
                 }
             } else if (data.currentRoom.type === 'EVENT') {
                 const subType = data.currentRoom.eventSubType || 'ALTERATION';

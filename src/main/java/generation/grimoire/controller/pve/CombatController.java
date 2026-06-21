@@ -117,9 +117,9 @@ public class CombatController {
     }
 
     @PostMapping("/{sessionId}/open-chest")
-    public ResponseEntity<CombatSession> openChest(@PathVariable String sessionId) {
+    public ResponseEntity<CombatSession> openChest(@PathVariable("sessionId") String sessionId, @RequestParam(required = false, defaultValue = "false") boolean useKey) {
         try {
-            CombatSession session = combatService.openChest(sessionId);
+            CombatSession session = combatService.openChest(sessionId, useKey);
             return ResponseEntity.ok(session);
         } catch (Exception e) {
             e.printStackTrace();

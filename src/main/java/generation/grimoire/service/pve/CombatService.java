@@ -209,7 +209,7 @@ public class CombatService {
         }
     }
 
-    public CombatSession openChest(String sessionId) {
+    public CombatSession openChest(String sessionId, boolean useKey) {
         CombatSession session = activeSessions.get(sessionId);
         if (session == null || session.isFinished())
             return session;
@@ -218,6 +218,22 @@ public class CombatService {
         }
         if (session.isRoomEventCompleted()) {
             throw new RuntimeException("Le coffre a déjà été ouvert.");
+        }
+
+        if (useKey) {
+            generation.grimoire.entity.Equipment key = null;
+            for (generation.grimoire.entity.Equipment eq : session.getActiveConsumables()) {
+                if ("Clé".equalsIgnoreCase(eq.getName())) {
+                    key = eq;
+                    break;
+                }
+            }
+            if (key == null) {
+                throw new RuntimeException("L'équipe ne possède pas de Clé !");
+            }
+            session.getActiveConsumables().remove(key);
+            equipmentRepository.delete(key);
+            session.addLog("Vous utilisez une Clé pour ouvrir les compartiments secrets du coffre ! (+10% de chance de butin)");
         }
 
         int gold = session.getCurrentRoom().getTreasureGold();
@@ -247,7 +263,8 @@ public class CombatService {
         if (session.getCurrentRoom().getLootTable() != null && user != null) {
             for (LootEntry entry : session.getCurrentRoom().getLootTable()) {
                 double roll = rnd.nextDouble() * 100.0;
-                if (roll <= entry.getProbability() && entry.getEquipment() != null) {
+                double proba = entry.getProbability() + (useKey ? 10.0 : 0.0);
+                if (roll <= proba && entry.getEquipment() != null) {
                     Equipment template = entry.getEquipment();
 
                     // Clone it

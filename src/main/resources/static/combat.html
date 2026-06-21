@@ -1014,9 +1014,13 @@
                 </div>
 
                 <div id="eventActionContainer" style="display: flex; gap: 1rem;">
-                    <button class="action-btn" id="btnOpenChest" onclick="openChest()"
+                    <button class="action-btn" id="btnOpenChest" onclick="openChest(false)"
                         style="background: rgba(245, 158, 11, 0.2); color: #f59e0b; border-color: rgba(245, 158, 11, 0.4); display: none;">
                         <span class="material-symbols-outlined">lock_open</span> Ouvrir le coffre
+                    </button>
+                    <button class="action-btn" id="btnOpenChestKey" onclick="openChest(true)"
+                        style="background: rgba(168, 85, 247, 0.2); color: #c084fc; border-color: rgba(168, 85, 247, 0.4); display: none;">
+                        <span class="material-symbols-outlined">vpn_key</span> Ouvrir (Clé : +10% de butin)
                     </button>
                     <button class="action-btn" id="btnContinueEvent" onclick="nextRoom()"
                         style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; border-color: rgba(59, 130, 246, 0.4);">
