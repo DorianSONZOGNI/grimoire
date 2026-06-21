@@ -186,6 +186,13 @@ async function submitPersonnage() {
         return;
     }
 
+    const voieIdVal = document.getElementById('charVoie').value;
+    const spiritIdVal = document.getElementById('charSpirit').value;
+    if (!editingId && (!voieIdVal || !spiritIdVal)) {
+        showNotif('Une Voie et une Spiritualité sont obligatoires à la création.', true);
+        return;
+    }
+
     const dto = {
         id: editingId,
         name: name,

@@ -94,6 +94,11 @@ public class PersonnageController {
             }
             isUpdate = true;
         } else {
+            if (dto.getVoieId() == null || dto.getSpiritualiteId() == null) {
+                Map<String, Object> errorResp = new HashMap<>();
+                errorResp.put("message", "Une Voie et une Spiritualité sont obligatoires à la création.");
+                return ResponseEntity.status(org.springframework.http.HttpStatus.BAD_REQUEST).body(errorResp);
+            }
             int userMax = user != null ? user.getMaxCharacters() : 2;
             if (userMax <= 0) userMax = 2;
             int max = isAdmin ? 999 : userMax;
