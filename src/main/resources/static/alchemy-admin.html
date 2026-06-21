@@ -311,7 +311,7 @@
             updateRewardNameInput();
         }
 
-        function updateRewardNameInput() {
+        async function updateRewardNameInput() {
             const type = document.getElementById('rewardType').value;
             const container = document.getElementById('rewardNameContainer');
             if (!container) return;
@@ -371,9 +371,51 @@
                         <input type="hidden" id="rewardName" value="XP Spiritualité">
                     </div>
                 `;
+            } else if (type === 'UNLOCK_FEATURE') {
+                // Fetch dungeons to get available secrets
+                let secretOptions = '';
+                try {
+                    const res = await fetch('/api/pve/dungeons');
+                    if (res.ok) {
+                        const dungeons = await res.json();
+                        const secretDungeons = dungeons.filter(d => d.requiredSecret && d.requiredSecret.trim() !== '');
+                        secretDungeons.forEach(d => {
+                            secretOptions += `<div class="custom-option" data-value="${d.requiredSecret}">
+                                <span class="material-symbols-outlined cs-icon" style="color: #f59e0b;">key</span>
+                                ${d.requiredSecret} <span style="color: #64748b; font-size: 0.8rem;">(Donjon: ${d.name})</span>
+                            </div>`;
+                        });
+                    }
+                } catch (e) {
+                    console.error("Erreur chargement donjons pour secrets", e);
+                }
+
+                if (!secretOptions) {
+                    secretOptions = `<div class="custom-option" data-value="" style="pointer-events: none; opacity: 0.5;">
+                        <span class="material-symbols-outlined cs-icon" style="color: #64748b;">warning</span>
+                        Aucun secret configur\u00e9 dans les donjons
+                    </div>`;
+                }
+
+                container.innerHTML = `
+                    <label>Secret / D\u00e9blocage (R\u00e9sultat)</label>
+                    <div class="custom-select-wrapper" style="width: 100%; z-index: 9;">
+                        <div class="custom-select-trigger" style="background: rgba(15,23,42,0.6); padding: 0.6rem; border-radius: 8px;">
+                            <span class="cs-label" style="font-size: 0.9rem;">
+                                <span class="material-symbols-outlined cs-icon" style="color: #f59e0b;">key</span>
+                                Choisir un secret...
+                            </span>
+                            <span class="material-symbols-outlined" style="color: #64748b; font-size: 1.1rem;">expand_more</span>
+                        </div>
+                        <div class="custom-select-options custom-options">
+                            ${secretOptions}
+                        </div>
+                        <input type="hidden" id="rewardName" value="" required>
+                    </div>
+                `;
             } else {
                 container.innerHTML = `
-                    <label>Nom de l'objet / Secret (Résultat)</label>
+                    <label>Nom de l'objet / Secret (R\u00e9sultat)</label>
                     <input type="text" id="rewardName" required placeholder="Ex: Secret du feu" class="form-control" style="width: 100%; padding: 0.6rem; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); color: white; border-radius: 8px;">
                 `;
             }
