@@ -1405,6 +1405,22 @@ public class CombatService {
             session.setFinished(true);
             session.setPlayerWon(false);
             session.addLog("Toute l'équipe a été vaincue...");
+
+            // Defeat penalty: 8 gold per room
+            int roomsCount = (session.getDonjon() != null && session.getDonjon().getSalles() != null)
+                    ? session.getDonjon().getSalles().size() : 1;
+            int goldLoss = 8 * roomsCount;
+            session.setTotalGoldLostOnDefeat(goldLoss);
+
+            if (!session.getPlayers().isEmpty() && session.getPlayers().get(0).getId() != null) {
+                Personnage dbP = personnageRepository.findById(session.getPlayers().get(0).getId()).orElse(null);
+                if (dbP != null && dbP.getUser() != null) {
+                    generation.grimoire.entity.auth.AppUser user = dbP.getUser();
+                    user.setMonnaie(Math.max(0, user.getMonnaie() - goldLoss));
+                    userRepository.save(user);
+                    session.addLog("L'équipe perd " + goldLoss + " Or suite à cette défaite.");
+                }
+            }
         } else if (session.isRoundFinished() && !session.areAllEnemiesDead()) {
             session.setTurnNumber(session.getTurnNumber() + 1);
             rollInitiative(session);

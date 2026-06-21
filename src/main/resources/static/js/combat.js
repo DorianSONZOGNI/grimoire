@@ -1804,7 +1804,7 @@ function updateUI(data) {
 
     // Check finish
     if (data.finished) {
-        showResult(data.playerWon);
+        showResult(data);
     } else if (isActiveEnemy) {
         // Disable UI
         document.getElementById('btnAttack').disabled = true;
@@ -2592,19 +2592,20 @@ function renderSpellCard(sp) {
     `;
 }
 
-function showResult(playerWon) {
+function showResult(data) {
     const overlay = document.getElementById('resultOverlay');
     const title = document.getElementById('resultTitle');
     const desc = document.getElementById('resultDesc');
 
-    if (playerWon) {
+    if (data.playerWon) {
         title.textContent = "VICTOIRE";
         title.style.color = "#10b981";
         desc.textContent = "Le donjon a été complété.";
     } else {
         title.textContent = "DÉFAITE";
         title.style.color = "#ef4444";
-        desc.textContent = "Votre équipe a été anéantie.";
+        const goldLost = data.totalGoldLostOnDefeat || 0;
+        desc.innerHTML = `Votre équipe a été anéantie.<br><span style="color:#fbbf24; font-weight:600; margin-top:0.5rem; display:block;">Pénalité : -${goldLost} Or</span>`;
     }
 
     overlay.classList.add('show');
