@@ -53,7 +53,7 @@ public class CombatService {
     // In-memory combat sessions
     private final Map<String, CombatSession> activeSessions = new ConcurrentHashMap<>();
 
-    public CombatSession startCombat(@NonNull List<Long> characterIds, @NonNull Long dungeonId, String username) {
+    public CombatSession startCombat(@NonNull List<Long> characterIds, @NonNull Long dungeonId, List<Long> consumableIds, String username) {
         if (characterIds.isEmpty())
             throw new RuntimeException("Aucun personnage sélectionné");
 
@@ -78,6 +78,16 @@ public class CombatService {
 
         String sessionId = UUID.randomUUID().toString();
         CombatSession session = new CombatSession(sessionId, d, players);
+
+        if (consumableIds != null && !consumableIds.isEmpty()) {
+            for (Long cid : consumableIds) {
+                equipmentRepository.findById(cid).ifPresent(eq -> {
+                    if (eq.getOwnerUsername() != null && eq.getOwnerUsername().equals(username)) {
+                        session.getActiveConsumables().add(eq);
+                    }
+                });
+            }
+        }
 
         handleRoomStart(session);
 

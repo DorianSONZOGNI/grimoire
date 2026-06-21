@@ -17,6 +17,7 @@ public class CombatSession {
     private Long dungeonId;
     private Donjon donjon;
     private List<Personnage> players = new ArrayList<>();
+    private List<generation.grimoire.entity.Equipment> activeConsumables = new ArrayList<>();
 
     // Initiative Queue
     private List<InitiativeEntry> turnOrder = new ArrayList<>();

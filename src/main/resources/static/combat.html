@@ -976,45 +976,85 @@
 
         <!-- Room Event Overlay (Treasure/Event) -->
         <div class="event-overlay" id="eventOverlay">
-            <span class="material-symbols-outlined" id="eventIcon"
-                style="font-size: 5rem; margin-bottom: 1rem; color: #f59e0b;">money_bag</span>
-            <div class="result-title" id="eventTitle" style="font-size: 3rem; margin-bottom: 1rem;">Trésor !</div>
-            <p style="color: #94a3b8; font-size: 1.2rem; margin-bottom: 2rem; max-width: 600px; text-align: center;"
-                id="eventDesc">Vous avez trouvé un trésor.</p>
-
-            <div id="eventLootContainer"
-                style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; margin-bottom: 2rem;">
-                <!-- Rempli par JS (Items / XP animation) -->
+            <!-- Left: Inventory Panel Wrapper -->
+            <div id="eventInventoryWrapper" style="position: absolute; left: 0; top: 0; bottom: 0; width: 320px; z-index: 20; transform: translateX(-320px); transition: transform 0.3s ease;">
+                <div style="width: 100%; height: 100%; background: rgba(15, 23, 42, 0.95); border-right: 1px solid rgba(255, 255, 255, 0.1); padding: 1.5rem; display: flex; flex-direction: column; overflow-y: auto; position: relative;">
+                    <h3 style="color: #10b981; font-size: 1.2rem; margin-bottom: 1rem; text-align: center; font-family: 'Outfit', sans-serif; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                        <span class="material-symbols-outlined">inventory_2</span> Inventaire
+                    </h3>
+                    <div id="eventOverlayInventoryList" style="display: flex; flex-direction: column; gap: 0.8rem;">
+                        <!-- JS injects consumable cards here -->
+                    </div>
+                </div>
+                <!-- Toggle Tab -->
+                <div onclick="const w = document.getElementById('eventInventoryWrapper'); w.style.transform = w.style.transform === 'translateX(0px)' ? 'translateX(-320px)' : 'translateX(0px)';"
+                     style="position: absolute; right: -40px; top: 50%; transform: translateY(-50%); width: 40px; height: 100px; background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(255, 255, 255, 0.1); border-left: none; border-radius: 0 8px 8px 0; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #10b981; box-shadow: 5px 0 10px rgba(0,0,0,0.3);">
+                    <span class="material-symbols-outlined">inventory_2</span>
+                </div>
             </div>
 
-            <div id="eventActionContainer" style="display: flex; gap: 1rem;">
-                <button class="action-btn" id="btnOpenChest" onclick="openChest()"
-                    style="background: rgba(245, 158, 11, 0.2); color: #f59e0b; border-color: rgba(245, 158, 11, 0.4); display: none;">
-                    <span class="material-symbols-outlined">lock_open</span> Ouvrir le coffre
-                </button>
-                <button class="action-btn" id="btnContinueEvent" onclick="nextRoom()"
-                    style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; border-color: rgba(59, 130, 246, 0.4);">
-                    Continuer
-                </button>
+            <!-- Right: Event Content -->
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 3rem; position: relative; max-width: 800px; width: 100%; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);">
+                <span class="material-symbols-outlined" id="eventIcon"
+                    style="font-size: 5rem; margin-bottom: 1rem; color: #f59e0b;">money_bag</span>
+                <div class="result-title" id="eventTitle" style="font-size: 3rem; margin-bottom: 1rem;">Trésor !</div>
+                <p style="color: #94a3b8; font-size: 1.2rem; margin-bottom: 2rem; max-width: 600px; text-align: center;"
+                    id="eventDesc">Vous avez trouvé un trésor.</p>
+
+                <div id="eventLootContainer"
+                    style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; margin-bottom: 2rem; width: 100%;">
+                    <!-- Rempli par JS (Items / XP animation) -->
+                </div>
+
+                <div id="eventActionContainer" style="display: flex; gap: 1rem;">
+                    <button class="action-btn" id="btnOpenChest" onclick="openChest()"
+                        style="background: rgba(245, 158, 11, 0.2); color: #f59e0b; border-color: rgba(245, 158, 11, 0.4); display: none;">
+                        <span class="material-symbols-outlined">lock_open</span> Ouvrir le coffre
+                    </button>
+                    <button class="action-btn" id="btnContinueEvent" onclick="nextRoom()"
+                        style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; border-color: rgba(59, 130, 246, 0.4);">
+                        Continuer
+                    </button>
+                </div>
             </div>
         </div>
 
         <!-- Combat Victory Overlay -->
         <div class="event-overlay" id="combatVictoryOverlay">
-            <span class="material-symbols-outlined"
-                style="font-size: 5rem; margin-bottom: 1rem; color: #10b981;">emoji_events</span>
-            <div class="result-title" style="font-size: 3rem; margin-bottom: 1rem; color: #10b981;">Victoire !</div>
-            <p style="color: #94a3b8; font-size: 1.2rem; margin-bottom: 2rem; max-width: 600px; text-align: center;"
-                id="combatVictoryDesc">
-            </p>
-            <div id="combatVictoryXpContainer"
-                style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; margin-bottom: 2rem;">
-                <!-- Rempli par JS -->
+            <!-- Left: Inventory Panel Wrapper -->
+            <div id="combatVictoryInventoryWrapper" style="position: absolute; left: 0; top: 0; bottom: 0; width: 320px; z-index: 20; transform: translateX(-320px); transition: transform 0.3s ease;">
+                <div style="width: 100%; height: 100%; background: rgba(15, 23, 42, 0.95); border-right: 1px solid rgba(255, 255, 255, 0.1); padding: 1.5rem; display: flex; flex-direction: column; overflow-y: auto; position: relative;">
+                    <h3 style="color: #10b981; font-size: 1.2rem; margin-bottom: 1rem; text-align: center; font-family: 'Outfit', sans-serif; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+                        <span class="material-symbols-outlined">inventory_2</span> Inventaire
+                    </h3>
+                    <div id="combatVictoryInventoryList" style="display: flex; flex-direction: column; gap: 0.8rem;">
+                        <!-- JS injects consumable cards here -->
+                    </div>
+                </div>
+                <!-- Toggle Tab -->
+                <div onclick="const w = document.getElementById('combatVictoryInventoryWrapper'); w.style.transform = w.style.transform === 'translateX(0px)' ? 'translateX(-320px)' : 'translateX(0px)';"
+                     style="position: absolute; right: -40px; top: 50%; transform: translateY(-50%); width: 40px; height: 100px; background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(255, 255, 255, 0.1); border-left: none; border-radius: 0 8px 8px 0; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #10b981; box-shadow: 5px 0 10px rgba(0,0,0,0.3);">
+                    <span class="material-symbols-outlined">inventory_2</span>
+                </div>
             </div>
-            <button class="action-btn" onclick="nextRoom()"
-                style="background: rgba(16, 185, 129, 0.2); color: #34d399; border-color: rgba(16, 185, 129, 0.4);">
-                Continuer l'exploration
-            </button>
+
+            <!-- Right: Victory Content -->
+            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 3rem; position: relative; max-width: 800px; width: 100%; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);">
+                <span class="material-symbols-outlined"
+                    style="font-size: 5rem; margin-bottom: 1rem; color: #10b981;">emoji_events</span>
+                <div class="result-title" style="font-size: 3rem; margin-bottom: 1rem; color: #10b981;">Victoire !</div>
+                <p style="color: #94a3b8; font-size: 1.2rem; margin-bottom: 2rem; max-width: 600px; text-align: center;"
+                    id="combatVictoryDesc">
+                </p>
+                <div id="combatVictoryXpContainer"
+                    style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; margin-bottom: 2rem; width: 100%;">
+                    <!-- Rempli par JS -->
+                </div>
+                <button class="action-btn" onclick="nextRoom()"
+                    style="background: rgba(16, 185, 129, 0.2); color: #34d399; border-color: rgba(16, 185, 129, 0.4);">
+                    Continuer l'exploration
+                </button>
+            </div>
         </div>
 
         <div class="result-overlay" id="resultOverlay">

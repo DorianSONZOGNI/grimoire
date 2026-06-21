@@ -21,12 +21,13 @@ public class CombatController {
     public ResponseEntity<CombatSession> startCombat(
             @RequestParam @NonNull List<Long> characterIds,
             @RequestParam @NonNull Long dungeonId,
+            @RequestParam(required = false) List<Long> consumableIds,
             Principal principal) {
         if (principal == null)
             return ResponseEntity.status(401).build();
 
         try {
-            CombatSession session = combatService.startCombat(characterIds, dungeonId, principal.getName());
+            CombatSession session = combatService.startCombat(characterIds, dungeonId, consumableIds, principal.getName());
             return ResponseEntity.ok(session);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(null);

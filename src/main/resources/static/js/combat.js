@@ -271,6 +271,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
     const dungeonId = urlParams.get('dungeonId');
     const characterIds = urlParams.get('characterIds');
+    const consumableIds = urlParams.get('consumableIds');
 
     if (!dungeonId || !characterIds) {
         alert("Paramètres de combat manquants.");
@@ -278,12 +279,17 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    startCombat(characterIds, dungeonId);
+    startCombat(characterIds, dungeonId, consumableIds);
 });
 
-async function startCombat(characterIds, dungeonId) {
+async function startCombat(characterIds, dungeonId, consumableIds) {
     try {
-        const res = await fetch(`/api/pve/combat/start?characterIds=${characterIds}&dungeonId=${dungeonId}`, {
+        let fetchUrl = `/api/pve/combat/start?characterIds=${characterIds}&dungeonId=${dungeonId}`;
+        if (consumableIds) {
+            fetchUrl += `&consumableIds=${consumableIds}`;
+        }
+        
+        const res = await fetch(fetchUrl, {
             method: 'POST'
         });
 
@@ -945,6 +951,7 @@ function updateUI(data) {
                 document.getElementById('btnAttack').disabled = true;
                 const vicOverlay = document.getElementById('combatVictoryOverlay');
                 if (vicOverlay) {
+                    if (typeof renderOverlayInventory === 'function') renderOverlayInventory('combatVictoryInventoryList');
                     vicOverlay.classList.add('show');
                     const xpContainer = document.getElementById('combatVictoryXpContainer');
                     if (xpContainer) {
@@ -1245,6 +1252,12 @@ function updateUI(data) {
                                     }
                                 } else {
                                     container.innerHTML = '';
+                                    const btn = document.getElementById('btnAcceptAlteration');
+                                    if (btn) {
+                                        btn.removeAttribute('disabled');
+                                        btn.style.opacity = '1';
+                                        btn.style.cursor = 'pointer';
+                                    }
                                 }
                             }).catch(err => {
                                 console.error(err);
@@ -1295,6 +1308,13 @@ function updateUI(data) {
                                     return;
                                 }
 
+                                const btn = document.getElementById('btnAcceptAlteration');
+                                if (btn) {
+                                    btn.removeAttribute('disabled');
+                                    btn.style.opacity = '1';
+                                    btn.style.cursor = 'pointer';
+                                }
+
                                 const first = eligible[0];
                                 const CATEGORY_ICONS = {
                                     'PIERRE': 'landslide', 'METAL': 'hardware', 'COEUR': 'favorite',
@@ -1331,12 +1351,18 @@ function updateUI(data) {
 
                         btnCont.style.display = 'none';
                         lootContainer.style.display = 'flex';
+                        
+                        let disabledState = '';
+                        if (data.currentRoom.alterationType === 'ITEM' || data.currentRoom.alterationType === 'AUTEL') {
+                            disabledState = 'disabled style="opacity: 0.5; cursor: not-allowed;"';
+                        }
+                        
                         lootContainer.innerHTML = `
                             <div style="display: flex; flex-direction: column; align-items: center; max-width: 600px; width: 100%;">
                                 ${warningHtml}
                                 ${specialItemHtml}
                                 <div style="display: flex; gap: 1rem; margin-top: 1rem; justify-content: center; width: 100%;">
-                                    <button type="button" id="btnAcceptAlteration" class="btn" style="flex: 1; max-width: 250px; background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.3); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;" onclick="event.preventDefault(); acceptAlteration();">${btnText}</button>
+                                    <button type="button" id="btnAcceptAlteration" class="btn" style="flex: 1; max-width: 250px; background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.3); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;" ${disabledState} onclick="event.preventDefault(); acceptAlteration();">${btnText}</button>
                                     <button type="button" class="btn" style="flex: 1; max-width: 250px; background: rgba(255, 255, 255, 0.05); color: #94a3b8; border: 1px solid rgba(255, 255, 255, 0.1); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;" onclick="event.preventDefault(); nextRoom();">Ignorer et passer</button>
                                 </div>
                             </div>
@@ -1635,6 +1661,7 @@ function updateUI(data) {
                 }
             }
 
+            if (typeof renderOverlayInventory === 'function') renderOverlayInventory('eventOverlayInventoryList');
             overlay.classList.add('show');
         }
     }
@@ -2594,4 +2621,34 @@ window.showGlobalTooltip = function(el) {
 window.hideGlobalTooltip = function() {
     const tooltip = document.getElementById('globalFixedTooltip');
     if (tooltip) tooltip.style.display = 'none';
+};
+
+window.renderOverlayInventory = function(containerId) {
+    const list = document.getElementById(containerId);
+    if (!list) return;
+    list.innerHTML = '';
+
+    if (!currentSessionData || !currentSessionData.activeConsumables || currentSessionData.activeConsumables.length === 0) {
+        list.innerHTML = `<div style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 1rem;">Aucun objet dans l'inventaire.</div>`;
+        return;
+    }
+
+    currentSessionData.activeConsumables.forEach(c => {
+        list.innerHTML += `
+            <div style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 0.8rem; display: flex; align-items: center; gap: 0.8rem;">
+                <span class="material-symbols-outlined" style="font-size: 1.5rem; color: #10b981;">inventory_2</span>
+                <div style="flex: 1;">
+                    <div style="color: #f8fafc; font-weight: 600; font-size: 0.9rem;">${c.name}</div>
+                    <div style="color: var(--text-muted); font-size: 0.75rem;">
+                        ${c.bonusHealthMax ? `+${c.bonusHealthMax} PV ` : ''}
+                        ${c.bonusManaMax ? `+${c.bonusManaMax} Mana ` : ''}
+                        ${c.bonusPower ? `+${c.bonusPower} Pui ` : ''}
+                        ${c.bonusStrength ? `+${c.bonusStrength} For ` : ''}
+                        ${c.bonusArmor ? `+${c.bonusArmor} Arm ` : ''}
+                        ${c.bonusResistance ? `+${c.bonusResistance} Res ` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+    });
 };
