@@ -790,9 +790,7 @@ function renderRooms() {
                             }
                             const lvlColor = an && an.level ? (an.level === 1 ? '#10b981' : an.level === 2 ? '#3b82f6' : an.level === 3 ? '#a855f7' : an.level === 4 ? '#f59e0b' : '#ef4444') : '#10b981';
                             const typeColor = an && an.magicObject ? '#ec4899' : '#b45309';
-                            nameHtml = `<span class="anomaly-badge" style="border-color: ${color}; background: ${color}25; color: ${color}; cursor: help;">
-                                <span class="material-symbols-outlined" style="font-size: 1.1rem; vertical-align: middle; color: ${color};">${icon}</span>
-                                <div class="anomaly-tooltip">
+                            const tooltipDataHtml = `
                                     <div class="anomaly-tooltip-title">${loot.specialItemName}</div>
                                     <div style="display: flex; gap: 6px; margin: 6px 0; flex-wrap: wrap;">
                                         <span style="border: 1px solid ${lvlColor}; color: ${lvlColor}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold;">
@@ -808,7 +806,9 @@ function renderRooms() {
                                         </span>` : ''}
                                     </div>
                                     <div class="anomaly-tooltip-desc">${tooltipDesc}</div>
-                                </div>
+                            `;
+                            nameHtml = `<span class="anomaly-badge" style="border-color: ${color}; background: ${color}25; color: ${color}; cursor: help;" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipDataHtml.replace(/"/g, '&quot;')}">
+                                <span class="material-symbols-outlined" style="font-size: 1.1rem; vertical-align: middle; color: ${color};">${icon}</span>
                             </span>`;
                         } else {
                             const eq = allEquipments.find(x => x.id === loot.equipmentId);
@@ -838,9 +838,7 @@ function renderRooms() {
                             }
                             const lvlColor = anPrice && anPrice.level ? (anPrice.level === 1 ? '#10b981' : anPrice.level === 2 ? '#3b82f6' : anPrice.level === 3 ? '#a855f7' : anPrice.level === 4 ? '#f59e0b' : '#ef4444') : '#10b981';
                             const typeColor = anPrice && anPrice.magicObject ? '#ec4899' : '#b45309';
-                            priceHtml += `<span class="anomaly-badge" style="border-color: ${priceColor}; background: ${priceColor}25; color: ${priceColor}; margin-left: 0.5rem; cursor: help; display: inline-flex; align-items: center; gap: 0.2rem;">
-                                <span class="material-symbols-outlined" style="font-size: 0.9rem; vertical-align: middle; color: ${priceColor};">${priceIcon}</span> 1x
-                                <div class="anomaly-tooltip">
+                            const tooltipDataHtml2 = `
                                     <div class="anomaly-tooltip-title">${loot.priceSpecialItemName}</div>
                                     <div style="display: flex; gap: 6px; margin: 6px 0; flex-wrap: wrap;">
                                         <span style="border: 1px solid ${lvlColor}; color: ${lvlColor}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold;">
@@ -856,16 +854,23 @@ function renderRooms() {
                                         </span>` : ''}
                                     </div>
                                     <div class="anomaly-tooltip-desc">${tooltipDesc}</div>
-                                </div>
+                            `;
+                            priceHtml += `<span class="anomaly-badge" style="border-color: ${priceColor}; background: ${priceColor}25; color: ${priceColor}; margin-left: 0.5rem; cursor: help; display: inline-flex; align-items: center; gap: 0.2rem;" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipDataHtml2.replace(/"/g, '&quot;')}">
+                                <span class="material-symbols-outlined" style="font-size: 0.9rem; vertical-align: middle; color: ${priceColor};">${priceIcon}</span> 1x
                             </span>`;
                         }
 
                         shopHtml += `
                             <div style="display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.3); padding: 0.4rem 0.8rem; border-radius: 4px;">
                                 <span style="font-size: 0.85rem; color: #f8fafc; display: flex; align-items: center; gap: 0.4rem;">
-                                    ${nameHtml} ${priceHtml}
+                                    ${nameHtml}
                                 </span>
-                                <button type="button" onclick="removeLootFromRoom(${rIndex}, ${lIndex})" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 0;"><span class="material-symbols-outlined" style="font-size: 1rem;">close</span></button>
+                                <div style="display: flex; align-items: center; gap: 0.8rem;">
+                                    <span style="display: flex; align-items: center;">
+                                        ${priceHtml}
+                                    </span>
+                                    <button type="button" onclick="removeLootFromRoom(${rIndex}, ${lIndex})" style="background: none; border: none; color: #ef4444; cursor: pointer; padding: 0;"><span class="material-symbols-outlined" style="font-size: 1rem;">close</span></button>
+                                </div>
                             </div>
                         `;
                     });
@@ -1716,9 +1721,9 @@ async function loadDungeons() {
                             ${bosses > 0 ? `<div style="color: #dc2626; margin-left: 0.5rem; display: flex; align-items: center; gap: 0.3rem;">
                                 <span class="material-symbols-outlined" style="font-size: 1rem;">skull</span> Boss : ${bosses} (avec ${totalBossMobs} mob${totalBossMobs > 1 ? 's' : ''})
                             </div>` : ''}
-                            <div style="color: #f59e0b; margin-left: 0.5rem; display: flex; align-items: center; gap: 0.3rem;">
+                            ${treasures > 0 ? `<div style="color: #f59e0b; margin-left: 0.5rem; display: flex; align-items: center; gap: 0.3rem;">
                                 <span class="material-symbols-outlined" style="font-size: 1rem;">shopping_bag</span> Trésors : ${treasures}
-                            </div>
+                            </div>` : ''}
                             ${eventDetails ? `<div style="margin-left: 0.5rem; display: flex; align-items: center; gap: 0.3rem; flex-wrap: wrap;">Événements : ${eventDetails}</div>` : ''}
                         </div>
                     </div>
@@ -2259,3 +2264,54 @@ document.addEventListener('click', (e) => {
         document.querySelectorAll('.custom-select-wrapper.open').forEach(w => w.classList.remove('open'));
     }
 });
+
+window.showTooltipFixed = function(el) {
+    let tooltip = document.getElementById('globalFixedTooltip');
+    if (!tooltip) {
+        tooltip = document.createElement('div');
+        tooltip.id = 'globalFixedTooltip';
+        tooltip.style.position = 'fixed';
+        tooltip.style.zIndex = '999999';
+        tooltip.style.visibility = 'visible';
+        tooltip.style.opacity = '1';
+        tooltip.style.pointerEvents = 'none';
+        tooltip.style.transform = 'none';
+        tooltip.style.background = 'rgba(15, 23, 42, 0.95)';
+        tooltip.style.border = '1px solid rgba(168, 85, 247, 0.5)';
+        tooltip.style.borderRadius = '8px';
+        tooltip.style.padding = '10px';
+        tooltip.style.color = '#f8fafc';
+        tooltip.style.fontSize = '0.8rem';
+        tooltip.style.lineHeight = '1.4';
+        tooltip.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.5)';
+        tooltip.style.maxWidth = '250px';
+        tooltip.style.whiteSpace = 'normal';
+        tooltip.style.wordWrap = 'break-word';
+        tooltip.style.textAlign = 'left';
+        document.body.appendChild(tooltip);
+    }
+    tooltip.innerHTML = el.getAttribute('data-tooltip-html');
+    tooltip.style.display = 'block';
+
+    const rect = el.getBoundingClientRect();
+    let top = rect.bottom + 8;
+    let left = rect.left + rect.width / 2 - tooltip.offsetWidth / 2;
+
+    if (top + tooltip.offsetHeight > window.innerHeight) {
+        top = rect.top - tooltip.offsetHeight - 8;
+    }
+    if (left < 10) left = 10;
+    if (left + tooltip.offsetWidth > window.innerWidth - 10) {
+        left = window.innerWidth - tooltip.offsetWidth - 10;
+    }
+
+    tooltip.style.top = top + 'px';
+    tooltip.style.left = left + 'px';
+}
+
+window.hideTooltipFixed = function() {
+    let tooltip = document.getElementById('globalFixedTooltip');
+    if (tooltip) {
+        tooltip.style.display = 'none';
+    }
+}

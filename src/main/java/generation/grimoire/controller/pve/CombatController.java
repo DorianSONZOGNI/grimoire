@@ -27,7 +27,8 @@ public class CombatController {
             return ResponseEntity.status(401).build();
 
         try {
-            CombatSession session = combatService.startCombat(characterIds, dungeonId, consumableIds, principal.getName());
+            CombatSession session = combatService.startCombat(characterIds, dungeonId, consumableIds,
+                    principal.getName());
             return ResponseEntity.ok(session);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(null);
@@ -117,7 +118,8 @@ public class CombatController {
     }
 
     @PostMapping("/{sessionId}/open-chest")
-    public ResponseEntity<CombatSession> openChest(@PathVariable("sessionId") String sessionId, @RequestParam(required = false, defaultValue = "false") boolean useKey) {
+    public ResponseEntity<CombatSession> openChest(@PathVariable("sessionId") String sessionId,
+            @RequestParam(required = false, defaultValue = "false") boolean useKey) {
         try {
             CombatSession session = combatService.openChest(sessionId, useKey);
             return ResponseEntity.ok(session);
@@ -158,9 +160,10 @@ public class CombatController {
             Principal principal) {
         if (principal == null)
             return ResponseEntity.status(401).build();
-            
+
         try {
-            CombatSession session = combatService.consumeItem(sessionId, consumableId, characterId, principal.getName());
+            CombatSession session = combatService.consumeItem(sessionId, consumableId, characterId,
+                    principal.getName());
             return ResponseEntity.ok(session);
         } catch (Exception e) {
             e.printStackTrace();
