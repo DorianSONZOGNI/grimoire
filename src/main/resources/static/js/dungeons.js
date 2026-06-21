@@ -206,13 +206,13 @@ function renderConsumablesList() {
     availableConsumables.forEach(c => {
         const isSelected = selectedConsumableIds.includes(c.id);
         const selIndex = selectedConsumableIds.indexOf(c.id);
-        const badgeHtml = isSelected ? `<div style="position: absolute; top: 50%; transform: translateY(-50%); right: 10px; background: #10b981; color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700;">${selIndex + 1}</div>` : '';
+        const badgeHtml = isSelected ? `<div style="position: absolute; top: -6px; right: -6px; background: #10b981; color: white; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 700; z-index: 2; box-shadow: 0 2px 4px rgba(0,0,0,0.5);">${selIndex + 1}</div>` : '';
         cardsHtml += `
-            <div class="consumable-card ${isSelected ? 'selected' : ''}" onclick="selectConsumable(${c.id})" style="position: relative;">
-                <span class="material-symbols-outlined" style="font-size: 1.5rem; color: ${isSelected ? '#10b981' : '#854c4c'};">inventory_2</span>
-                <div style="flex: 1;">
-                    <div style="color: #f8fafc; font-weight: 600; font-size: 0.9rem;">${c.name}</div>
-                    <div style="color: var(--text-muted); font-size: 0.75rem;">
+            <div class="consumable-card ${isSelected ? 'selected' : ''}" onclick="selectConsumable(${c.id})" style="position: relative; overflow: visible;">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem; color: ${isSelected ? '#10b981' : '#854c4c'}; flex-shrink: 0;">inventory_2</span>
+                <div style="flex: 1; min-width: 0;">
+                    <div style="color: #f8fafc; font-weight: 600; font-size: 0.7rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${c.name}">${c.name}</div>
+                    <div style="color: var(--text-muted); font-size: 0.6rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
                         ${c.bonusHealthMax ? `+${c.bonusHealthMax} PV ` : ''}
                         ${c.bonusManaMax ? `+${c.bonusManaMax} Mana ` : ''}
                         ${c.bonusPower ? `+${c.bonusPower} Pui ` : ''}
@@ -222,7 +222,7 @@ function renderConsumablesList() {
             </div>
         `;
     });
-    list.innerHTML = counterHtml + cardsHtml;
+    list.innerHTML = counterHtml + `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">${cardsHtml}</div>`;
 }
 
 window.selectConsumable = function (id) {
