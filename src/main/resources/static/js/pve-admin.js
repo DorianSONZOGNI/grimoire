@@ -384,7 +384,7 @@ function renderRooms() {
 
         const div = document.createElement('div');
         div.className = 'room-card';
-        div.style.cssText = 'background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 1rem; position: relative;';
+        div.style.cssText = `background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 1rem; position: relative; z-index: ${1000 - rIndex};`;
 
         let headerIcon = '';
         let headerColor = '';
@@ -660,7 +660,7 @@ function renderRooms() {
                     </div>
                     <div style="margin-top: 0.75rem; background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 4px;">
                         <label style="font-size: 0.8rem; color: #fbbf24;">Récompense en échange</label>
-                        <div class="custom-select-wrapper" id="room_alt_reward_type_wrapper_${rIndex}" style="width: 100%; z-index: ${101 - rIndex}; margin: 0; margin-top: 0.2rem; margin-bottom: 0.5rem;">
+                        <div class="custom-select-wrapper" id="room_alt_reward_type_wrapper_${rIndex}" style="width: 100%; z-index: ${105 - rIndex}; margin: 0; margin-top: 0.2rem; margin-bottom: 0.5rem;">
                             <div class="custom-select-trigger" onclick="const w = document.getElementById('room_alt_reward_type_wrapper_${rIndex}'); document.querySelectorAll('.custom-select-wrapper.open').forEach(el => { if(el !== w) el.classList.remove('open'); }); w.classList.toggle('open');" style="padding: 0.6rem 1rem; border-radius: 8px;">
                                 <span class="cs-label" id="room_alt_reward_type_label_${rIndex}">
                                     ${rewType === 'SPIRITUAL_XP' ? '<span class="material-symbols-outlined cs-icon" style="color: #8b5cf6;">blur_on</span> XP de Spiritualité' :
@@ -686,7 +686,7 @@ function renderRooms() {
                                 selHtml = `<span class="material-symbols-outlined cs-icon" style="color: ${color};">star</span> ${selAnomalie.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${selAnomalie.level || 1})</span>`;
                             }
                             return `
-                                <div class="custom-select-wrapper" id="room_alt_reward_wrapper_${rIndex}" style="margin-top: 0.2rem; z-index: ${100 - rIndex};">
+                                <div class="custom-select-wrapper" id="room_alt_reward_wrapper_${rIndex}" style="margin-top: 0.2rem; z-index: ${103 - rIndex};">
                                     <div class="custom-select-trigger" onclick="document.getElementById('room_alt_reward_wrapper_${rIndex}').classList.toggle('open')" style="padding: 0.5rem; font-size: 0.85rem; border-radius: 8px;">
                                         <span class="cs-label" id="room_alt_reward_label_${rIndex}">${selHtml}</span>
                                         <span class="material-symbols-outlined">expand_more</span>

@@ -1345,7 +1345,7 @@ function updateUI(data) {
                                         `;
                                     }
 
-                                    if (log.includes("Vous entrez dans")) break;
+                                    if (log.includes("Vous entrez dans") || log.includes("Vous trouvez un trésor") || log.startsWith("Événement :")) break;
                                 }
                             }
 
