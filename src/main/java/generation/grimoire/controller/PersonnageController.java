@@ -44,6 +44,24 @@ public class PersonnageController {
         return ResponseEntity.ok(result);
     }
 
+    @GetMapping("/limit")
+    public ResponseEntity<Map<String, Integer>> getLimit(java.security.Principal principal) {
+        if (principal == null) return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
+        generation.grimoire.entity.auth.AppUser user = userRepository.findByUsername(principal.getName()).orElse(null);
+        if (user == null) return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
+        
+        boolean isAdmin = ((org.springframework.security.core.Authentication) principal).getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
+        
+        int userMax = user.getMaxCharacters();
+        if (userMax <= 0) userMax = 2;
+        int max = isAdmin ? 999 : userMax;
+        
+        int current = personnageRepository.findByUser_Username(principal.getName()).size();
+        
+        return ResponseEntity.ok(Map.of("maxCharacters", max, "currentCharacters", current));
+    }
+
     @GetMapping("/all")
     public ResponseEntity<List<Map<String, Object>>> getAllAdmin(java.security.Principal principal) {
         if (principal == null) return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
@@ -76,6 +94,16 @@ public class PersonnageController {
             }
             isUpdate = true;
         } else {
+            int userMax = user != null ? user.getMaxCharacters() : 2;
+            if (userMax <= 0) userMax = 2;
+            int max = isAdmin ? 999 : userMax;
+            
+            int current = personnageRepository.findByUser_Username(principal.getName()).size();
+            if (current >= max) {
+                Map<String, Object> errorResp = new HashMap<>();
+                errorResp.put("message", "Limite de personnages atteinte (" + max + ").");
+                return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).body(errorResp);
+            }
             personnage = new Personnage();
             personnage.setUser(user);
         }

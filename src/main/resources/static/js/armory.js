@@ -142,8 +142,29 @@ async function loadPersonnages() {
         const res = await fetch(url);
         personnages = await res.json();
         renderPersonnages();
+        await updateCharLimitUI();
     } catch (e) {
         console.error('Erreur chargement personnages:', e);
+    }
+}
+
+async function updateCharLimitUI() {
+    try {
+        const res = await fetch('/api/personnages/limit');
+        if (res.ok) {
+            const data = await res.json();
+            const limitText = document.getElementById('charLimitText');
+            if (limitText) {
+                limitText.textContent = `${data.currentCharacters}/${data.maxCharacters}`;
+                if (data.currentCharacters >= data.maxCharacters && !window.isAdmin) {
+                    limitText.style.color = '#ef4444';
+                } else {
+                    limitText.style.color = '#94a3b8';
+                }
+            }
+        }
+    } catch (e) {
+        console.error('Erreur limite personnages:', e);
     }
 }
 
@@ -858,7 +879,7 @@ function editPersonnage(id) {
 
     document.getElementById('charSpiritExperience').value = p.spiritualiteExperience || 0;
 
-    document.getElementById('formTitle').innerHTML = `
+    document.getElementById('formTitleText').innerHTML = `
         <span class="material-symbols-outlined">edit</span>
         Modifier : ${p.name}`;
     document.getElementById('submitBtn').innerHTML = `
@@ -891,9 +912,9 @@ function resetForm() {
     
     document.getElementById('charSpiritExperience').value = 0;
 
-    document.getElementById('formTitle').innerHTML = `
+    document.getElementById('formTitleText').innerHTML = `
         <span class="material-symbols-outlined">person_add</span>
-        Créer un Personnage`;
+        Recruter à la taverne`;
     document.getElementById('submitBtn').innerHTML = `
         <span class="material-symbols-outlined" style="font-size: 1.1rem;">person_add</span>
         Forger le Personnage`;

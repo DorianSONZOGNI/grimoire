@@ -25,5 +25,8 @@ public class AppUser {
 
     @Column(nullable = false)
     private double monnaie = 0.0;
+    
+    @Column(nullable = false)
+    private int maxCharacters = 2;
 
 }
