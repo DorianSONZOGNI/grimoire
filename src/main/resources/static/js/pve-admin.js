@@ -1175,13 +1175,20 @@ function renderRooms() {
                         } else if (outcome.type === 'TRESOR') {
                             if (!outcome.treasureAnomalieId) outcome.treasureAnomalieId = allAnomalies.length > 0 ? allAnomalies[0].id : '';
                             const selAnomalie = allAnomalies.find(a => a.id == outcome.treasureAnomalieId) || allAnomalies[0];
+                            const CATEGORY_ICONS = {
+                                'PIERRE': 'landslide', 'METAL': 'hardware', 'COEUR': 'favorite',
+                                'ORBE': 'lens', 'CRISTAL': 'diamond', 'PLUME': 'history_edu',
+                                'ECAILLE': 'waves', 'AUTRE': 'category'
+                            };
                             let selAnColor = '#94a3b8';
+                            let selCatIcon = 'star';
                             if (selAnomalie) {
-                                if (selAnomalie.spiritualite === 'TENEBRES') selAnColor = '#d946ef';
-                                else if (selAnomalie.spiritualite === 'ESPRIT') selAnColor = '#3b82f6';
+                                if (selAnomalie.spiritualite === 'TENEBRES') selAnColor = '#a855f7';
+                                else if (selAnomalie.spiritualite === 'ESPRIT') selAnColor = '#38bdf8';
                                 else if (selAnomalie.spiritualite === 'KARMA') selAnColor = '#f59e0b';
+                                selCatIcon = selAnomalie.category ? (CATEGORY_ICONS[selAnomalie.category] || 'category') : 'star';
                             }
-                            const selAnHtml = selAnomalie ? `<span class="material-symbols-outlined cs-icon" style="color: ${selAnColor}; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">star</span>${selAnomalie.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${selAnomalie.level || 1})</span>` : 'Aucune anomalie disponible';
+                            const selAnHtml = selAnomalie ? `<span class="material-symbols-outlined cs-icon" style="color: ${selAnColor}; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">${selCatIcon}</span>${selAnomalie.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${selAnomalie.level || 1})</span>` : 'Aucune anomalie disponible';
 
                             extraHtml = `
                                 <div style="margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px dashed rgba(255,255,255,0.15); width: 100%;">
@@ -1196,12 +1203,12 @@ function renderRooms() {
                                         <div class="custom-select-options" id="altar_treasure_options_${rIndex}_${oIndex}" style="max-height: 200px; overflow-y: auto;">
                                             ${allAnomalies.map(an => {
                                 let anColor = '#94a3b8';
-                                if (an.spiritualite === 'TENEBRES') anColor = '#d946ef';
-                                else if (an.spiritualite === 'ESPRIT') anColor = '#3b82f6';
+                                if (an.spiritualite === 'TENEBRES') anColor = '#a855f7';
+                                else if (an.spiritualite === 'ESPRIT') anColor = '#38bdf8';
                                 else if (an.spiritualite === 'KARMA') anColor = '#f59e0b';
                                 return `
                                                 <div class="custom-option" onclick="updateAltarField(${rIndex}, ${oIndex}, 'treasureAnomalieId', ${an.id})">
-                                                    <span class="material-symbols-outlined cs-icon" style="color: ${anColor}; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">star</span>${an.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${an.level || 1})</span>
+                                                    <span class="material-symbols-outlined cs-icon" style="color: ${anColor}; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">${an.category ? (CATEGORY_ICONS[an.category] || 'category') : 'star'}</span>${an.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${an.level || 1})</span>
                                                 </div>
                                                 `;
                             }).join('')}

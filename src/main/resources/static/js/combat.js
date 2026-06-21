@@ -2,6 +2,13 @@ import * as ui from './ui.js';
 import { getSpellEffectsSummaryHtml } from './grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from './filters.js';
 
+if (!window.allAnomaliesCombat) {
+    window.allAnomaliesCombat = [];
+    fetch('/api/anomalies/all-templates').then(res => res.json()).then(data => {
+        window.allAnomaliesCombat = data;
+    }).catch(console.error);
+}
+
 const SLOT_LABELS = {
     CASQUE: { label: 'Casque', icon: 'masks', color: '#a855f7', extraClass: 'flip-icon' },
     PLASTRON: { label: 'Plastron', icon: 'shield', color: '#3b82f6' },
@@ -1286,18 +1293,25 @@ function updateUI(data) {
                                         btn.style.cursor = 'not-allowed';
                                     }
                                     const first = eligible[0];
+                                    const CATEGORY_ICONS = {
+                                        'PIERRE': 'landslide', 'METAL': 'hardware', 'COEUR': 'favorite',
+                                        'ORBE': 'lens', 'CRISTAL': 'diamond', 'PLUME': 'history_edu',
+                                        'ECAILLE': 'waves', 'AUTRE': 'category'
+                                    };
+                                    let firstCatIcon = first.category ? (CATEGORY_ICONS[first.category] || 'category') : 'star';
                                     let selectHtml = `
                                     <div class="custom-select-wrapper" id="altarAnomalySelectWrapper" style="width: 100%; max-width: 350px; margin: 0 auto; z-index: 100;">
                                         <div class="custom-select-trigger" onclick="document.getElementById('altarAnomalySelectWrapper').classList.toggle('open')" style="padding: 0.6rem 1rem; border-radius: 8px; border: 1px solid ${spColor}; text-align: left; background: rgba(0,0,0,0.5);">
                                             <span class="cs-label" id="altarAnomalySelectLabel">
-                                                <span class="material-symbols-outlined cs-icon" style="color: ${spColor};">star</span> ${first.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${first.level || 1})</span>
+                                                <span class="material-symbols-outlined cs-icon" style="color: ${spColor};">${firstCatIcon}</span> ${first.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${first.level || 1})</span>
                                             </span>
                                             <span class="material-symbols-outlined">expand_more</span>
                                         </div>
                                         <div class="custom-select-options" style="max-height: 200px; overflow-y: auto; text-align: left;">
                                     `;
                                     eligible.forEach(a => {
-                                        selectHtml += `<div class="custom-option" onclick="document.getElementById('altarAnomalySelectLabel').innerHTML = this.innerHTML; document.getElementById('altarAnomalySelect').value = '${a.id}'; document.getElementById('altarAnomalySelectWrapper').classList.remove('open');"><span class="material-symbols-outlined cs-icon" style="color: ${spColor};">star</span> ${a.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${a.level || 1})</span></div>`;
+                                        let catIcon = a.category ? (CATEGORY_ICONS[a.category] || 'category') : 'star';
+                                        selectHtml += `<div class="custom-option" onclick="document.getElementById('altarAnomalySelectLabel').innerHTML = this.innerHTML; document.getElementById('altarAnomalySelect').value = '${a.id}'; document.getElementById('altarAnomalySelectWrapper').classList.remove('open');"><span class="material-symbols-outlined cs-icon" style="color: ${spColor};">${catIcon}</span> ${a.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${a.level || 1})</span></div>`;
                                     });
                                     selectHtml += `
                                         </div>
@@ -1340,20 +1354,50 @@ function updateUI(data) {
                                 for (let i = data.combatLog.length - 1; i >= 0; i--) {
                                     const log = data.combatLog[i];
 
+                                    const CATEGORY_ICONS = {
+                                        'PIERRE': 'landslide', 'METAL': 'hardware', 'COEUR': 'favorite',
+                                        'ORBE': 'lens', 'CRISTAL': 'diamond', 'PLUME': 'history_edu',
+                                        'ECAILLE': 'waves', 'AUTRE': 'category'
+                                    };
+
                                     const lostMatch = log.match(/sacrifi. l'item : (.*) !/);
                                     if (lostMatch) {
+                                        const itemName = lostMatch[1].trim();
+                                        let spColor = '#ef4444';
+                                        let catIcon = 'star';
+                                        if (window.allAnomaliesCombat) {
+                                            const an = window.allAnomaliesCombat.find(a => a.name === itemName);
+                                            if (an) {
+                                                if (an.spiritualite === 'TENEBRES') spColor = '#a855f7';
+                                                else if (an.spiritualite === 'ESPRIT') spColor = '#38bdf8';
+                                                else if (an.spiritualite === 'KARMA') spColor = '#f59e0b';
+                                                catIcon = an.category ? (CATEGORY_ICONS[an.category] || 'category') : 'star';
+                                            }
+                                        }
                                         gainedItemsHtml += `
-                                            <div style="background: rgba(0, 0, 0, 0.4); border: 1px solid #ef444480; padding: 0.8rem 1rem; border-radius: 8px; color: #ef4444; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
-                                                <span class="material-symbols-outlined" style="color: #ef4444;">star</span> -1 ${lostMatch[1]}
+                                            <div style="background: rgba(0, 0, 0, 0.4); border: 1px solid ${spColor}80; padding: 0.8rem 1rem; border-radius: 8px; color: ${spColor}; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
+                                                <span class="material-symbols-outlined" style="color: ${spColor};">${catIcon}</span> -1 ${itemName}
                                             </div>
                                         `;
                                     }
 
                                     const gainedMatch = log.match(/re.oit l'Item Sp.cial : (.*) !/);
                                     if (gainedMatch) {
+                                        const itemName = gainedMatch[1].trim();
+                                        let spColor = '#d946ef';
+                                        let catIcon = 'star';
+                                        if (window.allAnomaliesCombat) {
+                                            const an = window.allAnomaliesCombat.find(a => a.name === itemName);
+                                            if (an) {
+                                                if (an.spiritualite === 'TENEBRES') spColor = '#a855f7';
+                                                else if (an.spiritualite === 'ESPRIT') spColor = '#38bdf8';
+                                                else if (an.spiritualite === 'KARMA') spColor = '#f59e0b';
+                                                catIcon = an.category ? (CATEGORY_ICONS[an.category] || 'category') : 'star';
+                                            }
+                                        }
                                         gainedItemsHtml += `
-                                            <div style="background: rgba(0, 0, 0, 0.4); border: 1px solid #d946ef80; padding: 0.8rem 1rem; border-radius: 8px; color: #d946ef; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
-                                                <span class="material-symbols-outlined" style="color: #d946ef;">star</span> +1 ${gainedMatch[1]}
+                                            <div style="background: rgba(0, 0, 0, 0.4); border: 1px solid ${spColor}80; padding: 0.8rem 1rem; border-radius: 8px; color: ${spColor}; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
+                                                <span class="material-symbols-outlined" style="color: ${spColor};">${catIcon}</span> +1 ${itemName}
                                             </div>
                                         `;
                                     }

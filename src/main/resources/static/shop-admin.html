@@ -31,7 +31,7 @@
             background: rgba(15, 23, 42, 0.4);
             border-radius: 12px;
             border: 1px solid rgba(255, 255, 255, 0.05);
-            overflow: hidden;
+            /* Removed overflow: hidden; to allow tooltips to show */
             box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
         }
 
@@ -46,6 +46,8 @@
             border-bottom: 1px solid rgba(255, 255, 255, 0.05);
             text-transform: uppercase;
             letter-spacing: 0.05em;
+            border-top-left-radius: 12px;
+            border-top-right-radius: 12px;
         }
 
         .shop-admin-header.rarity-COMMUN {
@@ -90,6 +92,8 @@
 
         .shop-admin-row:last-child {
             border-bottom: none;
+            border-bottom-left-radius: 12px;
+            border-bottom-right-radius: 12px;
         }
 
         .shop-admin-row:hover {

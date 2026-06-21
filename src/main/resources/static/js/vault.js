@@ -331,12 +331,16 @@ function renderGrid(equipments) {
             };
             const typeStr = eq.magicObject !== false ? "Objet Magique" : "Matériau";
             const typeIcon = CATEGORY_ICONS[eq.category] || 'category';
+            let spColor = '#a855f7';
+            if (eq.spiritualite === 'ESPRIT') spColor = '#38bdf8';
+            else if (eq.spiritualite === 'KARMA') spColor = '#f59e0b';
+
             return `
-            <div class="vault-card rarity-RELIQUE" style="border-color: #d946ef; box-shadow: 0 0 15px rgba(217,70,239,0.1);">
+            <div class="vault-card rarity-RELIQUE" style="border-color: ${spColor}; box-shadow: 0 0 15px ${spColor}20;">
                 <div class="vault-card-header">
                     <div class="vault-card-name-group">
                         <div class="vault-card-slot">
-                            <span class="material-symbols-outlined" style="font-size: 0.9rem; color: #d946ef;">${typeIcon}</span>
+                            <span class="material-symbols-outlined" style="font-size: 0.9rem; color: ${spColor};">${typeIcon}</span>
                             ${typeStr} <span style="opacity:0.5; margin-left:4px;">${eq.spiritualite}</span> <span style="opacity:0.5; margin-left:4px;">(Niv. ${eq.level || 1})</span>
                         </div>
                         <div class="vault-card-name" style="color: #fdf4ff;">
@@ -353,12 +357,12 @@ function renderGrid(equipments) {
                         </button>` : ''}
                     </div>
                 </div>
-                <div class="vault-card-stats" style="color: #e879f9; font-size: 0.9rem; text-align: center; font-style: italic; background: rgba(217,70,239,0.05); border-radius: 8px; padding: 1rem; border: 1px dashed rgba(217,70,239,0.2);">
+                <div class="vault-card-stats" style="color: ${spColor}; font-size: 0.9rem; text-align: center; font-style: italic; background: ${spColor}10; border-radius: 8px; padding: 1rem; border: 1px dashed ${spColor}30;">
                     ${eq.description || "Une relique impie imprégnée d'une aura mystique."}
                 </div>
                 <div class="vault-card-footer">
                     <div class="vault-card-weight"></div>
-                    <span class="vault-card-status status-equipped" style="background: rgba(217,70,239,0.1); color: #e879f9;">
+                    <span class="vault-card-status status-equipped" style="background: ${spColor}20; color: ${spColor};">
                         <span class="material-symbols-outlined" style="font-size: 0.9rem;">person</span>
                         Possédé
                     </span>

@@ -112,6 +112,7 @@ public class AnomalieController {
                 }
                 existing.setName(anomalie.getName());
                 existing.setSpiritualite(anomalie.getSpiritualite());
+                existing.setCategory(anomalie.getCategory());
                 existing.setDescription(anomalie.getDescription());
                 existing.setLevel(anomalie.getLevel() != null ? anomalie.getLevel() : 1);
                 existing.setMagicObject(anomalie.isMagicObject());

@@ -172,8 +172,9 @@ function generateStandHtml(eq) {
                             };
                             const catIcon = aTemp && aTemp.category ? (CATEGORY_ICONS[aTemp.category] || 'category') : 'star';
 
-                            anos.push(`<span class="anomaly-badge">
-                                <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">${catIcon}</span> ${q}
+                            const spiriColor = aTemp && aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
+                            anos.push(`<span class="anomaly-badge" style="border-color: ${spiriColor}; background: ${spiriColor}25; color: ${spiriColor};">
+                                <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; color: ${spiriColor};">${catIcon}</span> ${q}
                                 <div class="anomaly-tooltip">
                                     <div class="anomaly-tooltip-title">${aTemp ? aTemp.name : n}</div>
                                     <div style="display: flex; gap: 6px; margin: 6px 0; flex-wrap: wrap;">
@@ -325,8 +326,20 @@ window.openBuyModal = function (idOrType, isConsumable = false) {
         let anos = [];
         for(const [n, q] of Object.entries(eq.priceAnomalies)) { 
             let aTemp = allAnomalies.find(a => a.name === n);
-            anos.push(`<span class="anomaly-badge">
-                <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">auto_awesome</span> ${q}
+            const CATEGORY_ICONS = {
+                'PIERRE': 'landslide',
+                'METAL': 'hardware',
+                'COEUR': 'favorite',
+                'ORBE': 'lens',
+                'CRISTAL': 'diamond',
+                'PLUME': 'history_edu',
+                'ECAILLE': 'waves',
+                'AUTRE': 'category'
+            };
+            const catIcon = aTemp && aTemp.category ? (CATEGORY_ICONS[aTemp.category] || 'category') : 'star';
+            const spiriColor = aTemp && aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
+            anos.push(`<span class="anomaly-badge" style="border-color: ${spiriColor}; background: ${spiriColor}25; color: ${spiriColor};">
+                <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; color: ${spiriColor};">${catIcon}</span> ${q}
                 <div class="anomaly-tooltip">
                     <div class="anomaly-tooltip-title">${aTemp ? aTemp.name : n}</div>
                     <div style="display: flex; gap: 6px; margin: 6px 0; flex-wrap: wrap;">

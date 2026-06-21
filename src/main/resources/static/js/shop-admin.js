@@ -200,15 +200,38 @@ function addAnomalyRow(selectedName = '', qty = 1) {
     row.style.gap = '0.5rem';
     row.style.alignItems = 'center';
 
+    const CATEGORY_ICONS = {
+        'PIERRE': 'landslide',
+        'METAL': 'hardware',
+        'COEUR': 'favorite',
+        'ORBE': 'lens',
+        'CRISTAL': 'diamond',
+        'PLUME': 'history_edu',
+        'ECAILLE': 'waves',
+        'AUTRE': 'category'
+    };
+
     let optionsHtml = '';
     (window.allAnomalies || []).forEach(n => {
+        const catIcon = n.category ? (CATEGORY_ICONS[n.category] || 'category') : 'star';
+        const spiriColor = n.spiritualite ? getSpiritualiteColor(n.spiritualite) : '#a855f7';
         optionsHtml += `<div class="custom-option" data-value="${n.name}">
-                            <span class="material-symbols-outlined cs-icon" style="color: #a855f7;">auto_awesome</span>
+                            <span class="material-symbols-outlined cs-icon" style="color: ${spiriColor};">${catIcon}</span>
                             ${n.name}
                         </div>`;
     });
 
-    const displayLabel = selectedName ? `<span class="material-symbols-outlined cs-icon" style="color: #a855f7;">auto_awesome</span> ${selectedName}` : 'Choisir une anomalie...';
+    let displayLabel = 'Choisir une anomalie...';
+    if (selectedName) {
+        const selA = (window.allAnomalies || []).find(a => a.name === selectedName);
+        if (selA) {
+            const catIcon = selA.category ? (CATEGORY_ICONS[selA.category] || 'category') : 'star';
+            const spiriColor = selA.spiritualite ? getSpiritualiteColor(selA.spiritualite) : '#a855f7';
+            displayLabel = `<span class="material-symbols-outlined cs-icon" style="color: ${spiriColor};">${catIcon}</span> ${selectedName}`;
+        } else {
+            displayLabel = `<span class="material-symbols-outlined cs-icon" style="color: #a855f7;">star</span> ${selectedName}`;
+        }
+    }
 
     row.innerHTML = `
         <div class="custom-select-wrapper" style="flex: 1;">
@@ -404,8 +427,20 @@ function renderGrid(equipments) {
                                 let anos = [];
                                 for(const [n, q] of Object.entries(eq.priceAnomalies)) {
                                     let aTemp = window.allAnomalies ? window.allAnomalies.find(a => a.name === n) : null;
-                                    anos.push(`<span class="anomaly-badge">
-                                        <span class="material-symbols-outlined" style="font-size: 0.9rem; vertical-align: middle;">auto_awesome</span> ${q}
+                                    const CATEGORY_ICONS = {
+                                        'PIERRE': 'landslide',
+                                        'METAL': 'hardware',
+                                        'COEUR': 'favorite',
+                                        'ORBE': 'lens',
+                                        'CRISTAL': 'diamond',
+                                        'PLUME': 'history_edu',
+                                        'ECAILLE': 'waves',
+                                        'AUTRE': 'category'
+                                    };
+                                    const catIcon = aTemp && aTemp.category ? (CATEGORY_ICONS[aTemp.category] || 'category') : 'star';
+                                    const spiriColor = aTemp && aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
+                                    anos.push(`<span class="anomaly-badge" style="border-color: ${spiriColor}; background: ${spiriColor}25; color: ${spiriColor};">
+                                        <span class="material-symbols-outlined" style="font-size: 0.9rem; vertical-align: middle; color: ${spiriColor};">${catIcon}</span> ${q}
                                         <div class="anomaly-tooltip">
                                             <div class="anomaly-tooltip-title">${aTemp ? aTemp.name : n}</div>
                                             <div style="display: flex; gap: 6px; margin: 6px 0; flex-wrap: wrap;">
@@ -413,7 +448,7 @@ function renderGrid(equipments) {
                                                     Lvl ${aTemp ? aTemp.level || 1 : 1}
                                                 </span>
                                                 <span style="border: 1px solid ${getTypeColor(aTemp && aTemp.magicObject)}; color: ${getTypeColor(aTemp && aTemp.magicObject)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; display: flex; align-items: center; gap: 4px;">
-                                                    <span class="material-symbols-outlined" style="font-size: 0.9rem;">${aTemp && aTemp.magicObject ? 'auto_awesome' : 'category'}</span>
+                                                    <span class="material-symbols-outlined" style="font-size: 0.9rem;">${catIcon}</span>
                                                     ${aTemp && aTemp.magicObject ? 'Objet Magique' : 'Matériau'}
                                                 </span>
                                                 ${aTemp && aTemp.spiritualite ? 
