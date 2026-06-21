@@ -564,6 +564,55 @@ public class CombatService {
         return session;
     }
 
+    public CombatSession consumeItem(String sessionId, Long consumableId, Long targetCharacterId, String username) {
+        CombatSession session = getSession(sessionId);
+        if (session == null) throw new RuntimeException("Session introuvable");
+
+        generation.grimoire.entity.Equipment toConsume = null;
+        for (generation.grimoire.entity.Equipment eq : session.getActiveConsumables()) {
+            if (eq.getId().equals(consumableId)) {
+                toConsume = eq;
+                break;
+            }
+        }
+        if (toConsume == null) throw new RuntimeException("Consommable non trouvé dans le combat");
+
+        generation.grimoire.entity.personnage.Personnage target = null;
+        for (generation.grimoire.entity.personnage.Personnage p : session.getPlayers()) {
+            if (p.getId().equals(targetCharacterId)) {
+                target = p;
+                break;
+            }
+        }
+        if (target == null) throw new RuntimeException("Cible introuvable");
+
+        String itemName = toConsume.getName();
+        if ("Pain".equalsIgnoreCase(itemName)) {
+            if (target.getHealthCurrent() > 0) {
+                int heal = (int) (target.getHealthMax() * 0.25);
+                target.setHealthCurrent(Math.min(target.getHealthMax(), target.getHealthCurrent() + heal));
+                session.addLog("🍞 " + target.getName() + " mange du Pain et récupère " + heal + " PV.");
+            } else {
+                throw new RuntimeException("Impossible d'utiliser du Pain sur un personnage mort.");
+            }
+        } else if ("Potion de mana".equalsIgnoreCase(itemName)) {
+            if (target.getHealthCurrent() > 0) {
+                int heal = (int) (target.getManaMax() * 0.25);
+                target.setManaCurrent(Math.min(target.getManaMax(), target.getManaCurrent() + heal));
+                session.addLog("💧 " + target.getName() + " boit une Potion de mana et récupère " + heal + " Mana.");
+            } else {
+                throw new RuntimeException("Impossible d'utiliser une Potion de mana sur un personnage mort.");
+            }
+        } else {
+            throw new RuntimeException("Ce consommable ne peut pas être utilisé de cette façon.");
+        }
+
+        session.getActiveConsumables().remove(toConsume);
+        personnageRepository.save(target);
+        equipmentRepository.delete(toConsume);
+        return session;
+    }
+
     public CombatSession buyMerchantItem(String sessionId, int lootIndex, Long characterId) {
         CombatSession session = activeSessions.get(sessionId);
         if (session == null || session.isFinished()) {

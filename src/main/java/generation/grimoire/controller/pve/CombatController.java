@@ -150,4 +150,21 @@ public class CombatController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
+    @PostMapping("/{sessionId}/consume/{consumableId}/target/{characterId}")
+    public ResponseEntity<CombatSession> consumeItem(@PathVariable String sessionId,
+            @PathVariable Long consumableId,
+            @PathVariable Long characterId,
+            Principal principal) {
+        if (principal == null)
+            return ResponseEntity.status(401).build();
+            
+        try {
+            CombatSession session = combatService.consumeItem(sessionId, consumableId, characterId, principal.getName());
+            return ResponseEntity.ok(session);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(null);
+        }
+    }
 }

@@ -2634,8 +2634,13 @@ window.renderOverlayInventory = function(containerId) {
     }
 
     currentSessionData.activeConsumables.forEach(c => {
+        const canConsume = c.name.toLowerCase() === 'pain' || c.name.toLowerCase() === 'potion de mana';
+        const onClickAttr = canConsume ? `onclick="window.openConsumeModal(${c.id}, '${c.name.replace(/'/g, "\\'")}')"` : '';
+        const cursorStyle = canConsume ? 'cursor: pointer;' : '';
+        const hoverClass = canConsume ? 'consumable-hover' : '';
+
         list.innerHTML += `
-            <div style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 0.8rem; display: flex; align-items: center; gap: 0.8rem;">
+            <div class="${hoverClass}" ${onClickAttr} style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 0.8rem; display: flex; align-items: center; gap: 0.8rem; transition: all 0.2s; ${cursorStyle}">
                 <span class="material-symbols-outlined" style="font-size: 1.5rem; color: #10b981;">inventory_2</span>
                 <div style="flex: 1;">
                     <div style="color: #f8fafc; font-weight: 600; font-size: 0.9rem;">${c.name}</div>
@@ -2646,9 +2651,59 @@ window.renderOverlayInventory = function(containerId) {
                         ${c.bonusStrength ? `+${c.bonusStrength} For ` : ''}
                         ${c.bonusArmor ? `+${c.bonusArmor} Arm ` : ''}
                         ${c.bonusResistance ? `+${c.bonusResistance} Res ` : ''}
+                        ${canConsume ? '<div style="color: #0ea5e9; margin-top: 4px; font-weight: 500;">Cliquable pour utiliser</div>' : ''}
                     </div>
                 </div>
             </div>
         `;
     });
+};
+
+window.openConsumeModal = function(consumableId, consumableName) {
+    document.getElementById('consumeTargetName').innerText = consumableName;
+    const btnContainer = document.getElementById('consumeTargetButtons');
+    btnContainer.innerHTML = '';
+
+    currentSessionData.players.forEach(p => {
+        let hpColor = p.healthCurrent <= 0 ? '#ef4444' : (p.healthCurrent < p.healthMax ? '#f59e0b' : '#10b981');
+        let mpColor = p.manaCurrent < p.manaMax ? '#3b82f6' : '#60a5fa';
+        btnContainer.innerHTML += `
+            <button onclick="window.confirmConsumeItem(${consumableId}, ${p.id})"
+                ${p.healthCurrent <= 0 ? 'disabled' : ''}
+                style="display: flex; justify-content: space-between; align-items: center; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 0.8rem; border-radius: 8px; cursor: ${p.healthCurrent <= 0 ? 'not-allowed' : 'pointer'}; opacity: ${p.healthCurrent <= 0 ? '0.5' : '1'}; transition: all 0.2s ease;">
+                <span style="font-weight: 600;">${p.name}</span>
+                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.2rem;">
+                    <span style="font-size: 0.85rem; color: ${hpColor};"><b>${p.healthCurrent}</b> / ${p.healthMax} PV</span>
+                    <span style="font-size: 0.85rem; color: ${mpColor};"><b>${p.manaCurrent}</b> / ${p.manaMax} MP</span>
+                </div>
+            </button>
+        `;
+    });
+
+    document.getElementById('consumeTargetModal').classList.add('show');
+};
+
+window.closeConsumeModal = function() {
+    document.getElementById('consumeTargetModal').classList.remove('show');
+};
+
+window.confirmConsumeItem = async function(consumableId, characterId) {
+    if (!sessionId) return;
+    try {
+        const res = await fetch(`/api/pve/combat/${sessionId}/consume/${consumableId}/target/${characterId}`, {
+            method: 'POST'
+        });
+        if (res.ok) {
+            currentSessionData = await res.json();
+            window.closeConsumeModal();
+            window.showNotif("Objet consommé avec succès !");
+            updateUI(currentSessionData);
+        } else {
+            const err = await res.text();
+            window.showNotif("Erreur: " + err, true);
+        }
+    } catch (e) {
+        console.error(e);
+        window.showNotif("Erreur lors de la consommation.", true);
+    }
 };
