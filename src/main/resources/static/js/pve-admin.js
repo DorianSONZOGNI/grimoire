@@ -363,6 +363,8 @@ window.updateRoomField = function (roomIndex, field, value) {
 };
 
 function renderRooms() {
+    const currentScroll = window.scrollY;
+    
     const container = document.getElementById('selectedRoomsContainer');
     const emptyMsg = document.getElementById('emptyRoomsMsg');
 
@@ -1328,6 +1330,8 @@ function renderRooms() {
 
         container.appendChild(div);
     });
+
+    window.scrollTo(0, currentScroll);
 }
 
 async function loadMonsters() {
