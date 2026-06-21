@@ -1032,7 +1032,11 @@ public class CombatService {
     }
 
     private void checkDeaths(CombatSession session) {
-        boolean allDeadBefore = session.areAllEnemiesDead();
+        // Check if all enemies were already processed (maxHp set to 0) before this call.
+        // We use maxHp == 0 instead of isDead() because isDead() checks healthCurrent <= 0,
+        // which is already true when a spell kills a monster before checkDeaths runs.
+        boolean allAlreadyProcessed = session.getEnemies().stream()
+                .allMatch(e -> e.getMaxHp() <= 0);
         int xpDrop = 0;
         int goldDrop = 0;
         // Check dead enemies
@@ -1069,7 +1073,10 @@ public class CombatService {
             }
         }
 
-        if (!allDeadBefore && session.areAllEnemiesDead()) {
+        // Check if all enemies are now processed (all maxHp == 0) and weren't all processed before
+        boolean allNowProcessed = session.getEnemies().stream()
+                .allMatch(e -> e.getMaxHp() <= 0);
+        if (!allAlreadyProcessed && allNowProcessed) {
             session.addLog("Combat terminé, vous avez vaincu tous les monstres !");
 
             // Boss end-of-combat bonus rewards

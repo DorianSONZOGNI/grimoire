@@ -967,30 +967,43 @@ function updateUI(data) {
                             `;
                         }
 
-                        // Boss bonus gold (new)
+                        // Récupération des données
                         const bossBonusGold = data.bossBonusGold || 0;
-                        if (bossBonusGold > 0) {
+                        const bossBonusSpiritXp = data.bossBonusSpiritualXp || 0;
+
+                        // On vérifie si le boss donne au moins un des deux bonus
+                        if (bossBonusGold > 0 || bossBonusSpiritXp > 0) {
+
+                            // Base du contenu avec le tag BOSS
+                            let innerContent = `
+                                <span class="material-symbols-outlined" style="color: #e11d48;">local_fire_department</span>
+                                <span style="color: #e11d48; margin-right: 0.5rem;">BOSS</span>
+                            `;
+
+                            // Ajout de l'Or si présent
+                            if (bossBonusGold > 0) {
+                                innerContent += `<span style="color: #fbbf24;">+${bossBonusGold} Or</span>`;
+                            }
+
+                            // Séparateur visuel si on a les DEUX bonus en même temps
+                            if (bossBonusGold > 0 && bossBonusSpiritXp > 0) {
+                                innerContent += `<span style="color: #6b7280; margin: 0 0.2rem;">|</span>`;
+                            }
+
+                            // Ajout de l'XP Spirituelle si présente
+                            if (bossBonusSpiritXp > 0) {
+                                const perHero = Math.floor(bossBonusSpiritXp / Math.max(1, (data.players || []).length));
+                                innerContent += `
+                                    <span class="material-symbols-outlined" style="color: #8b5cf6;">blur_on</span>
+                                    <span style="color: #8b5cf6;">+${perHero} XP Spiritualité</span>
+                                `;
+                            }
+
+                            // Injection dans le container (une seule fois)
                             xpContainer.innerHTML += `
                                 <div style="width: 100%; text-align: center; margin-bottom: 0.5rem; animation: popIn 0.6s ease-out forwards;">
-                                    <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(0,0,0,0.4); border: 1px solid #e11d4880; padding: 0.5rem 1rem; border-radius: 8px; color: #fbbf24; font-weight: bold; font-size: 1.1rem;">
-                                        <span class="material-symbols-outlined" style="color: #e11d48;">local_fire_department</span>
-                                        <span style="color: #e11d48; margin-right: 0.2rem;">BOSS</span> +${bossBonusGold} Or
-                                    </div>
-                                </div>
-                            `;
-                        }
-
-                        // Boss bonus spiritual XP (new)
-                        const bossBonusSpiritXp = data.bossBonusSpiritualXp || 0;
-                        if (bossBonusSpiritXp > 0) {
-                            const perHero = Math.floor(bossBonusSpiritXp / Math.max(1, (data.players || []).length));
-                            xpContainer.innerHTML += `
-                                <div style="width: 100%; text-align: center; margin-bottom: 0.5rem; animation: popIn 0.7s ease-out forwards;">
-                                    <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(0,0,0,0.4); border: 1px solid #8b5cf680; padding: 0.5rem 1rem; border-radius: 8px; color: #8b5cf6; font-weight: bold; font-size: 1.1rem;">
-                                        <span class="material-symbols-outlined" style="color: #e11d48;">local_fire_department</span>
-                                        <span style="color: #e11d48; margin-right: 0.2rem;">BOSS</span>
-                                        <span class="material-symbols-outlined" style="color: #8b5cf6;">blur_on</span>
-                                        +${perHero} XP Spiritualité / héros
+                                    <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(0,0,0,0.4); border: 1px solid #e11d4880; padding: 0.5rem 1rem; border-radius: 8px; font-weight: bold; font-size: 1.1rem;">
+                                        ${innerContent}
                                     </div>
                                 </div>
                             `;
@@ -1077,13 +1090,13 @@ function updateUI(data) {
                                     const slotInfo = eq ? (SLOT_LABELS[eq.slot] || { icon: 'help', color: '#94a3b8' }) : { icon: 'swords', color: '#f59e0b' };
                                     const rarityColor = eq ? (RARITY_COLORS[eq.rarity] || '#ef4444') : '#f59e0b';
                                     const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
-                                    
+
                                     let tooltipDataHtml = '';
                                     if (eq && typeof generateEquipmentTooltipHTML === 'function') {
                                         tooltipDataHtml = generateEquipmentTooltipHTML(eq);
                                     }
                                     const tooltipAttrs = tooltipDataHtml ? 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"' : '';
-                                    
+
                                     gainedItemsHtml += `
                                         <div ${tooltipAttrs} style="position: relative; cursor: ${tooltipDataHtml ? 'help' : 'default'}; background: rgba(0, 0, 0, 0.4); border: 1px solid ${rarityColor}80; padding: 0.8rem 1rem; border-radius: 8px; color: ${rarityColor}; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
                                             ${tooltipDataHtml ? `<template class="tooltip-data">${tooltipDataHtml}</template>` : ''}
@@ -1152,7 +1165,7 @@ function updateUI(data) {
                         if (data.currentRoom.alterationType === 'VIE_XP') {
                             let hp = data.currentRoom.alterationHpAmount || 0;
                             let xp = data.currentRoom.alterationExpAmount || 0;
-                            
+
                             warningHtml = '';
                             if (hp < 0) {
                                 warningHtml += `<div style="color: #ef4444; font-size: 0.85rem; margin-top: 0.5rem; text-align: center; background: rgba(239, 68, 68, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3);"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">favorite</span> <strong>Coût :</strong> ${hp} PV (par héros)</div>`;
@@ -1176,7 +1189,7 @@ function updateUI(data) {
                         } else if (data.currentRoom.alterationType === 'ITEM') {
                             btnText = `Donner l'item et Toucher`;
                             warningHtml = `<div style="color: #ef4444; font-size: 0.85rem; margin-top: 0.5rem; text-align: center; background: rgba(239, 68, 68, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3);"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">warning</span> <strong>Attention :</strong> L'item "${data.currentRoom.alterationRequiredItem || 'spécial'}" sera définitivement détruit de l'inventaire d'un de vos héros s'il accepte cette offre.</div>`;
-                            
+
                             if (data.currentRoom.alterationRewardType === 'SPIRITUAL_XP') {
                                 specialItemHtml = `<div style="color: #38bdf8; font-size: 0.85rem; margin-top: 0.5rem; text-align: center; background: rgba(56, 189, 248, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.3);"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">star</span> <strong>Récompense :</strong> Vous obtiendrez +${data.currentRoom.alterationSpiritualXpReward || 0} XP Spirituel !</div>`;
                             } else if (data.currentRoom.alterationRewardType === 'SPECIAL_ITEM') {

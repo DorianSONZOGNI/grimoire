@@ -190,8 +190,8 @@ window.addRoom = function (type) {
     if (type === 'COMBAT') {
         selectedRooms.push({ type: 'COMBAT', monsters: [] });
     } else if (type === 'BOSS') {
-        selectedRooms.push({ 
-            type: 'BOSS', 
+        selectedRooms.push({
+            type: 'BOSS',
             monsters: [],
             globalBuffs: [],
             bossRewardSpiritualXp: 0,
@@ -467,7 +467,7 @@ function renderRooms() {
                     </button>
                 </div>
             `;
-            
+
             // Global Buffs HTML
             if (!room.globalBuffs) room.globalBuffs = [];
             let buffsHtml = '<div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem;">';
@@ -535,7 +535,7 @@ function renderRooms() {
                         <div style="flex: 1;">
                             <label style="font-size: 0.75rem; color: #8b5cf6; display: flex; align-items: center; gap: 0.3rem; margin-bottom: 0.3rem;">
                                 <span class="material-symbols-outlined" style="font-size: 0.9rem;">blur_on</span>
-                                XP Spiritualité (total, partagé)
+                                XP Spiritualité
                             </label>
                             <input type="number" class="form-control" min="0" value="${room.bossRewardSpiritualXp || 0}" onchange="updateRoomField(${rIndex}, 'bossRewardSpiritualXp', parseInt(this.value) || 0)">
                         </div>
@@ -630,9 +630,9 @@ function renderRooms() {
                         <div class="custom-select-wrapper" id="room_alt_type_wrapper_${rIndex}" style="width: 100%; z-index: ${102 - rIndex}; margin: 0; margin-top: 0.2rem;">
                             <div class="custom-select-trigger" onclick="const w = document.getElementById('room_alt_type_wrapper_${rIndex}'); document.querySelectorAll('.custom-select-wrapper.open').forEach(el => { if(el !== w) el.classList.remove('open'); }); w.classList.toggle('open');" style="padding: 0.6rem 1rem; border-radius: 8px;">
                                 <span class="cs-label" id="room_alt_type_label_${rIndex}">
-                                    ${altType === 'VIE_XP' ? '<span class="material-symbols-outlined cs-icon" style="color: #ef4444;">favorite</span> Don de vie et/ou d\'xp' : 
-                                      (altType === 'ITEM' ? '<span class="material-symbols-outlined cs-icon" style="color: #d946ef;">diamond</span> Don d\'un item spécial' : 
-                                      '<span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">block</span> Ne rien faire')}
+                                    ${altType === 'VIE_XP' ? '<span class="material-symbols-outlined cs-icon" style="color: #ef4444;">favorite</span> Don de vie et/ou d\'xp' :
+                        (altType === 'ITEM' ? '<span class="material-symbols-outlined cs-icon" style="color: #d946ef;">diamond</span> Don d\'un item spécial' :
+                            '<span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">block</span> Ne rien faire')}
                                 </span>
                                 <span class="material-symbols-outlined">expand_more</span>
                             </div>
@@ -663,8 +663,8 @@ function renderRooms() {
                         <div class="custom-select-wrapper" id="room_alt_reward_type_wrapper_${rIndex}" style="width: 100%; z-index: ${101 - rIndex}; margin: 0; margin-top: 0.2rem; margin-bottom: 0.5rem;">
                             <div class="custom-select-trigger" onclick="const w = document.getElementById('room_alt_reward_type_wrapper_${rIndex}'); document.querySelectorAll('.custom-select-wrapper.open').forEach(el => { if(el !== w) el.classList.remove('open'); }); w.classList.toggle('open');" style="padding: 0.6rem 1rem; border-radius: 8px;">
                                 <span class="cs-label" id="room_alt_reward_type_label_${rIndex}">
-                                    ${rewType === 'SPIRITUAL_XP' ? '<span class="material-symbols-outlined cs-icon" style="color: #8b5cf6;">blur_on</span> XP de Spiritualité' : 
-                                      '<span class="material-symbols-outlined cs-icon" style="color: #d946ef;">diamond</span> Item Spécial'}
+                                    ${rewType === 'SPIRITUAL_XP' ? '<span class="material-symbols-outlined cs-icon" style="color: #8b5cf6;">blur_on</span> XP de Spiritualité' :
+                            '<span class="material-symbols-outlined cs-icon" style="color: #d946ef;">diamond</span> Item Spécial'}
                                 </span>
                                 <span class="material-symbols-outlined">expand_more</span>
                             </div>
@@ -679,13 +679,13 @@ function renderRooms() {
                         ` : `
                             <label style="font-size: 0.8rem; color: #94a3b8;">Item Spécial Donné en récompense</label>
                             ${(() => {
-                                const selAnomalie = allAnomalies.find(a => a.name === room.alterationSpecialItemReward);
-                                let selHtml = '<span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">star</span> Choisir une anomalie...';
-                                if (selAnomalie) {
-                                    const color = selAnomalie.spiritualite === 'TENEBRES' ? '#d946ef' : selAnomalie.spiritualite === 'ESPRIT' ? '#3b82f6' : selAnomalie.spiritualite === 'KARMA' ? '#f59e0b' : '#94a3b8';
-                                    selHtml = `<span class="material-symbols-outlined cs-icon" style="color: ${color};">star</span> ${selAnomalie.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${selAnomalie.level || 1})</span>`;
-                                }
-                                return `
+                            const selAnomalie = allAnomalies.find(a => a.name === room.alterationSpecialItemReward);
+                            let selHtml = '<span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">star</span> Choisir une anomalie...';
+                            if (selAnomalie) {
+                                const color = selAnomalie.spiritualite === 'TENEBRES' ? '#d946ef' : selAnomalie.spiritualite === 'ESPRIT' ? '#3b82f6' : selAnomalie.spiritualite === 'KARMA' ? '#f59e0b' : '#94a3b8';
+                                selHtml = `<span class="material-symbols-outlined cs-icon" style="color: ${color};">star</span> ${selAnomalie.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${selAnomalie.level || 1})</span>`;
+                            }
+                            return `
                                 <div class="custom-select-wrapper" id="room_alt_reward_wrapper_${rIndex}" style="margin-top: 0.2rem; z-index: ${100 - rIndex};">
                                     <div class="custom-select-trigger" onclick="document.getElementById('room_alt_reward_wrapper_${rIndex}').classList.toggle('open')" style="padding: 0.5rem; font-size: 0.85rem; border-radius: 8px;">
                                         <span class="cs-label" id="room_alt_reward_label_${rIndex}">${selHtml}</span>
@@ -693,13 +693,13 @@ function renderRooms() {
                                     </div>
                                     <div class="custom-select-options" style="max-height: 200px; overflow-y: auto;">
                                         ${allAnomalies.map(a => {
-                                            const color = a.spiritualite === 'TENEBRES' ? '#d946ef' : a.spiritualite === 'ESPRIT' ? '#3b82f6' : a.spiritualite === 'KARMA' ? '#f59e0b' : '#94a3b8';
-                                            return `<div class="custom-option" onclick="updateRoomField(${rIndex}, 'alterationSpecialItemReward', '${a.name.replace(/'/g, "\\'")}'); renderRooms();"><span class="material-symbols-outlined cs-icon" style="color: ${color};">star</span> ${a.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${a.level || 1})</span></div>`;
-                                        }).join('')}
+                                const color = a.spiritualite === 'TENEBRES' ? '#d946ef' : a.spiritualite === 'ESPRIT' ? '#3b82f6' : a.spiritualite === 'KARMA' ? '#f59e0b' : '#94a3b8';
+                                return `<div class="custom-option" onclick="updateRoomField(${rIndex}, 'alterationSpecialItemReward', '${a.name.replace(/'/g, "\\'")}'); renderRooms();"><span class="material-symbols-outlined cs-icon" style="color: ${color};">star</span> ${a.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${a.level || 1})</span></div>`;
+                            }).join('')}
                                     </div>
                                 </div>
                                 `;
-                            })()}
+                        })()}
                         `}
                     </div>
                     `;
@@ -722,9 +722,9 @@ function renderRooms() {
                                 </div>
                                 <div class="custom-select-options" style="max-height: 200px; overflow-y: auto;">
                                     ${allAnomalies.map(a => {
-                                        const color = a.spiritualite === 'TENEBRES' ? '#d946ef' : a.spiritualite === 'ESPRIT' ? '#3b82f6' : a.spiritualite === 'KARMA' ? '#f59e0b' : '#94a3b8';
-                                        return `<div class="custom-option" onclick="updateRoomField(${rIndex}, 'alterationRequiredItem', '${a.name.replace(/'/g, "\\'")}'); renderRooms();"><span class="material-symbols-outlined cs-icon" style="color: ${color};">star</span> ${a.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${a.level || 1})</span></div>`;
-                                    }).join('')}
+                                const color = a.spiritualite === 'TENEBRES' ? '#d946ef' : a.spiritualite === 'ESPRIT' ? '#3b82f6' : a.spiritualite === 'KARMA' ? '#f59e0b' : '#94a3b8';
+                                return `<div class="custom-option" onclick="updateRoomField(${rIndex}, 'alterationRequiredItem', '${a.name.replace(/'/g, "\\'")}'); renderRooms();"><span class="material-symbols-outlined cs-icon" style="color: ${color};">star</span> ${a.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${a.level || 1})</span></div>`;
+                            }).join('')}
                                 </div>
                             </div>
                             `;
@@ -969,7 +969,7 @@ function renderRooms() {
                             'RIEN': { icon: 'door_front', color: '#94a3b8', text: 'Rien' }
                         };
                         const conf = outcomeConfig[outcome.type] || { icon: 'help', color: '#94a3b8', text: outcome.type };
-                        
+
                         let extraHtml = '';
                         if (outcome.type === 'BOSS') {
                             if (!outcome.monsters) outcome.monsters = [];
@@ -1180,16 +1180,16 @@ function renderRooms() {
                                         </div>
                                         <div class="custom-select-options" id="altar_treasure_options_${rIndex}_${oIndex}" style="max-height: 200px; overflow-y: auto;">
                                             ${allAnomalies.map(an => {
-                                                let anColor = '#94a3b8';
-                                                if (an.spiritualite === 'TENEBRES') anColor = '#d946ef';
-                                                else if (an.spiritualite === 'ESPRIT') anColor = '#3b82f6';
-                                                else if (an.spiritualite === 'KARMA') anColor = '#f59e0b';
-                                                return `
+                                let anColor = '#94a3b8';
+                                if (an.spiritualite === 'TENEBRES') anColor = '#d946ef';
+                                else if (an.spiritualite === 'ESPRIT') anColor = '#3b82f6';
+                                else if (an.spiritualite === 'KARMA') anColor = '#f59e0b';
+                                return `
                                                 <div class="custom-option" onclick="updateAltarField(${rIndex}, ${oIndex}, 'treasureAnomalieId', ${an.id})">
                                                     <span class="material-symbols-outlined cs-icon" style="color: ${anColor}; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">star</span>${an.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${an.level || 1})</span>
                                                 </div>
                                                 `;
-                                            }).join('')}
+                            }).join('')}
                                         </div>
                                     </div>
                                 </div>
@@ -2026,12 +2026,12 @@ window.addMonsterToBoss = function (rIndex, oIndex) {
     const outcome = selectedRooms[rIndex].doorOutcomes[oIndex];
     if (!outcome.monsters) outcome.monsters = [];
     outcome.monsters.push(mId);
-    
+
     // Clear selection
     input.value = '';
     const triggerLabel = document.getElementById(`room_door_boss_label_${rIndex}_${oIndex}`);
     if (triggerLabel) triggerLabel.innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">pest_control</span> Sélectionner un boss...`;
-    
+
     renderRooms();
 };
 
@@ -2047,22 +2047,22 @@ window.addGlobalBuffToRoomBoss = function (rIndex) {
     const typeEl = document.getElementById(`room_boss_buff_type_${rIndex}`);
     const valEl = document.getElementById(`room_boss_buff_val_${rIndex}`);
     const durEl = document.getElementById(`room_boss_buff_dur_${rIndex}`);
-    
+
     if (!typeEl || !valEl || !durEl) return;
-    
+
     const type = typeEl.value;
     const val = parseInt(valEl.value) || 0;
     const dur = parseInt(durEl.value) || 0;
-    
+
     if (val <= 0) {
         showNotif('La valeur doit être positive.', true);
         return;
     }
-    
+
     const room = selectedRooms[rIndex];
     if (!room.globalBuffs) room.globalBuffs = [];
     room.globalBuffs.push({ type: type, value: val, duration: dur });
-    
+
     renderRooms();
 };
 
@@ -2078,25 +2078,25 @@ window.addGlobalBuffToBoss = function (rIndex, oIndex) {
     const typeEl = document.getElementById(`room_door_boss_buff_type_${rIndex}_${oIndex}`);
     const valEl = document.getElementById(`room_door_boss_buff_val_${rIndex}_${oIndex}`);
     const durEl = document.getElementById(`room_door_boss_buff_dur_${rIndex}_${oIndex}`);
-    
+
     if (!typeEl || !valEl || !durEl) return;
-    
+
     const type = typeEl.value;
     const val = parseInt(valEl.value) || 0;
     const dur = parseInt(durEl.value) || 0;
-    
+
     if (val <= 0) {
         showNotif('La valeur doit être positive.', true);
         return;
     }
-    
+
     const outcome = selectedRooms[rIndex].doorOutcomes[oIndex];
     if (!outcome.globalBuffs) outcome.globalBuffs = [];
     outcome.globalBuffs.push({ type: type, value: val, duration: dur });
-    
+
     // reset inputs partially
     valEl.value = '';
-    
+
     renderRooms();
 };
 
