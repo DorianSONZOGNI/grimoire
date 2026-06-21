@@ -29,14 +29,23 @@ public class EquipmentController {
         this.userRepository = userRepository;
     }
 
-    /** Liste tous les équipements */
+    /** Liste tous les équipements du joueur */
     @GetMapping
     public ResponseEntity<List<Map<String, Object>>> getAll(java.security.Principal principal) {
         if (principal == null) return ResponseEntity.status(401).build();
+        List<Equipment> equipmentList = equipmentRepository.findByUser_Username(principal.getName());
+        return ResponseEntity.ok(equipmentList.stream().filter(e -> !e.isShopTemplate()).map(this::toDto).toList());
+    }
+
+    /** Liste TOUS les équipements (réservé aux admins) */
+    @GetMapping("/all")
+    public ResponseEntity<List<Map<String, Object>>> getAllAdmin(java.security.Principal principal) {
+        if (principal == null) return ResponseEntity.status(401).build();
         boolean isAdmin = ((org.springframework.security.core.Authentication) principal).getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
+        if (!isAdmin) return ResponseEntity.status(403).build();
         
-        List<Equipment> equipmentList = isAdmin ? equipmentRepository.findAll() : equipmentRepository.findByUser_Username(principal.getName());
+        List<Equipment> equipmentList = equipmentRepository.findAll();
         return ResponseEntity.ok(equipmentList.stream().filter(e -> !e.isShopTemplate()).map(this::toDto).toList());
     }
 
@@ -57,12 +66,9 @@ public class EquipmentController {
     @GetMapping("/unassigned")
     public ResponseEntity<List<Map<String, Object>>> getUnassigned(java.security.Principal principal) {
         if (principal == null) return ResponseEntity.status(401).build();
-        boolean isAdmin = ((org.springframework.security.core.Authentication) principal).getAuthorities().stream()
-                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
         return ResponseEntity.ok(
-                equipmentRepository.findByPersonnageIsNull().stream()
+                equipmentRepository.findByPersonnageIsNullAndUser_Username(principal.getName()).stream()
                         .filter(e -> !e.isShopTemplate())
-                        .filter(e -> isAdmin || (e.getUser() != null && e.getUser().getUsername().equals(principal.getName())))
                         .map(this::toDto).toList());
     }
 
@@ -353,5 +359,6 @@ public class EquipmentController {
         private generation.grimoire.enumeration.EquipmentEffectType specialEffect;
         private int specialEffectValue = 0;
         private Long personnageId;
+        private java.util.Map<String, Integer> priceAnomalies = new java.util.HashMap<>();
     }
 }

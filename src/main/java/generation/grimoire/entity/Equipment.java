@@ -62,6 +62,12 @@ public class Equipment {
     @Column(name = "is_shop_template", nullable = false)
     private boolean isShopTemplate = false;
 
+    @ElementCollection
+    @CollectionTable(name = "equipment_anomaly_prices", joinColumns = @JoinColumn(name = "equipment_id"))
+    @MapKeyColumn(name = "anomaly_name")
+    @Column(name = "quantity")
+    private java.util.Map<String, Integer> priceAnomalies = new java.util.HashMap<>();
+
     public double calculateWeight() {
         double w = 0.0;
         w += this.bonusHealthMax * 0.2;

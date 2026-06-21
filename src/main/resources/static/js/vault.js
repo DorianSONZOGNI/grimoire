@@ -140,12 +140,14 @@ document.addEventListener('click', (e) => {
 // ===== API =====
 async function loadEquipments() {
     try {
-        const res = await fetch('/api/equipment');
+        const url = window.isAdmin ? '/api/equipment/all' : '/api/equipment';
+        const res = await fetch(url);
         let eqData = await res.json();
 
         let anomaliesData = [];
         try {
-            const aRes = await fetch('/api/anomalies');
+            const aUrl = window.isAdmin ? '/api/anomalies/all' : '/api/anomalies';
+            const aRes = await fetch(aUrl);
             if (aRes.ok) anomaliesData = await aRes.json();
         } catch(e) { console.error('Erreur chargement anomalies:', e); }
 
@@ -239,8 +241,24 @@ function filterVault() {
     const filterRarity = document.getElementById('filterRarity').value;
     const filterStatus = document.getElementById('filterStatus').value;
     const sortVault = document.getElementById('sortVault').value;
+    const filterConsommable = document.getElementById('filterConsommableOnly')?.checked;
+    const filterAnomalie = document.getElementById('filterAnomalieOnly')?.checked;
 
     let filtered = allEquipments.filter(eq => {
+        let matchMainType = false;
+        
+        if (filterConsommable && filterAnomalie) {
+            matchMainType = eq.isAnomalie || (!eq.isAnomalie && eq.slot === 'CONSOMMABLE');
+        } else if (filterConsommable) {
+            matchMainType = (!eq.isAnomalie && eq.slot === 'CONSOMMABLE');
+        } else if (filterAnomalie) {
+            matchMainType = eq.isAnomalie;
+        } else {
+            matchMainType = (!eq.isAnomalie && eq.slot !== 'CONSOMMABLE');
+        }
+        
+        if (!matchMainType) return false;
+
         const matchName = !searchName || eq.name.toLowerCase().includes(searchName);
         const matchOwner = !searchOwner || (eq.ownerUsername && eq.ownerUsername.toLowerCase().includes(searchOwner));
 
@@ -303,14 +321,28 @@ function renderGrid(equipments) {
 
     container.innerHTML = equipments.map(eq => {
         if (eq.isAnomalie) {
+            const CATEGORY_ICONS = {
+                'PIERRE': 'landslide',
+                'METAL': 'hardware',
+                'COEUR': 'favorite',
+                'ORBE': 'lens',
+                'CRISTAL': 'diamond',
+                'PLUME': 'history_edu',
+                'ECAILLE': 'waves',
+                'AUTRE': 'category'
+            };
             const typeStr = eq.magicObject !== false ? "Objet Magique" : "Matériau";
-            const typeIcon = eq.magicObject !== false ? "star" : "category";
+            const typeIcon = CATEGORY_ICONS[eq.category] || 'category';
+            let spColor = '#a855f7';
+            if (eq.spiritualite === 'ESPRIT') spColor = '#38bdf8';
+            else if (eq.spiritualite === 'KARMA') spColor = '#e7d198';
+
             return `
-            <div class="vault-card rarity-RELIQUE" style="border-color: #d946ef; box-shadow: 0 0 15px rgba(217,70,239,0.1);">
+            <div class="vault-card rarity-RELIQUE" style="border-color: ${spColor}; box-shadow: 0 0 15px ${spColor}20;">
                 <div class="vault-card-header">
                     <div class="vault-card-name-group">
                         <div class="vault-card-slot">
-                            <span class="material-symbols-outlined" style="font-size: 0.9rem; color: #d946ef;">${typeIcon}</span>
+                            <span class="material-symbols-outlined" style="font-size: 0.9rem; color: ${spColor};">${typeIcon}</span>
                             ${typeStr} <span style="opacity:0.5; margin-left:4px;">${eq.spiritualite}</span> <span style="opacity:0.5; margin-left:4px;">(Niv. ${eq.level || 1})</span>
                         </div>
                         <div class="vault-card-name" style="color: #fdf4ff;">
@@ -327,12 +359,12 @@ function renderGrid(equipments) {
                         </button>` : ''}
                     </div>
                 </div>
-                <div class="vault-card-stats" style="color: #e879f9; font-size: 0.9rem; text-align: center; font-style: italic; background: rgba(217,70,239,0.05); border-radius: 8px; padding: 1rem; border: 1px dashed rgba(217,70,239,0.2);">
+                <div class="vault-card-stats" style="color: ${spColor}; font-size: 0.9rem; text-align: center; font-style: italic; background: ${spColor}10; border-radius: 8px; padding: 1rem; border: 1px dashed ${spColor}30;">
                     ${eq.description || "Une relique impie imprégnée d'une aura mystique."}
                 </div>
                 <div class="vault-card-footer">
                     <div class="vault-card-weight"></div>
-                    <span class="vault-card-status status-equipped" style="background: rgba(217,70,239,0.1); color: #e879f9;">
+                    <span class="vault-card-status status-equipped" style="background: ${spColor}20; color: ${spColor};">
                         <span class="material-symbols-outlined" style="font-size: 0.9rem;">person</span>
                         Possédé
                     </span>
@@ -444,8 +476,6 @@ function renderGrid(equipments) {
 
 // Init
 window.addEventListener('DOMContentLoaded', () => {
-    loadEquipments();
-
     // Listeners for Weight Calculation
     const eqInputs = ['eqSlot', 'eqRarity', 'eqHp', 'eqMana', 'eqPower', 'eqStr', 'eqArmor', 'eqRes', 'eqSpeed', 'eqCrit', 'eqRegenHp', 'eqRegenMana', 'eqSpecialEffectValue'];
     eqInputs.forEach(id => {
@@ -470,7 +500,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-window.addEventListener('authLoaded', () => {
+window.addEventListener('authLoaded', async () => {
     const btnCreate = document.getElementById('btnCreateVaultEq');
     const btnCreateAnomalie = document.getElementById('btnCreateAnomalie');
     if (btnCreate) {
@@ -485,10 +515,7 @@ window.addEventListener('authLoaded', () => {
         searchOwnerContainer.style.display = window.isAdmin ? 'flex' : 'none';
     }
 
-    // Re-render the grid in case equipments loaded before auth
-    if (allEquipments && allEquipments.length > 0) {
-        filterVault();
-    }
+    await loadEquipments();
 });
 
 // ===== Equipment Creation / Edition =====
@@ -675,7 +702,25 @@ window.editAnomalie = function(id) {
     document.getElementById('anomalieName').value = eq.name || '';
     document.getElementById('anomalieDescription').value = eq.description || '';
     document.getElementById('anomalieSpiritualite').value = eq.spiritualite || 'TENEBRES';
+    document.getElementById('anomalieCategory').value = eq.category || 'AUTRE';
     document.getElementById('anomalieLevel').value = eq.level || 1;
+
+    // Update custom selects UI
+    const spiriLabel = document.getElementById('anomalieSpiritualiteLabel');
+    if (spiriLabel) {
+        const option = document.querySelector(`#anomalieSpiritualiteOptions .custom-option[data-value="${eq.spiritualite || 'TENEBRES'}"]`);
+        if (option) spiriLabel.innerHTML = option.innerHTML;
+    }
+    const catLabel = document.getElementById('anomalieCategoryLabel');
+    if (catLabel) {
+        const option = document.querySelector(`#anomalieCategoryOptions .custom-option[data-value="${eq.category || 'AUTRE'}"]`);
+        if (option) catLabel.innerHTML = option.innerHTML;
+    }
+    const lvlLabel = document.getElementById('anomalieLevelLabel');
+    if (lvlLabel) {
+        const option = document.querySelector(`#anomalieLevelOptions .custom-option[data-value="${eq.level || 1}"]`);
+        if (option) lvlLabel.innerHTML = option.innerHTML;
+    }
 
     const isMagic = eq.magicObject !== false;
     const toggleMagic = document.getElementById('anomalieMagicToggle');
@@ -696,6 +741,7 @@ window.closeCreateAnomalieModal = function () {
 window.submitAnomalie = async function () {
     const name = document.getElementById('anomalieName').value.trim();
     const spiritualite = document.getElementById('anomalieSpiritualite').value;
+    const category = document.getElementById('anomalieCategory').value;
     const description = document.getElementById('anomalieDescription').value.trim();
     const toggleMagic = document.getElementById('anomalieMagicToggle');
     const isMagicObject = toggleMagic ? toggleMagic.checked : true;
@@ -709,6 +755,7 @@ window.submitAnomalie = async function () {
         id: editingAnomalieId,
         name: name,
         spiritualite: spiritualite,
+        category: category,
         description: description,
         level: parseInt(document.getElementById('anomalieLevel').value) || 1,
         magicObject: isMagicObject

@@ -138,17 +138,40 @@ async function fetchMeta() {
 
 async function loadPersonnages() {
     try {
-        const res = await fetch('/api/personnages');
+        const url = window.isAdmin ? '/api/personnages/all' : '/api/personnages';
+        const res = await fetch(url);
         personnages = await res.json();
         renderPersonnages();
+        await updateCharLimitUI();
     } catch (e) {
         console.error('Erreur chargement personnages:', e);
     }
 }
 
+async function updateCharLimitUI() {
+    try {
+        const res = await fetch('/api/personnages/limit');
+        if (res.ok) {
+            const data = await res.json();
+            const limitText = document.getElementById('charLimitText');
+            if (limitText) {
+                limitText.textContent = `${data.currentCharacters}/${data.maxCharacters}`;
+                if (data.currentCharacters >= data.maxCharacters && !window.isAdmin) {
+                    limitText.style.color = '#ef4444';
+                } else {
+                    limitText.style.color = '#94a3b8';
+                }
+            }
+        }
+    } catch (e) {
+        console.error('Erreur limite personnages:', e);
+    }
+}
+
 async function loadAllEquipments() {
     try {
-        const res = await fetch('/api/equipment');
+        const url = window.isAdmin ? '/api/equipment/all' : '/api/equipment';
+        const res = await fetch(url);
         allEquipments = await res.json();
     } catch (e) {
         console.error('Erreur chargement équipements:', e);
@@ -160,6 +183,13 @@ async function submitPersonnage() {
     const name = document.getElementById('charName').value.trim();
     if (!name) {
         showNotif('Le nom est obligatoire.', true);
+        return;
+    }
+
+    const voieIdVal = document.getElementById('charVoie').value;
+    const spiritIdVal = document.getElementById('charSpirit').value;
+    if (!editingId && (!voieIdVal || !spiritIdVal)) {
+        showNotif('Une Voie et une Spiritualité sont obligatoires à la création.', true);
         return;
     }
 
@@ -856,7 +886,7 @@ function editPersonnage(id) {
 
     document.getElementById('charSpiritExperience').value = p.spiritualiteExperience || 0;
 
-    document.getElementById('formTitle').innerHTML = `
+    document.getElementById('formTitleText').innerHTML = `
         <span class="material-symbols-outlined">edit</span>
         Modifier : ${p.name}`;
     document.getElementById('submitBtn').innerHTML = `
@@ -889,9 +919,9 @@ function resetForm() {
     
     document.getElementById('charSpiritExperience').value = 0;
 
-    document.getElementById('formTitle').innerHTML = `
+    document.getElementById('formTitleText').innerHTML = `
         <span class="material-symbols-outlined">person_add</span>
-        Créer un Personnage`;
+        Recruter à la taverne`;
     document.getElementById('submitBtn').innerHTML = `
         <span class="material-symbols-outlined" style="font-size: 1.1rem;">person_add</span>
         Forger le Personnage`;
@@ -1025,15 +1055,15 @@ window.addEventListener('DOMContentLoaded', async () => {
     }
 
     await fetchMeta();
-    await loadAllEquipments();
-    await loadPersonnages();
 });
 
-window.addEventListener('authLoaded', () => {
+window.addEventListener('authLoaded', async () => {
     const searchOwnerContainer = document.getElementById('searchOwnerContainer');
     if (searchOwnerContainer) {
         searchOwnerContainer.style.display = window.isAdmin ? 'flex' : 'none';
     }
+    await loadAllEquipments();
+    await loadPersonnages();
 });
 
 window.showEqTooltip = function(el) {

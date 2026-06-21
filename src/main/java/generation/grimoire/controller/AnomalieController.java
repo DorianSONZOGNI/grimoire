@@ -37,7 +37,71 @@ public class AnomalieController {
         if (username == null) {
             return ResponseEntity.status(401).build();
         }
+        
+        Optional<AppUser> userOpt = userRepository.findByUsername(username);
+        if (userOpt.isPresent() && "ADMIN".equals(userOpt.get().getRole())) {
+            syncAdminAnomalies(userOpt.get());
+        }
+
         return ResponseEntity.ok(anomalieRepository.findByOwnerUsername(username));
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<Anomalie>> getAllAdmin() {
+        String username = getCurrentUsername();
+        if (username == null) return ResponseEntity.status(401).build();
+        
+        Optional<AppUser> userOpt = userRepository.findByUsername(username);
+        if (userOpt.isEmpty() || !"ADMIN".equals(userOpt.get().getRole())) {
+            return ResponseEntity.status(403).build();
+        }
+        
+        return ResponseEntity.ok(anomalieRepository.findAll());
+    }
+    
+    private void syncAdminAnomalies(AppUser adminUser) {
+        List<String> distinctNames = anomalieRepository.findDistinctNames();
+        List<Anomalie> adminAnomalies = anomalieRepository.findByOwnerUsername(adminUser.getUsername());
+        
+        for (String name : distinctNames) {
+            if (name == null || name.trim().isEmpty()) continue;
+            boolean hasIt = adminAnomalies.stream().anyMatch(a -> name.equals(a.getName()));
+            if (!hasIt) {
+                Anomalie template = anomalieRepository.findFirstByName(name);
+                if (template != null) {
+                    Anomalie newAno = new Anomalie();
+                    newAno.setName(template.getName());
+                    newAno.setSpiritualite(template.getSpiritualite());
+                    newAno.setCategory(template.getCategory());
+                    newAno.setDescription(template.getDescription());
+                    newAno.setLevel(template.getLevel() != null ? template.getLevel() : 1);
+                    newAno.setMagicObject(template.isMagicObject());
+                    newAno.setOwnerUsername(adminUser.getUsername());
+                    newAno.setUser(adminUser);
+                    anomalieRepository.save(newAno);
+                }
+            }
+        }
+    }
+
+    @GetMapping("/all-names")
+    public ResponseEntity<List<String>> getAllAnomalyNames() {
+        return ResponseEntity.ok(anomalieRepository.findDistinctNames());
+    }
+
+    @GetMapping("/all-templates")
+    public ResponseEntity<List<Anomalie>> getAllAnomalyTemplates() {
+        List<String> names = anomalieRepository.findDistinctNames();
+        List<Anomalie> templates = new java.util.ArrayList<>();
+        for (String name : names) {
+            if (name != null && !name.trim().isEmpty()) {
+                Anomalie template = anomalieRepository.findFirstByName(name);
+                if (template != null) {
+                    templates.add(template);
+                }
+            }
+        }
+        return ResponseEntity.ok(templates);
     }
 
     @PostMapping
@@ -61,6 +125,7 @@ public class AnomalieController {
                 }
                 existing.setName(anomalie.getName());
                 existing.setSpiritualite(anomalie.getSpiritualite());
+                existing.setCategory(anomalie.getCategory());
                 existing.setDescription(anomalie.getDescription());
                 existing.setLevel(anomalie.getLevel() != null ? anomalie.getLevel() : 1);
                 existing.setMagicObject(anomalie.isMagicObject());

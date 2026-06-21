@@ -142,6 +142,8 @@ window.logout = async function() {
 window.addEventListener('authLoaded', () => {
     const adminShop = document.getElementById('adminShopLink');
     const adminPvE = document.getElementById('adminPvELink');
+    const adminAlchemy = document.getElementById('adminAlchemyLink');
     if (adminShop) adminShop.style.display = window.isAdmin ? 'inline-flex' : 'none';
     if (adminPvE) adminPvE.style.display = window.isAdmin ? 'inline-flex' : 'none';
+    if (adminAlchemy) adminAlchemy.style.display = window.isAdmin ? 'inline-flex' : 'none';
 });

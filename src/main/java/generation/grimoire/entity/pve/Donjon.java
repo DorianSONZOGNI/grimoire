@@ -28,6 +28,12 @@ public class Donjon {
     
     private String imageUrl;
 
+    private double unlockCostGold = 0;
+    
+    private String requiredSecret;
+    
+    private double entryCostGold = 0;
+
     // For a simple novice dungeon, it's one combat. 
     // We can map multiple monsters to a dungeon if needed later, or just one boss.
     // For now, let's keep it flexible with a list of encounters or simply a ManyToMany with monsters.

@@ -20,4 +20,6 @@ public interface EquipmentRepository extends JpaRepository<Equipment, Long> {
     List<Equipment> findByPersonnageIsNull();
 
     List<Equipment> findByUser_Username(String username);
+
+    List<Equipment> findByOwnerUsername(String username);
 }

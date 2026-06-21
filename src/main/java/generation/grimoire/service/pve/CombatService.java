@@ -53,7 +53,8 @@ public class CombatService {
     // In-memory combat sessions
     private final Map<String, CombatSession> activeSessions = new ConcurrentHashMap<>();
 
-    public CombatSession startCombat(@NonNull List<Long> characterIds, @NonNull Long dungeonId, String username) {
+    public CombatSession startCombat(@NonNull List<Long> characterIds, @NonNull Long dungeonId,
+            List<Long> consumableIds, String username) {
         if (characterIds.isEmpty())
             throw new RuntimeException("Aucun personnage sélectionné");
 
@@ -72,12 +73,48 @@ public class CombatService {
 
         Donjon d = donjonRepository.findById(dungeonId).orElseThrow(() -> new RuntimeException("Donjon introuvable"));
 
+        generation.grimoire.entity.auth.AppUser account = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+
+        // Check required secret
+        if (d.getRequiredSecret() != null && !d.getRequiredSecret().trim().isEmpty()) {
+            if (!account.getUnlockedSecrets().contains(d.getRequiredSecret())) {
+                throw new RuntimeException("Ce donjon nécessite le secret : " + d.getRequiredSecret());
+            }
+        }
+
+        // Check unlock cost
+        if (d.getUnlockCostGold() > 0 && !account.getUnlockedDungeons().contains(d.getId())) {
+            throw new RuntimeException("Ce donjon doit être débloqué avant d'y entrer.");
+        }
+
+        // Check and deduct entry cost
+        if (d.getEntryCostGold() > 0) {
+            if (account.getMonnaie() < d.getEntryCostGold()) {
+                throw new RuntimeException("Pas assez d'or pour entrer dans ce donjon (Requis : " + d.getEntryCostGold() + " Or).");
+            }
+            account.setMonnaie(account.getMonnaie() - d.getEntryCostGold());
+            userRepository.save(account);
+        }
+
         if (d.getSalles() == null || d.getSalles().isEmpty()) {
             throw new RuntimeException("Ce donjon ne contient aucune salle.");
         }
 
         String sessionId = UUID.randomUUID().toString();
         CombatSession session = new CombatSession(sessionId, d, players);
+
+        if (consumableIds != null && !consumableIds.isEmpty()) {
+            for (Long cid : consumableIds) {
+                if (cid != null) { // <-- Added null check
+                    equipmentRepository.findById(cid).ifPresent(eq -> {
+                        if (eq.getOwnerUsername() != null && eq.getOwnerUsername().equals(username)) {
+                            session.getActiveConsumables().add(eq);
+                        }
+                    });
+                }
+            }
+        }
 
         handleRoomStart(session);
 
@@ -96,7 +133,8 @@ public class CombatService {
 
         // Re-fetch la salle pour éviter les LazyInitializationException sur les listes
         // de monstres et loots
-        generation.grimoire.entity.pve.Salle freshSalle = salleRepository.findById(java.util.Objects.requireNonNull(session.getCurrentRoom().getId()))
+        generation.grimoire.entity.pve.Salle freshSalle = salleRepository
+                .findById(java.util.Objects.requireNonNull(session.getCurrentRoom().getId()))
                 .orElse(session.getCurrentRoom());
 
         // Force initialization of lazy collections to prevent
@@ -198,7 +236,7 @@ public class CombatService {
         }
     }
 
-    public CombatSession openChest(String sessionId) {
+    public CombatSession openChest(String sessionId, boolean useKey) {
         CombatSession session = activeSessions.get(sessionId);
         if (session == null || session.isFinished())
             return session;
@@ -207,6 +245,23 @@ public class CombatService {
         }
         if (session.isRoomEventCompleted()) {
             throw new RuntimeException("Le coffre a déjà été ouvert.");
+        }
+
+        if (useKey) {
+            generation.grimoire.entity.Equipment key = null;
+            for (generation.grimoire.entity.Equipment eq : session.getActiveConsumables()) {
+                if ("Clé".equalsIgnoreCase(eq.getName())) {
+                    key = eq;
+                    break;
+                }
+            }
+            if (key == null) {
+                throw new RuntimeException("L'équipe ne possède pas de Clé !");
+            }
+            session.getActiveConsumables().remove(key);
+            equipmentRepository.delete(key);
+            session.addLog(
+                    "Vous utilisez une Clé pour ouvrir les compartiments secrets du coffre ! (+10% de chance de butin)");
         }
 
         int gold = session.getCurrentRoom().getTreasureGold();
@@ -236,7 +291,8 @@ public class CombatService {
         if (session.getCurrentRoom().getLootTable() != null && user != null) {
             for (LootEntry entry : session.getCurrentRoom().getLootTable()) {
                 double roll = rnd.nextDouble() * 100.0;
-                if (roll <= entry.getProbability() && entry.getEquipment() != null) {
+                double proba = entry.getProbability() + (useKey ? 10.0 : 0.0);
+                if (roll <= proba && entry.getEquipment() != null) {
                     Equipment template = entry.getEquipment();
 
                     // Clone it
@@ -403,7 +459,7 @@ public class CombatService {
                 throw new RuntimeException("Vous ne possédez pas l'item spécial : " + requiredItemName);
             }
 
-            anomalieRepository.delete(toDestroy);
+            consumeAnomalie(user, toDestroy);
 
             int spXp = room.getAlterationSpiritualXpReward();
             for (Personnage p : session.getPlayers()) {
@@ -422,7 +478,7 @@ public class CombatService {
             if (anomalyId == null) {
                 throw new RuntimeException("Aucune anomalie sélectionnée pour le sacrifice.");
             }
-            
+
             if (session.getPlayers().isEmpty()) {
                 throw new RuntimeException("Aucun joueur dans la session.");
             }
@@ -430,30 +486,31 @@ public class CombatService {
             if (user == null) {
                 throw new RuntimeException("Utilisateur inconnu.");
             }
-            
+
             Anomalie toDestroy = anomalieRepository.findById(anomalyId)
                     .orElseThrow(() -> new RuntimeException("Anomalie introuvable."));
-                    
+
             if (!toDestroy.getOwnerUsername().equals(user.getUsername())) {
                 throw new RuntimeException("Cette anomalie ne vous appartient pas.");
             }
-            
+
             if (!toDestroy.isMagicObject()) {
                 throw new RuntimeException("Vous ne pouvez sacrifier que des objets magiques, pas des matériaux.");
             }
-            
+
             String reqSp = room.getAltarRequiredSpirituality();
-            if (reqSp != null && toDestroy.getSpiritualite() != null && !toDestroy.getSpiritualite().name().equals(reqSp)) {
+            if (reqSp != null && toDestroy.getSpiritualite() != null
+                    && !toDestroy.getSpiritualite().name().equals(reqSp)) {
                 throw new RuntimeException("L'autel réclame une offrande de spiritualité " + reqSp + ".");
             }
-            
+
             String anomalyName = toDestroy.getName();
-            anomalieRepository.delete(toDestroy);
+            consumeAnomalie(user, toDestroy);
             session.addLog("Vous avez sacrifié l'anomalie : " + anomalyName + " sur l'autel.");
-            
+
             String rewardType = room.getAltarRewardType();
             int rewardValue = room.getAltarRewardValue();
-            
+
             if ("GOLD".equals(rewardType)) {
                 user.setMonnaie(user.getMonnaie() + rewardValue);
                 userRepository.save(user);
@@ -467,7 +524,8 @@ public class CombatService {
                 }
                 session.addLog("L'autel accorde " + rewardValue + " XP de Spiritualité à tous les héros !");
             } else if ("ITEM".equals(rewardType)) {
-                generation.grimoire.entity.Equipment template = equipmentRepository.findById((long) rewardValue).orElse(null);
+                generation.grimoire.entity.Equipment template = equipmentRepository.findById((long) rewardValue)
+                        .orElse(null);
                 if (template != null) {
                     generation.grimoire.entity.Equipment clone = new generation.grimoire.entity.Equipment();
                     clone.setName(template.getName());
@@ -518,36 +576,75 @@ public class CombatService {
             throw new RuntimeException("L'événement a déjà été résolu.");
         }
 
-        Personnage ropeOwner = null;
-        for (Personnage p : session.getPlayers()) {
-            if (p.getSpecialItemQuantity("Corde") > 0) {
-                ropeOwner = p;
+        generation.grimoire.entity.Equipment rope = null;
+        for (generation.grimoire.entity.Equipment eq : session.getActiveConsumables()) {
+            if ("Corde".equalsIgnoreCase(eq.getName())) {
+                rope = eq;
                 break;
             }
         }
 
-        if (ropeOwner == null) {
-            throw new RuntimeException("Aucun héros ne possède de Corde !");
+        if (rope == null) {
+            throw new RuntimeException("L'équipe ne possède pas de Corde !");
         }
 
-        ropeOwner.removeSpecialItem("Corde", 1);
-        personnageRepository.save(ropeOwner);
+        session.getActiveConsumables().remove(rope);
+        equipmentRepository.delete(rope);
 
-        generation.grimoire.entity.auth.AppUser user = ropeOwner.getUser();
-        if (user != null) {
-            List<generation.grimoire.entity.Anomalie> userAnomalies = anomalieRepository
-                    .findByOwnerUsername(user.getUsername());
-            generation.grimoire.entity.Anomalie toDestroy = userAnomalies.stream()
-                    .filter(a -> a.getName().equalsIgnoreCase("Corde"))
-                    .findFirst()
-                    .orElse(null);
-            if (toDestroy != null) {
-                anomalieRepository.delete(toDestroy);
+        session.addLog("Vous utilisez une Corde pour éviter le piège !");
+        session.setRoomEventCompleted(true);
+        return session;
+    }
+
+    public CombatSession consumeItem(String sessionId, Long consumableId, Long targetCharacterId, String username) {
+        CombatSession session = getSession(sessionId);
+        if (session == null)
+            throw new RuntimeException("Session introuvable");
+
+        generation.grimoire.entity.Equipment toConsume = null;
+        for (generation.grimoire.entity.Equipment eq : session.getActiveConsumables()) {
+            if (eq.getId().equals(consumableId)) {
+                toConsume = eq;
+                break;
             }
         }
+        if (toConsume == null)
+            throw new RuntimeException("Consommable non trouvé dans le combat");
 
-        session.addLog(ropeOwner.getName() + " utilise une Corde pour éviter le piège !");
-        session.setRoomEventCompleted(true);
+        generation.grimoire.entity.personnage.Personnage target = null;
+        for (generation.grimoire.entity.personnage.Personnage p : session.getPlayers()) {
+            if (p.getId().equals(targetCharacterId)) {
+                target = p;
+                break;
+            }
+        }
+        if (target == null)
+            throw new RuntimeException("Cible introuvable");
+
+        String itemName = toConsume.getName();
+        if ("Pain".equalsIgnoreCase(itemName)) {
+            if (target.getHealthCurrent() > 0) {
+                int heal = (int) (target.getHealthMax() * 0.25);
+                target.setHealthCurrent(Math.min(target.getHealthMax(), target.getHealthCurrent() + heal));
+                session.addLog("🍞 " + target.getName() + " mange du Pain et récupère " + heal + " PV.");
+            } else {
+                throw new RuntimeException("Impossible d'utiliser du Pain sur un personnage mort.");
+            }
+        } else if ("Potion de mana".equalsIgnoreCase(itemName)) {
+            if (target.getHealthCurrent() > 0) {
+                int heal = (int) (target.getManaMax() * 0.25);
+                target.setManaCurrent(Math.min(target.getManaMax(), target.getManaCurrent() + heal));
+                session.addLog("💧 " + target.getName() + " boit une Potion de mana et récupère " + heal + " Mana.");
+            } else {
+                throw new RuntimeException("Impossible d'utiliser une Potion de mana sur un personnage mort.");
+            }
+        } else {
+            throw new RuntimeException("Ce consommable ne peut pas être utilisé de cette façon.");
+        }
+
+        session.getActiveConsumables().remove(toConsume);
+        personnageRepository.save(target);
+        equipmentRepository.delete(toConsume);
         return session;
     }
 
@@ -607,7 +704,7 @@ public class CombatService {
                     throw new RuntimeException(
                             "Vous ne possédez pas l'item spécial dans l'inventaire global : " + specialItemPriceName);
                 }
-                anomalieRepository.delete(toDestroy);
+                consumeAnomalie(user, toDestroy);
             }
         }
 
@@ -814,8 +911,11 @@ public class CombatService {
             String type = selectedOutcome.path("type").asText("");
 
             if ("BOSS".equals(type)) {
-                room.setType(generation.grimoire.enumeration.RoomType.COMBAT);
+                room.setType(generation.grimoire.enumeration.RoomType.BOSS);
                 room.setEventSubType(null);
+                room.setBossRewardGold(selectedOutcome.path("bossRewardGold").asInt(0));
+                room.setBossRewardSpiritualXp(selectedOutcome.path("bossRewardSpiritualXp").asInt(0));
+
                 if (room.getMonsters() == null) {
                     room.setMonsters(new ArrayList<>());
                 } else {
@@ -832,13 +932,14 @@ public class CombatService {
                     }
                 }
 
-                // Initialize enemies based on updated room monsters manually to avoid overwriting from DB in handleRoomStart
+                // Initialize enemies based on updated room monsters manually to avoid
+                // overwriting from DB in handleRoomStart
                 session.getEnemies().clear();
                 for (generation.grimoire.entity.pve.Monstre m : room.getMonsters()) {
                     generation.grimoire.model.pve.ActiveMonster am = new generation.grimoire.model.pve.ActiveMonster(m);
                     session.getEnemies().add(am);
                 }
-                
+
                 session.setTurnNumber(1);
                 for (Personnage p : session.getPlayers()) {
                     p.setBanalSpellCastThisTurn(false);
@@ -909,7 +1010,8 @@ public class CombatService {
                 int rewardValue = selectedOutcome.path("altarRewardValue").asInt(100);
                 room.setAltarRewardValue(rewardValue);
                 if ("ITEM".equals(rewardType)) {
-                    generation.grimoire.entity.Equipment eq = equipmentRepository.findById((long) rewardValue).orElse(null);
+                    generation.grimoire.entity.Equipment eq = equipmentRepository.findById((long) rewardValue)
+                            .orElse(null);
                     room.setAltarRewardEquipment(eq);
                 }
                 room.setEventText("Un autel mystique (" + spirituality + ") réclame une offrande magique.");
@@ -922,11 +1024,13 @@ public class CombatService {
             } else if ("PIEGE".equals(type)) {
                 session.addLog("Vous avez ouvert la porte... et déclenché un piège mortel !");
                 room.setEventSubType(generation.grimoire.enumeration.EventSubType.PIEGE);
-                room.setTrapType("PV");
-                room.setTrapDamageHpPct(15);
-                room.setTrapDamageManaPct(15);
-                room.setTrapDamageHpFixed(0);
-                room.setTrapDamageManaFixed(0);
+                room.setTrapType(selectedOutcome.path("trapType").asText("PV"));
+                room.setTrapAmount(selectedOutcome.path("trapAmount").asInt(0));
+                room.setTrapHasRopeOption(selectedOutcome.path("trapHasRopeOption").asBoolean(false));
+                room.setTrapDamageHpPct(selectedOutcome.path("trapDamageHpPct").asInt(0));
+                room.setTrapDamageManaPct(selectedOutcome.path("trapDamageManaPct").asInt(0));
+                room.setTrapDamageHpFixed(selectedOutcome.path("trapDamageHpFixed").asInt(0));
+                room.setTrapDamageManaFixed(selectedOutcome.path("trapDamageManaFixed").asInt(0));
             } else {
                 session.addLog("Vous avez ouvert la porte... Il n'y a absolument rien derrière.");
                 session.setRoomEventCompleted(true);
@@ -949,7 +1053,8 @@ public class CombatService {
             throw new RuntimeException("Session introuvable");
         if (session.isFinished())
             return session;
-        if (session.getCurrentRoom().getType() != generation.grimoire.enumeration.RoomType.COMBAT && session.getCurrentRoom().getType() != generation.grimoire.enumeration.RoomType.BOSS) {
+        if (session.getCurrentRoom().getType() != generation.grimoire.enumeration.RoomType.COMBAT
+                && session.getCurrentRoom().getType() != generation.grimoire.enumeration.RoomType.BOSS) {
             throw new RuntimeException("Ce n'est pas une salle de combat !");
         }
 
@@ -1032,7 +1137,38 @@ public class CombatService {
     }
 
     private void checkDeaths(CombatSession session) {
-        boolean allDeadBefore = session.areAllEnemiesDead();
+        // Check dead players
+        for (Personnage p : session.getPlayers()) {
+            if (p.getHealthCurrent() <= 0 && p.getId() != null && !session.getPenalizedDeadPlayers().contains(p.getId())) {
+                session.getPenalizedDeadPlayers().add(p.getId());
+                
+                int penalty = 0;
+                switch (p.getVoieLevel()) {
+                    case 1: penalty = 10; break;
+                    case 2: penalty = 30; break;
+                    case 3: penalty = 80; break;
+                    case 4: penalty = 125; break;
+                    case 5: penalty = 160; break;
+                    default: penalty = 10; break;
+                }
+                
+                Personnage dbPersonnage = personnageRepository.findById(p.getId()).orElse(null);
+                if (dbPersonnage != null) {
+                    dbPersonnage.setExperience(Math.max(0, dbPersonnage.getExperience() - penalty));
+                    personnageRepository.save(dbPersonnage);
+                    p.setExperience(dbPersonnage.getExperience());
+                    session.addLog("☠️ " + p.getName() + " succombe à ses blessures et perd " + penalty + " XP normal...");
+                }
+            }
+        }
+
+        // Check if all enemies were already processed (maxHp set to 0) before this
+        // call.
+        // We use maxHp == 0 instead of isDead() because isDead() checks healthCurrent
+        // <= 0,
+        // which is already true when a spell kills a monster before checkDeaths runs.
+        boolean allAlreadyProcessed = session.getEnemies().stream()
+                .allMatch(e -> e.getMaxHp() <= 0);
         int xpDrop = 0;
         int goldDrop = 0;
         // Check dead enemies
@@ -1069,8 +1205,44 @@ public class CombatService {
             }
         }
 
-        if (!allDeadBefore && session.areAllEnemiesDead()) {
+        // Check if all enemies are now processed (all maxHp == 0) and weren't all
+        // processed before
+        boolean allNowProcessed = session.getEnemies().stream()
+                .allMatch(e -> e.getMaxHp() <= 0);
+        if (!allAlreadyProcessed && allNowProcessed) {
             session.addLog("Combat terminé, vous avez vaincu tous les monstres !");
+
+            // Boss end-of-combat bonus rewards
+            if (session.getCurrentRoom().getType() == generation.grimoire.enumeration.RoomType.BOSS) {
+                int bossSpXp = session.getCurrentRoom().getBossRewardSpiritualXp();
+                int bossGold = session.getCurrentRoom().getBossRewardGold();
+                System.out.println("[BOSS REWARDS] SalleId=" + session.getCurrentRoom().getId()
+                        + " | bossRewardSpiritualXp=" + bossSpXp
+                        + " | bossRewardGold=" + bossGold
+                        + " | nbPlayers=" + session.getPlayers().size());
+
+                if (bossSpXp > 0 && !session.getPlayers().isEmpty()) {
+                    int spXpPerHero = bossSpXp / Math.max(1, session.getPlayers().size());
+                    for (Personnage p : session.getPlayers()) {
+                        p.setSpiritualiteExperience(p.getSpiritualiteExperience() + spXpPerHero);
+                        personnageRepository.save(p);
+                    }
+                    session.setBossBonusSpiritualXp(bossSpXp);
+                    session.addLog("🔮 Le Boss vaincu octroie " + bossSpXp + " XP Spiritualité, partagé entre "
+                            + session.getPlayers().size() + " héros (" + spXpPerHero + " chacun).");
+                }
+
+                if (bossGold > 0 && !session.getPlayers().isEmpty()) {
+                    generation.grimoire.entity.auth.AppUser user = session.getPlayers().get(0).getUser();
+                    if (user != null) {
+                        user.setMonnaie(user.getMonnaie() + bossGold);
+                        userRepository.save(user);
+                    }
+                    session.setTotalGoldAccumulated(session.getTotalGoldAccumulated() + bossGold);
+                    session.setBossBonusGold(bossGold);
+                    session.addLog("💰 Le Boss vaincu octroie " + bossGold + " Or supplémentaires !");
+                }
+            }
         }
     }
 
@@ -1080,7 +1252,8 @@ public class CombatService {
             throw new RuntimeException("Session introuvable");
         if (session.isFinished())
             return session;
-        if (session.getCurrentRoom().getType() != generation.grimoire.enumeration.RoomType.COMBAT && session.getCurrentRoom().getType() != generation.grimoire.enumeration.RoomType.BOSS) {
+        if (session.getCurrentRoom().getType() != generation.grimoire.enumeration.RoomType.COMBAT
+                && session.getCurrentRoom().getType() != generation.grimoire.enumeration.RoomType.BOSS) {
             throw new RuntimeException("Ce n'est pas une salle de combat !");
         }
 
@@ -1256,6 +1429,22 @@ public class CombatService {
             session.setFinished(true);
             session.setPlayerWon(false);
             session.addLog("Toute l'équipe a été vaincue...");
+
+            // Defeat penalty: 8 gold per room
+            int roomsCount = (session.getDonjon() != null && session.getDonjon().getSalles() != null)
+                    ? session.getDonjon().getSalles().size() : 1;
+            int goldLoss = 8 * roomsCount;
+            session.setTotalGoldLostOnDefeat(goldLoss);
+
+            if (!session.getPlayers().isEmpty() && session.getPlayers().get(0).getId() != null) {
+                Personnage dbP = personnageRepository.findById(session.getPlayers().get(0).getId()).orElse(null);
+                if (dbP != null && dbP.getUser() != null) {
+                    generation.grimoire.entity.auth.AppUser user = dbP.getUser();
+                    user.setMonnaie(Math.max(0, user.getMonnaie() - goldLoss));
+                    userRepository.save(user);
+                    session.addLog("L'équipe perd " + goldLoss + " Or suite à cette défaite.");
+                }
+            }
         } else if (session.isRoundFinished() && !session.areAllEnemiesDead()) {
             session.setTurnNumber(session.getTurnNumber() + 1);
             rollInitiative(session);
@@ -1263,6 +1452,53 @@ public class CombatService {
 
         computeSpellAvailability(session);
         return session;
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public void fleeCombat(String sessionId) {
+        CombatSession session = activeSessions.get(sessionId);
+        if (session == null || session.isFinished())
+            return;
+
+        int roomsCount = (session.getDonjon() != null && session.getDonjon().getSalles() != null)
+                ? session.getDonjon().getSalles().size()
+                : 1;
+        int penaltyGold = 10 * roomsCount;
+        int penaltyXpTotal = 10 * roomsCount;
+        int nbHeroes = Math.max(1, session.getPlayers().size());
+        int penaltyXpPerPlayer = penaltyXpTotal / nbHeroes;
+
+        boolean goldDeducted = false;
+
+        for (Personnage p : session.getPlayers()) {
+            Long playerId = p.getId();
+
+            if (playerId == null) {
+                continue;
+            }
+
+            Personnage dbPersonnage = personnageRepository.findById(playerId).orElse(null);
+
+            if (dbPersonnage != null) {
+                dbPersonnage.setExperience(Math.max(0, dbPersonnage.getExperience() - penaltyXpPerPlayer));
+                personnageRepository.save(dbPersonnage);
+
+                if (!goldDeducted) {
+                    generation.grimoire.entity.auth.AppUser user = dbPersonnage.getUser();
+                    if (user != null) {
+                        user.setMonnaie(Math.max(0, user.getMonnaie() - penaltyGold));
+                        userRepository.save(user);
+                        goldDeducted = true;
+                    }
+                }
+
+                p.setExperience(dbPersonnage.getExperience());
+            }
+        }
+
+        session.setFinished(true);
+        session.setPlayerWon(false);
+        activeSessions.remove(sessionId);
     }
 
     private void rollInitiative(CombatSession session) {
@@ -1623,5 +1859,19 @@ public class CombatService {
                 session.addLog(line.trim());
             }
         }
+    }
+
+    private void consumeAnomalie(AppUser user, generation.grimoire.entity.Anomalie toDestroy) {
+        if (toDestroy == null)
+            return;
+        if (user != null && "ADMIN".equals(user.getRole())) {
+            long count = anomalieRepository.findByOwnerUsername(user.getUsername()).stream()
+                    .filter(a -> toDestroy.getName() != null && toDestroy.getName().equals(a.getName()))
+                    .count();
+            if (count <= 1) {
+                return; // L'admin garde toujours le dernier exemplaire
+            }
+        }
+        anomalieRepository.delete(toDestroy);
     }
 }

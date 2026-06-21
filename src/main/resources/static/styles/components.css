@@ -498,6 +498,7 @@
 .top-nav-link.nav-armory:hover, .top-nav-link.nav-armory.active { color: #3b82f6 !important; border-color: rgba(59, 130, 246, 0.3) !important; background: rgba(59, 130, 246, 0.1) !important; }
 .top-nav-link.nav-vault:hover, .top-nav-link.nav-vault.active { color: #f59e0b !important; border-color: rgba(245, 158, 11, 0.3) !important; background: rgba(245, 158, 11, 0.1) !important; }
 .top-nav-link.nav-shop:hover, .top-nav-link.nav-shop.active { color: #10b981 !important; border-color: rgba(16, 185, 129, 0.3) !important; background: rgba(16, 185, 129, 0.1) !important; }
+.top-nav-link.nav-alchemy:hover, .top-nav-link.nav-alchemy.active { color: #06b6d4 !important; border-color: rgba(6, 182, 212, 0.3) !important; background: rgba(6, 182, 212, 0.1) !important; }
 .top-nav-link.nav-admin:hover, .top-nav-link.nav-admin.active { color: #ef4444 !important; border-color: rgba(239, 68, 68, 0.3) !important; background: rgba(239, 68, 68, 0.1) !important; }
 
 /* Unified Header Styles */
@@ -516,3 +517,6 @@
 /* PvE Colors */
 .top-nav-link.nav-dungeon:hover, .top-nav-link.nav-dungeon.active { color: #ef4444 !important; border-color: rgba(239, 68, 68, 0.3) !important; background: rgba(239, 68, 68, 0.1) !important; }
 .logo-dungeon { background-image: linear-gradient(to right, #f87171, #991b1b); }
+
+/* Alchemy Colors */
+.logo-alchemy { background-image: linear-gradient(to right, #34d399, #06b6d4); }

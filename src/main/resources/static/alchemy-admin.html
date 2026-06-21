@@ -1,0 +1,750 @@
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Alchimie - Grimoire</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link rel="icon" type="image/png" href="/favicon.svg">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+        rel="stylesheet" />
+    <link rel="stylesheet" href="/styles/variables.css?v=4">
+    <link rel="stylesheet" href="/styles/layout.css?v=4">
+    <link rel="stylesheet" href="/styles/forms.css?v=4">
+    <link rel="stylesheet" href="/styles/components.css?v=4">
+    <link rel="stylesheet" href="/styles/vault.css?v=4">
+    <style>
+        .req-list {
+            display: flex;
+            flex-direction: column;
+            gap: 0.5rem;
+            margin-top: 0.5rem;
+            margin-bottom: 1rem;
+        }
+
+        .req-item {
+            display: flex;
+            gap: 0.5rem;
+            align-items: center;
+        }
+        .custom-select-wrapper { position: relative; user-select: none; width: 100%; }
+        .custom-select-trigger { background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; padding: 0.35rem 0.5rem; font-size: 0.8rem; font-family: 'Inter', sans-serif; color: #fff; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: all 0.2s ease; height: 100%; min-height: 28px; }
+        .custom-select-trigger:hover, .custom-select-wrapper.open .custom-select-trigger { border-color: #f59e0b; }
+        .custom-select-options { position: absolute; top: calc(100% + 5px); left: 0; right: 0; background: #0f172a; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); z-index: 100; display: none; max-height: 150px; overflow-y: auto; }
+        .custom-select-options::-webkit-scrollbar { width: 6px; }
+        .custom-select-options::-webkit-scrollbar-track { background: transparent; border-radius: 6px; }
+        .custom-select-options::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 6px; }
+        .custom-select-options::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.25); }
+        .custom-select-wrapper.open .custom-select-options { display: block; }
+        .custom-option { padding: 0.4rem 0.6rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; transition: background 0.2s ease; border-bottom: 1px solid rgba(255, 255, 255, 0.02); }
+        .custom-option:hover { background: rgba(245, 158, 11, 0.15); }
+        .cs-icon { font-size: 1rem; }
+        .cs-label { display: flex; align-items: center; gap: 0.4rem; }
+    </style>
+</head>
+
+<body>
+
+    <header class="top-header">
+        <div class="page-logo">
+            <span class="material-symbols-outlined logo-icon-gradient logo-admin">science</span>
+            <span class="logo-text-gradient logo-admin">Admin Alchimie</span>
+        </div>
+        <div class="header-actions">
+            <a href="/" class="top-nav-link nav-grimoire">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">auto_awesome</span> Grimoire
+            </a>
+            <a href="/armory.html" class="top-nav-link nav-armory">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">shield</span> Armurerie
+            </a>
+            <a href="/dungeons.html" class="top-nav-link nav-dungeon">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">swords</span> Donjons
+            </a>
+            <a href="/vault.html" class="top-nav-link nav-vault">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">money_bag</span> Coffres
+            </a>
+            <a href="/shop.html" class="top-nav-link nav-shop">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">storefront</span> Boutique
+            </a>
+            <a href="/alchemy.html" class="top-nav-link nav-alchemy">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">science</span> Alchimie
+            </a>
+            <a href="/shop-admin.html" id="adminShopLink" class="top-nav-link nav-admin">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">settings</span> Admin Boutique
+            </a>
+            <a href="/pve-admin.html" id="adminPvELink" class="top-nav-link nav-admin">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">admin_panel_settings</span> Admin PvE
+            </a>
+            <a href="/alchemy-admin.html" id="adminAlchemyLink" class="top-nav-link nav-admin active">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">science</span> Admin Alchimie
+            </a>
+
+            <div id="authNavContainer"
+                style="display: flex; align-items: center; gap: 0.5rem; margin-left: 1rem; padding-left: 1rem; border-left: 1px solid var(--glass-border);">
+                <!-- Dynamically injected by auth.js -->
+                <span style="font-size: 0.85rem; color: var(--text-muted);">Chargement...</span>
+            </div>
+        </div>
+    </header>
+
+    <main style="display: block;">
+        <div class="magic-rock"></div>
+        <div class="form-container" style="max-width: 1200px; margin: 2rem auto; display: flex; gap: 2rem; align-items: flex-start;">
+            
+            <div class="panel" style="flex: 1;">
+                <div class="panel-title">
+                    <span class="material-symbols-outlined" style="color: #06b6d4;">science</span>
+                    Créer une Recette Alchimique
+                </div>
+                
+                <form id="recipeForm">
+                    <div class="form-group">
+                        <label>Nom de la recette</label>
+                        <input type="text" id="recipeName" required placeholder="Ex: Transmutation Majeure">
+                    </div>
+                    
+                    <div class="form-group">
+                        <label>Description</label>
+                        <textarea id="recipeDesc" rows="2" placeholder="Ex: Convertit de vieilles anomalies en un golem puissant."></textarea>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label style="color: #f59e0b;"><span class="material-symbols-outlined" style="font-size: 1rem;">monetization_on</span> Coût Or</label>
+                            <input type="number" id="costGold" value="0" min="0" step="0.1">
+                        </div>
+                        <div class="form-group">
+                            <label style="color: #10b981;"><span class="material-symbols-outlined" style="font-size: 1rem;">star</span> Coût XP Spirit</label>
+                            <input type="number" id="costSpirit" value="0" min="0">
+                        </div>
+                    </div>
+
+                    <hr style="border-color: var(--glass-border); margin: 1.5rem 0;">
+
+                    <div class="form-group">
+                        <label>Ingrédients : Anomalies</label>
+                        <div id="reqAnomaliesList" class="req-list"></div>
+                        <button type="button" class="btn btn-secondary" onclick="addRequirement('anomalie')">+ Ajouter Anomalie requise</button>
+                    </div>
+
+                    <div class="form-group" style="margin-top: 1rem;">
+                        <label>Ingrédients : Consommables</label>
+                        <div id="reqConsumablesList" class="req-list"></div>
+                        <button type="button" class="btn btn-secondary" onclick="addRequirement('consumable')">+ Ajouter Consommable requis</button>
+                    </div>
+
+                    <hr style="border-color: var(--glass-border); margin: 1.5rem 0;">
+
+                    <div class="panel-title" style="font-size: 1.1rem; margin-bottom: 1rem;">
+                        <span class="material-symbols-outlined" style="color: #a855f7;">auto_awesome</span>
+                        Résultat de la Transmutation
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Type de récompense</label>
+                            <div class="custom-select-wrapper" style="width: 100%; z-index: 10;">
+                                <div class="custom-select-trigger" style="background: rgba(15,23,42,0.6); padding: 0.6rem; border-radius: 8px;">
+                                    <span class="cs-label" style="font-size: 0.9rem;">
+                                        <span class="material-symbols-outlined cs-icon" style="color: #a855f7;">star</span>
+                                        Donner Anomalie
+                                    </span>
+                                    <span class="material-symbols-outlined" style="color: #64748b; font-size: 1.1rem;">expand_more</span>
+                                </div>
+                                <div class="custom-select-options custom-options">
+                                    <div class="custom-option" data-value="GIVE_ANOMALY">
+                                        <span class="material-symbols-outlined cs-icon" style="color: #a855f7;">star</span>
+                                        Donner Anomalie
+                                    </div>
+                                    <div class="custom-option" data-value="GIVE_CONSUMABLE">
+                                        <span class="material-symbols-outlined cs-icon" style="color: #10b981;">inventory_2</span>
+                                        Donner Consommable
+                                    </div>
+                                    <div class="custom-option" data-value="UNLOCK_FEATURE">
+                                        <span class="material-symbols-outlined cs-icon" style="color: #f59e0b;">key</span>
+                                        Déblocage / Secret
+                                    </div>
+                                    <div class="custom-option" data-value="GIVE_SPIRIT_XP">
+                                        <span class="material-symbols-outlined cs-icon" style="color: #38bdf8;">self_improvement</span>
+                                        Gagner XP Spiritualité
+                                    </div>
+                                </div>
+                                <input type="hidden" id="rewardType" value="GIVE_ANOMALY">
+                            </div>
+                        </div>
+                        <div class="form-group" id="rewardNameContainer">
+                            <label>Nom de l'objet (Résultat)</label>
+                            <input type="text" id="rewardName" required placeholder="Ex: Potion de Soin Majeure">
+                        </div>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label>Quantité</label>
+                            <input type="number" id="rewardQty" value="1" min="1">
+                        </div>
+                        <div class="form-group">
+                            <label>Niveau (Pour les Anomalies)</label>
+                            <input type="number" id="rewardLevel" value="1" min="1">
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn" style="margin-top: 2rem; width: 100%;">Enregistrer la recette</button>
+                    <div id="formMsg" style="margin-top: 1rem; font-weight: bold; text-align: center;"></div>
+                </form>
+            </div>
+
+            <div class="panel" style="flex: 1;">
+                <div class="panel-title">
+                    <span class="material-symbols-outlined" style="color: #10b981;">list</span>
+                    Recettes Existantes
+                </div>
+                <div id="recipesList" style="display: flex; flex-direction: column; gap: 1rem;">
+                    Chargement...
+                </div>
+            </div>
+
+        </div>
+    </main>
+
+    <script src="/js/auth.js"></script>
+    <script>
+        let allAnomalies = [];
+        let allConsumables = [];
+
+        document.addEventListener('click', (e) => {
+            // Fermer les dropdowns
+            if (!e.target.closest('.custom-select-wrapper')) {
+                document.querySelectorAll('.custom-select-wrapper.open').forEach(w => w.classList.remove('open'));
+            }
+
+            const trigger = e.target.closest('.custom-select-trigger');
+            if (trigger) {
+                const wrapper = trigger.closest('.custom-select-wrapper');
+                document.querySelectorAll('.custom-select-wrapper.open').forEach(w => {
+                    if (w !== wrapper) w.classList.remove('open');
+                });
+                wrapper.classList.toggle('open');
+                return;
+            }
+
+            const option = e.target.closest('.custom-option');
+            if (option) {
+                const wrapper = option.closest('.custom-select-wrapper');
+                const hiddenInput = wrapper.querySelector('input[type="hidden"]');
+                const labelEl = wrapper.querySelector('.cs-label');
+
+                hiddenInput.value = option.getAttribute('data-value');
+                labelEl.innerHTML = option.innerHTML;
+                wrapper.classList.remove('open');
+                hiddenInput.dispatchEvent(new Event('change'));
+            }
+        });
+
+        window.addEventListener('authLoaded', async () => {
+            if (!window.isAdmin) {
+                document.body.innerHTML = "<h2 style='color:red;text-align:center;margin-top:50px;'>Accès Refusé : Réservé aux Admins</h2>";
+                return;
+            }
+            await loadItems();
+            loadRecipes();
+        });
+
+        async function loadItems() {
+            try {
+                const resA = await fetch('/api/anomalies/all-templates');
+                if (resA.ok) allAnomalies = await resA.json();
+            } catch (e) {
+                console.error("Erreur chargement anomalies", e);
+            }
+
+            let templates = [];
+            try {
+                const resT = await fetch('/api/shop/templates');
+                if (resT.ok) templates = await resT.json();
+            } catch (e) {
+                console.error("Erreur chargement templates boutique", e);
+            }
+            
+            let instances = [];
+            try {
+                const resE = await fetch('/api/equipment/all');
+                if (resE.ok) instances = await resE.json();
+            } catch (e) {
+                console.error("Erreur chargement équipements", e);
+            }
+
+            try {
+                let merged = [...templates, ...instances];
+                let map = new Map();
+                merged.forEach(e => {
+                    if (e && e.name) map.set(e.name, e);
+                });
+                allConsumables = Array.from(map.values()).filter(e => e.slot === 'CONSOMMABLE');
+            } catch (e) {
+                console.error("Erreur merge équipements", e);
+            }
+
+            // AFFICHER LE DEBUG SUR LA PAGE
+            let debugDiv = document.getElementById('debug_items_count');
+            if (!debugDiv) {
+                debugDiv = document.createElement('div');
+                debugDiv.id = 'debug_items_count';
+                debugDiv.style.color = '#10b981';
+                debugDiv.style.fontSize = '0.8rem';
+                debugDiv.style.marginTop = '1rem';
+                const panel = document.querySelector('.admin-panel');
+                if (panel) {
+                    panel.appendChild(debugDiv);
+                } else {
+                    document.body.appendChild(debugDiv);
+                }
+            }
+            debugDiv.innerHTML = `Items chargés : ${allAnomalies.length} anomalies, ${allConsumables.length} consommables. (Veuillez faire un Ctrl+F5 si vous ne voyez pas vos objets)`;
+            
+            updateRewardNameInput();
+        }
+
+        async function updateRewardNameInput() {
+            const type = document.getElementById('rewardType').value;
+            const container = document.getElementById('rewardNameContainer');
+            if (!container) return;
+
+            let optionsHtml = '';
+            let displayLabel = 'Choisir un objet...';
+
+            if (type === 'GIVE_ANOMALY') {
+                allAnomalies.forEach(a => {
+                    const catIcon = a.category ? (CATEGORY_ICONS[a.category] || 'category') : 'star';
+                    const spiriColor = a.spiritualite ? getSpiritualiteColor(a.spiritualite) : '#a855f7';
+                    optionsHtml += `<div class="custom-option" data-value="${a.name}">
+                                        <span class="material-symbols-outlined cs-icon" style="color: ${spiriColor};">${catIcon}</span>
+                                        ${a.name} (Niv. ${a.level || 1})
+                                    </div>`;
+                });
+                container.innerHTML = `
+                    <label>Nom de l'objet (Résultat)</label>
+                    <div class="custom-select-wrapper" style="width: 100%; z-index: 9;">
+                        <div class="custom-select-trigger" style="background: rgba(15,23,42,0.6); padding: 0.6rem; border-radius: 8px;">
+                            <span class="cs-label" style="font-size: 0.9rem;">${displayLabel}</span>
+                            <span class="material-symbols-outlined" style="color: #64748b; font-size: 1.1rem;">expand_more</span>
+                        </div>
+                        <div class="custom-select-options custom-options">
+                            ${optionsHtml}
+                        </div>
+                        <input type="hidden" id="rewardName" value="" required>
+                    </div>
+                `;
+            } else if (type === 'GIVE_CONSUMABLE') {
+                allConsumables.forEach(c => {
+                    optionsHtml += `<div class="custom-option" data-value="${c.name}">
+                                        <span class="material-symbols-outlined cs-icon" style="color: #10b981;">inventory_2</span>
+                                        ${c.name}
+                                    </div>`;
+                });
+                container.innerHTML = `
+                    <label>Nom de l'objet (Résultat)</label>
+                    <div class="custom-select-wrapper" style="width: 100%; z-index: 9;">
+                        <div class="custom-select-trigger" style="background: rgba(15,23,42,0.6); padding: 0.6rem; border-radius: 8px;">
+                            <span class="cs-label" style="font-size: 0.9rem;">${displayLabel}</span>
+                            <span class="material-symbols-outlined" style="color: #64748b; font-size: 1.1rem;">expand_more</span>
+                        </div>
+                        <div class="custom-select-options custom-options">
+                            ${optionsHtml}
+                        </div>
+                        <input type="hidden" id="rewardName" value="" required>
+                    </div>
+                `;
+            } else if (type === 'GIVE_SPIRIT_XP') {
+                container.innerHTML = `
+                    <label>Nom de l'objet (Résultat)</label>
+                    <div class="custom-select-wrapper disabled" style="width: 100%; opacity: 0.5; pointer-events: none;">
+                        <div class="custom-select-trigger" style="background: rgba(15,23,42,0.6); padding: 0.6rem; border-radius: 8px;">
+                            <span class="cs-label" style="font-size: 0.9rem;">- XP Spiritualité -</span>
+                        </div>
+                        <input type="hidden" id="rewardName" value="XP Spiritualité">
+                    </div>
+                `;
+            } else if (type === 'UNLOCK_FEATURE') {
+                // Fetch dungeons to get available secrets
+                let secretOptions = '';
+                try {
+                    const res = await fetch('/api/pve/dungeons');
+                    if (res.ok) {
+                        const dungeons = await res.json();
+                        const secretDungeons = dungeons.filter(d => d.requiredSecret && d.requiredSecret.trim() !== '');
+                        secretDungeons.forEach(d => {
+                            secretOptions += `<div class="custom-option" data-value="${d.requiredSecret}">
+                                <span class="material-symbols-outlined cs-icon" style="color: #f59e0b;">key</span>
+                                ${d.requiredSecret} <span style="color: #64748b; font-size: 0.8rem;">(Donjon: ${d.name})</span>
+                            </div>`;
+                        });
+                    }
+                } catch (e) {
+                    console.error("Erreur chargement donjons pour secrets", e);
+                }
+
+                if (!secretOptions) {
+                    secretOptions = `<div class="custom-option" data-value="" style="pointer-events: none; opacity: 0.5;">
+                        <span class="material-symbols-outlined cs-icon" style="color: #64748b;">warning</span>
+                        Aucun secret configur\u00e9 dans les donjons
+                    </div>`;
+                }
+
+                container.innerHTML = `
+                    <label>Secret / D\u00e9blocage (R\u00e9sultat)</label>
+                    <div class="custom-select-wrapper" style="width: 100%; z-index: 9;">
+                        <div class="custom-select-trigger" style="background: rgba(15,23,42,0.6); padding: 0.6rem; border-radius: 8px;">
+                            <span class="cs-label" style="font-size: 0.9rem;">
+                                <span class="material-symbols-outlined cs-icon" style="color: #f59e0b;">key</span>
+                                Choisir un secret...
+                            </span>
+                            <span class="material-symbols-outlined" style="color: #64748b; font-size: 1.1rem;">expand_more</span>
+                        </div>
+                        <div class="custom-select-options custom-options">
+                            ${secretOptions}
+                        </div>
+                        <input type="hidden" id="rewardName" value="" required>
+                    </div>
+                `;
+            } else {
+                container.innerHTML = `
+                    <label>Nom de l'objet / Secret (R\u00e9sultat)</label>
+                    <input type="text" id="rewardName" required placeholder="Ex: Secret du feu" class="form-control" style="width: 100%; padding: 0.6rem; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); color: white; border-radius: 8px;">
+                `;
+            }
+        }
+
+        function getSpiritualiteColor(sp) {
+            if (!sp) return '#cbd5e1';
+            switch (sp.toUpperCase()) {
+                case 'TENEBRES': return '#a855f7';
+                case 'ESPRIT': return '#38bdf8';
+                case 'KARMA': return '#e7d198';
+                default: return '#cbd5e1';
+            }
+        }
+
+        function getLevelColor(lvl) {
+            const l = parseInt(lvl) || 1;
+            if (l === 1) return '#10b981'; // Vert
+            if (l === 2) return '#3b82f6'; // Bleu
+            if (l >= 3) return '#f59e0b'; // Or
+            return '#94a3b8'; // Gris par défaut
+        }
+
+        function getTypeColor(isMagic) {
+            return isMagic ? '#ec4899' : '#b45309'; // Rose : Marron
+        }
+
+        window.showTooltipFixed = function(el) {
+            let tooltip = document.getElementById('globalFixedTooltip');
+            if (!tooltip) {
+                tooltip = document.createElement('div');
+                tooltip.id = 'globalFixedTooltip';
+                tooltip.style.position = 'fixed';
+                tooltip.style.zIndex = '999999';
+                tooltip.style.visibility = 'visible';
+                tooltip.style.opacity = '1';
+                tooltip.style.pointerEvents = 'none';
+                tooltip.style.transform = 'none';
+                tooltip.style.background = 'rgba(15, 23, 42, 0.95)';
+                tooltip.style.border = '1px solid rgba(168, 85, 247, 0.5)';
+                tooltip.style.borderRadius = '8px';
+                tooltip.style.padding = '10px';
+                tooltip.style.color = '#f8fafc';
+                tooltip.style.fontSize = '0.8rem';
+                tooltip.style.lineHeight = '1.4';
+                tooltip.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.5)';
+                tooltip.style.maxWidth = '250px';
+                tooltip.style.whiteSpace = 'normal';
+                tooltip.style.wordWrap = 'break-word';
+                tooltip.style.textAlign = 'left';
+                document.body.appendChild(tooltip);
+            }
+            tooltip.innerHTML = el.getAttribute('data-tooltip-html');
+            tooltip.style.display = 'block';
+
+            const rect = el.getBoundingClientRect();
+            let top = rect.bottom + 8;
+            let left = rect.left + rect.width / 2 - tooltip.offsetWidth / 2;
+
+            if (top + tooltip.offsetHeight > window.innerHeight) {
+                top = rect.top - tooltip.offsetHeight - 8;
+            }
+            if (left < 10) left = 10;
+            if (left + tooltip.offsetWidth > window.innerWidth - 10) {
+                left = window.innerWidth - tooltip.offsetWidth - 10;
+            }
+
+            tooltip.style.top = top + 'px';
+            tooltip.style.left = left + 'px';
+        };
+
+        window.hideTooltipFixed = function() {
+            const tooltip = document.getElementById('globalFixedTooltip');
+            if (tooltip) tooltip.style.display = 'none';
+        };
+
+        const CATEGORY_ICONS = {
+            'PIERRE': 'landslide',
+            'METAL': 'hardware',
+            'COEUR': 'favorite',
+            'ORBE': 'lens',
+            'CRISTAL': 'diamond',
+            'PLUME': 'history_edu',
+            'ECAILLE': 'waves',
+            'AUTRE': 'category'
+        };
+
+        function addRequirement(type, selectedName = '', qty = 1) {
+            const list = document.getElementById(type === 'anomalie' ? 'reqAnomaliesList' : 'reqConsumablesList');
+            const div = document.createElement('div');
+            div.className = 'req-item';
+            div.style.display = 'flex';
+            div.style.gap = '0.5rem';
+            div.style.alignItems = 'center';
+
+            let optionsHtml = '';
+            let displayLabel = 'Choisir un objet...';
+
+            if (type === 'anomalie') {
+                allAnomalies.forEach(a => {
+                    const catIcon = a.category ? (CATEGORY_ICONS[a.category] || 'category') : 'star';
+                    const spiriColor = a.spiritualite ? getSpiritualiteColor(a.spiritualite) : '#a855f7';
+                    optionsHtml += `<div class="custom-option" data-value="${a.name}">
+                                        <span class="material-symbols-outlined cs-icon" style="color: ${spiriColor};">${catIcon}</span>
+                                        ${a.name} (Niv. ${a.level || 1})
+                                    </div>`;
+                });
+
+                if (selectedName) {
+                    const selA = allAnomalies.find(a => a.name === selectedName);
+                    if (selA) {
+                        const catIcon = selA.category ? (CATEGORY_ICONS[selA.category] || 'category') : 'star';
+                        const spiriColor = selA.spiritualite ? getSpiritualiteColor(selA.spiritualite) : '#a855f7';
+                        displayLabel = `<span class="material-symbols-outlined cs-icon" style="color: ${spiriColor};">${catIcon}</span> ${selectedName} (Niv. ${selA.level || 1})`;
+                    } else {
+                        displayLabel = `<span class="material-symbols-outlined cs-icon" style="color: #a855f7;">star</span> ${selectedName}`;
+                    }
+                }
+            } else {
+                allConsumables.forEach(c => {
+                    optionsHtml += `<div class="custom-option" data-value="${c.name}">
+                                        <span class="material-symbols-outlined cs-icon" style="color: #10b981;">inventory_2</span>
+                                        ${c.name}
+                                    </div>`;
+                });
+
+                if (selectedName) {
+                    displayLabel = `<span class="material-symbols-outlined cs-icon" style="color: #10b981;">inventory_2</span> ${selectedName}`;
+                }
+            }
+
+            const zIndex = 100 - list.children.length;
+
+            div.innerHTML = `
+                <div class="custom-select-wrapper" style="flex: 2; z-index: ${zIndex};">
+                    <div class="custom-select-trigger" style="background: rgba(15,23,42,0.6); padding: 0.6rem; border-radius: 8px;">
+                        <span class="cs-label" style="font-size: 0.9rem;">${displayLabel}</span>
+                        <span class="material-symbols-outlined" style="color: #64748b; font-size: 1.1rem;">expand_more</span>
+                    </div>
+                    <div class="custom-select-options custom-options">
+                        ${optionsHtml}
+                    </div>
+                    <input type="hidden" class="req-name" value="${selectedName}">
+                </div>
+                <input type="number" value="${qty}" min="1" class="req-qty form-control" style="flex: 1; padding: 0.6rem; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); color: white; border-radius: 8px;">
+                <button type="button" class="btn-remove-row" style="background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5; border-radius: 6px; cursor: pointer; padding: 0.6rem; display: flex; justify-content: center; align-items: center;">
+                    <span class="material-symbols-outlined" style="font-size: 1.1rem;">delete</span>
+                </button>
+            `;
+
+            div.querySelector('.btn-remove-row').addEventListener('click', () => {
+                div.remove();
+            });
+
+            list.appendChild(div);
+        }
+
+        async function loadRecipes() {
+            try {
+                const res = await fetch('/api/alchemy/recipes');
+                const data = await res.json();
+                const container = document.getElementById('recipesList');
+                container.innerHTML = '';
+                if(data.length === 0) {
+                    container.innerHTML = "<p style='color: var(--text-muted);'>Aucune recette définie.</p>";
+                    return;
+                }
+                data.forEach(r => {
+                    const div = document.createElement('div');
+                    div.style.background = 'rgba(0,0,0,0.3)';
+                    div.style.border = '1px solid var(--glass-border)';
+                    div.style.borderRadius = '8px';
+                    div.style.padding = '1rem';
+                    
+                    let reqs = [];
+                    if(r.costGold > 0) reqs.push(`<span class="anomaly-badge" style="border: 1px solid #fbbf24; background: linear-gradient(#fbbf2425, #fbbf2425), #1e293b; color: #fbbf24; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block;">${r.costGold} Or</span>`);
+                    if(r.costSpiritXp > 0) reqs.push(`<span class="anomaly-badge" style="border: 1px solid #38bdf8; background: linear-gradient(#38bdf825, #38bdf825), #1e293b; color: #38bdf8; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block;">${r.costSpiritXp} XP Spirit</span>`);
+                    
+                    if(r.requiredAnomalies) {
+                        for(const [k,v] of Object.entries(r.requiredAnomalies)) {
+                            const aTemp = allAnomalies.find(a => a.name === k);
+                            if (aTemp) {
+                                const catIcon = aTemp.category ? (CATEGORY_ICONS[aTemp.category] || 'category') : 'star';
+                                const spiriColor = aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
+                                const tooltipData = `
+                                    <div class="anomaly-tooltip-title">${aTemp.name}</div>
+                                    <div style="display: flex; gap: 6px; margin: 6px 0; flex-wrap: wrap;">
+                                        <span style="border: 1px solid ${getLevelColor(aTemp.level)}; color: ${getLevelColor(aTemp.level)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold;">
+                                            Lvl ${aTemp.level || 1}
+                                        </span>
+                                        <span style="border: 1px solid ${getTypeColor(aTemp.magicObject)}; color: ${getTypeColor(aTemp.magicObject)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; display: flex; align-items: center; gap: 4px;">
+                                            ${aTemp.spiritualite}
+                                        </span>
+                                    </div>
+                                    <div class="anomaly-tooltip-desc">${aTemp.description ? aTemp.description : 'Aucune description'}</div>
+                                `;
+                                reqs.push(`<span class="anomaly-badge" style="border: 1px solid ${spiriColor}; background: linear-gradient(${spiriColor}25, ${spiriColor}25), #1e293b; color: ${spiriColor}; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block; cursor: help;" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}"><span class="material-symbols-outlined" style="font-size: 0.9rem; vertical-align: middle; color: ${spiriColor};">${catIcon}</span> ${v}x ${k}</span>`);
+                            } else {
+                                reqs.push(`${v}x [A] ${k}`);
+                            }
+                        }
+                    }
+                    if(r.requiredConsumables) {
+                        for(const [k,v] of Object.entries(r.requiredConsumables)) {
+                            reqs.push(`<span class="anomaly-badge" style="border: 1px solid #10b981; background: linear-gradient(#10b98125, #10b98125), #1e293b; color: #10b981; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block;"><span class="material-symbols-outlined" style="font-size: 0.9rem; vertical-align: middle; color: #10b981;">inventory_2</span> ${v}x ${k}</span>`);
+                        }
+                    }
+
+                    let rewardHtml = '';
+                    if (r.rewardType === 'GIVE_ANOMALY') {
+                        const aTemp = allAnomalies.find(a => a.name === r.rewardName);
+                        if (aTemp) {
+                            const catIcon = aTemp.category ? (CATEGORY_ICONS[aTemp.category] || 'category') : 'star';
+                            const spiriColor = aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
+                            const tooltipData = `
+                                <div class="anomaly-tooltip-title">${aTemp.name}</div>
+                                <div style="display: flex; gap: 6px; margin: 6px 0; flex-wrap: wrap;">
+                                    <span style="border: 1px solid ${getLevelColor(aTemp.level)}; color: ${getLevelColor(aTemp.level)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold;">
+                                        Lvl ${r.rewardLevel || aTemp.level || 1}
+                                    </span>
+                                    <span style="border: 1px solid ${getTypeColor(aTemp.magicObject)}; color: ${getTypeColor(aTemp.magicObject)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; display: flex; align-items: center; gap: 4px;">
+                                        ${aTemp.spiritualite}
+                                    </span>
+                                </div>
+                                <div class="anomaly-tooltip-desc">${aTemp.description ? aTemp.description : 'Aucune description'}</div>
+                            `;
+                            rewardHtml = `<span class="anomaly-badge" style="border: 1px solid ${spiriColor}; background: linear-gradient(${spiriColor}25, ${spiriColor}25), #1e293b; color: ${spiriColor}; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block; cursor: help;" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; color: ${spiriColor};">${catIcon}</span> ${r.rewardQuantity}x ${r.rewardName}</span>`;
+                        } else {
+                            rewardHtml = `<span style="color: #10b981;">${r.rewardType} - ${r.rewardQuantity}x ${r.rewardName} (Niv. ${r.rewardLevel})</span>`;
+                        }
+                    } else if (r.rewardType === 'GIVE_CONSUMABLE') {
+                        rewardHtml = `<span class="anomaly-badge" style="border: 1px solid #10b981; background: linear-gradient(#10b98125, #10b98125), #1e293b; color: #10b981; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block;"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; color: #10b981;">inventory_2</span> ${r.rewardQuantity}x ${r.rewardName}</span>`;
+                    } else if (r.rewardType === 'GIVE_SPIRIT_XP') {
+                        rewardHtml = `<span class="anomaly-badge" style="border: 1px solid #38bdf8; background: linear-gradient(#38bdf825, #38bdf825), #1e293b; color: #38bdf8; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block;"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; color: #38bdf8;">self_improvement</span> ${r.rewardQuantity} XP Spiritualité</span>`;
+                    } else {
+                        rewardHtml = `<span style="color: #f59e0b;">${r.rewardType} - ${r.rewardQuantity}x ${r.rewardName}</span>`;
+                    }
+
+                    div.innerHTML = `
+                        <div style="display:flex; justify-content:space-between; align-items:start;">
+                            <div>
+                                <h4 style="margin: 0; color: #06b6d4;">${r.name}</h4>
+                                <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0.3rem 0;">${r.description || ''}</p>
+                            </div>
+                            <button class="btn-danger" style="padding:0.3rem 0.6rem; font-size:0.8rem;" onclick="deleteRecipe(${r.id})">Supprimer</button>
+                        </div>
+                        <div style="font-size: 0.85rem; margin-top: 0.5rem; display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
+                            <strong>Coût :</strong> ${reqs.length > 0 ? reqs.join(' ') : '<span style="color: #ef4444;">Gratuit</span>'}
+                        </div>
+                        <div style="font-size: 0.85rem; margin-top: 0.5rem; display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
+                            <strong>Résultat :</strong> ${rewardHtml}
+                        </div>
+                    `;
+                    container.appendChild(div);
+                });
+            } catch(e) {
+                console.error(e);
+            }
+        }
+
+        document.getElementById('rewardType').addEventListener('change', updateRewardNameInput);
+
+        document.getElementById('recipeForm').addEventListener('submit', async (e) => {
+            e.preventDefault();
+            const msg = document.getElementById('formMsg');
+            msg.innerText = "Création...";
+            msg.style.color = "var(--text-muted)";
+
+            const recipe = {
+                name: document.getElementById('recipeName').value,
+                description: document.getElementById('recipeDesc').value,
+                costGold: parseFloat(document.getElementById('costGold').value) || 0,
+                costSpiritXp: parseFloat(document.getElementById('costSpirit').value) || 0,
+                rewardType: document.getElementById('rewardType').value,
+                rewardName: document.getElementById('rewardName').value,
+                rewardQuantity: parseInt(document.getElementById('rewardQty').value) || 1,
+                rewardLevel: parseInt(document.getElementById('rewardLevel').value) || 1,
+                requiredAnomalies: {},
+                requiredConsumables: {}
+            };
+
+            const anoms = document.getElementById('reqAnomaliesList').children;
+            for(let a of anoms) {
+                const name = a.querySelector('.req-name').value.trim();
+                const qty = parseInt(a.querySelector('.req-qty').value);
+                if(name && qty > 0) recipe.requiredAnomalies[name] = qty;
+            }
+
+            const cons = document.getElementById('reqConsumablesList').children;
+            for(let c of cons) {
+                const name = c.querySelector('.req-name').value.trim();
+                const qty = parseInt(c.querySelector('.req-qty').value);
+                if(name && qty > 0) recipe.requiredConsumables[name] = qty;
+            }
+
+            try {
+                const res = await fetch('/api/alchemy/admin/recipe', {
+                    method: 'POST',
+                    headers: {'Content-Type': 'application/json'},
+                    body: JSON.stringify(recipe)
+                });
+                if(res.ok) {
+                    msg.innerText = "Recette créée avec succès !";
+                    msg.style.color = "#10b981";
+                    document.getElementById('recipeForm').reset();
+                    document.getElementById('reqAnomaliesList').innerHTML = '';
+                    document.getElementById('reqConsumablesList').innerHTML = '';
+                    loadRecipes();
+                } else {
+                    const err = await res.text();
+                    msg.innerText = "Erreur: " + err;
+                    msg.style.color = "#ef4444";
+                }
+            } catch(e) {
+                msg.innerText = "Erreur réseau.";
+                msg.style.color = "#ef4444";
+            }
+        });
+
+        async function deleteRecipe(id) {
+            if(!confirm("Supprimer cette recette ?")) return;
+            try {
+                await fetch('/api/alchemy/admin/recipe/' + id, { method: 'DELETE' });
+                loadRecipes();
+            } catch(e) {
+                alert("Erreur de suppression");
+            }
+        }
+    </script>
+</body>
+
+</html>

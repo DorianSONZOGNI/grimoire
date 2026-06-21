@@ -225,10 +225,9 @@
     <header class="top-header">
         <div class="page-logo">
             <span class="material-symbols-outlined logo-icon-gradient logo-admin">admin_panel_settings</span>
-            <span class="logo-text-gradient logo-admin">Gestion PvE</span>
+            <span class="logo-text-gradient logo-admin">Admin PvE</span>
         </div>
         <div class="header-actions">
-            <div style="font-size: 0.9rem; color: var(--text-muted);">Création des monstres et donjons</div>
             <a href="/" class="top-nav-link nav-grimoire">
                 <span class="material-symbols-outlined" style="font-size: 1.1rem;">auto_awesome</span> Grimoire
             </a>
@@ -239,17 +238,23 @@
                 <span class="material-symbols-outlined" style="font-size: 1.1rem;">swords</span> Donjons
             </a>
             <a href="/vault.html" class="top-nav-link nav-vault">
-                <span class="material-symbols-outlined" style="font-size: 1.1rem;">money_bag</span> Salle des coffres
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">money_bag</span> Coffres
             </a>
             <a href="/shop.html" class="top-nav-link nav-shop">
                 <span class="material-symbols-outlined" style="font-size: 1.1rem;">storefront</span> Boutique
             </a>
+            <a href="/alchemy.html" class="top-nav-link nav-alchemy">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">science</span> Alchimie
+            </a>
             <a href="/shop-admin.html" id="adminShopLink" class="top-nav-link nav-admin" style="display: none;">
-                <span class="material-symbols-outlined" style="font-size: 1.1rem;">settings</span> Gestion Boutique
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">settings</span> Admin Boutique
             </a>
             <a href="/pve-admin.html" id="adminPvELink" class="top-nav-link nav-admin active">
-                <span class="material-symbols-outlined" style="font-size: 1.1rem;">admin_panel_settings</span> Gestion
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">admin_panel_settings</span> Admin
                 PvE
+            </a>
+            <a href="/alchemy-admin.html" id="adminAlchemyLink" class="top-nav-link nav-admin" style="display: none;">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem;">science</span> Admin Alchimie
             </a>
 
             <div id="authNavContainer"
@@ -657,6 +662,18 @@
                                     <input type="number" id="dMaxHeroes" class="form-control" value="1" min="1" max="5"
                                         required>
                                 </div>
+                                <div class="form-group">
+                                    <label>Coût de Déblocage (Or)</label>
+                                    <input type="number" id="dUnlockCost" class="form-control" value="0" min="0">
+                                </div>
+                                <div class="form-group">
+                                    <label>Coût d'Entrée (Or)</label>
+                                    <input type="number" id="dEntryCost" class="form-control" value="0" min="0">
+                                </div>
+                                <div class="form-group" style="grid-column: span 2;">
+                                    <label>Condition Alchimie (Secret requis)</label>
+                                    <input type="text" id="dRequiredSecret" class="form-control" placeholder="Ex: Secret du Feu">
+                                </div>
                                 <div class="form-group" style="grid-column: span 2;">
                                     <label>Salles du Donjon (Ordre d'exploration)</label>
 
@@ -672,7 +689,8 @@
                                             style="background: rgba(225, 29, 72, 0.1); color: #e11d48; border: 1px solid rgba(225, 29, 72, 0.3); font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.7rem 0.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;"
                                             onclick="addRoom('BOSS')">
                                             <span class="material-symbols-outlined"
-                                                style="font-size: 1.1rem;">local_fire_department</span> + Boss
+                                                style="font-size: 1.1rem;">skull</span> +
+                                            Boss
                                         </button>
                                         <button type="button" class="btn"
                                             style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.7rem 0.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;"

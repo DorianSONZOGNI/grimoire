@@ -39,12 +39,37 @@ public class PersonnageController {
         if (principal == null) {
             return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
         }
+        List<Personnage> all = personnageRepository.findByUser_Username(principal.getName());
+        List<Map<String, Object>> result = all.stream().map(this::toDto).toList();
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/limit")
+    public ResponseEntity<Map<String, Integer>> getLimit(java.security.Principal principal) {
+        if (principal == null) return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
+        generation.grimoire.entity.auth.AppUser user = userRepository.findByUsername(principal.getName()).orElse(null);
+        if (user == null) return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
+        
         boolean isAdmin = ((org.springframework.security.core.Authentication) principal).getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
         
-        List<Personnage> all = isAdmin 
-                ? personnageRepository.findAll() 
-                : personnageRepository.findByUser_Username(principal.getName());
+        int userMax = user.getMaxCharacters();
+        if (userMax <= 0) userMax = 2;
+        int max = isAdmin ? 999 : userMax;
+        
+        int current = personnageRepository.findByUser_Username(principal.getName()).size();
+        
+        return ResponseEntity.ok(Map.of("maxCharacters", max, "currentCharacters", current));
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<Map<String, Object>>> getAllAdmin(java.security.Principal principal) {
+        if (principal == null) return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
+        boolean isAdmin = ((org.springframework.security.core.Authentication) principal).getAuthorities().stream()
+                .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
+        if (!isAdmin) return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).build();
+        
+        List<Personnage> all = personnageRepository.findAll();
         List<Map<String, Object>> result = all.stream().map(this::toDto).toList();
         return ResponseEntity.ok(result);
     }
@@ -58,16 +83,32 @@ public class PersonnageController {
         boolean isAdmin = ((org.springframework.security.core.Authentication) principal).getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
 
-        Personnage personnage;
-        boolean isUpdate = false;
+        try {
+            Personnage personnage;
+            boolean isUpdate = false;
 
-        if (dto.getId() != null && personnageService.existsById(java.util.Objects.requireNonNull(dto.getId()))) {
+            if (dto.getId() != null && personnageService.existsById(java.util.Objects.requireNonNull(dto.getId()))) {
             personnage = personnageService.findByIdOrThrow(java.util.Objects.requireNonNull(dto.getId()));
             if (!isAdmin && personnage.getUser() != null && !personnage.getUser().getUsername().equals(principal.getName())) {
                 return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).build();
             }
             isUpdate = true;
         } else {
+            if (dto.getVoieId() == null || dto.getSpiritualiteId() == null) {
+                Map<String, Object> errorResp = new HashMap<>();
+                errorResp.put("message", "Une Voie et une Spiritualité sont obligatoires à la création.");
+                return ResponseEntity.status(org.springframework.http.HttpStatus.BAD_REQUEST).body(errorResp);
+            }
+            int userMax = user != null ? user.getMaxCharacters() : 2;
+            if (userMax <= 0) userMax = 2;
+            int max = isAdmin ? 999 : userMax;
+            
+            int current = personnageRepository.findByUser_Username(principal.getName()).size();
+            if (current >= max) {
+                Map<String, Object> errorResp = new HashMap<>();
+                errorResp.put("message", "Limite de personnages atteinte (" + max + ").");
+                return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).body(errorResp);
+            }
             personnage = new Personnage();
             personnage.setUser(user);
         }
@@ -108,16 +149,22 @@ public class PersonnageController {
             personnage.setSpiritualiteLevel(Math.max(1, Math.min(3, dto.getSpiritualiteLevel())));
         }
 
-        Personnage saved = personnageService.save(personnage);
+            Personnage saved = personnageService.save(personnage);
 
-        String message = isUpdate
-                ? "Personnage \"" + saved.getName() + "\" mis à jour avec succès."
-                : "Personnage \"" + saved.getName() + "\" créé avec succès.";
+            String message = isUpdate
+                    ? "Personnage \"" + saved.getName() + "\" mis à jour avec succès."
+                    : "Personnage \"" + saved.getName() + "\" créé avec succès.";
 
-        Map<String, Object> response = new HashMap<>();
-        response.put("message", message);
-        response.put("personnage", toDto(saved));
-        return ResponseEntity.ok(response);
+            Map<String, Object> response = new HashMap<>();
+            response.put("message", message);
+            response.put("personnage", toDto(saved));
+            return ResponseEntity.ok(response);
+        } catch (Throwable e) {
+            e.printStackTrace();
+            Map<String, Object> errorResp = new HashMap<>();
+            errorResp.put("message", "Erreur serveur: " + e.getMessage() + " | " + e.getClass().getName());
+            return ResponseEntity.status(500).body(errorResp);
+        }
     }
 
     @DeleteMapping("/{id}")
@@ -145,8 +192,8 @@ public class PersonnageController {
         map.put("ownerUsername", p.getUser() != null ? p.getUser().getUsername() : "Inconnu");
         
         // Base stats pour le formulaire d'édition
-        map.put("healthMax", p.getBaseHealthMax());
-        map.put("manaMax", p.getBaseManaMax());
+        map.put("healthMax", p.getHealthMax());
+        map.put("manaMax", p.getManaMax());
         map.put("power", p.getPower());
         map.put("strength", p.getStrength());
         map.put("armor", p.getArmor());
@@ -155,8 +202,8 @@ public class PersonnageController {
         map.put("crit", p.getCrit());
         
         // Total stats pour l'affichage (inclus équipements, buffs, passifs)
-        map.put("totalHealthMax", p.getHealthMax());
-        map.put("totalManaMax", p.getManaMax());
+        map.put("totalHealthMax", p.getTotalHealthMax());
+        map.put("totalManaMax", p.getTotalManaMax());
         map.put("totalPower", p.getEffectiveStat(generation.grimoire.enumeration.StatType.POWER));
         map.put("totalStrength", p.getEffectiveStat(generation.grimoire.enumeration.StatType.STRENGTH));
         map.put("totalArmor", p.getEffectiveStat(generation.grimoire.enumeration.StatType.ARMURE));

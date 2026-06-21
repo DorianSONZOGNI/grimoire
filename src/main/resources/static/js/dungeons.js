@@ -1,7 +1,8 @@
 let currentDungeonId = null;
 let selectedCharIds = [];
 let currentMaxHeroes = 1;
-let selectedConsumableId = null;
+let selectedConsumableIds = [];
+const MAX_CONSUMABLES = 4;
 let userCharacters = [];
 let availableConsumables = [];
 
@@ -64,12 +65,15 @@ async function loadDungeons() {
 
             dungeons.forEach(d => {
                 let totalSalles = d.salles ? d.salles.length : 0;
-                let combats = 0, treasures = 0, events = 0, totalMobs = 0;
+                let combats = 0, bosses = 0, treasures = 0, events = 0, totalMobs = 0, totalBossMobs = 0;
                 if (d.salles) {
                     d.salles.forEach(s => {
-                        if (s.type === 'COMBAT' || s.type === 'BOSS') {
+                        if (s.type === 'COMBAT') {
                             combats++;
                             totalMobs += (s.monsters ? s.monsters.length : 0);
+                        } else if (s.type === 'BOSS') {
+                            bosses++;
+                            totalBossMobs += (s.monsters ? s.monsters.length : 0);
                         }
                         else if (s.type === 'TREASURE') { treasures++; }
                         else if (s.type === 'EVENT') { events++; }
@@ -78,24 +82,50 @@ async function loadDungeons() {
 
                 const sallesData = encodeURIComponent(JSON.stringify(d.salles || [])).replace(/'/g, "%27");
 
+                let lockedHtml = '';
+                let isLocked = false;
+                const userSecrets = window.currentUser?.unlockedSecrets || [];
+                const userDungeons = window.currentUser?.unlockedDungeons || [];
+
+                if (d.requiredSecret && d.requiredSecret.trim() !== '') {
+                    if (!userSecrets.includes(d.requiredSecret)) {
+                        isLocked = true;
+                        lockedHtml = `<div style="color: #ef4444; font-weight: 600; font-size: 0.9rem; margin-top: 0.5rem;"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">lock</span> Secret requis : ${d.requiredSecret}</div>`;
+                    }
+                }
+
+                if (!isLocked && d.unlockCostGold > 0) {
+                    if (!userDungeons.includes(d.id)) {
+                        isLocked = true;
+                        lockedHtml = `<div style="margin-top: 0.8rem;"><button class="btn btn-primary" onclick="event.stopPropagation(); unlockDungeon(${d.id}, ${d.unlockCostGold})" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.4rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem;">lock_open</span> D\u00e9bloquer (${d.unlockCostGold} Or)</button></div>`;
+                    }
+                }
+
+                const entryCostHtml = d.entryCostGold > 0 ? `<div style="color: #f59e0b; font-weight: 600; font-size: 0.9rem; margin-top: 0.5rem;"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">monetization_on</span> Co\u00fbt d'entr\u00e9e : ${d.entryCostGold} Or</div>` : '';
+
                 list.innerHTML += `
-                    <div class="dungeon-card" onclick="openPrepInterface(${d.id}, '${d.name.replace(/'/g, "\\'")}', '${sallesData}', ${d.maxHeroes || 1})">
+                    <div class="dungeon-card" ${isLocked ? 'style="opacity: 0.7; cursor: not-allowed;"' : `onclick="openPrepInterface(${d.id}, '${d.name.replace(/'/g, "\\'")}', '${sallesData}', ${d.maxHeroes || 1}, ${d.entryCostGold || 0})"`}>
                         <div class="dungeon-title">
                             <span class="material-symbols-outlined">castle</span>
                             ${d.name}
                         </div>
                         <div class="dungeon-level">Niveau ${d.recommendedLevel}</div>
-                        <div class="dungeon-desc">${d.description || 'Affrontez les dangers qui rôdent.'}</div>
+                        <div class="dungeon-desc">${d.description || 'Affrontez les dangers qui r\u00f4dent.'}</div>
+                        ${entryCostHtml}
+                        ${lockedHtml}
                         <div style="font-size: 0.85rem; color: #f8fafc; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.1); display: grid; gap: 0.4rem;">
                             <div><span style="font-weight: 600;">Salles totales :</span> ${totalSalles}</div>
-                            <div style="color: #ef4444; margin-left: 0.5rem; display: flex; align-items: center; gap: 0.3rem;">
+                            ${combats > 0 ? `<div style="color: #ef4444; margin-left: 0.5rem; display: flex; align-items: center; gap: 0.3rem;">
                                 <span class="material-symbols-outlined" style="font-size: 1rem;">swords</span> Combats : ${combats} (avec ${totalMobs} mob${totalMobs > 1 ? 's' : ''})
-                            </div>
-                            <div style="color: #f59e0b; margin-left: 0.5rem; display: flex; align-items: center; gap: 0.3rem;">
-                                <span class="material-symbols-outlined" style="font-size: 1rem;">shopping_bag</span> Trésors : ${treasures}
-                            </div>
+                            </div>` : ''}
+                            ${bosses > 0 ? `<div style="color: #dc2626; margin-left: 0.5rem; display: flex; align-items: center; gap: 0.3rem;">
+                                <span class="material-symbols-outlined" style="font-size: 1rem;">skull</span> Boss : ${bosses} (avec ${totalBossMobs} mob${totalBossMobs > 1 ? 's' : ''})
+                            </div>` : ''}
+                            ${treasures > 0 ? `<div style="color: #f59e0b; margin-left: 0.5rem; display: flex; align-items: center; gap: 0.3rem;">
+                                <span class="material-symbols-outlined" style="font-size: 1rem;">shopping_bag</span> Tr\u00e9sors : ${treasures}
+                            </div>` : ''}
                             <div style="color: #8b5cf6; margin-left: 0.5rem; display: flex; align-items: center; gap: 0.3rem;">
-                                <span class="material-symbols-outlined" style="font-size: 1rem;">auto_awesome</span> Événements : ${events}
+                                <span class="material-symbols-outlined" style="font-size: 1rem;">auto_awesome</span> \u00c9v\u00e9nements : ${events}
                             </div>
                         </div>
                     </div>
@@ -116,18 +146,18 @@ async function loadCharacters() {
             list.innerHTML = '';
 
             if (userCharacters.length === 0) {
-                list.innerHTML = `<div style="color: var(--text-muted); font-size: 0.9rem;">Vous n'avez aucun personnage. Allez dans le Grimoire pour en créer un.</div>`;
+                list.innerHTML = `<div style="color: var(--text-muted); font-size: 0.9rem;">Vous n'avez aucun personnage. Allez dans le Grimoire pour en cr\u00e9er un.</div>`;
                 return;
             }
 
             const getVIcon = (nom) => {
                 const n = nom.toLowerCase();
                 if (n.includes('raison')) return { c: '#3b82f6', i: 'psychology' };
-                if (n.includes('sûreté') || n.includes('surete')) return { c: '#00e5cc', i: 'water_drop' };
+                if (n.includes('s\u00fbret\u00e9') || n.includes('surete')) return { c: '#00e5cc', i: 'water_drop' };
                 if (n.includes('trahison')) return { c: '#ed5677', i: 'visibility_off' };
                 if (n.includes('consolidation')) return { c: '#99674c', i: 'foundation' };
                 if (n.includes('conviction')) return { c: '#b74c0b', i: 'volcano' };
-                if (n.includes('création') || n.includes('creation')) return { c: '#10b981', i: 'eco' };
+                if (n.includes('cr\u00e9ation') || n.includes('creation')) return { c: '#10b981', i: 'eco' };
                 if (n.includes('destruction')) return { c: '#ff0000', i: 'local_fire_department' };
                 if (n.includes('violence')) return { c: '#a70740', i: 'explosion' };
                 return { c: '#94a3b8', i: 'route' };
@@ -135,7 +165,7 @@ async function loadCharacters() {
             const getSIcon = (nom) => {
                 const n = nom.toLowerCase();
                 if (n.includes('esprit')) return { c: '#38bdf8', i: 'blur_on' };
-                if (n.includes('ténèbres') || n.includes('tenebres')) return { c: '#c084fc', i: 'dark_mode' };
+                if (n.includes('t\u00e9n\u00e8bres') || n.includes('tenebres')) return { c: '#c084fc', i: 'dark_mode' };
                 if (n.includes('karma')) return { c: '#e7d198', i: 'all_inclusive' };
                 return { c: '#a78bfa', i: 'psychology' };
             };
@@ -148,7 +178,7 @@ async function loadCharacters() {
                 }
                 if (c.spiritualite && c.spiritualite.nom) {
                     const si = getSIcon(c.spiritualite.nom);
-                    iconsHtml += `<span class="material-symbols-outlined" style="font-size: 1.1rem; color: ${si.c}; margin-left: 0.3rem;" title="Spiritualité : ${c.spiritualite.nom}">${si.i}</span>`;
+                    iconsHtml += `<span class="material-symbols-outlined" style="font-size: 1.1rem; color: ${si.c}; margin-left: 0.3rem;" title="Spiritualit\u00e9 : ${c.spiritualite.nom}">${si.i}</span>`;
                 }
                 list.innerHTML += `
                     <div class="char-card" id="charCard_${c.id}" onclick="selectCharacter(${c.id})">
@@ -157,7 +187,7 @@ async function loadCharacters() {
                             <div style="color: #f8fafc; font-weight: 600; font-family: 'Outfit'; font-size: 1.1rem; display: flex; align-items: center;">
                                 ${c.name} ${iconsHtml}
                             </div>
-                            <div style="color: var(--text-muted); font-size: 0.85rem;">Niv. ${c.level || 1} • ${c.healthMax} PV max</div>
+                            <div style="color: var(--text-muted); font-size: 0.85rem;">Niv. ${c.level || 1} \u2022 ${c.healthMax} PV max</div>
                         </div>
                     </div>
                 `;
@@ -184,32 +214,49 @@ function renderConsumablesList() {
     const list = document.getElementById('prepConsumableList');
     list.innerHTML = '';
 
+    const counterHtml = `<div style="text-align: center; margin-bottom: 0.8rem; font-size: 0.85rem; color: ${selectedConsumableIds.length >= MAX_CONSUMABLES ? '#ef4444' : '#94a3b8'};">
+        <span class="material-symbols-outlined" style="font-size: 0.9rem; vertical-align: middle;">backpack</span>
+        ${selectedConsumableIds.length} / ${MAX_CONSUMABLES} s\u00e9lectionn\u00e9s
+    </div>`;
+
     if (availableConsumables.length === 0) {
-        list.innerHTML = `<div style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 1rem;">Vous n'avez aucun consommable dans votre coffre.</div>`;
+        list.innerHTML = counterHtml + `<div style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 1rem;">Vous n'avez aucun consommable dans votre coffre.</div>`;
         return;
     }
 
+    let cardsHtml = '';
     availableConsumables.forEach(c => {
-        const isSelected = selectedConsumableId === c.id;
-        list.innerHTML += `
-            <div class="consumable-card ${isSelected ? 'selected' : ''}" onclick="selectConsumable(${c.id})">
-                <span class="material-symbols-outlined" style="font-size: 2rem; color: ${isSelected ? '#10b981' : '#854c4c'}; margin-bottom: 0.5rem;">inventory_2</span>
-                <div style="color: #f8fafc; font-weight: 600; font-size: 0.9rem; margin-bottom: 0.2rem;">${c.name}</div>
-                <div style="color: var(--text-muted); font-size: 0.8rem;">
-                    ${c.bonusHealthMax ? `+${c.bonusHealthMax} PV ` : ''}
-                    ${c.bonusManaMax ? `+${c.bonusManaMax} Mana ` : ''}
-                    ${c.bonusPower ? `+${c.bonusPower} Pui ` : ''}
+        const isSelected = selectedConsumableIds.includes(c.id);
+        const selIndex = selectedConsumableIds.indexOf(c.id);
+        const badgeHtml = isSelected ? `<div style="position: absolute; top: -6px; right: -6px; background: #10b981; color: white; width: 18px; height: 18px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.65rem; font-weight: 700; z-index: 2; box-shadow: 0 2px 4px rgba(0,0,0,0.5);">${selIndex + 1}</div>` : '';
+        cardsHtml += `
+            <div class="consumable-card ${isSelected ? 'selected' : ''}" onclick="selectConsumable(${c.id})" style="position: relative; overflow: visible;">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem; color: ${isSelected ? '#10b981' : '#854c4c'}; flex-shrink: 0;">inventory_2</span>
+                <div style="flex: 1; min-width: 0;">
+                    <div style="color: #f8fafc; font-weight: 600; font-size: 0.7rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${c.name}">${c.name}</div>
+                    <div style="color: var(--text-muted); font-size: 0.6rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
+                        ${c.bonusHealthMax ? `+${c.bonusHealthMax} PV ` : ''}
+                        ${c.bonusManaMax ? `+${c.bonusManaMax} Mana ` : ''}
+                        ${c.bonusPower ? `+${c.bonusPower} Pui ` : ''}
+                    </div>
                 </div>
+                ${badgeHtml}
             </div>
         `;
     });
+    list.innerHTML = counterHtml + `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">${cardsHtml}</div>`;
 }
 
 window.selectConsumable = function (id) {
-    if (selectedConsumableId === id) {
-        selectedConsumableId = null; // deselect
+    const idx = selectedConsumableIds.indexOf(id);
+    if (idx !== -1) {
+        selectedConsumableIds.splice(idx, 1);
     } else {
-        selectedConsumableId = id;
+        if (selectedConsumableIds.length >= MAX_CONSUMABLES) {
+            showNotif(`Vous ne pouvez s\u00e9lectionner que ${MAX_CONSUMABLES} consommables maximum.`, true);
+            return;
+        }
+        selectedConsumableIds.push(id);
     }
     renderConsumablesList();
 };
@@ -219,20 +266,18 @@ window.selectCharacter = async function (id) {
         selectedCharIds = selectedCharIds.filter(cid => cid !== id);
     } else {
         if (selectedCharIds.length >= currentMaxHeroes) {
-            showNotif(`Ce donjon est limité à ${currentMaxHeroes} héros maximum.`, true);
+            showNotif(`Ce donjon est limit\u00e9 \u00e0 ${currentMaxHeroes} h\u00e9ros maximum.`, true);
             return;
         }
         selectedCharIds.push(id);
     }
 
-    // Update visual selection
     document.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected'));
     selectedCharIds.forEach(cid => {
         const card = document.getElementById('charCard_' + cid);
         if (card) card.classList.add('selected');
     });
 
-    // Enable enter button if at least one character is selected
     const btn = document.getElementById('btnEnterDungeon');
     if (btn) {
         if (selectedCharIds.length > 0) {
@@ -244,7 +289,6 @@ window.selectCharacter = async function (id) {
         }
     }
 
-    // Fetch character equipments
     let equipments = [];
     try {
         const res = await fetch(`/api/equipment/personnage/${id}`);
@@ -256,7 +300,6 @@ window.selectCharacter = async function (id) {
     const char = userCharacters.find(c => c.id === id);
     if (!char) return;
 
-    // Calculate total stats
     let totalStats = {
         healthMax: char.healthMax || 0,
         manaMax: char.manaMax || 0,
@@ -283,7 +326,6 @@ window.selectCharacter = async function (id) {
         totalStats.regenManaPerTurn += (eq.regenManaPerTurn || 0);
     });
 
-    // Render Stats
     document.getElementById('prepStatEmpty').style.display = 'none';
     const grid = document.getElementById('prepStatGrid');
     grid.style.display = 'grid';
@@ -293,16 +335,15 @@ window.selectCharacter = async function (id) {
         <div class="stat-item" style="color: #a855f7;"><span class="material-symbols-outlined">auto_awesome</span> ${totalStats.power} Puissance</div>
         <div class="stat-item" style="color: #f43f5e;"><span class="material-symbols-outlined">fitness_center</span> ${totalStats.strength} Force</div>
         <div class="stat-item" style="color: #3b82f6;"><span class="material-symbols-outlined">shield</span> ${totalStats.armor} Armure</div>
-        <div class="stat-item" style="color: #10b981;"><span class="material-symbols-outlined">shield</span> ${totalStats.resistance} Résist</div>
+        <div class="stat-item" style="color: #10b981;"><span class="material-symbols-outlined">shield</span> ${totalStats.resistance} R\u00e9sist</div>
         <div class="stat-item" style="color: #f59e0b;"><span class="material-symbols-outlined">bolt</span> ${totalStats.speed} Vitesse</div>
         <div class="stat-item" style="color: #ef4444;"><span class="material-symbols-outlined">gps_fixed</span> ${totalStats.crit}% Crit</div>
     `;
 
-    // Render Equipments
     const equipList = document.getElementById('prepEquipList');
     equipList.innerHTML = '';
     if (equipments.length === 0) {
-        equipList.innerHTML = `<div style="color: var(--text-muted); font-size: 0.9rem;">Aucun équipement porté.</div>`;
+        equipList.innerHTML = `<div style="color: var(--text-muted); font-size: 0.9rem;">Aucun \u00e9quipement port\u00e9.</div>`;
     } else {
         const iconMap = {
             'CASQUE': 'masks', 'PLASTRON': 'shield', 'BOTTES': 'footprint',
@@ -329,45 +370,51 @@ window.selectCharacter = async function (id) {
     }
 };
 
-window.openPrepInterface = function (id, name, sallesData, maxHeroes) {
+window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost) {
     currentDungeonId = id;
     selectedCharIds = [];
-    selectedConsumableId = null;
+    selectedConsumableIds = [];
     currentMaxHeroes = maxHeroes || 1;
+    window.currentDungeonEntryCost = entryCost || 0;
 
-    document.getElementById('prepDungeonTitle').textContent = `${name} (Max: ${currentMaxHeroes} héros)`;
+    document.getElementById('prepDungeonTitle').textContent = `${name} (Max: ${currentMaxHeroes} h\u00e9ros)`;
+
+    const btnEnter = document.getElementById('btnEnterDungeon');
+    if (window.currentDungeonEntryCost > 0) {
+        btnEnter.innerHTML = `<span class="material-symbols-outlined">swords</span> Payer ${window.currentDungeonEntryCost} Or & Entrer`;
+    } else {
+        btnEnter.innerHTML = `<span class="material-symbols-outlined">swords</span> ENTRER DANS LE DONJON`;
+    }
 
     const salles = JSON.parse(decodeURIComponent(sallesData) || '[]');
     const list = document.getElementById('prepMonstersList');
 
     if (salles.length === 0) {
-        list.innerHTML = "Aucune salle configurée.";
+        list.innerHTML = "Aucune salle configur\u00e9e.";
     } else {
         let html = '';
         salles.forEach((s, index) => {
             if (s.type === 'COMBAT' || s.type === 'BOSS') {
-                html += `<div style="margin-bottom: 0.5rem; color: #ef4444; font-weight: 600; display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem;">${s.type === 'BOSS' ? 'local_fire_department' : 'swords'}</span> Étape ${index + 1} : ${s.type === 'BOSS' ? 'Boss' : 'Combat'}</div>`;
+                html += `<div style="margin-bottom: 0.5rem; color: #ef4444; font-weight: 600; display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem;">${s.type === 'BOSS' ? 'skull' : 'swords'}</span> \u00c9tape ${index + 1} : ${s.type === 'BOSS' ? 'Boss' : 'Combat'}</div>`;
                 if (!s.monsters || s.monsters.length === 0) {
-                    html += `<div style="margin-left: 1.5rem; color: #94a3b8; font-size: 0.85rem;">Aucun monstre</div>`;
+                    html += `<div style="margin-left: 1.5rem; margin-bottom: 0.5rem; color: #94a3b8; font-size: 0.85rem;">Aucun ennemi d\u00e9tect\u00e9</div>`;
                 } else {
-                    s.monsters.forEach(m => {
-                        html += `<div style="margin-left: 1.5rem; font-size: 0.85rem; color: #f8fafc;">• ${m.name} (Lvl ${m.level || 1} - PV: ${m.healthMax})</div>`;
-                    });
+                    const count = s.monsters.length;
+                    html += `<div style="margin-left: 1.5rem; margin-bottom: 0.5rem; font-size: 0.85rem; color: #f8fafc;">${count} ennemi${count > 1 ? 's' : ''}</div>`;
                 }
             } else if (s.type === 'TREASURE') {
-                html += `<div style="margin-bottom: 0.5rem; color: #f59e0b; font-weight: 600; display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem;">shopping_bag</span> Étape ${index + 1} : Trésor</div>`;
+                html += `<div style="margin-bottom: 0.5rem; color: #f59e0b; font-weight: 600; display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem;">shopping_bag</span> \u00c9tape ${index + 1} : Tr\u00e9sor</div>`;
             } else if (s.type === 'EVENT') {
-                html += `<div style="margin-bottom: 0.5rem; color: #8b5cf6; font-weight: 600; display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem;">auto_awesome</span> Étape ${index + 1} : Événement</div>`;
+                html += `<div style="margin-bottom: 0.5rem; color: #8b5cf6; font-weight: 600; display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem;">auto_awesome</span> \u00c9tape ${index + 1} : \u00c9v\u00e9nement</div>`;
             }
         });
         list.innerHTML = html;
     }
 
-    // Reset UI
     document.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected'));
     document.getElementById('prepStatEmpty').style.display = 'flex';
     document.getElementById('prepStatGrid').style.display = 'none';
-    document.getElementById('prepEquipList').innerHTML = '<div style="color: var(--text-muted); font-size: 0.9rem;">Aucun équipement à afficher.</div>';
+    document.getElementById('prepEquipList').innerHTML = '<div style="color: var(--text-muted); font-size: 0.9rem;">Aucun \u00e9quipement \u00e0 afficher.</div>';
 
     const btn = document.getElementById('btnEnterDungeon');
     if (btn) {
@@ -386,20 +433,131 @@ window.closePrepInterface = function () {
     document.getElementById('dungeonsContent').style.display = 'block';
     currentDungeonId = null;
     selectedCharIds = [];
-    selectedConsumableId = null;
+    selectedConsumableIds = [];
 };
 
-window.startCombat = function () {
+window.startCombat = async function () {
     if (selectedCharIds.length === 0) {
-        showNotif("Veuillez sélectionner au moins un personnage.", true);
+        showNotif("Veuillez s\u00e9lectionner au moins un personnage.", true);
         return;
+    }
+
+    if (window.currentDungeonEntryCost > 0) {
+        if (window.currentUser && window.currentUser.monnaie < window.currentDungeonEntryCost) {
+            showNotif(`Fonds insuffisants. Il vous faut ${window.currentDungeonEntryCost} Or.`, true);
+            return;
+        }
+        const confirmed = await showEntryModal(window.currentDungeonEntryCost);
+        if (!confirmed) return;
     }
 
     const charIdsStr = selectedCharIds.join(',');
     let url = `/combat.html?dungeonId=${currentDungeonId}&characterIds=${charIdsStr}`;
-    if (selectedConsumableId) {
-        url += `&consumableId=${selectedConsumableId}`;
+    if (selectedConsumableIds.length > 0) {
+        url += `&consumableIds=${selectedConsumableIds.join(',')}`;
     }
-
     window.location.href = url;
+};
+
+window.unlockDungeon = async function (id, cost) {
+    const confirmed = await showUnlockModal(cost);
+    if (!confirmed) return;
+
+    try {
+        const res = await fetch(`/api/pve/dungeons/${id}/unlock`, { method: 'POST' });
+        if (res.ok) {
+            showNotif("Donjon d\u00e9bloqu\u00e9 !");
+            const authRes = await fetch('/api/auth/me', { credentials: 'same-origin' });
+            if (authRes.ok) window.currentUser = await authRes.json();
+            loadDungeons();
+        } else {
+            const err = await res.text();
+            showNotif(err, true);
+        }
+    } catch (e) {
+        showNotif("Erreur serveur", true);
+        console.error(e);
+    }
+};
+
+function showUnlockModal(cost) {
+    return new Promise((resolve) => {
+        const overlay = document.getElementById('unlockModal');
+        const costEl = document.getElementById('unlockModalCost');
+        const confirmBtn = document.getElementById('unlockModalConfirmBtn');
+
+        costEl.textContent = cost;
+        overlay.classList.add('active');
+
+        const onConfirm = () => {
+            cleanup();
+            resolve(true);
+        };
+        const onCancel = () => {
+            cleanup();
+            resolve(false);
+        };
+        const onOverlayClick = (e) => {
+            if (e.target === overlay) onCancel();
+        };
+        const onKeydown = (e) => {
+            if (e.key === 'Escape') onCancel();
+        };
+
+        function cleanup() {
+            overlay.classList.remove('active');
+            confirmBtn.removeEventListener('click', onConfirm);
+            overlay.removeEventListener('click', onOverlayClick);
+            document.removeEventListener('keydown', onKeydown);
+        }
+
+        confirmBtn.addEventListener('click', onConfirm);
+        overlay.addEventListener('click', onOverlayClick);
+        document.addEventListener('keydown', onKeydown);
+    });
+}
+
+window.closeUnlockModal = function () {
+    document.getElementById('unlockModal').classList.remove('active');
+};
+
+function showEntryModal(cost) {
+    return new Promise((resolve) => {
+        const overlay = document.getElementById('entryModal');
+        const costEl = document.getElementById('entryModalCost');
+        const confirmBtn = document.getElementById('entryModalConfirmBtn');
+
+        costEl.textContent = cost;
+        overlay.classList.add('active');
+
+        const onConfirm = () => {
+            cleanup();
+            resolve(true);
+        };
+        const onCancel = () => {
+            cleanup();
+            resolve(false);
+        };
+        const onOverlayClick = (e) => {
+            if (e.target === overlay) onCancel();
+        };
+        const onKeydown = (e) => {
+            if (e.key === 'Escape') onCancel();
+        };
+
+        function cleanup() {
+            overlay.classList.remove('active');
+            confirmBtn.removeEventListener('click', onConfirm);
+            overlay.removeEventListener('click', onOverlayClick);
+            document.removeEventListener('keydown', onKeydown);
+        }
+
+        confirmBtn.addEventListener('click', onConfirm);
+        overlay.addEventListener('click', onOverlayClick);
+        document.addEventListener('keydown', onKeydown);
+    });
+}
+
+window.closeEntryModal = function () {
+    document.getElementById('entryModal').classList.remove('active');
 };

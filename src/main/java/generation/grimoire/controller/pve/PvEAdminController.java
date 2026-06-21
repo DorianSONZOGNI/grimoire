@@ -87,6 +87,9 @@ public class PvEAdminController {
         entity.setImageUrl(dto.getImageUrl());
         entity.setRecommendedLevel(dto.getRecommendedLevel());
         entity.setMaxHeroes(dto.getMaxHeroes() > 0 ? dto.getMaxHeroes() : 1);
+        entity.setUnlockCostGold(dto.getUnlockCostGold());
+        entity.setEntryCostGold(dto.getEntryCostGold());
+        entity.setRequiredSecret(dto.getRequiredSecret());
 
         if (dto.getSalles() != null) {
             List<generation.grimoire.entity.pve.Salle> salles = dto.getSalles().stream().map(sDto -> {
@@ -113,6 +116,8 @@ public class PvEAdminController {
                 s.setTrapDamageManaFixed(sDto.getTrapDamageManaFixed());
                 s.setDoorOutcomes(sDto.getDoorOutcomes());
                 s.setGlobalBuffs(sDto.getGlobalBuffs());
+                s.setBossRewardSpiritualXp(sDto.getBossRewardSpiritualXp());
+                s.setBossRewardGold(sDto.getBossRewardGold());
 
                 if (sDto.getMonsters() != null) {
                     List<Monstre> monsters = sDto.getMonsters().stream()

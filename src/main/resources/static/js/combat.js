@@ -2,6 +2,13 @@ import * as ui from './ui.js';
 import { getSpellEffectsSummaryHtml } from './grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from './filters.js';
 
+if (!window.allAnomaliesCombat) {
+    window.allAnomaliesCombat = [];
+    fetch('/api/anomalies/all-templates').then(res => res.json()).then(data => {
+        window.allAnomaliesCombat = data;
+    }).catch(console.error);
+}
+
 const SLOT_LABELS = {
     CASQUE: { label: 'Casque', icon: 'masks', color: '#a855f7', extraClass: 'flip-icon' },
     PLASTRON: { label: 'Plastron', icon: 'shield', color: '#3b82f6' },
@@ -18,6 +25,53 @@ const RARITY_COLORS = {
     EPIQUE: '#c084fc',
     RELIQUE: '#ef4444'
 };
+
+let lastCombatLogCount = 0;
+
+function showFloatingTextOnElement(el, text, color) {
+    const wrapper = document.createElement('div');
+    const rect = el.getBoundingClientRect();
+    wrapper.style.position = 'fixed';
+    wrapper.style.left = (rect.left + rect.width / 2) + 'px';
+    wrapper.style.top = (rect.top + rect.height / 2) + 'px';
+    wrapper.style.transform = 'translate(-50%, -50%)';
+    wrapper.style.zIndex = '9999';
+    wrapper.style.pointerEvents = 'none';
+
+    const floater = document.createElement('div');
+    floater.className = 'floating-damage';
+    floater.innerHTML = text;
+    floater.style.color = color || '#ef4444';
+    
+    wrapper.appendChild(floater);
+    document.body.appendChild(wrapper);
+
+    setTimeout(() => {
+        if(wrapper.parentNode) wrapper.parentNode.removeChild(wrapper);
+    }, 3000);
+}
+
+function processNewDeathLogs(combatLogs) {
+    if (!combatLogs) return;
+    if (combatLogs.length < lastCombatLogCount) {
+        lastCombatLogCount = 0; // Combat was reset
+    }
+    for (let i = lastCombatLogCount; i < combatLogs.length; i++) {
+        const log = combatLogs[i];
+        const match = log.match(/☠️ (.*?) succombe à ses blessures et perd (\d+) XP/);
+        if (match) {
+            const heroName = match[1];
+            const xpLost = match[2];
+            const heroCards = document.querySelectorAll('.fighter-player');
+            heroCards.forEach(card => {
+                if (card.innerHTML.includes(heroName)) {
+                    showFloatingTextOnElement(card, `-${xpLost} XP`, '#f87171');
+                }
+            });
+        }
+    }
+    lastCombatLogCount = combatLogs.length;
+}
 
 function getSpellColor(sp) {
     if (sp.voie && sp.voie.nom) {
@@ -233,6 +287,31 @@ window.openBuyModal = openBuyModal;
 window.closeBuyModal = closeBuyModal;
 window.showGlobalTooltip = ui.showGlobalTooltip;
 window.hideGlobalTooltip = ui.hideGlobalTooltip;
+
+window.fleeCombatAction = async function() {
+    try {
+        const btn = document.querySelector('#fleeConfirmModal button:last-child');
+        if (btn) {
+            btn.disabled = true;
+            btn.textContent = "Fuite...";
+        }
+        const res = await fetch(`/api/pve/combat/${sessionId}/flee`, { method: 'POST' });
+        if (!res.ok) {
+            const err = await res.text();
+            alert("Erreur lors de la fuite : " + err);
+            if (btn) {
+                btn.disabled = false;
+                btn.textContent = "Oui, fuir";
+            }
+            return;
+        }
+        window.location.href = '/dungeons.html';
+    } catch (e) {
+        console.error(e);
+        window.location.href = '/dungeons.html';
+    }
+};
+
 window.initiateCombatCast = initiateCombatCast;
 window.confirmCombatCast = confirmCombatCast;
 window.cancelCombatCast = cancelCombatCast;
@@ -264,6 +343,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const urlParams = new URLSearchParams(window.location.search);
     const dungeonId = urlParams.get('dungeonId');
     const characterIds = urlParams.get('characterIds');
+    const consumableIds = urlParams.get('consumableIds');
 
     if (!dungeonId || !characterIds) {
         alert("Paramètres de combat manquants.");
@@ -271,12 +351,17 @@ document.addEventListener('DOMContentLoaded', () => {
         return;
     }
 
-    startCombat(characterIds, dungeonId);
+    startCombat(characterIds, dungeonId, consumableIds);
 });
 
-async function startCombat(characterIds, dungeonId) {
+async function startCombat(characterIds, dungeonId, consumableIds) {
     try {
-        const res = await fetch(`/api/pve/combat/start?characterIds=${characterIds}&dungeonId=${dungeonId}`, {
+        let fetchUrl = `/api/pve/combat/start?characterIds=${characterIds}&dungeonId=${dungeonId}`;
+        if (consumableIds) {
+            fetchUrl += `&consumableIds=${consumableIds}`;
+        }
+        
+        const res = await fetch(fetchUrl, {
             method: 'POST'
         });
 
@@ -636,6 +721,13 @@ async function openStrangeDoor() {
 
     try {
         const res = await fetch(`/api/pve/combat/${sessionId}/open-strange-door`, { method: 'POST' });
+        if (!res.ok) {
+            const errText = await res.text();
+            showNotif(errText || "Erreur lors de l'ouverture de la porte", true);
+            isProcessing = false;
+            setButtonsProcessing(false);
+            return;
+        }
         const data = await res.json();
 
         // Track the current XP so animations in new rooms start from this baseline
@@ -819,18 +911,23 @@ function generateEquipmentTooltipHTML(eq) {
     </div>`;
 }
 
-async function openChest() {
+async function openChest(useKey = false) {
     if (!sessionId || isProcessing) return;
     isProcessing = true;
     setButtonsProcessing(true);
     try {
         const btn = document.getElementById('btnOpenChest');
-        if (btn) {
-            btn.disabled = true;
+        const btnKey = document.getElementById('btnOpenChestKey');
+        if (btn) btn.disabled = true;
+        if (btnKey) btnKey.disabled = true;
+        
+        if (useKey && btnKey) {
+            btnKey.innerHTML = `<span class="material-symbols-outlined spin">sync</span> Ouverture...`;
+        } else if (!useKey && btn) {
             btn.innerHTML = `<span class="material-symbols-outlined spin">sync</span> Ouverture...`;
         }
 
-        const res = await fetch(`/api/pve/combat/${sessionId}/open-chest`, { method: 'POST' });
+        const res = await fetch(`/api/pve/combat/${sessionId}/open-chest?useKey=${useKey}`, { method: 'POST' });
         if (!res.ok) {
             const err = await res.text();
             alert("Erreur : " + err);
@@ -844,6 +941,10 @@ async function openChest() {
         if (btn) {
             btn.disabled = false;
             btn.innerHTML = `<span class="material-symbols-outlined">lock_open</span> Ouvrir le coffre`;
+        }
+        if (btnKey) {
+            btnKey.disabled = false;
+            btnKey.innerHTML = `<span class="material-symbols-outlined">vpn_key</span> Ouvrir (Clé : +10% de butin)`;
         }
 
         // Then call updateUI
@@ -874,6 +975,17 @@ function updateUI(data) {
 
     document.getElementById('headerDungeonName').textContent = data.donjon.name + " - Étape " + (data.currentRoomIndex + 1);
     document.getElementById('turnCounter').textContent = data.turnNumber;
+
+    // Update flee penalty text
+    const fleePenaltySpan = document.getElementById('fleePenaltyText');
+    if (fleePenaltySpan && data.players && data.donjon && data.donjon.salles) {
+        const nbHeroes = Math.max(1, data.players.length);
+        const nbRooms = Math.max(1, data.donjon.salles.length);
+        const totalXpLoss = 10 * nbRooms;
+        const xpLossPerHero = Math.floor(totalXpLoss / nbHeroes);
+        const goldLoss = 10 * nbRooms;
+        fleePenaltySpan.innerHTML = `Perte d'xp et Or : <span style="color: #f87171;">-${xpLossPerHero} XP normal</span> (par perso) et <span style="color: #fbbf24;">-${goldLoss} Or</span> (au total).`;
+    }
 
     // Players
     const playersContainer = document.getElementById('playersContainer');
@@ -938,29 +1050,89 @@ function updateUI(data) {
                 document.getElementById('btnAttack').disabled = true;
                 const vicOverlay = document.getElementById('combatVictoryOverlay');
                 if (vicOverlay) {
+                    if (typeof renderOverlayInventory === 'function') renderOverlayInventory('combatVictoryInventoryList');
                     vicOverlay.classList.add('show');
                     const xpContainer = document.getElementById('combatVictoryXpContainer');
                     if (xpContainer) {
                         xpContainer.innerHTML = '';
 
-                        let goldAmount = 0;
-                        if (data.combatLog) {
-                            for (let i = data.combatLog.length - 1; i >= 0; i--) {
-                                const log = data.combatLog[i];
-                                if (log.includes("Les monstres vaincus ont lâché")) {
-                                    const goldMatch = log.match(/lâché (\d+) Or/);
-                                    if (goldMatch) goldAmount = parseInt(goldMatch[1]);
-                                    break;
-                                }
-                                if (log.includes("Vous entrez dans")) break;
+                        // Base Gold and XP accumulated over the entire combat
+                        const totalGold = data.totalGoldAccumulated || 0;
+                        const totalRawXp = data.totalExpAccumulated || 0;
+                        const nbPlayers = Math.max(1, (data.players || []).length);
+                        const xpPerHero = Math.floor(totalRawXp / nbPlayers);
+
+                        const bossBonusGold = data.bossBonusGold || 0;
+                        const bossBonusSpiritXp = data.bossBonusSpiritualXp || 0;
+
+                        // Soustraire l'or du boss pour n'afficher que l'or des monstres dans la section de base
+                        let goldAmount = Math.max(0, totalGold - bossBonusGold);
+                        let xpAmount = xpPerHero;
+
+                        // Display base Gold and Base XP together
+                        if (goldAmount > 0 || xpAmount > 0) {
+                            let baseContent = '';
+                            if (goldAmount > 0) {
+                                baseContent += `
+                                    <span class="material-symbols-outlined" style="color: #f59e0b;">monetization_on</span>
+                                    <span style="color: #f59e0b;">+${goldAmount} Or</span>
+                                `;
                             }
+                            if (goldAmount > 0 && xpAmount > 0) {
+                                baseContent += `<span style="color: #6b7280; margin: 0 0.5rem;">|</span>`;
+                            }
+                            if (xpAmount > 0) {
+                                baseContent += `
+                                    <span class="material-symbols-outlined" style="color: #38bdf8;">upgrade</span>
+                                    <span style="color: #38bdf8;">+${xpAmount} XP</span>
+                                `;
+                            }
+                            
+                            xpContainer.innerHTML += `
+                                <div style="width: 100%; text-align: center; margin-bottom: 0.5rem; animation: popIn 0.5s ease-out forwards;">
+                                    <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(0,0,0,0.4); border: 1px solid #f59e0b80; padding: 0.5rem 1rem; border-radius: 8px; font-weight: bold; font-size: 1.2rem;">
+                                        ${baseContent}
+                                    </div>
+                                </div>
+                            `;
                         }
 
-                        if (goldAmount > 0) {
+                        // On vérifie si le boss donne au moins un des deux bonus
+                        if (bossBonusGold > 0 || bossBonusSpiritXp > 0) {
+
+                            // Base du contenu avec le tag BOSS
+                            let innerContent = `
+                                <span class="material-symbols-outlined" style="color: #e11d48;">local_fire_department</span>
+                                <span style="color: #e11d48; margin-right: 0.5rem;">BOSS</span>
+                            `;
+
+                            // Ajout de l'Or si présent
+                            if (bossBonusGold > 0) {
+                                innerContent += `
+                                    <span class="material-symbols-outlined" style="color: #f59e0b;">monetization_on</span>
+                                    <span style="color: #f59e0b;">+${bossBonusGold} Or</span>
+                                `;
+                            }
+
+                            // Séparateur visuel si on a les DEUX bonus en même temps
+                            if (bossBonusGold > 0 && bossBonusSpiritXp > 0) {
+                                innerContent += `<span style="color: #6b7280; margin: 0 0.2rem;">|</span>`;
+                            }
+
+                            // Ajout de l'XP Spirituelle si présente
+                            if (bossBonusSpiritXp > 0) {
+                                const perHero = Math.floor(bossBonusSpiritXp / Math.max(1, (data.players || []).length));
+                                innerContent += `
+                                    <span class="material-symbols-outlined" style="color: #F59E0B;">stars</span>
+                                    <span style="color: #F59E0B;">+${perHero} XP Spiritualité</span>
+                                `;
+                            }
+
+                            // Injection dans le container (une seule fois)
                             xpContainer.innerHTML += `
-                                <div style="width: 100%; text-align: center; margin-bottom: 1rem; animation: popIn 0.5s ease-out forwards;">
-                                    <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(0,0,0,0.4); border: 1px solid #f59e0b80; padding: 0.5rem 1rem; border-radius: 8px; color: #f59e0b; font-weight: bold; font-size: 1.2rem;">
-                                        <span class="material-symbols-outlined" style="color: #f59e0b;">monetization_on</span> +${goldAmount} Or
+                                <div style="width: 100%; text-align: center; margin-bottom: 0.5rem; animation: popIn 0.6s ease-out forwards;">
+                                    <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(0,0,0,0.4); border: 1px solid #e11d4880; padding: 0.5rem 1rem; border-radius: 8px; font-weight: bold; font-size: 1.1rem;">
+                                        ${innerContent}
                                     </div>
                                 </div>
                             `;
@@ -995,6 +1167,11 @@ function updateUI(data) {
             const btnCont = document.getElementById('btnContinueEvent');
             const lootContainer = document.getElementById('eventLootContainer');
 
+            // Reset default onclick to prevent previous events (like PORTE_ETRANGE) from overriding it
+            if (btnCont) {
+                btnCont.onclick = nextRoom;
+            }
+
             if (data.currentRoom.type === 'TREASURE') {
                 icon.textContent = data.roomEventCompleted ? 'lock_open' : 'lock';
                 icon.style.color = '#f59e0b';
@@ -1003,6 +1180,7 @@ function updateUI(data) {
                 if (data.roomEventCompleted) {
                     desc.textContent = `Vous avez ouvert le coffre !`;
                     btnOpen.style.display = 'none';
+                    if (document.getElementById('btnOpenChestKey')) document.getElementById('btnOpenChestKey').style.display = 'none';
                     btnCont.style.display = 'block';
                     lootContainer.style.display = 'flex';
 
@@ -1042,13 +1220,13 @@ function updateUI(data) {
                                     const slotInfo = eq ? (SLOT_LABELS[eq.slot] || { icon: 'help', color: '#94a3b8' }) : { icon: 'swords', color: '#f59e0b' };
                                     const rarityColor = eq ? (RARITY_COLORS[eq.rarity] || '#ef4444') : '#f59e0b';
                                     const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
-                                    
+
                                     let tooltipDataHtml = '';
                                     if (eq && typeof generateEquipmentTooltipHTML === 'function') {
                                         tooltipDataHtml = generateEquipmentTooltipHTML(eq);
                                     }
                                     const tooltipAttrs = tooltipDataHtml ? 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"' : '';
-                                    
+
                                     gainedItemsHtml += `
                                         <div ${tooltipAttrs} style="position: relative; cursor: ${tooltipDataHtml ? 'help' : 'default'}; background: rgba(0, 0, 0, 0.4); border: 1px solid ${rarityColor}80; padding: 0.8rem 1rem; border-radius: 8px; color: ${rarityColor}; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
                                             ${tooltipDataHtml ? `<template class="tooltip-data">${tooltipDataHtml}</template>` : ''}
@@ -1057,6 +1235,14 @@ function updateUI(data) {
                                     `;
                                 }
                             });
+
+                            if (expAmount > 0) {
+                                gainedItemsHtml = `
+                                    <div style="background: rgba(0, 0, 0, 0.4); border: 1px solid #38bdf880; padding: 0.8rem 1rem; border-radius: 8px; color: #38bdf8; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8); animation-delay: 0.1s;">
+                                        <span class="material-symbols-outlined" style="color: #38bdf8;">upgrade</span> +${expAmount} XP
+                                    </div>
+                                ` + gainedItemsHtml;
+                            }
 
                             if (goldAmount > 0) {
                                 gainedItemsHtml = `
@@ -1097,6 +1283,12 @@ function updateUI(data) {
                     lootContainer.style.display = 'none';
                     lootContainer.innerHTML = ''; // reset
                     delete lootContainer.dataset.filled;
+                    
+                    const btnKey = document.getElementById('btnOpenChestKey');
+                    if (btnKey) {
+                        const hasKey = data.activeConsumables && data.activeConsumables.some(eq => eq.name === 'Clé');
+                        btnKey.style.display = hasKey ? 'block' : 'none';
+                    }
                 }
             } else if (data.currentRoom.type === 'EVENT') {
                 const subType = data.currentRoom.eventSubType || 'ALTERATION';
@@ -1117,7 +1309,7 @@ function updateUI(data) {
                         if (data.currentRoom.alterationType === 'VIE_XP') {
                             let hp = data.currentRoom.alterationHpAmount || 0;
                             let xp = data.currentRoom.alterationExpAmount || 0;
-                            
+
                             warningHtml = '';
                             if (hp < 0) {
                                 warningHtml += `<div style="color: #ef4444; font-size: 0.85rem; margin-top: 0.5rem; text-align: center; background: rgba(239, 68, 68, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3);"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">favorite</span> <strong>Coût :</strong> ${hp} PV (par héros)</div>`;
@@ -1141,7 +1333,7 @@ function updateUI(data) {
                         } else if (data.currentRoom.alterationType === 'ITEM') {
                             btnText = `Donner l'item et Toucher`;
                             warningHtml = `<div style="color: #ef4444; font-size: 0.85rem; margin-top: 0.5rem; text-align: center; background: rgba(239, 68, 68, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3);"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">warning</span> <strong>Attention :</strong> L'item "${data.currentRoom.alterationRequiredItem || 'spécial'}" sera définitivement détruit de l'inventaire d'un de vos héros s'il accepte cette offre.</div>`;
-                            
+
                             if (data.currentRoom.alterationRewardType === 'SPIRITUAL_XP') {
                                 specialItemHtml = `<div style="color: #38bdf8; font-size: 0.85rem; margin-top: 0.5rem; text-align: center; background: rgba(56, 189, 248, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.3);"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">star</span> <strong>Récompense :</strong> Vous obtiendrez +${data.currentRoom.alterationSpiritualXpReward || 0} XP Spirituel !</div>`;
                             } else if (data.currentRoom.alterationRewardType === 'SPECIAL_ITEM') {
@@ -1166,6 +1358,12 @@ function updateUI(data) {
                                     }
                                 } else {
                                     container.innerHTML = '';
+                                    const btn = document.getElementById('btnAcceptAlteration');
+                                    if (btn) {
+                                        btn.removeAttribute('disabled');
+                                        btn.style.opacity = '1';
+                                        btn.style.cursor = 'pointer';
+                                    }
                                 }
                             }).catch(err => {
                                 console.error(err);
@@ -1213,14 +1411,43 @@ function updateUI(data) {
                                         btn.style.opacity = '0.5';
                                         btn.style.cursor = 'not-allowed';
                                     }
-                                } else {
-                                    let selectHtml = `<select id="altarAnomalySelect" style="padding: 0.5rem; border-radius: 6px; background: rgba(0,0,0,0.5); color: #fff; border: 1px solid ${spColor}; width: 100%; max-width: 300px; font-size: 0.9rem;">`;
-                                    eligible.forEach(a => {
-                                        selectHtml += `<option value="${a.id}">${a.name}</option>`;
-                                    });
-                                    selectHtml += `</select>`;
-                                    container.innerHTML = selectHtml;
+                                    return;
                                 }
+
+                                const btn = document.getElementById('btnAcceptAlteration');
+                                if (btn) {
+                                    btn.removeAttribute('disabled');
+                                    btn.style.opacity = '1';
+                                    btn.style.cursor = 'pointer';
+                                }
+
+                                const first = eligible[0];
+                                const CATEGORY_ICONS = {
+                                    'PIERRE': 'landslide', 'METAL': 'hardware', 'COEUR': 'favorite',
+                                    'ORBE': 'lens', 'CRISTAL': 'diamond', 'PLUME': 'history_edu',
+                                    'ECAILLE': 'waves', 'AUTRE': 'category'
+                                };
+                                let firstCatIcon = first.category ? (CATEGORY_ICONS[first.category] || 'category') : 'star';
+                                let selectHtml = `
+                                <div class="custom-select-wrapper" id="altarAnomalySelectWrapper" style="width: 100%; max-width: 350px; margin: 0 auto; z-index: 100;">
+                                    <div class="custom-select-trigger" onclick="document.getElementById('altarAnomalySelectWrapper').classList.toggle('open')" style="padding: 0.6rem 1rem; border-radius: 8px; border: 1px solid ${spColor}; text-align: left; background: rgba(0,0,0,0.5);">
+                                        <span class="cs-label" id="altarAnomalySelectLabel">
+                                            <span class="material-symbols-outlined cs-icon" style="color: ${spColor};">${firstCatIcon}</span> ${first.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${first.level || 1})</span>
+                                        </span>
+                                        <span class="material-symbols-outlined">expand_more</span>
+                                    </div>
+                                    <div class="custom-select-options" style="max-height: 200px; overflow-y: auto; text-align: left;">
+                                `;
+                                eligible.forEach(a => {
+                                    let catIcon = a.category ? (CATEGORY_ICONS[a.category] || 'category') : 'star';
+                                    selectHtml += `<div class="custom-option" onclick="document.getElementById('altarAnomalySelectLabel').innerHTML = this.innerHTML; document.getElementById('altarAnomalySelect').value = '${a.id}'; document.getElementById('altarAnomalySelectWrapper').classList.remove('open');"><span class="material-symbols-outlined cs-icon" style="color: ${spColor};">${catIcon}</span> ${a.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${a.level || 1})</span></div>`;
+                                });
+                                selectHtml += `
+                                    </div>
+                                </div>
+                                <input type="hidden" id="altarAnomalySelect" value="${first.id}">
+                                `;
+                                container.innerHTML = selectHtml;
                             }).catch(err => {
                                 console.error(err);
                                 const container = document.getElementById('altarAnomalySelectContainer');
@@ -1230,12 +1457,18 @@ function updateUI(data) {
 
                         btnCont.style.display = 'none';
                         lootContainer.style.display = 'flex';
+                        
+                        let disabledState = '';
+                        if (data.currentRoom.alterationType === 'ITEM' || data.currentRoom.alterationType === 'AUTEL') {
+                            disabledState = 'disabled style="opacity: 0.5; cursor: not-allowed;"';
+                        }
+                        
                         lootContainer.innerHTML = `
                             <div style="display: flex; flex-direction: column; align-items: center; max-width: 600px; width: 100%;">
                                 ${warningHtml}
                                 ${specialItemHtml}
                                 <div style="display: flex; gap: 1rem; margin-top: 1rem; justify-content: center; width: 100%;">
-                                    <button type="button" id="btnAcceptAlteration" class="btn" style="flex: 1; max-width: 250px; background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.3); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;" onclick="event.preventDefault(); acceptAlteration();">${btnText}</button>
+                                    <button type="button" id="btnAcceptAlteration" class="btn" style="flex: 1; max-width: 250px; background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.3); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;" ${disabledState} onclick="event.preventDefault(); acceptAlteration();">${btnText}</button>
                                     <button type="button" class="btn" style="flex: 1; max-width: 250px; background: rgba(255, 255, 255, 0.05); color: #94a3b8; border: 1px solid rgba(255, 255, 255, 0.1); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;" onclick="event.preventDefault(); nextRoom();">Ignorer et passer</button>
                                 </div>
                             </div>
@@ -1255,25 +1488,55 @@ function updateUI(data) {
                                 for (let i = data.combatLog.length - 1; i >= 0; i--) {
                                     const log = data.combatLog[i];
 
+                                    const CATEGORY_ICONS = {
+                                        'PIERRE': 'landslide', 'METAL': 'hardware', 'COEUR': 'favorite',
+                                        'ORBE': 'lens', 'CRISTAL': 'diamond', 'PLUME': 'history_edu',
+                                        'ECAILLE': 'waves', 'AUTRE': 'category'
+                                    };
+
                                     const lostMatch = log.match(/sacrifi. l'item : (.*) !/);
                                     if (lostMatch) {
+                                        const itemName = lostMatch[1].trim();
+                                        let spColor = '#ef4444';
+                                        let catIcon = 'star';
+                                        if (window.allAnomaliesCombat) {
+                                            const an = window.allAnomaliesCombat.find(a => a.name === itemName);
+                                            if (an) {
+                                                if (an.spiritualite === 'TENEBRES') spColor = '#a855f7';
+                                                else if (an.spiritualite === 'ESPRIT') spColor = '#38bdf8';
+                                                else if (an.spiritualite === 'KARMA') spColor = '#e7d198';
+                                                catIcon = an.category ? (CATEGORY_ICONS[an.category] || 'category') : 'star';
+                                            }
+                                        }
                                         gainedItemsHtml += `
-                                            <div style="background: rgba(0, 0, 0, 0.4); border: 1px solid #ef444480; padding: 0.8rem 1rem; border-radius: 8px; color: #ef4444; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
-                                                <span class="material-symbols-outlined" style="color: #ef4444;">star</span> -1 ${lostMatch[1]}
+                                            <div style="background: rgba(0, 0, 0, 0.4); border: 1px solid ${spColor}80; padding: 0.8rem 1rem; border-radius: 8px; color: ${spColor}; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
+                                                <span class="material-symbols-outlined" style="color: ${spColor};">${catIcon}</span> -1 ${itemName}
                                             </div>
                                         `;
                                     }
 
                                     const gainedMatch = log.match(/re.oit l'Item Sp.cial : (.*) !/);
                                     if (gainedMatch) {
+                                        const itemName = gainedMatch[1].trim();
+                                        let spColor = '#d946ef';
+                                        let catIcon = 'star';
+                                        if (window.allAnomaliesCombat) {
+                                            const an = window.allAnomaliesCombat.find(a => a.name === itemName);
+                                            if (an) {
+                                                if (an.spiritualite === 'TENEBRES') spColor = '#a855f7';
+                                                else if (an.spiritualite === 'ESPRIT') spColor = '#38bdf8';
+                                                else if (an.spiritualite === 'KARMA') spColor = '#e7d198';
+                                                catIcon = an.category ? (CATEGORY_ICONS[an.category] || 'category') : 'star';
+                                            }
+                                        }
                                         gainedItemsHtml += `
-                                            <div style="background: rgba(0, 0, 0, 0.4); border: 1px solid #d946ef80; padding: 0.8rem 1rem; border-radius: 8px; color: #d946ef; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
-                                                <span class="material-symbols-outlined" style="color: #d946ef;">star</span> +1 ${gainedMatch[1]}
+                                            <div style="background: rgba(0, 0, 0, 0.4); border: 1px solid ${spColor}80; padding: 0.8rem 1rem; border-radius: 8px; color: ${spColor}; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
+                                                <span class="material-symbols-outlined" style="color: ${spColor};">${catIcon}</span> +1 ${itemName}
                                             </div>
                                         `;
                                     }
 
-                                    if (log.includes("Vous entrez dans")) break;
+                                    if (log.includes("Vous entrez dans") || log.includes("Vous trouvez un trésor") || log.startsWith("Événement :")) break;
                                 }
                             }
 
@@ -1306,10 +1569,25 @@ function updateUI(data) {
                             let iconHtml = '';
                             let rarityColor = '#10b981';
 
+                            const CATEGORY_ICONS = {
+                                'PIERRE': 'landslide', 'METAL': 'hardware', 'COEUR': 'favorite',
+                                'ORBE': 'lens', 'CRISTAL': 'diamond', 'PLUME': 'history_edu',
+                                'ECAILLE': 'waves', 'AUTRE': 'category'
+                            };
+
                             if (entry.specialItemName) {
                                 nameHtml = entry.specialItemName;
-                                iconHtml = '<span class="material-symbols-outlined" style="color: #d946ef; font-size: 1.2rem;">star</span>';
                                 rarityColor = '#d946ef';
+                                let catIcon = 'star';
+                                if (window.allAnomaliesCombat) {
+                                    const an = window.allAnomaliesCombat.find(a => a.name === entry.specialItemName);
+                                    if (an) {
+                                        if (an.spiritualite === 'ESPRIT') rarityColor = '#38bdf8';
+                                        else if (an.spiritualite === 'KARMA') rarityColor = '#e7d198';
+                                        catIcon = an.category ? (CATEGORY_ICONS[an.category] || 'category') : 'star';
+                                    }
+                                }
+                                iconHtml = `<span class="material-symbols-outlined" style="color: ${rarityColor}; font-size: 1.2rem;">${catIcon}</span>`;
                             } else if (entry.equipment) {
                                 const eq = entry.equipment;
                                 const slotInfo = SLOT_LABELS[eq.slot] || { icon: 'help', color: '#94a3b8' };
@@ -1326,7 +1604,17 @@ function updateUI(data) {
                                 priceHtml += `<span style="color: #f59e0b; display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem;">monetization_on</span>${goldPrice}</span>`;
                             }
                             if (entry.priceSpecialItemName) {
-                                priceHtml += `<span style="color: #d946ef; display: flex; align-items: center; gap: 0.3rem; margin-left: ${goldPrice > 0 ? '0.8rem' : '0'};"><span class="material-symbols-outlined" style="font-size: 1.1rem;">star</span>1x ${entry.priceSpecialItemName}</span>`;
+                                let priceColor = '#d946ef';
+                                let priceIcon = 'star';
+                                if (window.allAnomaliesCombat) {
+                                    const anPrice = window.allAnomaliesCombat.find(a => a.name === entry.priceSpecialItemName);
+                                    if (anPrice) {
+                                        if (anPrice.spiritualite === 'ESPRIT') priceColor = '#38bdf8';
+                                        else if (anPrice.spiritualite === 'KARMA') priceColor = '#e7d198';
+                                        priceIcon = anPrice.category ? (CATEGORY_ICONS[anPrice.category] || 'category') : 'star';
+                                    }
+                                }
+                                priceHtml += `<span style="color: ${priceColor}; display: flex; align-items: center; gap: 0.3rem; margin-left: ${goldPrice > 0 ? '0.8rem' : '0'};"><span class="material-symbols-outlined" style="font-size: 1.1rem;">${priceIcon}</span>1x ${entry.priceSpecialItemName}</span>`;
                             }
 
                             if (priceHtml === '') {
@@ -1355,7 +1643,19 @@ function updateUI(data) {
                             if (entry.equipment) {
                                 tooltipDataHtml = generateEquipmentTooltipHTML(entry.equipment);
                             } else if (entry.specialItemName) {
-                                tooltipDataHtml = `<div style="padding: 0.5rem; color: #d946ef; font-weight: 600; text-align: center; min-width: 150px;">Objet Spécial</div><div style="color: #94a3b8; text-align: center; font-size: 0.9rem;">Cet objet aura un effet unique !</div>`;
+                                let tooltipTitle = 'Objet Spécial';
+                                let tooltipDesc = 'Cet objet aura un effet unique !';
+                                let tColor = '#d946ef';
+                                if (window.allAnomaliesCombat) {
+                                    const an = window.allAnomaliesCombat.find(a => a.name === entry.specialItemName);
+                                    if (an) {
+                                        tooltipTitle = 'Anomalie';
+                                        if (an.description) tooltipDesc = an.description;
+                                        if (an.spiritualite === 'ESPRIT') tColor = '#38bdf8';
+                                        else if (an.spiritualite === 'KARMA') tColor = '#e7d198';
+                                    }
+                                }
+                                tooltipDataHtml = `<div style="padding: 0.5rem; color: ${tColor}; font-weight: 600; text-align: center; min-width: 150px;">${tooltipTitle}</div><div style="color: #94a3b8; text-align: center; font-size: 0.9rem;">${tooltipDesc}</div>`;
                             }
 
                             const tooltipAttrs = tooltipDataHtml ? 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"' : '';
@@ -1419,11 +1719,12 @@ function updateUI(data) {
                         btnOpen.style.display = 'none';
 
                         if (data.currentRoom.trapHasRopeOption) {
+                            const hasRope = data.activeConsumables && data.activeConsumables.some(eq => eq.name === 'Corde');
                             lootContainer.style.display = 'flex';
                             lootContainer.innerHTML = `
                                 <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
                                     <div style="display: flex; gap: 1rem; margin-top: 1rem; justify-content: center; width: 100%;">
-                                        <button type="button" class="btn" style="flex: 1; max-width: 250px; background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;" onclick="event.preventDefault(); useRope();">Utiliser une Corde</button>
+                                        <button type="button" class="btn" ${!hasRope ? 'disabled title="Vous n\'avez pas de corde"' : ''} style="flex: 1; max-width: 250px; background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: ${hasRope ? 'pointer' : 'not-allowed'}; opacity: ${hasRope ? '1' : '0.5'}; transition: all 0.2s ease;" onclick="event.preventDefault(); ${hasRope ? 'useRope();' : ''}">Utiliser une Corde</button>
                                         <button type="button" class="btn" style="flex: 1; max-width: 250px; background: rgba(255, 255, 255, 0.05); color: #94a3b8; border: 1px solid rgba(255, 255, 255, 0.1); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;" onclick="event.preventDefault(); nextRoom();">Subir le piège et passer</button>
                                     </div>
                                 </div>
@@ -1437,36 +1738,47 @@ function updateUI(data) {
                     }
                 } else if (subType === 'PORTE_ETRANGE') {
                     icon.textContent = 'door_front';
-                    icon.style.color = '#fbbf24';
                     title.textContent = 'Porte Étrange';
-                    desc.innerHTML = data.currentRoom.eventText || 'Une porte mystérieuse se dresse devant vous...';
 
-                    btnOpen.style.display = 'none';
-                    btnCont.style.display = 'block';
-                    btnCont.textContent = 'Passer la porte';
-                    btnCont.onclick = openStrangeDoor;
-                    lootContainer.style.display = 'none';
+                    if (data.roomEventCompleted) {
+                        icon.style.color = '#94a3b8'; // Grisé
+                        desc.innerHTML = 'Vous avez ouvert la porte... mais il n\'y a absolument rien derrière.';
+                        btnOpen.style.display = 'none';
+                        btnCont.style.display = 'block';
+                        btnCont.textContent = 'Continuer';
+                        btnCont.onclick = nextRoom;
+                        lootContainer.style.display = 'none';
+                    } else {
+                        icon.style.color = '#fbbf24'; // Jaune
+                        desc.innerHTML = data.currentRoom.eventText || 'Une porte mystérieuse se dresse devant vous...';
+                        btnOpen.style.display = 'none';
+                        btnCont.style.display = 'block';
+                        btnCont.textContent = 'Passer la porte';
+                        btnCont.onclick = openStrangeDoor;
+                        lootContainer.style.display = 'none';
 
-                    // Show door outcomes info
-                    if (data.currentRoom.doorOutcomes) {
-                        let outcomes;
-                        try {
-                            outcomes = typeof data.currentRoom.doorOutcomes === 'string' ? JSON.parse(data.currentRoom.doorOutcomes) : data.currentRoom.doorOutcomes;
-                        } catch (e) { outcomes = []; }
+                        // Show door outcomes info
+                        if (data.currentRoom.doorOutcomes) {
+                            let outcomes;
+                            try {
+                                outcomes = typeof data.currentRoom.doorOutcomes === 'string' ? JSON.parse(data.currentRoom.doorOutcomes) : data.currentRoom.doorOutcomes;
+                            } catch (e) { outcomes = []; }
 
-                        if (outcomes.length > 0) {
-                            lootContainer.style.display = 'flex';
-                            lootContainer.innerHTML = `
-                                <div style="color: #94a3b8; font-size: 0.85rem; text-align: center; width: 100%;">
-                                    <span style="color: #fbbf24; font-weight: 600;">Que se cache-t-il derrière ?</span><br>
-                                    Le résultat sera révélé si vous passez la porte...
-                                </div>
-                            `;
+                            if (outcomes.length > 0) {
+                                lootContainer.style.display = 'flex';
+                                lootContainer.innerHTML = `
+                                    <div style="color: #94a3b8; font-size: 0.85rem; text-align: center; width: 100%;">
+                                        <span style="color: #fbbf24; font-weight: 600;">Que se cache-t-il derrière ?</span><br>
+                                        Le résultat sera révélé si vous passez la porte...
+                                    </div>
+                                `;
+                            }
                         }
                     }
                 }
             }
 
+            if (typeof renderOverlayInventory === 'function') renderOverlayInventory('eventOverlayInventoryList');
             overlay.classList.add('show');
         }
     }
@@ -1492,7 +1804,7 @@ function updateUI(data) {
 
     // Check finish
     if (data.finished) {
-        showResult(data.playerWon);
+        showResult(data);
     } else if (isActiveEnemy) {
         // Disable UI
         document.getElementById('btnAttack').disabled = true;
@@ -1549,6 +1861,8 @@ function updateUI(data) {
         const btnEnd = document.getElementById('btnEndTurn');
         if (btnEnd) btnEnd.disabled = false;
     }
+
+    processNewDeathLogs(data.combatLog);
 }
 
 // Removed GLOBAL_STAT_LABELS and formatStat (imported from ui.js)
@@ -2278,19 +2592,20 @@ function renderSpellCard(sp) {
     `;
 }
 
-function showResult(playerWon) {
+function showResult(data) {
     const overlay = document.getElementById('resultOverlay');
     const title = document.getElementById('resultTitle');
     const desc = document.getElementById('resultDesc');
 
-    if (playerWon) {
+    if (data.playerWon) {
         title.textContent = "VICTOIRE";
         title.style.color = "#10b981";
         desc.textContent = "Le donjon a été complété.";
     } else {
         title.textContent = "DÉFAITE";
         title.style.color = "#ef4444";
-        desc.textContent = "Votre équipe a été anéantie.";
+        const goldLost = data.totalGoldLostOnDefeat || 0;
+        desc.innerHTML = `Votre équipe a été anéantie.<br><span style="color:#fbbf24; font-weight:600; margin-top:0.5rem; display:block;">Pénalité : -${goldLost} Or</span>`;
     }
 
     overlay.classList.add('show');
@@ -2371,3 +2686,144 @@ function renderDotsHtml(dotList) {
         </div>
     `;
 }
+
+window.showGlobalTooltip = function(el) {
+    let tooltip = document.getElementById('globalFixedTooltip');
+    if (!tooltip) {
+        tooltip = document.createElement('div');
+        tooltip.id = 'globalFixedTooltip';
+        tooltip.style.position = 'fixed';
+        tooltip.style.zIndex = '999999';
+        tooltip.style.visibility = 'visible';
+        tooltip.style.opacity = '1';
+        tooltip.style.pointerEvents = 'none';
+        tooltip.style.transform = 'none';
+        tooltip.style.background = 'rgba(15, 23, 42, 0.95)';
+        tooltip.style.border = '1px solid rgba(168, 85, 247, 0.5)';
+        tooltip.style.borderRadius = '8px';
+        tooltip.style.padding = '10px';
+        tooltip.style.color = '#f8fafc';
+        tooltip.style.fontSize = '0.8rem';
+        tooltip.style.lineHeight = '1.4';
+        tooltip.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.5)';
+        tooltip.style.maxWidth = '250px';
+        tooltip.style.whiteSpace = 'normal';
+        tooltip.style.wordWrap = 'break-word';
+        tooltip.style.textAlign = 'left';
+        document.body.appendChild(tooltip);
+    }
+    
+    const tmpl = el.querySelector('.tooltip-data');
+    if (tmpl) {
+        tooltip.innerHTML = tmpl.innerHTML;
+    } else {
+        return;
+    }
+    
+    tooltip.style.display = 'block';
+
+    const rect = el.getBoundingClientRect();
+    let top = rect.bottom + 8;
+    let left = rect.left + rect.width / 2 - tooltip.offsetWidth / 2;
+
+    if (top + tooltip.offsetHeight > window.innerHeight) {
+        top = rect.top - tooltip.offsetHeight - 8;
+    }
+    if (left < 10) left = 10;
+    if (left + tooltip.offsetWidth > window.innerWidth - 10) {
+        left = window.innerWidth - tooltip.offsetWidth - 10;
+    }
+
+    tooltip.style.top = top + 'px';
+    tooltip.style.left = left + 'px';
+};
+
+window.hideGlobalTooltip = function() {
+    const tooltip = document.getElementById('globalFixedTooltip');
+    if (tooltip) tooltip.style.display = 'none';
+};
+
+window.renderOverlayInventory = function(containerId) {
+    const list = document.getElementById(containerId);
+    if (!list) return;
+    list.innerHTML = '';
+
+    if (!currentSessionData || !currentSessionData.activeConsumables || currentSessionData.activeConsumables.length === 0) {
+        list.innerHTML = `<div style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 1rem;">Aucun objet dans l'inventaire.</div>`;
+        return;
+    }
+
+    currentSessionData.activeConsumables.forEach(c => {
+        const canConsume = c.name.toLowerCase() === 'pain' || c.name.toLowerCase() === 'potion de mana';
+        const onClickAttr = canConsume ? `onclick="window.openConsumeModal(${c.id}, '${c.name.replace(/'/g, "\\'")}')"` : '';
+        const cursorStyle = canConsume ? 'cursor: pointer;' : '';
+        const hoverClass = canConsume ? 'consumable-hover' : '';
+
+        list.innerHTML += `
+            <div class="${hoverClass}" ${onClickAttr} style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 0.8rem; display: flex; align-items: center; gap: 0.8rem; transition: all 0.2s; ${cursorStyle}">
+                <span class="material-symbols-outlined" style="font-size: 1.5rem; color: #10b981;">inventory_2</span>
+                <div style="flex: 1;">
+                    <div style="color: #f8fafc; font-weight: 600; font-size: 0.9rem;">${c.name}</div>
+                    <div style="color: var(--text-muted); font-size: 0.75rem;">
+                        ${c.bonusHealthMax ? `+${c.bonusHealthMax} PV ` : ''}
+                        ${c.bonusManaMax ? `+${c.bonusManaMax} Mana ` : ''}
+                        ${c.bonusPower ? `+${c.bonusPower} Pui ` : ''}
+                        ${c.bonusStrength ? `+${c.bonusStrength} For ` : ''}
+                        ${c.bonusArmor ? `+${c.bonusArmor} Arm ` : ''}
+                        ${c.bonusResistance ? `+${c.bonusResistance} Res ` : ''}
+                        ${canConsume ? '<div style="color: #0ea5e9; margin-top: 4px; font-weight: 500;">Cliquable pour utiliser</div>' : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+};
+
+window.openConsumeModal = function(consumableId, consumableName) {
+    document.getElementById('consumeTargetName').innerText = consumableName;
+    const btnContainer = document.getElementById('consumeTargetButtons');
+    btnContainer.innerHTML = '';
+
+    currentSessionData.players.forEach(p => {
+        let hpColor = p.healthCurrent <= 0 ? '#ef4444' : (p.healthCurrent < p.healthMax ? '#f59e0b' : '#10b981');
+        let mpColor = p.manaCurrent < p.manaMax ? '#3b82f6' : '#60a5fa';
+        btnContainer.innerHTML += `
+            <button onclick="window.confirmConsumeItem(${consumableId}, ${p.id})"
+                ${p.healthCurrent <= 0 ? 'disabled' : ''}
+                style="display: flex; justify-content: space-between; align-items: center; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 0.8rem; border-radius: 8px; cursor: ${p.healthCurrent <= 0 ? 'not-allowed' : 'pointer'}; opacity: ${p.healthCurrent <= 0 ? '0.5' : '1'}; transition: all 0.2s ease;">
+                <span style="font-weight: 600;">${p.name}</span>
+                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.2rem;">
+                    <span style="font-size: 0.85rem; color: ${hpColor};"><b>${p.healthCurrent}</b> / ${p.healthMax} PV</span>
+                    <span style="font-size: 0.85rem; color: ${mpColor};"><b>${p.manaCurrent}</b> / ${p.manaMax} MP</span>
+                </div>
+            </button>
+        `;
+    });
+
+    document.getElementById('consumeTargetModal').classList.add('show');
+};
+
+window.closeConsumeModal = function() {
+    document.getElementById('consumeTargetModal').classList.remove('show');
+};
+
+window.confirmConsumeItem = async function(consumableId, characterId) {
+    if (!sessionId) return;
+    try {
+        const res = await fetch(`/api/pve/combat/${sessionId}/consume/${consumableId}/target/${characterId}`, {
+            method: 'POST'
+        });
+        if (res.ok) {
+            currentSessionData = await res.json();
+            window.closeConsumeModal();
+            window.showNotif("Objet consommé avec succès !");
+            updateUI(currentSessionData);
+        } else {
+            const err = await res.text();
+            window.showNotif("Erreur: " + err, true);
+        }
+    } catch (e) {
+        console.error(e);
+        window.showNotif("Erreur lors de la consommation.", true);
+    }
+};

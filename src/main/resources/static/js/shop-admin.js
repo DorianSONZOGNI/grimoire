@@ -155,6 +155,111 @@ async function loadEquipments() {
     }
 }
 
+function getSpiritualiteColor(sp) {
+    if (!sp) return '#cbd5e1';
+    switch (sp.toUpperCase()) {
+        case 'TENEBRES': return '#a855f7';
+        case 'ESPRIT': return '#38bdf8';
+        case 'KARMA': return '#e7d198';
+        default: return '#cbd5e1';
+    }
+}
+
+function getLevelColor(lvl) {
+    const l = parseInt(lvl) || 1;
+    if (l === 1) return '#10b981'; // Vert
+    if (l === 2) return '#3b82f6'; // Bleu
+    if (l === 3) return '#a855f7'; // Violet
+    if (l === 4) return '#f59e0b'; // Or
+    if (l >= 5) return '#ef4444'; // Rouge
+    return '#10b981';
+}
+
+function getTypeColor(isMagic) {
+    return isMagic ? '#ec4899' : '#b45309'; // Rose : Marron
+}
+
+async function loadAnomalies() {
+    try {
+        const res = await fetch('/api/anomalies/all-templates');
+        if (res.ok) {
+            window.allAnomalies = await res.json();
+        }
+    } catch (e) {
+        console.error('Erreur chargement anomalies:', e);
+    }
+}
+
+function addAnomalyRow(selectedName = '', qty = 1) {
+    const container = document.getElementById('priceAnomaliesContainer');
+    if (!container) return;
+
+    const row = document.createElement('div');
+    row.className = 'anomaly-price-row';
+    row.style.display = 'flex';
+    row.style.gap = '0.5rem';
+    row.style.alignItems = 'center';
+
+    const CATEGORY_ICONS = {
+        'PIERRE': 'landslide',
+        'METAL': 'hardware',
+        'COEUR': 'favorite',
+        'ORBE': 'lens',
+        'CRISTAL': 'diamond',
+        'PLUME': 'history_edu',
+        'ECAILLE': 'waves',
+        'AUTRE': 'category'
+    };
+
+    let optionsHtml = '';
+    (window.allAnomalies || []).forEach(n => {
+        const catIcon = n.category ? (CATEGORY_ICONS[n.category] || 'category') : 'star';
+        const spiriColor = n.spiritualite ? getSpiritualiteColor(n.spiritualite) : '#a855f7';
+        optionsHtml += `<div class="custom-option" data-value="${n.name}">
+                            <span class="material-symbols-outlined cs-icon" style="color: ${spiriColor};">${catIcon}</span>
+                            ${n.name} (Niv. ${n.level || 1})
+                        </div>`;
+    });
+
+    let displayLabel = 'Choisir une anomalie...';
+    if (selectedName) {
+        const selA = (window.allAnomalies || []).find(a => a.name === selectedName);
+        if (selA) {
+            const catIcon = selA.category ? (CATEGORY_ICONS[selA.category] || 'category') : 'star';
+            const spiriColor = selA.spiritualite ? getSpiritualiteColor(selA.spiritualite) : '#a855f7';
+            displayLabel = `<span class="material-symbols-outlined cs-icon" style="color: ${spiriColor};">${catIcon}</span> ${selectedName} (Niv. ${selA.level || 1})`;
+        } else {
+            displayLabel = `<span class="material-symbols-outlined cs-icon" style="color: #a855f7;">star</span> ${selectedName}`;
+        }
+    }
+
+    row.innerHTML = `
+        <div class="custom-select-wrapper" style="flex: 1;">
+            <div class="custom-select-trigger" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 0.6rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <span class="cs-label" style="color: #cbd5e1; font-size: 0.85rem; display: flex; align-items: center; gap: 0.3rem;">${displayLabel}</span>
+                <span class="material-symbols-outlined" style="color: #64748b; font-size: 1.1rem;">expand_more</span>
+            </div>
+            <div class="custom-select-options custom-options" style="max-height: 150px; overflow-y: auto;">
+                ${optionsHtml}
+            </div>
+            <input type="hidden" class="anomaly-select-hidden" value="${selectedName}">
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.3rem;">
+            <span style="color: #94a3b8; font-size: 0.8rem;">Qté:</span>
+            <input type="number" class="anomaly-qty-input" value="${qty}" min="1" style="width: 60px; padding: 0.5rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-family: 'Outfit', sans-serif;">
+        </div>
+        <button type="button" class="btn-remove-row" style="background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5; border-radius: 6px; cursor: pointer; padding: 0.4rem; display: flex; justify-content: center; align-items: center;">
+            <span class="material-symbols-outlined" style="font-size: 1rem;">delete</span>
+        </button>
+    `;
+
+    row.querySelector('.btn-remove-row').addEventListener('click', () => {
+        row.remove();
+    });
+
+    container.appendChild(row);
+}
+
 let equipmentToDelete = null;
 
 function deleteEquipment(id) {
@@ -316,8 +421,49 @@ function renderGrid(equipments) {
                     </div>
 
                     <div class="shop-admin-row-price">
-                        ${displayPrice}
-                        <span class="material-symbols-outlined" style="font-size: 1.1rem;">monetization_on</span>
+                        ${(() => {
+                            let priceHtml = `${displayPrice} <span class="material-symbols-outlined" style="font-size: 1.1rem;">monetization_on</span>`;
+                            if (eq.priceAnomalies && Object.keys(eq.priceAnomalies).length > 0) {
+                                let anos = [];
+                                for(const [n, q] of Object.entries(eq.priceAnomalies)) {
+                                    let aTemp = window.allAnomalies ? window.allAnomalies.find(a => a.name === n) : null;
+                                    const CATEGORY_ICONS = {
+                                        'PIERRE': 'landslide',
+                                        'METAL': 'hardware',
+                                        'COEUR': 'favorite',
+                                        'ORBE': 'lens',
+                                        'CRISTAL': 'diamond',
+                                        'PLUME': 'history_edu',
+                                        'ECAILLE': 'waves',
+                                        'AUTRE': 'category'
+                                    };
+                                    const catIcon = aTemp && aTemp.category ? (CATEGORY_ICONS[aTemp.category] || 'category') : 'star';
+                                    const spiriColor = aTemp && aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
+                                    const tooltipData = `
+                                            <div class="anomaly-tooltip-title">${aTemp ? aTemp.name : n}</div>
+                                            <div style="display: flex; gap: 6px; margin: 6px 0; flex-wrap: wrap;">
+                                                <span style="border: 1px solid ${getLevelColor(aTemp ? aTemp.level : 1)}; color: ${getLevelColor(aTemp ? aTemp.level : 1)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold;">
+                                                    Lvl ${aTemp ? aTemp.level || 1 : 1}
+                                                </span>
+                                                <span style="border: 1px solid ${getTypeColor(aTemp && aTemp.magicObject)}; color: ${getTypeColor(aTemp && aTemp.magicObject)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; display: flex; align-items: center; gap: 4px;">
+                                                    <span class="material-symbols-outlined" style="font-size: 0.9rem;">${catIcon}</span>
+                                                    ${aTemp && aTemp.magicObject ? 'Objet Magique' : 'Matériau'}
+                                                </span>
+                                                ${aTemp && aTemp.spiritualite ? 
+                                                `<span style="border: 1px solid ${getSpiritualiteColor(aTemp.spiritualite)}; color: ${getSpiritualiteColor(aTemp.spiritualite)}; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; background: rgba(0,0,0,0.3);">
+                                                    ${aTemp.spiritualite}
+                                                </span>` : ''}
+                                            </div>
+                                            <div class="anomaly-tooltip-desc">${aTemp && aTemp.description ? aTemp.description : 'Aucune description'}</div>
+                                    `;
+                                    anos.push(`<span class="anomaly-badge" style="border-color: ${spiriColor}; background: ${spiriColor}25; color: ${spiriColor};" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}">
+                                        <span class="material-symbols-outlined" style="font-size: 0.9rem; vertical-align: middle; color: ${spiriColor};">${catIcon}</span> ${q}
+                                    </span>`);
+                                }
+                                priceHtml += ` <br><div style="display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; margin-top: 4px;">${anos.join('')}</div>`;
+                            }
+                            return priceHtml;
+                        })()}
                     </div>
 
                     <div class="shop-admin-row-actions">
@@ -344,6 +490,13 @@ function renderGrid(equipments) {
 // Init
 window.addEventListener('DOMContentLoaded', () => {
     loadEquipments();
+    loadAnomalies();
+    
+    if (document.getElementById('addAnomalyPriceBtn')) {
+        document.getElementById('addAnomalyPriceBtn').addEventListener('click', () => {
+            addAnomalyRow();
+        });
+    }
 
     // Listeners for Weight Calculation
     const eqInputs = ['eqSlot', 'eqRarity', 'eqHp', 'eqMana', 'eqPower', 'eqStr', 'eqArmor', 'eqRes', 'eqSpeed', 'eqCrit', 'eqRegenHp', 'eqRegenMana', 'eqSpecialEffectValue'];
@@ -416,6 +569,11 @@ function resetEqForm() {
     document.getElementById('eqCrit').value = 0;
     document.getElementById('eqRegenHp').value = 0;
     document.getElementById('eqRegenMana').value = 0;
+    
+    const anomaliesContainer = document.getElementById('priceAnomaliesContainer');
+    if (anomaliesContainer) {
+        anomaliesContainer.innerHTML = '';
+    }
 
     // Reset Rarity
     const rarityInput = document.getElementById('eqRarity');
@@ -461,6 +619,16 @@ window.editEquipment = function (id) {
     document.getElementById('eqCrit').value = eq.bonusCrit || 0;
     document.getElementById('eqRegenHp').value = eq.regenHealthPerTurn || 0;
     document.getElementById('eqRegenMana').value = eq.regenManaPerTurn || 0;
+    
+    const anomaliesContainer = document.getElementById('priceAnomaliesContainer');
+    if (anomaliesContainer) {
+        anomaliesContainer.innerHTML = '';
+        if (eq.priceAnomalies && typeof eq.priceAnomalies === 'object') {
+            for (const [name, qty] of Object.entries(eq.priceAnomalies)) {
+                addAnomalyRow(name, qty);
+            }
+        }
+    }
 
     // Slot Setup
     const slotInput = document.getElementById('eqSlot');
@@ -578,6 +746,21 @@ window.submitEquipment = async function () {
         specialEffect,
         specialEffectValue,
         personnageId: null, // Keep null when forged from vault
+        priceAnomalies: (() => {
+            const map = {};
+            const container = document.getElementById('priceAnomaliesContainer');
+            if (container) {
+                const rows = container.querySelectorAll('.anomaly-price-row');
+                rows.forEach(row => {
+                    const selectVal = row.querySelector('.anomaly-select-hidden').value;
+                    const qtyVal = parseInt(row.querySelector('.anomaly-qty-input').value) || 0;
+                    if (selectVal && qtyVal > 0) {
+                        map[selectVal] = (map[selectVal] || 0) + qtyVal;
+                    }
+                });
+            }
+            return map;
+        })(),
     };
 
     try {
@@ -692,3 +875,52 @@ window.updateWeightUI = function () {
         priceEl.innerHTML = `${displayPrice} <span class="material-symbols-outlined" style="font-size: 1.2rem;">monetization_on</span>`;
     }
 }
+
+window.showTooltipFixed = function(el) {
+    let tooltip = document.getElementById('globalFixedTooltip');
+    if (!tooltip) {
+        tooltip = document.createElement('div');
+        tooltip.id = 'globalFixedTooltip';
+        tooltip.style.position = 'fixed';
+        tooltip.style.zIndex = '999999';
+        tooltip.style.visibility = 'visible';
+        tooltip.style.opacity = '1';
+        tooltip.style.pointerEvents = 'none';
+        tooltip.style.transform = 'none';
+        tooltip.style.background = 'rgba(15, 23, 42, 0.95)';
+        tooltip.style.border = '1px solid rgba(168, 85, 247, 0.5)';
+        tooltip.style.borderRadius = '8px';
+        tooltip.style.padding = '10px';
+        tooltip.style.color = '#f8fafc';
+        tooltip.style.fontSize = '0.8rem';
+        tooltip.style.lineHeight = '1.4';
+        tooltip.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.5)';
+        tooltip.style.maxWidth = '250px';
+        tooltip.style.whiteSpace = 'normal';
+        tooltip.style.wordWrap = 'break-word';
+        tooltip.style.textAlign = 'left';
+        document.body.appendChild(tooltip);
+    }
+    tooltip.innerHTML = el.getAttribute('data-tooltip-html');
+    tooltip.style.display = 'block';
+
+    const rect = el.getBoundingClientRect();
+    let top = rect.bottom + 8;
+    let left = rect.left + rect.width / 2 - tooltip.offsetWidth / 2;
+
+    if (top + tooltip.offsetHeight > window.innerHeight) {
+        top = rect.top - tooltip.offsetHeight - 8;
+    }
+    if (left < 10) left = 10;
+    if (left + tooltip.offsetWidth > window.innerWidth - 10) {
+        left = window.innerWidth - tooltip.offsetWidth - 10;
+    }
+
+    tooltip.style.top = top + 'px';
+    tooltip.style.left = left + 'px';
+};
+
+window.hideTooltipFixed = function() {
+    const tooltip = document.getElementById('globalFixedTooltip');
+    if (tooltip) tooltip.style.display = 'none';
+};

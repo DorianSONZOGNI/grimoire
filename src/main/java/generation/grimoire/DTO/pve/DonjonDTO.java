@@ -12,5 +12,9 @@ public class DonjonDTO {
     private int recommendedLevel;
     private int maxHeroes;
     
+    private double unlockCostGold;
+    private String requiredSecret;
+    private double entryCostGold;
+    
     private List<SalleDTO> salles;
 }

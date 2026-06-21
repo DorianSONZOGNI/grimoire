@@ -17,6 +17,7 @@ public class CombatSession {
     private Long dungeonId;
     private Donjon donjon;
     private List<Personnage> players = new ArrayList<>();
+    private List<generation.grimoire.entity.Equipment> activeConsumables = new ArrayList<>();
 
     // Initiative Queue
     private List<InitiativeEntry> turnOrder = new ArrayList<>();
@@ -37,10 +38,16 @@ public class CombatSession {
     private boolean isFinished = false;
     private boolean playerWon = false;
     private boolean roomEventCompleted = false;
+
+    // Track players who died and already lost XP
+    private java.util.Set<Long> penalizedDeadPlayers = new java.util.HashSet<>();
     private Set<Integer> purchasedMerchantItems = new HashSet<>();
 
     private int totalGoldAccumulated = 0;
+    private int totalGoldLostOnDefeat = 0;
     private int totalExpAccumulated = 0;
+    private int bossBonusSpiritualXp = 0;   // XP Spiritualité bonus boss (total distribué)
+    private int bossBonusGold = 0;           // Or bonus boss
 
     private List<String> combatLog = new ArrayList<>();
 
