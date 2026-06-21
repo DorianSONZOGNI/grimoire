@@ -239,8 +239,24 @@ function filterVault() {
     const filterRarity = document.getElementById('filterRarity').value;
     const filterStatus = document.getElementById('filterStatus').value;
     const sortVault = document.getElementById('sortVault').value;
+    const filterConsommable = document.getElementById('filterConsommableOnly')?.checked;
+    const filterAnomalie = document.getElementById('filterAnomalieOnly')?.checked;
 
     let filtered = allEquipments.filter(eq => {
+        let matchMainType = false;
+        
+        if (filterConsommable && filterAnomalie) {
+            matchMainType = eq.isAnomalie || (!eq.isAnomalie && eq.slot === 'CONSOMMABLE');
+        } else if (filterConsommable) {
+            matchMainType = (!eq.isAnomalie && eq.slot === 'CONSOMMABLE');
+        } else if (filterAnomalie) {
+            matchMainType = eq.isAnomalie;
+        } else {
+            matchMainType = (!eq.isAnomalie && eq.slot !== 'CONSOMMABLE');
+        }
+        
+        if (!matchMainType) return false;
+
         const matchName = !searchName || eq.name.toLowerCase().includes(searchName);
         const matchOwner = !searchOwner || (eq.ownerUsername && eq.ownerUsername.toLowerCase().includes(searchOwner));
 

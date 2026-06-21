@@ -482,10 +482,10 @@ function renderPassiveBadges(c) {
 
 function renderBuffsHtml(buffList) {
     if (!buffList || buffList.length === 0) return '';
-    
+
     const goodBuffs = [];
     const badBuffs = [];
-    
+
     buffList.forEach(b => {
         const inverseStats = ['DAMAGE_TAKEN_MAGIC', 'DAMAGE_TAKEN_PHYSIC', 'DAMAGE_TAKEN_BRUT', 'SHIELD_PIERCED', 'BURN', 'POISON'];
         const isInverse = inverseStats.includes(b.statAffected);
@@ -504,7 +504,7 @@ function renderBuffsHtml(buffList) {
 
         const typeStr = (b.statAffected === 'POISON' || b.statAffected === 'BURN') ? formatStat(b.statAffected) : 'Buff/Débuff';
         const indicatorColor = isBad ? '#f43f5e' : '#10b981';
-        
+
         let iconName = isBad ? 'trending_down' : 'trending_up';
         if (b.statAffected === 'POISON') iconName = 'coronavirus';
         if (b.statAffected === 'BURN') iconName = 'local_fire_department';
