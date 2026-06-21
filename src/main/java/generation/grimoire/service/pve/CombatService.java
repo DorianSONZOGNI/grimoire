@@ -404,7 +404,7 @@ public class CombatService {
                 throw new RuntimeException("Vous ne possédez pas l'item spécial : " + requiredItemName);
             }
 
-            anomalieRepository.delete(toDestroy);
+            consumeAnomalie(user, toDestroy);
 
             int spXp = room.getAlterationSpiritualXpReward();
             for (Personnage p : session.getPlayers()) {
@@ -450,7 +450,7 @@ public class CombatService {
             }
 
             String anomalyName = toDestroy.getName();
-            anomalieRepository.delete(toDestroy);
+            consumeAnomalie(user, toDestroy);
             session.addLog("Vous avez sacrifié l'anomalie : " + anomalyName + " sur l'autel.");
 
             String rewardType = room.getAltarRewardType();
@@ -545,7 +545,7 @@ public class CombatService {
                     .findFirst()
                     .orElse(null);
             if (toDestroy != null) {
-                anomalieRepository.delete(toDestroy);
+                consumeAnomalie(user, toDestroy);
             }
         }
 
@@ -610,7 +610,7 @@ public class CombatService {
                     throw new RuntimeException(
                             "Vous ne possédez pas l'item spécial dans l'inventaire global : " + specialItemPriceName);
                 }
-                anomalieRepository.delete(toDestroy);
+                consumeAnomalie(user, toDestroy);
             }
         }
 
@@ -1675,5 +1675,17 @@ public class CombatService {
                 session.addLog(line.trim());
             }
         }
+    }
+    private void consumeAnomalie(AppUser user, generation.grimoire.entity.Anomalie toDestroy) {
+        if (toDestroy == null) return;
+        if (user != null && "ADMIN".equals(user.getRole())) {
+            long count = anomalieRepository.findByOwnerUsername(user.getUsername()).stream()
+                    .filter(a -> toDestroy.getName() != null && toDestroy.getName().equals(a.getName()))
+                    .count();
+            if (count <= 1) {
+                return; // L'admin garde toujours le dernier exemplaire
+            }
+        }
+        anomalieRepository.delete(toDestroy);
     }
 }

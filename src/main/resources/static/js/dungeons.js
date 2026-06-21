@@ -354,11 +354,10 @@ window.openPrepInterface = function (id, name, sallesData, maxHeroes) {
             if (s.type === 'COMBAT' || s.type === 'BOSS') {
                 html += `<div style="margin-bottom: 0.5rem; color: #ef4444; font-weight: 600; display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem;">${s.type === 'BOSS' ? 'skull' : 'swords'}</span> Étape ${index + 1} : ${s.type === 'BOSS' ? 'Boss' : 'Combat'}</div>`;
                 if (!s.monsters || s.monsters.length === 0) {
-                    html += `<div style="margin-left: 1.5rem; color: #94a3b8; font-size: 0.85rem;">Aucun monstre</div>`;
+                    html += `<div style="margin-left: 1.5rem; margin-bottom: 0.5rem; color: #94a3b8; font-size: 0.85rem;">Aucun ennemi détecté</div>`;
                 } else {
-                    s.monsters.forEach(m => {
-                        html += `<div style="margin-left: 1.5rem; font-size: 0.85rem; color: #f8fafc;">• ${m.name} (Lvl ${m.level || 1} - PV: ${m.healthMax})</div>`;
-                    });
+                    const count = s.monsters.length;
+                    html += `<div style="margin-left: 1.5rem; margin-bottom: 0.5rem; font-size: 0.85rem; color: #f8fafc;">${count} ennemi${count > 1 ? 's' : ''}</div>`;
                 }
             } else if (s.type === 'TREASURE') {
                 html += `<div style="margin-bottom: 0.5rem; color: #f59e0b; font-weight: 600; display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem;">shopping_bag</span> Étape ${index + 1} : Trésor</div>`;

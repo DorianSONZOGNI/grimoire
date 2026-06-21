@@ -37,7 +37,42 @@ public class AnomalieController {
         if (username == null) {
             return ResponseEntity.status(401).build();
         }
+        
+        Optional<AppUser> userOpt = userRepository.findByUsername(username);
+        if (userOpt.isPresent() && "ADMIN".equals(userOpt.get().getRole())) {
+            syncAdminAnomalies(userOpt.get());
+        }
+
         return ResponseEntity.ok(anomalieRepository.findByOwnerUsername(username));
+    }
+    
+    private void syncAdminAnomalies(AppUser adminUser) {
+        List<String> distinctNames = anomalieRepository.findDistinctNames();
+        List<Anomalie> adminAnomalies = anomalieRepository.findByOwnerUsername(adminUser.getUsername());
+        
+        for (String name : distinctNames) {
+            if (name == null || name.trim().isEmpty()) continue;
+            boolean hasIt = adminAnomalies.stream().anyMatch(a -> name.equals(a.getName()));
+            if (!hasIt) {
+                Anomalie template = anomalieRepository.findFirstByName(name);
+                if (template != null) {
+                    Anomalie newAno = new Anomalie();
+                    newAno.setName(template.getName());
+                    newAno.setSpiritualite(template.getSpiritualite());
+                    newAno.setDescription(template.getDescription());
+                    newAno.setLevel(template.getLevel() != null ? template.getLevel() : 1);
+                    newAno.setMagicObject(template.isMagicObject());
+                    newAno.setOwnerUsername(adminUser.getUsername());
+                    newAno.setUser(adminUser);
+                    anomalieRepository.save(newAno);
+                }
+            }
+        }
+    }
+
+    @GetMapping("/all-names")
+    public ResponseEntity<List<String>> getAllAnomalyNames() {
+        return ResponseEntity.ok(anomalieRepository.findDistinctNames());
     }
 
     @PostMapping

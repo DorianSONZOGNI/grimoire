@@ -121,9 +121,16 @@ function generateStandHtml(eq) {
                 ${effectHtml}
             </div>
             
-            <button class="shop-stand-price" onclick="openBuyModal('${isConsumable ? eq.typeId : eq.id}', ${isConsumable})">
-                ${oldPriceHtml}
-                ${priceStr} <span class="material-symbols-outlined" style="font-size: 1.2rem;">monetization_on</span>
+            <button class="shop-stand-price" onclick="openBuyModal('${isConsumable ? eq.typeId : eq.id}', ${isConsumable})" style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
+                <div>${oldPriceHtml} ${priceStr} <span class="material-symbols-outlined" style="font-size: 1.2rem; vertical-align: middle;">monetization_on</span></div>
+                ${(() => {
+                    if (eq.priceAnomalies && Object.keys(eq.priceAnomalies).length > 0) {
+                        let anos = [];
+                        for(const [n, q] of Object.entries(eq.priceAnomalies)) { anos.push(`${q}x ${n}`); }
+                        return `<div style="color: #a855f7; font-size: 0.8rem;">+ ${anos.join(', ')} <span class="material-symbols-outlined" style="font-size: 0.9rem; vertical-align: middle;">auto_awesome</span></div>`;
+                    }
+                    return '';
+                })()}
             </button>
         </div>
     `;
@@ -241,12 +248,18 @@ window.openBuyModal = function (idOrType, isConsumable = false) {
 
     if (!eq) return;
 
-    itemToBuy = { idOrType, isConsumable, price: eq.shopPrice };
+    itemToBuy = { idOrType, isConsumable, price: eq.shopPrice, priceAnomalies: eq.priceAnomalies };
 
     document.getElementById('buyTargetName').textContent = eq.name;
+    
     const priceStr = eq.shopPrice % 1 === 0 ? eq.shopPrice : eq.shopPrice.toFixed(1);
-
-    document.getElementById('buyConfirmBtn').innerHTML = `Acheter pour ${priceStr} <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; margin-top: -2px;">monetization_on</span>`;
+    let btnHtml = `Acheter pour ${priceStr} <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; margin-top: -2px;">monetization_on</span>`;
+    if (eq.priceAnomalies && Object.keys(eq.priceAnomalies).length > 0) {
+        let anos = [];
+        for(const [n, q] of Object.entries(eq.priceAnomalies)) { anos.push(`${q}x ${n}`); }
+        btnHtml += ` <br><span style="font-size: 0.8rem; color: #d8b4fe;">+ ${anos.join(', ')}</span>`;
+    }
+    document.getElementById('buyConfirmBtn').innerHTML = btnHtml;
 
     document.getElementById('buyConfirmModal').style.opacity = '1';
     document.getElementById('buyConfirmModal').style.pointerEvents = 'all';

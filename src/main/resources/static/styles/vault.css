@@ -342,21 +342,21 @@
     display: none;
 }
 
-.custom-select-options::-webkit-scrollbar {
+.custom-select-options::-webkit-scrollbar, .custom-options::-webkit-scrollbar {
     width: 6px;
 }
 
-.custom-select-options::-webkit-scrollbar-track {
+.custom-select-options::-webkit-scrollbar-track, .custom-options::-webkit-scrollbar-track {
     background: transparent;
     border-radius: 6px;
 }
 
-.custom-select-options::-webkit-scrollbar-thumb {
+.custom-select-options::-webkit-scrollbar-thumb, .custom-options::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.15);
     border-radius: 6px;
 }
 
-.custom-select-options::-webkit-scrollbar-thumb:hover {
+.custom-select-options::-webkit-scrollbar-thumb:hover, .custom-options::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.25);
 }
 

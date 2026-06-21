@@ -155,6 +155,64 @@ async function loadEquipments() {
     }
 }
 
+async function loadAnomalies() {
+    try {
+        const res = await fetch('/api/anomalies/all-names');
+        if (res.ok) {
+            window.allAnomalies = await res.json();
+        }
+    } catch (e) {
+        console.error('Erreur chargement anomalies:', e);
+    }
+}
+
+function addAnomalyRow(selectedName = '', qty = 1) {
+    const container = document.getElementById('priceAnomaliesContainer');
+    if (!container) return;
+
+    const row = document.createElement('div');
+    row.className = 'anomaly-price-row';
+    row.style.display = 'flex';
+    row.style.gap = '0.5rem';
+    row.style.alignItems = 'center';
+
+    let optionsHtml = '';
+    (window.allAnomalies || []).forEach(n => {
+        optionsHtml += `<div class="custom-option" data-value="${n}">
+                            <span class="material-symbols-outlined cs-icon" style="color: #a855f7;">auto_awesome</span>
+                            ${n}
+                        </div>`;
+    });
+
+    const displayLabel = selectedName ? `<span class="material-symbols-outlined cs-icon" style="color: #a855f7;">auto_awesome</span> ${selectedName}` : 'Choisir une anomalie...';
+
+    row.innerHTML = `
+        <div class="custom-select-wrapper" style="flex: 1;">
+            <div class="custom-select-trigger" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 0.6rem; cursor: pointer; display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                <span class="cs-label" style="color: #cbd5e1; font-size: 0.85rem; display: flex; align-items: center; gap: 0.3rem;">${displayLabel}</span>
+                <span class="material-symbols-outlined" style="color: #64748b; font-size: 1.1rem;">expand_more</span>
+            </div>
+            <div class="custom-select-options custom-options" style="max-height: 150px; overflow-y: auto;">
+                ${optionsHtml}
+            </div>
+            <input type="hidden" class="anomaly-select-hidden" value="${selectedName}">
+        </div>
+        <div style="display: flex; align-items: center; gap: 0.3rem;">
+            <span style="color: #94a3b8; font-size: 0.8rem;">Qté:</span>
+            <input type="number" class="anomaly-qty-input" value="${qty}" min="1" style="width: 60px; padding: 0.5rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-family: 'Outfit', sans-serif;">
+        </div>
+        <button type="button" class="btn-remove-row" style="background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5; border-radius: 6px; cursor: pointer; padding: 0.4rem; display: flex; justify-content: center; align-items: center;">
+            <span class="material-symbols-outlined" style="font-size: 1rem;">delete</span>
+        </button>
+    `;
+
+    row.querySelector('.btn-remove-row').addEventListener('click', () => {
+        row.remove();
+    });
+
+    container.appendChild(row);
+}
+
 let equipmentToDelete = null;
 
 function deleteEquipment(id) {
@@ -316,8 +374,17 @@ function renderGrid(equipments) {
                     </div>
 
                     <div class="shop-admin-row-price">
-                        ${displayPrice}
-                        <span class="material-symbols-outlined" style="font-size: 1.1rem;">monetization_on</span>
+                        ${(() => {
+                            let priceHtml = `${displayPrice} <span class="material-symbols-outlined" style="font-size: 1.1rem;">monetization_on</span>`;
+                            if (eq.priceAnomalies && Object.keys(eq.priceAnomalies).length > 0) {
+                                let anos = [];
+                                for(const [n, q] of Object.entries(eq.priceAnomalies)) {
+                                    anos.push(`${q}x ${n}`);
+                                }
+                                priceHtml += ` <br><span style="color: #a855f7; font-size: 0.8rem;">+ ${anos.join(', ')} <span class="material-symbols-outlined" style="font-size: 0.9rem; vertical-align: bottom;">auto_awesome</span></span>`;
+                            }
+                            return priceHtml;
+                        })()}
                     </div>
 
                     <div class="shop-admin-row-actions">
@@ -344,6 +411,13 @@ function renderGrid(equipments) {
 // Init
 window.addEventListener('DOMContentLoaded', () => {
     loadEquipments();
+    loadAnomalies();
+    
+    if (document.getElementById('addAnomalyPriceBtn')) {
+        document.getElementById('addAnomalyPriceBtn').addEventListener('click', () => {
+            addAnomalyRow();
+        });
+    }
 
     // Listeners for Weight Calculation
     const eqInputs = ['eqSlot', 'eqRarity', 'eqHp', 'eqMana', 'eqPower', 'eqStr', 'eqArmor', 'eqRes', 'eqSpeed', 'eqCrit', 'eqRegenHp', 'eqRegenMana', 'eqSpecialEffectValue'];
@@ -416,6 +490,11 @@ function resetEqForm() {
     document.getElementById('eqCrit').value = 0;
     document.getElementById('eqRegenHp').value = 0;
     document.getElementById('eqRegenMana').value = 0;
+    
+    const anomaliesContainer = document.getElementById('priceAnomaliesContainer');
+    if (anomaliesContainer) {
+        anomaliesContainer.innerHTML = '';
+    }
 
     // Reset Rarity
     const rarityInput = document.getElementById('eqRarity');
@@ -461,6 +540,16 @@ window.editEquipment = function (id) {
     document.getElementById('eqCrit').value = eq.bonusCrit || 0;
     document.getElementById('eqRegenHp').value = eq.regenHealthPerTurn || 0;
     document.getElementById('eqRegenMana').value = eq.regenManaPerTurn || 0;
+    
+    const anomaliesContainer = document.getElementById('priceAnomaliesContainer');
+    if (anomaliesContainer) {
+        anomaliesContainer.innerHTML = '';
+        if (eq.priceAnomalies && typeof eq.priceAnomalies === 'object') {
+            for (const [name, qty] of Object.entries(eq.priceAnomalies)) {
+                addAnomalyRow(name, qty);
+            }
+        }
+    }
 
     // Slot Setup
     const slotInput = document.getElementById('eqSlot');
@@ -578,6 +667,21 @@ window.submitEquipment = async function () {
         specialEffect,
         specialEffectValue,
         personnageId: null, // Keep null when forged from vault
+        priceAnomalies: (() => {
+            const map = {};
+            const container = document.getElementById('priceAnomaliesContainer');
+            if (container) {
+                const rows = container.querySelectorAll('.anomaly-price-row');
+                rows.forEach(row => {
+                    const selectVal = row.querySelector('.anomaly-select-hidden').value;
+                    const qtyVal = parseInt(row.querySelector('.anomaly-qty-input').value) || 0;
+                    if (selectVal && qtyVal > 0) {
+                        map[selectVal] = (map[selectVal] || 0) + qtyVal;
+                    }
+                });
+            }
+            return map;
+        })(),
     };
 
     try {

@@ -353,5 +353,6 @@ public class EquipmentController {
         private generation.grimoire.enumeration.EquipmentEffectType specialEffect;
         private int specialEffectValue = 0;
         private Long personnageId;
+        private java.util.Map<String, Integer> priceAnomalies = new java.util.HashMap<>();
     }
 }
