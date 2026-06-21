@@ -141,20 +141,20 @@ public class CombatController {
     }
 
     @PostMapping("/{sessionId}/use-rope")
-    public ResponseEntity<?> useRope(@PathVariable String sessionId) {
+    public ResponseEntity<CombatSession> useRope(@PathVariable("sessionId") String sessionId) {
         try {
             CombatSession session = combatService.useRope(sessionId);
             return ResponseEntity.ok(session);
-        } catch (Exception e) {
+        } catch (Throwable e) {
             e.printStackTrace();
-            return ResponseEntity.badRequest().body(e.getMessage());
+            return ResponseEntity.badRequest().build();
         }
     }
 
     @PostMapping("/{sessionId}/consume/{consumableId}/target/{characterId}")
-    public ResponseEntity<CombatSession> consumeItem(@PathVariable String sessionId,
-            @PathVariable Long consumableId,
-            @PathVariable Long characterId,
+    public ResponseEntity<CombatSession> consumeItem(@PathVariable("sessionId") String sessionId,
+            @PathVariable("consumableId") Long consumableId,
+            @PathVariable("characterId") Long characterId,
             Principal principal) {
         if (principal == null)
             return ResponseEntity.status(401).build();

@@ -73,16 +73,17 @@ public class ShopController {
 
         // Consumables
         List<Map<String, Object>> consumables = List.of(
-                createConsumable("Sac d'inventaire", 15, "money_bag", "bag"),
-                createConsumable("Clé", 25, "vpn_key", "key"),
-                createConsumable("Pain", 5, "bakery_dining", "bread"),
-                createConsumable("Potion de mana", 10, "water_drop", "potion"));
+                createConsumable("Corde", 15, "gesture", "rope", "Sert à éviter certains pièges"),
+                createConsumable("Clé", 25, "vpn_key", "key", "Ouvre les compartiments secrets des coffres"),
+                createConsumable("Pain", 5, "bakery_dining", "bread", "Régénère 25% de la vie max"),
+                createConsumable("Potion de mana", 10, "water_drop", "potion", "Régénère 25% du mana max"));
         response.put("consumables", consumables);
 
         return ResponseEntity.ok(response);
     }
 
-    private Map<String, Object> createConsumable(String name, double price, String icon, String typeId) {
+    private Map<String, Object> createConsumable(String name, double price, String icon, String typeId,
+            String description) {
         Map<String, Object> map = new HashMap<>();
         map.put("name", name);
         map.put("shopPrice", price);
@@ -90,6 +91,7 @@ public class ShopController {
         map.put("iconId", icon); // Custom icon for display
         map.put("typeId", typeId); // ID for purchasing
         map.put("isConsumable", true);
+        map.put("description", description);
         return map;
     }
 
@@ -102,7 +104,8 @@ public class ShopController {
     }
 
     @PostMapping("/buy/{templateId}")
-    public ResponseEntity<?> buyItem(@PathVariable @org.springframework.lang.NonNull Long templateId, Principal principal) {
+    public ResponseEntity<?> buyItem(@PathVariable @org.springframework.lang.NonNull Long templateId,
+            Principal principal) {
         if (principal == null)
             return ResponseEntity.status(401).build();
 
@@ -156,25 +159,27 @@ public class ShopController {
         List<Anomalie> toConsumeList = new ArrayList<>();
         if (template.getPriceAnomalies() != null && !template.getPriceAnomalies().isEmpty()) {
             List<Anomalie> userAnomalies = anomalieRepository.findByOwnerUsername(user.getUsername());
-            
+
             for (Map.Entry<String, Integer> entry : template.getPriceAnomalies().entrySet()) {
                 String reqName = entry.getKey();
                 int reqQuantity = entry.getValue();
-                
+
                 List<Anomalie> matches = userAnomalies.stream()
                         .filter(a -> a.getName() != null && a.getName().equals(reqName))
                         .collect(Collectors.toList());
-                
+
                 if (matches.size() < reqQuantity) {
-                    return ResponseEntity.badRequest().body(Map.of("message", "Fonds insuffisants. Vous n'avez pas assez d'anomalies : " + reqName + " (" + matches.size() + "/" + reqQuantity + ")"));
+                    return ResponseEntity.badRequest()
+                            .body(Map.of("message", "Fonds insuffisants. Vous n'avez pas assez d'anomalies : " + reqName
+                                    + " (" + matches.size() + "/" + reqQuantity + ")"));
                 }
-                
+
                 boolean isAdmin = "ADMIN".equals(user.getRole());
                 int qtyToConsume = reqQuantity;
                 if (isAdmin && matches.size() == reqQuantity) {
                     qtyToConsume = reqQuantity - 1;
                 }
-                
+
                 for (int i = 0; i < qtyToConsume; i++) {
                     toConsumeList.add(matches.get(i));
                     userAnomalies.remove(matches.get(i));
@@ -228,8 +233,8 @@ public class ShopController {
         String name = "";
         double price = 0;
         switch (type.toLowerCase()) {
-            case "bag":
-                name = "Sac d'inventaire";
+            case "rope":
+                name = "Corde";
                 price = 15;
                 break;
             case "key":
@@ -319,7 +324,8 @@ public class ShopController {
     }
 
     @DeleteMapping("/templates/{id}")
-    public ResponseEntity<?> deleteTemplate(@PathVariable @org.springframework.lang.NonNull Long id, Principal principal) {
+    public ResponseEntity<?> deleteTemplate(@PathVariable @org.springframework.lang.NonNull Long id,
+            Principal principal) {
         if (principal == null || !isAdmin(principal))
             return ResponseEntity.status(403).build();
 

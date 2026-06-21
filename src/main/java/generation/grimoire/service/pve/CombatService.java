@@ -531,35 +531,22 @@ public class CombatService {
             throw new RuntimeException("L'événement a déjà été résolu.");
         }
 
-        Personnage ropeOwner = null;
-        for (Personnage p : session.getPlayers()) {
-            if (p.getSpecialItemQuantity("Corde") > 0) {
-                ropeOwner = p;
+        generation.grimoire.entity.Equipment rope = null;
+        for (generation.grimoire.entity.Equipment eq : session.getActiveConsumables()) {
+            if ("Corde".equalsIgnoreCase(eq.getName())) {
+                rope = eq;
                 break;
             }
         }
 
-        if (ropeOwner == null) {
-            throw new RuntimeException("Aucun héros ne possède de Corde !");
+        if (rope == null) {
+            throw new RuntimeException("L'équipe ne possède pas de Corde !");
         }
 
-        ropeOwner.removeSpecialItem("Corde", 1);
-        personnageRepository.save(ropeOwner);
+        session.getActiveConsumables().remove(rope);
+        equipmentRepository.delete(rope);
 
-        generation.grimoire.entity.auth.AppUser user = ropeOwner.getUser();
-        if (user != null) {
-            List<generation.grimoire.entity.Anomalie> userAnomalies = anomalieRepository
-                    .findByOwnerUsername(user.getUsername());
-            generation.grimoire.entity.Anomalie toDestroy = userAnomalies.stream()
-                    .filter(a -> a.getName().equalsIgnoreCase("Corde"))
-                    .findFirst()
-                    .orElse(null);
-            if (toDestroy != null) {
-                consumeAnomalie(user, toDestroy);
-            }
-        }
-
-        session.addLog(ropeOwner.getName() + " utilise une Corde pour éviter le piège !");
+        session.addLog("Vous utilisez une Corde pour éviter le piège !");
         session.setRoomEventCompleted(true);
         return session;
     }
@@ -989,11 +976,13 @@ public class CombatService {
             } else if ("PIEGE".equals(type)) {
                 session.addLog("Vous avez ouvert la porte... et déclenché un piège mortel !");
                 room.setEventSubType(generation.grimoire.enumeration.EventSubType.PIEGE);
-                room.setTrapType("PV");
-                room.setTrapDamageHpPct(15);
-                room.setTrapDamageManaPct(15);
-                room.setTrapDamageHpFixed(0);
-                room.setTrapDamageManaFixed(0);
+                room.setTrapType(selectedOutcome.path("trapType").asText("PV"));
+                room.setTrapAmount(selectedOutcome.path("trapAmount").asInt(0));
+                room.setTrapHasRopeOption(selectedOutcome.path("trapHasRopeOption").asBoolean(false));
+                room.setTrapDamageHpPct(selectedOutcome.path("trapDamageHpPct").asInt(0));
+                room.setTrapDamageManaPct(selectedOutcome.path("trapDamageManaPct").asInt(0));
+                room.setTrapDamageHpFixed(selectedOutcome.path("trapDamageHpFixed").asInt(0));
+                room.setTrapDamageManaFixed(selectedOutcome.path("trapDamageManaFixed").asInt(0));
             } else {
                 session.addLog("Vous avez ouvert la porte... Il n'y a absolument rien derrière.");
                 session.setRoomEventCompleted(true);

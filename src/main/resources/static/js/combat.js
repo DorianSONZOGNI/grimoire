@@ -1613,11 +1613,12 @@ function updateUI(data) {
                         btnOpen.style.display = 'none';
 
                         if (data.currentRoom.trapHasRopeOption) {
+                            const hasRope = data.activeConsumables && data.activeConsumables.some(eq => eq.name === 'Corde');
                             lootContainer.style.display = 'flex';
                             lootContainer.innerHTML = `
                                 <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
                                     <div style="display: flex; gap: 1rem; margin-top: 1rem; justify-content: center; width: 100%;">
-                                        <button type="button" class="btn" style="flex: 1; max-width: 250px; background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;" onclick="event.preventDefault(); useRope();">Utiliser une Corde</button>
+                                        <button type="button" class="btn" ${!hasRope ? 'disabled title="Vous n\'avez pas de corde"' : ''} style="flex: 1; max-width: 250px; background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: ${hasRope ? 'pointer' : 'not-allowed'}; opacity: ${hasRope ? '1' : '0.5'}; transition: all 0.2s ease;" onclick="event.preventDefault(); ${hasRope ? 'useRope();' : ''}">Utiliser une Corde</button>
                                         <button type="button" class="btn" style="flex: 1; max-width: 250px; background: rgba(255, 255, 255, 0.05); color: #94a3b8; border: 1px solid rgba(255, 255, 255, 0.1); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;" onclick="event.preventDefault(); nextRoom();">Subir le piège et passer</button>
                                     </div>
                                 </div>

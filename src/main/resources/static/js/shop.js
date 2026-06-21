@@ -150,6 +150,7 @@ function generateStandHtml(eq) {
             <div class="shop-stand-stats">
                 ${!isConsumable ? (statsHtml || '<div style="color:#64748b; font-style:italic; font-size: 0.85rem; margin-top: 0.5rem;">Aucune stat</div>') : ''}
                 ${effectHtml}
+                ${isConsumable && eq.description ? `<div style="color: #94a3b8; font-size: 0.85rem; font-style: italic; text-align: center; margin-top: 0.5rem;">${eq.description}</div>` : ''}
             </div>
             
             <button class="shop-stand-price" onclick="openBuyModal('${isConsumable ? eq.typeId : eq.id}', ${isConsumable})" style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
