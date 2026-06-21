@@ -117,6 +117,9 @@ document.addEventListener('DOMContentLoaded', () => {
             description: document.getElementById('dDesc').value,
             recommendedLevel: parseInt(document.getElementById('dLevel').value),
             maxHeroes: parseInt(document.getElementById('dMaxHeroes').value) || 1,
+            unlockCostGold: parseFloat(document.getElementById('dUnlockCost').value) || 0,
+            entryCostGold: parseFloat(document.getElementById('dEntryCost').value) || 0,
+            requiredSecret: document.getElementById('dRequiredSecret').value || null,
             salles: selectedRooms.map(r => {
                 const s = { type: r.type };
                 if (r.type === 'COMBAT') {
@@ -1748,6 +1751,9 @@ async function editDungeon(id) {
             document.getElementById('dDesc').value = d.description || '';
             document.getElementById('dLevel').value = d.recommendedLevel;
             document.getElementById('dMaxHeroes').value = d.maxHeroes || 1;
+            document.getElementById('dUnlockCost').value = d.unlockCostGold || 0;
+            document.getElementById('dEntryCost').value = d.entryCostGold || 0;
+            document.getElementById('dRequiredSecret').value = d.requiredSecret || '';
 
             selectedRooms = d.salles.map(s => {
                 const room = { type: s.type };

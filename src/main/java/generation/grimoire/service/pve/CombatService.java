@@ -73,6 +73,30 @@ public class CombatService {
 
         Donjon d = donjonRepository.findById(dungeonId).orElseThrow(() -> new RuntimeException("Donjon introuvable"));
 
+        generation.grimoire.entity.auth.AppUser account = userRepository.findByUsername(username)
+                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+
+        // Check required secret
+        if (d.getRequiredSecret() != null && !d.getRequiredSecret().trim().isEmpty()) {
+            if (!account.getUnlockedSecrets().contains(d.getRequiredSecret())) {
+                throw new RuntimeException("Ce donjon nécessite le secret : " + d.getRequiredSecret());
+            }
+        }
+
+        // Check unlock cost
+        if (d.getUnlockCostGold() > 0 && !account.getUnlockedDungeons().contains(d.getId())) {
+            throw new RuntimeException("Ce donjon doit être débloqué avant d'y entrer.");
+        }
+
+        // Check and deduct entry cost
+        if (d.getEntryCostGold() > 0) {
+            if (account.getMonnaie() < d.getEntryCostGold()) {
+                throw new RuntimeException("Pas assez d'or pour entrer dans ce donjon (Requis : " + d.getEntryCostGold() + " Or).");
+            }
+            account.setMonnaie(account.getMonnaie() - d.getEntryCostGold());
+            userRepository.save(account);
+        }
+
         if (d.getSalles() == null || d.getSalles().isEmpty()) {
             throw new RuntimeException("Ce donjon ne contient aucune salle.");
         }

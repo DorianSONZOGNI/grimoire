@@ -4,6 +4,9 @@ import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+import java.util.HashSet;
+import java.util.Set;
+
 @Data
 @NoArgsConstructor
 @Entity
@@ -28,5 +31,15 @@ public class AppUser {
     
     @Column(nullable = false)
     private int maxCharacters = 2;
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_unlocked_secrets", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "secret_name")
+    private Set<String> unlockedSecrets = new HashSet<>();
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_unlocked_dungeons", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "dungeon_id")
+    private Set<Long> unlockedDungeons = new HashSet<>();
 
 }

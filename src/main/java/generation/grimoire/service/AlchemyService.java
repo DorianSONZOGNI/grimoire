@@ -181,6 +181,11 @@ public class AlchemyService {
             anomalieRepository.save(upgraded);
             return "Vous avez amélioré une anomalie en : " + recipe.getRewardName() + " (Niv. " + recipe.getRewardLevel() + ")";
         } else if (recipe.getRewardType() == RecipeRewardType.UNLOCK_FEATURE) {
+            AppUser user = userRepository.findByUsername(username).orElse(null);
+            if (user != null) {
+                user.getUnlockedSecrets().add(recipe.getRewardName());
+                userRepository.save(user);
+            }
             return "Vous avez débloqué le secret : " + recipe.getRewardName();
         }
 
