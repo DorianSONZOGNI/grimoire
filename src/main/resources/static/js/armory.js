@@ -138,7 +138,8 @@ async function fetchMeta() {
 
 async function loadPersonnages() {
     try {
-        const res = await fetch('/api/personnages');
+        const url = window.isAdmin ? '/api/personnages/all' : '/api/personnages';
+        const res = await fetch(url);
         personnages = await res.json();
         renderPersonnages();
     } catch (e) {
@@ -148,7 +149,8 @@ async function loadPersonnages() {
 
 async function loadAllEquipments() {
     try {
-        const res = await fetch('/api/equipment');
+        const url = window.isAdmin ? '/api/equipment/all' : '/api/equipment';
+        const res = await fetch(url);
         allEquipments = await res.json();
     } catch (e) {
         console.error('Erreur chargement équipements:', e);
@@ -1025,15 +1027,15 @@ window.addEventListener('DOMContentLoaded', async () => {
     }
 
     await fetchMeta();
-    await loadAllEquipments();
-    await loadPersonnages();
 });
 
-window.addEventListener('authLoaded', () => {
+window.addEventListener('authLoaded', async () => {
     const searchOwnerContainer = document.getElementById('searchOwnerContainer');
     if (searchOwnerContainer) {
         searchOwnerContainer.style.display = window.isAdmin ? 'flex' : 'none';
     }
+    await loadAllEquipments();
+    await loadPersonnages();
 });
 
 window.showEqTooltip = function(el) {

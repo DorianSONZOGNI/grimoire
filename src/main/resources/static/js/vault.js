@@ -140,12 +140,14 @@ document.addEventListener('click', (e) => {
 // ===== API =====
 async function loadEquipments() {
     try {
-        const res = await fetch('/api/equipment');
+        const url = window.isAdmin ? '/api/equipment/all' : '/api/equipment';
+        const res = await fetch(url);
         let eqData = await res.json();
 
         let anomaliesData = [];
         try {
-            const aRes = await fetch('/api/anomalies');
+            const aUrl = window.isAdmin ? '/api/anomalies/all' : '/api/anomalies';
+            const aRes = await fetch(aUrl);
             if (aRes.ok) anomaliesData = await aRes.json();
         } catch(e) { console.error('Erreur chargement anomalies:', e); }
 
@@ -474,8 +476,6 @@ function renderGrid(equipments) {
 
 // Init
 window.addEventListener('DOMContentLoaded', () => {
-    loadEquipments();
-
     // Listeners for Weight Calculation
     const eqInputs = ['eqSlot', 'eqRarity', 'eqHp', 'eqMana', 'eqPower', 'eqStr', 'eqArmor', 'eqRes', 'eqSpeed', 'eqCrit', 'eqRegenHp', 'eqRegenMana', 'eqSpecialEffectValue'];
     eqInputs.forEach(id => {
@@ -500,7 +500,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-window.addEventListener('authLoaded', () => {
+window.addEventListener('authLoaded', async () => {
     const btnCreate = document.getElementById('btnCreateVaultEq');
     const btnCreateAnomalie = document.getElementById('btnCreateAnomalie');
     if (btnCreate) {
@@ -515,10 +515,7 @@ window.addEventListener('authLoaded', () => {
         searchOwnerContainer.style.display = window.isAdmin ? 'flex' : 'none';
     }
 
-    // Re-render the grid in case equipments loaded before auth
-    if (allEquipments && allEquipments.length > 0) {
-        filterVault();
-    }
+    await loadEquipments();
 });
 
 // ===== Equipment Creation / Edition =====

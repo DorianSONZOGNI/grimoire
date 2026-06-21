@@ -45,6 +45,19 @@ public class AnomalieController {
 
         return ResponseEntity.ok(anomalieRepository.findByOwnerUsername(username));
     }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<Anomalie>> getAllAdmin() {
+        String username = getCurrentUsername();
+        if (username == null) return ResponseEntity.status(401).build();
+        
+        Optional<AppUser> userOpt = userRepository.findByUsername(username);
+        if (userOpt.isEmpty() || !"ADMIN".equals(userOpt.get().getRole())) {
+            return ResponseEntity.status(403).build();
+        }
+        
+        return ResponseEntity.ok(anomalieRepository.findAll());
+    }
     
     private void syncAdminAnomalies(AppUser adminUser) {
         List<String> distinctNames = anomalieRepository.findDistinctNames();

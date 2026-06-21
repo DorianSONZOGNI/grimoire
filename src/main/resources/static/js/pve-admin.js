@@ -1464,7 +1464,7 @@ async function loadMonsters() {
 
 async function loadAnomalies() {
     try {
-        const res = await fetch('/api/anomalies');
+        const res = await fetch('/api/anomalies/all');
         if (res.ok) {
             allAnomalies = await res.json();
             renderRooms();
@@ -1477,7 +1477,7 @@ async function loadAnomalies() {
 async function loadEquipments() {
     try {
         const res1 = await fetch('/api/shop/templates');
-        const res2 = await fetch('/api/equipment');
+        const res2 = await fetch('/api/equipment/all');
 
         let templates = [];
         let instances = [];

@@ -39,12 +39,19 @@ public class PersonnageController {
         if (principal == null) {
             return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
         }
+        List<Personnage> all = personnageRepository.findByUser_Username(principal.getName());
+        List<Map<String, Object>> result = all.stream().map(this::toDto).toList();
+        return ResponseEntity.ok(result);
+    }
+
+    @GetMapping("/all")
+    public ResponseEntity<List<Map<String, Object>>> getAllAdmin(java.security.Principal principal) {
+        if (principal == null) return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
         boolean isAdmin = ((org.springframework.security.core.Authentication) principal).getAuthorities().stream()
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
+        if (!isAdmin) return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).build();
         
-        List<Personnage> all = isAdmin 
-                ? personnageRepository.findAll() 
-                : personnageRepository.findByUser_Username(principal.getName());
+        List<Personnage> all = personnageRepository.findAll();
         List<Map<String, Object>> result = all.stream().map(this::toDto).toList();
         return ResponseEntity.ok(result);
     }
