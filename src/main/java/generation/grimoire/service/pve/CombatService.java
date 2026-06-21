@@ -814,8 +814,11 @@ public class CombatService {
             String type = selectedOutcome.path("type").asText("");
 
             if ("BOSS".equals(type)) {
-                room.setType(generation.grimoire.enumeration.RoomType.COMBAT);
+                room.setType(generation.grimoire.enumeration.RoomType.BOSS);
                 room.setEventSubType(null);
+                room.setBossRewardGold(selectedOutcome.path("bossRewardGold").asInt(0));
+                room.setBossRewardSpiritualXp(selectedOutcome.path("bossRewardSpiritualXp").asInt(0));
+
                 if (room.getMonsters() == null) {
                     room.setMonsters(new ArrayList<>());
                 } else {

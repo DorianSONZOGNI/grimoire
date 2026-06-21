@@ -1070,6 +1070,19 @@ function renderRooms() {
                                     <label style="font-size: 0.8rem; color: #3b82f6;">Buffs Globaux du Boss</label>
                                     ${buffsHtml}
                                 </div>
+                                <div style="margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px dashed rgba(255,255,255,0.15); width: 100%;">
+                                    <label style="font-size: 0.8rem; color: #f59e0b;">Récompenses du Boss (Fin de combat)</label>
+                                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                                        <div style="flex: 1;">
+                                            <label style="font-size: 0.75rem; color: #94a3b8;"><span class="material-symbols-outlined" style="font-size: 0.9rem; vertical-align: middle; color: #fbbf24;">monetization_on</span> Or bonus</label>
+                                            <input type="number" id="room_door_boss_gold_${rIndex}_${oIndex}" class="form-control" value="${outcome.bossRewardGold || 0}" min="0" onchange="updateDoorBossField(${rIndex}, ${oIndex}, 'bossRewardGold', this.value)">
+                                        </div>
+                                        <div style="flex: 1;">
+                                            <label style="font-size: 0.75rem; color: #94a3b8;"><span class="material-symbols-outlined" style="font-size: 0.9rem; vertical-align: middle; color: #8b5cf6;">blur_on</span> XP Spirit. bonus</label>
+                                            <input type="number" id="room_door_boss_xp_${rIndex}_${oIndex}" class="form-control" value="${outcome.bossRewardSpiritualXp || 0}" min="0" onchange="updateDoorBossField(${rIndex}, ${oIndex}, 'bossRewardSpiritualXp', this.value)">
+                                        </div>
+                                    </div>
+                                </div>
                             `;
                         } else if (outcome.type === 'ITEM') {
                             extraHtml = doorLootHtml;
@@ -2105,6 +2118,21 @@ window.removeGlobalBuffFromBoss = function (rIndex, oIndex, bIndex) {
     if (outcome && outcome.globalBuffs) {
         outcome.globalBuffs.splice(bIndex, 1);
         renderRooms();
+    }
+};
+
+window.removeGlobalBuffFromBoss = function (rIndex, oIndex, bIndex) {
+    const outcome = selectedRooms[rIndex].doorOutcomes[oIndex];
+    if (outcome && outcome.globalBuffs) {
+        outcome.globalBuffs.splice(bIndex, 1);
+        renderRooms();
+    }
+};
+
+window.updateDoorBossField = function (rIndex, oIndex, fieldName, value) {
+    const outcome = selectedRooms[rIndex].doorOutcomes[oIndex];
+    if (outcome) {
+        outcome[fieldName] = parseInt(value) || 0;
     }
 };
 

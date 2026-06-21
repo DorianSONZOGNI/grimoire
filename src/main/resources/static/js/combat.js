@@ -943,33 +943,46 @@ function updateUI(data) {
                     if (xpContainer) {
                         xpContainer.innerHTML = '';
 
-                        // Gold from monster drops (existing logic, unchanged)
-                        let goldAmount = 0;
-                        if (data.combatLog) {
-                            for (let i = data.combatLog.length - 1; i >= 0; i--) {
-                                const log = data.combatLog[i];
-                                if (log.includes("Les monstres vaincus ont lâché")) {
-                                    const goldMatch = log.match(/lâché (\d+) Or/);
-                                    if (goldMatch) goldAmount = parseInt(goldMatch[1]);
-                                    break;
-                                }
-                                if (log.includes("Vous entrez dans")) break;
-                            }
-                        }
+                        // Base Gold and XP accumulated over the entire combat
+                        const totalGold = data.totalGoldAccumulated || 0;
+                        const totalRawXp = data.totalExpAccumulated || 0;
+                        const nbPlayers = Math.max(1, (data.players || []).length);
+                        const xpPerHero = Math.floor(totalRawXp / nbPlayers);
 
-                        if (goldAmount > 0) {
+                        const bossBonusGold = data.bossBonusGold || 0;
+                        const bossBonusSpiritXp = data.bossBonusSpiritualXp || 0;
+
+                        // Soustraire l'or du boss pour n'afficher que l'or des monstres dans la section de base
+                        let goldAmount = Math.max(0, totalGold - bossBonusGold);
+                        let xpAmount = xpPerHero;
+
+                        // Display base Gold and Base XP together
+                        if (goldAmount > 0 || xpAmount > 0) {
+                            let baseContent = '';
+                            if (goldAmount > 0) {
+                                baseContent += `
+                                    <span class="material-symbols-outlined" style="color: #f59e0b;">monetization_on</span>
+                                    <span style="color: #f59e0b;">+${goldAmount} Or</span>
+                                `;
+                            }
+                            if (goldAmount > 0 && xpAmount > 0) {
+                                baseContent += `<span style="color: #6b7280; margin: 0 0.5rem;">|</span>`;
+                            }
+                            if (xpAmount > 0) {
+                                baseContent += `
+                                    <span class="material-symbols-outlined" style="color: #38bdf8;">upgrade</span>
+                                    <span style="color: #38bdf8;">+${xpAmount} XP</span>
+                                `;
+                            }
+                            
                             xpContainer.innerHTML += `
                                 <div style="width: 100%; text-align: center; margin-bottom: 0.5rem; animation: popIn 0.5s ease-out forwards;">
-                                    <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(0,0,0,0.4); border: 1px solid #f59e0b80; padding: 0.5rem 1rem; border-radius: 8px; color: #f59e0b; font-weight: bold; font-size: 1.2rem;">
-                                        <span class="material-symbols-outlined" style="color: #f59e0b;">monetization_on</span> +${goldAmount} Or
+                                    <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(0,0,0,0.4); border: 1px solid #f59e0b80; padding: 0.5rem 1rem; border-radius: 8px; font-weight: bold; font-size: 1.2rem;">
+                                        ${baseContent}
                                     </div>
                                 </div>
                             `;
                         }
-
-                        // Récupération des données
-                        const bossBonusGold = data.bossBonusGold || 0;
-                        const bossBonusSpiritXp = data.bossBonusSpiritualXp || 0;
 
                         // On vérifie si le boss donne au moins un des deux bonus
                         if (bossBonusGold > 0 || bossBonusSpiritXp > 0) {
@@ -982,7 +995,10 @@ function updateUI(data) {
 
                             // Ajout de l'Or si présent
                             if (bossBonusGold > 0) {
-                                innerContent += `<span style="color: #fbbf24;">+${bossBonusGold} Or</span>`;
+                                innerContent += `
+                                    <span class="material-symbols-outlined" style="color: #f59e0b;">monetization_on</span>
+                                    <span style="color: #f59e0b;">+${bossBonusGold} Or</span>
+                                `;
                             }
 
                             // Séparateur visuel si on a les DEUX bonus en même temps
@@ -994,8 +1010,8 @@ function updateUI(data) {
                             if (bossBonusSpiritXp > 0) {
                                 const perHero = Math.floor(bossBonusSpiritXp / Math.max(1, (data.players || []).length));
                                 innerContent += `
-                                    <span class="material-symbols-outlined" style="color: #8b5cf6;">blur_on</span>
-                                    <span style="color: #8b5cf6;">+${perHero} XP Spiritualité</span>
+                                    <span class="material-symbols-outlined" style="color: #F59E0B;">stars</span>
+                                    <span style="color: #F59E0B;">+${perHero} XP Spiritualité</span>
                                 `;
                             }
 
@@ -1105,6 +1121,14 @@ function updateUI(data) {
                                     `;
                                 }
                             });
+
+                            if (expAmount > 0) {
+                                gainedItemsHtml = `
+                                    <div style="background: rgba(0, 0, 0, 0.4); border: 1px solid #38bdf880; padding: 0.8rem 1rem; border-radius: 8px; color: #38bdf8; font-weight: 600; display: flex; align-items: center; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8); animation-delay: 0.1s;">
+                                        <span class="material-symbols-outlined" style="color: #38bdf8;">upgrade</span> +${expAmount} XP
+                                    </div>
+                                ` + gainedItemsHtml;
+                            }
 
                             if (goldAmount > 0) {
                                 gainedItemsHtml = `
