@@ -456,9 +456,9 @@ window.startCombat = async function () {
 };
 
 window.unlockDungeon = async function (id, cost) {
-    if (!confirm(`Voulez-vous d\u00e9penser ${cost} Or pour d\u00e9bloquer ce donjon de fa\u00e7on permanente pour le compte ?`)) {
-        return;
-    }
+    const confirmed = await showUnlockModal(cost);
+    if (!confirmed) return;
+
     try {
         const res = await fetch(`/api/pve/dungeons/${id}/unlock`, { method: 'POST' });
         if (res.ok) {
@@ -475,3 +475,45 @@ window.unlockDungeon = async function (id, cost) {
         console.error(e);
     }
 };
+
+function showUnlockModal(cost) {
+    return new Promise((resolve) => {
+        const overlay = document.getElementById('unlockModal');
+        const costEl = document.getElementById('unlockModalCost');
+        const confirmBtn = document.getElementById('unlockModalConfirmBtn');
+
+        costEl.textContent = cost;
+        overlay.classList.add('active');
+
+        const onConfirm = () => {
+            cleanup();
+            resolve(true);
+        };
+        const onCancel = () => {
+            cleanup();
+            resolve(false);
+        };
+        const onOverlayClick = (e) => {
+            if (e.target === overlay) onCancel();
+        };
+        const onKeydown = (e) => {
+            if (e.key === 'Escape') onCancel();
+        };
+
+        function cleanup() {
+            overlay.classList.remove('active');
+            confirmBtn.removeEventListener('click', onConfirm);
+            overlay.removeEventListener('click', onOverlayClick);
+            document.removeEventListener('keydown', onKeydown);
+        }
+
+        confirmBtn.addEventListener('click', onConfirm);
+        overlay.addEventListener('click', onOverlayClick);
+        document.addEventListener('keydown', onKeydown);
+    });
+}
+
+window.closeUnlockModal = function () {
+    document.getElementById('unlockModal').classList.remove('active');
+};
+

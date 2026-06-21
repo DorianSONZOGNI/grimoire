@@ -291,6 +291,126 @@
                 background-position: -3360px 0;
             }
         }
+
+        /* --- UNLOCK MODAL --- */
+        .unlock-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.7);
+            backdrop-filter: blur(8px);
+            z-index: 10000;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .unlock-overlay.active {
+            opacity: 1;
+            pointer-events: all;
+        }
+        .unlock-modal {
+            background: linear-gradient(145deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95));
+            border: 1px solid rgba(245, 158, 11, 0.3);
+            border-radius: 20px;
+            padding: 2.5rem;
+            max-width: 420px;
+            width: 90%;
+            text-align: center;
+            box-shadow: 0 25px 60px rgba(0, 0, 0, 0.5), 0 0 80px rgba(245, 158, 11, 0.1);
+            transform: scale(0.85) translateY(20px);
+            transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
+        }
+        .unlock-overlay.active .unlock-modal {
+            transform: scale(1) translateY(0);
+        }
+        .unlock-modal-icon {
+            width: 72px;
+            height: 72px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(217, 119, 6, 0.1));
+            border: 2px solid rgba(245, 158, 11, 0.4);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 1.5rem;
+            animation: unlock-pulse 2s ease-in-out infinite;
+        }
+        @keyframes unlock-pulse {
+            0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.3); }
+            50% { box-shadow: 0 0 20px 8px rgba(245, 158, 11, 0.15); }
+        }
+        .unlock-modal-title {
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.4rem;
+            font-weight: 700;
+            color: #f8fafc;
+            margin-bottom: 0.75rem;
+        }
+        .unlock-modal-desc {
+            font-size: 0.95rem;
+            color: #94a3b8;
+            line-height: 1.6;
+            margin-bottom: 1.5rem;
+        }
+        .unlock-modal-cost {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            background: rgba(245, 158, 11, 0.1);
+            border: 1px solid rgba(245, 158, 11, 0.25);
+            padding: 0.6rem 1.2rem;
+            border-radius: 12px;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1.3rem;
+            font-weight: 700;
+            color: #fbbf24;
+            margin-bottom: 2rem;
+        }
+        .unlock-modal-actions {
+            display: flex;
+            gap: 1rem;
+        }
+        .unlock-btn-cancel {
+            flex: 1;
+            padding: 0.8rem;
+            border-radius: 10px;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            background: rgba(255, 255, 255, 0.05);
+            color: #94a3b8;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .unlock-btn-cancel:hover {
+            background: rgba(255, 255, 255, 0.1);
+            color: #f8fafc;
+        }
+        .unlock-btn-confirm {
+            flex: 1;
+            padding: 0.8rem;
+            border-radius: 10px;
+            border: none;
+            background: linear-gradient(135deg, #f59e0b, #d97706);
+            color: #0f172a;
+            font-family: 'Outfit', sans-serif;
+            font-size: 1rem;
+            font-weight: 700;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.4rem;
+            box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
+        }
+        .unlock-btn-confirm:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(245, 158, 11, 0.5);
+        }
     </style>
 </head>
 
@@ -452,6 +572,28 @@
         <div style="display: flex; align-items: center; gap: 0.5rem;">
             <span class="material-symbols-outlined" id="dungeonNotifIcon" style="font-size: 1.2rem;">error</span>
             <span id="dungeonNotifText">Action réussie</span>
+        </div>
+    </div>
+
+    <!-- Unlock Dungeon Modal -->
+    <div class="unlock-overlay" id="unlockModal">
+        <div class="unlock-modal">
+            <div class="unlock-modal-icon">
+                <span class="material-symbols-outlined" style="font-size: 2.2rem; color: #fbbf24;">lock_open</span>
+            </div>
+            <div class="unlock-modal-title">Débloquer ce donjon ?</div>
+            <div class="unlock-modal-desc">Ce déblocage est <strong style="color: #f8fafc;">définitif</strong> pour votre compte. Vous n’aurez plus jamais à payer ce coût.</div>
+            <div class="unlock-modal-cost">
+                <span class="material-symbols-outlined" style="font-size: 1.3rem;">monetization_on</span>
+                <span id="unlockModalCost">0</span> Or
+            </div>
+            <div class="unlock-modal-actions">
+                <button class="unlock-btn-cancel" onclick="closeUnlockModal()">Annuler</button>
+                <button class="unlock-btn-confirm" id="unlockModalConfirmBtn">
+                    <span class="material-symbols-outlined" style="font-size: 1.1rem;">lock_open</span>
+                    Débloquer
+                </button>
+            </div>
         </div>
     </div>
 
