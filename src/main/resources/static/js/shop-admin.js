@@ -217,7 +217,7 @@ function addAnomalyRow(selectedName = '', qty = 1) {
         const spiriColor = n.spiritualite ? getSpiritualiteColor(n.spiritualite) : '#a855f7';
         optionsHtml += `<div class="custom-option" data-value="${n.name}">
                             <span class="material-symbols-outlined cs-icon" style="color: ${spiriColor};">${catIcon}</span>
-                            ${n.name}
+                            ${n.name} (Niv. ${n.level || 1})
                         </div>`;
     });
 
@@ -227,7 +227,7 @@ function addAnomalyRow(selectedName = '', qty = 1) {
         if (selA) {
             const catIcon = selA.category ? (CATEGORY_ICONS[selA.category] || 'category') : 'star';
             const spiriColor = selA.spiritualite ? getSpiritualiteColor(selA.spiritualite) : '#a855f7';
-            displayLabel = `<span class="material-symbols-outlined cs-icon" style="color: ${spiriColor};">${catIcon}</span> ${selectedName}`;
+            displayLabel = `<span class="material-symbols-outlined cs-icon" style="color: ${spiriColor};">${catIcon}</span> ${selectedName} (Niv. ${selA.level || 1})`;
         } else {
             displayLabel = `<span class="material-symbols-outlined cs-icon" style="color: #a855f7;">star</span> ${selectedName}`;
         }
