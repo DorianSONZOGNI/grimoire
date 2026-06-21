@@ -364,7 +364,7 @@ window.updateRoomField = function (roomIndex, field, value) {
 
 function renderRooms() {
     const currentScroll = window.scrollY;
-    
+
     const container = document.getElementById('selectedRoomsContainer');
     const emptyMsg = document.getElementById('emptyRoomsMsg');
 
@@ -963,7 +963,7 @@ function renderRooms() {
                 } else {
                     room.doorOutcomes.forEach((outcome, oIndex) => {
                         const outcomeConfig = {
-                            'BOSS': { icon: 'sentiment_extremely_dissatisfied', color: '#ef4444', text: 'Boss' },
+                            'BOSS': { icon: 'skull', color: '#ef4444', text: 'Boss' },
                             'ITEM': { icon: 'redeem', color: '#8b5cf6', text: 'Item' },
                             'AUTEL': { icon: 'hand_bones', color: '#f97316', text: 'Autel Sacrificiel' },
                             'TRESOR': { icon: 'crown', color: '#eab308', text: 'Trésor' },
@@ -1276,13 +1276,13 @@ function renderRooms() {
                         <div class="custom-select-wrapper" id="room_door_outcome_wrapper_${rIndex}" style="flex: 2; z-index: ${50 - rIndex}; margin: 0;">
                             <div class="custom-select-trigger" onclick="toggleDoorOutcomeSelect(${rIndex})" style="padding: 0.6rem 1rem; border-radius: 8px;">
                                 <span class="cs-label" id="room_door_outcome_label_${rIndex}">
-                                    <span class="material-symbols-outlined cs-icon" style="color: #ef4444; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">sentiment_extremely_dissatisfied</span> Boss
+                                    <span class="material-symbols-outlined cs-icon" style="color: #ef4444; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">skull</span> Boss
                                 </span>
                                 <span class="material-symbols-outlined">expand_more</span>
                             </div>
                             <div class="custom-select-options" id="room_door_outcome_options_${rIndex}">
-                                <div class="custom-option" onclick="selectDoorOutcome(${rIndex}, 'BOSS', '<span class=\\'material-symbols-outlined cs-icon\\' style=\\'color: #ef4444; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;\\'>sentiment_extremely_dissatisfied</span> Boss')">
-                                    <span class="material-symbols-outlined cs-icon" style="color: #ef4444; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">sentiment_extremely_dissatisfied</span> Boss
+                                <div class="custom-option" onclick="selectDoorOutcome(${rIndex}, 'BOSS', '<span class=\\'material-symbols-outlined cs-icon\\' style=\\'color: #ef4444; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;\\'>skull</span> Boss')">
+                                    <span class="material-symbols-outlined cs-icon" style="color: #ef4444; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">skull</span> Boss
                                 </div>
                                 <div class="custom-option" onclick="selectDoorOutcome(${rIndex}, 'ITEM', '<span class=\\'material-symbols-outlined cs-icon\\' style=\\'color: #8b5cf6; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;\\'>redeem</span> Item')">
                                     <span class="material-symbols-outlined cs-icon" style="color: #8b5cf6; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">redeem</span> Item
@@ -1557,12 +1557,15 @@ async function loadDungeons() {
 
             dungeons.forEach(d => {
                 let totalSalles = d.salles ? d.salles.length : 0;
-                let combats = 0, treasures = 0, alterations = 0, rencontres = 0, pieges = 0, portes = 0, totalMobs = 0;
+                let combats = 0, bosses = 0, treasures = 0, alterations = 0, rencontres = 0, pieges = 0, portes = 0, totalMobs = 0, totalBossMobs = 0;
                 if (d.salles) {
                     d.salles.forEach(s => {
-                        if (s.type === 'COMBAT' || s.type === 'BOSS') {
+                        if (s.type === 'COMBAT') {
                             combats++;
                             totalMobs += (s.monsters ? s.monsters.length : 0);
+                        } else if (s.type === 'BOSS') {
+                            bosses++;
+                            totalBossMobs += (s.monsters ? s.monsters.length : 0);
                         }
                         else if (s.type === 'TREASURE') { treasures++; }
                         else if (s.type === 'EVENT') {
@@ -1592,9 +1595,12 @@ async function loadDungeons() {
                         <div style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 0.5rem;">${d.description || ''}</div>
                         <div style="font-size: 0.85rem; color: #f8fafc; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.1); display: grid; gap: 0.4rem;">
                             <div><span style="font-weight: 600;">Salles totales :</span> ${totalSalles}</div>
-                            <div style="color: #ef4444; margin-left: 0.5rem; display: flex; align-items: center; gap: 0.3rem;">
+                            ${combats > 0 ? `<div style="color: #ef4444; margin-left: 0.5rem; display: flex; align-items: center; gap: 0.3rem;">
                                 <span class="material-symbols-outlined" style="font-size: 1rem;">swords</span> Combats : ${combats} (avec ${totalMobs} mob${totalMobs > 1 ? 's' : ''})
-                            </div>
+                            </div>` : ''}
+                            ${bosses > 0 ? `<div style="color: #dc2626; margin-left: 0.5rem; display: flex; align-items: center; gap: 0.3rem;">
+                                <span class="material-symbols-outlined" style="font-size: 1rem;">skull</span> Boss : ${bosses} (avec ${totalBossMobs} mob${totalBossMobs > 1 ? 's' : ''})
+                            </div>` : ''}
                             <div style="color: #f59e0b; margin-left: 0.5rem; display: flex; align-items: center; gap: 0.3rem;">
                                 <span class="material-symbols-outlined" style="font-size: 1rem;">shopping_bag</span> Trésors : ${treasures}
                             </div>

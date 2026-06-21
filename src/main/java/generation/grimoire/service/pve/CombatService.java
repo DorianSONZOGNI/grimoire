@@ -96,7 +96,8 @@ public class CombatService {
 
         // Re-fetch la salle pour éviter les LazyInitializationException sur les listes
         // de monstres et loots
-        generation.grimoire.entity.pve.Salle freshSalle = salleRepository.findById(java.util.Objects.requireNonNull(session.getCurrentRoom().getId()))
+        generation.grimoire.entity.pve.Salle freshSalle = salleRepository
+                .findById(java.util.Objects.requireNonNull(session.getCurrentRoom().getId()))
                 .orElse(session.getCurrentRoom());
 
         // Force initialization of lazy collections to prevent
@@ -422,7 +423,7 @@ public class CombatService {
             if (anomalyId == null) {
                 throw new RuntimeException("Aucune anomalie sélectionnée pour le sacrifice.");
             }
-            
+
             if (session.getPlayers().isEmpty()) {
                 throw new RuntimeException("Aucun joueur dans la session.");
             }
@@ -430,30 +431,31 @@ public class CombatService {
             if (user == null) {
                 throw new RuntimeException("Utilisateur inconnu.");
             }
-            
+
             Anomalie toDestroy = anomalieRepository.findById(anomalyId)
                     .orElseThrow(() -> new RuntimeException("Anomalie introuvable."));
-                    
+
             if (!toDestroy.getOwnerUsername().equals(user.getUsername())) {
                 throw new RuntimeException("Cette anomalie ne vous appartient pas.");
             }
-            
+
             if (!toDestroy.isMagicObject()) {
                 throw new RuntimeException("Vous ne pouvez sacrifier que des objets magiques, pas des matériaux.");
             }
-            
+
             String reqSp = room.getAltarRequiredSpirituality();
-            if (reqSp != null && toDestroy.getSpiritualite() != null && !toDestroy.getSpiritualite().name().equals(reqSp)) {
+            if (reqSp != null && toDestroy.getSpiritualite() != null
+                    && !toDestroy.getSpiritualite().name().equals(reqSp)) {
                 throw new RuntimeException("L'autel réclame une offrande de spiritualité " + reqSp + ".");
             }
-            
+
             String anomalyName = toDestroy.getName();
             anomalieRepository.delete(toDestroy);
             session.addLog("Vous avez sacrifié l'anomalie : " + anomalyName + " sur l'autel.");
-            
+
             String rewardType = room.getAltarRewardType();
             int rewardValue = room.getAltarRewardValue();
-            
+
             if ("GOLD".equals(rewardType)) {
                 user.setMonnaie(user.getMonnaie() + rewardValue);
                 userRepository.save(user);
@@ -467,7 +469,8 @@ public class CombatService {
                 }
                 session.addLog("L'autel accorde " + rewardValue + " XP de Spiritualité à tous les héros !");
             } else if ("ITEM".equals(rewardType)) {
-                generation.grimoire.entity.Equipment template = equipmentRepository.findById((long) rewardValue).orElse(null);
+                generation.grimoire.entity.Equipment template = equipmentRepository.findById((long) rewardValue)
+                        .orElse(null);
                 if (template != null) {
                     generation.grimoire.entity.Equipment clone = new generation.grimoire.entity.Equipment();
                     clone.setName(template.getName());
@@ -835,13 +838,14 @@ public class CombatService {
                     }
                 }
 
-                // Initialize enemies based on updated room monsters manually to avoid overwriting from DB in handleRoomStart
+                // Initialize enemies based on updated room monsters manually to avoid
+                // overwriting from DB in handleRoomStart
                 session.getEnemies().clear();
                 for (generation.grimoire.entity.pve.Monstre m : room.getMonsters()) {
                     generation.grimoire.model.pve.ActiveMonster am = new generation.grimoire.model.pve.ActiveMonster(m);
                     session.getEnemies().add(am);
                 }
-                
+
                 session.setTurnNumber(1);
                 for (Personnage p : session.getPlayers()) {
                     p.setBanalSpellCastThisTurn(false);
@@ -912,7 +916,8 @@ public class CombatService {
                 int rewardValue = selectedOutcome.path("altarRewardValue").asInt(100);
                 room.setAltarRewardValue(rewardValue);
                 if ("ITEM".equals(rewardType)) {
-                    generation.grimoire.entity.Equipment eq = equipmentRepository.findById((long) rewardValue).orElse(null);
+                    generation.grimoire.entity.Equipment eq = equipmentRepository.findById((long) rewardValue)
+                            .orElse(null);
                     room.setAltarRewardEquipment(eq);
                 }
                 room.setEventText("Un autel mystique (" + spirituality + ") réclame une offrande magique.");
@@ -952,7 +957,8 @@ public class CombatService {
             throw new RuntimeException("Session introuvable");
         if (session.isFinished())
             return session;
-        if (session.getCurrentRoom().getType() != generation.grimoire.enumeration.RoomType.COMBAT && session.getCurrentRoom().getType() != generation.grimoire.enumeration.RoomType.BOSS) {
+        if (session.getCurrentRoom().getType() != generation.grimoire.enumeration.RoomType.COMBAT
+                && session.getCurrentRoom().getType() != generation.grimoire.enumeration.RoomType.BOSS) {
             throw new RuntimeException("Ce n'est pas une salle de combat !");
         }
 
@@ -1035,8 +1041,10 @@ public class CombatService {
     }
 
     private void checkDeaths(CombatSession session) {
-        // Check if all enemies were already processed (maxHp set to 0) before this call.
-        // We use maxHp == 0 instead of isDead() because isDead() checks healthCurrent <= 0,
+        // Check if all enemies were already processed (maxHp set to 0) before this
+        // call.
+        // We use maxHp == 0 instead of isDead() because isDead() checks healthCurrent
+        // <= 0,
         // which is already true when a spell kills a monster before checkDeaths runs.
         boolean allAlreadyProcessed = session.getEnemies().stream()
                 .allMatch(e -> e.getMaxHp() <= 0);
@@ -1076,7 +1084,8 @@ public class CombatService {
             }
         }
 
-        // Check if all enemies are now processed (all maxHp == 0) and weren't all processed before
+        // Check if all enemies are now processed (all maxHp == 0) and weren't all
+        // processed before
         boolean allNowProcessed = session.getEnemies().stream()
                 .allMatch(e -> e.getMaxHp() <= 0);
         if (!allAlreadyProcessed && allNowProcessed) {
@@ -1098,7 +1107,8 @@ public class CombatService {
                         personnageRepository.save(p);
                     }
                     session.setBossBonusSpiritualXp(bossSpXp);
-                    session.addLog("🔮 Le Boss vaincu octroie " + bossSpXp + " XP Spiritualité, partagé entre " + session.getPlayers().size() + " héros (" + spXpPerHero + " chacun).");
+                    session.addLog("🔮 Le Boss vaincu octroie " + bossSpXp + " XP Spiritualité, partagé entre "
+                            + session.getPlayers().size() + " héros (" + spXpPerHero + " chacun).");
                 }
 
                 if (bossGold > 0 && !session.getPlayers().isEmpty()) {
@@ -1121,7 +1131,8 @@ public class CombatService {
             throw new RuntimeException("Session introuvable");
         if (session.isFinished())
             return session;
-        if (session.getCurrentRoom().getType() != generation.grimoire.enumeration.RoomType.COMBAT && session.getCurrentRoom().getType() != generation.grimoire.enumeration.RoomType.BOSS) {
+        if (session.getCurrentRoom().getType() != generation.grimoire.enumeration.RoomType.COMBAT
+                && session.getCurrentRoom().getType() != generation.grimoire.enumeration.RoomType.BOSS) {
             throw new RuntimeException("Ce n'est pas une salle de combat !");
         }
 

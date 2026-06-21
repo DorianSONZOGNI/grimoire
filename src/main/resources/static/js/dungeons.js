@@ -64,12 +64,15 @@ async function loadDungeons() {
 
             dungeons.forEach(d => {
                 let totalSalles = d.salles ? d.salles.length : 0;
-                let combats = 0, treasures = 0, events = 0, totalMobs = 0;
+                let combats = 0, bosses = 0, treasures = 0, events = 0, totalMobs = 0, totalBossMobs = 0;
                 if (d.salles) {
                     d.salles.forEach(s => {
-                        if (s.type === 'COMBAT' || s.type === 'BOSS') {
+                        if (s.type === 'COMBAT') {
                             combats++;
                             totalMobs += (s.monsters ? s.monsters.length : 0);
+                        } else if (s.type === 'BOSS') {
+                            bosses++;
+                            totalBossMobs += (s.monsters ? s.monsters.length : 0);
                         }
                         else if (s.type === 'TREASURE') { treasures++; }
                         else if (s.type === 'EVENT') { events++; }
@@ -88,9 +91,12 @@ async function loadDungeons() {
                         <div class="dungeon-desc">${d.description || 'Affrontez les dangers qui rôdent.'}</div>
                         <div style="font-size: 0.85rem; color: #f8fafc; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.1); display: grid; gap: 0.4rem;">
                             <div><span style="font-weight: 600;">Salles totales :</span> ${totalSalles}</div>
-                            <div style="color: #ef4444; margin-left: 0.5rem; display: flex; align-items: center; gap: 0.3rem;">
+                            ${combats > 0 ? `<div style="color: #ef4444; margin-left: 0.5rem; display: flex; align-items: center; gap: 0.3rem;">
                                 <span class="material-symbols-outlined" style="font-size: 1rem;">swords</span> Combats : ${combats} (avec ${totalMobs} mob${totalMobs > 1 ? 's' : ''})
-                            </div>
+                            </div>` : ''}
+                            ${bosses > 0 ? `<div style="color: #dc2626; margin-left: 0.5rem; display: flex; align-items: center; gap: 0.3rem;">
+                                <span class="material-symbols-outlined" style="font-size: 1rem;">skull</span> Boss : ${bosses} (avec ${totalBossMobs} mob${totalBossMobs > 1 ? 's' : ''})
+                            </div>` : ''}
                             <div style="color: #f59e0b; margin-left: 0.5rem; display: flex; align-items: center; gap: 0.3rem;">
                                 <span class="material-symbols-outlined" style="font-size: 1rem;">shopping_bag</span> Trésors : ${treasures}
                             </div>
@@ -346,7 +352,7 @@ window.openPrepInterface = function (id, name, sallesData, maxHeroes) {
         let html = '';
         salles.forEach((s, index) => {
             if (s.type === 'COMBAT' || s.type === 'BOSS') {
-                html += `<div style="margin-bottom: 0.5rem; color: #ef4444; font-weight: 600; display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem;">${s.type === 'BOSS' ? 'local_fire_department' : 'swords'}</span> Étape ${index + 1} : ${s.type === 'BOSS' ? 'Boss' : 'Combat'}</div>`;
+                html += `<div style="margin-bottom: 0.5rem; color: #ef4444; font-weight: 600; display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem;">${s.type === 'BOSS' ? 'skull' : 'swords'}</span> Étape ${index + 1} : ${s.type === 'BOSS' ? 'Boss' : 'Combat'}</div>`;
                 if (!s.monsters || s.monsters.length === 0) {
                     html += `<div style="margin-left: 1.5rem; color: #94a3b8; font-size: 0.85rem;">Aucun monstre</div>`;
                 } else {
