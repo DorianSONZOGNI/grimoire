@@ -1,7 +1,8 @@
 let currentDungeonId = null;
 let selectedCharIds = [];
 let currentMaxHeroes = 1;
-let selectedConsumableId = null;
+let selectedConsumableIds = [];
+const MAX_CONSUMABLES = 4;
 let userCharacters = [];
 let availableConsumables = [];
 
@@ -190,15 +191,25 @@ function renderConsumablesList() {
     const list = document.getElementById('prepConsumableList');
     list.innerHTML = '';
 
+    // Counter
+    const counterHtml = `<div style="text-align: center; margin-bottom: 0.8rem; font-size: 0.85rem; color: ${selectedConsumableIds.length >= MAX_CONSUMABLES ? '#ef4444' : '#94a3b8'};">
+        <span class="material-symbols-outlined" style="font-size: 0.9rem; vertical-align: middle;">backpack</span>
+        ${selectedConsumableIds.length} / ${MAX_CONSUMABLES} sélectionnés
+    </div>`;
+
     if (availableConsumables.length === 0) {
-        list.innerHTML = `<div style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 1rem;">Vous n'avez aucun consommable dans votre coffre.</div>`;
+        list.innerHTML = counterHtml + `<div style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 1rem;">Vous n'avez aucun consommable dans votre coffre.</div>`;
         return;
     }
 
+    let cardsHtml = '';
     availableConsumables.forEach(c => {
-        const isSelected = selectedConsumableId === c.id;
-        list.innerHTML += `
-            <div class="consumable-card ${isSelected ? 'selected' : ''}" onclick="selectConsumable(${c.id})">
+        const isSelected = selectedConsumableIds.includes(c.id);
+        const selIndex = selectedConsumableIds.indexOf(c.id);
+        const badgeHtml = isSelected ? `<div style="position: absolute; top: 6px; right: 6px; background: #10b981; color: white; width: 20px; height: 20px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.7rem; font-weight: 700;">${selIndex + 1}</div>` : '';
+        cardsHtml += `
+            <div class="consumable-card ${isSelected ? 'selected' : ''}" onclick="selectConsumable(${c.id})" style="position: relative;">
+                ${badgeHtml}
                 <span class="material-symbols-outlined" style="font-size: 2rem; color: ${isSelected ? '#10b981' : '#854c4c'}; margin-bottom: 0.5rem;">inventory_2</span>
                 <div style="color: #f8fafc; font-weight: 600; font-size: 0.9rem; margin-bottom: 0.2rem;">${c.name}</div>
                 <div style="color: var(--text-muted); font-size: 0.8rem;">
@@ -209,13 +220,19 @@ function renderConsumablesList() {
             </div>
         `;
     });
+    list.innerHTML = counterHtml + cardsHtml;
 }
 
 window.selectConsumable = function (id) {
-    if (selectedConsumableId === id) {
-        selectedConsumableId = null; // deselect
+    const idx = selectedConsumableIds.indexOf(id);
+    if (idx !== -1) {
+        selectedConsumableIds.splice(idx, 1); // deselect
     } else {
-        selectedConsumableId = id;
+        if (selectedConsumableIds.length >= MAX_CONSUMABLES) {
+            showNotif(`Vous ne pouvez sélectionner que ${MAX_CONSUMABLES} consommables maximum.`, true);
+            return;
+        }
+        selectedConsumableIds.push(id);
     }
     renderConsumablesList();
 };
@@ -338,7 +355,7 @@ window.selectCharacter = async function (id) {
 window.openPrepInterface = function (id, name, sallesData, maxHeroes) {
     currentDungeonId = id;
     selectedCharIds = [];
-    selectedConsumableId = null;
+    selectedConsumableIds = [];
     currentMaxHeroes = maxHeroes || 1;
 
     document.getElementById('prepDungeonTitle').textContent = `${name} (Max: ${currentMaxHeroes} héros)`;
@@ -391,7 +408,7 @@ window.closePrepInterface = function () {
     document.getElementById('dungeonsContent').style.display = 'block';
     currentDungeonId = null;
     selectedCharIds = [];
-    selectedConsumableId = null;
+    selectedConsumableIds = [];
 };
 
 window.startCombat = function () {
@@ -402,8 +419,8 @@ window.startCombat = function () {
 
     const charIdsStr = selectedCharIds.join(',');
     let url = `/combat.html?dungeonId=${currentDungeonId}&characterIds=${charIdsStr}`;
-    if (selectedConsumableId) {
-        url += `&consumableId=${selectedConsumableId}`;
+    if (selectedConsumableIds.length > 0) {
+        url += `&consumableIds=${selectedConsumableIds.join(',')}`;
     }
 
     window.location.href = url;
