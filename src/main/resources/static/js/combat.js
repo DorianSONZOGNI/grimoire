@@ -649,6 +649,13 @@ async function openStrangeDoor() {
 
     try {
         const res = await fetch(`/api/pve/combat/${sessionId}/open-strange-door`, { method: 'POST' });
+        if (!res.ok) {
+            const errText = await res.text();
+            showNotif(errText || "Erreur lors de l'ouverture de la porte", true);
+            isProcessing = false;
+            setButtonsProcessing(false);
+            return;
+        }
         const data = await res.json();
 
         // Track the current XP so animations in new rooms start from this baseline
@@ -1650,29 +1657,38 @@ function updateUI(data) {
                     icon.textContent = 'door_front';
                     icon.style.color = '#fbbf24';
                     title.textContent = 'Porte Étrange';
-                    desc.innerHTML = data.currentRoom.eventText || 'Une porte mystérieuse se dresse devant vous...';
 
-                    btnOpen.style.display = 'none';
-                    btnCont.style.display = 'block';
-                    btnCont.textContent = 'Passer la porte';
-                    btnCont.onclick = openStrangeDoor;
-                    lootContainer.style.display = 'none';
+                    if (data.roomEventCompleted) {
+                        desc.innerHTML = 'Vous avez passé la porte mystérieuse.';
+                        btnOpen.style.display = 'none';
+                        btnCont.style.display = 'block';
+                        btnCont.textContent = 'Continuer';
+                        btnCont.onclick = nextRoom;
+                        lootContainer.style.display = 'none';
+                    } else {
+                        desc.innerHTML = data.currentRoom.eventText || 'Une porte mystérieuse se dresse devant vous...';
+                        btnOpen.style.display = 'none';
+                        btnCont.style.display = 'block';
+                        btnCont.textContent = 'Passer la porte';
+                        btnCont.onclick = openStrangeDoor;
+                        lootContainer.style.display = 'none';
 
-                    // Show door outcomes info
-                    if (data.currentRoom.doorOutcomes) {
-                        let outcomes;
-                        try {
-                            outcomes = typeof data.currentRoom.doorOutcomes === 'string' ? JSON.parse(data.currentRoom.doorOutcomes) : data.currentRoom.doorOutcomes;
-                        } catch (e) { outcomes = []; }
+                        // Show door outcomes info
+                        if (data.currentRoom.doorOutcomes) {
+                            let outcomes;
+                            try {
+                                outcomes = typeof data.currentRoom.doorOutcomes === 'string' ? JSON.parse(data.currentRoom.doorOutcomes) : data.currentRoom.doorOutcomes;
+                            } catch (e) { outcomes = []; }
 
-                        if (outcomes.length > 0) {
-                            lootContainer.style.display = 'flex';
-                            lootContainer.innerHTML = `
-                                <div style="color: #94a3b8; font-size: 0.85rem; text-align: center; width: 100%;">
-                                    <span style="color: #fbbf24; font-weight: 600;">Que se cache-t-il derrière ?</span><br>
-                                    Le résultat sera révélé si vous passez la porte...
-                                </div>
-                            `;
+                            if (outcomes.length > 0) {
+                                lootContainer.style.display = 'flex';
+                                lootContainer.innerHTML = `
+                                    <div style="color: #94a3b8; font-size: 0.85rem; text-align: center; width: 100%;">
+                                        <span style="color: #fbbf24; font-weight: 600;">Que se cache-t-il derrière ?</span><br>
+                                        Le résultat sera révélé si vous passez la porte...
+                                    </div>
+                                `;
+                            }
                         }
                     }
                 }
