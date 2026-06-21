@@ -30,11 +30,42 @@ const RARITY_COLORS = {
 
 let shopItems = [];
 let itemToBuy = null;
+let allAnomalies = [];
+
+function getSpiritualiteColor(sp) {
+    if (!sp) return '#cbd5e1';
+    switch (sp.toUpperCase()) {
+        case 'TENEBRES': return '#a855f7';
+        case 'ESPRIT': return '#38bdf8';
+        case 'KARMA': return '#f59e0b';
+        default: return '#cbd5e1';
+    }
+}
+
+function getLevelColor(lvl) {
+    const l = parseInt(lvl) || 1;
+    if (l === 1) return '#10b981'; // Vert
+    if (l === 2) return '#3b82f6'; // Bleu
+    if (l === 3) return '#a855f7'; // Violet
+    if (l === 4) return '#f59e0b'; // Or
+    if (l >= 5) return '#ef4444'; // Rouge
+    return '#10b981';
+}
+
+function getTypeColor(isMagic) {
+    return isMagic ? '#ec4899' : '#b45309'; // Rose : Marron
+}
 
 async function loadShop() {
     try {
-        const res = await fetch('/api/shop/daily');
-        shopItems = await res.json();
+        const [resShop, resAno] = await Promise.all([
+            fetch('/api/shop/daily'),
+            fetch('/api/anomalies/all-templates')
+        ]);
+        shopItems = await resShop.json();
+        if (resAno.ok) {
+            allAnomalies = await resAno.json();
+        }
         renderShop();
         renderSpecials();
     } catch (e) {
@@ -126,8 +157,30 @@ function generateStandHtml(eq) {
                 ${(() => {
                     if (eq.priceAnomalies && Object.keys(eq.priceAnomalies).length > 0) {
                         let anos = [];
-                        for(const [n, q] of Object.entries(eq.priceAnomalies)) { anos.push(`${q}x ${n}`); }
-                        return `<div style="color: #a855f7; font-size: 0.8rem;">+ ${anos.join(', ')} <span class="material-symbols-outlined" style="font-size: 0.9rem; vertical-align: middle;">auto_awesome</span></div>`;
+                        for(const [n, q] of Object.entries(eq.priceAnomalies)) { 
+                            let aTemp = allAnomalies.find(a => a.name === n);
+                            anos.push(`<span class="anomaly-badge">
+                                <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">auto_awesome</span> ${q}
+                                <div class="anomaly-tooltip">
+                                    <div class="anomaly-tooltip-title">${aTemp ? aTemp.name : n}</div>
+                                    <div style="display: flex; gap: 6px; margin: 6px 0; flex-wrap: wrap;">
+                                        <span style="border: 1px solid ${getLevelColor(aTemp ? aTemp.level : 1)}; color: ${getLevelColor(aTemp ? aTemp.level : 1)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold;">
+                                            Lvl ${aTemp ? aTemp.level || 1 : 1}
+                                        </span>
+                                        <span style="border: 1px solid ${getTypeColor(aTemp && aTemp.magicObject)}; color: ${getTypeColor(aTemp && aTemp.magicObject)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; display: flex; align-items: center; gap: 4px;">
+                                            <span class="material-symbols-outlined" style="font-size: 0.9rem;">${aTemp && aTemp.magicObject ? 'auto_awesome' : 'category'}</span>
+                                            ${aTemp && aTemp.magicObject ? 'Objet Magique' : 'Matériau'}
+                                        </span>
+                                        ${aTemp && aTemp.spiritualite ? 
+                                        `<span style="border: 1px solid ${getSpiritualiteColor(aTemp.spiritualite)}; color: ${getSpiritualiteColor(aTemp.spiritualite)}; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; background: rgba(0,0,0,0.3);">
+                                            ${aTemp.spiritualite}
+                                        </span>` : ''}
+                                    </div>
+                                    <div class="anomaly-tooltip-desc">${aTemp && aTemp.description ? aTemp.description : 'Aucune description'}</div>
+                                </div>
+                            </span>`); 
+                        }
+                        return `<div style="display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; margin-top: 2px;">${anos.join('')}</div>`;
                     }
                     return '';
                 })()}
@@ -253,12 +306,36 @@ window.openBuyModal = function (idOrType, isConsumable = false) {
     document.getElementById('buyTargetName').textContent = eq.name;
     
     const priceStr = eq.shopPrice % 1 === 0 ? eq.shopPrice : eq.shopPrice.toFixed(1);
-    let btnHtml = `Acheter pour ${priceStr} <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; margin-top: -2px;">monetization_on</span>`;
+    let btnHtml = `<div style="display: flex; align-items: center; gap: 6px; justify-content: center; flex-wrap: wrap;">`;
+    btnHtml += `<span>Acheter pour ${priceStr} <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; margin-top: -2px;">monetization_on</span></span>`;
     if (eq.priceAnomalies && Object.keys(eq.priceAnomalies).length > 0) {
         let anos = [];
-        for(const [n, q] of Object.entries(eq.priceAnomalies)) { anos.push(`${q}x ${n}`); }
-        btnHtml += ` <br><span style="font-size: 0.8rem; color: #d8b4fe;">+ ${anos.join(', ')}</span>`;
+        for(const [n, q] of Object.entries(eq.priceAnomalies)) { 
+            let aTemp = allAnomalies.find(a => a.name === n);
+            anos.push(`<span class="anomaly-badge">
+                <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">auto_awesome</span> ${q}
+                <div class="anomaly-tooltip">
+                    <div class="anomaly-tooltip-title">${aTemp ? aTemp.name : n}</div>
+                    <div style="display: flex; gap: 6px; margin: 6px 0; flex-wrap: wrap;">
+                        <span style="border: 1px solid ${getLevelColor(aTemp ? aTemp.level : 1)}; color: ${getLevelColor(aTemp ? aTemp.level : 1)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold;">
+                            Lvl ${aTemp ? aTemp.level || 1 : 1}
+                        </span>
+                        <span style="border: 1px solid ${getTypeColor(aTemp && aTemp.magicObject)}; color: ${getTypeColor(aTemp && aTemp.magicObject)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; display: flex; align-items: center; gap: 4px;">
+                            <span class="material-symbols-outlined" style="font-size: 0.9rem;">${aTemp && aTemp.magicObject ? 'auto_awesome' : 'category'}</span>
+                            ${aTemp && aTemp.magicObject ? 'Objet Magique' : 'Matériau'}
+                        </span>
+                        ${aTemp && aTemp.spiritualite ? 
+                        `<span style="border: 1px solid ${getSpiritualiteColor(aTemp.spiritualite)}; color: ${getSpiritualiteColor(aTemp.spiritualite)}; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; background: rgba(0,0,0,0.3);">
+                            ${aTemp.spiritualite}
+                        </span>` : ''}
+                    </div>
+                    <div class="anomaly-tooltip-desc">${aTemp && aTemp.description ? aTemp.description : 'Aucune description'}</div>
+                </div>
+            </span>`); 
+        }
+        btnHtml += `<span style="color: #94a3b8;">+</span> ${anos.join(' ')}`;
     }
+    btnHtml += `</div>`;
     document.getElementById('buyConfirmBtn').innerHTML = btnHtml;
 
     document.getElementById('buyConfirmModal').style.opacity = '1';

@@ -507,3 +507,74 @@
     border-color: rgba(239, 68, 68, 0.4);
     box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
 }
+
+.anomaly-badge {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(168, 85, 247, 0.15);
+    color: #d8b4fe;
+    padding: 2px 6px;
+    border-radius: 6px;
+    border: 1px solid rgba(168, 85, 247, 0.3);
+    cursor: help;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+}
+
+.anomaly-badge:hover {
+    background: rgba(168, 85, 247, 0.25);
+    border-color: rgba(168, 85, 247, 0.5);
+}
+
+.anomaly-badge .anomaly-tooltip {
+    visibility: hidden;
+    opacity: 0;
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) translateY(5px);
+    width: max-content;
+    max-width: 250px;
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid rgba(168, 85, 247, 0.5);
+    border-radius: 8px;
+    padding: 10px;
+    color: #f8fafc;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    z-index: 1000;
+    text-align: left;
+    white-space: normal;
+    word-wrap: break-word;
+    pointer-events: none;
+    transition: all 0.2s ease;
+}
+
+.anomaly-badge:hover .anomaly-tooltip {
+    visibility: visible;
+    opacity: 1;
+    transform: translateX(-50%) translateY(0);
+}
+
+.anomaly-tooltip-title {
+    font-weight: 700;
+    color: #a855f7;
+    margin-bottom: 4px;
+    border-bottom: 1px solid rgba(168, 85, 247, 0.3);
+    padding-bottom: 4px;
+}
+
+.anomaly-tooltip-stat {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 2px;
+}
+
+.anomaly-tooltip-desc {
+    margin-top: 6px;
+    font-style: italic;
+    color: #cbd5e1;
+}

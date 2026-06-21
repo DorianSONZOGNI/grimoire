@@ -75,6 +75,21 @@ public class AnomalieController {
         return ResponseEntity.ok(anomalieRepository.findDistinctNames());
     }
 
+    @GetMapping("/all-templates")
+    public ResponseEntity<List<Anomalie>> getAllAnomalyTemplates() {
+        List<String> names = anomalieRepository.findDistinctNames();
+        List<Anomalie> templates = new java.util.ArrayList<>();
+        for (String name : names) {
+            if (name != null && !name.trim().isEmpty()) {
+                Anomalie template = anomalieRepository.findFirstByName(name);
+                if (template != null) {
+                    templates.add(template);
+                }
+            }
+        }
+        return ResponseEntity.ok(templates);
+    }
+
     @PostMapping
     public ResponseEntity<?> createAnomalie(@RequestBody Anomalie anomalie) {
         String username = getCurrentUsername();
