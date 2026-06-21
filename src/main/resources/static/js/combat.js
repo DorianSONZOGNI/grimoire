@@ -1655,17 +1655,18 @@ function updateUI(data) {
                     }
                 } else if (subType === 'PORTE_ETRANGE') {
                     icon.textContent = 'door_front';
-                    icon.style.color = '#fbbf24';
                     title.textContent = 'Porte Étrange';
 
                     if (data.roomEventCompleted) {
-                        desc.innerHTML = 'Vous avez passé la porte mystérieuse.';
+                        icon.style.color = '#94a3b8'; // Grisé
+                        desc.innerHTML = 'Vous avez ouvert la porte... mais il n\'y a absolument rien derrière.';
                         btnOpen.style.display = 'none';
                         btnCont.style.display = 'block';
                         btnCont.textContent = 'Continuer';
                         btnCont.onclick = nextRoom;
                         lootContainer.style.display = 'none';
                     } else {
+                        icon.style.color = '#fbbf24'; // Jaune
                         desc.innerHTML = data.currentRoom.eventText || 'Une porte mystérieuse se dresse devant vous...';
                         btnOpen.style.display = 'none';
                         btnCont.style.display = 'block';
