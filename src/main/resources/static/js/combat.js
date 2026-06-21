@@ -1285,12 +1285,25 @@ function updateUI(data) {
                                         btn.style.opacity = '0.5';
                                         btn.style.cursor = 'not-allowed';
                                     }
-                                } else {
-                                    let selectHtml = `<select id="altarAnomalySelect" style="padding: 0.5rem; border-radius: 6px; background: rgba(0,0,0,0.5); color: #fff; border: 1px solid ${spColor}; width: 100%; max-width: 300px; font-size: 0.9rem;">`;
+                                    const first = eligible[0];
+                                    let selectHtml = `
+                                    <div class="custom-select-wrapper" id="altarAnomalySelectWrapper" style="width: 100%; max-width: 350px; margin: 0 auto; z-index: 100;">
+                                        <div class="custom-select-trigger" onclick="document.getElementById('altarAnomalySelectWrapper').classList.toggle('open')" style="padding: 0.6rem 1rem; border-radius: 8px; border: 1px solid ${spColor}; text-align: left; background: rgba(0,0,0,0.5);">
+                                            <span class="cs-label" id="altarAnomalySelectLabel">
+                                                <span class="material-symbols-outlined cs-icon" style="color: ${spColor};">star</span> ${first.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${first.level || 1})</span>
+                                            </span>
+                                            <span class="material-symbols-outlined">expand_more</span>
+                                        </div>
+                                        <div class="custom-select-options" style="max-height: 200px; overflow-y: auto; text-align: left;">
+                                    `;
                                     eligible.forEach(a => {
-                                        selectHtml += `<option value="${a.id}">${a.name}</option>`;
+                                        selectHtml += `<div class="custom-option" onclick="document.getElementById('altarAnomalySelectLabel').innerHTML = this.innerHTML; document.getElementById('altarAnomalySelect').value = '${a.id}'; document.getElementById('altarAnomalySelectWrapper').classList.remove('open');"><span class="material-symbols-outlined cs-icon" style="color: ${spColor};">star</span> ${a.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${a.level || 1})</span></div>`;
                                     });
-                                    selectHtml += `</select>`;
+                                    selectHtml += `
+                                        </div>
+                                    </div>
+                                    <input type="hidden" id="altarAnomalySelect" value="${first.id}">
+                                    `;
                                     container.innerHTML = selectHtml;
                                 }
                             }).catch(err => {
