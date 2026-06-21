@@ -57,8 +57,198 @@
             </div>
         </div>
     </header>
+    <div class="fox-cycle">
+        <div class="fox"></div>
+    </div>
+    <style>
+        /* Le conteneur principal */
+        .fox-cycle {
+            position: fixed;
+            bottom: 50px;
+            right: 150px;
+            z-index: 50;
+            pointer-events: none;
+            width: 32px;
+            height: 32px;
+            transform: scale(4);
+        }
 
-    <div class="vault-main">        <!-- Toolbar -->
+        /* La base commune du renard */
+        .fox {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 32px;
+            height: 32px;
+            background-image: url('images/fox.png');
+            background-size: 448px 224px;
+            image-rendering: pixelated;
+
+            /* Une seule animation maître qui gère tout sur 21 secondes ! */
+            animation: fox_master_timeline 21.0s infinite;
+        }
+
+        /* ==============================================================
+   LA MASTER TIMELINE (21.0s)
+   Chaque micro-pourcentage (ex: 4.761%) sert à "rembobiner" 
+   le sprite instantanément pour relancer une boucle propre.
+   ============================================================== */
+        @keyframes fox_master_timeline {
+
+            /* --- SEQ 1: Ligne 1, Attend (3 boucles de 5 frames) --- */
+            0% {
+                background-position: 0px 0px;
+                animation-timing-function: steps(5);
+            }
+
+            4.76% {
+                background-position: -160px 0px;
+            }
+
+            4.761% {
+                background-position: 0px 0px;
+                animation-timing-function: steps(5);
+            }
+
+            9.52% {
+                background-position: -160px 0px;
+            }
+
+            9.521% {
+                background-position: 0px 0px;
+                animation-timing-function: steps(5);
+            }
+
+            14.28% {
+                background-position: -160px 0px;
+            }
+
+            /* --- SEQ 2: Ligne 2, Tourne la tête (1 boucle de 14 frames) --- */
+            14.281% {
+                background-position: 0px -32px;
+                animation-timing-function: steps(14);
+            }
+
+            27.61% {
+                background-position: -448px -32px;
+            }
+
+            /* --- SEQ 3: Ligne 1, Attend (2 boucles de 5 frames) --- */
+            27.611% {
+                background-position: 0px 0px;
+                animation-timing-function: steps(5);
+            }
+
+            32.38% {
+                background-position: -160px 0px;
+            }
+
+            32.381% {
+                background-position: 0px 0px;
+                animation-timing-function: steps(5);
+            }
+
+            37.14% {
+                background-position: -160px 0px;
+            }
+
+            /* --- SEQ 4: Ligne 3, Course (3 boucles de 8 frames) --- */
+            37.141% {
+                background-position: 0px -64px;
+                animation-timing-function: steps(8);
+            }
+
+            44.76% {
+                background-position: -256px -64px;
+            }
+
+            44.761% {
+                background-position: 0px -64px;
+                animation-timing-function: steps(8);
+            }
+
+            52.38% {
+                background-position: -256px -64px;
+            }
+
+            52.381% {
+                background-position: 0px -64px;
+                animation-timing-function: steps(8);
+            }
+
+            60.00% {
+                background-position: -256px -64px;
+            }
+
+            /* --- SEQ 5: Ligne 4, Jump (1 boucle de 11 frames) --- */
+            60.001% {
+                background-position: 0px -96px;
+                animation-timing-function: steps(11);
+            }
+
+            70.47% {
+                background-position: -352px -96px;
+            }
+
+            /* --- SEQ 6: Ligne 4, Se couche (1 boucle de 3 frames) --- */
+            70.471% {
+                background-position: 0px -96px;
+                animation-timing-function: steps(3);
+            }
+
+            73.33% {
+                background-position: -96px -96px;
+            }
+
+            /* --- SEQ 7: Ligne 6, Dort (4 boucles de 6 frames) --- */
+            73.331% {
+                background-position: 0px -160px;
+                animation-timing-function: steps(6);
+            }
+
+            79.04% {
+                background-position: -192px -160px;
+            }
+
+            79.041% {
+                background-position: 0px -160px;
+                animation-timing-function: steps(6);
+            }
+
+            84.76% {
+                background-position: -192px -160px;
+            }
+
+            84.761% {
+                background-position: 0px -160px;
+                animation-timing-function: steps(6);
+            }
+
+            90.47% {
+                background-position: -192px -160px;
+            }
+
+            90.471% {
+                background-position: 0px -160px;
+                animation-timing-function: steps(6);
+            }
+
+            96.18% {
+                background-position: -192px -160px;
+            }
+
+            /* --- SEQ 8: Ligne 4, Se relève (frames 8 à 11) --- */
+            96.181% {
+                background-position: -224px -96px;
+                animation-timing-function: steps(4);
+            }
+
+            100% {
+                background-position: -352px -96px;
+            }
+        }
+    </style>
+    <div class="vault-main"> <!-- Toolbar -->
         <div class="vault-toolbar">
             <div style="display: flex; gap: 1rem; flex: 1;">
                 <div class="search-bar" style="flex: 1;">
@@ -193,34 +383,54 @@
 
                 <div class="type-toggles" style="display: flex; gap: 0.5rem;">
                     <style>
-                        .type-toggle input { display: none; }
-                        .type-toggle input:checked + .toggle-btn.cons {
+                        .type-toggle input {
+                            display: none;
+                        }
+
+                        .type-toggle input:checked+.toggle-btn.cons {
                             background: rgba(252, 165, 165, 0.2) !important;
                             border-color: #fca5a5 !important;
                             color: #f8fafc !important;
                         }
-                        .type-toggle input:checked + .toggle-btn.ano {
+
+                        .type-toggle input:checked+.toggle-btn.ano {
                             background: rgba(240, 171, 252, 0.2) !important;
                             border-color: #f0abfc !important;
                             color: #f8fafc !important;
                         }
+
                         .type-toggle .toggle-btn {
-                            display: inline-flex; align-items: center; gap: 0.4rem; padding: 0.4rem 0.8rem; background: rgba(255,255,255,0.05); border-radius: 8px; cursor: pointer; border: 1px solid rgba(255,255,255,0.1); color: #94a3b8; font-weight: 500; font-size: 0.85rem; font-family: 'Outfit', sans-serif; transition: all 0.2s;
+                            display: inline-flex;
+                            align-items: center;
+                            gap: 0.4rem;
+                            padding: 0.4rem 0.8rem;
+                            background: rgba(255, 255, 255, 0.05);
+                            border-radius: 8px;
+                            cursor: pointer;
+                            border: 1px solid rgba(255, 255, 255, 0.1);
+                            color: #94a3b8;
+                            font-weight: 500;
+                            font-size: 0.85rem;
+                            font-family: 'Outfit', sans-serif;
+                            transition: all 0.2s;
                         }
+
                         .type-toggle .toggle-btn:hover {
-                            background: rgba(255,255,255,0.1);
+                            background: rgba(255, 255, 255, 0.1);
                         }
                     </style>
                     <label class="type-toggle" title="Afficher uniquement les consommables">
                         <input type="checkbox" id="filterConsommableOnly" onchange="filterVault()">
                         <span class="toggle-btn cons">
-                            <span class="material-symbols-outlined" style="font-size: 1.1rem; color: #fca5a5;">inventory_2</span> Consommables
+                            <span class="material-symbols-outlined"
+                                style="font-size: 1.1rem; color: #fca5a5;">inventory_2</span> Consommables
                         </span>
                     </label>
                     <label class="type-toggle" title="Afficher uniquement les anomalies">
                         <input type="checkbox" id="filterAnomalieOnly" onchange="filterVault()">
                         <span class="toggle-btn ano">
-                            <span class="material-symbols-outlined" style="font-size: 1.1rem; color: #f0abfc;">star</span> Anomalies
+                            <span class="material-symbols-outlined"
+                                style="font-size: 1.1rem; color: #f0abfc;">star</span> Anomalies
                         </span>
                     </label>
                 </div>
@@ -658,19 +868,37 @@
                         <div class="custom-select-wrapper" id="anomalieCategoryWrapper" tabindex="0">
                             <div class="custom-select-trigger" id="anomalieCategoryTrigger">
                                 <span class="cs-label" id="anomalieCategoryLabel">
-                                    <span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">category</span> Autre
+                                    <span class="material-symbols-outlined cs-icon"
+                                        style="color: #94a3b8;">category</span> Autre
                                 </span>
-                                <span class="material-symbols-outlined cs-arrow" style="font-size: 1.1rem;">expand_more</span>
+                                <span class="material-symbols-outlined cs-arrow"
+                                    style="font-size: 1.1rem;">expand_more</span>
                             </div>
                             <div class="custom-select-options" id="anomalieCategoryOptions">
-                                <div class="custom-option" data-value="PIERRE"><span class="material-symbols-outlined cs-icon" style="color: #a8a29e;">landslide</span> Pierre</div>
-                                <div class="custom-option" data-value="METAL"><span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">hardware</span> Métal</div>
-                                <div class="custom-option" data-value="COEUR"><span class="material-symbols-outlined cs-icon" style="color: #ef4444;">favorite</span> Cœur</div>
-                                <div class="custom-option" data-value="ORBE"><span class="material-symbols-outlined cs-icon" style="color: #8b5cf6;">lens</span> Orbe</div>
-                                <div class="custom-option" data-value="CRISTAL"><span class="material-symbols-outlined cs-icon" style="color: #06b6d4;">diamond</span> Cristal</div>
-                                <div class="custom-option" data-value="PLUME"><span class="material-symbols-outlined cs-icon" style="color: #fcd34d;">history_edu</span> Plume</div>
-                                <div class="custom-option" data-value="ECAILLE"><span class="material-symbols-outlined cs-icon" style="color: #10b981;">waves</span> Écaille</div>
-                                <div class="custom-option" data-value="AUTRE"><span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">category</span> Autre</div>
+                                <div class="custom-option" data-value="PIERRE"><span
+                                        class="material-symbols-outlined cs-icon"
+                                        style="color: #a8a29e;">landslide</span> Pierre</div>
+                                <div class="custom-option" data-value="METAL"><span
+                                        class="material-symbols-outlined cs-icon"
+                                        style="color: #94a3b8;">hardware</span> Métal</div>
+                                <div class="custom-option" data-value="COEUR"><span
+                                        class="material-symbols-outlined cs-icon"
+                                        style="color: #ef4444;">favorite</span> Cœur</div>
+                                <div class="custom-option" data-value="ORBE"><span
+                                        class="material-symbols-outlined cs-icon" style="color: #8b5cf6;">lens</span>
+                                    Orbe</div>
+                                <div class="custom-option" data-value="CRISTAL"><span
+                                        class="material-symbols-outlined cs-icon" style="color: #06b6d4;">diamond</span>
+                                    Cristal</div>
+                                <div class="custom-option" data-value="PLUME"><span
+                                        class="material-symbols-outlined cs-icon"
+                                        style="color: #fcd34d;">history_edu</span> Plume</div>
+                                <div class="custom-option" data-value="ECAILLE"><span
+                                        class="material-symbols-outlined cs-icon" style="color: #10b981;">waves</span>
+                                    Écaille</div>
+                                <div class="custom-option" data-value="AUTRE"><span
+                                        class="material-symbols-outlined cs-icon"
+                                        style="color: #94a3b8;">category</span> Autre</div>
                             </div>
                             <input type="hidden" id="anomalieCategory" value="AUTRE">
                         </div>
