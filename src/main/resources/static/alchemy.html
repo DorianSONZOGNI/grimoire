@@ -93,10 +93,11 @@
 
     <header class="top-header">
         <div class="page-logo">
-            <span class="material-symbols-outlined logo-icon-gradient logo-grimoire">auto_awesome</span>
-            <span class="logo-text-gradient logo-grimoire">Grimoire</span>
+            <span class="material-symbols-outlined logo-icon-gradient logo-alchemy">science</span>
+            <span class="logo-text-gradient logo-alchemy">Alchimie</span>
         </div>
         <div class="header-actions">
+            <div style="font-size: 0.9rem; color: var(--text-muted);">La magie opère ici...</div>
             <a href="/" class="top-nav-link nav-grimoire">
                 <span class="material-symbols-outlined" style="font-size: 1.1rem;">auto_awesome</span> Grimoire
             </a>
@@ -137,27 +138,33 @@
     <main style="display: block;">
         <div class="magic-rock"></div>
 
-        <div class="alchemy-main" style="max-width: 1400px; margin: 2rem auto; flex-direction: row; gap: 2rem; align-items: stretch; justify-content: center;">
-            
+        <div class="alchemy-main"
+            style="max-width: 1400px; margin: 2rem auto; flex-direction: row; gap: 2rem; align-items: stretch; justify-content: center;">
+
             <!-- Left: List of recipes -->
             <div class="panel" style="flex: 1; max-width: 450px;">
                 <div class="panel-title">
                     <span class="material-symbols-outlined" style="color: #a855f7;">menu_book</span>
                     Recettes Connues
                 </div>
-                <div id="playerRecipesList" style="display: flex; flex-direction: column; gap: 1rem; max-height: 70vh; overflow-y: auto;">
-                    <p style="color: var(--text-muted); text-align: center; margin-top: 2rem;">Chargement du Grimoire Alchimique...</p>
+                <div id="playerRecipesList"
+                    style="display: flex; flex-direction: column; gap: 1rem; max-height: 70vh; overflow-y: auto;">
+                    <p style="color: var(--text-muted); text-align: center; margin-top: 2rem;">Chargement du Grimoire
+                        Alchimique...</p>
                 </div>
             </div>
 
             <!-- Right: The Cauldron / Crafting Area -->
-            <div class="alchemy-panel" style="flex: 2; display: flex; justify-content: center; align-items: center; min-height: 500px;" id="cauldronPanel">
+            <div class="alchemy-panel"
+                style="flex: 2; display: flex; justify-content: center; align-items: center; min-height: 500px;"
+                id="cauldronPanel">
                 <div style="text-align: center; color: var(--text-muted);">
-                    <span class="material-symbols-outlined" style="font-size: 4rem; color: rgba(16, 185, 129, 0.3);">experiment</span>
+                    <span class="material-symbols-outlined"
+                        style="font-size: 4rem; color: rgba(16, 185, 129, 0.3);">experiment</span>
                     <p style="margin-top: 1rem;">Sélectionnez une recette dans le grimoire à gauche pour l'étudier.</p>
                 </div>
             </div>
-            
+
         </div>
 
     </main>
@@ -199,7 +206,7 @@
                 div.style.padding = '1rem';
                 div.style.cursor = 'pointer';
                 div.style.transition = 'all 0.2s';
-                
+
                 div.onmouseover = () => div.style.borderColor = '#10b981';
                 div.onmouseout = () => { if (selectedRecipe?.id !== r.id) div.style.borderColor = 'var(--glass-border)'; };
                 div.onclick = () => selectRecipe(r, div);
@@ -230,7 +237,7 @@
 
         function renderCauldron(r) {
             const container = document.getElementById('cauldronPanel');
-            
+
             let reqsHTML = '';
             if (r.costGold > 0) {
                 reqsHTML += `<div style="display:flex; align-items:center; gap:0.5rem; background:rgba(0,0,0,0.4); padding:0.5rem 1rem; border-radius:8px; border:1px solid rgba(245, 158, 11, 0.3);">
@@ -246,7 +253,7 @@
             }
 
             if (r.requiredAnomalies) {
-                for(const [name, qty] of Object.entries(r.requiredAnomalies)) {
+                for (const [name, qty] of Object.entries(r.requiredAnomalies)) {
                     reqsHTML += `<div style="display:flex; align-items:center; gap:0.5rem; background:rgba(0,0,0,0.4); padding:0.5rem 1rem; border-radius:8px; border:1px solid rgba(168, 85, 247, 0.3);">
                         <span class="material-symbols-outlined" style="color: #a855f7;">auto_awesome</span>
                         <span>${qty}x ${name}</span>
@@ -254,7 +261,7 @@
                 }
             }
             if (r.requiredConsumables) {
-                for(const [name, qty] of Object.entries(r.requiredConsumables)) {
+                for (const [name, qty] of Object.entries(r.requiredConsumables)) {
                     reqsHTML += `<div style="display:flex; align-items:center; gap:0.5rem; background:rgba(0,0,0,0.4); padding:0.5rem 1rem; border-radius:8px; border:1px solid rgba(59, 130, 246, 0.3);">
                         <span class="material-symbols-outlined" style="color: #3b82f6;">water_drop</span>
                         <span>${qty}x ${name}</span>
@@ -299,7 +306,7 @@
 
                     <div style="width: 100%; max-width: 500px; background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(6,182,212,0.1)); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 12px; padding: 1.5rem; margin-top: 1rem; text-align: center;">
                         <span style="display:block; font-size: 0.85rem; color: #10b981; text-transform: uppercase; font-weight: 700; letter-spacing: 1px; margin-bottom: 0.5rem;">Résultat Attendu</span>
-                        <strong style="font-size: 1.3rem; color: #fff;">${r.rewardQuantity}x ${r.rewardName} ${r.rewardLevel > 1 ? '(Niv. '+r.rewardLevel+')' : ''}</strong>
+                        <strong style="font-size: 1.3rem; color: #fff;">${r.rewardQuantity}x ${r.rewardName} ${r.rewardLevel > 1 ? '(Niv. ' + r.rewardLevel + ')' : ''}</strong>
                     </div>
 
                     <button class="btn" style="margin-top: 2.5rem; padding: 1rem 3rem; font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg, #10b981, #06b6d4); border:none; box-shadow: 0 4px 15px rgba(16,185,129,0.4);" onclick="craftSelected()">
@@ -315,17 +322,17 @@
             try {
                 // Check where user characters endpoint is... usually /api/personnages or similar.
                 const res = await fetch('/api/personnages');
-                if(res.ok) {
+                if (res.ok) {
                     const chars = await res.json();
                     const sel = document.getElementById('crafterSelect');
-                    if(sel) {
+                    if (sel) {
                         sel.innerHTML = '<option value="">-- Choisir un personnage --</option>';
                         chars.forEach(c => {
                             sel.innerHTML += `<option value="${c.id}">${c.name} (XP Spirit: ${c.spiritualiteExperience || 0})</option>`;
                         });
                     }
                 }
-            } catch(e) {
+            } catch (e) {
                 console.warn(e);
             }
         }
@@ -339,7 +346,7 @@
             let url = `/api/alchemy/craft/${selectedRecipe.id}`;
             if (selectedRecipe.costSpiritXp > 0) {
                 const sel = document.getElementById('crafterSelect');
-                if(!sel || !sel.value) {
+                if (!sel || !sel.value) {
                     msg.innerText = "Veuillez sélectionner un personnage pour dépenser l'XP.";
                     msg.style.color = "#ef4444";
                     return;
@@ -353,7 +360,7 @@
                 if (res.ok) {
                     msg.innerText = text;
                     msg.style.color = "#10b981";
-                    
+
                     // Add cool particle animation if desired
                     createMagicParticles();
 
@@ -365,7 +372,7 @@
                     msg.innerText = "Échec : " + text;
                     msg.style.color = "#ef4444";
                 }
-            } catch(e) {
+            } catch (e) {
                 msg.innerText = "Erreur de connexion.";
                 msg.style.color = "#ef4444";
             }
@@ -373,7 +380,7 @@
 
         function createMagicParticles() {
             const panel = document.getElementById('cauldronPanel');
-            for(let i = 0; i < 30; i++) {
+            for (let i = 0; i < 30; i++) {
                 const p = document.createElement('div');
                 p.style.position = 'absolute';
                 p.style.width = '8px';
@@ -386,7 +393,7 @@
                 p.style.transition = 'all 1s cubic-bezier(0.25, 1, 0.5, 1)';
                 p.style.opacity = '1';
                 p.style.pointerEvents = 'none';
-                
+
                 panel.appendChild(p);
 
                 setTimeout(() => {

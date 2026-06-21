@@ -39,8 +39,8 @@
 
     <header class="top-header">
         <div class="page-logo">
-            <span class="material-symbols-outlined logo-icon-gradient logo-grimoire">auto_awesome</span>
-            <span class="logo-text-gradient logo-grimoire">Grimoire</span>
+            <span class="material-symbols-outlined logo-icon-gradient logo-admin">science</span>
+            <span class="logo-text-gradient logo-admin">Admin Alchimie</span>
         </div>
         <div class="header-actions">
             <a href="/" class="top-nav-link nav-grimoire">
@@ -70,6 +70,12 @@
             <a href="/alchemy-admin.html" id="adminAlchemyLink" class="top-nav-link nav-admin active">
                 <span class="material-symbols-outlined" style="font-size: 1.1rem;">science</span> Admin Alchimie
             </a>
+
+            <div id="authNavContainer"
+                style="display: flex; align-items: center; gap: 0.5rem; margin-left: 1rem; padding-left: 1rem; border-left: 1px solid var(--glass-border);">
+                <!-- Dynamically injected by auth.js -->
+                <span style="font-size: 0.85rem; color: var(--text-muted);">Chargement...</span>
+            </div>
         </div>
     </header>
 

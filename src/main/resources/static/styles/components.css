@@ -517,3 +517,6 @@
 /* PvE Colors */
 .top-nav-link.nav-dungeon:hover, .top-nav-link.nav-dungeon.active { color: #ef4444 !important; border-color: rgba(239, 68, 68, 0.3) !important; background: rgba(239, 68, 68, 0.1) !important; }
 .logo-dungeon { background-image: linear-gradient(to right, #f87171, #991b1b); }
+
+/* Alchemy Colors */
+.logo-alchemy { background-image: linear-gradient(to right, #34d399, #06b6d4); }
