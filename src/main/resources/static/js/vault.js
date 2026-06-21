@@ -333,7 +333,7 @@ function renderGrid(equipments) {
             const typeIcon = CATEGORY_ICONS[eq.category] || 'category';
             let spColor = '#a855f7';
             if (eq.spiritualite === 'ESPRIT') spColor = '#38bdf8';
-            else if (eq.spiritualite === 'KARMA') spColor = '#f59e0b';
+            else if (eq.spiritualite === 'KARMA') spColor = '#e7d198';
 
             return `
             <div class="vault-card rarity-RELIQUE" style="border-color: ${spColor}; box-shadow: 0 0 15px ${spColor}20;">

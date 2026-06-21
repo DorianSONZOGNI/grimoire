@@ -691,7 +691,7 @@ function renderRooms() {
                             if (selAnomalie) {
                                 let color = '#a855f7';
                                 if (selAnomalie.spiritualite === 'ESPRIT') color = '#38bdf8';
-                                else if (selAnomalie.spiritualite === 'KARMA') color = '#f59e0b';
+                                else if (selAnomalie.spiritualite === 'KARMA') color = '#e7d198';
                                 const icon = CATEGORY_ICONS[selAnomalie.category] || 'category';
                                 selHtml = `<span class="material-symbols-outlined cs-icon" style="color: ${color};">${icon}</span> ${selAnomalie.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${selAnomalie.level || 1})</span>`;
                             }
@@ -705,7 +705,7 @@ function renderRooms() {
                                         ${allAnomalies.map(a => {
                                 let color = '#a855f7';
                                 if (a.spiritualite === 'ESPRIT') color = '#38bdf8';
-                                else if (a.spiritualite === 'KARMA') color = '#f59e0b';
+                                else if (a.spiritualite === 'KARMA') color = '#e7d198';
                                 const icon = CATEGORY_ICONS[a.category] || 'category';
                                 return `<div class="custom-option" onclick="updateRoomField(${rIndex}, 'alterationSpecialItemReward', '${a.name.replace(/'/g, "\\'")}'); renderRooms();"><span class="material-symbols-outlined cs-icon" style="color: ${color};">${icon}</span> ${a.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${a.level || 1})</span></div>`;
                             }).join('')}
@@ -731,7 +731,7 @@ function renderRooms() {
                             if (selAnomalie) {
                                 let color = '#a855f7';
                                 if (selAnomalie.spiritualite === 'ESPRIT') color = '#38bdf8';
-                                else if (selAnomalie.spiritualite === 'KARMA') color = '#f59e0b';
+                                else if (selAnomalie.spiritualite === 'KARMA') color = '#e7d198';
                                 const icon = CATEGORY_ICONS[selAnomalie.category] || 'category';
                                 selHtml = `<span class="material-symbols-outlined cs-icon" style="color: ${color};">${icon}</span> ${selAnomalie.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${selAnomalie.level || 1})</span>`;
                             }
@@ -745,7 +745,7 @@ function renderRooms() {
                                     ${allAnomalies.map(a => {
                                 let color = '#a855f7';
                                 if (a.spiritualite === 'ESPRIT') color = '#38bdf8';
-                                else if (a.spiritualite === 'KARMA') color = '#f59e0b';
+                                else if (a.spiritualite === 'KARMA') color = '#e7d198';
                                 const icon = CATEGORY_ICONS[a.category] || 'category';
                                 return `<div class="custom-option" onclick="updateRoomField(${rIndex}, 'alterationRequiredItem', '${a.name.replace(/'/g, "\\'")}'); renderRooms();"><span class="material-symbols-outlined cs-icon" style="color: ${color};">${icon}</span> ${a.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${a.level || 1})</span></div>`;
                             }).join('')}
@@ -784,7 +784,7 @@ function renderRooms() {
                             const an = allAnomalies.find(a => a.name === loot.specialItemName);
                             if (an) {
                                 if (an.spiritualite === 'ESPRIT') color = '#38bdf8';
-                                else if (an.spiritualite === 'KARMA') color = '#f59e0b';
+                                else if (an.spiritualite === 'KARMA') color = '#e7d198';
                                 icon = CATEGORY_ICONS[an.category] || 'category';
                                 if (an.description) tooltipDesc = an.description.replace(/'/g, "&#39;").replace(/"/g, "&quot;");
                             }
@@ -832,7 +832,7 @@ function renderRooms() {
                             const anPrice = allAnomalies.find(a => a.name === loot.priceSpecialItemName);
                             if (anPrice) {
                                 if (anPrice.spiritualite === 'ESPRIT') priceColor = '#38bdf8';
-                                else if (anPrice.spiritualite === 'KARMA') priceColor = '#f59e0b';
+                                else if (anPrice.spiritualite === 'KARMA') priceColor = '#e7d198';
                                 priceIcon = CATEGORY_ICONS[anPrice.category] || 'category';
                                 if (anPrice.description) tooltipDesc = anPrice.description.replace(/'/g, "&#39;").replace(/"/g, "&quot;");
                             }
@@ -920,7 +920,7 @@ function renderRooms() {
                     };
                     let color = '#a855f7';
                     if (a.spiritualite === 'ESPRIT') color = '#38bdf8';
-                    else if (a.spiritualite === 'KARMA') color = '#f59e0b';
+                    else if (a.spiritualite === 'KARMA') color = '#e7d198';
                     const icon = CATEGORY_ICONS[a.category] || 'category';
                     return `<div class="custom-option" onclick="selectMerchantSpecial(${rIndex}, '${a.name.replace(/'/g, "\\'")}', '${a.name.replace(/'/g, "\\'")}', '${color}')"><span class="material-symbols-outlined cs-icon" style="color: ${color};">${icon}</span> ${a.name}</div>`;
                 }).join('')}
@@ -950,7 +950,7 @@ function renderRooms() {
                     };
                     let color = '#a855f7';
                     if (a.spiritualite === 'ESPRIT') color = '#38bdf8';
-                    else if (a.spiritualite === 'KARMA') color = '#f59e0b';
+                    else if (a.spiritualite === 'KARMA') color = '#e7d198';
                     const icon = CATEGORY_ICONS[a.category] || 'category';
                     return `<div class="custom-option" onclick="selectMerchantCost(${rIndex}, '${a.name.replace(/'/g, "\\'")}', '${a.name.replace(/'/g, "\\'")}', '${color}')"><span class="material-symbols-outlined cs-icon" style="color: ${color};">${icon}</span> ${a.name}</div>`;
                 }).join('')}
@@ -1234,7 +1234,7 @@ function renderRooms() {
                                             <div class="custom-select-wrapper" id="altar_spirituality_wrapper_${rIndex}_${oIndex}" style="margin-top: 0.2rem; z-index: ${152 - (rIndex * 10 + oIndex * 3)};">
                                                 <div class="custom-select-trigger" onclick="toggleAltarSpiritualitySelect(${rIndex}, ${oIndex})" style="padding: 0.5rem; font-size: 0.85rem; border-radius: 8px;">
                                                     <span class="cs-label" id="altar_spirituality_label_${rIndex}_${oIndex}">
-                                                        ${outcome.altarSpirituality === 'ESPRIT' ? '<span class="material-symbols-outlined cs-icon" style="color: #3b82f6; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">blur_on</span> Esprit' : outcome.altarSpirituality === 'KARMA' ? '<span class="material-symbols-outlined cs-icon" style="color: #f59e0b; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">all_inclusive</span> Karma' : '<span class="material-symbols-outlined cs-icon" style="color: #d946ef; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">dark_mode</span> Ténèbres'}
+                                                        ${outcome.altarSpirituality === 'ESPRIT' ? '<span class="material-symbols-outlined cs-icon" style="color: #3b82f6; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">blur_on</span> Esprit' : outcome.altarSpirituality === 'KARMA' ? '<span class="material-symbols-outlined cs-icon" style="color: #e7d198; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">all_inclusive</span> Karma' : '<span class="material-symbols-outlined cs-icon" style="color: #d946ef; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">dark_mode</span> Ténèbres'}
                                                     </span>
                                                     <span class="material-symbols-outlined">expand_more</span>
                                                 </div>
@@ -1246,7 +1246,7 @@ function renderRooms() {
                                                         <span class="material-symbols-outlined cs-icon" style="color: #3b82f6; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">blur_on</span> Esprit
                                                     </div>
                                                     <div class="custom-option" onclick="updateAltarField(${rIndex}, ${oIndex}, 'altarSpirituality', 'KARMA')">
-                                                        <span class="material-symbols-outlined cs-icon" style="color: #f59e0b; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">all_inclusive</span> Karma
+                                                        <span class="material-symbols-outlined cs-icon" style="color: #e7d198; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">all_inclusive</span> Karma
                                                     </div>
                                                 </div>
                                             </div>
@@ -1293,7 +1293,7 @@ function renderRooms() {
                             if (selAnomalie) {
                                 if (selAnomalie.spiritualite === 'TENEBRES') selAnColor = '#a855f7';
                                 else if (selAnomalie.spiritualite === 'ESPRIT') selAnColor = '#38bdf8';
-                                else if (selAnomalie.spiritualite === 'KARMA') selAnColor = '#f59e0b';
+                                else if (selAnomalie.spiritualite === 'KARMA') selAnColor = '#e7d198';
                                 selCatIcon = selAnomalie.category ? (CATEGORY_ICONS[selAnomalie.category] || 'category') : 'star';
                             }
                             const selAnHtml = selAnomalie ? `<span class="material-symbols-outlined cs-icon" style="color: ${selAnColor}; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">${selCatIcon}</span>${selAnomalie.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${selAnomalie.level || 1})</span>` : 'Aucune anomalie disponible';
@@ -1313,7 +1313,7 @@ function renderRooms() {
                                 let anColor = '#94a3b8';
                                 if (an.spiritualite === 'TENEBRES') anColor = '#a855f7';
                                 else if (an.spiritualite === 'ESPRIT') anColor = '#38bdf8';
-                                else if (an.spiritualite === 'KARMA') anColor = '#f59e0b';
+                                else if (an.spiritualite === 'KARMA') anColor = '#e7d198';
                                 return `
                                                 <div class="custom-option" onclick="updateAltarField(${rIndex}, ${oIndex}, 'treasureAnomalieId', ${an.id})">
                                                     <span class="material-symbols-outlined cs-icon" style="color: ${anColor}; font-size: 1.1rem; vertical-align: middle; margin-right: 4px;">${an.category ? (CATEGORY_ICONS[an.category] || 'category') : 'star'}</span>${an.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${an.level || 1})</span>
@@ -2236,14 +2236,6 @@ window.addGlobalBuffToBoss = function (rIndex, oIndex) {
     valEl.value = '';
 
     renderRooms();
-};
-
-window.removeGlobalBuffFromBoss = function (rIndex, oIndex, bIndex) {
-    const outcome = selectedRooms[rIndex].doorOutcomes[oIndex];
-    if (outcome && outcome.globalBuffs) {
-        outcome.globalBuffs.splice(bIndex, 1);
-        renderRooms();
-    }
 };
 
 window.removeGlobalBuffFromBoss = function (rIndex, oIndex, bIndex) {

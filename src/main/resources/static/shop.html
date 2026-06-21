@@ -44,6 +44,11 @@
             border: 1px solid rgba(255, 255, 255, 0.05);
             flex-shrink: 0;
             /* Prevents group from shrinking or wrapping its children */
+            transition: z-index 0.2s;
+        }
+
+        .shop-rarity-group:hover {
+            z-index: 50;
         }
 
         .shop-rarity-group.group-COMMUN {
@@ -108,6 +113,7 @@
             transform: translateY(-5px);
             background: rgba(255, 255, 255, 0.05);
             box-shadow: 0 10px 20px rgba(0, 0, 0, 0.2);
+            z-index: 50;
         }
 
         .flip-icon {

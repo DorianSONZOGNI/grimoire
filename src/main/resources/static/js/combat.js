@@ -1292,34 +1292,36 @@ function updateUI(data) {
                                         btn.style.opacity = '0.5';
                                         btn.style.cursor = 'not-allowed';
                                     }
-                                    const first = eligible[0];
-                                    const CATEGORY_ICONS = {
-                                        'PIERRE': 'landslide', 'METAL': 'hardware', 'COEUR': 'favorite',
-                                        'ORBE': 'lens', 'CRISTAL': 'diamond', 'PLUME': 'history_edu',
-                                        'ECAILLE': 'waves', 'AUTRE': 'category'
-                                    };
-                                    let firstCatIcon = first.category ? (CATEGORY_ICONS[first.category] || 'category') : 'star';
-                                    let selectHtml = `
-                                    <div class="custom-select-wrapper" id="altarAnomalySelectWrapper" style="width: 100%; max-width: 350px; margin: 0 auto; z-index: 100;">
-                                        <div class="custom-select-trigger" onclick="document.getElementById('altarAnomalySelectWrapper').classList.toggle('open')" style="padding: 0.6rem 1rem; border-radius: 8px; border: 1px solid ${spColor}; text-align: left; background: rgba(0,0,0,0.5);">
-                                            <span class="cs-label" id="altarAnomalySelectLabel">
-                                                <span class="material-symbols-outlined cs-icon" style="color: ${spColor};">${firstCatIcon}</span> ${first.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${first.level || 1})</span>
-                                            </span>
-                                            <span class="material-symbols-outlined">expand_more</span>
-                                        </div>
-                                        <div class="custom-select-options" style="max-height: 200px; overflow-y: auto; text-align: left;">
-                                    `;
-                                    eligible.forEach(a => {
-                                        let catIcon = a.category ? (CATEGORY_ICONS[a.category] || 'category') : 'star';
-                                        selectHtml += `<div class="custom-option" onclick="document.getElementById('altarAnomalySelectLabel').innerHTML = this.innerHTML; document.getElementById('altarAnomalySelect').value = '${a.id}'; document.getElementById('altarAnomalySelectWrapper').classList.remove('open');"><span class="material-symbols-outlined cs-icon" style="color: ${spColor};">${catIcon}</span> ${a.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${a.level || 1})</span></div>`;
-                                    });
-                                    selectHtml += `
-                                        </div>
-                                    </div>
-                                    <input type="hidden" id="altarAnomalySelect" value="${first.id}">
-                                    `;
-                                    container.innerHTML = selectHtml;
+                                    return;
                                 }
+
+                                const first = eligible[0];
+                                const CATEGORY_ICONS = {
+                                    'PIERRE': 'landslide', 'METAL': 'hardware', 'COEUR': 'favorite',
+                                    'ORBE': 'lens', 'CRISTAL': 'diamond', 'PLUME': 'history_edu',
+                                    'ECAILLE': 'waves', 'AUTRE': 'category'
+                                };
+                                let firstCatIcon = first.category ? (CATEGORY_ICONS[first.category] || 'category') : 'star';
+                                let selectHtml = `
+                                <div class="custom-select-wrapper" id="altarAnomalySelectWrapper" style="width: 100%; max-width: 350px; margin: 0 auto; z-index: 100;">
+                                    <div class="custom-select-trigger" onclick="document.getElementById('altarAnomalySelectWrapper').classList.toggle('open')" style="padding: 0.6rem 1rem; border-radius: 8px; border: 1px solid ${spColor}; text-align: left; background: rgba(0,0,0,0.5);">
+                                        <span class="cs-label" id="altarAnomalySelectLabel">
+                                            <span class="material-symbols-outlined cs-icon" style="color: ${spColor};">${firstCatIcon}</span> ${first.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${first.level || 1})</span>
+                                        </span>
+                                        <span class="material-symbols-outlined">expand_more</span>
+                                    </div>
+                                    <div class="custom-select-options" style="max-height: 200px; overflow-y: auto; text-align: left;">
+                                `;
+                                eligible.forEach(a => {
+                                    let catIcon = a.category ? (CATEGORY_ICONS[a.category] || 'category') : 'star';
+                                    selectHtml += `<div class="custom-option" onclick="document.getElementById('altarAnomalySelectLabel').innerHTML = this.innerHTML; document.getElementById('altarAnomalySelect').value = '${a.id}'; document.getElementById('altarAnomalySelectWrapper').classList.remove('open');"><span class="material-symbols-outlined cs-icon" style="color: ${spColor};">${catIcon}</span> ${a.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${a.level || 1})</span></div>`;
+                                });
+                                selectHtml += `
+                                    </div>
+                                </div>
+                                <input type="hidden" id="altarAnomalySelect" value="${first.id}">
+                                `;
+                                container.innerHTML = selectHtml;
                             }).catch(err => {
                                 console.error(err);
                                 const container = document.getElementById('altarAnomalySelectContainer');
@@ -1370,7 +1372,7 @@ function updateUI(data) {
                                             if (an) {
                                                 if (an.spiritualite === 'TENEBRES') spColor = '#a855f7';
                                                 else if (an.spiritualite === 'ESPRIT') spColor = '#38bdf8';
-                                                else if (an.spiritualite === 'KARMA') spColor = '#f59e0b';
+                                                else if (an.spiritualite === 'KARMA') spColor = '#e7d198';
                                                 catIcon = an.category ? (CATEGORY_ICONS[an.category] || 'category') : 'star';
                                             }
                                         }
@@ -1391,7 +1393,7 @@ function updateUI(data) {
                                             if (an) {
                                                 if (an.spiritualite === 'TENEBRES') spColor = '#a855f7';
                                                 else if (an.spiritualite === 'ESPRIT') spColor = '#38bdf8';
-                                                else if (an.spiritualite === 'KARMA') spColor = '#f59e0b';
+                                                else if (an.spiritualite === 'KARMA') spColor = '#e7d198';
                                                 catIcon = an.category ? (CATEGORY_ICONS[an.category] || 'category') : 'star';
                                             }
                                         }
@@ -1449,7 +1451,7 @@ function updateUI(data) {
                                     const an = window.allAnomaliesCombat.find(a => a.name === entry.specialItemName);
                                     if (an) {
                                         if (an.spiritualite === 'ESPRIT') rarityColor = '#38bdf8';
-                                        else if (an.spiritualite === 'KARMA') rarityColor = '#f59e0b';
+                                        else if (an.spiritualite === 'KARMA') rarityColor = '#e7d198';
                                         catIcon = an.category ? (CATEGORY_ICONS[an.category] || 'category') : 'star';
                                     }
                                 }
@@ -1476,7 +1478,7 @@ function updateUI(data) {
                                     const anPrice = window.allAnomaliesCombat.find(a => a.name === entry.priceSpecialItemName);
                                     if (anPrice) {
                                         if (anPrice.spiritualite === 'ESPRIT') priceColor = '#38bdf8';
-                                        else if (anPrice.spiritualite === 'KARMA') priceColor = '#f59e0b';
+                                        else if (anPrice.spiritualite === 'KARMA') priceColor = '#e7d198';
                                         priceIcon = anPrice.category ? (CATEGORY_ICONS[anPrice.category] || 'category') : 'star';
                                     }
                                 }
@@ -1518,7 +1520,7 @@ function updateUI(data) {
                                         tooltipTitle = 'Anomalie';
                                         if (an.description) tooltipDesc = an.description;
                                         if (an.spiritualite === 'ESPRIT') tColor = '#38bdf8';
-                                        else if (an.spiritualite === 'KARMA') tColor = '#f59e0b';
+                                        else if (an.spiritualite === 'KARMA') tColor = '#e7d198';
                                     }
                                 }
                                 tooltipDataHtml = `<div style="padding: 0.5rem; color: ${tColor}; font-weight: 600; text-align: center; min-width: 150px;">${tooltipTitle}</div><div style="color: #94a3b8; text-align: center; font-size: 0.9rem;">${tooltipDesc}</div>`;
@@ -2537,3 +2539,59 @@ function renderDotsHtml(dotList) {
         </div>
     `;
 }
+
+window.showGlobalTooltip = function(el) {
+    let tooltip = document.getElementById('globalFixedTooltip');
+    if (!tooltip) {
+        tooltip = document.createElement('div');
+        tooltip.id = 'globalFixedTooltip';
+        tooltip.style.position = 'fixed';
+        tooltip.style.zIndex = '999999';
+        tooltip.style.visibility = 'visible';
+        tooltip.style.opacity = '1';
+        tooltip.style.pointerEvents = 'none';
+        tooltip.style.transform = 'none';
+        tooltip.style.background = 'rgba(15, 23, 42, 0.95)';
+        tooltip.style.border = '1px solid rgba(168, 85, 247, 0.5)';
+        tooltip.style.borderRadius = '8px';
+        tooltip.style.padding = '10px';
+        tooltip.style.color = '#f8fafc';
+        tooltip.style.fontSize = '0.8rem';
+        tooltip.style.lineHeight = '1.4';
+        tooltip.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.5)';
+        tooltip.style.maxWidth = '250px';
+        tooltip.style.whiteSpace = 'normal';
+        tooltip.style.wordWrap = 'break-word';
+        tooltip.style.textAlign = 'left';
+        document.body.appendChild(tooltip);
+    }
+    
+    const tmpl = el.querySelector('.tooltip-data');
+    if (tmpl) {
+        tooltip.innerHTML = tmpl.innerHTML;
+    } else {
+        return;
+    }
+    
+    tooltip.style.display = 'block';
+
+    const rect = el.getBoundingClientRect();
+    let top = rect.bottom + 8;
+    let left = rect.left + rect.width / 2 - tooltip.offsetWidth / 2;
+
+    if (top + tooltip.offsetHeight > window.innerHeight) {
+        top = rect.top - tooltip.offsetHeight - 8;
+    }
+    if (left < 10) left = 10;
+    if (left + tooltip.offsetWidth > window.innerWidth - 10) {
+        left = window.innerWidth - tooltip.offsetWidth - 10;
+    }
+
+    tooltip.style.top = top + 'px';
+    tooltip.style.left = left + 'px';
+};
+
+window.hideGlobalTooltip = function() {
+    const tooltip = document.getElementById('globalFixedTooltip');
+    if (tooltip) tooltip.style.display = 'none';
+};

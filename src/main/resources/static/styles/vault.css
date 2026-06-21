@@ -342,21 +342,25 @@
     display: none;
 }
 
-.custom-select-options::-webkit-scrollbar, .custom-options::-webkit-scrollbar {
+.custom-select-options::-webkit-scrollbar,
+.custom-options::-webkit-scrollbar {
     width: 6px;
 }
 
-.custom-select-options::-webkit-scrollbar-track, .custom-options::-webkit-scrollbar-track {
+.custom-select-options::-webkit-scrollbar-track,
+.custom-options::-webkit-scrollbar-track {
     background: transparent;
     border-radius: 6px;
 }
 
-.custom-select-options::-webkit-scrollbar-thumb, .custom-options::-webkit-scrollbar-thumb {
+.custom-select-options::-webkit-scrollbar-thumb,
+.custom-options::-webkit-scrollbar-thumb {
     background: rgba(255, 255, 255, 0.15);
     border-radius: 6px;
 }
 
-.custom-select-options::-webkit-scrollbar-thumb:hover, .custom-options::-webkit-scrollbar-thumb:hover {
+.custom-select-options::-webkit-scrollbar-thumb:hover,
+.custom-options::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.25);
 }
 
@@ -528,9 +532,7 @@
     border-color: rgba(168, 85, 247, 0.5);
 }
 
-.anomaly-badge .anomaly-tooltip {
-    visibility: hidden;
-    opacity: 0;
+.anomaly-tooltip {
     position: absolute;
     bottom: calc(100% + 8px);
     left: 50%;
@@ -544,7 +546,7 @@
     color: #f8fafc;
     font-size: 0.8rem;
     line-height: 1.4;
-    box-shadow: 0 10px 25px rgba(0,0,0,0.5);
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
     z-index: 1000;
     text-align: left;
     white-space: normal;
@@ -553,11 +555,7 @@
     transition: all 0.2s ease;
 }
 
-.anomaly-badge:hover .anomaly-tooltip {
-    visibility: visible;
-    opacity: 1;
-    transform: translateX(-50%) translateY(0);
-}
+
 
 .anomaly-tooltip-title {
     font-weight: 700;
