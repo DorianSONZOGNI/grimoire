@@ -52,6 +52,65 @@
             -webkit-text-fill-color: transparent;
         }
 
+        .btn-transmute {
+            position: relative;
+            background: linear-gradient(135deg, #10b981, #06b6d4);
+            color: white;
+            border: none;
+            padding: 1rem 3rem;
+            font-size: 1.15rem;
+            font-weight: 700;
+            letter-spacing: 1px;
+            text-transform: uppercase;
+            border-radius: 50px;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 0.6rem;
+            box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4), inset 0 2px 0 rgba(255, 255, 255, 0.2);
+            /* On ne cible que le mouvement et l'ombre en rapide (0.3s) */
+            transition: transform 0.3s cubic-bezier(0.25, 0.8, 0.25, 1),
+                box-shadow 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+            overflow: hidden;
+            z-index: 1;
+        }
+
+        .btn-transmute::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: linear-gradient(135deg, #06b6d4, #10b981);
+            opacity: 0;
+            z-index: -1;
+            border-radius: 50px;
+            /* L'astuce anti-flash est ici : */
+            pointer-events: none;
+            /* On ralentit uniquement le fondu du dégradé (1s) */
+            transition: opacity 1s ease-in-out;
+        }
+
+        .btn-transmute:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 12px 35px rgba(16, 185, 129, 0.6), inset 0 2px 0 rgba(255, 255, 255, 0.3);
+        }
+
+        .btn-transmute:hover::before {
+            opacity: 1;
+        }
+
+        .btn-transmute:active {
+            transform: translateY(1px);
+            box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4), inset 0 2px 0 rgba(255, 255, 255, 0.1);
+        }
+
+        .btn-transmute .material-symbols-outlined {
+            font-size: 1.4rem;
+        }
+
         .alchemy-panel {
             background: var(--glass-bg);
             border: 1px solid var(--glass-border);
@@ -218,7 +277,7 @@
                     const equips = await resC.json();
                     userConsumables = equips.filter(e => e.slot === 'CONSOMMABLE');
                 }
-            } catch(e) {
+            } catch (e) {
                 console.error("Erreur chargement inventaire", e);
             }
         }
@@ -236,9 +295,9 @@
         function renderRecipesList() {
             const container = document.getElementById('playerRecipesList');
             container.innerHTML = '';
-            
+
             const unlockedSecrets = window.currentUser?.unlockedSecrets || {};
-            
+
             const visibleRecipes = allRecipes.filter(r => {
                 if (r.rewardType === 'UNLOCK_FEATURE') {
                     const currentLevel = unlockedSecrets[r.rewardName] || 0;
@@ -297,13 +356,13 @@
             if (lower.includes('sceau')) return { icon: 'token', color: '#a855f7' }; // purple
             if (lower.includes('parchemin')) return { icon: 'history_edu', color: '#fb923c' }; // orange
             if (lower.includes('potion') || lower.includes('élixir') || lower.includes('elixir')) return { icon: 'science', color: '#10b981' }; // green
-            
+
             // Defaults
             if (defaultType === 'CONSUMABLE') return { icon: 'water_drop', color: '#3b82f6' }; // blue
             if (defaultType === 'ANOMALY') return { icon: 'auto_awesome', color: '#a855f7' }; // purple
             if (defaultType === 'SECRET' || defaultType === 'UNLOCK') return { icon: 'key', color: '#f59e0b' }; // gold
             if (defaultType === 'SPIRIT_XP') return { icon: 'self_improvement', color: '#38bdf8' }; // light blue
-            
+
             return { icon: 'category', color: '#94a3b8' }; // generic
         }
 
@@ -320,11 +379,11 @@
                     <span style="color: #f59e0b; font-weight:600; font-size:0.9rem;">${r.costGold} Or</span>
                 </div>`;
             }
-            
+
             if (r.requiredAnomalies) {
                 for (const [name, qty] of Object.entries(r.requiredAnomalies)) {
                     let matching = userAnomalies.filter(a => a.name === name);
-                    
+
                     let isIdentical = true;
                     if (matching.length > 0) {
                         const first = matching[0];
@@ -339,7 +398,7 @@
                     const hasEnough = matching.length >= qty;
                     const statusColor = hasEnough ? '#10b981' : '#ef4444';
                     const statusIcon = hasEnough ? 'check_circle' : 'cancel';
-                    
+
                     const style = getItemStyle(name, 'ANOMALY');
 
                     reqsHTML += `<div style="background:rgba(0,0,0,0.4); padding:0.6rem; border-radius:8px; border:1px solid ${style.color}40; margin-bottom: 0.4rem;">
@@ -353,21 +412,21 @@
                                 ${matching.length}/${qty}
                             </div>
                         </div>`;
-                    
+
                     if (!isIdentical && hasEnough) {
                         reqsHTML += `<div style="display: flex; flex-direction: column; gap: 0.4rem;">`;
                         let usedIndexes = new Set();
                         for (let i = 0; i < qty; i++) {
                             let selectedIndex = -1;
-                            for(let j=0; j<matching.length; j++) {
-                                if(!usedIndexes.has(j)) {
+                            for (let j = 0; j < matching.length; j++) {
+                                if (!usedIndexes.has(j)) {
                                     selectedIndex = j;
                                     usedIndexes.add(j);
                                     break;
                                 }
                             }
-                            
-                            let options = [{value: '', html: '-- Choisir une anomalie --', selected: (selectedIndex === -1)}];
+
+                            let options = [{ value: '', html: '-- Choisir une anomalie --', selected: (selectedIndex === -1) }];
                             matching.forEach((a, j) => {
                                 options.push({
                                     value: a.id,
@@ -375,10 +434,10 @@
                                     selected: (j === selectedIndex)
                                 });
                             });
-                            
+
                             const selectId = `anomaly_select_${name.replace(/\s+/g, '')}_${i}`;
                             reqsHTML += `<div id="${selectId}"></div>`;
-                            
+
                             customSelectSetups.push(() => {
                                 buildCustomSelect(document.getElementById(selectId), options, 'anomaly-select');
                             });
@@ -394,14 +453,14 @@
                     reqsHTML += `</div>`;
                 }
             }
-            
+
             if (r.requiredConsumables) {
                 for (const [name, qty] of Object.entries(r.requiredConsumables)) {
                     let matching = userConsumables.filter(c => c.name === name);
                     const hasEnough = matching.length >= qty;
                     const statusColor = hasEnough ? '#3b82f6' : '#ef4444';
                     const statusIcon = hasEnough ? 'check_circle' : 'cancel';
-                    
+
                     const style = getItemStyle(name, 'CONSUMABLE');
 
                     reqsHTML += `<div style="background:rgba(0,0,0,0.4); padding:0.6rem; border-radius:8px; border:1px solid ${style.color}40; margin-bottom: 0.4rem;">
@@ -415,7 +474,7 @@
                                 ${matching.length}/${qty}
                             </div>
                         </div>`;
-                    
+
                     if (hasEnough) {
                         reqsHTML += `<div style="display:none;">`;
                         for (let i = 0; i < qty; i++) {
@@ -507,14 +566,14 @@
                         <strong style="font-size: 1.2rem; color: #fff;">${quantityDisplay}</strong>
                     </div>
 
-                    <button class="btn" style="margin-top: 1.5rem; padding: 0.8rem 2.5rem; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg, #10b981, #06b6d4); border:none; box-shadow: 0 4px 15px rgba(16,185,129,0.4);" onclick="craftSelected()">
+                    <button class="btn-transmute" style="margin-top: 1.5rem;" onclick="craftSelected()">
                         <span class="material-symbols-outlined">science</span>
                         Transmuter
                     </button>
                     <div id="craftMessage" style="margin-top: 0.5rem; font-size:0.9rem; font-weight: 600; text-align: center;"></div>
                 </div>
             `;
-            
+
             // Execute custom select setups
             customSelectSetups.forEach(setup => setup());
         }
@@ -525,7 +584,7 @@
             options.forEach(o => {
                 optionsHTML += `<div class="custom-option" data-value="${o.value}">${o.html}</div>`;
             });
-            
+
             containerDiv.innerHTML = `
                 <div class="custom-select-wrapper" style="width: 100%; position: relative;">
                     <div class="custom-select-trigger" style="display:flex; justify-content:space-between; align-items:center; background: rgba(0,0,0,0.5); padding: 0.5rem 0.8rem; border: 1px solid var(--glass-border); color: #fff; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-size:0.9rem;">
@@ -538,28 +597,28 @@
                     <input type="hidden" class="${hiddenInputClass}" id="${hiddenInputId}" value="${selectedOption.value}">
                 </div>
             `;
-            
+
             const trigger = containerDiv.querySelector('.custom-select-trigger');
             const optionsMenu = containerDiv.querySelector('.custom-select-options');
             const hiddenInput = containerDiv.querySelector('input');
-            
+
             trigger.onclick = (e) => {
                 e.stopPropagation();
                 // Close all other dropdowns
                 document.querySelectorAll('.custom-select-options').forEach(m => {
-                    if(m !== optionsMenu) m.style.display = 'none';
+                    if (m !== optionsMenu) m.style.display = 'none';
                 });
                 optionsMenu.style.display = optionsMenu.style.display === 'none' ? 'block' : 'none';
                 trigger.style.borderColor = optionsMenu.style.display === 'block' ? '#10b981' : 'var(--glass-border)';
             };
-            
+
             containerDiv.querySelectorAll('.custom-option').forEach(opt => {
                 opt.style.padding = '0.5rem 0.8rem';
                 opt.style.cursor = 'pointer';
                 opt.style.transition = 'background 0.2s';
                 opt.onmouseover = () => opt.style.background = 'rgba(255,255,255,0.1)';
                 opt.onmouseout = () => opt.style.background = 'transparent';
-                
+
                 opt.onclick = (e) => {
                     e.stopPropagation();
                     const val = opt.getAttribute('data-value');
@@ -570,7 +629,7 @@
                 };
             });
         }
-        
+
         document.addEventListener('click', () => {
             document.querySelectorAll('.custom-select-options').forEach(m => m.style.display = 'none');
             document.querySelectorAll('.custom-select-trigger').forEach(t => t.style.borderColor = 'var(--glass-border)');
@@ -583,7 +642,7 @@
                     const chars = await res.json();
                     const container = document.getElementById('crafterSelectContainer');
                     if (container) {
-                        let options = [{value: '', html: '-- Choisir un personnage --', selected: true}];
+                        let options = [{ value: '', html: '-- Choisir un personnage --', selected: true }];
                         chars.forEach(c => {
                             options.push({
                                 value: c.id,
@@ -692,7 +751,7 @@
             }
 
             try {
-                const res = await fetch(`/api/alchemy/craft/${selectedRecipe.id}`, { 
+                const res = await fetch(`/api/alchemy/craft/${selectedRecipe.id}`, {
                     method: 'POST',
                     headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(body)
@@ -709,10 +768,10 @@
                     if (window.checkAuthStatus) {
                         window.checkAuthStatus();
                     }
-                    
+
                     // Refresh inventory
                     await fetchUserInventory();
-                    
+
                     // Force refresh of cauldron UI
                     renderCauldron(selectedRecipe);
                     document.getElementById('craftMessage').innerText = text;
@@ -730,32 +789,80 @@
 
         function createMagicParticles() {
             const panel = document.getElementById('cauldronPanel');
-            for (let i = 0; i < 30; i++) {
+
+            // Central majestic flash
+            const flash = document.createElement('div');
+            flash.style.position = 'absolute';
+            flash.style.width = '20px';
+            flash.style.height = '20px';
+            flash.style.background = '#fff';
+            flash.style.borderRadius = '50%';
+            flash.style.boxShadow = '0 0 50px 20px #06b6d4, 0 0 100px 40px #10b981';
+            flash.style.left = '50%';
+            flash.style.top = '50%';
+            flash.style.transform = 'translate(-50%, -50%)';
+            flash.style.pointerEvents = 'none';
+            flash.style.zIndex = '100';
+            panel.appendChild(flash);
+
+            flash.animate([
+                { transform: 'translate(-50%, -50%) scale(1)', opacity: 0.5, offset: 0 },
+                { transform: 'translate(-50%, -50%) scale(8)', opacity: 1, offset: 0.3 },
+                { transform: 'translate(-50%, -50%) scale(15)', opacity: 0.8, offset: 0.8 },
+                { transform: 'translate(-50%, -50%) scale(25)', opacity: 0, offset: 1 }
+            ], {
+                duration: 4000,
+                easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
+                fill: 'forwards'
+            });
+
+            setTimeout(() => flash.remove(), 4100);
+
+            // Particles
+            const colors = ['#10b981', '#06b6d4', '#f59e0b', '#a855f7', '#ffffff'];
+
+            for (let i = 0; i < 120; i++) {
                 const p = document.createElement('div');
+                const size = 3 + Math.random() * 6;
                 p.style.position = 'absolute';
-                p.style.width = '8px';
-                p.style.height = '8px';
-                p.style.background = Math.random() > 0.5 ? '#10b981' : '#06b6d4';
+                p.style.width = `${size}px`;
+                p.style.height = `${size}px`;
+                const color = colors[Math.floor(Math.random() * colors.length)];
+                p.style.background = color;
                 p.style.borderRadius = '50%';
-                p.style.boxShadow = `0 0 10px ${p.style.background}`;
+                p.style.boxShadow = `0 0 ${size * 2}px ${color}, 0 0 ${size * 4}px ${color}`;
                 p.style.left = '50%';
                 p.style.top = '50%';
-                p.style.transition = 'all 1s cubic-bezier(0.25, 1, 0.5, 1)';
-                p.style.opacity = '1';
                 p.style.pointerEvents = 'none';
+                p.style.zIndex = '101';
 
                 panel.appendChild(p);
 
-                setTimeout(() => {
-                    const angle = Math.random() * Math.PI * 2;
-                    const dist = 100 + Math.random() * 150;
-                    p.style.transform = `translate(${Math.cos(angle) * dist}px, ${Math.sin(angle) * dist}px) scale(0)`;
-                    p.style.opacity = '0';
-                }, 10);
+                // TRÈS LENT : 8 à 15 secondes
+                const duration = 8000 + Math.random() * 7000;
+                const angle = Math.random() * Math.PI * 2;
+
+                // Moins de distance horizontale pour un effet de flottement plus vertical
+                const dist = 50 + Math.random() * 150;
+
+                // Dérive forte vers le haut
+                const destX = Math.cos(angle) * dist + (Math.random() * 150 - 75);
+                const destY = Math.sin(angle) * dist - (250 + Math.random() * 300);
+
+                p.animate([
+                    { transform: 'translate(-50%, -50%) scale(0)', opacity: 0, offset: 0 },
+                    { transform: 'translate(-50%, -50%) scale(1)', opacity: 1, offset: 0.05 },
+                    { transform: `translate(calc(-50% + ${destX * 0.8}px), calc(-50% + ${destY * 0.8}px)) scale(1)`, opacity: 0.8, offset: 0.8 },
+                    { transform: `translate(calc(-50% + ${destX}px), calc(-50% + ${destY}px)) scale(0)`, opacity: 0, offset: 1 }
+                ], {
+                    duration: duration,
+                    easing: 'linear', // linéaire pour un flottement constant et doux
+                    fill: 'forwards'
+                });
 
                 setTimeout(() => {
                     p.remove();
-                }, 1000);
+                }, duration + 100);
             }
         }
     </script>
