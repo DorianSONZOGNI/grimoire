@@ -258,14 +258,17 @@
             renderCauldron(recipe);
         }
 
+        let customSelectSetups = [];
+
         function renderCauldron(r) {
             const container = document.getElementById('cauldronPanel');
+            customSelectSetups = [];
 
             let reqsHTML = '';
             if (r.costGold > 0) {
-                reqsHTML += `<div style="display:flex; align-items:center; gap:0.5rem; background:rgba(0,0,0,0.4); padding:0.5rem 1rem; border-radius:8px; border:1px solid rgba(245, 158, 11, 0.3);">
-                    <span class="material-symbols-outlined" style="color: #f59e0b;">monetization_on</span>
-                    <span style="color: #f59e0b; font-weight:600;">${r.costGold} Or</span>
+                reqsHTML += `<div style="display:flex; align-items:center; gap:0.5rem; background:rgba(0,0,0,0.4); padding:0.6rem; border-radius:8px; border:1px solid rgba(245, 158, 11, 0.3); margin-bottom: 0.4rem;">
+                    <span class="material-symbols-outlined" style="color: #f59e0b; font-size:1.2rem;">monetization_on</span>
+                    <span style="color: #f59e0b; font-weight:600; font-size:0.9rem;">${r.costGold} Or</span>
                 </div>`;
             }
             
@@ -288,11 +291,11 @@
                     const statusColor = hasEnough ? '#10b981' : '#ef4444';
                     const statusIcon = hasEnough ? 'check_circle' : 'cancel';
                     
-                    reqsHTML += `<div style="background:rgba(0,0,0,0.4); padding:1rem; border-radius:8px; border:1px solid rgba(168, 85, 247, 0.3); margin-bottom: 0.5rem;">
+                    reqsHTML += `<div style="background:rgba(0,0,0,0.4); padding:0.6rem; border-radius:8px; border:1px solid rgba(168, 85, 247, 0.3); margin-bottom: 0.4rem;">
                         <div style="display:flex; align-items:center; justify-content: space-between; gap:0.5rem; margin-bottom: ${(!isIdentical && hasEnough) ? '0.5rem' : '0'};">
                             <div style="display:flex; align-items:center; gap:0.5rem;">
-                                <span class="material-symbols-outlined" style="color: #a855f7;">auto_awesome</span>
-                                <span style="font-weight: 600;">${qty}x ${name}</span>
+                                <span class="material-symbols-outlined" style="color: #a855f7; font-size:1.2rem;">auto_awesome</span>
+                                <span style="font-weight: 600; font-size:0.9rem;">${qty}x ${name}</span>
                             </div>
                             <div style="display:flex; align-items:center; gap:0.3rem; color: ${statusColor}; font-size: 0.85rem; font-weight: 600;">
                                 <span class="material-symbols-outlined" style="font-size: 1.1rem;">${statusIcon}</span>
@@ -301,7 +304,7 @@
                         </div>`;
                     
                     if (!isIdentical && hasEnough) {
-                        reqsHTML += `<div style="display: flex; flex-direction: column; gap: 0.5rem;">`;
+                        reqsHTML += `<div style="display: flex; flex-direction: column; gap: 0.4rem;">`;
                         let usedIndexes = new Set();
                         for (let i = 0; i < qty; i++) {
                             let selectedIndex = -1;
@@ -313,17 +316,21 @@
                                 }
                             }
                             
-                            let optionsHTML = '<option value="">-- Choisir une anomalie --</option>';
+                            let options = [{value: '', html: '-- Choisir une anomalie --', selected: (selectedIndex === -1)}];
                             matching.forEach((a, j) => {
-                                const isSelected = (j === selectedIndex) ? 'selected' : '';
-                                optionsHTML += `<option value="${a.id}" ${isSelected}>Niv. ${a.level || 1} (${a.spiritualite || 'Autre'})</option>`;
+                                options.push({
+                                    value: a.id,
+                                    html: `Niv. ${a.level || 1} (${a.spiritualite || 'Autre'})`,
+                                    selected: (j === selectedIndex)
+                                });
                             });
                             
-                            reqsHTML += `
-                                <select class="anomaly-select ingredient-select" style="width:100%; padding: 0.6rem; background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); color: #fff; border-radius: 6px;">
-                                    ${optionsHTML}
-                                </select>
-                            `;
+                            const selectId = `anomaly_select_${name.replace(/\s+/g, '')}_${i}`;
+                            reqsHTML += `<div id="${selectId}"></div>`;
+                            
+                            customSelectSetups.push(() => {
+                                buildCustomSelect(document.getElementById(selectId), options, 'anomaly-select');
+                            });
                         }
                         reqsHTML += `</div>`;
                     } else if (hasEnough) {
@@ -344,11 +351,11 @@
                     const statusColor = hasEnough ? '#3b82f6' : '#ef4444';
                     const statusIcon = hasEnough ? 'check_circle' : 'cancel';
                     
-                    reqsHTML += `<div style="background:rgba(0,0,0,0.4); padding:1rem; border-radius:8px; border:1px solid rgba(59, 130, 246, 0.3); margin-bottom: 0.5rem;">
+                    reqsHTML += `<div style="background:rgba(0,0,0,0.4); padding:0.6rem; border-radius:8px; border:1px solid rgba(59, 130, 246, 0.3); margin-bottom: 0.4rem;">
                         <div style="display:flex; align-items:center; justify-content: space-between; gap:0.5rem;">
                             <div style="display:flex; align-items:center; gap:0.5rem;">
-                                <span class="material-symbols-outlined" style="color: #3b82f6;">water_drop</span>
-                                <span style="font-weight: 600;">${qty}x ${name}</span>
+                                <span class="material-symbols-outlined" style="color: #3b82f6; font-size:1.2rem;">water_drop</span>
+                                <span style="font-weight: 600; font-size:0.9rem;">${qty}x ${name}</span>
                             </div>
                             <div style="display:flex; align-items:center; gap:0.3rem; color: ${statusColor}; font-size: 0.85rem; font-weight: 600;">
                                 <span class="material-symbols-outlined" style="font-size: 1.1rem;">${statusIcon}</span>
@@ -371,14 +378,14 @@
             let crafterSelectHTML = '';
             if (r.costSpiritXp > 0) {
                 crafterSelectHTML = `
-                    <div style="margin-top: 1.5rem; text-align:left; width: 100%;">
-                        <label style="color: #10b981; font-weight: 600; font-size: 0.9rem;">
-                            <span class="material-symbols-outlined" style="font-size: 1.1rem; vertical-align: middle; color: #10b981;">star</span>
+                    <div style="margin-top: 1rem; text-align:left; width: 100%;">
+                        <label style="color: #10b981; font-weight: 600; font-size: 0.85rem;">
+                            <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; color: #10b981;">star</span>
                             Sélectionnez le personnage canalisant (-${r.costSpiritXp} XP Spirit.) :
                         </label>
-                        <select id="crafterSelect" style="width:100%; padding: 0.6rem; margin-top: 0.5rem; background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); color: #fff; border-radius: 8px;">
-                            <option value="">Chargement de vos personnages...</option>
-                        </select>
+                        <div id="crafterSelectContainer" style="margin-top: 0.4rem;">
+                            <div style="padding:0.4rem; color:var(--text-muted); font-size:0.85rem;">Chargement...</div>
+                        </div>
                     </div>
                 `;
                 fetchUserCharacters();
@@ -393,53 +400,118 @@
 
             container.innerHTML = `
                 <div style="width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; text-align: left;">
-                    <div style="margin-bottom: 2rem; text-align:center;">
-                        <span class="material-symbols-outlined" style="font-size: 3rem; color: #06b6d4;">experiment</span>
-                        <h2 style="margin: 0.5rem 0 0 0; color: #fff; font-size: 1.8rem;">${r.name}</h2>
-                        <p style="color: var(--text-muted); font-size: 1rem; max-width: 500px; margin: 0.5rem auto;">${r.description || ''}</p>
+                    <div style="margin-bottom: 1rem; text-align:center;">
+                        <span class="material-symbols-outlined" style="font-size: 2.2rem; color: #06b6d4;">experiment</span>
+                        <h2 style="margin: 0.2rem 0 0 0; color: #fff; font-size: 1.5rem;">${r.name}</h2>
+                        <p style="color: var(--text-muted); font-size: 0.9rem; max-width: 500px; margin: 0.2rem auto;">${r.description || ''}</p>
                     </div>
 
-                    <div style="width: 100%; max-width: 500px; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); border-radius: 12px; padding: 1.5rem;">
-                        <h3 style="margin-top: 0; color: #e2e8f0; font-size: 1.1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem;">Ingrédients Requis</h3>
-                        <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 1rem;">
-                            ${reqsHTML || '<span style="color:var(--text-muted);">Aucun coût matériel.</span>'}
+                    <div style="width: 100%; max-width: 500px; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); border-radius: 12px; padding: 1rem;">
+                        <h3 style="margin-top: 0; color: #e2e8f0; font-size: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.4rem;">Ingrédients Requis</h3>
+                        <div style="display: flex; flex-direction: column; gap: 0.2rem; margin-top: 0.6rem;">
+                            ${reqsHTML || '<span style="color:var(--text-muted); font-size:0.9rem;">Aucun coût matériel.</span>'}
                         </div>
                         
                         ${crafterSelectHTML}
                     </div>
 
-                    <div style="margin-top: 1.5rem; display: flex; align-items: center; gap: 1rem;">
-                        <span class="material-symbols-outlined" style="color: #10b981; font-size: 2rem;">arrow_downward</span>
+                    <div style="margin-top: 0.5rem; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 1rem;">
+                        <span class="material-symbols-outlined" style="color: #10b981; font-size: 1.8rem;">arrow_downward</span>
                     </div>
 
-                    <div style="width: 100%; max-width: 500px; background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(6,182,212,0.1)); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 12px; padding: 1.5rem; margin-top: 1rem; text-align: center;">
-                        <span style="display:flex; justify-content:center; align-items:center; gap:0.3rem; font-size: 0.85rem; color: #10b981; text-transform: uppercase; font-weight: 700; letter-spacing: 1px; margin-bottom: 0.5rem;">
+                    <div style="width: 100%; max-width: 500px; background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(6,182,212,0.1)); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 12px; padding: 1rem; text-align: center;">
+                        <span style="display:flex; justify-content:center; align-items:center; gap:0.3rem; font-size: 0.8rem; color: #10b981; text-transform: uppercase; font-weight: 700; letter-spacing: 1px; margin-bottom: 0.3rem;">
                             <span class="material-symbols-outlined" style="font-size: 1.1rem;">${resultIcon}</span>
                             ${resultLabel}
                         </span>
-                        <strong style="font-size: 1.3rem; color: #fff;">${r.rewardQuantity}x ${r.rewardName} ${r.rewardLevel > 1 ? '(Niv. ' + r.rewardLevel + ')' : ''}</strong>
+                        <strong style="font-size: 1.2rem; color: #fff;">${r.rewardQuantity}x ${r.rewardName} ${r.rewardLevel > 1 ? '(Niv. ' + r.rewardLevel + ')' : ''}</strong>
                     </div>
 
-                    <button class="btn" style="margin-top: 2.5rem; padding: 1rem 3rem; font-size: 1.2rem; display: flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg, #10b981, #06b6d4); border:none; box-shadow: 0 4px 15px rgba(16,185,129,0.4);" onclick="craftSelected()">
+                    <button class="btn" style="margin-top: 1.5rem; padding: 0.8rem 2.5rem; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg, #10b981, #06b6d4); border:none; box-shadow: 0 4px 15px rgba(16,185,129,0.4);" onclick="craftSelected()">
                         <span class="material-symbols-outlined">science</span>
                         Transmuter
                     </button>
-                    <div id="craftMessage" style="margin-top: 1rem; font-weight: 600; text-align: center;"></div>
+                    <div id="craftMessage" style="margin-top: 0.5rem; font-size:0.9rem; font-weight: 600; text-align: center;"></div>
                 </div>
             `;
+            
+            // Execute custom select setups
+            customSelectSetups.forEach(setup => setup());
         }
+
+        function buildCustomSelect(containerDiv, options, hiddenInputClass, hiddenInputId = '') {
+            let selectedOption = options.find(o => o.selected) || options[0];
+            let optionsHTML = '';
+            options.forEach(o => {
+                optionsHTML += `<div class="custom-option" data-value="${o.value}">${o.html}</div>`;
+            });
+            
+            containerDiv.innerHTML = `
+                <div class="custom-select-wrapper" style="width: 100%; position: relative;">
+                    <div class="custom-select-trigger" style="display:flex; justify-content:space-between; align-items:center; background: rgba(0,0,0,0.5); padding: 0.5rem 0.8rem; border: 1px solid var(--glass-border); color: #fff; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-size:0.9rem;">
+                        <span class="cs-label">${selectedOption.html}</span>
+                        <span class="material-symbols-outlined" style="font-size:1.2rem;">expand_more</span>
+                    </div>
+                    <div class="custom-select-options" style="display:none; position:absolute; top:calc(100% + 4px); left:0; right:0; background:rgba(15,23,42,0.95); border:1px solid var(--glass-border); border-radius:6px; z-index:100; max-height:180px; overflow-y:auto; box-shadow:0 10px 25px rgba(0,0,0,0.5); font-size:0.9rem;">
+                        ${optionsHTML}
+                    </div>
+                    <input type="hidden" class="${hiddenInputClass}" id="${hiddenInputId}" value="${selectedOption.value}">
+                </div>
+            `;
+            
+            const trigger = containerDiv.querySelector('.custom-select-trigger');
+            const optionsMenu = containerDiv.querySelector('.custom-select-options');
+            const hiddenInput = containerDiv.querySelector('input');
+            
+            trigger.onclick = (e) => {
+                e.stopPropagation();
+                // Close all other dropdowns
+                document.querySelectorAll('.custom-select-options').forEach(m => {
+                    if(m !== optionsMenu) m.style.display = 'none';
+                });
+                optionsMenu.style.display = optionsMenu.style.display === 'none' ? 'block' : 'none';
+                trigger.style.borderColor = optionsMenu.style.display === 'block' ? '#10b981' : 'var(--glass-border)';
+            };
+            
+            containerDiv.querySelectorAll('.custom-option').forEach(opt => {
+                opt.style.padding = '0.5rem 0.8rem';
+                opt.style.cursor = 'pointer';
+                opt.style.transition = 'background 0.2s';
+                opt.onmouseover = () => opt.style.background = 'rgba(255,255,255,0.1)';
+                opt.onmouseout = () => opt.style.background = 'transparent';
+                
+                opt.onclick = (e) => {
+                    e.stopPropagation();
+                    const val = opt.getAttribute('data-value');
+                    hiddenInput.value = val;
+                    trigger.querySelector('.cs-label').innerHTML = opt.innerHTML;
+                    optionsMenu.style.display = 'none';
+                    trigger.style.borderColor = 'var(--glass-border)';
+                };
+            });
+        }
+        
+        document.addEventListener('click', () => {
+            document.querySelectorAll('.custom-select-options').forEach(m => m.style.display = 'none');
+            document.querySelectorAll('.custom-select-trigger').forEach(t => t.style.borderColor = 'var(--glass-border)');
+        });
 
         async function fetchUserCharacters() {
             try {
                 const res = await fetch('/api/personnages');
                 if (res.ok) {
                     const chars = await res.json();
-                    const sel = document.getElementById('crafterSelect');
-                    if (sel) {
-                        sel.innerHTML = '<option value="">-- Choisir un personnage --</option>';
+                    const container = document.getElementById('crafterSelectContainer');
+                    if (container) {
+                        let options = [{value: '', html: '-- Choisir un personnage --', selected: true}];
                         chars.forEach(c => {
-                            sel.innerHTML += `<option value="${c.id}">${c.name} (XP Spirit: ${c.spiritualiteExperience || 0})</option>`;
+                            options.push({
+                                value: c.id,
+                                html: `<div style="display:flex; justify-content:space-between; width:100%;"><span style="color:#38bdf8;">${c.name}</span> <span style="color:#94a3b8; font-size:0.8rem;">XP Spirit: ${c.spiritualiteExperience || 0}</span></div>`,
+                                selected: false
+                            });
                         });
+                        buildCustomSelect(container, options, '', 'crafterSelect');
                     }
                 }
             } catch (e) {
