@@ -34,8 +34,9 @@ public class AppUser {
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_unlocked_secrets", joinColumns = @JoinColumn(name = "user_id"))
-    @Column(name = "secret_name")
-    private Set<String> unlockedSecrets = new HashSet<>();
+    @MapKeyColumn(name = "secret_name")
+    @Column(name = "level")
+    private java.util.Map<String, Integer> unlockedSecrets = new java.util.HashMap<>();
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "user_unlocked_dungeons", joinColumns = @JoinColumn(name = "user_id"))

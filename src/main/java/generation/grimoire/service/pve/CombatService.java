@@ -78,8 +78,8 @@ public class CombatService {
 
         // Check required secret
         if (d.getRequiredSecret() != null && !d.getRequiredSecret().trim().isEmpty()) {
-            if (!account.getUnlockedSecrets().contains(d.getRequiredSecret())) {
-                throw new RuntimeException("Ce donjon nécessite le secret : " + d.getRequiredSecret());
+            if (!account.getUnlockedSecrets().containsKey(d.getRequiredSecret())) {
+                throw new RuntimeException("Vous n'avez pas débloqué le secret requis pour ce donjon.");
             }
         }
 

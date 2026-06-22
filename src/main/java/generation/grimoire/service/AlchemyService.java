@@ -61,6 +61,17 @@ public class AlchemyService {
         AlchemyRecipe recipe = recipeRepository.findById(recipeId)
                 .orElseThrow(() -> new RuntimeException("Recette introuvable"));
 
+        // Vérification de la progression des secrets si la recette débloque un secret
+        if (recipe.getRewardType() == generation.grimoire.enumeration.RecipeRewardType.UNLOCK_FEATURE) {
+            int currentLevel = user.getUnlockedSecrets().getOrDefault(recipe.getRewardName(), 0);
+            if (currentLevel >= recipe.getRewardLevel()) {
+                throw new RuntimeException("Vous possédez déjà ce niveau de secret.");
+            }
+            if (currentLevel < recipe.getRewardLevel() - 1) {
+                throw new RuntimeException("Vous devez d'abord débloquer le niveau précédent de ce secret.");
+            }
+        }
+
         // Vérification et déduction de l'Or
         if (recipe.getCostGold() > 0) {
             if (user.getMonnaie() < recipe.getCostGold()) {
@@ -216,7 +227,7 @@ public class AlchemyService {
         } else if (recipe.getRewardType() == RecipeRewardType.UNLOCK_FEATURE) {
             AppUser user = userRepository.findByUsername(username).orElse(null);
             if (user != null) {
-                user.getUnlockedSecrets().add(recipe.getRewardName());
+                user.getUnlockedSecrets().put(recipe.getRewardName(), recipe.getRewardLevel());
                 userRepository.save(user);
             }
             return "Vous avez débloqué le secret : " + recipe.getRewardName();
