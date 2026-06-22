@@ -289,6 +289,23 @@
             renderCauldron(recipe);
         }
 
+        function getItemStyle(name, defaultType) {
+            const lower = name.toLowerCase();
+            if (lower.includes('cristal')) return { icon: 'diamond', color: '#38bdf8' }; // light blue
+            if (lower.includes('cœur') || lower.includes('coeur')) return { icon: 'favorite', color: '#ef4444' }; // red
+            if (lower.includes('or')) return { icon: 'monetization_on', color: '#f59e0b' }; // gold
+            if (lower.includes('sceau')) return { icon: 'token', color: '#a855f7' }; // purple
+            if (lower.includes('parchemin')) return { icon: 'history_edu', color: '#fb923c' }; // orange
+            if (lower.includes('potion') || lower.includes('élixir') || lower.includes('elixir')) return { icon: 'science', color: '#10b981' }; // green
+            
+            // Defaults
+            if (defaultType === 'CONSUMABLE') return { icon: 'water_drop', color: '#3b82f6' }; // blue
+            if (defaultType === 'ANOMALY') return { icon: 'auto_awesome', color: '#a855f7' }; // purple
+            if (defaultType === 'SECRET' || defaultType === 'UNLOCK') return { icon: 'key', color: '#f59e0b' }; // gold
+            
+            return { icon: 'category', color: '#94a3b8' }; // generic
+        }
+
         let customSelectSetups = [];
 
         function renderCauldron(r) {
@@ -322,11 +339,13 @@
                     const statusColor = hasEnough ? '#10b981' : '#ef4444';
                     const statusIcon = hasEnough ? 'check_circle' : 'cancel';
                     
-                    reqsHTML += `<div style="background:rgba(0,0,0,0.4); padding:0.6rem; border-radius:8px; border:1px solid rgba(168, 85, 247, 0.3); margin-bottom: 0.4rem;">
+                    const style = getItemStyle(name, 'ANOMALY');
+
+                    reqsHTML += `<div style="background:rgba(0,0,0,0.4); padding:0.6rem; border-radius:8px; border:1px solid ${style.color}40; margin-bottom: 0.4rem;">
                         <div style="display:flex; align-items:center; justify-content: space-between; gap:0.5rem; margin-bottom: ${(!isIdentical && hasEnough) ? '0.5rem' : '0'};">
                             <div style="display:flex; align-items:center; gap:0.5rem;">
-                                <span class="material-symbols-outlined" style="color: #a855f7; font-size:1.2rem;">auto_awesome</span>
-                                <span style="font-weight: 600; font-size:0.9rem;">${qty}x ${name}</span>
+                                <span class="material-symbols-outlined" style="color: ${style.color}; font-size:1.2rem;">${style.icon}</span>
+                                <span style="font-weight: 600; font-size:0.9rem; color: #fff;">${qty}x ${name}</span>
                             </div>
                             <div style="display:flex; align-items:center; gap:0.3rem; color: ${statusColor}; font-size: 0.85rem; font-weight: 600;">
                                 <span class="material-symbols-outlined" style="font-size: 1.1rem;">${statusIcon}</span>
@@ -382,11 +401,13 @@
                     const statusColor = hasEnough ? '#3b82f6' : '#ef4444';
                     const statusIcon = hasEnough ? 'check_circle' : 'cancel';
                     
-                    reqsHTML += `<div style="background:rgba(0,0,0,0.4); padding:0.6rem; border-radius:8px; border:1px solid rgba(59, 130, 246, 0.3); margin-bottom: 0.4rem;">
+                    const style = getItemStyle(name, 'CONSUMABLE');
+
+                    reqsHTML += `<div style="background:rgba(0,0,0,0.4); padding:0.6rem; border-radius:8px; border:1px solid ${style.color}40; margin-bottom: 0.4rem;">
                         <div style="display:flex; align-items:center; justify-content: space-between; gap:0.5rem;">
                             <div style="display:flex; align-items:center; gap:0.5rem;">
-                                <span class="material-symbols-outlined" style="color: #3b82f6; font-size:1.2rem;">water_drop</span>
-                                <span style="font-weight: 600; font-size:0.9rem;">${qty}x ${name}</span>
+                                <span class="material-symbols-outlined" style="color: ${style.color}; font-size:1.2rem;">${style.icon}</span>
+                                <span style="font-weight: 600; font-size:0.9rem; color: #fff;">${qty}x ${name}</span>
                             </div>
                             <div style="display:flex; align-items:center; gap:0.3rem; color: ${statusColor}; font-size: 0.85rem; font-weight: 600;">
                                 <span class="material-symbols-outlined" style="font-size: 1.1rem;">${statusIcon}</span>
@@ -423,11 +444,19 @@
             }
 
             let resultLabel = "Résultat Attendu";
-            let resultIcon = "science";
+            let resultType = 'OTHER';
             if (r.rewardType === 'UNLOCK_FEATURE') {
                 resultLabel = "Secret Débloqué";
-                resultIcon = "key";
+                resultType = 'SECRET';
+            } else if (r.rewardType === 'GIVE_CONSUMABLE') {
+                resultType = 'CONSUMABLE';
+            } else if (r.rewardType === 'GIVE_ANOMALY' || r.rewardType === 'UPGRADE_ANOMALY') {
+                resultType = 'ANOMALY';
             }
+
+            const resultStyle = getItemStyle(r.rewardName, resultType);
+            const resultIcon = resultStyle.icon;
+            const resultColor = resultStyle.color;
 
             container.innerHTML = `
                 <div style="width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; text-align: left;">
@@ -450,8 +479,8 @@
                         <span class="material-symbols-outlined" style="color: #10b981; font-size: 1.8rem;">arrow_downward</span>
                     </div>
 
-                    <div style="width: 100%; max-width: 500px; background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(6,182,212,0.1)); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 12px; padding: 1rem; text-align: center;">
-                        <span style="display:flex; justify-content:center; align-items:center; gap:0.3rem; font-size: 0.8rem; color: #10b981; text-transform: uppercase; font-weight: 700; letter-spacing: 1px; margin-bottom: 0.3rem;">
+                    <div style="width: 100%; max-width: 500px; background: linear-gradient(135deg, ${resultColor}15, rgba(0,0,0,0.2)); border: 1px solid ${resultColor}50; border-radius: 12px; padding: 1rem; text-align: center;">
+                        <span style="display:flex; justify-content:center; align-items:center; gap:0.3rem; font-size: 0.8rem; color: ${resultColor}; text-transform: uppercase; font-weight: 700; letter-spacing: 1px; margin-bottom: 0.3rem;">
                             <span class="material-symbols-outlined" style="font-size: 1.1rem;">${resultIcon}</span>
                             ${resultLabel}
                         </span>
