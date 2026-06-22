@@ -33,19 +33,96 @@
             gap: 0.5rem;
             align-items: center;
         }
-        .custom-select-wrapper { position: relative; user-select: none; width: 100%; }
-        .custom-select-trigger { background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; padding: 0.35rem 0.5rem; font-size: 0.8rem; font-family: 'Inter', sans-serif; color: #fff; display: flex; justify-content: space-between; align-items: center; cursor: pointer; transition: all 0.2s ease; height: 100%; min-height: 28px; }
-        .custom-select-trigger:hover, .custom-select-wrapper.open .custom-select-trigger { border-color: #f59e0b; }
-        .custom-select-options { position: absolute; top: calc(100% + 5px); left: 0; right: 0; background: #0f172a; border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 6px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5); z-index: 100; display: none; max-height: 150px; overflow-y: auto; }
-        .custom-select-options::-webkit-scrollbar { width: 6px; }
-        .custom-select-options::-webkit-scrollbar-track { background: transparent; border-radius: 6px; }
-        .custom-select-options::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 6px; }
-        .custom-select-options::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.25); }
-        .custom-select-wrapper.open .custom-select-options { display: block; }
-        .custom-option { padding: 0.4rem 0.6rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-size: 0.8rem; transition: background 0.2s ease; border-bottom: 1px solid rgba(255, 255, 255, 0.02); }
-        .custom-option:hover { background: rgba(245, 158, 11, 0.15); }
-        .cs-icon { font-size: 1rem; }
-        .cs-label { display: flex; align-items: center; gap: 0.4rem; }
+
+        .custom-select-wrapper {
+            position: relative;
+            user-select: none;
+            width: 100%;
+        }
+
+        .custom-select-trigger {
+            background: rgba(0, 0, 0, 0.3);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+            border-radius: 6px;
+            padding: 0.35rem 0.5rem;
+            font-size: 0.8rem;
+            font-family: 'Inter', sans-serif;
+            color: #fff;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            height: 100%;
+            min-height: 28px;
+        }
+
+        .custom-select-trigger:hover,
+        .custom-select-wrapper.open .custom-select-trigger {
+            border-color: #f59e0b;
+        }
+
+        .custom-select-options {
+            position: absolute;
+            top: calc(100% + 5px);
+            left: 0;
+            right: 0;
+            background: #0f172a;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 6px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            display: none;
+            max-height: 150px;
+            overflow-y: auto;
+        }
+
+        .custom-select-options::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-select-options::-webkit-scrollbar-track {
+            background: transparent;
+            border-radius: 6px;
+        }
+
+        .custom-select-options::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 6px;
+        }
+
+        .custom-select-options::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .custom-select-wrapper.open .custom-select-options {
+            display: block;
+        }
+
+        .custom-option {
+            padding: 0.4rem 0.6rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.8rem;
+            transition: background 0.2s ease;
+            border-bottom: 1px solid rgba(255, 255, 255, 0.02);
+        }
+
+        .custom-option:hover {
+            background: rgba(245, 158, 11, 0.15);
+        }
+
+        .cs-icon {
+            font-size: 1rem;
+        }
+
+        .cs-label {
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
     </style>
 </head>
 
@@ -95,32 +172,36 @@
 
     <main style="display: block;">
         <div class="magic-rock"></div>
-        <div class="form-container" style="max-width: 1200px; margin: 2rem auto; display: flex; gap: 2rem; align-items: flex-start;">
-            
+        <div class="form-container"
+            style="max-width: 1200px; margin: 2rem auto; display: flex; gap: 2rem; align-items: flex-start;">
+
             <div class="panel" style="flex: 1;">
                 <div class="panel-title">
                     <span class="material-symbols-outlined" style="color: #06b6d4;">science</span>
                     Créer une Recette Alchimique
                 </div>
-                
+
                 <form id="recipeForm">
                     <div class="form-group">
                         <label>Nom de la recette</label>
                         <input type="text" id="recipeName" required placeholder="Ex: Transmutation Majeure">
                     </div>
-                    
+
                     <div class="form-group">
                         <label>Description</label>
-                        <textarea id="recipeDesc" rows="2" placeholder="Ex: Convertit de vieilles anomalies en un golem puissant."></textarea>
+                        <textarea id="recipeDesc" rows="2"
+                            placeholder="Ex: Convertit de vieilles anomalies en un golem puissant."></textarea>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label style="color: #f59e0b;"><span class="material-symbols-outlined" style="font-size: 1rem;">monetization_on</span> Coût Or</label>
+                            <label style="color: #f59e0b;"><span class="material-symbols-outlined"
+                                    style="font-size: 1rem;">monetization_on</span> Coût Or</label>
                             <input type="number" id="costGold" value="0" min="0" step="0.1">
                         </div>
                         <div class="form-group">
-                            <label style="color: #10b981;"><span class="material-symbols-outlined" style="font-size: 1rem;">star</span> Coût XP Spirit</label>
+                            <label style="color: #10b981;"><span class="material-symbols-outlined"
+                                    style="font-size: 1rem;">star</span> Coût XP Spirit</label>
                             <input type="number" id="costSpirit" value="0" min="0">
                         </div>
                     </div>
@@ -130,13 +211,15 @@
                     <div class="form-group">
                         <label>Ingrédients : Anomalies</label>
                         <div id="reqAnomaliesList" class="req-list"></div>
-                        <button type="button" class="btn btn-secondary" onclick="addRequirement('anomalie')">+ Ajouter Anomalie requise</button>
+                        <button type="button" class="btn btn-secondary" onclick="addRequirement('anomalie')">+ Ajouter
+                            Anomalie requise</button>
                     </div>
 
                     <div class="form-group" style="margin-top: 1rem;">
                         <label>Ingrédients : Consommables</label>
                         <div id="reqConsumablesList" class="req-list"></div>
-                        <button type="button" class="btn btn-secondary" onclick="addRequirement('consumable')">+ Ajouter Consommable requis</button>
+                        <button type="button" class="btn btn-secondary" onclick="addRequirement('consumable')">+ Ajouter
+                            Consommable requis</button>
                     </div>
 
                     <hr style="border-color: var(--glass-border); margin: 1.5rem 0;">
@@ -150,28 +233,35 @@
                         <div class="form-group">
                             <label>Type de récompense</label>
                             <div class="custom-select-wrapper" style="width: 100%; z-index: 10;">
-                                <div class="custom-select-trigger" style="background: rgba(15,23,42,0.6); padding: 0.6rem; border-radius: 8px;">
+                                <div class="custom-select-trigger"
+                                    style="background: rgba(15,23,42,0.6); padding: 0.6rem; border-radius: 8px;">
                                     <span class="cs-label" style="font-size: 0.9rem;">
-                                        <span class="material-symbols-outlined cs-icon" style="color: #a855f7;">star</span>
+                                        <span class="material-symbols-outlined cs-icon"
+                                            style="color: #a855f7;">star</span>
                                         Donner Anomalie
                                     </span>
-                                    <span class="material-symbols-outlined" style="color: #64748b; font-size: 1.1rem;">expand_more</span>
+                                    <span class="material-symbols-outlined"
+                                        style="color: #64748b; font-size: 1.1rem;">expand_more</span>
                                 </div>
                                 <div class="custom-select-options custom-options">
                                     <div class="custom-option" data-value="GIVE_ANOMALY">
-                                        <span class="material-symbols-outlined cs-icon" style="color: #a855f7;">star</span>
+                                        <span class="material-symbols-outlined cs-icon"
+                                            style="color: #a855f7;">star</span>
                                         Donner Anomalie
                                     </div>
                                     <div class="custom-option" data-value="GIVE_CONSUMABLE">
-                                        <span class="material-symbols-outlined cs-icon" style="color: #10b981;">inventory_2</span>
+                                        <span class="material-symbols-outlined cs-icon"
+                                            style="color: #10b981;">inventory_2</span>
                                         Donner Consommable
                                     </div>
                                     <div class="custom-option" data-value="UNLOCK_FEATURE">
-                                        <span class="material-symbols-outlined cs-icon" style="color: #f59e0b;">key</span>
+                                        <span class="material-symbols-outlined cs-icon"
+                                            style="color: #f59e0b;">key</span>
                                         Déblocage / Secret
                                     </div>
                                     <div class="custom-option" data-value="GIVE_SPIRIT_XP">
-                                        <span class="material-symbols-outlined cs-icon" style="color: #38bdf8;">self_improvement</span>
+                                        <span class="material-symbols-outlined cs-icon"
+                                            style="color: #38bdf8;">self_improvement</span>
                                         Gagner XP Spiritualité
                                     </div>
                                 </div>
@@ -190,12 +280,13 @@
                             <input type="number" id="rewardQty" value="1" min="1">
                         </div>
                         <div class="form-group">
-                            <label>Niveau (Pour les Anomalies)</label>
+                            <label id="rewardLevelLabel">Niveau (Anomalies/Secrets)</label>
                             <input type="number" id="rewardLevel" value="1" min="1">
                         </div>
                     </div>
 
-                    <button type="submit" class="btn" style="margin-top: 2rem; width: 100%;">Enregistrer la recette</button>
+                    <button type="submit" class="btn" style="margin-top: 2rem; width: 100%;">Enregistrer la
+                        recette</button>
                     <div id="formMsg" style="margin-top: 1rem; font-weight: bold; text-align: center;"></div>
                 </form>
             </div>
@@ -271,7 +362,7 @@
             } catch (e) {
                 console.error("Erreur chargement templates boutique", e);
             }
-            
+
             let instances = [];
             try {
                 const resE = await fetch('/api/equipment/all');
@@ -307,14 +398,26 @@
                 }
             }
             debugDiv.innerHTML = `Items chargés : ${allAnomalies.length} anomalies, ${allConsumables.length} consommables. (Veuillez faire un Ctrl+F5 si vous ne voyez pas vos objets)`;
-            
+
             updateRewardNameInput();
         }
 
         async function updateRewardNameInput() {
             const type = document.getElementById('rewardType').value;
             const container = document.getElementById('rewardNameContainer');
+            const qtyInput = document.getElementById('rewardQty');
             if (!container) return;
+
+            if (qtyInput) {
+                if (type === 'UNLOCK_FEATURE') {
+                    qtyInput.value = 1;
+                    qtyInput.disabled = true;
+                    qtyInput.style.opacity = '0.5';
+                } else {
+                    qtyInput.disabled = false;
+                    qtyInput.style.opacity = '1';
+                }
+            }
 
             let optionsHtml = '';
             let displayLabel = 'Choisir un objet...';
@@ -374,7 +477,7 @@
             } else if (type === 'UNLOCK_FEATURE') {
                 // Fetch dungeons to get available secrets
                 let secretOptions = '';
-                
+
                 const defaultSecrets = [
                     { name: "Secret de la Destruction", icon: "bolt", color: "#ef4444" },
                     { name: "Secret de la Création", icon: "auto_awesome", color: "#10b981" },
@@ -467,7 +570,7 @@
             return isMagic ? '#ec4899' : '#b45309'; // Rose : Marron
         }
 
-        window.showTooltipFixed = function(el) {
+        window.showTooltipFixed = function (el) {
             let tooltip = document.getElementById('globalFixedTooltip');
             if (!tooltip) {
                 tooltip = document.createElement('div');
@@ -511,7 +614,7 @@
             tooltip.style.left = left + 'px';
         };
 
-        window.hideTooltipFixed = function() {
+        window.hideTooltipFixed = function () {
             const tooltip = document.getElementById('globalFixedTooltip');
             if (tooltip) tooltip.style.display = 'none';
         };
@@ -603,7 +706,7 @@
                 const data = await res.json();
                 const container = document.getElementById('recipesList');
                 container.innerHTML = '';
-                if(data.length === 0) {
+                if (data.length === 0) {
                     container.innerHTML = "<p style='color: var(--text-muted);'>Aucune recette définie.</p>";
                     return;
                 }
@@ -613,13 +716,13 @@
                     div.style.border = '1px solid var(--glass-border)';
                     div.style.borderRadius = '8px';
                     div.style.padding = '1rem';
-                    
+
                     let reqs = [];
-                    if(r.costGold > 0) reqs.push(`<span class="anomaly-badge" style="border: 1px solid #fbbf24; background: linear-gradient(#fbbf2425, #fbbf2425), #1e293b; color: #fbbf24; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block;">${r.costGold} Or</span>`);
-                    if(r.costSpiritXp > 0) reqs.push(`<span class="anomaly-badge" style="border: 1px solid #38bdf8; background: linear-gradient(#38bdf825, #38bdf825), #1e293b; color: #38bdf8; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block;">${r.costSpiritXp} XP Spirit</span>`);
-                    
-                    if(r.requiredAnomalies) {
-                        for(const [k,v] of Object.entries(r.requiredAnomalies)) {
+                    if (r.costGold > 0) reqs.push(`<span class="anomaly-badge" style="border: 1px solid #f59e0b; background: linear-gradient(#f59e0b25, #f59e0b25), #1e293b; color: #fbbf24; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block;">${r.costGold} Or</span>`);
+                    if (r.costSpiritXp > 0) reqs.push(`<span class="anomaly-badge" style="border: 1px solid #38bdf8; background: linear-gradient(#38bdf825, #38bdf825), #1e293b; color: #38bdf8; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block;">${r.costSpiritXp} XP Spirit</span>`);
+
+                    if (r.requiredAnomalies) {
+                        for (const [k, v] of Object.entries(r.requiredAnomalies)) {
                             const aTemp = allAnomalies.find(a => a.name === k);
                             if (aTemp) {
                                 const catIcon = aTemp.category ? (CATEGORY_ICONS[aTemp.category] || 'category') : 'star';
@@ -642,8 +745,8 @@
                             }
                         }
                     }
-                    if(r.requiredConsumables) {
-                        for(const [k,v] of Object.entries(r.requiredConsumables)) {
+                    if (r.requiredConsumables) {
+                        for (const [k, v] of Object.entries(r.requiredConsumables)) {
                             reqs.push(`<span class="anomaly-badge" style="border: 1px solid #10b981; background: linear-gradient(#10b98125, #10b98125), #1e293b; color: #10b981; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block;"><span class="material-symbols-outlined" style="font-size: 0.9rem; vertical-align: middle; color: #10b981;">inventory_2</span> ${v}x ${k}</span>`);
                         }
                     }
@@ -674,6 +777,8 @@
                         rewardHtml = `<span class="anomaly-badge" style="border: 1px solid #10b981; background: linear-gradient(#10b98125, #10b98125), #1e293b; color: #10b981; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block;"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; color: #10b981;">inventory_2</span> ${r.rewardQuantity}x ${r.rewardName}</span>`;
                     } else if (r.rewardType === 'GIVE_SPIRIT_XP') {
                         rewardHtml = `<span class="anomaly-badge" style="border: 1px solid #38bdf8; background: linear-gradient(#38bdf825, #38bdf825), #1e293b; color: #38bdf8; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block;"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; color: #38bdf8;">self_improvement</span> ${r.rewardQuantity} XP Spiritualité</span>`;
+                    } else if (r.rewardType === 'UNLOCK_FEATURE') {
+                        rewardHtml = `<span class="anomaly-badge" style="border: 1px solid #f59e0b; background: linear-gradient(#f59e0b25, #f59e0b25), #1e293b; color: #f59e0b; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block;"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; color: #f59e0b;">key</span> Secret - ${r.rewardName} <span style="opacity: 0.8; font-size: 0.85em;">(Niv. ${r.rewardLevel || 1})</span></span>`;
                     } else {
                         rewardHtml = `<span style="color: #f59e0b;">${r.rewardType} - ${r.rewardQuantity}x ${r.rewardName}</span>`;
                     }
@@ -687,7 +792,7 @@
                             <button class="btn-danger" style="padding:0.3rem 0.6rem; font-size:0.8rem;" onclick="deleteRecipe(${r.id})">Supprimer</button>
                         </div>
                         <div style="font-size: 0.85rem; margin-top: 0.5rem; display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
-                            <strong>Coût :</strong> ${reqs.length > 0 ? reqs.join(' ') : '<span style="color: #ef4444;">Gratuit</span>'}
+                            <strong>Coût :</strong> ${reqs.length > 0 ? reqs.join(' ') : '<span style="color: #f59e0b;">Gratuit</span>'}
                         </div>
                         <div style="font-size: 0.85rem; margin-top: 0.5rem; display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
                             <strong>Résultat :</strong> ${rewardHtml}
@@ -695,7 +800,7 @@
                     `;
                     container.appendChild(div);
                 });
-            } catch(e) {
+            } catch (e) {
                 console.error(e);
             }
         }
@@ -722,26 +827,26 @@
             };
 
             const anoms = document.getElementById('reqAnomaliesList').children;
-            for(let a of anoms) {
+            for (let a of anoms) {
                 const name = a.querySelector('.req-name').value.trim();
                 const qty = parseInt(a.querySelector('.req-qty').value);
-                if(name && qty > 0) recipe.requiredAnomalies[name] = qty;
+                if (name && qty > 0) recipe.requiredAnomalies[name] = qty;
             }
 
             const cons = document.getElementById('reqConsumablesList').children;
-            for(let c of cons) {
+            for (let c of cons) {
                 const name = c.querySelector('.req-name').value.trim();
                 const qty = parseInt(c.querySelector('.req-qty').value);
-                if(name && qty > 0) recipe.requiredConsumables[name] = qty;
+                if (name && qty > 0) recipe.requiredConsumables[name] = qty;
             }
 
             try {
                 const res = await fetch('/api/alchemy/admin/recipe', {
                     method: 'POST',
-                    headers: {'Content-Type': 'application/json'},
+                    headers: { 'Content-Type': 'application/json' },
                     body: JSON.stringify(recipe)
                 });
-                if(res.ok) {
+                if (res.ok) {
                     msg.innerText = "Recette créée avec succès !";
                     msg.style.color = "#10b981";
                     document.getElementById('recipeForm').reset();
@@ -753,18 +858,18 @@
                     msg.innerText = "Erreur: " + err;
                     msg.style.color = "#ef4444";
                 }
-            } catch(e) {
+            } catch (e) {
                 msg.innerText = "Erreur réseau.";
                 msg.style.color = "#ef4444";
             }
         });
 
         async function deleteRecipe(id) {
-            if(!confirm("Supprimer cette recette ?")) return;
+            if (!confirm("Supprimer cette recette ?")) return;
             try {
                 await fetch('/api/alchemy/admin/recipe/' + id, { method: 'DELETE' });
                 loadRecipes();
-            } catch(e) {
+            } catch (e) {
                 alert("Erreur de suppression");
             }
         }
