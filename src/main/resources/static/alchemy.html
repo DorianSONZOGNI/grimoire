@@ -173,12 +173,35 @@
     <script>
         let allRecipes = [];
         let selectedRecipe = null;
+        let userAnomalies = [];
+        let userConsumables = [];
 
-        document.addEventListener('authLoaded', () => {
+        window.addEventListener('authLoaded', () => {
             if (window.currentUser) {
                 loadPlayerRecipes();
+                fetchUserInventory();
+            } else {
+                const container = document.getElementById('playerRecipesList');
+                if (container) {
+                    container.innerHTML = "<p style='color: #ef4444; text-align:center; padding: 1rem;'>Veuillez vous connecter pour accéder à l'Alchimie.</p>";
+                }
             }
         });
+
+        async function fetchUserInventory() {
+            try {
+                const resA = await fetch('/api/anomalies');
+                if (resA.ok) userAnomalies = await resA.json();
+
+                const resC = await fetch('/api/equipment');
+                if (resC.ok) {
+                    const equips = await resC.json();
+                    userConsumables = equips.filter(e => e.slot === 'CONSOMMABLE');
+                }
+            } catch(e) {
+                console.error("Erreur chargement inventaire", e);
+            }
+        }
 
         async function loadPlayerRecipes() {
             try {
@@ -245,27 +268,102 @@
                     <span style="color: #f59e0b; font-weight:600;">${r.costGold} Or</span>
                 </div>`;
             }
-            if (r.costSpiritXp > 0) {
-                reqsHTML += `<div style="display:flex; align-items:center; gap:0.5rem; background:rgba(0,0,0,0.4); padding:0.5rem 1rem; border-radius:8px; border:1px solid rgba(16, 185, 129, 0.3);">
-                    <span class="material-symbols-outlined" style="color: #10b981;">star</span>
-                    <span style="color: #10b981; font-weight:600;">${r.costSpiritXp} XP Spirit.</span>
-                </div>`;
-            }
-
+            
             if (r.requiredAnomalies) {
                 for (const [name, qty] of Object.entries(r.requiredAnomalies)) {
-                    reqsHTML += `<div style="display:flex; align-items:center; gap:0.5rem; background:rgba(0,0,0,0.4); padding:0.5rem 1rem; border-radius:8px; border:1px solid rgba(168, 85, 247, 0.3);">
-                        <span class="material-symbols-outlined" style="color: #a855f7;">auto_awesome</span>
-                        <span>${qty}x ${name}</span>
-                    </div>`;
+                    let matching = userAnomalies.filter(a => a.name === name);
+                    
+                    let isIdentical = true;
+                    if (matching.length > 0) {
+                        const first = matching[0];
+                        for (let a of matching) {
+                            if (a.level !== first.level || a.spiritualite !== first.spiritualite) {
+                                isIdentical = false;
+                                break;
+                            }
+                        }
+                    }
+
+                    const hasEnough = matching.length >= qty;
+                    const statusColor = hasEnough ? '#10b981' : '#ef4444';
+                    const statusIcon = hasEnough ? 'check_circle' : 'cancel';
+                    
+                    reqsHTML += `<div style="background:rgba(0,0,0,0.4); padding:1rem; border-radius:8px; border:1px solid rgba(168, 85, 247, 0.3); margin-bottom: 0.5rem;">
+                        <div style="display:flex; align-items:center; justify-content: space-between; gap:0.5rem; margin-bottom: ${(!isIdentical && hasEnough) ? '0.5rem' : '0'};">
+                            <div style="display:flex; align-items:center; gap:0.5rem;">
+                                <span class="material-symbols-outlined" style="color: #a855f7;">auto_awesome</span>
+                                <span style="font-weight: 600;">${qty}x ${name}</span>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:0.3rem; color: ${statusColor}; font-size: 0.85rem; font-weight: 600;">
+                                <span class="material-symbols-outlined" style="font-size: 1.1rem;">${statusIcon}</span>
+                                ${matching.length}/${qty}
+                            </div>
+                        </div>`;
+                    
+                    if (!isIdentical && hasEnough) {
+                        reqsHTML += `<div style="display: flex; flex-direction: column; gap: 0.5rem;">`;
+                        let usedIndexes = new Set();
+                        for (let i = 0; i < qty; i++) {
+                            let selectedIndex = -1;
+                            for(let j=0; j<matching.length; j++) {
+                                if(!usedIndexes.has(j)) {
+                                    selectedIndex = j;
+                                    usedIndexes.add(j);
+                                    break;
+                                }
+                            }
+                            
+                            let optionsHTML = '<option value="">-- Choisir une anomalie --</option>';
+                            matching.forEach((a, j) => {
+                                const isSelected = (j === selectedIndex) ? 'selected' : '';
+                                optionsHTML += `<option value="${a.id}" ${isSelected}>Niv. ${a.level || 1} (${a.spiritualite || 'Autre'})</option>`;
+                            });
+                            
+                            reqsHTML += `
+                                <select class="anomaly-select ingredient-select" style="width:100%; padding: 0.6rem; background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); color: #fff; border-radius: 6px;">
+                                    ${optionsHTML}
+                                </select>
+                            `;
+                        }
+                        reqsHTML += `</div>`;
+                    } else if (hasEnough) {
+                        reqsHTML += `<div style="display:none;">`;
+                        for (let i = 0; i < qty; i++) {
+                            reqsHTML += `<input type="hidden" class="anomaly-select" value="${matching[i].id}">`;
+                        }
+                        reqsHTML += `</div>`;
+                    }
+                    reqsHTML += `</div>`;
                 }
             }
+            
             if (r.requiredConsumables) {
                 for (const [name, qty] of Object.entries(r.requiredConsumables)) {
-                    reqsHTML += `<div style="display:flex; align-items:center; gap:0.5rem; background:rgba(0,0,0,0.4); padding:0.5rem 1rem; border-radius:8px; border:1px solid rgba(59, 130, 246, 0.3);">
-                        <span class="material-symbols-outlined" style="color: #3b82f6;">water_drop</span>
-                        <span>${qty}x ${name}</span>
-                    </div>`;
+                    let matching = userConsumables.filter(c => c.name === name);
+                    const hasEnough = matching.length >= qty;
+                    const statusColor = hasEnough ? '#3b82f6' : '#ef4444';
+                    const statusIcon = hasEnough ? 'check_circle' : 'cancel';
+                    
+                    reqsHTML += `<div style="background:rgba(0,0,0,0.4); padding:1rem; border-radius:8px; border:1px solid rgba(59, 130, 246, 0.3); margin-bottom: 0.5rem;">
+                        <div style="display:flex; align-items:center; justify-content: space-between; gap:0.5rem;">
+                            <div style="display:flex; align-items:center; gap:0.5rem;">
+                                <span class="material-symbols-outlined" style="color: #3b82f6;">water_drop</span>
+                                <span style="font-weight: 600;">${qty}x ${name}</span>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:0.3rem; color: ${statusColor}; font-size: 0.85rem; font-weight: 600;">
+                                <span class="material-symbols-outlined" style="font-size: 1.1rem;">${statusIcon}</span>
+                                ${matching.length}/${qty}
+                            </div>
+                        </div>`;
+                    
+                    if (hasEnough) {
+                        reqsHTML += `<div style="display:none;">`;
+                        for (let i = 0; i < qty; i++) {
+                            reqsHTML += `<input type="hidden" class="consumable-select" value="${matching[i].id}">`;
+                        }
+                        reqsHTML += `</div>`;
+                    }
+                    reqsHTML += `</div>`;
                 }
             }
 
@@ -274,13 +372,23 @@
             if (r.costSpiritXp > 0) {
                 crafterSelectHTML = `
                     <div style="margin-top: 1.5rem; text-align:left; width: 100%;">
-                        <label style="color: #10b981; font-weight: 600; font-size: 0.9rem;">Sélectionnez le personnage canalisant (pour l'XP) :</label>
+                        <label style="color: #10b981; font-weight: 600; font-size: 0.9rem;">
+                            <span class="material-symbols-outlined" style="font-size: 1.1rem; vertical-align: middle; color: #10b981;">star</span>
+                            Sélectionnez le personnage canalisant (-${r.costSpiritXp} XP Spirit.) :
+                        </label>
                         <select id="crafterSelect" style="width:100%; padding: 0.6rem; margin-top: 0.5rem; background: rgba(0,0,0,0.5); border: 1px solid var(--glass-border); color: #fff; border-radius: 8px;">
                             <option value="">Chargement de vos personnages...</option>
                         </select>
                     </div>
                 `;
                 fetchUserCharacters();
+            }
+
+            let resultLabel = "Résultat Attendu";
+            let resultIcon = "science";
+            if (r.rewardType === 'UNLOCK_FEATURE') {
+                resultLabel = "Secret Débloqué";
+                resultIcon = "key";
             }
 
             container.innerHTML = `
@@ -305,7 +413,10 @@
                     </div>
 
                     <div style="width: 100%; max-width: 500px; background: linear-gradient(135deg, rgba(16,185,129,0.1), rgba(6,182,212,0.1)); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 12px; padding: 1.5rem; margin-top: 1rem; text-align: center;">
-                        <span style="display:block; font-size: 0.85rem; color: #10b981; text-transform: uppercase; font-weight: 700; letter-spacing: 1px; margin-bottom: 0.5rem;">Résultat Attendu</span>
+                        <span style="display:flex; justify-content:center; align-items:center; gap:0.3rem; font-size: 0.85rem; color: #10b981; text-transform: uppercase; font-weight: 700; letter-spacing: 1px; margin-bottom: 0.5rem;">
+                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">${resultIcon}</span>
+                            ${resultLabel}
+                        </span>
                         <strong style="font-size: 1.3rem; color: #fff;">${r.rewardQuantity}x ${r.rewardName} ${r.rewardLevel > 1 ? '(Niv. ' + r.rewardLevel + ')' : ''}</strong>
                     </div>
 
@@ -320,7 +431,6 @@
 
         async function fetchUserCharacters() {
             try {
-                // Check where user characters endpoint is... usually /api/personnages or similar.
                 const res = await fetch('/api/personnages');
                 if (res.ok) {
                     const chars = await res.json();
@@ -343,7 +453,82 @@
             msg.innerText = "Transmutation en cours...";
             msg.style.color = "var(--text-muted)";
 
-            let url = `/api/alchemy/craft/${selectedRecipe.id}`;
+            let anomalieIds = [];
+            let consumableIds = [];
+            let isValid = true;
+            let usedAnomalyIds = new Set();
+            let usedConsumableIds = new Set();
+
+            document.querySelectorAll('.anomaly-select').forEach(sel => {
+                const val = sel.value;
+                if (!val) {
+                    isValid = false;
+                } else {
+                    if (usedAnomalyIds.has(val)) {
+                        msg.innerText = "Vous ne pouvez pas sélectionner la même anomalie plusieurs fois.";
+                        msg.style.color = "#ef4444";
+                        isValid = false;
+                    }
+                    usedAnomalyIds.add(val);
+                    anomalieIds.push(parseInt(val));
+                }
+            });
+
+            let reqAnoCount = 0;
+            if (selectedRecipe.requiredAnomalies) {
+                for (const qty of Object.values(selectedRecipe.requiredAnomalies)) reqAnoCount += qty;
+            }
+            if (anomalieIds.length < reqAnoCount) {
+                msg.innerText = "Vous n'avez pas assez d'anomalies pour cette recette.";
+                msg.style.color = "#ef4444";
+                return;
+            }
+
+            if (!isValid && msg.innerText === "Transmutation en cours...") {
+                msg.innerText = "Veuillez sélectionner toutes les anomalies requises.";
+                msg.style.color = "#ef4444";
+                return;
+            }
+
+            document.querySelectorAll('.consumable-select').forEach(sel => {
+                const val = sel.value;
+                if (!val) {
+                    isValid = false;
+                } else {
+                    if (usedConsumableIds.has(val)) {
+                        msg.innerText = "Vous ne pouvez pas sélectionner le même consommable plusieurs fois.";
+                        msg.style.color = "#ef4444";
+                        isValid = false;
+                    }
+                    usedConsumableIds.add(val);
+                    consumableIds.push(parseInt(val));
+                }
+            });
+
+            let reqConsCount = 0;
+            if (selectedRecipe.requiredConsumables) {
+                for (const qty of Object.values(selectedRecipe.requiredConsumables)) reqConsCount += qty;
+            }
+            if (consumableIds.length < reqConsCount) {
+                msg.innerText = "Vous n'avez pas assez de consommables pour cette recette.";
+                msg.style.color = "#ef4444";
+                return;
+            }
+
+            if (!isValid) {
+                if (msg.innerText === "Transmutation en cours...") {
+                    msg.innerText = "Veuillez sélectionner tous les consommables requis.";
+                    msg.style.color = "#ef4444";
+                }
+                return;
+            }
+
+            const body = {
+                personnageId: null,
+                anomalieIds: anomalieIds,
+                consumableIds: consumableIds
+            };
+
             if (selectedRecipe.costSpiritXp > 0) {
                 const sel = document.getElementById('crafterSelect');
                 if (!sel || !sel.value) {
@@ -351,11 +536,15 @@
                     msg.style.color = "#ef4444";
                     return;
                 }
-                url += `?personnageId=${sel.value}`;
+                body.personnageId = parseInt(sel.value);
             }
 
             try {
-                const res = await fetch(url, { method: 'POST' });
+                const res = await fetch(`/api/alchemy/craft/${selectedRecipe.id}`, { 
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(body)
+                });
                 const text = await res.text();
                 if (res.ok) {
                     msg.innerText = text;
@@ -368,6 +557,15 @@
                     if (window.checkAuthStatus) {
                         window.checkAuthStatus();
                     }
+                    
+                    // Refresh inventory
+                    await fetchUserInventory();
+                    
+                    // Force refresh of cauldron UI
+                    renderCauldron(selectedRecipe);
+                    document.getElementById('craftMessage').innerText = text;
+                    document.getElementById('craftMessage').style.color = "#10b981";
+
                 } else {
                     msg.innerText = "Échec : " + text;
                     msg.style.color = "#ef4444";

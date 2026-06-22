@@ -54,7 +54,7 @@ public class AlchemyService {
     }
 
     @Transactional
-    public String craftRecipe(String username, Long recipeId, Long crafterPersonnageId) {
+    public String craftRecipe(String username, Long recipeId, Long crafterPersonnageId, List<Long> anomalieIds, List<Long> consumableIds) {
         AppUser user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
 
@@ -97,19 +97,27 @@ public class AlchemyService {
                 String requiredName = entry.getKey();
                 int requiredQty = entry.getValue();
                 
-                List<Anomalie> matching = userAnomalies.stream()
-                        .filter(a -> a.getName().equalsIgnoreCase(requiredName))
+                List<Anomalie> matchingProvided = anomalieIds.stream()
+                        .map(id -> userAnomalies.stream().filter(a -> a.getId().equals(id)).findFirst().orElse(null))
+                        .filter(a -> a != null && a.getName().equalsIgnoreCase(requiredName))
                         .toList();
                         
-                if (matching.size() < requiredQty) {
-                    throw new RuntimeException("Pas assez d'anomalies : " + requiredName);
+                if (matchingProvided.size() < requiredQty) {
+                    throw new RuntimeException("Veuillez sélectionner " + requiredQty + "x " + requiredName + ".");
                 }
                 
-                // Consomme les `requiredQty` premières correspondances
-                for (int i = 0; i < requiredQty; i++) {
-                    Anomalie a = matching.get(i);
+                boolean isAdmin = "ADMIN".equals(user.getRole()) || "ROLE_ADMIN".equals(user.getRole());
+                long totalOwned = isAdmin ? userAnomalies.stream().filter(a -> a.getName().equalsIgnoreCase(requiredName)).count() : 0;
+                
+                int itemsToDelete = requiredQty;
+                if (isAdmin && (totalOwned - requiredQty < 1)) {
+                    itemsToDelete = Math.max(0, (int)totalOwned - 1);
+                }
+                
+                for (int i = 0; i < itemsToDelete; i++) {
+                    Anomalie a = matchingProvided.get(i);
                     toDeleteAnomalies.add(a);
-                    userAnomalies.remove(a); // Évite de réutiliser la même instance
+                    anomalieIds.remove(a.getId()); // Évite de réutiliser la même instance
                 }
             }
             anomalieRepository.deleteAll(toDeleteAnomalies);
@@ -124,18 +132,27 @@ public class AlchemyService {
                 String requiredName = entry.getKey();
                 int requiredQty = entry.getValue();
 
-                List<Equipment> matching = userEquipments.stream()
-                        .filter(e -> e.getSlot() == EquipmentSlot.CONSOMMABLE && e.getName().equalsIgnoreCase(requiredName))
+                List<Equipment> matchingProvided = consumableIds.stream()
+                        .map(id -> userEquipments.stream().filter(e -> e.getId().equals(id)).findFirst().orElse(null))
+                        .filter(e -> e != null && e.getSlot() == EquipmentSlot.CONSOMMABLE && e.getName().equalsIgnoreCase(requiredName))
                         .toList();
 
-                if (matching.size() < requiredQty) {
-                    throw new RuntimeException("Pas assez de consommables : " + requiredName);
+                if (matchingProvided.size() < requiredQty) {
+                    throw new RuntimeException("Veuillez sélectionner " + requiredQty + "x " + requiredName + ".");
                 }
 
-                for (int i = 0; i < requiredQty; i++) {
-                    Equipment e = matching.get(i);
+                boolean isAdmin = "ADMIN".equals(user.getRole()) || "ROLE_ADMIN".equals(user.getRole());
+                long totalOwned = isAdmin ? userEquipments.stream().filter(e -> e.getSlot() == EquipmentSlot.CONSOMMABLE && e.getName().equalsIgnoreCase(requiredName)).count() : 0;
+                
+                int itemsToDelete = requiredQty;
+                if (isAdmin && (totalOwned - requiredQty < 1)) {
+                    itemsToDelete = Math.max(0, (int)totalOwned - 1);
+                }
+
+                for (int i = 0; i < itemsToDelete; i++) {
+                    Equipment e = matchingProvided.get(i);
                     toDeleteConsumables.add(e);
-                    userEquipments.remove(e);
+                    consumableIds.remove(e.getId());
                 }
             }
             equipmentRepository.deleteAll(toDeleteConsumables);
