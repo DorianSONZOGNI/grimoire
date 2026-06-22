@@ -49,4 +49,7 @@ public class AppUser {
     @Column(nullable = false)
     private boolean unlockedAlchemy = false;
 
+    @Column(nullable = false)
+    private boolean unlockedShop = false;
+
 }

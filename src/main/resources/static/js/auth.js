@@ -150,9 +150,11 @@ window.addEventListener('authLoaded', () => {
     // Feature locks
     const hasVault = window.currentUser && window.currentUser.unlockedVault;
     const hasAlchemy = window.currentUser && window.currentUser.unlockedAlchemy;
+    const hasShop = window.currentUser && window.currentUser.unlockedShop;
 
     document.querySelectorAll('.nav-vault').forEach(el => applyFeatureLock(el, hasVault, 'Coffres', 50, 'vault', '/vault.html'));
     document.querySelectorAll('.nav-alchemy').forEach(el => applyFeatureLock(el, hasAlchemy, 'Alchimie', 150, 'alchemy', '/alchemy.html'));
+    document.querySelectorAll('.nav-shop').forEach(el => applyFeatureLock(el, hasShop, 'Boutique', 75, 'shop', '/shop.html'));
 });
 
 function applyFeatureLock(el, isUnlocked, featureName, cost, featureId, originalHref) {

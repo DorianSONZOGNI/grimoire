@@ -81,6 +81,7 @@ public class AuthController {
             res.put("unlockedDungeons", u.getUnlockedDungeons());
             res.put("unlockedVault", u.isUnlockedVault());
             res.put("unlockedAlchemy", u.isUnlockedAlchemy());
+            res.put("unlockedShop", u.isUnlockedShop());
         });
 
         return ResponseEntity.ok(res);
@@ -110,6 +111,13 @@ public class AuthController {
             user.setUnlockedAlchemy(true);
             userRepository.save(user);
             return ResponseEntity.ok(Map.of("message", "Alchimie débloquée avec succès !"));
+        } else if ("shop".equals(feature)) {
+            if (user.isUnlockedShop()) return ResponseEntity.ok(Map.of("message", "Déjà débloqué."));
+            if (user.getMonnaie() < 75) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Pas assez d'or."));
+            user.setMonnaie(user.getMonnaie() - 75);
+            user.setUnlockedShop(true);
+            userRepository.save(user);
+            return ResponseEntity.ok(Map.of("message", "Boutique débloquée avec succès !"));
         }
 
         return ResponseEntity.badRequest().body(Map.of("message", "Fonctionnalité inconnue."));
