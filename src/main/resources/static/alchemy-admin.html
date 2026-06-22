@@ -268,16 +268,52 @@
                         </div>
                     </div>
 
-                    <button type="submit" class="btn" style="margin-top: 0.5rem; width: 100%; padding: 0.5rem;">Enregistrer la recette</button>
+                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
+                        <button type="submit" class="btn" style="flex: 1; padding: 0.5rem;">Enregistrer la recette</button>
+                        <button type="button" id="cancelEditBtn" class="btn btn-secondary" style="flex: 1; padding: 0.5rem; display: none; background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.4); color: #fca5a5;" onclick="cancelEdit()">Annuler l'édition</button>
+                    </div>
                     <div id="formMsg" style="margin-top: 0.5rem; font-weight: bold; text-align: center; font-size: 0.85rem;"></div>
                 </form>
             </div>
 
             <div class="panel" style="flex: 1;">
-                <div class="panel-title">
-                    <span class="material-symbols-outlined" style="color: #10b981;">list</span>
-                    Recettes Existantes
+                <div class="panel-title" style="display: flex; justify-content: space-between; align-items: center;">
+                    <div>
+                        <span class="material-symbols-outlined" style="color: #a855f7;">auto_awesome</span>
+                        Recettes Existantes
+                    </div>
                 </div>
+
+                <div class="filters-container" style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
+                    <div style="flex: 1;">
+                        <input type="text" id="searchRecipeName" class="form-control" placeholder="Rechercher par nom..." style="margin: 0; padding: 0.6rem; font-size: 0.85rem;" oninput="renderRecipesList()">
+                    </div>
+                    <div class="custom-select-wrapper" style="flex: 1; z-index: 20;">
+                        <div class="custom-select-trigger" style="background: rgba(15,23,42,0.6); padding: 0.6rem; border-radius: 8px;">
+                            <span class="cs-label" style="font-size: 0.85rem;">Toutes récompenses</span>
+                            <span class="material-symbols-outlined" style="color: #64748b; font-size: 1rem;">expand_more</span>
+                        </div>
+                        <div class="custom-select-options custom-options">
+                            <div class="custom-option" data-value="" style="padding: 0.4rem; font-size: 0.85rem;">
+                                <span class="material-symbols-outlined cs-icon" style="color: #64748b; font-size: 1rem;">filter_list_off</span> Toutes récompenses
+                            </div>
+                            <div class="custom-option" data-value="GIVE_ANOMALY" style="padding: 0.4rem; font-size: 0.85rem;">
+                                <span class="material-symbols-outlined cs-icon" style="color: #a855f7; font-size: 1rem;">star</span> Anomalie
+                            </div>
+                            <div class="custom-option" data-value="GIVE_CONSUMABLE" style="padding: 0.4rem; font-size: 0.85rem;">
+                                <span class="material-symbols-outlined cs-icon" style="color: #10b981; font-size: 1rem;">inventory_2</span> Consommable
+                            </div>
+                            <div class="custom-option" data-value="UNLOCK_FEATURE" style="padding: 0.4rem; font-size: 0.85rem;">
+                                <span class="material-symbols-outlined cs-icon" style="color: #f59e0b; font-size: 1rem;">key</span> Secret
+                            </div>
+                            <div class="custom-option" data-value="GIVE_SPIRIT_XP" style="padding: 0.4rem; font-size: 0.85rem;">
+                                <span class="material-symbols-outlined cs-icon" style="color: #38bdf8; font-size: 1rem;">self_improvement</span> XP Spiritualité
+                            </div>
+                        </div>
+                        <input type="hidden" id="filterRewardType" value="" onchange="renderRecipesList()">
+                    </div>
+                </div>
+
                 <div id="recipesList" style="display: flex; flex-direction: column; gap: 1rem;">
                     Chargement...
                 </div>
@@ -690,56 +726,44 @@
                 const res = await fetch('/api/alchemy/recipes');
                 const data = await res.json();
                 allRecipes = data; // Store for edit
-                const container = document.getElementById('recipesList');
-                container.innerHTML = '';
-                if (data.length === 0) {
-                    container.innerHTML = "<p style='color: var(--text-muted);'>Aucune recette définie.</p>";
-                    return;
-                }
-                data.forEach(r => {
-                    const div = document.createElement('div');
-                    div.style.background = 'rgba(0,0,0,0.3)';
-                    div.style.border = '1px solid var(--glass-border)';
-                    div.style.borderRadius = '8px';
-                    div.style.padding = '1rem';
+                renderRecipesList();
+            } catch (e) {
+                console.error(e);
+            }
+        }
 
-                    let reqs = [];
-                    if (r.costGold > 0) reqs.push(`<span class="anomaly-badge" style="border: 1px solid #f59e0b; background: linear-gradient(#f59e0b25, #f59e0b25), #1e293b; color: #fbbf24; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block;">${r.costGold} Or</span>`);
-                    if (r.costSpiritXp > 0) reqs.push(`<span class="anomaly-badge" style="border: 1px solid #38bdf8; background: linear-gradient(#38bdf825, #38bdf825), #1e293b; color: #38bdf8; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block;">${r.costSpiritXp} XP Spirit</span>`);
+        window.renderRecipesList = function() {
+            const container = document.getElementById('recipesList');
+            container.innerHTML = '';
+            
+            const searchName = (document.getElementById('searchRecipeName')?.value || '').toLowerCase();
+            const filterType = document.getElementById('filterRewardType')?.value || '';
 
-                    if (r.requiredAnomalies) {
-                        for (const [k, v] of Object.entries(r.requiredAnomalies)) {
-                            const aTemp = allAnomalies.find(a => a.name === k);
-                            if (aTemp) {
-                                const catIcon = aTemp.category ? (CATEGORY_ICONS[aTemp.category] || 'category') : 'star';
-                                const spiriColor = aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
-                                const tooltipData = `
-                                    <div class="anomaly-tooltip-title">${aTemp.name}</div>
-                                    <div style="display: flex; gap: 6px; margin: 6px 0; flex-wrap: wrap;">
-                                        <span style="border: 1px solid ${getLevelColor(aTemp.level)}; color: ${getLevelColor(aTemp.level)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold;">
-                                            Lvl ${aTemp.level || 1}
-                                        </span>
-                                        <span style="border: 1px solid ${getTypeColor(aTemp.magicObject)}; color: ${getTypeColor(aTemp.magicObject)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; display: flex; align-items: center; gap: 4px;">
-                                            ${aTemp.spiritualite}
-                                        </span>
-                                    </div>
-                                    <div class="anomaly-tooltip-desc">${aTemp.description ? aTemp.description : 'Aucune description'}</div>
-                                `;
-                                reqs.push(`<span class="anomaly-badge" style="border: 1px solid ${spiriColor}; background: linear-gradient(${spiriColor}25, ${spiriColor}25), #1e293b; color: ${spiriColor}; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block; cursor: help;" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}"><span class="material-symbols-outlined" style="font-size: 0.9rem; vertical-align: middle; color: ${spiriColor};">${catIcon}</span> ${v}x ${k}</span>`);
-                            } else {
-                                reqs.push(`${v}x [A] ${k}`);
-                            }
-                        }
-                    }
-                    if (r.requiredConsumables) {
-                        for (const [k, v] of Object.entries(r.requiredConsumables)) {
-                            reqs.push(`<span class="anomaly-badge" style="border: 1px solid #10b981; background: linear-gradient(#10b98125, #10b98125), #1e293b; color: #10b981; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block;"><span class="material-symbols-outlined" style="font-size: 0.9rem; vertical-align: middle; color: #10b981;">inventory_2</span> ${v}x ${k}</span>`);
-                        }
-                    }
+            const filteredRecipes = allRecipes.filter(r => {
+                if (searchName && !r.name.toLowerCase().includes(searchName)) return false;
+                if (filterType && r.rewardType !== filterType) return false;
+                return true;
+            });
 
-                    let rewardHtml = '';
-                    if (r.rewardType === 'GIVE_ANOMALY') {
-                        const aTemp = allAnomalies.find(a => a.name === r.rewardName);
+            if (filteredRecipes.length === 0) {
+                container.innerHTML = "<p style='color: var(--text-muted);'>Aucune recette trouvée.</p>";
+                return;
+            }
+
+            filteredRecipes.forEach(r => {
+                const div = document.createElement('div');
+                div.style.background = 'rgba(0,0,0,0.3)';
+                div.style.border = '1px solid var(--glass-border)';
+                div.style.borderRadius = '8px';
+                div.style.padding = '1rem';
+
+                let reqs = [];
+                if (r.costGold > 0) reqs.push(`<span class="anomaly-badge" style="border: 1px solid #f59e0b; background: linear-gradient(#f59e0b25, #f59e0b25), #1e293b; color: #fbbf24; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block;">${r.costGold} Or</span>`);
+                if (r.costSpiritXp > 0) reqs.push(`<span class="anomaly-badge" style="border: 1px solid #38bdf8; background: linear-gradient(#38bdf825, #38bdf825), #1e293b; color: #38bdf8; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block;">${r.costSpiritXp} XP Spirit</span>`);
+
+                if (r.requiredAnomalies) {
+                    for (const [k, v] of Object.entries(r.requiredAnomalies)) {
+                        const aTemp = allAnomalies.find(a => a.name === k);
                         if (aTemp) {
                             const catIcon = aTemp.category ? (CATEGORY_ICONS[aTemp.category] || 'category') : 'star';
                             const spiriColor = aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
@@ -747,7 +771,7 @@
                                 <div class="anomaly-tooltip-title">${aTemp.name}</div>
                                 <div style="display: flex; gap: 6px; margin: 6px 0; flex-wrap: wrap;">
                                     <span style="border: 1px solid ${getLevelColor(aTemp.level)}; color: ${getLevelColor(aTemp.level)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold;">
-                                        Lvl ${r.rewardLevel || aTemp.level || 1}
+                                        Lvl ${aTemp.level || 1}
                                     </span>
                                     <span style="border: 1px solid ${getTypeColor(aTemp.magicObject)}; color: ${getTypeColor(aTemp.magicObject)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; display: flex; align-items: center; gap: 4px;">
                                         ${aTemp.spiritualite}
@@ -755,44 +779,71 @@
                                 </div>
                                 <div class="anomaly-tooltip-desc">${aTemp.description ? aTemp.description : 'Aucune description'}</div>
                             `;
-                            rewardHtml = `<span class="anomaly-badge" style="border: 1px solid ${spiriColor}; background: linear-gradient(${spiriColor}25, ${spiriColor}25), #1e293b; color: ${spiriColor}; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block; cursor: help;" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; color: ${spiriColor};">${catIcon}</span> ${r.rewardQuantity}x ${r.rewardName}</span>`;
+                            reqs.push(`<span class="anomaly-badge" style="border: 1px solid ${spiriColor}; background: linear-gradient(${spiriColor}25, ${spiriColor}25), #1e293b; color: ${spiriColor}; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block; cursor: help;" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}"><span class="material-symbols-outlined" style="font-size: 0.9rem; vertical-align: middle; color: ${spiriColor};">${catIcon}</span> ${v}x ${k}</span>`);
                         } else {
-                            rewardHtml = `<span style="color: #10b981;">${r.rewardType} - ${r.rewardQuantity}x ${r.rewardName} (Niv. ${r.rewardLevel})</span>`;
+                            reqs.push(`${v}x [A] ${k}`);
                         }
-                    } else if (r.rewardType === 'GIVE_CONSUMABLE') {
-                        rewardHtml = `<span class="anomaly-badge" style="border: 1px solid #10b981; background: linear-gradient(#10b98125, #10b98125), #1e293b; color: #10b981; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block;"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; color: #10b981;">inventory_2</span> ${r.rewardQuantity}x ${r.rewardName}</span>`;
-                    } else if (r.rewardType === 'GIVE_SPIRIT_XP') {
-                        rewardHtml = `<span class="anomaly-badge" style="border: 1px solid #38bdf8; background: linear-gradient(#38bdf825, #38bdf825), #1e293b; color: #38bdf8; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block;"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; color: #38bdf8;">self_improvement</span> ${r.rewardQuantity} XP Spiritualité</span>`;
-                    } else if (r.rewardType === 'UNLOCK_FEATURE') {
-                        const meta = DEFAULT_SECRETS_META.find(s => s.name === r.rewardName) || { icon: "key", color: "#f59e0b" };
-                        rewardHtml = `<span class="anomaly-badge" style="border: 1px solid ${meta.color}; background: linear-gradient(${meta.color}25, ${meta.color}25), #1e293b; color: ${meta.color}; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block;"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; color: ${meta.color};">${meta.icon}</span> Secret - ${r.rewardName} <span style="opacity: 0.8; font-size: 0.85em;">(Niv. ${r.rewardLevel || 1})</span></span>`;
-                    } else {
-                        rewardHtml = `<span style="color: #f59e0b;">${r.rewardType} - ${r.rewardQuantity}x ${r.rewardName}</span>`;
                     }
+                }
+                if (r.requiredConsumables) {
+                    for (const [k, v] of Object.entries(r.requiredConsumables)) {
+                        reqs.push(`<span class="anomaly-badge" style="border: 1px solid #10b981; background: linear-gradient(#10b98125, #10b98125), #1e293b; color: #10b981; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block;"><span class="material-symbols-outlined" style="font-size: 0.9rem; vertical-align: middle; color: #10b981;">inventory_2</span> ${v}x ${k}</span>`);
+                    }
+                }
 
-                    div.innerHTML = `
-                        <div style="display:flex; justify-content:space-between; align-items:start;">
-                            <div>
-                                <h4 style="margin: 0; color: #06b6d4;">${r.name}</h4>
-                                <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0.3rem 0;">${r.description || ''}</p>
+                let rewardHtml = '';
+                if (r.rewardType === 'GIVE_ANOMALY') {
+                    const aTemp = allAnomalies.find(a => a.name === r.rewardName);
+                    if (aTemp) {
+                        const catIcon = aTemp.category ? (CATEGORY_ICONS[aTemp.category] || 'category') : 'star';
+                        const spiriColor = aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
+                        const tooltipData = `
+                            <div class="anomaly-tooltip-title">${aTemp.name}</div>
+                            <div style="display: flex; gap: 6px; margin: 6px 0; flex-wrap: wrap;">
+                                <span style="border: 1px solid ${getLevelColor(aTemp.level)}; color: ${getLevelColor(aTemp.level)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold;">
+                                    Lvl ${r.rewardLevel || aTemp.level || 1}
+                                </span>
+                                <span style="border: 1px solid ${getTypeColor(aTemp.magicObject)}; color: ${getTypeColor(aTemp.magicObject)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; display: flex; align-items: center; gap: 4px;">
+                                    ${aTemp.spiritualite}
+                                </span>
                             </div>
-                            <div style="display: flex; gap: 0.5rem;">
-                                <button style="background: rgba(245, 158, 11, 0.2); border: 1px solid rgba(245, 158, 11, 0.5); color: #fcd34d; border-radius: 6px; cursor: pointer; padding: 0.3rem 0.6rem; font-size: 0.8rem; transition: all 0.2s;" onmouseover="this.style.background='rgba(245, 158, 11, 0.4)'" onmouseout="this.style.background='rgba(245, 158, 11, 0.2)'" onclick="editRecipe(${r.id})">Éditer</button>
-                                <button class="btn-danger" style="padding:0.3rem 0.6rem; font-size:0.8rem;" onclick="deleteRecipe(${r.id})">Supprimer</button>
-                            </div>
+                            <div class="anomaly-tooltip-desc">${aTemp.description ? aTemp.description : 'Aucune description'}</div>
+                        `;
+                        rewardHtml = `<span class="anomaly-badge" style="border: 1px solid ${spiriColor}; background: linear-gradient(${spiriColor}25, ${spiriColor}25), #1e293b; color: ${spiriColor}; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block; cursor: help;" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; color: ${spiriColor};">${catIcon}</span> ${r.rewardQuantity}x ${r.rewardName}</span>`;
+                    } else {
+                        rewardHtml = `<span style="color: #10b981;">${r.rewardType} - ${r.rewardQuantity}x ${r.rewardName} (Niv. ${r.rewardLevel})</span>`;
+                    }
+                } else if (r.rewardType === 'GIVE_CONSUMABLE') {
+                    rewardHtml = `<span class="anomaly-badge" style="border: 1px solid #10b981; background: linear-gradient(#10b98125, #10b98125), #1e293b; color: #10b981; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block;"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; color: #10b981;">inventory_2</span> ${r.rewardQuantity}x ${r.rewardName}</span>`;
+                } else if (r.rewardType === 'GIVE_SPIRIT_XP') {
+                    rewardHtml = `<span class="anomaly-badge" style="border: 1px solid #38bdf8; background: linear-gradient(#38bdf825, #38bdf825), #1e293b; color: #38bdf8; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block;"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; color: #38bdf8;">self_improvement</span> ${r.rewardQuantity} XP Spiritualité</span>`;
+                } else if (r.rewardType === 'UNLOCK_FEATURE') {
+                    const meta = DEFAULT_SECRETS_META.find(s => s.name === r.rewardName) || { icon: "key", color: "#f59e0b" };
+                    rewardHtml = `<span class="anomaly-badge" style="border: 1px solid ${meta.color}; background: linear-gradient(${meta.color}25, ${meta.color}25), #1e293b; color: ${meta.color}; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block;"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; color: ${meta.color};">${meta.icon}</span> Secret - ${r.rewardName} <span style="opacity: 0.8; font-size: 0.85em;">(Niv. ${r.rewardLevel || 1})</span></span>`;
+                } else {
+                    rewardHtml = `<span style="color: #f59e0b;">${r.rewardType} - ${r.rewardQuantity}x ${r.rewardName}</span>`;
+                }
+
+                div.innerHTML = `
+                    <div style="display:flex; justify-content:space-between; align-items:start;">
+                        <div>
+                            <h4 style="margin: 0; color: #06b6d4;">${r.name}</h4>
+                            <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0.3rem 0;">${r.description || ''}</p>
                         </div>
-                        <div style="font-size: 0.85rem; margin-top: 0.5rem; display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
-                            <strong>Coût :</strong> ${reqs.length > 0 ? reqs.join(' ') : '<span style="color: #f59e0b;">Gratuit</span>'}
+                        <div style="display: flex; gap: 0.5rem;">
+                            <button style="background: rgba(245, 158, 11, 0.2); border: 1px solid rgba(245, 158, 11, 0.5); color: #fcd34d; border-radius: 6px; cursor: pointer; padding: 0.3rem 0.6rem; font-size: 0.8rem; transition: all 0.2s;" onmouseover="this.style.background='rgba(245, 158, 11, 0.4)'" onmouseout="this.style.background='rgba(245, 158, 11, 0.2)'" onclick="editRecipe(${r.id})">Éditer</button>
+                            <button class="btn-danger" style="padding:0.3rem 0.6rem; font-size:0.8rem;" onclick="deleteRecipe(${r.id})">Supprimer</button>
                         </div>
-                        <div style="font-size: 0.85rem; margin-top: 0.5rem; display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
-                            <strong>Résultat :</strong> ${rewardHtml}
-                        </div>
-                    `;
-                    container.appendChild(div);
-                });
-            } catch (e) {
-                console.error(e);
-            }
+                    </div>
+                    <div style="font-size: 0.85rem; margin-top: 0.5rem; display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
+                        <strong>Coût :</strong> ${reqs.length > 0 ? reqs.join(' ') : '<span style="color: #f59e0b;">Gratuit</span>'}
+                    </div>
+                    <div style="font-size: 0.85rem; margin-top: 0.5rem; display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
+                        <strong>Résultat :</strong> ${rewardHtml}
+                    </div>
+                `;
+                container.appendChild(div);
+            });
         }
 
         document.getElementById('rewardType').addEventListener('change', updateRewardNameInput);
@@ -848,6 +899,7 @@
                     document.getElementById('recipePanel').style.border = "1px solid var(--glass-border)";
                     document.getElementById('reqAnomaliesList').innerHTML = '';
                     document.getElementById('reqConsumablesList').innerHTML = '';
+                    document.getElementById('cancelEditBtn').style.display = 'none';
                     loadRecipes();
                 } else {
                     const err = await res.text();
@@ -938,9 +990,31 @@
             document.getElementById('recipePanel').style.boxShadow = "0 0 20px rgba(245, 158, 11, 0.4)";
             document.getElementById('recipePanel').style.border = "1px solid rgba(245, 158, 11, 0.8)";
             
+            document.getElementById('cancelEditBtn').style.display = 'block';
+
             const msg = document.getElementById('formMsg');
             msg.innerText = "Mode édition actif. Modifiez et enregistrez.";
             msg.style.color = "#f59e0b";
+        };
+
+        window.cancelEdit = function() {
+            document.getElementById('recipeForm').reset();
+            document.getElementById('recipeId').value = "";
+            document.getElementById('recipePanel').style.boxShadow = "none";
+            document.getElementById('recipePanel').style.border = "1px solid var(--glass-border)";
+            document.getElementById('reqAnomaliesList').innerHTML = '';
+            document.getElementById('reqConsumablesList').innerHTML = '';
+            document.getElementById('cancelEditBtn').style.display = 'none';
+            document.getElementById('formMsg').innerText = "";
+            
+            document.getElementById('rewardType').value = "GIVE_ANOMALY";
+            const rewardTypeWrapper = document.getElementById('rewardType').closest('.custom-select-wrapper');
+            if (rewardTypeWrapper) {
+                const opt = rewardTypeWrapper.querySelector(`.custom-option[data-value="GIVE_ANOMALY"]`);
+                if (opt) rewardTypeWrapper.querySelector('.cs-label').innerHTML = opt.innerHTML;
+            }
+            updateRewardNameInput();
+            window.scrollTo({ top: 0, behavior: 'smooth' });
         };
     </script>
 </body>
