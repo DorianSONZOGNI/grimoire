@@ -118,6 +118,20 @@ public class AuthController {
             user.setUnlockedShop(true);
             userRepository.save(user);
             return ResponseEntity.ok(Map.of("message", "Boutique débloquée avec succès !"));
+        } else if ("roster".equals(feature)) {
+            int currentMax = user.getMaxCharacters();
+            if (currentMax < 2) currentMax = 2;
+
+            if (currentMax >= 8) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Taille maximale déjà atteinte."));
+            
+            int[] upgradeCosts = {0, 0, 20, 50, 75, 150, 200, 300};
+            int cost = upgradeCosts[currentMax];
+            
+            if (user.getMonnaie() < cost) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Pas assez d'or."));
+            user.setMonnaie(user.getMonnaie() - cost);
+            user.setMaxCharacters(currentMax + 1);
+            userRepository.save(user);
+            return ResponseEntity.ok(Map.of("message", "Emplacement supplémentaire acheté avec succès !"));
         }
 
         return ResponseEntity.badRequest().body(Map.of("message", "Fonctionnalité inconnue."));

@@ -153,20 +153,61 @@ async function updateCharLimitUI() {
         const res = await fetch('/api/personnages/limit');
         if (res.ok) {
             const data = await res.json();
-            const limitText = document.getElementById('charLimitText');
-            if (limitText) {
-                limitText.textContent = `${data.currentCharacters}/${data.maxCharacters}`;
-                if (data.currentCharacters >= data.maxCharacters && !window.isAdmin) {
-                    limitText.style.color = '#ef4444';
-                } else {
-                    limitText.style.color = '#94a3b8';
-                }
+            const limitContainer = document.getElementById('charLimitContainer');
+            if (!limitContainer) return;
+
+            const isMaxedOut = data.currentCharacters >= data.maxCharacters;
+            const color = (isMaxedOut && !window.isAdmin) ? '#ef4444' : '#94a3b8';
+            
+            let html = `<span style="font-size: 0.9rem; color: ${color}; font-weight: 500;">${data.currentCharacters}/${data.maxCharacters}</span>`;
+
+            if (isMaxedOut && data.maxCharacters < 8 && !window.isAdmin) {
+                const costs = {2: 20, 3: 50, 4: 75, 5: 150, 6: 200, 7: 300};
+                const cost = costs[data.maxCharacters];
+                html += `<button onclick="buyRosterSlot(${cost})" style="margin-left: 0.5rem; background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.4); color: #10b981; border-radius: 4px; cursor: pointer; padding: 0.1rem 0.3rem; display: inline-flex; align-items: center;" title="Acheter un emplacement pour ${cost} or"><span class="material-symbols-outlined" style="font-size: 0.9rem;">add</span></button>`;
             }
+
+            limitContainer.innerHTML = html;
         }
     } catch (e) {
         console.error('Erreur limite personnages:', e);
     }
 }
+
+window.buyRosterSlot = function(cost) {
+    document.getElementById('rosterSlotCostText').textContent = cost;
+    document.getElementById('buyRosterModal').classList.add('show');
+};
+
+window.closeRosterModal = function() {
+    document.getElementById('buyRosterModal').classList.remove('show');
+};
+
+document.getElementById('buyRosterConfirmBtn').addEventListener('click', async () => {
+    closeRosterModal();
+    try {
+        const res = await fetch('/api/auth/unlock/roster', { method: 'POST' });
+        const data = await res.json();
+        if (res.ok) {
+            showNotif(data.message);
+            // Update auth state so UI syncs
+            await fetch('/api/auth/me').then(r => r.json()).then(u => {
+                if (window.updateGoldDisplay) window.updateGoldDisplay(u.monnaie);
+                window.currentUser = u;
+            });
+            await updateCharLimitUI();
+            
+            // Si le panneau de création était caché par applyRbac (pas géré directement mais au cas où)
+            const eqCreateSection = document.querySelector('.equip-create-section');
+            if (eqCreateSection && window.currentUser) eqCreateSection.style.display = 'block';
+            
+        } else {
+            showNotif(data.message, true);
+        }
+    } catch (e) {
+        showNotif('Erreur réseau', true);
+    }
+});
 
 async function loadAllEquipments() {
     try {
