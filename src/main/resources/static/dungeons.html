@@ -677,28 +677,12 @@
             <p style="color: var(--text-muted); margin-bottom: 2rem;">Choisissez un donjon à affronter. La mort n'est
                 qu'un léger contretemps.</p>
 
-            <div class="tabs-header" id="dungeonsTabs" style="display: none;">
-                <button class="tab-btn tab-free active" onclick="switchDungeonTab('free')" id="tab-btn-free">
-                    <span class="material-symbols-outlined">public</span> Libres <span class="tab-badge" id="badge-free">0</span>
-                </button>
-                <button class="tab-btn tab-gold" onclick="switchDungeonTab('gold')" id="tab-btn-gold">
-                    <span class="material-symbols-outlined">monetization_on</span> À Dévérouiller <span class="tab-badge" id="badge-gold">0</span>
-                </button>
-                <button class="tab-btn tab-secret" onclick="switchDungeonTab('secret')" id="tab-btn-secret">
-                    <span class="material-symbols-outlined">auto_awesome</span> Secrets <span class="tab-badge" id="badge-secret">0</span>
-                </button>
+            <div class="tabs-header" id="dungeonsTabs" style="display: none; flex-wrap: wrap;">
+                <!-- Rempli par JS -->
             </div>
 
-            <div id="freeDungeonsSection" class="tab-content active">
-                <div class="dungeons-grid" id="freeDungeonsList"></div>
-            </div>
-
-            <div id="goldDungeonsSection" class="tab-content">
-                <div class="dungeons-grid" id="goldDungeonsList"></div>
-            </div>
-
-            <div id="secretDungeonsSection" class="tab-content">
-                <div class="dungeons-grid" id="secretDungeonsList"></div>
+            <div id="dungeonsSectionsContainer">
+                <!-- Rempli par JS -->
             </div>
             
             <div id="noDungeonsMsg" style="color: var(--text-muted); display: none;">Aucun donjon disponible pour le moment.</div>
