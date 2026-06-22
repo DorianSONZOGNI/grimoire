@@ -79,9 +79,40 @@ public class AuthController {
             res.put("monnaie", u.getMonnaie());
             res.put("unlockedSecrets", u.getUnlockedSecrets());
             res.put("unlockedDungeons", u.getUnlockedDungeons());
+            res.put("unlockedVault", u.isUnlockedVault());
+            res.put("unlockedAlchemy", u.isUnlockedAlchemy());
         });
 
         return ResponseEntity.ok(res);
+    }
+
+    @PostMapping("/unlock/{feature}")
+    public ResponseEntity<?> unlockFeature(@PathVariable String feature) {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        if (auth == null || !auth.isAuthenticated() || "anonymousUser".equals(auth.getPrincipal())) {
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(Map.of("message", "Non connecté."));
+        }
+
+        AppUser user = userRepository.findByUsername(auth.getName()).orElse(null);
+        if (user == null) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).build();
+
+        if ("vault".equals(feature)) {
+            if (user.isUnlockedVault()) return ResponseEntity.ok(Map.of("message", "Déjà débloqué."));
+            if (user.getMonnaie() < 50) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Pas assez d'or."));
+            user.setMonnaie(user.getMonnaie() - 50);
+            user.setUnlockedVault(true);
+            userRepository.save(user);
+            return ResponseEntity.ok(Map.of("message", "Coffres débloqués avec succès !"));
+        } else if ("alchemy".equals(feature)) {
+            if (user.isUnlockedAlchemy()) return ResponseEntity.ok(Map.of("message", "Déjà débloqué."));
+            if (user.getMonnaie() < 150) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(Map.of("message", "Pas assez d'or."));
+            user.setMonnaie(user.getMonnaie() - 150);
+            user.setUnlockedAlchemy(true);
+            userRepository.save(user);
+            return ResponseEntity.ok(Map.of("message", "Alchimie débloquée avec succès !"));
+        }
+
+        return ResponseEntity.badRequest().body(Map.of("message", "Fonctionnalité inconnue."));
     }
 
     private void authenticateUser(String username, String password, HttpServletRequest request, HttpServletResponse response) {

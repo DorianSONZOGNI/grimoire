@@ -43,4 +43,10 @@ public class AppUser {
     @Column(name = "dungeon_id")
     private Set<Long> unlockedDungeons = new HashSet<>();
 
+    @Column(nullable = false)
+    private boolean unlockedVault = false;
+
+    @Column(nullable = false)
+    private boolean unlockedAlchemy = false;
+
 }
