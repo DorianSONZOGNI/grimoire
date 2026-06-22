@@ -171,9 +171,17 @@ public class AlchemyService {
                 anomaly.setName(recipe.getRewardName());
                 anomaly.setOwnerUsername(username);
                 anomaly.setLevel(recipe.getRewardLevel());
-                // Valeurs par défaut pour spiritualité et catégorie
-                anomaly.setSpiritualite(generation.grimoire.enumeration.SpiritualiteType.KARMA); 
-                anomaly.setCategory(generation.grimoire.enumeration.AnomalieCategory.AUTRE);
+                
+                // Cherche un template existant pour copier la spiritualité et la catégorie
+                Anomalie template = anomalieRepository.findFirstByName(recipe.getRewardName());
+                if (template != null) {
+                    anomaly.setSpiritualite(template.getSpiritualite());
+                    anomaly.setCategory(template.getCategory());
+                } else {
+                    anomaly.setSpiritualite(generation.grimoire.enumeration.SpiritualiteType.KARMA); 
+                    anomaly.setCategory(generation.grimoire.enumeration.AnomalieCategory.AUTRE);
+                }
+                
                 anomalieRepository.save(anomaly);
             }
             return "Vous avez obtenu " + recipe.getRewardQuantity() + "x Anomalie : " + recipe.getRewardName();
@@ -193,8 +201,16 @@ public class AlchemyService {
             upgraded.setName(recipe.getRewardName());
             upgraded.setOwnerUsername(username);
             upgraded.setLevel(recipe.getRewardLevel());
-            upgraded.setSpiritualite(generation.grimoire.enumeration.SpiritualiteType.KARMA);
-            upgraded.setCategory(generation.grimoire.enumeration.AnomalieCategory.AUTRE);
+            
+            Anomalie template = anomalieRepository.findFirstByName(recipe.getRewardName());
+            if (template != null) {
+                upgraded.setSpiritualite(template.getSpiritualite());
+                upgraded.setCategory(template.getCategory());
+            } else {
+                upgraded.setSpiritualite(generation.grimoire.enumeration.SpiritualiteType.KARMA);
+                upgraded.setCategory(generation.grimoire.enumeration.AnomalieCategory.AUTRE);
+            }
+            
             anomalieRepository.save(upgraded);
             return "Vous avez amélioré une anomalie en : " + recipe.getRewardName() + " (Niv. " + recipe.getRewardLevel() + ")";
         } else if (recipe.getRewardType() == RecipeRewardType.UNLOCK_FEATURE) {
