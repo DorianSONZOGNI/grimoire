@@ -175,13 +175,14 @@
         <div class="form-container"
             style="max-width: 1200px; margin: 2rem auto; display: flex; gap: 2rem; align-items: flex-start;">
 
-            <div class="panel" style="flex: 1;">
+            <div class="panel" id="recipePanel" style="flex: 1; transition: all 0.3s ease;">
                 <div class="panel-title">
                     <span class="material-symbols-outlined" style="color: #06b6d4;">science</span>
-                    Créer une Recette Alchimique
+                    Créer/Éditer une Recette Alchimique
                 </div>
 
                 <form id="recipeForm" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                    <input type="hidden" id="recipeId" value="">
                     <div class="form-row">
                         <div class="form-group" style="flex: 1;">
                             <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">Nom de la recette</label>
@@ -287,8 +288,23 @@
 
     <script src="/js/auth.js"></script>
     <script>
+        const DEFAULT_SECRETS_META = [
+            { name: "Secret du Chaos", icon: "local_fire_department", color: "#ff0000" },
+            { name: "Secret de l'Abondance", icon: "eco", color: "#10b981" },
+            { name: "Secret de la Préservation", icon: "foundation", color: "#99674c" },
+            { name: "Secret de la Sérénité", icon: "water_drop", color: "#00e5cc" },
+            { name: "Secret de la Chasse", icon: "visibility_off", color: "#ed5677" },
+            { name: "Secret du Carnage", icon: "explosion", color: "#a70740" },
+            { name: "Secret de la Joie", icon: "volcano", color: "#b74c0b" },
+            { name: "Secret du Savoir", icon: "psychology", color: "#3b82f6" },
+            { name: "Secret du Destin", icon: "all_inclusive", color: "#e7d198" },
+            { name: "Secret de l'Éther", icon: "blur_on", color: "#38bdf8" },
+            { name: "Secret des Abysses", icon: "dark_mode", color: "#c084fc" }
+        ];
+
         let allAnomalies = [];
         let allConsumables = [];
+        let allRecipes = []; // To hold loaded recipes for editing
 
         document.addEventListener('click', (e) => {
             // Fermer les dropdowns
@@ -459,19 +475,7 @@
                 // Fetch dungeons to get available secrets
                 let secretOptions = '';
 
-                const defaultSecrets = [
-                    { name: "Secret du Chaos", icon: "local_fire_department", color: "#ff0000" },
-                    { name: "Secret de l'Abondance", icon: "eco", color: "#10b981" },
-                    { name: "Secret de la Préservation", icon: "foundation", color: "#99674c" },
-                    { name: "Secret de la Sérénité", icon: "water_drop", color: "#00e5cc" },
-                    { name: "Secret de la Chasse", icon: "visibility_off", color: "#ed5677" },
-                    { name: "Secret du Carnage", icon: "explosion", color: "#a70740" },
-                    { name: "Secret de la Joie", icon: "volcano", color: "#b74c0b" },
-                    { name: "Secret du Savoir", icon: "psychology", color: "#3b82f6" },
-                    { name: "Secret du Destin", icon: "all_inclusive", color: "#e7d198" },
-                    { name: "Secret de l'Éther", icon: "blur_on", color: "#38bdf8" },
-                    { name: "Secret des Abysses", icon: "dark_mode", color: "#c084fc" }
-                ];
+                const defaultSecrets = DEFAULT_SECRETS_META;
 
                 defaultSecrets.forEach(ds => {
                     secretOptions += `<div class="custom-option" data-value="${ds.name}">
@@ -685,6 +689,7 @@
             try {
                 const res = await fetch('/api/alchemy/recipes');
                 const data = await res.json();
+                allRecipes = data; // Store for edit
                 const container = document.getElementById('recipesList');
                 container.innerHTML = '';
                 if (data.length === 0) {
@@ -759,7 +764,8 @@
                     } else if (r.rewardType === 'GIVE_SPIRIT_XP') {
                         rewardHtml = `<span class="anomaly-badge" style="border: 1px solid #38bdf8; background: linear-gradient(#38bdf825, #38bdf825), #1e293b; color: #38bdf8; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block;"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; color: #38bdf8;">self_improvement</span> ${r.rewardQuantity} XP Spiritualité</span>`;
                     } else if (r.rewardType === 'UNLOCK_FEATURE') {
-                        rewardHtml = `<span class="anomaly-badge" style="border: 1px solid #f59e0b; background: linear-gradient(#f59e0b25, #f59e0b25), #1e293b; color: #f59e0b; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block;"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; color: #f59e0b;">key</span> Secret - ${r.rewardName} <span style="opacity: 0.8; font-size: 0.85em;">(Niv. ${r.rewardLevel || 1})</span></span>`;
+                        const meta = DEFAULT_SECRETS_META.find(s => s.name === r.rewardName) || { icon: "key", color: "#f59e0b" };
+                        rewardHtml = `<span class="anomaly-badge" style="border: 1px solid ${meta.color}; background: linear-gradient(${meta.color}25, ${meta.color}25), #1e293b; color: ${meta.color}; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block;"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; color: ${meta.color};">${meta.icon}</span> Secret - ${r.rewardName} <span style="opacity: 0.8; font-size: 0.85em;">(Niv. ${r.rewardLevel || 1})</span></span>`;
                     } else {
                         rewardHtml = `<span style="color: #f59e0b;">${r.rewardType} - ${r.rewardQuantity}x ${r.rewardName}</span>`;
                     }
@@ -770,7 +776,10 @@
                                 <h4 style="margin: 0; color: #06b6d4;">${r.name}</h4>
                                 <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0.3rem 0;">${r.description || ''}</p>
                             </div>
-                            <button class="btn-danger" style="padding:0.3rem 0.6rem; font-size:0.8rem;" onclick="deleteRecipe(${r.id})">Supprimer</button>
+                            <div style="display: flex; gap: 0.5rem;">
+                                <button style="background: rgba(245, 158, 11, 0.2); border: 1px solid rgba(245, 158, 11, 0.5); color: #fcd34d; border-radius: 6px; cursor: pointer; padding: 0.3rem 0.6rem; font-size: 0.8rem; transition: all 0.2s;" onmouseover="this.style.background='rgba(245, 158, 11, 0.4)'" onmouseout="this.style.background='rgba(245, 158, 11, 0.2)'" onclick="editRecipe(${r.id})">Éditer</button>
+                                <button class="btn-danger" style="padding:0.3rem 0.6rem; font-size:0.8rem;" onclick="deleteRecipe(${r.id})">Supprimer</button>
+                            </div>
                         </div>
                         <div style="font-size: 0.85rem; margin-top: 0.5rem; display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
                             <strong>Coût :</strong> ${reqs.length > 0 ? reqs.join(' ') : '<span style="color: #f59e0b;">Gratuit</span>'}
@@ -791,7 +800,7 @@
         document.getElementById('recipeForm').addEventListener('submit', async (e) => {
             e.preventDefault();
             const msg = document.getElementById('formMsg');
-            msg.innerText = "Création...";
+            msg.innerText = "Sauvegarde...";
             msg.style.color = "var(--text-muted)";
 
             const recipe = {
@@ -806,6 +815,9 @@
                 requiredAnomalies: {},
                 requiredConsumables: {}
             };
+
+            const editId = document.getElementById('recipeId').value;
+            if (editId) recipe.id = editId;
 
             const anoms = document.getElementById('reqAnomaliesList').children;
             for (let a of anoms) {
@@ -828,9 +840,12 @@
                     body: JSON.stringify(recipe)
                 });
                 if (res.ok) {
-                    msg.innerText = "Recette créée avec succès !";
+                    msg.innerText = editId ? "Recette mise à jour !" : "Recette créée avec succès !";
                     msg.style.color = "#10b981";
                     document.getElementById('recipeForm').reset();
+                    document.getElementById('recipeId').value = "";
+                    document.getElementById('recipePanel').style.boxShadow = "none";
+                    document.getElementById('recipePanel').style.border = "1px solid var(--glass-border)";
                     document.getElementById('reqAnomaliesList').innerHTML = '';
                     document.getElementById('reqConsumablesList').innerHTML = '';
                     loadRecipes();
@@ -854,6 +869,79 @@
                 alert("Erreur de suppression");
             }
         }
+
+        window.editRecipe = function(id) {
+            const recipe = allRecipes.find(r => r.id === id);
+            if (!recipe) return;
+
+            document.getElementById('recipeId').value = recipe.id;
+            document.getElementById('recipeName').value = recipe.name || '';
+            document.getElementById('recipeDesc').value = recipe.description || '';
+            document.getElementById('costGold').value = recipe.costGold || 0;
+            document.getElementById('costSpirit').value = recipe.costSpiritXp || 0;
+            
+            // Set reward type using the custom select logic
+            const rewardTypeWrapper = document.getElementById('rewardType').closest('.custom-select-wrapper');
+            const option = rewardTypeWrapper.querySelector(`.custom-option[data-value="${recipe.rewardType}"]`);
+            if (option) {
+                document.getElementById('rewardType').value = recipe.rewardType;
+                rewardTypeWrapper.querySelector('.cs-label').innerHTML = option.innerHTML;
+                updateRewardNameInput().then(() => {
+                    // Setting reward name and level *after* updateRewardNameInput recreates the inputs
+                    setTimeout(() => {
+                        const rNameInput = document.getElementById('rewardName');
+                        if (rNameInput) {
+                            if (rNameInput.tagName === 'INPUT' && rNameInput.type === 'hidden') {
+                                // It's a custom select, find the option
+                                const w = rNameInput.closest('.custom-select-wrapper');
+                                const opt = w.querySelector(`.custom-option[data-value="${recipe.rewardName}"]`);
+                                if (opt) {
+                                    rNameInput.value = recipe.rewardName;
+                                    w.querySelector('.cs-label').innerHTML = opt.innerHTML;
+                                } else {
+                                    rNameInput.value = recipe.rewardName;
+                                    w.querySelector('.cs-label').innerHTML = recipe.rewardName;
+                                }
+                            } else {
+                                rNameInput.value = recipe.rewardName;
+                            }
+                        }
+                    }, 50);
+                });
+            }
+
+            document.getElementById('rewardQty').value = recipe.rewardQuantity || 1;
+            document.getElementById('rewardLevel').value = recipe.rewardLevel || 1;
+
+            // Clear existing requirements
+            document.getElementById('reqAnomaliesList').innerHTML = '';
+            document.getElementById('reqConsumablesList').innerHTML = '';
+
+            // Add required anomalies
+            if (recipe.requiredAnomalies) {
+                for (const [name, qty] of Object.entries(recipe.requiredAnomalies)) {
+                    addRequirement('anomalie', name, qty);
+                }
+            }
+
+            // Add required consumables
+            if (recipe.requiredConsumables) {
+                for (const [name, qty] of Object.entries(recipe.requiredConsumables)) {
+                    addRequirement('consumable', name, qty);
+                }
+            }
+            
+            // Scroll to top
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+            
+            // Highlight panel
+            document.getElementById('recipePanel').style.boxShadow = "0 0 20px rgba(245, 158, 11, 0.4)";
+            document.getElementById('recipePanel').style.border = "1px solid rgba(245, 158, 11, 0.8)";
+            
+            const msg = document.getElementById('formMsg');
+            msg.innerText = "Mode édition actif. Modifiez et enregistrez.";
+            msg.style.color = "#f59e0b";
+        };
     </script>
 </body>
 
