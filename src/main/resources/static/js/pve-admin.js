@@ -804,8 +804,8 @@ function renderRooms() {
                                             <span class="material-symbols-outlined" style="font-size: 0.9rem;">${icon}</span>
                                             ${an && an.magicObject ? 'Objet Magique' : 'Matériau'}
                                         </span>
-                                        ${an && an.spiritualite ? 
-                                        `<span style="border: 1px solid ${color}; color: ${color}; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; background: rgba(0,0,0,0.3);">
+                                        ${an && an.spiritualite ?
+                                    `<span style="border: 1px solid ${color}; color: ${color}; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; background: rgba(0,0,0,0.3);">
                                             ${an.spiritualite}
                                         </span>` : ''}
                                     </div>
@@ -852,8 +852,8 @@ function renderRooms() {
                                             <span class="material-symbols-outlined" style="font-size: 0.9rem;">${priceIcon}</span>
                                             ${anPrice && anPrice.magicObject ? 'Objet Magique' : 'Matériau'}
                                         </span>
-                                        ${anPrice && anPrice.spiritualite ? 
-                                        `<span style="border: 1px solid ${priceColor}; color: ${priceColor}; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; background: rgba(0,0,0,0.3);">
+                                        ${anPrice && anPrice.spiritualite ?
+                                    `<span style="border: 1px solid ${priceColor}; color: ${priceColor}; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; background: rgba(0,0,0,0.3);">
                                             ${anPrice.spiritualite}
                                         </span>` : ''}
                                     </div>
@@ -1718,6 +1718,7 @@ async function loadDungeons() {
                         <div class="monster-card-title">${d.name} <span style="font-size: 0.8rem; background: rgba(255,255,255,0.1); padding: 0.2rem 0.4rem; border-radius: 4px; margin-left: 0.5rem;">Lvl ${d.recommendedLevel}</span></div>
                         <div style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 0.5rem;">${d.description || ''}</div>
                         <div style="font-size: 0.85rem; color: #f8fafc; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.1); display: grid; gap: 0.4rem;">
+                            ${d.requiredSecret ? `<div style="color: #94a3b8; display: flex; align-items: center; gap: 0.4rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem; color: #f59e0b;">key</span> <span><strong style="color:#f8fafc;">${d.requiredSecret}</strong> (Lvl ${d.requiredSecretLevel || 1})</span></div>` : ''}
                             <div><span style="font-weight: 600;">Salles totales :</span> ${totalSalles}</div>
                             ${combats > 0 ? `<div style="color: #ef4444; margin-left: 0.5rem; display: flex; align-items: center; gap: 0.3rem;">
                                 <span class="material-symbols-outlined" style="font-size: 1rem;">swords</span> Combats : ${combats} (avec ${totalMobs} mob${totalMobs > 1 ? 's' : ''})
@@ -2273,7 +2274,7 @@ document.addEventListener('click', (e) => {
     }
 });
 
-window.showTooltipFixed = function(el) {
+window.showTooltipFixed = function (el) {
     let tooltip = document.getElementById('globalFixedTooltip');
     if (!tooltip) {
         tooltip = document.createElement('div');
@@ -2317,7 +2318,7 @@ window.showTooltipFixed = function(el) {
     tooltip.style.left = left + 'px';
 }
 
-window.hideTooltipFixed = function() {
+window.hideTooltipFixed = function () {
     let tooltip = document.getElementById('globalFixedTooltip');
     if (tooltip) {
         tooltip.style.display = 'none';
