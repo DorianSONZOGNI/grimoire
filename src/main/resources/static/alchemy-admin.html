@@ -374,16 +374,40 @@
             } else if (type === 'UNLOCK_FEATURE') {
                 // Fetch dungeons to get available secrets
                 let secretOptions = '';
+                
+                const defaultSecrets = [
+                    { name: "Secret de la Destruction", icon: "bolt", color: "#ef4444" },
+                    { name: "Secret de la Création", icon: "auto_awesome", color: "#10b981" },
+                    { name: "Secret de la Préservation", icon: "shield", color: "#f59e0b" },
+                    { name: "Secret de l'Abondance", icon: "spa", color: "#22c55e" },
+                    { name: "Secret de la Chasse", icon: "my_location", color: "#38bdf8" },
+                    { name: "Secret de l'Harmonie", icon: "music_note", color: "#a855f7" },
+                    { name: "Secret de la Joie", icon: "mood", color: "#f43f5e" },
+                    { name: "Secret du Savoir", icon: "menu_book", color: "#6366f1" },
+                    { name: "Secret du Karma", icon: "change_history", color: "#e7d198" },
+                    { name: "Secret de l'Esprit", icon: "psychology", color: "#38bdf8" },
+                    { name: "Secret des Ténèbres", icon: "dark_mode", color: "#a855f7" }
+                ];
+                
+                defaultSecrets.forEach(ds => {
+                    secretOptions += `<div class="custom-option" data-value="${ds.name}">
+                        <span class="material-symbols-outlined cs-icon" style="color: ${ds.color};">${ds.icon}</span>
+                        ${ds.name}
+                    </div>`;
+                });
+
                 try {
                     const res = await fetch('/api/pve/dungeons');
                     if (res.ok) {
                         const dungeons = await res.json();
                         const secretDungeons = dungeons.filter(d => d.requiredSecret && d.requiredSecret.trim() !== '');
                         secretDungeons.forEach(d => {
-                            secretOptions += `<div class="custom-option" data-value="${d.requiredSecret}">
-                                <span class="material-symbols-outlined cs-icon" style="color: #f59e0b;">key</span>
-                                ${d.requiredSecret} <span style="color: #64748b; font-size: 0.8rem;">(Donjon: ${d.name})</span>
-                            </div>`;
+                            if (!defaultSecrets.some(ds => ds.name === d.requiredSecret)) {
+                                secretOptions += `<div class="custom-option" data-value="${d.requiredSecret}">
+                                    <span class="material-symbols-outlined cs-icon" style="color: #f59e0b;">key</span>
+                                    ${d.requiredSecret} <span style="color: #64748b; font-size: 0.8rem;">(Donjon: ${d.name})</span>
+                                </div>`;
+                            }
                         });
                     }
                 } catch (e) {
