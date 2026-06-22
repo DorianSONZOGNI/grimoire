@@ -20,6 +20,7 @@ let editingDungeonId = null;
 let allMonsters = [];
 let allEquipments = [];
 let allAnomalies = [];
+let allDungeons = [];
 let selectedRooms = [];
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -1675,87 +1676,104 @@ async function loadDungeons() {
     try {
         const res = await fetch('/api/admin/pve/dungeons');
         if (res.ok) {
-            const dungeons = await res.json();
-            const list = document.getElementById('dungeonsList');
-            list.innerHTML = '';
-
-            dungeons.forEach(d => {
-                let totalSalles = d.salles ? d.salles.length : 0;
-                let combats = 0, bosses = 0, treasures = 0, alterations = 0, rencontres = 0, pieges = 0, portes = 0, totalMobs = 0, totalBossMobs = 0;
-                if (d.salles) {
-                    d.salles.forEach(s => {
-                        if (s.type === 'COMBAT') {
-                            combats++;
-                            totalMobs += (s.monsters ? s.monsters.length : 0);
-                        } else if (s.type === 'BOSS') {
-                            bosses++;
-                            totalBossMobs += (s.monsters ? s.monsters.length : 0);
-                        }
-                        else if (s.type === 'TREASURE') { treasures++; }
-                        else if (s.type === 'EVENT') {
-                            if (s.eventSubType === 'RENCONTRE') rencontres++;
-                            else if (s.eventSubType === 'PIEGE') pieges++;
-                            else if (s.eventSubType === 'PORTE_ETRANGE') portes++;
-                            else alterations++;
-                        }
-                    });
-                }
-
-                let eventDetails = '';
-                if (alterations > 0) eventDetails += `<span style="color: #8b5cf6; display: inline-flex; align-items: center; gap: 0.2rem; margin-right: 0.5rem;"><span class="material-symbols-outlined" style="font-size: 0.9rem;">blur_on</span>${alterations}</span>`;
-                if (rencontres > 0) eventDetails += `<span style="color: #10b981; display: inline-flex; align-items: center; gap: 0.2rem; margin-right: 0.5rem;"><span class="material-symbols-outlined" style="font-size: 0.9rem;">storefront</span>${rencontres}</span>`;
-                if (pieges > 0) eventDetails += `<span style="color: #f87171; display: inline-flex; align-items: center; gap: 0.2rem; margin-right: 0.5rem;"><span class="material-symbols-outlined" style="font-size: 0.9rem;">warning</span>${pieges}</span>`;
-                if (portes > 0) eventDetails += `<span style="color: #fbbf24; display: inline-flex; align-items: center; gap: 0.2rem; margin-right: 0.5rem;"><span class="material-symbols-outlined" style="font-size: 0.9rem;">door_front</span>${portes}</span>`;
-
-                let secretMeta = { icon: "key", color: "#f59e0b" };
-                if (d.requiredSecret) {
-                    const DEFAULT_SECRETS_META = [
-                        { name: "Secret du Chaos", icon: "local_fire_department", color: "#ff0000" },
-                        { name: "Secret de l'Abondance", icon: "eco", color: "#10b981" },
-                        { name: "Secret de la Préservation", icon: "foundation", color: "#99674c" },
-                        { name: "Secret de la Sérénité", icon: "water_drop", color: "#00e5cc" },
-                        { name: "Secret de la Chasse", icon: "visibility_off", color: "#ed5677" },
-                        { name: "Secret du Carnage", icon: "explosion", color: "#a70740" },
-                        { name: "Secret de la Joie", icon: "volcano", color: "#b74c0b" },
-                        { name: "Secret du Savoir", icon: "psychology", color: "#3b82f6" },
-                        { name: "Secret du Destin", icon: "all_inclusive", color: "#e7d198" },
-                        { name: "Secret de l'Éther", icon: "blur_on", color: "#38bdf8" },
-                        { name: "Secret des Abysses", icon: "dark_mode", color: "#c084fc" }
-                    ];
-                    secretMeta = DEFAULT_SECRETS_META.find(s => s.name === d.requiredSecret) || secretMeta;
-                }
-
-                list.innerHTML += `
-                    <div class="monster-card">
-                        <button class="delete-btn" onclick="deleteDungeon(${d.id})">
-                            <span class="material-symbols-outlined">delete</span>
-                        </button>
-                        <button class="delete-btn" style="right: 3rem; color: #3b82f6;" onclick="editDungeon(${d.id})">
-                            <span class="material-symbols-outlined">edit</span>
-                        </button>
-                        <div class="monster-card-title">${d.name} <span style="font-size: 0.8rem; background: rgba(255,255,255,0.1); padding: 0.2rem 0.4rem; border-radius: 4px; margin-left: 0.5rem;">Lvl ${d.recommendedLevel}</span></div>
-                        <div style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 0.5rem;">${d.description || ''}</div>
-                        <div style="font-size: 0.85rem; color: #f8fafc; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.1); display: grid; gap: 0.4rem;">
-                            ${d.requiredSecret ? `<div style="color: #94a3b8; display: flex; align-items: center; gap: 0.4rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem; color: ${secretMeta.color};">${secretMeta.icon}</span> <span><strong style="color:${secretMeta.color};">${d.requiredSecret}</strong> (Lvl ${d.requiredSecretLevel || 1})</span></div>` : ''}
-                            <div><span style="font-weight: 600;">Salles totales :</span> ${totalSalles}</div>
-                            ${combats > 0 ? `<div style="color: #ef4444; margin-left: 0.5rem; display: flex; align-items: center; gap: 0.3rem;">
-                                <span class="material-symbols-outlined" style="font-size: 1rem;">swords</span> Combats : ${combats} (avec ${totalMobs} mob${totalMobs > 1 ? 's' : ''})
-                            </div>` : ''}
-                            ${bosses > 0 ? `<div style="color: #dc2626; margin-left: 0.5rem; display: flex; align-items: center; gap: 0.3rem;">
-                                <span class="material-symbols-outlined" style="font-size: 1rem;">skull</span> Boss : ${bosses} (avec ${totalBossMobs} mob${totalBossMobs > 1 ? 's' : ''})
-                            </div>` : ''}
-                            ${treasures > 0 ? `<div style="color: #f59e0b; margin-left: 0.5rem; display: flex; align-items: center; gap: 0.3rem;">
-                                <span class="material-symbols-outlined" style="font-size: 1rem;">shopping_bag</span> Trésors : ${treasures}
-                            </div>` : ''}
-                            ${eventDetails ? `<div style="margin-left: 0.5rem; display: flex; align-items: center; gap: 0.3rem; flex-wrap: wrap;">Événements : ${eventDetails}</div>` : ''}
-                        </div>
-                    </div>
-                `;
-            });
+            allDungeons = await res.json();
+            window.renderDungeonsList();
         }
     } catch (e) {
         console.error(e);
     }
+}
+
+window.renderDungeonsList = function() {
+    const list = document.getElementById('dungeonsList');
+    if (!list) return;
+
+    list.innerHTML = '';
+    const filterSelect = document.getElementById('dungeonSecretFilter');
+    const filterVal = filterSelect ? filterSelect.value : '';
+
+    let filtered = allDungeons;
+    if (filterVal) {
+        if (filterVal === 'Aucun') {
+            filtered = filtered.filter(d => !d.requiredSecret);
+        } else {
+            filtered = filtered.filter(d => d.requiredSecret === filterVal);
+        }
+    }
+
+    filtered.forEach(d => {
+        let totalSalles = d.salles ? d.salles.length : 0;
+        let combats = 0, bosses = 0, treasures = 0, alterations = 0, rencontres = 0, pieges = 0, portes = 0, totalMobs = 0, totalBossMobs = 0;
+        if (d.salles) {
+            d.salles.forEach(s => {
+                if (s.type === 'COMBAT') {
+                    combats++;
+                    totalMobs += (s.monsters ? s.monsters.length : 0);
+                } else if (s.type === 'BOSS') {
+                    bosses++;
+                    totalBossMobs += (s.monsters ? s.monsters.length : 0);
+                }
+                else if (s.type === 'TREASURE') { treasures++; }
+                else if (s.type === 'EVENT') {
+                    if (s.eventSubType === 'RENCONTRE') rencontres++;
+                    else if (s.eventSubType === 'PIEGE') pieges++;
+                    else if (s.eventSubType === 'PORTE_ETRANGE') portes++;
+                    else alterations++;
+                }
+            });
+        }
+
+        let eventDetails = '';
+        if (alterations > 0) eventDetails += `<span style="color: #8b5cf6; display: inline-flex; align-items: center; gap: 0.2rem; margin-right: 0.5rem;"><span class="material-symbols-outlined" style="font-size: 0.9rem;">blur_on</span>${alterations}</span>`;
+        if (rencontres > 0) eventDetails += `<span style="color: #10b981; display: inline-flex; align-items: center; gap: 0.2rem; margin-right: 0.5rem;"><span class="material-symbols-outlined" style="font-size: 0.9rem;">storefront</span>${rencontres}</span>`;
+        if (pieges > 0) eventDetails += `<span style="color: #f87171; display: inline-flex; align-items: center; gap: 0.2rem; margin-right: 0.5rem;"><span class="material-symbols-outlined" style="font-size: 0.9rem;">warning</span>${pieges}</span>`;
+        if (portes > 0) eventDetails += `<span style="color: #fbbf24; display: inline-flex; align-items: center; gap: 0.2rem; margin-right: 0.5rem;"><span class="material-symbols-outlined" style="font-size: 0.9rem;">door_front</span>${portes}</span>`;
+
+        let secretMeta = { icon: "key", color: "#f59e0b" };
+        if (d.requiredSecret) {
+            const DEFAULT_SECRETS_META = [
+                { name: "Secret du Chaos", icon: "local_fire_department", color: "#ff0000" },
+                { name: "Secret de l'Abondance", icon: "eco", color: "#10b981" },
+                { name: "Secret de la Préservation", icon: "foundation", color: "#99674c" },
+                { name: "Secret de la Sérénité", icon: "water_drop", color: "#00e5cc" },
+                { name: "Secret de la Chasse", icon: "visibility_off", color: "#ed5677" },
+                { name: "Secret du Carnage", icon: "explosion", color: "#a70740" },
+                { name: "Secret de la Joie", icon: "volcano", color: "#b74c0b" },
+                { name: "Secret du Savoir", icon: "psychology", color: "#3b82f6" },
+                { name: "Secret du Destin", icon: "all_inclusive", color: "#e7d198" },
+                { name: "Secret de l'Éther", icon: "blur_on", color: "#38bdf8" },
+                { name: "Secret des Abysses", icon: "dark_mode", color: "#c084fc" }
+            ];
+            secretMeta = DEFAULT_SECRETS_META.find(s => s.name === d.requiredSecret) || secretMeta;
+        }
+
+        list.innerHTML += `
+            <div class="monster-card">
+                <button class="delete-btn" onclick="deleteDungeon(${d.id})">
+                    <span class="material-symbols-outlined">delete</span>
+                </button>
+                <button class="delete-btn" style="right: 3rem; color: #3b82f6;" onclick="editDungeon(${d.id})">
+                    <span class="material-symbols-outlined">edit</span>
+                </button>
+                <div class="monster-card-title">${d.name} <span style="font-size: 0.8rem; background: rgba(255,255,255,0.1); padding: 0.2rem 0.4rem; border-radius: 4px; margin-left: 0.5rem;">Lvl ${d.recommendedLevel}</span></div>
+                <div style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 0.5rem;">${d.description || ''}</div>
+                <div style="font-size: 0.85rem; color: #f8fafc; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.1); display: grid; gap: 0.4rem;">
+                    ${d.requiredSecret ? `<div style="color: #94a3b8; display: flex; align-items: center; gap: 0.4rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem; color: ${secretMeta.color};">${secretMeta.icon}</span> <span><strong style="color:${secretMeta.color};">${d.requiredSecret}</strong> (Lvl ${d.requiredSecretLevel || 1})</span></div>` : ''}
+                    <div><span style="font-weight: 600;">Salles totales :</span> ${totalSalles}</div>
+                    ${combats > 0 ? `<div style="color: #ef4444; margin-left: 0.5rem; display: flex; align-items: center; gap: 0.3rem;">
+                        <span class="material-symbols-outlined" style="font-size: 1rem;">swords</span> Combats : ${combats} (avec ${totalMobs} mob${totalMobs > 1 ? 's' : ''})
+                    </div>` : ''}
+                    ${bosses > 0 ? `<div style="color: #dc2626; margin-left: 0.5rem; display: flex; align-items: center; gap: 0.3rem;">
+                        <span class="material-symbols-outlined" style="font-size: 1rem;">skull</span> Boss : ${bosses} (avec ${totalBossMobs} mob${totalBossMobs > 1 ? 's' : ''})
+                    </div>` : ''}
+                    ${treasures > 0 ? `<div style="color: #f59e0b; margin-left: 0.5rem; display: flex; align-items: center; gap: 0.3rem;">
+                        <span class="material-symbols-outlined" style="font-size: 1rem;">shopping_bag</span> Trésors : ${treasures}
+                    </div>` : ''}
+                    ${eventDetails ? `<div style="margin-left: 0.5rem; display: flex; align-items: center; gap: 0.3rem; flex-wrap: wrap;">Événements : ${eventDetails}</div>` : ''}
+                </div>
+            </div>
+        `;
+    });
 }
 
 async function editDungeon(id) {
