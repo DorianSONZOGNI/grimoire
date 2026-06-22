@@ -84,27 +84,36 @@ async function loadDungeons() {
 
                 let lockedHtml = '';
                 let isLocked = false;
-                const userSecrets = window.currentUser?.unlockedSecrets || [];
+                const userSecrets = window.currentUser?.unlockedSecrets || {};
                 const userDungeons = window.currentUser?.unlockedDungeons || [];
 
                 if (d.requiredSecret && d.requiredSecret.trim() !== '') {
-                    if (!userSecrets.includes(d.requiredSecret)) {
+                    if (!userSecrets.hasOwnProperty(d.requiredSecret)) {
                         isLocked = true;
-                        lockedHtml = `<div style="color: #ef4444; font-weight: 600; font-size: 0.9rem; margin-top: 0.5rem;"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">lock</span> Secret requis : ${d.requiredSecret}</div>`;
+                        lockedHtml = `<div class="dungeon-lock-overlay">
+                            <span class="material-symbols-outlined" style="font-size: 3.5rem; margin-bottom: 0.5rem; opacity: 0.8;">lock</span>
+                            <div style="font-family: 'Outfit'; font-size: 1.2rem; font-weight: 700; color: #f8fafc; margin-bottom: 0.3rem;">Accès Verrouillé</div>
+                            <div style="font-size: 0.95rem; color: #fca5a5;">Secret requis : <strong style="color: #f8fafc;">${d.requiredSecret}</strong></div>
+                        </div>`;
                     }
                 }
 
                 if (!isLocked && d.unlockCostGold > 0) {
                     if (!userDungeons.includes(d.id)) {
                         isLocked = true;
-                        lockedHtml = `<div style="margin-top: 0.8rem;"><button class="btn btn-primary" onclick="event.stopPropagation(); unlockDungeon(${d.id}, ${d.unlockCostGold})" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.4rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem;">lock_open</span> D\u00e9bloquer (${d.unlockCostGold} Or)</button></div>`;
+                        lockedHtml = `<div class="dungeon-lock-overlay" style="background: rgba(15, 23, 42, 0.75); color: #f59e0b;">
+                            <span class="material-symbols-outlined" style="font-size: 3.5rem; margin-bottom: 0.5rem; opacity: 0.8;">lock</span>
+                            <div style="font-family: 'Outfit'; font-size: 1.2rem; font-weight: 700; color: #f8fafc; margin-bottom: 1rem;">Donjon Verrouillé</div>
+                            <button class="btn btn-primary" onclick="event.stopPropagation(); unlockDungeon(${d.id}, ${d.unlockCostGold})" style="width: 80%; display: flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.6rem; border-radius: 8px; border: none; background: linear-gradient(135deg, #f59e0b, #d97706); color: #0f172a; font-family: 'Outfit', sans-serif; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);"><span class="material-symbols-outlined" style="font-size: 1.1rem;">lock_open</span> D\u00e9bloquer (${d.unlockCostGold} Or)</button>
+                        </div>`;
                     }
                 }
 
                 const entryCostHtml = d.entryCostGold > 0 ? `<div style="color: #f59e0b; font-weight: 600; font-size: 0.9rem; margin-top: 0.5rem;"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">monetization_on</span> Co\u00fbt d'entr\u00e9e : ${d.entryCostGold} Or</div>` : '';
 
                 list.innerHTML += `
-                    <div class="dungeon-card" ${isLocked ? 'style="opacity: 0.7; cursor: not-allowed;"' : `onclick="openPrepInterface(${d.id}, '${d.name.replace(/'/g, "\\'")}', '${sallesData}', ${d.maxHeroes || 1}, ${d.entryCostGold || 0})"`}>
+                    <div class="dungeon-card ${isLocked ? 'locked' : ''}" ${isLocked ? '' : `onclick="openPrepInterface(${d.id}, '${d.name.replace(/'/g, "\\'")}', '${sallesData}', ${d.maxHeroes || 1}, ${d.entryCostGold || 0})"`}>
+                        ${lockedHtml}
                         <div class="dungeon-title">
                             <span class="material-symbols-outlined">castle</span>
                             ${d.name}
@@ -112,7 +121,6 @@ async function loadDungeons() {
                         <div class="dungeon-level">Niveau ${d.recommendedLevel}</div>
                         <div class="dungeon-desc">${d.description || 'Affrontez les dangers qui r\u00f4dent.'}</div>
                         ${entryCostHtml}
-                        ${lockedHtml}
                         <div style="font-size: 0.85rem; color: #f8fafc; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.1); display: grid; gap: 0.4rem;">
                             <div><span style="font-weight: 600;">Salles totales :</span> ${totalSalles}</div>
                             ${combats > 0 ? `<div style="color: #ef4444; margin-left: 0.5rem; display: flex; align-items: center; gap: 0.3rem;">
