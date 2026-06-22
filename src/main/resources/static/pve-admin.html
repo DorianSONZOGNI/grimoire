@@ -218,7 +218,12 @@
             display: inline-block;
         }
 
-        .custom-select-wrapper { position: relative; user-select: none; width: 100%; }
+        .custom-select-wrapper {
+            position: relative;
+            user-select: none;
+            width: 100%;
+        }
+
         .custom-select-trigger {
             background: rgba(15, 23, 42, 0.6);
             border: 1px solid rgba(255, 255, 255, 0.1);
@@ -234,27 +239,75 @@
             transition: all 0.2s ease;
             min-height: 42px;
         }
+
         .custom-select-trigger:hover,
-        .custom-select-wrapper.open .custom-select-trigger { border-color: var(--primary); box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2); }
-        .custom-select-options {
-            position: absolute; top: calc(100% + 5px); left: 0; right: 0;
-            background: #0f172a; border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 8px; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-            z-index: 100; display: none; max-height: 200px; overflow-y: auto;
+        .custom-select-wrapper.open .custom-select-trigger {
+            border-color: var(--primary);
+            box-shadow: 0 0 0 2px rgba(139, 92, 246, 0.2);
         }
-        .custom-select-options::-webkit-scrollbar { width: 6px; }
-        .custom-select-options::-webkit-scrollbar-track { background: transparent; border-radius: 6px; }
-        .custom-select-options::-webkit-scrollbar-thumb { background: rgba(255, 255, 255, 0.15); border-radius: 6px; }
-        .custom-select-options::-webkit-scrollbar-thumb:hover { background: rgba(255, 255, 255, 0.25); }
-        .custom-select-wrapper.open .custom-select-options { display: block; }
+
+        .custom-select-options {
+            position: absolute;
+            top: calc(100% + 5px);
+            left: 0;
+            right: 0;
+            background: #0f172a;
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
+            z-index: 100;
+            display: none;
+            max-height: 200px;
+            overflow-y: auto;
+        }
+
+        .custom-select-options::-webkit-scrollbar {
+            width: 6px;
+        }
+
+        .custom-select-options::-webkit-scrollbar-track {
+            background: transparent;
+            border-radius: 6px;
+        }
+
+        .custom-select-options::-webkit-scrollbar-thumb {
+            background: rgba(255, 255, 255, 0.15);
+            border-radius: 6px;
+        }
+
+        .custom-select-options::-webkit-scrollbar-thumb:hover {
+            background: rgba(255, 255, 255, 0.25);
+        }
+
+        .custom-select-wrapper.open .custom-select-options {
+            display: block;
+        }
+
         .custom-option {
-            padding: 0.5rem 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem;
-            font-size: 0.9rem; transition: background 0.2s ease; color: #f8fafc;
+            padding: 0.5rem 0.8rem;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+            font-size: 0.9rem;
+            transition: background 0.2s ease;
+            color: #f8fafc;
             border-bottom: 1px solid rgba(255, 255, 255, 0.02);
         }
-        .custom-option:hover { background: rgba(139, 92, 246, 0.15); }
-        .cs-icon { font-size: 1.1rem; }
-        .cs-label { display: flex; align-items: center; gap: 0.5rem; }
+
+        .custom-option:hover {
+            background: rgba(139, 92, 246, 0.15);
+        }
+
+        .cs-icon {
+            font-size: 1.1rem;
+        }
+
+        .cs-label {
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
     </style>
 </head>
 
@@ -701,7 +754,7 @@
                                         required>
                                 </div>
                                 <div class="form-group">
-                                    <label>Coût de Déblocage (Or)</label>
+                                    <label>Coût de dévérouillage (Or)</label>
                                     <input type="number" id="dUnlockCost" class="form-control" value="0" min="0">
                                 </div>
                                 <div class="form-group">
@@ -711,68 +764,85 @@
                                 <div class="form-group" style="grid-column: span 2;">
                                     <label>Condition Alchimie (Secret requis et niveau)</label>
                                     <div style="display: flex; gap: 1rem; align-items: flex-start;">
-                                        <div class="custom-select-wrapper" id="dRequiredSecretWrapper" style="z-index: 90; flex: 2;">
+                                        <div class="custom-select-wrapper" id="dRequiredSecretWrapper"
+                                            style="z-index: 90; flex: 2;">
                                             <div class="custom-select-trigger">
                                                 <span class="cs-label">
-                                                    <span class="material-symbols-outlined cs-icon" style="color: #64748b;">close</span>
+                                                    <span class="material-symbols-outlined cs-icon"
+                                                        style="color: #64748b;">close</span>
                                                     Aucun (Optionnel)
                                                 </span>
-                                                <span class="material-symbols-outlined" style="color: #64748b; font-size: 1.2rem;">expand_more</span>
+                                                <span class="material-symbols-outlined"
+                                                    style="color: #64748b; font-size: 1.2rem;">expand_more</span>
                                             </div>
                                             <div class="custom-select-options custom-options">
                                                 <div class="custom-option" data-value="">
-                                                    <span class="material-symbols-outlined cs-icon" style="color: #64748b;">close</span>
+                                                    <span class="material-symbols-outlined cs-icon"
+                                                        style="color: #64748b;">close</span>
                                                     Aucun (Optionnel)
                                                 </div>
-                                                <div class="custom-option" data-value="Secret de la Destruction">
-                                                    <span class="material-symbols-outlined cs-icon" style="color: #ef4444;">bolt</span>
-                                                    Secret de la Destruction
-                                                </div>
-                                                <div class="custom-option" data-value="Secret de la Création">
-                                                    <span class="material-symbols-outlined cs-icon" style="color: #10b981;">auto_awesome</span>
-                                                    Secret de la Création
-                                                </div>
-                                                <div class="custom-option" data-value="Secret de la Préservation">
-                                                    <span class="material-symbols-outlined cs-icon" style="color: #f59e0b;">shield</span>
-                                                    Secret de la Préservation
+                                                <div class="custom-option" data-value="Secret du Chaos">
+                                                    <span class="material-symbols-outlined cs-icon"
+                                                        style="color: #ff0000;">local_fire_department</span>
+                                                    Secret du Chaos
                                                 </div>
                                                 <div class="custom-option" data-value="Secret de l'Abondance">
-                                                    <span class="material-symbols-outlined cs-icon" style="color: #22c55e;">spa</span>
+                                                    <span class="material-symbols-outlined cs-icon"
+                                                        style="color: #10b981;">eco</span>
                                                     Secret de l'Abondance
                                                 </div>
+                                                <div class="custom-option" data-value="Secret de la Préservation">
+                                                    <span class="material-symbols-outlined cs-icon"
+                                                        style="color: #99674c;">foundation</span>
+                                                    Secret de la Préservation
+                                                </div>
+                                                <div class="custom-option" data-value="Secret de la Sérénité">
+                                                    <span class="material-symbols-outlined cs-icon"
+                                                        style="color: #00e5cc;">water_drop</span>
+                                                    Secret de la Sérénité
+                                                </div>
                                                 <div class="custom-option" data-value="Secret de la Chasse">
-                                                    <span class="material-symbols-outlined cs-icon" style="color: #38bdf8;">my_location</span>
+                                                    <span class="material-symbols-outlined cs-icon"
+                                                        style="color: #ed5677;">visibility_off</span>
                                                     Secret de la Chasse
                                                 </div>
-                                                <div class="custom-option" data-value="Secret de l'Harmonie">
-                                                    <span class="material-symbols-outlined cs-icon" style="color: #a855f7;">music_note</span>
-                                                    Secret de l'Harmonie
+                                                <div class="custom-option" data-value="Secret du Carnage">
+                                                    <span class="material-symbols-outlined cs-icon"
+                                                        style="color: #a70740;">explosion</span>
+                                                    Secret du Carnage
                                                 </div>
                                                 <div class="custom-option" data-value="Secret de la Joie">
-                                                    <span class="material-symbols-outlined cs-icon" style="color: #f43f5e;">mood</span>
+                                                    <span class="material-symbols-outlined cs-icon"
+                                                        style="color: #b74c0b;">volcano</span>
                                                     Secret de la Joie
                                                 </div>
                                                 <div class="custom-option" data-value="Secret du Savoir">
-                                                    <span class="material-symbols-outlined cs-icon" style="color: #6366f1;">menu_book</span>
+                                                    <span class="material-symbols-outlined cs-icon"
+                                                        style="color: #3b82f6;">psychology</span>
                                                     Secret du Savoir
                                                 </div>
-                                                <div class="custom-option" data-value="Secret du Karma">
-                                                    <span class="material-symbols-outlined cs-icon" style="color: #e7d198;">change_history</span>
-                                                    Secret du Karma
+                                                <div class="custom-option" data-value="Secret du Destin">
+                                                    <span class="material-symbols-outlined cs-icon"
+                                                        style="color: #e7d198;">all_inclusive</span>
+                                                    Secret du Destin
                                                 </div>
-                                                <div class="custom-option" data-value="Secret de l'Esprit">
-                                                    <span class="material-symbols-outlined cs-icon" style="color: #38bdf8;">psychology</span>
-                                                    Secret de l'Esprit
+                                                <div class="custom-option" data-value="Secret de l'Éther">
+                                                    <span class="material-symbols-outlined cs-icon"
+                                                        style="color: #38bdf8;">blur_on</span>
+                                                    Secret de l'Éther
                                                 </div>
-                                                <div class="custom-option" data-value="Secret des Ténèbres">
-                                                    <span class="material-symbols-outlined cs-icon" style="color: #a855f7;">dark_mode</span>
-                                                    Secret des Ténèbres
+                                                <div class="custom-option" data-value="Secret des Abysses">
+                                                    <span class="material-symbols-outlined cs-icon"
+                                                        style="color: #c084fc;">dark_mode</span>
+                                                    Secret des Abysses
                                                 </div>
                                             </div>
                                             <input type="hidden" id="dRequiredSecret" value="">
                                         </div>
                                         <div style="flex: 1;">
-                                            <input type="number" id="dRequiredSecretLevel" class="form-control" value="1" min="1" placeholder="Niveau" title="Niveau du secret" style="min-height: 42px;">
+                                            <input type="number" id="dRequiredSecretLevel" class="form-control"
+                                                value="1" min="1" placeholder="Niveau" title="Niveau du secret"
+                                                style="min-height: 42px;">
                                         </div>
                                     </div>
                                 </div>
@@ -907,7 +977,7 @@
         if (inputEl) {
             const originalSet = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
             Object.defineProperty(inputEl, 'value', {
-                set: function(val) {
+                set: function (val) {
                     originalSet.call(this, val);
                     const wrapper = this.closest('.custom-select-wrapper');
                     if (wrapper) {
@@ -927,7 +997,7 @@
                         }
                     }
                 },
-                get: function() {
+                get: function () {
                     return Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').get.call(this);
                 }
             });
