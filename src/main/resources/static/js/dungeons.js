@@ -1,3 +1,11 @@
+window.switchDungeonTab = function(tabName) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+    document.getElementById(`tab-btn-${tabName}`).classList.add('active');
+    document.getElementById(`${tabName}DungeonsSection`).classList.add('active');
+};
+
 let currentDungeonId = null;
 let selectedCharIds = [];
 let currentMaxHeroes = 1;
@@ -55,12 +63,24 @@ async function loadDungeons() {
         const res = await fetch('/api/pve/dungeons');
         if (res.ok) {
             const dungeons = await res.json();
-            const list = document.getElementById('dungeonsList');
-            list.innerHTML = '';
+            const freeList = document.getElementById('freeDungeonsList');
+            const goldList = document.getElementById('goldDungeonsList');
+            const secretList = document.getElementById('secretDungeonsList');
+            
+            freeList.innerHTML = '';
+            goldList.innerHTML = '';
+            secretList.innerHTML = '';
+
+            let freeCount = 0, goldCount = 0, secretCount = 0;
 
             if (dungeons.length === 0) {
-                list.innerHTML = `<div style="color: var(--text-muted);">Aucun donjon disponible pour le moment.</div>`;
+                document.getElementById('noDungeonsMsg').style.display = 'block';
+                document.getElementById('freeDungeonsSection').style.display = 'none';
+                document.getElementById('goldDungeonsSection').style.display = 'none';
+                document.getElementById('secretDungeonsSection').style.display = 'none';
                 return;
+            } else {
+                document.getElementById('noDungeonsMsg').style.display = 'none';
             }
 
             dungeons.forEach(d => {
@@ -113,7 +133,7 @@ async function loadDungeons() {
 
                 const entryCostHtml = d.entryCostGold > 0 ? `<div style="color: #f59e0b; font-weight: 600; font-size: 0.9rem; margin-top: 0.5rem;"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">monetization_on</span> Co\u00fbt d'entr\u00e9e : ${d.entryCostGold} Or</div>` : '';
 
-                list.innerHTML += `
+                const cardHtml = `
                     <div class="dungeon-card ${isLocked ? 'locked' : ''}" ${isLocked ? '' : `onclick="openPrepInterface(${d.id}, '${d.name.replace(/'/g, "\\'")}', '${sallesData}', ${d.maxHeroes || 1}, ${d.entryCostGold || 0})"`}>
                         ${lockedHtml}
                         <div class="dungeon-title">
@@ -140,7 +160,36 @@ async function loadDungeons() {
                         </div>
                     </div>
                 `;
+
+                if (d.requiredSecret && d.requiredSecret.trim() !== '') {
+                    secretList.innerHTML += cardHtml;
+                    secretCount++;
+                } else if (d.unlockCostGold > 0) {
+                    goldList.innerHTML += cardHtml;
+                    goldCount++;
+                } else {
+                    freeList.innerHTML += cardHtml;
+                    freeCount++;
+                }
             });
+
+            document.getElementById('badge-free').textContent = freeCount;
+            document.getElementById('badge-gold').textContent = goldCount;
+            document.getElementById('badge-secret').textContent = secretCount;
+
+            document.getElementById('tab-btn-free').style.display = freeCount > 0 ? 'flex' : 'none';
+            document.getElementById('tab-btn-gold').style.display = goldCount > 0 ? 'flex' : 'none';
+            document.getElementById('tab-btn-secret').style.display = secretCount > 0 ? 'flex' : 'none';
+
+            if (freeCount > 0 || goldCount > 0 || secretCount > 0) {
+                document.getElementById('dungeonsTabs').style.display = 'flex';
+                if (freeCount > 0) switchDungeonTab('free');
+                else if (goldCount > 0) switchDungeonTab('gold');
+                else switchDungeonTab('secret');
+            } else {
+                document.getElementById('dungeonsTabs').style.display = 'none';
+                document.getElementById('noDungeonsMsg').style.display = 'block';
+            }
         }
     } catch (e) {
         console.error(e);
