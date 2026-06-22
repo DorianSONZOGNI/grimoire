@@ -88,12 +88,14 @@ async function loadDungeons() {
                 const userDungeons = window.currentUser?.unlockedDungeons || [];
 
                 if (d.requiredSecret && d.requiredSecret.trim() !== '') {
-                    if (!userSecrets.hasOwnProperty(d.requiredSecret)) {
+                    const userLevel = userSecrets[d.requiredSecret] || 0;
+                    const reqLevel = d.requiredSecretLevel || 1;
+                    if (userLevel < reqLevel) {
                         isLocked = true;
                         lockedHtml = `<div class="dungeon-lock-overlay">
                             <span class="material-symbols-outlined" style="font-size: 3.5rem; margin-bottom: 0.5rem; opacity: 0.8;">lock</span>
                             <div style="font-family: 'Outfit'; font-size: 1.2rem; font-weight: 700; color: #f8fafc; margin-bottom: 0.3rem;">Accès Verrouillé</div>
-                            <div style="font-size: 0.95rem; color: #fca5a5;">Secret requis : <strong style="color: #f8fafc;">${d.requiredSecret}</strong></div>
+                            <div style="font-size: 0.95rem; color: #fca5a5;">Secret requis : <strong style="color: #f8fafc;">${d.requiredSecret}</strong> (Niv. ${reqLevel})</div>
                         </div>`;
                     }
                 }
