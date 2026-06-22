@@ -950,6 +950,23 @@
                                     </div>
                                     <input type="hidden" id="dungeonSecretFilter" value="" onchange="renderDungeonsList()">
                                 </div>
+                                <div class="custom-select-wrapper" style="width: 140px; z-index: 100;">
+                                    <div class="custom-select-trigger" style="min-height: 36px; padding: 0.4rem 0.8rem; font-size: 0.85rem;">
+                                        <span class="cs-label"><span class="material-symbols-outlined cs-icon" style="color: #94a3b8; font-size: 1rem;">filter_alt</span> Lvl exact</span>
+                                        <span class="material-symbols-outlined" style="font-size: 1rem;">expand_more</span>
+                                    </div>
+                                    <div class="custom-select-options custom-options" style="min-width: 140px;">
+                                        <div class="custom-option" data-value="">
+                                            <span class="material-symbols-outlined cs-icon" style="color: #94a3b8; font-size: 1rem;">filter_alt</span> Tous
+                                        </div>
+                                        <div class="custom-option" data-value="1"><span class="material-symbols-outlined cs-icon" style="color: #94a3b8; font-size: 1rem;">star</span> 1</div>
+                                        <div class="custom-option" data-value="2"><span class="material-symbols-outlined cs-icon" style="color: #10b981; font-size: 1rem;">star</span> 2</div>
+                                        <div class="custom-option" data-value="3"><span class="material-symbols-outlined cs-icon" style="color: #3b82f6; font-size: 1rem;">star</span> 3</div>
+                                        <div class="custom-option" data-value="4"><span class="material-symbols-outlined cs-icon" style="color: #a855f7; font-size: 1rem;">star</span> 4</div>
+                                        <div class="custom-option" data-value="5"><span class="material-symbols-outlined cs-icon" style="color: #f59e0b; font-size: 1rem;">star</span> 5</div>
+                                    </div>
+                                    <input type="hidden" id="dungeonLevelFilter" value="" onchange="renderDungeonsList()">
+                                </div>
                             </div>
                         </div>
                         <div class="admin-section-content"
@@ -983,20 +1000,24 @@
                 document.querySelectorAll('.custom-select-wrapper.open').forEach(w => {
                     if (w !== wrapper) w.classList.remove('open');
                 });
-                wrapper.classList.toggle('open');
+                if (!trigger.hasAttribute('onclick')) {
+                    wrapper.classList.toggle('open');
+                }
                 return;
             }
 
             const option = e.target.closest('.custom-option');
             if (option) {
-                const wrapper = option.closest('.custom-select-wrapper');
-                const hiddenInput = wrapper.querySelector('input[type="hidden"]');
-                const labelEl = wrapper.querySelector('.cs-label');
+                if (!option.hasAttribute('onclick')) {
+                    const wrapper = option.closest('.custom-select-wrapper');
+                    const hiddenInput = wrapper.querySelector('input[type="hidden"]');
+                    const labelEl = wrapper.querySelector('.cs-label');
 
-                hiddenInput.value = option.getAttribute('data-value');
-                labelEl.innerHTML = option.innerHTML;
-                wrapper.classList.remove('open');
-                hiddenInput.dispatchEvent(new Event('change'));
+                    hiddenInput.value = option.getAttribute('data-value');
+                    labelEl.innerHTML = option.innerHTML;
+                    wrapper.classList.remove('open');
+                    hiddenInput.dispatchEvent(new Event('change'));
+                }
             }
         });
 

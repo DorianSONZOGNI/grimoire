@@ -1517,6 +1517,30 @@ async function loadEquipments() {
     }
 }
 
+window.toggleFilterLevelSelect = function() {
+    document.getElementById('mLevelFilterWrapper').classList.toggle('open');
+};
+
+window.selectFilterLevelOption = function(val, label, color, icon) {
+    document.getElementById('monsterLevelFilter').value = val;
+    document.getElementById('mLevelFilterTrigger').innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: ${color}; font-size: 1.1rem;">${icon}</span> <span style="flex:1; text-align:center;">${label}</span>`;
+    document.getElementById('mLevelFilterWrapper').classList.remove('open');
+    window.renderMonstersList();
+};
+
+window.toggleSortSelect = function() {
+    document.getElementById('mSortWrapper').classList.toggle('open');
+};
+
+window.selectSortOption = function(val, label, icon, color) {
+    document.getElementById('monsterSort').value = val;
+    let extraStyle = '';
+    if (val === 'name_desc') extraStyle = 'transform: scaleY(-1);';
+    document.getElementById('mSortTrigger').innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: ${color}; font-size: 1.1rem; ${extraStyle}">${icon}</span> <span style="flex:1; text-align:left;">${label}</span> <span class="material-symbols-outlined" style="color: #94a3b8; font-size: 1.2rem; pointer-events: none;">expand_more</span>`;
+    document.getElementById('mSortWrapper').classList.remove('open');
+    window.renderMonstersList();
+};
+
 window.renderMonstersList = function () {
     const list = document.getElementById('monstersList');
     if (!list) return;
@@ -1699,6 +1723,14 @@ window.renderDungeonsList = function() {
         } else {
             filtered = filtered.filter(d => d.requiredSecret === filterVal);
         }
+    }
+
+    const lvlSelect = document.getElementById('dungeonLevelFilter');
+    const lvlVal = lvlSelect ? lvlSelect.value : '';
+
+    if (lvlVal) {
+        const lvl = parseInt(lvlVal);
+        filtered = filtered.filter(d => (d.recommendedLevel || 1) === lvl);
     }
 
     filtered.forEach(d => {
