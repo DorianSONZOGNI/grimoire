@@ -90,6 +90,7 @@ public class PvEAdminController {
         entity.setUnlockCostGold(dto.getUnlockCostGold());
         entity.setEntryCostGold(dto.getEntryCostGold());
         entity.setRequiredSecret(dto.getRequiredSecret());
+        entity.setRequiredSecretLevel(dto.getRequiredSecretLevel());
 
         if (dto.getSalles() != null) {
             List<generation.grimoire.entity.pve.Salle> salles = dto.getSalles().stream().map(sDto -> {
