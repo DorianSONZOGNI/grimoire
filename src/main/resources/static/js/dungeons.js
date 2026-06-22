@@ -101,7 +101,8 @@ async function loadDungeons() {
                 
                 if (d.requiredSecret && d.requiredSecret.trim() !== '') {
                     catId = 'secret-' + d.requiredSecret.replace(/\s+/g, '-').toLowerCase();
-                    label = d.requiredSecret;
+                    label = d.requiredSecret.replace(/^Secret (de la |du |de l'|des |d'|de )/i, '');
+                    label = label.charAt(0).toUpperCase() + label.slice(1);
                     
                     const meta = DEFAULT_SECRETS_META.find(s => s.name.toLowerCase() === d.requiredSecret.toLowerCase()) || { icon: "key", color: "#f59e0b" };
                     icon = meta.icon;
