@@ -172,10 +172,10 @@ public class AlchemyService {
         userRepository.save(user);
 
         // Attribution de la récompense
-        return giveReward(username, recipe);
+        return giveReward(username, recipe, crafterPersonnageId);
     }
 
-    private String giveReward(String username, AlchemyRecipe recipe) {
+    private String giveReward(String username, AlchemyRecipe recipe, Long crafterPersonnageId) {
         if (recipe.getRewardType() == RecipeRewardType.GIVE_ANOMALY) {
             for (int i = 0; i < recipe.getRewardQuantity(); i++) {
                 Anomalie anomaly = new Anomalie();
@@ -231,6 +231,16 @@ public class AlchemyService {
                 userRepository.save(user);
             }
             return "Vous avez débloqué le secret : " + recipe.getRewardName();
+        } else if (recipe.getRewardType() == RecipeRewardType.GIVE_SPIRIT_XP) {
+            if (crafterPersonnageId == null) {
+                throw new RuntimeException("Un personnage doit être sélectionné pour recevoir l'XP de spiritualité.");
+            }
+            Personnage crafter = personnageRepository.findById(crafterPersonnageId)
+                    .orElseThrow(() -> new RuntimeException("Personnage introuvable"));
+            
+            crafter.setSpiritualiteExperience(crafter.getSpiritualiteExperience() + recipe.getRewardQuantity());
+            personnageRepository.save(crafter);
+            return "Le personnage " + crafter.getName() + " a gagné " + recipe.getRewardQuantity() + " XP de Spiritualité.";
         }
 
         return "Transmutation réussie : " + recipe.getRewardName();

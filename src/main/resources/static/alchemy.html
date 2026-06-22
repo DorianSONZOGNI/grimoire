@@ -302,6 +302,7 @@
             if (defaultType === 'CONSUMABLE') return { icon: 'water_drop', color: '#3b82f6' }; // blue
             if (defaultType === 'ANOMALY') return { icon: 'auto_awesome', color: '#a855f7' }; // purple
             if (defaultType === 'SECRET' || defaultType === 'UNLOCK') return { icon: 'key', color: '#f59e0b' }; // gold
+            if (defaultType === 'SPIRIT_XP') return { icon: 'self_improvement', color: '#38bdf8' }; // light blue
             
             return { icon: 'category', color: '#94a3b8' }; // generic
         }
@@ -428,12 +429,21 @@
 
             // Character selector if needed for Spirit XP
             let crafterSelectHTML = '';
-            if (r.costSpiritXp > 0) {
+            if (r.costSpiritXp > 0 || r.rewardType === 'GIVE_SPIRIT_XP') {
+                let actionText = '';
+                if (r.costSpiritXp > 0 && r.rewardType === 'GIVE_SPIRIT_XP') {
+                    actionText = `(-${r.costSpiritXp} XP Spirit. / Gagne ${r.rewardQuantity} XP)`;
+                } else if (r.costSpiritXp > 0) {
+                    actionText = `(-${r.costSpiritXp} XP Spirit.)`;
+                } else if (r.rewardType === 'GIVE_SPIRIT_XP') {
+                    actionText = `(Gagne ${r.rewardQuantity} XP Spirit.)`;
+                }
+
                 crafterSelectHTML = `
                     <div style="margin-top: 1rem; text-align:left; width: 100%;">
                         <label style="color: #10b981; font-weight: 600; font-size: 0.85rem;">
                             <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; color: #10b981;">star</span>
-                            Sélectionnez le personnage canalisant (-${r.costSpiritXp} XP Spirit.) :
+                            Sélectionnez le personnage canalisant ${actionText} :
                         </label>
                         <div id="crafterSelectContainer" style="margin-top: 0.4rem;">
                             <div style="padding:0.4rem; color:var(--text-muted); font-size:0.85rem;">Chargement...</div>
@@ -452,11 +462,21 @@
                 resultType = 'CONSUMABLE';
             } else if (r.rewardType === 'GIVE_ANOMALY' || r.rewardType === 'UPGRADE_ANOMALY') {
                 resultType = 'ANOMALY';
+            } else if (r.rewardType === 'GIVE_SPIRIT_XP') {
+                resultLabel = "XP Spiritualité";
+                resultType = 'SPIRIT_XP';
             }
 
             const resultStyle = getItemStyle(r.rewardName, resultType);
             const resultIcon = resultStyle.icon;
             const resultColor = resultStyle.color;
+
+            let quantityDisplay = `${r.rewardQuantity}x ${r.rewardName}`;
+            if (r.rewardType === 'GIVE_SPIRIT_XP') {
+                quantityDisplay = `+${r.rewardQuantity} XP Spiritualité`;
+            } else if (r.rewardLevel > 1) {
+                quantityDisplay += ` (Niv. ${r.rewardLevel})`;
+            }
 
             container.innerHTML = `
                 <div style="width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; text-align: left;">
@@ -484,7 +504,7 @@
                             <span class="material-symbols-outlined" style="font-size: 1.1rem;">${resultIcon}</span>
                             ${resultLabel}
                         </span>
-                        <strong style="font-size: 1.2rem; color: #fff;">${r.rewardQuantity}x ${r.rewardName} ${r.rewardLevel > 1 ? '(Niv. ' + r.rewardLevel + ')' : ''}</strong>
+                        <strong style="font-size: 1.2rem; color: #fff;">${quantityDisplay}</strong>
                     </div>
 
                     <button class="btn" style="margin-top: 1.5rem; padding: 0.8rem 2.5rem; font-size: 1.1rem; display: flex; align-items: center; gap: 0.5rem; background: linear-gradient(135deg, #10b981, #06b6d4); border:none; box-shadow: 0 4px 15px rgba(16,185,129,0.4);" onclick="craftSelected()">
@@ -661,10 +681,10 @@
                 consumableIds: consumableIds
             };
 
-            if (selectedRecipe.costSpiritXp > 0) {
+            if (selectedRecipe.costSpiritXp > 0 || selectedRecipe.rewardType === 'GIVE_SPIRIT_XP') {
                 const sel = document.getElementById('crafterSelect');
                 if (!sel || !sel.value) {
-                    msg.innerText = "Veuillez sélectionner un personnage pour dépenser l'XP.";
+                    msg.innerText = "Veuillez sélectionner un personnage.";
                     msg.style.color = "#ef4444";
                     return;
                 }
