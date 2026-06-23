@@ -22,26 +22,25 @@ public class CombatTimeoutScheduler {
     public void checkAndTimeoutCombats() {
         Instant threshold = Instant.now().minus(2, ChronoUnit.HOURS);
 
-        Iterator<Map.Entry<String, CombatSession>> iterator = combatService.getActiveSessions().entrySet().iterator();
-        while (iterator.hasNext()) {
-            Map.Entry<String, CombatSession> entry = iterator.next();
+        for (Map.Entry<String, CombatSession> entry : combatService.getActiveSessions().entrySet()) {
             CombatSession session = entry.getValue();
 
             if (session.getLastActivity().isBefore(threshold)) {
-                // Apply defeat penalties
-                session.getPlayers().forEach(p -> {
-                    p.setHealthCurrent(0);
-                    // Add other defeat logic if needed (XP loss, etc.)
-                    personnageRepository.save(p);
-                });
+                // Apply actual flee penalties
+                try {
+                    combatService.fleeCombat(session.getSessionId());
+                } catch (Exception e) {
+                    System.err.println("Error applying flee penalties for timed out session " + session.getSessionId() + ": " + e.getMessage());
+                }
                 
+                // Ensure it is marked as finished
                 session.setFinished(true);
                 session.setPlayerWon(false);
                 
                 // Remove from memory
-                iterator.remove();
+                combatService.getActiveSessions().remove(session.getSessionId());
                 
-                System.out.println("CombatSession " + session.getSessionId() + " timed out due to inactivity.");
+                System.out.println("CombatSession " + session.getSessionId() + " timed out due to inactivity and was fled.");
             }
         }
     }
