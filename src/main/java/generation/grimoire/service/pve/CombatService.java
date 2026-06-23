@@ -124,7 +124,23 @@ public class CombatService {
     }
 
     public CombatSession getSession(String sessionId) {
-        return activeSessions.get(sessionId);
+        CombatSession session = activeSessions.get(sessionId);
+        if (session != null) {
+            session.setLastActivity(java.time.Instant.now());
+        }
+        return session;
+    }
+
+    public CombatSession resumeCombat(String sessionId) {
+        CombatSession session = getSession(sessionId);
+        if (session != null) {
+            session.setReloadCount(session.getReloadCount() + 1);
+        }
+        return session;
+    }
+
+    public Map<String, CombatSession> getActiveSessions() {
+        return activeSessions;
     }
 
     private void handleRoomStart(CombatSession session) {
@@ -312,6 +328,20 @@ public class CombatService {
                     clone.setRarity(template.getRarity());
                     clone.setSpecialEffect(template.getSpecialEffect());
                     clone.setSpecialEffectValue(template.getSpecialEffectValue());
+
+                    // Apply anti-ragequit penalty
+                    if (session.getReloadCount() > 0) {
+                        double penaltyFactor = Math.max(0.1, 1.0 - (session.getReloadCount() * 0.1));
+                        clone.setBonusHealthMax((int) (clone.getBonusHealthMax() * penaltyFactor));
+                        clone.setBonusManaMax((int) (clone.getBonusManaMax() * penaltyFactor));
+                        clone.setBonusPower((int) (clone.getBonusPower() * penaltyFactor));
+                        clone.setBonusStrength((int) (clone.getBonusStrength() * penaltyFactor));
+                        clone.setBonusArmor((int) (clone.getBonusArmor() * penaltyFactor));
+                        clone.setBonusResistance((int) (clone.getBonusResistance() * penaltyFactor));
+                        clone.setBonusSpeed((int) (clone.getBonusSpeed() * penaltyFactor));
+                        clone.setBonusCrit((int) (clone.getBonusCrit() * penaltyFactor));
+                        session.addLog("Un équipement a été dégradé à cause des recharges abusives.");
+                    }
 
                     clone.setShopTemplate(false);
                     clone.setUser(user);

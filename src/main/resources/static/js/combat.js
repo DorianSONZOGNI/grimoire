@@ -305,9 +305,11 @@ window.fleeCombatAction = async function() {
             }
             return;
         }
+        localStorage.removeItem('activeCombatId');
         window.location.href = '/dungeons.html';
     } catch (e) {
         console.error(e);
+        localStorage.removeItem('activeCombatId');
         window.location.href = '/dungeons.html';
     }
 };
@@ -340,6 +342,13 @@ window.showNotif = function (message, isError = false) {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Check for active combat in localStorage
+    const savedCombatId = localStorage.getItem('activeCombatId');
+    if (savedCombatId) {
+        resumeCombat(savedCombatId);
+        return;
+    }
+
     const urlParams = new URLSearchParams(window.location.search);
     const dungeonId = urlParams.get('dungeonId');
     const characterIds = urlParams.get('characterIds');
@@ -353,6 +362,40 @@ document.addEventListener('DOMContentLoaded', () => {
 
     startCombat(characterIds, dungeonId, consumableIds);
 });
+
+// Anti-Ragequit: Warn user if trying to leave while in combat
+window.addEventListener('beforeunload', function (e) {
+    if (sessionId && currentSessionData && !currentSessionData.finished) {
+        e.preventDefault();
+        e.returnValue = "Vous êtes en combat ! Quitter maintenant comptera comme une défaite ou un abandon pénalisé.";
+        return e.returnValue;
+    }
+});
+
+async function resumeCombat(savedSessionId) {
+    try {
+        const res = await fetch(`/api/pve/combat/${savedSessionId}/resume`, { method: 'POST' });
+        if (!res.ok) {
+            localStorage.removeItem('activeCombatId');
+            alert("Combat introuvable ou expiré.");
+            window.location.href = '/vault.html';
+            return;
+        }
+        const data = await res.json();
+        sessionId = data.sessionId;
+        
+        data.players.forEach(p => {
+            previousPlayerXP[p.id] = p.experience;
+            previousPlayerSpiritXP[p.id] = p.spiritualiteExperience || 0;
+        });
+
+        updateUI(data);
+    } catch (e) {
+        console.error(e);
+        localStorage.removeItem('activeCombatId');
+        window.location.href = '/vault.html';
+    }
+}
 
 async function startCombat(characterIds, dungeonId, consumableIds) {
     try {
@@ -373,6 +416,7 @@ async function startCombat(characterIds, dungeonId, consumableIds) {
 
         const data = await res.json();
         sessionId = data.sessionId;
+        localStorage.setItem('activeCombatId', sessionId);
 
         // Initialize previous XP for the first room
         data.players.forEach(p => {
@@ -961,6 +1005,10 @@ async function openChest(useKey = false) {
 
 function updateUI(data) {
     currentSessionData = data;
+    
+    if (data.finished) {
+        localStorage.removeItem('activeCombatId');
+    }
 
     let isActiveEnemy = false;
     let activeEnemyIndex = -1;
