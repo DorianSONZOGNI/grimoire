@@ -18,6 +18,6 @@ public class WebMvcConfig implements WebMvcConfigurer {
     public void addInterceptors(@NonNull InterceptorRegistry registry) {
         registry.addInterceptor(combatInterceptor)
                 .addPathPatterns("/**")
-                .excludePathPatterns("/css/**", "/js/**", "/images/**", "/api/combat/**", "/api/auth/**", "/error");
+                .excludePathPatterns("/css/**", "/js/**", "/images/**", "/styles/**", "/api/combat/**", "/api/pve/combat/**", "/api/auth/**", "/combat.html", "/error");
     }
 }

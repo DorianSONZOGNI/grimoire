@@ -25,8 +25,8 @@ public class CombatInterceptor implements HandlerInterceptor {
         String uri = request.getRequestURI();
 
         // Exclude specific URIs
-        if (uri.startsWith("/api/combat/") || uri.startsWith("/api/auth/") || uri.startsWith("/css/")
-                || uri.startsWith("/js/") || uri.startsWith("/images/")) {
+        if (uri.startsWith("/api/combat/") || uri.startsWith("/api/pve/combat/") || uri.startsWith("/api/auth/") || uri.startsWith("/css/")
+                || uri.startsWith("/js/") || uri.startsWith("/images/") || uri.startsWith("/styles/") || uri.equals("/combat.html") || uri.equals("/error")) {
             return true;
         }
 
@@ -43,7 +43,7 @@ public class CombatInterceptor implements HandlerInterceptor {
                         response.sendError(HttpServletResponse.SC_FORBIDDEN, "Vous êtes en combat, action interdite.");
                         return false;
                     } else {
-                        response.sendRedirect("/combat"); // Replace with actual combat view URL
+                        response.sendRedirect("/combat.html"); // Replace with actual combat view URL
                         return false;
                     }
                 }
