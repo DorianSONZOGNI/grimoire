@@ -34,7 +34,8 @@ public class DungeonController {
 
     @PostMapping("/{id}/unlock")
     public ResponseEntity<?> unlockDungeon(@PathVariable Long id, Principal principal) {
-        if (principal == null) return ResponseEntity.status(401).build();
+        if (principal == null)
+            return ResponseEntity.status(401).build();
 
         AppUser user = userRepository.findByUsername(principal.getName())
                 .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
@@ -43,7 +44,7 @@ public class DungeonController {
                 .orElseThrow(() -> new RuntimeException("Donjon introuvable"));
 
         if (donjon.getUnlockCostGold() <= 0) {
-            return ResponseEntity.badRequest().body("Ce donjon n'a pas de coût de déblocage.");
+            return ResponseEntity.badRequest().body("Ce donjon n'a pas de coût de dévérouillage.");
         }
 
         if (user.getUnlockedDungeons().contains(id)) {

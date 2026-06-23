@@ -32,6 +32,8 @@ public class Donjon {
     
     private String requiredSecret;
     
+    private int requiredSecretLevel = 1;
+    
     private double entryCostGold = 0;
 
     // For a simple novice dungeon, it's one combat. 

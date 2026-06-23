@@ -72,9 +72,9 @@
                     <span class="material-symbols-outlined">person_add</span>
                     Recruter à la taverne
                 </span>
-                <span id="charLimitText" style="font-size: 0.9rem; color: #94a3b8; font-weight: 500;">
-                    -/-
-                </span>
+                <div id="charLimitContainer" style="display: flex; align-items: center;">
+                    <span id="charLimitText" style="font-size: 0.9rem; color: #94a3b8; font-weight: 500;">-/-</span>
+                </div>
             </div>
 
             <!-- Nom -->
@@ -558,6 +558,21 @@
             <div class="vault-modal-actions">
                 <button class="vault-btn-cancel" onclick="closeDeletePersoModal()">Annuler</button>
                 <button class="vault-btn-confirm" id="deletePersoConfirmBtn">Oui, supprimer</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Buy Roster Slot Modal -->
+    <div id="buyRosterModal" class="vault-modal-overlay">
+        <div class="vault-modal-content" style="border-color: rgba(16, 185, 129, 0.4);">
+            <div class="vault-modal-icon" style="background: rgba(16, 185, 129, 0.1); color: #10b981; border-color: rgba(16, 185, 129, 0.2);">
+                <span class="material-symbols-outlined" style="font-size: 2rem;">group_add</span>
+            </div>
+            <div class="vault-modal-title">Agrandir la taverne ?</div>
+            <div class="vault-modal-text">Voulez-vous acheter un emplacement de personnage supplémentaire pour <strong id="rosterSlotCostText" style="color: #f59e0b;">0</strong> <span class="material-symbols-outlined" style="font-size: 0.9rem; color: #f59e0b; vertical-align: middle;">toll</span> ?</div>
+            <div class="vault-modal-actions">
+                <button class="vault-btn-cancel" onclick="closeRosterModal()">Annuler</button>
+                <button class="vault-btn-confirm" id="buyRosterConfirmBtn" style="background: #10b981; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">Oui, acheter</button>
             </div>
         </div>
     </div>

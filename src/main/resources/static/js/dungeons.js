@@ -1,3 +1,11 @@
+window.switchDungeonTab = function(tabName) {
+    document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+    document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
+
+    document.getElementById(`tab-btn-${tabName}`).classList.add('active');
+    document.getElementById(`${tabName}DungeonsSection`).classList.add('active');
+};
+
 let currentDungeonId = null;
 let selectedCharIds = [];
 let currentMaxHeroes = 1;
@@ -55,81 +63,176 @@ async function loadDungeons() {
         const res = await fetch('/api/pve/dungeons');
         if (res.ok) {
             const dungeons = await res.json();
-            const list = document.getElementById('dungeonsList');
-            list.innerHTML = '';
+            const tabsHeader = document.getElementById('dungeonsTabs');
+            const contentContainer = document.getElementById('dungeonsSectionsContainer');
+            
+            tabsHeader.innerHTML = '';
+            contentContainer.innerHTML = '';
 
             if (dungeons.length === 0) {
-                list.innerHTML = `<div style="color: var(--text-muted);">Aucun donjon disponible pour le moment.</div>`;
+                document.getElementById('noDungeonsMsg').style.display = 'block';
+                tabsHeader.style.display = 'none';
                 return;
+            } else {
+                document.getElementById('noDungeonsMsg').style.display = 'none';
+                tabsHeader.style.display = 'flex';
             }
 
+            const categories = new Map();
+            // Force Libre to be the first key in the map to guarantee tab order
+            categories.set('free', { id: 'free', label: 'Libres', icon: 'public', color: '#38bdf8', dungeons: [] });
+
+            const DEFAULT_SECRETS_META = [
+                { name: "Secret du Chaos", icon: "local_fire_department", color: "#ff0000" },
+                { name: "Secret de l'Abondance", icon: "eco", color: "#10b981" },
+                { name: "Secret de la Préservation", icon: "foundation", color: "#99674c" },
+                { name: "Secret de la Sérénité", icon: "water_drop", color: "#00e5cc" },
+                { name: "Secret de la Chasse", icon: "visibility_off", color: "#ed5677" },
+                { name: "Secret du Carnage", icon: "explosion", color: "#a70740" },
+                { name: "Secret de la Joie", icon: "volcano", color: "#b74c0b" },
+                { name: "Secret du Savoir", icon: "psychology", color: "#3b82f6" },
+                { name: "Secret du Destin", icon: "all_inclusive", color: "#e7d198" },
+                { name: "Secret de l'Éther", icon: "blur_on", color: "#38bdf8" },
+                { name: "Secret des Abysses", icon: "dark_mode", color: "#c084fc" }
+            ];
+
             dungeons.forEach(d => {
-                let totalSalles = d.salles ? d.salles.length : 0;
-                let combats = 0, bosses = 0, treasures = 0, events = 0, totalMobs = 0, totalBossMobs = 0;
-                if (d.salles) {
-                    d.salles.forEach(s => {
-                        if (s.type === 'COMBAT') {
-                            combats++;
-                            totalMobs += (s.monsters ? s.monsters.length : 0);
-                        } else if (s.type === 'BOSS') {
-                            bosses++;
-                            totalBossMobs += (s.monsters ? s.monsters.length : 0);
-                        }
-                        else if (s.type === 'TREASURE') { treasures++; }
-                        else if (s.type === 'EVENT') { events++; }
-                    });
-                }
-
-                const sallesData = encodeURIComponent(JSON.stringify(d.salles || [])).replace(/'/g, "%27");
-
-                let lockedHtml = '';
-                let isLocked = false;
-                const userSecrets = window.currentUser?.unlockedSecrets || [];
-                const userDungeons = window.currentUser?.unlockedDungeons || [];
-
+                let catId, label, icon, color;
+                
                 if (d.requiredSecret && d.requiredSecret.trim() !== '') {
-                    if (!userSecrets.includes(d.requiredSecret)) {
-                        isLocked = true;
-                        lockedHtml = `<div style="color: #ef4444; font-weight: 600; font-size: 0.9rem; margin-top: 0.5rem;"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">lock</span> Secret requis : ${d.requiredSecret}</div>`;
-                    }
+                    catId = 'secret-' + d.requiredSecret.replace(/\s+/g, '-').toLowerCase();
+                    label = d.requiredSecret.replace(/^Secret (de la |du |de l'|des |d'|de )/i, '');
+                    label = label.charAt(0).toUpperCase() + label.slice(1);
+                    
+                    const meta = DEFAULT_SECRETS_META.find(s => s.name.toLowerCase() === d.requiredSecret.toLowerCase()) || { icon: "key", color: "#f59e0b" };
+                    icon = meta.icon;
+                    color = meta.color;
+                } else {
+                    catId = 'free';
+                    label = 'Libres';
+                    icon = 'public';
+                    color = '#38bdf8';
                 }
 
-                if (!isLocked && d.unlockCostGold > 0) {
-                    if (!userDungeons.includes(d.id)) {
-                        isLocked = true;
-                        lockedHtml = `<div style="margin-top: 0.8rem;"><button class="btn btn-primary" onclick="event.stopPropagation(); unlockDungeon(${d.id}, ${d.unlockCostGold})" style="width: 100%; display: flex; align-items: center; justify-content: center; gap: 0.4rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem;">lock_open</span> D\u00e9bloquer (${d.unlockCostGold} Or)</button></div>`;
-                    }
+                if (!categories.has(catId)) {
+                    categories.set(catId, { id: catId, label, icon, color, dungeons: [] });
                 }
+                categories.get(catId).dungeons.push(d);
+            });
 
-                const entryCostHtml = d.entryCostGold > 0 ? `<div style="color: #f59e0b; font-weight: 600; font-size: 0.9rem; margin-top: 0.5rem;"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">monetization_on</span> Co\u00fbt d'entr\u00e9e : ${d.entryCostGold} Or</div>` : '';
+            if (categories.get('free').dungeons.length === 0) {
+                categories.delete('free');
+            }
 
-                list.innerHTML += `
-                    <div class="dungeon-card" ${isLocked ? 'style="opacity: 0.7; cursor: not-allowed;"' : `onclick="openPrepInterface(${d.id}, '${d.name.replace(/'/g, "\\'")}', '${sallesData}', ${d.maxHeroes || 1}, ${d.entryCostGold || 0})"`}>
-                        <div class="dungeon-title">
-                            <span class="material-symbols-outlined">castle</span>
-                            ${d.name}
-                        </div>
-                        <div class="dungeon-level">Niveau ${d.recommendedLevel}</div>
-                        <div class="dungeon-desc">${d.description || 'Affrontez les dangers qui r\u00f4dent.'}</div>
-                        ${entryCostHtml}
-                        ${lockedHtml}
-                        <div style="font-size: 0.85rem; color: #f8fafc; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.1); display: grid; gap: 0.4rem;">
-                            <div><span style="font-weight: 600;">Salles totales :</span> ${totalSalles}</div>
-                            ${combats > 0 ? `<div style="color: #ef4444; margin-left: 0.5rem; display: flex; align-items: center; gap: 0.3rem;">
-                                <span class="material-symbols-outlined" style="font-size: 1rem;">swords</span> Combats : ${combats} (avec ${totalMobs} mob${totalMobs > 1 ? 's' : ''})
-                            </div>` : ''}
-                            ${bosses > 0 ? `<div style="color: #dc2626; margin-left: 0.5rem; display: flex; align-items: center; gap: 0.3rem;">
-                                <span class="material-symbols-outlined" style="font-size: 1rem;">skull</span> Boss : ${bosses} (avec ${totalBossMobs} mob${totalBossMobs > 1 ? 's' : ''})
-                            </div>` : ''}
-                            ${treasures > 0 ? `<div style="color: #f59e0b; margin-left: 0.5rem; display: flex; align-items: center; gap: 0.3rem;">
-                                <span class="material-symbols-outlined" style="font-size: 1rem;">shopping_bag</span> Tr\u00e9sors : ${treasures}
-                            </div>` : ''}
-                            <div style="color: #8b5cf6; margin-left: 0.5rem; display: flex; align-items: center; gap: 0.3rem;">
-                                <span class="material-symbols-outlined" style="font-size: 1rem;">auto_awesome</span> \u00c9v\u00e9nements : ${events}
+            let firstTab = true;
+            categories.forEach(cat => {
+                // Generate Tab Button
+                const btn = document.createElement('button');
+                btn.className = `tab-btn ${firstTab ? 'active' : ''}`;
+                btn.id = `tab-btn-${cat.id}`;
+                // Apply a specific class for the colored active state
+                if (cat.id === 'free') btn.classList.add('tab-free');
+                else if (cat.id === 'gold') btn.classList.add('tab-gold');
+                else btn.classList.add('tab-secret'); // Use secret style for all secret tabs
+                
+                // Add inline style for custom active color
+                btn.innerHTML = `<span class="material-symbols-outlined" style="color: ${cat.color};">${cat.icon}</span> ${cat.label} <span class="tab-badge">${cat.dungeons.length}</span>`;
+                btn.onclick = () => switchDungeonTab(cat.id);
+                tabsHeader.appendChild(btn);
+
+                // Generate Content Section
+                const section = document.createElement('div');
+                section.className = `tab-content ${firstTab ? 'active' : ''}`;
+                section.id = `${cat.id}DungeonsSection`;
+                
+                const grid = document.createElement('div');
+                grid.className = 'dungeons-grid';
+                section.appendChild(grid);
+                contentContainer.appendChild(section);
+
+                // Populate Grid
+                cat.dungeons.forEach(d => {
+                    let totalSalles = d.salles ? d.salles.length : 0;
+                    let combats = 0, bosses = 0, treasures = 0, events = 0, totalMobs = 0, totalBossMobs = 0;
+                    if (d.salles) {
+                        d.salles.forEach(s => {
+                            if (s.type === 'COMBAT') {
+                                combats++;
+                                totalMobs += (s.monsters ? s.monsters.length : 0);
+                            } else if (s.type === 'BOSS') {
+                                bosses++;
+                                totalBossMobs += (s.monsters ? s.monsters.length : 0);
+                            }
+                            else if (s.type === 'TREASURE') { treasures++; }
+                            else if (s.type === 'EVENT') { events++; }
+                        });
+                    }
+
+                    const sallesData = encodeURIComponent(JSON.stringify(d.salles || [])).replace(/'/g, "%27");
+
+                    let lockedHtml = '';
+                    let isLocked = false;
+                    const userSecrets = window.currentUser?.unlockedSecrets || {};
+                    const userDungeons = window.currentUser?.unlockedDungeons || [];
+
+                    if (d.requiredSecret && d.requiredSecret.trim() !== '') {
+                        const userLevel = userSecrets[d.requiredSecret] || 0;
+                        const reqLevel = d.requiredSecretLevel || 1;
+                        if (userLevel < reqLevel) {
+                            isLocked = true;
+                            lockedHtml = `<div class="dungeon-lock-overlay">
+                                <span class="material-symbols-outlined" style="font-size: 3.5rem; margin-bottom: 0.5rem; opacity: 0.8;">lock</span>
+                                <div style="font-family: 'Outfit'; font-size: 1.2rem; font-weight: 700; color: #f8fafc; margin-bottom: 0.3rem;">Accès Verrouillé</div>
+                                <div style="font-size: 0.95rem; color: #fca5a5;">Secret requis : <strong style="color: #f8fafc;">${d.requiredSecret}</strong> (Niv. ${reqLevel})</div>
+                            </div>`;
+                        }
+                    }
+
+                    if (!isLocked && d.unlockCostGold > 0) {
+                        if (!userDungeons.includes(d.id)) {
+                            isLocked = true;
+                            lockedHtml = `<div class="dungeon-lock-overlay" style="background: rgba(15, 23, 42, 0.75); color: #f59e0b;">
+                                <span class="material-symbols-outlined" style="font-size: 3.5rem; margin-bottom: 0.5rem; opacity: 0.8;">lock</span>
+                                <div style="font-family: 'Outfit'; font-size: 1.2rem; font-weight: 700; color: #f8fafc; margin-bottom: 1rem;">Donjon Verrouillé</div>
+                                <button class="btn btn-primary" onclick="event.stopPropagation(); unlockDungeon(${d.id}, ${d.unlockCostGold})" style="width: 80%; display: flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.6rem; border-radius: 8px; border: none; background: linear-gradient(135deg, #f59e0b, #d97706); color: #0f172a; font-family: 'Outfit', sans-serif; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);"><span class="material-symbols-outlined" style="font-size: 1.1rem;">lock_open</span> D\u00e9bloquer (${d.unlockCostGold} Or)</button>
+                            </div>`;
+                        }
+                    }
+
+                    const entryCostHtml = d.entryCostGold > 0 ? `<div style="color: #f59e0b; font-weight: 600; font-size: 0.9rem; margin-top: 0.5rem;"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">monetization_on</span> Co\u00fbt d'entr\u00e9e : ${d.entryCostGold} Or</div>` : '';
+
+                    const cardHtml = `
+                        <div class="dungeon-card ${isLocked ? 'locked' : ''}" ${isLocked ? '' : `onclick="openPrepInterface(${d.id}, '${d.name.replace(/'/g, "\\'")}', '${sallesData}', ${d.maxHeroes || 1}, ${d.entryCostGold || 0})"`}>
+                            ${lockedHtml}
+                            <div class="dungeon-title">
+                                <span class="material-symbols-outlined">castle</span>
+                                ${d.name}
+                            </div>
+                            <div class="dungeon-level">Niveau ${d.recommendedLevel}</div>
+                            <div class="dungeon-desc">${d.description || 'Affrontez les dangers qui r\u00f4dent.'}</div>
+                            ${entryCostHtml}
+                            <div style="font-size: 0.85rem; color: #f8fafc; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.1); display: grid; gap: 0.4rem;">
+                                <div><span style="font-weight: 600;">Salles totales :</span> ${totalSalles}</div>
+                                ${combats > 0 ? `<div style="color: #ef4444; margin-left: 0.5rem; display: flex; align-items: center; gap: 0.3rem;">
+                                    <span class="material-symbols-outlined" style="font-size: 1rem;">swords</span> Combats : ${combats} (avec ${totalMobs} mob${totalMobs > 1 ? 's' : ''})
+                                </div>` : ''}
+                                ${bosses > 0 ? `<div style="color: #dc2626; margin-left: 0.5rem; display: flex; align-items: center; gap: 0.3rem;">
+                                    <span class="material-symbols-outlined" style="font-size: 1rem;">skull</span> Boss : ${bosses} (avec ${totalBossMobs} mob${totalBossMobs > 1 ? 's' : ''})
+                                </div>` : ''}
+                                ${treasures > 0 ? `<div style="color: #f59e0b; margin-left: 0.5rem; display: flex; align-items: center; gap: 0.3rem;">
+                                    <span class="material-symbols-outlined" style="font-size: 1rem;">shopping_bag</span> Tr\u00e9sors : ${treasures}
+                                </div>` : ''}
+                                <div style="color: #8b5cf6; margin-left: 0.5rem; display: flex; align-items: center; gap: 0.3rem;">
+                                    <span class="material-symbols-outlined" style="font-size: 1rem;">auto_awesome</span> \u00c9v\u00e9nements : ${events}
+                                </div>
                             </div>
                         </div>
-                    </div>
-                `;
+                    `;
+
+                    grid.innerHTML += cardHtml;
+                });
+
+                firstTab = false;
             });
         }
     } catch (e) {

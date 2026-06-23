@@ -58,6 +58,31 @@
             z-index: 1;
         }
 
+        .dungeon-card.locked {
+            border-color: rgba(220, 38, 38, 0.4);
+            cursor: not-allowed;
+        }
+
+        .dungeon-card.locked:hover {
+            transform: none;
+            box-shadow: none;
+        }
+
+        .dungeon-lock-overlay {
+            position: absolute;
+            inset: 0;
+            background: rgba(15, 23, 42, 0.85);
+            backdrop-filter: blur(4px);
+            z-index: 10;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            text-align: center;
+            color: #ef4444;
+            padding: 1rem;
+        }
+
         .dungeon-title {
             font-family: 'Outfit', sans-serif;
             font-size: 1.5rem;
@@ -85,6 +110,80 @@
             color: var(--text-muted);
             line-height: 1.5;
             margin-bottom: 1.5rem;
+        }
+
+        /* --- TABS --- */
+        .tabs-header {
+            display: flex;
+            gap: 0.5rem;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            padding-bottom: 0.8rem;
+            flex-wrap: wrap;
+        }
+
+        .tab-btn {
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255,255,255,0.1);
+            color: var(--text-muted);
+            font-family: 'Outfit', sans-serif;
+            font-size: 0.95rem;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+            padding: 0.4rem 0.8rem;
+            border-radius: 8px;
+            transition: all 0.2s;
+            white-space: nowrap;
+        }
+
+        .tab-btn:hover {
+            background: rgba(255,255,255,0.05);
+            color: #f8fafc;
+            border-color: rgba(255,255,255,0.2);
+        }
+
+        .tab-btn.active {
+            color: #f8fafc;
+        }
+
+        .tab-btn.tab-free.active {
+            background: rgba(56, 189, 248, 0.1);
+            border-color: rgba(56, 189, 248, 0.5);
+            box-shadow: 0 0 15px rgba(56, 189, 248, 0.2);
+        }
+        .tab-btn.tab-gold.active {
+            background: rgba(245, 158, 11, 0.1);
+            border-color: rgba(245, 158, 11, 0.5);
+            box-shadow: 0 0 15px rgba(245, 158, 11, 0.2);
+        }
+        .tab-btn.tab-secret.active {
+            background: rgba(192, 132, 252, 0.1);
+            border-color: rgba(192, 132, 252, 0.5);
+            box-shadow: 0 0 15px rgba(192, 132, 252, 0.2);
+        }
+
+        .tab-badge {
+            background: rgba(0,0,0,0.4);
+            padding: 0.1rem 0.6rem;
+            border-radius: 12px;
+            font-size: 0.85rem;
+        }
+
+        .tab-content {
+            display: none;
+            animation: fadeInTab 0.3s ease-out;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeInTab {
+            from { opacity: 0; transform: translateY(10px); }
+            to { opacity: 1; transform: translateY(0); }
         }
 
         /* New Prep Interface Styles */
@@ -306,10 +405,12 @@
             pointer-events: none;
             transition: opacity 0.3s ease;
         }
+
         .unlock-overlay.active {
             opacity: 1;
             pointer-events: all;
         }
+
         .unlock-modal {
             background: linear-gradient(145deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95));
             border: 1px solid rgba(245, 158, 11, 0.3);
@@ -322,9 +423,11 @@
             transform: scale(0.85) translateY(20px);
             transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
+
         .unlock-overlay.active .unlock-modal {
             transform: scale(1) translateY(0);
         }
+
         .unlock-modal-icon {
             width: 72px;
             height: 72px;
@@ -337,10 +440,19 @@
             margin: 0 auto 1.5rem;
             animation: unlock-pulse 2s ease-in-out infinite;
         }
+
         @keyframes unlock-pulse {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.3); }
-            50% { box-shadow: 0 0 20px 8px rgba(245, 158, 11, 0.15); }
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(245, 158, 11, 0.3);
+            }
+
+            50% {
+                box-shadow: 0 0 20px 8px rgba(245, 158, 11, 0.15);
+            }
         }
+
         .unlock-modal-title {
             font-family: 'Outfit', sans-serif;
             font-size: 1.4rem;
@@ -348,12 +460,14 @@
             color: #f8fafc;
             margin-bottom: 0.75rem;
         }
+
         .unlock-modal-desc {
             font-size: 0.95rem;
             color: #94a3b8;
             line-height: 1.6;
             margin-bottom: 1.5rem;
         }
+
         .unlock-modal-cost {
             display: inline-flex;
             align-items: center;
@@ -368,10 +482,12 @@
             color: #fbbf24;
             margin-bottom: 2rem;
         }
+
         .unlock-modal-actions {
             display: flex;
             gap: 1rem;
         }
+
         .unlock-btn-cancel {
             flex: 1;
             padding: 0.8rem;
@@ -385,10 +501,12 @@
             cursor: pointer;
             transition: all 0.2s;
         }
+
         .unlock-btn-cancel:hover {
             background: rgba(255, 255, 255, 0.1);
             color: #f8fafc;
         }
+
         .unlock-btn-confirm {
             flex: 1;
             padding: 0.8rem;
@@ -407,10 +525,12 @@
             gap: 0.4rem;
             box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
         }
+
         .unlock-btn-confirm:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(245, 158, 11, 0.5);
         }
+
         /* --- ENTRY COST MODAL --- */
         .entry-overlay {
             position: fixed;
@@ -425,10 +545,12 @@
             pointer-events: none;
             transition: opacity 0.3s ease;
         }
+
         .entry-overlay.active {
             opacity: 1;
             pointer-events: all;
         }
+
         .entry-modal {
             background: linear-gradient(145deg, rgba(15, 23, 42, 0.95), rgba(30, 41, 59, 0.95));
             border: 1px solid rgba(220, 38, 38, 0.3);
@@ -441,9 +563,11 @@
             transform: scale(0.85) translateY(20px);
             transition: transform 0.35s cubic-bezier(0.34, 1.56, 0.64, 1);
         }
+
         .entry-overlay.active .entry-modal {
             transform: scale(1) translateY(0);
         }
+
         .entry-modal-icon {
             width: 72px;
             height: 72px;
@@ -456,10 +580,19 @@
             margin: 0 auto 1.5rem;
             animation: entry-pulse 2s ease-in-out infinite;
         }
+
         @keyframes entry-pulse {
-            0%, 100% { box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.3); }
-            50% { box-shadow: 0 0 20px 8px rgba(220, 38, 38, 0.15); }
+
+            0%,
+            100% {
+                box-shadow: 0 0 0 0 rgba(220, 38, 38, 0.3);
+            }
+
+            50% {
+                box-shadow: 0 0 20px 8px rgba(220, 38, 38, 0.15);
+            }
         }
+
         .entry-btn-confirm {
             flex: 1;
             padding: 0.8rem;
@@ -478,6 +611,7 @@
             gap: 0.4rem;
             box-shadow: 0 4px 15px rgba(220, 38, 38, 0.3);
         }
+
         .entry-btn-confirm:hover {
             transform: translateY(-2px);
             box-shadow: 0 6px 20px rgba(220, 38, 38, 0.5);
@@ -545,9 +679,15 @@
             <p style="color: var(--text-muted); margin-bottom: 2rem;">Choisissez un donjon à affronter. La mort n'est
                 qu'un léger contretemps.</p>
 
-            <div class="dungeons-grid" id="dungeonsList">
+            <div class="tabs-header" id="dungeonsTabs" style="display: none;">
                 <!-- Rempli par JS -->
             </div>
+
+            <div id="dungeonsSectionsContainer">
+                <!-- Rempli par JS -->
+            </div>
+            
+            <div id="noDungeonsMsg" style="color: var(--text-muted); display: none;">Aucun donjon disponible pour le moment.</div>
         </div>
 
         <div id="prepInterface" style="display: none;">
@@ -653,7 +793,8 @@
                 <span class="material-symbols-outlined" style="font-size: 2.2rem; color: #fbbf24;">lock_open</span>
             </div>
             <div class="unlock-modal-title">Débloquer ce donjon ?</div>
-            <div class="unlock-modal-desc">Ce déblocage est <strong style="color: #f8fafc;">définitif</strong> pour votre compte. Vous n’aurez plus jamais à payer ce coût.</div>
+            <div class="unlock-modal-desc">Ce dévérouillage est <strong style="color: #f8fafc;">définitif</strong> pour
+                votre compte. Vous n’aurez plus jamais à payer ce coût.</div>
             <div class="unlock-modal-cost">
                 <span class="material-symbols-outlined" style="font-size: 1.3rem;">monetization_on</span>
                 <span id="unlockModalCost">0</span> Or
@@ -675,8 +816,10 @@
                 <span class="material-symbols-outlined" style="font-size: 2.2rem; color: #ef4444;">swords</span>
             </div>
             <div class="unlock-modal-title">Entrer dans le donjon ?</div>
-            <div class="unlock-modal-desc">Le co&ucirc;t d'entr&eacute;e sera d&eacute;duit de votre Or. Ce co&ucirc;t est pr&eacute;lev&eacute; &agrave; <strong style="color: #f8fafc;">chaque tentative</strong>.</div>
-            <div class="unlock-modal-cost" style="border-color: rgba(220, 38, 38, 0.25); background: rgba(220, 38, 38, 0.1); color: #fca5a5;">
+            <div class="unlock-modal-desc">Le co&ucirc;t d'entr&eacute;e sera d&eacute;duit de votre Or. Ce co&ucirc;t
+                est pr&eacute;lev&eacute; &agrave; <strong style="color: #f8fafc;">chaque tentative</strong>.</div>
+            <div class="unlock-modal-cost"
+                style="border-color: rgba(220, 38, 38, 0.25); background: rgba(220, 38, 38, 0.1); color: #fca5a5;">
                 <span class="material-symbols-outlined" style="font-size: 1.3rem;">monetization_on</span>
                 <span id="entryModalCost">0</span> Or
             </div>

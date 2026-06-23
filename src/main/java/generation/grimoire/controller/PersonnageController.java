@@ -54,7 +54,7 @@ public class PersonnageController {
                 .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
         
         int userMax = user.getMaxCharacters();
-        if (userMax <= 0) userMax = 2;
+        if (userMax < 2) userMax = 2;
         int max = isAdmin ? 999 : userMax;
         
         int current = personnageRepository.findByUser_Username(principal.getName()).size();
@@ -100,7 +100,7 @@ public class PersonnageController {
                 return ResponseEntity.status(org.springframework.http.HttpStatus.BAD_REQUEST).body(errorResp);
             }
             int userMax = user != null ? user.getMaxCharacters() : 2;
-            if (userMax <= 0) userMax = 2;
+            if (userMax < 2) userMax = 2;
             int max = isAdmin ? 999 : userMax;
             
             int current = personnageRepository.findByUser_Username(principal.getName()).size();

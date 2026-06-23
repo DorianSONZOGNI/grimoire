@@ -23,16 +23,26 @@ public class AlchemyController {
         return ResponseEntity.ok(alchemyService.getAllRecipes());
     }
 
+    public static class CraftRequest {
+        public Long personnageId;
+        public List<Long> anomalieIds;
+        public List<Long> consumableIds;
+    }
+
     @PostMapping("/craft/{recipeId}")
     public ResponseEntity<?> craftRecipe(@PathVariable Long recipeId, 
-                                         @RequestParam(required = false) Long personnageId,
+                                         @RequestBody(required = false) CraftRequest request,
                                          Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
             return ResponseEntity.status(401).body("Non autorisé");
         }
         
         try {
-            String resultMessage = alchemyService.craftRecipe(authentication.getName(), recipeId, personnageId);
+            Long persoId = request != null ? request.personnageId : null;
+            List<Long> anoms = request != null && request.anomalieIds != null ? request.anomalieIds : List.of();
+            List<Long> cons = request != null && request.consumableIds != null ? request.consumableIds : List.of();
+            
+            String resultMessage = alchemyService.craftRecipe(authentication.getName(), recipeId, persoId, anoms, cons);
             return ResponseEntity.ok(resultMessage);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());

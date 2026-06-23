@@ -14,6 +14,7 @@ public class DonjonDTO {
     
     private double unlockCostGold;
     private String requiredSecret;
+    private int requiredSecretLevel;
     private double entryCostGold;
     
     private List<SalleDTO> salles;
