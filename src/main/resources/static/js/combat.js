@@ -42,12 +42,12 @@ function showFloatingTextOnElement(el, text, color) {
     floater.className = 'floating-damage';
     floater.innerHTML = text;
     floater.style.color = color || '#ef4444';
-    
+
     wrapper.appendChild(floater);
     document.body.appendChild(wrapper);
 
     setTimeout(() => {
-        if(wrapper.parentNode) wrapper.parentNode.removeChild(wrapper);
+        if (wrapper.parentNode) wrapper.parentNode.removeChild(wrapper);
     }, 3000);
 }
 
@@ -290,7 +290,7 @@ window.hideGlobalTooltip = ui.hideGlobalTooltip;
 
 let isFleeing = false;
 
-window.fleeCombatAction = async function() {
+window.fleeCombatAction = async function () {
     try {
         isFleeing = true;
         const btn = document.querySelector('#fleeConfirmModal button:last-child');
@@ -387,7 +387,7 @@ async function resumeCombat(savedSessionId) {
         }
         const data = await res.json();
         sessionId = data.sessionId;
-        
+
         data.players.forEach(p => {
             previousPlayerXP[p.id] = p.experience;
             previousPlayerSpiritXP[p.id] = p.spiritualiteExperience || 0;
@@ -407,7 +407,7 @@ async function startCombat(characterIds, dungeonId, consumableIds) {
         if (consumableIds) {
             fetchUrl += `&consumableIds=${consumableIds}`;
         }
-        
+
         const res = await fetch(fetchUrl, {
             method: 'POST'
         });
@@ -968,7 +968,7 @@ async function openChest(useKey = false) {
         const btnKey = document.getElementById('btnOpenChestKey');
         if (btn) btn.disabled = true;
         if (btnKey) btnKey.disabled = true;
-        
+
         if (useKey && btnKey) {
             btnKey.innerHTML = `<span class="material-symbols-outlined spin">sync</span> Ouverture...`;
         } else if (!useKey && btn) {
@@ -1009,7 +1009,7 @@ async function openChest(useKey = false) {
 
 function updateUI(data) {
     currentSessionData = data;
-    
+
     if (data.finished) {
         localStorage.removeItem('activeCombatId');
     }
@@ -1139,7 +1139,7 @@ function updateUI(data) {
                                     <span style="color: #38bdf8;">+${xpAmount} XP</span>
                                 `;
                             }
-                            
+
                             xpContainer.innerHTML += `
                                 <div style="width: 100%; text-align: center; margin-bottom: 0.5rem; animation: popIn 0.5s ease-out forwards;">
                                     <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(0,0,0,0.4); border: 1px solid #f59e0b80; padding: 0.5rem 1rem; border-radius: 8px; font-weight: bold; font-size: 1.2rem;">
@@ -1335,7 +1335,7 @@ function updateUI(data) {
                     lootContainer.style.display = 'none';
                     lootContainer.innerHTML = ''; // reset
                     delete lootContainer.dataset.filled;
-                    
+
                     const btnKey = document.getElementById('btnOpenChestKey');
                     if (btnKey) {
                         const hasKey = data.activeConsumables && data.activeConsumables.some(eq => eq.name === 'Clé');
@@ -1509,12 +1509,12 @@ function updateUI(data) {
 
                         btnCont.style.display = 'none';
                         lootContainer.style.display = 'flex';
-                        
+
                         let disabledState = '';
                         if (data.currentRoom.alterationType === 'ITEM' || data.currentRoom.alterationType === 'AUTEL') {
                             disabledState = 'disabled style="opacity: 0.5; cursor: not-allowed;"';
                         }
-                        
+
                         lootContainer.innerHTML = `
                             <div style="display: flex; flex-direction: column; align-items: center; max-width: 600px; width: 100%;">
                                 ${warningHtml}
@@ -2191,6 +2191,7 @@ function generateFighterHtml(c, isHero) {
         <div class="sandbox-status-list" style="justify-content: center;">
             ${renderShieldsHtml(c.activeShields)}
             ${renderBuffsHtml(c.activeBuffs || c.buffs)}
+            ${renderPoisonBurnHtml(c)}
             ${renderDotsHtml(c.activeDamageOverTimeEffects)}
         </div>
     `;
@@ -2270,6 +2271,88 @@ function renderShieldsHtml(shieldList) {
             </div>
         </template>
     </div>`;
+}
+
+function renderPoisonBurnHtml(c) {
+    const tooltipAttrs = 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"';
+    const poisonEntries = [];
+    const burnEntries = [];
+
+    const buffs = c.activeBuffs || c.buffs || [];
+    buffs.forEach(b => {
+        if (b.statAffected === 'POISON') {
+            const dmg = b.flatValue || 0;
+            poisonEntries.push(`
+                <div style="display:flex; align-items:flex-start; gap:0.4rem; font-size:0.85rem;">
+                    <span class="material-symbols-outlined" style="flex-shrink:0; font-size:1.1rem; color:#22c55e;">pest_control</span>
+                    <span style="font-weight:600; color:#fff;">[Poison]</span>
+                    <span style="color:#22c55e; font-weight:500;">${dmg} Dégâts Brut</span>
+                    <span style="color:#e2e8f0;">⏳ (${b.duration} tours)</span>
+                </div>
+            `);
+        } else if (b.statAffected === 'BURN') {
+            const dmg = b.flatValue || 0;
+            burnEntries.push(`
+                <div style="display:flex; align-items:flex-start; gap:0.4rem; font-size:0.85rem;">
+                    <span class="material-symbols-outlined" style="flex-shrink:0; font-size:1.1rem; color:#ef4444;">local_fire_department</span>
+                    <span style="font-weight:600; color:#fff;">[Brûlure]</span>
+                    <span style="color:#ef4444; font-weight:500;">${dmg} Dégâts Magique</span>
+                    <span style="color:#e2e8f0;">⏳ (${b.duration} tours)</span>
+                </div>
+            `);
+        }
+    });
+
+    const dots = c.activeDamageOverTimeEffects || [];
+    dots.forEach(d => {
+        if (d.poison) {
+            poisonEntries.push(`
+                <div style="display:flex; align-items:flex-start; gap:0.4rem; font-size:0.85rem;">
+                    <span class="material-symbols-outlined" style="flex-shrink:0; font-size:1.1rem; color:#22c55e;">pest_control</span>
+                    <span style="font-weight:600; color:#fff;">[Poison]</span>
+                    <span style="color:#22c55e; font-weight:500;">${d.fixedDamagePerTick} Dégâts Brut</span>
+                    <span style="color:#e2e8f0;">⏳ (${d.duration} tours)</span>
+                </div>
+            `);
+        } else if (d.burn) {
+            burnEntries.push(`
+                <div style="display:flex; align-items:flex-start; gap:0.4rem; font-size:0.85rem;">
+                    <span class="material-symbols-outlined" style="flex-shrink:0; font-size:1.1rem; color:#ef4444;">local_fire_department</span>
+                    <span style="font-weight:600; color:#fff;">[Brûlure]</span>
+                    <span style="color:#ef4444; font-weight:500;">${d.fixedDamagePerTick} Dégâts Magique</span>
+                    <span style="color:#e2e8f0;">⏳ (${d.duration} tours)</span>
+                </div>
+            `);
+        }
+    });
+
+    let html = '';
+
+    if (poisonEntries.length > 0) {
+        html += `<div class="sandbox-status-badge debuff" ${tooltipAttrs} style="cursor: help; position: relative; border-color: rgba(34, 197, 94, 0.4); color: #22c55e; background: rgba(34, 197, 94, 0.1);">
+            <span class="material-symbols-outlined" style="font-size: 0.95rem;">pest_control</span>
+            <span>Poison (${poisonEntries.length})</span>
+            <template class="tooltip-data">
+                <div style="display: flex; flex-direction: column; gap: 0.3rem;">
+                    ${poisonEntries.join('')}
+                </div>
+            </template>
+        </div>`;
+    }
+
+    if (burnEntries.length > 0) {
+        html += `<div class="sandbox-status-badge debuff" ${tooltipAttrs} style="cursor: help; position: relative; border-color: rgba(239, 68, 68, 0.4); color: #ef4444; background: rgba(239, 68, 68, 0.1);">
+            <span class="material-symbols-outlined" style="font-size: 0.95rem;">local_fire_department</span>
+            <span>Brûlure (${burnEntries.length})</span>
+            <template class="tooltip-data">
+                <div style="display: flex; flex-direction: column; gap: 0.3rem;">
+                    ${burnEntries.join('')}
+                </div>
+            </template>
+        </div>`;
+    }
+
+    return html;
 }
 
 function renderBuffsHtml(buffList) {
@@ -2749,7 +2832,7 @@ function renderDotsHtml(dotList) {
     `;
 }
 
-window.showGlobalTooltip = function(el) {
+window.showGlobalTooltip = function (el) {
     let tooltip = document.getElementById('globalFixedTooltip');
     if (!tooltip) {
         tooltip = document.createElement('div');
@@ -2774,14 +2857,14 @@ window.showGlobalTooltip = function(el) {
         tooltip.style.textAlign = 'left';
         document.body.appendChild(tooltip);
     }
-    
+
     const tmpl = el.querySelector('.tooltip-data');
     if (tmpl) {
         tooltip.innerHTML = tmpl.innerHTML;
     } else {
         return;
     }
-    
+
     tooltip.style.display = 'block';
 
     const rect = el.getBoundingClientRect();
@@ -2800,12 +2883,12 @@ window.showGlobalTooltip = function(el) {
     tooltip.style.left = left + 'px';
 };
 
-window.hideGlobalTooltip = function() {
+window.hideGlobalTooltip = function () {
     const tooltip = document.getElementById('globalFixedTooltip');
     if (tooltip) tooltip.style.display = 'none';
 };
 
-window.renderOverlayInventory = function(containerId) {
+window.renderOverlayInventory = function (containerId) {
     const list = document.getElementById(containerId);
     if (!list) return;
     list.innerHTML = '';
@@ -2841,7 +2924,7 @@ window.renderOverlayInventory = function(containerId) {
     });
 };
 
-window.openConsumeModal = function(consumableId, consumableName) {
+window.openConsumeModal = function (consumableId, consumableName) {
     document.getElementById('consumeTargetName').innerText = consumableName;
     const btnContainer = document.getElementById('consumeTargetButtons');
     btnContainer.innerHTML = '';
@@ -2865,11 +2948,11 @@ window.openConsumeModal = function(consumableId, consumableName) {
     document.getElementById('consumeTargetModal').classList.add('show');
 };
 
-window.closeConsumeModal = function() {
+window.closeConsumeModal = function () {
     document.getElementById('consumeTargetModal').classList.remove('show');
 };
 
-window.confirmConsumeItem = async function(consumableId, characterId) {
+window.confirmConsumeItem = async function (consumableId, characterId) {
     if (!sessionId) return;
     try {
         const res = await fetch(`/api/pve/combat/${sessionId}/consume/${consumableId}/target/${characterId}`, {
