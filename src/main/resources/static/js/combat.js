@@ -2851,9 +2851,9 @@ window.showGlobalTooltip = function (el) {
         tooltip.style.fontSize = '0.8rem';
         tooltip.style.lineHeight = '1.4';
         tooltip.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.5)';
-        tooltip.style.maxWidth = '250px';
-        tooltip.style.whiteSpace = 'normal';
-        tooltip.style.wordWrap = 'break-word';
+        tooltip.style.maxWidth = 'max-content';
+        tooltip.style.whiteSpace = 'nowrap';
+        tooltip.style.wordWrap = 'normal';
         tooltip.style.textAlign = 'left';
         document.body.appendChild(tooltip);
     }

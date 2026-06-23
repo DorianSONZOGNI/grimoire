@@ -132,11 +132,11 @@ export function getSpellEffectsSummaryHtml(sp) {
         });
         if (sp.heatGenerated && sp.heatGenerated > 0 && !hasHeatEffectInList) {
             effectsSummaryHtml += `
-                        <div class="effect-line" style="display:flex; align-items:baseline; gap:0.3rem; flex-wrap:wrap;">
+                        <div class="effect-line" style="display:flex; align-items:baseline; gap:0.3rem; flex-wrap:nowrap; white-space:nowrap;">
                             <div class="indicator" style="flex-shrink:0; background-color: #f97316;"></div>
-                            <span style="font-weight:600; color:#fff;">[Lanceur]</span>
-                            <span style="color:#ef4444; font-weight:500;">🔥 Chaleur</span>
-                            <span style="color:#e2e8f0;">➔ génère ${sp.heatGenerated} Chaleur</span>
+                            <span style="font-weight:600; color:#fff; white-space:nowrap;">[Lanceur]</span>
+                            <span style="color:#ef4444; font-weight:500; white-space:nowrap;">🔥 Chaleur</span>
+                            <span style="color:#e2e8f0; white-space:nowrap;">➔ génère ${sp.heatGenerated} Chaleur</span>
                         </div>
                     `;
         }
@@ -387,15 +387,15 @@ export function getSpellEffectsSummaryHtml(sp) {
                     }
                 }
 
-                effectsSummaryHtml += `<div style="display:flex; align-items:flex-start; gap:0.3rem;">
+                effectsSummaryHtml += `<div style="display:flex; align-items:flex-start; gap:0.3rem; white-space:nowrap; flex-wrap:nowrap;">
                             <span class="material-symbols-outlined" style="flex-shrink:0; font-size:1.1rem; color:${indicatorColor};">${iconName}</span>
                             ${statIconHtml}
                             ${turnBadge}
                             ${keyBadge}
                             ${dsBadge}
-                            <span style="font-weight:600; color:#fff;">[${targetText}]</span>
-                            <span style="color:var(--spell-color, #38bdf8); font-weight:500;">${eTypeStr}</span>
-                            <span style="color:#e2e8f0;">${detailsStr}</span>
+                            <span style="font-weight:600; color:#fff; white-space:nowrap;">[${targetText}]</span>
+                            <span style="color:var(--spell-color, #38bdf8); font-weight:500; white-space:nowrap;">${eTypeStr}</span>
+                            <span style="color:#e2e8f0; white-space:nowrap;">${detailsStr}</span>
                         </div>
                     `;
             });
