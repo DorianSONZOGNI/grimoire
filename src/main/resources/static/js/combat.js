@@ -2057,10 +2057,12 @@ function generateFighterHtml(c, isHero) {
         let karmaHarmony = c.karmaHarmony || (c.passiveStates && c.passiveStates['karma_harmony'] === 1);
         let karmaGauge = c.karmaGauge !== undefined ? c.karmaGauge : (c.passiveStates && c.passiveStates['karma_gauge'] !== undefined ? c.passiveStates['karma_gauge'] : 0);
 
+        let karmaLockedDuration = c.passiveStates && c.passiveStates['karma_locked_duration'] !== undefined ? c.passiveStates['karma_locked_duration'] : 0;
+
         let borderColor, color, icon, text, title;
         if (karmaLocked) {
             borderColor = 'rgba(239, 68, 68, 0.4)'; color = '#f87171'; icon = 'block';
-            text = 'Brisé'; title = "Karma Brisé (Voie désactivée)";
+            text = `Brisé (${karmaLockedDuration})`; title = "Karma Brisé (Voie désactivée)";
         } else if (karmaHarmony) {
             borderColor = 'rgba(100, 116, 139, 0.4)'; color = '#cbd5e1'; icon = 'brightness_medium';
             text = 'Harmonie'; title = "Karma en Harmonie";
