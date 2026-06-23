@@ -10,6 +10,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
+import java.time.Instant;
 
 @Data
 public class CombatSession {
@@ -50,6 +51,9 @@ public class CombatSession {
     private int bossBonusGold = 0;           // Or bonus boss
 
     private List<String> combatLog = new ArrayList<>();
+
+    private int reloadCount = 0;
+    private Instant lastActivity = Instant.now();
 
     public CombatSession(String sessionId, Donjon donjon, List<Personnage> players) {
         this.sessionId = sessionId;
