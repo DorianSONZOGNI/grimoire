@@ -2,13 +2,11 @@ package generation.grimoire.scheduler;
 
 import generation.grimoire.model.pve.CombatSession;
 import generation.grimoire.service.pve.CombatService;
-import generation.grimoire.repository.PersonnageRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
-import java.util.Iterator;
 import java.util.Map;
 
 @Component
@@ -16,7 +14,6 @@ import java.util.Map;
 public class CombatTimeoutScheduler {
 
     private final CombatService combatService;
-    private final PersonnageRepository personnageRepository;
 
     @Scheduled(fixedRate = 60000)
     public void checkAndTimeoutCombats() {

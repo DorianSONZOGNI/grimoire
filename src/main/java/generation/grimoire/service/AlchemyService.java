@@ -18,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @Service
 public class AlchemyService {
@@ -46,11 +45,11 @@ public class AlchemyService {
     }
 
     public AlchemyRecipe saveRecipe(AlchemyRecipe recipe) {
-        return recipeRepository.save(recipe);
+        return recipeRepository.save(java.util.Objects.requireNonNull(recipe));
     }
 
     public void deleteRecipe(Long id) {
-        recipeRepository.deleteById(id);
+        recipeRepository.deleteById(java.util.Objects.requireNonNull(id));
     }
 
     @Transactional
@@ -58,7 +57,7 @@ public class AlchemyService {
         AppUser user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
 
-        AlchemyRecipe recipe = recipeRepository.findById(recipeId)
+        AlchemyRecipe recipe = recipeRepository.findById(java.util.Objects.requireNonNull(recipeId))
                 .orElseThrow(() -> new RuntimeException("Recette introuvable"));
 
         // Vérification de la progression des secrets si la recette débloque un secret
@@ -169,7 +168,7 @@ public class AlchemyService {
             equipmentRepository.deleteAll(toDeleteConsumables);
         }
 
-        userRepository.save(user);
+        userRepository.save(java.util.Objects.requireNonNull(user));
 
         // Attribution de la récompense
         return giveReward(username, recipe, crafterPersonnageId);

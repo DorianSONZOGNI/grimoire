@@ -5,6 +5,8 @@ import generation.grimoire.service.pve.CombatService;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+
+import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Component;
 import org.springframework.web.servlet.HandlerInterceptor;
 
@@ -17,12 +19,14 @@ public class CombatInterceptor implements HandlerInterceptor {
     private final CombatService combatService;
 
     @Override
-    public boolean preHandle(HttpServletRequest request, HttpServletResponse response, Object handler) throws Exception {
+    public boolean preHandle(@NonNull HttpServletRequest request,
+            @NonNull HttpServletResponse response,
+            @NonNull Object handler) throws Exception {
         String uri = request.getRequestURI();
-        
+
         // Exclude specific URIs
-        if (uri.startsWith("/api/combat/") || uri.startsWith("/api/auth/") || uri.startsWith("/css/") 
-            || uri.startsWith("/js/") || uri.startsWith("/images/")) {
+        if (uri.startsWith("/api/combat/") || uri.startsWith("/api/auth/") || uri.startsWith("/css/")
+                || uri.startsWith("/js/") || uri.startsWith("/images/")) {
             return true;
         }
 
@@ -33,7 +37,7 @@ public class CombatInterceptor implements HandlerInterceptor {
                 CombatSession session = entry.getValue();
                 boolean inCombat = session.getPlayers().stream()
                         .anyMatch(p -> p.getUser() != null && username.equals(p.getUser().getUsername()));
-                
+
                 if (inCombat && !session.isFinished()) {
                     if (uri.startsWith("/api/")) {
                         response.sendError(HttpServletResponse.SC_FORBIDDEN, "Vous êtes en combat, action interdite.");
@@ -45,7 +49,7 @@ public class CombatInterceptor implements HandlerInterceptor {
                 }
             }
         }
-        
+
         return true;
     }
 }

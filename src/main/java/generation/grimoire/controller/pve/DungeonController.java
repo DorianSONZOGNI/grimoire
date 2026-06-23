@@ -33,7 +33,8 @@ public class DungeonController {
     }
 
     @PostMapping("/{id}/unlock")
-    public ResponseEntity<?> unlockDungeon(@PathVariable Long id, Principal principal) {
+    public ResponseEntity<?> unlockDungeon(@PathVariable @org.springframework.lang.NonNull Long id,
+            Principal principal) {
         if (principal == null)
             return ResponseEntity.status(401).build();
 

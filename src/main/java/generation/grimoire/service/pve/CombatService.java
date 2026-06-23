@@ -1182,7 +1182,7 @@ public class CombatService {
                     default: penalty = 10; break;
                 }
                 
-                Personnage dbPersonnage = personnageRepository.findById(p.getId()).orElse(null);
+                Personnage dbPersonnage = personnageRepository.findById(java.util.Objects.requireNonNull(p.getId())).orElse(null);
                 if (dbPersonnage != null) {
                     dbPersonnage.setExperience(Math.max(0, dbPersonnage.getExperience() - penalty));
                     personnageRepository.save(dbPersonnage);
@@ -1467,7 +1467,7 @@ public class CombatService {
             session.setTotalGoldLostOnDefeat(goldLoss);
 
             if (!session.getPlayers().isEmpty() && session.getPlayers().get(0).getId() != null) {
-                Personnage dbP = personnageRepository.findById(session.getPlayers().get(0).getId()).orElse(null);
+                Personnage dbP = personnageRepository.findById(java.util.Objects.requireNonNull(session.getPlayers().get(0).getId())).orElse(null);
                 if (dbP != null && dbP.getUser() != null) {
                     generation.grimoire.entity.auth.AppUser user = dbP.getUser();
                     user.setMonnaie(Math.max(0, user.getMonnaie() - goldLoss));
