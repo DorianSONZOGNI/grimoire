@@ -101,6 +101,13 @@ public class CombatService {
             throw new RuntimeException("Ce donjon ne contient aucune salle.");
         }
 
+        // Validate character level
+        for (Personnage p : players) {
+            if (p.getVoieLevel() < d.getRecommendedLevel()) {
+                throw new RuntimeException("Le personnage " + p.getName() + " (Niv." + p.getVoieLevel() + ") n'a pas le niveau requis (" + d.getRecommendedLevel() + ") pour ce donjon.");
+            }
+        }
+
         String sessionId = UUID.randomUUID().toString();
         CombatSession session = new CombatSession(sessionId, d, players);
 

@@ -202,7 +202,7 @@ async function loadDungeons() {
                     const entryCostHtml = d.entryCostGold > 0 ? `<div style="color: #f59e0b; font-weight: 600; font-size: 0.9rem; margin-top: 0.5rem;"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">monetization_on</span> Co\u00fbt d'entr\u00e9e : ${d.entryCostGold} Or</div>` : '';
 
                     const cardHtml = `
-                        <div class="dungeon-card ${isLocked ? 'locked' : ''}" ${isLocked ? '' : `onclick="openPrepInterface(${d.id}, '${d.name.replace(/'/g, "\\'")}', '${sallesData}', ${d.maxHeroes || 1}, ${d.entryCostGold || 0})"`}>
+                        <div class="dungeon-card ${isLocked ? 'locked' : ''}" ${isLocked ? '' : `onclick="openPrepInterface(${d.id}, '${d.name.replace(/'/g, "\\'")}', '${sallesData}', ${d.maxHeroes || 1}, ${d.entryCostGold || 0}, ${d.recommendedLevel || 1})"`}>
                             ${lockedHtml}
                             <div class="dungeon-title">
                                 <span class="material-symbols-outlined">castle</span>
@@ -290,7 +290,7 @@ async function loadCharacters() {
                             <div style="color: #f8fafc; font-weight: 600; font-family: 'Outfit'; font-size: 1.1rem; display: flex; align-items: center;">
                                 ${c.name} ${iconsHtml}
                             </div>
-                            <div style="color: var(--text-muted); font-size: 0.85rem;">Niv. ${c.level || 1} \u2022 ${c.healthMax} PV max</div>
+                            <div style="color: var(--text-muted); font-size: 0.85rem;">Niv. ${c.voieLevel || 1} • ${c.healthMax} PV max</div>
                         </div>
                     </div>
                 `;
@@ -473,12 +473,13 @@ window.selectCharacter = async function (id) {
     }
 };
 
-window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost) {
+window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost, reqLevel) {
     currentDungeonId = id;
     selectedCharIds = [];
     selectedConsumableIds = [];
     currentMaxHeroes = maxHeroes || 1;
     window.currentDungeonEntryCost = entryCost || 0;
+    window.currentDungeonReqLevel = reqLevel || 1;
 
     document.getElementById('prepDungeonTitle').textContent = `${name} (Max: ${currentMaxHeroes} h\u00e9ros)`;
 
@@ -514,10 +515,30 @@ window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost)
         list.innerHTML = html;
     }
 
-    document.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected'));
+    document.querySelectorAll('.char-card').forEach(c => {
+        c.classList.remove('selected');
+        c.classList.remove('locked');
+        c.style.opacity = '1';
+        c.style.pointerEvents = 'all';
+    });
+    
+    // Grey out characters with level < window.currentDungeonReqLevel
+    userCharacters.forEach(c => {
+        const charLevel = c.voieLevel || 1;
+        if (charLevel < window.currentDungeonReqLevel) {
+            const card = document.getElementById('charCard_' + c.id);
+            if (card) {
+                card.classList.add('locked');
+                card.style.opacity = '0.4';
+                card.style.pointerEvents = 'none';
+                card.title = `Niveau ${window.currentDungeonReqLevel} requis`;
+            }
+        }
+    });
+
     document.getElementById('prepStatEmpty').style.display = 'flex';
     document.getElementById('prepStatGrid').style.display = 'none';
-    document.getElementById('prepEquipList').innerHTML = '<div style="color: var(--text-muted); font-size: 0.9rem;">Aucun \u00e9quipement \u00e0 afficher.</div>';
+    document.getElementById('prepEquipList').innerHTML = '<div style="color: var(--text-muted); font-size: 0.9rem;">Aucun équipement à afficher.</div>';
 
     const btn = document.getElementById('btnEnterDungeon');
     if (btn) {
