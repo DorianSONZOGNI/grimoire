@@ -288,8 +288,11 @@ window.closeBuyModal = closeBuyModal;
 window.showGlobalTooltip = ui.showGlobalTooltip;
 window.hideGlobalTooltip = ui.hideGlobalTooltip;
 
+let isFleeing = false;
+
 window.fleeCombatAction = async function() {
     try {
+        isFleeing = true;
         const btn = document.querySelector('#fleeConfirmModal button:last-child');
         if (btn) {
             btn.disabled = true;
@@ -297,6 +300,7 @@ window.fleeCombatAction = async function() {
         }
         const res = await fetch(`/api/pve/combat/${sessionId}/flee`, { method: 'POST' });
         if (!res.ok) {
+            isFleeing = false;
             const err = await res.text();
             alert("Erreur lors de la fuite : " + err);
             if (btn) {
@@ -365,7 +369,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
 // Anti-Ragequit: Warn user if trying to leave while in combat
 window.addEventListener('beforeunload', function (e) {
-    if (sessionId && currentSessionData && !currentSessionData.finished) {
+    if (!isFleeing && sessionId && currentSessionData && !currentSessionData.finished) {
         e.preventDefault();
         e.returnValue = "Vous êtes en combat ! Quitter maintenant comptera comme une défaite ou un abandon pénalisé.";
         return e.returnValue;
