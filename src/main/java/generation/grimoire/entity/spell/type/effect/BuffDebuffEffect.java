@@ -69,6 +69,22 @@ public class BuffDebuffEffect extends SpellEffect {
 
     @Override
     public void apply(Personnage caster, Personnage target) {
+        if (statAffected == StatType.AME_DETACHEE) {
+            java.util.Optional<BuffDebuffEffect> existing = target.getActiveBuffs().stream()
+                .filter(b -> b.getStatAffected() == StatType.AME_DETACHEE)
+                .findFirst();
+            if (existing.isPresent()) {
+                existing.get().setDuration(2);
+                System.out.println(target.getName() + " réinitialise son Âme Détachée à 2 tours.");
+            } else {
+                BuffDebuffEffect clone = this.cloneEffect();
+                clone.setDuration(2);
+                target.getActiveBuffs().add(clone);
+                System.out.println(target.getName() + " reçoit l'état Âme Détachée pour 2 tours.");
+            }
+            return;
+        }
+
         if (!impactedSpells.isEmpty()) {
             for (Spell spell : impactedSpells) {
                 System.out.println("Buff/Débuff sur le sort : " + spell.getNom());

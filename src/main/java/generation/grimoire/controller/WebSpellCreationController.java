@@ -902,6 +902,7 @@ public class WebSpellCreationController {
                     effect.setEffectTarget(
                             eDto.getEffectTarget() != null ? eDto.getEffectTarget() : EffectTarget.TARGET);
                     effect.setRequiredChoiceKey(eDto.getRequiredChoiceKey());
+                    effect.setDetachedSoulRequirement(eDto.getDetachedSoulRequirement() != null ? eDto.getDetachedSoulRequirement() : generation.grimoire.enumeration.DetachedSoulRequirement.NOT_AFFECTED);
                     if (eDto.getChannelingTurns() != null) {
                         effect.setChannelingTurns(new java.util.ArrayList<>(eDto.getChannelingTurns()));
                     }
@@ -958,6 +959,7 @@ public class WebSpellCreationController {
         private StatType statAffected;
         private Source source;
         private Integer requiredChoiceKey;
+        private generation.grimoire.enumeration.DetachedSoulRequirement detachedSoulRequirement;
         private List<Integer> channelingTurns = new ArrayList<>();
     }
 

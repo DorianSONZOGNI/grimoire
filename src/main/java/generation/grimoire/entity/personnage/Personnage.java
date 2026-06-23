@@ -705,6 +705,14 @@ public class Personnage {
                 .filter(buff -> buff.affectsStatType(statType) && buff.getFlatValue() == 0)
                 .mapToDouble(BuffDebuffEffect::getModifier)
                 .sum();
+                
+        if (statType == StatType.DAMAGE_GIVEN_PHYSIC) {
+            boolean hasAmeDetachee = activeBuffs.stream().anyMatch(b -> b.getStatAffected() == StatType.AME_DETACHEE);
+            if (hasAmeDetachee) {
+                totalModifier += 0.40;
+            }
+        }
+                
         return 1.0 + totalModifier;
     }
 
@@ -713,6 +721,13 @@ public class Personnage {
                 .filter(buff -> buff.affectsStatType(statType) && buff.getFlatValue() != 0)
                 .mapToInt(BuffDebuffEffect::getFlatValue)
                 .sum();
+                
+        if (statType == StatType.DAMAGE_GIVEN_PHYSIC) {
+            boolean hasAmeDetachee = activeBuffs.stream().anyMatch(b -> b.getStatAffected() == StatType.AME_DETACHEE);
+            if (hasAmeDetachee) {
+                buffBonus += 5;
+            }
+        }
         int passiveBonus = getPassiveState("stat_flat_" + statType.name(), 0);
         
         int equipmentBonus = 0;

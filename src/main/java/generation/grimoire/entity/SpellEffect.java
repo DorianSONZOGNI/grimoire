@@ -32,6 +32,10 @@ public abstract class SpellEffect {
     @Column(name = "required_choice_key")
     private Integer requiredChoiceKey;
 
+    @Enumerated(EnumType.STRING)
+    @Column(name = "detached_soul_req")
+    private generation.grimoire.enumeration.DetachedSoulRequirement detachedSoulRequirement = generation.grimoire.enumeration.DetachedSoulRequirement.NOT_AFFECTED;
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "spell_effect_channeling_turns", joinColumns = @JoinColumn(name = "spell_effect_id"))
     @Column(name = "turn")
