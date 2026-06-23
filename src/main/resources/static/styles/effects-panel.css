@@ -227,6 +227,7 @@
             cursor: help;
         }
 
-#globalSpellTooltip .effect-line{
+#globalSpellTooltip .effect-line, #globalFixedTooltip .effect-line{
             flex-wrap: nowrap !important;
+            white-space: nowrap !important;
         }
