@@ -345,6 +345,13 @@ export function getSpellEffectsSummaryHtml(sp) {
                     }
                 }
 
+                let dsBadge = '';
+                if (e.detachedSoulRequirement === 'REQUIRED') {
+                    dsBadge = `<span style="background:rgba(16,185,129,0.2); color:#10b981; padding:0.1rem 0.3rem; border-radius:3px; font-size:0.75rem; font-weight:bold; display:inline-flex; align-items:center; gap:0.1rem;" title="Requiert l'Âme Détachée"><span class="material-symbols-outlined" style="font-size:1rem;">hand_bones</span>Requis</span>`;
+                } else if (e.detachedSoulRequirement === 'FORBIDDEN') {
+                    dsBadge = `<span style="background:rgba(239,68,68,0.2); color:#ef4444; padding:0.1rem 0.3rem; border-radius:3px; font-size:0.75rem; font-weight:bold; display:inline-flex; align-items:center; gap:0.1rem;" title="Exclut l'Âme Détachée"><span class="material-symbols-outlined" style="font-size:1rem;">hand_bones</span>Exclu</span>`;
+                }
+
                 let statIconHtml = '';
                 if (['BuffDebuff', 'BUFF_DEBUFF'].includes(t) && e.statAffected) {
                     const sa = e.statAffected.toUpperCase();
@@ -385,6 +392,7 @@ export function getSpellEffectsSummaryHtml(sp) {
                             ${statIconHtml}
                             ${turnBadge}
                             ${keyBadge}
+                            ${dsBadge}
                             <span style="font-weight:600; color:#fff;">[${targetText}]</span>
                             <span style="color:var(--spell-color, #38bdf8); font-weight:500;">${eTypeStr}</span>
                             <span style="color:#e2e8f0;">${detailsStr}</span>
@@ -665,6 +673,12 @@ export function editSpell(id) {
             detachedSoulRequirement: e.detachedSoulRequirement || 'NOT_AFFECTED',
             channelingTurns: e.channelingTurns || [1]
         };
+    });
+
+    state.currentEffects.sort((a, b) => {
+        if (a.effectType === 'AME_DETACHEE' && b.effectType !== 'AME_DETACHEE') return -1;
+        if (b.effectType === 'AME_DETACHEE' && a.effectType !== 'AME_DETACHEE') return 1;
+        return 0;
     });
 
     // Fallback pour la chaleur de la destruction si non présente dans les effets

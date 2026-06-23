@@ -256,6 +256,11 @@ export function addEffectPanel(type) {
     else if (type === 'AME_DETACHEE') stat = 'AME_DETACHEE';
     else stat = 'ARMURE';
 
+    if (type === 'AME_DETACHEE' && state.currentEffects.some(e => e.effectType === 'AME_DETACHEE')) {
+        alert("L'effet Âme Détachée ne peut être ajouté qu'une seule fois par sort.");
+        return;
+    }
+
     const effectObj = {
         id: Date.now() + Math.random(),
         effectType: type,
@@ -275,7 +280,11 @@ export function addEffectPanel(type) {
         channelingTurns: [1]
     };
 
-    state.currentEffects.push(effectObj);
+    if (type === 'AME_DETACHEE') {
+        state.currentEffects.unshift(effectObj);
+    } else {
+        state.currentEffects.push(effectObj);
+    }
     renderEffects();
 }
 
@@ -357,7 +366,8 @@ export function renderEffects() {
             'HEAT_PERCENTAGE': 'Chaleur %',
             'HEAT_OVER_TIME': 'Chaleur Tick',
             'POISON': 'Poison',
-            'BURN': 'Brûlure'
+            'BURN': 'Brûlure',
+            'AME_DETACHEE': 'Âme Détachée'
         };
         const typeLabel = labelObj ? labelObj.label : (customLabels[eff.effectType] || eff.effectType);
 
@@ -653,6 +663,12 @@ export function renderEffects() {
                             </div>
                         </div>
                     `;
+        } else if (eff.effectType === 'AME_DETACHEE') {
+            fieldsHtml = `
+                        <div style="padding: 0.5rem; background: rgba(244, 63, 94, 0.1); border-left: 3px solid #f43f5e; border-radius: 4px; font-size: 0.85rem; color: #fda4af;">
+                            ✨ Confère au lanceur +5 Dégâts Physiques et +40% de Dégâts Physiques supplémentaires pendant 2 tours.
+                        </div>
+                    `;
         }
 
         let typeBadgeStyle = 'background: rgba(255,255,255,0.05); color: #fff; border-color: var(--glass-border);';
@@ -735,7 +751,7 @@ export function renderEffects() {
                         <div style="margin-top: 0.8rem; display: flex; flex-direction: column; gap: 0.4rem; padding-top: 0.5rem; border-top: 1px dashed rgba(255,255,255,0.05);">
                             <div style="display: flex; align-items: center; justify-content: space-between;">
                                 <label style="color: #fda4af; font-weight: 600; font-size: 0.85rem; display: flex; align-items: center; gap: 0.3rem;">
-                                    <span class="material-symbols-outlined" style="font-size: 1.1rem;">dark_mode</span> Condition "Âme Détachée"
+                                    <span class="material-symbols-outlined" style="font-size: 1.1rem;">hand_bones</span> Condition "Âme Détachée"
                                 </label>
                                 ${(() => {
                                     const r = eff.detachedSoulRequirement || 'NOT_AFFECTED';
