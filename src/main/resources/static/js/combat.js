@@ -2099,6 +2099,12 @@ function generateFighterHtml(c, isHero) {
         statsHtml += `<span class="hero-stat-chip" title="${title}" style="border-color: ${borderColor}; color: ${color};"><span class="material-symbols-outlined" style="color: inherit;">${icon}</span>${text}</span>`;
     }
 
+    const ameDetacheeBuff = (c.activeBuffs || c.buffs || []).find(b => b.statAffected === 'AME_DETACHEE' || b.effectType === 'AME_DETACHEE');
+    if (ameDetacheeBuff) {
+        const turns = ameDetacheeBuff.duration;
+        statsHtml += `<span class="hero-stat-chip" title="Âme Détachée (+5 Dégâts Phys. et +40% Dégâts Phys.) - Reste ${turns} tour(s)" style="border-color: rgba(244, 63, 94, 0.4); color: #fda4af;"><span class="material-symbols-outlined" style="color: inherit;">hand_bones</span>${turns}</span>`;
+    }
+
     statsHtml += `</div>`;
 
     let specialItemsHtml = '';
@@ -2267,6 +2273,8 @@ function renderBuffsHtml(buffList) {
     const badBuffs = [];
 
     buffList.forEach(b => {
+        if (b.statAffected === 'AME_DETACHEE' || b.effectType === 'AME_DETACHEE') return;
+
         const inverseStats = ['DAMAGE_TAKEN_MAGIC', 'DAMAGE_TAKEN_PHYSIC', 'DAMAGE_TAKEN_BRUT', 'SHIELD_PIERCED', 'BURN', 'POISON'];
         const isInverse = inverseStats.includes(b.statAffected);
         const isNegativeValue = b.modifier < 0 || b.flatValue < 0;
