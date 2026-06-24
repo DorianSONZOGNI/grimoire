@@ -2162,7 +2162,7 @@ function generateFighterHtml(c, isHero) {
         if (c.behavior && c.behavior !== 'NORMAL') {
             const behaviorTitles = {
                 'PREDATEUR': "Prédateur : Verrouille une cible et l'attaque jusqu'à sa mort.",
-                'CORRUPTEUR': "Corrupteur : Cible toujours le joueur avec le plus de Mana.",
+                'CORRUPTEUR': "Corrupteur : Cible toujours le joueur avec le plus de Mana et lui retire 5% Mana Act.",
                 'LEADER': "Leader : Ordonne à tous les autres monstres d'attaquer sa cible.",
                 'ASSASSIN': "Assassin : Vise systématiquement le joueur avec le moins de Résistance.",
                 'INSENSIBLE': "Insensible : Ses attaques infligent des dégâts bruts (ignore l'armure)."

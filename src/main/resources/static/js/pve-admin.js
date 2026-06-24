@@ -1517,22 +1517,22 @@ async function loadEquipments() {
     }
 }
 
-window.toggleFilterLevelSelect = function() {
+window.toggleFilterLevelSelect = function () {
     document.getElementById('mLevelFilterWrapper').classList.toggle('open');
 };
 
-window.selectFilterLevelOption = function(val, label, color, icon) {
+window.selectFilterLevelOption = function (val, label, color, icon) {
     document.getElementById('monsterLevelFilter').value = val;
     document.getElementById('mLevelFilterTrigger').innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: ${color}; font-size: 1.1rem;">${icon}</span> <span style="flex:1; text-align:center;">${label}</span>`;
     document.getElementById('mLevelFilterWrapper').classList.remove('open');
     window.renderMonstersList();
 };
 
-window.toggleSortSelect = function() {
+window.toggleSortSelect = function () {
     document.getElementById('mSortWrapper').classList.toggle('open');
 };
 
-window.selectSortOption = function(val, label, icon, color) {
+window.selectSortOption = function (val, label, icon, color) {
     document.getElementById('monsterSort').value = val;
     let extraStyle = '';
     if (val === 'name_desc') extraStyle = 'transform: scaleY(-1);';
@@ -1582,7 +1582,7 @@ window.renderMonstersList = function () {
                 <div style="font-size: 0.8rem; color: #94a3b8; margin-bottom: 0.5rem;">${m.description || ''}</div>
                 <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.5rem;">
                     ${m.monsterType && m.monsterType !== 'NORMAL' ? `<span title="${{ 'DEMON': 'Démon : 10% des dégâts infligés le sont en dégâts bruts supplémentaires.', 'REPTILE': 'Reptile : Réduit les dégâts physiques subis de 15%.', 'MORT_VIVANT': 'Mort-vivant : Régénère 5% de ses PV max au début de son tour.', 'HYBRIDE': 'Hybride : Utilise la plus haute valeur entre Force et Puissance pour attaquer.', 'VAMPIRE': 'Vampire : Se soigne de 20% des dégâts infligés.' }[m.monsterType] || ''}" style="cursor: help; font-size: 0.75rem; background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined" style="font-size: 0.9rem;">${{ 'DEMON': 'rib_cage', 'REPTILE': 'grass', 'MORT_VIVANT': 'skull', 'HYBRIDE': 'network_node', 'VAMPIRE': 'bloodtype' }[m.monsterType] || 'check_box_outline_blank'}</span>${{ 'DEMON': 'Démon', 'REPTILE': 'Reptile', 'MORT_VIVANT': 'Mort-vivant', 'HYBRIDE': 'Hybride', 'VAMPIRE': 'Vampire' }[m.monsterType] || m.monsterType}</span>` : ''}
-                    ${m.behavior && m.behavior !== 'NORMAL' ? `<span title="${{ 'PREDATEUR': 'Prédateur : Verrouille une cible et l&apos;attaque jusqu&apos;à sa mort.', 'CORRUPTEUR': 'Corrupteur : Cible toujours le joueur avec le plus de Mana.', 'LEADER': 'Leader : Ordonne à tous les autres monstres d&apos;attaquer sa cible.', 'ASSASSIN': 'Assassin : Vise systématiquement le joueur avec le moins de Résistance.', 'INSENSIBLE': 'Insensible : Ses attaques infligent des dégâts bruts (ignore l&apos;armure).' }[m.behavior] || ''}" style="cursor: help; font-size: 0.75rem; background: rgba(139, 92, 246, 0.15); color: #8b5cf6; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(139, 92, 246, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined" style="font-size: 0.9rem;">${{ 'PREDATEUR': 'track_changes', 'CORRUPTEUR': 'allergy', 'LEADER': 'crown', 'ASSASSIN': 'gps_fixed', 'INSENSIBLE': 'shield' }[m.behavior] || 'check_box_outline_blank'}</span>${{ 'PREDATEUR': 'Prédateur', 'CORRUPTEUR': 'Corrupteur', 'LEADER': 'Leader', 'ASSASSIN': 'Assassin', 'INSENSIBLE': 'Insensible' }[m.behavior] || m.behavior}</span>` : ''}
+                    ${m.behavior && m.behavior !== 'NORMAL' ? `<span title="${{ 'PREDATEUR': 'Prédateur : Verrouille une cible et l&apos;attaque jusqu&apos;à sa mort.', 'CORRUPTEUR': 'Corrupteur : Cible toujours le joueur avec le plus de Mana et lui retire 5% Mana Act.', 'LEADER': 'Leader : Ordonne à tous les autres monstres d&apos;attaquer sa cible.', 'ASSASSIN': 'Assassin : Vise systématiquement le joueur avec le moins de Résistance.', 'INSENSIBLE': 'Insensible : Ses attaques infligent des dégâts bruts (ignore l&apos;armure).' }[m.behavior] || ''}" style="cursor: help; font-size: 0.75rem; background: rgba(139, 92, 246, 0.15); color: #8b5cf6; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(139, 92, 246, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined" style="font-size: 0.9rem;">${{ 'PREDATEUR': 'track_changes', 'CORRUPTEUR': 'allergy', 'LEADER': 'crown', 'ASSASSIN': 'gps_fixed', 'INSENSIBLE': 'shield' }[m.behavior] || 'check_box_outline_blank'}</span>${{ 'PREDATEUR': 'Prédateur', 'CORRUPTEUR': 'Corrupteur', 'LEADER': 'Leader', 'ASSASSIN': 'Assassin', 'INSENSIBLE': 'Insensible' }[m.behavior] || m.behavior}</span>` : ''}
                 </div>
                 <div class="monster-card-stats">
                     <span style="display: flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined" style="font-size: 1rem; color: #ec4899;">favorite</span> PV: ${m.healthMax}</span>
@@ -1708,7 +1708,7 @@ async function loadDungeons() {
     }
 }
 
-window.renderDungeonsList = function() {
+window.renderDungeonsList = function () {
     const list = document.getElementById('dungeonsList');
     if (!list) return;
 

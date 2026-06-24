@@ -1430,6 +1430,15 @@ public class CombatService {
                                         + poisonDmg + " dégâts par tour)");
                             }
 
+                            // === COMPORTEMENT : CORRUPTEUR — Drain de mana ===
+                            if (behavior == MonsterBehavior.CORRUPTEUR) {
+                                int manaLoss = (int) Math.floor(targetPlayer.getManaCurrent() * 0.05);
+                                if (manaLoss > 0) {
+                                    targetPlayer.setManaCurrent(Math.max(0, targetPlayer.getManaCurrent() - manaLoss));
+                                    session.addLog("🦇 " + targetPlayer.getName() + " perd " + manaLoss + " points de mana ! (Corrupteur)");
+                                }
+                            }
+
                             // === PASSIF TYPE : DEMON — 10% dégâts bruts supplémentaires ===
                             if (mType == MonsterType.DEMON) {
                                 int brutDmg = (int) Math.ceil(monsterDmg * 0.10);
