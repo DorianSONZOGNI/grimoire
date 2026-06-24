@@ -21,6 +21,14 @@ function getCurrentWeight() {
         .reduce((sum, c) => sum + (c.weight || 0), 0);
 }
 
+function updateHeroCountDisplay() {
+    const el = document.getElementById('heroCountDisplay');
+    if (el) {
+        el.innerText = `(${selectedCharIds.length} / ${currentMaxHeroes})`;
+        el.style.color = selectedCharIds.length === currentMaxHeroes ? '#10b981' : '#94a3b8';
+    }
+}
+
 let userCharacters = [];
 let availableConsumables = [];
 
@@ -402,6 +410,7 @@ window.selectCharacter = async function (id) {
     }
     
     renderConsumablesList();
+    updateHeroCountDisplay();
 
     document.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected'));
     selectedCharIds.forEach(cid => {
@@ -508,6 +517,8 @@ window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost,
     currentMaxHeroes = maxHeroes || 1;
     window.currentDungeonEntryCost = entryCost || 0;
     window.currentDungeonReqLevel = reqLevel || 1;
+
+    updateHeroCountDisplay();
 
     document.getElementById('prepDungeonTitle').textContent = `${name} (Max: ${currentMaxHeroes} h\u00e9ros)`;
 
