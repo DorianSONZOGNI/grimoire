@@ -430,6 +430,7 @@ public class WebSpellCreationController {
                 && p.getSpiritualite().getNom().toLowerCase().contains("karma"));
         cs.setKarmaGauge(p.getPassiveState("karma_gauge", 0));
         cs.setKarmaLocked(p.getPassiveState("karma_locked", 0) == 1);
+        cs.setKarmaLockedDuration(p.getPassiveState("karma_locked_duration", 0));
         cs.setKarmaHarmony(p.getPassiveState("karma_harmony", 0) == 1);
 
         // Stats
@@ -1010,6 +1011,7 @@ public class WebSpellCreationController {
         private boolean hasKarma;
         private int karmaGauge;
         private boolean karmaLocked, karmaHarmony;
+        private int karmaLockedDuration;
         // Stats effectives
         private int power, strength, armor, resistance, speed, crit;
         // Stats de base

@@ -451,7 +451,7 @@
         }
 
 /* Custom Select Scrollbar */
-.custom-select-options::-webkit-scrollbar{
+.custom-select-options { scrollbar-width: thin; scrollbar-color: rgba(255, 255, 255, 0.2) rgba(0, 0, 0, 0.2); } .custom-select-options::-webkit-scrollbar{
     width: 6px;
 }
 

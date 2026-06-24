@@ -163,7 +163,7 @@ public class KarmaPassiveEffect extends SpiritualitePassiveEffect {
             
             if (sameId || sameName) {
                 if (caster.getPassiveState("karma_locked", 0) == 1) {
-                    if (spell.getKarmaAlignment() != generation.grimoire.enumeration.KarmaAlignment.RESTORATIVE) {
+                    if (spell.getKarmaAlignment() != generation.grimoire.enumeration.KarmaAlignment.RESTORATIVE && (spell.getNom() == null || !spell.getNom().toLowerCase().contains("harmonie"))) {
                         System.out.println("🚫 " + caster.getName()
                                 + " ne peut plus lancer de sorts du Karma (Voie verrouillée par Corruption/Illumination).");
                         return false;

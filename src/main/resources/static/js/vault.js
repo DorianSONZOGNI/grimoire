@@ -38,12 +38,13 @@ const WEIGHT_LIMITS = {
     ANNEAU_GAUCHE: { COMMUN: 2, RARE: 3, LEGENDAIRE: 5, EPIQUE: 7, RELIQUE: 8 },
     ANNEAU_DROIT: { COMMUN: 2, RARE: 3, LEGENDAIRE: 5, EPIQUE: 7, RELIQUE: 8 },
     BOTTES: { COMMUN: 4, RARE: 7, LEGENDAIRE: 11, EPIQUE: 16, RELIQUE: 20 },
-    CAPE: { COMMUN: 5, RARE: 9, LEGENDAIRE: 14, EPIQUE: 20, RELIQUE: 24 }
+    CAPE: { COMMUN: 5, RARE: 9, LEGENDAIRE: 14, EPIQUE: 20, RELIQUE: 24 },
+    CONSOMMABLE: { COMMUN: 5, RARE: 9, LEGENDAIRE: 14, EPIQUE: 20, RELIQUE: 24 }
 };
 
 function calculateWeight(eq) {
     if (eq.isAnomalie) return 0;
-    let w = 0;
+    let w = eq.baseWeight || 0;
     w += (eq.bonusHealthMax || 0) * 0.2;
     w += (eq.bonusManaMax || 0) * 0.2;
     w += (eq.bonusPower || 0) * 2.0;
@@ -464,9 +465,9 @@ function renderGrid(equipments) {
                 ${effectHtml}
                 
                 <div class="vault-card-footer">
-                    <div class="vault-card-weight" title="Poids total / Poids Max (${maxWeight})">
-                        <span class="material-symbols-outlined" style="font-size: 1.1rem; color: ${weightColor};">scale</span>
-                        <span style="color: ${weightColor}; font-weight: 600;">${weightStr}</span> / ${maxWeight} pts
+                    <div class="vault-card-weight" title="${eq.slot === 'CONSOMMABLE' ? 'Poids total' : `Poids total / Poids Max (${maxWeight})`}">
+                        <span class="material-symbols-outlined" style="font-size: 1.1rem; color: ${eq.slot === 'CONSOMMABLE' ? '#10b981' : weightColor};">scale</span>
+                        <span style="color: ${eq.slot === 'CONSOMMABLE' ? '#10b981' : weightColor}; font-weight: 600;">${weightStr}</span>${eq.slot === 'CONSOMMABLE' ? ' pts' : ` / ${maxWeight} pts`}
                     </div>
                     ${statusHtml}
                 </div>
@@ -477,7 +478,7 @@ function renderGrid(equipments) {
 // Init
 window.addEventListener('DOMContentLoaded', () => {
     // Listeners for Weight Calculation
-    const eqInputs = ['eqSlot', 'eqRarity', 'eqHp', 'eqMana', 'eqPower', 'eqStr', 'eqArmor', 'eqRes', 'eqSpeed', 'eqCrit', 'eqRegenHp', 'eqRegenMana', 'eqSpecialEffectValue'];
+    const eqInputs = ['eqSlot', 'eqRarity', 'eqHp', 'eqMana', 'eqPower', 'eqStr', 'eqArmor', 'eqRes', 'eqSpeed', 'eqCrit', 'eqRegenHp', 'eqRegenMana', 'eqSpecialEffectValue', 'eqBaseWeight'];
     eqInputs.forEach(id => {
         const el = document.getElementById(id);
         if (el) {
@@ -489,7 +490,7 @@ window.addEventListener('DOMContentLoaded', () => {
     // Render create form slot select
     const slotOptionsContainer = document.getElementById('eqSlotOptions');
     if (slotOptionsContainer) {
-        const slots = ['CASQUE', 'PLASTRON', 'ANNEAU_GAUCHE', 'ANNEAU_DROIT', 'BOTTES', 'CAPE'];
+        const slots = ['CASQUE', 'PLASTRON', 'ANNEAU_GAUCHE', 'ANNEAU_DROIT', 'BOTTES', 'CAPE', 'CONSOMMABLE'];
         slotOptionsContainer.innerHTML = slots.map(s => {
             const info = SLOT_LABELS[s];
             return `<div class="custom-option" data-value="${s}">
@@ -548,6 +549,7 @@ function resetEqForm() {
     document.getElementById('eqCrit').value = 0;
     document.getElementById('eqRegenHp').value = 0;
     document.getElementById('eqRegenMana').value = 0;
+    if(document.getElementById('eqBaseWeight')) document.getElementById('eqBaseWeight').value = 0;
 
     // Reset Rarity
     const rarityInput = document.getElementById('eqRarity');
@@ -593,6 +595,7 @@ window.editEquipment = function (id) {
     document.getElementById('eqCrit').value = eq.bonusCrit || 0;
     document.getElementById('eqRegenHp').value = eq.regenHealthPerTurn || 0;
     document.getElementById('eqRegenMana').value = eq.regenManaPerTurn || 0;
+    if(document.getElementById('eqBaseWeight')) document.getElementById('eqBaseWeight').value = eq.baseWeight || 0;
 
     // Slot Setup
     const slotInput = document.getElementById('eqSlot');
@@ -828,6 +831,7 @@ window.submitEquipment = async function () {
         bonusCrit: parseInt(document.getElementById('eqCrit').value) || 0,
         regenHealthPerTurn: parseInt(document.getElementById('eqRegenHp').value) || 0,
         regenManaPerTurn: parseInt(document.getElementById('eqRegenMana').value) || 0,
+        baseWeight: parseFloat(document.getElementById('eqBaseWeight')?.value) || 0,
         rarity,
         specialEffect,
         specialEffectValue,
@@ -867,6 +871,9 @@ function calculateEquipmentWeight() {
     w += (parseInt(document.getElementById('eqCrit').value) || 0) * 1.0;
     w += (parseInt(document.getElementById('eqRegenHp').value) || 0) * 1.0;
     w += (parseInt(document.getElementById('eqRegenMana').value) || 0) * 1.0;
+    
+    const baseWeightEl = document.getElementById('eqBaseWeight');
+    if (baseWeightEl) w += parseFloat(baseWeightEl.value) || 0;
 
     // Add special effect weight if Epic/Relic
     const rarity = document.getElementById('eqRarity').value;
@@ -881,9 +888,16 @@ function calculateEquipmentWeight() {
     return w;
 }
 
-window.updateWeightUI = function () {
+window.updateWeightUI = function() {
     const slot = document.getElementById('eqSlot').value;
     const rarity = document.getElementById('eqRarity').value;
+    if (!slot) return;
+
+    const row = document.getElementById('eqBaseWeightRow');
+    if (row) {
+        row.style.display = slot === 'CONSOMMABLE' ? 'flex' : 'none';
+    }
+
     const w = calculateEquipmentWeight();
 
     const limitsForSlot = WEIGHT_LIMITS[slot] || {};
@@ -894,14 +908,21 @@ window.updateWeightUI = function () {
 
     if (textEl) {
         const displayW = w % 1 === 0 ? w : w.toFixed(1);
-        textEl.innerText = `${displayW} / ${maxW}`;
+        if (slot === 'CONSOMMABLE') {
+            textEl.innerText = `${displayW}`;
+        } else {
+            textEl.innerText = `${displayW} / ${maxW}`;
+        }
     }
 
     if (fillEl) {
         let pct = (w / maxW) * 100;
         let color = '#10b981';
 
-        if (pct < 0) {
+        if (slot === 'CONSOMMABLE') {
+            pct = 0;
+            color = '#10b981';
+        } else if (pct < 0) {
             pct = Math.min(Math.abs(pct), 100);
             color = '#3b82f6';
         } else if (pct > 100) {

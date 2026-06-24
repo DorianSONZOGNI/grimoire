@@ -73,17 +73,17 @@ public class ShopController {
 
         // Consumables
         List<Map<String, Object>> consumables = List.of(
-                createConsumable("Corde", 15, "gesture", "rope", "Sert à éviter certains pièges"),
-                createConsumable("Clé", 25, "vpn_key", "key", "Ouvre les compartiments secrets des coffres"),
-                createConsumable("Pain", 5, "bakery_dining", "bread", "Régénère 25% de la vie max"),
-                createConsumable("Potion de mana", 10, "water_drop", "potion", "Régénère 25% du mana max"));
+                createConsumable("Corde", 15, "gesture", "rope", "Sert à éviter certains pièges", 5.0),
+                createConsumable("Clé", 25, "vpn_key", "key", "Ouvre les compartiments secrets des coffres", 1.0),
+                createConsumable("Pain", 5, "bakery_dining", "bread", "Régénère 25% de la vie max", 2.0),
+                createConsumable("Potion de mana", 10, "water_drop", "potion", "Régénère 25% du mana max", 2.0));
         response.put("consumables", consumables);
 
         return ResponseEntity.ok(response);
     }
 
     private Map<String, Object> createConsumable(String name, double price, String icon, String typeId,
-            String description) {
+            String description, double weight) {
         Map<String, Object> map = new HashMap<>();
         map.put("name", name);
         map.put("shopPrice", price);
@@ -92,6 +92,7 @@ public class ShopController {
         map.put("typeId", typeId); // ID for purchasing
         map.put("isConsumable", true);
         map.put("description", description);
+        map.put("weight", weight);
         return map;
     }
 
@@ -232,22 +233,27 @@ public class ShopController {
 
         String name = "";
         double price = 0;
+        double weight = 0;
         switch (type.toLowerCase()) {
             case "rope":
                 name = "Corde";
                 price = 15;
+                weight = 5.0;
                 break;
             case "key":
                 name = "Clé";
                 price = 25;
+                weight = 1.0;
                 break;
             case "bread":
                 name = "Pain";
                 price = 5;
+                weight = 2.0;
                 break;
             case "potion":
                 name = "Potion de mana";
                 price = 10;
+                weight = 2.0;
                 break;
             default:
                 return ResponseEntity.badRequest().body(Map.of("message", "Consommable inconnu."));
@@ -278,6 +284,7 @@ public class ShopController {
         consumable.setBonusCrit(0);
         consumable.setRegenHealthPerTurn(0);
         consumable.setRegenManaPerTurn(0);
+        consumable.setBaseWeight(weight);
         equipmentRepository.save(consumable);
 
         return ResponseEntity.ok(Map.of("message", "Achat réussi !"));
@@ -393,6 +400,7 @@ public class ShopController {
         map.put("shopPrice", calculateShopPrice(e));
         map.put("priceAnomalies", e.getPriceAnomalies());
         map.put("weight", e.calculateWeight());
+        map.put("baseWeight", e.getBaseWeight());
         return map;
     }
 
@@ -409,6 +417,7 @@ public class ShopController {
         eq.setBonusCrit(dto.getBonusCrit());
         eq.setRegenHealthPerTurn(dto.getRegenHealthPerTurn());
         eq.setRegenManaPerTurn(dto.getRegenManaPerTurn());
+        eq.setBaseWeight(dto.getBaseWeight());
         if (dto.getPriceAnomalies() != null) {
             eq.setPriceAnomalies(new HashMap<>(dto.getPriceAnomalies()));
         } else {

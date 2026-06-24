@@ -46,6 +46,9 @@ public class Equipment {
     private int regenHealthPerTurn = 0;
     private int regenManaPerTurn = 0;
 
+    // Poids de base pour les objets sans stats (ex: consommables)
+    private double baseWeight = 0.0;
+
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "personnage_id", nullable = true)
@@ -69,7 +72,7 @@ public class Equipment {
     private java.util.Map<String, Integer> priceAnomalies = new java.util.HashMap<>();
 
     public double calculateWeight() {
-        double w = 0.0;
+        double w = this.baseWeight;
         w += this.bonusHealthMax * 0.2;
         w += this.bonusManaMax * 0.2;
         w += this.bonusPower * 2.0;

@@ -36,6 +36,7 @@ const SLOT_LABELS = {
     ANNEAU_DROIT: { label: 'Anneau D.', icon: 'diamond', color: '#f59e0b' },
     BOTTES: { label: 'Bottes', icon: 'footprint', color: '#10b981' },
     CAPE: { label: 'Cape', icon: 'carpenter', color: '#ec4899' },
+    CONSOMMABLE: { label: 'Consommable', icon: 'inventory_2', color: '#854c4c' }
 };
 
 const STAT_DEFS = [
@@ -57,7 +58,8 @@ const WEIGHT_LIMITS = {
     ANNEAU_GAUCHE: { COMMUN: 2, RARE: 3, LEGENDAIRE: 5, EPIQUE: 7, RELIQUE: 8 },
     ANNEAU_DROIT: { COMMUN: 2, RARE: 3, LEGENDAIRE: 5, EPIQUE: 7, RELIQUE: 8 },
     BOTTES: { COMMUN: 4, RARE: 7, LEGENDAIRE: 11, EPIQUE: 16, RELIQUE: 20 },
-    CAPE: { COMMUN: 5, RARE: 9, LEGENDAIRE: 14, EPIQUE: 20, RELIQUE: 24 }
+    CAPE: { COMMUN: 5, RARE: 9, LEGENDAIRE: 14, EPIQUE: 20, RELIQUE: 24 },
+    CONSOMMABLE: { COMMUN: 5, RARE: 9, LEGENDAIRE: 14, EPIQUE: 20, RELIQUE: 24 }
 };
 
 function calculateEquipmentWeight() {
@@ -72,13 +74,19 @@ function calculateEquipmentWeight() {
     const regenHp = parseFloat(document.getElementById('eqRegenHp').value) || 0;
     const regenMana = parseFloat(document.getElementById('eqRegenMana').value) || 0;
     const effectValue = parseFloat(document.getElementById('eqSpecialEffectValue').value) || 0;
+    const baseWeightVal = parseFloat(document.getElementById('eqBaseWeight')?.value) || 0;
 
-    return (hp / 5) + (mana / 5) + (power / 2) + (str / 2) + (armor / 2) + (res / 2) + (speed * 2) + crit + regenHp + regenMana + effectValue;
+    return (hp / 5) + (mana / 5) + (power / 2) + (str / 2) + (armor / 2) + (res / 2) + (speed * 2) + crit + regenHp + regenMana + effectValue + baseWeightVal;
 }
 
 function updateWeightUI() {
     const slot = document.getElementById('eqSlot').value;
     const rarity = document.getElementById('eqRarity').value;
+    
+    const row = document.getElementById('eqBaseWeightRow');
+    if (row) {
+        row.style.display = slot === 'CONSOMMABLE' ? 'flex' : 'none';
+    }
     
     let maxWeight = 5; // Fallback
     if (slot && rarity && WEIGHT_LIMITS[slot] && WEIGHT_LIMITS[slot][rarity]) {
@@ -86,37 +94,49 @@ function updateWeightUI() {
     }
 
     const currentWeight = calculateEquipmentWeight();
-    const pct = maxWeight > 0 ? (currentWeight / maxWeight) * 100 : 0;
+    let pct = maxWeight > 0 ? (currentWeight / maxWeight) * 100 : 0;
     
     const textEl = document.getElementById('eqWeightText');
     const fillEl = document.getElementById('eqWeightFill');
     const btn = document.getElementById('submitEquipmentBtn');
     
     if (textEl && fillEl) {
-        // Format string to drop .0 if it's an integer
-        textEl.innerText = `${currentWeight % 1 === 0 ? currentWeight : currentWeight.toFixed(1)} / ${maxWeight}`;
-        fillEl.style.width = `${Math.min(pct, 100)}%`;
+        const displayW = currentWeight % 1 === 0 ? currentWeight : currentWeight.toFixed(1);
         
-        if (currentWeight > maxWeight) {
-            textEl.style.color = '#ef4444'; // Red
-            fillEl.style.background = '#ef4444';
-            if (btn) {
-                btn.style.opacity = '0.5';
-                btn.style.cursor = 'not-allowed';
-            }
-        } else if (pct > 80) {
-            textEl.style.color = '#f59e0b'; // Orange
-            fillEl.style.background = '#f59e0b';
+        if (slot === 'CONSOMMABLE') {
+            textEl.innerText = `${displayW}`;
+            fillEl.style.width = `0%`;
+            textEl.style.color = '#94a3b8'; // Normal
+            fillEl.style.background = '#10b981'; // Green
             if (btn) {
                 btn.style.opacity = '1';
                 btn.style.cursor = 'pointer';
             }
         } else {
-            textEl.style.color = '#10b981'; // Green
-            fillEl.style.background = '#10b981';
-            if (btn) {
-                btn.style.opacity = '1';
-                btn.style.cursor = 'pointer';
+            textEl.innerText = `${displayW} / ${maxWeight}`;
+            fillEl.style.width = `${Math.min(pct, 100)}%`;
+            
+            if (currentWeight > maxWeight) {
+                textEl.style.color = '#ef4444'; // Red
+                fillEl.style.background = '#ef4444';
+                if (btn) {
+                    btn.style.opacity = '0.5';
+                    btn.style.cursor = 'not-allowed';
+                }
+            } else if (pct > 80) {
+                textEl.style.color = '#f59e0b'; // Orange
+                fillEl.style.background = '#f59e0b';
+                if (btn) {
+                    btn.style.opacity = '1';
+                    btn.style.cursor = 'pointer';
+                }
+            } else {
+                textEl.style.color = '#94a3b8'; // Normal
+                fillEl.style.background = '#10b981'; // Green
+                if (btn) {
+                    btn.style.opacity = '1';
+                    btn.style.cursor = 'pointer';
+                }
             }
         }
     }
@@ -353,6 +373,7 @@ async function submitEquipment() {
         bonusCrit: parseInt(document.getElementById('eqCrit').value) || 0,
         regenHealthPerTurn: parseInt(document.getElementById('eqRegenHp').value) || 0,
         regenManaPerTurn: parseInt(document.getElementById('eqRegenMana').value) || 0,
+        baseWeight: parseFloat(document.getElementById('eqBaseWeight')?.value) || 0,
         rarity,
         specialEffect,
         specialEffectValue,
@@ -383,6 +404,7 @@ async function submitEquipment() {
         document.getElementById('eqCrit').value = 0;
         document.getElementById('eqRegenHp').value = 0;
         document.getElementById('eqRegenMana').value = 0;
+        if(document.getElementById('eqBaseWeight')) document.getElementById('eqBaseWeight').value = 0;
         document.getElementById('eqRarity').value = 'COMMUN';
         document.getElementById('eqSpecialEffect').value = 'NONE';
         document.getElementById('eqSpecialEffectValue').value = 0;
@@ -615,7 +637,7 @@ function renderPersonnages() {
         const persoEquips = allEquipments.filter(e => e.personnage && e.personnage.id === p.id);
         let equipHtml = '';
         if (persoEquips.length > 0) {
-            const slotOrder = ['CASQUE', 'PLASTRON', 'ANNEAU_GAUCHE', 'ANNEAU_DROIT', 'BOTTES', 'CAPE'];
+            const slotOrder = ['CASQUE', 'PLASTRON', 'ANNEAU_GAUCHE', 'ANNEAU_DROIT', 'BOTTES', 'CAPE', 'CONSOMMABLE'];
             equipHtml = `<div class="char-equip-row">` +
                 persoEquips.sort((a, b) => slotOrder.indexOf(a.slot) - slotOrder.indexOf(b.slot)).map(eq => {
                     const slotInfo = SLOT_LABELS[eq.slot] || { label: eq.slot, icon: 'help', color: '#94a3b8' };
@@ -1031,7 +1053,7 @@ document.addEventListener('click', (e) => {
 
 window.addEventListener('DOMContentLoaded', async () => {
     // Listeners for Weight Calculation
-    const eqInputs = ['eqSlot', 'eqRarity', 'eqHp', 'eqMana', 'eqPower', 'eqStr', 'eqArmor', 'eqRes', 'eqSpeed', 'eqCrit', 'eqRegenHp', 'eqRegenMana', 'eqSpecialEffectValue'];
+    const eqInputs = ['eqSlot', 'eqRarity', 'eqHp', 'eqMana', 'eqPower', 'eqStr', 'eqArmor', 'eqRes', 'eqSpeed', 'eqCrit', 'eqRegenHp', 'eqRegenMana', 'eqSpecialEffectValue', 'eqBaseWeight'];
     eqInputs.forEach(id => {
         const el = document.getElementById(id);
         if (el) {
