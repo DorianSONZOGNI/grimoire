@@ -127,6 +127,14 @@ public class CombatService {
             }
         }
 
+        double totalWeight = session.getActiveConsumables().stream()
+                .mapToDouble(generation.grimoire.entity.Equipment::calculateWeight)
+                .sum();
+        double maxWeight = 10.0 + 5.0 * players.size();
+        if (totalWeight > maxWeight) {
+            throw new IllegalArgumentException("Le poids total des objets d\u00e9passe la limite autoris\u00e9e (" + maxWeight + ").");
+        }
+
         handleRoomStart(session);
 
         activeSessions.put(sessionId, session);

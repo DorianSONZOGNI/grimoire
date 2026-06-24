@@ -10,7 +10,17 @@ let currentDungeonId = null;
 let selectedCharIds = [];
 let currentMaxHeroes = 1;
 let selectedConsumableIds = [];
-const MAX_CONSUMABLES = 4;
+
+function getMaxWeight() {
+    return 10 + 5 * selectedCharIds.length;
+}
+
+function getCurrentWeight() {
+    return availableConsumables
+        .filter(c => selectedConsumableIds.includes(c.id))
+        .reduce((sum, c) => sum + (c.weight || 0), 0);
+}
+
 let userCharacters = [];
 let availableConsumables = [];
 
@@ -317,9 +327,13 @@ function renderConsumablesList() {
     const list = document.getElementById('prepConsumableList');
     list.innerHTML = '';
 
-    const counterHtml = `<div style="text-align: center; margin-bottom: 0.8rem; font-size: 0.85rem; color: ${selectedConsumableIds.length >= MAX_CONSUMABLES ? '#ef4444' : '#94a3b8'};">
-        <span class="material-symbols-outlined" style="font-size: 0.9rem; vertical-align: middle;">backpack</span>
-        ${selectedConsumableIds.length} / ${MAX_CONSUMABLES} s\u00e9lectionn\u00e9s
+    const curWeight = getCurrentWeight();
+    const maxWeight = getMaxWeight();
+    const isOverweight = curWeight > maxWeight;
+
+    const counterHtml = `<div style="text-align: center; margin-bottom: 0.8rem; font-size: 0.85rem; color: ${isOverweight ? '#ef4444' : '#94a3b8'};">
+        <span class="material-symbols-outlined" style="font-size: 0.9rem; vertical-align: middle;">scale</span>
+        Poids: ${curWeight % 1 === 0 ? curWeight : curWeight.toFixed(1)} / ${maxWeight}
     </div>`;
 
     if (availableConsumables.length === 0) {
@@ -336,7 +350,10 @@ function renderConsumablesList() {
             <div class="consumable-card ${isSelected ? 'selected' : ''}" onclick="selectConsumable(${c.id})" style="position: relative; overflow: visible;">
                 <span class="material-symbols-outlined" style="font-size: 1.1rem; color: ${isSelected ? '#10b981' : '#854c4c'}; flex-shrink: 0;">inventory_2</span>
                 <div style="flex: 1; min-width: 0;">
-                    <div style="color: #f8fafc; font-weight: 600; font-size: 0.7rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${c.name}">${c.name}</div>
+                    <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div style="color: #f8fafc; font-weight: 600; font-size: 0.7rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${c.name}">${c.name}</div>
+                        <div style="color: #94a3b8; font-size: 0.65rem; font-weight: bold; background: rgba(0,0,0,0.3); padding: 0.1rem 0.3rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 0.1rem;"><span class="material-symbols-outlined" style="font-size: 0.7rem;">scale</span>${c.weight % 1 === 0 ? c.weight : Number(c.weight).toFixed(1)}</div>
+                    </div>
                     <div style="color: var(--text-muted); font-size: 0.75rem; display: flex; gap: 0.4rem; flex-wrap: wrap; overflow: visible; align-items: center; margin-top: 2px;">
                         ${c.bonusHealthMax ? `<span style="display:inline-flex; align-items:center; color:#ec4899;" title="PV">+${c.bonusHealthMax}<span class="material-symbols-outlined" style="font-size:0.8rem; margin-left:1px;">favorite</span></span>` : ''}
                         ${c.bonusManaMax ? `<span style="display:inline-flex; align-items:center; color:#38bdf8;" title="Mana">+${c.bonusManaMax}<span class="material-symbols-outlined" style="font-size:0.8rem; margin-left:1px;">water_drop</span></span>` : ''}
@@ -358,8 +375,10 @@ window.selectConsumable = function (id) {
     if (idx !== -1) {
         selectedConsumableIds.splice(idx, 1);
     } else {
-        if (selectedConsumableIds.length >= MAX_CONSUMABLES) {
-            showNotif(`Vous ne pouvez s\u00e9lectionner que ${MAX_CONSUMABLES} consommables maximum.`, true);
+        const c = availableConsumables.find(item => item.id === id);
+        const itemWeight = c ? (c.weight || 0) : 0;
+        if (getCurrentWeight() + itemWeight > getMaxWeight()) {
+            showNotif(`Le poids maximum serait d\u00e9pass\u00e9 !`, true);
             return;
         }
         selectedConsumableIds.push(id);
@@ -370,6 +389,10 @@ window.selectConsumable = function (id) {
 window.selectCharacter = async function (id) {
     if (selectedCharIds.includes(id)) {
         selectedCharIds = selectedCharIds.filter(cid => cid !== id);
+        if (getCurrentWeight() > getMaxWeight()) {
+            selectedConsumableIds = [];
+            showNotif(`Inventaire r\u00e9initialis\u00e9 car le poids max a diminu\u00e9.`, true);
+        }
     } else {
         if (selectedCharIds.length >= currentMaxHeroes) {
             showNotif(`Ce donjon est limit\u00e9 \u00e0 ${currentMaxHeroes} h\u00e9ros maximum.`, true);
@@ -377,6 +400,8 @@ window.selectCharacter = async function (id) {
         }
         selectedCharIds.push(id);
     }
+    
+    renderConsumablesList();
 
     document.querySelectorAll('.char-card').forEach(c => c.classList.remove('selected'));
     selectedCharIds.forEach(cid => {
