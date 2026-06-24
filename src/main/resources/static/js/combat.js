@@ -2151,11 +2151,12 @@ function generateFighterHtml(c, isHero) {
                 'REPTILE': 'Reptile : Réduit les dégâts physiques subis de 15%.',
                 'MORT_VIVANT': 'Mort-vivant : Régénère 5% de ses PV max au début de son tour.',
                 'HYBRIDE': 'Hybride : Utilise la plus haute valeur entre Force et Puissance pour attaquer.',
-                'VAMPIRE': 'Vampire : Se soigne de 20% des dégâts infligés.'
+                'VAMPIRE': 'Vampire : Se soigne de 20% des dégâts infligés.',
+                'ECTOPLASME': 'Ectoplasme : Ces attaques appliquent un débuff de résistance magique (-5 res pendant 3 tours).'
             };
             const tTitle = typeTitles[c.monsterType] || '';
-            const tIcon = { 'DEMON': 'local_fire_department', 'REPTILE': 'grass', 'MORT_VIVANT': 'skull', 'HYBRIDE': 'network_node', 'VAMPIRE': 'bloodtype' }[c.monsterType] || 'check_box_outline_blank';
-            const tLabel = { 'DEMON': 'Démon', 'REPTILE': 'Reptile', 'MORT_VIVANT': 'Mort-vivant', 'HYBRIDE': 'Hybride', 'VAMPIRE': 'Vampire' }[c.monsterType] || c.monsterType;
+            const tIcon = { 'DEMON': 'local_fire_department', 'REPTILE': 'grass', 'MORT_VIVANT': 'skull', 'HYBRIDE': 'network_node', 'VAMPIRE': 'bloodtype', 'ECTOPLASME': 'candle' }[c.monsterType] || 'check_box_outline_blank';
+            const tLabel = { 'DEMON': 'Démon', 'REPTILE': 'Reptile', 'MORT_VIVANT': 'Mort-vivant', 'HYBRIDE': 'Hybride', 'VAMPIRE': 'Vampire', 'ECTOPLASME': 'Ectoplasme' }[c.monsterType] || c.monsterType;
 
             monsterBadgesHtml += `<span title="${tTitle}" style="cursor: help; font-size: 0.75rem; background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined" style="font-size: 0.9rem;">${tIcon}</span>${tLabel}</span>`;
         }
@@ -2165,11 +2166,12 @@ function generateFighterHtml(c, isHero) {
                 'CORRUPTEUR': "Corrupteur : Cible toujours le joueur avec le plus de Mana et lui retire 5% Mana Act.",
                 'LEADER': "Leader : Ordonne à tous les autres monstres d'attaquer sa cible.",
                 'ASSASSIN': "Assassin : Vise systématiquement le joueur avec le moins de Résistance.",
-                'INSENSIBLE': "Insensible : Ses attaques infligent des dégâts bruts (ignore l'armure)."
+                'INSENSIBLE': "Insensible : Ses attaques infligent des dégâts bruts (ignore l'armure).",
+                'TRANSCENDANT': "Transcendant : Il attaque toutes les cibles adverse à la fois."
             };
             const bTitle = behaviorTitles[c.behavior] || '';
-            const bIcon = { 'PREDATEUR': 'track_changes', 'CORRUPTEUR': 'allergy', 'LEADER': 'crown', 'ASSASSIN': 'gps_fixed', 'INSENSIBLE': 'shield' }[c.behavior] || 'check_box_outline_blank';
-            const bLabel = { 'PREDATEUR': 'Prédateur', 'CORRUPTEUR': 'Corrupteur', 'LEADER': 'Leader', 'ASSASSIN': 'Assassin', 'INSENSIBLE': 'Insensible' }[c.behavior] || c.behavior;
+            const bIcon = { 'PREDATEUR': 'track_changes', 'CORRUPTEUR': 'allergy', 'LEADER': 'crown', 'ASSASSIN': 'gps_fixed', 'INSENSIBLE': 'shield', 'TRANSCENDANT': 'grid_view' }[c.behavior] || 'check_box_outline_blank';
+            const bLabel = { 'PREDATEUR': 'Prédateur', 'CORRUPTEUR': 'Corrupteur', 'LEADER': 'Leader', 'ASSASSIN': 'Assassin', 'INSENSIBLE': 'Insensible', 'TRANSCENDANT': 'Transcendant' }[c.behavior] || c.behavior;
             monsterBadgesHtml += `<span title="${bTitle}" style="cursor: help; font-size: 0.75rem; background: rgba(139, 92, 246, 0.15); color: #8b5cf6; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(139, 92, 246, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined" style="font-size: 0.9rem;">${bIcon}</span>${bLabel}</span>`;
         }
         monsterBadgesHtml += `</div>`;
