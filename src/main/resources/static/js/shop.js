@@ -18,6 +18,10 @@ const STAT_DEFS = [
     { key: 'bonusCrit', label: 'Crit', icon: 'gps_fixed', color: '#ef4444' },
     { key: 'regenHealthPerTurn', label: 'PV/t', icon: 'healing', color: '#10b981' },
     { key: 'regenManaPerTurn', label: 'Mana/t', icon: 'cyclone', color: '#38bdf8' },
+    { key: 'consumableHpPercent', label: 'PV Max', icon: 'favorite', color: '#ec4899', isPercent: true },
+    { key: 'consumableManaPercent', label: 'Mana Max', icon: 'water_drop', color: '#38bdf8', isPercent: true },
+    { key: 'consumableMissingHpPercent', label: 'PV Manq', icon: 'healing', color: '#f43f5e', isPercent: true },
+    { key: 'consumableMissingManaPercent', label: 'Mana Manq', icon: 'cyclone', color: '#a855f7', isPercent: true }
 ];
 
 const RARITY_COLORS = {
@@ -106,12 +110,13 @@ function generateStandHtml(eq) {
             const val = eq[s.key];
             const isMalus = val < 0;
             const sign = val > 0 ? '+' : '';
-            return `<div class="shop-stand-stat ${isMalus ? 'malus' : ''}">
+            const suffix = s.isPercent ? '%' : '';
+            return `<div class="shop-stand-stat ${isMalus ? 'malus' : ''}" title="${s.label}">
                 <div style="display: flex; align-items: center; gap: 0.3rem;">
                     <span class="material-symbols-outlined" style="color:${isMalus ? '#ef4444' : s.color}; font-size: 0.9rem;">${s.icon}</span>
                     ${s.label}
                 </div>
-                <span style="font-weight: 600;">${sign}${val}</span>
+                <span style="font-weight: 600;">${sign}${val}${suffix}</span>
             </div>`;
         }).join('');
 

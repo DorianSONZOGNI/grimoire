@@ -75,8 +75,8 @@ public class ShopController {
         List<Map<String, Object>> consumables = List.of(
                 createConsumable("Corde", 15, "gesture", "rope", "Sert à éviter certains pièges", 5.0),
                 createConsumable("Clé", 25, "vpn_key", "key", "Ouvre les compartiments secrets des coffres", 1.0),
-                createConsumable("Pain", 5, "bakery_dining", "bread", "Régénère 25% de la vie max", 2.0),
-                createConsumable("Potion de mana", 10, "water_drop", "potion", "Régénère 25% du mana max", 2.0));
+                createConsumable("Pain", 5, "bakery_dining", "bread", "Régénère 10% de la vie max", 2.0),
+                createConsumable("Potion de mana", 10, "water_drop", "potion", "Régénère 10% du mana max", 2.0));
         response.put("consumables", consumables);
 
         return ResponseEntity.ok(response);
@@ -285,6 +285,13 @@ public class ShopController {
         consumable.setRegenHealthPerTurn(0);
         consumable.setRegenManaPerTurn(0);
         consumable.setBaseWeight(weight);
+        
+        if ("bread".equalsIgnoreCase(type)) {
+            consumable.setConsumableHpPercent(10);
+        } else if ("potion".equalsIgnoreCase(type)) {
+            consumable.setConsumableManaPercent(10);
+        }
+
         equipmentRepository.save(consumable);
 
         return ResponseEntity.ok(Map.of("message", "Achat réussi !"));

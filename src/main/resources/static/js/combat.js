@@ -2899,7 +2899,7 @@ window.renderOverlayInventory = function (containerId) {
     }
 
     currentSessionData.activeConsumables.forEach(c => {
-        const canConsume = c.name.toLowerCase() === 'pain' || c.name.toLowerCase() === 'potion de mana';
+        const canConsume = true;
         const onClickAttr = canConsume ? `onclick="window.openConsumeModal(${c.id}, '${c.name.replace(/'/g, "\\'")}')"` : '';
         const cursorStyle = canConsume ? 'cursor: pointer;' : '';
         const hoverClass = canConsume ? 'consumable-hover' : '';
@@ -2909,15 +2909,15 @@ window.renderOverlayInventory = function (containerId) {
                 <span class="material-symbols-outlined" style="font-size: 1.5rem; color: #10b981;">inventory_2</span>
                 <div style="flex: 1;">
                     <div style="color: #f8fafc; font-weight: 600; font-size: 0.9rem;">${c.name}</div>
-                    <div style="color: var(--text-muted); font-size: 0.75rem;">
-                        ${c.bonusHealthMax ? `+${c.bonusHealthMax} PV ` : ''}
-                        ${c.bonusManaMax ? `+${c.bonusManaMax} Mana ` : ''}
-                        ${c.bonusPower ? `+${c.bonusPower} Pui ` : ''}
-                        ${c.bonusStrength ? `+${c.bonusStrength} For ` : ''}
-                        ${c.bonusArmor ? `+${c.bonusArmor} Arm ` : ''}
-                        ${c.bonusResistance ? `+${c.bonusResistance} Res ` : ''}
-                        ${canConsume ? '<div style="color: #0ea5e9; margin-top: 4px; font-weight: 500;">Cliquable pour utiliser</div>' : ''}
+                    <div style="color: var(--text-muted); font-size: 0.8rem; display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin-bottom: 4px;">
+                        ${c.bonusHealthMax ? `<span style="display:inline-flex; align-items:center; color:#ec4899;" title="PV">+${c.bonusHealthMax}<span class="material-symbols-outlined" style="font-size:0.85rem; margin-left:2px;">favorite</span></span>` : ''}
+                        ${c.bonusManaMax ? `<span style="display:inline-flex; align-items:center; color:#38bdf8;" title="Mana">+${c.bonusManaMax}<span class="material-symbols-outlined" style="font-size:0.85rem; margin-left:2px;">water_drop</span></span>` : ''}
+                        ${c.consumableHpPercent ? `<span style="display:inline-flex; align-items:center; color:#ec4899;" title="PV Max">+${c.consumableHpPercent}%<span class="material-symbols-outlined" style="font-size:0.85rem; margin-left:2px;">favorite</span></span>` : ''}
+                        ${c.consumableManaPercent ? `<span style="display:inline-flex; align-items:center; color:#38bdf8;" title="Mana Max">+${c.consumableManaPercent}%<span class="material-symbols-outlined" style="font-size:0.85rem; margin-left:2px;">water_drop</span></span>` : ''}
+                        ${c.consumableMissingHpPercent ? `<span style="display:inline-flex; align-items:center; color:#f43f5e;" title="PV Manq">+${c.consumableMissingHpPercent}%<span class="material-symbols-outlined" style="font-size:0.85rem; margin-left:2px;">healing</span></span>` : ''}
+                        ${c.consumableMissingManaPercent ? `<span style="display:inline-flex; align-items:center; color:#a855f7;" title="Mana Manq">+${c.consumableMissingManaPercent}%<span class="material-symbols-outlined" style="font-size:0.85rem; margin-left:2px;">cyclone</span></span>` : ''}
                     </div>
+                    ${canConsume ? '<div style="color: #0ea5e9; font-size: 0.75rem; font-weight: 500;">Cliquable pour utiliser</div>' : ''}
                 </div>
             </div>
         `;

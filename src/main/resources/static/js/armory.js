@@ -50,6 +50,10 @@ const STAT_DEFS = [
     { key: 'bonusCrit', label: 'Crit', icon: 'gps_fixed', color: '#ef4444' },
     { key: 'regenHealthPerTurn', label: 'PV/t', icon: 'healing', color: '#10b981' },
     { key: 'regenManaPerTurn', label: 'Mana/t', icon: 'cyclone', color: '#38bdf8' },
+    { key: 'consumableHpPercent', label: 'PV Max', icon: 'favorite', color: '#ec4899', isPercent: true },
+    { key: 'consumableManaPercent', label: 'Mana Max', icon: 'water_drop', color: '#38bdf8', isPercent: true },
+    { key: 'consumableMissingHpPercent', label: 'PV Manq', icon: 'healing', color: '#f43f5e', isPercent: true },
+    { key: 'consumableMissingManaPercent', label: 'Mana Manq', icon: 'cyclone', color: '#a855f7', isPercent: true }
 ];
 
 const WEIGHT_LIMITS = {
@@ -87,6 +91,13 @@ function updateWeightUI() {
     if (row) {
         row.style.display = slot === 'CONSOMMABLE' ? 'flex' : 'none';
     }
+
+    document.querySelectorAll('.non-consumable-stat').forEach(el => {
+        el.style.display = slot === 'CONSOMMABLE' ? 'none' : '';
+    });
+    document.querySelectorAll('.consumable-stat').forEach(el => {
+        el.style.display = slot === 'CONSOMMABLE' ? 'flex' : 'none';
+    });
     
     let maxWeight = 5; // Fallback
     if (slot && rarity && WEIGHT_LIMITS[slot] && WEIGHT_LIMITS[slot][rarity]) {
@@ -373,6 +384,10 @@ async function submitEquipment() {
         bonusCrit: parseInt(document.getElementById('eqCrit').value) || 0,
         regenHealthPerTurn: parseInt(document.getElementById('eqRegenHp').value) || 0,
         regenManaPerTurn: parseInt(document.getElementById('eqRegenMana').value) || 0,
+        consumableHpPercent: document.getElementById('eqConsumableHpPercent') ? (parseInt(document.getElementById('eqConsumableHpPercent').value) || 0) : 0,
+        consumableManaPercent: document.getElementById('eqConsumableManaPercent') ? (parseInt(document.getElementById('eqConsumableManaPercent').value) || 0) : 0,
+        consumableMissingHpPercent: document.getElementById('eqConsumableMissingHpPercent') ? (parseInt(document.getElementById('eqConsumableMissingHpPercent').value) || 0) : 0,
+        consumableMissingManaPercent: document.getElementById('eqConsumableMissingManaPercent') ? (parseInt(document.getElementById('eqConsumableMissingManaPercent').value) || 0) : 0,
         baseWeight: parseFloat(document.getElementById('eqBaseWeight')?.value) || 0,
         rarity,
         specialEffect,
@@ -404,6 +419,10 @@ async function submitEquipment() {
         document.getElementById('eqCrit').value = 0;
         document.getElementById('eqRegenHp').value = 0;
         document.getElementById('eqRegenMana').value = 0;
+        if(document.getElementById('eqConsumableHpPercent')) document.getElementById('eqConsumableHpPercent').value = 0;
+        if(document.getElementById('eqConsumableManaPercent')) document.getElementById('eqConsumableManaPercent').value = 0;
+        if(document.getElementById('eqConsumableMissingHpPercent')) document.getElementById('eqConsumableMissingHpPercent').value = 0;
+        if(document.getElementById('eqConsumableMissingManaPercent')) document.getElementById('eqConsumableMissingManaPercent').value = 0;
         if(document.getElementById('eqBaseWeight')) document.getElementById('eqBaseWeight').value = 0;
         document.getElementById('eqRarity').value = 'COMMUN';
         document.getElementById('eqSpecialEffect').value = 'NONE';
@@ -643,7 +662,7 @@ function renderPersonnages() {
                     const slotInfo = SLOT_LABELS[eq.slot] || { label: eq.slot, icon: 'help', color: '#94a3b8' };
                     const statsStr = STAT_DEFS
                         .filter(s => eq[s.key] && eq[s.key] !== 0)
-                        .map(s => `${eq[s.key] > 0 ? '+' : ''}${eq[s.key]} ${s.label}`)
+                        .map(s => `${eq[s.key] > 0 ? '+' : ''}${eq[s.key]}${s.isPercent ? '%' : ''} ${s.label}`)
                         .join(', ');
                     const rarityClass = eq.rarity ? `rarity-${eq.rarity}` : '';
                     let effectStar = '';
@@ -750,7 +769,8 @@ function renderEquipModal() {
                     const val = equipped[s.key];
                     const sign = val > 0 ? '+' : '';
                     const isMalus = val < 0;
-                    return `<span class="eq-stat-mini ${isMalus ? 'malus' : ''}"><span class="material-symbols-outlined" style="color:${isMalus ? '#ef4444' : s.color}; font-size:0.75rem;">${s.icon}</span>${sign}${val}</span>`;
+                    const suffix = s.isPercent ? '%' : '';
+                    return `<span class="eq-stat-mini ${isMalus ? 'malus' : ''}" title="${s.label}"><span class="material-symbols-outlined" style="color:${isMalus ? '#ef4444' : s.color}; font-size:0.75rem;">${s.icon}</span>${sign}${val}${suffix}</span>`;
                 })
                 .join('');
             const rarityClass = equipped.rarity ? `rarity-${equipped.rarity}` : '';
@@ -832,7 +852,8 @@ function renderEquipModal() {
                                     const val = a[s.key];
                                     const sign = val > 0 ? '+' : '';
                                     const isMalus = val < 0;
-                                    return `<span class="eq-stat-mini ${isMalus ? 'malus' : ''}"><span class="material-symbols-outlined" style="color:${isMalus ? '#ef4444' : s.color}; font-size:0.75rem;">${s.icon}</span>${sign}${val}</span>`;
+                                    const suffix = s.isPercent ? '%' : '';
+                                    return `<span class="eq-stat-mini ${isMalus ? 'malus' : ''}" title="${s.label}"><span class="material-symbols-outlined" style="color:${isMalus ? '#ef4444' : s.color}; font-size:0.75rem;">${s.icon}</span>${sign}${val}${suffix}</span>`;
                                 }).join('');
 
                             let aSpecialEffectHtml = '';

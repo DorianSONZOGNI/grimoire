@@ -30,6 +30,10 @@ const STAT_DEFS = [
     { key: 'bonusCrit', label: 'Crit', icon: 'gps_fixed', color: '#ef4444' },
     { key: 'regenHealthPerTurn', label: 'PV/t', icon: 'healing', color: '#10b981' },
     { key: 'regenManaPerTurn', label: 'Mana/t', icon: 'cyclone', color: '#38bdf8' },
+    { key: 'consumableHpPercent', label: 'PV Max', icon: 'favorite', color: '#ec4899', isPercent: true },
+    { key: 'consumableManaPercent', label: 'Mana Max', icon: 'water_drop', color: '#38bdf8', isPercent: true },
+    { key: 'consumableMissingHpPercent', label: 'PV Manq', icon: 'healing', color: '#f43f5e', isPercent: true },
+    { key: 'consumableMissingManaPercent', label: 'Mana Manq', icon: 'cyclone', color: '#a855f7', isPercent: true }
 ];
 
 const WEIGHT_LIMITS = {
@@ -381,9 +385,10 @@ function renderGrid(equipments) {
                 const val = eq[s.key];
                 const isMalus = val < 0;
                 const sign = val > 0 ? '+' : '';
-                return `<span class="vault-stat-chip ${isMalus ? 'malus' : ''}">
+                const suffix = s.isPercent ? '%' : '';
+                return `<span class="vault-stat-chip ${isMalus ? 'malus' : ''}" title="${s.label}">
                     <span class="material-symbols-outlined" style="color:${isMalus ? '#ef4444' : s.color}; font-size: 0.8rem;">${s.icon}</span>
-                    ${sign}${val}
+                    ${sign}${val}${suffix}
                 </span>`;
             }).join('');
 
@@ -549,6 +554,10 @@ function resetEqForm() {
     document.getElementById('eqCrit').value = 0;
     document.getElementById('eqRegenHp').value = 0;
     document.getElementById('eqRegenMana').value = 0;
+    if(document.getElementById('eqConsumableHpPercent')) document.getElementById('eqConsumableHpPercent').value = 0;
+    if(document.getElementById('eqConsumableManaPercent')) document.getElementById('eqConsumableManaPercent').value = 0;
+    if(document.getElementById('eqConsumableMissingHpPercent')) document.getElementById('eqConsumableMissingHpPercent').value = 0;
+    if(document.getElementById('eqConsumableMissingManaPercent')) document.getElementById('eqConsumableMissingManaPercent').value = 0;
     if(document.getElementById('eqBaseWeight')) document.getElementById('eqBaseWeight').value = 0;
 
     // Reset Rarity
@@ -595,6 +604,10 @@ window.editEquipment = function (id) {
     document.getElementById('eqCrit').value = eq.bonusCrit || 0;
     document.getElementById('eqRegenHp').value = eq.regenHealthPerTurn || 0;
     document.getElementById('eqRegenMana').value = eq.regenManaPerTurn || 0;
+    if(document.getElementById('eqConsumableHpPercent')) document.getElementById('eqConsumableHpPercent').value = eq.consumableHpPercent || 0;
+    if(document.getElementById('eqConsumableManaPercent')) document.getElementById('eqConsumableManaPercent').value = eq.consumableManaPercent || 0;
+    if(document.getElementById('eqConsumableMissingHpPercent')) document.getElementById('eqConsumableMissingHpPercent').value = eq.consumableMissingHpPercent || 0;
+    if(document.getElementById('eqConsumableMissingManaPercent')) document.getElementById('eqConsumableMissingManaPercent').value = eq.consumableMissingManaPercent || 0;
     if(document.getElementById('eqBaseWeight')) document.getElementById('eqBaseWeight').value = eq.baseWeight || 0;
 
     // Slot Setup
@@ -831,7 +844,11 @@ window.submitEquipment = async function () {
         bonusCrit: parseInt(document.getElementById('eqCrit').value) || 0,
         regenHealthPerTurn: parseInt(document.getElementById('eqRegenHp').value) || 0,
         regenManaPerTurn: parseInt(document.getElementById('eqRegenMana').value) || 0,
-        baseWeight: parseFloat(document.getElementById('eqBaseWeight')?.value) || 0,
+        consumableHpPercent: document.getElementById('eqConsumableHpPercent') ? (parseInt(document.getElementById('eqConsumableHpPercent').value) || 0) : 0,
+        consumableManaPercent: document.getElementById('eqConsumableManaPercent') ? (parseInt(document.getElementById('eqConsumableManaPercent').value) || 0) : 0,
+        consumableMissingHpPercent: document.getElementById('eqConsumableMissingHpPercent') ? (parseInt(document.getElementById('eqConsumableMissingHpPercent').value) || 0) : 0,
+        consumableMissingManaPercent: document.getElementById('eqConsumableMissingManaPercent') ? (parseInt(document.getElementById('eqConsumableMissingManaPercent').value) || 0) : 0,
+        baseWeight: document.getElementById('eqBaseWeight') ? (parseFloat(document.getElementById('eqBaseWeight').value) || 0.0) : 0.0,
         rarity,
         specialEffect,
         specialEffectValue,
@@ -892,6 +909,13 @@ window.updateWeightUI = function() {
     const slot = document.getElementById('eqSlot').value;
     const rarity = document.getElementById('eqRarity').value;
     if (!slot) return;
+
+    document.querySelectorAll('.non-consumable-stat').forEach(el => {
+        el.style.display = slot === 'CONSOMMABLE' ? 'none' : '';
+    });
+    document.querySelectorAll('.consumable-stat').forEach(el => {
+        el.style.display = slot === 'CONSOMMABLE' ? 'flex' : 'none';
+    });
 
     const row = document.getElementById('eqBaseWeightRow');
     if (row) {

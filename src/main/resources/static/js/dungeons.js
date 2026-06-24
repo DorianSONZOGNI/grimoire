@@ -337,10 +337,13 @@ function renderConsumablesList() {
                 <span class="material-symbols-outlined" style="font-size: 1.1rem; color: ${isSelected ? '#10b981' : '#854c4c'}; flex-shrink: 0;">inventory_2</span>
                 <div style="flex: 1; min-width: 0;">
                     <div style="color: #f8fafc; font-weight: 600; font-size: 0.7rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${c.name}">${c.name}</div>
-                    <div style="color: var(--text-muted); font-size: 0.6rem; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;">
-                        ${c.bonusHealthMax ? `+${c.bonusHealthMax} PV ` : ''}
-                        ${c.bonusManaMax ? `+${c.bonusManaMax} Mana ` : ''}
-                        ${c.bonusPower ? `+${c.bonusPower} Pui ` : ''}
+                    <div style="color: var(--text-muted); font-size: 0.75rem; display: flex; gap: 0.4rem; flex-wrap: wrap; overflow: visible; align-items: center; margin-top: 2px;">
+                        ${c.bonusHealthMax ? `<span style="display:inline-flex; align-items:center; color:#ec4899;" title="PV">+${c.bonusHealthMax}<span class="material-symbols-outlined" style="font-size:0.8rem; margin-left:1px;">favorite</span></span>` : ''}
+                        ${c.bonusManaMax ? `<span style="display:inline-flex; align-items:center; color:#38bdf8;" title="Mana">+${c.bonusManaMax}<span class="material-symbols-outlined" style="font-size:0.8rem; margin-left:1px;">water_drop</span></span>` : ''}
+                        ${c.consumableHpPercent ? `<span style="display:inline-flex; align-items:center; color:#ec4899;" title="PV Max">+${c.consumableHpPercent}%<span class="material-symbols-outlined" style="font-size:0.8rem; margin-left:1px;">favorite</span></span>` : ''}
+                        ${c.consumableManaPercent ? `<span style="display:inline-flex; align-items:center; color:#38bdf8;" title="Mana Max">+${c.consumableManaPercent}%<span class="material-symbols-outlined" style="font-size:0.8rem; margin-left:1px;">water_drop</span></span>` : ''}
+                        ${c.consumableMissingHpPercent ? `<span style="display:inline-flex; align-items:center; color:#f43f5e;" title="PV Manq">+${c.consumableMissingHpPercent}%<span class="material-symbols-outlined" style="font-size:0.8rem; margin-left:1px;">healing</span></span>` : ''}
+                        ${c.consumableMissingManaPercent ? `<span style="display:inline-flex; align-items:center; color:#a855f7;" title="Mana Manq">+${c.consumableMissingManaPercent}%<span class="material-symbols-outlined" style="font-size:0.8rem; margin-left:1px;">cyclone</span></span>` : ''}
                     </div>
                 </div>
                 ${badgeHtml}

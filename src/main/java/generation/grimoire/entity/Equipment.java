@@ -49,6 +49,12 @@ public class Equipment {
     // Poids de base pour les objets sans stats (ex: consommables)
     private double baseWeight = 0.0;
 
+    // Champs spécifiques aux consommables
+    private int consumableHpPercent = 0;
+    private int consumableManaPercent = 0;
+    private int consumableMissingHpPercent = 0;
+    private int consumableMissingManaPercent = 0;
+
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "personnage_id", nullable = true)
