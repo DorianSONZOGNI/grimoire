@@ -332,21 +332,7 @@ public class CombatService {
 
                     // Clone it
                     Equipment clone = new Equipment();
-                    clone.setName(template.getName());
-                    clone.setSlot(template.getSlot());
-                    clone.setBonusHealthMax(template.getBonusHealthMax());
-                    clone.setBonusManaMax(template.getBonusManaMax());
-                    clone.setBonusPower(template.getBonusPower());
-                    clone.setBonusStrength(template.getBonusStrength());
-                    clone.setBonusArmor(template.getBonusArmor());
-                    clone.setBonusResistance(template.getBonusResistance());
-                    clone.setBonusSpeed(template.getBonusSpeed());
-                    clone.setBonusCrit(template.getBonusCrit());
-                    clone.setRegenHealthPerTurn(template.getRegenHealthPerTurn());
-                    clone.setRegenManaPerTurn(template.getRegenManaPerTurn());
-                    clone.setRarity(template.getRarity());
-                    clone.setSpecialEffect(template.getSpecialEffect());
-                    clone.setSpecialEffectValue(template.getSpecialEffectValue());
+                    clone.copyStatsFrom(template);
 
                     // Apply anti-ragequit penalty
                     if (session.getReloadCount() > 0) {
@@ -577,21 +563,7 @@ public class CombatService {
                         .orElse(null);
                 if (template != null) {
                     generation.grimoire.entity.Equipment clone = new generation.grimoire.entity.Equipment();
-                    clone.setName(template.getName());
-                    clone.setSlot(template.getSlot());
-                    clone.setBonusHealthMax(template.getBonusHealthMax());
-                    clone.setBonusManaMax(template.getBonusManaMax());
-                    clone.setBonusPower(template.getBonusPower());
-                    clone.setBonusStrength(template.getBonusStrength());
-                    clone.setBonusArmor(template.getBonusArmor());
-                    clone.setBonusResistance(template.getBonusResistance());
-                    clone.setBonusSpeed(template.getBonusSpeed());
-                    clone.setBonusCrit(template.getBonusCrit());
-                    clone.setRegenHealthPerTurn(template.getRegenHealthPerTurn());
-                    clone.setRegenManaPerTurn(template.getRegenManaPerTurn());
-                    clone.setRarity(template.getRarity());
-                    clone.setSpecialEffect(template.getSpecialEffect());
-                    clone.setSpecialEffectValue(template.getSpecialEffectValue());
+                    clone.copyStatsFrom(template);
 
                     clone.setShopTemplate(false);
                     clone.setUser(user);
@@ -796,21 +768,7 @@ public class CombatService {
         } else if (entry.getEquipment() != null) {
             Equipment clone = new Equipment();
             Equipment template = entry.getEquipment();
-            clone.setName(template.getName());
-            clone.setSlot(template.getSlot());
-            clone.setBonusHealthMax(template.getBonusHealthMax());
-            clone.setBonusManaMax(template.getBonusManaMax());
-            clone.setBonusPower(template.getBonusPower());
-            clone.setBonusStrength(template.getBonusStrength());
-            clone.setBonusArmor(template.getBonusArmor());
-            clone.setBonusResistance(template.getBonusResistance());
-            clone.setBonusSpeed(template.getBonusSpeed());
-            clone.setBonusCrit(template.getBonusCrit());
-            clone.setRegenHealthPerTurn(template.getRegenHealthPerTurn());
-            clone.setRegenManaPerTurn(template.getRegenManaPerTurn());
-            clone.setSpecialEffect(template.getSpecialEffect());
-            clone.setSpecialEffectValue(template.getSpecialEffectValue());
-            clone.setRarity(template.getRarity());
+            clone.copyStatsFrom(template);
             clone.setUser(user);
 
             equipmentRepository.save(clone);

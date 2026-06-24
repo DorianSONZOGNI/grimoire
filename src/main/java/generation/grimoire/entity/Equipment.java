@@ -77,6 +77,30 @@ public class Equipment {
     @Column(name = "quantity")
     private java.util.Map<String, Integer> priceAnomalies = new java.util.HashMap<>();
 
+    public void copyStatsFrom(Equipment template) {
+        if (template == null) return;
+        this.setName(template.getName());
+        this.setSlot(template.getSlot());
+        this.setRarity(template.getRarity());
+        this.setSpecialEffect(template.getSpecialEffect());
+        this.setSpecialEffectValue(template.getSpecialEffectValue());
+        this.setBonusHealthMax(template.getBonusHealthMax());
+        this.setBonusManaMax(template.getBonusManaMax());
+        this.setBonusPower(template.getBonusPower());
+        this.setBonusStrength(template.getBonusStrength());
+        this.setBonusArmor(template.getBonusArmor());
+        this.setBonusResistance(template.getBonusResistance());
+        this.setBonusSpeed(template.getBonusSpeed());
+        this.setBonusCrit(template.getBonusCrit());
+        this.setRegenHealthPerTurn(template.getRegenHealthPerTurn());
+        this.setRegenManaPerTurn(template.getRegenManaPerTurn());
+        this.setBaseWeight(template.getBaseWeight());
+        this.setConsumableHpPercent(template.getConsumableHpPercent());
+        this.setConsumableManaPercent(template.getConsumableManaPercent());
+        this.setConsumableMissingHpPercent(template.getConsumableMissingHpPercent());
+        this.setConsumableMissingManaPercent(template.getConsumableMissingManaPercent());
+    }
+
     public double calculateWeight() {
         double w = this.baseWeight;
         w += this.bonusHealthMax * 0.2;

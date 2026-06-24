@@ -203,24 +203,7 @@ public class AlchemyService {
                 consumable.setOwnerUsername(username);
                 consumable.setSlot(EquipmentSlot.CONSOMMABLE);
                 if (template != null) {
-                    consumable.setRarity(template.getRarity());
-                    consumable.setSpecialEffect(template.getSpecialEffect());
-                    consumable.setSpecialEffectValue(template.getSpecialEffectValue());
-                    consumable.setBonusHealthMax(template.getBonusHealthMax());
-                    consumable.setBonusManaMax(template.getBonusManaMax());
-                    consumable.setBonusPower(template.getBonusPower());
-                    consumable.setBonusStrength(template.getBonusStrength());
-                    consumable.setBonusArmor(template.getBonusArmor());
-                    consumable.setBonusResistance(template.getBonusResistance());
-                    consumable.setBonusSpeed(template.getBonusSpeed());
-                    consumable.setBonusCrit(template.getBonusCrit());
-                    consumable.setRegenHealthPerTurn(template.getRegenHealthPerTurn());
-                    consumable.setRegenManaPerTurn(template.getRegenManaPerTurn());
-                    consumable.setBaseWeight(template.getBaseWeight());
-                    consumable.setConsumableHpPercent(template.getConsumableHpPercent());
-                    consumable.setConsumableManaPercent(template.getConsumableManaPercent());
-                    consumable.setConsumableMissingHpPercent(template.getConsumableMissingHpPercent());
-                    consumable.setConsumableMissingManaPercent(template.getConsumableMissingManaPercent());
+                    consumable.copyStatsFrom(template);
                 }
                 equipmentRepository.save(consumable);
             }
