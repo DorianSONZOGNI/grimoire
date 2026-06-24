@@ -1348,6 +1348,7 @@ if (data.finished) {
     const btnEnd = document.getElementById('btnEndTurn');
     if (btnEnd) btnEnd.disabled = false;
 }
+}
 
 // Removed GLOBAL_STAT_LABELS and formatStat (imported from ui.js)
 

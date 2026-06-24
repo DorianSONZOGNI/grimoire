@@ -86,7 +86,7 @@ public class PvEAdminController {
         entity.setDescription(dto.getDescription());
         entity.setImageUrl(dto.getImageUrl());
         entity.setRecommendedLevel(dto.getRecommendedLevel());
-        entity.setMaxHeroes(dto.getMaxHeroes() > 0 ? dto.getMaxHeroes() : 1);
+        entity.setMaxHeroes(Math.min(4, Math.max(1, dto.getMaxHeroes())));
         entity.setUnlockCostGold(dto.getUnlockCostGold());
         entity.setEntryCostGold(dto.getEntryCostGold());
         entity.setRequiredSecret(dto.getRequiredSecret());
