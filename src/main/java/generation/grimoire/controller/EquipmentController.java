@@ -127,7 +127,7 @@ public class EquipmentController {
             Personnage personnage = personnageService.findByIdOrThrow(java.util.Objects.requireNonNull(dto.getPersonnageId()));
 
             // Si l'admin forge pour un autre joueur, l'objet doit appartenir à ce joueur
-            if (personnage.getUser() != null && (equipment.getUser() == null || equipment.getUser().getId().equals(currentUser.getId()))) {
+            if (personnage.getUser() != null && (equipment.getUser() == null || (currentUser != null && equipment.getUser().getId().equals(currentUser.getId())))) {
                 equipment.setUser(personnage.getUser());
                 equipment.setOwnerUsername(personnage.getUser().getUsername());
             }
