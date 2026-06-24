@@ -87,16 +87,20 @@
             </div>
 
             <!-- Voie & Spiritualité -->
-            <div class="armory-section-title">
+            <div class="armory-section-title" style="display: flex; align-items: center; gap: 0.5rem;">
                 <span class="material-symbols-outlined" style="color: #a855f7;">auto_awesome</span>
                 Voie & Spiritualité
             </div>
 
             <div class="armory-form-row">
                 <div class="armory-field">
-                    <label for="charVoie">
+                    <label for="charVoie" style="display: flex; align-items: center; gap: 0.3rem;">
                         <span class="material-symbols-outlined" style="color: #a855f7;">route</span>
                         Voie
+                        <span id="charVoieInfoIcon" class="material-symbols-outlined" style="font-size: 1.1rem; color: #a855f7; cursor: help; display: none;" onmouseenter="showEqTooltip(this)" onmouseleave="hideEqTooltip()">
+                            info
+                            <template class="tooltip-data"></template>
+                        </span>
                     </label>
                     <div class="custom-select-wrapper" id="charVoieWrapper" tabindex="0">
                         <div class="custom-select-trigger" id="charVoieTrigger">
@@ -123,9 +127,13 @@
 
             <div class="armory-form-row">
                 <div class="armory-field">
-                    <label for="charSpirit">
+                    <label for="charSpirit" style="display: flex; align-items: center; gap: 0.3rem;">
                         <span class="material-symbols-outlined" style="color: #fb923c;">psychology</span>
                         Spiritualité
+                        <span id="charSpiritInfoIcon" class="material-symbols-outlined" style="font-size: 1.1rem; color: #fb923c; cursor: help; display: none;" onmouseenter="showEqTooltip(this)" onmouseleave="hideEqTooltip()">
+                            info
+                            <template class="tooltip-data"></template>
+                        </span>
                     </label>
                     <div class="custom-select-wrapper" id="charSpiritWrapper" tabindex="0">
                         <div class="custom-select-trigger" id="charSpiritTrigger">

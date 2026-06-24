@@ -29,6 +29,20 @@ let editingId = null;
 let equipModalPersoId = null;
 let allEquipments = [];
 
+const DESCRIPTIONS_PASSIFS = {
+    'Voie de la Raison': 'Si un sort de Raison est lancé, les sorts de type Inspiration et Expiration coûtent 10% de PV/Mana en moins pour ce tour.',
+    'Voie de la Sûreté': 'Augmente passivement l\'armure et la résistance en fonction du mana dépensé.',
+    'Voie de Trahison': 'Les attaques infligent plus de dégâts mais consument des PV selon la cible.',
+    'Voie de la Consolidation': 'Booste les statistiques de base du personnage après le lancement d\'un sort.',
+    'Voie de la Conviction': 'Les soins et dégâts sont ajustés en fonction de la conviction.',
+    'Voie de la Création': 'Permet aux sorts de type Banal d\'être lancés de manière instantanée.',
+    'Voie de la Destruction': 'Ajuste la puissance des sorts et leur coût en combat.',
+    'Voie de la Violence': 'Le lancement d\'un sort octroie des effets d\'Inspiration ou d\'Expiration supplémentaires.',
+    'Esprit': 'Régénération de mana augmentée.',
+    'Ténèbres': 'Résistance accrue aux attaques magiques ténébreuses.',
+    'Karma': 'Renvoie une portion des dégâts reçus aux attaquants.'
+};
+
 const SLOT_LABELS = {
     CASQUE: { label: 'Casque', icon: 'masks', color: '#a855f7', extraClass: 'flip-icon' },
     PLASTRON: { label: 'Plastron', icon: 'shield', color: '#3b82f6' },
@@ -1082,6 +1096,74 @@ window.addEventListener('DOMContentLoaded', async () => {
             el.addEventListener('change', updateWeightUI);
         }
     });
+
+    const cvInput = document.getElementById('charVoie');
+    if (cvInput) {
+        cvInput.addEventListener('change', (e) => {
+            const vId = e.target.value;
+            const iconEl = document.getElementById('charVoieInfoIcon');
+            
+            if (!vId) {
+                if (iconEl) iconEl.style.display = 'none';
+                return;
+            }
+            const v = voies.find(x => x.id == vId);
+            if (v && iconEl) {
+                const info = getVoieInfo(v.nom);
+                const template = iconEl.querySelector('.tooltip-data');
+                if (template) {
+                    template.innerHTML = `
+                        <div style="font-size: 0.9rem; font-weight: 500; margin-bottom: 0.5rem; display:flex; align-items:center; gap:0.3rem; color: ${info.color};">
+                            <span class="material-symbols-outlined" style="font-size:1.1rem;">${info.icon}</span>
+                            ${v.nom}
+                        </div>
+                        <div style="font-size: 0.8rem; color: #cbd5e1; margin-bottom: 0.5rem;">${v.description || 'Description générique.'}</div>
+                        <div style="font-size: 0.8rem; display: flex; align-items: flex-start; gap: 0.3rem; color: #e2e8f0;">
+                            <span class="material-symbols-outlined" style="font-size: 0.95rem; color: ${info.color};">bolt</span>
+                            <span style="font-style: italic;">${DESCRIPTIONS_PASSIFS[v.nom] || 'Passif spécifique.'}</span>
+                        </div>
+                    `;
+                }
+                iconEl.style.display = 'inline-block';
+            } else if (iconEl) {
+                iconEl.style.display = 'none';
+            }
+        });
+    }
+
+    const csInput = document.getElementById('charSpirit');
+    if (csInput) {
+        csInput.addEventListener('change', (e) => {
+            const sId = e.target.value;
+            const iconEl = document.getElementById('charSpiritInfoIcon');
+            
+            if (!sId) {
+                if (iconEl) iconEl.style.display = 'none';
+                return;
+            }
+            const s = spiritualites.find(x => x.id == sId);
+            if (s && iconEl) {
+                const info = getSpiritInfo(s.nom);
+                const template = iconEl.querySelector('.tooltip-data');
+                if (template) {
+                    template.innerHTML = `
+                        <div style="font-size: 0.9rem; font-weight: 500; margin-bottom: 0.5rem; display:flex; align-items:center; gap:0.3rem; color: ${info.color};">
+                            <span class="material-symbols-outlined" style="font-size:1.1rem;">${info.icon}</span>
+                            ${s.nom}
+                        </div>
+                        <div style="font-size: 0.8rem; color: #cbd5e1; margin-bottom: 0.5rem;">${s.description || 'Description générique.'}</div>
+                        <div style="font-size: 0.8rem; display: flex; align-items: flex-start; gap: 0.3rem; color: #e2e8f0;">
+                            <span class="material-symbols-outlined" style="font-size: 0.95rem; color: ${info.color};">bolt</span>
+                            <span style="font-style: italic;">${DESCRIPTIONS_PASSIFS[s.nom] || 'Passif spécifique.'}</span>
+                        </div>
+                    `;
+                }
+                iconEl.style.display = 'inline-block';
+            } else if (iconEl) {
+                iconEl.style.display = 'none';
+            }
+        });
+    }
     
     // Initial UI update
     updateWeightUI();
