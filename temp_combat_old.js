@@ -1013,20 +1013,20 @@ function updateUI(data) {
             const btnCont = document.getElementById('btnContinueEvent');
             const lootContainer = document.getElementById('eventLootContainer');
 
-
-            if (data.roomEventCompleted) {
-                desc.textContent = `Vous avez ouvert le coffre !`;
-                btnOpen.style.display = 'none';
-                btnCont.style.display = 'block';
-                lootContainer.style.display = 'flex';
-            } else {
-                desc.textContent = `Un coffre myst├®rieux se trouve au centre de la pi├¿ce...`;
-                btnOpen.style.display = 'block';
-                btnCont.style.display = 'none';
-                lootContainer.style.display = 'none';
-                lootContainer.innerHTML = ''; // reset
-            }
-        } else if (data.currentRoom.type === 'EVENT') {
+            if (data.currentRoom.type === 'TREASURE') {
+                if (data.roomEventCompleted) {
+                    desc.textContent = `Vous avez ouvert le coffre !`;
+                    btnOpen.style.display = 'none';
+                    btnCont.style.display = 'block';
+                    lootContainer.style.display = 'flex';
+                } else {
+                    desc.textContent = `Un coffre mystérieux se trouve au centre de la pièce...`;
+                    btnOpen.style.display = 'block';
+                    btnCont.style.display = 'none';
+                    lootContainer.style.display = 'none';
+                    lootContainer.innerHTML = ''; // reset
+                }
+            } else if (data.currentRoom.type === 'EVENT') {
             const subType = data.currentRoom.eventSubType || 'ALTERATION';
 
             if (subType === 'ALTERATION') {
