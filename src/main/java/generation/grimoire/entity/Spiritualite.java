@@ -18,7 +18,11 @@ public class Spiritualite {
 
     private String nom;
 
+    @Column(length = 500)
     private String description;
+
+    @Column(length = 1000)
+    private String passiveDescription;
 
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "spiritualite_rank_names", joinColumns = @JoinColumn(name = "spiritualite_id"))

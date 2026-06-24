@@ -126,6 +126,16 @@ public class WebSpellCreationController {
     public void initStandardEntities() {
         // Initialiser les Voies classiques si absentes, et y associer leurs passifs
         // respectifs
+        Map<String, String> passifsVoies = new HashMap<>();
+        passifsVoies.put("Voie de la Raison", "Si un sort de Raison est lancé, les sorts de type Inspiration et Expiration coûtent 10% de PV/Mana en moins pour ce tour.");
+        passifsVoies.put("Voie de la Sûreté", "Augmente passivement l'armure et la résistance en fonction du mana dépensé.");
+        passifsVoies.put("Voie de Trahison", "Les attaques infligent plus de dégâts mais consument des PV selon la cible.");
+        passifsVoies.put("Voie de la Consolidation", "Booste les statistiques de base du personnage après le lancement d'un sort.");
+        passifsVoies.put("Voie de la Conviction", "Les soins et dégâts sont ajustés en fonction de la conviction.");
+        passifsVoies.put("Voie de la Création", "Permet aux sorts de type Banal d'être lancés de manière instantanée.");
+        passifsVoies.put("Voie de la Destruction", "Ajuste la puissance des sorts et leur coût en combat.");
+        passifsVoies.put("Voie de la Violence", "Le lancement d'un sort octroie des effets d'Inspiration ou d'Expiration supplémentaires.");
+
         String[] voies = { "Voie de la Raison", "Voie de la Sûreté", "Voie de Trahison", "Voie de la Consolidation",
                 "Voie de la Conviction", "Voie de la Création", "Voie de la Destruction", "Voie de la Violence" };
         for (String v : voies) {
@@ -139,6 +149,10 @@ public class WebSpellCreationController {
                 isNew = true;
             } else {
                 voie = optVoie.get();
+            }
+
+            if (passifsVoies.containsKey(v)) {
+                voie.setPassiveDescription(passifsVoies.get(v));
             }
 
             if (voie.getPassiveEffects() == null || voie.getPassiveEffects().isEmpty()) {
@@ -174,7 +188,7 @@ public class WebSpellCreationController {
                     voie.setPassiveEffects(List.of(passif));
                 }
                 voieRepository.save(voie);
-            } else if (isNew) {
+            } else {
                 voieRepository.save(voie);
             }
         }
@@ -236,11 +250,23 @@ public class WebSpellCreationController {
         spiritualiteRepository.findByNom("Karma").ifPresent(sp -> {
             if (sp.getRankNames().isEmpty()) {
                 sp.getRankNames().put(1, "Équilibre");
-                sp.getRankNames().put(2, "Justesse");
-                sp.getRankNames().put(3, "Plénitude");
+                sp.getRankNames().put(2, "Harmonie");
+                sp.getRankNames().put(3, "Jugement");
                 spiritualiteRepository.save(sp);
             }
         });
+
+        // Set passiveDescription for spiritualites
+        for (Spiritualite sp : spiritualiteRepository.findAll()) {
+            if ("Esprit".equals(sp.getNom())) {
+                sp.setPassiveDescription("Régénération de mana augmentée.");
+            } else if ("Ténèbres".equals(sp.getNom())) {
+                sp.setPassiveDescription("Résistance accrue aux attaques magiques ténébreuses.");
+            } else if ("Karma".equals(sp.getNom())) {
+                sp.setPassiveDescription("Renvoie une portion des dégâts reçus aux attaquants.");
+            }
+            spiritualiteRepository.save(sp);
+        }
 
         // Définir des noms de rangs par défaut pour les Voies classiques
         voieRepository.findAll().forEach(v -> {
