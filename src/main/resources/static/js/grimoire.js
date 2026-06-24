@@ -411,7 +411,20 @@ export function getSpellCardHtml(sp) {
         const vHex = getVoieButtonColor(sp.voie);
         const vRgb = hexToRgb(vHex);
         const vIcon = getVoieIcon(sp.voie.nom);
-        voieBadge = `<span class="badge" style="color: ${vHex}; border-color: rgba(${vRgb}, 0.3); background: rgba(${vRgb}, 0.05); display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size:1.1em;">${vIcon}</span>${sp.voie.nom}</span>`;
+        voieBadge = `<span class="badge" style="cursor: help; color: ${vHex}; border-color: rgba(${vRgb}, 0.3); background: rgba(${vRgb}, 0.05); display:inline-flex; align-items:center; gap:0.2rem;" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()">
+            <span class="material-symbols-outlined" style="font-size:1.1em;">${vIcon}</span>${sp.voie.nom}
+            <template class="tooltip-data">
+                <div style="font-size: 0.9rem; font-weight: 500; margin-bottom: 0.5rem; display:flex; align-items:center; gap:0.3rem; color: ${vHex};">
+                    <span class="material-symbols-outlined" style="font-size:1.1rem;">${vIcon}</span>
+                    ${sp.voie.nom}
+                </div>
+                <div style="font-size: 0.8rem; color: #cbd5e1; margin-bottom: 0.5rem;">${sp.voie.description || 'Description générique.'}</div>
+                <div style="font-size: 0.8rem; display: flex; align-items: flex-start; gap: 0.3rem; color: #e2e8f0;">
+                    <span class="material-symbols-outlined" style="font-size: 0.95rem; color: ${vHex};">bolt</span>
+                    <span style="font-style: italic;">${sp.voie.passiveDescription || 'Passif spécifique.'}</span>
+                </div>
+            </template>
+        </span>`;
     }
 
     let spiritBadge = '';
@@ -419,7 +432,20 @@ export function getSpellCardHtml(sp) {
         const sHex = getSpiritButtonColor(sp.spiritualite);
         const sRgb = hexToRgb(sHex);
         const sIcon = getSpiritIcon(sp.spiritualite.nom);
-        spiritBadge = `<span class="badge" style="color: ${sHex}; border-color: rgba(${sRgb}, 0.3); background: rgba(${sRgb}, 0.05); display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size:1.1em;">${sIcon}</span>${sp.spiritualite.nom}</span>`;
+        spiritBadge = `<span class="badge" style="cursor: help; color: ${sHex}; border-color: rgba(${sRgb}, 0.3); background: rgba(${sRgb}, 0.05); display:inline-flex; align-items:center; gap:0.2rem;" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()">
+            <span class="material-symbols-outlined" style="font-size:1.1em;">${sIcon}</span>${sp.spiritualite.nom}
+            <template class="tooltip-data">
+                <div style="font-size: 0.9rem; font-weight: 500; margin-bottom: 0.5rem; display:flex; align-items:center; gap:0.3rem; color: ${sHex};">
+                    <span class="material-symbols-outlined" style="font-size:1.1rem;">${sIcon}</span>
+                    ${sp.spiritualite.nom}
+                </div>
+                <div style="font-size: 0.8rem; color: #cbd5e1; margin-bottom: 0.5rem;">${sp.spiritualite.description || 'Description générique.'}</div>
+                <div style="font-size: 0.8rem; display: flex; align-items: flex-start; gap: 0.3rem; color: #e2e8f0;">
+                    <span class="material-symbols-outlined" style="font-size: 0.95rem; color: ${sHex};">bolt</span>
+                    <span style="font-style: italic;">${sp.spiritualite.passiveDescription || 'Passif spécifique.'}</span>
+                </div>
+            </template>
+        </span>`;
     }
 
     let castBadge = '';

@@ -2121,12 +2121,40 @@ function generateFighterHtml(c, isHero) {
     if (c.voie && c.voie.nom) {
         const vColor = getVoieButtonColor(c.voie);
         const vIcon = ui.getVoieIcon(c.voie.nom);
-        titleIconsHtml += `<span class="material-symbols-outlined" style="font-size: 1.2rem; color: ${vColor};" title="${c.voie.nom}">${vIcon}</span>`;
+        const vFull = window.state?.metaData?.voies?.find(v => v.id == c.voie.id) || c.voie;
+        titleIconsHtml += `<span style="cursor: help; position: relative; display: inline-flex; align-items: center; justify-content: center;" onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null">
+            <span class="material-symbols-outlined" style="font-size: 1.2rem; color: ${vColor};">${vIcon}</span>
+            <template class="tooltip-data">
+                <div style="font-size: 0.9rem; font-weight: 500; margin-bottom: 0.5rem; display:flex; align-items:center; gap:0.3rem; color: ${vColor};">
+                    <span class="material-symbols-outlined" style="font-size:1.1rem;">${vIcon}</span>
+                    ${vFull.nom}
+                </div>
+                <div style="font-size: 0.8rem; color: #cbd5e1; margin-bottom: 0.5rem;">${vFull.description || 'Description générique.'}</div>
+                <div style="font-size: 0.8rem; display: flex; align-items: flex-start; gap: 0.3rem; color: #e2e8f0;">
+                    <span class="material-symbols-outlined" style="font-size: 0.95rem; color: ${vColor};">bolt</span>
+                    <span style="font-style: italic;">${vFull.passiveDescription || 'Passif spécifique.'}</span>
+                </div>
+            </template>
+        </span>`;
     }
     if (c.spiritualite && c.spiritualite.nom) {
         const sColor = getSpiritButtonColor(c.spiritualite);
         const sIcon = ui.getSpiritIcon(c.spiritualite.nom);
-        titleIconsHtml += `<span class="material-symbols-outlined" style="font-size: 1.2rem; color: ${sColor};" title="${c.spiritualite.nom}">${sIcon}</span>`;
+        const sFull = window.state?.metaData?.spiritualites?.find(s => s.id == c.spiritualite.id) || c.spiritualite;
+        titleIconsHtml += `<span style="cursor: help; position: relative; display: inline-flex; align-items: center; justify-content: center;" onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null">
+            <span class="material-symbols-outlined" style="font-size: 1.2rem; color: ${sColor};">${sIcon}</span>
+            <template class="tooltip-data">
+                <div style="font-size: 0.9rem; font-weight: 500; margin-bottom: 0.5rem; display:flex; align-items:center; gap:0.3rem; color: ${sColor};">
+                    <span class="material-symbols-outlined" style="font-size:1.1rem;">${sIcon}</span>
+                    ${sFull.nom}
+                </div>
+                <div style="font-size: 0.8rem; color: #cbd5e1; margin-bottom: 0.5rem;">${sFull.description || 'Description générique.'}</div>
+                <div style="font-size: 0.8rem; display: flex; align-items: flex-start; gap: 0.3rem; color: #e2e8f0;">
+                    <span class="material-symbols-outlined" style="font-size: 0.95rem; color: ${sColor};">bolt</span>
+                    <span style="font-style: italic;">${sFull.passiveDescription || 'Passif spécifique.'}</span>
+                </div>
+            </template>
+        </span>`;
     }
 
     let monsterBadgesHtml = '';
