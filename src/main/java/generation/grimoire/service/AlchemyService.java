@@ -196,11 +196,32 @@ public class AlchemyService {
             }
             return "Vous avez obtenu " + recipe.getRewardQuantity() + "x Anomalie : " + recipe.getRewardName();
         } else if (recipe.getRewardType() == RecipeRewardType.GIVE_CONSUMABLE) {
+            Equipment template = equipmentRepository.findFirstByName(recipe.getRewardName());
             for (int i = 0; i < recipe.getRewardQuantity(); i++) {
                 Equipment consumable = new Equipment();
                 consumable.setName(recipe.getRewardName());
                 consumable.setOwnerUsername(username);
                 consumable.setSlot(EquipmentSlot.CONSOMMABLE);
+                if (template != null) {
+                    consumable.setRarity(template.getRarity());
+                    consumable.setSpecialEffect(template.getSpecialEffect());
+                    consumable.setSpecialEffectValue(template.getSpecialEffectValue());
+                    consumable.setBonusHealthMax(template.getBonusHealthMax());
+                    consumable.setBonusManaMax(template.getBonusManaMax());
+                    consumable.setBonusPower(template.getBonusPower());
+                    consumable.setBonusStrength(template.getBonusStrength());
+                    consumable.setBonusArmor(template.getBonusArmor());
+                    consumable.setBonusResistance(template.getBonusResistance());
+                    consumable.setBonusSpeed(template.getBonusSpeed());
+                    consumable.setBonusCrit(template.getBonusCrit());
+                    consumable.setRegenHealthPerTurn(template.getRegenHealthPerTurn());
+                    consumable.setRegenManaPerTurn(template.getRegenManaPerTurn());
+                    consumable.setBaseWeight(template.getBaseWeight());
+                    consumable.setConsumableHpPercent(template.getConsumableHpPercent());
+                    consumable.setConsumableManaPercent(template.getConsumableManaPercent());
+                    consumable.setConsumableMissingHpPercent(template.getConsumableMissingHpPercent());
+                    consumable.setConsumableMissingManaPercent(template.getConsumableMissingManaPercent());
+                }
                 equipmentRepository.save(consumable);
             }
             return "Vous avez obtenu " + recipe.getRewardQuantity() + "x Consommable : " + recipe.getRewardName();

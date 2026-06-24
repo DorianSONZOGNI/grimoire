@@ -22,4 +22,6 @@ public interface EquipmentRepository extends JpaRepository<Equipment, Long> {
     List<Equipment> findByUser_Username(String username);
 
     List<Equipment> findByOwnerUsername(String username);
+
+    Equipment findFirstByName(String name);
 }
