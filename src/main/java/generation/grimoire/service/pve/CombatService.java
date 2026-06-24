@@ -1362,21 +1362,46 @@ public class CombatService {
                             Personnage targetPlayer = resolveMonsterTarget(m, behavior, alivePlayers, session);
 
                             // === RÉSOLUTION DES DÉGÂTS (TYPE) ===
-                            int monsterDmg;
+                            int str = m.getBase().getStrength();
+                            int pwr = m.getBase().getPower();
+                            
+                            int physDmg;
+                            int magicDmg;
+                            
                             if (mType == MonsterType.HYBRIDE) {
-                                monsterDmg = Math.max(m.getBase().getStrength(), m.getBase().getPower());
+                                int total = str + pwr;
+                                physDmg = total / 2;
+                                magicDmg = total - physDmg;
                             } else {
-                                monsterDmg = m.getBase().getStrength();
+                                physDmg = str;
+                                magicDmg = pwr;
                             }
 
-                            generation.grimoire.enumeration.DamageType dmgType = generation.grimoire.enumeration.DamageType.PHYSIC;
+                            int monsterDmg = physDmg + magicDmg;
+
                             if (behavior == MonsterBehavior.INSENSIBLE) {
-                                dmgType = generation.grimoire.enumeration.DamageType.BRUT;
+                                System.out.println(m.getBase().getName() + " attaque " + targetPlayer.getName()
+                                        + " et inflige " + monsterDmg + " dégâts bruts.");
+                                if (monsterDmg > 0) {
+                                    targetPlayer.takeDamage(monsterDmg, generation.grimoire.enumeration.DamageType.BRUT);
+                                }
+                            } else {
+                                StringBuilder logMsg = new StringBuilder();
+                                if (physDmg > 0) {
+                                    logMsg.append(physDmg).append(" dégâts physiques");
+                                    targetPlayer.takeDamage(physDmg, generation.grimoire.enumeration.DamageType.PHYSIC);
+                                }
+                                if (magicDmg > 0) {
+                                    if (physDmg > 0) logMsg.append(" et ");
+                                    logMsg.append(magicDmg).append(" dégâts magiques");
+                                    targetPlayer.takeDamage(magicDmg, generation.grimoire.enumeration.DamageType.MAGIC);
+                                }
+                                if (physDmg == 0 && magicDmg == 0) {
+                                    logMsg.append("0 dégât");
+                                }
+                                System.out.println(m.getBase().getName() + " attaque " + targetPlayer.getName()
+                                        + " et inflige " + logMsg.toString() + ".");
                             }
-
-                            System.out.println(m.getBase().getName() + " attaque " + targetPlayer.getName()
-                                    + " et inflige " + monsterDmg + " dégâts.");
-                            targetPlayer.takeDamage(monsterDmg, dmgType);
 
                             // Check for ON_HIT passive effects (BURN, POISON)
                             int burnDmg = m.getAsPersonnage().getPassiveState("BURN_ON_HIT", 0);
