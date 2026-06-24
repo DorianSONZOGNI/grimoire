@@ -230,6 +230,9 @@ async function loadDungeons() {
                             <div class="dungeon-desc">${d.description || 'Affrontez les dangers qui r\u00f4dent.'}</div>
                             ${entryCostHtml}
                             <div style="font-size: 0.85rem; color: #f8fafc; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.1); display: grid; gap: 0.4rem;">
+                                <div style="color: #0ea5e9; font-weight: 600; display: flex; align-items: center; gap: 0.3rem;">
+                                    <span class="material-symbols-outlined" style="font-size: 1.1rem;">group</span> H\u00e9ros max : ${d.maxHeroes || 1}
+                                </div>
                                 <div><span style="font-weight: 600;">Salles totales :</span> ${totalSalles}</div>
                                 ${combats > 0 ? `<div style="color: #ef4444; margin-left: 0.5rem; display: flex; align-items: center; gap: 0.3rem;">
                                     <span class="material-symbols-outlined" style="font-size: 1rem;">swords</span> Combats : ${combats} (avec ${totalMobs} mob${totalMobs > 1 ? 's' : ''})
