@@ -141,12 +141,10 @@ public class WebSpellCreationController {
         for (String v : voies) {
             java.util.Optional<Voie> optVoie = voieRepository.findByNom(v);
             Voie voie;
-            boolean isNew = false;
             if (optVoie.isEmpty()) {
                 voie = new Voie();
                 voie.setNom(v);
                 voie.setDescription("Voie classique du grimoire.");
-                isNew = true;
             } else {
                 voie = optVoie.get();
             }
