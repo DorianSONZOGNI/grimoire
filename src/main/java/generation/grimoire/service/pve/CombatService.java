@@ -128,7 +128,8 @@ public class CombatService {
         }
 
         double totalWeight = session.getActiveConsumables().stream()
-                .mapToDouble(generation.grimoire.entity.Equipment::calculateWeight)
+                .filter(java.util.Objects::nonNull)
+                .mapToDouble(e -> e.calculateWeight())
                 .sum();
         double maxWeight = 10.0 + 5.0 * players.size();
         if (totalWeight > maxWeight) {
@@ -1114,7 +1115,7 @@ public class CombatService {
                 }
 
                 List<Personnage> allEnemies = session.getEnemies().stream()
-                        .map(generation.grimoire.model.pve.ActiveMonster::getAsPersonnage).toList();
+                        .map(am -> am.getAsPersonnage()).toList();
                 List<Personnage> allAllies = session.getPlayers().stream().filter(pl -> pl.getHealthCurrent() > 0)
                         .toList();
 
@@ -1656,7 +1657,7 @@ if (targetPlayer.getHealthCurrent() <= 0) {
             case CORRUPTEUR -> {
                 // Target with highest mana
                 Personnage target = alivePlayers.stream()
-                        .max(java.util.Comparator.comparingInt(Personnage::getManaCurrent))
+                        .max(java.util.Comparator.comparingInt(p -> p != null ? p.getManaCurrent() : 0))
                         .orElse(alivePlayers.get(0));
                 session.addLog("\uD83D\uDC1B " + m.getBase().getName() + " cible " + target.getName()
                         + " (le plus de Mana - Corrupteur).");
@@ -1942,3 +1943,4 @@ if (targetPlayer.getHealthCurrent() <= 0) {
         anomalieRepository.delete(toDestroy);
     }
 }
+

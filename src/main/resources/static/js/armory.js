@@ -4,17 +4,17 @@ function applyRbac() {
     if (window.currentUser !== undefined && !window.isAdmin) {
         const baseStats = document.getElementById('baseStatsSection');
         if (baseStats) baseStats.style.display = 'none';
-        
+
         const xpField = document.getElementById('charExperience');
         if (xpField && xpField.parentElement) xpField.parentElement.style.display = 'none';
-        
+
         const spiritExpField = document.getElementById('charSpiritExperience');
         if (spiritExpField && spiritExpField.parentElement) spiritExpField.parentElement.style.display = 'none';
-        
+
         const eqCreateSection = document.querySelector('.equip-create-section');
         if (eqCreateSection) eqCreateSection.style.display = 'none';
     }
-    
+
     // Re-render characters to apply button visibility rules
     if (personnages.length > 0) {
         updateCharsList();
@@ -57,12 +57,12 @@ const STAT_DEFS = [
 ];
 
 const WEIGHT_LIMITS = {
-    CASQUE: { COMMUN: 5, RARE: 9, LEGENDAIRE: 14, EPIQUE: 20, RELIQUE: 24 },
-    PLASTRON: { COMMUN: 8, RARE: 13, LEGENDAIRE: 20, EPIQUE: 26, RELIQUE: 30 },
-    ANNEAU_GAUCHE: { COMMUN: 2, RARE: 3, LEGENDAIRE: 5, EPIQUE: 7, RELIQUE: 8 },
-    ANNEAU_DROIT: { COMMUN: 2, RARE: 3, LEGENDAIRE: 5, EPIQUE: 7, RELIQUE: 8 },
-    BOTTES: { COMMUN: 4, RARE: 7, LEGENDAIRE: 11, EPIQUE: 16, RELIQUE: 20 },
-    CAPE: { COMMUN: 5, RARE: 9, LEGENDAIRE: 14, EPIQUE: 20, RELIQUE: 24 },
+    CASQUE: { COMMUN: 5, RARE: 14, LEGENDAIRE: 22, EPIQUE: 35, RELIQUE: 40 },
+    PLASTRON: { COMMUN: 9, RARE: 19, LEGENDAIRE: 29, EPIQUE: 40, RELIQUE: 46 },
+    ANNEAU_GAUCHE: { COMMUN: 3, RARE: 6, LEGENDAIRE: 10, EPIQUE: 15, RELIQUE: 17 },
+    ANNEAU_DROIT: { COMMUN: 3, RARE: 6, LEGENDAIRE: 10, EPIQUE: 15, RELIQUE: 17 },
+    BOTTES: { COMMUN: 4, RARE: 12, LEGENDAIRE: 19, EPIQUE: 30, RELIQUE: 34 },
+    CAPE: { COMMUN: 5, RARE: 14, LEGENDAIRE: 22, EPIQUE: 35, RELIQUE: 40 },
     CONSOMMABLE: { COMMUN: 5, RARE: 9, LEGENDAIRE: 14, EPIQUE: 20, RELIQUE: 24 }
 };
 
@@ -86,7 +86,7 @@ function calculateEquipmentWeight() {
 function updateWeightUI() {
     const slot = document.getElementById('eqSlot').value;
     const rarity = document.getElementById('eqRarity').value;
-    
+
     const row = document.getElementById('eqBaseWeightRow');
     if (row) {
         row.style.display = slot === 'CONSOMMABLE' ? 'flex' : 'none';
@@ -98,7 +98,7 @@ function updateWeightUI() {
     document.querySelectorAll('.consumable-stat').forEach(el => {
         el.style.display = slot === 'CONSOMMABLE' ? 'flex' : 'none';
     });
-    
+
     let maxWeight = 5; // Fallback
     if (slot && rarity && WEIGHT_LIMITS[slot] && WEIGHT_LIMITS[slot][rarity]) {
         maxWeight = WEIGHT_LIMITS[slot][rarity];
@@ -106,14 +106,14 @@ function updateWeightUI() {
 
     const currentWeight = calculateEquipmentWeight();
     let pct = maxWeight > 0 ? (currentWeight / maxWeight) * 100 : 0;
-    
+
     const textEl = document.getElementById('eqWeightText');
     const fillEl = document.getElementById('eqWeightFill');
     const btn = document.getElementById('submitEquipmentBtn');
-    
+
     if (textEl && fillEl) {
         const displayW = currentWeight % 1 === 0 ? currentWeight : currentWeight.toFixed(1);
-        
+
         if (slot === 'CONSOMMABLE') {
             textEl.innerText = `${displayW}`;
             fillEl.style.width = `0%`;
@@ -126,7 +126,7 @@ function updateWeightUI() {
         } else {
             textEl.innerText = `${displayW} / ${maxWeight}`;
             fillEl.style.width = `${Math.min(pct, 100)}%`;
-            
+
             if (currentWeight > maxWeight) {
                 textEl.style.color = '#ef4444'; // Red
                 fillEl.style.background = '#ef4444';
@@ -189,11 +189,11 @@ async function updateCharLimitUI() {
 
             const isMaxedOut = data.currentCharacters >= data.maxCharacters;
             const color = (isMaxedOut && !window.isAdmin) ? '#ef4444' : '#94a3b8';
-            
+
             let html = `<span style="font-size: 0.9rem; color: ${color}; font-weight: 500;">${data.currentCharacters}/${data.maxCharacters}</span>`;
 
             if (isMaxedOut && data.maxCharacters < 8 && !window.isAdmin) {
-                const costs = {2: 20, 3: 50, 4: 75, 5: 150, 6: 200, 7: 300};
+                const costs = { 2: 20, 3: 50, 4: 75, 5: 150, 6: 200, 7: 300 };
                 const cost = costs[data.maxCharacters];
                 html += `<button onclick="buyRosterSlot(${cost})" style="margin-left: 0.5rem; background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.4); color: #10b981; border-radius: 4px; cursor: pointer; padding: 0.1rem 0.3rem; display: inline-flex; align-items: center;" title="Acheter un emplacement pour ${cost} or"><span class="material-symbols-outlined" style="font-size: 0.9rem;">add</span></button>`;
             }
@@ -205,12 +205,12 @@ async function updateCharLimitUI() {
     }
 }
 
-window.buyRosterSlot = function(cost) {
+window.buyRosterSlot = function (cost) {
     document.getElementById('rosterSlotCostText').textContent = cost;
     document.getElementById('buyRosterModal').classList.add('show');
 };
 
-window.closeRosterModal = function() {
+window.closeRosterModal = function () {
     document.getElementById('buyRosterModal').classList.remove('show');
 };
 
@@ -227,11 +227,11 @@ document.getElementById('buyRosterConfirmBtn').addEventListener('click', async (
                 window.currentUser = u;
             });
             await updateCharLimitUI();
-            
+
             // Si le panneau de création était caché par applyRbac (pas géré directement mais au cas où)
             const eqCreateSection = document.querySelector('.equip-create-section');
             if (eqCreateSection && window.currentUser) eqCreateSection.style.display = 'block';
-            
+
         } else {
             showNotif(data.message, true);
         }
@@ -314,7 +314,7 @@ function deletePersonnage(id) {
     document.getElementById('deletePersonnageModal').classList.add('show');
 }
 
-window.closeDeletePersoModal = function() {
+window.closeDeletePersoModal = function () {
     document.getElementById('deletePersonnageModal').classList.remove('show');
     persoToDelete = null;
 };
@@ -323,7 +323,7 @@ document.getElementById('deletePersoConfirmBtn').addEventListener('click', async
     if (!persoToDelete) return;
     const id = persoToDelete;
     closeDeletePersoModal();
-    
+
     try {
         await fetch(`/api/personnages/${id}`, { method: 'DELETE' });
         showNotif('Personnage supprimé.');
@@ -341,7 +341,7 @@ async function submitEquipment() {
     const slot = document.getElementById('eqSlot').value;
     if (!name) { showNotif('Nom de l\'équipement obligatoire.', true); return; }
     if (!slot) { showNotif('Slot obligatoire.', true); return; }
-    
+
     const rarity = document.getElementById('eqRarity').value;
     const maxWeight = (WEIGHT_LIMITS[slot] && WEIGHT_LIMITS[slot][rarity]) ? WEIGHT_LIMITS[slot][rarity] : 5;
     const currentWeight = calculateEquipmentWeight();
@@ -419,18 +419,18 @@ async function submitEquipment() {
         document.getElementById('eqCrit').value = 0;
         document.getElementById('eqRegenHp').value = 0;
         document.getElementById('eqRegenMana').value = 0;
-        if(document.getElementById('eqConsumableHpPercent')) document.getElementById('eqConsumableHpPercent').value = 0;
-        if(document.getElementById('eqConsumableManaPercent')) document.getElementById('eqConsumableManaPercent').value = 0;
-        if(document.getElementById('eqConsumableMissingHpPercent')) document.getElementById('eqConsumableMissingHpPercent').value = 0;
-        if(document.getElementById('eqConsumableMissingManaPercent')) document.getElementById('eqConsumableMissingManaPercent').value = 0;
-        if(document.getElementById('eqBaseWeight')) document.getElementById('eqBaseWeight').value = 0;
+        if (document.getElementById('eqConsumableHpPercent')) document.getElementById('eqConsumableHpPercent').value = 0;
+        if (document.getElementById('eqConsumableManaPercent')) document.getElementById('eqConsumableManaPercent').value = 0;
+        if (document.getElementById('eqConsumableMissingHpPercent')) document.getElementById('eqConsumableMissingHpPercent').value = 0;
+        if (document.getElementById('eqConsumableMissingManaPercent')) document.getElementById('eqConsumableMissingManaPercent').value = 0;
+        if (document.getElementById('eqBaseWeight')) document.getElementById('eqBaseWeight').value = 0;
         document.getElementById('eqRarity').value = 'COMMUN';
         document.getElementById('eqSpecialEffect').value = 'NONE';
         document.getElementById('eqSpecialEffectValue').value = 0;
         document.getElementById('eqSpecialEffectRow').style.display = 'none';
-        
+
         updateWeightUI(); // Update UI after reset
-        
+
         await loadAllEquipments();
         renderEquipModal();
         await loadPersonnages();
@@ -514,7 +514,7 @@ function getSpiritInfo(nom) {
 }
 
 function getLevelInfo(lvl) {
-    switch(parseInt(lvl)) {
+    switch (parseInt(lvl)) {
         case 1: return { icon: 'looks_one', color: '#cbd5e1' };
         case 2: return { icon: 'looks_two', color: '#10b981' };
         case 3: return { icon: 'looks_3', color: '#3b82f6' };
@@ -610,7 +610,7 @@ function renderPersonnages() {
         const matchSpirit = !searchSpirit || (p.spiritualite && p.spiritualite.id == searchSpirit);
         return matchName && matchOwner && matchVoie && matchSpirit;
     });
-    
+
     // Sort logic: Sort by User then Name for admins, else by Name only
     filtered.sort((a, b) => {
         if (window.isAdmin) {
@@ -700,7 +700,7 @@ function renderPersonnages() {
                         ${eq.name}${effectStar}
                     </span>`;
                 }).join('') +
-            `</div>`;
+                `</div>`;
         }
 
         return `
@@ -800,7 +800,7 @@ function renderEquipModal() {
                 })
                 .join('');
             const rarityClass = equipped.rarity ? `rarity-${equipped.rarity}` : '';
-            
+
             let specialEffectHtml = '';
             if (equipped.specialEffect && equipped.specialEffect !== 'NONE') {
                 const effectLabels = {
@@ -837,10 +837,10 @@ function renderEquipModal() {
         } else {
             // Available items for this slot
             let available = allEquipments.filter(e => e.slot === slotKey && !e.personnage);
-            
+
             // Special case for rings: allow any ring in any ring slot
             if (slotKey === 'ANNEAU_GAUCHE' || slotKey === 'ANNEAU_DROIT') {
-                available = allEquipments.filter(e => 
+                available = allEquipments.filter(e =>
                     (e.slot === 'ANNEAU_GAUCHE' || e.slot === 'ANNEAU_DROIT') && !e.personnage
                 );
             }
@@ -872,33 +872,33 @@ function renderEquipModal() {
                     <div class="custom-select-options" style="font-size: 0.85rem;">
                         <div class="custom-option" data-value=""><span style="color: var(--text-muted);">Choisir...</span></div>
                         ${available.map(a => {
-                            const aStatsChips = STAT_DEFS
-                                .filter(s => a[s.key] && a[s.key] !== 0)
-                                .map(s => {
-                                    const val = a[s.key];
-                                    const sign = val > 0 ? '+' : '';
-                                    const isMalus = val < 0;
-                                    const suffix = s.isPercent ? '%' : '';
-                                    return `<span class="eq-stat-mini ${isMalus ? 'malus' : ''}" title="${s.label}"><span class="material-symbols-outlined" style="color:${isMalus ? '#ef4444' : s.color}; font-size:0.75rem;">${s.icon}</span>${sign}${val}${suffix}</span>`;
-                                }).join('');
+                    const aStatsChips = STAT_DEFS
+                        .filter(s => a[s.key] && a[s.key] !== 0)
+                        .map(s => {
+                            const val = a[s.key];
+                            const sign = val > 0 ? '+' : '';
+                            const isMalus = val < 0;
+                            const suffix = s.isPercent ? '%' : '';
+                            return `<span class="eq-stat-mini ${isMalus ? 'malus' : ''}" title="${s.label}"><span class="material-symbols-outlined" style="color:${isMalus ? '#ef4444' : s.color}; font-size:0.75rem;">${s.icon}</span>${sign}${val}${suffix}</span>`;
+                        }).join('');
 
-                            let aSpecialEffectHtml = '';
-                            if (a.specialEffect && a.specialEffect !== 'NONE') {
-                                const effectLabels = {
-                                    'LIFESTEAL': 'Vol de Vie',
-                                    'THORNS': 'Épines',
-                                    'MANA_SHIELD': 'Bouclier de Mana',
-                                    'CHEAT_DEATH': 'Ange Gardien',
-                                    'CRIT_DAMAGE': 'Dégâts Critiques'
-                                };
-                                const label = effectLabels[a.specialEffect] || a.specialEffect;
-                                aSpecialEffectHtml = `<div style="margin-top: 0.3rem; font-size: 0.7rem; color: #c084fc; background: rgba(168, 85, 247, 0.1); padding: 0.1rem 0.4rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 0.2rem;">
+                    let aSpecialEffectHtml = '';
+                    if (a.specialEffect && a.specialEffect !== 'NONE') {
+                        const effectLabels = {
+                            'LIFESTEAL': 'Vol de Vie',
+                            'THORNS': 'Épines',
+                            'MANA_SHIELD': 'Bouclier de Mana',
+                            'CHEAT_DEATH': 'Ange Gardien',
+                            'CRIT_DAMAGE': 'Dégâts Critiques'
+                        };
+                        const label = effectLabels[a.specialEffect] || a.specialEffect;
+                        aSpecialEffectHtml = `<div style="margin-top: 0.3rem; font-size: 0.7rem; color: #c084fc; background: rgba(168, 85, 247, 0.1); padding: 0.1rem 0.4rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 0.2rem;">
                                     <span class="material-symbols-outlined" style="font-size: 0.8rem;">auto_awesome</span>
                                     ${label} : ${a.specialEffectValue}
                                 </div>`;
-                            }
+                    }
 
-                            const tooltipHtml = `
+                    const tooltipHtml = `
                                 <div class="tooltip-data" style="display:none;">
                                     <div style="font-weight: bold; margin-bottom: 0.3rem; font-size: 1rem;" class="${a.rarity ? 'rarity-' + a.rarity : ''}">${a.name} ${a.rarity ? '(' + a.rarity + ')' : ''}</div>
                                     <div class="equip-slot-stats" style="flex-wrap: wrap;">
@@ -908,14 +908,14 @@ function renderEquipModal() {
                                 </div>
                             `;
 
-                            return `
+                    return `
                                 <div class="custom-option" data-value="${a.id}" onmouseenter="showEqTooltip(this)" onmouseleave="hideEqTooltip()">
                                     <span class="${a.rarity ? 'rarity-' + a.rarity : ''}">${a.name}</span>
                                     ${a.rarity ? '<span style="font-size: 0.7rem; opacity: 0.5; margin-left: 0.3rem;">(' + a.rarity + ')</span>' : ''}
                                     ${tooltipHtml}
                                 </div>
                             `;
-                        }).join('')}
+                }).join('')}
                     </div>
                     <input type="hidden" class="eq-assign-hidden" data-perso-id="${perso.id}" data-slot="${slotKey}" value="">
                 </div>`;
@@ -947,7 +947,7 @@ function renderEquipModal() {
                 ${info.label}
             </div>`;
         }).join('');
-        
+
         // Setup initial value
         if (slots.length > 0) {
             const firstSlot = slots[0];
@@ -1021,12 +1021,12 @@ function resetForm() {
     document.getElementById('charCrit').value = 0;
     document.getElementById('charVoie').value = '';
     document.getElementById('charVoieLabel').innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">trip_origin</span> — Aucune —`;
-    
+
     document.getElementById('charExperience').value = 0;
 
     document.getElementById('charSpirit').value = '';
     document.getElementById('charSpiritLabel').innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">trip_origin</span> — Aucune —`;
-    
+
     document.getElementById('charSpiritExperience').value = 0;
 
     document.getElementById('formTitleText').innerHTML = `
@@ -1074,14 +1074,14 @@ document.addEventListener('click', (e) => {
         const wrapper = option.closest('.custom-select-wrapper');
         const hiddenInput = wrapper.querySelector('input[type="hidden"]');
         const labelEl = wrapper.querySelector('.cs-label');
-        
+
         hiddenInput.value = option.getAttribute('data-value');
         labelEl.innerHTML = option.innerHTML;
         wrapper.classList.remove('open');
-        
+
         const event = new Event('change', { bubbles: true });
         hiddenInput.dispatchEvent(event);
-        
+
         // Trigger specific logic for search
         if (hiddenInput.id === 'searchVoie' || hiddenInput.id === 'searchSpirit') {
             filterPersonnages();
@@ -1114,7 +1114,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         cvInput.addEventListener('change', (e) => {
             const vId = e.target.value;
             const iconEl = document.getElementById('charVoieInfoIcon');
-            
+
             if (!vId) {
                 if (iconEl) iconEl.style.display = 'none';
                 return;
@@ -1148,7 +1148,7 @@ window.addEventListener('DOMContentLoaded', async () => {
         csInput.addEventListener('change', (e) => {
             const sId = e.target.value;
             const iconEl = document.getElementById('charSpiritInfoIcon');
-            
+
             if (!sId) {
                 if (iconEl) iconEl.style.display = 'none';
                 return;
@@ -1176,7 +1176,7 @@ window.addEventListener('DOMContentLoaded', async () => {
             }
         });
     }
-    
+
     // Initial UI update
     updateWeightUI();
 
@@ -1188,32 +1188,32 @@ window.addEventListener('DOMContentLoaded', async () => {
             const row = document.getElementById('eqSpecialEffectRow');
             if (val === 'EPIQUE' || val === 'RELIQUE') {
                 row.style.display = 'grid';
-                
+
                 // Colors based on rarity
                 const isEpic = val === 'EPIQUE';
                 const color = isEpic ? '#ef4444' : '#c084fc';
                 const bg = isEpic ? 'rgba(239, 68, 68, 0.05)' : 'rgba(168, 85, 247, 0.05)';
                 const border = isEpic ? '1px dashed rgba(239, 68, 68, 0.3)' : '1px dashed rgba(168, 85, 247, 0.3)';
                 const inputBorder = isEpic ? 'rgba(239, 68, 68, 0.3)' : 'rgba(192, 132, 252, 0.3)';
-                
+
                 row.style.background = bg;
                 row.style.border = border;
-                
+
                 const labelTitle = document.getElementById('eqSpecialEffectLabelTitle');
-                if(labelTitle) labelTitle.style.color = color;
-                
+                if (labelTitle) labelTitle.style.color = color;
+
                 const valueTitle = document.getElementById('eqSpecialEffectValueTitle');
-                if(valueTitle) valueTitle.style.color = color;
-                
+                if (valueTitle) valueTitle.style.color = color;
+
                 const trigger = document.getElementById('eqSpecialEffectTrigger');
-                if(trigger) trigger.style.borderColor = inputBorder;
-                
+                if (trigger) trigger.style.borderColor = inputBorder;
+
                 const valInput = document.getElementById('eqSpecialEffectValue');
-                if(valInput) valInput.style.borderColor = inputBorder;
+                if (valInput) valInput.style.borderColor = inputBorder;
 
             } else {
                 row.style.display = 'none';
-                
+
                 // Reset hidden input for custom select
                 const effectInput = document.getElementById('eqSpecialEffect');
                 if (effectInput) {
@@ -1224,7 +1224,7 @@ window.addEventListener('DOMContentLoaded', async () => {
                         labelSpan.innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">not_interested</span> Aucun`;
                     }
                 }
-                
+
                 const valInput = document.getElementById('eqSpecialEffectValue');
                 if (valInput) valInput.value = 0;
             }
@@ -1244,7 +1244,7 @@ window.addEventListener('authLoaded', async () => {
     await loadPersonnages();
 });
 
-window.showEqTooltip = function(el) {
+window.showEqTooltip = function (el) {
     let tooltip = document.getElementById('globalSpellTooltip');
     if (!tooltip) {
         tooltip = document.createElement('div');
@@ -1268,7 +1268,7 @@ window.showEqTooltip = function(el) {
     tooltip.style.left = leftPos + 'px';
 };
 
-window.hideEqTooltip = function() {
+window.hideEqTooltip = function () {
     const tooltip = document.getElementById('globalSpellTooltip');
     if (tooltip) tooltip.style.display = 'none';
 };
