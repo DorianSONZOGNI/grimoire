@@ -55,9 +55,14 @@ public class WebSpellCreationController {
     private final java.util.List<String> sandboxLogs = new java.util.ArrayList<>();
 
     /** Raccourci : le héros est toujours allies[0] */
-    private Personnage getSandboxHero() { return sandboxAllies.isEmpty() ? null : sandboxAllies.get(0); }
+    private Personnage getSandboxHero() {
+        return sandboxAllies.isEmpty() ? null : sandboxAllies.get(0);
+    }
+
     /** Raccourci : le monstre principal est toujours enemies[0] */
-    private Personnage getSandboxMonster() { return sandboxEnemies.isEmpty() ? null : sandboxEnemies.get(0); }
+    private Personnage getSandboxMonster() {
+        return sandboxEnemies.isEmpty() ? null : sandboxEnemies.get(0);
+    }
 
     private synchronized void initSandbox() {
         if (sandboxAllies.isEmpty()) {
@@ -127,14 +132,22 @@ public class WebSpellCreationController {
         // Initialiser les Voies classiques si absentes, et y associer leurs passifs
         // respectifs
         Map<String, String> passifsVoies = new HashMap<>();
-        passifsVoies.put("Voie de la Raison", "Si un sort de Raison est lancé, les sorts de type Inspiration et Expiration coûtent 10% de PV/Mana en moins pour ce tour.");
-        passifsVoies.put("Voie de la Sûreté", "Augmente passivement l'armure et la résistance en fonction du mana dépensé.");
-        passifsVoies.put("Voie de Trahison", "Les attaques infligent plus de dégâts mais consument des PV selon la cible.");
-        passifsVoies.put("Voie de la Consolidation", "Booste les statistiques de base du personnage après le lancement d'un sort.");
-        passifsVoies.put("Voie de la Conviction", "Les soins et dégâts sont ajustés en fonction de la conviction.");
-        passifsVoies.put("Voie de la Création", "Permet aux sorts de type Banal d'être lancés de manière instantanée.");
-        passifsVoies.put("Voie de la Destruction", "Ajuste la puissance des sorts et leur coût en combat.");
-        passifsVoies.put("Voie de la Violence", "Le lancement d'un sort octroie des effets d'Inspiration ou d'Expiration supplémentaires.");
+        passifsVoies.put("Voie de la Raison",
+                "Lancer un sort de Raison confère +1 Vitesse au tour suivant (max 10 cumuls, perdus si aucun n'est lancé). De plus, le score de Critique est augmenté d'un montant égal au double de la Vitesse.");
+        passifsVoies.put("Voie de la Sûreté",
+                "Accumule des points de Sûreté (10/tour et 20% du mana dépensé). À 100 points, octroie +15% de Critique, ou +25% si le palier est atteint passivement en début de tour.");
+        passifsVoies.put("Voie de Trahison",
+                "Une fois par tour, vos attaques physiques infligent des dégâts bruts bonus qui vous soignent : +10% de base, +15% si la cible a moins de 50% PV, et +10% si elle a un malus.");
+        passifsVoies.put("Voie de la Consolidation",
+                "Octroie +5% d'Armure par défaut. Lancer un sort remplace ce bonus selon son niveau (Nv1: +1 Vitesse, Nv2: +10% Armure, Nv3: +10% Résistance Magique, Nv4: Coût des sorts -20%, Nv5: +8% Armure et Résistance).");
+        passifsVoies.put("Voie de la Conviction",
+                "Régénère 25 points de mana par tour (+5 par niveau de Voie) et augmente le mana maximum de 25 par niveau au-delà du premier.");
+        passifsVoies.put("Voie de la Création",
+                "Modifie le 1er sort du tour : un sort Instantané devient gratuit, un sort Banal devient Instantané, et un sort Canalisé octroie un bouclier égal au mana dépensé.");
+        passifsVoies.put("Voie de la Destruction",
+                "Accumule de la 'Chaleur' en lançant des sorts. Lorsque la chaleur atteint 100, le prochain sort lancé est entièrement gratuit.");
+        passifsVoies.put("Voie de la Violence",
+                "Le lancement d'un sort octroie des effets d'Inspiration ou d'Expiration supplémentaires.");
 
         String[] voies = { "Voie de la Raison", "Voie de la Sûreté", "Voie de Trahison", "Voie de la Consolidation",
                 "Voie de la Conviction", "Voie de la Création", "Voie de la Destruction", "Voie de la Violence" };
@@ -210,7 +223,7 @@ public class WebSpellCreationController {
         if (spiritualiteRepository.findByNom("Ténèbres").isEmpty()) {
             Spiritualite tenebres = new Spiritualite();
             tenebres.setNom("Ténèbres");
-            tenebres.setDescription("Spiritualité axée sur la puissance brute sous condition.");
+            tenebres.setDescription("Axée sur la puissance brute et les débuffs");
             TenebrePassiveEffect te = new TenebrePassiveEffect();
             te.setSpiritualite(tenebres);
             tenebres.setPassiveEffects(List.of(te));
@@ -257,11 +270,14 @@ public class WebSpellCreationController {
         // Set passiveDescription for spiritualites
         for (Spiritualite sp : spiritualiteRepository.findAll()) {
             if ("Esprit".equals(sp.getNom())) {
-                sp.setPassiveDescription("Régénération de mana augmentée.");
+                sp.setPassiveDescription(
+                        "Les sorts de cette spiritualité ne peuvent être lancés que si vous possédez au moins 20% de vos PV max ET 20% de votre Mana max.");
             } else if ("Ténèbres".equals(sp.getNom())) {
-                sp.setPassiveDescription("Résistance accrue aux attaques magiques ténébreuses.");
+                sp.setPassiveDescription(
+                        "Sauf pour les sorts de 'base', le lancement nécessite d'avoir 80% ou moins de vos PV max OU 80% ou moins de votre Mana max.");
             } else if ("Karma".equals(sp.getNom())) {
-                sp.setPassiveDescription("Renvoie une portion des dégâts reçus aux attaquants.");
+                sp.setPassiveDescription(
+                        "Gère une jauge affectée par l'alignement des sorts (Ténèbre, Harmonie, Lumière). À 0 (Harmonie), octroie des bonus sur vos sorts. À +4 ou -4, verrouille la magie karmique sauf les sorts d'Harmonie pendant 6 tours mais confère un buff massif d'Illumination (+Armure/Résist) ou de Corruption (+Dégâts). On peut réduire le timer de tour en lançant des sorts d'harmonie.");
             }
             spiritualiteRepository.save(sp);
         }
@@ -488,29 +504,29 @@ public class WebSpellCreationController {
         clone.setId(dbP.getId());
         clone.setName(dbP.getName());
         clone.setTeamId(teamPrefix + "_" + index);
-        
+
         clone.setHealthMax(dbP.getBaseHealthMax());
         clone.setManaMax(dbP.getBaseManaMax());
-        
+
         clone.setPower(dbP.getPower());
         clone.setStrength(dbP.getStrength());
         clone.setArmor(dbP.getArmor());
         clone.setResistance(dbP.getResistance());
         clone.setCrit(dbP.getCrit());
         clone.setSpeed(dbP.getSpeed());
-        
+
         clone.setVoie(dbP.getVoie());
         clone.setVoieLevel(dbP.getVoieLevel());
         clone.setSpiritualite(dbP.getSpiritualite());
         clone.setSpiritualiteLevel(dbP.getSpiritualiteLevel());
-        
+
         if (dbP.getEquipments() != null) {
             clone.setEquipments(new java.util.ArrayList<>(dbP.getEquipments()));
         }
 
         clone.setHealthCurrent(dbP.getHealthMax());
         clone.setManaCurrent(dbP.getManaMax());
-        
+
         return clone;
     }
 
@@ -686,9 +702,11 @@ public class WebSpellCreationController {
 
         Personnage caster = getSandboxHero();
         Personnage target = (targetEnemyIndex >= 0 && targetEnemyIndex < sandboxEnemies.size())
-                ? sandboxEnemies.get(targetEnemyIndex) : getSandboxMonster();
+                ? sandboxEnemies.get(targetEnemyIndex)
+                : getSandboxMonster();
         Personnage ally = (targetAllyIndex >= 0 && targetAllyIndex < sandboxAllies.size())
-                ? sandboxAllies.get(targetAllyIndex) : caster;
+                ? sandboxAllies.get(targetAllyIndex)
+                : caster;
 
         java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
         java.io.PrintStream originalOut = System.out;
@@ -729,7 +747,8 @@ public class WebSpellCreationController {
             // Résoudre les canalisations actives du héros
             if (hero.getRemainingChannelingTurns() > 0) {
                 Personnage channelingTarget = hero.getChannelingTarget();
-                if (channelingTarget == null) channelingTarget = getSandboxMonster();
+                if (channelingTarget == null)
+                    channelingTarget = getSandboxMonster();
                 spellService.tickChanneling(hero, channelingTarget, hero.getChannelingChoiceKey());
             }
 
@@ -927,7 +946,9 @@ public class WebSpellCreationController {
                     effect.setEffectTarget(
                             eDto.getEffectTarget() != null ? eDto.getEffectTarget() : EffectTarget.TARGET);
                     effect.setRequiredChoiceKey(eDto.getRequiredChoiceKey());
-                    effect.setDetachedSoulRequirement(eDto.getDetachedSoulRequirement() != null ? eDto.getDetachedSoulRequirement() : generation.grimoire.enumeration.DetachedSoulRequirement.NOT_AFFECTED);
+                    effect.setDetachedSoulRequirement(
+                            eDto.getDetachedSoulRequirement() != null ? eDto.getDetachedSoulRequirement()
+                                    : generation.grimoire.enumeration.DetachedSoulRequirement.NOT_AFFECTED);
                     if (eDto.getChannelingTurns() != null) {
                         effect.setChannelingTurns(new java.util.ArrayList<>(eDto.getChannelingTurns()));
                     }

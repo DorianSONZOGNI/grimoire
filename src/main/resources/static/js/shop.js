@@ -161,25 +161,25 @@ function generateStandHtml(eq) {
             <button class="shop-stand-price" onclick="openBuyModal('${isConsumable ? eq.typeId : eq.id}', ${isConsumable})" style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
                 <div>${oldPriceHtml} ${priceStr} <span class="material-symbols-outlined" style="font-size: 1.2rem; vertical-align: middle;">monetization_on</span></div>
                 ${(() => {
-                    if (eq.priceAnomalies && Object.keys(eq.priceAnomalies).length > 0) {
-                        let anos = [];
-                        for(const [n, q] of Object.entries(eq.priceAnomalies)) { 
-                            let aTemp = allAnomalies.find(a => a.name === n);
-                            
-                            const CATEGORY_ICONS = {
-                                'PIERRE': 'landslide',
-                                'METAL': 'hardware',
-                                'COEUR': 'favorite',
-                                'ORBE': 'lens',
-                                'CRISTAL': 'diamond',
-                                'PLUME': 'history_edu',
-                                'ECAILLE': 'waves',
-                                'AUTRE': 'category'
-                            };
-                            const catIcon = aTemp && aTemp.category ? (CATEGORY_ICONS[aTemp.category] || 'category') : 'star';
+            if (eq.priceAnomalies && Object.keys(eq.priceAnomalies).length > 0) {
+                let anos = [];
+                for (const [n, q] of Object.entries(eq.priceAnomalies)) {
+                    let aTemp = allAnomalies.find(a => a.name === n);
 
-                            const spiriColor = aTemp && aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
-                            const tooltipData = `
+                    const CATEGORY_ICONS = {
+                        'PIERRE': 'landslide',
+                        'METAL': 'hardware',
+                        'COEUR': 'favorite',
+                        'ORBE': 'lens',
+                        'CRISTAL': 'diamond',
+                        'PLUME': 'history_edu',
+                        'ECAILLE': 'waves',
+                        'AUTRE': 'category'
+                    };
+                    const catIcon = aTemp && aTemp.category ? (CATEGORY_ICONS[aTemp.category] || 'category') : 'star';
+
+                    const spiriColor = aTemp && aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
+                    const tooltipData = `
                                     <div class="anomaly-tooltip-title">${aTemp ? aTemp.name : n}</div>
                                     <div style="display: flex; gap: 6px; margin: 6px 0; flex-wrap: wrap;">
                                         <span style="border: 1px solid ${getLevelColor(aTemp ? aTemp.level : 1)}; color: ${getLevelColor(aTemp ? aTemp.level : 1)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold;">
@@ -189,21 +189,21 @@ function generateStandHtml(eq) {
                                             <span class="material-symbols-outlined" style="font-size: 0.9rem;">${catIcon}</span>
                                             ${aTemp && aTemp.magicObject ? 'Objet Magique' : 'Matériau'}
                                         </span>
-                                        ${aTemp && aTemp.spiritualite ? 
-                                        `<span style="border: 1px solid ${getSpiritualiteColor(aTemp.spiritualite)}; color: ${getSpiritualiteColor(aTemp.spiritualite)}; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; background: rgba(0,0,0,0.3);">
+                                        ${aTemp && aTemp.spiritualite ?
+                            `<span style="border: 1px solid ${getSpiritualiteColor(aTemp.spiritualite)}; color: ${getSpiritualiteColor(aTemp.spiritualite)}; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; background: rgba(0,0,0,0.3);">
                                             ${aTemp.spiritualite}
                                         </span>` : ''}
                                     </div>
                                     <div class="anomaly-tooltip-desc">${aTemp && aTemp.description ? aTemp.description : 'Aucune description'}</div>
                             `;
-                            anos.push(`<span class="anomaly-badge" style="border-color: ${spiriColor}; background: linear-gradient(${spiriColor}25, ${spiriColor}25), #1e293b; color: ${spiriColor};" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}">
+                    anos.push(`<span class="anomaly-badge" style="border-color: ${spiriColor}; background: linear-gradient(${spiriColor}25, ${spiriColor}25), #1e293b; color: ${spiriColor};" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}">
                                 <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; color: ${spiriColor};">${catIcon}</span> ${q}
-                            </span>`); 
-                        }
-                        return `<div style="display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; margin-top: 2px;">${anos.join('')}</div>`;
-                    }
-                    return '';
-                })()}
+                            </span>`);
+                }
+                return `<div style="display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; margin-top: 2px;">${anos.join('')}</div>`;
+            }
+            return '';
+        })()}
             </button>
         </div>
     `;
@@ -276,13 +276,13 @@ function renderSpecials() {
     if (discountItem) {
         const rarity = discountItem.rarity || 'COMMUN';
         const color = RARITY_COLORS[rarity] || '#ef4444';
-        
+
         let r = 239, g = 68, b = 68;
         if (color === '#94a3b8') { r = 148; g = 163; b = 184; }
         else if (color === '#3b82f6') { r = 59; g = 130; b = 246; }
         else if (color === '#f59e0b') { r = 245; g = 158; b = 11; }
         else if (color === '#c084fc') { r = 192; g = 132; b = 252; }
-        
+
         html += `
             <div class="shop-rarity-group" style="border-top: 3px solid ${color}; background: rgba(${r}, ${g}, ${b}, 0.05);">
                 <div class="shop-rarity-title" style="color: ${color}; border-color: rgba(${r}, ${g}, ${b}, 0.3);">PROMO DU JOUR</div>
@@ -294,7 +294,7 @@ function renderSpecials() {
     if (consumables.length > 0) {
         html += `
             <div class="shop-rarity-group" style="border-top: 3px solid #c084fc; background: rgba(192, 132, 252, 0.05);">
-                <div class="shop-rarity-title" style="color: #c084fc; border-color: rgba(192, 132, 252, 0.3);">FOURNITURES</div>
+                <div class="shop-rarity-title" style="color: #c084fc; border-color: rgba(192, 132, 252, 0.3);">CONSOMABLE</div>
         `;
         consumables.forEach(eq => {
             html += generateStandHtml(eq);
@@ -324,13 +324,13 @@ window.openBuyModal = function (idOrType, isConsumable = false) {
     itemToBuy = { idOrType, isConsumable, price: eq.shopPrice, priceAnomalies: eq.priceAnomalies };
 
     document.getElementById('buyTargetName').textContent = eq.name;
-    
+
     const priceStr = eq.shopPrice % 1 === 0 ? eq.shopPrice : eq.shopPrice.toFixed(1);
     let btnHtml = `<div style="display: flex; align-items: center; gap: 6px; justify-content: center; flex-wrap: wrap;">`;
     btnHtml += `<span>Acheter pour ${priceStr} <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; margin-top: -2px;">monetization_on</span></span>`;
     if (eq.priceAnomalies && Object.keys(eq.priceAnomalies).length > 0) {
         let anos = [];
-        for(const [n, q] of Object.entries(eq.priceAnomalies)) { 
+        for (const [n, q] of Object.entries(eq.priceAnomalies)) {
             let aTemp = allAnomalies.find(a => a.name === n);
             const CATEGORY_ICONS = {
                 'PIERRE': 'landslide',
@@ -354,8 +354,8 @@ window.openBuyModal = function (idOrType, isConsumable = false) {
                             <span class="material-symbols-outlined" style="font-size: 0.9rem;">${catIcon}</span>
                             ${aTemp && aTemp.magicObject ? 'Objet Magique' : 'Matériau'}
                         </span>
-                        ${aTemp && aTemp.spiritualite ? 
-                        `<span style="border: 1px solid ${getSpiritualiteColor(aTemp.spiritualite)}; color: ${getSpiritualiteColor(aTemp.spiritualite)}; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; background: rgba(0,0,0,0.3);">
+                        ${aTemp && aTemp.spiritualite ?
+                    `<span style="border: 1px solid ${getSpiritualiteColor(aTemp.spiritualite)}; color: ${getSpiritualiteColor(aTemp.spiritualite)}; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; background: rgba(0,0,0,0.3);">
                             ${aTemp.spiritualite}
                         </span>` : ''}
                     </div>
@@ -363,7 +363,7 @@ window.openBuyModal = function (idOrType, isConsumable = false) {
             `;
             anos.push(`<span class="anomaly-badge" style="border-color: ${spiriColor}; background: linear-gradient(${spiriColor}25, ${spiriColor}25), #1e293b; color: ${spiriColor};" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}">
                 <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; color: ${spiriColor};">${catIcon}</span> ${q}
-            </span>`); 
+            </span>`);
         }
         btnHtml += `<span style="color: #94a3b8;">+</span> ${anos.join(' ')}`;
     }
@@ -419,7 +419,7 @@ window.addEventListener('authLoaded', () => {
     }
 });
 
-window.showTooltipFixed = function(el) {
+window.showTooltipFixed = function (el) {
     let tooltip = document.getElementById('globalFixedTooltip');
     if (!tooltip) {
         tooltip = document.createElement('div');
@@ -463,7 +463,7 @@ window.showTooltipFixed = function(el) {
     tooltip.style.left = left + 'px';
 };
 
-window.hideTooltipFixed = function() {
+window.hideTooltipFixed = function () {
     const tooltip = document.getElementById('globalFixedTooltip');
     if (tooltip) tooltip.style.display = 'none';
 };
