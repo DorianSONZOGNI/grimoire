@@ -292,12 +292,12 @@ public class PersonnageController {
         private String name;
         private int healthMax = 100;
         private int manaMax = 100;
-        private int power = 25;
+        private int power = 10;
         private int strength = 10;
-        private int armor = 10;
-        private int resistance = 10;
-        private int speed = 0;
-        private int crit = 0;
+        private int armor = 5;
+        private int resistance = 5;
+        private int speed = 1;
+        private int crit = 5;
         private Long voieId;
         private int voieLevel = 1;
         private int experience = 0;

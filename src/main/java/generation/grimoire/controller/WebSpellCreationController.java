@@ -129,8 +129,42 @@ public class WebSpellCreationController {
 
     @PostConstruct
     public void initStandardEntities() {
-        // Initialiser les Voies classiques si absentes, et y associer leurs passifs
-        // respectifs
+        // 1. Initialiser les descriptions classiques
+        Map<String, String> descriptionsVoies = new HashMap<>();
+        descriptionsVoies.put("Voie de la Raison",
+                "Basé sur la vitesse et les coups critique.");
+        descriptionsVoies.put("Voie de la Sûreté",
+                "Défensive et sûre. Des buffs, de la santé et du débuff pour tout le monde.");
+        descriptionsVoies.put("Voie de Trahison",
+                "L'art d'exploiter les faiblesses ennemies et d'achever les cibles faciles.");
+        descriptionsVoies.put("Voie de la Consolidation",
+                "Protection et dégats physiques. Simple, efficasse, endurant.");
+        descriptionsVoies.put("Voie de la Conviction",
+                "Une magie inarrêtable , un flot continue de puissance et de résistance.");
+        descriptionsVoies.put("Voie de la Création",
+                "Imprévisible, adaptable, les longs combats ne lui font pas peur.");
+        descriptionsVoies.put("Voie de la Destruction",
+                "La destruction, c'est très parlant. Ici on envoie des boules de feu, des lasers, et autres joyeusetés.");
+        descriptionsVoies.put("Voie de la Violence",
+                "Un cible mortel fait pour exterminer des groupes entier d'un simple claquement de doigts.");
+
+        // 2. Initialiser les rangs personnalisés par Voie (basé sur tes captures
+        // d'écran)
+        Map<String, Map<Integer, String>> rangsVoies = new HashMap<>();
+        rangsVoies.put("Voie de la Raison", Map.of(1, "Air", 2, "Vibration", 3, "Vide", 4, "Déviation", 5, "Gravité"));
+        rangsVoies.put("Voie de la Sûreté", Map.of(1, "Eau", 2, "Glace", 3, "Sang", 4, "Vapeur", 5, "Pression"));
+        rangsVoies.put("Voie de Trahison", Map.of(1, "Neige", 2, "Acide", 3, "Poison", 4, "Corrosion", 5, "Friction"));
+        rangsVoies.put("Voie de la Consolidation",
+                Map.of(1, "Terre", 2, "Métal", 3, "Sable", 4, "Poussière", 5, "Atome"));
+        rangsVoies.put("Voie de la Conviction", Map.of(1, "Lave", 2, "Cristaux", 3, "Verre", 4, "Fibre", 5, "Tension"));
+        rangsVoies.put("Voie de la Création",
+                Map.of(1, "Plante", 2, "Pétrole", 3, "Plastic", 4, "Caoutchou", 5, "Fil"));
+        rangsVoies.put("Voie de la Destruction",
+                Map.of(1, "Feu", 2, "Explosion", 3, "Éclair", 4, "Laser", 5, "Absorption"));
+        rangsVoies.put("Voie de la Violence",
+                Map.of(1, "Combustion", 2, "Gas", 3, "Oxygen", 4, "Dioxide", 5, "Fragmentation"));
+
+        // 3. Initialiser les passifs classiques
         Map<String, String> passifsVoies = new HashMap<>();
         passifsVoies.put("Voie de la Raison",
                 "Lancer un sort de Raison confère +1 Vitesse au tour suivant (max 10 cumuls, perdus si aucun n'est lancé). De plus, le score de Critique est augmenté d'un montant égal au double de la Vitesse.");
@@ -151,17 +185,26 @@ public class WebSpellCreationController {
 
         String[] voies = { "Voie de la Raison", "Voie de la Sûreté", "Voie de Trahison", "Voie de la Consolidation",
                 "Voie de la Conviction", "Voie de la Création", "Voie de la Destruction", "Voie de la Violence" };
+
         for (String v : voies) {
             java.util.Optional<Voie> optVoie = voieRepository.findByNom(v);
             Voie voie;
             if (optVoie.isEmpty()) {
                 voie = new Voie();
                 voie.setNom(v);
-                voie.setDescription("Voie classique du grimoire.");
             } else {
                 voie = optVoie.get();
             }
 
+            // Assigner la description personnalisée
+            voie.setDescription(descriptionsVoies.getOrDefault(v, "Voie classique du grimoire."));
+
+            // Assigner les rangs personnalisés
+            if (rangsVoies.containsKey(v)) {
+                voie.getRankNames().putAll(rangsVoies.get(v));
+            }
+
+            // Assigner le passif
             if (passifsVoies.containsKey(v)) {
                 voie.setPassiveDescription(passifsVoies.get(v));
             }
@@ -198,10 +241,8 @@ public class WebSpellCreationController {
                     passif.setVoie(voie);
                     voie.setPassiveEffects(List.of(passif));
                 }
-                voieRepository.save(voie);
-            } else {
-                voieRepository.save(voie);
             }
+            voieRepository.save(voie);
         }
 
         // Initialiser les Spiritualités si absentes
@@ -214,7 +255,7 @@ public class WebSpellCreationController {
         if (spiritualiteRepository.findByNom("Esprit").isEmpty()) {
             Spiritualite esprit = new Spiritualite();
             esprit.setNom("Esprit");
-            esprit.setDescription("Spiritualité axée sur l'esprit, la protection et la ressource.");
+            esprit.setDescription("Axée sur le renforcement et les ressources.");
             EspritPassiveEffect ee = new EspritPassiveEffect();
             ee.setSpiritualite(esprit);
             esprit.setPassiveEffects(List.of(ee));
@@ -223,7 +264,7 @@ public class WebSpellCreationController {
         if (spiritualiteRepository.findByNom("Ténèbres").isEmpty()) {
             Spiritualite tenebres = new Spiritualite();
             tenebres.setNom("Ténèbres");
-            tenebres.setDescription("Axée sur la puissance brute et les débuffs");
+            tenebres.setDescription("Axée sur la puissance brute les buffs et les débuffs");
             TenebrePassiveEffect te = new TenebrePassiveEffect();
             te.setSpiritualite(tenebres);
             tenebres.setPassiveEffects(List.of(te));
@@ -232,7 +273,7 @@ public class WebSpellCreationController {
         if (spiritualiteRepository.findByNom("Karma").isEmpty()) {
             Spiritualite karma = new Spiritualite();
             karma.setNom("Karma");
-            karma.setDescription("Spiritualité cyclique.");
+            karma.setDescription("Polyvalent mix entre dégats, protection et soutien.");
             KarmaPassiveEffect ke = new KarmaPassiveEffect();
             ke.setSpiritualite(karma);
             karma.setPassiveEffects(List.of(ke));
@@ -281,18 +322,6 @@ public class WebSpellCreationController {
             }
             spiritualiteRepository.save(sp);
         }
-
-        // Définir des noms de rangs par défaut pour les Voies classiques
-        voieRepository.findAll().forEach(v -> {
-            if (v.getRankNames().isEmpty()) {
-                v.getRankNames().put(1, "Novice");
-                v.getRankNames().put(2, "Adepte");
-                v.getRankNames().put(3, "Disciple");
-                v.getRankNames().put(4, "Maître");
-                v.getRankNames().put(5, "Transcendant");
-                voieRepository.save(v);
-            }
-        });
     }
 
     @GetMapping("/meta")
