@@ -34,7 +34,7 @@ public class ShopController {
     @GetMapping("/daily")
     public ResponseEntity<Map<String, Object>> getDailyShop() {
         List<Equipment> templates = equipmentRepository.findAll().stream()
-                .filter(Equipment::isShopTemplate)
+                .filter(e -> e != null && e.isShopTemplate())
                 .collect(Collectors.toList());
 
         List<Equipment> commons = templates.stream().filter(e -> e.getRarity() == EquipmentRarity.COMMUN).toList();
@@ -118,7 +118,8 @@ public class ShopController {
         // Verify it's in today's selection
         long seed = LocalDate.now().toEpochDay();
         Random random = new Random(seed);
-        List<Equipment> allTemplates = equipmentRepository.findAll().stream().filter(Equipment::isShopTemplate)
+        List<Equipment> allTemplates = equipmentRepository.findAll().stream()
+                .filter(e -> e != null && e.isShopTemplate())
                 .toList();
         List<Equipment> commons = allTemplates.stream().filter(e -> e.getRarity() == EquipmentRarity.COMMUN).toList();
         List<Equipment> rares = allTemplates.stream().filter(e -> e.getRarity() == EquipmentRarity.RARE).toList();
@@ -271,7 +272,7 @@ public class ShopController {
         consumable.setRegenHealthPerTurn(0);
         consumable.setRegenManaPerTurn(0);
         consumable.setBaseWeight(weight);
-        
+
         if ("bread".equalsIgnoreCase(type)) {
             consumable.setConsumableHpPercent(10);
         } else if ("potion".equalsIgnoreCase(type)) {
@@ -290,7 +291,7 @@ public class ShopController {
         if (principal == null || !isAdmin(principal))
             return ResponseEntity.status(403).build();
         List<Equipment> templates = equipmentRepository.findAll().stream()
-                .filter(Equipment::isShopTemplate)
+                .filter(e -> e != null && e.isShopTemplate())
                 .collect(Collectors.toList());
         return ResponseEntity.ok(templates.stream().map(this::toShopDto).toList());
     }
