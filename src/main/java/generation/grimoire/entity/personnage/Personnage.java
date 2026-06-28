@@ -146,6 +146,12 @@ public class Personnage {
     @com.fasterxml.jackson.annotation.JsonIgnore
     private generation.grimoire.entity.auth.AppUser user;
 
+    @com.fasterxml.jackson.annotation.JsonProperty("gold")
+    @Transient
+    public int getGold() {
+        return user != null ? (int) user.getMonnaie() : 0;
+    }
+
     @OneToMany(mappedBy = "personnage", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 
     private List<generation.grimoire.entity.Equipment> equipments = new ArrayList<>();

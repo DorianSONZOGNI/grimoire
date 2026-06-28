@@ -3054,8 +3054,23 @@ window.renderOverlayInventory = function (containerId) {
     if (!list) return;
     list.innerHTML = '';
 
+    // Add Gold reminder
+    let goldAmount = 0;
+    if (currentSessionData && currentSessionData.players && currentSessionData.players.length > 0) {
+        goldAmount = currentSessionData.players[0].gold || 0;
+    }
+    list.innerHTML += `
+        <div style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px; padding: 0.8rem; display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.5rem;">
+            <span class="material-symbols-outlined" style="font-size: 1.5rem; color: #f59e0b;">monetization_on</span>
+            <div style="flex: 1;">
+                <div style="color: #f8fafc; font-weight: 600; font-size: 0.9rem;">Or du compte</div>
+                <div style="color: #f59e0b; font-weight: 700; font-size: 1.1rem;">${goldAmount}</div>
+            </div>
+        </div>
+    `;
+
     if (!currentSessionData || !currentSessionData.activeConsumables || currentSessionData.activeConsumables.length === 0) {
-        list.innerHTML = `<div style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 1rem;">Aucun objet dans l'inventaire.</div>`;
+        list.innerHTML += `<div style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 1rem;">Aucun objet dans l'inventaire.</div>`;
         return;
     }
 
