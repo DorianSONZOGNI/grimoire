@@ -16,6 +16,7 @@
         rel="stylesheet" />
     <link rel="stylesheet" href="/styles/variables.css?v=4">
     <link rel="stylesheet" href="/styles/layout.css?v=4">
+    <link rel="stylesheet" href="/styles/forms.css?v=4">
     <link rel="stylesheet" href="/styles/components.css?v=4">
     <style>
         .alchemy-main {
@@ -462,10 +463,20 @@
                 div.onmouseout = () => { if (selectedRecipe?.id !== r.id) div.style.borderColor = 'var(--glass-border)'; };
                 div.onclick = () => selectRecipe(r, div);
 
+                let rewardIcon = '';
+                if (r.rewardType === 'GIVE_ANOMALY') rewardIcon = `<span class="material-symbols-outlined" style="color: #a855f7; font-size: 1.1rem; opacity: 0.8;" title="Anomalie">star</span>`;
+                else if (r.rewardType === 'GIVE_CONSUMABLE') rewardIcon = `<span class="material-symbols-outlined" style="color: #10b981; font-size: 1.1rem; opacity: 0.8;" title="Consommable">inventory_2</span>`;
+                else if (r.rewardType === 'GIVE_EQUIPMENT') rewardIcon = `<span class="material-symbols-outlined" style="color: #fbbf24; font-size: 1.1rem; opacity: 0.8;" title="Equipement">shield</span>`;
+                else if (r.rewardType === 'UNLOCK_FEATURE') rewardIcon = `<span class="material-symbols-outlined" style="color: #f59e0b; font-size: 1.1rem; opacity: 0.8;" title="Secret">key</span>`;
+                else if (r.rewardType === 'GIVE_SPIRIT_XP') rewardIcon = `<span class="material-symbols-outlined" style="color: #38bdf8; font-size: 1.1rem; opacity: 0.8;" title="XP Spiritualité">self_improvement</span>`;
+
                 div.innerHTML = `
-                    <h4 style="margin: 0; color: #06b6d4; display:flex; align-items:center; gap:0.5rem;">
-                        <span class="material-symbols-outlined" style="font-size:1.2rem;">science</span>
-                        ${r.name}
+                    <h4 style="margin: 0; color: #06b6d4; display:flex; align-items:center; justify-content: space-between;">
+                        <span style="display:flex; align-items:center; gap:0.5rem;">
+                            <span class="material-symbols-outlined" style="font-size:1.2rem;">science</span>
+                            ${r.name}
+                        </span>
+                        ${rewardIcon}
                     </h4>
                     <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${r.description || ''}</p>
                 `;
