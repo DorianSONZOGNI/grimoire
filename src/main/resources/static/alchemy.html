@@ -531,6 +531,21 @@
             if (lower.includes('parchemin')) return { icon: 'history_edu', color: '#fb923c' }; // orange
             if (lower.includes('potion') || lower.includes('élixir') || lower.includes('elixir')) return { icon: 'science', color: '#10b981' }; // green
 
+            if (defaultType === 'SECRET' || defaultType === 'UNLOCK' || lower.includes('secret')) {
+                if (lower.includes('chaos')) return { icon: 'local_fire_department', color: '#ff0000' };
+                if (lower.includes('abondance')) return { icon: 'eco', color: '#10b981' };
+                if (lower.includes('préservation') || lower.includes('preservation')) return { icon: 'foundation', color: '#99674c' };
+                if (lower.includes('sérénité') || lower.includes('serenite')) return { icon: 'water_drop', color: '#00e5cc' };
+                if (lower.includes('chasse')) return { icon: 'visibility_off', color: '#ed5677' };
+                if (lower.includes('carnage')) return { icon: 'explosion', color: '#a70740' };
+                if (lower.includes('joie')) return { icon: 'volcano', color: '#b74c0b' };
+                if (lower.includes('savoir')) return { icon: 'psychology', color: '#3b82f6' };
+                if (lower.includes('destin')) return { icon: 'all_inclusive', color: '#e7d198' };
+                if (lower.includes('éther') || lower.includes('ether')) return { icon: 'blur_on', color: '#38bdf8' };
+                if (lower.includes('abysses') || lower.includes('abysse')) return { icon: 'dark_mode', color: '#c084fc' };
+                return { icon: 'key', color: '#f59e0b' }; // gold
+            }
+
             // Defaults
             if (defaultType === 'CONSUMABLE') return { icon: 'inventory_2', color: '#10b981' }; // green
             if (defaultType === 'ANOMALY') return { icon: 'auto_awesome', color: '#a855f7' }; // purple
