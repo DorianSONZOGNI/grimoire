@@ -456,26 +456,26 @@
 }
 
 /* Custom Select Scrollbar */
-.custom-select-options {
+.custom-select-options, .custom-scrollbar {
     scrollbar-width: thin;
     scrollbar-color: rgba(255, 255, 255, 0.2) rgba(0, 0, 0, 0.2);
 }
 
-.custom-select-options::-webkit-scrollbar {
+.custom-select-options::-webkit-scrollbar, .custom-scrollbar::-webkit-scrollbar {
     width: 6px;
 }
 
-.custom-select-options::-webkit-scrollbar-track {
+.custom-select-options::-webkit-scrollbar-track, .custom-scrollbar::-webkit-scrollbar-track {
     background: rgba(0, 0, 0, 0.2);
     border-radius: 4px;
 }
 
-.custom-select-options::-webkit-scrollbar-thumb {
+.custom-select-options::-webkit-scrollbar-thumb, .custom-scrollbar::-webkit-scrollbar-thumb {
     background: var(--glass-border, rgba(255, 255, 255, 0.2));
     border-radius: 4px;
 }
 
-.custom-select-options::-webkit-scrollbar-thumb:hover {
+.custom-select-options::-webkit-scrollbar-thumb:hover, .custom-scrollbar::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.4);
 }
 

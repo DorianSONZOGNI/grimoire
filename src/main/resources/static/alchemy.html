@@ -279,10 +279,10 @@
         <div class="magic-rock"></div>
 
         <div class="alchemy-main"
-            style="max-width: 1400px; margin: 2rem auto; flex-direction: row; gap: 2rem; align-items: stretch; justify-content: center;">
+            style="max-width: 1400px; margin: 2rem auto; flex-direction: row; gap: 2rem; align-items: stretch; justify-content: center; height: calc(100vh - 160px);">
 
             <!-- Left: List of recipes -->
-            <div class="panel" style="flex: 1; max-width: 450px;">
+            <div class="panel" style="flex: 1; max-width: 450px; display: flex; flex-direction: column;">
                 <div class="panel-title">
                     <span class="material-symbols-outlined" style="color: #a855f7;">menu_book</span>
                     Recettes Connues
@@ -335,8 +335,8 @@
                         <input type="hidden" id="filterRewardType" value="" onchange="renderRecipesList()">
                     </div>
                 </div>
-                <div id="playerRecipesList"
-                    style="display: flex; flex-direction: column; gap: 1rem; max-height: 70vh; overflow-y: auto;">
+                <div id="playerRecipesList" class="custom-scrollbar"
+                    style="display: flex; flex-direction: column; gap: 1rem; flex: 1; overflow-y: auto; padding-right: 0.5rem;">
                     <p style="color: var(--text-muted); text-align: center; margin-top: 2rem;">Chargement du Grimoire
                         Alchimique...</p>
                 </div>
