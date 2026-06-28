@@ -556,13 +556,17 @@ public class CombatService {
                 session.addLog("L'autel vous récompense de " + multipliedValue + " Or !");
             } else if ("XP".equals(rewardType)) {
                 int multipliedValue = (int) Math.round(rewardValue * multiplier);
-                for (Personnage p : session.getPlayers()) {
-                    if (p.getHealthCurrent() > 0) {
-                        p.setSpiritualiteExperience(p.getSpiritualiteExperience() + multipliedValue);
-                        personnageRepository.save(p);
+                int aliveHeroes = (int) session.getPlayers().stream().filter(p -> p.getHealthCurrent() > 0).count();
+                if (aliveHeroes > 0) {
+                    int xpPerHero = multipliedValue / aliveHeroes;
+                    for (Personnage p : session.getPlayers()) {
+                        if (p.getHealthCurrent() > 0) {
+                            p.setSpiritualiteExperience(p.getSpiritualiteExperience() + xpPerHero);
+                            personnageRepository.save(p);
+                        }
                     }
+                    session.addLog("L'autel accorde " + xpPerHero + " XP de Spiritualité à chaque héros !");
                 }
-                session.addLog("L'autel accorde " + multipliedValue + " XP de Spiritualité à tous les héros !");
             } else if ("ITEM".equals(rewardType)) {
                 int chance = level == 1 ? 45 : (level == 2 ? 75 : 100);
                 boolean success = new java.util.Random().nextInt(100) < chance;
