@@ -195,6 +195,20 @@ public class SpellService {
                     }
                 }
             }
+
+            // Vérification de la condition d'Âme Détachée
+            if (effect.getDetachedSoulRequirement() != null && effect.getDetachedSoulRequirement() != generation.grimoire.enumeration.DetachedSoulRequirement.NOT_AFFECTED) {
+                boolean hasAmeDetachee = caster.getActiveBuffs().stream()
+                        .anyMatch(b -> b.getStatAffected() == generation.grimoire.enumeration.StatType.AME_DETACHEE);
+                
+                if (effect.getDetachedSoulRequirement() == generation.grimoire.enumeration.DetachedSoulRequirement.REQUIRED && !hasAmeDetachee) {
+                    continue; // Skip because Âme Détachée is required but not present
+                }
+                if (effect.getDetachedSoulRequirement() == generation.grimoire.enumeration.DetachedSoulRequirement.FORBIDDEN && hasAmeDetachee) {
+                    continue; // Skip because Âme Détachée is forbidden but present
+                }
+            }
+
             java.util.List<Personnage> recipients = resolveRecipients(effect.getEffectTarget(), caster, target);
 
             // Application concrète de l'effet sur chaque destinataire résolu
@@ -343,6 +357,19 @@ public class SpellService {
                     if (!effect.getChannelingTurns().contains(1)) {
                         continue;
                     }
+                }
+            }
+
+            // Vérification de la condition d'Âme Détachée
+            if (effect.getDetachedSoulRequirement() != null && effect.getDetachedSoulRequirement() != generation.grimoire.enumeration.DetachedSoulRequirement.NOT_AFFECTED) {
+                boolean hasAmeDetachee = caster.getActiveBuffs().stream()
+                        .anyMatch(b -> b.getStatAffected() == generation.grimoire.enumeration.StatType.AME_DETACHEE);
+                
+                if (effect.getDetachedSoulRequirement() == generation.grimoire.enumeration.DetachedSoulRequirement.REQUIRED && !hasAmeDetachee) {
+                    continue;
+                }
+                if (effect.getDetachedSoulRequirement() == generation.grimoire.enumeration.DetachedSoulRequirement.FORBIDDEN && hasAmeDetachee) {
+                    continue;
                 }
             }
 
@@ -549,6 +576,19 @@ public class SpellService {
             }
             if (effect.getChannelingTurns() != null && !effect.getChannelingTurns().isEmpty()) {
                 if (!effect.getChannelingTurns().contains(currentTurn)) {
+                    continue;
+                }
+            }
+
+            // Vérification de la condition d'Âme Détachée
+            if (effect.getDetachedSoulRequirement() != null && effect.getDetachedSoulRequirement() != generation.grimoire.enumeration.DetachedSoulRequirement.NOT_AFFECTED) {
+                boolean hasAmeDetachee = caster.getActiveBuffs().stream()
+                        .anyMatch(b -> b.getStatAffected() == generation.grimoire.enumeration.StatType.AME_DETACHEE);
+                
+                if (effect.getDetachedSoulRequirement() == generation.grimoire.enumeration.DetachedSoulRequirement.REQUIRED && !hasAmeDetachee) {
+                    continue;
+                }
+                if (effect.getDetachedSoulRequirement() == generation.grimoire.enumeration.DetachedSoulRequirement.FORBIDDEN && hasAmeDetachee) {
                     continue;
                 }
             }

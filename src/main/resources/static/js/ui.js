@@ -186,6 +186,7 @@ export function makeCustomSelect(selectIdOrElement) {
     trigger.style.fontSize = '0.9rem';
 
     const optionsContainer = document.createElement('div');
+    optionsContainer.classList.add('custom-select-options');
     optionsContainer.style.position = 'absolute';
     optionsContainer.style.top = '100%';
     optionsContainer.style.left = '0';

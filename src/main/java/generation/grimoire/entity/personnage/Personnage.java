@@ -14,6 +14,8 @@ import generation.grimoire.enumeration.StatType;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -23,6 +25,12 @@ import java.util.HashMap;
 
 @Data
 @NoArgsConstructor
+@EqualsAndHashCode(exclude = { "user", "equipments", "activeBuffs", "activeShields", "activeHealOverTimeEffects",
+        "activeManaOverTimeEffects", "activeDamageOverTimeEffects", "activeHeatOverTimeEffects", "consumableSpellBuffs",
+        "channelingTarget" })
+@ToString(exclude = { "user", "equipments", "activeBuffs", "activeShields", "activeHealOverTimeEffects",
+        "activeManaOverTimeEffects", "activeDamageOverTimeEffects", "activeHeatOverTimeEffects", "consumableSpellBuffs",
+        "channelingTarget" })
 @Entity
 @Table(name = "Personnage")
 public class Personnage {
@@ -56,21 +64,33 @@ public class Personnage {
     @Access(AccessType.PROPERTY)
     @Column(name = "voie_level", nullable = false)
     public int getVoieLevel() {
-        if (experience >= 1000) return 5;
-        if (experience >= 600) return 4;
-        if (experience >= 300) return 3;
-        if (experience >= 100) return 2;
+        if (experience >= 1000)
+            return 5;
+        if (experience >= 600)
+            return 4;
+        if (experience >= 300)
+            return 3;
+        if (experience >= 100)
+            return 2;
         return 1;
     }
 
     public void setVoieLevel(int level) {
-        // Ignoré car calculé depuis l'expérience, mais laissé pour compatibilité avec certains setter implicites (ex: Jackson si besoin, ou si du code existant tente de le modifier)
-        // Si on force un setVoieLevel manuel (ex: admin), on pourrait affecter l'xp minimale correspondante :
-        if (level == 5) this.experience = Math.max(this.experience, 1000);
-        else if (level == 4) this.experience = Math.max(this.experience, 600);
-        else if (level == 3) this.experience = Math.max(this.experience, 300);
-        else if (level == 2) this.experience = Math.max(this.experience, 100);
-        else if (level == 1) this.experience = Math.max(this.experience, 0);
+        // Ignoré car calculé depuis l'expérience, mais laissé pour compatibilité avec
+        // certains setter implicites (ex: Jackson si besoin, ou si du code existant
+        // tente de le modifier)
+        // Si on force un setVoieLevel manuel (ex: admin), on pourrait affecter l'xp
+        // minimale correspondante :
+        if (level == 5)
+            this.experience = Math.max(this.experience, 1000);
+        else if (level == 4)
+            this.experience = Math.max(this.experience, 600);
+        else if (level == 3)
+            this.experience = Math.max(this.experience, 300);
+        else if (level == 2)
+            this.experience = Math.max(this.experience, 100);
+        else if (level == 1)
+            this.experience = Math.max(this.experience, 0);
     }
 
     @ManyToOne
@@ -78,7 +98,7 @@ public class Personnage {
     private Spiritualite spiritualite;
 
     private int spiritualiteExperience = 0;
-    
+
     @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "personnage_special_items", joinColumns = @JoinColumn(name = "personnage_id"))
     @MapKeyColumn(name = "item_name")
@@ -105,21 +125,32 @@ public class Personnage {
     @Access(AccessType.PROPERTY)
     @Column(name = "spiritualite_level", nullable = false)
     public int getSpiritualiteLevel() {
-        if (spiritualiteExperience >= 300) return 3;
-        if (spiritualiteExperience >= 100) return 2;
+        if (spiritualiteExperience >= 300)
+            return 3;
+        if (spiritualiteExperience >= 100)
+            return 2;
         return 1;
     }
 
     public void setSpiritualiteLevel(int level) {
-        if (level == 3) this.spiritualiteExperience = Math.max(this.spiritualiteExperience, 300);
-        else if (level == 2) this.spiritualiteExperience = Math.max(this.spiritualiteExperience, 100);
-        else if (level == 1) this.spiritualiteExperience = Math.max(this.spiritualiteExperience, 0);
+        if (level == 3)
+            this.spiritualiteExperience = Math.max(this.spiritualiteExperience, 300);
+        else if (level == 2)
+            this.spiritualiteExperience = Math.max(this.spiritualiteExperience, 100);
+        else if (level == 1)
+            this.spiritualiteExperience = Math.max(this.spiritualiteExperience, 0);
     }
 
     @ManyToOne
     @JoinColumn(name = "user_id", nullable = true)
     @com.fasterxml.jackson.annotation.JsonIgnore
     private generation.grimoire.entity.auth.AppUser user;
+
+    @com.fasterxml.jackson.annotation.JsonProperty("gold")
+    @Transient
+    public int getGold() {
+        return user != null ? (int) user.getMonnaie() : 0;
+    }
 
     @OneToMany(mappedBy = "personnage", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 
@@ -197,7 +228,7 @@ public class Personnage {
                         .println(name + " continue de canaliser (tours restants : " + remainingChannelingTurns + ").");
             }
         }
-        
+
         // Effets des équipements (Régen / Drain)
         if (this.healthCurrent > 0 && this.equipments != null) {
             int totalHpRegen = 0;
@@ -218,7 +249,8 @@ public class Personnage {
     }
 
     public int getSpecialEffectValue(generation.grimoire.enumeration.EquipmentEffectType type) {
-        if (this.equipments == null) return 0;
+        if (this.equipments == null)
+            return 0;
         int total = 0;
         for (generation.grimoire.entity.Equipment eq : this.equipments) {
             if (eq.getSpecialEffect() == type) {
@@ -304,7 +336,8 @@ public class Personnage {
         // Calcul des dégâts après la réduction
         double finalDamage = damageAfterBuff * (1 - reductionFactor);
 
-        // S'assurer que les dégâts sont toujours au moins 1 si les dégâts de base étaient > 0
+        // S'assurer que les dégâts sont toujours au moins 1 si les dégâts de base
+        // étaient > 0
         int effectiveDamage = (int) finalDamage;
         if (damageAfterBuff > 0 && effectiveDamage < 1) {
             effectiveDamage = 1;
@@ -357,7 +390,7 @@ public class Personnage {
         }
 
         int remainingDamage = effectiveDamage - bypassDamage;
-        
+
         // MANA SHIELD
         int manaShieldPct = getSpecialEffectValue(generation.grimoire.enumeration.EquipmentEffectType.MANA_SHIELD);
         if (manaShieldPct > 0 && remainingDamage > 0) {
@@ -423,10 +456,12 @@ public class Personnage {
 
         // CHEAT DEATH
         if (this.healthCurrent <= 0) {
-            int cheatDeathValue = getSpecialEffectValue(generation.grimoire.enumeration.EquipmentEffectType.CHEAT_DEATH);
+            int cheatDeathValue = getSpecialEffectValue(
+                    generation.grimoire.enumeration.EquipmentEffectType.CHEAT_DEATH);
             if (cheatDeathValue > 0) {
                 this.healthCurrent = cheatDeathValue * 5;
-                System.out.println("👼 Ange Gardien activé ! Le personnage survit avec " + (cheatDeathValue * 5) + " PV.");
+                System.out.println(
+                        "👼 Ange Gardien activé ! Le personnage survit avec " + (cheatDeathValue * 5) + " PV.");
                 // Consomme l'effet pour la session/combat
                 if (this.equipments != null) {
                     for (generation.grimoire.entity.Equipment eq : this.equipments) {
@@ -463,7 +498,8 @@ public class Personnage {
                 }
             }
             if (damageType == DamageType.PHYSIC || damageType == DamageType.MAGIC) {
-                int lifestealPct = caster.getSpecialEffectValue(generation.grimoire.enumeration.EquipmentEffectType.LIFESTEAL);
+                int lifestealPct = caster
+                        .getSpecialEffectValue(generation.grimoire.enumeration.EquipmentEffectType.LIFESTEAL);
                 if (lifestealPct > 0) {
                     int healAmount = (int) Math.ceil(totalDamageToHealth * (lifestealPct / 100.0));
                     System.out.println("🩸 Vol de vie : l'attaquant récupère " + healAmount + " PV.");
@@ -496,11 +532,14 @@ public class Personnage {
         this.healthCurrent += finalHeal;
         if (this.healthCurrent > this.getTotalHealthMax()) {
             this.healthCurrent = this.getTotalHealthMax();
+        } else if (this.healthCurrent < 0) {
+            this.healthCurrent = 0;
         }
         System.out.println(name + " est soigné de " + finalHeal + " points (multiplier soin reçu: " + multiplier
                 + "). Vie actuelle : " + healthCurrent);
 
-        boolean removedPoison = activeBuffs.removeIf(b -> b.getStatAffected() == StatType.POISON && b.getFlatValue() > 0);
+        boolean removedPoison = activeBuffs
+                .removeIf(b -> b.getStatAffected() == StatType.POISON && b.getFlatValue() > 0);
         boolean removedPoisonDot = activeDamageOverTimeEffects.removeIf(dot -> Boolean.TRUE.equals(dot.getPoison()));
         if (removedPoison || removedPoisonDot) {
             System.out.println("💧 Le soin a purifié le Poison sur " + name + " !");
@@ -511,6 +550,8 @@ public class Personnage {
         this.manaCurrent += manaAmount;
         if (this.manaCurrent > this.getTotalManaMax()) {
             this.manaCurrent = this.getTotalManaMax();
+        } else if (this.manaCurrent < 0) {
+            this.manaCurrent = 0;
         }
         System.out.println(name + " régénère " + manaAmount + " mana. Mana actuelle : " + manaCurrent);
     }
@@ -669,7 +710,8 @@ public class Personnage {
     public int getTotalShield() {
         if (activeShields == null)
             return 0;
-        return activeShields.stream().mapToInt(ActiveShield::getAmount).sum();
+        return activeShields.stream().mapToInt(shield -> shield != null ? shield.getAmount() : 0)
+                .sum();
     }
 
     public void addConsumableSpellBuff(ConsumableSpellBuffDebuffEffect buff) {
@@ -703,18 +745,33 @@ public class Personnage {
     public double getStatBuffMultiplier(StatType statType) {
         double totalModifier = activeBuffs.stream()
                 .filter(buff -> buff.affectsStatType(statType) && buff.getFlatValue() == 0)
-                .mapToDouble(BuffDebuffEffect::getModifier)
+                .mapToDouble(buff -> buff.getModifier())
                 .sum();
+
+        if (statType == StatType.DAMAGE_GIVEN_PHYSIC) {
+            boolean hasAmeDetachee = activeBuffs.stream().anyMatch(b -> b.getStatAffected() == StatType.AME_DETACHEE);
+            if (hasAmeDetachee) {
+                totalModifier += 0.40;
+            }
+        }
+
         return 1.0 + totalModifier;
     }
 
     public int getStatFlatBonus(StatType statType) {
         int buffBonus = activeBuffs.stream()
                 .filter(buff -> buff.affectsStatType(statType) && buff.getFlatValue() != 0)
-                .mapToInt(BuffDebuffEffect::getFlatValue)
+                .mapToInt(buff -> buff.getFlatValue())
                 .sum();
+
+        if (statType == StatType.DAMAGE_GIVEN_PHYSIC) {
+            boolean hasAmeDetachee = activeBuffs.stream().anyMatch(b -> b.getStatAffected() == StatType.AME_DETACHEE);
+            if (hasAmeDetachee) {
+                buffBonus += 5;
+            }
+        }
         int passiveBonus = getPassiveState("stat_flat_" + statType.name(), 0);
-        
+
         int equipmentBonus = 0;
         if (this.equipments != null) {
             for (generation.grimoire.entity.Equipment eq : this.equipments) {
@@ -727,7 +784,8 @@ public class Personnage {
                     case RESISTANCE -> equipmentBonus += eq.getBonusResistance();
                     case SPEED -> equipmentBonus += eq.getBonusSpeed();
                     case CRIT -> equipmentBonus += eq.getBonusCrit();
-                    default -> {}
+                    default -> {
+                    }
                 }
             }
         }
@@ -776,9 +834,12 @@ public class Personnage {
      * Vérifie si ce personnage peut lancer le sort donné en fonction de sa voie,
      * sa spiritualité et ses niveaux respectifs.
      * <ul>
-     *   <li>Si le sort nécessite une voie, le personnage doit avoir la même voie et un niveau ≥ au niveau du sort.</li>
-     *   <li>Si le sort nécessite une spiritualité, le personnage doit avoir la même spiritualité et un niveau ≥ au niveau du sort.</li>
-     *   <li>Si le sort nécessite les deux, les deux conditions doivent être satisfaites.</li>
+     * <li>Si le sort nécessite une voie, le personnage doit avoir la même voie et
+     * un niveau ≥ au niveau du sort.</li>
+     * <li>Si le sort nécessite une spiritualité, le personnage doit avoir la même
+     * spiritualité et un niveau ≥ au niveau du sort.</li>
+     * <li>Si le sort nécessite les deux, les deux conditions doivent être
+     * satisfaites.</li>
      * </ul>
      *
      * @param spell le sort à vérifier
@@ -789,10 +850,13 @@ public class Personnage {
         boolean hasSpiritReq = spell.getSpiritualite() != null;
 
         if (hasVoieReq) {
-            boolean idMatch = this.voie != null && this.voie.getId() != null && spell.getVoie().getId() != null && this.voie.getId().equals(spell.getVoie().getId());
-            boolean nameMatch = this.voie != null && this.voie.getId() == null && spell.getVoie().getId() == null && this.voie.getNom() != null && this.voie.getNom().equals(spell.getVoie().getNom());
+            boolean idMatch = this.voie != null && this.voie.getId() != null && spell.getVoie().getId() != null
+                    && this.voie.getId().equals(spell.getVoie().getId());
+            boolean nameMatch = this.voie != null && this.voie.getId() == null && spell.getVoie().getId() == null
+                    && this.voie.getNom() != null && this.voie.getNom().equals(spell.getVoie().getNom());
             if (this.voie == null || (!idMatch && !nameMatch)) {
-                return this.name + " n'a pas la " + spell.getVoie().getNom() + " requise pour lancer " + spell.getNom() + ".";
+                return this.name + " n'a pas la " + spell.getVoie().getNom() + " requise pour lancer " + spell.getNom()
+                        + ".";
             }
             if (this.getVoieLevel() < spell.getNiveau()) {
                 return this.name + " a besoin de " + spell.getVoie().getNom() + " niveau " + spell.getNiveau()
@@ -801,10 +865,15 @@ public class Personnage {
         }
 
         if (hasSpiritReq) {
-            boolean idMatch = this.spiritualite != null && this.spiritualite.getId() != null && spell.getSpiritualite().getId() != null && this.spiritualite.getId().equals(spell.getSpiritualite().getId());
-            boolean nameMatch = this.spiritualite != null && this.spiritualite.getId() == null && spell.getSpiritualite().getId() == null && this.spiritualite.getNom() != null && this.spiritualite.getNom().equals(spell.getSpiritualite().getNom());
+            boolean idMatch = this.spiritualite != null && this.spiritualite.getId() != null
+                    && spell.getSpiritualite().getId() != null
+                    && this.spiritualite.getId().equals(spell.getSpiritualite().getId());
+            boolean nameMatch = this.spiritualite != null && this.spiritualite.getId() == null
+                    && spell.getSpiritualite().getId() == null && this.spiritualite.getNom() != null
+                    && this.spiritualite.getNom().equals(spell.getSpiritualite().getNom());
             if (this.spiritualite == null || (!idMatch && !nameMatch)) {
-                return this.name + " n'a pas la spiritualité " + spell.getSpiritualite().getNom() + " requise pour lancer " + spell.getNom() + ".";
+                return this.name + " n'a pas la spiritualité " + spell.getSpiritualite().getNom()
+                        + " requise pour lancer " + spell.getNom() + ".";
             }
             if (this.getSpiritualiteLevel() < spell.getNiveau()) {
                 return this.name + " a besoin de " + spell.getSpiritualite().getNom() + " niveau " + spell.getNiveau()
@@ -813,12 +882,16 @@ public class Personnage {
         }
 
         // Si le sort n'a ni Voie ni Spiritualité, c'est un sort générique.
-        // Si le personnage A une Voie ou une Spiritualité, on interdit l'accès aux sorts génériques
-        // pour respecter strictement "accès QU'AUX sorts de la voie de la raison" sauf "attaque basic"
+        // Si le personnage A une Voie ou une Spiritualité, on interdit l'accès aux
+        // sorts génériques
+        // pour respecter strictement "accès QU'AUX sorts de la voie de la raison" sauf
+        // "attaque basic"
         if (!hasVoieReq && !hasSpiritReq) {
             if (this.voie != null || this.spiritualite != null) {
-                // Sauf exceptions explicites si besoin, mais le prompt disait "uniquement les sorts de sa voie"
-                // On va l'interdire SAUF si le nom du sort est l'attaque de base (pour la sécurité).
+                // Sauf exceptions explicites si besoin, mais le prompt disait "uniquement les
+                // sorts de sa voie"
+                // On va l'interdire SAUF si le nom du sort est l'attaque de base (pour la
+                // sécurité).
                 if (spell.getNom() != null && spell.getNom().toLowerCase().contains("base")) {
                     return null;
                 }

@@ -101,6 +101,13 @@ public class CombatService {
             throw new RuntimeException("Ce donjon ne contient aucune salle.");
         }
 
+        // Validate character level
+        for (Personnage p : players) {
+            if (p.getVoieLevel() < d.getRecommendedLevel()) {
+                throw new RuntimeException("Le personnage " + p.getName() + " (Niv." + p.getVoieLevel() + ") n'a pas le niveau requis (" + d.getRecommendedLevel() + ") pour ce donjon.");
+            }
+        }
+
         String sessionId = UUID.randomUUID().toString();
         CombatSession session = new CombatSession(sessionId, d, players);
 
@@ -108,12 +115,25 @@ public class CombatService {
             for (Long cid : consumableIds) {
                 if (cid != null) { // <-- Added null check
                     equipmentRepository.findById(cid).ifPresent(eq -> {
-                        if (eq.getOwnerUsername() != null && eq.getOwnerUsername().equals(username)) {
+                        String ownerStr = eq.getOwnerUsername();
+                        if (ownerStr == null && eq.getUser() != null) {
+                            ownerStr = eq.getUser().getUsername();
+                        }
+                        if (ownerStr != null && ownerStr.equals(username)) {
                             session.getActiveConsumables().add(eq);
                         }
                     });
                 }
             }
+        }
+
+        double totalWeight = session.getActiveConsumables().stream()
+                .filter(java.util.Objects::nonNull)
+                .mapToDouble(e -> e.calculateWeight())
+                .sum();
+        double maxWeight = 10.0 + 5.0 * players.size();
+        if (totalWeight > maxWeight) {
+            throw new IllegalArgumentException("Le poids total des objets d\u00e9passe la limite autoris\u00e9e (" + maxWeight + ").");
         }
 
         handleRoomStart(session);
@@ -124,7 +144,23 @@ public class CombatService {
     }
 
     public CombatSession getSession(String sessionId) {
-        return activeSessions.get(sessionId);
+        CombatSession session = activeSessions.get(sessionId);
+        if (session != null) {
+            session.setLastActivity(java.time.Instant.now());
+        }
+        return session;
+    }
+
+    public CombatSession resumeCombat(String sessionId) {
+        CombatSession session = getSession(sessionId);
+        if (session != null) {
+            session.setReloadCount(session.getReloadCount() + 1);
+        }
+        return session;
+    }
+
+    public Map<String, CombatSession> getActiveSessions() {
+        return activeSessions;
     }
 
     private void handleRoomStart(CombatSession session) {
@@ -297,21 +333,21 @@ public class CombatService {
 
                     // Clone it
                     Equipment clone = new Equipment();
-                    clone.setName(template.getName());
-                    clone.setSlot(template.getSlot());
-                    clone.setBonusHealthMax(template.getBonusHealthMax());
-                    clone.setBonusManaMax(template.getBonusManaMax());
-                    clone.setBonusPower(template.getBonusPower());
-                    clone.setBonusStrength(template.getBonusStrength());
-                    clone.setBonusArmor(template.getBonusArmor());
-                    clone.setBonusResistance(template.getBonusResistance());
-                    clone.setBonusSpeed(template.getBonusSpeed());
-                    clone.setBonusCrit(template.getBonusCrit());
-                    clone.setRegenHealthPerTurn(template.getRegenHealthPerTurn());
-                    clone.setRegenManaPerTurn(template.getRegenManaPerTurn());
-                    clone.setRarity(template.getRarity());
-                    clone.setSpecialEffect(template.getSpecialEffect());
-                    clone.setSpecialEffectValue(template.getSpecialEffectValue());
+                    clone.copyStatsFrom(template);
+
+                    // Apply anti-ragequit penalty
+                    if (session.getReloadCount() > 0) {
+                        double penaltyFactor = Math.max(0.1, 1.0 - (session.getReloadCount() * 0.1));
+                        clone.setBonusHealthMax((int) (clone.getBonusHealthMax() * penaltyFactor));
+                        clone.setBonusManaMax((int) (clone.getBonusManaMax() * penaltyFactor));
+                        clone.setBonusPower((int) (clone.getBonusPower() * penaltyFactor));
+                        clone.setBonusStrength((int) (clone.getBonusStrength() * penaltyFactor));
+                        clone.setBonusArmor((int) (clone.getBonusArmor() * penaltyFactor));
+                        clone.setBonusResistance((int) (clone.getBonusResistance() * penaltyFactor));
+                        clone.setBonusSpeed((int) (clone.getBonusSpeed() * penaltyFactor));
+                        clone.setBonusCrit((int) (clone.getBonusCrit() * penaltyFactor));
+                        session.addLog("Un équipement a été dégradé à cause des recharges abusives.");
+                    }
 
                     clone.setShopTemplate(false);
                     clone.setUser(user);
@@ -510,46 +546,44 @@ public class CombatService {
 
             String rewardType = room.getAltarRewardType();
             int rewardValue = room.getAltarRewardValue();
+            int level = toDestroy.getLevel() != null ? toDestroy.getLevel() : 1;
+            double multiplier = level == 1 ? 1.0 : (level == 2 ? 1.3 : 1.8);
 
             if ("GOLD".equals(rewardType)) {
-                user.setMonnaie(user.getMonnaie() + rewardValue);
+                int multipliedValue = (int) Math.round(rewardValue * multiplier);
+                user.setMonnaie(user.getMonnaie() + multipliedValue);
                 userRepository.save(user);
-                session.addLog("L'autel vous récompense de " + rewardValue + " Or !");
+                session.addLog("L'autel vous récompense de " + multipliedValue + " Or !");
             } else if ("XP".equals(rewardType)) {
-                for (Personnage p : session.getPlayers()) {
-                    if (p.getHealthCurrent() > 0) {
-                        p.setSpiritualiteExperience(p.getSpiritualiteExperience() + rewardValue);
-                        personnageRepository.save(p);
+                int multipliedValue = (int) Math.round(rewardValue * multiplier);
+                int aliveHeroes = (int) session.getPlayers().stream().filter(p -> p.getHealthCurrent() > 0).count();
+                if (aliveHeroes > 0) {
+                    int xpPerHero = multipliedValue / aliveHeroes;
+                    for (Personnage p : session.getPlayers()) {
+                        if (p.getHealthCurrent() > 0) {
+                            p.setSpiritualiteExperience(p.getSpiritualiteExperience() + xpPerHero);
+                            personnageRepository.save(p);
+                        }
                     }
+                    session.addLog("L'autel accorde " + xpPerHero + " XP de Spiritualité à chaque héros !");
                 }
-                session.addLog("L'autel accorde " + rewardValue + " XP de Spiritualité à tous les héros !");
             } else if ("ITEM".equals(rewardType)) {
-                generation.grimoire.entity.Equipment template = equipmentRepository.findById((long) rewardValue)
-                        .orElse(null);
-                if (template != null) {
-                    generation.grimoire.entity.Equipment clone = new generation.grimoire.entity.Equipment();
-                    clone.setName(template.getName());
-                    clone.setSlot(template.getSlot());
-                    clone.setBonusHealthMax(template.getBonusHealthMax());
-                    clone.setBonusManaMax(template.getBonusManaMax());
-                    clone.setBonusPower(template.getBonusPower());
-                    clone.setBonusStrength(template.getBonusStrength());
-                    clone.setBonusArmor(template.getBonusArmor());
-                    clone.setBonusResistance(template.getBonusResistance());
-                    clone.setBonusSpeed(template.getBonusSpeed());
-                    clone.setBonusCrit(template.getBonusCrit());
-                    clone.setRegenHealthPerTurn(template.getRegenHealthPerTurn());
-                    clone.setRegenManaPerTurn(template.getRegenManaPerTurn());
-                    clone.setRarity(template.getRarity());
-                    clone.setSpecialEffect(template.getSpecialEffect());
-                    clone.setSpecialEffectValue(template.getSpecialEffectValue());
+                int chance = level == 1 ? 45 : (level == 2 ? 75 : 100);
+                boolean success = new java.util.Random().nextInt(100) < chance;
 
-                    clone.setShopTemplate(false);
-                    clone.setUser(user);
-                    clone.setOwnerUsername(user.getUsername());
-
-                    equipmentRepository.save(clone);
-                    session.addLog("L'autel vous a offert un équipement : " + template.getName() + " !");
+                if (success) {
+                    generation.grimoire.entity.Equipment template = equipmentRepository.findById((long) rewardValue).orElse(null);
+                    if (template != null) {
+                        generation.grimoire.entity.Equipment clone = new generation.grimoire.entity.Equipment();
+                        clone.copyStatsFrom(template);
+                        clone.setShopTemplate(false);
+                        clone.setUser(user);
+                        clone.setOwnerUsername(user.getUsername());
+                        equipmentRepository.save(clone);
+                        session.addLog("L'autel vous a offert un équipement : " + template.getName() + " !");
+                    }
+                } else {
+                    session.addLog("L'autel a consumé votre offrande sans vous accorder d'équipement...");
                 }
             }
         }
@@ -622,24 +656,32 @@ public class CombatService {
             throw new RuntimeException("Cible introuvable");
 
         String itemName = toConsume.getName();
-        if ("Pain".equalsIgnoreCase(itemName)) {
-            if (target.getHealthCurrent() > 0) {
-                int heal = (int) (target.getHealthMax() * 0.25);
-                target.setHealthCurrent(Math.min(target.getHealthMax(), target.getHealthCurrent() + heal));
-                session.addLog("🍞 " + target.getName() + " mange du Pain et récupère " + heal + " PV.");
-            } else {
-                throw new RuntimeException("Impossible d'utiliser du Pain sur un personnage mort.");
+        if (toConsume.getSlot() == generation.grimoire.enumeration.EquipmentSlot.CONSOMMABLE) {
+            if (target.getHealthCurrent() <= 0) {
+                throw new RuntimeException("Impossible d'utiliser un consommable sur un personnage mort.");
             }
-        } else if ("Potion de mana".equalsIgnoreCase(itemName)) {
-            if (target.getHealthCurrent() > 0) {
-                int heal = (int) (target.getManaMax() * 0.25);
-                target.setManaCurrent(Math.min(target.getManaMax(), target.getManaCurrent() + heal));
-                session.addLog("💧 " + target.getName() + " boit une Potion de mana et récupère " + heal + " Mana.");
-            } else {
-                throw new RuntimeException("Impossible d'utiliser une Potion de mana sur un personnage mort.");
+
+            int healHp = toConsume.getBonusHealthMax();
+            healHp += (int) (target.getHealthMax() * (toConsume.getConsumableHpPercent() / 100.0));
+            healHp += (int) ((target.getHealthMax() - target.getHealthCurrent()) * (toConsume.getConsumableMissingHpPercent() / 100.0));
+
+            int healMana = toConsume.getBonusManaMax();
+            healMana += (int) (target.getManaMax() * (toConsume.getConsumableManaPercent() / 100.0));
+            healMana += (int) ((target.getManaMax() - target.getManaCurrent()) * (toConsume.getConsumableMissingManaPercent() / 100.0));
+
+            if (healHp > 0) {
+                target.setHealthCurrent(Math.min(target.getHealthMax(), target.getHealthCurrent() + healHp));
+                session.addLog("🍔 " + target.getName() + " consomme " + itemName + " et récupère " + healHp + " PV.");
+            }
+            if (healMana > 0) {
+                target.setManaCurrent(Math.min(target.getManaMax(), target.getManaCurrent() + healMana));
+                session.addLog("🧪 " + target.getName() + " consomme " + itemName + " et récupère " + healMana + " Mana.");
+            }
+            if (healHp == 0 && healMana == 0) {
+                session.addLog("🎒 " + target.getName() + " consomme " + itemName + " mais cela n'a aucun effet de soin.");
             }
         } else {
-            throw new RuntimeException("Ce consommable ne peut pas être utilisé de cette façon.");
+            throw new RuntimeException("Cet objet n'est pas un consommable.");
         }
 
         session.getActiveConsumables().remove(toConsume);
@@ -739,21 +781,7 @@ public class CombatService {
         } else if (entry.getEquipment() != null) {
             Equipment clone = new Equipment();
             Equipment template = entry.getEquipment();
-            clone.setName(template.getName());
-            clone.setSlot(template.getSlot());
-            clone.setBonusHealthMax(template.getBonusHealthMax());
-            clone.setBonusManaMax(template.getBonusManaMax());
-            clone.setBonusPower(template.getBonusPower());
-            clone.setBonusStrength(template.getBonusStrength());
-            clone.setBonusArmor(template.getBonusArmor());
-            clone.setBonusResistance(template.getBonusResistance());
-            clone.setBonusSpeed(template.getBonusSpeed());
-            clone.setBonusCrit(template.getBonusCrit());
-            clone.setRegenHealthPerTurn(template.getRegenHealthPerTurn());
-            clone.setRegenManaPerTurn(template.getRegenManaPerTurn());
-            clone.setSpecialEffect(template.getSpecialEffect());
-            clone.setSpecialEffectValue(template.getSpecialEffectValue());
-            clone.setRarity(template.getRarity());
+            clone.copyStatsFrom(template);
             clone.setUser(user);
 
             equipmentRepository.save(clone);
@@ -1099,7 +1127,7 @@ public class CombatService {
                 }
 
                 List<Personnage> allEnemies = session.getEnemies().stream()
-                        .map(generation.grimoire.model.pve.ActiveMonster::getAsPersonnage).toList();
+                        .map(am -> am.getAsPersonnage()).toList();
                 List<Personnage> allAllies = session.getPlayers().stream().filter(pl -> pl.getHealthCurrent() > 0)
                         .toList();
 
@@ -1152,7 +1180,7 @@ public class CombatService {
                     default: penalty = 10; break;
                 }
                 
-                Personnage dbPersonnage = personnageRepository.findById(p.getId()).orElse(null);
+                Personnage dbPersonnage = personnageRepository.findById(java.util.Objects.requireNonNull(p.getId())).orElse(null);
                 if (dbPersonnage != null) {
                     dbPersonnage.setExperience(Math.max(0, dbPersonnage.getExperience() - penalty));
                     personnageRepository.save(dbPersonnage);
@@ -1344,24 +1372,56 @@ public class CombatService {
                             if (behavior == null)
                                 behavior = MonsterBehavior.NORMAL;
 
-                            Personnage targetPlayer = resolveMonsterTarget(m, behavior, alivePlayers, session);
+                            List<Personnage> targetPlayers = new java.util.ArrayList<>();
+                            if (behavior == MonsterBehavior.TRANSCENDANT) {
+                                targetPlayers.addAll(alivePlayers);
+                            } else {
+                                targetPlayers.add(resolveMonsterTarget(m, behavior, alivePlayers, session));
+                            }
+
+                            for (Personnage targetPlayer : targetPlayers) {
 
                             // === RÉSOLUTION DES DÉGÂTS (TYPE) ===
-                            int monsterDmg;
+                            int str = m.getBase().getStrength();
+                            int pwr = m.getBase().getPower();
+                            
+                            int physDmg;
+                            int magicDmg;
+                            
                             if (mType == MonsterType.HYBRIDE) {
-                                monsterDmg = Math.max(m.getBase().getStrength(), m.getBase().getPower());
+                                int total = str + pwr;
+                                physDmg = total / 2;
+                                magicDmg = total - physDmg;
                             } else {
-                                monsterDmg = m.getBase().getStrength();
+                                physDmg = str;
+                                magicDmg = pwr;
                             }
 
-                            generation.grimoire.enumeration.DamageType dmgType = generation.grimoire.enumeration.DamageType.PHYSIC;
+                            int monsterDmg = physDmg + magicDmg;
+
                             if (behavior == MonsterBehavior.INSENSIBLE) {
-                                dmgType = generation.grimoire.enumeration.DamageType.BRUT;
+                                System.out.println(m.getBase().getName() + " attaque " + targetPlayer.getName()
+                                        + " et inflige " + monsterDmg + " dégâts bruts.");
+                                if (monsterDmg > 0) {
+                                    targetPlayer.takeDamage(monsterDmg, generation.grimoire.enumeration.DamageType.BRUT);
+                                }
+                            } else {
+                                StringBuilder logMsg = new StringBuilder();
+                                if (physDmg > 0) {
+                                    logMsg.append(physDmg).append(" dégâts physiques");
+                                    targetPlayer.takeDamage(physDmg, generation.grimoire.enumeration.DamageType.PHYSIC);
+                                }
+                                if (magicDmg > 0) {
+                                    if (physDmg > 0) logMsg.append(" et ");
+                                    logMsg.append(magicDmg).append(" dégâts magiques");
+                                    targetPlayer.takeDamage(magicDmg, generation.grimoire.enumeration.DamageType.MAGIC);
+                                }
+                                if (physDmg == 0 && magicDmg == 0) {
+                                    logMsg.append("0 dégât");
+                                }
+                                System.out.println(m.getBase().getName() + " attaque " + targetPlayer.getName()
+                                        + " et inflige " + logMsg.toString() + ".");
                             }
-
-                            System.out.println(m.getBase().getName() + " attaque " + targetPlayer.getName()
-                                    + " et inflige " + monsterDmg + " dégâts.");
-                            targetPlayer.takeDamage(monsterDmg, dmgType);
 
                             // Check for ON_HIT passive effects (BURN, POISON)
                             int burnDmg = m.getAsPersonnage().getPassiveState("BURN_ON_HIT", 0);
@@ -1390,6 +1450,15 @@ public class CombatService {
                                         + poisonDmg + " dégâts par tour)");
                             }
 
+                            // === COMPORTEMENT : CORRUPTEUR — Drain de mana ===
+                            if (behavior == MonsterBehavior.CORRUPTEUR) {
+                                int manaLoss = (int) Math.floor(targetPlayer.getManaCurrent() * 0.05);
+                                if (manaLoss > 0) {
+                                    targetPlayer.setManaCurrent(Math.max(0, targetPlayer.getManaCurrent() - manaLoss));
+                                    session.addLog("🦇 " + targetPlayer.getName() + " perd " + manaLoss + " points de mana ! (Corrupteur)");
+                                }
+                            }
+
                             // === PASSIF TYPE : DEMON — 10% dégâts bruts supplémentaires ===
                             if (mType == MonsterType.DEMON) {
                                 int brutDmg = (int) Math.ceil(monsterDmg * 0.10);
@@ -1410,9 +1479,20 @@ public class CombatService {
                                         + " PV (Vampire).");
                             }
 
-                            if (targetPlayer.getHealthCurrent() <= 0) {
+                                                        // === PASSIF TYPE : ECTOPLASME ===
+                            if (mType == MonsterType.ECTOPLASME) {
+                                generation.grimoire.entity.spell.type.effect.BuffDebuffEffect eff = new generation.grimoire.entity.spell.type.effect.BuffDebuffEffect();
+                                eff.setStatAffected(generation.grimoire.enumeration.StatType.RESISTANCE);
+                                eff.setFlatValue(-5);
+                                eff.setDuration(3);
+                                targetPlayer.getActiveBuffs().add(eff);
+                                session.addLog("👻 " + targetPlayer.getName() + " perd 5 Résistance Magique pour 3 tours ! (Ectoplasme)");
+                            }
+
+if (targetPlayer.getHealthCurrent() <= 0) {
                                 System.out.println(targetPlayer.getName() + " a été vaincu...");
                             }
+                            } // End of targetPlayer loop
                         }
                     }
                 } else {
@@ -1437,7 +1517,7 @@ public class CombatService {
             session.setTotalGoldLostOnDefeat(goldLoss);
 
             if (!session.getPlayers().isEmpty() && session.getPlayers().get(0).getId() != null) {
-                Personnage dbP = personnageRepository.findById(session.getPlayers().get(0).getId()).orElse(null);
+                Personnage dbP = personnageRepository.findById(java.util.Objects.requireNonNull(session.getPlayers().get(0).getId())).orElse(null);
                 if (dbP != null && dbP.getUser() != null) {
                     generation.grimoire.entity.auth.AppUser user = dbP.getUser();
                     user.setMonnaie(Math.max(0, user.getMonnaie() - goldLoss));
@@ -1589,7 +1669,7 @@ public class CombatService {
             case CORRUPTEUR -> {
                 // Target with highest mana
                 Personnage target = alivePlayers.stream()
-                        .max(java.util.Comparator.comparingInt(Personnage::getManaCurrent))
+                        .max(java.util.Comparator.comparingInt(p -> p != null ? p.getManaCurrent() : 0))
                         .orElse(alivePlayers.get(0));
                 session.addLog("\uD83D\uDC1B " + m.getBase().getName() + " cible " + target.getName()
                         + " (le plus de Mana - Corrupteur).");
@@ -1875,3 +1955,4 @@ public class CombatService {
         anomalieRepository.delete(toDestroy);
     }
 }
+

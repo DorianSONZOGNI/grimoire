@@ -198,7 +198,7 @@
 
         .prep-layout {
             display: grid;
-            grid-template-columns: 300px 1fr 300px;
+            grid-template-columns: 300px 1fr 400px;
             gap: 2rem;
             align-items: start;
         }
@@ -714,6 +714,7 @@
                     <h3
                         style="font-family: 'Outfit'; font-size: 1.2rem; color: #f8fafc; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
                         <span class="material-symbols-outlined" style="color: #0ea5e9;">group</span> Sélection du Héros
+                        <span id="heroCountDisplay" style="font-size: 0.9rem; color: #94a3b8; font-weight: normal; margin-left: auto;">(0 / 1)</span>
                     </h3>
                     <div id="prepCharList">
                         <!-- Rempli par JS -->
@@ -750,10 +751,9 @@
                     <h3
                         style="font-family: 'Outfit'; font-size: 1.2rem; color: #f8fafc; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
                         <span class="material-symbols-outlined" style="color: #10b981;">inventory_2</span> Inventaire
-                        (max. 4)
                     </h3>
                     <div id="prepConsumableList"
-                        style="margin-bottom: 2rem; max-height: 250px; overflow-y: auto; padding-right: 0.5rem;">
+                        style="margin-bottom: 2rem; max-height: 250px; overflow-y: auto; overflow-x: hidden; padding-right: 0.5rem;">
                         <!-- Rempli par JS -->
                     </div>
 

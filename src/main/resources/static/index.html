@@ -101,7 +101,7 @@
                     <label for="castingTypeSelect">Catégorie d'Action (Tour)</label>
                     <select id="castingTypeSelect">
                         <option value="INSTANTANE">Instantané (Action Libre)</option>
-                        <option value="BANAL" selected>Banal (Consomme le tour)</option>
+                        <option value="BANAL" selected>Banal (1/tour)</option>
                         <option value="CANALISE">Canalisé (Multi-tours)</option>
                     </select>
                 </div>
@@ -354,6 +354,17 @@
                             onclick="addEffectPanel('HEAT_OVER_TIME')">
                             <span class="material-symbols-outlined" style="font-size: 1.1rem;">cyclone</span> Tick
                             Chaleur
+                        </button>
+                    </div>
+
+                    <!-- Bouton Âme Détachée (spécifique Spiritualité Ténèbres) -->
+                    <div id="ameDetacheeEffectButton"
+                        style="display: none; grid-column: 1 / -1; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.5rem; margin-top: 0.5rem; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 0.5rem; width: 100%;">
+                        <button type="button" class="btn-effect-add"
+                            style="background: rgba(244, 63, 94, 0.2); color: #fda4af; border: 1px solid rgba(244, 63, 94, 0.35);"
+                            onclick="addEffectPanel('AME_DETACHEE')">
+                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">dark_mode</span> Âme
+                            Détachée
                         </button>
                     </div>
                 </div>

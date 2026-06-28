@@ -1000,13 +1000,13 @@
                                 Mana</label>
                             <input type="number" id="eqMana" value="0">
                         </div>
-                        <div class="eq-create-field">
+                        <div class="eq-create-field non-consumable-stat">
                             <label><span class="material-symbols-outlined"
                                     style="font-size: 1rem; vertical-align: bottom; color: #a855f7;">auto_awesome</span>
                                 Puissance</label>
                             <input type="number" id="eqPower" value="0">
                         </div>
-                        <div class="eq-create-field">
+                        <div class="eq-create-field non-consumable-stat">
                             <label><span class="material-symbols-outlined"
                                     style="font-size: 1rem; vertical-align: bottom; color: #f43f5e;">fitness_center</span>
                                 Force</label>
@@ -1014,7 +1014,7 @@
                         </div>
                     </div>
 
-                    <div class="eq-create-row quad">
+                    <div class="eq-create-row quad non-consumable-stat">
                         <div class="eq-create-field">
                             <label><span class="material-symbols-outlined"
                                     style="font-size: 1rem; vertical-align: bottom; color: #3b82f6;">shield</span>
@@ -1041,7 +1041,7 @@
                         </div>
                     </div>
 
-                    <div class="eq-create-row">
+                    <div class="eq-create-row non-consumable-stat">
                         <div class="eq-create-field">
                             <label><span class="material-symbols-outlined"
                                     style="font-size: 1rem; vertical-align: bottom; color: #10b981;">healing</span>
@@ -1055,6 +1055,34 @@
                                 Régen
                                 Mana / tour</label>
                             <input type="number" id="eqRegenMana" value="0" placeholder="Positif ou Négatif">
+                        </div>
+                    </div>
+
+                    <div class="eq-create-row quad consumable-stat" style="display: none;">
+                        <div class="eq-create-field">
+                            <label><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: bottom; color: #ec4899;">percent</span> PV (Max)</label>
+                            <input type="number" id="eqConsumableHpPercent" value="0">
+                        </div>
+                        <div class="eq-create-field">
+                            <label><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: bottom; color: #38bdf8;">percent</span> Mana (Max)</label>
+                            <input type="number" id="eqConsumableManaPercent" value="0">
+                        </div>
+                        <div class="eq-create-field">
+                            <label><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: bottom; color: #f43f5e;">heart_broken</span> PV (Manq)</label>
+                            <input type="number" id="eqConsumableMissingHpPercent" value="0">
+                        </div>
+                        <div class="eq-create-field">
+                            <label><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: bottom; color: #a855f7;">water_drop</span> Mana (Manq)</label>
+                            <input type="number" id="eqConsumableMissingManaPercent" value="0">
+                        </div>
+                    </div>
+
+                    <div class="eq-create-row" id="eqBaseWeightRow" style="display: none; margin-bottom: 1rem;">
+                        <div class="eq-create-field">
+                            <label><span class="material-symbols-outlined"
+                                    style="font-size: 1rem; vertical-align: bottom; color: #94a3b8;">scale</span>
+                                Poids de base (Consommable)</label>
+                            <input type="number" step="0.1" id="eqBaseWeight" value="0">
                         </div>
                     </div>
 

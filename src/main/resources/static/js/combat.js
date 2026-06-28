@@ -2,11 +2,20 @@ import * as ui from './ui.js';
 import { getSpellEffectsSummaryHtml } from './grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from './filters.js';
 
-if (!window.allAnomaliesCombat) {
+if (!window.allAnomaliesCombat || !Array.isArray(window.allAnomaliesCombat)) {
     window.allAnomaliesCombat = [];
-    fetch('/api/anomalies/all-templates').then(res => res.json()).then(data => {
-        window.allAnomaliesCombat = data;
-    }).catch(console.error);
+    fetch('/api/anomalies/all-templates').then(res => {
+        if (!res.ok) throw new Error("HTTP error " + res.status);
+        return res.json();
+    }).then(data => {
+        if (Array.isArray(data)) {
+            window.allAnomaliesCombat = data;
+        } else {
+            console.warn("Expected array for anomalies but got", data);
+        }
+    }).catch(err => {
+        console.error("Failed to load anomalies templates:", err);
+    });
 }
 
 const SLOT_LABELS = {
@@ -42,12 +51,12 @@ function showFloatingTextOnElement(el, text, color) {
     floater.className = 'floating-damage';
     floater.innerHTML = text;
     floater.style.color = color || '#ef4444';
-    
+
     wrapper.appendChild(floater);
     document.body.appendChild(wrapper);
 
     setTimeout(() => {
-        if(wrapper.parentNode) wrapper.parentNode.removeChild(wrapper);
+        if (wrapper.parentNode) wrapper.parentNode.removeChild(wrapper);
     }, 3000);
 }
 
@@ -288,8 +297,11 @@ window.closeBuyModal = closeBuyModal;
 window.showGlobalTooltip = ui.showGlobalTooltip;
 window.hideGlobalTooltip = ui.hideGlobalTooltip;
 
-window.fleeCombatAction = async function() {
+let isFleeing = false;
+
+window.fleeCombatAction = async function () {
     try {
+        isFleeing = true;
         const btn = document.querySelector('#fleeConfirmModal button:last-child');
         if (btn) {
             btn.disabled = true;
@@ -297,6 +309,7 @@ window.fleeCombatAction = async function() {
         }
         const res = await fetch(`/api/pve/combat/${sessionId}/flee`, { method: 'POST' });
         if (!res.ok) {
+            isFleeing = false;
             const err = await res.text();
             alert("Erreur lors de la fuite : " + err);
             if (btn) {
@@ -305,9 +318,11 @@ window.fleeCombatAction = async function() {
             }
             return;
         }
+        localStorage.removeItem('activeCombatId');
         window.location.href = '/dungeons.html';
     } catch (e) {
         console.error(e);
+        localStorage.removeItem('activeCombatId');
         window.location.href = '/dungeons.html';
     }
 };
@@ -340,6 +355,13 @@ window.showNotif = function (message, isError = false) {
 };
 
 document.addEventListener('DOMContentLoaded', () => {
+    // Check for active combat in localStorage
+    const savedCombatId = localStorage.getItem('activeCombatId');
+    if (savedCombatId) {
+        resumeCombat(savedCombatId);
+        return;
+    }
+
     const urlParams = new URLSearchParams(window.location.search);
     const dungeonId = urlParams.get('dungeonId');
     const characterIds = urlParams.get('characterIds');
@@ -354,13 +376,47 @@ document.addEventListener('DOMContentLoaded', () => {
     startCombat(characterIds, dungeonId, consumableIds);
 });
 
+// Anti-Ragequit: Warn user if trying to leave while in combat
+window.addEventListener('beforeunload', function (e) {
+    if (!isFleeing && sessionId && currentSessionData && !currentSessionData.finished) {
+        e.preventDefault();
+        e.returnValue = "Vous êtes en combat ! Quitter maintenant comptera comme une défaite ou un abandon pénalisé.";
+        return e.returnValue;
+    }
+});
+
+async function resumeCombat(savedSessionId) {
+    try {
+        const res = await fetch(`/api/pve/combat/${savedSessionId}/resume`, { method: 'POST' });
+        if (!res.ok) {
+            localStorage.removeItem('activeCombatId');
+            alert("Combat introuvable ou expiré.");
+            window.location.href = '/vault.html';
+            return;
+        }
+        const data = await res.json();
+        sessionId = data.sessionId;
+
+        data.players.forEach(p => {
+            previousPlayerXP[p.id] = p.experience;
+            previousPlayerSpiritXP[p.id] = p.spiritualiteExperience || 0;
+        });
+
+        updateUI(data);
+    } catch (e) {
+        console.error(e);
+        localStorage.removeItem('activeCombatId');
+        window.location.href = '/vault.html';
+    }
+}
+
 async function startCombat(characterIds, dungeonId, consumableIds) {
     try {
         let fetchUrl = `/api/pve/combat/start?characterIds=${characterIds}&dungeonId=${dungeonId}`;
         if (consumableIds) {
             fetchUrl += `&consumableIds=${consumableIds}`;
         }
-        
+
         const res = await fetch(fetchUrl, {
             method: 'POST'
         });
@@ -373,6 +429,7 @@ async function startCombat(characterIds, dungeonId, consumableIds) {
 
         const data = await res.json();
         sessionId = data.sessionId;
+        localStorage.setItem('activeCombatId', sessionId);
 
         // Initialize previous XP for the first room
         data.players.forEach(p => {
@@ -639,6 +696,14 @@ async function doAction(spellId = null) {
         if (choiceKey !== null) url += `&choiceKey=${choiceKey}`;
 
         const res = await fetch(url, { method: 'POST' });
+        if (!res.ok) {
+            const errText = await res.text();
+            console.error('Server error:', errText);
+            showNotif(errText || "Erreur serveur", true);
+            isProcessing = false;
+            setButtonsProcessing(false);
+            return;
+        }
         const data = await res.json();
 
         // Let user read log by adding a small delay before full UI update
@@ -814,22 +879,31 @@ async function buyMerchantItem(lootIndex) {
 
         const res = await fetch(`/api/pve/combat/${sessionId}/merchant-buy?lootIndex=${lootIndex}&characterId=${charId}`, { method: 'POST' });
         if (!res.ok) {
-            alert("Vous n'avez pas les ressources nécessaires, ou cet objet n'est plus disponible.");
-            if (btn) btn.innerHTML = 'Acheter';
+            const errorText = await res.text();
+            showNotif(errorText || "Vous n'avez pas les ressources nécessaires.", true);
+            if (btn) btn.innerHTML = '<span class="material-symbols-outlined" style="font-size: 1.2rem;">shopping_cart</span>Acheter';
             return;
         }
         const data = await res.json();
         updateUI(data);
     } catch (e) {
         console.error(e);
-        alert("Erreur lors de l'achat.");
+        showNotif("Erreur lors de l'achat.", true);
     } finally {
         isProcessing = false;
         setButtonsProcessing(false);
     }
 }
 
-function openBuyModal(idx, itemName) {
+function openBuyModal(idx, itemName, goldPrice = 0) {
+    if (goldPrice > 0) {
+        const playerGold = currentSessionData?.players?.[0]?.gold || 0;
+        if (playerGold < goldPrice) {
+            showNotif("Vous n'avez pas assez d'or pour acheter cet objet !", true);
+            return;
+        }
+    }
+
     const modal = document.getElementById('buyConfirmModal');
     const targetName = document.getElementById('buyTargetName');
     const confirmBtn = document.getElementById('buyConfirmBtn');
@@ -920,7 +994,7 @@ async function openChest(useKey = false) {
         const btnKey = document.getElementById('btnOpenChestKey');
         if (btn) btn.disabled = true;
         if (btnKey) btnKey.disabled = true;
-        
+
         if (useKey && btnKey) {
             btnKey.innerHTML = `<span class="material-symbols-outlined spin">sync</span> Ouverture...`;
         } else if (!useKey && btn) {
@@ -961,6 +1035,10 @@ async function openChest(useKey = false) {
 
 function updateUI(data) {
     currentSessionData = data;
+
+    if (data.finished) {
+        localStorage.removeItem('activeCombatId');
+    }
 
     let isActiveEnemy = false;
     let activeEnemyIndex = -1;
@@ -1087,7 +1165,7 @@ function updateUI(data) {
                                     <span style="color: #38bdf8;">+${xpAmount} XP</span>
                                 `;
                             }
-                            
+
                             xpContainer.innerHTML += `
                                 <div style="width: 100%; text-align: center; margin-bottom: 0.5rem; animation: popIn 0.5s ease-out forwards;">
                                     <div style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(0,0,0,0.4); border: 1px solid #f59e0b80; padding: 0.5rem 1rem; border-radius: 8px; font-weight: bold; font-size: 1.2rem;">
@@ -1283,7 +1361,7 @@ function updateUI(data) {
                     lootContainer.style.display = 'none';
                     lootContainer.innerHTML = ''; // reset
                     delete lootContainer.dataset.filled;
-                    
+
                     const btnKey = document.getElementById('btnOpenChestKey');
                     if (btnKey) {
                         const hasKey = data.activeConsumables && data.activeConsumables.some(eq => eq.name === 'Clé');
@@ -1294,9 +1372,15 @@ function updateUI(data) {
                 const subType = data.currentRoom.eventSubType || 'ALTERATION';
 
                 if (subType === 'ALTERATION') {
-                    icon.textContent = 'blur_on';
-                    icon.style.color = '#8b5cf6';
-                    title.textContent = 'Altération';
+                    if (data.currentRoom.alterationType === 'AUTEL') {
+                        icon.textContent = 'hand_bones';
+                        icon.style.color = '#f97316';
+                        title.textContent = 'Autel Sacrificiel';
+                    } else {
+                        icon.textContent = 'blur_on';
+                        icon.style.color = '#8b5cf6';
+                        title.textContent = 'Altération';
+                    }
                     desc.innerHTML = data.currentRoom.eventText || 'Une force mystérieuse vous entoure...';
 
                     btnOpen.style.display = 'none';
@@ -1343,7 +1427,11 @@ function updateUI(data) {
                             specialItemHtml += `<div id="itemAlterationCheckContainer" style="margin-top: 1rem; text-align: center; width: 100%;">
                                 <span class="material-symbols-outlined spin">sync</span> Vérification de votre inventaire...
                             </div>`;
-                            fetch('/api/anomalies').then(res => res.json()).then(anomalies => {
+                            fetch('/api/anomalies').then(res => {
+                                if (!res.ok) throw new Error("API responded with " + res.status);
+                                return res.json();
+                            }).then(anomalies => {
+                                if (!Array.isArray(anomalies)) anomalies = [];
                                 const container = document.getElementById('itemAlterationCheckContainer');
                                 if (!container) return;
                                 const reqItem = data.currentRoom.alterationRequiredItem;
@@ -1372,14 +1460,14 @@ function updateUI(data) {
                             });
                         } else if (data.currentRoom.alterationType === 'AUTEL') {
                             btnText = `Sacrifier l'Objet`;
-                            let spColor = data.currentRoom.altarRequiredSpirituality === 'TENEBRES' ? '#d946ef' : data.currentRoom.altarRequiredSpirituality === 'ESPRIT' ? '#3b82f6' : '#f59e0b';
+                            let spColor = data.currentRoom.altarRequiredSpirituality === 'TENEBRES' ? '#d946ef' : data.currentRoom.altarRequiredSpirituality === 'ESPRIT' ? '#3b82f6' : data.currentRoom.altarRequiredSpirituality === 'KARMA' ? '#e7d198' : '#f59e0b';
                             warningHtml = `<div style="color: ${spColor}; font-size: 0.85rem; margin-top: 0.5rem; text-align: center; background: ${spColor}1A; padding: 0.5rem; border-radius: 6px; border: 1px solid ${spColor}4D;"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">warning</span> <strong>Offrande :</strong> Cet autel réclame le sacrifice d'un <strong>Objet Magique</strong> de spiritualité <strong>${data.currentRoom.altarRequiredSpirituality}</strong>.</div>`;
 
                             let altarRewardHtml = '';
                             if (data.currentRoom.altarRewardType === 'GOLD') {
-                                altarRewardHtml = `<div style="color: #fbbf24; font-weight: bold; margin-top: 0.5rem; text-align: center; background: rgba(251, 191, 36, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(251, 191, 36, 0.3);"><span class="material-symbols-outlined" style="vertical-align: middle; font-size: 1.1rem; margin-right: 0.2rem;">paid</span> <strong>Récompense :</strong> +${data.currentRoom.altarRewardValue} Or</div>`;
+                                altarRewardHtml = `<div style="color: #fbbf24; font-weight: bold; margin-top: 0.5rem; text-align: center; background: rgba(251, 191, 36, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(251, 191, 36, 0.3);"><span class="material-symbols-outlined" style="vertical-align: middle; font-size: 1.1rem; margin-right: 0.2rem;">paid</span> <strong>Récompense :</strong> +<span id="altarDynamicRewardValue" data-type="GOLD" data-base-value="${data.currentRoom.altarRewardValue}">${data.currentRoom.altarRewardValue}</span> Or</div>`;
                             } else if (data.currentRoom.altarRewardType === 'XP') {
-                                altarRewardHtml = `<div style="color: #38bdf8; font-weight: bold; margin-top: 0.5rem; text-align: center; background: rgba(56, 189, 248, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.3);"><span class="material-symbols-outlined" style="vertical-align: middle; font-size: 1.1rem; margin-right: 0.2rem;">star</span> <strong>Récompense :</strong> +${data.currentRoom.altarRewardValue} XP de Spiritualité (pour le groupe)</div>`;
+                                altarRewardHtml = `<div style="color: #38bdf8; font-weight: bold; margin-top: 0.5rem; text-align: center; background: rgba(56, 189, 248, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.3);"><span class="material-symbols-outlined" style="vertical-align: middle; font-size: 1.1rem; margin-right: 0.2rem;">star</span> <strong>Récompense :</strong> +<span id="altarDynamicRewardValue" data-type="XP" data-base-value="${data.currentRoom.altarRewardValue}">${data.currentRoom.altarRewardValue}</span> XP de Spiritualité (par héros)</div>`;
                             } else if (data.currentRoom.altarRewardType === 'ITEM') {
                                 const eq = data.currentRoom.altarRewardEquipment;
                                 if (eq) {
@@ -1387,7 +1475,7 @@ function updateUI(data) {
                                     const rarityColor = rarityColors[eq.rarity] || '#94a3b8';
                                     const tooltipDataHtml = typeof generateEquipmentTooltipHTML === 'function' ? generateEquipmentTooltipHTML(eq) : '';
                                     const tooltipAttrs = tooltipDataHtml ? 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"' : '';
-                                    altarRewardHtml = `<div style="margin-top: 0.5rem; text-align: center; background: rgba(192, 132, 252, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(192, 132, 252, 0.3);"><span style="color: #cbd5e1; margin-right: 0.5rem;"><strong>Récompense :</strong></span> <span ${tooltipAttrs} style="color: ${rarityColor}; font-weight: bold; cursor: help; border-bottom: 1px dashed ${rarityColor}; position: relative;">${eq.name}${tooltipDataHtml ? `<template class="tooltip-data">${tooltipDataHtml}</template>` : ''}</span></div>`;
+                                    altarRewardHtml = `<div style="margin-top: 0.5rem; text-align: center; background: rgba(192, 132, 252, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(192, 132, 252, 0.3);"><span style="color: #cbd5e1; margin-right: 0.5rem;"><strong>Récompense :</strong></span> <span ${tooltipAttrs} style="color: ${rarityColor}; font-weight: bold; cursor: help; border-bottom: 1px dashed ${rarityColor}; position: relative;">${eq.name}${tooltipDataHtml ? `<template class="tooltip-data">${tooltipDataHtml}</template>` : ''}</span> <span id="altarDropChance" style="font-weight: bold; font-size: 0.9rem; margin-left: 0.5rem;"></span></div>`;
                                 } else {
                                     altarRewardHtml = `<div style="color: #c084fc; font-weight: bold; margin-top: 0.5rem; text-align: center; background: rgba(192, 132, 252, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(192, 132, 252, 0.3);"><span class="material-symbols-outlined" style="vertical-align: middle; font-size: 1.1rem; margin-right: 0.2rem;">star</span> <strong>Récompense :</strong> Équipement mystère</div>`;
                                 }
@@ -1398,8 +1486,21 @@ function updateUI(data) {
                                 <span class="material-symbols-outlined spin">sync</span> Chargement de vos objets magiques...
                             </div>`;
 
-                            fetch('/api/anomalies').then(res => res.json()).then(anomalies => {
-                                const eligible = anomalies.filter(a => a.magicObject === true && a.spiritualite === data.currentRoom.altarRequiredSpirituality);
+                            fetch('/api/anomalies').then(res => {
+                                if (!res.ok) throw new Error("API responded with " + res.status);
+                                return res.json();
+                            }).then(anomalies => {
+                                if (!Array.isArray(anomalies)) {
+                                    anomalies = [];
+                                    console.warn("Expected array for anomalies but got", anomalies);
+                                }
+                                const uniqueNames = new Set();
+                                const eligible = anomalies.filter(a => {
+                                    if (!a.magicObject || a.spiritualite !== data.currentRoom.altarRequiredSpirituality) return false;
+                                    if (uniqueNames.has(a.name)) return false;
+                                    uniqueNames.add(a.name);
+                                    return true;
+                                });
                                 const container = document.getElementById('altarAnomalySelectContainer');
                                 if (!container) return;
 
@@ -1440,29 +1541,63 @@ function updateUI(data) {
                                 `;
                                 eligible.forEach(a => {
                                     let catIcon = a.category ? (CATEGORY_ICONS[a.category] || 'category') : 'star';
-                                    selectHtml += `<div class="custom-option" onclick="document.getElementById('altarAnomalySelectLabel').innerHTML = this.innerHTML; document.getElementById('altarAnomalySelect').value = '${a.id}'; document.getElementById('altarAnomalySelectWrapper').classList.remove('open');"><span class="material-symbols-outlined cs-icon" style="color: ${spColor};">${catIcon}</span> ${a.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${a.level || 1})</span></div>`;
+                                    selectHtml += `<div class="custom-option" onclick="document.getElementById('altarAnomalySelectLabel').innerHTML = this.innerHTML; document.getElementById('altarAnomalySelect').value = '${a.id}'; document.getElementById('altarAnomalySelectWrapper').classList.remove('open'); if(window.updateAltarDropChance) window.updateAltarDropChance(${a.level || 1});"><span class="material-symbols-outlined cs-icon" style="color: ${spColor};">${catIcon}</span> ${a.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${a.level || 1})</span></div>`;
                                 });
                                 selectHtml += `
                                     </div>
                                 </div>
                                 <input type="hidden" id="altarAnomalySelect" value="${first.id}">
                                 `;
+                                window.updateAltarDropChance = function(level) {
+                                    const el = document.getElementById('altarDropChance');
+                                    if (el) {
+                                        let chance = level === 1 ? 45 : (level === 2 ? 75 : 100);
+                                        el.textContent = `(${chance}%)`;
+                                        el.style.color = chance === 100 ? '#10b981' : (chance === 75 ? '#fbbf24' : '#ef4444');
+                                    }
+                                    const valEl = document.getElementById('altarDynamicRewardValue');
+                                    if (valEl) {
+                                        let multiplier = level === 1 ? 1.0 : (level === 2 ? 1.3 : 1.8);
+                                        let baseVal = parseInt(valEl.getAttribute('data-base-value'), 10);
+                                        let finalVal = Math.round(baseVal * multiplier);
+                                        
+                                        if (valEl.getAttribute('data-type') === 'XP') {
+                                            let aliveHeroes = 1;
+                                            if (data && data.players) {
+                                                aliveHeroes = data.players.filter(p => p.healthCurrent > 0).length;
+                                            }
+                                            if (aliveHeroes < 1) aliveHeroes = 1;
+                                            finalVal = Math.floor(finalVal / aliveHeroes);
+                                        }
+                                        
+                                        valEl.textContent = finalVal;
+                                    }
+                                };
                                 container.innerHTML = selectHtml;
+                                if(window.updateAltarDropChance) window.updateAltarDropChance(first.level || 1);
                             }).catch(err => {
-                                console.error(err);
+                                console.error("Failed to load anomalies:", err);
                                 const container = document.getElementById('altarAnomalySelectContainer');
-                                if (container) container.innerHTML = `<div style="color: #ef4444;">Erreur lors du chargement des anomalies.</div>`;
+                                if (container) {
+                                    container.innerHTML = `<div style="color: #ef4444; font-weight: bold; background: rgba(239,68,68,0.1); padding: 0.5rem; border-radius: 6px;">Erreur lors du chargement de vos objets magiques.</div>`;
+                                }
+                                const btn = document.getElementById('btnAcceptAlteration');
+                                if (btn) {
+                                    btn.disabled = true;
+                                    btn.style.opacity = '0.5';
+                                    btn.style.cursor = 'not-allowed';
+                                }
                             });
                         }
 
                         btnCont.style.display = 'none';
                         lootContainer.style.display = 'flex';
-                        
+
                         let disabledState = '';
                         if (data.currentRoom.alterationType === 'ITEM' || data.currentRoom.alterationType === 'AUTEL') {
                             disabledState = 'disabled style="opacity: 0.5; cursor: not-allowed;"';
                         }
-                        
+
                         lootContainer.innerHTML = `
                             <div style="display: flex; flex-direction: column; align-items: center; max-width: 600px; width: 100%;">
                                 ${warningHtml}
@@ -1499,7 +1634,7 @@ function updateUI(data) {
                                         const itemName = lostMatch[1].trim();
                                         let spColor = '#ef4444';
                                         let catIcon = 'star';
-                                        if (window.allAnomaliesCombat) {
+                                        if (Array.isArray(window.allAnomaliesCombat)) {
                                             const an = window.allAnomaliesCombat.find(a => a.name === itemName);
                                             if (an) {
                                                 if (an.spiritualite === 'TENEBRES') spColor = '#a855f7';
@@ -1520,7 +1655,7 @@ function updateUI(data) {
                                         const itemName = gainedMatch[1].trim();
                                         let spColor = '#d946ef';
                                         let catIcon = 'star';
-                                        if (window.allAnomaliesCombat) {
+                                        if (Array.isArray(window.allAnomaliesCombat)) {
                                             const an = window.allAnomaliesCombat.find(a => a.name === itemName);
                                             if (an) {
                                                 if (an.spiritualite === 'TENEBRES') spColor = '#a855f7';
@@ -1559,6 +1694,8 @@ function updateUI(data) {
 
                     btnOpen.style.display = 'none';
                     btnCont.style.display = 'block';
+                    btnCont.textContent = 'Continuer';
+                    btnCont.onclick = nextRoom;
 
                     if (data.currentRoom.lootTable && data.currentRoom.lootTable.length > 0) {
                         lootContainer.style.display = 'flex';
@@ -1579,7 +1716,7 @@ function updateUI(data) {
                                 nameHtml = entry.specialItemName;
                                 rarityColor = '#d946ef';
                                 let catIcon = 'star';
-                                if (window.allAnomaliesCombat) {
+                                if (Array.isArray(window.allAnomaliesCombat)) {
                                     const an = window.allAnomaliesCombat.find(a => a.name === entry.specialItemName);
                                     if (an) {
                                         if (an.spiritualite === 'ESPRIT') rarityColor = '#38bdf8';
@@ -1606,7 +1743,7 @@ function updateUI(data) {
                             if (entry.priceSpecialItemName) {
                                 let priceColor = '#d946ef';
                                 let priceIcon = 'star';
-                                if (window.allAnomaliesCombat) {
+                                if (Array.isArray(window.allAnomaliesCombat)) {
                                     const anPrice = window.allAnomaliesCombat.find(a => a.name === entry.priceSpecialItemName);
                                     if (anPrice) {
                                         if (anPrice.spiritualite === 'ESPRIT') priceColor = '#38bdf8';
@@ -1633,7 +1770,7 @@ function updateUI(data) {
                                                   Vendu
                                               </button>`;
                             } else {
-                                buttonHtml = `<button id="btn_buy_${idx}" type="button" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 8px; padding: 0.6rem 1.2rem; font-weight: 700; font-size: 1rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s ease; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);" onclick="openBuyModal(${idx}, \`${nameHtml.replace(/'/g, "\\'").replace(/"/g, '&quot;')}\`)" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='none'">
+                                buttonHtml = `<button id="btn_buy_${idx}" type="button" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 8px; padding: 0.6rem 1.2rem; font-weight: 700; font-size: 1rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s ease; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);" onclick="openBuyModal(${idx}, \`${nameHtml.replace(/'/g, "\\'").replace(/"/g, '&quot;')}\`, ${goldPrice})" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='none'">
                                                   <span class="material-symbols-outlined" style="font-size: 1.2rem;">shopping_cart</span>
                                                   Acheter
                                               </button>`;
@@ -1646,7 +1783,7 @@ function updateUI(data) {
                                 let tooltipTitle = 'Objet Spécial';
                                 let tooltipDesc = 'Cet objet aura un effet unique !';
                                 let tColor = '#d946ef';
-                                if (window.allAnomaliesCombat) {
+                                if (Array.isArray(window.allAnomaliesCombat)) {
                                     const an = window.allAnomaliesCombat.find(a => a.name === entry.specialItemName);
                                     if (an) {
                                         tooltipTitle = 'Anomalie';
@@ -1887,7 +2024,15 @@ function generateFighterHtml(c, isHero) {
             case 'ARMURE': base = c.armor || 0; break;
             case 'RESISTANCE': base = c.resistance || 0; break;
             case 'SPEED': base = c.speed || 0; break;
-            case 'CRIT': base = (c.critDerived !== null && c.critDerived !== undefined) ? c.critDerived : (c.crit || 0); break;
+            case 'CRIT':
+                if (c.critDerived !== null && c.critDerived !== undefined) {
+                    base = c.critDerived;
+                } else if (c.voie && c.voie.nom && c.voie.nom.toLowerCase().includes('raison')) {
+                    base = getEffectiveStat('SPEED') * 2;
+                } else {
+                    base = c.crit || 0;
+                }
+                break;
         }
 
         let flatBonus = 0;
@@ -2005,10 +2150,12 @@ function generateFighterHtml(c, isHero) {
         let karmaHarmony = c.karmaHarmony || (c.passiveStates && c.passiveStates['karma_harmony'] === 1);
         let karmaGauge = c.karmaGauge !== undefined ? c.karmaGauge : (c.passiveStates && c.passiveStates['karma_gauge'] !== undefined ? c.passiveStates['karma_gauge'] : 0);
 
+        let karmaLockedDuration = c.passiveStates && c.passiveStates['karma_locked_duration'] !== undefined ? c.passiveStates['karma_locked_duration'] : 0;
+
         let borderColor, color, icon, text, title;
         if (karmaLocked) {
             borderColor = 'rgba(239, 68, 68, 0.4)'; color = '#f87171'; icon = 'block';
-            text = 'Brisé'; title = "Karma Brisé (Voie désactivée)";
+            text = `Brisé (${karmaLockedDuration})`; title = "Karma Brisé (Voie désactivée)";
         } else if (karmaHarmony) {
             borderColor = 'rgba(100, 116, 139, 0.4)'; color = '#cbd5e1'; icon = 'brightness_medium';
             text = 'Harmonie'; title = "Karma en Harmonie";
@@ -2051,6 +2198,12 @@ function generateFighterHtml(c, isHero) {
         statsHtml += `<span class="hero-stat-chip" title="${title}" style="border-color: ${borderColor}; color: ${color};"><span class="material-symbols-outlined" style="color: inherit;">${icon}</span>${text}</span>`;
     }
 
+    const ameDetacheeBuff = (c.activeBuffs || c.buffs || []).find(b => b.statAffected === 'AME_DETACHEE' || b.effectType === 'AME_DETACHEE');
+    if (ameDetacheeBuff) {
+        const turns = ameDetacheeBuff.duration;
+        statsHtml += `<span class="hero-stat-chip" title="Âme Détachée (+5 Dégâts Phys. et +40% Dégâts Phys.) - Reste ${turns} tour(s)" style="border-color: rgba(244, 63, 94, 0.4); color: #fda4af;"><span class="material-symbols-outlined" style="color: inherit;">hand_bones</span>${turns}</span>`;
+    }
+
     statsHtml += `</div>`;
 
     let specialItemsHtml = '';
@@ -2061,12 +2214,40 @@ function generateFighterHtml(c, isHero) {
     if (c.voie && c.voie.nom) {
         const vColor = getVoieButtonColor(c.voie);
         const vIcon = ui.getVoieIcon(c.voie.nom);
-        titleIconsHtml += `<span class="material-symbols-outlined" style="font-size: 1.2rem; color: ${vColor};" title="${c.voie.nom}">${vIcon}</span>`;
+        const vFull = window.state?.metaData?.voies?.find(v => v.id == c.voie.id) || c.voie;
+        titleIconsHtml += `<span style="cursor: help; position: relative; display: inline-flex; align-items: center; justify-content: center;" onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null">
+            <span class="material-symbols-outlined" style="font-size: 1.2rem; color: ${vColor};">${vIcon}</span>
+            <template class="tooltip-data">
+                <div style="font-size: 0.9rem; font-weight: 500; margin-bottom: 0.5rem; display:flex; align-items:center; gap:0.3rem; color: ${vColor};">
+                    <span class="material-symbols-outlined" style="font-size:1.1rem;">${vIcon}</span>
+                    ${vFull.nom}
+                </div>
+                <div style="font-size: 0.8rem; color: #cbd5e1; margin-bottom: 0.5rem;">${vFull.description || 'Description générique.'}</div>
+                <div style="font-size: 0.8rem; display: flex; align-items: flex-start; gap: 0.3rem; color: #e2e8f0;">
+                    <span class="material-symbols-outlined" style="font-size: 0.95rem; color: ${vColor};">bolt</span>
+                    <span style="font-style: italic;">${vFull.passiveDescription || 'Passif spécifique.'}</span>
+                </div>
+            </template>
+        </span>`;
     }
     if (c.spiritualite && c.spiritualite.nom) {
         const sColor = getSpiritButtonColor(c.spiritualite);
         const sIcon = ui.getSpiritIcon(c.spiritualite.nom);
-        titleIconsHtml += `<span class="material-symbols-outlined" style="font-size: 1.2rem; color: ${sColor};" title="${c.spiritualite.nom}">${sIcon}</span>`;
+        const sFull = window.state?.metaData?.spiritualites?.find(s => s.id == c.spiritualite.id) || c.spiritualite;
+        titleIconsHtml += `<span style="cursor: help; position: relative; display: inline-flex; align-items: center; justify-content: center;" onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null">
+            <span class="material-symbols-outlined" style="font-size: 1.2rem; color: ${sColor};">${sIcon}</span>
+            <template class="tooltip-data">
+                <div style="font-size: 0.9rem; font-weight: 500; margin-bottom: 0.5rem; display:flex; align-items:center; gap:0.3rem; color: ${sColor};">
+                    <span class="material-symbols-outlined" style="font-size:1.1rem;">${sIcon}</span>
+                    ${sFull.nom}
+                </div>
+                <div style="font-size: 0.8rem; color: #cbd5e1; margin-bottom: 0.5rem;">${sFull.description || 'Description générique.'}</div>
+                <div style="font-size: 0.8rem; display: flex; align-items: flex-start; gap: 0.3rem; color: #e2e8f0;">
+                    <span class="material-symbols-outlined" style="font-size: 0.95rem; color: ${sColor};">bolt</span>
+                    <span style="font-style: italic;">${sFull.passiveDescription || 'Passif spécifique.'}</span>
+                </div>
+            </template>
+        </span>`;
     }
 
     let monsterBadgesHtml = '';
@@ -2091,25 +2272,27 @@ function generateFighterHtml(c, isHero) {
                 'REPTILE': 'Reptile : Réduit les dégâts physiques subis de 15%.',
                 'MORT_VIVANT': 'Mort-vivant : Régénère 5% de ses PV max au début de son tour.',
                 'HYBRIDE': 'Hybride : Utilise la plus haute valeur entre Force et Puissance pour attaquer.',
-                'VAMPIRE': 'Vampire : Se soigne de 20% des dégâts infligés.'
+                'VAMPIRE': 'Vampire : Se soigne de 20% des dégâts infligés.',
+                'ECTOPLASME': 'Ectoplasme : Ces attaques appliquent un débuff de résistance magique (-5 res pendant 3 tours).'
             };
             const tTitle = typeTitles[c.monsterType] || '';
-            const tIcon = { 'DEMON': 'local_fire_department', 'REPTILE': 'grass', 'MORT_VIVANT': 'skull', 'HYBRIDE': 'network_node', 'VAMPIRE': 'bloodtype' }[c.monsterType] || 'check_box_outline_blank';
-            const tLabel = { 'DEMON': 'Démon', 'REPTILE': 'Reptile', 'MORT_VIVANT': 'Mort-vivant', 'HYBRIDE': 'Hybride', 'VAMPIRE': 'Vampire' }[c.monsterType] || c.monsterType;
+            const tIcon = { 'DEMON': 'local_fire_department', 'REPTILE': 'grass', 'MORT_VIVANT': 'skull', 'HYBRIDE': 'network_node', 'VAMPIRE': 'bloodtype', 'ECTOPLASME': 'candle' }[c.monsterType] || 'check_box_outline_blank';
+            const tLabel = { 'DEMON': 'Démon', 'REPTILE': 'Reptile', 'MORT_VIVANT': 'Mort-vivant', 'HYBRIDE': 'Hybride', 'VAMPIRE': 'Vampire', 'ECTOPLASME': 'Ectoplasme' }[c.monsterType] || c.monsterType;
 
             monsterBadgesHtml += `<span title="${tTitle}" style="cursor: help; font-size: 0.75rem; background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined" style="font-size: 0.9rem;">${tIcon}</span>${tLabel}</span>`;
         }
         if (c.behavior && c.behavior !== 'NORMAL') {
             const behaviorTitles = {
                 'PREDATEUR': "Prédateur : Verrouille une cible et l'attaque jusqu'à sa mort.",
-                'CORRUPTEUR': "Corrupteur : Cible toujours le joueur avec le plus de Mana.",
+                'CORRUPTEUR': "Corrupteur : Cible toujours le joueur avec le plus de Mana et lui retire 5% Mana Act.",
                 'LEADER': "Leader : Ordonne à tous les autres monstres d'attaquer sa cible.",
                 'ASSASSIN': "Assassin : Vise systématiquement le joueur avec le moins de Résistance.",
-                'INSENSIBLE': "Insensible : Ses attaques infligent des dégâts bruts (ignore l'armure)."
+                'INSENSIBLE': "Insensible : Ses attaques infligent des dégâts bruts (ignore l'armure).",
+                'TRANSCENDANT': "Transcendant : Il attaque toutes les cibles adverse à la fois."
             };
             const bTitle = behaviorTitles[c.behavior] || '';
-            const bIcon = { 'PREDATEUR': 'track_changes', 'CORRUPTEUR': 'allergy', 'LEADER': 'crown', 'ASSASSIN': 'gps_fixed', 'INSENSIBLE': 'shield' }[c.behavior] || 'check_box_outline_blank';
-            const bLabel = { 'PREDATEUR': 'Prédateur', 'CORRUPTEUR': 'Corrupteur', 'LEADER': 'Leader', 'ASSASSIN': 'Assassin', 'INSENSIBLE': 'Insensible' }[c.behavior] || c.behavior;
+            const bIcon = { 'PREDATEUR': 'track_changes', 'CORRUPTEUR': 'allergy', 'LEADER': 'crown', 'ASSASSIN': 'gps_fixed', 'INSENSIBLE': 'shield', 'TRANSCENDANT': 'grid_view' }[c.behavior] || 'check_box_outline_blank';
+            const bLabel = { 'PREDATEUR': 'Prédateur', 'CORRUPTEUR': 'Corrupteur', 'LEADER': 'Leader', 'ASSASSIN': 'Assassin', 'INSENSIBLE': 'Insensible', 'TRANSCENDANT': 'Transcendant' }[c.behavior] || c.behavior;
             monsterBadgesHtml += `<span title="${bTitle}" style="cursor: help; font-size: 0.75rem; background: rgba(139, 92, 246, 0.15); color: #8b5cf6; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(139, 92, 246, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined" style="font-size: 0.9rem;">${bIcon}</span>${bLabel}</span>`;
         }
         monsterBadgesHtml += `</div>`;
@@ -2130,7 +2313,8 @@ function generateFighterHtml(c, isHero) {
         <div class="sandbox-status-list" style="justify-content: center;">${passiveBadges}</div>
         <div class="sandbox-status-list" style="justify-content: center;">
             ${renderShieldsHtml(c.activeShields)}
-            ${renderBuffsHtml(c.activeBuffs || c.buffs)}
+            ${renderBuffsHtml(c.activeBuffs || c.buffs, c.activeManaOverTimeEffects, c.activeHealOverTimeEffects)}
+            ${renderPoisonBurnHtml(c)}
             ${renderDotsHtml(c.activeDamageOverTimeEffects)}
         </div>
     `;
@@ -2212,69 +2396,152 @@ function renderShieldsHtml(shieldList) {
     </div>`;
 }
 
-function renderBuffsHtml(buffList) {
-    if (!buffList || buffList.length === 0) return '';
+function renderPoisonBurnHtml(c) {
+    const tooltipAttrs = 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"';
+    const poisonEntries = [];
+    const burnEntries = [];
 
+    const buffs = c.activeBuffs || c.buffs || [];
+    buffs.forEach(b => {
+        if (b.statAffected === 'POISON') {
+            const dmg = b.flatValue || 0;
+            poisonEntries.push(`
+                <div style="display:flex; align-items:flex-start; gap:0.4rem; font-size:0.85rem;">
+                    <span class="material-symbols-outlined" style="flex-shrink:0; font-size:1.1rem; color:#22c55e;">pest_control</span>
+                    <span style="font-weight:600; color:#fff;">[Poison]</span>
+                    <span style="color:#22c55e; font-weight:500;">${dmg} Dégâts Brut</span>
+                    <span style="color:#e2e8f0;">⏳ (${b.duration} tours)</span>
+                </div>
+            `);
+        } else if (b.statAffected === 'BURN') {
+            const dmg = b.flatValue || 0;
+            burnEntries.push(`
+                <div style="display:flex; align-items:flex-start; gap:0.4rem; font-size:0.85rem;">
+                    <span class="material-symbols-outlined" style="flex-shrink:0; font-size:1.1rem; color:#ef4444;">local_fire_department</span>
+                    <span style="font-weight:600; color:#fff;">[Brûlure]</span>
+                    <span style="color:#ef4444; font-weight:500;">${dmg} Dégâts Magique</span>
+                    <span style="color:#e2e8f0;">⏳ (${b.duration} tours)</span>
+                </div>
+            `);
+        }
+    });
+
+    const dots = c.activeDamageOverTimeEffects || [];
+    dots.forEach(d => {
+        if (d.poison) {
+            poisonEntries.push(`
+                <div style="display:flex; align-items:flex-start; gap:0.4rem; font-size:0.85rem;">
+                    <span class="material-symbols-outlined" style="flex-shrink:0; font-size:1.1rem; color:#22c55e;">pest_control</span>
+                    <span style="font-weight:600; color:#fff;">[Poison]</span>
+                    <span style="color:#22c55e; font-weight:500;">${d.fixedDamagePerTick} Dégâts Brut</span>
+                    <span style="color:#e2e8f0;">⏳ (${d.duration} tours)</span>
+                </div>
+            `);
+        } else if (d.burn) {
+            burnEntries.push(`
+                <div style="display:flex; align-items:flex-start; gap:0.4rem; font-size:0.85rem;">
+                    <span class="material-symbols-outlined" style="flex-shrink:0; font-size:1.1rem; color:#ef4444;">local_fire_department</span>
+                    <span style="font-weight:600; color:#fff;">[Brûlure]</span>
+                    <span style="color:#ef4444; font-weight:500;">${d.fixedDamagePerTick} Dégâts Magique</span>
+                    <span style="color:#e2e8f0;">⏳ (${d.duration} tours)</span>
+                </div>
+            `);
+        }
+    });
+
+    let html = '';
+
+    if (poisonEntries.length > 0) {
+        html += `<div class="sandbox-status-badge debuff" ${tooltipAttrs} style="cursor: help; position: relative; border-color: rgba(34, 197, 94, 0.4); color: #22c55e; background: rgba(34, 197, 94, 0.1);">
+            <span class="material-symbols-outlined" style="font-size: 0.95rem;">pest_control</span>
+            <span>Poison (${poisonEntries.length})</span>
+            <template class="tooltip-data">
+                <div style="display: flex; flex-direction: column; gap: 0.3rem;">
+                    ${poisonEntries.join('')}
+                </div>
+            </template>
+        </div>`;
+    }
+
+    if (burnEntries.length > 0) {
+        html += `<div class="sandbox-status-badge debuff" ${tooltipAttrs} style="cursor: help; position: relative; border-color: rgba(239, 68, 68, 0.4); color: #ef4444; background: rgba(239, 68, 68, 0.1);">
+            <span class="material-symbols-outlined" style="font-size: 0.95rem;">local_fire_department</span>
+            <span>Brûlure (${burnEntries.length})</span>
+            <template class="tooltip-data">
+                <div style="display: flex; flex-direction: column; gap: 0.3rem;">
+                    ${burnEntries.join('')}
+                </div>
+            </template>
+        </div>`;
+    }
+
+    return html;
+}
+
+function renderBuffsHtml(buffList, motList, hotList) {
     const goodBuffs = [];
     const badBuffs = [];
 
-    buffList.forEach(b => {
-        const inverseStats = ['DAMAGE_TAKEN_MAGIC', 'DAMAGE_TAKEN_PHYSIC', 'DAMAGE_TAKEN_BRUT', 'SHIELD_PIERCED', 'BURN', 'POISON'];
-        const isInverse = inverseStats.includes(b.statAffected);
-        const isNegativeValue = b.modifier < 0 || b.flatValue < 0;
+    if (buffList && buffList.length > 0) {
+        buffList.forEach(b => {
+            if (b.statAffected === 'AME_DETACHEE' || b.effectType === 'AME_DETACHEE') return;
 
-        let isBad = isNegativeValue;
-        if (isInverse) isBad = !isNegativeValue;
+            const inverseStats = ['DAMAGE_TAKEN_MAGIC', 'DAMAGE_TAKEN_PHYSIC', 'DAMAGE_TAKEN_BRUT', 'SHIELD_PIERCED', 'BURN', 'POISON'];
+            const isInverse = inverseStats.includes(b.statAffected);
+            const isNegativeValue = b.modifier < 0 || b.flatValue < 0;
 
-        let text = '';
-        if (b.flatValue) text += `${b.flatValue > 0 ? '+' : ''}${b.flatValue} ${ui.formatStat(b.statAffected)}`;
-        if (b.modifier) {
-            if (text) text += ' et ';
-            text += `${b.modifier > 0 ? '+' : ''}${Math.round(b.modifier * 100)}% ${ui.formatStat(b.statAffected)}`;
-        }
-        if (!text) text = `Modifie ${ui.formatStat(b.statAffected)}`;
+            let isBad = isNegativeValue;
+            if (isInverse) isBad = !isNegativeValue;
 
-        const typeStr = (b.statAffected === 'POISON' || b.statAffected === 'BURN') ? ui.formatStat(b.statAffected) : 'Buff/Débuff';
-        const indicatorColor = isBad ? '#f43f5e' : '#10b981';
+            let text = '';
+            if (b.flatValue) text += `${b.flatValue > 0 ? '+' : ''}${b.flatValue} ${ui.formatStat(b.statAffected)}`;
+            if (b.modifier) {
+                if (text) text += ' et ';
+                text += `${b.modifier > 0 ? '+' : ''}${Math.round(b.modifier * 100)}% ${ui.formatStat(b.statAffected)}`;
+            }
+            if (!text) text = `Modifie ${ui.formatStat(b.statAffected)}`;
 
-        let iconName = isBad ? 'trending_down' : 'trending_up';
-        if (b.statAffected === 'POISON') iconName = 'coronavirus';
-        if (b.statAffected === 'BURN') iconName = 'local_fire_department';
+            const typeStr = (b.statAffected === 'POISON' || b.statAffected === 'BURN') ? ui.formatStat(b.statAffected) : 'Buff/Débuff';
+            const indicatorColor = isBad ? '#f43f5e' : '#10b981';
 
-        let statIconHtml = '';
-        if (b.statAffected && b.statAffected !== 'POISON' && b.statAffected !== 'BURN') {
-            const sa = b.statAffected.toUpperCase();
-            let statIcon = { icon: 'star', color: '#94a3b8' };
-            if (sa.includes('SPEED')) statIcon = { icon: 'bolt', color: '#f59e0b' };
-            else if (sa.includes('MANA')) statIcon = { icon: 'water_drop', color: '#38bdf8' };
-            else if (sa.includes('HEALTH') || sa.includes('HP') || sa.includes('LIFE')) statIcon = { icon: 'favorite', color: '#ec4899' };
-            else if (sa.includes('CRIT')) statIcon = { icon: 'gps_fixed', color: '#ef4444' };
-            else if (sa.includes('ARMOR') || sa.includes('ARMURE')) statIcon = { icon: 'shield', color: '#3b82f6' };
-            else if (sa.includes('RESISTANCE')) statIcon = { icon: 'shield', color: '#10b981' };
-            else if (sa.includes('PHYSICAL_POWER') || sa.includes('STRENGTH')) statIcon = { icon: 'fitness_center', color: '#f43f5e' };
-            else if (sa.includes('POWER')) statIcon = { icon: 'auto_awesome', color: '#a855f7' };
-            else if (sa.includes('HEAL_RECEIVED')) statIcon = { icon: 'health_and_safety', color: '#10b981' };
-            else if (sa.includes('SHIELD_RECEIVED')) statIcon = { icon: 'security', color: '#06b6d4' };
-            else if (sa.includes('HEAL_GIVEN')) statIcon = { icon: 'healing', color: '#34d399' };
-            else if (sa.includes('SHIELD_GIVEN')) statIcon = { icon: 'add_moderator', color: '#22d3ee' };
-            else if (sa === 'SHIELD_PIERCED') statIcon = { icon: 'heart_broken', color: '#ef4444' };
-            else if (sa === 'SHIELD_PENETRATION') statIcon = { icon: 'heart_broken', color: '#fb923c' };
-            else if (sa === 'DAMAGE_TAKEN_MAGIC') statIcon = { icon: 'explosion', color: '#a855f7' };
-            else if (sa === 'DAMAGE_TAKEN_PHYSIC') statIcon = { icon: 'explosion', color: '#ef4444' };
-            else if (sa === 'DAMAGE_TAKEN_BRUT') statIcon = { icon: 'explosion', color: '#b91c1c' };
-            else if (sa === 'DAMAGE_GIVEN_MAGIC') statIcon = { icon: 'auto_awesome', color: '#a855f7' };
-            else if (sa === 'DAMAGE_GIVEN_PHYSIC') statIcon = { icon: 'swords', color: '#f43f5e' };
-            else if (sa === 'DAMAGE_GIVEN_BRUT') statIcon = { icon: 'bloodtype', color: '#ef4444' };
-            else if (sa === 'DAMAGE_GIVEN_MAGIC_TO_SHIELD') statIcon = { icon: 'gavel', color: '#d946ef' };
-            else if (sa === 'DAMAGE_GIVEN_PHYSIC_TO_SHIELD') statIcon = { icon: 'gavel', color: '#f43f5e' };
-            else if (sa.includes('DAMAGE_TAKEN')) statIcon = { icon: 'explosion', color: '#ef4444' };
-            else if (sa.includes('DAMAGE_GIVEN')) statIcon = { icon: 'swords', color: '#f43f5e' };
-            else if (sa.includes('PIERCED') || sa.includes('PIERCING')) statIcon = { icon: 'heart_broken', color: '#fb923c' };
+            let iconName = isBad ? 'trending_down' : 'trending_up';
+            if (b.statAffected === 'POISON') iconName = 'coronavirus';
+            if (b.statAffected === 'BURN') iconName = 'local_fire_department';
 
-            statIconHtml = `<span class="material-symbols-outlined" style="flex-shrink:0; font-size:1.1rem; color:${statIcon.color}; margin-left:-0.1rem;">${statIcon.icon}</span>`;
-        }
+            let statIconHtml = '';
+            if (b.statAffected && b.statAffected !== 'POISON' && b.statAffected !== 'BURN') {
+                const sa = b.statAffected.toUpperCase();
+                let statIcon = { icon: 'star', color: '#94a3b8' };
+                if (sa.includes('SPEED')) statIcon = { icon: 'bolt', color: '#f59e0b' };
+                else if (sa.includes('MANA')) statIcon = { icon: 'water_drop', color: '#38bdf8' };
+                else if (sa.includes('HEALTH') || sa.includes('HP') || sa.includes('LIFE')) statIcon = { icon: 'favorite', color: '#ec4899' };
+                else if (sa.includes('CRIT')) statIcon = { icon: 'gps_fixed', color: '#ef4444' };
+                else if (sa.includes('ARMOR') || sa.includes('ARMURE')) statIcon = { icon: 'shield', color: '#3b82f6' };
+                else if (sa.includes('RESISTANCE')) statIcon = { icon: 'shield', color: '#10b981' };
+                else if (sa.includes('PHYSICAL_POWER') || sa.includes('STRENGTH')) statIcon = { icon: 'fitness_center', color: '#f43f5e' };
+                else if (sa.includes('POWER')) statIcon = { icon: 'auto_awesome', color: '#a855f7' };
+                else if (sa.includes('HEAL_RECEIVED')) statIcon = { icon: 'health_and_safety', color: '#10b981' };
+                else if (sa.includes('SHIELD_RECEIVED')) statIcon = { icon: 'security', color: '#06b6d4' };
+                else if (sa.includes('HEAL_GIVEN')) statIcon = { icon: 'healing', color: '#34d399' };
+                else if (sa.includes('SHIELD_GIVEN')) statIcon = { icon: 'add_moderator', color: '#22d3ee' };
+                else if (sa === 'SHIELD_PIERCED') statIcon = { icon: 'heart_broken', color: '#ef4444' };
+                else if (sa === 'SHIELD_PENETRATION') statIcon = { icon: 'heart_broken', color: '#fb923c' };
+                else if (sa === 'DAMAGE_TAKEN_MAGIC') statIcon = { icon: 'explosion', color: '#a855f7' };
+                else if (sa === 'DAMAGE_TAKEN_PHYSIC') statIcon = { icon: 'explosion', color: '#ef4444' };
+                else if (sa === 'DAMAGE_TAKEN_BRUT') statIcon = { icon: 'explosion', color: '#b91c1c' };
+                else if (sa === 'DAMAGE_GIVEN_MAGIC') statIcon = { icon: 'auto_awesome', color: '#a855f7' };
+                else if (sa === 'DAMAGE_GIVEN_PHYSIC') statIcon = { icon: 'swords', color: '#f43f5e' };
+                else if (sa === 'DAMAGE_GIVEN_BRUT') statIcon = { icon: 'bloodtype', color: '#ef4444' };
+                else if (sa === 'DAMAGE_GIVEN_MAGIC_TO_SHIELD') statIcon = { icon: 'gavel', color: '#d946ef' };
+                else if (sa === 'DAMAGE_GIVEN_PHYSIC_TO_SHIELD') statIcon = { icon: 'gavel', color: '#f43f5e' };
+                else if (sa.includes('DAMAGE_TAKEN')) statIcon = { icon: 'explosion', color: '#ef4444' };
+                else if (sa.includes('DAMAGE_GIVEN')) statIcon = { icon: 'swords', color: '#f43f5e' };
+                else if (sa.includes('PIERCED') || sa.includes('PIERCING')) statIcon = { icon: 'heart_broken', color: '#fb923c' };
 
-        const entryHtml = `
+                statIconHtml = `<span class="material-symbols-outlined" style="flex-shrink:0; font-size:1.1rem; color:${statIcon.color}; margin-left:-0.1rem;">${statIcon.icon}</span>`;
+            }
+
+            const entryHtml = `
             <div style="display:flex; align-items:flex-start; gap:0.4rem; font-size:0.85rem;">
                 <span class="material-symbols-outlined" style="flex-shrink:0; font-size:1.1rem; color:${indicatorColor};">${iconName}</span>
                 ${statIconHtml}
@@ -2284,10 +2551,80 @@ function renderBuffsHtml(buffList) {
             </div>
         `;
 
-        if (isBad) badBuffs.push(entryHtml);
-        else goodBuffs.push(entryHtml);
-    });
+            if (isBad) badBuffs.push(entryHtml);
+            else goodBuffs.push(entryHtml);
+        });
+    }
 
+    if (motList && motList.length > 0) {
+        motList.forEach(m => {
+            let text = "";
+            if (m.percentageManaPerTick) {
+                text = (m.percentageManaPerTick * 100) + "% " + (m.manaSource === 'TARGET_MANA_MAX' ? 'Mana Max' : ui.formatSrc(m.manaSource));
+                if (m.fixedManaPerTick) {
+                    text += (m.fixedManaPerTick > 0 ? ' + ' : ' - ') + Math.abs(m.fixedManaPerTick);
+                }
+            } else {
+                text = m.fixedManaPerTick;
+            }
+
+            let isBad = false;
+            if (m.percentageManaPerTick < 0 || m.fixedManaPerTick < 0) {
+                isBad = true;
+            }
+
+            const indicatorColor = isBad ? '#f43f5e' : '#10b981';
+            const iconName = isBad ? 'trending_down' : 'trending_up';
+
+            const entryHtml = `
+                <div style="display:flex; align-items:flex-start; gap:0.4rem; font-size:0.85rem;">
+                    <span class="material-symbols-outlined" style="flex-shrink:0; font-size:1.1rem; color:${indicatorColor};">${iconName}</span>
+                    <span class="material-symbols-outlined" style="flex-shrink:0; font-size:1.1rem; color:#38bdf8; margin-left:-0.1rem;">water_drop</span>
+                    <span style="font-weight:600; color:#fff;">[Cible]</span>
+                    <span style="color:#38bdf8; font-weight:500;">MoT</span>
+                    <span style="color:#e2e8f0;">➔ ${text} Mana/tour (${m.duration} tours)</span>
+                </div>
+            `;
+            if (isBad) badBuffs.push(entryHtml);
+            else goodBuffs.push(entryHtml);
+        });
+    }
+
+    if (hotList && hotList.length > 0) {
+        hotList.forEach(h => {
+            let text = "";
+            if (h.percentageHealPerTick) {
+                text = (h.percentageHealPerTick * 100) + "% " + (h.healSource === 'TARGET_HEALTH_MAX' ? 'PV Max' : ui.formatSrc(h.healSource));
+                if (h.fixedHealPerTick) {
+                    text += (h.fixedHealPerTick > 0 ? ' + ' : ' - ') + Math.abs(h.fixedHealPerTick);
+                }
+            } else {
+                text = h.fixedHealPerTick;
+            }
+
+            let isBad = false;
+            if (h.percentageHealPerTick < 0 || h.fixedHealPerTick < 0) {
+                isBad = true;
+            }
+
+            const indicatorColor = isBad ? '#f43f5e' : '#10b981';
+            const iconName = isBad ? 'trending_down' : 'trending_up';
+
+            const entryHtml = `
+                <div style="display:flex; align-items:flex-start; gap:0.4rem; font-size:0.85rem;">
+                    <span class="material-symbols-outlined" style="flex-shrink:0; font-size:1.1rem; color:${indicatorColor};">${iconName}</span>
+                    <span class="material-symbols-outlined" style="flex-shrink:0; font-size:1.1rem; color:#22c55e; margin-left:-0.1rem;">healing</span>
+                    <span style="font-weight:600; color:#fff;">[Cible]</span>
+                    <span style="color:#22c55e; font-weight:500;">HoT</span>
+                    <span style="color:#e2e8f0;">➔ ${text} PV/tour (${h.duration} tours)</span>
+                </div>
+            `;
+            if (isBad) badBuffs.push(entryHtml);
+            else goodBuffs.push(entryHtml);
+        });
+    }
+
+    if (goodBuffs.length === 0 && badBuffs.length === 0) return '';
     let html = '';
     const tooltipAttrs = 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"';
 
@@ -2631,12 +2968,15 @@ function showNotif(msg, isError = false) {
     }, 3000);
 }
 
+
+
 function renderDotsHtml(dotList) {
     if (!dotList || dotList.length === 0) return '';
 
     let totalDmg = 0;
     const dotEntries = [];
     dotList.forEach(d => {
+        if (d.burn || d.poison) return; // Déjà géré par renderPoisonBurnHtml
         totalDmg += d.fixedDamagePerTick || 0;
         let dTypeStr = "Brut";
         if (d.damageType === "PHYSIC") dTypeStr = "Physique";
@@ -2687,7 +3027,7 @@ function renderDotsHtml(dotList) {
     `;
 }
 
-window.showGlobalTooltip = function(el) {
+window.showGlobalTooltip = function (el) {
     let tooltip = document.getElementById('globalFixedTooltip');
     if (!tooltip) {
         tooltip = document.createElement('div');
@@ -2706,20 +3046,20 @@ window.showGlobalTooltip = function(el) {
         tooltip.style.fontSize = '0.8rem';
         tooltip.style.lineHeight = '1.4';
         tooltip.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.5)';
-        tooltip.style.maxWidth = '250px';
-        tooltip.style.whiteSpace = 'normal';
-        tooltip.style.wordWrap = 'break-word';
+        tooltip.style.maxWidth = 'max-content';
+        tooltip.style.whiteSpace = 'nowrap';
+        tooltip.style.wordWrap = 'normal';
         tooltip.style.textAlign = 'left';
         document.body.appendChild(tooltip);
     }
-    
+
     const tmpl = el.querySelector('.tooltip-data');
     if (tmpl) {
         tooltip.innerHTML = tmpl.innerHTML;
     } else {
         return;
     }
-    
+
     tooltip.style.display = 'block';
 
     const rect = el.getBoundingClientRect();
@@ -2738,23 +3078,38 @@ window.showGlobalTooltip = function(el) {
     tooltip.style.left = left + 'px';
 };
 
-window.hideGlobalTooltip = function() {
+window.hideGlobalTooltip = function () {
     const tooltip = document.getElementById('globalFixedTooltip');
     if (tooltip) tooltip.style.display = 'none';
 };
 
-window.renderOverlayInventory = function(containerId) {
+window.renderOverlayInventory = function (containerId) {
     const list = document.getElementById(containerId);
     if (!list) return;
     list.innerHTML = '';
 
+    // Add Gold reminder
+    let goldAmount = 0;
+    if (currentSessionData && currentSessionData.players && currentSessionData.players.length > 0) {
+        goldAmount = currentSessionData.players[0].gold || 0;
+    }
+    list.innerHTML += `
+        <div style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px; padding: 0.8rem; display: flex; align-items: center; gap: 0.8rem; margin-bottom: 0.5rem;">
+            <span class="material-symbols-outlined" style="font-size: 1.5rem; color: #f59e0b;">monetization_on</span>
+            <div style="flex: 1;">
+                <div style="color: #f8fafc; font-weight: 600; font-size: 0.9rem;">Or du compte</div>
+                <div style="color: #f59e0b; font-weight: 700; font-size: 1.1rem;">${goldAmount}</div>
+            </div>
+        </div>
+    `;
+
     if (!currentSessionData || !currentSessionData.activeConsumables || currentSessionData.activeConsumables.length === 0) {
-        list.innerHTML = `<div style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 1rem;">Aucun objet dans l'inventaire.</div>`;
+        list.innerHTML += `<div style="color: var(--text-muted); font-size: 0.85rem; text-align: center; padding: 1rem;">Aucun objet dans l'inventaire.</div>`;
         return;
     }
 
     currentSessionData.activeConsumables.forEach(c => {
-        const canConsume = c.name.toLowerCase() === 'pain' || c.name.toLowerCase() === 'potion de mana';
+        const canConsume = true;
         const onClickAttr = canConsume ? `onclick="window.openConsumeModal(${c.id}, '${c.name.replace(/'/g, "\\'")}')"` : '';
         const cursorStyle = canConsume ? 'cursor: pointer;' : '';
         const hoverClass = canConsume ? 'consumable-hover' : '';
@@ -2764,22 +3119,22 @@ window.renderOverlayInventory = function(containerId) {
                 <span class="material-symbols-outlined" style="font-size: 1.5rem; color: #10b981;">inventory_2</span>
                 <div style="flex: 1;">
                     <div style="color: #f8fafc; font-weight: 600; font-size: 0.9rem;">${c.name}</div>
-                    <div style="color: var(--text-muted); font-size: 0.75rem;">
-                        ${c.bonusHealthMax ? `+${c.bonusHealthMax} PV ` : ''}
-                        ${c.bonusManaMax ? `+${c.bonusManaMax} Mana ` : ''}
-                        ${c.bonusPower ? `+${c.bonusPower} Pui ` : ''}
-                        ${c.bonusStrength ? `+${c.bonusStrength} For ` : ''}
-                        ${c.bonusArmor ? `+${c.bonusArmor} Arm ` : ''}
-                        ${c.bonusResistance ? `+${c.bonusResistance} Res ` : ''}
-                        ${canConsume ? '<div style="color: #0ea5e9; margin-top: 4px; font-weight: 500;">Cliquable pour utiliser</div>' : ''}
+                    <div style="color: var(--text-muted); font-size: 0.8rem; display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin-bottom: 4px;">
+                        ${c.bonusHealthMax ? `<span style="display:inline-flex; align-items:center; color:#ec4899;" title="PV">+${c.bonusHealthMax}<span class="material-symbols-outlined" style="font-size:0.85rem; margin-left:2px;">favorite</span></span>` : ''}
+                        ${c.bonusManaMax ? `<span style="display:inline-flex; align-items:center; color:#38bdf8;" title="Mana">+${c.bonusManaMax}<span class="material-symbols-outlined" style="font-size:0.85rem; margin-left:2px;">water_drop</span></span>` : ''}
+                        ${c.consumableHpPercent ? `<span style="display:inline-flex; align-items:center; color:#ec4899;" title="PV Max">+${c.consumableHpPercent}%<span class="material-symbols-outlined" style="font-size:0.85rem; margin-left:2px;">favorite</span></span>` : ''}
+                        ${c.consumableManaPercent ? `<span style="display:inline-flex; align-items:center; color:#38bdf8;" title="Mana Max">+${c.consumableManaPercent}%<span class="material-symbols-outlined" style="font-size:0.85rem; margin-left:2px;">water_drop</span></span>` : ''}
+                        ${c.consumableMissingHpPercent ? `<span style="display:inline-flex; align-items:center; color:#f43f5e;" title="PV Manq">+${c.consumableMissingHpPercent}%<span class="material-symbols-outlined" style="font-size:0.85rem; margin-left:2px;">healing</span></span>` : ''}
+                        ${c.consumableMissingManaPercent ? `<span style="display:inline-flex; align-items:center; color:#a855f7;" title="Mana Manq">+${c.consumableMissingManaPercent}%<span class="material-symbols-outlined" style="font-size:0.85rem; margin-left:2px;">cyclone</span></span>` : ''}
                     </div>
+                    ${canConsume ? '<div style="color: #0ea5e9; font-size: 0.75rem; font-weight: 500;">Cliquable pour utiliser</div>' : ''}
                 </div>
             </div>
         `;
     });
 };
 
-window.openConsumeModal = function(consumableId, consumableName) {
+window.openConsumeModal = function (consumableId, consumableName) {
     document.getElementById('consumeTargetName').innerText = consumableName;
     const btnContainer = document.getElementById('consumeTargetButtons');
     btnContainer.innerHTML = '';
@@ -2803,11 +3158,11 @@ window.openConsumeModal = function(consumableId, consumableName) {
     document.getElementById('consumeTargetModal').classList.add('show');
 };
 
-window.closeConsumeModal = function() {
+window.closeConsumeModal = function () {
     document.getElementById('consumeTargetModal').classList.remove('show');
 };
 
-window.confirmConsumeItem = async function(consumableId, characterId) {
+window.confirmConsumeItem = async function (consumableId, characterId) {
     if (!sessionId) return;
     try {
         const res = await fetch(`/api/pve/combat/${sessionId}/consume/${consumableId}/target/${characterId}`, {

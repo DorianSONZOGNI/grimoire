@@ -18,7 +18,6 @@ import org.springframework.transaction.annotation.Transactional;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.Optional;
 
 @Service
 public class AlchemyService {
@@ -46,11 +45,11 @@ public class AlchemyService {
     }
 
     public AlchemyRecipe saveRecipe(AlchemyRecipe recipe) {
-        return recipeRepository.save(recipe);
+        return recipeRepository.save(java.util.Objects.requireNonNull(recipe));
     }
 
     public void deleteRecipe(Long id) {
-        recipeRepository.deleteById(id);
+        recipeRepository.deleteById(java.util.Objects.requireNonNull(id));
     }
 
     @Transactional
@@ -58,7 +57,7 @@ public class AlchemyService {
         AppUser user = userRepository.findByUsername(username)
                 .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
 
-        AlchemyRecipe recipe = recipeRepository.findById(recipeId)
+        AlchemyRecipe recipe = recipeRepository.findById(java.util.Objects.requireNonNull(recipeId))
                 .orElseThrow(() -> new RuntimeException("Recette introuvable"));
 
         // Vérification de la progression des secrets si la recette débloque un secret
@@ -169,7 +168,7 @@ public class AlchemyService {
             equipmentRepository.deleteAll(toDeleteConsumables);
         }
 
-        userRepository.save(user);
+        userRepository.save(java.util.Objects.requireNonNull(user));
 
         // Attribution de la récompense
         return giveReward(username, recipe, crafterPersonnageId);
@@ -197,14 +196,33 @@ public class AlchemyService {
             }
             return "Vous avez obtenu " + recipe.getRewardQuantity() + "x Anomalie : " + recipe.getRewardName();
         } else if (recipe.getRewardType() == RecipeRewardType.GIVE_CONSUMABLE) {
+            Equipment template = equipmentRepository.findFirstByName(recipe.getRewardName());
             for (int i = 0; i < recipe.getRewardQuantity(); i++) {
                 Equipment consumable = new Equipment();
                 consumable.setName(recipe.getRewardName());
                 consumable.setOwnerUsername(username);
                 consumable.setSlot(EquipmentSlot.CONSOMMABLE);
+                if (template != null) {
+                    consumable.copyStatsFrom(template);
+                }
                 equipmentRepository.save(consumable);
             }
             return "Vous avez obtenu " + recipe.getRewardQuantity() + "x Consommable : " + recipe.getRewardName();
+        } else if (recipe.getRewardType() == RecipeRewardType.GIVE_EQUIPMENT) {
+            Equipment template = equipmentRepository.findFirstByName(recipe.getRewardName());
+            for (int i = 0; i < recipe.getRewardQuantity(); i++) {
+                Equipment eq = new Equipment();
+                eq.setName(recipe.getRewardName());
+                eq.setOwnerUsername(username);
+                if (template != null) {
+                    eq.setSlot(template.getSlot());
+                    eq.copyStatsFrom(template);
+                } else {
+                    eq.setSlot(EquipmentSlot.CASQUE);
+                }
+                equipmentRepository.save(eq);
+            }
+            return "Vous avez obtenu " + recipe.getRewardQuantity() + "x Équipement : " + recipe.getRewardName();
         } else if (recipe.getRewardType() == RecipeRewardType.UPGRADE_ANOMALY) {
             // Dans ce MVP, on crée directement une anomalie d'un niveau supérieur 
             // (vu qu'on vient de consommer l'anomalie de base comme ingrédient)

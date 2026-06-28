@@ -30,20 +30,25 @@ const STAT_DEFS = [
     { key: 'bonusCrit', label: 'Crit', icon: 'gps_fixed', color: '#ef4444' },
     { key: 'regenHealthPerTurn', label: 'PV/t', icon: 'healing', color: '#10b981' },
     { key: 'regenManaPerTurn', label: 'Mana/t', icon: 'cyclone', color: '#38bdf8' },
+    { key: 'consumableHpPercent', label: 'PV Max', icon: 'favorite', color: '#ec4899', isPercent: true },
+    { key: 'consumableManaPercent', label: 'Mana Max', icon: 'water_drop', color: '#38bdf8', isPercent: true },
+    { key: 'consumableMissingHpPercent', label: 'PV Manq', icon: 'healing', color: '#f43f5e', isPercent: true },
+    { key: 'consumableMissingManaPercent', label: 'Mana Manq', icon: 'cyclone', color: '#a855f7', isPercent: true }
 ];
 
 const WEIGHT_LIMITS = {
-    CASQUE: { COMMUN: 5, RARE: 9, LEGENDAIRE: 14, EPIQUE: 20, RELIQUE: 24 },
-    PLASTRON: { COMMUN: 8, RARE: 13, LEGENDAIRE: 20, EPIQUE: 26, RELIQUE: 30 },
-    ANNEAU_GAUCHE: { COMMUN: 2, RARE: 3, LEGENDAIRE: 5, EPIQUE: 7, RELIQUE: 8 },
-    ANNEAU_DROIT: { COMMUN: 2, RARE: 3, LEGENDAIRE: 5, EPIQUE: 7, RELIQUE: 8 },
-    BOTTES: { COMMUN: 4, RARE: 7, LEGENDAIRE: 11, EPIQUE: 16, RELIQUE: 20 },
-    CAPE: { COMMUN: 5, RARE: 9, LEGENDAIRE: 14, EPIQUE: 20, RELIQUE: 24 }
+    CASQUE: { COMMUN: 5, RARE: 14, LEGENDAIRE: 22, EPIQUE: 35, RELIQUE: 40 },
+    PLASTRON: { COMMUN: 9, RARE: 19, LEGENDAIRE: 29, EPIQUE: 40, RELIQUE: 46 },
+    ANNEAU_GAUCHE: { COMMUN: 3, RARE: 6, LEGENDAIRE: 10, EPIQUE: 15, RELIQUE: 17 },
+    ANNEAU_DROIT: { COMMUN: 3, RARE: 6, LEGENDAIRE: 10, EPIQUE: 15, RELIQUE: 17 },
+    BOTTES: { COMMUN: 4, RARE: 12, LEGENDAIRE: 19, EPIQUE: 30, RELIQUE: 34 },
+    CAPE: { COMMUN: 5, RARE: 14, LEGENDAIRE: 22, EPIQUE: 35, RELIQUE: 40 },
+    CONSOMMABLE: { COMMUN: 5, RARE: 9, LEGENDAIRE: 14, EPIQUE: 20, RELIQUE: 24 }
 };
 
 function calculateWeight(eq) {
     if (eq.isAnomalie) return 0;
-    let w = 0;
+    let w = eq.baseWeight || 0;
     w += (eq.bonusHealthMax || 0) * 0.2;
     w += (eq.bonusManaMax || 0) * 0.2;
     w += (eq.bonusPower || 0) * 2.0;
@@ -164,6 +169,8 @@ async function loadEquipments() {
             eq._weight = calculateWeight(eq);
         });
 
+        allEquipments = groupEquipments(allEquipments);
+
         filterVault();
     } catch (e) {
         console.error('Erreur chargement équipements:', e);
@@ -174,10 +181,11 @@ async function loadEquipments() {
 let equipmentToDelete = null;
 let anomalieToDelete = null;
 
-window.deleteAnomalie = function(id) {
-    anomalieToDelete = id;
+window.deleteAnomalie = function(idsStr) {
+    anomalieToDelete = String(idsStr).split(',');
     equipmentToDelete = null;
-    const eq = allEquipments.find(e => e.id === id && e.isAnomalie);
+    const firstId = Number(anomalieToDelete[0]);
+    const eq = allEquipments.find(e => e.id === firstId && e.isAnomalie);
     if (eq) {
         document.getElementById('deleteTargetName').textContent = eq.name;
         document.getElementById('deleteConfirmBtn').innerHTML = `Oui, détruire l'anomalie`;
@@ -185,10 +193,11 @@ window.deleteAnomalie = function(id) {
     document.getElementById('deleteConfirmModal').classList.add('show');
 }
 
-window.deleteEquipment = function(id) {
-    equipmentToDelete = id;
+window.deleteEquipment = function(idsStr) {
+    equipmentToDelete = String(idsStr).split(',');
     anomalieToDelete = null;
-    const eq = allEquipments.find(e => e.id === id && !e.isAnomalie);
+    const firstId = Number(equipmentToDelete[0]);
+    const eq = allEquipments.find(e => e.id === firstId && !e.isAnomalie);
     if (eq) {
         document.getElementById('deleteTargetName').textContent = eq.name;
         const weightStr = eq._weight % 1 === 0 ? eq._weight : eq._weight.toFixed(1);
@@ -205,33 +214,68 @@ function closeDeleteModal() {
 document.getElementById('deleteConfirmBtn').addEventListener('click', async () => {
     if (!equipmentToDelete && !anomalieToDelete) return;
 
-    const idEq = equipmentToDelete;
-    const idAn = anomalieToDelete;
+    const idsEq = equipmentToDelete;
+    const idsAn = anomalieToDelete;
     closeDeleteModal();
 
     try {
-        if (idEq) {
-            const res = await fetch(`/api/equipment/${idEq}`, { method: 'DELETE' });
-            if (res.ok) {
-                showNotif('Équipement détruit.');
-                await loadEquipments();
-                if (window.checkAuthStatus) window.checkAuthStatus();
-            } else {
-                showNotif('Erreur lors de la suppression.', true);
+        if (idsEq) {
+            let success = false;
+            for (let id of idsEq) {
+                const res = await fetch(`/api/equipment/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    success = true;
+                    showNotif('Équipement détruit.');
+                    await loadEquipments();
+                    if (window.checkAuthStatus) window.checkAuthStatus();
+                    break;
+                }
             }
-        } else if (idAn) {
-            const res = await fetch(`/api/anomalies/${idAn}`, { method: 'DELETE' });
-            if (res.ok) {
-                showNotif('Anomalie détruite.');
-                await loadEquipments();
-            } else {
-                showNotif('Erreur lors de la suppression.', true);
+            if (!success) showNotif('Impossible de détruire cet objet (lié).', true);
+        } else if (idsAn) {
+            let success = false;
+            for (let id of idsAn) {
+                const res = await fetch(`/api/anomalies/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    success = true;
+                    showNotif('Anomalie détruite.');
+                    await loadEquipments();
+                    break;
+                }
             }
+            if (!success) showNotif('Impossible de détruire cette anomalie (liée).', true);
         }
     } catch (e) {
         showNotif('Erreur réseau.', true);
     }
 });
+
+function groupEquipments(list) {
+    let stacked = [];
+    let groups = {};
+    list.forEach(eq => {
+        const isStackable = eq.isAnomalie || eq.slot === 'CONSOMMABLE';
+        if (!isStackable) {
+            stacked.push(eq);
+            return;
+        }
+
+        let ownerLabel = eq.personnage ? eq.personnage.name : eq.ownerUsername;
+        let key = eq.isAnomalie ? `ANO_${eq.name}_${eq.level || 1}` : `CONS_${eq.name}`;
+        if (window.isAdmin) {
+            key += `_${ownerLabel}`;
+        }
+
+        if (!groups[key]) {
+            groups[key] = { ...eq, stackIds: [eq.id], stackCount: 1, _groupOwner: ownerLabel };
+        } else {
+            groups[key].stackIds.push(eq.id);
+            groups[key].stackCount++;
+        }
+    });
+    
+    return stacked.concat(Object.values(groups));
+}
 
 // ===== Rendu =====
 function filterVault() {
@@ -320,7 +364,28 @@ function renderGrid(equipments) {
     }
 
     container.innerHTML = equipments.map(eq => {
+        const rarityClass = eq.rarity ? `rarity-${eq.rarity}` : 'rarity-COMMUN';
+
         if (eq.isAnomalie) {
+            const spColors = {
+                'NATURE': '#10b981',
+                'NECROMANCIE': '#8b5cf6',
+                'EAU': '#3b82f6',
+                'FEU': '#ef4444',
+                'TERRE': '#f59e0b',
+                'AIR': '#06b6d4',
+                'LUMIERE': '#fde047',
+                'NEANT': '#000000',
+                'FOUDRE': '#fbbf24',
+                'SANG': '#991b1b',
+                'POISON': '#22c55e',
+                'GLACE': '#93c5fd',
+                'ESPRIT': '#38bdf8',
+                'KARMA': '#e7d198',
+                'TENEBRES': '#a855f7'
+            };
+            const spColor = spColors[eq.spiritualite] || '#d946ef';
+
             const CATEGORY_ICONS = {
                 'PIERRE': 'landslide',
                 'METAL': 'hardware',
@@ -331,30 +396,42 @@ function renderGrid(equipments) {
                 'ECAILLE': 'waves',
                 'AUTRE': 'category'
             };
-            const typeStr = eq.magicObject !== false ? "Objet Magique" : "Matériau";
-            const typeIcon = CATEGORY_ICONS[eq.category] || 'category';
-            let spColor = '#a855f7';
-            if (eq.spiritualite === 'ESPRIT') spColor = '#38bdf8';
-            else if (eq.spiritualite === 'KARMA') spColor = '#e7d198';
+            const catIcon = CATEGORY_ICONS[eq.category] || 'category';
+
+            let typeIcon = 'star';
+            let typeStr = 'Objet Magique';
+            if (eq.magicObject === false) {
+                typeIcon = catIcon;
+                typeStr = 'Matériau';
+            }
+
+            const badgeHtml = (eq.stackCount && eq.stackCount > 1) 
+                ? `<div style="position: absolute; top: -10px; right: -10px; background: #ef4444; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.85rem; font-weight: bold; border: 2px solid #1e293b; z-index: 5; box-shadow: 0 2px 4px rgba(0,0,0,0.5);">x${eq.stackCount}</div>` 
+                : '';
+                
+            const displayOwner = window.isAdmin ? (eq._groupOwner || eq.ownerUsername) : null;
+            const adminOwnerHtml = displayOwner ? `<span style="margin-left: 0.5rem; font-size: 0.65rem; padding: 0.15rem 0.4rem; background: ${displayOwner === window.currentUser?.username ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.1)'}; color: ${displayOwner === window.currentUser?.username ? '#34d399' : '#cbd5e1'}; border-radius: 4px; border: 1px solid ${displayOwner === window.currentUser?.username ? 'rgba(16, 185, 129, 0.3)' : 'rgba(255, 255, 255, 0.1)'}; white-space: nowrap; vertical-align: middle;"><span class="material-symbols-outlined" style="font-size: 0.7rem; vertical-align: middle; margin-right: 2px;">account_circle</span>${displayOwner}</span>` : '';
 
             return `
-            <div class="vault-card rarity-RELIQUE" style="border-color: ${spColor}; box-shadow: 0 0 15px ${spColor}20;">
+            <div class="vault-card ${rarityClass}" data-id="${eq.id}" style="position: relative; border-top: 2px solid ${spColor}; box-shadow: 0 -4px 15px ${spColor}20;">
+                ${badgeHtml}
                 <div class="vault-card-header">
                     <div class="vault-card-name-group">
                         <div class="vault-card-slot">
                             <span class="material-symbols-outlined" style="font-size: 0.9rem; color: ${spColor};">${typeIcon}</span>
                             ${typeStr} <span style="opacity:0.5; margin-left:4px;">${eq.spiritualite}</span> <span style="opacity:0.5; margin-left:4px;">(Niv. ${eq.level || 1})</span>
                         </div>
-                        <div class="vault-card-name" style="color: #fdf4ff;">
-                            ${eq.name}
-                            ${window.isAdmin && eq.ownerUsername ? `<span style="margin-left: 0.5rem; font-size: 0.65rem; padding: 0.15rem 0.4rem; background: ${eq.ownerUsername === window.currentUser?.username ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.1)'}; color: ${eq.ownerUsername === window.currentUser?.username ? '#34d399' : '#cbd5e1'}; border-radius: 4px; border: 1px solid ${eq.ownerUsername === window.currentUser?.username ? 'rgba(16, 185, 129, 0.3)' : 'rgba(255, 255, 255, 0.1)'}; white-space: nowrap; vertical-align: middle;"><span class="material-symbols-outlined" style="font-size: 0.7rem; vertical-align: middle; margin-right: 2px;">account_circle</span>${eq.ownerUsername}</span>` : ''}
+                        <div class="vault-card-name" style="color: #fdf4ff; display: flex; align-items: center; gap: 0.3rem;">
+                            <span class="material-symbols-outlined" style="font-size: 1.2rem; opacity: 0.8; color: ${spColor};">${catIcon}</span>
+                            <span>${eq.name}</span>
+                            ${adminOwnerHtml}
                         </div>
                     </div>
                     <div class="vault-card-actions">
                         ${window.isAdmin ? `<button class="vault-btn-edit" onclick="editAnomalie(${eq.id})" title="Modifier l'anomalie">
                             <span class="material-symbols-outlined">edit</span>
                         </button>` : ''}
-                        ${(window.isAdmin || eq.ownerUsername === window.currentUser?.username) ? `<button class="vault-btn-delete" onclick="deleteAnomalie(${eq.id})" title="Détruire l'anomalie">
+                        ${(window.isAdmin || eq.ownerUsername === window.currentUser?.username) ? `<button class="vault-btn-delete" onclick="deleteAnomalie('${eq.stackIds ? eq.stackIds.join(',') : eq.id}')" title="Détruire l'anomalie">
                             <span class="material-symbols-outlined">delete</span>
                         </button>` : ''}
                     </div>
@@ -380,9 +457,10 @@ function renderGrid(equipments) {
                 const val = eq[s.key];
                 const isMalus = val < 0;
                 const sign = val > 0 ? '+' : '';
-                return `<span class="vault-stat-chip ${isMalus ? 'malus' : ''}">
+                const suffix = s.isPercent ? '%' : '';
+                return `<span class="vault-stat-chip ${isMalus ? 'malus' : ''}" title="${s.label}">
                     <span class="material-symbols-outlined" style="color:${isMalus ? '#ef4444' : s.color}; font-size: 0.8rem;">${s.icon}</span>
-                    ${sign}${val}
+                    ${sign}${val}${suffix}
                 </span>`;
             }).join('');
 
@@ -401,9 +479,6 @@ function renderGrid(equipments) {
                 ${label} : ${eq.specialEffectValue}
             </div>`;
         }
-
-        const rarityClass = eq.rarity ? `rarity-${eq.rarity}` : 'rarity-COMMUN';
-
         let statusHtml = '';
         if (eq.personnage) {
             statusHtml = `<span class="vault-card-status status-equipped">
@@ -435,8 +510,16 @@ function renderGrid(equipments) {
             weightColor = `hsl(${hue}, 80%, 55%)`;
         }
 
+        const badgeHtml = (eq.stackCount && eq.stackCount > 1) 
+            ? `<div style="position: absolute; top: -10px; right: -10px; background: #ef4444; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.85rem; font-weight: bold; border: 2px solid #1e293b; z-index: 5; box-shadow: 0 2px 4px rgba(0,0,0,0.5);">x${eq.stackCount}</div>` 
+            : '';
+            
+        const displayOwner = window.isAdmin ? (eq._groupOwner || eq.ownerUsername) : null;
+        const adminOwnerHtml = displayOwner ? `<span style="margin-left: 0.5rem; font-size: 0.65rem; padding: 0.15rem 0.4rem; background: ${displayOwner === window.currentUser?.username ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.1)'}; color: ${displayOwner === window.currentUser?.username ? '#34d399' : '#cbd5e1'}; border-radius: 4px; border: 1px solid ${displayOwner === window.currentUser?.username ? 'rgba(16, 185, 129, 0.3)' : 'rgba(255, 255, 255, 0.1)'}; white-space: nowrap; vertical-align: middle;"><span class="material-symbols-outlined" style="font-size: 0.7rem; vertical-align: middle; margin-right: 2px;">account_circle</span>${displayOwner}</span>` : '';
+
         return `
-            <div class="vault-card ${rarityClass}">
+            <div class="vault-card ${rarityClass}" style="position: relative;">
+                ${badgeHtml}
                 <div class="vault-card-header">
                     <div class="vault-card-name-group">
                         <div class="vault-card-slot">
@@ -445,14 +528,14 @@ function renderGrid(equipments) {
                         </div>
                         <div class="vault-card-name">
                             ${eq.name}
-                            ${window.isAdmin && eq.ownerUsername ? `<span style="margin-left: 0.5rem; font-size: 0.65rem; padding: 0.15rem 0.4rem; background: ${eq.ownerUsername === window.currentUser?.username ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.1)'}; color: ${eq.ownerUsername === window.currentUser?.username ? '#34d399' : '#cbd5e1'}; border-radius: 4px; border: 1px solid ${eq.ownerUsername === window.currentUser?.username ? 'rgba(16, 185, 129, 0.3)' : 'rgba(255, 255, 255, 0.1)'}; white-space: nowrap; vertical-align: middle;"><span class="material-symbols-outlined" style="font-size: 0.7rem; vertical-align: middle; margin-right: 2px;">account_circle</span>${eq.ownerUsername}</span>` : ''}
+                            ${adminOwnerHtml}
                         </div>
                     </div>
                     <div class="vault-card-actions">
                         ${window.isAdmin ? `<button class="vault-btn-edit" onclick="editEquipment(${eq.id})" title="Modifier l'objet">
                             <span class="material-symbols-outlined">edit</span>
                         </button>` : ''}
-                        ${(window.isAdmin || eq.ownerUsername === window.currentUser?.username) ? `<button class="vault-btn-delete" onclick="deleteEquipment(${eq.id})" title="Détruire l'objet">
+                        ${(window.isAdmin || eq.ownerUsername === window.currentUser?.username) ? `<button class="vault-btn-delete" onclick="deleteEquipment('${eq.stackIds ? eq.stackIds.join(',') : eq.id}')" title="Détruire l'objet">
                             <span class="material-symbols-outlined">delete</span>
                         </button>` : ''}
                     </div>
@@ -464,9 +547,9 @@ function renderGrid(equipments) {
                 ${effectHtml}
                 
                 <div class="vault-card-footer">
-                    <div class="vault-card-weight" title="Poids total / Poids Max (${maxWeight})">
-                        <span class="material-symbols-outlined" style="font-size: 1.1rem; color: ${weightColor};">scale</span>
-                        <span style="color: ${weightColor}; font-weight: 600;">${weightStr}</span> / ${maxWeight} pts
+                    <div class="vault-card-weight" title="${eq.slot === 'CONSOMMABLE' ? 'Poids total' : `Poids total / Poids Max (${maxWeight})`}">
+                        <span class="material-symbols-outlined" style="font-size: 1.1rem; color: ${eq.slot === 'CONSOMMABLE' ? '#10b981' : weightColor};">scale</span>
+                        <span style="color: ${eq.slot === 'CONSOMMABLE' ? '#10b981' : weightColor}; font-weight: 600;">${weightStr}</span>${eq.slot === 'CONSOMMABLE' ? ' pts' : ` / ${maxWeight} pts`}
                     </div>
                     ${statusHtml}
                 </div>
@@ -477,7 +560,7 @@ function renderGrid(equipments) {
 // Init
 window.addEventListener('DOMContentLoaded', () => {
     // Listeners for Weight Calculation
-    const eqInputs = ['eqSlot', 'eqRarity', 'eqHp', 'eqMana', 'eqPower', 'eqStr', 'eqArmor', 'eqRes', 'eqSpeed', 'eqCrit', 'eqRegenHp', 'eqRegenMana', 'eqSpecialEffectValue'];
+    const eqInputs = ['eqSlot', 'eqRarity', 'eqHp', 'eqMana', 'eqPower', 'eqStr', 'eqArmor', 'eqRes', 'eqSpeed', 'eqCrit', 'eqRegenHp', 'eqRegenMana', 'eqSpecialEffectValue', 'eqBaseWeight'];
     eqInputs.forEach(id => {
         const el = document.getElementById(id);
         if (el) {
@@ -489,7 +572,7 @@ window.addEventListener('DOMContentLoaded', () => {
     // Render create form slot select
     const slotOptionsContainer = document.getElementById('eqSlotOptions');
     if (slotOptionsContainer) {
-        const slots = ['CASQUE', 'PLASTRON', 'ANNEAU_GAUCHE', 'ANNEAU_DROIT', 'BOTTES', 'CAPE'];
+        const slots = ['CASQUE', 'PLASTRON', 'ANNEAU_GAUCHE', 'ANNEAU_DROIT', 'BOTTES', 'CAPE', 'CONSOMMABLE'];
         slotOptionsContainer.innerHTML = slots.map(s => {
             const info = SLOT_LABELS[s];
             return `<div class="custom-option" data-value="${s}">
@@ -548,6 +631,11 @@ function resetEqForm() {
     document.getElementById('eqCrit').value = 0;
     document.getElementById('eqRegenHp').value = 0;
     document.getElementById('eqRegenMana').value = 0;
+    if(document.getElementById('eqConsumableHpPercent')) document.getElementById('eqConsumableHpPercent').value = 0;
+    if(document.getElementById('eqConsumableManaPercent')) document.getElementById('eqConsumableManaPercent').value = 0;
+    if(document.getElementById('eqConsumableMissingHpPercent')) document.getElementById('eqConsumableMissingHpPercent').value = 0;
+    if(document.getElementById('eqConsumableMissingManaPercent')) document.getElementById('eqConsumableMissingManaPercent').value = 0;
+    if(document.getElementById('eqBaseWeight')) document.getElementById('eqBaseWeight').value = 0;
 
     // Reset Rarity
     const rarityInput = document.getElementById('eqRarity');
@@ -593,6 +681,11 @@ window.editEquipment = function (id) {
     document.getElementById('eqCrit').value = eq.bonusCrit || 0;
     document.getElementById('eqRegenHp').value = eq.regenHealthPerTurn || 0;
     document.getElementById('eqRegenMana').value = eq.regenManaPerTurn || 0;
+    if(document.getElementById('eqConsumableHpPercent')) document.getElementById('eqConsumableHpPercent').value = eq.consumableHpPercent || 0;
+    if(document.getElementById('eqConsumableManaPercent')) document.getElementById('eqConsumableManaPercent').value = eq.consumableManaPercent || 0;
+    if(document.getElementById('eqConsumableMissingHpPercent')) document.getElementById('eqConsumableMissingHpPercent').value = eq.consumableMissingHpPercent || 0;
+    if(document.getElementById('eqConsumableMissingManaPercent')) document.getElementById('eqConsumableMissingManaPercent').value = eq.consumableMissingManaPercent || 0;
+    if(document.getElementById('eqBaseWeight')) document.getElementById('eqBaseWeight').value = eq.baseWeight || 0;
 
     // Slot Setup
     const slotInput = document.getElementById('eqSlot');
@@ -828,6 +921,11 @@ window.submitEquipment = async function () {
         bonusCrit: parseInt(document.getElementById('eqCrit').value) || 0,
         regenHealthPerTurn: parseInt(document.getElementById('eqRegenHp').value) || 0,
         regenManaPerTurn: parseInt(document.getElementById('eqRegenMana').value) || 0,
+        consumableHpPercent: document.getElementById('eqConsumableHpPercent') ? (parseInt(document.getElementById('eqConsumableHpPercent').value) || 0) : 0,
+        consumableManaPercent: document.getElementById('eqConsumableManaPercent') ? (parseInt(document.getElementById('eqConsumableManaPercent').value) || 0) : 0,
+        consumableMissingHpPercent: document.getElementById('eqConsumableMissingHpPercent') ? (parseInt(document.getElementById('eqConsumableMissingHpPercent').value) || 0) : 0,
+        consumableMissingManaPercent: document.getElementById('eqConsumableMissingManaPercent') ? (parseInt(document.getElementById('eqConsumableMissingManaPercent').value) || 0) : 0,
+        baseWeight: document.getElementById('eqBaseWeight') ? (parseFloat(document.getElementById('eqBaseWeight').value) || 0.0) : 0.0,
         rarity,
         specialEffect,
         specialEffectValue,
@@ -867,6 +965,9 @@ function calculateEquipmentWeight() {
     w += (parseInt(document.getElementById('eqCrit').value) || 0) * 1.0;
     w += (parseInt(document.getElementById('eqRegenHp').value) || 0) * 1.0;
     w += (parseInt(document.getElementById('eqRegenMana').value) || 0) * 1.0;
+    
+    const baseWeightEl = document.getElementById('eqBaseWeight');
+    if (baseWeightEl) w += parseFloat(baseWeightEl.value) || 0;
 
     // Add special effect weight if Epic/Relic
     const rarity = document.getElementById('eqRarity').value;
@@ -881,9 +982,23 @@ function calculateEquipmentWeight() {
     return w;
 }
 
-window.updateWeightUI = function () {
+window.updateWeightUI = function() {
     const slot = document.getElementById('eqSlot').value;
     const rarity = document.getElementById('eqRarity').value;
+    if (!slot) return;
+
+    document.querySelectorAll('.non-consumable-stat').forEach(el => {
+        el.style.display = slot === 'CONSOMMABLE' ? 'none' : '';
+    });
+    document.querySelectorAll('.consumable-stat').forEach(el => {
+        el.style.display = slot === 'CONSOMMABLE' ? 'flex' : 'none';
+    });
+
+    const row = document.getElementById('eqBaseWeightRow');
+    if (row) {
+        row.style.display = slot === 'CONSOMMABLE' ? 'flex' : 'none';
+    }
+
     const w = calculateEquipmentWeight();
 
     const limitsForSlot = WEIGHT_LIMITS[slot] || {};
@@ -894,14 +1009,21 @@ window.updateWeightUI = function () {
 
     if (textEl) {
         const displayW = w % 1 === 0 ? w : w.toFixed(1);
-        textEl.innerText = `${displayW} / ${maxW}`;
+        if (slot === 'CONSOMMABLE') {
+            textEl.innerText = `${displayW}`;
+        } else {
+            textEl.innerText = `${displayW} / ${maxW}`;
+        }
     }
 
     if (fillEl) {
         let pct = (w / maxW) * 100;
         let color = '#10b981';
 
-        if (pct < 0) {
+        if (slot === 'CONSOMMABLE') {
+            pct = 0;
+            color = '#10b981';
+        } else if (pct < 0) {
             pct = Math.min(Math.abs(pct), 100);
             color = '#3b82f6';
         } else if (pct > 100) {

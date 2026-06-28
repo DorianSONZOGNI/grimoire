@@ -186,22 +186,32 @@
                     <div class="form-row">
                         <div class="form-group" style="flex: 1;">
                             <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">Nom de la recette</label>
-                            <input type="text" id="recipeName" required placeholder="Ex: Transmutation Majeure" style="padding: 0.4rem; font-size: 0.9rem;">
+                            <input type="text" id="recipeName" required placeholder="Ex: Transmutation Majeure"
+                                style="padding: 0.4rem; font-size: 0.9rem;">
                         </div>
                         <div class="form-group" style="flex: 2;">
                             <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">Description</label>
-                            <input type="text" id="recipeDesc" placeholder="Ex: Convertit des anomalies en golem." style="padding: 0.4rem; font-size: 0.9rem;">
+                            <input type="text" id="recipeDesc" placeholder="Ex: Convertit des anomalies en golem."
+                                style="padding: 0.4rem; font-size: 0.9rem;">
                         </div>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label style="color: #f59e0b; margin-bottom: 0.2rem; font-size: 0.85rem;"><span class="material-symbols-outlined" style="font-size: 0.9rem; vertical-align: middle;">monetization_on</span> Coût Or</label>
-                            <input type="number" id="costGold" value="0" min="0" step="0.1" style="padding: 0.4rem; font-size: 0.9rem;">
+                            <label style="color: #f59e0b; margin-bottom: 0.2rem; font-size: 0.85rem;"><span
+                                    class="material-symbols-outlined"
+                                    style="font-size: 0.9rem; vertical-align: middle;">monetization_on</span> Coût
+                                Or</label>
+                            <input type="number" id="costGold" value="0" min="0" step="0.1"
+                                style="padding: 0.4rem; font-size: 0.9rem;">
                         </div>
                         <div class="form-group">
-                            <label style="color: #10b981; margin-bottom: 0.2rem; font-size: 0.85rem;"><span class="material-symbols-outlined" style="font-size: 0.9rem; vertical-align: middle;">star</span> Coût XP Spirit</label>
-                            <input type="number" id="costSpirit" value="0" min="0" style="padding: 0.4rem; font-size: 0.9rem;">
+                            <label style="color: #10b981; margin-bottom: 0.2rem; font-size: 0.85rem;"><span
+                                    class="material-symbols-outlined"
+                                    style="font-size: 0.9rem; vertical-align: middle;">star</span> Coût XP
+                                Spirit</label>
+                            <input type="number" id="costSpirit" value="0" min="0"
+                                style="padding: 0.4rem; font-size: 0.9rem;">
                         </div>
                     </div>
 
@@ -210,42 +220,65 @@
                     <div class="form-group" style="margin: 0;">
                         <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">Ingrédients : Anomalies</label>
                         <div id="reqAnomaliesList" class="req-list" style="margin-bottom: 0.3rem;"></div>
-                        <button type="button" class="btn btn-secondary" onclick="addRequirement('anomalie')" style="padding: 0.3rem 0.5rem; font-size: 0.8rem; width: 100%;">+ Ajouter Anomalie</button>
+                        <button type="button" class="btn btn-secondary" onclick="addRequirement('anomalie')"
+                            style="padding: 0.3rem 0.5rem; font-size: 0.8rem; width: 100%;">+ Ajouter Anomalie</button>
                     </div>
                     <div class="form-group" style="margin: 0;">
                         <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">Ingrédients : Consommables</label>
                         <div id="reqConsumablesList" class="req-list" style="margin-bottom: 0.3rem;"></div>
-                        <button type="button" class="btn btn-secondary" onclick="addRequirement('consumable')" style="padding: 0.3rem 0.5rem; font-size: 0.8rem; width: 100%;">+ Ajouter Consommable</button>
+                        <button type="button" class="btn btn-secondary" onclick="addRequirement('consumable')"
+                            style="padding: 0.3rem 0.5rem; font-size: 0.8rem; width: 100%;">+ Ajouter
+                            Consommable</button>
                     </div>
 
                     <hr style="border-color: rgba(255,255,255,0.05); margin: 0.3rem 0;">
 
-                    <div class="panel-title" style="font-size: 0.95rem; margin-bottom: 0; padding-bottom: 0; border: none;">
-                        <span class="material-symbols-outlined" style="color: #a855f7; font-size: 1rem;">auto_awesome</span> Résultat
+                    <div class="panel-title"
+                        style="font-size: 0.95rem; margin-bottom: 0; padding-bottom: 0; border: none;">
+                        <span class="material-symbols-outlined"
+                            style="color: #a855f7; font-size: 1rem;">auto_awesome</span> Résultat
                     </div>
 
                     <div class="form-row" style="margin-bottom: 0;">
                         <div class="form-group" style="flex: 1.5;">
                             <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">Type de récompense</label>
                             <div class="custom-select-wrapper" style="width: 100%; z-index: 10;">
-                                <div class="custom-select-trigger" style="background: rgba(15,23,42,0.6); padding: 0.4rem; border-radius: 8px;">
+                                <div class="custom-select-trigger"
+                                    style="background: rgba(15,23,42,0.6); padding: 0.4rem; border-radius: 8px;">
                                     <span class="cs-label" style="font-size: 0.85rem;">
-                                        <span class="material-symbols-outlined cs-icon" style="color: #a855f7; font-size: 1rem;">star</span> Donner Anomalie
+                                        <span class="material-symbols-outlined cs-icon"
+                                            style="color: #a855f7; font-size: 1rem;">star</span> Donner Anomalie
                                     </span>
-                                    <span class="material-symbols-outlined" style="color: #64748b; font-size: 1rem;">expand_more</span>
+                                    <span class="material-symbols-outlined"
+                                        style="color: #64748b; font-size: 1rem;">expand_more</span>
                                 </div>
                                 <div class="custom-select-options custom-options">
-                                    <div class="custom-option" data-value="GIVE_ANOMALY" style="padding: 0.4rem; font-size: 0.85rem;">
-                                        <span class="material-symbols-outlined cs-icon" style="color: #a855f7; font-size: 1rem;">star</span> Donner Anomalie
+                                    <div class="custom-option" data-value="GIVE_ANOMALY"
+                                        style="padding: 0.4rem; font-size: 0.85rem;">
+                                        <span class="material-symbols-outlined cs-icon"
+                                            style="color: #a855f7; font-size: 1rem;">star</span> Donner Anomalie
                                     </div>
-                                    <div class="custom-option" data-value="GIVE_CONSUMABLE" style="padding: 0.4rem; font-size: 0.85rem;">
-                                        <span class="material-symbols-outlined cs-icon" style="color: #10b981; font-size: 1rem;">inventory_2</span> Donner Consommable
+                                    <div class="custom-option" data-value="GIVE_CONSUMABLE"
+                                        style="padding: 0.4rem; font-size: 0.85rem;">
+                                        <span class="material-symbols-outlined cs-icon"
+                                            style="color: #10b981; font-size: 1rem;">inventory_2</span> Donner
+                                        Consommable
                                     </div>
-                                    <div class="custom-option" data-value="UNLOCK_FEATURE" style="padding: 0.4rem; font-size: 0.85rem;">
-                                        <span class="material-symbols-outlined cs-icon" style="color: #f59e0b; font-size: 1rem;">key</span> Secret
+                                    <div class="custom-option" data-value="GIVE_EQUIPMENT"
+                                        style="padding: 0.4rem; font-size: 0.85rem;">
+                                        <span class="material-symbols-outlined cs-icon"
+                                            style="color: #fbbf24; font-size: 1rem;">shield</span> Donner Equipement
                                     </div>
-                                    <div class="custom-option" data-value="GIVE_SPIRIT_XP" style="padding: 0.4rem; font-size: 0.85rem;">
-                                        <span class="material-symbols-outlined cs-icon" style="color: #38bdf8; font-size: 1rem;">self_improvement</span> Gagner XP Spiritualité
+                                    <div class="custom-option" data-value="UNLOCK_FEATURE"
+                                        style="padding: 0.4rem; font-size: 0.85rem;">
+                                        <span class="material-symbols-outlined cs-icon"
+                                            style="color: #f59e0b; font-size: 1rem;">key</span> Secret
+                                    </div>
+                                    <div class="custom-option" data-value="GIVE_SPIRIT_XP"
+                                        style="padding: 0.4rem; font-size: 0.85rem;">
+                                        <span class="material-symbols-outlined cs-icon"
+                                            style="color: #38bdf8; font-size: 1rem;">self_improvement</span> Gagner XP
+                                        Spiritualité
                                     </div>
                                 </div>
                                 <input type="hidden" id="rewardType" value="GIVE_ANOMALY">
@@ -253,26 +286,34 @@
                         </div>
                         <div class="form-group" id="rewardNameContainer" style="flex: 2;">
                             <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">Nom de l'objet (Résultat)</label>
-                            <input type="text" id="rewardName" required placeholder="Ex: Potion" style="padding: 0.4rem; font-size: 0.9rem;">
+                            <input type="text" id="rewardName" required placeholder="Ex: Potion"
+                                style="padding: 0.4rem; font-size: 0.9rem;">
                         </div>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
                             <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">Quantité</label>
-                            <input type="number" id="rewardQty" value="1" min="1" style="padding: 0.4rem; font-size: 0.9rem;">
+                            <input type="number" id="rewardQty" value="1" min="1"
+                                style="padding: 0.4rem; font-size: 0.9rem;">
                         </div>
                         <div class="form-group">
-                            <label id="rewardLevelLabel" style="margin-bottom: 0.2rem; font-size: 0.85rem;">Niveau (Anomalies/Secrets)</label>
-                            <input type="number" id="rewardLevel" value="1" min="1" style="padding: 0.4rem; font-size: 0.9rem;">
+                            <label id="rewardLevelLabel" style="margin-bottom: 0.2rem; font-size: 0.85rem;">Niveau
+                                (Anomalies/Secrets)</label>
+                            <input type="number" id="rewardLevel" value="1" min="1"
+                                style="padding: 0.4rem; font-size: 0.9rem;">
                         </div>
                     </div>
 
                     <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
-                        <button type="submit" class="btn" style="flex: 1; padding: 0.5rem;">Enregistrer la recette</button>
-                        <button type="button" id="cancelEditBtn" class="btn btn-secondary" style="flex: 1; padding: 0.5rem; display: none; background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.4); color: #fca5a5;" onclick="cancelEdit()">Annuler l'édition</button>
+                        <button type="submit" class="btn" style="flex: 1; padding: 0.5rem;">Enregistrer la
+                            recette</button>
+                        <button type="button" id="cancelEditBtn" class="btn btn-secondary"
+                            style="flex: 1; padding: 0.5rem; display: none; background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.4); color: #fca5a5;"
+                            onclick="cancelEdit()">Annuler l'édition</button>
                     </div>
-                    <div id="formMsg" style="margin-top: 0.5rem; font-weight: bold; text-align: center; font-size: 0.85rem;"></div>
+                    <div id="formMsg"
+                        style="margin-top: 0.5rem; font-weight: bold; text-align: center; font-size: 0.85rem;"></div>
                 </form>
             </div>
 
@@ -286,28 +327,46 @@
 
                 <div class="filters-container" style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
                     <div style="flex: 1;">
-                        <input type="text" id="searchRecipeName" class="form-control" placeholder="Rechercher par nom..." style="margin: 0; padding: 0.6rem; font-size: 0.85rem;" oninput="renderRecipesList()">
+                        <input type="text" id="searchRecipeName" class="form-control"
+                            placeholder="Rechercher par nom..." style="margin: 0; padding: 0.6rem; font-size: 0.85rem;"
+                            oninput="renderRecipesList()">
                     </div>
                     <div class="custom-select-wrapper" style="flex: 1; z-index: 20;">
-                        <div class="custom-select-trigger" style="background: rgba(15,23,42,0.6); padding: 0.6rem; border-radius: 8px;">
-                            <span class="cs-label" style="font-size: 0.85rem;">Toutes récompenses</span>
-                            <span class="material-symbols-outlined" style="color: #64748b; font-size: 1rem;">expand_more</span>
+                        <div class="custom-select-trigger"
+                            style="background: rgba(15,23,42,0.6); padding: 0.6rem; border-radius: 8px;">
+                            <span class="cs-label" style="font-size: 0.85rem;">Toutes les recettes</span>
+                            <span class="material-symbols-outlined"
+                                style="color: #64748b; font-size: 1rem;">expand_more</span>
                         </div>
                         <div class="custom-select-options custom-options">
                             <div class="custom-option" data-value="" style="padding: 0.4rem; font-size: 0.85rem;">
-                                <span class="material-symbols-outlined cs-icon" style="color: #64748b; font-size: 1rem;">filter_list_off</span> Toutes récompenses
+                                <span class="material-symbols-outlined cs-icon"
+                                    style="color: #64748b; font-size: 1rem;">filter_list_off</span> Toutes les recettes
                             </div>
-                            <div class="custom-option" data-value="GIVE_ANOMALY" style="padding: 0.4rem; font-size: 0.85rem;">
-                                <span class="material-symbols-outlined cs-icon" style="color: #a855f7; font-size: 1rem;">star</span> Anomalie
+                            <div class="custom-option" data-value="GIVE_ANOMALY"
+                                style="padding: 0.4rem; font-size: 0.85rem;">
+                                <span class="material-symbols-outlined cs-icon"
+                                    style="color: #a855f7; font-size: 1rem;">star</span> Anomalie
                             </div>
-                            <div class="custom-option" data-value="GIVE_CONSUMABLE" style="padding: 0.4rem; font-size: 0.85rem;">
-                                <span class="material-symbols-outlined cs-icon" style="color: #10b981; font-size: 1rem;">inventory_2</span> Consommable
+                            <div class="custom-option" data-value="GIVE_CONSUMABLE"
+                                style="padding: 0.4rem; font-size: 0.85rem;">
+                                <span class="material-symbols-outlined cs-icon"
+                                    style="color: #10b981; font-size: 1rem;">inventory_2</span> Consommable
                             </div>
-                            <div class="custom-option" data-value="UNLOCK_FEATURE" style="padding: 0.4rem; font-size: 0.85rem;">
-                                <span class="material-symbols-outlined cs-icon" style="color: #f59e0b; font-size: 1rem;">key</span> Secret
+                            <div class="custom-option" data-value="GIVE_EQUIPMENT"
+                                style="padding: 0.4rem; font-size: 0.85rem;">
+                                <span class="material-symbols-outlined cs-icon"
+                                    style="color: #fbbf24; font-size: 1rem;">shield</span> Equipement
                             </div>
-                            <div class="custom-option" data-value="GIVE_SPIRIT_XP" style="padding: 0.4rem; font-size: 0.85rem;">
-                                <span class="material-symbols-outlined cs-icon" style="color: #38bdf8; font-size: 1rem;">self_improvement</span> XP Spiritualité
+                            <div class="custom-option" data-value="UNLOCK_FEATURE"
+                                style="padding: 0.4rem; font-size: 0.85rem;">
+                                <span class="material-symbols-outlined cs-icon"
+                                    style="color: #f59e0b; font-size: 1rem;">key</span> Secret
+                            </div>
+                            <div class="custom-option" data-value="GIVE_SPIRIT_XP"
+                                style="padding: 0.4rem; font-size: 0.85rem;">
+                                <span class="material-symbols-outlined cs-icon"
+                                    style="color: #38bdf8; font-size: 1rem;">self_improvement</span> XP Spiritualité
                             </div>
                         </div>
                         <input type="hidden" id="filterRewardType" value="" onchange="renderRecipesList()">
@@ -324,6 +383,24 @@
 
     <script src="/js/auth.js"></script>
     <script>
+        const SLOT_LABELS = {
+            CASQUE: { label: 'Casque', icon: 'masks', color: '#a855f7', extraClass: 'flip-icon' },
+            PLASTRON: { label: 'Plastron', icon: 'shield', color: '#3b82f6' },
+            ANNEAU_GAUCHE: { label: 'Anneau Gauche', icon: 'diamond', color: '#f59e0b' },
+            ANNEAU_DROIT: { label: 'Anneau Droit', icon: 'diamond', color: '#f59e0b' },
+            BOTTES: { label: 'Bottes', icon: 'footprint', color: '#10b981' },
+            CAPE: { label: 'Cape', icon: 'carpenter', color: '#ec4899' },
+            CONSOMMABLE: { label: 'Consommable', icon: 'inventory_2', color: '#10b981' }
+        };
+
+        const RARITY_COLORS = {
+            COMMUN: '#94a3b8',
+            RARE: '#3b82f6',
+            LEGENDAIRE: '#f59e0b',
+            EPIQUE: '#c084fc',
+            RELIQUE: '#ef4444'
+        };
+
         const DEFAULT_SECRETS_META = [
             { name: "Secret du Chaos", icon: "local_fire_department", color: "#ff0000" },
             { name: "Secret de l'Abondance", icon: "eco", color: "#10b981" },
@@ -340,6 +417,7 @@
 
         let allAnomalies = [];
         let allConsumables = [];
+        let allEquipments = [];
         let allRecipes = []; // To hold loaded recipes for editing
 
         document.addEventListener('click', (e) => {
@@ -410,7 +488,11 @@
                 merged.forEach(e => {
                     if (e && e.name) map.set(e.name, e);
                 });
-                allConsumables = Array.from(map.values()).filter(e => e.slot === 'CONSOMMABLE');
+                allEquipments = Array.from(map.values()).sort((a, b) => {
+                    if (a.slot !== b.slot) return a.slot.localeCompare(b.slot);
+                    return a.name.localeCompare(b.name);
+                });
+                allConsumables = allEquipments.filter(e => e.slot === 'CONSOMMABLE');
             } catch (e) {
                 console.error("Erreur merge équipements", e);
             }
@@ -466,6 +548,29 @@
                 });
                 container.innerHTML = `
                     <label>Nom de l'objet (Résultat)</label>
+                    <div class="custom-select-wrapper" style="width: 100%; z-index: 9;">
+                        <div class="custom-select-trigger" style="background: rgba(15,23,42,0.6); padding: 0.6rem; border-radius: 8px;">
+                            <span class="cs-label" style="font-size: 0.9rem;">${displayLabel}</span>
+                            <span class="material-symbols-outlined" style="color: #64748b; font-size: 1.1rem;">expand_more</span>
+                        </div>
+                        <div class="custom-select-options custom-options">
+                            ${optionsHtml}
+                        </div>
+                        <input type="hidden" id="rewardName" value="" required>
+                    </div>
+                `;
+            } else if (type === 'GIVE_EQUIPMENT') {
+                allEquipments.forEach(eq => {
+                    const slotInfo = SLOT_LABELS[eq.slot] || { label: eq.slot, icon: 'help', color: '#94a3b8' };
+                    const rarityColor = RARITY_COLORS[eq.rarity] || '#ef4444';
+                    const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
+                    optionsHtml += `<div class="custom-option" data-value="${eq.name}">
+                                        <span class="material-symbols-outlined cs-icon${extraClass}" style="color: ${slotInfo.color};">${slotInfo.icon}</span>
+                                        <span style="color: ${rarityColor};">${eq.name}</span>
+                                    </div>`;
+                });
+                container.innerHTML = `
+                    <label>Nom de l'équipement (Résultat)</label>
                     <div class="custom-select-wrapper" style="width: 100%; z-index: 9;">
                         <div class="custom-select-trigger" style="background: rgba(15,23,42,0.6); padding: 0.6rem; border-radius: 8px;">
                             <span class="cs-label" style="font-size: 0.9rem;">${displayLabel}</span>
@@ -610,9 +715,9 @@
                 tooltip.style.fontSize = '0.8rem';
                 tooltip.style.lineHeight = '1.4';
                 tooltip.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.5)';
-                tooltip.style.maxWidth = '250px';
-                tooltip.style.whiteSpace = 'normal';
-                tooltip.style.wordWrap = 'break-word';
+                tooltip.style.maxWidth = 'max-content';
+                tooltip.style.whiteSpace = 'nowrap';
+                tooltip.style.wordWrap = 'normal';
                 tooltip.style.textAlign = 'left';
                 document.body.appendChild(tooltip);
             }
@@ -732,10 +837,10 @@
             }
         }
 
-        window.renderRecipesList = function() {
+        window.renderRecipesList = function () {
             const container = document.getElementById('recipesList');
             container.innerHTML = '';
-            
+
             const searchName = (document.getElementById('searchRecipeName')?.value || '').toLowerCase();
             const filterType = document.getElementById('filterRewardType')?.value || '';
 
@@ -815,6 +920,8 @@
                     }
                 } else if (r.rewardType === 'GIVE_CONSUMABLE') {
                     rewardHtml = `<span class="anomaly-badge" style="border: 1px solid #10b981; background: linear-gradient(#10b98125, #10b98125), #1e293b; color: #10b981; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block;"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; color: #10b981;">inventory_2</span> ${r.rewardQuantity}x ${r.rewardName}</span>`;
+                } else if (r.rewardType === 'GIVE_EQUIPMENT') {
+                    rewardHtml = `<span class="anomaly-badge" style="border: 1px solid #fbbf24; background: linear-gradient(#fbbf2425, #fbbf2425), #1e293b; color: #fbbf24; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block;"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; color: #fbbf24;">shield</span> ${r.rewardQuantity}x ${r.rewardName}</span>`;
                 } else if (r.rewardType === 'GIVE_SPIRIT_XP') {
                     rewardHtml = `<span class="anomaly-badge" style="border: 1px solid #38bdf8; background: linear-gradient(#38bdf825, #38bdf825), #1e293b; color: #38bdf8; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block;"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; color: #38bdf8;">self_improvement</span> ${r.rewardQuantity} XP Spiritualité</span>`;
                 } else if (r.rewardType === 'UNLOCK_FEATURE') {
@@ -922,7 +1029,7 @@
             }
         }
 
-        window.editRecipe = function(id) {
+        window.editRecipe = function (id) {
             const recipe = allRecipes.find(r => r.id === id);
             if (!recipe) return;
 
@@ -931,7 +1038,7 @@
             document.getElementById('recipeDesc').value = recipe.description || '';
             document.getElementById('costGold').value = recipe.costGold || 0;
             document.getElementById('costSpirit').value = recipe.costSpiritXp || 0;
-            
+
             // Set reward type using the custom select logic
             const rewardTypeWrapper = document.getElementById('rewardType').closest('.custom-select-wrapper');
             const option = rewardTypeWrapper.querySelector(`.custom-option[data-value="${recipe.rewardType}"]`);
@@ -982,14 +1089,14 @@
                     addRequirement('consumable', name, qty);
                 }
             }
-            
+
             // Scroll to top
             window.scrollTo({ top: 0, behavior: 'smooth' });
-            
+
             // Highlight panel
             document.getElementById('recipePanel').style.boxShadow = "0 0 20px rgba(245, 158, 11, 0.4)";
             document.getElementById('recipePanel').style.border = "1px solid rgba(245, 158, 11, 0.8)";
-            
+
             document.getElementById('cancelEditBtn').style.display = 'block';
 
             const msg = document.getElementById('formMsg');
@@ -997,7 +1104,7 @@
             msg.style.color = "#f59e0b";
         };
 
-        window.cancelEdit = function() {
+        window.cancelEdit = function () {
             document.getElementById('recipeForm').reset();
             document.getElementById('recipeId').value = "";
             document.getElementById('recipePanel').style.boxShadow = "none";
@@ -1006,7 +1113,7 @@
             document.getElementById('reqConsumablesList').innerHTML = '';
             document.getElementById('cancelEditBtn').style.display = 'none';
             document.getElementById('formMsg').innerText = "";
-            
+
             document.getElementById('rewardType').value = "GIVE_ANOMALY";
             const rewardTypeWrapper = document.getElementById('rewardType').closest('.custom-select-wrapper');
             if (rewardTypeWrapper) {

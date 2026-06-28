@@ -43,6 +43,20 @@ public class CombatController {
         return ResponseEntity.ok(session);
     }
 
+    @PostMapping("/{sessionId}/resume")
+    public ResponseEntity<?> resumeCombat(@PathVariable("sessionId") String sessionId) {
+        try {
+            CombatSession session = combatService.resumeCombat(sessionId);
+            if (session == null) {
+                return ResponseEntity.notFound().build();
+            }
+            return ResponseEntity.ok(session);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @PostMapping("/{sessionId}/action")
     public ResponseEntity<?> executeAction(
             @PathVariable("sessionId") String sessionId,

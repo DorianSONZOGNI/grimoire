@@ -34,7 +34,7 @@ public class PassiveDispatcher {
      */
     public void dispatch(Personnage caster, Spell spell, GameEvent event) {
         List<PassiveEffect> passives = collectPassives(caster, spell);
-        passives.sort(Comparator.comparingInt(PassiveEffect::getPriority).reversed());
+        passives.sort(Comparator.comparingInt((PassiveEffect p) -> p.getPriority()).reversed());
         for (PassiveEffect passive : passives) {
             passive.onEvent(event);
         }

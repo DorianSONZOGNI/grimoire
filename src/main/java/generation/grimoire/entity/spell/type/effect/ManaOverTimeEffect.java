@@ -38,14 +38,16 @@ public class ManaOverTimeEffect extends ManaEffect {
     public void tick(Personnage target) {
         if (duration > 0) {
             int totalMana = fixedManaPerTick;
-            if (percentageManaPerTick > 0) {
-                double sourceValue = generation.grimoire.utils.StatCalculator.getSourceValue(manaSource, caster, target);
-                totalMana += (int)(sourceValue * percentageManaPerTick);
+            if (percentageManaPerTick != 0) {
+                double sourceValue = generation.grimoire.utils.StatCalculator.getSourceValue(manaSource, caster,
+                        target);
+                totalMana += (int) (sourceValue * percentageManaPerTick);
             }
             totalMana = (int) (totalMana * getAmplificationMultiplier());
             target.restoreMana(totalMana);
             duration--;
-            System.out.println(target.getName() + " régénère " + totalMana + " mana par mana over time, durée restante : " + duration);
+            System.out.println(target.getName() + " régénère " + totalMana
+                    + " mana par mana over time, durée restante : " + duration);
         }
     }
 
@@ -55,8 +57,9 @@ public class ManaOverTimeEffect extends ManaEffect {
         clone.setSpell(this.getSpell());
         clone.setEffectTarget(this.getEffectTarget());
         clone.setRequiredChoiceKey(this.getRequiredChoiceKey());
-        clone.setChannelingTurns(this.getChannelingTurns() != null ? new java.util.ArrayList<>(this.getChannelingTurns()) : null);
-        
+        clone.setChannelingTurns(
+                this.getChannelingTurns() != null ? new java.util.ArrayList<>(this.getChannelingTurns()) : null);
+
         clone.setFixedManaPerTick(this.fixedManaPerTick);
         clone.setPercentageManaPerTick(this.percentageManaPerTick);
         clone.setDuration(this.duration);

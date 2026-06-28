@@ -210,7 +210,7 @@ export async function submitSpell() {
         karmaAlignment: document.getElementById('karmaAlignment') ? document.getElementById('karmaAlignment').value : 'NONE',
 
         effects: state.currentEffects.map(e => ({
-            effectType: (e.effectType === 'POISON' || e.effectType === 'BURN') ? 'BUFF_DEBUFF' : e.effectType,
+            effectType: (e.effectType === 'POISON' || e.effectType === 'BURN' || e.effectType === 'AME_DETACHEE') ? 'BUFF_DEBUFF' : e.effectType,
             effectTarget: e.effectTarget,
             damage: e.damage,
             healAmount: e.healAmount,
@@ -220,9 +220,10 @@ export async function submitSpell() {
             modifier: e.modifier,
             duration: e.duration,
             damageType: e.damageType,
-            statAffected: (e.effectType === 'POISON' || e.effectType === 'BURN') ? e.effectType : e.statAffected,
-            source: (e.effectType === 'BUFF_DEBUFF' || e.effectType === 'POISON' || e.effectType === 'BURN') ? null : e.source,
+            statAffected: (e.effectType === 'POISON' || e.effectType === 'BURN' || e.effectType === 'AME_DETACHEE') ? e.effectType : e.statAffected,
+            source: (e.effectType === 'BUFF_DEBUFF' || e.effectType === 'POISON' || e.effectType === 'BURN' || e.effectType === 'AME_DETACHEE') ? null : e.source,
             requiredChoiceKey: e.requiredChoiceKey !== undefined ? e.requiredChoiceKey : null,
+            detachedSoulRequirement: e.detachedSoulRequirement || 'NOT_AFFECTED',
             channelingTurns: e.channelingTurns || []
         }))
     };

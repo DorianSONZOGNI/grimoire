@@ -7,6 +7,7 @@ const SLOT_LABELS = {
     ANNEAU_DROIT: { label: 'Anneau', icon: 'diamond', color: '#f59e0b' },
     BOTTES: { label: 'Bottes', icon: 'footprint', color: '#10b981' },
     CAPE: { label: 'Cape', icon: 'carpenter', color: '#ec4899' },
+    CONSOMMABLE: { label: 'Consommable', icon: 'inventory_2', color: '#854c4c' }
 };
 
 const RARITY_ORDER = {
@@ -28,19 +29,24 @@ const STAT_DEFS = [
     { key: 'bonusCrit', label: 'Crit', icon: 'gps_fixed', color: '#ef4444' },
     { key: 'regenHealthPerTurn', label: 'PV/t', icon: 'healing', color: '#10b981' },
     { key: 'regenManaPerTurn', label: 'Mana/t', icon: 'cyclone', color: '#38bdf8' },
+    { key: 'consumableHpPercent', label: 'PV Max', icon: 'favorite', color: '#ec4899', isPercent: true },
+    { key: 'consumableManaPercent', label: 'Mana Max', icon: 'water_drop', color: '#38bdf8', isPercent: true },
+    { key: 'consumableMissingHpPercent', label: 'PV Manq', icon: 'healing', color: '#f43f5e', isPercent: true },
+    { key: 'consumableMissingManaPercent', label: 'Mana Manq', icon: 'cyclone', color: '#a855f7', isPercent: true }
 ];
 
 const WEIGHT_LIMITS = {
-    CASQUE: { COMMUN: 5, RARE: 9, LEGENDAIRE: 14, EPIQUE: 20, RELIQUE: 24 },
-    PLASTRON: { COMMUN: 8, RARE: 13, LEGENDAIRE: 20, EPIQUE: 26, RELIQUE: 30 },
-    ANNEAU_GAUCHE: { COMMUN: 2, RARE: 3, LEGENDAIRE: 5, EPIQUE: 7, RELIQUE: 8 },
-    ANNEAU_DROIT: { COMMUN: 2, RARE: 3, LEGENDAIRE: 5, EPIQUE: 7, RELIQUE: 8 },
-    BOTTES: { COMMUN: 4, RARE: 7, LEGENDAIRE: 11, EPIQUE: 16, RELIQUE: 20 },
-    CAPE: { COMMUN: 5, RARE: 9, LEGENDAIRE: 14, EPIQUE: 20, RELIQUE: 24 }
+    CASQUE: { COMMUN: 5, RARE: 14, LEGENDAIRE: 22, EPIQUE: 35, RELIQUE: 40 },
+    PLASTRON: { COMMUN: 9, RARE: 19, LEGENDAIRE: 29, EPIQUE: 40, RELIQUE: 46 },
+    ANNEAU_GAUCHE: { COMMUN: 3, RARE: 6, LEGENDAIRE: 10, EPIQUE: 15, RELIQUE: 17 },
+    ANNEAU_DROIT: { COMMUN: 3, RARE: 6, LEGENDAIRE: 10, EPIQUE: 15, RELIQUE: 17 },
+    BOTTES: { COMMUN: 4, RARE: 12, LEGENDAIRE: 19, EPIQUE: 30, RELIQUE: 34 },
+    CAPE: { COMMUN: 5, RARE: 14, LEGENDAIRE: 22, EPIQUE: 35, RELIQUE: 40 },
+    CONSOMMABLE: { COMMUN: 5, RARE: 9, LEGENDAIRE: 14, EPIQUE: 20, RELIQUE: 24 }
 };
 
 function calculateWeight(eq) {
-    let w = 0;
+    let w = eq.baseWeight || 0;
     w += (eq.bonusHealthMax || 0) * 0.2;
     w += (eq.bonusManaMax || 0) * 0.2;
     w += (eq.bonusPower || 0) * 2.0;
@@ -383,9 +389,10 @@ function renderGrid(equipments) {
                     const val = eq[s.key];
                     const isMalus = val < 0;
                     const sign = val > 0 ? '+' : '';
-                    return `<span class="stat-badge ${isMalus ? 'malus' : ''}">
+                    const suffix = s.isPercent ? '%' : '';
+                    return `<span class="stat-badge ${isMalus ? 'malus' : ''}" title="${s.label}">
                         <span class="material-symbols-outlined" style="color:${isMalus ? '#ef4444' : s.color}; font-size: 0.8rem;">${s.icon}</span>
-                        ${sign}${val}
+                        ${sign}${val}${suffix}
                     </span>`;
                 }).join('');
 
@@ -499,7 +506,7 @@ window.addEventListener('DOMContentLoaded', () => {
     }
 
     // Listeners for Weight Calculation
-    const eqInputs = ['eqSlot', 'eqRarity', 'eqHp', 'eqMana', 'eqPower', 'eqStr', 'eqArmor', 'eqRes', 'eqSpeed', 'eqCrit', 'eqRegenHp', 'eqRegenMana', 'eqSpecialEffectValue'];
+    const eqInputs = ['eqSlot', 'eqRarity', 'eqHp', 'eqMana', 'eqPower', 'eqStr', 'eqArmor', 'eqRes', 'eqSpeed', 'eqCrit', 'eqRegenHp', 'eqRegenMana', 'eqSpecialEffectValue', 'eqBaseWeight'];
     eqInputs.forEach(id => {
         const el = document.getElementById(id);
         if (el) {
@@ -511,7 +518,7 @@ window.addEventListener('DOMContentLoaded', () => {
     // Render create form slot select
     const slotOptionsContainer = document.getElementById('eqSlotOptions');
     if (slotOptionsContainer) {
-        const slots = ['CASQUE', 'PLASTRON', 'ANNEAU_GAUCHE', 'ANNEAU_DROIT', 'BOTTES', 'CAPE'];
+        const slots = ['CASQUE', 'PLASTRON', 'ANNEAU_GAUCHE', 'ANNEAU_DROIT', 'BOTTES', 'CAPE', 'CONSOMMABLE'];
         slotOptionsContainer.innerHTML = slots.map(s => {
             const info = SLOT_LABELS[s];
             return `<div class="custom-option" data-value="${s}">
@@ -569,6 +576,11 @@ function resetEqForm() {
     document.getElementById('eqCrit').value = 0;
     document.getElementById('eqRegenHp').value = 0;
     document.getElementById('eqRegenMana').value = 0;
+    if(document.getElementById('eqConsumableHpPercent')) document.getElementById('eqConsumableHpPercent').value = 0;
+    if(document.getElementById('eqConsumableManaPercent')) document.getElementById('eqConsumableManaPercent').value = 0;
+    if(document.getElementById('eqConsumableMissingHpPercent')) document.getElementById('eqConsumableMissingHpPercent').value = 0;
+    if(document.getElementById('eqConsumableMissingManaPercent')) document.getElementById('eqConsumableMissingManaPercent').value = 0;
+    if(document.getElementById('eqBaseWeight')) document.getElementById('eqBaseWeight').value = 0;
     
     const anomaliesContainer = document.getElementById('priceAnomaliesContainer');
     if (anomaliesContainer) {
@@ -619,6 +631,11 @@ window.editEquipment = function (id) {
     document.getElementById('eqCrit').value = eq.bonusCrit || 0;
     document.getElementById('eqRegenHp').value = eq.regenHealthPerTurn || 0;
     document.getElementById('eqRegenMana').value = eq.regenManaPerTurn || 0;
+    if(document.getElementById('eqConsumableHpPercent')) document.getElementById('eqConsumableHpPercent').value = eq.consumableHpPercent || 0;
+    if(document.getElementById('eqConsumableManaPercent')) document.getElementById('eqConsumableManaPercent').value = eq.consumableManaPercent || 0;
+    if(document.getElementById('eqConsumableMissingHpPercent')) document.getElementById('eqConsumableMissingHpPercent').value = eq.consumableMissingHpPercent || 0;
+    if(document.getElementById('eqConsumableMissingManaPercent')) document.getElementById('eqConsumableMissingManaPercent').value = eq.consumableMissingManaPercent || 0;
+    if(document.getElementById('eqBaseWeight')) document.getElementById('eqBaseWeight').value = eq.baseWeight || 0;
     
     const anomaliesContainer = document.getElementById('priceAnomaliesContainer');
     if (anomaliesContainer) {
@@ -742,6 +759,11 @@ window.submitEquipment = async function () {
         bonusCrit: parseInt(document.getElementById('eqCrit').value) || 0,
         regenHealthPerTurn: parseInt(document.getElementById('eqRegenHp').value) || 0,
         regenManaPerTurn: parseInt(document.getElementById('eqRegenMana').value) || 0,
+        consumableHpPercent: document.getElementById('eqConsumableHpPercent') ? (parseInt(document.getElementById('eqConsumableHpPercent').value) || 0) : 0,
+        consumableManaPercent: document.getElementById('eqConsumableManaPercent') ? (parseInt(document.getElementById('eqConsumableManaPercent').value) || 0) : 0,
+        consumableMissingHpPercent: document.getElementById('eqConsumableMissingHpPercent') ? (parseInt(document.getElementById('eqConsumableMissingHpPercent').value) || 0) : 0,
+        consumableMissingManaPercent: document.getElementById('eqConsumableMissingManaPercent') ? (parseInt(document.getElementById('eqConsumableMissingManaPercent').value) || 0) : 0,
+        baseWeight: parseFloat(document.getElementById('eqBaseWeight')?.value) || 0,
         rarity,
         specialEffect,
         specialEffectValue,
@@ -803,6 +825,9 @@ function calculateEquipmentWeight() {
     w += (parseInt(document.getElementById('eqCrit').value) || 0) * 1.0;
     w += (parseInt(document.getElementById('eqRegenHp').value) || 0) * 1.0;
     w += (parseInt(document.getElementById('eqRegenMana').value) || 0) * 1.0;
+    
+    const baseWeightEl = document.getElementById('eqBaseWeight');
+    if (baseWeightEl) w += parseFloat(baseWeightEl.value) || 0;
 
     // Add special effect weight if Epic/Relic
     const rarity = document.getElementById('eqRarity').value;
@@ -836,6 +861,20 @@ function calculateShopPrice(weight, rarity, slot) {
 window.updateWeightUI = function () {
     const slot = document.getElementById('eqSlot').value;
     const rarity = document.getElementById('eqRarity').value;
+    if (!slot) return;
+
+    document.querySelectorAll('.non-consumable-stat').forEach(el => {
+        el.style.display = slot === 'CONSOMMABLE' ? 'none' : '';
+    });
+    document.querySelectorAll('.consumable-stat').forEach(el => {
+        el.style.display = slot === 'CONSOMMABLE' ? 'flex' : 'none';
+    });
+
+    const row = document.getElementById('eqBaseWeightRow');
+    if (row) {
+        row.style.display = slot === 'CONSOMMABLE' ? 'flex' : 'none';
+    }
+
     const w = calculateEquipmentWeight();
 
     const limitsForSlot = WEIGHT_LIMITS[slot] || {};
@@ -846,14 +885,21 @@ window.updateWeightUI = function () {
 
     if (textEl) {
         const displayW = w % 1 === 0 ? w : w.toFixed(1);
-        textEl.innerText = `${displayW} / ${maxW}`;
+        if (slot === 'CONSOMMABLE') {
+            textEl.innerText = `${displayW}`;
+        } else {
+            textEl.innerText = `${displayW} / ${maxW}`;
+        }
     }
 
     if (fillEl) {
         let pct = (w / maxW) * 100;
         let color = '#10b981';
 
-        if (pct < 0) {
+        if (slot === 'CONSOMMABLE') {
+            pct = 0;
+            color = '#10b981';
+        } else if (pct < 0) {
             pct = Math.min(Math.abs(pct), 100);
             color = '#3b82f6';
         } else if (pct > 100) {
@@ -895,9 +941,9 @@ window.showTooltipFixed = function(el) {
         tooltip.style.fontSize = '0.8rem';
         tooltip.style.lineHeight = '1.4';
         tooltip.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.5)';
-        tooltip.style.maxWidth = '250px';
-        tooltip.style.whiteSpace = 'normal';
-        tooltip.style.wordWrap = 'break-word';
+        tooltip.style.maxWidth = 'max-content';
+        tooltip.style.whiteSpace = 'nowrap';
+        tooltip.style.wordWrap = 'normal';
         tooltip.style.textAlign = 'left';
         document.body.appendChild(tooltip);
     }

@@ -46,7 +46,23 @@ public class EquipmentController {
         if (!isAdmin) return ResponseEntity.status(403).build();
         
         List<Equipment> equipmentList = equipmentRepository.findAll();
-        return ResponseEntity.ok(equipmentList.stream().filter(e -> !e.isShopTemplate()).map(this::toDto).toList());
+        return ResponseEntity.ok(equipmentList.stream().map(this::toDto).toList());
+    }
+
+    /** Récupérer tous les templates publiquement */
+    @GetMapping("/templates/public")
+    public ResponseEntity<List<Map<String, Object>>> getPublicTemplates() {
+        List<String> names = equipmentRepository.findDistinctNames();
+        List<Equipment> templates = new java.util.ArrayList<>();
+        for (String name : names) {
+            if (name != null && !name.trim().isEmpty()) {
+                Equipment template = equipmentRepository.findFirstByName(name);
+                if (template != null) {
+                    templates.add(template);
+                }
+            }
+        }
+        return ResponseEntity.ok(templates.stream().map(this::toDto).toList());
     }
 
     /** Liste les équipements d'un personnage */
@@ -92,6 +108,9 @@ public class EquipmentController {
         } else {
             equipment = new Equipment();
             equipment.setUser(currentUser);
+            if (currentUser != null) {
+                equipment.setOwnerUsername(currentUser.getUsername());
+            }
         }
 
         equipment.setName(dto.getName());
@@ -106,6 +125,11 @@ public class EquipmentController {
         equipment.setBonusCrit(dto.getBonusCrit());
         equipment.setRegenHealthPerTurn(dto.getRegenHealthPerTurn());
         equipment.setRegenManaPerTurn(dto.getRegenManaPerTurn());
+        equipment.setBaseWeight(dto.getBaseWeight());
+        equipment.setConsumableHpPercent(dto.getConsumableHpPercent());
+        equipment.setConsumableManaPercent(dto.getConsumableManaPercent());
+        equipment.setConsumableMissingHpPercent(dto.getConsumableMissingHpPercent());
+        equipment.setConsumableMissingManaPercent(dto.getConsumableMissingManaPercent());
         if (dto.getRarity() != null) {
             equipment.setRarity(dto.getRarity());
         }
@@ -119,8 +143,9 @@ public class EquipmentController {
             Personnage personnage = personnageService.findByIdOrThrow(java.util.Objects.requireNonNull(dto.getPersonnageId()));
 
             // Si l'admin forge pour un autre joueur, l'objet doit appartenir à ce joueur
-            if (personnage.getUser() != null && (equipment.getUser() == null || equipment.getUser().getId().equals(currentUser.getId()))) {
+            if (personnage.getUser() != null && (equipment.getUser() == null || (currentUser != null && equipment.getUser().getId().equals(currentUser.getId())))) {
                 equipment.setUser(personnage.getUser());
+                equipment.setOwnerUsername(personnage.getUser().getUsername());
             }
 
             try {
@@ -325,6 +350,12 @@ public class EquipmentController {
         map.put("rarity", e.getRarity());
         map.put("specialEffect", e.getSpecialEffect());
         map.put("specialEffectValue", e.getSpecialEffectValue());
+        map.put("baseWeight", e.getBaseWeight());
+        map.put("consumableHpPercent", e.getConsumableHpPercent());
+        map.put("consumableManaPercent", e.getConsumableManaPercent());
+        map.put("consumableMissingHpPercent", e.getConsumableMissingHpPercent());
+        map.put("consumableMissingManaPercent", e.getConsumableMissingManaPercent());
+        map.put("weight", e.calculateWeight());
 
         if (e.getPersonnage() != null) {
             Map<String, Object> perso = new HashMap<>();
@@ -355,6 +386,11 @@ public class EquipmentController {
         private int bonusCrit = 0;
         private int regenHealthPerTurn = 0;
         private int regenManaPerTurn = 0;
+        private double baseWeight = 0.0;
+        private int consumableHpPercent = 0;
+        private int consumableManaPercent = 0;
+        private int consumableMissingHpPercent = 0;
+        private int consumableMissingManaPercent = 0;
         private generation.grimoire.enumeration.EquipmentRarity rarity;
         private generation.grimoire.enumeration.EquipmentEffectType specialEffect;
         private int specialEffectValue = 0;

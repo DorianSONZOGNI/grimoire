@@ -55,9 +55,14 @@ public class WebSpellCreationController {
     private final java.util.List<String> sandboxLogs = new java.util.ArrayList<>();
 
     /** Raccourci : le héros est toujours allies[0] */
-    private Personnage getSandboxHero() { return sandboxAllies.isEmpty() ? null : sandboxAllies.get(0); }
+    private Personnage getSandboxHero() {
+        return sandboxAllies.isEmpty() ? null : sandboxAllies.get(0);
+    }
+
     /** Raccourci : le monstre principal est toujours enemies[0] */
-    private Personnage getSandboxMonster() { return sandboxEnemies.isEmpty() ? null : sandboxEnemies.get(0); }
+    private Personnage getSandboxMonster() {
+        return sandboxEnemies.isEmpty() ? null : sandboxEnemies.get(0);
+    }
 
     private synchronized void initSandbox() {
         if (sandboxAllies.isEmpty()) {
@@ -124,21 +129,84 @@ public class WebSpellCreationController {
 
     @PostConstruct
     public void initStandardEntities() {
-        // Initialiser les Voies classiques si absentes, et y associer leurs passifs
-        // respectifs
+        // 1. Initialiser les descriptions classiques
+        Map<String, String> descriptionsVoies = new HashMap<>();
+        descriptionsVoies.put("Voie de la Raison",
+                "Basé sur la vitesse et les coups critique.");
+        descriptionsVoies.put("Voie de la Sûreté",
+                "Défensive et sûre. Des buffs, de la santé et du débuff pour tout le monde.");
+        descriptionsVoies.put("Voie de Trahison",
+                "L'art d'exploiter les faiblesses ennemies et d'achever les cibles faciles.");
+        descriptionsVoies.put("Voie de la Consolidation",
+                "Protection et dégats physiques. Simple, efficasse, endurant.");
+        descriptionsVoies.put("Voie de la Conviction",
+                "Une magie inarrêtable , un flot continue de puissance et de résistance.");
+        descriptionsVoies.put("Voie de la Création",
+                "Imprévisible, adaptable, les longs combats ne lui font pas peur.");
+        descriptionsVoies.put("Voie de la Destruction",
+                "La destruction, c'est très parlant. Ici on envoie des boules de feu, des lasers, et autres joyeusetés.");
+        descriptionsVoies.put("Voie de la Violence",
+                "Un cible mortel fait pour exterminer des groupes entier d'un simple claquement de doigts.");
+
+        // 2. Initialiser les rangs personnalisés par Voie (basé sur tes captures
+        // d'écran)
+        Map<String, Map<Integer, String>> rangsVoies = new HashMap<>();
+        rangsVoies.put("Voie de la Raison", Map.of(1, "Air", 2, "Vibration", 3, "Vide", 4, "Déviation", 5, "Gravité"));
+        rangsVoies.put("Voie de la Sûreté", Map.of(1, "Eau", 2, "Glace", 3, "Sang", 4, "Vapeur", 5, "Pression"));
+        rangsVoies.put("Voie de Trahison", Map.of(1, "Neige", 2, "Acide", 3, "Poison", 4, "Corrosion", 5, "Friction"));
+        rangsVoies.put("Voie de la Consolidation",
+                Map.of(1, "Terre", 2, "Métal", 3, "Sable", 4, "Poussière", 5, "Atome"));
+        rangsVoies.put("Voie de la Conviction", Map.of(1, "Lave", 2, "Cristaux", 3, "Verre", 4, "Fibre", 5, "Tension"));
+        rangsVoies.put("Voie de la Création",
+                Map.of(1, "Plante", 2, "Pétrole", 3, "Plastic", 4, "Caoutchou", 5, "Fil"));
+        rangsVoies.put("Voie de la Destruction",
+                Map.of(1, "Feu", 2, "Explosion", 3, "Éclair", 4, "Laser", 5, "Absorption"));
+        rangsVoies.put("Voie de la Violence",
+                Map.of(1, "Combustion", 2, "Gas", 3, "Oxygen", 4, "Dioxide", 5, "Fragmentation"));
+
+        // 3. Initialiser les passifs classiques
+        Map<String, String> passifsVoies = new HashMap<>();
+        passifsVoies.put("Voie de la Raison",
+                "Lancer un sort de Raison confère +1 Vitesse au tour suivant (max 10 cumuls, perdus si aucun n'est lancé). De plus, le score de Critique est augmenté d'un montant égal au double de la Vitesse.");
+        passifsVoies.put("Voie de la Sûreté",
+                "Accumule des points de Sûreté (10/tour et 20% du mana dépensé). À 100 points, octroie +15% de Critique, ou +25% si le palier est atteint passivement en début de tour.");
+        passifsVoies.put("Voie de Trahison",
+                "Une fois par tour, vos attaques physiques infligent des dégâts bruts bonus qui vous soignent : +10% de base, +15% si la cible a moins de 50% PV, et +10% si elle a un malus.");
+        passifsVoies.put("Voie de la Consolidation",
+                "Octroie +5% d'Armure par défaut. Lancer un sort remplace ce bonus selon son niveau (Nv1: +1 Vitesse, Nv2: +10% Armure, Nv3: +10% Résistance Magique, Nv4: Coût des sorts -20%, Nv5: +8% Armure et Résistance).");
+        passifsVoies.put("Voie de la Conviction",
+                "Régénère 25 points de mana par tour (+5 par niveau de Voie) et augmente le mana maximum de 25 par niveau au-delà du premier.");
+        passifsVoies.put("Voie de la Création",
+                "Modifie le 1er sort du tour : un sort Instantané devient gratuit, un sort Banal devient Instantané, et un sort Canalisé octroie un bouclier égal au mana dépensé.");
+        passifsVoies.put("Voie de la Destruction",
+                "Accumule de la 'Chaleur' en lançant des sorts. Lorsque la chaleur atteint 100, le prochain sort lancé est entièrement gratuit.");
+        passifsVoies.put("Voie de la Violence",
+                "Le lancement d'un sort octroie des effets d'Inspiration ou d'Expiration supplémentaires.");
+
         String[] voies = { "Voie de la Raison", "Voie de la Sûreté", "Voie de Trahison", "Voie de la Consolidation",
                 "Voie de la Conviction", "Voie de la Création", "Voie de la Destruction", "Voie de la Violence" };
+
         for (String v : voies) {
             java.util.Optional<Voie> optVoie = voieRepository.findByNom(v);
             Voie voie;
-            boolean isNew = false;
             if (optVoie.isEmpty()) {
                 voie = new Voie();
                 voie.setNom(v);
-                voie.setDescription("Voie classique du grimoire.");
-                isNew = true;
             } else {
                 voie = optVoie.get();
+            }
+
+            // Assigner la description personnalisée
+            voie.setDescription(descriptionsVoies.getOrDefault(v, "Voie classique du grimoire."));
+
+            // Assigner les rangs personnalisés
+            if (rangsVoies.containsKey(v)) {
+                voie.getRankNames().putAll(rangsVoies.get(v));
+            }
+
+            // Assigner le passif
+            if (passifsVoies.containsKey(v)) {
+                voie.setPassiveDescription(passifsVoies.get(v));
             }
 
             if (voie.getPassiveEffects() == null || voie.getPassiveEffects().isEmpty()) {
@@ -173,10 +241,8 @@ public class WebSpellCreationController {
                     passif.setVoie(voie);
                     voie.setPassiveEffects(List.of(passif));
                 }
-                voieRepository.save(voie);
-            } else if (isNew) {
-                voieRepository.save(voie);
             }
+            voieRepository.save(voie);
         }
 
         // Initialiser les Spiritualités si absentes
@@ -189,7 +255,7 @@ public class WebSpellCreationController {
         if (spiritualiteRepository.findByNom("Esprit").isEmpty()) {
             Spiritualite esprit = new Spiritualite();
             esprit.setNom("Esprit");
-            esprit.setDescription("Spiritualité axée sur l'esprit, la protection et la ressource.");
+            esprit.setDescription("Axée sur le renforcement et les ressources.");
             EspritPassiveEffect ee = new EspritPassiveEffect();
             ee.setSpiritualite(esprit);
             esprit.setPassiveEffects(List.of(ee));
@@ -198,7 +264,7 @@ public class WebSpellCreationController {
         if (spiritualiteRepository.findByNom("Ténèbres").isEmpty()) {
             Spiritualite tenebres = new Spiritualite();
             tenebres.setNom("Ténèbres");
-            tenebres.setDescription("Spiritualité axée sur la puissance brute sous condition.");
+            tenebres.setDescription("Axée sur la puissance brute les buffs et les débuffs");
             TenebrePassiveEffect te = new TenebrePassiveEffect();
             te.setSpiritualite(tenebres);
             tenebres.setPassiveEffects(List.of(te));
@@ -207,7 +273,7 @@ public class WebSpellCreationController {
         if (spiritualiteRepository.findByNom("Karma").isEmpty()) {
             Spiritualite karma = new Spiritualite();
             karma.setNom("Karma");
-            karma.setDescription("Spiritualité cyclique.");
+            karma.setDescription("Polyvalent mix entre dégats, protection et soutien.");
             KarmaPassiveEffect ke = new KarmaPassiveEffect();
             ke.setSpiritualite(karma);
             karma.setPassiveEffects(List.of(ke));
@@ -236,23 +302,26 @@ public class WebSpellCreationController {
         spiritualiteRepository.findByNom("Karma").ifPresent(sp -> {
             if (sp.getRankNames().isEmpty()) {
                 sp.getRankNames().put(1, "Équilibre");
-                sp.getRankNames().put(2, "Justesse");
-                sp.getRankNames().put(3, "Plénitude");
+                sp.getRankNames().put(2, "Harmonie");
+                sp.getRankNames().put(3, "Jugement");
                 spiritualiteRepository.save(sp);
             }
         });
 
-        // Définir des noms de rangs par défaut pour les Voies classiques
-        voieRepository.findAll().forEach(v -> {
-            if (v.getRankNames().isEmpty()) {
-                v.getRankNames().put(1, "Novice");
-                v.getRankNames().put(2, "Adepte");
-                v.getRankNames().put(3, "Disciple");
-                v.getRankNames().put(4, "Maître");
-                v.getRankNames().put(5, "Transcendant");
-                voieRepository.save(v);
+        // Set passiveDescription for spiritualites
+        for (Spiritualite sp : spiritualiteRepository.findAll()) {
+            if ("Esprit".equals(sp.getNom())) {
+                sp.setPassiveDescription(
+                        "Les sorts de cette spiritualité ne peuvent être lancés que si vous possédez au moins 20% de vos PV max ET 20% de votre Mana max.");
+            } else if ("Ténèbres".equals(sp.getNom())) {
+                sp.setPassiveDescription(
+                        "Sauf pour les sorts de 'base', le lancement nécessite d'avoir 80% ou moins de vos PV max OU 80% ou moins de votre Mana max.");
+            } else if ("Karma".equals(sp.getNom())) {
+                sp.setPassiveDescription(
+                        "Gère une jauge affectée par l'alignement des sorts (Ténèbre, Harmonie, Lumière). À 0 (Harmonie), octroie des bonus sur vos sorts. À +4 ou -4, verrouille la magie karmique sauf les sorts d'Harmonie pendant 6 tours mais confère un buff massif d'Illumination (+Armure/Résist) ou de Corruption (+Dégâts). On peut réduire le timer de tour en lançant des sorts d'harmonie.");
             }
-        });
+            spiritualiteRepository.save(sp);
+        }
     }
 
     @GetMapping("/meta")
@@ -430,6 +499,7 @@ public class WebSpellCreationController {
                 && p.getSpiritualite().getNom().toLowerCase().contains("karma"));
         cs.setKarmaGauge(p.getPassiveState("karma_gauge", 0));
         cs.setKarmaLocked(p.getPassiveState("karma_locked", 0) == 1);
+        cs.setKarmaLockedDuration(p.getPassiveState("karma_locked_duration", 0));
         cs.setKarmaHarmony(p.getPassiveState("karma_harmony", 0) == 1);
 
         // Stats
@@ -463,29 +533,29 @@ public class WebSpellCreationController {
         clone.setId(dbP.getId());
         clone.setName(dbP.getName());
         clone.setTeamId(teamPrefix + "_" + index);
-        
+
         clone.setHealthMax(dbP.getBaseHealthMax());
         clone.setManaMax(dbP.getBaseManaMax());
-        
+
         clone.setPower(dbP.getPower());
         clone.setStrength(dbP.getStrength());
         clone.setArmor(dbP.getArmor());
         clone.setResistance(dbP.getResistance());
         clone.setCrit(dbP.getCrit());
         clone.setSpeed(dbP.getSpeed());
-        
+
         clone.setVoie(dbP.getVoie());
         clone.setVoieLevel(dbP.getVoieLevel());
         clone.setSpiritualite(dbP.getSpiritualite());
         clone.setSpiritualiteLevel(dbP.getSpiritualiteLevel());
-        
+
         if (dbP.getEquipments() != null) {
             clone.setEquipments(new java.util.ArrayList<>(dbP.getEquipments()));
         }
 
         clone.setHealthCurrent(dbP.getHealthMax());
         clone.setManaCurrent(dbP.getManaMax());
-        
+
         return clone;
     }
 
@@ -661,9 +731,11 @@ public class WebSpellCreationController {
 
         Personnage caster = getSandboxHero();
         Personnage target = (targetEnemyIndex >= 0 && targetEnemyIndex < sandboxEnemies.size())
-                ? sandboxEnemies.get(targetEnemyIndex) : getSandboxMonster();
+                ? sandboxEnemies.get(targetEnemyIndex)
+                : getSandboxMonster();
         Personnage ally = (targetAllyIndex >= 0 && targetAllyIndex < sandboxAllies.size())
-                ? sandboxAllies.get(targetAllyIndex) : caster;
+                ? sandboxAllies.get(targetAllyIndex)
+                : caster;
 
         java.io.ByteArrayOutputStream baos = new java.io.ByteArrayOutputStream();
         java.io.PrintStream originalOut = System.out;
@@ -704,7 +776,8 @@ public class WebSpellCreationController {
             // Résoudre les canalisations actives du héros
             if (hero.getRemainingChannelingTurns() > 0) {
                 Personnage channelingTarget = hero.getChannelingTarget();
-                if (channelingTarget == null) channelingTarget = getSandboxMonster();
+                if (channelingTarget == null)
+                    channelingTarget = getSandboxMonster();
                 spellService.tickChanneling(hero, channelingTarget, hero.getChannelingChoiceKey());
             }
 
@@ -902,6 +975,9 @@ public class WebSpellCreationController {
                     effect.setEffectTarget(
                             eDto.getEffectTarget() != null ? eDto.getEffectTarget() : EffectTarget.TARGET);
                     effect.setRequiredChoiceKey(eDto.getRequiredChoiceKey());
+                    effect.setDetachedSoulRequirement(
+                            eDto.getDetachedSoulRequirement() != null ? eDto.getDetachedSoulRequirement()
+                                    : generation.grimoire.enumeration.DetachedSoulRequirement.NOT_AFFECTED);
                     if (eDto.getChannelingTurns() != null) {
                         effect.setChannelingTurns(new java.util.ArrayList<>(eDto.getChannelingTurns()));
                     }
@@ -958,6 +1034,7 @@ public class WebSpellCreationController {
         private StatType statAffected;
         private Source source;
         private Integer requiredChoiceKey;
+        private generation.grimoire.enumeration.DetachedSoulRequirement detachedSoulRequirement;
         private List<Integer> channelingTurns = new ArrayList<>();
     }
 
@@ -1008,6 +1085,7 @@ public class WebSpellCreationController {
         private boolean hasKarma;
         private int karmaGauge;
         private boolean karmaLocked, karmaHarmony;
+        private int karmaLockedDuration;
         // Stats effectives
         private int power, strength, armor, resistance, speed, crit;
         // Stats de base

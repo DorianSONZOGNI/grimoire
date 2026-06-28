@@ -104,11 +104,15 @@ export function updateSpecialVoieConfig() {
 export function updateSpecialSpiritConfig() {
     const spiritId = document.getElementById('spiritSelect').value;
     let isKarma = false;
+    let isTenebres = false;
     if (spiritId && state.metaData.spiritualites) {
         const s = state.metaData.spiritualites.find(sp => sp.id == spiritId);
         if (s && s.nom) {
             if (s.nom.toLowerCase().includes('karma')) {
                 isKarma = true;
+            }
+            if (s.nom.toLowerCase().includes('ténèbre') || s.nom.toLowerCase().includes('tenebre')) {
+                isTenebres = true;
             }
         }
     }
@@ -117,6 +121,12 @@ export function updateSpecialSpiritConfig() {
     if (karmaConfig) {
         karmaConfig.style.display = isKarma ? 'block' : 'none';
         updateKarmaLabel();
+    }
+
+    const ameDetacheeBtn = document.getElementById('ameDetacheeEffectButton');
+    if (ameDetacheeBtn) {
+        const hasAmeDetachee = state.currentEffects && state.currentEffects.some(e => e.effectType === 'AME_DETACHEE');
+        ameDetacheeBtn.style.display = (isTenebres && !hasAmeDetachee) ? 'grid' : 'none';
     }
 }
 
@@ -230,28 +240,51 @@ export function updateKarmaLabel() {
 
 export function addEffectPanel(type) {
     let stat = 'ARMURE';
+    let actualType = type;
+    if (type === 'POISON') { stat = 'POISON'; actualType = 'BUFF_DEBUFF'; }
+    if (type === 'BURN') { stat = 'BURN'; actualType = 'BUFF_DEBUFF'; }
+    if (type === 'AME_DETACHEE') { stat = 'AME_DETACHEE'; actualType = 'BUFF_DEBUFF'; }
+
+    // Rétrocompatibilité ou conservation du type d'origine pour le visuel si besoin, 
+    // mais ici POISON/BURN ont déjà leur propre rendu dans renderEffects.
+    // Pour AME_DETACHEE, on peut utiliser son propre type ou le traiter comme BUFF_DEBUFF.
+    // On va garder le type d'origine pour l'UI, et laisser le backend gérer ou le mapper.
+    // Wait, POISON/BURN are sent as POISON/BURN ? Let's check how they are sent.
+    // In grimoire.js, they might be mapped. Let's just use the 'type' directly.
     if (type === 'POISON') stat = 'POISON';
-    if (type === 'BURN') stat = 'BURN';
+    else if (type === 'BURN') stat = 'BURN';
+    else if (type === 'AME_DETACHEE') stat = 'AME_DETACHEE';
+    else stat = 'ARMURE';
+
+    if (type === 'AME_DETACHEE' && state.currentEffects.some(e => e.effectType === 'AME_DETACHEE')) {
+        alert("L'effet Âme Détachée ne peut être ajouté qu'une seule fois par sort.");
+        return;
+    }
 
     const effectObj = {
         id: Date.now() + Math.random(),
         effectType: type,
-        effectTarget: type.startsWith('HEAT') ? 'CASTER' : 'TARGET',
+        effectTarget: (type.startsWith('HEAT') || type === 'AME_DETACHEE') ? 'CASTER' : 'TARGET',
         damage: 20,
         healAmount: 20,
         manaAmount: 20,
         percentage: 0.10,
-        flatValue: 5,
-        modifier: 0.20,
+        flatValue: type === 'AME_DETACHEE' ? 5 : 5,
+        modifier: type === 'AME_DETACHEE' ? 0.40 : 0.20,
         duration: 2,
         damageType: 'MAGIC',
         statAffected: stat,
-        source: (type === 'BUFF_DEBUFF' || type === 'POISON' || type === 'BURN') ? null : 'TARGET_HEALTH_MAX',
+        source: (type === 'BUFF_DEBUFF' || type === 'POISON' || type === 'BURN' || type === 'AME_DETACHEE') ? null : 'TARGET_HEALTH_MAX',
         requiredChoiceKey: null,
+        detachedSoulRequirement: 'NOT_AFFECTED',
         channelingTurns: [1]
     };
 
-    state.currentEffects.push(effectObj);
+    if (type === 'AME_DETACHEE') {
+        state.currentEffects.unshift(effectObj);
+    } else {
+        state.currentEffects.push(effectObj);
+    }
     renderEffects();
 }
 
@@ -278,6 +311,9 @@ export function updateEffectProp(id, prop, value) {
         } else {
             effect[prop] = value;
         }
+        if (prop === 'detachedSoulRequirement') {
+            renderEffects();
+        }
     }
 }
 
@@ -295,6 +331,7 @@ export function toggleEffectChannelingTurn(effectId, turnNum) {
         }
         effect.channelingTurns.sort((a, b) => a - b);
         renderEffects();
+        updateSpecialSpiritConfig();
     }
 }
 
@@ -312,6 +349,15 @@ export function renderEffects() {
     const isCanalise = castingTypeSelect && castingTypeSelect.value === 'CANALISE';
     const durationInput = document.getElementById('channelingDuration');
     const duration = durationInput ? (parseInt(durationInput.value) || 1) : 1;
+    
+    const spiritId = document.getElementById('spiritSelect') ? document.getElementById('spiritSelect').value : null;
+    let isTenebres = false;
+    if (spiritId && state.metaData.spiritualites) {
+        const s = state.metaData.spiritualites.find(sp => sp.id == spiritId);
+        if (s && s.nom && (s.nom.toLowerCase().includes('ténèbre') || s.nom.toLowerCase().includes('tenebre'))) {
+            isTenebres = true;
+        }
+    }
 
     state.currentEffects.forEach((eff, idx) => {
         const labelObj = state.metaData.effectTypes.find(t => t.type === eff.effectType);
@@ -320,7 +366,8 @@ export function renderEffects() {
             'HEAT_PERCENTAGE': 'Chaleur %',
             'HEAT_OVER_TIME': 'Chaleur Tick',
             'POISON': 'Poison',
-            'BURN': 'Brûlure'
+            'BURN': 'Brûlure',
+            'AME_DETACHEE': 'Âme Détachée'
         };
         const typeLabel = labelObj ? labelObj.label : (customLabels[eff.effectType] || eff.effectType);
 
@@ -616,6 +663,12 @@ export function renderEffects() {
                             </div>
                         </div>
                     `;
+        } else if (eff.effectType === 'AME_DETACHEE') {
+            fieldsHtml = `
+                        <div style="padding: 0.5rem; background: rgba(244, 63, 94, 0.1); border-left: 3px solid #f43f5e; border-radius: 4px; font-size: 0.85rem; color: #fda4af;">
+                            ✨ Confère au lanceur +5 Dégâts Physiques et +40% de Dégâts Physiques supplémentaires pendant 2 tours.
+                        </div>
+                    `;
         }
 
         let typeBadgeStyle = 'background: rgba(255,255,255,0.05); color: #fff; border-color: var(--glass-border);';
@@ -639,14 +692,16 @@ export function renderEffects() {
             typeBadgeStyle = 'background: linear-gradient(135deg, rgba(6, 182, 212, 0.25), rgba(8, 145, 178, 0.4)); color: #a5f3fc; border: 1px solid #06b6d4; box-shadow: 0 0 12px rgba(6, 182, 212, 0.3); text-shadow: 0 0 5px rgba(0,0,0,0.8);';
         } else if (['HEAT_FIXED', 'HEAT_PERCENTAGE', 'HEAT_OVER_TIME'].includes(eff.effectType)) {
             typeBadgeStyle = 'background: linear-gradient(135deg, rgba(239, 68, 68, 0.25), rgba(185, 28, 28, 0.4)); color: #fca5a5; border: 1px solid #ef4444; box-shadow: 0 0 12px rgba(239, 68, 68, 0.3); text-shadow: 0 0 5px rgba(0,0,0,0.8);';
+        } else if (eff.effectType === 'AME_DETACHEE') {
+            typeBadgeStyle = 'background: linear-gradient(135deg, rgba(244, 63, 94, 0.25), rgba(190, 18, 60, 0.4)); color: #fda4af; border: 1px solid #f43f5e; box-shadow: 0 0 12px rgba(244, 63, 94, 0.3); text-shadow: 0 0 5px rgba(0,0,0,0.8);';
         }
 
         const deleteOrLinkedButton = `<button type="button" class="btn-danger" onclick="removeEffect('${eff.id}')">✕ Supprimer</button>`;
 
-        const targetSelectorHtml = isHeatEffect ? `
+        const targetSelectorHtml = (isHeatEffect || eff.effectType === 'AME_DETACHEE') ? `
                         <div style="display: flex; align-items: center; gap: 0.5rem; background: rgba(239, 68, 68, 0.08); padding: 0.6rem 0.8rem; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.25); margin-bottom: 0.5rem;">
                             <span class="material-symbols-outlined" style="color: #fca5a5; font-size: 1.25rem;">person</span>
-                            <span style="font-size: 0.85rem; color: #fca5a5; font-weight: 600;">Cible : Lanceur (Chaleur générée)</span>
+                            <span style="font-size: 0.85rem; color: #fca5a5; font-weight: 600;">Cible : Lanceur (${eff.effectType === 'AME_DETACHEE' ? 'Âme Détachée' : 'Chaleur générée'})</span>
                         </div>
                 ` : `
                         <!-- Sélection de la cible de l'Effet -->
@@ -690,6 +745,31 @@ export function renderEffects() {
                                 <input type="number" value="${eff.requiredChoiceKey !== undefined && eff.requiredChoiceKey !== null ? eff.requiredChoiceKey : ''}" placeholder="Toutes (Par défaut)" style="width: 140px; font-size: 0.85rem; padding: 0.2rem 0.4rem; background: var(--glass-bg); color: #fff; border: 1px solid var(--glass-border); border-radius: 4px;" onchange="updateEffectProp('${eff.id}', 'requiredChoiceKey', this.value ? parseInt(this.value) : null)">
                                 <span style="font-size: 0.75rem; color: var(--text-muted);">Ex: 1 pour la ligne Soin, 2 pour la ligne Mana. Laissez vide pour s'activer toujours.</span>
                             </div>
+
+                            <!-- Condition Âme Détachée -->
+                            ${(isTenebres && eff.effectType !== 'AME_DETACHEE') ? `
+                        <div style="margin-top: 0.8rem; display: flex; flex-direction: column; gap: 0.4rem; padding-top: 0.5rem; border-top: 1px dashed rgba(255,255,255,0.05);">
+                            <div style="display: flex; align-items: center; justify-content: space-between;">
+                                <label style="color: #fda4af; font-weight: 600; font-size: 0.85rem; display: flex; align-items: center; gap: 0.3rem;">
+                                    <span class="material-symbols-outlined" style="font-size: 1.1rem;">hand_bones</span> Condition "Âme Détachée"
+                                </label>
+                                ${(() => {
+                                    const r = eff.detachedSoulRequirement || 'NOT_AFFECTED';
+                                    return `
+                                    <div style="display: flex; background: rgba(0,0,0,0.3); border-radius: 6px; padding: 2px; border: 1px solid rgba(255,255,255,0.1); width: 260px;">
+                                        <div onclick="updateEffectProp('${eff.id}', 'detachedSoulRequirement', 'NOT_AFFECTED')" style="flex: 1; text-align: center; cursor: pointer; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; color: ${r === 'NOT_AFFECTED' ? '#fff' : 'var(--text-muted)'}; background: ${r === 'NOT_AFFECTED' ? 'rgba(255,255,255,0.15)' : 'transparent'}; transition: all 0.2s;">
+                                            Normal
+                                        </div>
+                                        <div onclick="updateEffectProp('${eff.id}', 'detachedSoulRequirement', 'REQUIRED')" style="flex: 1; text-align: center; cursor: pointer; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; color: ${r === 'REQUIRED' ? '#10b981' : 'var(--text-muted)'}; background: ${r === 'REQUIRED' ? 'rgba(16,185,129,0.15)' : 'transparent'}; transition: all 0.2s;">
+                                            Requiert
+                                        </div>
+                                        <div onclick="updateEffectProp('${eff.id}', 'detachedSoulRequirement', 'FORBIDDEN')" style="flex: 1; text-align: center; cursor: pointer; padding: 4px 8px; border-radius: 4px; font-size: 0.8rem; font-weight: 600; color: ${r === 'FORBIDDEN' ? '#ef4444' : 'var(--text-muted)'}; background: ${r === 'FORBIDDEN' ? 'rgba(239,68,68,0.15)' : 'transparent'}; transition: all 0.2s;">
+                                            Exclut
+                                        </div>
+                                    </div>
+                                    `;
+                                })()}
+                    ` : ''}
 
                             <!-- Tour(s) d'activation de l'effet dans la canalisation (uniquement si le sort est canalisé) -->
                             ${isCanalise ? `

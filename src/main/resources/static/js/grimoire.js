@@ -44,7 +44,7 @@ export function renderFilteredSpells() {
                 let rawType = e.effectType || e.effect_type || '';
                 let mappedType = javaClassToCode[rawType] || rawType;
 
-                if (mappedType === 'BUFF_DEBUFF' && (e.statAffected === 'POISON' || e.statAffected === 'BURN')) {
+                if (mappedType === 'BUFF_DEBUFF' && (e.statAffected === 'POISON' || e.statAffected === 'BURN' || e.statAffected === 'AME_DETACHEE')) {
                     mappedType = e.statAffected;
                 }
 
@@ -154,7 +154,7 @@ export function getSpellEffectsSummaryHtml(sp) {
                 const targetText = effectTargetLabels[target] || 'Cible';
 
                 let rawType = e.effectType || e.effect_type || '';
-                if ((rawType === 'BUFF_DEBUFF' || rawType === 'BuffDebuffEffect') && (e.statAffected === 'POISON' || e.statAffected === 'BURN')) {
+                if ((rawType === 'BUFF_DEBUFF' || rawType === 'BuffDebuffEffect') && (e.statAffected === 'POISON' || e.statAffected === 'BURN' || e.statAffected === 'AME_DETACHEE')) {
                     rawType = e.statAffected;
                 }
                 const t = rawType.replace('Effect', '');
@@ -162,7 +162,7 @@ export function getSpellEffectsSummaryHtml(sp) {
                 let isBad = false;
                 if (['DamageFixed', 'FIXED_DAMAGE', 'DamagePercentage', 'PERCENTAGE_DAMAGE', 'DamageOverTime', 'DOT'].includes(t)) {
                     isBad = true;
-                } else if (['BuffDebuff', 'BUFF_DEBUFF', 'POISON', 'BURN'].includes(t)) {
+                } else if (['BuffDebuff', 'BUFF_DEBUFF', 'POISON', 'BURN', 'AME_DETACHEE'].includes(t)) {
                     const inverseStats = ['DAMAGE_TAKEN_MAGIC', 'DAMAGE_TAKEN_PHYSIC', 'DAMAGE_TAKEN_BRUT', 'SHIELD_PIERCED', 'BURN', 'POISON'];
                     const isNegativeValue = e.modifier < 0 || e.flatValue < 0;
                     isBad = isNegativeValue;
@@ -197,6 +197,7 @@ export function getSpellEffectsSummaryHtml(sp) {
                 if (['Shield', 'SHIELD'].includes(t)) iconName = 'security';
                 if (['HeatFixed', 'HEAT_FIXED', 'HeatPercentage', 'HEAT_PERCENTAGE', 'HeatOverTime', 'HEAT_OVER_TIME', 'Heat', 'HEAT', 'BURN'].includes(t)) iconName = 'local_fire_department';
                 if (t === 'POISON') iconName = 'coronavirus';
+                if (t === 'AME_DETACHEE') iconName = 'person_cancel';
                 if (t === 'Purge' || t === 'PURGE') iconName = 'cleaning_services';
                 if (['BuffDebuff', 'BUFF_DEBUFF'].includes(t)) iconName = isBad ? 'trending_down' : 'trending_up';
 
@@ -234,7 +235,8 @@ export function getSpellEffectsSummaryHtml(sp) {
                     'HeatEffect': 'Chaleur',
                     'HEAT': 'Chaleur',
                     'POISON': 'Poison',
-                    'BURN': 'Brûlure'
+                    'BURN': 'Brûlure',
+                    'AME_DETACHEE': 'Âme Détachée'
                 };
                 const eTypeStr = typeNames[rawType] || rawType || 'Effet';
 
@@ -257,6 +259,8 @@ export function getSpellEffectsSummaryHtml(sp) {
                 } else if (t === 'HealPercentage' || t === 'PERCENTAGE_HEAL') {
                     const pct = Math.round((e.percentage || 0) * 100);
                     detailsStr = `➔ rend ${pct}% de ${ui.formatSrc(e.healSource || e.source)} en PV`;
+                } else if (t === 'AME_DETACHEE') {
+                    detailsStr = `➔ +5 Dégâts Phys. et +40% Dégâts Phys. (2 tours)`;
                 } else if (t === 'BuffDebuff' || t === 'BUFF_DEBUFF' || t === 'POISON' || t === 'BURN') {
                     let parts = [];
                     if (e.flatValue) {
@@ -341,6 +345,13 @@ export function getSpellEffectsSummaryHtml(sp) {
                     }
                 }
 
+                let dsBadge = '';
+                if (e.detachedSoulRequirement === 'REQUIRED') {
+                    dsBadge = `<span style="background:rgba(16,185,129,0.2); color:#10b981; padding:0.1rem 0.3rem; border-radius:3px; font-size:0.75rem; font-weight:bold; display:inline-flex; align-items:center; gap:0.1rem;" title="Requiert l'Âme Détachée"><span class="material-symbols-outlined" style="font-size:1rem;">hand_bones</span>Requis</span>`;
+                } else if (e.detachedSoulRequirement === 'FORBIDDEN') {
+                    dsBadge = `<span style="background:rgba(239,68,68,0.2); color:#ef4444; padding:0.1rem 0.3rem; border-radius:3px; font-size:0.75rem; font-weight:bold; display:inline-flex; align-items:center; gap:0.1rem;" title="Exclut l'Âme Détachée"><span class="material-symbols-outlined" style="font-size:1rem;">hand_bones</span>Exclu</span>`;
+                }
+
                 let statIconHtml = '';
                 if (['BuffDebuff', 'BUFF_DEBUFF'].includes(t) && e.statAffected) {
                     const sa = e.statAffected.toUpperCase();
@@ -371,16 +382,17 @@ export function getSpellEffectsSummaryHtml(sp) {
                     else if (sa.includes('DAMAGE_GIVEN')) statIcon = { icon: 'swords', color: '#f43f5e' };
                     else if (sa.includes('PIERCED') || sa.includes('PIERCING')) statIcon = { icon: 'heart_broken', color: '#fb923c' };
 
-                    if (sa !== 'POISON' && sa !== 'BURN') {
+                    if (sa !== 'POISON' && sa !== 'BURN' && sa !== 'AME_DETACHEE') {
                         statIconHtml = `<span class="material-symbols-outlined" style="flex-shrink:0; font-size:1.1rem; color:${statIcon.color}; margin-left:-0.1rem;">${statIcon.icon}</span>`;
                     }
                 }
 
-                effectsSummaryHtml += `<div style="display:flex; align-items:flex-start; gap:0.3rem;">
+                effectsSummaryHtml += `<div class="effect-line" style="display:flex; align-items:flex-start; gap:0.3rem; flex-wrap:wrap;">
                             <span class="material-symbols-outlined" style="flex-shrink:0; font-size:1.1rem; color:${indicatorColor};">${iconName}</span>
                             ${statIconHtml}
                             ${turnBadge}
                             ${keyBadge}
+                            ${dsBadge}
                             <span style="font-weight:600; color:#fff;">[${targetText}]</span>
                             <span style="color:var(--spell-color, #38bdf8); font-weight:500;">${eTypeStr}</span>
                             <span style="color:#e2e8f0;">${detailsStr}</span>
@@ -399,7 +411,20 @@ export function getSpellCardHtml(sp) {
         const vHex = getVoieButtonColor(sp.voie);
         const vRgb = hexToRgb(vHex);
         const vIcon = getVoieIcon(sp.voie.nom);
-        voieBadge = `<span class="badge" style="color: ${vHex}; border-color: rgba(${vRgb}, 0.3); background: rgba(${vRgb}, 0.05); display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size:1.1em;">${vIcon}</span>${sp.voie.nom}</span>`;
+        voieBadge = `<span class="badge" style="cursor: help; color: ${vHex}; border-color: rgba(${vRgb}, 0.3); background: rgba(${vRgb}, 0.05); display:inline-flex; align-items:center; gap:0.2rem;" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()">
+            <span class="material-symbols-outlined" style="font-size:1.1em;">${vIcon}</span>${sp.voie.nom}
+            <template class="tooltip-data">
+                <div style="font-size: 0.9rem; font-weight: 500; margin-bottom: 0.5rem; display:flex; align-items:center; gap:0.3rem; color: ${vHex};">
+                    <span class="material-symbols-outlined" style="font-size:1.1rem;">${vIcon}</span>
+                    ${sp.voie.nom}
+                </div>
+                <div style="font-size: 0.8rem; color: #cbd5e1; margin-bottom: 0.5rem;">${sp.voie.description || 'Description générique.'}</div>
+                <div style="font-size: 0.8rem; display: flex; align-items: flex-start; gap: 0.3rem; color: #e2e8f0;">
+                    <span class="material-symbols-outlined" style="font-size: 0.95rem; color: ${vHex};">bolt</span>
+                    <span style="font-style: italic;">${sp.voie.passiveDescription || 'Passif spécifique.'}</span>
+                </div>
+            </template>
+        </span>`;
     }
 
     let spiritBadge = '';
@@ -407,7 +432,20 @@ export function getSpellCardHtml(sp) {
         const sHex = getSpiritButtonColor(sp.spiritualite);
         const sRgb = hexToRgb(sHex);
         const sIcon = getSpiritIcon(sp.spiritualite.nom);
-        spiritBadge = `<span class="badge" style="color: ${sHex}; border-color: rgba(${sRgb}, 0.3); background: rgba(${sRgb}, 0.05); display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size:1.1em;">${sIcon}</span>${sp.spiritualite.nom}</span>`;
+        spiritBadge = `<span class="badge" style="cursor: help; color: ${sHex}; border-color: rgba(${sRgb}, 0.3); background: rgba(${sRgb}, 0.05); display:inline-flex; align-items:center; gap:0.2rem;" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()">
+            <span class="material-symbols-outlined" style="font-size:1.1em;">${sIcon}</span>${sp.spiritualite.nom}
+            <template class="tooltip-data">
+                <div style="font-size: 0.9rem; font-weight: 500; margin-bottom: 0.5rem; display:flex; align-items:center; gap:0.3rem; color: ${sHex};">
+                    <span class="material-symbols-outlined" style="font-size:1.1rem;">${sIcon}</span>
+                    ${sp.spiritualite.nom}
+                </div>
+                <div style="font-size: 0.8rem; color: #cbd5e1; margin-bottom: 0.5rem;">${sp.spiritualite.description || 'Description générique.'}</div>
+                <div style="font-size: 0.8rem; display: flex; align-items: flex-start; gap: 0.3rem; color: #e2e8f0;">
+                    <span class="material-symbols-outlined" style="font-size: 0.95rem; color: ${sHex};">bolt</span>
+                    <span style="font-style: italic;">${sp.spiritualite.passiveDescription || 'Passif spécifique.'}</span>
+                </div>
+            </template>
+        </span>`;
     }
 
     let castBadge = '';
@@ -637,7 +675,7 @@ export function editSpell(id) {
         const rawType = e.effectType || e.effect_type || '';
         let effectType = javaClassToCode[rawType] || rawType;
 
-        if (effectType === 'BUFF_DEBUFF' && (e.statAffected === 'POISON' || e.statAffected === 'BURN')) {
+        if (effectType === 'BUFF_DEBUFF' && (e.statAffected === 'POISON' || e.statAffected === 'BURN' || e.statAffected === 'AME_DETACHEE')) {
             effectType = e.statAffected;
         }
 
@@ -656,10 +694,17 @@ export function editSpell(id) {
             duration: e.duration || 0,
             damageType: e.damageType || 'MAGIC',
             statAffected: e.statAffected || 'ARMURE',
-            source: (effectType === 'BUFF_DEBUFF' || effectType === 'POISON' || effectType === 'BURN') ? (e.source || e.modifierSource || null) : (e.source || e.shieldSource || e.damageSource || e.healSource || e.manaSource || e.modifierSource || 'TARGET_HEALTH_MAX'),
+            source: (effectType === 'BUFF_DEBUFF' || effectType === 'POISON' || effectType === 'BURN' || effectType === 'AME_DETACHEE') ? (e.source || e.modifierSource || null) : (e.source || e.shieldSource || e.damageSource || e.healSource || e.manaSource || e.modifierSource || 'TARGET_HEALTH_MAX'),
             requiredChoiceKey: e.requiredChoiceKey !== undefined ? e.requiredChoiceKey : null,
+            detachedSoulRequirement: e.detachedSoulRequirement || 'NOT_AFFECTED',
             channelingTurns: e.channelingTurns || [1]
         };
+    });
+
+    state.currentEffects.sort((a, b) => {
+        if (a.effectType === 'AME_DETACHEE' && b.effectType !== 'AME_DETACHEE') return -1;
+        if (b.effectType === 'AME_DETACHEE' && a.effectType !== 'AME_DETACHEE') return 1;
+        return 0;
     });
 
     // Fallback pour la chaleur de la destruction si non présente dans les effets

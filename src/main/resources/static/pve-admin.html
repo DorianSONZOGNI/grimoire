@@ -550,6 +550,11 @@
                                                 <span class="material-symbols-outlined cs-icon"
                                                     style="color: #e11d48;">bloodtype</span>Vampire
                                             </div>
+                                            <div class="custom-option"
+                                                onclick="selectMonsterType('ECTOPLASME', 'Ectoplasme', 'candle', '#a855f7')">
+                                                <span class="material-symbols-outlined cs-icon"
+                                                    style="color: #a855f7;">candle</span>Ectoplasme
+                                            </div>
                                         </div>
                                     </div>
                                 </div>
@@ -598,6 +603,11 @@
                                                 onclick="selectMonsterBehavior('INSENSIBLE', 'Insensible', 'shield', '#9ca3af')">
                                                 <span class="material-symbols-outlined cs-icon"
                                                     style="color: #9ca3af;">shield</span>Insensible
+                                            </div>
+                                            <div class="custom-option"
+                                                onclick="selectMonsterBehavior('TRANSCENDANT', 'Transcendant', 'grid_view', '#fbbf24')">
+                                                <span class="material-symbols-outlined cs-icon"
+                                                    style="color: #fbbf24;">grid_view</span>Transcendant
                                             </div>
                                         </div>
                                     </div>
@@ -750,7 +760,7 @@
                                 </div>
                                 <div class="form-group">
                                     <label>Héros Maximum</label>
-                                    <input type="number" id="dMaxHeroes" class="form-control" value="1" min="1" max="5"
+                                    <input type="number" id="dMaxHeroes" class="form-control" value="1" min="1" max="4"
                                         required>
                                 </div>
                                 <div class="form-group">
