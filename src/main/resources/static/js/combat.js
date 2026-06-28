@@ -1662,6 +1662,8 @@ function updateUI(data) {
 
                     btnOpen.style.display = 'none';
                     btnCont.style.display = 'block';
+                    btnCont.textContent = 'Continuer';
+                    btnCont.onclick = nextRoom;
 
                     if (data.currentRoom.lootTable && data.currentRoom.lootTable.length > 0) {
                         lootContainer.style.display = 'flex';
