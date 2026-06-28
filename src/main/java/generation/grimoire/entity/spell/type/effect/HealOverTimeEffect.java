@@ -21,7 +21,8 @@ public class HealOverTimeEffect extends HealEffect {
 
     /**
      * Pourcentage (exprimé en décimal, par exemple 0.10 pour 10%)
-     * du soin qui est calculé sur une base déterminée (par exemple, la vie max du personnage).
+     * du soin qui est calculé sur une base déterminée (par exemple, la vie max du
+     * personnage).
      */
     private double percentageHealPerTick;
 
@@ -39,14 +40,16 @@ public class HealOverTimeEffect extends HealEffect {
 
     /**
      * Méthode qui applique le soin chaque tour.
-     * Cette méthode sera appelée par le Personnage (via sa méthode d'update des effets) à chaque début ou fin de tour.
+     * Cette méthode sera appelée par le Personnage (via sa méthode d'update des
+     * effets) à chaque début ou fin de tour.
      */
     public void tick(Personnage target) {
         if (duration > 0) {
             int totalHeal = fixedHealPerTick;
-            if (percentageHealPerTick > 0) {
-                double sourceValue = generation.grimoire.utils.StatCalculator.getSourceValue(healSource, caster, target);
-                totalHeal += (int)(sourceValue * percentageHealPerTick);
+            if (percentageHealPerTick != 0) {
+                double sourceValue = generation.grimoire.utils.StatCalculator.getSourceValue(healSource, caster,
+                        target);
+                totalHeal += (int) (sourceValue * percentageHealPerTick);
             }
             double healGivenMultiplier = 1.0;
             if (caster != null) {
@@ -55,7 +58,9 @@ public class HealOverTimeEffect extends HealEffect {
             totalHeal = (int) (totalHeal * getAmplificationMultiplier() * Math.max(0, healGivenMultiplier));
             target.heal(totalHeal);
             duration--;
-            System.out.println(target.getName() + " est soigné de " + totalHeal + " PV par heal over time (multiplier donné: " + healGivenMultiplier + "), durée restante : " + duration);
+            System.out.println(
+                    target.getName() + " est soigné de " + totalHeal + " PV par heal over time (multiplier donné: "
+                            + healGivenMultiplier + "), durée restante : " + duration);
         }
     }
 
@@ -65,8 +70,9 @@ public class HealOverTimeEffect extends HealEffect {
         clone.setSpell(this.getSpell());
         clone.setEffectTarget(this.getEffectTarget());
         clone.setRequiredChoiceKey(this.getRequiredChoiceKey());
-        clone.setChannelingTurns(this.getChannelingTurns() != null ? new java.util.ArrayList<>(this.getChannelingTurns()) : null);
-        
+        clone.setChannelingTurns(
+                this.getChannelingTurns() != null ? new java.util.ArrayList<>(this.getChannelingTurns()) : null);
+
         clone.setFixedHealPerTick(this.fixedHealPerTick);
         clone.setPercentageHealPerTick(this.percentageHealPerTick);
         clone.setDuration(this.duration);

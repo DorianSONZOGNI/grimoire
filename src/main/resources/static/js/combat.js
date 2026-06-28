@@ -2223,6 +2223,8 @@ function generateFighterHtml(c, isHero) {
             ${renderBuffsHtml(c.activeBuffs || c.buffs)}
             ${renderPoisonBurnHtml(c)}
             ${renderDotsHtml(c.activeDamageOverTimeEffects)}
+            ${renderMoTsHtml(c.activeManaOverTimeEffects)}
+            ${renderHoTsHtml(c.activeHealOverTimeEffects)}
         </div>
     `;
 }
@@ -2804,6 +2806,86 @@ function showNotif(msg, isError = false) {
     setTimeout(() => {
         notif.classList.remove('show');
     }, 3000);
+}
+
+function renderMoTsHtml(motList) {
+    if (!motList || motList.length === 0) return '';
+    const motEntries = [];
+    motList.forEach(m => {
+        let text = "";
+        if (m.percentageManaPerTick) {
+            text = (m.percentageManaPerTick * 100) + "% " + (m.manaSource === 'TARGET_MANA_MAX' ? 'Mana Max' : ui.formatSrc(m.manaSource));
+            if (m.fixedManaPerTick) {
+                text += (m.fixedManaPerTick > 0 ? ' + ' : ' - ') + Math.abs(m.fixedManaPerTick);
+            }
+        } else {
+            text = m.fixedManaPerTick;
+        }
+
+        motEntries.push(`
+            <div style="display:flex; align-items:flex-start; gap:0.4rem; font-size:0.85rem;">
+                <span class="material-symbols-outlined" style="flex-shrink:0; font-size:1.1rem; color:#38bdf8;">water_drop</span>
+                <span style="font-weight:600; color:#fff;">[MoT]</span>
+                <span style="color:#38bdf8; font-weight:500;">${text} Mana/tour</span>
+                <span style="color:#e2e8f0;">⏳ (${m.duration} tours)</span>
+            </div>
+        `);
+    });
+
+    if (motEntries.length === 0) return '';
+    const tooltipAttrs = 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"';
+
+    return `
+        <div class="status-badge status-dot" ${tooltipAttrs} style="display:inline-flex; align-items:center; gap:0.3rem; border: 1px solid rgba(56, 189, 248, 0.3); background: rgba(56, 189, 248, 0.1); color: #38bdf8; border-radius: 6px; padding: 0.15rem 0.5rem; cursor: help;">
+            <span class="material-symbols-outlined" style="font-size:1rem;">water_drop</span> MoT (${motList.length})
+            <template class="tooltip-data">
+                <div style="font-weight:600; margin-bottom:0.5rem; color:#f8fafc; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:0.3rem;">Mana sur le temps</div>
+                <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                    ${motEntries.join('')}
+                </div>
+            </template>
+        </div>
+    `;
+}
+
+function renderHoTsHtml(hotList) {
+    if (!hotList || hotList.length === 0) return '';
+    const hotEntries = [];
+    hotList.forEach(h => {
+        let text = "";
+        if (h.percentageHealPerTick) {
+            text = (h.percentageHealPerTick * 100) + "% " + (h.healSource === 'TARGET_HEALTH_MAX' ? 'PV Max' : ui.formatSrc(h.healSource));
+            if (h.fixedHealPerTick) {
+                text += (h.fixedHealPerTick > 0 ? ' + ' : ' - ') + Math.abs(h.fixedHealPerTick);
+            }
+        } else {
+            text = h.fixedHealPerTick;
+        }
+
+        hotEntries.push(`
+            <div style="display:flex; align-items:flex-start; gap:0.4rem; font-size:0.85rem;">
+                <span class="material-symbols-outlined" style="flex-shrink:0; font-size:1.1rem; color:#22c55e;">healing</span>
+                <span style="font-weight:600; color:#fff;">[HoT]</span>
+                <span style="color:#22c55e; font-weight:500;">${text} PV/tour</span>
+                <span style="color:#e2e8f0;">⏳ (${h.duration} tours)</span>
+            </div>
+        `);
+    });
+
+    if (hotEntries.length === 0) return '';
+    const tooltipAttrs = 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"';
+
+    return `
+        <div class="status-badge status-dot" ${tooltipAttrs} style="display:inline-flex; align-items:center; gap:0.3rem; border: 1px solid rgba(34, 197, 94, 0.3); background: rgba(34, 197, 94, 0.1); color: #22c55e; border-radius: 6px; padding: 0.15rem 0.5rem; cursor: help;">
+            <span class="material-symbols-outlined" style="font-size:1rem;">healing</span> HoT (${hotList.length})
+            <template class="tooltip-data">
+                <div style="font-weight:600; margin-bottom:0.5rem; color:#f8fafc; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:0.3rem;">Soin sur le temps</div>
+                <div style="display:flex; flex-direction:column; gap:0.5rem;">
+                    ${hotEntries.join('')}
+                </div>
+            </template>
+        </div>
+    `;
 }
 
 function renderDotsHtml(dotList) {

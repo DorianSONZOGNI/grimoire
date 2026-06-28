@@ -25,8 +25,12 @@ import java.util.HashMap;
 
 @Data
 @NoArgsConstructor
-@EqualsAndHashCode(exclude = {"user", "equipments", "activeBuffs", "activeShields", "activeHealOverTimeEffects", "activeManaOverTimeEffects", "activeDamageOverTimeEffects", "activeHeatOverTimeEffects", "consumableSpellBuffs", "channelingTarget"})
-@ToString(exclude = {"user", "equipments", "activeBuffs", "activeShields", "activeHealOverTimeEffects", "activeManaOverTimeEffects", "activeDamageOverTimeEffects", "activeHeatOverTimeEffects", "consumableSpellBuffs", "channelingTarget"})
+@EqualsAndHashCode(exclude = { "user", "equipments", "activeBuffs", "activeShields", "activeHealOverTimeEffects",
+        "activeManaOverTimeEffects", "activeDamageOverTimeEffects", "activeHeatOverTimeEffects", "consumableSpellBuffs",
+        "channelingTarget" })
+@ToString(exclude = { "user", "equipments", "activeBuffs", "activeShields", "activeHealOverTimeEffects",
+        "activeManaOverTimeEffects", "activeDamageOverTimeEffects", "activeHeatOverTimeEffects", "consumableSpellBuffs",
+        "channelingTarget" })
 @Entity
 @Table(name = "Personnage")
 public class Personnage {
@@ -522,6 +526,8 @@ public class Personnage {
         this.healthCurrent += finalHeal;
         if (this.healthCurrent > this.getTotalHealthMax()) {
             this.healthCurrent = this.getTotalHealthMax();
+        } else if (this.healthCurrent < 0) {
+            this.healthCurrent = 0;
         }
         System.out.println(name + " est soigné de " + finalHeal + " points (multiplier soin reçu: " + multiplier
                 + "). Vie actuelle : " + healthCurrent);
@@ -538,6 +544,8 @@ public class Personnage {
         this.manaCurrent += manaAmount;
         if (this.manaCurrent > this.getTotalManaMax()) {
             this.manaCurrent = this.getTotalManaMax();
+        } else if (this.manaCurrent < 0) {
+            this.manaCurrent = 0;
         }
         System.out.println(name + " régénère " + manaAmount + " mana. Mana actuelle : " + manaCurrent);
     }
