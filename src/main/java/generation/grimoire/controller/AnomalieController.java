@@ -125,28 +125,18 @@ public class AnomalieController {
                     return ResponseEntity.status(403).body("Ce n'est pas votre anomalie.");
                 }
                 
-                if (isAdmin) {
-                    String originalName = existing.getName();
-                    List<Anomalie> sameAnomalies = anomalieRepository.findByName(originalName);
-                    for (Anomalie a : sameAnomalies) {
-                        a.setName(anomalie.getName());
-                        a.setSpiritualite(anomalie.getSpiritualite());
-                        a.setCategory(anomalie.getCategory());
-                        a.setDescription(anomalie.getDescription());
-                        a.setLevel(anomalie.getLevel() != null ? anomalie.getLevel() : 1);
-                        a.setMagicObject(anomalie.isMagicObject());
-                    }
-                    anomalieRepository.saveAll(sameAnomalies);
-                    return ResponseEntity.ok(existing);
-                } else {
-                    existing.setName(anomalie.getName());
-                    existing.setSpiritualite(anomalie.getSpiritualite());
-                    existing.setCategory(anomalie.getCategory());
-                    existing.setDescription(anomalie.getDescription());
-                    existing.setLevel(anomalie.getLevel() != null ? anomalie.getLevel() : 1);
-                    existing.setMagicObject(anomalie.isMagicObject());
-                    return ResponseEntity.ok(anomalieRepository.save(existing));
+                String originalName = existing.getName();
+                List<Anomalie> sameAnomalies = anomalieRepository.findByName(originalName);
+                for (Anomalie a : sameAnomalies) {
+                    a.setName(anomalie.getName());
+                    a.setSpiritualite(anomalie.getSpiritualite());
+                    a.setCategory(anomalie.getCategory());
+                    a.setDescription(anomalie.getDescription());
+                    a.setLevel(anomalie.getLevel() != null ? anomalie.getLevel() : 1);
+                    a.setMagicObject(anomalie.isMagicObject());
                 }
+                anomalieRepository.saveAll(sameAnomalies);
+                return ResponseEntity.ok(existing);
             }
         }
 

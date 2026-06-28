@@ -46,7 +46,16 @@ public class EquipmentController {
         if (!isAdmin) return ResponseEntity.status(403).build();
         
         List<Equipment> equipmentList = equipmentRepository.findAll();
-        return ResponseEntity.ok(equipmentList.stream().filter(e -> !e.isShopTemplate()).map(this::toDto).toList());
+        return ResponseEntity.ok(equipmentList.stream().map(this::toDto).toList());
+    }
+
+    /** Récupérer tous les templates publiquement */
+    @GetMapping("/templates/public")
+    public ResponseEntity<List<Map<String, Object>>> getPublicTemplates() {
+        List<Equipment> templates = equipmentRepository.findAll().stream()
+                .filter(e -> e != null && e.isShopTemplate())
+                .toList();
+        return ResponseEntity.ok(templates.stream().map(this::toDto).toList());
     }
 
     /** Liste les équipements d'un personnage */
