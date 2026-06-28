@@ -1465,9 +1465,9 @@ function updateUI(data) {
 
                             let altarRewardHtml = '';
                             if (data.currentRoom.altarRewardType === 'GOLD') {
-                                altarRewardHtml = `<div style="color: #fbbf24; font-weight: bold; margin-top: 0.5rem; text-align: center; background: rgba(251, 191, 36, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(251, 191, 36, 0.3);"><span class="material-symbols-outlined" style="vertical-align: middle; font-size: 1.1rem; margin-right: 0.2rem;">paid</span> <strong>Récompense :</strong> +${data.currentRoom.altarRewardValue} Or</div>`;
+                                altarRewardHtml = `<div style="color: #fbbf24; font-weight: bold; margin-top: 0.5rem; text-align: center; background: rgba(251, 191, 36, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(251, 191, 36, 0.3);"><span class="material-symbols-outlined" style="vertical-align: middle; font-size: 1.1rem; margin-right: 0.2rem;">paid</span> <strong>Récompense :</strong> +<span id="altarDynamicRewardValue" data-base-value="${data.currentRoom.altarRewardValue}">${data.currentRoom.altarRewardValue}</span> Or</div>`;
                             } else if (data.currentRoom.altarRewardType === 'XP') {
-                                altarRewardHtml = `<div style="color: #38bdf8; font-weight: bold; margin-top: 0.5rem; text-align: center; background: rgba(56, 189, 248, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.3);"><span class="material-symbols-outlined" style="vertical-align: middle; font-size: 1.1rem; margin-right: 0.2rem;">star</span> <strong>Récompense :</strong> +${data.currentRoom.altarRewardValue} XP de Spiritualité (pour le groupe)</div>`;
+                                altarRewardHtml = `<div style="color: #38bdf8; font-weight: bold; margin-top: 0.5rem; text-align: center; background: rgba(56, 189, 248, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.3);"><span class="material-symbols-outlined" style="vertical-align: middle; font-size: 1.1rem; margin-right: 0.2rem;">star</span> <strong>Récompense :</strong> +<span id="altarDynamicRewardValue" data-base-value="${data.currentRoom.altarRewardValue}">${data.currentRoom.altarRewardValue}</span> XP de Spiritualité (pour le groupe)</div>`;
                             } else if (data.currentRoom.altarRewardType === 'ITEM') {
                                 const eq = data.currentRoom.altarRewardEquipment;
                                 if (eq) {
@@ -1554,6 +1554,12 @@ function updateUI(data) {
                                         let chance = level === 1 ? 45 : (level === 2 ? 75 : 100);
                                         el.textContent = `(${chance}%)`;
                                         el.style.color = chance === 100 ? '#10b981' : (chance === 75 ? '#fbbf24' : '#ef4444');
+                                    }
+                                    const valEl = document.getElementById('altarDynamicRewardValue');
+                                    if (valEl) {
+                                        let multiplier = level === 1 ? 1.0 : (level === 2 ? 1.3 : 1.8);
+                                        let baseVal = parseInt(valEl.getAttribute('data-base-value'), 10);
+                                        valEl.textContent = Math.round(baseVal * multiplier);
                                     }
                                 };
                                 container.innerHTML = selectHtml;

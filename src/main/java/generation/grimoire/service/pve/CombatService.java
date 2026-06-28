@@ -546,21 +546,24 @@ public class CombatService {
 
             String rewardType = room.getAltarRewardType();
             int rewardValue = room.getAltarRewardValue();
+            int level = toDestroy.getLevel() != null ? toDestroy.getLevel() : 1;
+            double multiplier = level == 1 ? 1.0 : (level == 2 ? 1.3 : 1.8);
 
             if ("GOLD".equals(rewardType)) {
-                user.setMonnaie(user.getMonnaie() + rewardValue);
+                int multipliedValue = (int) Math.round(rewardValue * multiplier);
+                user.setMonnaie(user.getMonnaie() + multipliedValue);
                 userRepository.save(user);
-                session.addLog("L'autel vous récompense de " + rewardValue + " Or !");
+                session.addLog("L'autel vous récompense de " + multipliedValue + " Or !");
             } else if ("XP".equals(rewardType)) {
+                int multipliedValue = (int) Math.round(rewardValue * multiplier);
                 for (Personnage p : session.getPlayers()) {
                     if (p.getHealthCurrent() > 0) {
-                        p.setSpiritualiteExperience(p.getSpiritualiteExperience() + rewardValue);
+                        p.setSpiritualiteExperience(p.getSpiritualiteExperience() + multipliedValue);
                         personnageRepository.save(p);
                     }
                 }
-                session.addLog("L'autel accorde " + rewardValue + " XP de Spiritualité à tous les héros !");
+                session.addLog("L'autel accorde " + multipliedValue + " XP de Spiritualité à tous les héros !");
             } else if ("ITEM".equals(rewardType)) {
-                int level = toDestroy.getLevel() != null ? toDestroy.getLevel() : 1;
                 int chance = level == 1 ? 45 : (level == 2 ? 75 : 100);
                 boolean success = new java.util.Random().nextInt(100) < chance;
 
