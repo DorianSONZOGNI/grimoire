@@ -1028,10 +1028,15 @@
                     // Refresh inventory
                     await fetchUserInventory();
 
-                    // Force refresh of cauldron UI
-                    renderCauldron(selectedRecipe);
-                    document.getElementById('craftMessage').innerText = text;
-                    document.getElementById('craftMessage').style.color = "#10b981";
+                    setTimeout(() => {
+                        // Force refresh of cauldron UI
+                        renderCauldron(selectedRecipe);
+                        const msgObj = document.getElementById('craftMessage');
+                        if (msgObj) {
+                            msgObj.innerText = text;
+                            msgObj.style.color = "#10b981";
+                        }
+                    }, 2000);
 
                 } else {
                     msg.innerText = "Échec : " + text;
@@ -1045,41 +1050,44 @@
 
         function createMagicParticles() {
             const panel = document.getElementById('cauldronPanel');
+            const rect = panel.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2 + window.scrollX;
+            const centerY = rect.top + rect.height / 2 + window.scrollY;
 
             // Central majestic flash
             const flash = document.createElement('div');
             flash.style.position = 'absolute';
-            flash.style.width = '20px';
-            flash.style.height = '20px';
+            flash.style.width = '30px';
+            flash.style.height = '30px';
             flash.style.background = '#fff';
             flash.style.borderRadius = '50%';
-            flash.style.boxShadow = '0 0 50px 20px #06b6d4, 0 0 100px 40px #10b981';
-            flash.style.left = '50%';
-            flash.style.top = '50%';
+            flash.style.boxShadow = '0 0 60px 30px #06b6d4, 0 0 120px 60px #10b981';
+            flash.style.left = centerX + 'px';
+            flash.style.top = centerY + 'px';
             flash.style.transform = 'translate(-50%, -50%)';
             flash.style.pointerEvents = 'none';
-            flash.style.zIndex = '100';
-            panel.appendChild(flash);
+            flash.style.zIndex = '9999';
+            document.body.appendChild(flash);
 
             flash.animate([
                 { transform: 'translate(-50%, -50%) scale(1)', opacity: 0.5, offset: 0 },
-                { transform: 'translate(-50%, -50%) scale(8)', opacity: 1, offset: 0.3 },
-                { transform: 'translate(-50%, -50%) scale(15)', opacity: 0.8, offset: 0.8 },
-                { transform: 'translate(-50%, -50%) scale(25)', opacity: 0, offset: 1 }
+                { transform: 'translate(-50%, -50%) scale(10)', opacity: 1, offset: 0.3 },
+                { transform: 'translate(-50%, -50%) scale(20)', opacity: 0.9, offset: 0.7 },
+                { transform: 'translate(-50%, -50%) scale(35)', opacity: 0, offset: 1 }
             ], {
-                duration: 4000,
+                duration: 3000,
                 easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
                 fill: 'forwards'
             });
 
-            setTimeout(() => flash.remove(), 4100);
+            setTimeout(() => flash.remove(), 6100);
 
             // Particles
             const colors = ['#10b981', '#06b6d4', '#f59e0b', '#a855f7', '#ffffff'];
 
-            for (let i = 0; i < 120; i++) {
+            for (let i = 0; i < 150; i++) {
                 const p = document.createElement('div');
-                const size = 3 + Math.random() * 6;
+                const size = 4 + Math.random() * 8;
                 p.style.position = 'absolute';
                 p.style.width = `${size}px`;
                 p.style.height = `${size}px`;
@@ -1087,32 +1095,29 @@
                 p.style.background = color;
                 p.style.borderRadius = '50%';
                 p.style.boxShadow = `0 0 ${size * 2}px ${color}, 0 0 ${size * 4}px ${color}`;
-                p.style.left = '50%';
-                p.style.top = '50%';
+                p.style.left = centerX + 'px';
+                p.style.top = centerY + 'px';
                 p.style.pointerEvents = 'none';
-                p.style.zIndex = '101';
+                p.style.zIndex = '9999';
 
-                panel.appendChild(p);
+                document.body.appendChild(p);
 
-                // TRÈS LENT : 8 à 15 secondes
-                const duration = 8000 + Math.random() * 7000;
+                // TRÈS LENT : 10 à 20 secondes
+                const duration = 10000 + Math.random() * 10000;
                 const angle = Math.random() * Math.PI * 2;
 
-                // Moins de distance horizontale pour un effet de flottement plus vertical
-                const dist = 50 + Math.random() * 150;
-
-                // Dérive forte vers le haut
-                const destX = Math.cos(angle) * dist + (Math.random() * 150 - 75);
-                const destY = Math.sin(angle) * dist - (250 + Math.random() * 300);
+                const dist = 100 + Math.random() * 250;
+                const destX = Math.cos(angle) * dist + (Math.random() * 200 - 100);
+                const destY = Math.sin(angle) * dist - (300 + Math.random() * 400);
 
                 p.animate([
                     { transform: 'translate(-50%, -50%) scale(0)', opacity: 0, offset: 0 },
-                    { transform: 'translate(-50%, -50%) scale(1)', opacity: 1, offset: 0.05 },
+                    { transform: 'translate(-50%, -50%) scale(1.5)', opacity: 1, offset: 0.05 },
                     { transform: `translate(calc(-50% + ${destX * 0.8}px), calc(-50% + ${destY * 0.8}px)) scale(1)`, opacity: 0.8, offset: 0.8 },
                     { transform: `translate(calc(-50% + ${destX}px), calc(-50% + ${destY}px)) scale(0)`, opacity: 0, offset: 1 }
                 ], {
                     duration: duration,
-                    easing: 'linear', // linéaire pour un flottement constant et doux
+                    easing: 'linear',
                     fill: 'forwards'
                 });
 
@@ -1122,17 +1127,17 @@
             }
         }
         function getLevelColor(lvl) {
-            if(lvl === 1) return '#10b981';
-            if(lvl === 2) return '#3b82f6';
-            if(lvl === 3) return '#8b5cf6';
-            if(lvl === 4) return '#f59e0b';
+            if (lvl === 1) return '#10b981';
+            if (lvl === 2) return '#3b82f6';
+            if (lvl === 3) return '#8b5cf6';
+            if (lvl === 4) return '#f59e0b';
             return '#ef4444';
         }
 
         function buildAnomalyTooltipHTML(name) {
             let temp = allAnomalyTemplates.find(a => a.name === name);
             if (!temp) temp = { name: name, level: 1, spiritualite: 'Inconnu', description: 'Aucune description' };
-            
+
             return `
                 <div style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:#c084fc;">${temp.name}</div>
                 <div style="display: flex; gap: 6px; margin: 6px 0; flex-wrap: wrap;">
@@ -1162,7 +1167,7 @@
 
         function buildEquipmentTooltipHTML(name, isConsumable = false) {
             let temp = allEquipmentTemplates.find(e => e.name === name);
-            if (!temp) return ''; 
+            if (!temp) return '';
 
             let statsHtml = '';
             STAT_DEFS.forEach(def => {
@@ -1201,7 +1206,7 @@
                 `;
             }
 
-            if (!statsHtml && !isConsumable) return ''; 
+            if (!statsHtml && !isConsumable) return '';
 
             let html = `
                 <div style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:#f8fafc; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:4px;">${temp.name}</div>
