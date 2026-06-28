@@ -2883,6 +2883,7 @@ function renderDotsHtml(dotList) {
     let totalDmg = 0;
     const dotEntries = [];
     dotList.forEach(d => {
+        if (d.burn || d.poison) return; // Déjà géré par renderPoisonBurnHtml
         totalDmg += d.fixedDamagePerTick || 0;
         let dTypeStr = "Brut";
         if (d.damageType === "PHYSIC") dTypeStr = "Physique";
