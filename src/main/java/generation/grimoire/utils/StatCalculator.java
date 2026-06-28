@@ -7,20 +7,21 @@ import generation.grimoire.enumeration.StatType;
 public class StatCalculator {
 
     /**
-     * Récupère la valeur de la statistique définie par 'source' en utilisant les données du caster et de la target.
-     * Les bonus flat provenant des passifs (ex: Violence, buffs) sont inclus pour les stats concernées.
+     * Récupère la valeur de la statistique définie par 'source' en utilisant les
+     * données du caster et de la target.
+     * Les bonus flat provenant des passifs (ex: Violence, buffs) sont inclus pour
+     * les stats concernées.
      *
-     * @param source  l'énumération définissant la source du calcul
-     * @param caster  le personnage qui lance le sort
-     * @param target  la cible du sort
+     * @param source l'énumération définissant la source du calcul
+     * @param caster le personnage qui lance le sort
+     * @param target la cible du sort
      * @return la valeur correspondant à la source choisie
      */
     public static double getSourceValue(Source source, Personnage caster, Personnage target) {
         if (source == null) {
             return 1.0;
         }
-        // If target is null but a TARGET_* source is requested, fall back to caster
-        if (target == null && source.name().startsWith("TARGET")) {
+        if (target == null) {
             target = caster;
         }
         return switch (source) {
