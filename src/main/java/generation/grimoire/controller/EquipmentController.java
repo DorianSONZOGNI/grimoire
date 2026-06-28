@@ -52,9 +52,16 @@ public class EquipmentController {
     /** Récupérer tous les templates publiquement */
     @GetMapping("/templates/public")
     public ResponseEntity<List<Map<String, Object>>> getPublicTemplates() {
-        List<Equipment> templates = equipmentRepository.findAll().stream()
-                .filter(e -> e != null && e.isShopTemplate())
-                .toList();
+        List<String> names = equipmentRepository.findDistinctNames();
+        List<Equipment> templates = new java.util.ArrayList<>();
+        for (String name : names) {
+            if (name != null && !name.trim().isEmpty()) {
+                Equipment template = equipmentRepository.findFirstByName(name);
+                if (template != null) {
+                    templates.add(template);
+                }
+            }
+        }
         return ResponseEntity.ok(templates.stream().map(this::toDto).toList());
     }
 

@@ -526,7 +526,7 @@
             const lower = name.toLowerCase();
             if (lower.includes('cristal')) return { icon: 'diamond', color: '#38bdf8' }; // light blue
             if (lower.includes('cœur') || lower.includes('coeur')) return { icon: 'favorite', color: '#ef4444' }; // red
-            if (lower.includes('or')) return { icon: 'monetization_on', color: '#f59e0b' }; // gold
+            if (/\bor\b/.test(lower) || lower.includes('pièce') || lower.includes('monnaie')) return { icon: 'monetization_on', color: '#f59e0b' }; // gold
             if (lower.includes('sceau')) return { icon: 'token', color: '#a855f7' }; // purple
             if (lower.includes('parchemin')) return { icon: 'history_edu', color: '#fb923c' }; // orange
             if (lower.includes('potion') || lower.includes('élixir') || lower.includes('elixir')) return { icon: 'science', color: '#10b981' }; // green
@@ -711,8 +711,21 @@
             }
 
             const resultStyle = getItemStyle(r.rewardName, resultType);
-            const resultIcon = resultStyle.icon;
-            const resultColor = resultStyle.color;
+            let resultIcon = resultStyle.icon;
+            let resultColor = resultStyle.color;
+
+            if (resultType === 'EQUIPMENT') {
+                const eqTemp = allEquipmentTemplates.find(e => e.name === r.rewardName);
+                if (eqTemp && eqTemp.rarity) {
+                    const rColors = { 'COMMUN': '#94a3b8', 'RARE': '#10b981', 'LEGENDAIRE': '#f59e0b', 'EPIQUE': '#ef4444', 'RELIQUE': '#a855f7' };
+                    if (rColors[eqTemp.rarity]) resultColor = rColors[eqTemp.rarity];
+                }
+            } else if (resultType === 'ANOMALY') {
+                const anomTemp = allAnomalyTemplates.find(a => a.name === r.rewardName);
+                if (anomTemp && anomTemp.spiritualite) {
+                    resultColor = getSpiritualiteColor(anomTemp.spiritualite);
+                }
+            }
 
             let quantityDisplay = `${r.rewardQuantity}x ${r.rewardName}`;
             if (r.rewardType === 'GIVE_SPIRIT_XP') {
@@ -758,7 +771,7 @@
                             <span class="material-symbols-outlined" style="font-size: 1.1rem;">${resultIcon}</span>
                             ${resultLabel}
                         </span>
-                        <strong style="font-size: 1.2rem; color: #fff;">${quantityDisplay}</strong>
+                        <strong style="font-size: 1.2rem; color: ${resultColor};">${quantityDisplay}</strong>
                     </div>
 
                     <button class="btn-transmute" style="margin-top: 1.5rem;" onclick="craftSelected()">

@@ -24,4 +24,7 @@ public interface EquipmentRepository extends JpaRepository<Equipment, Long> {
     List<Equipment> findByOwnerUsername(String username);
 
     Equipment findFirstByName(String name);
+
+    @org.springframework.data.jpa.repository.Query("SELECT DISTINCT e.name FROM Equipment e")
+    List<String> findDistinctNames();
 }

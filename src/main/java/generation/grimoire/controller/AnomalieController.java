@@ -135,7 +135,7 @@ public class AnomalieController {
                     a.setLevel(anomalie.getLevel() != null ? anomalie.getLevel() : 1);
                     a.setMagicObject(anomalie.isMagicObject());
                 }
-                anomalieRepository.saveAll(sameAnomalies);
+                anomalieRepository.saveAll(java.util.Objects.requireNonNull(sameAnomalies));
                 return ResponseEntity.ok(existing);
             }
         }
