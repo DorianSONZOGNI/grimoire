@@ -1190,7 +1190,7 @@
                     const val = temp[def.key] > 0 ? '+' + temp[def.key] : temp[def.key];
                     const suffix = def.isPercent ? '%' : '';
                     statsHtml += `
-                        <div style="display: flex; justify-content: space-between; align-items: center; width: 120px; font-size: 0.85rem;">
+                        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; min-width: 160px; gap: 16px; font-size: 0.85rem;">
                             <span style="display:flex; align-items:center; gap:4px; color: ${def.color};">
                                 <span class="material-symbols-outlined" style="font-size: 1rem;">${def.icon}</span>
                                 ${def.label}
@@ -1211,7 +1211,7 @@
                 };
                 const label = effectLabels[temp.specialEffect] || temp.specialEffect;
                 statsHtml += `
-                    <div style="display: flex; justify-content: space-between; align-items: center; width: 120px; font-size: 0.85rem; margin-top: 4px; padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.1);">
+                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; min-width: 160px; gap: 16px; font-size: 0.85rem; margin-top: 4px; padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.1);">
                         <span style="display:flex; align-items:center; gap:4px; color: #c084fc;">
                             <span class="material-symbols-outlined" style="font-size: 1rem;">auto_awesome</span>
                             ${label}
