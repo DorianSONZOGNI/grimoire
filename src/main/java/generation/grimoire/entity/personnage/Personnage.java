@@ -14,6 +14,8 @@ import generation.grimoire.enumeration.StatType;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import lombok.EqualsAndHashCode;
+import lombok.ToString;
 
 import java.util.ArrayList;
 import java.util.Iterator;
@@ -23,6 +25,8 @@ import java.util.HashMap;
 
 @Data
 @NoArgsConstructor
+@EqualsAndHashCode(exclude = {"user", "equipments", "activeBuffs", "activeShields", "activeHealOverTimeEffects", "activeManaOverTimeEffects", "activeDamageOverTimeEffects", "activeHeatOverTimeEffects", "consumableSpellBuffs", "channelingTarget"})
+@ToString(exclude = {"user", "equipments", "activeBuffs", "activeShields", "activeHealOverTimeEffects", "activeManaOverTimeEffects", "activeDamageOverTimeEffects", "activeHeatOverTimeEffects", "consumableSpellBuffs", "channelingTarget"})
 @Entity
 @Table(name = "Personnage")
 public class Personnage {
