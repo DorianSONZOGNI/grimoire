@@ -1982,7 +1982,15 @@ function generateFighterHtml(c, isHero) {
             case 'ARMURE': base = c.armor || 0; break;
             case 'RESISTANCE': base = c.resistance || 0; break;
             case 'SPEED': base = c.speed || 0; break;
-            case 'CRIT': base = (c.critDerived !== null && c.critDerived !== undefined) ? c.critDerived : (c.crit || 0); break;
+            case 'CRIT': 
+                if (c.critDerived !== null && c.critDerived !== undefined) {
+                    base = c.critDerived;
+                } else if (c.voie && c.voie.nom && c.voie.nom.toLowerCase().includes('raison')) {
+                    base = getEffectiveStat('SPEED') * 2;
+                } else {
+                    base = c.crit || 0;
+                }
+                break;
         }
 
         let flatBonus = 0;
