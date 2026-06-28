@@ -231,6 +231,7 @@
     <script src="/js/auth.js"></script>
     <script>
         let allRecipes = [];
+        let allAnomalyTemplates = [];
         let selectedRecipe = null;
         let userAnomalies = [];
         let userConsumables = [];
@@ -269,6 +270,9 @@
 
         async function fetchUserInventory() {
             try {
+                const resT = await fetch('/api/anomalies/all-templates');
+                if (resT.ok) allAnomalyTemplates = await resT.json();
+
                 const resA = await fetch('/api/anomalies');
                 if (resA.ok) userAnomalies = await resA.json();
 
@@ -348,6 +352,27 @@
             renderCauldron(recipe);
         }
 
+        const CATEGORY_ICONS = {
+            'PIERRE': 'landslide',
+            'METAL': 'hardware',
+            'COEUR': 'favorite',
+            'ORBE': 'lens',
+            'CRISTAL': 'diamond',
+            'PLUME': 'history_edu',
+            'ECAILLE': 'waves',
+            'AUTRE': 'category'
+        };
+
+        function getSpiritualiteColor(sp) {
+            if (!sp) return '#a855f7';
+            switch (sp.toUpperCase()) {
+                case 'TENEBRES': return '#a855f7';
+                case 'ESPRIT': return '#38bdf8';
+                case 'KARMA': return '#e7d198';
+                default: return '#a855f7';
+            }
+        }
+
         function getItemStyle(name, defaultType) {
             const lower = name.toLowerCase();
             if (lower.includes('cristal')) return { icon: 'diamond', color: '#38bdf8' }; // light blue
@@ -358,7 +383,7 @@
             if (lower.includes('potion') || lower.includes('élixir') || lower.includes('elixir')) return { icon: 'science', color: '#10b981' }; // green
 
             // Defaults
-            if (defaultType === 'CONSUMABLE') return { icon: 'water_drop', color: '#3b82f6' }; // blue
+            if (defaultType === 'CONSUMABLE') return { icon: 'inventory_2', color: '#10b981' }; // green
             if (defaultType === 'ANOMALY') return { icon: 'auto_awesome', color: '#a855f7' }; // purple
             if (defaultType === 'SECRET' || defaultType === 'UNLOCK') return { icon: 'key', color: '#f59e0b' }; // gold
             if (defaultType === 'SPIRIT_XP') return { icon: 'self_improvement', color: '#38bdf8' }; // light blue
@@ -400,7 +425,11 @@
                     const statusColor = hasEnough ? '#10b981' : '#ef4444';
                     const statusIcon = hasEnough ? 'check_circle' : 'cancel';
 
-                    const style = getItemStyle(name, 'ANOMALY');
+                    const temp = allAnomalyTemplates.find(a => a.name === name) || {};
+                    const style = { 
+                        icon: temp.category ? (CATEGORY_ICONS[temp.category] || 'category') : 'star',
+                        color: temp.spiritualite ? getSpiritualiteColor(temp.spiritualite) : '#a855f7'
+                    };
 
                     reqsHTML += `<div style="background:rgba(0,0,0,0.4); padding:0.6rem; border-radius:8px; border:1px solid ${style.color}40; margin-bottom: 0.4rem;">
                         <div style="display:flex; align-items:center; justify-content: space-between; gap:0.5rem; margin-bottom: ${(!isIdentical && hasEnough) ? '0.5rem' : '0'};">
@@ -459,7 +488,7 @@
                 for (const [name, qty] of Object.entries(r.requiredConsumables)) {
                     let matching = userConsumables.filter(c => c.name === name);
                     const hasEnough = matching.length >= qty;
-                    const statusColor = hasEnough ? '#3b82f6' : '#ef4444';
+                    const statusColor = hasEnough ? '#10b981' : '#ef4444';
                     const statusIcon = hasEnough ? 'check_circle' : 'cancel';
 
                     const style = getItemStyle(name, 'CONSUMABLE');
