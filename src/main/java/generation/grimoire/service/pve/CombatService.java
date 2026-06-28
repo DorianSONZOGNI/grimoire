@@ -560,18 +560,23 @@ public class CombatService {
                 }
                 session.addLog("L'autel accorde " + rewardValue + " XP de Spiritualité à tous les héros !");
             } else if ("ITEM".equals(rewardType)) {
-                generation.grimoire.entity.Equipment template = equipmentRepository.findById((long) rewardValue)
-                        .orElse(null);
-                if (template != null) {
-                    generation.grimoire.entity.Equipment clone = new generation.grimoire.entity.Equipment();
-                    clone.copyStatsFrom(template);
+                int level = toDestroy.getLevel() != null ? toDestroy.getLevel() : 1;
+                int chance = level == 1 ? 45 : (level == 2 ? 75 : 100);
+                boolean success = new java.util.Random().nextInt(100) < chance;
 
-                    clone.setShopTemplate(false);
-                    clone.setUser(user);
-                    clone.setOwnerUsername(user.getUsername());
-
-                    equipmentRepository.save(clone);
-                    session.addLog("L'autel vous a offert un équipement : " + template.getName() + " !");
+                if (success) {
+                    generation.grimoire.entity.Equipment template = equipmentRepository.findById((long) rewardValue).orElse(null);
+                    if (template != null) {
+                        generation.grimoire.entity.Equipment clone = new generation.grimoire.entity.Equipment();
+                        clone.copyStatsFrom(template);
+                        clone.setShopTemplate(false);
+                        clone.setUser(user);
+                        clone.setOwnerUsername(user.getUsername());
+                        equipmentRepository.save(clone);
+                        session.addLog("L'autel vous a offert un équipement : " + template.getName() + " !");
+                    }
+                } else {
+                    session.addLog("L'autel a consumé votre offrande sans vous accorder d'équipement...");
                 }
             }
         }

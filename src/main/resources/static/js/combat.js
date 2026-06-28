@@ -1475,7 +1475,7 @@ function updateUI(data) {
                                     const rarityColor = rarityColors[eq.rarity] || '#94a3b8';
                                     const tooltipDataHtml = typeof generateEquipmentTooltipHTML === 'function' ? generateEquipmentTooltipHTML(eq) : '';
                                     const tooltipAttrs = tooltipDataHtml ? 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"' : '';
-                                    altarRewardHtml = `<div style="margin-top: 0.5rem; text-align: center; background: rgba(192, 132, 252, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(192, 132, 252, 0.3);"><span style="color: #cbd5e1; margin-right: 0.5rem;"><strong>Récompense :</strong></span> <span ${tooltipAttrs} style="color: ${rarityColor}; font-weight: bold; cursor: help; border-bottom: 1px dashed ${rarityColor}; position: relative;">${eq.name}${tooltipDataHtml ? `<template class="tooltip-data">${tooltipDataHtml}</template>` : ''}</span></div>`;
+                                    altarRewardHtml = `<div style="margin-top: 0.5rem; text-align: center; background: rgba(192, 132, 252, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(192, 132, 252, 0.3);"><span style="color: #cbd5e1; margin-right: 0.5rem;"><strong>Récompense :</strong></span> <span ${tooltipAttrs} style="color: ${rarityColor}; font-weight: bold; cursor: help; border-bottom: 1px dashed ${rarityColor}; position: relative;">${eq.name}${tooltipDataHtml ? `<template class="tooltip-data">${tooltipDataHtml}</template>` : ''}</span> <span id="altarDropChance" style="font-weight: bold; font-size: 0.9rem; margin-left: 0.5rem;"></span></div>`;
                                 } else {
                                     altarRewardHtml = `<div style="color: #c084fc; font-weight: bold; margin-top: 0.5rem; text-align: center; background: rgba(192, 132, 252, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(192, 132, 252, 0.3);"><span class="material-symbols-outlined" style="vertical-align: middle; font-size: 1.1rem; margin-right: 0.2rem;">star</span> <strong>Récompense :</strong> Équipement mystère</div>`;
                                 }
@@ -1541,14 +1541,23 @@ function updateUI(data) {
                                 `;
                                 eligible.forEach(a => {
                                     let catIcon = a.category ? (CATEGORY_ICONS[a.category] || 'category') : 'star';
-                                    selectHtml += `<div class="custom-option" onclick="document.getElementById('altarAnomalySelectLabel').innerHTML = this.innerHTML; document.getElementById('altarAnomalySelect').value = '${a.id}'; document.getElementById('altarAnomalySelectWrapper').classList.remove('open');"><span class="material-symbols-outlined cs-icon" style="color: ${spColor};">${catIcon}</span> ${a.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${a.level || 1})</span></div>`;
+                                    selectHtml += `<div class="custom-option" onclick="document.getElementById('altarAnomalySelectLabel').innerHTML = this.innerHTML; document.getElementById('altarAnomalySelect').value = '${a.id}'; document.getElementById('altarAnomalySelectWrapper').classList.remove('open'); if(window.updateAltarDropChance) window.updateAltarDropChance(${a.level || 1});"><span class="material-symbols-outlined cs-icon" style="color: ${spColor};">${catIcon}</span> ${a.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${a.level || 1})</span></div>`;
                                 });
                                 selectHtml += `
                                     </div>
                                 </div>
                                 <input type="hidden" id="altarAnomalySelect" value="${first.id}">
                                 `;
+                                window.updateAltarDropChance = function(level) {
+                                    const el = document.getElementById('altarDropChance');
+                                    if (el) {
+                                        let chance = level === 1 ? 45 : (level === 2 ? 75 : 100);
+                                        el.textContent = `(${chance}%)`;
+                                        el.style.color = chance === 100 ? '#10b981' : (chance === 75 ? '#fbbf24' : '#ef4444');
+                                    }
+                                };
                                 container.innerHTML = selectHtml;
+                                if(window.updateAltarDropChance) window.updateAltarDropChance(first.level || 1);
                             }).catch(err => {
                                 console.error("Failed to load anomalies:", err);
                                 const container = document.getElementById('altarAnomalySelectContainer');
