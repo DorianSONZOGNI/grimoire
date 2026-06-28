@@ -19,6 +19,10 @@ public class StatCalculator {
         if (source == null) {
             return 1.0;
         }
+        // If target is null but a TARGET_* source is requested, fall back to caster
+        if (target == null && source.name().startsWith("TARGET")) {
+            target = caster;
+        }
         return switch (source) {
             case CASTER_POWER -> caster.getPower() + caster.getStatFlatBonus(StatType.POWER);
             case TARGET_POWER -> target.getPower() + target.getStatFlatBonus(StatType.POWER);

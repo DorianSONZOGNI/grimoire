@@ -696,6 +696,14 @@ async function doAction(spellId = null) {
         if (choiceKey !== null) url += `&choiceKey=${choiceKey}`;
 
         const res = await fetch(url, { method: 'POST' });
+        if (!res.ok) {
+            const errText = await res.text();
+            console.error('Server error:', errText);
+            showNotif(errText || "Erreur serveur", true);
+            isProcessing = false;
+            setButtonsProcessing(false);
+            return;
+        }
         const data = await res.json();
 
         // Let user read log by adding a small delay before full UI update

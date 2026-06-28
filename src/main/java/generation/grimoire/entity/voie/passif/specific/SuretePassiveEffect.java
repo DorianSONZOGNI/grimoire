@@ -16,10 +16,15 @@ public class SuretePassiveEffect extends VoiePassiveEffect {
 
     @Override
     public void onSpellCast(Personnage personnage, Spell spell) {
+        // Logic moved to onSpellCostPaid to use actual mana paid (supports % costs)
+    }
+
+    @Override
+    public void onSpellCostPaid(Personnage personnage, Spell spell, int manaPaid) {
         int storedPoints = personnage.getPassiveState("surete_points", 0);
-        int pointsGained = (int) Math.round(spell.getManaCost() * 0.20);
+        int pointsGained = (int) Math.round(manaPaid * 0.20);
         storedPoints += pointsGained;
-        System.out.println(personnage.getName() + " stocke " + pointsGained + " points de sûreté (20% de " + spell.getManaCost() + " mana). Total: " + storedPoints + "/100");
+        System.out.println(personnage.getName() + " stocke " + pointsGained + " points de sûreté (20% de " + manaPaid + " mana). Total: " + storedPoints + "/100");
         if (storedPoints >= 100) {
             System.out.println(personnage.getName() + " obtient +15% de critique pour le prochain tour (Sûreté).");
             
