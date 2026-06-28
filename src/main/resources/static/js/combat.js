@@ -1372,9 +1372,15 @@ function updateUI(data) {
                 const subType = data.currentRoom.eventSubType || 'ALTERATION';
 
                 if (subType === 'ALTERATION') {
-                    icon.textContent = 'blur_on';
-                    icon.style.color = '#8b5cf6';
-                    title.textContent = 'Altération';
+                    if (data.currentRoom.alterationType === 'AUTEL') {
+                        icon.textContent = 'hand_bones';
+                        icon.style.color = '#f97316';
+                        title.textContent = 'Autel Sacrificiel';
+                    } else {
+                        icon.textContent = 'blur_on';
+                        icon.style.color = '#8b5cf6';
+                        title.textContent = 'Altération';
+                    }
                     desc.innerHTML = data.currentRoom.eventText || 'Une force mystérieuse vous entoure...';
 
                     btnOpen.style.display = 'none';
