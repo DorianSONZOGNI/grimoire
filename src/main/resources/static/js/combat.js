@@ -871,22 +871,31 @@ async function buyMerchantItem(lootIndex) {
 
         const res = await fetch(`/api/pve/combat/${sessionId}/merchant-buy?lootIndex=${lootIndex}&characterId=${charId}`, { method: 'POST' });
         if (!res.ok) {
-            alert("Vous n'avez pas les ressources nécessaires, ou cet objet n'est plus disponible.");
-            if (btn) btn.innerHTML = 'Acheter';
+            const errorText = await res.text();
+            showNotif(errorText || "Vous n'avez pas les ressources nécessaires.", true);
+            if (btn) btn.innerHTML = '<span class="material-symbols-outlined" style="font-size: 1.2rem;">shopping_cart</span>Acheter';
             return;
         }
         const data = await res.json();
         updateUI(data);
     } catch (e) {
         console.error(e);
-        alert("Erreur lors de l'achat.");
+        showNotif("Erreur lors de l'achat.", true);
     } finally {
         isProcessing = false;
         setButtonsProcessing(false);
     }
 }
 
-function openBuyModal(idx, itemName) {
+function openBuyModal(idx, itemName, goldPrice = 0) {
+    if (goldPrice > 0) {
+        const playerGold = currentSessionData?.players?.[0]?.gold || 0;
+        if (playerGold < goldPrice) {
+            showNotif("Vous n'avez pas assez d'or pour acheter cet objet !", true);
+            return;
+        }
+    }
+
     const modal = document.getElementById('buyConfirmModal');
     const targetName = document.getElementById('buyTargetName');
     const confirmBtn = document.getElementById('buyConfirmBtn');
@@ -1459,7 +1468,14 @@ function updateUI(data) {
                                 <span class="material-symbols-outlined spin">sync</span> Chargement de vos objets magiques...
                             </div>`;
 
-                            fetch('/api/anomalies').then(res => res.json()).then(anomalies => {
+                            fetch('/api/anomalies').then(res => {
+                                if (!res.ok) throw new Error("API responded with " + res.status);
+                                return res.json();
+                            }).then(anomalies => {
+                                if (!Array.isArray(anomalies)) {
+                                    anomalies = [];
+                                    console.warn("Expected array for anomalies but got", anomalies);
+                                }
                                 const eligible = anomalies.filter(a => a.magicObject === true && a.spiritualite === data.currentRoom.altarRequiredSpirituality);
                                 const container = document.getElementById('altarAnomalySelectContainer');
                                 if (!container) return;
@@ -1510,9 +1526,17 @@ function updateUI(data) {
                                 `;
                                 container.innerHTML = selectHtml;
                             }).catch(err => {
-                                console.error(err);
+                                console.error("Failed to load anomalies:", err);
                                 const container = document.getElementById('altarAnomalySelectContainer');
-                                if (container) container.innerHTML = `<div style="color: #ef4444;">Erreur lors du chargement des anomalies.</div>`;
+                                if (container) {
+                                    container.innerHTML = `<div style="color: #ef4444; font-weight: bold; background: rgba(239,68,68,0.1); padding: 0.5rem; border-radius: 6px;">Erreur lors du chargement de vos objets magiques.</div>`;
+                                }
+                                const btn = document.getElementById('btnAcceptAlteration');
+                                if (btn) {
+                                    btn.disabled = true;
+                                    btn.style.opacity = '0.5';
+                                    btn.style.cursor = 'not-allowed';
+                                }
                             });
                         }
 
@@ -1694,7 +1718,7 @@ function updateUI(data) {
                                                   Vendu
                                               </button>`;
                             } else {
-                                buttonHtml = `<button id="btn_buy_${idx}" type="button" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 8px; padding: 0.6rem 1.2rem; font-weight: 700; font-size: 1rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s ease; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);" onclick="openBuyModal(${idx}, \`${nameHtml.replace(/'/g, "\\'").replace(/"/g, '&quot;')}\`)" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='none'">
+                                buttonHtml = `<button id="btn_buy_${idx}" type="button" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 8px; padding: 0.6rem 1.2rem; font-weight: 700; font-size: 1rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: all 0.2s ease; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);" onclick="openBuyModal(${idx}, \`${nameHtml.replace(/'/g, "\\'").replace(/"/g, '&quot;')}\`, ${goldPrice})" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='none'">
                                                   <span class="material-symbols-outlined" style="font-size: 1.2rem;">shopping_cart</span>
                                                   Acheter
                                               </button>`;
