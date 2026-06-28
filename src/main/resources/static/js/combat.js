@@ -2,11 +2,20 @@ import * as ui from './ui.js';
 import { getSpellEffectsSummaryHtml } from './grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from './filters.js';
 
-if (!window.allAnomaliesCombat) {
+if (!window.allAnomaliesCombat || !Array.isArray(window.allAnomaliesCombat)) {
     window.allAnomaliesCombat = [];
-    fetch('/api/anomalies/all-templates').then(res => res.json()).then(data => {
-        window.allAnomaliesCombat = data;
-    }).catch(console.error);
+    fetch('/api/anomalies/all-templates').then(res => {
+        if (!res.ok) throw new Error("HTTP error " + res.status);
+        return res.json();
+    }).then(data => {
+        if (Array.isArray(data)) {
+            window.allAnomaliesCombat = data;
+        } else {
+            console.warn("Expected array for anomalies but got", data);
+        }
+    }).catch(err => {
+        console.error("Failed to load anomalies templates:", err);
+    });
 }
 
 const SLOT_LABELS = {
@@ -1551,7 +1560,7 @@ function updateUI(data) {
                                         const itemName = lostMatch[1].trim();
                                         let spColor = '#ef4444';
                                         let catIcon = 'star';
-                                        if (window.allAnomaliesCombat) {
+                                        if (Array.isArray(window.allAnomaliesCombat)) {
                                             const an = window.allAnomaliesCombat.find(a => a.name === itemName);
                                             if (an) {
                                                 if (an.spiritualite === 'TENEBRES') spColor = '#a855f7';
@@ -1572,7 +1581,7 @@ function updateUI(data) {
                                         const itemName = gainedMatch[1].trim();
                                         let spColor = '#d946ef';
                                         let catIcon = 'star';
-                                        if (window.allAnomaliesCombat) {
+                                        if (Array.isArray(window.allAnomaliesCombat)) {
                                             const an = window.allAnomaliesCombat.find(a => a.name === itemName);
                                             if (an) {
                                                 if (an.spiritualite === 'TENEBRES') spColor = '#a855f7';
@@ -1631,7 +1640,7 @@ function updateUI(data) {
                                 nameHtml = entry.specialItemName;
                                 rarityColor = '#d946ef';
                                 let catIcon = 'star';
-                                if (window.allAnomaliesCombat) {
+                                if (Array.isArray(window.allAnomaliesCombat)) {
                                     const an = window.allAnomaliesCombat.find(a => a.name === entry.specialItemName);
                                     if (an) {
                                         if (an.spiritualite === 'ESPRIT') rarityColor = '#38bdf8';
@@ -1658,7 +1667,7 @@ function updateUI(data) {
                             if (entry.priceSpecialItemName) {
                                 let priceColor = '#d946ef';
                                 let priceIcon = 'star';
-                                if (window.allAnomaliesCombat) {
+                                if (Array.isArray(window.allAnomaliesCombat)) {
                                     const anPrice = window.allAnomaliesCombat.find(a => a.name === entry.priceSpecialItemName);
                                     if (anPrice) {
                                         if (anPrice.spiritualite === 'ESPRIT') priceColor = '#38bdf8';
@@ -1698,7 +1707,7 @@ function updateUI(data) {
                                 let tooltipTitle = 'Objet Spécial';
                                 let tooltipDesc = 'Cet objet aura un effet unique !';
                                 let tColor = '#d946ef';
-                                if (window.allAnomaliesCombat) {
+                                if (Array.isArray(window.allAnomaliesCombat)) {
                                     const an = window.allAnomaliesCombat.find(a => a.name === entry.specialItemName);
                                     if (an) {
                                         tooltipTitle = 'Anomalie';
