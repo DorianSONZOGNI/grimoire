@@ -118,6 +118,12 @@ async function loadDungeons() {
                 let catId, label, icon, color;
                 
                 if (d.requiredSecret && d.requiredSecret.trim() !== '') {
+                    const userSecrets = window.currentUser?.unlockedSecrets || {};
+                    const userLevel = userSecrets[d.requiredSecret] || 0;
+                    if (userLevel < (d.requiredSecretLevel || 1)) {
+                        return;
+                    }
+
                     catId = 'secret-' + d.requiredSecret.replace(/\s+/g, '-').toLowerCase();
                     label = d.requiredSecret.replace(/^Secret (de la |du |de l'|des |d'|de )/i, '');
                     label = label.charAt(0).toUpperCase() + label.slice(1);
