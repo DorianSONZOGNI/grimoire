@@ -362,6 +362,7 @@
             if (defaultType === 'ANOMALY') return { icon: 'auto_awesome', color: '#a855f7' }; // purple
             if (defaultType === 'SECRET' || defaultType === 'UNLOCK') return { icon: 'key', color: '#f59e0b' }; // gold
             if (defaultType === 'SPIRIT_XP') return { icon: 'self_improvement', color: '#38bdf8' }; // light blue
+            if (defaultType === 'EQUIPMENT') return { icon: 'shield', color: '#fbbf24' }; // amber
 
             return { icon: 'category', color: '#94a3b8' }; // generic
         }
@@ -519,6 +520,8 @@
                 resultType = 'SECRET';
             } else if (r.rewardType === 'GIVE_CONSUMABLE') {
                 resultType = 'CONSUMABLE';
+            } else if (r.rewardType === 'GIVE_EQUIPMENT') {
+                resultType = 'EQUIPMENT';
             } else if (r.rewardType === 'GIVE_ANOMALY' || r.rewardType === 'UPGRADE_ANOMALY') {
                 resultType = 'ANOMALY';
             } else if (r.rewardType === 'GIVE_SPIRIT_XP') {

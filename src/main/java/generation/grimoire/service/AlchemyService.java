@@ -208,6 +208,21 @@ public class AlchemyService {
                 equipmentRepository.save(consumable);
             }
             return "Vous avez obtenu " + recipe.getRewardQuantity() + "x Consommable : " + recipe.getRewardName();
+        } else if (recipe.getRewardType() == RecipeRewardType.GIVE_EQUIPMENT) {
+            Equipment template = equipmentRepository.findFirstByName(recipe.getRewardName());
+            for (int i = 0; i < recipe.getRewardQuantity(); i++) {
+                Equipment eq = new Equipment();
+                eq.setName(recipe.getRewardName());
+                eq.setOwnerUsername(username);
+                if (template != null) {
+                    eq.setSlot(template.getSlot());
+                    eq.copyStatsFrom(template);
+                } else {
+                    eq.setSlot(EquipmentSlot.CASQUE);
+                }
+                equipmentRepository.save(eq);
+            }
+            return "Vous avez obtenu " + recipe.getRewardQuantity() + "x Équipement : " + recipe.getRewardName();
         } else if (recipe.getRewardType() == RecipeRewardType.UPGRADE_ANOMALY) {
             // Dans ce MVP, on crée directement une anomalie d'un niveau supérieur 
             // (vu qu'on vient de consommer l'anomalie de base comme ingrédient)

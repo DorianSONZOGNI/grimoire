@@ -241,6 +241,9 @@
                                     <div class="custom-option" data-value="GIVE_CONSUMABLE" style="padding: 0.4rem; font-size: 0.85rem;">
                                         <span class="material-symbols-outlined cs-icon" style="color: #10b981; font-size: 1rem;">inventory_2</span> Donner Consommable
                                     </div>
+                                    <div class="custom-option" data-value="GIVE_EQUIPMENT" style="padding: 0.4rem; font-size: 0.85rem;">
+                                        <span class="material-symbols-outlined cs-icon" style="color: #fbbf24; font-size: 1rem;">shield</span> Donner Equipement
+                                    </div>
                                     <div class="custom-option" data-value="UNLOCK_FEATURE" style="padding: 0.4rem; font-size: 0.85rem;">
                                         <span class="material-symbols-outlined cs-icon" style="color: #f59e0b; font-size: 1rem;">key</span> Secret
                                     </div>
@@ -324,6 +327,24 @@
 
     <script src="/js/auth.js"></script>
     <script>
+        const SLOT_LABELS = {
+            CASQUE: { label: 'Casque', icon: 'masks', color: '#a855f7', extraClass: 'flip-icon' },
+            PLASTRON: { label: 'Plastron', icon: 'shield', color: '#3b82f6' },
+            ANNEAU_GAUCHE: { label: 'Anneau Gauche', icon: 'diamond', color: '#f59e0b' },
+            ANNEAU_DROIT: { label: 'Anneau Droit', icon: 'diamond', color: '#f59e0b' },
+            BOTTES: { label: 'Bottes', icon: 'footprint', color: '#10b981' },
+            CAPE: { label: 'Cape', icon: 'carpenter', color: '#ec4899' },
+            CONSOMMABLE: { label: 'Consommable', icon: 'inventory_2', color: '#10b981' }
+        };
+
+        const RARITY_COLORS = {
+            COMMUN: '#94a3b8',
+            RARE: '#3b82f6',
+            LEGENDAIRE: '#f59e0b',
+            EPIQUE: '#c084fc',
+            RELIQUE: '#ef4444'
+        };
+
         const DEFAULT_SECRETS_META = [
             { name: "Secret du Chaos", icon: "local_fire_department", color: "#ff0000" },
             { name: "Secret de l'Abondance", icon: "eco", color: "#10b981" },
@@ -340,6 +361,7 @@
 
         let allAnomalies = [];
         let allConsumables = [];
+        let allEquipments = [];
         let allRecipes = []; // To hold loaded recipes for editing
 
         document.addEventListener('click', (e) => {
@@ -410,7 +432,11 @@
                 merged.forEach(e => {
                     if (e && e.name) map.set(e.name, e);
                 });
-                allConsumables = Array.from(map.values()).filter(e => e.slot === 'CONSOMMABLE');
+                allEquipments = Array.from(map.values()).sort((a, b) => {
+                    if (a.slot !== b.slot) return a.slot.localeCompare(b.slot);
+                    return a.name.localeCompare(b.name);
+                });
+                allConsumables = allEquipments.filter(e => e.slot === 'CONSOMMABLE');
             } catch (e) {
                 console.error("Erreur merge équipements", e);
             }
@@ -466,6 +492,29 @@
                 });
                 container.innerHTML = `
                     <label>Nom de l'objet (Résultat)</label>
+                    <div class="custom-select-wrapper" style="width: 100%; z-index: 9;">
+                        <div class="custom-select-trigger" style="background: rgba(15,23,42,0.6); padding: 0.6rem; border-radius: 8px;">
+                            <span class="cs-label" style="font-size: 0.9rem;">${displayLabel}</span>
+                            <span class="material-symbols-outlined" style="color: #64748b; font-size: 1.1rem;">expand_more</span>
+                        </div>
+                        <div class="custom-select-options custom-options">
+                            ${optionsHtml}
+                        </div>
+                        <input type="hidden" id="rewardName" value="" required>
+                    </div>
+                `;
+            } else if (type === 'GIVE_EQUIPMENT') {
+                allEquipments.forEach(eq => {
+                    const slotInfo = SLOT_LABELS[eq.slot] || { label: eq.slot, icon: 'help', color: '#94a3b8' };
+                    const rarityColor = RARITY_COLORS[eq.rarity] || '#ef4444';
+                    const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
+                    optionsHtml += `<div class="custom-option" data-value="${eq.name}">
+                                        <span class="material-symbols-outlined cs-icon${extraClass}" style="color: ${slotInfo.color};">${slotInfo.icon}</span>
+                                        <span style="color: ${rarityColor};">${eq.name}</span>
+                                    </div>`;
+                });
+                container.innerHTML = `
+                    <label>Nom de l'équipement (Résultat)</label>
                     <div class="custom-select-wrapper" style="width: 100%; z-index: 9;">
                         <div class="custom-select-trigger" style="background: rgba(15,23,42,0.6); padding: 0.6rem; border-radius: 8px;">
                             <span class="cs-label" style="font-size: 0.9rem;">${displayLabel}</span>
@@ -815,6 +864,8 @@
                     }
                 } else if (r.rewardType === 'GIVE_CONSUMABLE') {
                     rewardHtml = `<span class="anomaly-badge" style="border: 1px solid #10b981; background: linear-gradient(#10b98125, #10b98125), #1e293b; color: #10b981; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block;"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; color: #10b981;">inventory_2</span> ${r.rewardQuantity}x ${r.rewardName}</span>`;
+                } else if (r.rewardType === 'GIVE_EQUIPMENT') {
+                    rewardHtml = `<span class="anomaly-badge" style="border: 1px solid #fbbf24; background: linear-gradient(#fbbf2425, #fbbf2425), #1e293b; color: #fbbf24; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block;"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; color: #fbbf24;">shield</span> ${r.rewardQuantity}x ${r.rewardName}</span>`;
                 } else if (r.rewardType === 'GIVE_SPIRIT_XP') {
                     rewardHtml = `<span class="anomaly-badge" style="border: 1px solid #38bdf8; background: linear-gradient(#38bdf825, #38bdf825), #1e293b; color: #38bdf8; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block;"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; color: #38bdf8;">self_improvement</span> ${r.rewardQuantity} XP Spiritualité</span>`;
                 } else if (r.rewardType === 'UNLOCK_FEATURE') {
