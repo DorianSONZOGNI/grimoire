@@ -169,6 +169,8 @@ async function loadEquipments() {
             eq._weight = calculateWeight(eq);
         });
 
+        allEquipments = groupEquipments(allEquipments);
+
         filterVault();
     } catch (e) {
         console.error('Erreur chargement équipements:', e);
@@ -179,10 +181,11 @@ async function loadEquipments() {
 let equipmentToDelete = null;
 let anomalieToDelete = null;
 
-window.deleteAnomalie = function(id) {
-    anomalieToDelete = id;
+window.deleteAnomalie = function(idsStr) {
+    anomalieToDelete = String(idsStr).split(',');
     equipmentToDelete = null;
-    const eq = allEquipments.find(e => e.id === id && e.isAnomalie);
+    const firstId = Number(anomalieToDelete[0]);
+    const eq = allEquipments.find(e => e.id === firstId && e.isAnomalie);
     if (eq) {
         document.getElementById('deleteTargetName').textContent = eq.name;
         document.getElementById('deleteConfirmBtn').innerHTML = `Oui, détruire l'anomalie`;
@@ -190,10 +193,11 @@ window.deleteAnomalie = function(id) {
     document.getElementById('deleteConfirmModal').classList.add('show');
 }
 
-window.deleteEquipment = function(id) {
-    equipmentToDelete = id;
+window.deleteEquipment = function(idsStr) {
+    equipmentToDelete = String(idsStr).split(',');
     anomalieToDelete = null;
-    const eq = allEquipments.find(e => e.id === id && !e.isAnomalie);
+    const firstId = Number(equipmentToDelete[0]);
+    const eq = allEquipments.find(e => e.id === firstId && !e.isAnomalie);
     if (eq) {
         document.getElementById('deleteTargetName').textContent = eq.name;
         const weightStr = eq._weight % 1 === 0 ? eq._weight : eq._weight.toFixed(1);
@@ -210,33 +214,68 @@ function closeDeleteModal() {
 document.getElementById('deleteConfirmBtn').addEventListener('click', async () => {
     if (!equipmentToDelete && !anomalieToDelete) return;
 
-    const idEq = equipmentToDelete;
-    const idAn = anomalieToDelete;
+    const idsEq = equipmentToDelete;
+    const idsAn = anomalieToDelete;
     closeDeleteModal();
 
     try {
-        if (idEq) {
-            const res = await fetch(`/api/equipment/${idEq}`, { method: 'DELETE' });
-            if (res.ok) {
-                showNotif('Équipement détruit.');
-                await loadEquipments();
-                if (window.checkAuthStatus) window.checkAuthStatus();
-            } else {
-                showNotif('Erreur lors de la suppression.', true);
+        if (idsEq) {
+            let success = false;
+            for (let id of idsEq) {
+                const res = await fetch(`/api/equipment/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    success = true;
+                    showNotif('Équipement détruit.');
+                    await loadEquipments();
+                    if (window.checkAuthStatus) window.checkAuthStatus();
+                    break;
+                }
             }
-        } else if (idAn) {
-            const res = await fetch(`/api/anomalies/${idAn}`, { method: 'DELETE' });
-            if (res.ok) {
-                showNotif('Anomalie détruite.');
-                await loadEquipments();
-            } else {
-                showNotif('Erreur lors de la suppression.', true);
+            if (!success) showNotif('Impossible de détruire cet objet (lié).', true);
+        } else if (idsAn) {
+            let success = false;
+            for (let id of idsAn) {
+                const res = await fetch(`/api/anomalies/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    success = true;
+                    showNotif('Anomalie détruite.');
+                    await loadEquipments();
+                    break;
+                }
             }
+            if (!success) showNotif('Impossible de détruire cette anomalie (liée).', true);
         }
     } catch (e) {
         showNotif('Erreur réseau.', true);
     }
 });
+
+function groupEquipments(list) {
+    let stacked = [];
+    let groups = {};
+    list.forEach(eq => {
+        const isStackable = eq.isAnomalie || eq.slot === 'CONSOMMABLE';
+        if (!isStackable) {
+            stacked.push(eq);
+            return;
+        }
+
+        let ownerLabel = eq.personnage ? eq.personnage.name : eq.ownerUsername;
+        let key = eq.isAnomalie ? `ANO_${eq.name}_${eq.level || 1}` : `CONS_${eq.name}`;
+        if (window.isAdmin) {
+            key += `_${ownerLabel}`;
+        }
+
+        if (!groups[key]) {
+            groups[key] = { ...eq, stackIds: [eq.id], stackCount: 1, _groupOwner: ownerLabel };
+        } else {
+            groups[key].stackIds.push(eq.id);
+            groups[key].stackCount++;
+        }
+    });
+    
+    return stacked.concat(Object.values(groups));
+}
 
 // ===== Rendu =====
 function filterVault() {
@@ -325,7 +364,28 @@ function renderGrid(equipments) {
     }
 
     container.innerHTML = equipments.map(eq => {
+        const rarityClass = eq.rarity ? `rarity-${eq.rarity}` : 'rarity-COMMUN';
+
         if (eq.isAnomalie) {
+            const spColors = {
+                'NATURE': '#10b981',
+                'NECROMANCIE': '#8b5cf6',
+                'EAU': '#3b82f6',
+                'FEU': '#ef4444',
+                'TERRE': '#f59e0b',
+                'AIR': '#06b6d4',
+                'LUMIERE': '#fde047',
+                'NEANT': '#000000',
+                'FOUDRE': '#fbbf24',
+                'SANG': '#991b1b',
+                'POISON': '#22c55e',
+                'GLACE': '#93c5fd',
+                'ESPRIT': '#38bdf8',
+                'KARMA': '#e7d198',
+                'TENEBRES': '#a855f7'
+            };
+            const spColor = spColors[eq.spiritualite] || '#d946ef';
+
             const CATEGORY_ICONS = {
                 'PIERRE': 'landslide',
                 'METAL': 'hardware',
@@ -336,30 +396,42 @@ function renderGrid(equipments) {
                 'ECAILLE': 'waves',
                 'AUTRE': 'category'
             };
-            const typeStr = eq.magicObject !== false ? "Objet Magique" : "Matériau";
-            const typeIcon = CATEGORY_ICONS[eq.category] || 'category';
-            let spColor = '#a855f7';
-            if (eq.spiritualite === 'ESPRIT') spColor = '#38bdf8';
-            else if (eq.spiritualite === 'KARMA') spColor = '#e7d198';
+            const catIcon = CATEGORY_ICONS[eq.category] || 'category';
+
+            let typeIcon = 'star';
+            let typeStr = 'Objet Magique';
+            if (eq.magicObject === false) {
+                typeIcon = catIcon;
+                typeStr = 'Matériau';
+            }
+
+            const badgeHtml = (eq.stackCount && eq.stackCount > 1) 
+                ? `<div style="position: absolute; top: -10px; right: -10px; background: #ef4444; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.85rem; font-weight: bold; border: 2px solid #1e293b; z-index: 5; box-shadow: 0 2px 4px rgba(0,0,0,0.5);">x${eq.stackCount}</div>` 
+                : '';
+                
+            const displayOwner = window.isAdmin ? (eq._groupOwner || eq.ownerUsername) : null;
+            const adminOwnerHtml = displayOwner ? `<span style="margin-left: 0.5rem; font-size: 0.65rem; padding: 0.15rem 0.4rem; background: ${displayOwner === window.currentUser?.username ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.1)'}; color: ${displayOwner === window.currentUser?.username ? '#34d399' : '#cbd5e1'}; border-radius: 4px; border: 1px solid ${displayOwner === window.currentUser?.username ? 'rgba(16, 185, 129, 0.3)' : 'rgba(255, 255, 255, 0.1)'}; white-space: nowrap; vertical-align: middle;"><span class="material-symbols-outlined" style="font-size: 0.7rem; vertical-align: middle; margin-right: 2px;">account_circle</span>${displayOwner}</span>` : '';
 
             return `
-            <div class="vault-card rarity-RELIQUE" style="border-color: ${spColor}; box-shadow: 0 0 15px ${spColor}20;">
+            <div class="vault-card ${rarityClass}" data-id="${eq.id}" style="position: relative; border-top: 2px solid ${spColor}; box-shadow: 0 -4px 15px ${spColor}20;">
+                ${badgeHtml}
                 <div class="vault-card-header">
                     <div class="vault-card-name-group">
                         <div class="vault-card-slot">
                             <span class="material-symbols-outlined" style="font-size: 0.9rem; color: ${spColor};">${typeIcon}</span>
                             ${typeStr} <span style="opacity:0.5; margin-left:4px;">${eq.spiritualite}</span> <span style="opacity:0.5; margin-left:4px;">(Niv. ${eq.level || 1})</span>
                         </div>
-                        <div class="vault-card-name" style="color: #fdf4ff;">
-                            ${eq.name}
-                            ${window.isAdmin && eq.ownerUsername ? `<span style="margin-left: 0.5rem; font-size: 0.65rem; padding: 0.15rem 0.4rem; background: ${eq.ownerUsername === window.currentUser?.username ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.1)'}; color: ${eq.ownerUsername === window.currentUser?.username ? '#34d399' : '#cbd5e1'}; border-radius: 4px; border: 1px solid ${eq.ownerUsername === window.currentUser?.username ? 'rgba(16, 185, 129, 0.3)' : 'rgba(255, 255, 255, 0.1)'}; white-space: nowrap; vertical-align: middle;"><span class="material-symbols-outlined" style="font-size: 0.7rem; vertical-align: middle; margin-right: 2px;">account_circle</span>${eq.ownerUsername}</span>` : ''}
+                        <div class="vault-card-name" style="color: #fdf4ff; display: flex; align-items: center; gap: 0.3rem;">
+                            <span class="material-symbols-outlined" style="font-size: 1.2rem; opacity: 0.8; color: ${spColor};">${catIcon}</span>
+                            <span>${eq.name}</span>
+                            ${adminOwnerHtml}
                         </div>
                     </div>
                     <div class="vault-card-actions">
                         ${window.isAdmin ? `<button class="vault-btn-edit" onclick="editAnomalie(${eq.id})" title="Modifier l'anomalie">
                             <span class="material-symbols-outlined">edit</span>
                         </button>` : ''}
-                        ${(window.isAdmin || eq.ownerUsername === window.currentUser?.username) ? `<button class="vault-btn-delete" onclick="deleteAnomalie(${eq.id})" title="Détruire l'anomalie">
+                        ${(window.isAdmin || eq.ownerUsername === window.currentUser?.username) ? `<button class="vault-btn-delete" onclick="deleteAnomalie('${eq.stackIds ? eq.stackIds.join(',') : eq.id}')" title="Détruire l'anomalie">
                             <span class="material-symbols-outlined">delete</span>
                         </button>` : ''}
                     </div>
@@ -407,9 +479,6 @@ function renderGrid(equipments) {
                 ${label} : ${eq.specialEffectValue}
             </div>`;
         }
-
-        const rarityClass = eq.rarity ? `rarity-${eq.rarity}` : 'rarity-COMMUN';
-
         let statusHtml = '';
         if (eq.personnage) {
             statusHtml = `<span class="vault-card-status status-equipped">
@@ -441,8 +510,16 @@ function renderGrid(equipments) {
             weightColor = `hsl(${hue}, 80%, 55%)`;
         }
 
+        const badgeHtml = (eq.stackCount && eq.stackCount > 1) 
+            ? `<div style="position: absolute; top: -10px; right: -10px; background: #ef4444; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.85rem; font-weight: bold; border: 2px solid #1e293b; z-index: 5; box-shadow: 0 2px 4px rgba(0,0,0,0.5);">x${eq.stackCount}</div>` 
+            : '';
+            
+        const displayOwner = window.isAdmin ? (eq._groupOwner || eq.ownerUsername) : null;
+        const adminOwnerHtml = displayOwner ? `<span style="margin-left: 0.5rem; font-size: 0.65rem; padding: 0.15rem 0.4rem; background: ${displayOwner === window.currentUser?.username ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.1)'}; color: ${displayOwner === window.currentUser?.username ? '#34d399' : '#cbd5e1'}; border-radius: 4px; border: 1px solid ${displayOwner === window.currentUser?.username ? 'rgba(16, 185, 129, 0.3)' : 'rgba(255, 255, 255, 0.1)'}; white-space: nowrap; vertical-align: middle;"><span class="material-symbols-outlined" style="font-size: 0.7rem; vertical-align: middle; margin-right: 2px;">account_circle</span>${displayOwner}</span>` : '';
+
         return `
-            <div class="vault-card ${rarityClass}">
+            <div class="vault-card ${rarityClass}" style="position: relative;">
+                ${badgeHtml}
                 <div class="vault-card-header">
                     <div class="vault-card-name-group">
                         <div class="vault-card-slot">
@@ -451,14 +528,14 @@ function renderGrid(equipments) {
                         </div>
                         <div class="vault-card-name">
                             ${eq.name}
-                            ${window.isAdmin && eq.ownerUsername ? `<span style="margin-left: 0.5rem; font-size: 0.65rem; padding: 0.15rem 0.4rem; background: ${eq.ownerUsername === window.currentUser?.username ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.1)'}; color: ${eq.ownerUsername === window.currentUser?.username ? '#34d399' : '#cbd5e1'}; border-radius: 4px; border: 1px solid ${eq.ownerUsername === window.currentUser?.username ? 'rgba(16, 185, 129, 0.3)' : 'rgba(255, 255, 255, 0.1)'}; white-space: nowrap; vertical-align: middle;"><span class="material-symbols-outlined" style="font-size: 0.7rem; vertical-align: middle; margin-right: 2px;">account_circle</span>${eq.ownerUsername}</span>` : ''}
+                            ${adminOwnerHtml}
                         </div>
                     </div>
                     <div class="vault-card-actions">
                         ${window.isAdmin ? `<button class="vault-btn-edit" onclick="editEquipment(${eq.id})" title="Modifier l'objet">
                             <span class="material-symbols-outlined">edit</span>
                         </button>` : ''}
-                        ${(window.isAdmin || eq.ownerUsername === window.currentUser?.username) ? `<button class="vault-btn-delete" onclick="deleteEquipment(${eq.id})" title="Détruire l'objet">
+                        ${(window.isAdmin || eq.ownerUsername === window.currentUser?.username) ? `<button class="vault-btn-delete" onclick="deleteEquipment('${eq.stackIds ? eq.stackIds.join(',') : eq.id}')" title="Détruire l'objet">
                             <span class="material-symbols-outlined">delete</span>
                         </button>` : ''}
                     </div>
