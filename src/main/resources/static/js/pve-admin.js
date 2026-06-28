@@ -1476,7 +1476,13 @@ async function loadAnomalies() {
     try {
         const res = await fetch('/api/anomalies/all');
         if (res.ok) {
-            allAnomalies = await res.json();
+            let data = await res.json();
+            const uniqueNames = new Set();
+            allAnomalies = data.filter(a => {
+                if (uniqueNames.has(a.name)) return false;
+                uniqueNames.add(a.name);
+                return true;
+            });
             renderRooms();
         }
     } catch (e) {

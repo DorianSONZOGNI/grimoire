@@ -1413,7 +1413,11 @@ function updateUI(data) {
                             specialItemHtml += `<div id="itemAlterationCheckContainer" style="margin-top: 1rem; text-align: center; width: 100%;">
                                 <span class="material-symbols-outlined spin">sync</span> Vérification de votre inventaire...
                             </div>`;
-                            fetch('/api/anomalies').then(res => res.json()).then(anomalies => {
+                            fetch('/api/anomalies').then(res => {
+                                if (!res.ok) throw new Error("API responded with " + res.status);
+                                return res.json();
+                            }).then(anomalies => {
+                                if (!Array.isArray(anomalies)) anomalies = [];
                                 const container = document.getElementById('itemAlterationCheckContainer');
                                 if (!container) return;
                                 const reqItem = data.currentRoom.alterationRequiredItem;
@@ -1476,7 +1480,13 @@ function updateUI(data) {
                                     anomalies = [];
                                     console.warn("Expected array for anomalies but got", anomalies);
                                 }
-                                const eligible = anomalies.filter(a => a.magicObject === true && a.spiritualite === data.currentRoom.altarRequiredSpirituality);
+                                const uniqueNames = new Set();
+                                const eligible = anomalies.filter(a => {
+                                    if (!a.magicObject || a.spiritualite !== data.currentRoom.altarRequiredSpirituality) return false;
+                                    if (uniqueNames.has(a.name)) return false;
+                                    uniqueNames.add(a.name);
+                                    return true;
+                                });
                                 const container = document.getElementById('altarAnomalySelectContainer');
                                 if (!container) return;
 
