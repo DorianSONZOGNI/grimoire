@@ -33,15 +33,15 @@ let userCharacters = [];
 let availableConsumables = [];
 
 document.addEventListener('DOMContentLoaded', () => {
-    const checkAuth = () => {
+    const checkAuth = async () => {
         if (!window.currentUser) {
             document.getElementById('authWarning').style.display = 'block';
             return;
         }
 
         document.getElementById('dungeonsContent').style.display = 'block';
-        loadDungeons();
-        loadCharacters();
+        await loadCharacters();
+        await loadDungeons();
         loadConsumables();
     };
 
@@ -116,6 +116,12 @@ async function loadDungeons() {
 
             dungeons.forEach(d => {
                 let catId, label, icon, color;
+
+                // Check hero levels
+                if (userCharacters.length > 0) {
+                    const hasMatchingHero = userCharacters.some(c => (c.voieLevel || 1) === (d.recommendedLevel || 1));
+                    if (!hasMatchingHero) return; // Skip if no hero has exactly this level
+                }
                 
                 if (d.requiredSecret && d.requiredSecret.trim() !== '') {
                     const userSecrets = window.currentUser?.unlockedSecrets || {};
