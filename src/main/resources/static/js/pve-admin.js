@@ -1214,18 +1214,32 @@ function renderRooms() {
                             let rewardValueHtml = '';
                             if (outcome.altarRewardType === 'ITEM') {
                                 const selEq = allEquipments.find(e => e.id == outcome.altarRewardValue) || allEquipments[0];
+                                
+                                const getEqHtml = (eq) => {
+                                    if (!eq) return 'Choisir un objet';
+                                    const slotInfo = SLOT_LABELS[eq.slot] || { label: eq.slot, icon: 'help', color: '#94a3b8' };
+                                    const rarityColor = RARITY_COLORS[eq.rarity] || '#94a3b8';
+                                    const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
+                                    return `<span style="display:flex; align-items:center; gap:0.4rem;"><span class="material-symbols-outlined${extraClass}" style="font-size:1.1rem; color:${slotInfo.color};">${slotInfo.icon}</span> <span style="color:${rarityColor};">${eq.name}</span></span>`;
+                                };
+
+                                const sortedEquipments = [...allEquipments].sort((a, b) => {
+                                    if (a.slot !== b.slot) return a.slot.localeCompare(b.slot);
+                                    return a.name.localeCompare(b.name);
+                                });
+
                                 rewardValueHtml = `
                                     <div class="custom-select-wrapper" id="altar_rewardval_wrapper_${rIndex}_${oIndex}" style="margin-top: 0.2rem; z-index: ${150 - (rIndex * 10 + oIndex * 3)};">
                                         <div class="custom-select-trigger" onclick="toggleAltarRewardValSelect(${rIndex}, ${oIndex})" style="padding: 0.5rem; font-size: 0.85rem; border-radius: 8px;">
-                                            <span class="cs-label" id="altar_rewardval_label_${rIndex}_${oIndex}">
-                                                ${selEq ? selEq.name : 'Choisir un objet'}
+                                            <span class="cs-label" id="altar_rewardval_label_${rIndex}_${oIndex}" style="width: 100%; margin-right: 0.5rem;">
+                                                ${getEqHtml(selEq)}
                                             </span>
                                             <span class="material-symbols-outlined">expand_more</span>
                                         </div>
                                         <div class="custom-select-options" id="altar_rewardval_options_${rIndex}_${oIndex}" style="max-height: 200px; overflow-y: auto;">
-                                            ${allEquipments.map(eq => `
+                                            ${sortedEquipments.map(eq => `
                                                 <div class="custom-option" onclick="updateAltarField(${rIndex}, ${oIndex}, 'altarRewardValue', ${eq.id})">
-                                                    ${eq.name}
+                                                    ${getEqHtml(eq)}
                                                 </div>
                                             `).join('')}
                                         </div>
