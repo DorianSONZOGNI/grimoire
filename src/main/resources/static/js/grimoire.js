@@ -317,7 +317,12 @@ export function getSpellEffectsSummaryHtml(sp) {
                     const durStr = e.duration > 0 ? ` sur ${e.duration} tours` : '';
                     detailsStr = `➔ Bouclier de ${parts.join(' + ')}${durStr}`;
                 } else if (t === 'Heat' || t === 'HEAT' || t === 'HeatFixed' || t === 'HEAT_FIXED') {
-                    detailsStr = `➔ génère ${e.amount || e.flatValue || 0} Chaleur`;
+                    const amt = e.amount || e.flatValue || 0;
+                    if (amt < 0) {
+                        detailsStr = `➔ consomme ${Math.abs(amt)} Chaleur`;
+                    } else {
+                        detailsStr = `➔ génère ${amt} Chaleur`;
+                    }
                 } else if (t === 'HeatPercentage' || t === 'HEAT_PERCENTAGE') {
                     const pct = Math.round((e.percentage || 0) * 100);
                     detailsStr = `➔ génère ${pct}% de ${ui.formatSrc(e.source)} en Chaleur`;
@@ -525,7 +530,7 @@ export function getSpellCardHtml(sp) {
                     </div>
                     ${rankTitleBadge}
                     <div class="spell-meta" style="flex-wrap: wrap; gap: 0.5rem; align-items: center;">
-                        <span style="display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined" style="font-size: 1.05rem; color: #38bdf8; vertical-align: middle;">water_drop</span>${sp.manaCost > 0 ? sp.manaCost : (sp.percentManaCost > 0 ? '' : '0')}${sp.manaCost > 0 && sp.percentManaCost > 0 ? ' + ' : ''}${sp.percentManaCost > 0 ? `${sp.percentManaCost}% (${ui.formatSrc(sp.percentManaCostSource || 'CASTER_MANA_MAX')})` : ''} Mana</span>
+                        ${sp.manaCost > 0 || sp.percentManaCost > 0 ? `<span style="display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined" style="font-size: 1.05rem; color: #38bdf8; vertical-align: middle;">water_drop</span>${sp.manaCost > 0 ? sp.manaCost : ''}${sp.manaCost > 0 && sp.percentManaCost > 0 ? ' + ' : ''}${sp.percentManaCost > 0 ? `${sp.percentManaCost}% (${ui.formatSrc(sp.percentManaCostSource || 'CASTER_MANA_MAX')})` : ''} Mana</span>` : ''}
                         ${sp.healCost > 0 || sp.percentHealCost > 0 ? `<span style="display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined" style="font-size: 1.05rem; color: #f43f5e; vertical-align: middle;">bloodtype</span>${sp.healCost > 0 ? sp.healCost : (sp.percentHealCost > 0 ? '' : '0')}${sp.healCost > 0 && sp.percentHealCost > 0 ? ' + ' : ''}${sp.percentHealCost > 0 ? `${sp.percentHealCost}% (${ui.formatSrc(sp.percentHealCostSource || 'CASTER_HEALTH_MAX')})` : ''} PV</span>` : ''}
                         ${sp.heatCost > 0 || sp.percentHeatCost > 0 ? `<span style="display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined" style="font-size: 1.05rem; color: #f97316; vertical-align: middle;">local_fire_department</span>${sp.heatCost > 0 ? sp.heatCost : (sp.percentHeatCost > 0 ? '' : '0')}${sp.heatCost > 0 && sp.percentHeatCost > 0 ? ' + ' : ''}${sp.percentHeatCost > 0 ? `${sp.percentHeatCost}% Chaleur` : ''} Chaleur</span>` : ''}
                         ${sp.castingType === 'CANALISE' ? `

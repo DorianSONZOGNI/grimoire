@@ -452,6 +452,57 @@ let pendingCastSpellId = null;
 let pendingNeedsEnemy = false;
 let pendingNeedsAlly = false;
 
+window.updateSpellCardState = function(spellId) {
+    if (!currentSessionData) return;
+    const sp = currentSessionData.availableSpells.find(s => s.id === spellId);
+    if (!sp) return;
+
+    const availabilityList = currentSessionData.spellAvailability || [];
+    const avail = availabilityList.find(a => a.spellId === sp.id);
+    let isCastable = !avail || avail.castable;
+
+    const choiceSelect = document.getElementById(`choice-select-${spellId}`);
+    if (choiceSelect && isCastable) {
+        const currentChoiceKey = choiceSelect.value;
+        const effects = sp.effects || [];
+        const activeEffects = effects.filter(e => {
+            if (e.requiredChoiceKey == null) return true;
+            return String(e.requiredChoiceKey) === String(currentChoiceKey);
+        });
+
+        let requiredHeatFromEffects = 0;
+        activeEffects.forEach(e => {
+            const rawType = e.effectType || e.effect_type || '';
+            if (rawType === 'HEAT_FIXED' || rawType === 'HeatFixedEffect') {
+                if ((e.amount || 0) < 0) {
+                    requiredHeatFromEffects += Math.abs(e.amount);
+                }
+            }
+        });
+
+        const playerHeat = currentSessionData.activePlayer.passiveStates ? (currentSessionData.activePlayer.passiveStates['destruction_heat'] || 0) : 0;
+        const totalHeatCost = (sp.heatCost || 0) + requiredHeatFromEffects;
+        
+        if (playerHeat < totalHeatCost) {
+            isCastable = false;
+        }
+    }
+
+    const card = document.getElementById(`spell-card-${spellId}`);
+    if (card) {
+        if (isCastable) {
+            card.classList.remove('spell-disabled');
+            card.setAttribute('onclick', `initiateCombatCast(${spellId})`);
+        } else {
+            card.classList.add('spell-disabled');
+            // We keep onclick empty so clicking it doesn't trigger cast
+            // However, the select inside it will still work due to pointer-events: auto
+            card.setAttribute('onclick', '');
+        }
+    }
+};
+
+
 function initiateCombatCast(spellId) {
     if (!currentSessionData) return;
 
@@ -477,6 +528,25 @@ function initiateCombatCast(spellId) {
             if (e.requiredChoiceKey == null) return true;
             return String(e.requiredChoiceKey) === String(currentChoiceKey);
         });
+
+        // Verifier si les effets actifs consomment plus de chaleur que ce que le joueur possède
+        let requiredHeatFromEffects = 0;
+        activeEffects.forEach(e => {
+            const rawType = e.effectType || e.effect_type || '';
+            if (rawType === 'HEAT_FIXED' || rawType === 'HeatFixedEffect') {
+                if ((e.amount || 0) < 0) {
+                    requiredHeatFromEffects += Math.abs(e.amount);
+                }
+            }
+        });
+
+        const playerHeat = currentSessionData.activePlayer.passiveStates ? (currentSessionData.activePlayer.passiveStates['destruction_heat'] || 0) : 0;
+        const totalHeatCost = (sp.heatCost || 0) + requiredHeatFromEffects;
+        
+        if (playerHeat < totalHeatCost) {
+            addCombatLog(`Chaleur insuffisante pour cette option (${playerHeat}/${totalHeatCost})`, 'system');
+            return;
+        }
 
         if (activeEffects.length > 0) {
             targetType = activeEffects[0].effectTarget || activeEffects[0].effect_target;
@@ -2542,6 +2612,7 @@ function renderBuffsHtml(buffList, motList, hotList) {
     if (buffList && buffList.length > 0) {
         buffList.forEach(b => {
             if (b.statAffected === 'AME_DETACHEE' || b.effectType === 'AME_DETACHEE') return;
+            if (b.statAffected === 'POISON' || b.statAffected === 'BURN') return;
 
             const inverseStats = ['DAMAGE_TAKEN_MAGIC', 'DAMAGE_TAKEN_PHYSIC', 'DAMAGE_TAKEN_BRUT', 'SHIELD_PIERCED', 'BURN', 'POISON'];
             const isInverse = inverseStats.includes(b.statAffected);
@@ -2842,6 +2913,13 @@ function renderSpells(spells) {
     });
 
     container.innerHTML = html;
+
+    // Update initial state for dynamic options
+    filteredSpells.forEach(sp => {
+        if (window.updateSpellCardState) {
+            window.updateSpellCardState(sp.id);
+        }
+    });
 }
 
 function renderSpellCard(sp) {
@@ -2853,7 +2931,7 @@ function renderSpellCard(sp) {
     let optionSelectorHtml = '';
     if (choiceKeys.length > 0) {
         optionSelectorHtml = `
-            <select class="spell-choice-mini" id="choice-select-${sp.id}" onclick="event.stopPropagation()" style="background: rgba(15, 23, 42, 0.8); color: #e2e8f0; border: 1px solid var(--glass-border); border-radius: 4px; padding: 0 0.2rem; font-size: 0.75rem; height: 1.2rem; margin-left: auto; outline: none; cursor: pointer;">
+            <select class="spell-choice-mini" id="choice-select-${sp.id}" onclick="event.stopPropagation()" onchange="window.updateSpellCardState(${sp.id})" style="background: rgba(15, 23, 42, 0.8); color: #e2e8f0; border: 1px solid var(--glass-border); border-radius: 4px; padding: 0 0.2rem; font-size: 0.75rem; height: 1.2rem; margin-left: auto; outline: none; cursor: pointer;">
                 ${choiceKeys.map(k => `<option value="${k}">${k}</option>`).join('')}
             </select>
         `;
@@ -2879,8 +2957,7 @@ function renderSpellCard(sp) {
         costDetailsHtml.push(`<span style="display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem; color: #f97316;" title="Chaleur">local_fire_department</span><span style="border-bottom: 1px solid rgba(249, 115, 22, 0.5); padding-bottom: 0.05rem;">${sp.heatCost}${sp.percentHeatCost > 0 ? ` + ${sp.percentHeatCost}%` : ''}</span></span>`);
     }
     let costDetails = costDetailsHtml.join('<span style="color:rgba(255,255,255,0.2); margin:0 0.2rem;">|</span>');
-    if (costDetailsHtml.length === 0) costDetails = `<span style="display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem; color: #38bdf8;" title="Mana">water_drop</span><span>0</span></span>`;
-
+    if (costDetailsHtml.length === 0) costDetails = '';
     let castingTypeHtml = '';
     if (sp.castingType === 'INSTANTANE') {
         castingTypeHtml = '<span class="material-symbols-outlined" style="font-size: 1rem; color: #f59e0b;" title="Action Instantanée">bolt</span>';

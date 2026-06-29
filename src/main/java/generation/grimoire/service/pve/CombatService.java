@@ -1867,6 +1867,20 @@ if (targetPlayer.getHealthCurrent() <= 0) {
             actualHeatCost += (int) (100.0 * spell.getPercentHeatCost() / 100.0);
         }
 
+        int minRequiredHeatFromEffects = 0;
+        if (spell.getEffects() != null) {
+            for (generation.grimoire.entity.SpellEffect effect : spell.getEffects()) {
+                if (effect.getRequiredChoiceKey() == null) {
+                    if (effect instanceof generation.grimoire.entity.spell.type.effect.HeatFixedEffect hfe) {
+                        if (hfe.getAmount() < 0) {
+                            minRequiredHeatFromEffects += -hfe.getAmount();
+                        }
+                    }
+                }
+            }
+        }
+        actualHeatCost += minRequiredHeatFromEffects;
+
         // Ajustement des coûts via les passifs (Création, Consolidation, Destruction,
         // Karma)
         int[] costs = { actualManaCost, actualHealCost, actualHeatCost };

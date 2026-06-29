@@ -436,9 +436,11 @@ public class Personnage {
 
                             shieldDamageFlat = Math.max(0, shieldDamageFlat - absorbed);
 
-                            System.out.println("🛡️ Le bouclier (" + shield.getSourceName() + ") absorbe " + absorbed
-                                    + " dégâts (dégâts bruts consommés : " + rawConsumedInt + "). Reste : "
-                                    + shield.getAmount() + " absorption.");
+                            if (absorbed > 0) {
+                                System.out.println("🛡️ Le bouclier (" + shield.getSourceName() + ") absorbe " + absorbed
+                                        + " dégâts (dégâts bruts consommés : " + rawConsumedInt + "). Reste : "
+                                        + shield.getAmount() + " absorption.");
+                            }
                             if (remainingDamage <= 0) {
                                 remainingDamage = 0;
                                 break;
@@ -934,19 +936,24 @@ public class Personnage {
      * (flat ou modificateur négatif/réduit, vulnérabilités, ou DoTs actifs).
      */
     public boolean hasDebuff() {
-        if (activeDamageOverTimeEffects != null && !activeDamageOverTimeEffects.isEmpty()) {
-            return true;
+        if (activeDamageOverTimeEffects != null) {
+            for (generation.grimoire.entity.effect.DamageOverTimeEffect effect : activeDamageOverTimeEffects) {
+                if (!Boolean.TRUE.equals(effect.getPoison()) && !Boolean.TRUE.equals(effect.getBurn())) {
+                    return true;
+                }
+            }
         }
         if (activeBuffs != null) {
             for (BuffDebuffEffect b : activeBuffs) {
                 StatType stat = b.getStatAffected();
                 if (stat != null) {
+                    if (stat == StatType.POISON || stat == StatType.BURN) {
+                        continue;
+                    }
                     if (stat == StatType.DAMAGE_TAKEN_MAGIC ||
                             stat == StatType.DAMAGE_TAKEN_PHYSIC ||
                             stat == StatType.DAMAGE_TAKEN_BRUT ||
-                            stat == StatType.SHIELD_PIERCED ||
-                            stat == StatType.BURN ||
-                            stat == StatType.POISON) {
+                            stat == StatType.SHIELD_PIERCED) {
                         if (b.getFlatValue() > 0 || (b.getFlatValue() == 0 && b.getModifier() > 1.0)) {
                             return true;
                         }

@@ -298,6 +298,20 @@ public class SpellService {
         actualHealCost = costs[1];
         actualHeatCost = costs.length > 2 ? costs[2] : actualHeatCost;
 
+        int requiredHeatFromEffects = 0;
+        if (toCast.getEffects() != null) {
+            for (generation.grimoire.entity.SpellEffect effect : toCast.getEffects()) {
+                if (effect.getRequiredChoiceKey() != null && choiceKey != null && !effect.getRequiredChoiceKey().equals(choiceKey)) {
+                    continue;
+                }
+                if (effect instanceof generation.grimoire.entity.spell.type.effect.HeatFixedEffect hfe) {
+                    if (hfe.getAmount() < 0) {
+                        requiredHeatFromEffects += -hfe.getAmount();
+                    }
+                }
+            }
+        }
+
         if (caster.getManaCurrent() < actualManaCost) {
             System.out.println("Mana insuffisant pour lancer le sort " + toCast.getNom());
             return;
@@ -307,7 +321,7 @@ public class SpellService {
             return;
         }
         int currentHeat = caster.getPassiveState("destruction_heat", 0);
-        if (currentHeat < actualHeatCost) {
+        if (currentHeat < actualHeatCost + requiredHeatFromEffects) {
             System.out.println("Chaleur insuffisante pour lancer le sort " + toCast.getNom());
             return;
         }
