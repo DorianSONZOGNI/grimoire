@@ -1785,7 +1785,7 @@ if (targetPlayer.getHealthCurrent() <= 0) {
             }));
 
             for (Spell spell : session.getAvailableSpells()) {
-                SpellAvailability avail = checkSpellAvailability(spell, p);
+                SpellAvailability avail = checkSpellAvailability(spell, p, session);
                 avails.add(avail);
             }
         } finally {
@@ -1795,10 +1795,22 @@ if (targetPlayer.getHealthCurrent() <= 0) {
         session.setSpellAvailability(avails);
     }
 
-    private SpellAvailability checkSpellAvailability(Spell spell, Personnage p) {
+    private SpellAvailability checkSpellAvailability(Spell spell, Personnage p, CombatSession session) {
         String canCastError = p.canCast(spell);
         if (canCastError != null) {
             return SpellAvailability.blocked(spell.getId(), "CONDITION", canCastError);
+        }
+
+        // Vérification si le sort cible uniquement un allié et qu'il n'y a pas d'autre allié vivant
+        boolean targetsOnlyAlly = !spell.getEffects().isEmpty() && spell.getEffects().stream()
+                .allMatch(e -> e.getEffectTarget() == generation.grimoire.enumeration.EffectTarget.ALLY);
+        if (targetsOnlyAlly) {
+            boolean hasOtherAliveAlly = session.getPlayers().stream()
+                    .anyMatch(pl -> pl.getHealthCurrent() > 0 && !pl.getId().equals(p.getId()));
+            if (!hasOtherAliveAlly) {
+                return SpellAvailability.blocked(spell.getId(), "NO_OTHER_ALLY",
+                        "Nécessite un autre allié en vie sur le terrain.");
+            }
         }
 
         // 1) Déterminer le type de casting effectif (avec passif Création)

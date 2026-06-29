@@ -460,6 +460,7 @@ window.updateSpellCardState = function(spellId) {
     const availabilityList = currentSessionData.spellAvailability || [];
     const avail = availabilityList.find(a => a.spellId === sp.id);
     let isCastable = !avail || avail.castable;
+    let dynamicReason = null;
 
     const choiceSelect = document.getElementById(`choice-select-${spellId}`);
     if (choiceSelect && isCastable) {
@@ -485,6 +486,7 @@ window.updateSpellCardState = function(spellId) {
         
         if (playerHeat < totalHeatCost) {
             isCastable = false;
+            dynamicReason = 'HEAT';
         }
     }
 
@@ -493,11 +495,19 @@ window.updateSpellCardState = function(spellId) {
         if (isCastable) {
             card.classList.remove('spell-disabled');
             card.setAttribute('onclick', `initiateCombatCast(${spellId})`);
+            const dynamicBadge = card.querySelector('.dynamic-spell-disabled-badge');
+            if (dynamicBadge) dynamicBadge.remove();
         } else {
             card.classList.add('spell-disabled');
-            // We keep onclick empty so clicking it doesn't trigger cast
-            // However, the select inside it will still work due to pointer-events: auto
             card.setAttribute('onclick', '');
+            
+            if (dynamicReason === 'HEAT' && !card.querySelector('.spell-disabled-badge')) {
+                const badge = document.createElement('div');
+                badge.className = 'spell-disabled-badge badge-resource dynamic-spell-disabled-badge';
+                badge.title = 'Chaleur insuffisante pour cette option';
+                badge.innerHTML = '<span class="material-symbols-outlined">local_fire_department</span>';
+                card.appendChild(badge);
+            }
         }
     }
 };
@@ -3035,6 +3045,15 @@ function renderSpellCard(sp) {
         } else if (avail.reason === 'CHANNELING') {
             badgeClass = 'badge-channeling';
             badgeIcon = 'cyclone';
+        } else if (avail.reason === 'NO_OTHER_ALLY') {
+            badgeClass = 'badge-condition';
+            badgeIcon = 'group_off';
+        } else if (avail.reason === 'RESOURCE' || !avail.reason) {
+            if (avail.tooltip && avail.tooltip.toLowerCase().includes('chaleur')) {
+                badgeIcon = 'local_fire_department';
+            } else if (avail.tooltip && avail.tooltip.toLowerCase().includes('pv')) {
+                badgeIcon = 'bloodtype';
+            }
         }
         disabledBadgeHtml = `<div class="spell-disabled-badge ${badgeClass}" title="${avail.tooltip || ''}"><span class="material-symbols-outlined">${badgeIcon}</span></div>`;
     }

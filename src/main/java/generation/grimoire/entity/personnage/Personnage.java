@@ -207,6 +207,7 @@ public class Personnage {
     private Spell channeledSpell;
 
     @Transient
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private Personnage channelingTarget;
 
     @Transient
@@ -937,7 +938,7 @@ public class Personnage {
      */
     public boolean hasDebuff() {
         if (activeDamageOverTimeEffects != null) {
-            for (generation.grimoire.entity.effect.DamageOverTimeEffect effect : activeDamageOverTimeEffects) {
+            for (DamageOverTimeEffect effect : activeDamageOverTimeEffects) {
                 if (!Boolean.TRUE.equals(effect.getPoison()) && !Boolean.TRUE.equals(effect.getBurn())) {
                     return true;
                 }
