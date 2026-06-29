@@ -1097,8 +1097,10 @@ public class CombatService {
                 // Find target
                 Personnage target = null;
                 boolean targetsEnemy = spellToCast.getEffects().stream()
+                        .filter(e -> e.getRequiredChoiceKey() == null || e.getRequiredChoiceKey().equals(choiceKey))
                         .anyMatch(e -> e.getEffectTarget() == generation.grimoire.enumeration.EffectTarget.TARGET);
                 boolean targetsAlly = spellToCast.getEffects().stream()
+                        .filter(e -> e.getRequiredChoiceKey() == null || e.getRequiredChoiceKey().equals(choiceKey))
                         .anyMatch(e -> e.getEffectTarget() == generation.grimoire.enumeration.EffectTarget.ALLY);
 
                 if (targetsEnemy && targetIndex != null && targetIndex >= 0
@@ -1802,18 +1804,6 @@ if (targetPlayer.getHealthCurrent() <= 0) {
         String canCastError = p.canCast(spell);
         if (canCastError != null) {
             return SpellAvailability.blocked(spell.getId(), "CONDITION", canCastError);
-        }
-
-        // Vérification si le sort cible uniquement un allié et qu'il n'y a pas d'autre allié vivant
-        boolean targetsOnlyAlly = !spell.getEffects().isEmpty() && spell.getEffects().stream()
-                .allMatch(e -> e.getEffectTarget() == generation.grimoire.enumeration.EffectTarget.ALLY);
-        if (targetsOnlyAlly) {
-            boolean hasOtherAliveAlly = session.getPlayers().stream()
-                    .anyMatch(pl -> pl.getHealthCurrent() > 0 && !pl.getId().equals(p.getId()));
-            if (!hasOtherAliveAlly) {
-                return SpellAvailability.blocked(spell.getId(), "NO_OTHER_ALLY",
-                        "Nécessite un autre allié en vie sur le terrain.");
-            }
         }
 
         // 1) Déterminer le type de casting effectif (avec passif Création)

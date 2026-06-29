@@ -463,13 +463,16 @@ window.updateSpellCardState = function(spellId) {
     let dynamicReason = null;
 
     const choiceSelect = document.getElementById(`choice-select-${spellId}`);
-    if (choiceSelect && isCastable) {
-        const currentChoiceKey = choiceSelect.value;
-        const effects = sp.effects || [];
-        const activeEffects = effects.filter(e => {
-            if (e.requiredChoiceKey == null) return true;
-            return String(e.requiredChoiceKey) === String(currentChoiceKey);
-        });
+    if (isCastable) {
+        let activeEffects = sp.effects || [];
+        
+        if (choiceSelect) {
+            const currentChoiceKey = choiceSelect.value;
+            activeEffects = activeEffects.filter(e => {
+                if (e.requiredChoiceKey == null) return true;
+                return String(e.requiredChoiceKey) === String(currentChoiceKey);
+            });
+        }
 
         let requiredHeatFromEffects = 0;
         activeEffects.forEach(e => {
@@ -488,6 +491,20 @@ window.updateSpellCardState = function(spellId) {
             isCastable = false;
             dynamicReason = 'HEAT';
         }
+
+        // Dynamic NO_OTHER_ALLY check
+        const targetsOnlyAlly = activeEffects.length > 0 && activeEffects.every(e => {
+            const t = e.effectTarget || e.effect_target;
+            return t === 'ALLY';
+        });
+
+        if (targetsOnlyAlly && isCastable) {
+            const hasOtherAlly = currentSessionData.players && currentSessionData.players.some(p => p.healthCurrent > 0 && p.id !== currentSessionData.activePlayer.id);
+            if (!hasOtherAlly) {
+                isCastable = false;
+                dynamicReason = 'NO_OTHER_ALLY';
+            }
+        }
     }
 
     const card = document.getElementById(`spell-card-${spellId}`);
@@ -501,11 +518,23 @@ window.updateSpellCardState = function(spellId) {
             card.classList.add('spell-disabled');
             card.setAttribute('onclick', '');
             
-            if (dynamicReason === 'HEAT' && !card.querySelector('.spell-disabled-badge')) {
+            if (dynamicReason === 'HEAT' && !card.querySelector('.spell-disabled-badge.dynamic-spell-disabled-badge')) {
+                const dynamicBadge = card.querySelector('.dynamic-spell-disabled-badge');
+                if (dynamicBadge) dynamicBadge.remove();
+
                 const badge = document.createElement('div');
                 badge.className = 'spell-disabled-badge badge-resource dynamic-spell-disabled-badge';
                 badge.title = 'Chaleur insuffisante pour cette option';
                 badge.innerHTML = '<span class="material-symbols-outlined">local_fire_department</span>';
+                card.appendChild(badge);
+            } else if (dynamicReason === 'NO_OTHER_ALLY' && !card.querySelector('.spell-disabled-badge.dynamic-spell-disabled-badge')) {
+                const dynamicBadge = card.querySelector('.dynamic-spell-disabled-badge');
+                if (dynamicBadge) dynamicBadge.remove();
+
+                const badge = document.createElement('div');
+                badge.className = 'spell-disabled-badge badge-condition dynamic-spell-disabled-badge';
+                badge.title = 'Nécessite un autre allié en vie sur le terrain.';
+                badge.innerHTML = '<span class="material-symbols-outlined">group_off</span>';
                 card.appendChild(badge);
             }
         }
@@ -2395,6 +2424,25 @@ function generateFighterHtml(c, isHero) {
         </span>`;
     }
 
+    let channelingBadgeHtml = '';
+    if (c.remainingChannelingTurns > 0) {
+        channelingBadgeHtml = `<div style="position: absolute; top: -10px; right: -10px; z-index: 10; cursor: help; display: flex; align-items: center; justify-content: center; background: #1e293b; border-radius: 50%; padding: 4px; box-shadow: 0 0 10px rgba(139, 92, 246, 0.6); border: 2px solid #8b5cf6;" onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null">
+            <span class="material-symbols-outlined" style="font-size: 1.5rem; color: #8b5cf6;">cyclone</span>
+            <span style="position: absolute; bottom: -2px; right: -2px; background: #ef4444; color: white; font-size: 0.75rem; border-radius: 50%; width: 16px; height: 16px; display: flex; align-items: center; justify-content: center; font-weight: bold; border: 1px solid #1e293b;">${c.remainingChannelingTurns}</span>
+            <template class="tooltip-data">
+                <div style="font-size: 0.9rem; font-weight: 500; margin-bottom: 0.5rem; display:flex; align-items:center; gap:0.3rem; color: #8b5cf6;">
+                    <span class="material-symbols-outlined" style="font-size:1.1rem;">cyclone</span>
+                    Canalisation en cours
+                </div>
+                <div style="font-size: 0.8rem; color: #cbd5e1; margin-bottom: 0.5rem;">Un sort est en cours de préparation. Ses effets se déclencheront à la fin du compte à rebours.</div>
+                <div style="font-size: 0.8rem; display: flex; align-items: flex-start; gap: 0.3rem; color: #e2e8f0;">
+                    <span class="material-symbols-outlined" style="font-size: 0.95rem; color: #8b5cf6;">hourglass_top</span>
+                    <span style="font-style: italic;">Temps restant : ${c.remainingChannelingTurns} tour(s)</span>
+                </div>
+            </template>
+        </div>`;
+    }
+
     let monsterBadgesHtml = '';
     if (!isHero) {
         monsterBadgesHtml += `<div style="display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; margin-bottom: 0.5rem;">`;
@@ -2444,6 +2492,7 @@ function generateFighterHtml(c, isHero) {
     }
 
     return `
+        ${channelingBadgeHtml}
         <div class="fighter-name" style="color: ${isHero ? '#f8fafc' : '#ef4444'}; font-size: 1.2rem; display: flex; justify-content: center; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
             ${isHero ? '🧙‍♂️' : '👹'} ${titleIconsHtml} ${c.name}
         </div>
@@ -2949,7 +2998,7 @@ function renderSpellCard(sp) {
     let optionSelectorHtml = '';
     if (choiceKeys.length > 0) {
         optionSelectorHtml = `
-            <select class="spell-choice-mini" id="choice-select-${sp.id}" onclick="event.stopPropagation()" onchange="window.updateSpellCardState(${sp.id})" style="background: rgba(15, 23, 42, 0.8); color: #e2e8f0; border: 1px solid var(--glass-border); border-radius: 4px; padding: 0 0.2rem; font-size: 0.75rem; height: 1.2rem; margin-left: auto; outline: none; cursor: pointer;">
+            <select class="spell-choice-mini" id="choice-select-${sp.id}" onclick="event.stopPropagation()" onchange="window.updateSpellCardState(${sp.id})" style="background: rgba(15, 23, 42, 0.8); color: #e2e8f0; border: 1px solid var(--glass-border); border-radius: 4px; padding: 0 0.2rem; font-size: 0.75rem; height: 1.2rem; margin-left: auto; outline: none; cursor: pointer; pointer-events: auto;">
                 ${choiceKeys.map(k => `<option value="${k}">${k}</option>`).join('')}
             </select>
         `;
