@@ -525,6 +525,10 @@ function initiateCombatCast(spellId) {
 
     let requiresEnemySelection = false;
     let requiresAllySelection = false;
+    let hasAlly = false;
+    let hasAllAllies = false;
+    let hasEveryone = false;
+    let hasCaster = false;
 
     if (spellId) {
         const sp = currentSessionData.availableSpells.find(s => s.id === spellId);
@@ -564,11 +568,11 @@ function initiateCombatCast(spellId) {
 
         const targets = activeEffects.map(e => e.effectTarget || e.effect_target);
         const hasTarget = targets.includes('TARGET');
-        const hasAlly = targets.includes('ALLY');
+        hasAlly = targets.includes('ALLY');
         const hasAllEnemies = targets.includes('ALL_ENEMIES');
-        const hasAllAllies = targets.includes('ALL_ALLIES');
-        const hasEveryone = targets.includes('ALL_COMBATANTS');
-        const hasCaster = targets.includes('CASTER');
+        hasAllAllies = targets.includes('ALL_ALLIES');
+        hasEveryone = targets.includes('ALL_COMBATANTS');
+        hasCaster = targets.includes('CASTER');
 
         needsEnemy = hasTarget || hasAllEnemies || hasEveryone;
         needsAlly = hasAlly || hasAllAllies || hasEveryone;
@@ -670,6 +674,10 @@ function initiateCombatCast(spellId) {
 
     if (needsAlly) {
         allyCards.forEach(card => {
+            // Prevent selecting the caster (active player) if the effect strictly targets an ALLY
+            if (hasAlly && !hasAllAllies && !hasEveryone && card.classList.contains('active')) {
+                return;
+            }
             card.classList.add('target-selectable');
             card.dataset.oldOnClick = card.getAttribute('onclick');
             const idx = Array.from(card.parentNode.children).indexOf(card);

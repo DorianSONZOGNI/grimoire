@@ -1124,6 +1124,9 @@ public class CombatService {
                             }
                         }
                     }
+                    if (allyTarget.getId().equals(p.getId())) {
+                        throw new RuntimeException("Vous ne pouvez pas vous cibler vous-même pour un effet qui cible un allié.");
+                    }
                 }
 
                 List<Personnage> allEnemies = session.getEnemies().stream()
