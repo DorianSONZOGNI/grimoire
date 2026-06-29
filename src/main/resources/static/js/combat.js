@@ -449,6 +449,8 @@ async function startCombat(characterIds, dungeonId, consumableIds) {
 // Ally target selection is now handled entirely within the combat prompt mode
 // ===== Target Selection for Cast =====
 let pendingCastSpellId = null;
+let pendingNeedsEnemy = false;
+let pendingNeedsAlly = false;
 
 function initiateCombatCast(spellId) {
     if (!currentSessionData) return;
@@ -504,6 +506,14 @@ function initiateCombatCast(spellId) {
 
     cancelCombatCast(); // Clean previous state
     pendingCastSpellId = spellId;
+    pendingNeedsEnemy = needsEnemy;
+    pendingNeedsAlly = needsAlly;
+
+    // Reset target selections for dual-target spells to avoid stale values
+    if (needsEnemy && needsAlly) {
+        selectedTargetIndex = null;
+        selectedAllyIndex = -1;
+    }
 
     const cardEl = spellId ? document.getElementById(`spell-card-${spellId}`) : document.getElementById('btnAttack');
 
@@ -529,8 +539,13 @@ function initiateCombatCast(spellId) {
         `;
 
         if (multiEnemy || multiAlly) {
+            const dualTarget = requiresEnemySelection && requiresAllySelection;
+            const promptText = dualTarget
+                ? 'Sélectionnez un ennemi et un allié'
+                : (requiresEnemySelection ? 'Sélectionnez un ennemi' : 'Sélectionnez un allié');
             overlay.innerHTML = `
-                <span style="font-size: 0.9rem; font-weight: 600; color: #e2e8f0;">Sélectionnez une cible</span>
+                <span id="castPromptText" style="font-size: 0.9rem; font-weight: 600; color: #e2e8f0;">${promptText}</span>
+                <div id="castTargetStatus" style="font-size: 0.75rem; color: #94a3b8; display: ${dualTarget ? 'block' : 'none'};"></div>
                 <button type="button" onclick="event.stopPropagation(); cancelCombatCast()" style="background: rgba(239, 68, 68, 0.2); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.4); padding: 0.3rem 0.8rem; border-radius: 4px; font-size: 0.8rem; cursor: pointer; font-family: 'Outfit', sans-serif;">Annuler</button>
             `;
         } else {
@@ -599,6 +614,46 @@ function confirmCombatCast(index, type) {
     } else if (type === 'ally') {
         selectedAllyIndex = index;
     }
+
+    // Dual-target: need both enemy AND ally — wait if one is still missing
+    // Skip when type is 'direct' (Lancer button click, auto-targeting handles it)
+    if (pendingNeedsEnemy && pendingNeedsAlly && type !== 'direct') {
+        const hasEnemy = selectedTargetIndex !== null;
+        const hasAlly = selectedAllyIndex !== -1;
+
+        // Update visual feedback on selected cards
+        if (type === 'enemy' && index !== null) {
+            document.querySelectorAll('.fighter-enemy.target-selected').forEach(c => c.classList.remove('target-selected'));
+            const card = document.querySelector(`.fighter-enemy[data-index="${index}"]`);
+            if (card) card.classList.add('target-selected');
+        }
+        if (type === 'ally' && index !== -1) {
+            document.querySelectorAll('.fighter-player.target-selected').forEach(c => c.classList.remove('target-selected'));
+            const cards = document.querySelectorAll('.fighter-player:not(.dead)');
+            if (cards[index]) cards[index].classList.add('target-selected');
+        }
+
+        // Update status text in overlay
+        const statusEl = document.getElementById('castTargetStatus');
+        const promptEl = document.getElementById('castPromptText');
+        if (statusEl) {
+            const parts = [];
+            if (hasEnemy) parts.push('✅ Ennemi sélectionné');
+            else parts.push('⬜ Sélectionnez un ennemi');
+            if (hasAlly) parts.push('✅ Allié sélectionné');
+            else parts.push('⬜ Sélectionnez un allié');
+            statusEl.innerHTML = parts.join(' &nbsp;·&nbsp; ');
+        }
+
+        if (!hasEnemy || !hasAlly) {
+            // Still waiting for second target — update prompt and return
+            if (promptEl) {
+                promptEl.textContent = !hasEnemy ? 'Sélectionnez un ennemi' : 'Sélectionnez un allié';
+            }
+            return;
+        }
+    }
+
     const spellId = pendingCastSpellId;
     cancelCombatCast();
     doAction(spellId);
@@ -607,7 +662,7 @@ function confirmCombatCast(index, type) {
 function cancelCombatCast() {
     const enemyCards = document.querySelectorAll('.fighter-enemy');
     enemyCards.forEach(card => {
-        card.classList.remove('target-selectable', 'target-highlight');
+        card.classList.remove('target-selectable', 'target-highlight', 'target-selected');
         if (card.dataset.oldOnClick) {
             card.setAttribute('onclick', card.dataset.oldOnClick);
         } else {
@@ -617,7 +672,7 @@ function cancelCombatCast() {
 
     const allyCards = document.querySelectorAll('.fighter-player');
     allyCards.forEach(card => {
-        card.classList.remove('target-selectable', 'target-highlight');
+        card.classList.remove('target-selectable', 'target-highlight', 'target-selected');
         if (card.dataset.oldOnClick) {
             card.setAttribute('onclick', card.dataset.oldOnClick);
         } else {
@@ -656,6 +711,8 @@ function cancelCombatCast() {
     }
 
     pendingCastSpellId = null;
+    pendingNeedsEnemy = false;
+    pendingNeedsAlly = false;
 }
 
 async function doAction(spellId = null) {
