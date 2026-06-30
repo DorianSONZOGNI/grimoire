@@ -559,7 +559,7 @@ public class SpellService {
         }
     }
 
-    public void tickChanneling(Personnage caster, Personnage target, Integer choiceKey) {
+    public void tickChanneling(Personnage caster, Personnage target, Integer choiceKey, Personnage ally, java.util.List<Personnage> allAllies, java.util.List<Personnage> allEnemies) {
         Spell channeledSpell = caster.getChanneledSpell();
         if (channeledSpell == null) return;
 
@@ -607,7 +607,7 @@ public class SpellService {
                 }
             }
 
-            java.util.List<Personnage> recipients = resolveRecipients(effect.getEffectTarget(), caster, target);
+            java.util.List<Personnage> recipients = resolveRecipientsGroup(effect.getEffectTarget(), caster, target, ally, allAllies, allEnemies);
 
             for (Personnage recipient : recipients) {
                 effect.apply(caster, recipient);

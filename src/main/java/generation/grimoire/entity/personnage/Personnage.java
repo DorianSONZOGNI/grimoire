@@ -218,18 +218,12 @@ public class Personnage {
     public void startTurn() {
         this.instantSpellCastThisTurn = false;
         this.banalSpellCastThisTurn = false;
+        
         if (this.remainingChannelingTurns > 0) {
-            this.remainingChannelingTurns--;
-            if (this.remainingChannelingTurns == 0) {
-                this.allowInstantDuringCurrentChanneling = true;
-                this.channeledSpell = null;
-                this.channelingTarget = null;
-                this.channelingChoiceKey = null;
-                System.out.println(name + " a terminé sa canalisation.");
-            } else {
-                System.out
-                        .println(name + " continue de canaliser (tours restants : " + remainingChannelingTurns + ").");
-            }
+            // On ne décrémente PAS ici car c'est tickChanneling() qui gère l'avancement.
+            // On empêche simplement le personnage de lancer un autre sort banal pendant qu'il canalise.
+            this.banalSpellCastThisTurn = true;
+            System.out.println(name + " continue de canaliser (tours restants : " + remainingChannelingTurns + ").");
         }
 
         // Effets de régen de base + équipements (Régen / Drain)

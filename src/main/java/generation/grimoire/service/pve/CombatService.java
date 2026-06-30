@@ -1126,8 +1126,11 @@ public class CombatService {
                             }
                         }
                     }
-                    if (allyTarget.getId().equals(p.getId())) {
-                        throw new RuntimeException("Vous ne pouvez pas vous cibler vous-même pour un effet qui cible un allié.");
+                    if (allyTarget != null && allyTarget.getId().equals(p.getId())) {
+                        // Le sort a peut-être d'autres effets valides (ex: sur l'ennemi ou le lanceur).
+                        // On annule juste la cible alliée pour que l'effet ALLY soit ignoré,
+                        // mais on permet au sort de se lancer.
+                        allyTarget = null;
                     }
                 }
 
@@ -1301,7 +1304,9 @@ public class CombatService {
                     if (channelingTarget == null && !session.getEnemies().isEmpty()) {
                         channelingTarget = session.getEnemies().get(0).getAsPersonnage();
                     }
-                    spellService.tickChanneling(p, channelingTarget, p.getChannelingChoiceKey());
+                    List<Personnage> allAllies = session.getPlayers().stream().filter(pl -> pl.getHealthCurrent() > 0).toList();
+                    List<Personnage> allEnemies = session.getEnemies().stream().map(generation.grimoire.model.pve.ActiveMonster::getAsPersonnage).toList();
+                    spellService.tickChanneling(p, channelingTarget, p.getChannelingChoiceKey(), p, allAllies, allEnemies);
                 }
             });
         }
@@ -1367,7 +1372,9 @@ public class CombatService {
                         if (cTarget == null && !session.getPlayers().isEmpty()) {
                             cTarget = session.getPlayers().get(0);
                         }
-                        spellService.tickChanneling(mp, cTarget, mp.getChannelingChoiceKey());
+                        List<Personnage> allAllies = session.getEnemies().stream().map(generation.grimoire.model.pve.ActiveMonster::getAsPersonnage).toList();
+                        List<Personnage> allEnemies = session.getPlayers().stream().filter(pl -> pl.getHealthCurrent() > 0).toList();
+                        spellService.tickChanneling(mp, cTarget, mp.getChannelingChoiceKey(), mp, allAllies, allEnemies);
                     } else {
                         List<Personnage> alivePlayers = session.getPlayers().stream()
                                 .filter(pl -> pl.getHealthCurrent() > 0).toList();
