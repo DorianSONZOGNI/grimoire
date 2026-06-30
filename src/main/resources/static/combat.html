@@ -697,10 +697,20 @@
 
         /* ===== Disabled Spell Cards ===== */
         .combat-spell-card.spell-disabled {
-            opacity: 0.45;
-            filter: grayscale(0.6);
             cursor: not-allowed;
             transform: none !important;
+            border-color: rgba(255, 255, 255, 0.1) !important;
+        }
+
+        .combat-spell-card.spell-disabled .combat-spell-header,
+        .combat-spell-card.spell-disabled .combat-spell-cost {
+            opacity: 0.45;
+            filter: grayscale(0.6);
+        }
+
+        .combat-spell-card.spell-disabled .combat-spell-icons > *:not(.spell-choice-mini) {
+            opacity: 0.45;
+            filter: grayscale(0.6);
         }
 
         .combat-spell-card.spell-disabled:hover {
