@@ -302,8 +302,8 @@ public class PersonnageController {
         private int resistance = 5;
         private int speed = 1;
         private int crit = 5;
-        private int regenHp = 5;
-        private int regenMana = 5;
+        private int regenHp = 2;
+        private int regenMana = 4;
         private Long voieId;
         private int voieLevel = 1;
         private int experience = 0;
