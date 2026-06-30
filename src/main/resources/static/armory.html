@@ -97,7 +97,9 @@
                     <label for="charVoie" style="display: flex; align-items: center; gap: 0.3rem;">
                         <span class="material-symbols-outlined" style="color: #a855f7;">route</span>
                         Voie
-                        <span id="charVoieInfoIcon" class="material-symbols-outlined" style="font-size: 1.1rem; color: #a855f7; cursor: help; display: none;" onmouseenter="showEqTooltip(this)" onmouseleave="hideEqTooltip()">
+                        <span id="charVoieInfoIcon" class="material-symbols-outlined"
+                            style="font-size: 1.1rem; color: #a855f7; cursor: help; display: none;"
+                            onmouseenter="showEqTooltip(this)" onmouseleave="hideEqTooltip()">
                             info
                             <template class="tooltip-data"></template>
                         </span>
@@ -130,7 +132,9 @@
                     <label for="charSpirit" style="display: flex; align-items: center; gap: 0.3rem;">
                         <span class="material-symbols-outlined" style="color: #fb923c;">psychology</span>
                         Spiritualité
-                        <span id="charSpiritInfoIcon" class="material-symbols-outlined" style="font-size: 1.1rem; color: #fb923c; cursor: help; display: none;" onmouseenter="showEqTooltip(this)" onmouseleave="hideEqTooltip()">
+                        <span id="charSpiritInfoIcon" class="material-symbols-outlined"
+                            style="font-size: 1.1rem; color: #fb923c; cursor: help; display: none;"
+                            onmouseenter="showEqTooltip(this)" onmouseleave="hideEqTooltip()">
                             info
                             <template class="tooltip-data"></template>
                         </span>
@@ -227,6 +231,23 @@
                             Critique (%)
                         </label>
                         <input type="number" id="charCrit" min="0" max="100" value="0">
+                    </div>
+                </div>
+
+                <div class="armory-form-row">
+                    <div class="armory-field">
+                        <label for="charRegenHp">
+                            <span class="material-symbols-outlined" style="color: #f472b6;">healing</span>
+                            Régen PV
+                        </label>
+                        <input type="number" id="charRegenHp" min="0" value="0">
+                    </div>
+                    <div class="armory-field">
+                        <label for="charRegenMana">
+                            <span class="material-symbols-outlined" style="color: #67e8f9;">dew_point</span>
+                            Régen Mana
+                        </label>
+                        <input type="number" id="charRegenMana" min="0" value="0">
                     </div>
                 </div>
 
@@ -522,19 +543,27 @@
 
                 <div class="eq-create-row quad consumable-stat" style="display: none;">
                     <div class="eq-create-field">
-                        <label><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: bottom; color: #ec4899;">percent</span> PV (Max)</label>
+                        <label><span class="material-symbols-outlined"
+                                style="font-size: 1rem; vertical-align: bottom; color: #ec4899;">percent</span> PV
+                            (Max)</label>
                         <input type="number" id="eqConsumableHpPercent" value="0">
                     </div>
                     <div class="eq-create-field">
-                        <label><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: bottom; color: #38bdf8;">percent</span> Mana (Max)</label>
+                        <label><span class="material-symbols-outlined"
+                                style="font-size: 1rem; vertical-align: bottom; color: #38bdf8;">percent</span> Mana
+                            (Max)</label>
                         <input type="number" id="eqConsumableManaPercent" value="0">
                     </div>
                     <div class="eq-create-field">
-                        <label><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: bottom; color: #f43f5e;">heart_broken</span> PV (Manq)</label>
+                        <label><span class="material-symbols-outlined"
+                                style="font-size: 1rem; vertical-align: bottom; color: #f43f5e;">heart_broken</span> PV
+                            (Manq)</label>
                         <input type="number" id="eqConsumableMissingHpPercent" value="0">
                     </div>
                     <div class="eq-create-field">
-                        <label><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: bottom; color: #a855f7;">water_drop</span> Mana (Manq)</label>
+                        <label><span class="material-symbols-outlined"
+                                style="font-size: 1rem; vertical-align: bottom; color: #a855f7;">water_drop</span> Mana
+                            (Manq)</label>
                         <input type="number" id="eqConsumableMissingManaPercent" value="0">
                     </div>
                 </div>
@@ -601,14 +630,18 @@
     <!-- Buy Roster Slot Modal -->
     <div id="buyRosterModal" class="vault-modal-overlay">
         <div class="vault-modal-content" style="border-color: rgba(16, 185, 129, 0.4);">
-            <div class="vault-modal-icon" style="background: rgba(16, 185, 129, 0.1); color: #10b981; border-color: rgba(16, 185, 129, 0.2);">
+            <div class="vault-modal-icon"
+                style="background: rgba(16, 185, 129, 0.1); color: #10b981; border-color: rgba(16, 185, 129, 0.2);">
                 <span class="material-symbols-outlined" style="font-size: 2rem;">group_add</span>
             </div>
             <div class="vault-modal-title">Agrandir la taverne ?</div>
-            <div class="vault-modal-text">Voulez-vous acheter un emplacement de personnage supplémentaire pour <strong id="rosterSlotCostText" style="color: #f59e0b;">0</strong> <span class="material-symbols-outlined" style="font-size: 0.9rem; color: #f59e0b; vertical-align: middle;">toll</span> ?</div>
+            <div class="vault-modal-text">Voulez-vous acheter un emplacement de personnage supplémentaire pour <strong
+                    id="rosterSlotCostText" style="color: #f59e0b;">0</strong> <span class="material-symbols-outlined"
+                    style="font-size: 0.9rem; color: #f59e0b; vertical-align: middle;">toll</span> ?</div>
             <div class="vault-modal-actions">
                 <button class="vault-btn-cancel" onclick="closeRosterModal()">Annuler</button>
-                <button class="vault-btn-confirm" id="buyRosterConfirmBtn" style="background: #10b981; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">Oui, acheter</button>
+                <button class="vault-btn-confirm" id="buyRosterConfirmBtn"
+                    style="background: #10b981; box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);">Oui, acheter</button>
             </div>
         </div>
     </div>

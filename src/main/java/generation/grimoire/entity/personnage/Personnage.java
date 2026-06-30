@@ -54,6 +54,8 @@ public class Personnage {
     private int resistance;
     private int crit;
     private int speed;
+    private int regenHp;
+    private int regenMana;
 
     @ManyToOne
     @JoinColumn(name = "voie_id", nullable = true)
@@ -230,13 +232,15 @@ public class Personnage {
             }
         }
 
-        // Effets des équipements (Régen / Drain)
-        if (this.healthCurrent > 0 && this.equipments != null) {
-            int totalHpRegen = 0;
-            int totalManaRegen = 0;
-            for (generation.grimoire.entity.Equipment eq : this.equipments) {
-                totalHpRegen += eq.getRegenHealthPerTurn();
-                totalManaRegen += eq.getRegenManaPerTurn();
+        // Effets de régen de base + équipements (Régen / Drain)
+        if (this.healthCurrent > 0) {
+            int totalHpRegen = this.regenHp;
+            int totalManaRegen = this.regenMana;
+            if (this.equipments != null) {
+                for (generation.grimoire.entity.Equipment eq : this.equipments) {
+                    totalHpRegen += eq.getRegenHealthPerTurn();
+                    totalManaRegen += eq.getRegenManaPerTurn();
+                }
             }
             if (totalHpRegen > 0) {
                 this.heal(totalHpRegen);

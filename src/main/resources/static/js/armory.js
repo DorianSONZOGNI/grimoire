@@ -276,6 +276,8 @@ async function submitPersonnage() {
         resistance: parseInt(document.getElementById('charResistance').value) || 0,
         speed: parseInt(document.getElementById('charSpeed').value) || 0,
         crit: parseInt(document.getElementById('charCrit').value) || 0,
+        regenHp: parseInt(document.getElementById('charRegenHp').value) || 0,
+        regenMana: parseInt(document.getElementById('charRegenMana').value) || 0,
         voieId: document.getElementById('charVoie').value || null,
         experience: parseInt(document.getElementById('charExperience').value) || 0,
         spiritualiteId: document.getElementById('charSpirit').value || null,
@@ -736,6 +738,8 @@ function renderPersonnages() {
                     <span class="char-stat-chip"><span class="material-symbols-outlined" style="color: #10b981;">shield</span>${p.totalResistance !== undefined ? p.totalResistance : p.resistance} Rés</span>
                     ${(p.totalSpeed !== undefined ? p.totalSpeed : p.speed) > 0 ? `<span class="char-stat-chip"><span class="material-symbols-outlined" style="color: #f59e0b;">bolt</span>${p.totalSpeed !== undefined ? p.totalSpeed : p.speed} Vit</span>` : ''}
                     ${(p.totalCrit !== undefined ? p.totalCrit : p.crit) > 0 ? `<span class="char-stat-chip"><span class="material-symbols-outlined" style="color: #ef4444;">gps_fixed</span>${p.totalCrit !== undefined ? p.totalCrit : p.crit}% Crit</span>` : ''}
+                    ${(p.regenHp || 0) > 0 ? `<span class="char-stat-chip"><span class="material-symbols-outlined" style="color: #f472b6;">healing</span>${p.regenHp} Régen PV</span>` : ''}
+                    ${(p.regenMana || 0) > 0 ? `<span class="char-stat-chip"><span class="material-symbols-outlined" style="color: #67e8f9;">dew_point</span>${p.regenMana} Régen Mana</span>` : ''}
                 </div>
                 <div class="char-xp-container" style="margin-top: 0.5rem; display: flex; flex-direction: column; gap: 0.3rem;">
                     <div style="display: flex; justify-content: space-between; font-size: 0.72rem; color: #cbd5e1; font-family: 'Inter', sans-serif; font-weight: 500;">
@@ -976,6 +980,8 @@ function editPersonnage(id) {
     document.getElementById('charResistance').value = p.resistance || 0;
     document.getElementById('charSpeed').value = p.speed || 0;
     document.getElementById('charCrit').value = p.crit || 0;
+    document.getElementById('charRegenHp').value = p.regenHp || 0;
+    document.getElementById('charRegenMana').value = p.regenMana || 0;
     document.getElementById('charVoie').value = p.voie ? p.voie.id : '';
     if (p.voie) {
         const info = getVoieInfo(p.voie.nom);
@@ -1019,6 +1025,8 @@ function resetForm() {
     document.getElementById('charResistance').value = 10;
     document.getElementById('charSpeed').value = 0;
     document.getElementById('charCrit').value = 0;
+    document.getElementById('charRegenHp').value = 0;
+    document.getElementById('charRegenMana').value = 0;
     document.getElementById('charVoie').value = '';
     document.getElementById('charVoieLabel').innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">trip_origin</span> — Aucune —`;
 

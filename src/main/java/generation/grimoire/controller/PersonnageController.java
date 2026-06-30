@@ -132,6 +132,8 @@ public class PersonnageController {
             personnage.setResistance(Math.max(0, dto.getResistance()));
             personnage.setSpeed(Math.max(0, dto.getSpeed()));
             personnage.setCrit(Math.max(0, Math.min(100, dto.getCrit())));
+            personnage.setRegenHp(Math.max(0, dto.getRegenHp()));
+            personnage.setRegenMana(Math.max(0, dto.getRegenMana()));
 
             // Voie
             if (dto.getVoieId() != null) {
@@ -213,6 +215,8 @@ public class PersonnageController {
         map.put("resistance", p.getResistance());
         map.put("speed", p.getSpeed());
         map.put("crit", p.getCrit());
+        map.put("regenHp", p.getRegenHp());
+        map.put("regenMana", p.getRegenMana());
 
         // Total stats pour l'affichage (inclus équipements, buffs, passifs)
         map.put("totalHealthMax", p.getTotalHealthMax());
@@ -298,6 +302,8 @@ public class PersonnageController {
         private int resistance = 5;
         private int speed = 1;
         private int crit = 5;
+        private int regenHp = 5;
+        private int regenMana = 5;
         private Long voieId;
         private int voieLevel = 1;
         private int experience = 0;
