@@ -7,7 +7,7 @@ const passifsMap = {
     'Voie de la Sûreté': "Accumule des points de Sûreté (10/tour et 20% du mana dépensé). À 100 points, octroie +15% de Critique, ou +25% si le palier est atteint passivement en début de tour.",
     'Voie de Trahison': "Une fois par tour, vos attaques physiques infligent des dégâts bruts bonus qui vous soignent : +10% de base, +15% si la cible a moins de 50% PV, et +10% si elle a un malus.",
     'Voie de la Consolidation': "Octroie +5% d'Armure par défaut. Lancer un sort remplace ce bonus selon son niveau (Nv1: +1 Vitesse, Nv2: +10% Armure, Nv3: +10% Résistance Magique, Nv4: Coût des sorts -20%, Nv5: +8% Armure et Résistance).",
-    'Voie de la Conviction': "Régénère 25 points de mana par tour (+5 par niveau de Voie) et augmente le mana maximum de 25 par niveau au-delà du premier.",
+    'Voie de la Conviction': "Régénère 25 points de mana par tour (+4 par niveau de Voie) et augmente le mana maximum de 20 par niveau au-delà du premier.",
     'Voie de la Création': "Modifie le 1er sort du tour : un sort Instantané devient gratuit, un sort Banal devient Instantané, et un sort Canalisé octroie un bouclier égal au mana dépensé.",
     'Voie de la Destruction': "Accumule de la 'Chaleur' en lançant des sorts. Lorsque la chaleur atteint 100, le prochain sort lancé est entièrement gratuit.",
     'Voie de la Violence': "Lancer un sort octroie des cumuls : l'Inspiration donne +2 Critique/cumul (max 5), l'Expiration donne +2 Puissance/cumul (max 10). Lancer une catégorie réinitialise l'autre. Stacks perdus si aucun sort n'est lancé au tour précédent."

@@ -766,6 +766,11 @@
                 opacity: 0;
                 transform: translateY(10px);
             }
+            to {
+                opacity: 1;
+                transform: translateY(0);
+            }
+        }
 
 .destruction-spark{
             position: fixed;
@@ -801,6 +806,11 @@
         }
 
 @keyframes destructionShake{
+            0%, 100% { transform: translate(0, 0) rotate(0deg); }
+            25% { transform: translate(-3px, 2px) rotate(-1deg); }
+            50% { transform: translate(2px, -1px) rotate(1deg); }
+            75% { transform: translate(-2px, -3px) rotate(0deg); }
+        }
 
 .creation-leaf{
             position: fixed;
@@ -842,12 +852,14 @@
             0% {
                 box-shadow: 0 0 0 rgba(120, 255, 150, 0);
             }
-
-.destruction-shake{
-            animation: destructionShake 0.35s ease-in-out;
+            50% {
+                box-shadow: 0 0 20px rgba(120, 255, 150, 0.8);
+            }
+            100% {
+                box-shadow: 0 0 0 rgba(120, 255, 150, 0);
+            }
         }
 
-@keyframes destructionShake{
 
 .consolidation-wall{
             position: fixed;
@@ -904,6 +916,13 @@
             0% {
                 transform: translateY(0);
             }
+            50% {
+                transform: translateY(-8px);
+            }
+            100% {
+                transform: translateY(0);
+            }
+        }
 
 .darkness-mist{
             position: fixed;
@@ -942,11 +961,13 @@
             0% {
                 filter: brightness(1);
             }
+        }
 
 @keyframes karmaBalance{
             0% {
                 transform: rotate(0deg) scale(1);
             }
+        }
 
 .betrayal-slash{
             position: fixed;
@@ -1006,9 +1027,24 @@
                 transform: translateX(0);
                 filter: hue-rotate(0deg);
             }
+            20% { transform: translate(-2px, 2px); filter: hue-rotate(90deg); }
+            40% { transform: translate(-2px, -2px); filter: hue-rotate(-90deg); }
+            60% { transform: translate(2px, 2px); filter: hue-rotate(90deg); }
+            80% { transform: translate(2px, -2px); filter: hue-rotate(-90deg); }
+            100% {
+                transform: translateX(0);
+                filter: hue-rotate(0deg);
+            }
+        }
 
 @keyframes violenceShock{
             0% {
                 transform: scale(1);
             }
-
+            50% {
+                transform: scale(1.2);
+            }
+            100% {
+                transform: scale(1);
+            }
+        }
