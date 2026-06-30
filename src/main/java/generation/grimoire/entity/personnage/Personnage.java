@@ -442,9 +442,10 @@ public class Personnage {
                             shieldDamageFlat = Math.max(0, shieldDamageFlat - absorbed);
 
                             if (absorbed > 0) {
-                                System.out.println("🛡️ Le bouclier (" + shield.getSourceName() + ") absorbe " + absorbed
-                                        + " dégâts (dégâts bruts consommés : " + rawConsumedInt + "). Reste : "
-                                        + shield.getAmount() + " absorption.");
+                                System.out
+                                        .println("🛡️ Le bouclier (" + shield.getSourceName() + ") absorbe " + absorbed
+                                                + " dégâts (dégâts bruts consommés : " + rawConsumedInt + "). Reste : "
+                                                + shield.getAmount() + " absorption.");
                             }
                             if (remainingDamage <= 0) {
                                 remainingDamage = 0;

@@ -452,7 +452,7 @@ let pendingCastSpellId = null;
 let pendingNeedsEnemy = false;
 let pendingNeedsAlly = false;
 
-window.updateSpellCardState = function(spellId) {
+window.updateSpellCardState = function (spellId) {
     if (!currentSessionData) return;
     const sp = currentSessionData.availableSpells.find(s => s.id === spellId);
     if (!sp) return;
@@ -465,7 +465,7 @@ window.updateSpellCardState = function(spellId) {
     const choiceSelect = document.getElementById(`choice-select-${spellId}`);
     if (isCastable) {
         let activeEffects = sp.effects || [];
-        
+
         if (choiceSelect) {
             const currentChoiceKey = choiceSelect.value;
             activeEffects = activeEffects.filter(e => {
@@ -486,7 +486,7 @@ window.updateSpellCardState = function(spellId) {
 
         const playerHeat = currentSessionData.activePlayer.passiveStates ? (currentSessionData.activePlayer.passiveStates['destruction_heat'] || 0) : 0;
         const totalHeatCost = (sp.heatCost || 0) + requiredHeatFromEffects;
-        
+
         if (playerHeat < totalHeatCost) {
             isCastable = false;
             dynamicReason = 'HEAT';
@@ -517,7 +517,7 @@ window.updateSpellCardState = function(spellId) {
         } else {
             card.classList.add('spell-disabled');
             card.setAttribute('onclick', '');
-            
+
             if (dynamicReason === 'HEAT' && !card.querySelector('.spell-disabled-badge.dynamic-spell-disabled-badge')) {
                 const dynamicBadge = card.querySelector('.dynamic-spell-disabled-badge');
                 if (dynamicBadge) dynamicBadge.remove();
@@ -585,7 +585,7 @@ function initiateCombatCast(spellId) {
 
         const playerHeat = currentSessionData.activePlayer.passiveStates ? (currentSessionData.activePlayer.passiveStates['destruction_heat'] || 0) : 0;
         const totalHeatCost = (sp.heatCost || 0) + requiredHeatFromEffects;
-        
+
         if (playerHeat < totalHeatCost) {
             addCombatLog(`Chaleur insuffisante pour cette option (${playerHeat}/${totalHeatCost})`, 'system');
             return;
@@ -1244,6 +1244,14 @@ function updateUI(data) {
     if (playersContainer) {
         playersContainer.innerHTML = '';
         data.players.forEach((p, index) => {
+            let actualHp = p.healthCurrent;
+            let preHp = p.hpCurrentBeforeTurnStart;
+            let needsDelay = preHp !== undefined && preHp !== null && preHp < actualHp;
+
+            if (needsDelay) {
+                p.healthCurrent = preHp;
+            }
+
             let isActive = false;
             if (data.turnOrder && data.turnOrder.length > data.currentTurnIndex) {
                 const currentTurn = data.turnOrder[data.currentTurnIndex];
@@ -1275,6 +1283,22 @@ function updateUI(data) {
             }
             div.innerHTML = generateFighterHtml(p, true);
             playersContainer.appendChild(div);
+
+            if (needsDelay) {
+                p.healthCurrent = actualHp;
+                setTimeout(() => {
+                    const hpBar = div.querySelector('.gauge-fill.hp');
+                    const hpLabel = div.querySelector('.gauge-label span:nth-child(2)');
+                    if (hpBar) {
+                        hpBar.style.width = (p.healthMax > 0 ? Math.max(0, Math.min(100, (actualHp / p.healthMax) * 100)) : 0) + '%';
+                    }
+                    if (hpLabel) {
+                        let labelText = `${actualHp} / ${p.healthMax}`;
+                        if (p.shieldTotal > 0) labelText += ` (+${p.shieldTotal} 🛡️)`;
+                        hpLabel.textContent = labelText;
+                    }
+                }, 800);
+            }
         });
     }
 
@@ -1722,7 +1746,7 @@ function updateUI(data) {
                                 </div>
                                 <input type="hidden" id="altarAnomalySelect" value="${first.id}">
                                 `;
-                                window.updateAltarDropChance = function(level) {
+                                window.updateAltarDropChance = function (level) {
                                     const el = document.getElementById('altarDropChance');
                                     if (el) {
                                         let chance = level === 1 ? 45 : (level === 2 ? 75 : 100);
@@ -1734,7 +1758,7 @@ function updateUI(data) {
                                         let multiplier = level === 1 ? 1.0 : (level === 2 ? 1.3 : 1.8);
                                         let baseVal = parseInt(valEl.getAttribute('data-base-value'), 10);
                                         let finalVal = Math.round(baseVal * multiplier);
-                                        
+
                                         if (valEl.getAttribute('data-type') === 'XP') {
                                             let aliveHeroes = 1;
                                             if (data && data.players) {
@@ -1743,12 +1767,12 @@ function updateUI(data) {
                                             if (aliveHeroes < 1) aliveHeroes = 1;
                                             finalVal = Math.floor(finalVal / aliveHeroes);
                                         }
-                                        
+
                                         valEl.textContent = finalVal;
                                     }
                                 };
                                 container.innerHTML = selectHtml;
-                                if(window.updateAltarDropChance) window.updateAltarDropChance(first.level || 1);
+                                if (window.updateAltarDropChance) window.updateAltarDropChance(first.level || 1);
                             }).catch(err => {
                                 console.error("Failed to load anomalies:", err);
                                 const container = document.getElementById('altarAnomalySelectContainer');
