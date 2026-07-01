@@ -477,6 +477,25 @@ export function showGlobalTooltip(el) {
     if (!dataEl) return;
 
     tooltip.innerHTML = dataEl.innerHTML;
+    
+    const elColor = el.getAttribute('data-color');
+    if (elColor) {
+        tooltip.style.borderColor = elColor;
+        const titleEl = tooltip.querySelector('.anomaly-tooltip-title');
+        if (titleEl) {
+            titleEl.style.color = elColor;
+            titleEl.style.borderBottom = '1px solid ' + elColor;
+        }
+    } else {
+        tooltip.style.borderColor = 'rgba(255, 255, 255, 0.15)';
+        const titleEl = tooltip.querySelector('.anomaly-tooltip-title');
+        if (titleEl) {
+            // Restore default if any
+            titleEl.style.color = '#c084fc';
+            titleEl.style.borderBottom = 'none';
+        }
+    }
+    
     tooltip.style.display = 'flex';
     tooltip.style.maxHeight = '60vh';
     tooltip.style.overflowY = 'auto';

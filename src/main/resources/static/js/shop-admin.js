@@ -948,6 +948,13 @@ window.showTooltipFixed = function(el) {
         document.body.appendChild(tooltip);
     }
     tooltip.innerHTML = el.getAttribute('data-tooltip-html');
+    const elColor = el.style.color || '#a855f7';
+    tooltip.style.border = '1px solid ' + elColor;
+    const titleEl = tooltip.querySelector('.anomaly-tooltip-title');
+    if (titleEl) {
+        titleEl.style.color = elColor;
+        titleEl.style.borderBottom = '1px solid ' + elColor;
+    }
     tooltip.style.display = 'block';
 
     const rect = el.getBoundingClientRect();

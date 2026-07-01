@@ -722,6 +722,13 @@
                 document.body.appendChild(tooltip);
             }
             tooltip.innerHTML = el.getAttribute('data-tooltip-html');
+            const elColor = el.style.color || '#a855f7';
+            tooltip.style.border = '1px solid ' + elColor;
+            const titleEl = tooltip.querySelector('.anomaly-tooltip-title');
+            if (titleEl) {
+                titleEl.style.color = elColor;
+                titleEl.style.borderBottom = '1px solid ' + elColor;
+            }
             tooltip.style.display = 'block';
 
             const rect = el.getBoundingClientRect();
@@ -879,8 +886,12 @@
                                         Lvl ${aTemp.level || 1}
                                     </span>
                                     <span style="border: 1px solid ${getTypeColor(aTemp.magicObject)}; color: ${getTypeColor(aTemp.magicObject)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; display: flex; align-items: center; gap: 4px;">
-                                        ${aTemp.spiritualite}
+                                        <span class="material-symbols-outlined" style="font-size: 0.9rem;">${catIcon}</span>
+                                        ${aTemp.magicObject ? 'Objet Magique' : 'Matériau'}
                                     </span>
+                                    ${aTemp.spiritualite ? `<span style="border: 1px solid ${getSpiritualiteColor(aTemp.spiritualite)}; color: ${getSpiritualiteColor(aTemp.spiritualite)}; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; background: rgba(0,0,0,0.3); text-transform: uppercase;">
+                                        ${aTemp.spiritualite}
+                                    </span>` : ''}
                                 </div>
                                 <div class="anomaly-tooltip-desc">${aTemp.description ? aTemp.description : 'Aucune description'}</div>
                             `;
@@ -909,8 +920,12 @@
                                     Lvl ${r.rewardLevel || aTemp.level || 1}
                                 </span>
                                 <span style="border: 1px solid ${getTypeColor(aTemp.magicObject)}; color: ${getTypeColor(aTemp.magicObject)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; display: flex; align-items: center; gap: 4px;">
-                                    ${aTemp.spiritualite}
+                                    <span class="material-symbols-outlined" style="font-size: 0.9rem;">${catIcon}</span>
+                                    ${aTemp.magicObject ? 'Objet Magique' : 'Matériau'}
                                 </span>
+                                ${aTemp.spiritualite ? `<span style="border: 1px solid ${getSpiritualiteColor(aTemp.spiritualite)}; color: ${getSpiritualiteColor(aTemp.spiritualite)}; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; background: rgba(0,0,0,0.3); text-transform: uppercase;">
+                                    ${aTemp.spiritualite}
+                                </span>` : ''}
                             </div>
                             <div class="anomaly-tooltip-desc">${aTemp.description ? aTemp.description : 'Aucune description'}</div>
                         `;

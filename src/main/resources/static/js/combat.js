@@ -1,4 +1,4 @@
-import * as ui from './ui.js';
+import * as ui from './ui.js?v=2';
 import { getSpellEffectsSummaryHtml } from './grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from './filters.js';
 
@@ -16,6 +16,66 @@ if (!window.allAnomaliesCombat || !Array.isArray(window.allAnomaliesCombat)) {
     }).catch(err => {
         console.error("Failed to load anomalies templates:", err);
     });
+}
+
+export function createAnomalyBadgeHtml(anomalyName, showName = false) {
+    if (!anomalyName || anomalyName === 'Item') return anomalyName;
+
+    const CATEGORY_ICONS = {
+        'PIERRE': 'landslide', 'METAL': 'hardware', 'COEUR': 'favorite',
+        'ORBE': 'lens', 'CRISTAL': 'diamond', 'PLUME': 'history_edu',
+        'ECAILLE': 'waves', 'AUTRE': 'category'
+    };
+
+    let tooltipTitle = anomalyName;
+    let tooltipDesc = 'Cet objet aura un effet unique !';
+    let tColor = '#d946ef';
+    let anomLevel = 1;
+    let anomSpiri = 'Inconnu';
+    let catIcon = 'star';
+    let isMagic = false;
+
+    if (Array.isArray(window.allAnomaliesCombat)) {
+        const an = window.allAnomaliesCombat.find(a => a.name === anomalyName);
+        if (an) {
+            if (an.description) tooltipDesc = an.description;
+            if (an.level) anomLevel = an.level;
+            if (an.magicObject) isMagic = true;
+            if (an.category) catIcon = CATEGORY_ICONS[an.category] || 'category';
+            if (an.spiritualite) {
+                anomSpiri = an.spiritualite;
+                if (an.spiritualite === 'ESPRIT') tColor = '#38bdf8';
+                else if (an.spiritualite === 'KARMA') tColor = '#e7d198';
+                else if (an.spiritualite === 'TENEBRES') tColor = '#a855f7';
+            }
+        }
+    }
+
+    let lvlColor = '#10b981';
+    if (anomLevel === 2) lvlColor = '#3b82f6';
+    else if (anomLevel === 3) lvlColor = '#8b5cf6';
+    else if (anomLevel === 4) lvlColor = '#f59e0b';
+    else if (anomLevel >= 5) lvlColor = '#ef4444';
+
+    const typeColor = isMagic ? '#ec4899' : '#b45309';
+    const typeLabel = isMagic ? 'Objet Magique' : 'Matériau';
+
+    const tooltipDataHtml = `
+        <div class="anomaly-tooltip-title" style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:${tColor}; border-bottom: 1px solid ${tColor}; padding-bottom: 4px;">${tooltipTitle}</div>
+        <div style="display: flex; gap: 6px; margin: 6px 0; flex-wrap: wrap;">
+            <span style="border: 1px solid ${lvlColor}; color: ${lvlColor}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold;">Lvl ${anomLevel}</span>
+            <span style="border: 1px solid ${typeColor}; color: ${typeColor}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; display: flex; align-items: center; gap: 4px;"><span class="material-symbols-outlined" style="font-size: 0.9rem;">${catIcon}</span>${typeLabel}</span>
+            <span style="border: 1px solid ${tColor}; color: ${tColor}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase;">${anomSpiri}</span>
+        </div>
+        <div style="font-style:italic; color:#cbd5e1; margin-top:8px; max-width: 350px; line-height: 1.4; white-space: normal !important; word-wrap: break-word;">${tooltipDesc}</div>
+    `;
+
+    const tooltipAttrs = 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"';
+    const extraAttrs = `data-color="${tColor}"`;
+
+    const nameHtml = showName ? `<span style="margin-left: 0.2rem;">${anomalyName}</span>` : '';
+    const padStyle = showName ? 'padding: 0.1rem 0.4rem;' : 'padding: 0.3rem;';
+    return `<span class="anomaly-badge" ${tooltipAttrs} ${extraAttrs} style="display: inline-flex; align-items: center; justify-content: center; border: 1px solid ${tColor}; background: linear-gradient(${tColor}25, ${tColor}25), rgba(15,23,42,0.8); color: ${tColor}; ${padStyle} border-radius: 6px; font-weight:bold; cursor: help; vertical-align: middle;"><template class="tooltip-data">${tooltipDataHtml}</template><span class="material-symbols-outlined" style="font-size: 1.2rem;">${catIcon}</span>${nameHtml}</span>`;
 }
 
 const SLOT_LABELS = {
@@ -1638,18 +1698,21 @@ function updateUI(data) {
                             if (data.currentRoom.alterationRewardType === 'SPIRITUAL_XP') {
                                 specialItemHtml = `<div style="color: #c084fc; font-size: 0.85rem; margin-top: 0.5rem; text-align: center; background: rgba(192, 132, 252, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(192, 132, 252, 0.3);"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">star</span> <strong>Récompense :</strong> Vous obtiendrez +${data.currentRoom.alterationSpiritualXpReward || 0} XP Spirituel !</div>`;
                             } else if (data.currentRoom.alterationRewardType === 'SPECIAL_ITEM') {
-                                specialItemHtml = `<div style="color: #d946ef; font-size: 0.85rem; margin-top: 0.5rem; text-align: center; background: rgba(217, 70, 239, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(217, 70, 239, 0.3);"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">star</span> <strong>Récompense :</strong> Vous obtiendrez l'item spécial "${data.currentRoom.alterationSpecialItemReward || 'Item'}" !</div>`;
+                                let badge = data.currentRoom.alterationSpecialItemReward ? createAnomalyBadgeHtml(data.currentRoom.alterationSpecialItemReward) : '"Item"';
+                                specialItemHtml = `<div style="color: #d946ef; font-size: 0.85rem; margin-top: 0.5rem; text-align: center; background: rgba(217, 70, 239, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(217, 70, 239, 0.3);"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">star</span> <strong>Récompense :</strong> Vous obtiendrez l'item spécial ${badge}</div>`;
                             }
 
                             btnText = `Accepter`;
                         } else if (data.currentRoom.alterationType === 'ITEM') {
                             btnText = `Donner l'item et Toucher`;
-                            warningHtml = `<div style="color: #ef4444; font-size: 0.85rem; margin-top: 0.5rem; text-align: center; background: rgba(239, 68, 68, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3);"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">warning</span> <strong>Attention :</strong> L'item "${data.currentRoom.alterationRequiredItem || 'spécial'}" sera définitivement détruit de l'inventaire d'un de vos héros s'il accepte cette offre.</div>`;
+                            let reqBadge = data.currentRoom.alterationRequiredItem ? createAnomalyBadgeHtml(data.currentRoom.alterationRequiredItem) : '"spécial"';
+                            warningHtml = `<div style="color: #ef4444; font-size: 0.85rem; margin-top: 0.5rem; text-align: center; background: rgba(239, 68, 68, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3);"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">warning</span> <strong>Attention :</strong> L'item ${reqBadge} sera définitivement détruit de l'inventaire d'un de vos héros s'il accepte cette offre.</div>`;
 
                             if (data.currentRoom.alterationRewardType === 'SPIRITUAL_XP') {
                                 specialItemHtml = `<div style="color: #38bdf8; font-size: 0.85rem; margin-top: 0.5rem; text-align: center; background: rgba(56, 189, 248, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.3);"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">star</span> <strong>Récompense :</strong> Vous obtiendrez +${data.currentRoom.alterationSpiritualXpReward || 0} XP Spirituel !</div>`;
                             } else if (data.currentRoom.alterationRewardType === 'SPECIAL_ITEM') {
-                                specialItemHtml = `<div style="color: #d946ef; font-size: 0.85rem; margin-top: 0.5rem; text-align: center; background: rgba(217, 70, 239, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(217, 70, 239, 0.3);"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">star</span> <strong>Récompense :</strong> Vous obtiendrez l'item spécial "${data.currentRoom.alterationSpecialItemReward || 'Item'}" !</div>`;
+                                let badge = data.currentRoom.alterationSpecialItemReward ? createAnomalyBadgeHtml(data.currentRoom.alterationSpecialItemReward) : '"Item"';
+                                specialItemHtml = `<div style="color: #d946ef; font-size: 0.85rem; margin-top: 0.5rem; text-align: center; background: rgba(217, 70, 239, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(217, 70, 239, 0.3);"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle;">star</span> <strong>Récompense :</strong> Vous obtiendrez l'item spécial ${badge}</div>`;
                             }
 
                             specialItemHtml += `<div id="itemAlterationCheckContainer" style="margin-top: 1rem; text-align: center; width: 100%;">
@@ -2011,22 +2074,53 @@ function updateUI(data) {
                                 let tooltipTitle = 'Objet Spécial';
                                 let tooltipDesc = 'Cet objet aura un effet unique !';
                                 let tColor = '#d946ef';
+                                let anomLevel = 1;
+                                let anomSpiri = 'Inconnu';
+                                let catIcon2 = 'star';
+                                let isMagic = false;
+
                                 if (Array.isArray(window.allAnomaliesCombat)) {
                                     const an = window.allAnomaliesCombat.find(a => a.name === entry.specialItemName);
                                     if (an) {
-                                        tooltipTitle = 'Anomalie';
+                                        tooltipTitle = an.name;
                                         if (an.description) tooltipDesc = an.description;
-                                        if (an.spiritualite === 'ESPRIT') tColor = '#38bdf8';
-                                        else if (an.spiritualite === 'KARMA') tColor = '#e7d198';
+                                        if (an.level) anomLevel = an.level;
+                                        if (an.magicObject) isMagic = true;
+                                        if (an.category) catIcon2 = CATEGORY_ICONS[an.category] || 'category';
+                                        if (an.spiritualite) {
+                                            anomSpiri = an.spiritualite;
+                                            if (an.spiritualite === 'ESPRIT') tColor = '#38bdf8';
+                                            else if (an.spiritualite === 'KARMA') tColor = '#e7d198';
+                                            else if (an.spiritualite === 'TENEBRES') tColor = '#a855f7';
+                                        }
                                     }
                                 }
-                                tooltipDataHtml = `<div style="padding: 0.5rem; color: ${tColor}; font-weight: 600; text-align: center; min-width: 150px;">${tooltipTitle}</div><div style="color: #94a3b8; text-align: center; font-size: 0.9rem;">${tooltipDesc}</div>`;
+
+                                let lvlColor = '#10b981';
+                                if (anomLevel === 2) lvlColor = '#3b82f6';
+                                else if (anomLevel === 3) lvlColor = '#8b5cf6';
+                                else if (anomLevel === 4) lvlColor = '#f59e0b';
+                                else if (anomLevel >= 5) lvlColor = '#ef4444';
+
+                                const typeColor = isMagic ? '#ec4899' : '#b45309';
+                                const typeLabel = isMagic ? 'Objet Magique' : 'Matériau';
+
+                                tooltipDataHtml = `
+                                    <div class="anomaly-tooltip-title" style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:${tColor}; border-bottom: 1px solid ${tColor}; padding-bottom: 4px;">${tooltipTitle}</div>
+                                    <div style="display: flex; gap: 6px; margin: 6px 0; flex-wrap: wrap;">
+                                        <span style="border: 1px solid ${lvlColor}; color: ${lvlColor}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold;">Lvl ${anomLevel}</span>
+                                        <span style="border: 1px solid ${typeColor}; color: ${typeColor}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; display: flex; align-items: center; gap: 4px;"><span class="material-symbols-outlined" style="font-size: 0.9rem;">${catIcon2}</span>${typeLabel}</span>
+                                        <span style="border: 1px solid ${tColor}; color: ${tColor}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase;">${anomSpiri}</span>
+                                    </div>
+                                    <div style="font-style:italic; color:#cbd5e1; margin-top:8px; max-width: 350px; line-height: 1.4; white-space: normal !important; word-wrap: break-word;">${tooltipDesc}</div>
+                                `;
                             }
 
                             const tooltipAttrs = tooltipDataHtml ? 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"' : '';
+                            const extraAttrs = entry.specialItemName ? `data-color="${rarityColor}"` : '';
 
                             lootContainer.innerHTML += `
-                                <div ${tooltipAttrs} style="background: rgba(15, 23, 42, 0.6); border: 1px solid ${rarityColor}50; padding: 1rem; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; gap: 1rem; width: 48%; min-width: 350px; flex: 1 1 auto; max-width: 500px; transition: all 0.2s ease; position: relative;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.4)';" onmouseout="this.style.transform='none'; this.style.boxShadow='none';">
+                                <div ${tooltipAttrs} ${extraAttrs} style="background: rgba(15, 23, 42, 0.6); border: 1px solid ${rarityColor}50; padding: 1rem; border-radius: 12px; display: flex; align-items: center; justify-content: space-between; gap: 1rem; width: 48%; min-width: 350px; flex: 1 1 auto; max-width: 500px; transition: all 0.2s ease; position: relative;" onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.4)';" onmouseout="this.style.transform='none'; this.style.boxShadow='none';">
                                     ${tooltipDataHtml ? `<template class="tooltip-data">${tooltipDataHtml}</template>` : ''}
                                     <div style="display: flex; align-items: center; gap: 1rem;">
                                         <div style="width: 48px; height: 48px; border-radius: 8px; background: rgba(0,0,0,0.5); display: flex; align-items: center; justify-content: center; border: 1px solid ${rarityColor}30;">
@@ -3147,7 +3241,7 @@ function renderSpellCard(sp) {
     if (!isCastable && avail) {
         let badgeClass = 'badge-resource';
         let badgeIcon = 'water_drop';
-        
+
         if (avail.reason === 'CONDITION') {
             badgeClass = 'badge-condition';
             badgeIcon = 'block';
@@ -3161,9 +3255,9 @@ function renderSpellCard(sp) {
             badgeClass = 'badge-condition';
             badgeIcon = 'group_off';
         }
-        
+
         if (avail.reason === 'RESOURCE' || !avail.reason) {
-            let resIcon = 'water_drop'; 
+            let resIcon = 'water_drop';
             let resColor = '#38bdf8';
             if (avail.tooltip && avail.tooltip.toLowerCase().includes('chaleur')) {
                 resIcon = 'local_fire_department';

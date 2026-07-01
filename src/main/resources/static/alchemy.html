@@ -596,7 +596,7 @@
                     };
 
                     const tooltipData = buildAnomalyTooltipHTML(name);
-                    reqsHTML += `<div style="background:rgba(0,0,0,0.4); padding:0.6rem; border-radius:8px; border:1px solid ${style.color}40; margin-bottom: 0.4rem; cursor: help;" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipData}">
+                    reqsHTML += `<div data-color="${style.color}" style="background:rgba(0,0,0,0.4); padding:0.6rem; border-radius:8px; border:1px solid ${style.color}40; margin-bottom: 0.4rem; cursor: help;" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipData}">
                         <div style="display:flex; align-items:center; justify-content: space-between; gap:0.5rem; margin-bottom: ${(!isIdentical && hasEnough) ? '0.5rem' : '0'};">
                             <div style="display:flex; align-items:center; gap:0.5rem;">
                                 <span class="material-symbols-outlined" style="color: ${style.color}; font-size:1.2rem;">${style.icon}</span>
@@ -658,7 +658,7 @@
 
                     const style = getItemStyle(name, 'CONSUMABLE');
                     const tooltipData = buildEquipmentTooltipHTML(name, true);
-                    const tooltipAttrs = tooltipData ? `onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipData}" style="cursor: help; background:rgba(0,0,0,0.4); padding:0.6rem; border-radius:8px; border:1px solid ${style.color}40; margin-bottom: 0.4rem;"` : `style="background:rgba(0,0,0,0.4); padding:0.6rem; border-radius:8px; border:1px solid ${style.color}40; margin-bottom: 0.4rem;"`;
+                    const tooltipAttrs = tooltipData ? `data-color="${style.color}" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipData}" style="cursor: help; background:rgba(0,0,0,0.4); padding:0.6rem; border-radius:8px; border:1px solid ${style.color}40; margin-bottom: 0.4rem;"` : `style="background:rgba(0,0,0,0.4); padding:0.6rem; border-radius:8px; border:1px solid ${style.color}40; margin-bottom: 0.4rem;"`;
 
                     reqsHTML += `<div ${tooltipAttrs}>
                         <div style="display:flex; align-items:center; justify-content: space-between; gap:0.5rem;">
@@ -752,11 +752,11 @@
             let resultTooltipAttr = '';
             if (resultType === 'ANOMALY') {
                 const tooltipData = buildAnomalyTooltipHTML(r.rewardName);
-                resultTooltipAttr = `onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipData}"`;
+                resultTooltipAttr = `data-color="${resultColor}" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipData}"`;
             } else if (resultType === 'EQUIPMENT' || resultType === 'CONSUMABLE') {
                 const tooltipData = buildEquipmentTooltipHTML(r.rewardName, resultType === 'CONSUMABLE');
                 if (tooltipData) {
-                    resultTooltipAttr = `onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipData}"`;
+                    resultTooltipAttr = `data-color="${resultColor}" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipData}"`;
                 }
             }
 
@@ -1153,13 +1153,19 @@
             let temp = allAnomalyTemplates.find(a => a.name === name);
             if (!temp) temp = { name: name, level: 1, spiritualite: 'Inconnu', description: 'Aucune description' };
 
+            const isMagic = temp.magicObject ? true : false;
+            const typeColor = isMagic ? '#ec4899' : '#b45309';
+            const typeLabel = isMagic ? 'Objet Magique' : 'Matériau';
+            const catIcon = temp.category ? (CATEGORY_ICONS[temp.category] || 'category') : 'star';
+
             return `
-                <div style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:#c084fc;">${temp.name}</div>
+                <div class="anomaly-tooltip-title" style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:#c084fc;">${temp.name}</div>
                 <div style="display: flex; gap: 6px; margin: 6px 0; flex-wrap: wrap;">
                     <span style="border: 1px solid ${getLevelColor(temp.level)}; color: ${getLevelColor(temp.level)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold;">Lvl ${temp.level}</span>
+                    <span style="border: 1px solid ${typeColor}; color: ${typeColor}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; display: flex; align-items: center; gap: 4px;"><span class="material-symbols-outlined" style="font-size: 0.9rem;">${catIcon}</span>${typeLabel}</span>
                     <span style="border: 1px solid ${getSpiritualiteColor(temp.spiritualite)}; color: ${getSpiritualiteColor(temp.spiritualite)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase;">${temp.spiritualite || 'Autre'}</span>
                 </div>
-                <div style="font-style:italic; color:#cbd5e1; margin-top:8px;">${temp.description || 'Aucune description'}</div>
+                <div style="font-style:italic; color:#cbd5e1; margin-top:8px; max-width: 350px; line-height: 1.4; white-space: normal !important; word-wrap: break-word;">${temp.description || 'Aucune description'}</div>
             `.replace(/"/g, '&quot;');
         }
 
@@ -1256,6 +1262,13 @@
                 document.body.appendChild(tooltip);
             }
             tooltip.innerHTML = el.getAttribute('data-tooltip-html');
+            const elColor = el.getAttribute('data-color') || el.style.color || '#a855f7';
+            tooltip.style.border = '1px solid ' + elColor;
+            const titleEl = tooltip.querySelector('.anomaly-tooltip-title');
+            if (titleEl) {
+                titleEl.style.color = elColor;
+                titleEl.style.borderBottom = '1px solid ' + elColor;
+            }
             tooltip.style.display = 'block';
 
             const rect = el.getBoundingClientRect();
