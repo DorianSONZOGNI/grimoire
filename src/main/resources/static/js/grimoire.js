@@ -330,16 +330,22 @@ export function getSpellEffectsSummaryHtml(sp) {
                     }
                 } else if (t === 'HeatPercentage' || t === 'HEAT_PERCENTAGE') {
                     const pct = Math.round((e.percentage || 0) * 100);
-                    detailsStr = `➔ génère ${pct}% de ${ui.formatSrc(e.source)} en Chaleur`;
+                    if (pct < 0) {
+                        detailsStr = `➔ consomme ${Math.abs(pct)}% de ${ui.formatSrc(e.source)} en Chaleur`;
+                    } else {
+                        detailsStr = `➔ génère ${pct}% de ${ui.formatSrc(e.source)} en Chaleur`;
+                    }
                 } else if (t === 'HeatOverTime' || t === 'HEAT_OVER_TIME') {
                     let parts = [];
                     const fv = e.flatValue || e.fixedValue || 0;
                     const pv = e.percentage || 0;
-                    if (fv) parts.push(`${fv}`);
-                    if (pv) parts.push(`${Math.round(pv * 100)}% ${ui.formatSrc(e.source || 'TARGET_HEALTH_MAX')}`);
+                    if (fv) parts.push(`${Math.abs(fv)}`);
+                    if (pv) parts.push(`${Math.abs(Math.round(pv * 100))}% ${ui.formatSrc(e.source || 'TARGET_HEALTH_MAX')}`);
                     if (parts.length === 0) parts.push('0');
                     const durStr = e.duration > 0 ? ` sur ${e.duration} tours` : '';
-                    detailsStr = `➔ Tick Chaleur de ${parts.join(' + ')}/tour${durStr}`;
+                    const isConsuming = (fv < 0) || (pv < 0);
+                    const verb = isConsuming ? 'Consomme' : 'Génère';
+                    detailsStr = `➔ Tick Chaleur : ${verb} ${parts.join(' + ')}/tour${durStr}`;
                 }
 
                 const keyBadge = e.requiredChoiceKey != null ? `<span style="background:rgba(245,158,11,0.2); color:#f59e0b; padding:0.1rem 0.3rem; border-radius:3px; font-size:0.75rem; font-weight:bold;" title="S'active uniquement si l'option choisie au cast est ${e.requiredChoiceKey}">Option ${e.requiredChoiceKey}</span>` : '';
