@@ -461,7 +461,20 @@
         async function loadItems() {
             try {
                 const resA = await fetch('/api/anomalies/all-templates');
-                if (resA.ok) allAnomalies = await resA.json();
+                if (resA.ok) {
+                    allAnomalies = await resA.json();
+                    allAnomalies.sort((a, b) => {
+                        const spiA = a.spiritualite || 'ZZZ';
+                        const spiB = b.spiritualite || 'ZZZ';
+                        if (spiA !== spiB) return spiA.localeCompare(spiB);
+                        
+                        const lvlA = a.level || 1;
+                        const lvlB = b.level || 1;
+                        if (lvlA !== lvlB) return lvlA - lvlB;
+                        
+                        return a.name.localeCompare(b.name);
+                    });
+                }
             } catch (e) {
                 console.error("Erreur chargement anomalies", e);
             }

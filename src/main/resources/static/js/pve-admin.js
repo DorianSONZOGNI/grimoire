@@ -932,7 +932,7 @@ function renderRooms() {
                     if (a.spiritualite === 'ESPRIT') color = '#38bdf8';
                     else if (a.spiritualite === 'KARMA') color = '#e7d198';
                     const icon = CATEGORY_ICONS[a.category] || 'category';
-                    return `<div class="custom-option" onclick="selectMerchantSpecial(${rIndex}, '${a.name.replace(/'/g, "\\'")}', '${a.name.replace(/'/g, "\\'")}', '${color}')"><span class="material-symbols-outlined cs-icon" style="color: ${color};">${icon}</span> ${a.name}</div>`;
+                    return `<div class="custom-option" onclick="selectMerchantSpecial(${rIndex}, '${a.name.replace(/'/g, "\\'")}', '${a.name.replace(/'/g, "\\'")}', '${color}')"><span class="material-symbols-outlined cs-icon" style="color: ${color};">${icon}</span> ${a.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${a.level || 1})</span></div>`;
                 }).join('')}
                                 </div>
                                 <input type="hidden" id="room_merchant_special_${rIndex}" value="">
@@ -962,7 +962,7 @@ function renderRooms() {
                     if (a.spiritualite === 'ESPRIT') color = '#38bdf8';
                     else if (a.spiritualite === 'KARMA') color = '#e7d198';
                     const icon = CATEGORY_ICONS[a.category] || 'category';
-                    return `<div class="custom-option" onclick="selectMerchantCost(${rIndex}, '${a.name.replace(/'/g, "\\'")}', '${a.name.replace(/'/g, "\\'")}', '${color}')"><span class="material-symbols-outlined cs-icon" style="color: ${color};">${icon}</span> ${a.name}</div>`;
+                    return `<div class="custom-option" onclick="selectMerchantCost(${rIndex}, '${a.name.replace(/'/g, "\\'")}', '${a.name.replace(/'/g, "\\'")}', '${color}')"><span class="material-symbols-outlined cs-icon" style="color: ${color};">${icon}</span> ${a.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${a.level || 1})</span></div>`;
                 }).join('')}
                                     </div>
                                     <input type="hidden" id="room_merchant_cost_item_${rIndex}" value="">
@@ -1496,6 +1496,14 @@ async function loadAnomalies() {
                 if (uniqueNames.has(a.name)) return false;
                 uniqueNames.add(a.name);
                 return true;
+            }).sort((a, b) => {
+                const typeA = a.magicObject ? 0 : 1;
+                const typeB = b.magicObject ? 0 : 1;
+                if (typeA !== typeB) return typeA - typeB;
+                const lvlA = a.level || 1;
+                const lvlB = b.level || 1;
+                if (lvlA !== lvlB) return lvlA - lvlB;
+                return a.name.localeCompare(b.name);
             });
             renderRooms();
         }
