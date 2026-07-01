@@ -234,8 +234,9 @@
     position: fixed;
     bottom: 2rem;
     right: 2rem;
-    width: 380px;
-    max-width: 90%;
+    min-width: 380px;
+    max-width: 800px;
+    width: max-content;
     background: rgba(15, 23, 42, 0.95);
     border: 1px solid var(--primary);
     box-shadow: 0 10px 30px var(--primary-glow), 0 0 20px rgba(139, 92, 246, 0.15);
