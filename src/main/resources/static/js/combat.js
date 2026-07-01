@@ -481,6 +481,21 @@ window.updateSpellCardState = function (spellId) {
                 if ((e.amount || 0) < 0) {
                     requiredHeatFromEffects += Math.abs(e.amount);
                 }
+            } else if (rawType === 'HEAT_PERCENTAGE' || rawType === 'HeatPercentageEffect') {
+                if ((e.percentage || 0) < 0) {
+                    const src = e.source || 'TARGET_HEALTH_MAX';
+                    let srcVal = 1; // Default
+                    if (currentSessionData && currentSessionData.activePlayer) {
+                        if (src === 'CASTER_HEALTH_MAX') srcVal = currentSessionData.activePlayer.hpMax || 1;
+                        if (src === 'CASTER_MANA_MAX') srcVal = currentSessionData.activePlayer.manaMax || 1;
+                        if (src === 'CASTER_POWER') srcVal = currentSessionData.activePlayer.power || 1;
+                        if (src === 'CASTER_STRENGTH') srcVal = currentSessionData.activePlayer.strength || 1;
+                        if (src === 'CASTER_ARMOR') srcVal = currentSessionData.activePlayer.armor || 1;
+                        if (src === 'CASTER_RESISTANCE') srcVal = currentSessionData.activePlayer.resistance || 1;
+                        if (src === 'CASTER_SPEED') srcVal = currentSessionData.activePlayer.speed || 1;
+                    }
+                    requiredHeatFromEffects += Math.floor(Math.abs(e.percentage) * srcVal);
+                }
             }
         });
 
@@ -579,6 +594,21 @@ function initiateCombatCast(spellId) {
             if (rawType === 'HEAT_FIXED' || rawType === 'HeatFixedEffect') {
                 if ((e.amount || 0) < 0) {
                     requiredHeatFromEffects += Math.abs(e.amount);
+                }
+            } else if (rawType === 'HEAT_PERCENTAGE' || rawType === 'HeatPercentageEffect') {
+                if ((e.percentage || 0) < 0) {
+                    const src = e.source || 'TARGET_HEALTH_MAX';
+                    let srcVal = 1;
+                    if (currentSessionData && currentSessionData.activePlayer) {
+                        if (src === 'CASTER_HEALTH_MAX') srcVal = currentSessionData.activePlayer.hpMax || 1;
+                        if (src === 'CASTER_MANA_MAX') srcVal = currentSessionData.activePlayer.manaMax || 1;
+                        if (src === 'CASTER_POWER') srcVal = currentSessionData.activePlayer.power || 1;
+                        if (src === 'CASTER_STRENGTH') srcVal = currentSessionData.activePlayer.strength || 1;
+                        if (src === 'CASTER_ARMOR') srcVal = currentSessionData.activePlayer.armor || 1;
+                        if (src === 'CASTER_RESISTANCE') srcVal = currentSessionData.activePlayer.resistance || 1;
+                        if (src === 'CASTER_SPEED') srcVal = currentSessionData.activePlayer.speed || 1;
+                    }
+                    requiredHeatFromEffects += Math.floor(Math.abs(e.percentage) * srcVal);
                 }
             }
         });
@@ -3117,6 +3147,7 @@ function renderSpellCard(sp) {
     if (!isCastable && avail) {
         let badgeClass = 'badge-resource';
         let badgeIcon = 'water_drop';
+        
         if (avail.reason === 'CONDITION') {
             badgeClass = 'badge-condition';
             badgeIcon = 'block';
@@ -3129,14 +3160,22 @@ function renderSpellCard(sp) {
         } else if (avail.reason === 'NO_OTHER_ALLY') {
             badgeClass = 'badge-condition';
             badgeIcon = 'group_off';
-        } else if (avail.reason === 'RESOURCE' || !avail.reason) {
-            if (avail.tooltip && avail.tooltip.toLowerCase().includes('chaleur')) {
-                badgeIcon = 'local_fire_department';
-            } else if (avail.tooltip && avail.tooltip.toLowerCase().includes('pv')) {
-                badgeIcon = 'bloodtype';
-            }
         }
-        disabledBadgeHtml = `<div class="spell-disabled-badge ${badgeClass}" title="${avail.tooltip || ''}"><span class="material-symbols-outlined">${badgeIcon}</span></div>`;
+        
+        if (avail.reason === 'RESOURCE' || !avail.reason) {
+            let resIcon = 'water_drop'; 
+            let resColor = '#38bdf8';
+            if (avail.tooltip && avail.tooltip.toLowerCase().includes('chaleur')) {
+                resIcon = 'local_fire_department';
+                resColor = '#f97316';
+            } else if (avail.tooltip && avail.tooltip.toLowerCase().includes('pv')) {
+                resIcon = 'bloodtype';
+                resColor = '#ef4444';
+            }
+            disabledBadgeHtml = `<div class="spell-disabled-badge badge-resource" title="${avail.tooltip || 'Ressources insuffisantes'}"><span class="material-symbols-outlined" style="color: ${resColor};">${resIcon}</span></div>`;
+        } else {
+            disabledBadgeHtml = `<div class="spell-disabled-badge ${badgeClass}" title="${avail.tooltip || ''}"><span class="material-symbols-outlined">${badgeIcon}</span></div>`;
+        }
     }
 
     return `

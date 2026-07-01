@@ -114,20 +114,28 @@ public class BuffDebuffEffect extends SpellEffect {
 
         if (totalFlatToApply != 0 || totalModifierToApply != 0) {
             if (duration > 0) {
-                BuffDebuffEffect clone = this.cloneEffect();
-                clone.setFlatValue(totalFlatToApply);
-                clone.setModifier(totalModifierToApply);
-                target.getActiveBuffs().add(clone);
+                if (totalFlatToApply != 0) {
+                    BuffDebuffEffect cloneFlat = this.cloneEffect();
+                    cloneFlat.setFlatValue(totalFlatToApply);
+                    cloneFlat.setModifier(0);
+                    target.getActiveBuffs().add(cloneFlat);
+                }
+                if (totalModifierToApply != 0) {
+                    BuffDebuffEffect cloneMult = this.cloneEffect();
+                    cloneMult.setFlatValue(0);
+                    cloneMult.setModifier(totalModifierToApply);
+                    target.getActiveBuffs().add(cloneMult);
+                }
                 System.out.println(target.getName() + " reçoit un effet sur " + statAffected + " (fixe: " + totalFlatToApply + ", mult: " + totalModifierToApply + ") pour " + duration + " tours.");
             } else {
                 if (totalFlatToApply != 0) {
                     target.applyFlatBuff(statAffected, totalFlatToApply);
                 }
                 if (totalModifierToApply != 0) {
-                    BuffDebuffEffect clone = this.cloneEffect();
-                    clone.setFlatValue(0);
-                    clone.setModifier(totalModifierToApply);
-                    target.getActiveBuffs().add(clone);
+                    BuffDebuffEffect cloneMult = this.cloneEffect();
+                    cloneMult.setFlatValue(0);
+                    cloneMult.setModifier(totalModifierToApply);
+                    target.getActiveBuffs().add(cloneMult);
                 }
             }
         }

@@ -348,7 +348,7 @@ public class Personnage {
             boolean hasPenBuff = caster.getActiveBuffs().stream()
                     .anyMatch(b -> b.affectsStatType(StatType.SHIELD_PENETRATION) && b.getFlatValue() == 0);
             if (hasPenBuff) {
-                casterPenetrationPct = caster.getStatBuffMultiplier(StatType.SHIELD_PENETRATION);
+                casterPenetrationPct = caster.getStatBuffMultiplier(StatType.SHIELD_PENETRATION) - 1.0;
             }
         }
 
@@ -356,7 +356,7 @@ public class Personnage {
         boolean hasPiercedBuff = this.getActiveBuffs().stream()
                 .anyMatch(b -> b.affectsStatType(StatType.SHIELD_PIERCED) && b.getFlatValue() == 0);
         if (hasPiercedBuff) {
-            targetPiercedPct = this.getStatBuffMultiplier(StatType.SHIELD_PIERCED);
+            targetPiercedPct = this.getStatBuffMultiplier(StatType.SHIELD_PIERCED) - 1.0;
         }
 
         // Rétrocompatibilité avec les debuffs négatifs de SHIELD_PENETRATION sur la
@@ -385,7 +385,7 @@ public class Personnage {
         int bypassDamage = 0;
         if (totalBypassPct > 0 || totalBypassFlat > 0) {
             double rawBypass = effectiveDamage * Math.min(1.0, totalBypassPct) + totalBypassFlat;
-            bypassDamage = (int) Math.min(effectiveDamage, Math.max(0, rawBypass));
+            bypassDamage = (int) Math.round(Math.min(effectiveDamage, Math.max(0, rawBypass)));
         }
 
         int remainingDamage = effectiveDamage - bypassDamage;
@@ -542,7 +542,7 @@ public class Personnage {
                 + "). Vie actuelle : " + healthCurrent);
 
         boolean removedPoison = activeBuffs
-                .removeIf(b -> b.getStatAffected() == StatType.POISON && b.getFlatValue() > 0);
+                .removeIf(b -> b.getStatAffected() == StatType.POISON && (b.getFlatValue() > 0 || b.getModifier() > 0));
         boolean removedPoisonDot = activeDamageOverTimeEffects.removeIf(dot -> Boolean.TRUE.equals(dot.getPoison()));
         if (removedPoison || removedPoisonDot) {
             System.out.println("💧 Le soin a purifié le Poison sur " + name + " !");

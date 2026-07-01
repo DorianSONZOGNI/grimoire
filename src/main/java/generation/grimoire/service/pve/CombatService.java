@@ -1887,6 +1887,11 @@ if (targetPlayer.getHealthCurrent() <= 0) {
                         if (hfe.getAmount() < 0) {
                             minRequiredHeatFromEffects += -hfe.getAmount();
                         }
+                    } else if (effect instanceof generation.grimoire.entity.spell.type.effect.HeatPercentageEffect hpe) {
+                        if (hpe.getPercentage() < 0) {
+                            double srcVal = generation.grimoire.utils.StatCalculator.getSourceValue(hpe.getSource(), p, p);
+                            minRequiredHeatFromEffects += (int) (-hpe.getPercentage() * srcVal);
+                        }
                     }
                 }
             }

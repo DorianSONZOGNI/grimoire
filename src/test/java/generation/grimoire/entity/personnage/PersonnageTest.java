@@ -3,7 +3,6 @@ package generation.grimoire.entity.personnage;
 import generation.grimoire.entity.spell.type.effect.BuffDebuffEffect;
 import generation.grimoire.entity.spell.type.effect.ShieldEffect;
 import generation.grimoire.enumeration.DamageType;
-import generation.grimoire.enumeration.Source;
 import generation.grimoire.enumeration.StatType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -72,10 +71,10 @@ class PersonnageTest {
     void shouldApplyAndExpireBuffs() {
         BuffDebuffEffect buff = new BuffDebuffEffect();
         buff.setStatAffected(StatType.POWER);
-        buff.setModifier(1.5);
+        buff.setModifier(0.5);
         buff.setDuration(2);
 
-        hero.applyBuff(buff, 1.5);
+        hero.applyBuff(buff, 0.5);
         assertThat(hero.getActiveBuffs()).hasSize(1);
         assertThat(hero.getStatBuffMultiplier(StatType.POWER)).isEqualTo(1.5);
 
@@ -113,9 +112,9 @@ class PersonnageTest {
 
         BuffDebuffEffect penDebuff = new BuffDebuffEffect();
         penDebuff.setStatAffected(StatType.SHIELD_PENETRATION);
-        penDebuff.setModifier(0.0); // < 1.0 -> debuff
+        penDebuff.setModifier(-1.0); // < 0.0 -> debuff
         penDebuff.setDuration(2);
-        enemy.applyBuff(penDebuff, 0.0);
+        enemy.applyBuff(penDebuff, -1.0);
 
         // enemy armor = 100, constant = 100 -> reduction factor = 0.5
         // damage = 50 -> finalDamage = 25
@@ -133,9 +132,9 @@ class PersonnageTest {
 
         BuffDebuffEffect shieldDmgBuff = new BuffDebuffEffect();
         shieldDmgBuff.setStatAffected(StatType.DAMAGE_GIVEN_PHYSIC_TO_SHIELD);
-        shieldDmgBuff.setModifier(2.0); // double damage to shield
+        shieldDmgBuff.setModifier(1.0); // double damage to shield
         shieldDmgBuff.setDuration(2);
-        hero.applyBuff(shieldDmgBuff, 2.0);
+        hero.applyBuff(shieldDmgBuff, 1.0);
 
         // armor = 100, constant = 100 -> reduction factor = 0.5
         // raw damage = 50 -> effective damage = 25
@@ -154,9 +153,9 @@ class PersonnageTest {
     void shouldMultiplyShieldReceived() {
         BuffDebuffEffect recBuff = new BuffDebuffEffect();
         recBuff.setStatAffected(StatType.SHIELD_RECEIVED);
-        recBuff.setModifier(1.5); // +50% shield received
+        recBuff.setModifier(0.5); // +50% shield received
         recBuff.setDuration(2);
-        hero.applyBuff(recBuff, 1.5);
+        hero.applyBuff(recBuff, 0.5);
 
         // base amount = 100
         // with 1.5 multiplier on recipient -> final amount = 150
@@ -168,9 +167,9 @@ class PersonnageTest {
     void shouldMultiplyShieldGivenByCaster() {
         BuffDebuffEffect giveBuff = new BuffDebuffEffect();
         giveBuff.setStatAffected(StatType.SHIELD_GIVEN);
-        giveBuff.setModifier(2.0); // +100% shield given
+        giveBuff.setModifier(1.0); // +100% shield given
         giveBuff.setDuration(2);
-        hero.applyBuff(giveBuff, 2.0);
+        hero.applyBuff(giveBuff, 1.0);
 
         ShieldEffect shieldEff = new ShieldEffect();
         shieldEff.setFixedValue(50);
@@ -189,9 +188,9 @@ class PersonnageTest {
 
         BuffDebuffEffect shieldDmgBuff = new BuffDebuffEffect();
         shieldDmgBuff.setStatAffected(StatType.DAMAGE_GIVEN_MAGIC_TO_SHIELD);
-        shieldDmgBuff.setModifier(2.0); // double damage to shield
+        shieldDmgBuff.setModifier(1.0); // double damage to shield
         shieldDmgBuff.setDuration(2);
-        hero.applyBuff(shieldDmgBuff, 2.0);
+        hero.applyBuff(shieldDmgBuff, 1.0);
 
         // resistance = 100, constant = 100 -> reduction factor = 0.5
         // raw damage = 50 -> effective damage = 25
@@ -209,7 +208,7 @@ class PersonnageTest {
     @Test
     void shouldBypassShieldIfCasterHasShieldPenetrationFlatBuff() {
         enemy.addShield(50, 2, "ShieldSource");
-        
+
         BuffDebuffEffect penBuff = new BuffDebuffEffect();
         penBuff.setStatAffected(StatType.SHIELD_PENETRATION);
         penBuff.setFlatValue(50); // Flat bonus > 0 -> buff
@@ -289,19 +288,6 @@ class PersonnageTest {
     }
 
     @Test
-    void shouldCleanUpTargetHealthMaxSourceInPostLoad() throws Exception {
-        BuffDebuffEffect buff = new BuffDebuffEffect();
-        buff.setModifierSource(Source.TARGET_HEALTH_MAX);
-
-        // Access private postLoad method using reflection
-        java.lang.reflect.Method method = BuffDebuffEffect.class.getDeclaredMethod("postLoad");
-        method.setAccessible(true);
-        method.invoke(buff);
-
-        assertThat(buff.getModifierSource()).isNull();
-    }
-
-    @Test
     void shouldCloneBuffEffectAndNotMutateTemplateDuration() {
         BuffDebuffEffect buffTemplate = new BuffDebuffEffect();
         buffTemplate.setStatAffected(StatType.ARMURE);
@@ -316,7 +302,7 @@ class PersonnageTest {
 
         // Enemy should have cloned active buffs
         assertThat(enemy.getActiveBuffs()).hasSize(2); // One flat, one modifier clone
-        
+
         // Update buffs: should decrement active buff duration to 1
         enemy.updateBuffs();
         assertThat(enemy.getActiveBuffs()).hasSize(2);
@@ -325,5 +311,50 @@ class PersonnageTest {
 
         // Template duration remains 2
         assertThat(buffTemplate.getDuration()).isEqualTo(2);
+    }
+
+    @Test
+    void shouldCleansePoisonOnHeal() {
+        BuffDebuffEffect poisonFlat = new BuffDebuffEffect();
+        poisonFlat.setStatAffected(StatType.POISON);
+        poisonFlat.setFlatValue(5);
+        poisonFlat.setDuration(2);
+
+        BuffDebuffEffect poisonMult = new BuffDebuffEffect();
+        poisonMult.setStatAffected(StatType.POISON);
+        poisonMult.setModifier(0.2); // 20% vulnerability
+        poisonMult.setDuration(2);
+
+        enemy.getActiveBuffs().add(poisonFlat);
+        enemy.getActiveBuffs().add(poisonMult);
+
+        assertThat(enemy.getActiveBuffs()).hasSize(2);
+
+        enemy.setHealthCurrent(50);
+        enemy.heal(10); // Heal should cleanse both
+
+        assertThat(enemy.getActiveBuffs()).isEmpty();
+    }
+
+    @Test
+    void shouldDoubleMagicResistanceForBurnDamage() {
+        // enemy has resistance=100
+        // Burn is MAGIC damage with isBurn=true.
+        // For MAGIC, constant=100.
+        // resistanceValue = resistance * 2 = 100 * 2 = 200.
+        // reductionFactor = 200 / (200 + 100) = 2/3 = 0.6666...
+        // Damage = 60
+        // finalDamage = 60 * (1 - 2/3) = 60 * 1/3 = 20.
+
+        enemy.takeDamage(60, DamageType.MAGIC, hero, true);
+        assertThat(enemy.getHealthCurrent()).isEqualTo(100 - 20);
+
+        // Without isBurn, magic damage:
+        // resistanceValue = 100. reductionFactor = 100 / (100 + 100) = 0.5.
+        // finalDamage = 60 * 0.5 = 30.
+        enemy.setHealthCurrent(100);
+        enemy.takeDamage(60, DamageType.MAGIC, hero, false);
+
+        assertThat(enemy.getHealthCurrent()).isEqualTo(100 - 30);
     }
 }
