@@ -110,7 +110,7 @@ export function renderStatOptions(arr, selectedVal) {
     if (!arr || !Array.isArray(arr)) return '';
     return arr.filter(s => {
         const val = typeof s === 'object' ? s.id || s : s;
-        return val !== 'POISON' && val !== 'BURN';
+        return val !== 'POISON' && val !== 'BURN' && val !== 'AME_DETACHEE';
     }).map(s => {
         const val = typeof s === 'object' ? s.id || s : s;
         return `<option value="${val}" ${val === selectedVal ? 'selected' : ''}>${formatStat(val)}</option>`;

@@ -11,7 +11,7 @@ export const GLOBAL_STAT_LABELS = {
     'DAMAGE_GIVEN_PHYSIC_TO_SHIELD': 'Dég. Phys. au Bouclier',
     'SHIELD_PENETRATION': 'Perce-Bouclier',
     'SHIELD_PIERCED': 'Bouclier Percé',
-    'AME_DETACHEE': 'Dégâts Phys.'
+    'AME_DETACHEE': 'Âme Détachée'
 };
 
 export const GLOBAL_SRC_LABELS = {
