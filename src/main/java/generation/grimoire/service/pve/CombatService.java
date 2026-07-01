@@ -1305,7 +1305,7 @@ public class CombatService {
                         channelingTarget = session.getEnemies().get(0).getAsPersonnage();
                     }
                     List<Personnage> allAllies = session.getPlayers().stream().filter(pl -> pl.getHealthCurrent() > 0).toList();
-                    List<Personnage> allEnemies = session.getEnemies().stream().map(generation.grimoire.model.pve.ActiveMonster::getAsPersonnage).toList();
+                    List<Personnage> allEnemies = session.getEnemies().stream().map(m -> m.getAsPersonnage()).toList();
                     spellService.tickChanneling(p, channelingTarget, p.getChannelingChoiceKey(), p, allAllies, allEnemies);
                 }
             });
@@ -1372,7 +1372,7 @@ public class CombatService {
                         if (cTarget == null && !session.getPlayers().isEmpty()) {
                             cTarget = session.getPlayers().get(0);
                         }
-                        List<Personnage> allAllies = session.getEnemies().stream().map(generation.grimoire.model.pve.ActiveMonster::getAsPersonnage).toList();
+                        List<Personnage> allAllies = session.getEnemies().stream().map(am -> am.getAsPersonnage()).toList();
                         List<Personnage> allEnemies = session.getPlayers().stream().filter(pl -> pl.getHealthCurrent() > 0).toList();
                         spellService.tickChanneling(mp, cTarget, mp.getChannelingChoiceKey(), mp, allAllies, allEnemies);
                     } else {

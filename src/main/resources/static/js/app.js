@@ -7,7 +7,7 @@ import * as sandbox from './sandbox.js';
 import * as filters from './filters.js';
 import * as grimoire from './grimoire.js';
 import * as forge from './forge.js';
-import * as ui from './ui.js?v=2';
+import * as ui from './ui.js';
 
 // Expose for HTML inline handlers
 window.state = state;

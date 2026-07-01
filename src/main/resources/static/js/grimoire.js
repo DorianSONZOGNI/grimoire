@@ -268,7 +268,12 @@ export function getSpellEffectsSummaryHtml(sp) {
                     }
                     if (e.modifier) {
                         const sign = e.modifier > 0 ? '+' : '';
-                        parts.push(`${sign}${Math.round(e.modifier * 100)}% ${ui.formatStat(e.statAffected || e.effectType)}`);
+                        let sourceStr = '';
+                        const src = e.source || e.modifierSource;
+                        if (src) {
+                            sourceStr = ` de ${ui.formatSrc(src)}`;
+                        }
+                        parts.push(`${sign}${Math.round(e.modifier * 100)}%${sourceStr} en ${ui.formatStat(e.statAffected || e.effectType)}`);
                     }
                     if (parts.length === 0) parts.push(`modifie ${ui.formatStat(e.statAffected || e.effectType)}`);
                     const durStr = e.duration > 0 ? ` (${e.duration} tours)` : '';

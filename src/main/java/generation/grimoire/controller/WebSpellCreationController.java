@@ -421,7 +421,7 @@ public class WebSpellCreationController {
                 for (int t = 2; t <= duration; t++) {
                     System.out.println("\n--- TOUR DE CANALISATION " + t + " ---");
                     spellService.startTurn(hero);
-                    spellService.tickChanneling(hero, monstre, null);
+                    spellService.tickChanneling(hero, monstre, null, hero, java.util.List.of(hero), java.util.List.of(monstre));
                 }
             }
             ps.flush();
@@ -778,7 +778,7 @@ public class WebSpellCreationController {
                 Personnage channelingTarget = hero.getChannelingTarget();
                 if (channelingTarget == null)
                     channelingTarget = getSandboxMonster();
-                spellService.tickChanneling(hero, channelingTarget, hero.getChannelingChoiceKey());
+                spellService.tickChanneling(hero, channelingTarget, hero.getChannelingChoiceKey(), hero, sandboxAllies, sandboxEnemies);
             }
 
             // Déclencher le début du tour suivant pour TOUS les personnages
@@ -909,6 +909,7 @@ public class WebSpellCreationController {
                         bde.setFlatValue(eDto.getFlatValue());
                         bde.setModifier(eDto.getModifier());
                         bde.setDuration(eDto.getDuration());
+                        bde.setModifierSource(eDto.getSource());
                         effect = bde;
                         break;
                     case "DOT":

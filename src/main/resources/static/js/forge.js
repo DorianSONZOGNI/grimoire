@@ -274,7 +274,7 @@ export function addEffectPanel(type) {
         duration: 2,
         damageType: 'MAGIC',
         statAffected: stat,
-        source: (type === 'BUFF_DEBUFF' || type === 'POISON' || type === 'BURN' || type === 'AME_DETACHEE') ? null : 'TARGET_HEALTH_MAX',
+        source: (type === 'BUFF_DEBUFF' || type === 'AME_DETACHEE') ? null : 'TARGET_HEALTH_MAX',
         requiredChoiceKey: null,
         detachedSoulRequirement: 'NOT_AFFECTED',
         channelingTurns: [1]
@@ -462,6 +462,12 @@ export function renderEffects() {
                                 <input type="number" step="0.05" value="${eff.modifier}" onchange="updateEffectProp('${eff.id}', 'modifier', this.value)">
                             </div>
                         </div>
+                        <div class="form-group">
+                            <label>Source du Ratio</label>
+                            <select class="custom-select-dynamic" id="ratioSource-${eff.id}" onchange="updateEffectProp('${eff.id}', 'source', this.value)">
+                                ${renderSourceOptions(state.metaData.sources, eff.source)}
+                            </select>
+                        </div>
                     `;
         } else if (eff.effectType === 'POISON' || eff.effectType === 'BURN') {
             fieldsHtml = `
@@ -480,6 +486,12 @@ export function renderEffects() {
                                 <label>Multiplicateur (Ratio)</label>
                                 <input type="number" step="0.05" value="${eff.modifier}" onchange="updateEffectProp('${eff.id}', 'modifier', this.value)">
                             </div>
+                        </div>
+                        <div class="form-group">
+                            <label>Source du Ratio</label>
+                            <select class="custom-select-dynamic" id="ratioSource-${eff.id}" onchange="updateEffectProp('${eff.id}', 'source', this.value)">
+                                ${renderSourceOptions(state.metaData.sources, eff.source)}
+                            </select>
                         </div>
                     `;
         } else if (eff.effectType === 'DOT') {

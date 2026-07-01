@@ -559,6 +559,62 @@ public class SpellService {
         }
     }
 
+    public void tickChanneling(Personnage caster, Personnage target, Integer choiceKey) {
+        Spell channeledSpell = caster.getChanneledSpell();
+        if (channeledSpell == null) return;
+
+        int duration = channeledSpell.getChannelingDuration();
+        int remaining = caster.getRemainingChannelingTurns();
+        int currentTurn = duration - remaining + 1;
+
+        // Decrement remaining turns
+        int newRemaining = remaining - 1;
+        caster.setRemainingChannelingTurns(Math.max(0, newRemaining));
+        if (newRemaining <= 0) {
+            caster.setChanneledSpell(null);
+            caster.setChannelingTarget(null);
+            caster.setChannelingChoiceKey(null);
+        }
+
+        // Le T1 est déjà résolu au moment du cast (dans castSpell).
+        // À la fin du tour de lancement, currentTurn vaut 1, on ne doit donc rien faire de plus.
+        if (currentTurn == 1) {
+            return;
+        }
+
+        System.out.println("🌀 [Canalisation] Résolution des effets pour le Tour " + currentTurn + " de " + channeledSpell.getNom());
+
+        for (SpellEffect effect : channeledSpell.getEffects()) {
+            if (effect.getRequiredChoiceKey() != null && !effect.getRequiredChoiceKey().equals(choiceKey)) {
+                continue;
+            }
+            if (effect.getChannelingTurns() != null && !effect.getChannelingTurns().isEmpty()) {
+                if (!effect.getChannelingTurns().contains(currentTurn)) {
+                    continue;
+                }
+            }
+
+            // Vérification de la condition d'Âme Détachée
+            if (effect.getDetachedSoulRequirement() != null && effect.getDetachedSoulRequirement() != generation.grimoire.enumeration.DetachedSoulRequirement.NOT_AFFECTED) {
+                boolean hasAmeDetachee = caster.getActiveBuffs().stream()
+                        .anyMatch(b -> b.getStatAffected() == generation.grimoire.enumeration.StatType.AME_DETACHEE);
+                
+                if (effect.getDetachedSoulRequirement() == generation.grimoire.enumeration.DetachedSoulRequirement.REQUIRED && !hasAmeDetachee) {
+                    continue;
+                }
+                if (effect.getDetachedSoulRequirement() == generation.grimoire.enumeration.DetachedSoulRequirement.FORBIDDEN && hasAmeDetachee) {
+                    continue;
+                }
+            }
+
+            java.util.List<Personnage> recipients = resolveRecipients(effect.getEffectTarget(), caster, target);
+
+            for (Personnage recipient : recipients) {
+                effect.apply(caster, recipient);
+            }
+        }
+    }
+
     public void tickChanneling(Personnage caster, Personnage target, Integer choiceKey, Personnage ally, java.util.List<Personnage> allAllies, java.util.List<Personnage> allEnemies) {
         Spell channeledSpell = caster.getChanneledSpell();
         if (channeledSpell == null) return;

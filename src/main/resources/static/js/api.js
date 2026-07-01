@@ -221,7 +221,7 @@ export async function submitSpell() {
             duration: e.duration,
             damageType: e.damageType,
             statAffected: (e.effectType === 'POISON' || e.effectType === 'BURN' || e.effectType === 'AME_DETACHEE') ? e.effectType : e.statAffected,
-            source: (e.effectType === 'BUFF_DEBUFF' || e.effectType === 'POISON' || e.effectType === 'BURN' || e.effectType === 'AME_DETACHEE') ? null : e.source,
+            source: (e.effectType === 'AME_DETACHEE') ? null : e.source,
             requiredChoiceKey: e.requiredChoiceKey !== undefined ? e.requiredChoiceKey : null,
             detachedSoulRequirement: e.detachedSoulRequirement || 'NOT_AFFECTED',
             channelingTurns: e.channelingTurns || []
