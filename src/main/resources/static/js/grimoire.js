@@ -192,7 +192,8 @@ export function getSpellEffectsSummaryHtml(sp) {
                         iconName = 'swords';
                     }
                 }
-                if (['HealFixed', 'FIXED_HEAL', 'HealPercentage', 'PERCENTAGE_HEAL', 'HealOverTime', 'HOT'].includes(t)) iconName = 'favorite';
+                if (['HealFixed', 'FIXED_HEAL', 'HealPercentage', 'PERCENTAGE_HEAL'].includes(t)) iconName = 'favorite';
+                if (['HealOverTime', 'HOT'].includes(t)) iconName = 'healing';
                 if (['ManaFixed', 'FIXED_MANA', 'ManaPercentage', 'PERCENTAGE_MANA', 'ManaOverTime', 'MOT'].includes(t)) iconName = 'water_drop';
                 if (['Shield', 'SHIELD'].includes(t)) iconName = 'security';
                 if (['HeatFixed', 'HEAT_FIXED', 'HeatPercentage', 'HEAT_PERCENTAGE', 'HeatOverTime', 'HEAT_OVER_TIME', 'Heat', 'HEAT', 'BURN'].includes(t)) iconName = 'local_fire_department';

@@ -253,7 +253,7 @@ export function makeCustomSelect(selectIdOrElement) {
             if (t.includes('mana') && t.includes('%')) return { icon: 'water_drop', color: '#7dd3fc' };
             if (t.includes('buff') || t.includes('débuff') || t.includes('debuff')) return { icon: 'trending_up', color: '#3b82f6' };
             if (t.includes('dot') || (t.includes('durée') && (t.includes('dégâ') || t.includes('dega')))) return { icon: 'whatshot', color: '#f97316' };
-            if (t.includes('hot') || (t.includes('durée') && t.includes('soin'))) return { icon: 'spa', color: '#34d399' };
+            if (t.includes('hot') || (t.includes('durée') && t.includes('soin'))) return { icon: 'healing', color: '#34d399' };
             if (t.includes('mot') || (t.includes('mana') && t.includes('tick'))) return { icon: 'cyclone', color: '#8b5cf6' };
             if (t.includes('dissipation') || t.includes('purge')) return { icon: 'air', color: '#a78bfa' };
             if (t.includes('bouclier') || t.includes('shield')) return { icon: 'security', color: '#06b6d4' };
