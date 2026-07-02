@@ -55,18 +55,8 @@
             z-index: 50;
         }
 
-        .shop-rarity-group.group-COMMUN {
-            border-top: 3px solid #94a3b8;
-        }
-
-        .shop-rarity-group.group-RARE {
-            border-top: 3px solid #3b82f6;
-        }
-
-        .shop-rarity-group.group-LEGENDAIRE {
-            border-top: 3px solid #f59e0b;
-        }
-
+        .shop-rarity-group.group-COMMUN { border-top: 3px solid #94a3b8; }
+        
         .shop-rarity-title {
             position: absolute;
             top: -12px;
@@ -84,20 +74,28 @@
             white-space: nowrap;
         }
 
-        .group-COMMUN .shop-rarity-title {
-            color: #94a3b8;
-            border-color: rgba(148, 163, 184, 0.3);
-        }
+        .group-COMMUN .shop-rarity-title { color: #94a3b8; border-color: rgba(148, 163, 184, 0.3); }
 
-        .group-RARE .shop-rarity-title {
-            color: #3b82f6;
-            border-color: rgba(59, 130, 246, 0.3);
-        }
+        .shop-rarity-group.group-INHABITUEL { border-top: 3px solid #ffffff; }
+        .group-INHABITUEL .shop-rarity-title { color: #ffffff; border-color: rgba(255, 255, 255, 0.3); }
 
-        .group-LEGENDAIRE .shop-rarity-title {
-            color: #f59e0b;
-            border-color: rgba(245, 158, 11, 0.3);
-        }
+        .shop-rarity-group.group-RARE { border-top: 3px solid #22c55e; }
+        .group-RARE .shop-rarity-title { color: #22c55e; border-color: rgba(34, 197, 94, 0.3); }
+
+        .shop-rarity-group.group-MYTHIQUE { border-top: 3px solid #f97316; }
+        .group-MYTHIQUE .shop-rarity-title { color: #f97316; border-color: rgba(249, 115, 22, 0.3); }
+
+        .shop-rarity-group.group-LEGENDAIRE { border-top: 3px solid #f59e0b; }
+        .group-LEGENDAIRE .shop-rarity-title { color: #f59e0b; border-color: rgba(245, 158, 11, 0.3); }
+
+        .shop-rarity-group.group-EPIQUE { border-top: 3px solid #ef4444; }
+        .group-EPIQUE .shop-rarity-title { color: #ef4444; border-color: rgba(239, 68, 68, 0.3); }
+
+        .shop-rarity-group.group-RELIQUE { border-top: 3px solid #a855f7; }
+        .group-RELIQUE .shop-rarity-title { color: #a855f7; border-color: rgba(168, 85, 247, 0.3); }
+
+        .shop-rarity-group.group-MAUDIT { border-top: 3px solid #555555; }
+        .group-MAUDIT .shop-rarity-title { color: #555555; border-color: rgba(85, 85, 85, 0.3); }
 
         .shop-stand {
             flex: 0 0 200px;
@@ -347,7 +345,7 @@
             }
         });
     </script>
-    <script src="/js/shop.js?v=9"></script>
+    <script src="/js/shop.js?v=10"></script>
     <script type="module" src="/js/auth.js?v=10"></script>
 </body>
 
