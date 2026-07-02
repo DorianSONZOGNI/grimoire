@@ -395,6 +395,11 @@ public class ShopController {
         map.put("priceAnomalies", e.getPriceAnomalies());
         map.put("weight", e.calculateWeight());
         map.put("baseWeight", e.getBaseWeight());
+        map.put("consumableHpPercent", e.getConsumableHpPercent());
+        map.put("consumableManaPercent", e.getConsumableManaPercent());
+        map.put("consumableMissingHpPercent", e.getConsumableMissingHpPercent());
+        map.put("consumableMissingManaPercent", e.getConsumableMissingManaPercent());
+        map.put("consumableCategory", e.getConsumableCategory() != null ? e.getConsumableCategory().name() : "AUTRE");
         return map;
     }
 
@@ -412,6 +417,13 @@ public class ShopController {
         eq.setRegenHealthPerTurn(dto.getRegenHealthPerTurn());
         eq.setRegenManaPerTurn(dto.getRegenManaPerTurn());
         eq.setBaseWeight(dto.getBaseWeight());
+        eq.setConsumableHpPercent(dto.getConsumableHpPercent());
+        eq.setConsumableManaPercent(dto.getConsumableManaPercent());
+        eq.setConsumableMissingHpPercent(dto.getConsumableMissingHpPercent());
+        eq.setConsumableMissingManaPercent(dto.getConsumableMissingManaPercent());
+        if (dto.getConsumableCategory() != null) {
+            eq.setConsumableCategory(dto.getConsumableCategory());
+        }
         if (dto.getPriceAnomalies() != null) {
             eq.setPriceAnomalies(new HashMap<>(dto.getPriceAnomalies()));
         } else {

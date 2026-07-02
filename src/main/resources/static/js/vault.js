@@ -8,8 +8,20 @@ const SLOT_LABELS = {
     BOTTES: { label: 'Bottes', icon: 'footprint', color: '#10b981' },
     CAPE: { label: 'Cape', icon: 'carpenter', color: '#ec4899' },
     CONSOMMABLE: { label: 'Consommable', icon: 'inventory_2', color: '#854c4c' },
-    ANOMALIE: { label: 'Anomalie', icon: 'star', color: '#d946ef' }
+    ANOMALIE: { label: 'Anomalie', icon: 'auto_awesome', color: '#f59e0b' }
 };
+
+function getSlotInfo(eq) {
+    if (!eq) return { icon: 'help', color: '#94a3b8' };
+    const info = Object.assign({}, SLOT_LABELS[eq.slot] || { label: eq.slot, icon: 'help', color: '#94a3b8' });
+    if (eq.slot === 'CONSOMMABLE' && eq.consumableCategory) {
+        const catIcons = { POTION_ROSE: 'science', POTION_BLEUE: 'science', POTION_ROUGE: 'science', POTION_VIOLETTE: 'science', CLE: 'vpn_key', CORDE: 'gesture', PARCHEMIN: 'history_edu', NOURRITURE: 'restaurant', OUTIL: 'construction', AUTRE: 'inventory_2' };
+        const catColors = { POTION_ROSE: '#ec4899', POTION_BLEUE: '#0ea5e9', POTION_ROUGE: '#ef4444', POTION_VIOLETTE: '#a855f7', CLE: '#eab308', CORDE: '#8b4513', PARCHEMIN: '#f59e0b', NOURRITURE: '#f43f5e', OUTIL: '#64748b', AUTRE: '#94a3b8' };
+        info.icon = catIcons[eq.consumableCategory] || 'inventory_2';
+        info.color = catColors[eq.consumableCategory] || '#854c4c';
+    }
+    return info;
+}
 
 const RARITY_ORDER = {
     'COMMUN': 1,
@@ -449,7 +461,7 @@ function renderGrid(equipments) {
             </div>`;
         }
 
-        const slotInfo = SLOT_LABELS[eq.slot] || { label: eq.slot, icon: 'help', color: '#94a3b8' };
+        const slotInfo = getSlotInfo(eq);
 
         const statsHtml = STAT_DEFS
             .filter(s => eq[s.key] && eq[s.key] !== 0)
@@ -637,6 +649,12 @@ function resetEqForm() {
     if(document.getElementById('eqConsumableMissingManaPercent')) document.getElementById('eqConsumableMissingManaPercent').value = 0;
     if(document.getElementById('eqBaseWeight')) document.getElementById('eqBaseWeight').value = 0;
 
+    const catInput = document.getElementById('eqConsumableCategory');
+    if (catInput) {
+        catInput.value = 'AUTRE';
+        document.getElementById('eqConsumableCategoryLabel').innerHTML = '<span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">inventory_2</span> Autre';
+    }
+
     // Reset Rarity
     const rarityInput = document.getElementById('eqRarity');
     if (rarityInput) {
@@ -687,11 +705,20 @@ window.editEquipment = function (id) {
     if(document.getElementById('eqConsumableMissingManaPercent')) document.getElementById('eqConsumableMissingManaPercent').value = eq.consumableMissingManaPercent || 0;
     if(document.getElementById('eqBaseWeight')) document.getElementById('eqBaseWeight').value = eq.baseWeight || 0;
 
+    const catInput = document.getElementById('eqConsumableCategory');
+    if (catInput && eq.consumableCategory) {
+        catInput.value = eq.consumableCategory;
+        const option = document.querySelector(`#eqConsumableCategoryOptions .custom-option[data-value="${eq.consumableCategory}"]`);
+        if (option) {
+            document.getElementById('eqConsumableCategoryLabel').innerHTML = option.innerHTML;
+        }
+    }
+
     // Slot Setup
     const slotInput = document.getElementById('eqSlot');
     if (slotInput && eq.slot) {
         slotInput.value = eq.slot;
-        const info = SLOT_LABELS[eq.slot];
+        const info = getSlotInfo(eq);
         if (info) {
             document.getElementById('eqSlotLabel').innerHTML = `<span class="material-symbols-outlined cs-icon ${info.extraClass || ''}" style="color: ${info.color};">${info.icon}</span> ${info.label}`;
         }
@@ -926,6 +953,7 @@ window.submitEquipment = async function () {
         consumableMissingHpPercent: document.getElementById('eqConsumableMissingHpPercent') ? (parseInt(document.getElementById('eqConsumableMissingHpPercent').value) || 0) : 0,
         consumableMissingManaPercent: document.getElementById('eqConsumableMissingManaPercent') ? (parseInt(document.getElementById('eqConsumableMissingManaPercent').value) || 0) : 0,
         baseWeight: document.getElementById('eqBaseWeight') ? (parseFloat(document.getElementById('eqBaseWeight').value) || 0.0) : 0.0,
+        consumableCategory: document.getElementById('eqConsumableCategory') ? document.getElementById('eqConsumableCategory').value : 'AUTRE',
         rarity,
         specialEffect,
         specialEffectValue,
@@ -998,6 +1026,10 @@ window.updateWeightUI = function() {
     if (row) {
         row.style.display = slot === 'CONSOMMABLE' ? 'flex' : 'none';
     }
+
+    document.querySelectorAll('.consumable-category-field').forEach(el => {
+        el.style.display = slot === 'CONSOMMABLE' ? 'block' : 'none';
+    });
 
     const w = calculateEquipmentWeight();
 

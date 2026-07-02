@@ -7,8 +7,21 @@ const SLOT_LABELS = {
     ANNEAU_DROIT: { label: 'Anneau', icon: 'diamond', color: '#f59e0b' },
     BOTTES: { label: 'Bottes', icon: 'footprint', color: '#10b981' },
     CAPE: { label: 'Cape', icon: 'carpenter', color: '#ec4899' },
-    CONSOMMABLE: { label: 'Consommable', icon: 'inventory_2', color: '#854c4c' }
+    CONSOMMABLE: { label: 'Consommable', icon: 'inventory_2', color: '#854c4c' },
+    ANOMALIE: { label: 'Anomalie', icon: 'auto_awesome', color: '#f59e0b' }
 };
+
+function getSlotInfo(eq) {
+    if (!eq) return { icon: 'help', color: '#94a3b8' };
+    const info = Object.assign({}, SLOT_LABELS[eq.slot] || { label: eq.slot, icon: 'help', color: '#94a3b8' });
+    if (eq.slot === 'CONSOMMABLE' && eq.consumableCategory) {
+        const catIcons = { POTION_ROSE: 'science', POTION_BLEUE: 'science', POTION_ROUGE: 'science', POTION_VIOLETTE: 'science', CLE: 'vpn_key', CORDE: 'gesture', PARCHEMIN: 'history_edu', NOURRITURE: 'restaurant', OUTIL: 'construction', AUTRE: 'inventory_2' };
+        const catColors = { POTION_ROSE: '#ec4899', POTION_BLEUE: '#0ea5e9', POTION_ROUGE: '#ef4444', POTION_VIOLETTE: '#a855f7', CLE: '#eab308', CORDE: '#8b4513', PARCHEMIN: '#f59e0b', NOURRITURE: '#f43f5e', OUTIL: '#64748b', AUTRE: '#94a3b8' };
+        info.icon = catIcons[eq.consumableCategory] || 'inventory_2';
+        info.color = catColors[eq.consumableCategory] || '#854c4c';
+    }
+    return info;
+}
 
 const RARITY_ORDER = {
     'COMMUN': 1,
@@ -392,7 +405,7 @@ function renderGrid(equipments) {
         `;
 
         items.forEach(eq => {
-            const slotInfo = SLOT_LABELS[eq.slot] || { label: eq.slot, icon: 'help', color: '#94a3b8' };
+            const slotInfo = getSlotInfo(eq);
 
             const statsHtml = STAT_DEFS
                 .filter(s => eq[s.key] && eq[s.key] !== 0)
@@ -591,6 +604,11 @@ function resetEqForm() {
     if(document.getElementById('eqConsumableManaPercent')) document.getElementById('eqConsumableManaPercent').value = 0;
     if(document.getElementById('eqConsumableMissingHpPercent')) document.getElementById('eqConsumableMissingHpPercent').value = 0;
     if(document.getElementById('eqConsumableMissingManaPercent')) document.getElementById('eqConsumableMissingManaPercent').value = 0;
+    if(document.getElementById('eqConsumableCategory')) {
+        document.getElementById('eqConsumableCategory').value = 'AUTRE';
+        const label = document.getElementById('eqConsumableCategoryLabel');
+        if(label) label.innerHTML = '<span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">inventory_2</span> Autre';
+    }
     if(document.getElementById('eqBaseWeight')) document.getElementById('eqBaseWeight').value = 0;
     
     const anomaliesContainer = document.getElementById('priceAnomaliesContainer');
@@ -646,6 +664,14 @@ window.editEquipment = function (id) {
     if(document.getElementById('eqConsumableManaPercent')) document.getElementById('eqConsumableManaPercent').value = eq.consumableManaPercent || 0;
     if(document.getElementById('eqConsumableMissingHpPercent')) document.getElementById('eqConsumableMissingHpPercent').value = eq.consumableMissingHpPercent || 0;
     if(document.getElementById('eqConsumableMissingManaPercent')) document.getElementById('eqConsumableMissingManaPercent').value = eq.consumableMissingManaPercent || 0;
+    if(document.getElementById('eqConsumableCategory')) {
+        const cat = eq.consumableCategory || 'AUTRE';
+        document.getElementById('eqConsumableCategory').value = cat;
+        const option = document.querySelector(`#eqConsumableCategoryOptions .custom-option[data-value="${cat}"]`);
+        if (option) {
+            document.getElementById('eqConsumableCategoryLabel').innerHTML = option.innerHTML;
+        }
+    }
     if(document.getElementById('eqBaseWeight')) document.getElementById('eqBaseWeight').value = eq.baseWeight || 0;
     
     const anomaliesContainer = document.getElementById('priceAnomaliesContainer');
@@ -662,7 +688,7 @@ window.editEquipment = function (id) {
     const slotInput = document.getElementById('eqSlot');
     if (slotInput && eq.slot) {
         slotInput.value = eq.slot;
-        const info = SLOT_LABELS[eq.slot];
+        const info = getSlotInfo(eq);
         if (info) {
             document.getElementById('eqSlotLabel').innerHTML = `<span class="material-symbols-outlined cs-icon ${info.extraClass || ''}" style="color: ${info.color};">${info.icon}</span> ${info.label}`;
         }
@@ -774,6 +800,7 @@ window.submitEquipment = async function () {
         consumableManaPercent: document.getElementById('eqConsumableManaPercent') ? (parseInt(document.getElementById('eqConsumableManaPercent').value) || 0) : 0,
         consumableMissingHpPercent: document.getElementById('eqConsumableMissingHpPercent') ? (parseInt(document.getElementById('eqConsumableMissingHpPercent').value) || 0) : 0,
         consumableMissingManaPercent: document.getElementById('eqConsumableMissingManaPercent') ? (parseInt(document.getElementById('eqConsumableMissingManaPercent').value) || 0) : 0,
+        consumableCategory: document.getElementById('eqConsumableCategory') ? document.getElementById('eqConsumableCategory').value : 'AUTRE',
         baseWeight: parseFloat(document.getElementById('eqBaseWeight')?.value) || 0,
         rarity,
         specialEffect,
@@ -878,6 +905,9 @@ window.updateWeightUI = function () {
         el.style.display = slot === 'CONSOMMABLE' ? 'none' : '';
     });
     document.querySelectorAll('.consumable-stat').forEach(el => {
+        el.style.display = slot === 'CONSOMMABLE' ? 'flex' : 'none';
+    });
+    document.querySelectorAll('.consumable-category-field').forEach(el => {
         el.style.display = slot === 'CONSOMMABLE' ? 'flex' : 'none';
     });
 

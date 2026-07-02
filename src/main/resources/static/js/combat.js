@@ -84,8 +84,22 @@ const SLOT_LABELS = {
     ANNEAU_GAUCHE: { label: 'Anneau Gauche', icon: 'diamond', color: '#f59e0b' },
     ANNEAU_DROIT: { label: 'Anneau Droit', icon: 'diamond', color: '#f59e0b' },
     BOTTES: { label: 'Bottes', icon: 'footprint', color: '#10b981' },
-    CAPE: { label: 'Cape', icon: 'carpenter', color: '#ec4899' }
+    CAPE: { label: 'Cape', icon: 'carpenter', color: '#ec4899' },
+    CONSOMMABLE: { label: 'Consommable', icon: 'inventory_2', color: '#854c4c' },
+    ANOMALIE: { label: 'Anomalie', icon: 'auto_awesome', color: '#f59e0b' }
 };
+
+function getSlotInfo(eq) {
+    if (!eq) return { icon: 'help', color: '#94a3b8' };
+    const info = Object.assign({}, SLOT_LABELS[eq.slot] || { label: eq.slot, icon: 'help', color: '#94a3b8' });
+    if (eq.slot === 'CONSOMMABLE' && eq.consumableCategory) {
+        const catIcons = { POTION_ROSE: 'science', POTION_BLEUE: 'science', POTION_ROUGE: 'science', POTION_VIOLETTE: 'science', CLE: 'vpn_key', CORDE: 'gesture', PARCHEMIN: 'history_edu', NOURRITURE: 'restaurant', OUTIL: 'construction', AUTRE: 'inventory_2' };
+        const catColors = { POTION_ROSE: '#ec4899', POTION_BLEUE: '#0ea5e9', POTION_ROUGE: '#ef4444', POTION_VIOLETTE: '#a855f7', CLE: '#eab308', CORDE: '#8b4513', PARCHEMIN: '#f59e0b', NOURRITURE: '#f43f5e', OUTIL: '#64748b', AUTRE: '#94a3b8' };
+        info.icon = catIcons[eq.consumableCategory] || 'inventory_2';
+        info.color = catColors[eq.consumableCategory] || '#854c4c';
+    }
+    return info;
+}
 
 const RARITY_COLORS = {
     COMMUN: '#94a3b8',
@@ -1583,7 +1597,7 @@ function updateUI(data) {
                                         const entry = data.currentRoom.lootTable.find(l => l.equipment && l.equipment.name === eqName);
                                         if (entry) eq = entry.equipment;
                                     }
-                                    const slotInfo = eq ? (SLOT_LABELS[eq.slot] || { icon: 'help', color: '#94a3b8' }) : { icon: 'swords', color: '#f59e0b' };
+                                    const slotInfo = eq ? (getSlotInfo(eq) || { icon: 'help', color: '#94a3b8' }) : { icon: 'swords', color: '#f59e0b' };
                                     const rarityColor = eq ? (RARITY_COLORS[eq.rarity] || '#ef4444') : '#f59e0b';
                                     const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
 
@@ -2018,7 +2032,7 @@ function updateUI(data) {
                                 iconHtml = `<span class="material-symbols-outlined" style="color: ${rarityColor}; font-size: 1.2rem;">${catIcon}</span>`;
                             } else if (entry.equipment) {
                                 const eq = entry.equipment;
-                                const slotInfo = SLOT_LABELS[eq.slot] || { icon: 'help', color: '#94a3b8' };
+                                const slotInfo = getSlotInfo(eq);
                                 rarityColor = RARITY_COLORS[eq.rarity] || '#ef4444';
                                 const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
                                 nameHtml = eq.name;

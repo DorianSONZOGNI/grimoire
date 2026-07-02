@@ -36,8 +36,21 @@ const SLOT_LABELS = {
     ANNEAU_DROIT: { label: 'Anneau D.', icon: 'diamond', color: '#f59e0b' },
     BOTTES: { label: 'Bottes', icon: 'footprint', color: '#10b981' },
     CAPE: { label: 'Cape', icon: 'carpenter', color: '#ec4899' },
-    CONSOMMABLE: { label: 'Consommable', icon: 'inventory_2', color: '#854c4c' }
+    CONSOMMABLE: { label: 'Consommable', icon: 'inventory_2', color: '#854c4c' },
+    ANOMALIE: { label: 'Anomalie', icon: 'auto_awesome', color: '#f59e0b' }
 };
+
+function getSlotInfo(eq) {
+    if (!eq) return { icon: 'help', color: '#94a3b8' };
+    const info = Object.assign({}, SLOT_LABELS[eq.slot] || { label: eq.slot, icon: 'help', color: '#94a3b8' });
+    if (eq.slot === 'CONSOMMABLE' && eq.consumableCategory) {
+        const catIcons = { POTION_ROSE: 'science', POTION_BLEUE: 'science', POTION_ROUGE: 'science', POTION_VIOLETTE: 'science', CLE: 'vpn_key', CORDE: 'gesture', PARCHEMIN: 'history_edu', NOURRITURE: 'restaurant', OUTIL: 'construction', AUTRE: 'inventory_2' };
+        const catColors = { POTION_ROSE: '#ec4899', POTION_BLEUE: '#0ea5e9', POTION_ROUGE: '#ef4444', POTION_VIOLETTE: '#a855f7', CLE: '#eab308', CORDE: '#8b4513', PARCHEMIN: '#f59e0b', NOURRITURE: '#f43f5e', OUTIL: '#64748b', AUTRE: '#94a3b8' };
+        info.icon = catIcons[eq.consumableCategory] || 'inventory_2';
+        info.color = catColors[eq.consumableCategory] || '#854c4c';
+    }
+    return info;
+}
 
 const STAT_DEFS = [
     { key: 'bonusHealthMax', label: 'PV', icon: 'favorite', color: '#ec4899' },
@@ -687,7 +700,7 @@ function renderPersonnages() {
             const slotOrder = ['CASQUE', 'PLASTRON', 'ANNEAU_GAUCHE', 'ANNEAU_DROIT', 'BOTTES', 'CAPE', 'CONSOMMABLE'];
             equipHtml = `<div class="char-equip-row">` +
                 persoEquips.sort((a, b) => slotOrder.indexOf(a.slot) - slotOrder.indexOf(b.slot)).map(eq => {
-                    const slotInfo = SLOT_LABELS[eq.slot] || { label: eq.slot, icon: 'help', color: '#94a3b8' };
+                    const slotInfo = getSlotInfo(eq);
                     const statsStr = STAT_DEFS
                         .filter(s => eq[s.key] && eq[s.key] !== 0)
                         .map(s => `${eq[s.key] > 0 ? '+' : ''}${eq[s.key]}${s.isPercent ? '%' : ''} ${s.label}`)

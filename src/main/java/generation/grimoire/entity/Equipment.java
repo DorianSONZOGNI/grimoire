@@ -54,6 +54,7 @@ public class Equipment {
     private int consumableManaPercent = 0;
     private int consumableMissingHpPercent = 0;
     private int consumableMissingManaPercent = 0;
+    private generation.grimoire.enumeration.ConsumableCategory consumableCategory = generation.grimoire.enumeration.ConsumableCategory.AUTRE;
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)

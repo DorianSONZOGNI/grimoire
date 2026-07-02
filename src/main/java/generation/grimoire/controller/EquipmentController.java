@@ -130,6 +130,9 @@ public class EquipmentController {
         equipment.setConsumableManaPercent(dto.getConsumableManaPercent());
         equipment.setConsumableMissingHpPercent(dto.getConsumableMissingHpPercent());
         equipment.setConsumableMissingManaPercent(dto.getConsumableMissingManaPercent());
+        if (dto.getConsumableCategory() != null) {
+            equipment.setConsumableCategory(dto.getConsumableCategory());
+        }
         if (dto.getRarity() != null) {
             equipment.setRarity(dto.getRarity());
         }
@@ -355,6 +358,7 @@ public class EquipmentController {
         map.put("consumableManaPercent", e.getConsumableManaPercent());
         map.put("consumableMissingHpPercent", e.getConsumableMissingHpPercent());
         map.put("consumableMissingManaPercent", e.getConsumableMissingManaPercent());
+        map.put("consumableCategory", e.getConsumableCategory() != null ? e.getConsumableCategory().name() : "AUTRE");
         map.put("weight", e.calculateWeight());
 
         if (e.getPersonnage() != null) {
@@ -391,6 +395,7 @@ public class EquipmentController {
         private int consumableManaPercent = 0;
         private int consumableMissingHpPercent = 0;
         private int consumableMissingManaPercent = 0;
+        private generation.grimoire.enumeration.ConsumableCategory consumableCategory;
         private generation.grimoire.enumeration.EquipmentRarity rarity;
         private generation.grimoire.enumeration.EquipmentEffectType specialEffect;
         private int specialEffectValue = 0;
