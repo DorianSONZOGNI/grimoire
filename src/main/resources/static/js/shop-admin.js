@@ -365,10 +365,13 @@ function renderGrid(equipments) {
 
     const groups = {
         COMMUN: [],
+        INHABITUEL: [],
         RARE: [],
+        MYTHIQUE: [],
         LEGENDAIRE: [],
         EPIQUE: [],
-        RELIQUE: []
+        RELIQUE: [],
+        MAUDIT: []
     };
 
     equipments.forEach(eq => {
@@ -382,17 +385,18 @@ function renderGrid(equipments) {
 
     const RARITY_LABELS = {
         COMMUN: { label: 'Commun', icon: 'lens' },
+        INHABITUEL: { label: 'Inhabituel', icon: 'radio_button_unchecked' },
         RARE: { label: 'Rare', icon: 'adjust' },
+        MYTHIQUE: { label: 'Mythique', icon: 'star_half' },
         LEGENDAIRE: { label: 'Légendaire', icon: 'workspace_premium' },
         EPIQUE: { label: 'Épique', icon: 'whatshot' },
-        RELIQUE: { label: 'Relique', icon: 'webhook' }
+        RELIQUE: { label: 'Relique', icon: 'webhook' },
+        MAUDIT: { label: 'Maudit', icon: 'skull' }
     };
 
     let html = '';
 
     for (const [rarity, items] of Object.entries(groups)) {
-        if (items.length === 0) continue;
-
         const rarityInfo = RARITY_LABELS[rarity];
 
         html += `
@@ -404,7 +408,10 @@ function renderGrid(equipments) {
                 <div class="shop-admin-list">
         `;
 
-        items.forEach(eq => {
+        if (items.length === 0) {
+            html += `<div style="padding: 1rem; color: #64748b; font-style: italic; text-align: center;">Aucun article dans cette rareté</div>`;
+        } else {
+            items.forEach(eq => {
             const slotInfo = getSlotInfo(eq);
 
             const statsHtml = STAT_DEFS
@@ -507,7 +514,8 @@ function renderGrid(equipments) {
                     </div>
                 </div>
             `;
-        });
+            });
+        }
 
         html += `
                 </div>
