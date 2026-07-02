@@ -70,13 +70,13 @@ const STAT_DEFS = [
 ];
 
 const WEIGHT_LIMITS = {
-    CASQUE: { COMMUN: 5, RARE: 14, LEGENDAIRE: 22, EPIQUE: 35, RELIQUE: 40 },
-    PLASTRON: { COMMUN: 9, RARE: 19, LEGENDAIRE: 29, EPIQUE: 40, RELIQUE: 46 },
-    ANNEAU_GAUCHE: { COMMUN: 3, RARE: 6, LEGENDAIRE: 10, EPIQUE: 15, RELIQUE: 17 },
-    ANNEAU_DROIT: { COMMUN: 3, RARE: 6, LEGENDAIRE: 10, EPIQUE: 15, RELIQUE: 17 },
-    BOTTES: { COMMUN: 4, RARE: 12, LEGENDAIRE: 19, EPIQUE: 30, RELIQUE: 34 },
-    CAPE: { COMMUN: 5, RARE: 14, LEGENDAIRE: 22, EPIQUE: 35, RELIQUE: 40 },
-    CONSOMMABLE: { COMMUN: 5, RARE: 9, LEGENDAIRE: 14, EPIQUE: 20, RELIQUE: 24 }
+    CASQUE: { COMMUN: 5, INHABITUEL: 9, RARE: 14, MYTHIQUE: 18, LEGENDAIRE: 22, EPIQUE: 35, RELIQUE: 40, MAUDIT: 40 },
+    PLASTRON: { COMMUN: 9, INHABITUEL: 14, RARE: 19, MYTHIQUE: 24, LEGENDAIRE: 29, EPIQUE: 40, RELIQUE: 46, MAUDIT: 46 },
+    ANNEAU_GAUCHE: { COMMUN: 3, INHABITUEL: 4, RARE: 6, MYTHIQUE: 8, LEGENDAIRE: 10, EPIQUE: 15, RELIQUE: 17, MAUDIT: 17 },
+    ANNEAU_DROIT: { COMMUN: 3, INHABITUEL: 4, RARE: 6, MYTHIQUE: 8, LEGENDAIRE: 10, EPIQUE: 15, RELIQUE: 17, MAUDIT: 17 },
+    BOTTES: { COMMUN: 4, INHABITUEL: 8, RARE: 12, MYTHIQUE: 15, LEGENDAIRE: 19, EPIQUE: 30, RELIQUE: 34, MAUDIT: 34 },
+    CAPE: { COMMUN: 5, INHABITUEL: 9, RARE: 14, MYTHIQUE: 18, LEGENDAIRE: 22, EPIQUE: 35, RELIQUE: 40, MAUDIT: 40 },
+    CONSOMMABLE: { COMMUN: 5, INHABITUEL: 7, RARE: 9, MYTHIQUE: 11, LEGENDAIRE: 14, EPIQUE: 20, RELIQUE: 24, MAUDIT: 24 }
 };
 
 function calculateEquipmentWeight() {
@@ -865,10 +865,13 @@ function renderEquipModal() {
             // Sort by rarity (descending) then by name
             const rarityOrder = {
                 'COMMUN': 0,
-                'RARE': 1,
-                'LEGENDAIRE': 2,
-                'EPIQUE': 3,
-                'RELIQUE': 4
+                'INHABITUEL': 1,
+                'RARE': 2,
+                'MYTHIQUE': 3,
+                'LEGENDAIRE': 4,
+                'EPIQUE': 5,
+                'RELIQUE': 6,
+                'MAUDIT': -1
             };
             available.sort((a, b) => {
                 const rA = a.rarity ? rarityOrder[a.rarity] || 0 : 0;

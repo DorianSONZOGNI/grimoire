@@ -348,17 +348,23 @@ public class ShopController {
 
     private double calculateShopPrice(Equipment eq) {
         double weight = eq.calculateWeight();
-        int multiplier = 1;
+        double multiplier = 1.0;
         if (eq.getRarity() == EquipmentRarity.COMMUN)
-            multiplier = 1;
+            multiplier = 1.0;
+        else if (eq.getRarity() == EquipmentRarity.INHABITUEL)
+            multiplier = 1.5;
         else if (eq.getRarity() == EquipmentRarity.RARE)
-            multiplier = 2;
+            multiplier = 2.0;
+        else if (eq.getRarity() == EquipmentRarity.MYTHIQUE)
+            multiplier = 2.5;
         else if (eq.getRarity() == EquipmentRarity.LEGENDAIRE)
-            multiplier = 3;
+            multiplier = 3.0;
         else if (eq.getRarity() == EquipmentRarity.EPIQUE)
-            multiplier = 5;
+            multiplier = 5.0;
         else if (eq.getRarity() == EquipmentRarity.RELIQUE)
-            multiplier = 6;
+            multiplier = 6.0;
+        else if (eq.getRarity() == EquipmentRarity.MAUDIT)
+            multiplier = 4;
 
         double slotMultiplier = 1.0;
         if (eq.getSlot() == EquipmentSlot.PLASTRON)

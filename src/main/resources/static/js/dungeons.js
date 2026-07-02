@@ -509,8 +509,8 @@ window.selectCharacter = async function (id) {
             'ANNEAU_GAUCHE': 'diamond', 'ANNEAU_DROIT': 'diamond', 'CAPE': 'carpenter'
         };
         const colorMap = {
-            'COMMUN': '#94a3b8', 'RARE': '#3b82f6', 'LEGENDAIRE': '#f59e0b',
-            'EPIQUE': '#ef4444', 'RELIQUE': '#c084fc'
+            'COMMUN': '#94a3b8', 'INHABITUEL': '#ffffff', 'RARE': '#3b82f6', 'MYTHIQUE': '#f97316', 'LEGENDAIRE': '#f59e0b',
+            'EPIQUE': '#ef4444', 'RELIQUE': '#c084fc', 'MAUDIT': '#555555'
         };
         equipments.forEach(eq => {
             const icon = iconMap[eq.slot] || 'help';

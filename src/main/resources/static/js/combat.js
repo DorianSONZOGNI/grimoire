@@ -103,10 +103,13 @@ function getSlotInfo(eq) {
 
 const RARITY_COLORS = {
     COMMUN: '#94a3b8',
+    INHABITUEL: '#ffffff',
     RARE: '#3b82f6',
+    MYTHIQUE: '#f97316',
     LEGENDAIRE: '#f59e0b',
     EPIQUE: '#c084fc',
-    RELIQUE: '#ef4444'
+    RELIQUE: '#ef4444',
+    MAUDIT: '#555555'
 };
 
 let lastCombatLogCount = 0;
@@ -1776,7 +1779,7 @@ function updateUI(data) {
                             } else if (data.currentRoom.altarRewardType === 'ITEM') {
                                 const eq = data.currentRoom.altarRewardEquipment;
                                 if (eq) {
-                                    const rarityColors = { 'COMMUN': '#94a3b8', 'RARE': '#38bdf8', 'EPIQUE': '#c084fc', 'LEGENDAIRE': '#fbbf24' };
+                                    const rarityColors = { 'COMMUN': '#94a3b8', 'INHABITUEL': '#ffffff', 'RARE': '#38bdf8', 'MYTHIQUE': '#f97316', 'EPIQUE': '#c084fc', 'LEGENDAIRE': '#fbbf24', 'RELIQUE': '#ef4444', 'MAUDIT': '#555555' };
                                     const rarityColor = rarityColors[eq.rarity] || '#94a3b8';
                                     const tooltipDataHtml = typeof generateEquipmentTooltipHTML === 'function' ? generateEquipmentTooltipHTML(eq) : '';
                                     const tooltipAttrs = tooltipDataHtml ? 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"' : '';

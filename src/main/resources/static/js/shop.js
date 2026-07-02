@@ -40,10 +40,13 @@ const STAT_DEFS = [
 
 const RARITY_COLORS = {
     COMMUN: '#94a3b8',
+    INHABITUEL: '#ffffff',
     RARE: '#3b82f6',
+    MYTHIQUE: '#f97316',
     LEGENDAIRE: '#f59e0b',
     EPIQUE: '#c084fc',
-    RELIQUE: '#ef4444'
+    RELIQUE: '#ef4444',
+    MAUDIT: '#555555'
 };
 
 let shopItems = [];

@@ -24,10 +24,13 @@ function getSlotInfo(eq) {
 
 const RARITY_COLORS = {
     COMMUN: '#94a3b8',
+    INHABITUEL: '#ffffff',
     RARE: '#3b82f6',
+    MYTHIQUE: '#f97316',
     LEGENDAIRE: '#f59e0b',
     EPIQUE: '#c084fc',
-    RELIQUE: '#ef4444'
+    RELIQUE: '#ef4444',
+    MAUDIT: '#555555'
 };
 
 let editingDungeonId = null;
@@ -1547,7 +1550,7 @@ async function loadEquipments() {
         });
 
         // Sort by rarity, then name
-        const rarityOrder = { 'COMMUN': 1, 'RARE': 2, 'EPIQUE': 3, 'LEGENDAIRE': 4, 'RELIQUE': 5 };
+        const rarityOrder = { 'MAUDIT': 1, 'RELIQUE': 2, 'EPIQUE': 3, 'LEGENDAIRE': 4, 'MYTHIQUE': 5, 'RARE': 6, 'INHABITUEL': 7, 'COMMUN': 8 };
         allEquipments = Array.from(map.values()).sort((a, b) => {
             const rA = rarityOrder[a.rarity] || 0;
             const rB = rarityOrder[b.rarity] || 0;

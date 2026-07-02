@@ -56,10 +56,22 @@
             border-bottom-color: rgba(16, 185, 129, 0.2);
         }
 
+        .shop-admin-header.rarity-INHABITUEL {
+            background: rgba(255, 255, 255, 0.1);
+            color: #ffffff;
+            border-bottom-color: rgba(255, 255, 255, 0.2);
+        }
+
         .shop-admin-header.rarity-RARE {
             background: rgba(143, 246, 59, 0.1);
             color: #218d00;
             border-bottom-color: rgba(59, 130, 246, 0.2);
+        }
+
+        .shop-admin-header.rarity-MYTHIQUE {
+            background: rgba(249, 115, 22, 0.1);
+            color: #f97316;
+            border-bottom-color: rgba(249, 115, 22, 0.2);
         }
 
         .shop-admin-header.rarity-LEGENDAIRE {
@@ -78,6 +90,13 @@
             background: rgba(168, 85, 247, 0.1);
             color: #c084fc;
             border-bottom-color: rgba(168, 85, 247, 0.2);
+        }
+
+        .shop-admin-header.rarity-MAUDIT {
+            background: rgba(0, 0, 0, 0.3);
+            color: #555555;
+            border-bottom-color: rgba(0, 0, 0, 0.5);
+            text-shadow: 0 0 2px rgba(255,255,255,0.2);
         }
 
         .shop-admin-row {
@@ -305,9 +324,15 @@
                                     <div class="custom-option rarity-COMMUN" data-value="COMMUN" data-color="#94a3b8"
                                         data-letter="C"><span class="cs-icon"
                                             style="color: #94a3b8; font-weight: bold;">C</span> Commun</div>
+                                    <div class="custom-option rarity-INHABITUEL" data-value="INHABITUEL" data-color="#ffffff"
+                                        data-letter="I"><span class="cs-icon"
+                                            style="color: #ffffff; font-weight: bold;">I</span> Inhabituel</div>
                                     <div class="custom-option rarity-RARE" data-value="RARE" data-color="#22c55e"
                                         data-letter="R"><span class="cs-icon"
                                             style="color: #22c55e; font-weight: bold;">R</span> Rare</div>
+                                    <div class="custom-option rarity-MYTHIQUE" data-value="MYTHIQUE" data-color="#f97316"
+                                        data-letter="M"><span class="cs-icon"
+                                            style="color: #f97316; font-weight: bold;">M</span> Mythique</div>
                                     <div class="custom-option rarity-LEGENDAIRE" data-value="LEGENDAIRE"
                                         data-color="#eab308" data-letter="L"><span class="cs-icon"
                                             style="color: #eab308; font-weight: bold;">L</span> Légendaire</div>
@@ -317,6 +342,9 @@
                                     <div class="custom-option rarity-RELIQUE" data-value="RELIQUE" data-color="#a855f7"
                                         data-letter="R"><span class="cs-icon"
                                             style="color: #a855f7; font-weight: bold;">R</span> Relique (Max 1)</div>
+                                    <div class="custom-option rarity-MAUDIT" data-value="MAUDIT" data-color="#555555"
+                                        data-letter="M"><span class="cs-icon"
+                                            style="color: #555555; font-weight: bold;">M</span> Maudit</div>
                                 </div>
                                 <input type="hidden" id="eqRarity" value="COMMUN">
                             </div>

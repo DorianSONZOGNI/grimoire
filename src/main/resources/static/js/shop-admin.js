@@ -49,13 +49,13 @@ const STAT_DEFS = [
 ];
 
 const WEIGHT_LIMITS = {
-    CASQUE: { COMMUN: 5, RARE: 14, LEGENDAIRE: 22, EPIQUE: 35, RELIQUE: 40 },
-    PLASTRON: { COMMUN: 9, RARE: 19, LEGENDAIRE: 29, EPIQUE: 40, RELIQUE: 46 },
-    ANNEAU_GAUCHE: { COMMUN: 3, RARE: 6, LEGENDAIRE: 10, EPIQUE: 15, RELIQUE: 17 },
-    ANNEAU_DROIT: { COMMUN: 3, RARE: 6, LEGENDAIRE: 10, EPIQUE: 15, RELIQUE: 17 },
-    BOTTES: { COMMUN: 4, RARE: 12, LEGENDAIRE: 19, EPIQUE: 30, RELIQUE: 34 },
-    CAPE: { COMMUN: 5, RARE: 14, LEGENDAIRE: 22, EPIQUE: 35, RELIQUE: 40 },
-    CONSOMMABLE: { COMMUN: 5, RARE: 9, LEGENDAIRE: 14, EPIQUE: 20, RELIQUE: 24 }
+    CASQUE: { COMMUN: 5, INHABITUEL: 9, RARE: 14, MYTHIQUE: 18, LEGENDAIRE: 22, EPIQUE: 35, RELIQUE: 40, MAUDIT: 40 },
+    PLASTRON: { COMMUN: 9, INHABITUEL: 14, RARE: 19, MYTHIQUE: 24, LEGENDAIRE: 29, EPIQUE: 40, RELIQUE: 46, MAUDIT: 46 },
+    ANNEAU_GAUCHE: { COMMUN: 3, INHABITUEL: 4, RARE: 6, MYTHIQUE: 8, LEGENDAIRE: 10, EPIQUE: 15, RELIQUE: 17, MAUDIT: 17 },
+    ANNEAU_DROIT: { COMMUN: 3, INHABITUEL: 4, RARE: 6, MYTHIQUE: 8, LEGENDAIRE: 10, EPIQUE: 15, RELIQUE: 17, MAUDIT: 17 },
+    BOTTES: { COMMUN: 4, INHABITUEL: 8, RARE: 12, MYTHIQUE: 15, LEGENDAIRE: 19, EPIQUE: 30, RELIQUE: 34, MAUDIT: 34 },
+    CAPE: { COMMUN: 5, INHABITUEL: 9, RARE: 14, MYTHIQUE: 18, LEGENDAIRE: 22, EPIQUE: 35, RELIQUE: 40, MAUDIT: 40 },
+    CONSOMMABLE: { COMMUN: 5, INHABITUEL: 7, RARE: 9, MYTHIQUE: 11, LEGENDAIRE: 14, EPIQUE: 20, RELIQUE: 24, MAUDIT: 24 }
 };
 
 function calculateWeight(eq) {
@@ -333,7 +333,7 @@ document.getElementById('deleteConfirmBtn').addEventListener('click', async () =
 // ===== Rendu =====
 function renderVault() {
     // Sort allEquipments: rarity order, then slot, then name
-    const rarityOrder = { 'RELIQUE': 0, 'EPIQUE': 1, 'LEGENDAIRE': 2, 'RARE': 3, 'COMMUN': 4 };
+    const rarityOrder = { 'MAUDIT': -1, 'RELIQUE': 0, 'EPIQUE': 1, 'LEGENDAIRE': 2, 'MYTHIQUE': 3, 'RARE': 4, 'INHABITUEL': 5, 'COMMUN': 6 };
     const slotOrder = { 'CASQUE': 1, 'PLASTRON': 2, 'ANNEAU_GAUCHE': 3, 'ANNEAU_DROIT': 3, 'BOTTES': 4, 'CAPE': 5 };
 
     let sorted = [...allEquipments].sort((a, b) => {
@@ -882,10 +882,13 @@ function calculateEquipmentWeight() {
 function calculateShopPrice(weight, rarity, slot) {
     let multiplier = 1;
     if (rarity === 'COMMUN') multiplier = 1;
+    else if (rarity === 'INHABITUEL') multiplier = 1.5;
     else if (rarity === 'RARE') multiplier = 2;
+    else if (rarity === 'MYTHIQUE') multiplier = 2.5;
     else if (rarity === 'LEGENDAIRE') multiplier = 3;
     else if (rarity === 'EPIQUE') multiplier = 5;
     else if (rarity === 'RELIQUE') multiplier = 6;
+    else if (rarity === 'MAUDIT') multiplier = 0.5;
 
     let slotMultiplier = 1.0;
     if (slot === 'PLASTRON') slotMultiplier = 1.1;
