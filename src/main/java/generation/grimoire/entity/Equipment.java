@@ -68,7 +68,7 @@ public class Equipment {
 
     @Column(name = "owner_username")
     private String ownerUsername;
-    
+
     @Column(name = "is_shop_template", nullable = false)
     private boolean isShopTemplate = false;
 
@@ -79,7 +79,8 @@ public class Equipment {
     private java.util.Map<String, Integer> priceAnomalies = new java.util.HashMap<>();
 
     public void copyStatsFrom(Equipment template) {
-        if (template == null) return;
+        if (template == null)
+            return;
         this.setName(template.getName());
         this.setSlot(template.getSlot());
         this.setRarity(template.getRarity());
@@ -110,17 +111,18 @@ public class Equipment {
         w += this.bonusStrength * 2.0;
         w += this.bonusArmor * 1.0;
         w += this.bonusResistance * 1.0;
-        w += this.bonusSpeed * 2.0;
-        w += this.bonusCrit * 1.0;
-        w += this.regenHealthPerTurn * 1.0;
-        w += this.regenManaPerTurn * 1.0;
+        w += this.bonusSpeed * 3.0;
+        w += this.bonusCrit * 1.5;
+        w += this.regenHealthPerTurn * 1.5;
+        w += this.regenManaPerTurn * 1.5;
 
-        if ((this.rarity == generation.grimoire.enumeration.EquipmentRarity.EPIQUE || 
-             this.rarity == generation.grimoire.enumeration.EquipmentRarity.RELIQUE) &&
-            this.specialEffect != generation.grimoire.enumeration.EquipmentEffectType.NONE && 
-            this.specialEffectValue > 0) {
-            
-            w += this.specialEffectValue * 1.0;
+        if ((this.rarity == generation.grimoire.enumeration.EquipmentRarity.EPIQUE ||
+                this.rarity == generation.grimoire.enumeration.EquipmentRarity.RELIQUE ||
+                this.rarity == generation.grimoire.enumeration.EquipmentRarity.MAUDIT) &&
+                this.specialEffect != generation.grimoire.enumeration.EquipmentEffectType.NONE &&
+                this.specialEffectValue != 0) {
+
+            w += this.specialEffectValue * 1.5;
         }
         return w;
     }

@@ -825,7 +825,11 @@ function renderEquipModal() {
                     'THORNS': 'Épines',
                     'MANA_SHIELD': 'Bouclier de Mana',
                     'CHEAT_DEATH': 'Ange Gardien',
-                    'CRIT_DAMAGE': 'Dégâts Critiques'
+                    'CRIT_DAMAGE': 'Dégâts Critiques',
+                    'CURSED_MANA_DRAIN': 'Famine (Drain Mana)',
+                    'CURSED_HP_LOSS_ON_MANA': 'Hémorragie magique',
+                    'CURSED_MAGIC_DAMAGE_REDUCTION': 'Folie',
+                    'CURSED_PHYSICAL_DAMAGE_REDUCTION': 'Faiblesse'
                 };
                 const label = effectLabels[equipped.specialEffect] || equipped.specialEffect;
                 specialEffectHtml = `<div style="margin-top: 0.3rem; font-size: 0.7rem; color: #c084fc; background: rgba(168, 85, 247, 0.1); padding: 0.1rem 0.4rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 0.2rem;">

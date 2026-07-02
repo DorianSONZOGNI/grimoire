@@ -42,6 +42,9 @@ public class DamagePercentageEffect extends DamageEffect {
             damage *= getCriticalMultiplier(caster);
         }
 
+        // Appliquer la réduction des malédictions
+        damage = applyCursedReduction(damage, caster, this.getDamageType());
+
         // Appliquer les dégâts à la cible
         target.takeDamage((int) damage, this.getDamageType(), caster);
     }

@@ -1244,7 +1244,11 @@ function generateEquipmentTooltipHTML(eq) {
             'THORNS': 'Épines',
             'MANA_SHIELD': 'Bouclier de Mana',
             'CHEAT_DEATH': 'Ange Gardien',
-            'CRIT_DAMAGE': 'Dégâts Critiques'
+            'CRIT_DAMAGE': 'Dégâts Critiques',
+            'CURSED_MANA_DRAIN': 'Famine (Drain Mana)',
+            'CURSED_HP_LOSS_ON_MANA': 'Hémorragie magique',
+            'CURSED_MAGIC_DAMAGE_REDUCTION': 'Folie',
+            'CURSED_PHYSICAL_DAMAGE_REDUCTION': 'Faiblesse'
         };
         const label = effectLabels[eq.specialEffect] || eq.specialEffect;
         effectHtml = `<div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.1);">

@@ -75,11 +75,13 @@ public class DamageOverTimeEffect extends DamageEffect {
             if (caster != null && checkCriticalHit(caster)) {
                 totalDamage = (int) (totalDamage * 1.5);
             }
+            
+            double reducedDamage = applyCursedReduction(totalDamage, caster, this.damageType);
 
-            target.takeDamage(totalDamage, damageType, caster, burn != null && burn);
+            target.takeDamage((int) reducedDamage, damageType, caster, burn != null && burn);
             duration--;
 
-            System.out.println(target.getName() + " subit " + totalDamage
+            System.out.println(target.getName() + " subit " + ((int)reducedDamage)
                     + " dégâts (" + damageType + ") de damage over time, durée restante: " + duration);
         }
     }

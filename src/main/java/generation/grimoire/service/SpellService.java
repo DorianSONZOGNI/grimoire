@@ -147,6 +147,18 @@ public class SpellService {
         // Déduire les coûts
         caster.setManaCurrent(caster.getManaCurrent() - actualManaCost);
         caster.setHealthCurrent(caster.getHealthCurrent() - actualHealCost);
+        
+        // Malédiction: Hémorragie magique (Perte d'HP en % du mana consommé)
+        if (actualManaCost > 0) {
+            int hpLossPct = caster.getSpecialEffectValue(generation.grimoire.enumeration.EquipmentEffectType.CURSED_HP_LOSS_ON_MANA);
+            if (hpLossPct != 0) {
+                int hpLoss = (int) (actualManaCost * Math.abs(hpLossPct) / 100.0);
+                if (hpLoss > 0) {
+                    caster.takeDamage(hpLoss, generation.grimoire.enumeration.DamageType.BRUT, caster);
+                    System.out.println(caster.getName() + " subit " + hpLoss + " dégâts de malédiction (Hémorragie magique) !");
+                }
+            }
+        }
         caster.setPassiveState("destruction_heat", currentHeat - actualHeatCost);
         
         String costMsg = "";
@@ -328,6 +340,18 @@ public class SpellService {
 
         caster.setManaCurrent(caster.getManaCurrent() - actualManaCost);
         caster.setHealthCurrent(caster.getHealthCurrent() - actualHealCost);
+        
+        // Malédiction: Hémorragie magique (Perte d'HP en % du mana consommé)
+        if (actualManaCost > 0) {
+            int hpLossPct = caster.getSpecialEffectValue(generation.grimoire.enumeration.EquipmentEffectType.CURSED_HP_LOSS_ON_MANA);
+            if (hpLossPct != 0) {
+                int hpLoss = (int) (actualManaCost * Math.abs(hpLossPct) / 100.0);
+                if (hpLoss > 0) {
+                    caster.takeDamage(hpLoss, generation.grimoire.enumeration.DamageType.BRUT, caster);
+                    System.out.println(caster.getName() + " subit " + hpLoss + " dégâts de malédiction (Hémorragie magique) !");
+                }
+            }
+        }
         caster.setPassiveState("destruction_heat", currentHeat - actualHeatCost);
         
         String costMsg2 = "";

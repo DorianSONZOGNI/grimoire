@@ -144,7 +144,11 @@ function generateStandHtml(eq) {
             'THORNS': 'Épines',
             'MANA_SHIELD': 'Bouclier de Mana',
             'CHEAT_DEATH': 'Ange Gardien',
-            'CRIT_DAMAGE': 'Dégâts Critiques'
+            'CRIT_DAMAGE': 'Dégâts Critiques',
+            'CURSED_MANA_DRAIN': 'Famine (Drain Mana)',
+            'CURSED_HP_LOSS_ON_MANA': 'Hémorragie magique',
+            'CURSED_MAGIC_DAMAGE_REDUCTION': 'Folie',
+            'CURSED_PHYSICAL_DAMAGE_REDUCTION': 'Faiblesse'
         };
         const label = effectLabels[eq.specialEffect] || eq.specialEffect;
         effectHtml = `<div class="shop-stand-stat" style="background: rgba(168, 85, 247, 0.1); color: #c084fc;">

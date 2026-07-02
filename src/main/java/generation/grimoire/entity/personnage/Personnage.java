@@ -241,6 +241,13 @@ public class Personnage {
             } else if (totalHpRegen < 0) {
                 this.takeDamage(-totalHpRegen, generation.grimoire.enumeration.DamageType.BRUT);
             }
+            
+            // Malédiction: Famine (Drain de mana par tour)
+            int cursedManaDrain = getSpecialEffectValue(generation.grimoire.enumeration.EquipmentEffectType.CURSED_MANA_DRAIN);
+            if (cursedManaDrain != 0) {
+                totalManaRegen -= Math.abs(cursedManaDrain);
+            }
+            
             if (totalManaRegen != 0) {
                 this.setManaCurrent(this.manaCurrent + totalManaRegen);
             }

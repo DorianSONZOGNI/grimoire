@@ -21,6 +21,9 @@ public class DamageFixedEffect extends DamageEffect {
         if (checkCriticalHit(caster)) {
             finalDamage *= getCriticalMultiplier(caster);
         }
+        
+        finalDamage = applyCursedReduction(finalDamage, caster, this.getDamageType());
+
         target.takeDamage((int) finalDamage, this.getDamageType(), caster);
     }
 }

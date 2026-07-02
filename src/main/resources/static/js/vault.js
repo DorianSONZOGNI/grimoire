@@ -126,19 +126,47 @@ document.addEventListener('click', (e) => {
         if (hiddenInput.id === 'eqRarity') {
             const val = hiddenInput.value;
             const row = document.getElementById('eqSpecialEffectRow');
-            if (val === 'EPIQUE' || val === 'RELIQUE') {
+            if (val === 'EPIQUE' || val === 'RELIQUE' || val === 'MAUDIT') {
                 row.style.display = 'grid';
                 const isEpic = val === 'EPIQUE';
-                const color = isEpic ? '#ef4444' : '#c084fc';
-                const bg = isEpic ? 'rgba(239, 68, 68, 0.05)' : 'rgba(168, 85, 247, 0.05)';
-                const border = isEpic ? '1px dashed rgba(239, 68, 68, 0.3)' : '1px dashed rgba(168, 85, 247, 0.3)';
-                const inputBorder = isEpic ? 'rgba(239, 68, 68, 0.3)' : 'rgba(192, 132, 252, 0.3)';
+                const isMaudit = val === 'MAUDIT';
+                let color = isEpic ? '#ef4444' : '#a855f7';
+                let bg = isEpic ? 'rgba(239, 68, 68, 0.05)' : 'rgba(168, 85, 247, 0.05)';
+                let border = isEpic ? '1px dashed rgba(239, 68, 68, 0.3)' : '1px dashed rgba(168, 85, 247, 0.3)';
+                let inputBorder = isEpic ? 'rgba(239, 68, 68, 0.3)' : 'rgba(168, 85, 247, 0.3)';
+                if (isMaudit) {
+                    color = '#555555';
+                    bg = 'rgba(85, 85, 85, 0.05)';
+                    border = '1px dashed rgba(85, 85, 85, 0.3)';
+                    inputBorder = 'rgba(85, 85, 85, 0.3)';
+                }
+                
                 row.style.background = bg;
                 row.style.border = border;
                 document.getElementById('eqSpecialEffectLabelTitle').style.color = color;
                 document.getElementById('eqSpecialEffectValueTitle').style.color = color;
                 document.getElementById('eqSpecialEffectTrigger').style.borderColor = inputBorder;
                 document.getElementById('eqSpecialEffectValue').style.borderColor = inputBorder;
+                
+                const effectOptions = document.querySelectorAll('#eqSpecialEffectOptions .custom-option');
+                effectOptions.forEach(opt => {
+                    const effectVal = opt.getAttribute('data-value');
+                    if (effectVal === 'NONE') {
+                        opt.style.display = 'block';
+                    } else if (isMaudit) {
+                        opt.style.display = effectVal.startsWith('CURSED_') ? 'block' : 'none';
+                    } else {
+                        opt.style.display = effectVal.startsWith('CURSED_') ? 'none' : 'block';
+                    }
+                });
+
+                const currentEffect = document.getElementById('eqSpecialEffect').value;
+                if ((isMaudit && !currentEffect.startsWith('CURSED_') && currentEffect !== 'NONE') || 
+                    (!isMaudit && currentEffect.startsWith('CURSED_'))) {
+                    document.getElementById('eqSpecialEffect').value = 'NONE';
+                    document.getElementById('eqSpecialEffectLabel').innerHTML = '<span class="material-symbols-outlined cs-icon" style="color: #94a3b8;">not_interested</span> Aucun';
+                    document.getElementById('eqSpecialEffectValue').value = 0;
+                }
             } else {
                 row.style.display = 'none';
                 document.getElementById('eqSpecialEffect').value = 'NONE';
@@ -483,7 +511,11 @@ function renderGrid(equipments) {
                 'THORNS': 'Épines',
                 'MANA_SHIELD': 'Bouclier de Mana',
                 'CHEAT_DEATH': 'Ange Gardien',
-                'CRIT_DAMAGE': 'Dégâts Critiques'
+                'CRIT_DAMAGE': 'Dégâts Critiques',
+                'CURSED_MANA_DRAIN': 'Famine (Drain Mana)',
+                'CURSED_HP_LOSS_ON_MANA': 'Hémorragie magique',
+                'CURSED_MAGIC_DAMAGE_REDUCTION': 'Folie',
+                'CURSED_PHYSICAL_DAMAGE_REDUCTION': 'Faiblesse'
             };
             const label = effectLabels[eq.specialEffect] || eq.specialEffect;
             effectHtml = `<div class="vault-card-effect">
@@ -734,19 +766,39 @@ window.editEquipment = function (id) {
         }
 
         const row = document.getElementById('eqSpecialEffectRow');
-        if (eq.rarity === 'EPIQUE' || eq.rarity === 'RELIQUE') {
+        if (eq.rarity === 'EPIQUE' || eq.rarity === 'RELIQUE' || eq.rarity === 'MAUDIT') {
             if (row) row.style.display = 'grid';
 
             const isEpic = eq.rarity === 'EPIQUE';
-            const color = isEpic ? '#ef4444' : '#c084fc';
-            const bg = isEpic ? 'rgba(239, 68, 68, 0.05)' : 'rgba(168, 85, 247, 0.05)';
-            const border = isEpic ? '1px dashed rgba(239, 68, 68, 0.3)' : '1px dashed rgba(168, 85, 247, 0.3)';
-            const inputBorder = isEpic ? 'rgba(239, 68, 68, 0.3)' : 'rgba(192, 132, 252, 0.3)';
+            const isMaudit = eq.rarity === 'MAUDIT';
+            let color = isEpic ? '#ef4444' : '#a855f7';
+            let bg = isEpic ? 'rgba(239, 68, 68, 0.05)' : 'rgba(168, 85, 247, 0.05)';
+            let border = isEpic ? '1px dashed rgba(239, 68, 68, 0.3)' : '1px dashed rgba(168, 85, 247, 0.3)';
+            let inputBorder = isEpic ? 'rgba(239, 68, 68, 0.3)' : 'rgba(168, 85, 247, 0.3)';
+
+            if (isMaudit) {
+                color = '#555555';
+                bg = 'rgba(85, 85, 85, 0.05)';
+                border = '1px dashed rgba(85, 85, 85, 0.3)';
+                inputBorder = 'rgba(85, 85, 85, 0.3)';
+            }
 
             if (row) {
                 row.style.background = bg;
                 row.style.border = border;
             }
+            
+            const effectOptions = document.querySelectorAll('#eqSpecialEffectOptions .custom-option');
+            effectOptions.forEach(opt => {
+                const effectVal = opt.getAttribute('data-value');
+                if (effectVal === 'NONE') {
+                    opt.style.display = 'block';
+                } else if (isMaudit) {
+                    opt.style.display = effectVal.startsWith('CURSED_') ? 'block' : 'none';
+                } else {
+                    opt.style.display = effectVal.startsWith('CURSED_') ? 'none' : 'block';
+                }
+            });
 
             const labelTitle = document.getElementById('eqSpecialEffectLabelTitle');
             if (labelTitle) labelTitle.style.color = color;
