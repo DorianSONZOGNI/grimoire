@@ -189,7 +189,18 @@ async function loadAnomalies() {
     try {
         const res = await fetch('/api/anomalies/all-templates');
         if (res.ok) {
-            window.allAnomalies = await res.json();
+            let data = await res.json();
+            window.allAnomalies = data.sort((a, b) => {
+                const spiriA = a.spiritualite || 'ZZZ';
+                const spiriB = b.spiritualite || 'ZZZ';
+                if (spiriA !== spiriB) return spiriA.localeCompare(spiriB);
+                
+                const lvlA = a.level || 1;
+                const lvlB = b.level || 1;
+                if (lvlA !== lvlB) return lvlA - lvlB;
+                
+                return a.name.localeCompare(b.name);
+            });
         }
     } catch (e) {
         console.error('Erreur chargement anomalies:', e);

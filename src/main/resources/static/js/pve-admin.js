@@ -1497,9 +1497,9 @@ async function loadAnomalies() {
                 uniqueNames.add(a.name);
                 return true;
             }).sort((a, b) => {
-                const typeA = a.magicObject ? 0 : 1;
-                const typeB = b.magicObject ? 0 : 1;
-                if (typeA !== typeB) return typeA - typeB;
+                const spiriA = a.spiritualite || 'ZZZ';
+                const spiriB = b.spiritualite || 'ZZZ';
+                if (spiriA !== spiriB) return spiriA.localeCompare(spiriB);
                 const lvlA = a.level || 1;
                 const lvlB = b.level || 1;
                 if (lvlA !== lvlB) return lvlA - lvlB;
