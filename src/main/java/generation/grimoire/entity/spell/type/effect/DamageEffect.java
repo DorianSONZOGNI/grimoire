@@ -21,12 +21,18 @@ public abstract class DamageEffect extends SpellEffect {
      * Multiplicateur d'amplification pour cet effet.
      * Par défaut, 1.0 signifie qu'aucun buff n'est appliqué.
      */
+    @jakarta.persistence.Transient
     private double amplificationMultiplier = 1.0;
 
     @Override
     public void applyModifierFromBuff(BuffDebuffEffect buff, Personnage caster, Personnage target) {
         this.amplificationMultiplier *= buff.getModifier();
         System.out.println("Amplification appliquée au DamageEffect avec x" + buff.getModifier());
+    }
+
+    @Override
+    public void resetModifiers() {
+        this.amplificationMultiplier = 1.0;
     }
 
     public double applyEquipmentModifiers(double damage, Personnage caster, Personnage target, DamageType damageType) {

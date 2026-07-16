@@ -15,11 +15,17 @@ public abstract class HealEffect extends SpellEffect {
      * Multiplicateur d'amplification des soins.
      * 1.0 signifie pas de modification.
      */
+    @jakarta.persistence.Transient
     private double amplificationMultiplier = 1.0;
 
     @Override
     public void applyModifierFromBuff(BuffDebuffEffect buff, Personnage caster, Personnage target) {
         this.amplificationMultiplier *= buff.getModifier();
         System.out.println("Amplification appliquée au HealEffect avec x" + buff.getModifier());
+    }
+
+    @Override
+    public void resetModifiers() {
+        this.amplificationMultiplier = 1.0;
     }
 }
