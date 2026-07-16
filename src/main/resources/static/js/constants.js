@@ -65,7 +65,7 @@ export async function initMeta() {
             window.RARITY_COLORS = {};
             if (allMeta.equipmentRarities) {
                 allMeta.equipmentRarities.forEach(r => {
-                    window.RARITY_COLORS[r.name] = r.cssClass || '#fbbf24';
+                    window.RARITY_COLORS[r.name] = r.color || '#fbbf24';
                 });
             }
         }
