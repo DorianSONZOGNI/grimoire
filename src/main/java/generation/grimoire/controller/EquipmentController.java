@@ -581,7 +581,7 @@ public class EquipmentController {
         Map<String, Object> map = new HashMap<>();
         map.put("id", e.getId());
         map.put("name", e.getName());
-        map.put("slot", e.getSlot());
+        map.put("slot", e.getSlot() != null ? e.getSlot().name() : null);
         map.put("bonusHealthMax", e.getBonusHealthMax());
         map.put("bonusManaMax", e.getBonusManaMax());
         map.put("bonusPower", e.getBonusPower());
@@ -592,8 +592,8 @@ public class EquipmentController {
         map.put("bonusCrit", e.getBonusCrit());
         map.put("regenHealthPerTurn", e.getRegenHealthPerTurn());
         map.put("regenManaPerTurn", e.getRegenManaPerTurn());
-        map.put("rarity", e.getRarity());
-        map.put("specialEffect", e.getSpecialEffect());
+        map.put("rarity", e.getRarity() != null ? e.getRarity().name() : null);
+        map.put("specialEffect", e.getSpecialEffect() != null ? e.getSpecialEffect().name() : null);
         map.put("specialEffectValue", e.getSpecialEffectValue());
         map.put("baseWeight", e.getBaseWeight());
         map.put("consumableHpPercent", e.getConsumableHpPercent());

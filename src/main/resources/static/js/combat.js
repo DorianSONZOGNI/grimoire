@@ -2405,24 +2405,47 @@ function generateFighterHtml(c, isHero) {
         </div>`;
 
     const getEffectiveStat = (statName) => {
+        let hasTotal = false;
         let base = 0;
         switch (statName) {
-            case 'POWER': base = c.totalPower !== undefined ? c.totalPower : (c.power || 0); break;
-            case 'STRENGTH': base = c.totalStrength !== undefined ? c.totalStrength : (c.strength || 0); break;
-            case 'ARMURE': base = c.totalArmor !== undefined ? c.totalArmor : (c.armor || 0); break;
-            case 'RESISTANCE': base = c.totalResistance !== undefined ? c.totalResistance : (c.resistance || 0); break;
-            case 'SPEED': base = c.totalSpeed !== undefined ? c.totalSpeed : (c.speed || 0); break;
+            case 'POWER':
+                if (c.totalPower !== undefined) { base = c.totalPower; hasTotal = true; } else { base = c.power || 0; }
+                break;
+            case 'STRENGTH':
+                if (c.totalStrength !== undefined) { base = c.totalStrength; hasTotal = true; } else { base = c.strength || 0; }
+                break;
+            case 'ARMURE':
+                if (c.totalArmor !== undefined) { base = c.totalArmor; hasTotal = true; } else { base = c.armor || 0; }
+                break;
+            case 'RESISTANCE':
+                if (c.totalResistance !== undefined) { base = c.totalResistance; hasTotal = true; } else { base = c.resistance || 0; }
+                break;
+            case 'SPEED':
+                if (c.totalSpeed !== undefined) { base = c.totalSpeed; hasTotal = true; } else { base = c.speed || 0; }
+                break;
             case 'CRIT':
                 if (c.totalCrit !== undefined) {
                     base = c.totalCrit;
+                    hasTotal = true;
                 } else if (c.critDerived !== null && c.critDerived !== undefined) {
                     base = c.critDerived;
+                    hasTotal = true; // critDerived also includes buffs usually
                 } else if (c.voie && c.voie.nom && c.voie.nom.toLowerCase().includes('raison')) {
-                    base = getEffectiveStat('SPEED') * 2;
+                    // For Voie de la Raison, crit is based on speed. We'll handle this specially.
+                    let speed = c.totalSpeed !== undefined ? c.totalSpeed : (c.speed || 0);
+                    base = speed * 2;
                 } else {
                     base = c.crit || 0;
                 }
                 break;
+        }
+
+        // If the backend already provided the total stat (which includes buffs/passives), return it directly.
+        if (hasTotal && statName !== 'CRIT') {
+            return base;
+        }
+        if (hasTotal && statName === 'CRIT' && c.totalCrit !== undefined) {
+            return base;
         }
 
         let flatBonus = 0;
