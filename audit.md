@@ -17,8 +17,8 @@ La règle **B3 (DTOs Actifs)** + **B4 (Simulate)** couvrent ce cas. Constat terr
 
 **Verdict** : B3+B4 ont été appliquées avec succès. L'intégralité du calcul (poids, limites, prix) est centralisée dans le back-end (`Equipment.java`) et interrogée via l'endpoint de simulation (`/api/equipments/simulate-weight`).
 
-> [!WARNING]
-> **Violation résiduelle :** `WEIGHT_LIMITS` est encore hardcodé dans [constants.js](file:///c:/Users/doria/Desktop/Project/grimoire/src/main/resources/static/js/constants.js#L24-L35) et consommé par [vault.js](file:///c:/Users/doria/Desktop/Project/grimoire/src/main/resources/static/js/vault.js#L536) pour la validation côté client. Ce dictionnaire duplique les valeurs du `EquipmentController.getMaxWeight()`. Il devrait être fourni par le back-end via `/api/meta` ou l'endpoint `simulate-weight`.
+> [!NOTE]
+> **Violation résiduelle résolue :** `WEIGHT_LIMITS` a été supprimé de `constants.js` et le client consomme désormais la propriété `maxWeight` fournie directement par l'API pour validation.
 
 ### ✅ HTML/CSS dans le code Java/BDD
 
@@ -35,8 +35,8 @@ La règle **F1** couvre ce cas. Constat terrain :
 - ~~`GLOBAL_STAT_LABELS` est maintenant hydraté par le back-end.~~ **(CORRIGÉ)**
 - ~~`SLOT_LABELS` et d'autres constantes sont dupliquées et hardcodées.~~ **(CORRIGÉ)** — Maintenant hydraté via `window.SLOT_LABELS` depuis `/api/meta`.
 
-> [!WARNING]
-> **Violation résiduelle :** [combat.js:2663-2673](file:///c:/Users/doria/Desktop/Project/grimoire/src/main/resources/static/js/combat.js#L2663-L2673) contient un dictionnaire `behaviorTitles` et `bIcon`/`bLabel` hardcodés pour les comportements de monstres (`PREDATEUR`, `CORRUPTEUR`, etc.). Ceci viole **F1** et **B2** : ces métadonnées devraient être portées par l'enum `MonsterBehavior` côté Java et sérialisées via `/api/meta`.
+> [!NOTE]
+> **Violation résiduelle résolue :** `combat.js` consomme désormais directement la description et le label des comportements via les objets enum transmis par l'API Meta. Le dictionnaire `behaviorTitles` a été supprimé.
 
 **Verdict** : F1 majoritairement appliquée. Reste la dette `behaviorTitles` dans `combat.js`.
 
@@ -75,14 +75,14 @@ La structure CSS a été migrée et F3 dans `GRIMOIRE_ARCHITECTURE.md` reflète 
 Règle F6 établie. `pageState` adopté dans : `armory.js`, `vault.js`, `shop.js`, `shop-admin.js`.
 
 > [!NOTE]
-> `combat.js`, `dungeons.js` et `pve-admin.js` n'ont pas encore adopté le pattern `pageState` — ils utilisent toujours des variables `let` globales. Conversion à planifier.
+> **Violation résiduelle résolue :** `combat.js`, `dungeons.js`, `pve-admin.js` et `grimoire.js` ont adopté le pattern `pageState` ou `state` centralisé. Les variables globales `let` ont été migrées.
 
 ### ✅ AM-6 : Gestion des appels fetch() — CORRIGÉ (PARTIEL)
 
 `globalFetch()` est utilisé dans tous les fichiers `.js` principaux.
 
-> [!WARNING]
-> **Violation résiduelle :** `auth.js` utilise `fetch()` brut (6 occurrences) — légitime car c'est le module d'authentification lui-même (bootstrap). Plus critique : [alchemy.html](file:///c:/Users/doria/Desktop/Project/grimoire/src/main/resources/static/alchemy.html) et [alchemy-admin.html](file:///c:/Users/doria/Desktop/Project/grimoire/src/main/resources/static/alchemy-admin.html) contiennent leur JS inline avec des appels `fetch()` directs (14 occurrences au total). Ces pages devraient avoir un fichier JS dédié utilisant `globalFetch()`.
+> [!NOTE]
+> **Violation résiduelle résolue :** Le JS de `alchemy.html` et `alchemy-admin.html` a été extrait vers `alchemy.js` et `alchemy-admin.js` et utilise le wrapper `globalFetch()`. L'authentification utilise légitimement `fetch()` brut.
 
 ### ✅ AM-7 : L'exception légitime pour `element.style` dans les animations — CORRIGÉ
 
@@ -107,58 +107,43 @@ Suite à la correction de l'AM-8 (`/api/equipment` → `/api/equipments`), `Secu
 > [!IMPORTANT]
 > Les items ci-dessous sont des violations actives des règles du document `GRIMOIRE_ARCHITECTURE.md`. Ils nécessitent des corrections dans le code.
 
-### ⚠️ VR-1 : `WEIGHT_LIMITS` hardcodé en JS (viole F1 + B3)
+### ✅ VR-1 : `WEIGHT_LIMITS` hardcodé en JS (viole F1 + B3) — CORRIGÉ
 
-**Fichier** : [constants.js:24-35](file:///c:/Users/doria/Desktop/Project/grimoire/src/main/resources/static/js/constants.js#L24-L35)
-**Consommé par** : [vault.js:536](file:///c:/Users/doria/Desktop/Project/grimoire/src/main/resources/static/js/vault.js#L536), [vault.js:968](file:///c:/Users/doria/Desktop/Project/grimoire/src/main/resources/static/js/vault.js#L968)
+Le dictionnaire `WEIGHT_LIMITS` a été supprimé. Le client consomme la valeur exacte `eq.maxWeight` fournie directement par le DTO backend lors de l'appel API, en accord avec l'endpoint `/api/equipments/simulate-weight`.
 
-Le dictionnaire `WEIGHT_LIMITS` duplique les valeurs de `EquipmentController.getMaxWeight()` côté Java. La validation devrait passer par l'endpoint `/api/equipments/simulate-weight` qui existe déjà.
+### ✅ VR-2 : `behaviorTitles` hardcodé dans `combat.js` (viole F1 + B2) — CORRIGÉ
 
-### ⚠️ VR-2 : `behaviorTitles` hardcodé dans `combat.js` (viole F1 + B2)
+Les dictionnaires `behaviorTitles`, `bIcon`, `bLabel` codés en dur ont été supprimés. Ces métadonnées sont désormais portées par l'enum `MonsterBehavior` côté Java et exposées/consommées correctement via le paramètre enrichi.
 
-**Fichier** : [combat.js:2663-2673](file:///c:/Users/doria/Desktop/Project/grimoire/src/main/resources/static/js/combat.js#L2663-L2673)
+### ✅ VR-3 : Pages Alchimie sans `globalFetch()` (viole F4) — CORRIGÉ
 
-Dictionnaires `behaviorTitles`, `bIcon`, `bLabel` codés en dur pour les 6 comportements de monstres. Ces métadonnées devraient être portées par l'enum `MonsterBehavior` côté Java et exposées via `/api/meta`.
+Le code JS de [alchemy.html](file:///c:/Users/doria/Desktop/Project/grimoire/src/main/resources/static/alchemy.html) et [alchemy-admin.html](file:///c:/Users/doria/Desktop/Project/grimoire/src/main/resources/static/alchemy-admin.html) a été correctement extrait vers des fichiers externes `alchemy.js` et `alchemy-admin.js`, et s'appuie désormais sur le wrapper `globalFetch()` pour l'authentification et les requêtes.
 
-### ⚠️ VR-3 : Pages Alchimie sans `globalFetch()` (viole F4)
+### ✅ VR-4 : `pageState` non adopté par toutes les pages (viole F6) — CORRIGÉ
 
-**Fichiers** :
-- [alchemy.html](file:///c:/Users/doria/Desktop/Project/grimoire/src/main/resources/static/alchemy.html) : 7 appels `fetch()` directs
-- [alchemy-admin.html](file:///c:/Users/doria/Desktop/Project/grimoire/src/main/resources/static/alchemy-admin.html) : 7 appels `fetch()` directs
+Les fichiers `combat.js`, `dungeons.js`, `pve-admin.js`, et `grimoire.js` ont tous été refactorisés pour adopter le pattern `pageState` ou `state` importé afin d'encapsuler la logique d'état local de la page.
 
-Ces pages ont leur JS inliné dans le HTML et n'utilisent pas le wrapper `globalFetch()`. À migrer vers un fichier JS dédié.
+### ✅ VR-5 : Enums Java non enrichies (viole B2) — CORRIGÉ
 
-### ⚠️ VR-4 : `pageState` non adopté par toutes les pages (viole F6)
-
-**Fichiers manquants** : `combat.js`, `dungeons.js`, `pve-admin.js`, `grimoire.js`
-
-Ces fichiers utilisent encore des variables `let` globales au lieu d'un objet `pageState` encapsulé.
-
-### ⚠️ VR-5 : Enums Java non enrichies (viole B2)
-
-**`@JsonFormat(shape = Shape.OBJECT)`** n'est utilisé sur aucune enum. Les métadonnées (label, icon, color) sont servies par `EnumMetaController` dans un format ad-hoc, mais les enums elles-mêmes ne portent pas leurs propriétés en Java. Enums concernées :
-- `EquipmentRarity` — pas de propriétés label/icon/color intégrées
-- `MonsterBehavior` — pas de description/icon
-- `MonsterType` — pas de description/icon
-- `ConsumableCategory` — pas de label/icon/color
+Les enums ont été enrichies avec des propriétés (`label`, `icon`, `color`) et sérialisées avec `@JsonFormat(shape = JsonFormat.Shape.OBJECT)`. L'`EnumMetaController` a pu être nettoyé et agit désormais comme un simple proxy sans contenir de règles métier.
 
 ---
 
 ## 4. Conformité GRIMOIRE_ARCHITECTURE.md ↔ Code
 
-| Règle | Statut | Note |
-|---|---|---|
-| B1 (No HTML in DB) | ✅ Conforme | — |
-| B2 (Rich Enums) | ⚠️ Partiel | Enums servies via EnumMetaController mais pas enrichies en Java (VR-5) |
-| B3 (DTOs Actifs) | ⚠️ Partiel | `WEIGHT_LIMITS` encore dupliqué côté JS (VR-1) |
+| Règle | Statut | Commentaire |
+|-------|--------|-------------|
+| B1 (No HTML in DB/Java) | ✅ Conforme | Purgé de WebSpellCreationController |
+| B2 (Rich Enums) | ✅ Conforme | Enums enrichies et sérialisées en objets |
+| B3 (DTOs Actifs) | ✅ Conforme | `maxWeight` consommé directement en JS (VR-1) |
 | B4 (Simulate) | ✅ Conforme | Endpoint `/api/equipments/simulate-weight` opérationnel |
 | B5 (Conventions REST) | ✅ Conforme | `/api/equipments`, `/api/admin/pve` etc. |
-| F1 (Zéro logique JS) | ⚠️ Partiel | `behaviorTitles` hardcodé dans combat.js (VR-2) |
+| F1 (Zéro logique JS) | ✅ Conforme | Métadonnées de comportement lues depuis l'Enum API (VR-2) |
 | F2 (Zéro CSS inline) | ✅ Conforme | Migration massif effectuée, exception animations documentée |
 | F3 (Arborescence CSS) | ✅ Conforme | `/styles/variables.css`, `/styles/ui/`, `/styles/pages/`, `/styles/sprites/` |
-| F4 (Fetch centralisé) | ⚠️ Partiel | alchemy.html et alchemy-admin.html utilisent fetch() brut (VR-3) |
+| F4 (Fetch centralisé) | ✅ Conforme | Fichiers JS alchimie séparés avec `globalFetch()` (VR-3) |
 | F5 (Erreurs unifiées) | ✅ Conforme | 0 alert(), GlobalExceptionHandler en place |
-| F6 (State par page) | ⚠️ Partiel | combat.js, dungeons.js, pve-admin.js pas migrés (VR-4) |
+| F6 (State par page) | ✅ Conforme | Pattern `pageState` adopté sur toutes les pages (VR-4) |
 | F7 (Zéro HTML inline) | ✅ Conforme | — |
 | S1 (Protection routes) | ✅ Conforme | SecurityConfig à jour, routes `/api/equipments` protégées |
 | S2 (CSRF) | ✅ Documenté | Commenté dans SecurityConfig |
@@ -178,3 +163,4 @@ Ces fichiers utilisent encore des variables `let` globales au lieu d'un objet `p
 | Convention API REST | ✅ CORRIGÉ | B5 + migration `/api/equipments` |
 | Stacking Context (z-index) | ✅ CORRIGÉ | Retrait position/z-index dans .req-item |
 | Sécurité Migration URL | ✅ CORRIGÉ | SecurityConfig `/api/equipments` |
+

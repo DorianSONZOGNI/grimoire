@@ -8,3 +8,4 @@ public enum EffectTarget {
     ALL_ENEMIES,
     ALL_COMBATANTS
 }
+

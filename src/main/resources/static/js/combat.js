@@ -58,7 +58,7 @@ export function createAnomalyBadgeHtml(anomalyName, showName = false) {
     else if (anomLevel >= 5) lvlColor = '#ef4444';
 
     const typeColor = isMagic ? '#ec4899' : '#b45309';
-    const typeLabel = isMagic ? 'Objet Magique' : 'Matériau';
+    const typeLabel = isMagic ? 'Magique' : 'Matériau';
 
     const tooltipDataHtml = `
         <div class="anomaly-tooltip-title" style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:${tColor}; border-bottom: 1px solid ${tColor}; padding-bottom: 4px;">${tooltipTitle}</div>
@@ -81,11 +81,13 @@ export function createAnomalyBadgeHtml(anomalyName, showName = false) {
 // Replaced by window.SLOT_LABELS
 
 function getSlotInfo(eq) {
-    if (!eq) return { icon: 'help', color: '#94a3b8' };
-    const info = Object.assign({}, window.SLOT_LABELS[eq.slot] || { label: eq.slot, icon: 'help', color: '#94a3b8' });
-    if (eq.slot === 'CONSOMMABLE' && eq.consumableCategory) {
+    if (!eq) return { icon: 'help', color: '#94a3b8', label: '?' };
+    const sName = typeof eq.slot === 'object' ? eq.slot?.name : eq.slot;
+    const info = Object.assign({}, (window.SLOT_LABELS && window.SLOT_LABELS[sName]) ? window.SLOT_LABELS[sName] : { label: sName || '?', icon: 'help', color: '#94a3b8' });
+
+    if (sName === 'CONSOMMABLE' && eq.consumableCategory) {
         const catName = typeof eq.consumableCategory === 'object' ? eq.consumableCategory?.name : eq.consumableCategory;
-        if (catName && window.CONSUMABLE_CATEGORIES[catName]) {
+        if (catName && window.CONSUMABLE_CATEGORIES && window.CONSUMABLE_CATEGORIES[catName]) {
             const catInfo = window.CONSUMABLE_CATEGORIES[catName];
             info.icon = catInfo.icon;
             info.color = catInfo.color;
@@ -106,20 +108,20 @@ const RARITY_COLORS = {
 };
 
 export const pageState = {
-  lastCombatLogCount: null,
-  sessionId: null,
-  currentSessionData: null,
-  isProcessing: null,
-  selectedTargetIndex: null,
-  selectedAllyIndex: null,
-  previousPlayerXP: null,
-  previousPlayerSpiritXP: null,
-  isFleeing: null,
-  currentSpellFilter: null,
-  hasAnimatedOpening: null,
-  pendingCastSpellId: null,
-  pendingNeedsEnemy: null,
-  pendingNeedsAlly: null,
+    lastCombatLogCount: null,
+    sessionId: null,
+    currentSessionData: null,
+    isProcessing: null,
+    selectedTargetIndex: null,
+    selectedAllyIndex: null,
+    previousPlayerXP: null,
+    previousPlayerSpiritXP: null,
+    isFleeing: null,
+    currentSpellFilter: null,
+    hasAnimatedOpening: null,
+    pendingCastSpellId: null,
+    pendingNeedsEnemy: null,
+    pendingNeedsAlly: null,
 };
 pageState.lastCombatLogCount = 0;
 pageState.previousPlayerXP = {};
@@ -451,7 +453,7 @@ window.showNotif = function (message, isError = false) {
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
-    try { if (window.initAppMeta) await window.initAppMeta(); } catch(e) { console.warn('Meta loading skipped:', e); }
+    try { if (window.initAppMeta) await window.initAppMeta(); } catch (e) { console.warn('Meta loading skipped:', e); }
     // Check for active combat in localStorage
     const savedCombatId = localStorage.getItem('activeCombatId');
     if (savedCombatId) {
@@ -1815,7 +1817,7 @@ function updateUI(data) {
                         } else if (data.currentRoom.alterationType === 'AUTEL') {
                             btnText = `Sacrifier l'Objet`;
                             let spColor = data.currentRoom.altarRequiredSpirituality === 'TENEBRES' ? '#d946ef' : data.currentRoom.altarRequiredSpirituality === 'ESPRIT' ? '#3b82f6' : data.currentRoom.altarRequiredSpirituality === 'KARMA' ? '#e7d198' : '#f59e0b';
-                            warningHtml = `<div class="text-center" style="color: ${spColor}; font-size: 0.85rem; margin-top: 0.5rem; background: ${spColor}1A; padding: 0.5rem; border-radius: 6px; border: 1px solid ${spColor}4D;"><span class="material-symbols-outlined align-middle" style="font-size: 1rem;">warning</span> <strong>Offrande :</strong> Cet autel réclame le sacrifice d'un <strong>Objet Magique</strong> de spiritualité <strong>${data.currentRoom.altarRequiredSpirituality}</strong>.</div>`;
+                            warningHtml = `<div class="text-center" style="color: ${spColor}; font-size: 0.85rem; margin-top: 0.5rem; background: ${spColor}1A; padding: 0.5rem; border-radius: 6px; border: 1px solid ${spColor}4D;"><span class="material-symbols-outlined align-middle" style="font-size: 1rem;">warning</span> <strong>Offrande :</strong> Cet autel réclame le sacrifice d'un <strong>Magique</strong> de spiritualité <strong>${data.currentRoom.altarRequiredSpirituality}</strong>.</div>`;
 
                             let altarRewardHtml = '';
                             if (data.currentRoom.altarRewardType === 'GOLD') {
@@ -2166,7 +2168,7 @@ function updateUI(data) {
                                 else if (anomLevel >= 5) lvlColor = '#ef4444';
 
                                 const typeColor = isMagic ? '#ec4899' : '#b45309';
-                                const typeLabel = isMagic ? 'Objet Magique' : 'Matériau';
+                                const typeLabel = isMagic ? 'Magique' : 'Matériau';
 
                                 tooltipDataHtml = `
                                     <div class="anomaly-tooltip-title" style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:${tColor}; border-bottom: 1px solid ${tColor}; padding-bottom: 4px;">${tooltipTitle}</div>
@@ -3639,3 +3641,6 @@ window.confirmConsumeItem = async function (consumableId, characterId) {
         window.showNotif("Erreur lors de la consommation.", true);
     }
 };
+
+
+

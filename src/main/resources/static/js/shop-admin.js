@@ -2,11 +2,13 @@ const pageState = { allEquipments: [], equipmentToDelete: null, editingEquipment
 
 // Replaced by window.SLOT_LABELS
 function getSlotInfo(eq) {
-    if (!eq) return { icon: 'help', color: '#94a3b8' };
-    const info = Object.assign({}, window.SLOT_LABELS[eq.slot] || { label: eq.slot, icon: 'help', color: '#94a3b8' });
-    if (eq.slot === 'CONSOMMABLE' && eq.consumableCategory) {
+    if (!eq) return { icon: 'help', color: '#94a3b8', label: '?' };
+    const sName = typeof eq.slot === 'object' ? eq.slot?.name : eq.slot;
+    const info = Object.assign({}, (window.SLOT_LABELS && window.SLOT_LABELS[sName]) ? window.SLOT_LABELS[sName] : { label: sName || '?', icon: 'help', color: '#94a3b8' });
+
+    if (sName === 'CONSOMMABLE' && eq.consumableCategory) {
         const catName = typeof eq.consumableCategory === 'object' ? eq.consumableCategory?.name : eq.consumableCategory;
-        if (catName && window.CONSUMABLE_CATEGORIES[catName]) {
+        if (catName && window.CONSUMABLE_CATEGORIES && window.CONSUMABLE_CATEGORIES[catName]) {
             const catInfo = window.CONSUMABLE_CATEGORIES[catName];
             info.icon = catInfo.icon;
             info.color = catInfo.color;
@@ -355,8 +357,8 @@ function renderVault() {
         const rB = rarityOrder[rNameB || 'COMMUN'] ?? 100;
         if (rA !== rB) return rA - rB;
 
-        const sNameA = typeof a.slot === 'object' ? a.slot?.name : a.slot;
-        const sNameB = typeof b.slot === 'object' ? b.slot?.name : b.slot;
+        const sNameA = typeof (a.slot?.name || a.slot) === 'object' ? a.slot?.name : a.slot;
+        const sNameB = typeof (b.slot?.name || b.slot) === 'object' ? b.slot?.name : b.slot;
         const sA = slotOrder[sNameA] || 99;
         const sB = slotOrder[sNameB] || 99;
         if (sA !== sB) return sA - sB;
@@ -515,7 +517,7 @@ function renderGrid(equipments) {
                                                 </span>
                                                 <span class="flex-center font-bold" style="border: 1px solid ${getTypeColor(aTemp && aTemp.magicObject)}; color: ${getTypeColor(aTemp && aTemp.magicObject)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; gap: 4px;">
                                                     <span class="material-symbols-outlined text-sm">${catIcon}</span>
-                                                    ${aTemp && aTemp.magicObject ? 'Objet Magique' : 'Matériau'}
+                                                    ${aTemp && aTemp.magicObject ? 'Magique' : 'Matériau'}
                                                 </span>
                                                 ${aTemp && aTemp.spiritualite ?
                                         `<span class="font-bold" style="border: 1px solid ${getSpiritualiteColor(aTemp.spiritualite)}; color: ${getSpiritualiteColor(aTemp.spiritualite)}; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; background: rgba(0,0,0,0.3);">
@@ -867,7 +869,7 @@ window.submitEquipment = async function () {
     if (!slot) { showNotif('Slot obligatoire.', true); return; }
 
     const rarity = dto.rarity;
-    
+
     // We already fetch simulated maxWeight in updateWeightUI. We can use it, or validate on backend.
     // Let's use the UI's last known max weight if available, or just skip local check and let backend fail if needed.
     // Wait, the backend doesn't fail on weight limit for templates, so we DO need local check or we can just fetch it here.
@@ -908,7 +910,7 @@ window.submitEquipment = async function () {
             return;
         }
     }
-    
+
     dto.specialEffect = specialEffect;
     dto.specialEffectValue = specialEffectValue;
 
@@ -1086,3 +1088,6 @@ window.hideTooltipFixed = function () {
     const tooltip = document.getElementById('globalFixedTooltip');
     if (tooltip) tooltip.style.display = 'none';
 };
+
+
+

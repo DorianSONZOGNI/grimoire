@@ -6,3 +6,4 @@ public enum KarmaAlignment {
     PROTECTIVE,
     RESTORATIVE
 }
+

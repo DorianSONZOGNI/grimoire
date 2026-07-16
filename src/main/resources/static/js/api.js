@@ -422,3 +422,6 @@ document.getElementById('deleteSpellConfirmBtn')?.addEventListener('click', asyn
 
 
 
+
+
+

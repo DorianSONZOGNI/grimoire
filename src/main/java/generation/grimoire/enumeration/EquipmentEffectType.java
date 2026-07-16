@@ -16,3 +16,4 @@ public enum EquipmentEffectType {
     EXECUTION,
     MAGIC_OVERLOAD
 }
+

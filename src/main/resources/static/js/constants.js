@@ -61,9 +61,20 @@ export async function initMeta() {
                     window.CATEGORY_ICONS[c.name] = c.icon;
                 });
             }
+
+            window.RARITY_COLORS = {};
+            if (allMeta.equipmentRarities) {
+                allMeta.equipmentRarities.forEach(r => {
+                    window.RARITY_COLORS[r.name] = r.cssClass || '#fbbf24';
+                });
+            }
         }
     } catch (e) {
         console.error("Error loading global meta:", e);
     }
 }
+
+
+
+
 

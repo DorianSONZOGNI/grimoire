@@ -370,7 +370,7 @@ async function loadConsumables() {
         if (res.ok) {
             const allUnassigned = await res.json();
             pageState.availableConsumables = allUnassigned
-                .filter(eq => eq.slot === 'CONSOMMABLE')
+                .filter(eq => (eq.slot?.name || eq.slot) === 'CONSOMMABLE')
                 .sort((a, b) => a.name.localeCompare(b.name));
         }
     } catch (e) {
@@ -591,15 +591,16 @@ window.selectCharacter = async function (id) {
             'EPIQUE': '#ef4444', 'RELIQUE': '#a855f7', 'MAUDIT': '#6b5252'
         };
         equipments.forEach(eq => {
-            const slotInfo = Object.assign({}, window.SLOT_LABELS[eq.slot] || { label: eq.slot, icon: 'help', color: '#94a3b8', extraClass: '' });
-            const rarityName = eq.rarity && typeof eq.rarity === 'object' ? eq.rarity.name : eq.rarity;
+            const slotName = eq.slot?.name || eq.slot;
+            const slotInfo = Object.assign({}, window.SLOT_LABELS && window.SLOT_LABELS[slotName] ? window.SLOT_LABELS[slotName] : { label: slotName, icon: 'help', color: '#94a3b8', extraClass: '' });
+            const rarityName = eq.rarity?.name || eq.rarity;
             const rarityColor = colorMap[rarityName] || '#f8fafc';
             equipList.innerHTML += `
                 <div class="equip-slot" style="border-left: 3px solid ${rarityColor};">
                     <div class="equip-slot-icon"><span class="material-symbols-outlined ${slotInfo.extraClass}" style="color: ${slotInfo.color};">${slotInfo.icon}</span></div>
-                    <div>
+                    <div class="equip-slot-content">
                         <div class="text-sm" style="color: ${rarityColor}; font-weight: 600;">${eq.name}</div>
-                        <div class="text-muted" style="font-size: 0.75rem;">${eq.slot}</div>
+                        <div class="text-muted" style="font-size: 0.75rem;">${slotName}</div>
                     </div>
                 </div>
             `;
@@ -826,3 +827,6 @@ function showEntryModal(cost) {
 window.closeEntryModal = function () {
     document.getElementById('entryModal').classList.remove('active');
 };
+
+
+

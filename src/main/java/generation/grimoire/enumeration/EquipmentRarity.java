@@ -1,10 +1,8 @@
 package generation.grimoire.enumeration;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.databind.JsonNode;
 
-@JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum EquipmentRarity {
     COMMUN("Commun", "rarity-commun"),
     INHABITUEL("Inhabituel", "rarity-inhabituel"),
@@ -35,4 +33,5 @@ public enum EquipmentRarity {
         return EquipmentRarity.valueOf(node.asText());
     }
 }
+
 

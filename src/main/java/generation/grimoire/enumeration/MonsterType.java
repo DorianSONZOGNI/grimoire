@@ -1,8 +1,6 @@
 package generation.grimoire.enumeration;
 
-import com.fasterxml.jackson.annotation.JsonFormat;
 
-@JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum MonsterType {
     NORMAL("Normal", "Pas de passif", "pets"),
     DEMON("Démon", "10% des dégâts infligés sont aussi appliqués en brut", "whatshot"),
@@ -35,4 +33,5 @@ public enum MonsterType {
         return MonsterType.valueOf(node.asText());
     }
 }
+
 

@@ -9,3 +9,4 @@ public enum RecipeRewardType {
     OTHER,
     GIVE_SPIRIT_XP
 }
+

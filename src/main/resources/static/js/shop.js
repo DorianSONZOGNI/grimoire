@@ -1,10 +1,12 @@
 // Replaced by window.SLOT_LABELS
 function getSlotInfo(eq) {
-    if (!eq) return { icon: 'help', color: '#94a3b8' };
-    const info = Object.assign({}, window.SLOT_LABELS[eq.slot] || { label: eq.slot, icon: eq.iconId || 'help', color: '#94a3b8' });
-    if (eq.slot === 'CONSOMMABLE' && eq.consumableCategory) {
+    if (!eq) return { icon: 'help', color: '#94a3b8', label: '?' };
+    const sName = typeof eq.slot === 'object' ? eq.slot?.name : eq.slot;
+    const info = Object.assign({}, (window.SLOT_LABELS && window.SLOT_LABELS[sName]) ? window.SLOT_LABELS[sName] : { label: sName || '?', icon: 'help', color: '#94a3b8' });
+
+    if (sName === 'CONSOMMABLE' && eq.consumableCategory) {
         const catName = typeof eq.consumableCategory === 'object' ? eq.consumableCategory?.name : eq.consumableCategory;
-        if (catName && window.CONSUMABLE_CATEGORIES[catName]) {
+        if (catName && window.CONSUMABLE_CATEGORIES && window.CONSUMABLE_CATEGORIES[catName]) {
             const catInfo = window.CONSUMABLE_CATEGORIES[catName];
             info.icon = catInfo.icon;
             info.color = catInfo.color;
@@ -218,7 +220,7 @@ function generateStandHtml(eq) {
                                         </span>
                                         <span class="flex-center font-bold" style="border: 1px solid ${getTypeColor(aTemp && aTemp.magicObject)}; color: ${getTypeColor(aTemp && aTemp.magicObject)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; gap: 4px;">
                                             <span class="material-symbols-outlined text-sm">${aTemp && aTemp.magicObject ? 'star' : 'category'}</span>
-                                            ${aTemp && aTemp.magicObject ? 'Objet Magique' : 'Matériau'}
+                                            ${aTemp && aTemp.magicObject ? 'Magique' : 'Matériau'}
                                         </span>
                                         ${aTemp && aTemp.spiritualite ?
                             `<span class="font-bold" style="border: 1px solid ${getSpiritualiteColor(aTemp.spiritualite)}; color: ${getSpiritualiteColor(aTemp.spiritualite)}; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; background: rgba(0,0,0,0.3);">
@@ -396,7 +398,7 @@ window.openBuyModal = function (id, isConsumable = false) {
                         </span>
                         <span class="flex-center font-bold" style="border: 1px solid ${getTypeColor(aTemp && aTemp.magicObject)}; color: ${getTypeColor(aTemp && aTemp.magicObject)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; gap: 4px;">
                             <span class="material-symbols-outlined text-sm">${aTemp && aTemp.magicObject ? 'star' : 'category'}</span>
-                            ${aTemp && aTemp.magicObject ? 'Objet Magique' : 'Matériau'}
+                            ${aTemp && aTemp.magicObject ? 'Magique' : 'Matériau'}
                         </span>
                         ${aTemp && aTemp.spiritualite ?
                     `<span class="font-bold" style="border: 1px solid ${getSpiritualiteColor(aTemp.spiritualite)}; color: ${getSpiritualiteColor(aTemp.spiritualite)}; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; background: rgba(0,0,0,0.3);">
@@ -516,3 +518,6 @@ window.hideTooltipFixed = function () {
     const tooltip = document.getElementById('globalFixedTooltip');
     if (tooltip) tooltip.style.display = 'none';
 };
+
+
+

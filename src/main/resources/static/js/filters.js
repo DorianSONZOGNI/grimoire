@@ -117,3 +117,6 @@ export function toggleFilterSpirit(event, id, hexColor) {
     renderFilteredSpells();
 }
 
+
+
+
