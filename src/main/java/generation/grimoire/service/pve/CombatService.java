@@ -1208,7 +1208,7 @@ public class CombatService {
 
                     System.out.println(p.getName() + " attaque " + targetMonster.getBase().getName() + " ("
                             + (isCrit ? "Critique : " : "Force : ") + playerDmg + ") !");
-                    targetMonster.takeDamage(playerDmg, generation.grimoire.enumeration.DamageType.PHYSIC, p);
+                    p.dealDamage(targetMonster.getAsPersonnage(), playerDmg, generation.grimoire.enumeration.DamageType.PHYSIC);
                 });
             }
         }
