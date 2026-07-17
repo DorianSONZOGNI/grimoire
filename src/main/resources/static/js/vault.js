@@ -682,6 +682,9 @@ function resetEqForm() {
     document.getElementById('eqRes').value = 0;
     document.getElementById('eqSpeed').value = 0;
     document.getElementById('eqCrit').value = 0;
+    if (document.getElementById('eqAvailableInShop')) {
+        document.getElementById('eqAvailableInShop').checked = false;
+    }
     document.getElementById('eqRegenHp').value = 0;
     document.getElementById('eqRegenMana').value = 0;
     if (document.getElementById('eqConsumableHpPercent')) document.getElementById('eqConsumableHpPercent').value = 0;
@@ -730,6 +733,9 @@ window.editEquipment = function (id) {
     document.getElementById('submitEquipmentBtn').innerHTML = '<span class="material-symbols-outlined" style="font-size: 1.2rem;">save</span> Enregistrer';
 
     document.getElementById('eqName').value = eq.name || '';
+    if (document.getElementById('eqAvailableInShop')) {
+        document.getElementById('eqAvailableInShop').checked = eq.availableInShop !== false;
+    }
     document.getElementById('eqHp').value = eq.bonusHealthMax || 0;
     document.getElementById('eqMana').value = eq.bonusManaMax || 0;
     document.getElementById('eqPower').value = eq.bonusPower || 0;
@@ -1050,6 +1056,7 @@ function getFormEquipmentData() {
 
     return {
         name: document.getElementById('eqName').value,
+        availableInShop: document.getElementById('eqAvailableInShop') ? document.getElementById('eqAvailableInShop').checked : false,
         slot,
         bonusHealthMax: parseInt(document.getElementById('eqHp').value) || 0,
         bonusManaMax: parseInt(document.getElementById('eqMana').value) || 0,

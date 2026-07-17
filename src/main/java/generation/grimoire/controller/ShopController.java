@@ -33,15 +33,14 @@ public class ShopController {
 
     @GetMapping("/daily")
     public ResponseEntity<Map<String, Object>> getDailyShop() {
-        List<Equipment> templates = equipmentRepository.findByIsTemplateTrue();
+        List<Equipment> templates = equipmentRepository.findByIsTemplateTrueAndAvailableInShopTrue();
 
         List<Equipment> equipmentTemplates = templates.stream()
                 .filter(e -> e.getSlot() != EquipmentSlot.CONSOMMABLE)
                 .toList();
 
-        List<String> shopConsumables = List.of("corde", "clé", "pain", "potion de mana");
-        List<Equipment> consumableTemplates = templates.stream()
-                .filter(e -> e.getSlot() == EquipmentSlot.CONSOMMABLE && e.getName() != null && shopConsumables.contains(e.getName().toLowerCase().trim()))
+        List<Equipment> allConsumables = templates.stream()
+                .filter(e -> e.getSlot() == EquipmentSlot.CONSOMMABLE)
                 .toList();
 
         List<Equipment> commons = equipmentTemplates.stream().filter(e -> e.getRarity() == EquipmentRarity.COMMUN).toList();
@@ -56,6 +55,8 @@ public class ShopController {
         dailySelection.addAll(pickRandom(commons, 3, random));
         dailySelection.addAll(pickRandom(rares, 1, random));
         dailySelection.addAll(pickRandom(legendaries, 1, random));
+
+        List<Equipment> consumableTemplates = pickRandom(allConsumables, 4, random);
 
         // Promo
         List<Equipment> remainingTemplates = new ArrayList<>(equipmentTemplates);
@@ -109,10 +110,14 @@ public class ShopController {
         // Verify it's in today's selection
         long seed = LocalDate.now().toEpochDay();
         Random random = new Random(seed);
-        List<Equipment> allTemplates = equipmentRepository.findByIsTemplateTrue();
+        List<Equipment> allTemplates = equipmentRepository.findByIsTemplateTrueAndAvailableInShopTrue();
         
         List<Equipment> equipmentTemplates = allTemplates.stream()
                 .filter(e -> e.getSlot() != EquipmentSlot.CONSOMMABLE)
+                .toList();
+
+        List<Equipment> allConsumables = allTemplates.stream()
+                .filter(e -> e.getSlot() == EquipmentSlot.CONSOMMABLE)
                 .toList();
 
         List<Equipment> commons = equipmentTemplates.stream().filter(e -> e.getRarity() == EquipmentRarity.COMMUN).toList();
@@ -125,6 +130,8 @@ public class ShopController {
         dailySelection.addAll(pickRandom(rares, 1, random));
         dailySelection.addAll(pickRandom(legendaries, 1, random));
 
+        List<Equipment> consumableTemplates = pickRandom(allConsumables, 4, random);
+
         List<Equipment> remainingTemplates = new ArrayList<>(equipmentTemplates);
         remainingTemplates.removeAll(dailySelection);
         Equipment promoItem = null;
@@ -134,7 +141,7 @@ public class ShopController {
 
         boolean isDaily = dailySelection.stream().anyMatch(e -> e.getId().equals(templateId));
         boolean isPromo = promoItem != null && promoItem.getId().equals(templateId);
-        boolean isConsumable = template.getSlot() == EquipmentSlot.CONSOMMABLE;
+        boolean isConsumable = consumableTemplates.stream().anyMatch(e -> e.getId().equals(templateId));
 
         if (!isDaily && !isPromo && !isConsumable) {
             return ResponseEntity.badRequest().body(Map.of("message", "Cet objet n'est pas en vente aujourd'hui."));
@@ -213,11 +220,12 @@ public class ShopController {
     public ResponseEntity<?> getTemplates(Principal principal) {
         if (principal == null || !isAdmin(principal))
             return ResponseEntity.status(403).build();
-        List<Equipment> templates = equipmentRepository.findByIsTemplateTrue();
+        List<Equipment> templates = equipmentRepository.findByIsTemplateTrueAndAvailableInShopTrue();
         return ResponseEntity.ok(templates.stream().map(this::toShopDto).toList());
     }
 
     @PostMapping("/templates")
+    @org.springframework.cache.annotation.CacheEvict(value = {"equipmentTemplates", "equipmentShopTemplates", "equipmentTemplateByName"}, allEntries = true)
     public ResponseEntity<?> createTemplate(
             @RequestBody generation.grimoire.controller.EquipmentController.EquipmentDto dto, Principal principal) {
         if (principal == null || !isAdmin(principal))
@@ -233,6 +241,7 @@ public class ShopController {
     }
 
     @PutMapping("/templates/{id}")
+    @org.springframework.cache.annotation.CacheEvict(value = {"equipmentTemplates", "equipmentShopTemplates", "equipmentTemplateByName"}, allEntries = true)
     public ResponseEntity<?> updateTemplate(@PathVariable @org.springframework.lang.NonNull Long id,
             @RequestBody generation.grimoire.controller.EquipmentController.EquipmentDto dto, Principal principal) {
         if (principal == null || !isAdmin(principal))
@@ -263,6 +272,7 @@ public class ShopController {
     }
 
     @DeleteMapping("/templates/{id}")
+    @org.springframework.cache.annotation.CacheEvict(value = {"equipmentTemplates", "equipmentShopTemplates", "equipmentTemplateByName"}, allEntries = true)
     public ResponseEntity<?> deleteTemplate(@PathVariable @org.springframework.lang.NonNull Long id,
             Principal principal) {
         if (principal == null || !isAdmin(principal))
@@ -322,6 +332,7 @@ public class ShopController {
         map.put("consumableMissingManaPercent", e.getConsumableMissingManaPercent());
         map.put("consumableCategory", e.getConsumableCategory() != null ? e.getConsumableCategory().name() : "AUTRE");
         map.put("isConsumable", e.getSlot() == EquipmentSlot.CONSOMMABLE);
+        map.put("availableInShop", e.isAvailableInShop());
         return map;
     }
 
@@ -345,6 +356,9 @@ public class ShopController {
         eq.setConsumableMissingManaPercent(dto.getConsumableMissingManaPercent());
         if (dto.getConsumableCategory() != null) {
             eq.setConsumableCategory(dto.getConsumableCategory());
+        }
+        if (dto.getAvailableInShop() != null) {
+            eq.setAvailableInShop(dto.getAvailableInShop());
         }
         if (dto.getPriceAnomalies() != null) {
             eq.setPriceAnomalies(new HashMap<>(dto.getPriceAnomalies()));

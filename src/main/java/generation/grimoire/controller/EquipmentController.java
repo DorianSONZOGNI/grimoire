@@ -279,6 +279,9 @@ public class EquipmentController {
         if (dto.getConsumableCategory() != null) {
             equipment.setConsumableCategory(dto.getConsumableCategory());
         }
+        if (dto.getAvailableInShop() != null) {
+            equipment.setAvailableInShop(dto.getAvailableInShop());
+        }
         if (dto.getRarity() != null) {
             equipment.setRarity(dto.getRarity());
         }
@@ -290,6 +293,7 @@ public class EquipmentController {
 
     /** Créer ou mettre à jour un équipement */
     @PostMapping
+    @org.springframework.cache.annotation.CacheEvict(value = {"equipmentTemplates", "equipmentShopTemplates", "equipmentTemplateByName"}, allEntries = true)
     public ResponseEntity<Map<String, Object>> createOrUpdate(@RequestBody EquipmentDto dto,
             java.security.Principal principal) {
         if (principal == null)
@@ -528,6 +532,7 @@ public class EquipmentController {
     /** Supprimer un équipement */
     @Transactional
     @DeleteMapping("/{id}")
+    @org.springframework.cache.annotation.CacheEvict(value = {"equipmentTemplates", "equipmentShopTemplates", "equipmentTemplateByName"}, allEntries = true)
     public ResponseEntity<String> delete(@PathVariable @org.springframework.lang.NonNull Long id,
             java.security.Principal principal) {
         if (principal == null)
@@ -654,5 +659,6 @@ public class EquipmentController {
         private int specialEffectValue = 0;
         private Long personnageId;
         private java.util.Map<String, Integer> priceAnomalies = new java.util.HashMap<>();
+        private Boolean availableInShop;
     }
 }
