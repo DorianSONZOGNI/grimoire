@@ -1640,7 +1640,7 @@ function updateUI(data) {
                             }
 
                             chestLogs.forEach(log => {
-                                const itemNameMatch = log.match(/Vous avez trouvé un objet : (.*) !/);
+                                const itemNameMatch = log.match(/Vous avez trouvé un objet : (.*?)(?: !| et il a été ajouté| \(envoyé)/);
                                 if (itemNameMatch) {
                                     const eqName = itemNameMatch[1];
                                     let eq = null;

@@ -358,7 +358,22 @@ public class CombatService {
 
                     equipmentRepository.save(clone);
 
-                    session.addLog("Vous avez trouvé un objet : " + template.getName() + " !");
+                    if (clone.getSlot() == generation.grimoire.enumeration.EquipmentSlot.CONSOMMABLE) {
+                        double currentWeight = session.getActiveConsumables().stream()
+                                .filter(java.util.Objects::nonNull)
+                                .mapToDouble(e -> e.calculateWeight())
+                                .sum();
+                        double maxWeight = 10.0 + 5.0 * session.getPlayers().size();
+
+                        if (currentWeight + clone.calculateWeight() <= maxWeight) {
+                            session.getActiveConsumables().add(clone);
+                            session.addLog("Vous avez trouvé un objet : " + template.getName() + " et il a été ajouté à l'inventaire du groupe.");
+                        } else {
+                            session.addLog("Vous avez trouvé un objet : " + template.getName() + " (envoyé au coffre, poids max atteint).");
+                        }
+                    } else {
+                        session.addLog("Vous avez trouvé un objet : " + template.getName() + " !");
+                    }
                 }
             }
         }
@@ -587,7 +602,23 @@ public class CombatService {
                         clone.setUser(user);
                         clone.setOwnerUsername(user.getUsername());
                         equipmentRepository.save(clone);
-                        session.addLog("L'autel vous a offert un équipement : " + template.getName() + " !");
+
+                        if (clone.getSlot() == generation.grimoire.enumeration.EquipmentSlot.CONSOMMABLE) {
+                            double currentWeight = session.getActiveConsumables().stream()
+                                    .filter(java.util.Objects::nonNull)
+                                    .mapToDouble(e -> e.calculateWeight())
+                                    .sum();
+                            double maxWeight = 10.0 + 5.0 * session.getPlayers().size();
+
+                            if (currentWeight + clone.calculateWeight() <= maxWeight) {
+                                session.getActiveConsumables().add(clone);
+                                session.addLog("L'autel vous a offert un équipement : " + template.getName() + " et il a été ajouté à l'inventaire du groupe.");
+                            } else {
+                                session.addLog("L'autel vous a offert un équipement : " + template.getName() + " (envoyé au coffre, poids max atteint).");
+                            }
+                        } else {
+                            session.addLog("L'autel vous a offert un équipement : " + template.getName() + " !");
+                        }
                     }
                 } else {
                     session.addLog("L'autel a consumé votre offrande sans vous accorder d'équipement...");
