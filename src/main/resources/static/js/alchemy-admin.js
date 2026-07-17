@@ -214,7 +214,10 @@ async function updateRewardNameInput() {
                     </div>
                 `;
     } else if (type === 'GIVE_EQUIPMENT') {
-        pageState.allEquipments.forEach(eq => {
+        pageState.allEquipments.filter(eq => {
+            const sName = typeof eq.slot === 'object' ? eq.slot?.name : eq.slot;
+            return sName !== 'CONSOMMABLE';
+        }).forEach(eq => {
             const slotInfo = getSlotInfo(eq);
             const rName = typeof eq.rarity === 'object' ? eq.rarity?.name : eq.rarity;
             const rarityColor = window.RARITY_COLORS[rName] || '#ef4444';
