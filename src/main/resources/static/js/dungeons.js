@@ -417,24 +417,27 @@ function renderConsumablesList() {
     
     if (hasFilter) {
         filteredConsumables = pageState.availableConsumables.filter(c => {
-            const isHp = (c.consumableHpPercent && c.consumableHpPercent > 0) || 
-                         (c.consumableMissingHpPercent && c.consumableMissingHpPercent > 0) || 
-                         (c.bonusHealthMax && c.bonusHealthMax > 0) ||
-                         c.consumableCategory === 'POTION_ROUGE' || 
-                         c.consumableCategory === 'POTION_ROSE' || 
-                         c.consumableCategory === 'NOURRITURE';
+            const hasHp = (c.consumableHpPercent && c.consumableHpPercent > 0) || 
+                          (c.consumableMissingHpPercent && c.consumableMissingHpPercent > 0) || 
+                          (c.bonusHealthMax && c.bonusHealthMax > 0) ||
+                          c.consumableCategory === 'POTION_ROUGE' || 
+                          c.consumableCategory === 'POTION_ROSE' || 
+                          c.consumableCategory === 'NOURRITURE';
             
-            const isMana = (c.consumableManaPercent && c.consumableManaPercent > 0) || 
-                           (c.consumableMissingManaPercent && c.consumableMissingManaPercent > 0) || 
-                           (c.bonusManaMax && c.bonusManaMax > 0) ||
-                           c.consumableCategory === 'POTION_BLEUE' || 
-                           c.consumableCategory === 'POTION_VIOLETTE';
+            const hasMana = (c.consumableManaPercent && c.consumableManaPercent > 0) || 
+                            (c.consumableMissingManaPercent && c.consumableMissingManaPercent > 0) || 
+                            (c.bonusManaMax && c.bonusManaMax > 0) ||
+                            c.consumableCategory === 'POTION_BLEUE' || 
+                            c.consumableCategory === 'POTION_VIOLETTE';
             
-            const isUtil = !isHp && !isMana;
+            const hasUtil = !hasHp && !hasMana;
 
-            return (pageState.activeConsumableFilters.hp && isHp) || 
-                   (pageState.activeConsumableFilters.mana && isMana) || 
-                   (pageState.activeConsumableFilters.util && isUtil);
+            let match = true;
+            if (pageState.activeConsumableFilters.hp !== hasHp) match = false;
+            if (pageState.activeConsumableFilters.mana !== hasMana) match = false;
+            if (pageState.activeConsumableFilters.util !== hasUtil) match = false;
+
+            return match;
         });
     }
 
