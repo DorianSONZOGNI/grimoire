@@ -194,4 +194,20 @@ public class CombatController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+    @PostMapping("/{sessionId}/add-consumable-by-name")
+    public ResponseEntity<?> addConsumableByName(
+            @PathVariable("sessionId") String sessionId,
+            @RequestParam("itemName") String itemName,
+            Principal principal) {
+        if (principal == null)
+            return ResponseEntity.status(401).build();
+
+        try {
+            CombatSession session = combatService.addConsumableByName(sessionId, itemName, principal.getName());
+            return ResponseEntity.ok(session);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
 }

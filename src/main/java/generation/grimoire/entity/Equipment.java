@@ -177,6 +177,10 @@ public class Equipment {
         return w;
     }
 
+    public double getWeight() {
+        return this.calculateWeight();
+    }
+
     public double calculateShopPrice() {
         double weight = this.calculateWeight();
         double multiplier = 1.0;

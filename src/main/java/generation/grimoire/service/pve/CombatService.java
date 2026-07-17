@@ -325,20 +325,22 @@ public class CombatService {
         session.addLog("Vous avez ouvert le coffre ! Vous trouvez " + gold + " Or et chaque héros gagne " + expPerHero
                 + " XP.");
 
-        // Loot table
+        // First pass: collect items
+        double totalConsumablesWeight = 0.0;
+        java.util.List<Equipment> lootedConsumables = new java.util.ArrayList<>();
+        java.util.List<Equipment> lootedOthers = new java.util.ArrayList<>();
+
         java.util.Random rnd = new java.util.Random();
         if (session.getCurrentRoom().getLootTable() != null && user != null) {
-            for (LootEntry entry : session.getCurrentRoom().getLootTable()) {
+            for (generation.grimoire.entity.pve.LootEntry entry : session.getCurrentRoom().getLootTable()) {
                 double roll = rnd.nextDouble() * 100.0;
                 double proba = entry.getProbability() + (useKey ? 10.0 : 0.0);
                 if (roll <= proba && entry.getEquipment() != null) {
                     Equipment template = entry.getEquipment();
 
-                    // Clone it
                     Equipment clone = new Equipment();
                     clone.copyStatsFrom(template);
 
-                    // Apply anti-ragequit penalty
                     if (session.getReloadCount() > 0) {
                         double penaltyFactor = Math.max(0.1, 1.0 - (session.getReloadCount() * 0.1));
                         clone.setBonusHealthMax((int) (clone.getBonusHealthMax() * penaltyFactor));
@@ -359,23 +361,33 @@ public class CombatService {
                     equipmentRepository.save(clone);
 
                     if (clone.getSlot() == generation.grimoire.enumeration.EquipmentSlot.CONSOMMABLE) {
-                        double currentWeight = session.getActiveConsumables().stream()
-                                .filter(java.util.Objects::nonNull)
-                                .mapToDouble(e -> e.calculateWeight())
-                                .sum();
-                        double maxWeight = 10.0 + 5.0 * session.getPlayers().size();
-
-                        if (currentWeight + clone.calculateWeight() <= maxWeight) {
-                            session.getActiveConsumables().add(clone);
-                            session.addLog("Vous avez trouvé un objet : " + template.getName() + " et il a été ajouté à l'inventaire du groupe.");
-                        } else {
-                            session.addLog("Vous avez trouvé un objet : " + template.getName() + " (envoyé au coffre, poids max atteint).");
-                        }
+                        totalConsumablesWeight += clone.calculateWeight();
+                        lootedConsumables.add(clone);
                     } else {
-                        session.addLog("Vous avez trouvé un objet : " + template.getName() + " !");
+                        lootedOthers.add(clone);
                     }
                 }
             }
+        }
+
+        double currentWeight = session.getActiveConsumables().stream()
+                .filter(java.util.Objects::nonNull)
+                .mapToDouble(e -> e.calculateWeight())
+                .sum();
+        double maxWeight = 10.0 + 5.0 * session.getPlayers().size();
+
+        boolean canFitAll = (currentWeight + totalConsumablesWeight) <= maxWeight;
+
+        for (Equipment clone : lootedConsumables) {
+            if (canFitAll) {
+                session.getActiveConsumables().add(clone);
+                session.addLog("Vous avez trouvé un objet : " + clone.getName() + " et il a été ajouté à l'inventaire du groupe.");
+            } else {
+                session.addLog("Vous avez trouvé un objet : " + clone.getName() + " (envoyé au coffre, choix manuel).");
+            }
+        }
+        for (Equipment clone : lootedOthers) {
+            session.addLog("Vous avez trouvé un objet : " + clone.getName() + " !");
         }
 
         session.setRoomEventCompleted(true);
@@ -1802,13 +1814,66 @@ public class CombatService {
                     : session.getEnemies().get(e.getIndex()).getBase().getName();
             session.addLog(name + " | Init: " + e.getInitiativeScore() + " (Vitesse: " + e.getSpeedStat() + ")");
         }
-
-        advanceToNextLiveTurn(session);
-
+        
         // Clear leader forced targets at start of each round
         for (generation.grimoire.model.pve.ActiveMonster am : session.getEnemies()) {
             am.setLeaderForcedTargetId(null);
         }
+
+        advanceToNextLiveTurn(session);
+    }
+
+    @org.springframework.transaction.annotation.Transactional
+    public CombatSession addConsumableByName(String sessionId, String itemName, String username) {
+        CombatSession session = activeSessions.get(sessionId);
+        if (session == null || session.isFinished()) {
+            throw new RuntimeException("Session introuvable ou terminée.");
+        }
+
+        List<Equipment> userEquipments = equipmentRepository.findByOwnerUsername(username);
+        Equipment targetEquipment = null;
+        for (Equipment eq : userEquipments) {
+            if (eq.getSlot() == generation.grimoire.enumeration.EquipmentSlot.CONSOMMABLE && eq.getName().trim().equalsIgnoreCase(itemName.trim())) {
+                boolean isActive = session.getActiveConsumables().stream()
+                        .filter(java.util.Objects::nonNull)
+                        .anyMatch(activeEq -> activeEq.getId() != null && activeEq.getId().equals(eq.getId()));
+                if (!isActive) {
+                    targetEquipment = eq;
+                    break;
+                }
+            }
+        }
+
+        if (targetEquipment == null) {
+            throw new RuntimeException("Aucun consommable nommé '" + itemName + "' n'est disponible dans le coffre.");
+        }
+
+        double currentWeight = session.getActiveConsumables().stream()
+                .filter(java.util.Objects::nonNull)
+                .mapToDouble(e -> e.calculateWeight())
+                .sum();
+        double maxWeight = 10.0 + 5.0 * session.getPlayers().size();
+
+        if (currentWeight + targetEquipment.calculateWeight() > maxWeight) {
+            throw new RuntimeException("Pas assez de place dans l'inventaire du groupe (poids maximum atteint).");
+        }
+
+        // Initialize lazy collection before returning to avoid LazyInitializationException during JSON serialization
+        if (targetEquipment.getPriceAnomalies() != null) {
+            targetEquipment.getPriceAnomalies().size();
+        }
+
+        session.getActiveConsumables().add(targetEquipment);
+
+        String searchStr = "Vous avez trouvé un objet : " + targetEquipment.getName() + " (envoyé au coffre, choix manuel).";
+        for (int i = 0; i < session.getCombatLog().size(); i++) {
+            if (session.getCombatLog().get(i).equals(searchStr)) {
+                session.getCombatLog().set(i, "Vous avez trouvé un objet : " + targetEquipment.getName() + " et il a été ajouté à l'inventaire du groupe.");
+                break;
+            }
+        }
+
+        return session;
     }
 
     Personnage resolveMonsterTarget(generation.grimoire.model.pve.ActiveMonster m, MonsterBehavior behavior,

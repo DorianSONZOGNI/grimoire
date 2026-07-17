@@ -15,14 +15,14 @@ window.globalFetch = async function (url, options = {}) {
         if (!res.ok) {
             let errorMsg = "Erreur serveur";
             try {
-                const data = await res.json();
-                errorMsg = data.message || data.error || errorMsg;
-            } catch (e) {
+                const text = await res.text();
                 try {
-                    const text = await res.text();
+                    const data = JSON.parse(text);
+                    errorMsg = data.message || data.error || text || errorMsg;
+                } catch (e) {
                     errorMsg = text || errorMsg;
-                } catch (e2) { }
-            }
+                }
+            } catch (e2) { }
             throw new Error(errorMsg);
         }
         return res;

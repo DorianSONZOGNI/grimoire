@@ -388,6 +388,7 @@ window.openStrangeDoor = openStrangeDoor;
 window.openChest = openChest;
 window.acceptAlteration = acceptAlteration;
 window.useRope = useRope;
+window.addLootedConsumable = addLootedConsumable;
 window.buyMerchantItem = buyMerchantItem;
 window.openBuyModal = openBuyModal;
 window.closeBuyModal = closeBuyModal;
@@ -1310,6 +1311,44 @@ function generateEquipmentTooltipHTML(eq) {
     </div>`;
 }
 
+async function addLootedConsumable(itemName, iconElement) {
+    if (!pageState.sessionId) return;
+    try {
+        iconElement.style.pointerEvents = 'none';
+        iconElement.style.opacity = '0.5';
+        const res = await globalFetch(`/api/pve/combat/${pageState.sessionId}/add-consumable-by-name?itemName=${encodeURIComponent(itemName)}`, { method: 'POST' });
+        if (!res.ok) {
+            const err = await res.text();
+            window.showNotif(err || "Erreur serveur", true);
+            iconElement.style.pointerEvents = 'auto';
+            iconElement.style.opacity = '1';
+            return;
+        }
+        const updatedSession = await res.json();
+        
+        // Success
+        iconElement.style.color = '#10b981';
+        iconElement.style.opacity = '1';
+        iconElement.style.cursor = 'default';
+        iconElement.onmouseover = null;
+        iconElement.onmouseout = null;
+        iconElement.onclick = null;
+        iconElement.title = "Dans l'inventaire du groupe";
+        
+        pageState.currentSessionData = updatedSession;
+        if (typeof window.renderOverlayInventory === 'function') {
+            window.renderOverlayInventory('eventOverlayInventoryList');
+            window.renderOverlayInventory('combatVictoryInventoryList');
+        }
+        window.showNotif(`${itemName} a été ajouté à votre inventaire actif.`);
+    } catch (e) {
+        console.error(e);
+        window.showNotif(e.message || "Erreur lors de l'ajout", true);
+        iconElement.style.pointerEvents = 'auto';
+        iconElement.style.opacity = '1';
+    }
+}
+
 async function openChest(useKey = false) {
     if (!pageState.sessionId || pageState.isProcessing) return;
     pageState.isProcessing = true;
@@ -1658,8 +1697,21 @@ function updateUI(data) {
                                     }
                                     const tooltipAttrs = tooltipDataHtml ? 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"' : '';
 
+                                    let inventoryStatus = log.includes("ajouté à l'inventaire") ? 'in_inventory' : (log.includes("envoyé au coffre") ? 'in_vault' : 'unknown');
+                                    
+                                    let inventoryIconHtml = '';
+                                    if (eq && eq.slot === 'CONSOMMABLE') {
+                                        if (inventoryStatus === 'in_inventory') {
+                                            inventoryIconHtml = `<span class="material-symbols-outlined" style="position: absolute; top: 0.2rem; left: 0.2rem; font-size: 1.2rem; color: #10b981;" title="Dans l'inventaire du groupe">inventory_2</span>`;
+                                        } else if (inventoryStatus === 'in_vault') {
+                                            const safeName = eqName.replace(/'/g, "\\'");
+                                            inventoryIconHtml = `<span class="material-symbols-outlined vault-to-inv-icon" data-itemname="${eqName}" onclick="addLootedConsumable('${safeName}', this)" style="position: absolute; top: 0.2rem; left: 0.2rem; font-size: 1.2rem; color: #64748b; cursor: pointer; transition: color 0.2s;" title="Cliquer pour ajouter à l'inventaire" onmouseover="this.style.color='#10b981'" onmouseout="this.style.color='#64748b'">inventory_2</span>`;
+                                        }
+                                    }
+
                                     gainedItemsHtml += `
                                         <div class="flex-center relative" ${tooltipAttrs} style="cursor: ${tooltipDataHtml ? 'help' : 'default'}; background: rgba(0, 0, 0, 0.4); border: 1px solid ${rarityColor}80; padding: 0.8rem 1rem; border-radius: 8px; color: ${rarityColor}; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
+                                            ${inventoryIconHtml}
                                             ${tooltipDataHtml ? `<template class="tooltip-data">${tooltipDataHtml}</template>` : ''}
                                             <span class="material-symbols-outlined${extraClass}" style="color: ${slotInfo.color};">${slotInfo.icon}</span> <span style="${tooltipDataHtml ? `border-bottom: 1px dashed ${rarityColor};` : ''}">${eqName}</span>
                                         </div>
@@ -3568,6 +3620,29 @@ window.renderOverlayInventory = function (containerId) {
     const list = document.getElementById(containerId);
     if (!list) return;
     list.innerHTML = '';
+
+    let totalWeight = 0;
+    if (pageState.currentSessionData && pageState.currentSessionData.activeConsumables) {
+        pageState.currentSessionData.activeConsumables.forEach(c => {
+            if (c.weight !== undefined) {
+                totalWeight += c.weight;
+            } else if (c.baseWeight !== undefined) {
+                totalWeight += c.baseWeight;
+            }
+        });
+    }
+    let maxWeight = 10;
+    if (pageState.currentSessionData && pageState.currentSessionData.players) {
+        maxWeight = 10 + 5 * pageState.currentSessionData.players.length;
+    }
+
+    if (list.parentElement) {
+        const weightSpan = list.parentElement.querySelector('.inventory-weight-display');
+        if (weightSpan) {
+            weightSpan.textContent = `(${totalWeight.toFixed(1)} / ${maxWeight} kg)`;
+            weightSpan.style.color = totalWeight > maxWeight ? '#ef4444' : '#94a3b8';
+        }
+    }
 
     // Add Gold reminder
     let goldAmount = 0;
