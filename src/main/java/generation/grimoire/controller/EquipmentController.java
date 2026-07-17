@@ -36,6 +36,7 @@ public class EquipmentController {
 
     /** Liste tous les équipements du joueur */
     @GetMapping
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public ResponseEntity<List<Map<String, Object>>> getAll(java.security.Principal principal) {
         if (principal == null)
             return ResponseEntity.status(401).build();
@@ -45,6 +46,7 @@ public class EquipmentController {
 
     /** Liste TOUS les équipements (réservé aux admins) */
     @GetMapping("/all")
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public ResponseEntity<List<Map<String, Object>>> getAllAdmin(java.security.Principal principal) {
         if (principal == null)
             return ResponseEntity.status(401).build();
@@ -59,6 +61,7 @@ public class EquipmentController {
 
     /** Récupérer tous les templates publiquement */
     @GetMapping("/templates/public")
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public ResponseEntity<List<Map<String, Object>>> getPublicTemplates() {
         List<String> names = equipmentRepository.findDistinctNames();
         List<Equipment> templates = new java.util.ArrayList<>();
@@ -75,6 +78,7 @@ public class EquipmentController {
 
     /** Liste les équipements d'un personnage */
     @GetMapping("/personnage/{personnageId}")
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public ResponseEntity<List<Map<String, Object>>> getByPersonnage(@PathVariable Long personnageId,
             java.security.Principal principal) {
         if (principal == null)
@@ -91,6 +95,7 @@ public class EquipmentController {
 
     /** Liste les équipements non-assignés (inventaire libre) */
     @GetMapping("/unassigned")
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public ResponseEntity<List<Map<String, Object>>> getUnassigned(java.security.Principal principal) {
         if (principal == null)
             return ResponseEntity.status(401).build();
@@ -581,7 +586,7 @@ public class EquipmentController {
         Map<String, Object> map = new HashMap<>();
         map.put("id", e.getId());
         map.put("name", e.getName());
-        map.put("slot", e.getSlot());
+        map.put("slot", e.getSlot() != null ? e.getSlot().name() : null);
         map.put("bonusHealthMax", e.getBonusHealthMax());
         map.put("bonusManaMax", e.getBonusManaMax());
         map.put("bonusPower", e.getBonusPower());
@@ -592,8 +597,8 @@ public class EquipmentController {
         map.put("bonusCrit", e.getBonusCrit());
         map.put("regenHealthPerTurn", e.getRegenHealthPerTurn());
         map.put("regenManaPerTurn", e.getRegenManaPerTurn());
-        map.put("rarity", e.getRarity());
-        map.put("specialEffect", e.getSpecialEffect());
+        map.put("rarity", e.getRarity() != null ? e.getRarity().name() : null);
+        map.put("specialEffect", e.getSpecialEffect() != null ? e.getSpecialEffect().name() : null);
         map.put("specialEffectValue", e.getSpecialEffectValue());
         map.put("baseWeight", e.getBaseWeight());
         map.put("consumableHpPercent", e.getConsumableHpPercent());

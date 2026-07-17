@@ -22,3 +22,4 @@ public enum AnomalieCategory {
     public String getLabel() { return label; }
     public String getIcon() { return icon; }
 }
+

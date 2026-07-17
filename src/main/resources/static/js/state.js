@@ -7,3 +7,6 @@ export const state = {
     selectedFilterSpiritId: null,
     grimoireDisplayMode: localStorage.getItem('grimoireDisplayMode') || 'scroll'
 };
+
+
+

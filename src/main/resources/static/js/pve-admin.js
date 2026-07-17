@@ -1,14 +1,14 @@
 const pageState = {
-  editingMonsterId: null,
-  editingDungeonId: null,
-  editingMutationId: null,
-  allMonsters: null,
-  allEquipments: null,
-  allAnomalies: null,
-  allDungeons: null,
-  allMutations: null,
-  selectedRooms: null,
-  selectedMutationIds: null,
+    editingMonsterId: null,
+    editingDungeonId: null,
+    editingMutationId: null,
+    allMonsters: null,
+    allEquipments: null,
+    allAnomalies: null,
+    allDungeons: null,
+    allMutations: null,
+    selectedRooms: null,
+    selectedMutationIds: null,
 };
 pageState.editingMonsterId = null;
 pageState.editingDungeonId = null;
@@ -23,11 +23,13 @@ pageState.selectedMutationIds = [];
 // Replaced by window.SLOT_LABELS
 
 function getSlotInfo(eq) {
-    if (!eq) return { icon: 'help', color: '#94a3b8' };
-    const info = Object.assign({}, window.SLOT_LABELS[eq.slot] || { label: eq.slot, icon: 'help', color: '#94a3b8' });
-    if (eq.slot === 'CONSOMMABLE' && eq.consumableCategory) {
+    if (!eq) return { icon: 'help', color: '#94a3b8', label: '?' };
+    const sName = typeof eq.slot === 'object' ? eq.slot?.name : eq.slot;
+    const info = Object.assign({}, (window.SLOT_LABELS && window.SLOT_LABELS[sName]) ? window.SLOT_LABELS[sName] : { label: sName || '?', icon: 'help', color: '#94a3b8' });
+
+    if (sName === 'CONSOMMABLE' && eq.consumableCategory) {
         const catName = typeof eq.consumableCategory === 'object' ? eq.consumableCategory?.name : eq.consumableCategory;
-        if (catName && window.CONSUMABLE_CATEGORIES[catName]) {
+        if (catName && window.CONSUMABLE_CATEGORIES && window.CONSUMABLE_CATEGORIES[catName]) {
             const catInfo = window.CONSUMABLE_CATEGORIES[catName];
             info.icon = catInfo.icon;
             info.color = catInfo.color;
@@ -586,14 +588,39 @@ function renderRooms() {
             <div class="relative" style="display: flex; gap: 0.5rem; margin-top: 0.5rem; align-items: flex-end; flex-wrap: wrap;">
                 <div style="flex: 2; min-width: 120px; display: flex; flex-direction: column; gap: 0.2rem;">
                     <label class="text-muted" style="font-size: 0.7rem; margin: 0; padding-left: 0.2rem;">Type de buff</label>
-                    <select id="room_boss_buff_type_${rIndex}" class="form-control text-xs" style="width: 100%;">
-                        <option value="HP_PCT">+ PV Max (%)</option>
-                        <option value="SHIELD_PCT">Bouclier (% PV)</option>
-                        <option value="ARMOR_FLAT">+ Armure</option>
-                        <option value="RESIST_FLAT">+ Résistance</option>
-                        <option value="BURN_ON_HIT">Brûlure au touché</option>
-                        <option value="POISON_ON_HIT">Poison au touché</option>
-                    </select>
+                    <div class="custom-combobox relative" style="width: 100%;">
+                        <input type="hidden" id="room_boss_buff_type_${rIndex}" value="HP_PCT">
+                        <button type="button" class="form-control text-xs flex-between" onclick="toggleBuffCombobox(${rIndex})" id="room_boss_buff_btn_${rIndex}" style="width: 100%; cursor: pointer; text-align: left; padding: 0.5rem; display: flex; justify-content: space-between; align-items: center; background: rgba(30, 41, 59, 0.7); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;">
+                            <span id="room_boss_buff_label_${rIndex}" style="display: flex; align-items: center; gap: 0.5rem;"><span class="material-symbols-outlined text-green-400" style="font-size: 1.1rem;">favorite</span> <span>+ PV Max (%)</span></span>
+                            <span class="material-symbols-outlined" style="font-size: 1.2rem; color: var(--text-muted);">expand_more</span>
+                        </button>
+                        <div id="room_boss_buff_menu_${rIndex}" class="custom-combobox-menu" style="display: none; position: absolute; top: calc(100% + 4px); left: 0; right: 0; background: #1e293b; border: 1px solid rgba(255,255,255,0.15); border-radius: 8px; z-index: 50; box-shadow: 0 10px 25px rgba(0,0,0,0.5); overflow: hidden; flex-direction: column;">
+                            <div class="combobox-item" onclick="selectBuffType(${rIndex}, 'HP_PCT', '+ PV Max (%)', 'favorite', 'text-green-400')" style="padding: 0.5rem 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: background 0.2s; font-size: 0.8rem;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
+                                <span class="material-symbols-outlined text-green-400" style="font-size: 1.1rem;">favorite</span>
+                                <span>+ PV Max (%)</span>
+                            </div>
+                            <div class="combobox-item" onclick="selectBuffType(${rIndex}, 'SHIELD_PCT', 'Bouclier (% PV)', 'shield', 'text-blue-400')" style="padding: 0.5rem 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: background 0.2s; font-size: 0.8rem;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
+                                <span class="material-symbols-outlined text-blue-400" style="font-size: 1.1rem;">shield</span>
+                                <span>Bouclier (% PV)</span>
+                            </div>
+                            <div class="combobox-item" onclick="selectBuffType(${rIndex}, 'ARMOR_FLAT', '+ Armure', 'security', 'text-gray-300')" style="padding: 0.5rem 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: background 0.2s; font-size: 0.8rem;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
+                                <span class="material-symbols-outlined text-gray-300" style="font-size: 1.1rem;">security</span>
+                                <span>+ Armure</span>
+                            </div>
+                            <div class="combobox-item" onclick="selectBuffType(${rIndex}, 'RESIST_FLAT', '+ Résistance', 'gpp_maybe', 'text-purple-400')" style="padding: 0.5rem 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: background 0.2s; font-size: 0.8rem;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
+                                <span class="material-symbols-outlined text-purple-400" style="font-size: 1.1rem;">gpp_maybe</span>
+                                <span>+ Résistance</span>
+                            </div>
+                            <div class="combobox-item" onclick="selectBuffType(${rIndex}, 'BURN_ON_HIT', 'Brûlure au touché', 'local_fire_department', 'text-orange-500')" style="padding: 0.5rem 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: background 0.2s; font-size: 0.8rem;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
+                                <span class="material-symbols-outlined text-orange-500" style="font-size: 1.1rem;">local_fire_department</span>
+                                <span>Brûlure au touché</span>
+                            </div>
+                            <div class="combobox-item" onclick="selectBuffType(${rIndex}, 'POISON_ON_HIT', 'Poison au touché', 'coronavirus', 'text-green-500')" style="padding: 0.5rem 0.8rem; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; transition: background 0.2s; font-size: 0.8rem;" onmouseover="this.style.background='rgba(255,255,255,0.05)'" onmouseout="this.style.background='transparent'">
+                                <span class="material-symbols-outlined text-green-500" style="font-size: 1.1rem;">coronavirus</span>
+                                <span>Poison au touché</span>
+                            </div>
+                        </div>
+                    </div>
                 </div>
                 <div style="flex: 1; min-width: 60px; display: flex; flex-direction: column; gap: 0.2rem;">
                     <label class="text-muted" style="font-size: 0.7rem; margin: 0; padding-left: 0.2rem;">Stat (Valeur)</label>
@@ -884,7 +911,7 @@ function renderRooms() {
                                         </span>
                                         <span class="flex-center font-bold" style="border: 1px solid ${typeColor}; color: ${typeColor}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; gap: 4px;">
                                             <span class="material-symbols-outlined text-sm">${icon}</span>
-                                            ${an && an.magicObject ? 'Objet Magique' : 'Matériau'}
+                                            ${an && an.magicObject ? 'Magique' : 'Matériau'}
                                         </span>
                                         ${an && an.spiritualite ?
                                     `<span class="font-bold" style="border: 1px solid ${color}; color: ${color}; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; background: rgba(0,0,0,0.3);">
@@ -932,7 +959,7 @@ function renderRooms() {
                                         </span>
                                         <span class="flex-center font-bold" style="border: 1px solid ${typeColor}; color: ${typeColor}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; gap: 4px;">
                                             <span class="material-symbols-outlined text-sm">${priceIcon}</span>
-                                            ${anPrice && anPrice.magicObject ? 'Objet Magique' : 'Matériau'}
+                                            ${anPrice && anPrice.magicObject ? 'Magique' : 'Matériau'}
                                         </span>
                                         ${anPrice && anPrice.spiritualite ?
                                     `<span class="font-bold" style="border: 1px solid ${priceColor}; color: ${priceColor}; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; background: rgba(0,0,0,0.3);">
@@ -1617,8 +1644,8 @@ async function loadEquipments() {
             const rB = rarityOrder[rNameB] ?? 100;
             if (rA !== rB) return rA - rB;
 
-            const tA = typeof a.slot === 'object' ? a.slot?.name : a.slot;
-            const tB = typeof b.slot === 'object' ? b.slot?.name : b.slot;
+            const tA = typeof (a.slot?.name || a.slot) === 'object' ? a.slot?.name : a.slot;
+            const tB = typeof (b.slot?.name || b.slot) === 'object' ? b.slot?.name : b.slot;
             if (tA !== tB) return (tA || '').localeCompare(tB || '');
 
             return a.name.localeCompare(b.name);
@@ -2754,3 +2781,25 @@ window.toggleMutationSelection = (id) => {
     }
     renderMutationsSelector();
 };
+
+window.toggleBuffCombobox = function(rIndex) {
+    const menu = document.getElementById(`room_boss_buff_menu_${rIndex}`);
+    if (menu.style.display === 'none' || menu.style.display === '') {
+        document.querySelectorAll('.custom-combobox-menu').forEach(el => el.style.display = 'none');
+        menu.style.display = 'flex';
+    } else {
+        menu.style.display = 'none';
+    }
+};
+
+window.selectBuffType = function(rIndex, value, label, icon, iconColorClass) {
+    document.getElementById(`room_boss_buff_type_${rIndex}`).value = value;
+    document.getElementById(`room_boss_buff_label_${rIndex}`).innerHTML = `<span class="material-symbols-outlined ${iconColorClass}" style="font-size: 1.1rem;">${icon}</span> <span>${label}</span>`;
+    document.getElementById(`room_boss_buff_menu_${rIndex}`).style.display = 'none';
+};
+
+document.addEventListener('click', function(e) {
+    if (!e.target.closest('.custom-combobox')) {
+        document.querySelectorAll('.custom-combobox-menu').forEach(el => el.style.display = 'none');
+    }
+});

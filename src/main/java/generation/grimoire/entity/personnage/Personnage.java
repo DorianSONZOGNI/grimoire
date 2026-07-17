@@ -1132,6 +1132,25 @@ public class Personnage {
     }
 
     public void dealDamage(Personnage target, int baseDamage, DamageType type) {
+        double multiplier = 1.0;
+        int flatBonus = 0;
+
+        if (type == DamageType.PHYSIC) {
+            multiplier = Math.max(0.0, getStatBuffMultiplier(StatType.DAMAGE_GIVEN_PHYSIC));
+            flatBonus = getStatFlatBonus(StatType.DAMAGE_GIVEN_PHYSIC);
+        } else if (type == DamageType.MAGIC) {
+            multiplier = Math.max(0.0, getStatBuffMultiplier(StatType.DAMAGE_GIVEN_MAGIC));
+            flatBonus = getStatFlatBonus(StatType.DAMAGE_GIVEN_MAGIC);
+        } else if (type == DamageType.BRUT) {
+            multiplier = Math.max(0.0, getStatBuffMultiplier(StatType.DAMAGE_GIVEN_BRUT));
+            flatBonus = getStatFlatBonus(StatType.DAMAGE_GIVEN_BRUT);
+        }
+
+        baseDamage = (int) (baseDamage * multiplier) + flatBonus;
+        if (baseDamage < 0) {
+            baseDamage = 0;
+        }
+
         if (this.monsterType == generation.grimoire.enumeration.MonsterType.HYBRIDE && type != DamageType.BRUT) {
             int total = (int) (baseDamage * 1.2);
             target.takeDamage(total / 2, DamageType.PHYSIC, this);

@@ -5,3 +5,4 @@ public enum SpellCastingType {
     BANAL,      // Consomme le tour du joueur
     CANALISE    // Consomme plusieurs tours
 }
+

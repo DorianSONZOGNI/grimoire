@@ -36,3 +36,6 @@ window.addEventListener('DOMContentLoaded', async () => {
 
     await api.loadSpells();
 });
+
+
+

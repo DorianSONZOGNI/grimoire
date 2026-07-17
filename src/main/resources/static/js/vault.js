@@ -2,11 +2,13 @@ const pageState = { allEquipments: [], equipmentToDelete: null, anomalieToDelete
 
 // Replaced by window.SLOT_LABELS
 function getSlotInfo(eq) {
-    if (!eq) return { icon: 'help', color: '#94a3b8' };
-    const info = Object.assign({}, window.SLOT_LABELS[eq.slot] || { label: eq.slot, icon: 'help', color: '#94a3b8' });
-    if (eq.slot === 'CONSOMMABLE' && eq.consumableCategory) {
+    if (!eq) return { icon: 'help', color: '#94a3b8', label: '?' };
+    const sName = typeof eq.slot === 'object' ? eq.slot?.name : eq.slot;
+    const info = Object.assign({}, (window.SLOT_LABELS && window.SLOT_LABELS[sName]) ? window.SLOT_LABELS[sName] : { label: sName || '?', icon: 'help', color: '#94a3b8' });
+
+    if (sName === 'CONSOMMABLE' && eq.consumableCategory) {
         const catName = typeof eq.consumableCategory === 'object' ? eq.consumableCategory?.name : eq.consumableCategory;
-        if (catName && window.CONSUMABLE_CATEGORIES[catName]) {
+        if (catName && window.CONSUMABLE_CATEGORIES && window.CONSUMABLE_CATEGORIES[catName]) {
             const catInfo = window.CONSUMABLE_CATEGORIES[catName];
             info.icon = catInfo.icon;
             info.color = catInfo.color;
@@ -277,7 +279,7 @@ function groupEquipments(list) {
     let stacked = [];
     let groups = {};
     list.forEach(eq => {
-        const isStackable = eq.isAnomalie || eq.slot === 'CONSOMMABLE';
+        const isStackable = eq.isAnomalie || (eq.slot?.name || eq.slot) === 'CONSOMMABLE';
         if (!isStackable) {
             stacked.push(eq);
             return;
@@ -315,13 +317,13 @@ function filterVault() {
         let matchMainType = false;
 
         if (filterConsommable && filterAnomalie) {
-            matchMainType = eq.isAnomalie || (!eq.isAnomalie && eq.slot === 'CONSOMMABLE');
+            matchMainType = eq.isAnomalie || (!eq.isAnomalie && (eq.slot?.name || eq.slot) === 'CONSOMMABLE');
         } else if (filterConsommable) {
-            matchMainType = (!eq.isAnomalie && eq.slot === 'CONSOMMABLE');
+            matchMainType = (!eq.isAnomalie && (eq.slot?.name || eq.slot) === 'CONSOMMABLE');
         } else if (filterAnomalie) {
             matchMainType = eq.isAnomalie;
         } else {
-            matchMainType = (!eq.isAnomalie && eq.slot !== 'CONSOMMABLE');
+            matchMainType = (!eq.isAnomalie && (eq.slot?.name || eq.slot) !== 'CONSOMMABLE');
         }
 
         if (!matchMainType) return false;
@@ -332,11 +334,11 @@ function filterVault() {
         let matchSlot = true;
         if (filterSlot) {
             if (filterSlot === 'ANNEAU') {
-                matchSlot = (eq.slot === 'ANNEAU_GAUCHE' || eq.slot === 'ANNEAU_DROIT');
+                matchSlot = ((eq.slot?.name || eq.slot) === 'ANNEAU_GAUCHE' || (eq.slot?.name || eq.slot) === 'ANNEAU_DROIT');
             } else if (filterSlot === 'ARME') {
-                matchSlot = (eq.slot === 'ARME_GAUCHE' || eq.slot === 'ARME_DROITE' || eq.slot === 'ARME_DEUX_MAINS');
+                matchSlot = ((eq.slot?.name || eq.slot) === 'ARME_GAUCHE' || (eq.slot?.name || eq.slot) === 'ARME_DROITE' || (eq.slot?.name || eq.slot) === 'ARME_DEUX_MAINS');
             } else {
-                matchSlot = eq.slot === filterSlot;
+                matchSlot = (eq.slot?.name || eq.slot) === filterSlot;
             }
         }
 
@@ -419,7 +421,7 @@ function renderGrid(equipments) {
 
             let typeIcon = 'star';
             let nameIcon = catIcon;
-            let typeStr = 'Objet Magique';
+            let typeStr = 'Magique';
             if (eq.magicObject === false) {
                 typeIcon = 'category';
                 typeStr = 'Matériau';
@@ -597,9 +599,9 @@ function renderGrid(equipments) {
                 ${effectHtml}
                 
                 <div class="vault-card-footer">
-                    <div class="vault-card-weight" title="${eq.slot === 'CONSOMMABLE' ? 'Poids total' : `Poids total / Poids Max (${maxWeight})`}">
-                        <span class="material-symbols-outlined" style="font-size: 1.1rem; color: ${eq.slot === 'CONSOMMABLE' ? '#10b981' : weightColor};">scale</span>
-                        <span style="color: ${eq.slot === 'CONSOMMABLE' ? '#10b981' : weightColor}; font-weight: 600;">${weightStr}</span>${eq.slot === 'CONSOMMABLE' ? ' pts' : ` / ${maxWeight} pts`}
+                    <div class="vault-card-weight" title="${(eq.slot?.name || eq.slot) === 'CONSOMMABLE' ? 'Poids total' : `Poids total / Poids Max (${maxWeight})`}">
+                        <span class="material-symbols-outlined" style="font-size: 1.1rem; color: ${(eq.slot?.name || eq.slot) === 'CONSOMMABLE' ? '#10b981' : weightColor};">scale</span>
+                        <span style="color: ${(eq.slot?.name || eq.slot) === 'CONSOMMABLE' ? '#10b981' : weightColor}; font-weight: 600;">${weightStr}</span>${(eq.slot?.name || eq.slot) === 'CONSOMMABLE' ? ' pts' : ` / ${maxWeight} pts`}
                     </div>
                     ${statusHtml}
                 </div>
@@ -1015,7 +1017,7 @@ window.submitEquipment = async function () {
                 return;
             }
         }
-    } catch(e) {
+    } catch (e) {
         console.error("Simulation error", e);
     }
 
@@ -1045,7 +1047,7 @@ function getFormEquipmentData() {
     const rarity = document.getElementById('eqRarity').value;
     const specialEffect = document.getElementById('eqSpecialEffect').value;
     const specialEffectValue = parseInt(document.getElementById('eqSpecialEffectValue').value) || 0;
-    
+
     return {
         name: document.getElementById('eqName').value,
         slot,
@@ -1154,3 +1156,6 @@ window.updateWeightUI = async function () {
         if (textEl) textEl.style.color = color;
     }
 }
+
+
+

@@ -6,3 +6,4 @@ public enum DamageType {
     PHYSIC,
     BRUT
 }
+

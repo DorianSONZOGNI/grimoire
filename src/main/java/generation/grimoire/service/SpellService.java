@@ -230,6 +230,9 @@ public class SpellService {
                 }
                 effect.apply(caster, recipient);
             }
+            
+            // Réinitialiser les modificateurs pour éviter que le buff ne soit conservé de manière permanente
+            effect.resetModifiers();
         }
 
         // Dispatch : notification post-cast à tous les passifs (Voie + Spiritualité)

@@ -33,11 +33,13 @@ const pageState = {
 // Replaced by window.SLOT_LABELS and window.CONSUMABLE_CATEGORIES
 
 function getSlotInfo(eq) {
-    if (!eq) return { icon: 'help', color: '#94a3b8' };
-    const info = Object.assign({}, window.SLOT_LABELS[eq.slot] || { label: eq.slot, icon: 'help', color: '#94a3b8' });
-    if (eq.slot === 'CONSOMMABLE' && eq.consumableCategory) {
+    if (!eq) return { icon: 'help', color: '#94a3b8', label: '?' };
+    const sName = typeof eq.slot === 'object' ? eq.slot?.name : eq.slot;
+    const info = Object.assign({}, (window.SLOT_LABELS && window.SLOT_LABELS[sName]) ? window.SLOT_LABELS[sName] : { label: sName || '?', icon: 'help', color: '#94a3b8' });
+    
+    if (sName === 'CONSOMMABLE' && eq.consumableCategory) {
         const catName = typeof eq.consumableCategory === 'object' ? eq.consumableCategory?.name : eq.consumableCategory;
-        if (catName && window.CONSUMABLE_CATEGORIES[catName]) {
+        if (catName && window.CONSUMABLE_CATEGORIES && window.CONSUMABLE_CATEGORIES[catName]) {
             const catInfo = window.CONSUMABLE_CATEGORIES[catName];
             info.icon = catInfo.icon;
             info.color = catInfo.color;
@@ -680,8 +682,8 @@ function renderPersonnages() {
             const slotOrder = ['CASQUE', 'PLASTRON', 'ARME_GAUCHE', 'ARME_DROITE', 'ANNEAU_GAUCHE', 'ANNEAU_DROIT', 'BOTTES', 'CAPE'];
             equipHtml = `<div class="char-equip-row">` +
                 persoEquips.sort((a, b) => {
-                    const sNameA = typeof a.slot === 'object' ? a.slot?.name : a.slot;
-                    const sNameB = typeof b.slot === 'object' ? b.slot?.name : b.slot;
+                    const sNameA = typeof (a.slot?.name || a.slot) === 'object' ? a.slot?.name : a.slot;
+                    const sNameB = typeof (b.slot?.name || b.slot) === 'object' ? b.slot?.name : b.slot;
                     return slotOrder.indexOf(sNameA) - slotOrder.indexOf(sNameB);
                 }).map(eq => {
                     const slotInfo = getSlotInfo(eq);
@@ -950,7 +952,7 @@ function renderEquipModal() {
                                 <div class="custom-option" data-value="${a.id}" onmouseenter="showEqTooltip(this)" onmouseleave="hideEqTooltip()">
                                     <span class="${aRarityName ? 'rarity-' + aRarityName : ''}">${a.name}</span>
                                     ${aRarityLabel ? '<span class="opacity-50" style="font-size: 0.7rem; margin-left: 0.3rem;">(' + aRarityLabel + ')</span>' : ''}
-                                    ${a.slot === 'ARME_DEUX_MAINS' ? '<span class="font-bold text-error" style="font-size: 0.7rem; margin-left: 0.3rem;">[2 Mains]</span>' : ''}
+                                    ${(a.slot?.name || a.slot) === 'ARME_DEUX_MAINS' ? '<span class="font-bold text-error" style="font-size: 0.7rem; margin-left: 0.3rem;">[2 Mains]</span>' : ''}
                                     ${tooltipHtml}
                                 </div>
                             `;
@@ -1438,4 +1440,7 @@ window.hideEqTooltip = function () {
     const tooltip = document.getElementById('globalSpellTooltip');
     if (tooltip) tooltip.style.display = 'none';
 };
+
+
+
 

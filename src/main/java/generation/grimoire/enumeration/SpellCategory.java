@@ -6,3 +6,4 @@ public enum SpellCategory {
     EXPIRATION,
     NEED_FLUIDIFICATION,
 }
+

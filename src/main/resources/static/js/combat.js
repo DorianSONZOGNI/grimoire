@@ -58,7 +58,7 @@ export function createAnomalyBadgeHtml(anomalyName, showName = false) {
     else if (anomLevel >= 5) lvlColor = '#ef4444';
 
     const typeColor = isMagic ? '#ec4899' : '#b45309';
-    const typeLabel = isMagic ? 'Objet Magique' : 'Matériau';
+    const typeLabel = isMagic ? 'Magique' : 'Matériau';
 
     const tooltipDataHtml = `
         <div class="anomaly-tooltip-title" style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:${tColor}; border-bottom: 1px solid ${tColor}; padding-bottom: 4px;">${tooltipTitle}</div>
@@ -81,11 +81,13 @@ export function createAnomalyBadgeHtml(anomalyName, showName = false) {
 // Replaced by window.SLOT_LABELS
 
 function getSlotInfo(eq) {
-    if (!eq) return { icon: 'help', color: '#94a3b8' };
-    const info = Object.assign({}, window.SLOT_LABELS[eq.slot] || { label: eq.slot, icon: 'help', color: '#94a3b8' });
-    if (eq.slot === 'CONSOMMABLE' && eq.consumableCategory) {
+    if (!eq) return { icon: 'help', color: '#94a3b8', label: '?' };
+    const sName = typeof eq.slot === 'object' ? eq.slot?.name : eq.slot;
+    const info = Object.assign({}, (window.SLOT_LABELS && window.SLOT_LABELS[sName]) ? window.SLOT_LABELS[sName] : { label: sName || '?', icon: 'help', color: '#94a3b8' });
+
+    if (sName === 'CONSOMMABLE' && eq.consumableCategory) {
         const catName = typeof eq.consumableCategory === 'object' ? eq.consumableCategory?.name : eq.consumableCategory;
-        if (catName && window.CONSUMABLE_CATEGORIES[catName]) {
+        if (catName && window.CONSUMABLE_CATEGORIES && window.CONSUMABLE_CATEGORIES[catName]) {
             const catInfo = window.CONSUMABLE_CATEGORIES[catName];
             info.icon = catInfo.icon;
             info.color = catInfo.color;
@@ -106,20 +108,20 @@ const RARITY_COLORS = {
 };
 
 export const pageState = {
-  lastCombatLogCount: null,
-  sessionId: null,
-  currentSessionData: null,
-  isProcessing: null,
-  selectedTargetIndex: null,
-  selectedAllyIndex: null,
-  previousPlayerXP: null,
-  previousPlayerSpiritXP: null,
-  isFleeing: null,
-  currentSpellFilter: null,
-  hasAnimatedOpening: null,
-  pendingCastSpellId: null,
-  pendingNeedsEnemy: null,
-  pendingNeedsAlly: null,
+    lastCombatLogCount: null,
+    sessionId: null,
+    currentSessionData: null,
+    isProcessing: null,
+    selectedTargetIndex: null,
+    selectedAllyIndex: null,
+    previousPlayerXP: null,
+    previousPlayerSpiritXP: null,
+    isFleeing: null,
+    currentSpellFilter: null,
+    hasAnimatedOpening: null,
+    pendingCastSpellId: null,
+    pendingNeedsEnemy: null,
+    pendingNeedsAlly: null,
 };
 pageState.lastCombatLogCount = 0;
 pageState.previousPlayerXP = {};
@@ -386,6 +388,7 @@ window.openStrangeDoor = openStrangeDoor;
 window.openChest = openChest;
 window.acceptAlteration = acceptAlteration;
 window.useRope = useRope;
+window.addLootedConsumable = addLootedConsumable;
 window.buyMerchantItem = buyMerchantItem;
 window.openBuyModal = openBuyModal;
 window.closeBuyModal = closeBuyModal;
@@ -451,7 +454,7 @@ window.showNotif = function (message, isError = false) {
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
-    try { if (window.initAppMeta) await window.initAppMeta(); } catch(e) { console.warn('Meta loading skipped:', e); }
+    try { if (window.initAppMeta) await window.initAppMeta(); } catch (e) { console.warn('Meta loading skipped:', e); }
     // Check for active combat in localStorage
     const savedCombatId = localStorage.getItem('activeCombatId');
     if (savedCombatId) {
@@ -1308,6 +1311,44 @@ function generateEquipmentTooltipHTML(eq) {
     </div>`;
 }
 
+async function addLootedConsumable(itemName, iconElement) {
+    if (!pageState.sessionId) return;
+    try {
+        iconElement.style.pointerEvents = 'none';
+        iconElement.style.opacity = '0.5';
+        const res = await globalFetch(`/api/pve/combat/${pageState.sessionId}/add-consumable-by-name?itemName=${encodeURIComponent(itemName)}`, { method: 'POST' });
+        if (!res.ok) {
+            const err = await res.text();
+            window.showNotif(err || "Erreur serveur", true);
+            iconElement.style.pointerEvents = 'auto';
+            iconElement.style.opacity = '1';
+            return;
+        }
+        const updatedSession = await res.json();
+        
+        // Success
+        iconElement.style.color = '#10b981';
+        iconElement.style.opacity = '1';
+        iconElement.style.cursor = 'default';
+        iconElement.onmouseover = null;
+        iconElement.onmouseout = null;
+        iconElement.onclick = null;
+        iconElement.title = "Dans l'inventaire du groupe";
+        
+        pageState.currentSessionData = updatedSession;
+        if (typeof window.renderOverlayInventory === 'function') {
+            window.renderOverlayInventory('eventOverlayInventoryList');
+            window.renderOverlayInventory('combatVictoryInventoryList');
+        }
+        window.showNotif(`${itemName} a été ajouté à votre inventaire actif.`);
+    } catch (e) {
+        console.error(e);
+        window.showNotif(e.message || "Erreur lors de l'ajout", true);
+        iconElement.style.pointerEvents = 'auto';
+        iconElement.style.opacity = '1';
+    }
+}
+
 async function openChest(useKey = false) {
     if (!pageState.sessionId || pageState.isProcessing) return;
     pageState.isProcessing = true;
@@ -1638,7 +1679,7 @@ function updateUI(data) {
                             }
 
                             chestLogs.forEach(log => {
-                                const itemNameMatch = log.match(/Vous avez trouvé un objet : (.*) !/);
+                                const itemNameMatch = log.match(/Vous avez trouvé un objet : (.*?)(?: !| et il a été ajouté| \(envoyé)/);
                                 if (itemNameMatch) {
                                     const eqName = itemNameMatch[1];
                                     let eq = null;
@@ -1656,8 +1697,21 @@ function updateUI(data) {
                                     }
                                     const tooltipAttrs = tooltipDataHtml ? 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"' : '';
 
+                                    let inventoryStatus = log.includes("ajouté à l'inventaire") ? 'in_inventory' : (log.includes("envoyé au coffre") ? 'in_vault' : 'unknown');
+                                    
+                                    let inventoryIconHtml = '';
+                                    if (eq && eq.slot === 'CONSOMMABLE') {
+                                        if (inventoryStatus === 'in_inventory') {
+                                            inventoryIconHtml = `<span class="material-symbols-outlined" style="position: absolute; top: 0.2rem; left: 0.2rem; font-size: 1.2rem; color: #10b981;" title="Dans l'inventaire du groupe">inventory_2</span>`;
+                                        } else if (inventoryStatus === 'in_vault') {
+                                            const safeName = eqName.replace(/'/g, "\\'");
+                                            inventoryIconHtml = `<span class="material-symbols-outlined vault-to-inv-icon" data-itemname="${eqName}" onclick="addLootedConsumable('${safeName}', this)" style="position: absolute; top: 0.2rem; left: 0.2rem; font-size: 1.2rem; color: #64748b; cursor: pointer; transition: color 0.2s;" title="Cliquer pour ajouter à l'inventaire" onmouseover="this.style.color='#10b981'" onmouseout="this.style.color='#64748b'">inventory_2</span>`;
+                                        }
+                                    }
+
                                     gainedItemsHtml += `
                                         <div class="flex-center relative" ${tooltipAttrs} style="cursor: ${tooltipDataHtml ? 'help' : 'default'}; background: rgba(0, 0, 0, 0.4); border: 1px solid ${rarityColor}80; padding: 0.8rem 1rem; border-radius: 8px; color: ${rarityColor}; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
+                                            ${inventoryIconHtml}
                                             ${tooltipDataHtml ? `<template class="tooltip-data">${tooltipDataHtml}</template>` : ''}
                                             <span class="material-symbols-outlined${extraClass}" style="color: ${slotInfo.color};">${slotInfo.icon}</span> <span style="${tooltipDataHtml ? `border-bottom: 1px dashed ${rarityColor};` : ''}">${eqName}</span>
                                         </div>
@@ -1815,7 +1869,7 @@ function updateUI(data) {
                         } else if (data.currentRoom.alterationType === 'AUTEL') {
                             btnText = `Sacrifier l'Objet`;
                             let spColor = data.currentRoom.altarRequiredSpirituality === 'TENEBRES' ? '#d946ef' : data.currentRoom.altarRequiredSpirituality === 'ESPRIT' ? '#3b82f6' : data.currentRoom.altarRequiredSpirituality === 'KARMA' ? '#e7d198' : '#f59e0b';
-                            warningHtml = `<div class="text-center" style="color: ${spColor}; font-size: 0.85rem; margin-top: 0.5rem; background: ${spColor}1A; padding: 0.5rem; border-radius: 6px; border: 1px solid ${spColor}4D;"><span class="material-symbols-outlined align-middle" style="font-size: 1rem;">warning</span> <strong>Offrande :</strong> Cet autel réclame le sacrifice d'un <strong>Objet Magique</strong> de spiritualité <strong>${data.currentRoom.altarRequiredSpirituality}</strong>.</div>`;
+                            warningHtml = `<div class="text-center" style="color: ${spColor}; font-size: 0.85rem; margin-top: 0.5rem; background: ${spColor}1A; padding: 0.5rem; border-radius: 6px; border: 1px solid ${spColor}4D;"><span class="material-symbols-outlined align-middle" style="font-size: 1rem;">warning</span> <strong>Offrande :</strong> Cet autel réclame le sacrifice d'un <strong>Magique</strong> de spiritualité <strong>${data.currentRoom.altarRequiredSpirituality}</strong>.</div>`;
 
                             let altarRewardHtml = '';
                             if (data.currentRoom.altarRewardType === 'GOLD') {
@@ -2166,7 +2220,7 @@ function updateUI(data) {
                                 else if (anomLevel >= 5) lvlColor = '#ef4444';
 
                                 const typeColor = isMagic ? '#ec4899' : '#b45309';
-                                const typeLabel = isMagic ? 'Objet Magique' : 'Matériau';
+                                const typeLabel = isMagic ? 'Magique' : 'Matériau';
 
                                 tooltipDataHtml = `
                                     <div class="anomaly-tooltip-title" style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:${tColor}; border-bottom: 1px solid ${tColor}; padding-bottom: 4px;">${tooltipTitle}</div>
@@ -2403,24 +2457,47 @@ function generateFighterHtml(c, isHero) {
         </div>`;
 
     const getEffectiveStat = (statName) => {
+        let hasTotal = false;
         let base = 0;
         switch (statName) {
-            case 'POWER': base = c.totalPower !== undefined ? c.totalPower : (c.power || 0); break;
-            case 'STRENGTH': base = c.totalStrength !== undefined ? c.totalStrength : (c.strength || 0); break;
-            case 'ARMURE': base = c.totalArmor !== undefined ? c.totalArmor : (c.armor || 0); break;
-            case 'RESISTANCE': base = c.totalResistance !== undefined ? c.totalResistance : (c.resistance || 0); break;
-            case 'SPEED': base = c.totalSpeed !== undefined ? c.totalSpeed : (c.speed || 0); break;
+            case 'POWER':
+                if (c.totalPower !== undefined) { base = c.totalPower; hasTotal = true; } else { base = c.power || 0; }
+                break;
+            case 'STRENGTH':
+                if (c.totalStrength !== undefined) { base = c.totalStrength; hasTotal = true; } else { base = c.strength || 0; }
+                break;
+            case 'ARMURE':
+                if (c.totalArmor !== undefined) { base = c.totalArmor; hasTotal = true; } else { base = c.armor || 0; }
+                break;
+            case 'RESISTANCE':
+                if (c.totalResistance !== undefined) { base = c.totalResistance; hasTotal = true; } else { base = c.resistance || 0; }
+                break;
+            case 'SPEED':
+                if (c.totalSpeed !== undefined) { base = c.totalSpeed; hasTotal = true; } else { base = c.speed || 0; }
+                break;
             case 'CRIT':
                 if (c.totalCrit !== undefined) {
                     base = c.totalCrit;
+                    hasTotal = true;
                 } else if (c.critDerived !== null && c.critDerived !== undefined) {
                     base = c.critDerived;
+                    hasTotal = true; // critDerived also includes buffs usually
                 } else if (c.voie && c.voie.nom && c.voie.nom.toLowerCase().includes('raison')) {
-                    base = getEffectiveStat('SPEED') * 2;
+                    // For Voie de la Raison, crit is based on speed. We'll handle this specially.
+                    let speed = c.totalSpeed !== undefined ? c.totalSpeed : (c.speed || 0);
+                    base = speed * 2;
                 } else {
                     base = c.crit || 0;
                 }
                 break;
+        }
+
+        // If the backend already provided the total stat (which includes buffs/passives), return it directly.
+        if (hasTotal && statName !== 'CRIT') {
+            return base;
+        }
+        if (hasTotal && statName === 'CRIT' && c.totalCrit !== undefined) {
+            return base;
         }
 
         let flatBonus = 0;
@@ -3544,6 +3621,29 @@ window.renderOverlayInventory = function (containerId) {
     if (!list) return;
     list.innerHTML = '';
 
+    let totalWeight = 0;
+    if (pageState.currentSessionData && pageState.currentSessionData.activeConsumables) {
+        pageState.currentSessionData.activeConsumables.forEach(c => {
+            if (c.weight !== undefined) {
+                totalWeight += c.weight;
+            } else if (c.baseWeight !== undefined) {
+                totalWeight += c.baseWeight;
+            }
+        });
+    }
+    let maxWeight = 10;
+    if (pageState.currentSessionData && pageState.currentSessionData.players) {
+        maxWeight = 10 + 5 * pageState.currentSessionData.players.length;
+    }
+
+    if (list.parentElement) {
+        const weightSpan = list.parentElement.querySelector('.inventory-weight-display');
+        if (weightSpan) {
+            weightSpan.textContent = `(${totalWeight.toFixed(1)} / ${maxWeight} kg)`;
+            weightSpan.style.color = totalWeight > maxWeight ? '#ef4444' : '#94a3b8';
+        }
+    }
+
     // Add Gold reminder
     let goldAmount = 0;
     if (pageState.currentSessionData && pageState.currentSessionData.players && pageState.currentSessionData.players.length > 0) {
@@ -3639,3 +3739,6 @@ window.confirmConsumeItem = async function (consumableId, characterId) {
         window.showNotif("Erreur lors de la consommation.", true);
     }
 };
+
+
+

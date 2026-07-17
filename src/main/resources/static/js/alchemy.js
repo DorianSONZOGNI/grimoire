@@ -1,0 +1,980 @@
+const pageState = {
+    allRecipes: [],
+    allAnomalyTemplates: [],
+    allEquipmentTemplates: [],
+    selectedRecipe: null,
+    userAnomalies: [],
+    userConsumables: [],
+    userCharacters: [],
+    customSelectSetups: []
+};
+
+window.addEventListener('authLoaded', async () => {
+    if (window.initAppMeta) await window.initAppMeta();
+    if (!window.currentUser) {
+        document.querySelector('.alchemy-layout').style.display = 'none';
+        document.querySelector('.alchemy-layout').insertAdjacentHTML('beforebegin', `
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60vh; text-align: center; color: white;">
+                        <span class="material-symbols-outlined" style="font-size: 4rem; color: #ef4444; margin-bottom: 1rem;">lock</span>
+                        <h1 style="font-size: 2rem; margin-bottom: 1rem; font-family: 'Outfit', sans-serif;">Veuillez vous connecter</h1>
+                        <p style="color: #94a3b8; max-width: 400px; margin-bottom: 2rem; font-size: 1.1rem;">
+                            Vous devez être connecté pour accéder à cette page.
+                        </p>
+                    </div>
+                `);
+    } else if (!window.currentUser.unlockedAlchemy) {
+        document.querySelector('.alchemy-layout').style.display = 'none';
+        document.querySelector('.alchemy-layout').insertAdjacentHTML('beforebegin', `
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 60vh; text-align: center; color: white;">
+                        <span class="material-symbols-outlined" style="font-size: 4rem; color: #ef4444; margin-bottom: 1rem;">lock</span>
+                        <h1 style="font-size: 2rem; margin-bottom: 1rem; font-family: 'Outfit', sans-serif;">Alchimie Bloquée</h1>
+                        <p style="color: #94a3b8; max-width: 400px; margin-bottom: 2rem; font-size: 1.1rem;">
+                            Vous devez débloquer l'Alchimie pour y accéder. L'accès coûte 150 or.
+                        </p>
+                        <button onclick="promptUnlockFeature('alchemy', 'Alchimie', 150)" style="background: #10b981; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 8px; font-weight: 600; font-family: 'Outfit', sans-serif; cursor: pointer; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); transition: all 0.2s;">
+                            Débloquer pour 150 <span class="material-symbols-outlined" style="font-size: 1.2rem; vertical-align: middle; color: #fcd34d;">monetization_on</span>
+                        </button>
+                    </div>
+                `);
+    } else {
+        Promise.all([
+            fetchUserInventory(),
+            fetchUserCharacters(),
+            globalFetch('/api/alchemy/recipes').then(res => res.json()).then(data => pageState.allRecipes = data)
+        ]).then(() => {
+            renderRecipesList();
+        }).catch(e => console.error("Erreur chargement alchimie:", e));
+    }
+});
+
+async function fetchUserInventory() {
+    try {
+        const [resT, resA, resEq, resC] = await Promise.all([
+            globalFetch('/api/anomalies/all-templates'),
+            globalFetch('/api/anomalies'),
+            globalFetch('/api/equipments/templates/public'),
+            globalFetch('/api/equipments')
+        ]);
+
+        if (resT && resT.ok) pageState.allAnomalyTemplates = await resT.json();
+        if (resA && resA.ok) pageState.userAnomalies = await resA.json();
+        if (resEq && resEq.ok) pageState.allEquipmentTemplates = await resEq.json();
+        if (resC && resC.ok) {
+            const equips = await resC.json();
+            pageState.userConsumables = equips.filter(e => e.slot === 'CONSOMMABLE');
+        }
+    } catch (e) {
+        console.error("Erreur chargement inventaire", e);
+    }
+}
+
+
+
+function canCraftRecipe(r) {
+    if (r.costGold > 0 && (window.currentUser?.monnaie || 0) < r.costGold) return false;
+
+    if (r.costSpiritXp > 0) {
+        const hasEnoughSpirit = pageState.userCharacters.some(c => (c.spiritualiteExperience || 0) >= r.costSpiritXp);
+        if (!hasEnoughSpirit) return false;
+    }
+
+    if (r.requiredAnomalies) {
+        for (const [name, qty] of Object.entries(r.requiredAnomalies)) {
+            let count = 0;
+            if (pageState.userAnomalies) {
+                count = pageState.userAnomalies.filter(a => a.name === name).length;
+            }
+            if (count < qty) return false;
+        }
+    }
+
+    if (r.requiredConsumables) {
+        for (const [name, qty] of Object.entries(r.requiredConsumables)) {
+            let count = 0;
+            if (pageState.userConsumables) {
+                count = pageState.userConsumables.filter(c => c.name === name).length;
+            }
+            if (count < qty) return false;
+        }
+    }
+
+    return true;
+}
+
+function renderRecipesList() {
+    const container = document.getElementById('playerRecipesList');
+    container.innerHTML = '';
+
+    const unlockedSecrets = window.currentUser?.unlockedSecrets || {};
+
+    const searchTxt = (document.getElementById('searchRecipeName')?.value || '').toLowerCase();
+    const filterType = document.getElementById('filterRewardType')?.value || '';
+
+    const visibleRecipes = pageState.allRecipes.filter(r => {
+        if (filterType && r.rewardType !== filterType) return false;
+        if (searchTxt && !r.name.toLowerCase().includes(searchTxt)) return false;
+
+        if (r.rewardType === 'UNLOCK_FEATURE') {
+            const currentLevel = unlockedSecrets[r.rewardName] || 0;
+            return currentLevel === (r.rewardLevel - 1);
+        }
+        return true;
+    });
+
+    if (visibleRecipes.length === 0) {
+        container.innerHTML = "<p style='color: var(--text-muted); text-align:center;'>Aucune recette disponible pour le moment.</p>";
+        return;
+    }
+
+    visibleRecipes.forEach(r => {
+        const isCraftable = canCraftRecipe(r);
+        const div = document.createElement('div');
+        div.style.background = 'rgba(0,0,0,0.3)';
+        div.style.border = '1px solid var(--glass-border)';
+        div.style.borderRadius = '12px';
+        div.style.padding = '1rem';
+        div.style.cursor = 'pointer';
+        div.style.transition = 'all 0.2s';
+
+        if (isCraftable) {
+            div.classList.add('craftable-pulse');
+            div.style.borderColor = 'rgba(16, 185, 129, 0.4)';
+        }
+
+        div.onmouseover = () => div.style.borderColor = '#10b981';
+        div.onmouseout = () => {
+            if (pageState.selectedRecipe?.id !== r.id) {
+                div.style.borderColor = isCraftable ? 'rgba(16, 185, 129, 0.4)' : 'var(--glass-border)';
+            }
+        };
+        div.onclick = () => selectRecipe(r, div);
+
+        let rewardIcon = '';
+        if (r.rewardType === 'GIVE_ANOMALY') rewardIcon = `<span class="material-symbols-outlined" style="color: #a855f7; font-size: 1.1rem; opacity: 0.8;" title="Anomalie">star</span>`;
+        else if (r.rewardType === 'GIVE_CONSUMABLE') rewardIcon = `<span class="material-symbols-outlined" style="color: #10b981; font-size: 1.1rem; opacity: 0.8;" title="Consommable">inventory_2</span>`;
+        else if (r.rewardType === 'GIVE_EQUIPMENT') rewardIcon = `<span class="material-symbols-outlined" style="color: #fbbf24; font-size: 1.1rem; opacity: 0.8;" title="Equipement">shield</span>`;
+        else if (r.rewardType === 'UNLOCK_FEATURE') rewardIcon = `<span class="material-symbols-outlined" style="color: #f59e0b; font-size: 1.1rem; opacity: 0.8;" title="Secret">key</span>`;
+        else if (r.rewardType === 'GIVE_SPIRIT_XP') rewardIcon = `<span class="material-symbols-outlined" style="color: #38bdf8; font-size: 1.1rem; opacity: 0.8;" title="XP Spiritualité">self_improvement</span>`;
+
+        div.innerHTML = `
+                    <h4 style="margin: 0; color: #06b6d4; display:flex; align-items:center; justify-content: space-between;">
+                        <span style="display:flex; align-items:center; gap:0.5rem;">
+                            <span class="material-symbols-outlined" style="font-size:1.2rem;">science</span>
+                            ${r.name}
+                        </span>
+                        ${rewardIcon}
+                    </h4>
+                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${r.description || ''}</p>
+                `;
+        container.appendChild(div);
+    });
+}
+
+function selectRecipe(recipe, element) {
+    pageState.selectedRecipe = recipe;
+    // Reset borders
+    Array.from(document.getElementById('playerRecipesList').children).forEach(c => {
+        const isCraftable = c.classList.contains('craftable-pulse');
+        c.style.borderColor = isCraftable ? 'rgba(16, 185, 129, 0.4)' : 'var(--glass-border)';
+        c.style.background = 'rgba(0,0,0,0.3)';
+    });
+    element.style.borderColor = '#10b981';
+    element.style.background = 'rgba(16, 185, 129, 0.1)';
+
+    renderCauldron(recipe);
+}
+
+const CATEGORY_ICONS = {
+    'PIERRE': 'landslide',
+    'METAL': 'hardware',
+    'COEUR': 'favorite',
+    'ORBE': 'lens',
+    'CRISTAL': 'diamond',
+    'PLUME': 'history_edu',
+    'ECAILLE': 'waves',
+    'AUTRE': 'category'
+};
+
+function getSpiritualiteColor(sp) {
+    if (!sp) return '#a855f7';
+    switch (sp.toUpperCase()) {
+        case 'TENEBRES': return '#a855f7';
+        case 'ESPRIT': return '#38bdf8';
+        case 'KARMA': return '#e7d198';
+        default: return '#a855f7';
+    }
+}
+
+function getItemStyle(name, defaultType) {
+    const lower = name.toLowerCase();
+    if (lower.includes('cristal')) return { icon: 'diamond', color: '#38bdf8' }; // light blue
+    if (lower.includes('cœur') || lower.includes('coeur')) return { icon: 'favorite', color: '#ef4444' }; // red
+    if (/\bor\b/.test(lower) || lower.includes('pièce') || lower.includes('monnaie')) return { icon: 'monetization_on', color: '#f59e0b' }; // gold
+    if (lower.includes('sceau')) return { icon: 'token', color: '#a855f7' }; // purple
+    if (lower.includes('parchemin')) return { icon: 'history_edu', color: '#fb923c' }; // orange
+    if (lower.includes('potion') || lower.includes('élixir') || lower.includes('elixir')) return { icon: 'science', color: '#10b981' }; // green
+
+    if (defaultType === 'SECRET' || defaultType === 'UNLOCK' || lower.includes('secret')) {
+        if (lower.includes('chaos')) return { icon: 'local_fire_department', color: '#ff0000' };
+        if (lower.includes('abondance')) return { icon: 'eco', color: '#10b981' };
+        if (lower.includes('préservation') || lower.includes('preservation')) return { icon: 'foundation', color: '#99674c' };
+        if (lower.includes('sérénité') || lower.includes('serenite')) return { icon: 'water_drop', color: '#00e5cc' };
+        if (lower.includes('chasse')) return { icon: 'visibility_off', color: '#ed5677' };
+        if (lower.includes('carnage')) return { icon: 'explosion', color: '#a70740' };
+        if (lower.includes('joie')) return { icon: 'volcano', color: '#b74c0b' };
+        if (lower.includes('savoir')) return { icon: 'psychology', color: '#3b82f6' };
+        if (lower.includes('destin')) return { icon: 'all_inclusive', color: '#e7d198' };
+        if (lower.includes('éther') || lower.includes('ether')) return { icon: 'blur_on', color: '#38bdf8' };
+        if (lower.includes('abysses') || lower.includes('abysse')) return { icon: 'dark_mode', color: '#c084fc' };
+        return { icon: 'key', color: '#f59e0b' }; // gold
+    }
+
+    // Defaults
+    if (defaultType === 'CONSUMABLE') return { icon: 'inventory_2', color: '#10b981' }; // green
+    if (defaultType === 'ANOMALY') return { icon: 'auto_awesome', color: '#a855f7' }; // purple
+    if (defaultType === 'SECRET' || defaultType === 'UNLOCK') return { icon: 'key', color: '#f59e0b' }; // gold
+    if (defaultType === 'SPIRIT_XP') return { icon: 'self_improvement', color: '#38bdf8' }; // light blue
+    if (defaultType === 'EQUIPMENT') return { icon: 'shield', color: '#fbbf24' }; // amber
+
+    return { icon: 'category', color: '#94a3b8' }; // generic
+}
+
+
+
+function renderCauldron(r) {
+    const container = document.getElementById('cauldronPanel');
+    pageState.customSelectSetups = [];
+
+    let reqsHTML = '';
+    if (r.costGold > 0) {
+        reqsHTML += `<div style="display:flex; align-items:center; gap:0.5rem; background:rgba(0,0,0,0.4); padding:0.6rem; border-radius:8px; border:1px solid rgba(245, 158, 11, 0.3); margin-bottom: 0.4rem;">
+                    <span class="material-symbols-outlined" style="color: #f59e0b; font-size:1.2rem;">monetization_on</span>
+                    <span style="color: #f59e0b; font-weight:600; font-size:0.9rem;">${r.costGold} Or</span>
+                </div>`;
+    }
+
+    if (r.requiredAnomalies) {
+        for (const [name, qty] of Object.entries(r.requiredAnomalies)) {
+            let matching = pageState.userAnomalies.filter(a => a.name === name);
+
+            let isIdentical = true;
+            if (matching.length > 0) {
+                const first = matching[0];
+                for (let a of matching) {
+                    if (a.level !== first.level || a.spiritualite !== first.spiritualite) {
+                        isIdentical = false;
+                        break;
+                    }
+                }
+            }
+
+            const hasEnough = matching.length >= qty;
+            const statusColor = hasEnough ? '#10b981' : '#ef4444';
+            const statusIcon = hasEnough ? 'check_circle' : 'cancel';
+
+            const temp = pageState.allAnomalyTemplates.find(a => a.name === name) || {};
+            const style = {
+                icon: temp.category ? (CATEGORY_ICONS[temp.category] || 'category') : 'star',
+                color: temp.spiritualite ? getSpiritualiteColor(temp.spiritualite) : '#a855f7'
+            };
+
+            const tooltipData = buildAnomalyTooltipHTML(name);
+            reqsHTML += `<div data-color="${style.color}" style="background:rgba(0,0,0,0.4); padding:0.6rem; border-radius:8px; border:1px solid ${style.color}40; margin-bottom: 0.4rem; cursor: help;" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipData}">
+                        <div style="display:flex; align-items:center; justify-content: space-between; gap:0.5rem; margin-bottom: ${(!isIdentical && hasEnough) ? '0.5rem' : '0'};">
+                            <div style="display:flex; align-items:center; gap:0.5rem;">
+                                <span class="material-symbols-outlined" style="color: ${style.color}; font-size:1.2rem;">${style.icon}</span>
+                                <span style="font-weight: 600; font-size:0.9rem; color: #fff;">${qty}x ${name}</span>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:0.3rem; color: ${statusColor}; font-size: 0.85rem; font-weight: 600;">
+                                <span class="material-symbols-outlined" style="font-size: 1.1rem;">${statusIcon}</span>
+                                ${matching.length}/${qty}
+                            </div>
+                        </div>`;
+
+            if (!isIdentical && hasEnough) {
+                reqsHTML += `<div style="display: flex; flex-direction: column; gap: 0.4rem;">`;
+                let usedIndexes = new Set();
+                for (let i = 0; i < qty; i++) {
+                    let selectedIndex = -1;
+                    for (let j = 0; j < matching.length; j++) {
+                        if (!usedIndexes.has(j)) {
+                            selectedIndex = j;
+                            usedIndexes.add(j);
+                            break;
+                        }
+                    }
+
+                    let options = [{ value: '', html: '-- Choisir une anomalie --', selected: (selectedIndex === -1) }];
+                    matching.forEach((a, j) => {
+                        options.push({
+                            value: a.id,
+                            html: `Niv. ${a.level || 1} (${a.spiritualite || 'Autre'})`,
+                            selected: (j === selectedIndex)
+                        });
+                    });
+
+                    const selectId = `anomaly_select_${name.replace(/\s+/g, '')}_${i}`;
+                    reqsHTML += `<div id="${selectId}"></div>`;
+
+                    pageState.customSelectSetups.push(() => {
+                        buildCustomSelect(document.getElementById(selectId), options, 'anomaly-select');
+                    });
+                }
+                reqsHTML += `</div>`;
+            } else if (hasEnough) {
+                reqsHTML += `<div style="display:none;">`;
+                for (let i = 0; i < qty; i++) {
+                    reqsHTML += `<input type="hidden" class="anomaly-select" value="${matching[i].id}">`;
+                }
+                reqsHTML += `</div>`;
+            }
+            reqsHTML += `</div>`;
+        }
+    }
+
+    if (r.requiredConsumables) {
+        for (const [name, qty] of Object.entries(r.requiredConsumables)) {
+            let matching = pageState.userConsumables.filter(c => c.name === name);
+            const hasEnough = matching.length >= qty;
+            const statusColor = hasEnough ? '#10b981' : '#ef4444';
+            const statusIcon = hasEnough ? 'check_circle' : 'cancel';
+
+            const style = getItemStyle(name, 'CONSUMABLE');
+            const tooltipData = buildEquipmentTooltipHTML(name, true);
+            const tooltipAttrs = tooltipData ? `data-color="${style.color}" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipData}" style="cursor: help; background:rgba(0,0,0,0.4); padding:0.6rem; border-radius:8px; border:1px solid ${style.color}40; margin-bottom: 0.4rem;"` : `style="background:rgba(0,0,0,0.4); padding:0.6rem; border-radius:8px; border:1px solid ${style.color}40; margin-bottom: 0.4rem;"`;
+
+            reqsHTML += `<div ${tooltipAttrs}>
+                        <div style="display:flex; align-items:center; justify-content: space-between; gap:0.5rem;">
+                            <div style="display:flex; align-items:center; gap:0.5rem;">
+                                <span class="material-symbols-outlined" style="color: ${style.color}; font-size:1.2rem;">${style.icon}</span>
+                                <span style="font-weight: 600; font-size:0.9rem; color: #fff;">${qty}x ${name}</span>
+                            </div>
+                            <div style="display:flex; align-items:center; gap:0.3rem; color: ${statusColor}; font-size: 0.85rem; font-weight: 600;">
+                                <span class="material-symbols-outlined" style="font-size: 1.1rem;">${statusIcon}</span>
+                                ${matching.length}/${qty}
+                            </div>
+                        </div>`;
+
+            if (hasEnough) {
+                reqsHTML += `<div style="display:none;">`;
+                for (let i = 0; i < qty; i++) {
+                    reqsHTML += `<input type="hidden" class="consumable-select" value="${matching[i].id}">`;
+                }
+                reqsHTML += `</div>`;
+            }
+            reqsHTML += `</div>`;
+        }
+    }
+
+    // Character selector if needed for Spirit XP
+    let crafterSelectHTML = '';
+    if (r.costSpiritXp > 0 || r.rewardType === 'GIVE_SPIRIT_XP') {
+        let actionText = '';
+        if (r.costSpiritXp > 0 && r.rewardType === 'GIVE_SPIRIT_XP') {
+            actionText = `(-${r.costSpiritXp} XP Spirit. / Gagne ${r.rewardQuantity} XP)`;
+        } else if (r.costSpiritXp > 0) {
+            actionText = `(-${r.costSpiritXp} XP Spirit.)`;
+        } else if (r.rewardType === 'GIVE_SPIRIT_XP') {
+            actionText = `(Gagne ${r.rewardQuantity} XP Spirit.)`;
+        }
+
+        crafterSelectHTML = `
+                    <div style="margin-top: 1rem; text-align:left; width: 100%;">
+                        <label style="color: #10b981; font-weight: 600; font-size: 0.85rem;">
+                            <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; color: #10b981;">star</span>
+                            Sélectionnez le personnage canalisant ${actionText} :
+                        </label>
+                        <div id="crafterSelectContainer" style="margin-top: 0.4rem;">
+                            <div style="padding:0.4rem; color:var(--text-muted); font-size:0.85rem;">Chargement...</div>
+                        </div>
+                    </div>
+                `;
+        fetchUserCharacters();
+    }
+
+    let resultLabel = "Résultat Attendu";
+    let resultType = 'OTHER';
+    if (r.rewardType === 'UNLOCK_FEATURE') {
+        resultLabel = "Secret Débloqué";
+        resultType = 'SECRET';
+    } else if (r.rewardType === 'GIVE_CONSUMABLE') {
+        resultType = 'CONSUMABLE';
+    } else if (r.rewardType === 'GIVE_EQUIPMENT') {
+        resultType = 'EQUIPMENT';
+    } else if (r.rewardType === 'GIVE_ANOMALY' || r.rewardType === 'UPGRADE_ANOMALY') {
+        resultType = 'ANOMALY';
+    } else if (r.rewardType === 'GIVE_SPIRIT_XP') {
+        resultLabel = "XP Spiritualité";
+        resultType = 'SPIRIT_XP';
+    }
+
+    const resultStyle = getItemStyle(r.rewardName, resultType);
+    let resultIcon = resultStyle.icon;
+    let resultColor = resultStyle.color;
+
+    if (resultType === 'EQUIPMENT' || resultType === 'CONSUMABLE') {
+        const eqTemp = pageState.allEquipmentTemplates.find(e => e.name === r.rewardName);
+        if (eqTemp && eqTemp.rarity) {
+            const rName = typeof eqTemp.rarity === 'object' ? eqTemp.rarity.name : eqTemp.rarity;
+            if (window.RARITY_COLORS && window.RARITY_COLORS[rName]) resultColor = window.RARITY_COLORS[rName];
+        }
+    } else if (resultType === 'ANOMALY') {
+        const anomTemp = pageState.allAnomalyTemplates.find(a => a.name === r.rewardName);
+        if (anomTemp && anomTemp.spiritualite) {
+            resultColor = getSpiritualiteColor(anomTemp.spiritualite);
+        }
+    }
+
+    let quantityDisplay = `${r.rewardQuantity}x ${r.rewardName}`;
+    if (r.rewardType === 'GIVE_SPIRIT_XP') {
+        quantityDisplay = `+${r.rewardQuantity} XP Spiritualité`;
+    } else if (r.rewardLevel > 1) {
+        quantityDisplay += ` (Niv. ${r.rewardLevel})`;
+    }
+
+    let resultTooltipAttr = '';
+    if (resultType === 'ANOMALY') {
+        const tooltipData = buildAnomalyTooltipHTML(r.rewardName);
+        resultTooltipAttr = `data-color="${resultColor}" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipData}"`;
+    } else if (resultType === 'EQUIPMENT' || resultType === 'CONSUMABLE') {
+        const tooltipData = buildEquipmentTooltipHTML(r.rewardName, resultType === 'CONSUMABLE');
+        if (tooltipData) {
+            resultTooltipAttr = `data-color="${resultColor}" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipData}"`;
+        }
+    }
+
+    container.innerHTML = `
+                <div style="width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; text-align: left;">
+                    <div style="margin-bottom: 1rem; text-align:center;">
+                        <span class="material-symbols-outlined" style="font-size: 2.2rem; color: #06b6d4;">experiment</span>
+                        <h2 style="margin: 0.2rem 0 0 0; color: #fff; font-size: 1.5rem;">${r.name}</h2>
+                        <p style="color: var(--text-muted); font-size: 0.9rem; max-width: 500px; margin: 0.2rem auto;">${r.description || ''}</p>
+                    </div>
+
+                    <div style="width: 100%; max-width: 500px; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); border-radius: 12px; padding: 1rem;">
+                        <h3 style="margin-top: 0; color: #e2e8f0; font-size: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.4rem;">Ingrédients Requis</h3>
+                        <div style="display: flex; flex-direction: column; gap: 0.2rem; margin-top: 0.6rem;">
+                            ${reqsHTML || '<span style="color:var(--text-muted); font-size:0.9rem;">Aucun coût matériel.</span>'}
+                        </div>
+                        
+                        ${crafterSelectHTML}
+                    </div>
+
+                    <div style="margin-top: 0.5rem; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 1rem;">
+                        <span class="material-symbols-outlined" style="color: #10b981; font-size: 1.8rem;">arrow_downward</span>
+                    </div>
+
+                    <div style="width: 100%; max-width: 500px; background: linear-gradient(135deg, ${resultColor}15, rgba(0,0,0,0.2)); border: 1px solid ${resultColor}50; border-radius: 12px; padding: 1rem; text-align: center; ${resultTooltipAttr ? 'cursor: help;' : ''}" ${resultTooltipAttr}>
+                        <span style="display:flex; justify-content:center; align-items:center; gap:0.3rem; font-size: 0.8rem; color: ${resultColor}; text-transform: uppercase; font-weight: 700; letter-spacing: 1px; margin-bottom: 0.3rem;">
+                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">${resultIcon}</span>
+                            ${resultLabel}
+                        </span>
+                        <strong style="font-size: 1.2rem; color: ${resultColor};">${quantityDisplay}</strong>
+                    </div>
+
+                    <button class="btn-transmute" style="margin-top: 1.5rem;" onclick="craftSelected()">
+                        <span class="material-symbols-outlined">science</span>
+                        Transmuter
+                    </button>
+                    <div id="craftMessage" style="margin-top: 0.5rem; font-size:0.9rem; font-weight: 600; text-align: center;"></div>
+                </div>
+            `;
+
+    // Execute custom select setups
+    pageState.customSelectSetups.forEach(setup => setup());
+}
+
+function buildCustomSelect(containerDiv, options, hiddenInputClass, hiddenInputId = '') {
+    let selectedOption = options.find(o => o.selected) || options[0];
+    let optionsHTML = '';
+    options.forEach(o => {
+        optionsHTML += `<div class="custom-option" data-value="${o.value}">${o.html}</div>`;
+    });
+
+    containerDiv.innerHTML = `
+                <div class="custom-select-wrapper" style="width: 100%; position: relative;">
+                    <div class="custom-select-trigger" style="display:flex; justify-content:space-between; align-items:center; background: rgba(0,0,0,0.5); padding: 0.5rem 0.8rem; border: 1px solid var(--glass-border); color: #fff; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-size:0.9rem;">
+                        <div class="cs-label" style="flex: 1; margin-right: 0.5rem; display: flex; align-items: center;">${selectedOption.html}</div>
+                        <span class="material-symbols-outlined" style="font-size:1.2rem;">expand_more</span>
+                    </div>
+                    <div class="custom-select-options" style="display:none; position:absolute; top:calc(100% + 4px); left:0; right:0; background:rgba(15,23,42,0.95); border:1px solid var(--glass-border); border-radius:6px; z-index:100; max-height:180px; overflow-y:auto; box-shadow:0 10px 25px rgba(0,0,0,0.5); font-size:0.9rem;">
+                        ${optionsHTML}
+                    </div>
+                    <input type="hidden" class="${hiddenInputClass}" id="${hiddenInputId}" value="${selectedOption.value}">
+                </div>
+            `;
+
+    const trigger = containerDiv.querySelector('.custom-select-trigger');
+    const optionsMenu = containerDiv.querySelector('.custom-select-options');
+    const hiddenInput = containerDiv.querySelector('input');
+
+    trigger.onclick = (e) => {
+        e.stopPropagation();
+        // Close all other dropdowns
+        document.querySelectorAll('.custom-select-options').forEach(m => {
+            if (m !== optionsMenu) m.style.display = 'none';
+        });
+        optionsMenu.style.display = optionsMenu.style.display === 'none' ? 'block' : 'none';
+        trigger.style.borderColor = optionsMenu.style.display === 'block' ? '#10b981' : 'var(--glass-border)';
+    };
+
+    containerDiv.querySelectorAll('.custom-option').forEach(opt => {
+        opt.style.padding = '0.5rem 0.8rem';
+        opt.style.cursor = 'pointer';
+        opt.style.transition = 'background 0.2s';
+        opt.onmouseover = () => opt.style.background = 'rgba(255,255,255,0.1)';
+        opt.onmouseout = () => opt.style.background = 'transparent';
+
+        opt.onclick = (e) => {
+            e.stopPropagation();
+            const val = opt.getAttribute('data-value');
+            hiddenInput.value = val;
+            trigger.querySelector('.cs-label').innerHTML = opt.innerHTML;
+            optionsMenu.style.display = 'none';
+            trigger.style.borderColor = 'var(--glass-border)';
+        };
+    });
+}
+
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.custom-select-wrapper')) {
+        document.querySelectorAll('.custom-select-wrapper.open').forEach(w => w.classList.remove('open'));
+        document.querySelectorAll('.custom-select-options').forEach(m => m.style.display = 'none');
+        document.querySelectorAll('.custom-select-trigger').forEach(t => t.style.borderColor = 'var(--glass-border)');
+    }
+
+    const trigger = e.target.closest('.custom-select-trigger');
+    if (trigger) {
+        const wrapper = trigger.closest('.custom-select-wrapper');
+        document.querySelectorAll('.custom-select-wrapper.open').forEach(w => {
+            if (w !== wrapper) {
+                w.classList.remove('open');
+                const m = w.querySelector('.custom-select-options');
+                if (m) m.style.display = 'none';
+                const t = w.querySelector('.custom-select-trigger');
+                if (t) t.style.borderColor = 'var(--glass-border)';
+            }
+        });
+
+        // If it's a static select without display block logic hooked in buildCustomSelect
+        const optionsMenu = wrapper.querySelector('.custom-select-options');
+        if (optionsMenu && !optionsMenu.style.display || optionsMenu.style.display === 'none') {
+            optionsMenu.style.display = 'block';
+            trigger.style.borderColor = '#10b981';
+            wrapper.classList.add('open');
+        } else if (optionsMenu) {
+            optionsMenu.style.display = 'none';
+            trigger.style.borderColor = 'var(--glass-border)';
+            wrapper.classList.remove('open');
+        }
+        return;
+    }
+
+    const option = e.target.closest('.custom-option');
+    if (option) {
+        const wrapper = option.closest('.custom-select-wrapper');
+        const hiddenInput = wrapper.querySelector('input[type="hidden"]');
+        const labelEl = wrapper.querySelector('.cs-label');
+
+        if (hiddenInput && labelEl) {
+            hiddenInput.value = option.getAttribute('data-value');
+            labelEl.innerHTML = option.innerHTML;
+            wrapper.classList.remove('open');
+            const optionsMenu = wrapper.querySelector('.custom-select-options');
+            if (optionsMenu) optionsMenu.style.display = 'none';
+            const tr = wrapper.querySelector('.custom-select-trigger');
+            if (tr) tr.style.borderColor = 'var(--glass-border)';
+            hiddenInput.dispatchEvent(new Event('change'));
+        }
+    }
+});
+
+async function fetchUserCharacters() {
+    try {
+        const res = await globalFetch('/api/personnages');
+        if (res && res.ok) {
+            const chars = await res.json();
+            pageState.userCharacters = chars;
+            const container = document.getElementById('crafterSelectContainer');
+            if (container) {
+                let options = [{ value: '', html: '-- Choisir un personnage --', selected: true }];
+                chars.forEach(c => {
+                    options.push({
+                        value: c.id,
+                        html: `<div style="display:flex; justify-content:space-between; align-items:center; width:100%;"><span style="color:#38bdf8; font-weight: 500;">${c.name}</span> <span style="color:#94a3b8; font-size:0.8rem; background: rgba(0,0,0,0.3); padding: 0.2rem 0.5rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.05);">XP Spirit : <strong style="color:#f59e0b;">${c.spiritualiteExperience || 0}</strong></span></div>`,
+                        selected: false
+                    });
+                });
+                buildCustomSelect(container, options, '', 'crafterSelect');
+            }
+        }
+    } catch (e) {
+        console.warn(e);
+    }
+}
+
+async function craftSelected() {
+    if (!pageState.selectedRecipe) return;
+    const msg = document.getElementById('craftMessage');
+    msg.innerText = "Transmutation en cours...";
+    msg.style.color = "var(--text-muted)";
+
+    let anomalieIds = [];
+    let consumableIds = [];
+    let isValid = true;
+    let usedAnomalyIds = new Set();
+    let usedConsumableIds = new Set();
+
+    document.querySelectorAll('.anomaly-select').forEach(sel => {
+        const val = sel.value;
+        if (!val) {
+            isValid = false;
+        } else {
+            if (usedAnomalyIds.has(val)) {
+                msg.innerText = "Vous ne pouvez pas sélectionner la même anomalie plusieurs fois.";
+                msg.style.color = "#ef4444";
+                isValid = false;
+            }
+            usedAnomalyIds.add(val);
+            anomalieIds.push(parseInt(val));
+        }
+    });
+
+    let reqAnoCount = 0;
+    if (pageState.selectedRecipe.requiredAnomalies) {
+        for (const qty of Object.values(pageState.selectedRecipe.requiredAnomalies)) reqAnoCount += qty;
+    }
+    if (anomalieIds.length < reqAnoCount) {
+        msg.innerText = "Vous n'avez pas assez d'anomalies pour cette recette.";
+        msg.style.color = "#ef4444";
+        return;
+    }
+
+    if (!isValid && msg.innerText === "Transmutation en cours...") {
+        msg.innerText = "Veuillez sélectionner toutes les anomalies requises.";
+        msg.style.color = "#ef4444";
+        return;
+    }
+
+    document.querySelectorAll('.consumable-select').forEach(sel => {
+        const val = sel.value;
+        if (!val) {
+            isValid = false;
+        } else {
+            if (usedConsumableIds.has(val)) {
+                msg.innerText = "Vous ne pouvez pas sélectionner le même consommable plusieurs fois.";
+                msg.style.color = "#ef4444";
+                isValid = false;
+            }
+            usedConsumableIds.add(val);
+            consumableIds.push(parseInt(val));
+        }
+    });
+
+    let reqConsCount = 0;
+    if (pageState.selectedRecipe.requiredConsumables) {
+        for (const qty of Object.values(pageState.selectedRecipe.requiredConsumables)) reqConsCount += qty;
+    }
+    if (consumableIds.length < reqConsCount) {
+        msg.innerText = "Vous n'avez pas assez de consommables pour cette recette.";
+        msg.style.color = "#ef4444";
+        return;
+    }
+
+    if (!isValid) {
+        if (msg.innerText === "Transmutation en cours...") {
+            msg.innerText = "Veuillez sélectionner tous les consommables requis.";
+            msg.style.color = "#ef4444";
+        }
+        return;
+    }
+
+    const body = {
+        personnageId: null,
+        anomalieIds: anomalieIds,
+        consumableIds: consumableIds
+    };
+
+    if (pageState.selectedRecipe.costSpiritXp > 0 || pageState.selectedRecipe.rewardType === 'GIVE_SPIRIT_XP') {
+        const sel = document.getElementById('crafterSelect');
+        if (!sel || !sel.value) {
+            msg.innerText = "Veuillez sélectionner un personnage.";
+            msg.style.color = "#ef4444";
+            return;
+        }
+        body.personnageId = parseInt(sel.value);
+    }
+
+    try {
+        const res = await globalFetch(`/api/alchemy/craft/${pageState.selectedRecipe.id}`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(body)
+        });
+        const text = await res.text();
+        if (res.ok) {
+            msg.innerText = text;
+            msg.style.color = "#10b981";
+
+            // Add cool particle animation if desired
+            createMagicParticles();
+
+            // Refresh user data (gold) in header
+            if (window.checkAuthStatus) {
+                window.checkAuthStatus();
+            }
+
+            // Refresh inventory
+            await fetchUserInventory();
+
+            setTimeout(() => {
+                // Force refresh of cauldron UI
+                renderCauldron(pageState.selectedRecipe);
+                const msgObj = document.getElementById('craftMessage');
+                if (msgObj) {
+                    msgObj.innerText = text;
+                    msgObj.style.color = "#10b981";
+                }
+            }, 2000);
+
+        } else {
+            msg.innerText = "Échec : " + text;
+            msg.style.color = "#ef4444";
+        }
+    } catch (e) {
+        msg.innerText = "Erreur de connexion.";
+        msg.style.color = "#ef4444";
+    }
+}
+
+function createMagicParticles() {
+    const panel = document.getElementById('cauldronPanel');
+    const rect = panel.getBoundingClientRect();
+    const centerX = rect.left + rect.width / 2 + window.scrollX;
+    const centerY = rect.top + rect.height / 2 + window.scrollY;
+
+    // Central majestic flash
+    const flash = document.createElement('div');
+    flash.style.position = 'absolute';
+    flash.style.width = '30px';
+    flash.style.height = '30px';
+    flash.style.background = '#fff';
+    flash.style.borderRadius = '50%';
+    flash.style.boxShadow = '0 0 60px 30px #06b6d4, 0 0 120px 60px #10b981';
+    flash.style.left = centerX + 'px';
+    flash.style.top = centerY + 'px';
+    flash.style.transform = 'translate(-50%, -50%)';
+    flash.style.pointerEvents = 'none';
+    flash.style.zIndex = '9999';
+    document.body.appendChild(flash);
+
+    flash.animate([
+        { transform: 'translate(-50%, -50%) scale(1)', opacity: 0.5, offset: 0 },
+        { transform: 'translate(-50%, -50%) scale(10)', opacity: 1, offset: 0.3 },
+        { transform: 'translate(-50%, -50%) scale(20)', opacity: 0.9, offset: 0.7 },
+        { transform: 'translate(-50%, -50%) scale(35)', opacity: 0, offset: 1 }
+    ], {
+        duration: 3000,
+        easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
+        fill: 'forwards'
+    });
+
+    setTimeout(() => flash.remove(), 6100);
+
+    // Particles
+    const colors = ['#10b981', '#06b6d4', '#f59e0b', '#a855f7', '#ffffff'];
+
+    for (let i = 0; i < 150; i++) {
+        const p = document.createElement('div');
+        const size = 4 + Math.random() * 8;
+        p.style.position = 'absolute';
+        p.style.width = `${size}px`;
+        p.style.height = `${size}px`;
+        const color = colors[Math.floor(Math.random() * colors.length)];
+        p.style.background = color;
+        p.style.borderRadius = '50%';
+        p.style.boxShadow = `0 0 ${size * 2}px ${color}, 0 0 ${size * 4}px ${color}`;
+        p.style.left = centerX + 'px';
+        p.style.top = centerY + 'px';
+        p.style.pointerEvents = 'none';
+        p.style.zIndex = '9999';
+
+        document.body.appendChild(p);
+
+        // TRÈS LENT : 10 à 20 secondes
+        const duration = 10000 + Math.random() * 10000;
+        const angle = Math.random() * Math.PI * 2;
+
+        const dist = 100 + Math.random() * 250;
+        const destX = Math.cos(angle) * dist + (Math.random() * 200 - 100);
+        const destY = Math.sin(angle) * dist - (300 + Math.random() * 400);
+
+        p.animate([
+            { transform: 'translate(-50%, -50%) scale(0)', opacity: 0, offset: 0 },
+            { transform: 'translate(-50%, -50%) scale(1.5)', opacity: 1, offset: 0.05 },
+            { transform: `translate(calc(-50% + ${destX * 0.8}px), calc(-50% + ${destY * 0.8}px)) scale(1)`, opacity: 0.8, offset: 0.8 },
+            { transform: `translate(calc(-50% + ${destX}px), calc(-50% + ${destY}px)) scale(0)`, opacity: 0, offset: 1 }
+        ], {
+            duration: duration,
+            easing: 'linear',
+            fill: 'forwards'
+        });
+
+        setTimeout(() => {
+            p.remove();
+        }, duration + 100);
+    }
+}
+function getLevelColor(lvl) {
+    if (lvl === 1) return '#10b981';
+    if (lvl === 2) return '#3b82f6';
+    if (lvl === 3) return '#8b5cf6';
+    if (lvl === 4) return '#f59e0b';
+    return '#ef4444';
+}
+
+function buildAnomalyTooltipHTML(name) {
+    let temp = pageState.allAnomalyTemplates.find(a => a.name === name);
+    if (!temp) temp = { name: name, level: 1, spiritualite: 'Inconnu', description: 'Aucune description' };
+
+    const isMagic = temp.magicObject ? true : false;
+    const typeColor = isMagic ? '#ec4899' : '#b45309';
+    const typeLabel = isMagic ? 'Magique' : 'Matériau';
+    const catIcon = temp.category ? (CATEGORY_ICONS[temp.category] || 'category') : 'star';
+
+    return `
+                <div class="anomaly-tooltip-title" style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:#c084fc;">${temp.name}</div>
+                <div style="display: flex; gap: 6px; margin: 6px 0; flex-wrap: wrap;">
+                    <span style="border: 1px solid ${getLevelColor(temp.level)}; color: ${getLevelColor(temp.level)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold;">Lvl ${temp.level}</span>
+                    <span style="border: 1px solid ${typeColor}; color: ${typeColor}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; display: flex; align-items: center; gap: 4px;"><span class="material-symbols-outlined" style="font-size: 0.9rem;">${catIcon}</span>${typeLabel}</span>
+                    <span style="border: 1px solid ${getSpiritualiteColor(temp.spiritualite)}; color: ${getSpiritualiteColor(temp.spiritualite)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase;">${temp.spiritualite || 'Autre'}</span>
+                </div>
+                <div style="font-style:italic; color:#cbd5e1; margin-top:8px; max-width: 350px; line-height: 1.4; white-space: normal !important; word-wrap: break-word;">${temp.description || 'Aucune description'}</div>
+            `.replace(/"/g, '&quot;');
+}
+
+const STAT_DEFS = [
+    { key: 'bonusHealthMax', label: 'PV', icon: 'favorite', color: '#ec4899' },
+    { key: 'bonusManaMax', label: 'Mana', icon: 'water_drop', color: '#38bdf8' },
+    { key: 'bonusPower', label: 'Pui', icon: 'auto_awesome', color: '#a855f7' },
+    { key: 'bonusStrength', label: 'For', icon: 'fitness_center', color: '#f43f5e' },
+    { key: 'bonusArmor', label: 'Arm', icon: 'shield', color: '#3b82f6' },
+    { key: 'bonusResistance', label: 'Rés', icon: 'shield', color: '#10b981' },
+    { key: 'bonusSpeed', label: 'Vit', icon: 'bolt', color: '#f59e0b' },
+    { key: 'bonusCrit', label: 'Crit', icon: 'gps_fixed', color: '#ef4444' },
+    { key: 'regenHealthPerTurn', label: 'PV/t', icon: 'healing', color: '#10b981' },
+    { key: 'regenManaPerTurn', label: 'Mana/t', icon: 'cyclone', color: '#38bdf8' },
+    { key: 'consumableHpPercent', label: 'PV Max', icon: 'favorite', color: '#ec4899', isPercent: true },
+    { key: 'consumableManaPercent', label: 'Mana Max', icon: 'water_drop', color: '#38bdf8', isPercent: true },
+    { key: 'consumableMissingHpPercent', label: 'PV Manq', icon: 'healing', color: '#f43f5e', isPercent: true },
+    { key: 'consumableMissingManaPercent', label: 'Mana Manq', icon: 'cyclone', color: '#a855f7', isPercent: true }
+];
+
+function buildEquipmentTooltipHTML(name, isConsumable = false) {
+    let temp = pageState.allEquipmentTemplates.find(e => e.name === name);
+    if (!temp) return '';
+
+    let statsHtml = '';
+    STAT_DEFS.forEach(def => {
+        if (temp[def.key]) {
+            const val = temp[def.key] > 0 ? '+' + temp[def.key] : temp[def.key];
+            const suffix = def.isPercent ? '%' : '';
+            statsHtml += `
+                        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; min-width: 160px; gap: 16px; font-size: 0.85rem;">
+                            <span style="display:flex; align-items:center; gap:4px; color: ${def.color};">
+                                <span class="material-symbols-outlined" style="font-size: 1rem;">${def.icon}</span>
+                                ${def.label}
+                            </span>
+                            <strong style="color: #f8fafc;">${val}${suffix}</strong>
+                        </div>
+                    `;
+        }
+    });
+
+    if (temp.specialEffect && temp.specialEffect !== 'NONE') {
+        const effectLabels = {
+            'LIFESTEAL': 'Vol de Vie',
+            'THORNS': 'Épines',
+            'MANA_SHIELD': 'Bouclier de Mana',
+            'CHEAT_DEATH': 'Ange Gardien',
+            'CRIT_DAMAGE': 'Dégâts Critiques'
+        };
+        const label = effectLabels[temp.specialEffect] || temp.specialEffect;
+        statsHtml += `
+                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; min-width: 160px; gap: 16px; font-size: 0.85rem; margin-top: 4px; padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.1);">
+                        <span style="display:flex; align-items:center; gap:4px; color: #c084fc;">
+                            <span class="material-symbols-outlined" style="font-size: 1rem;">auto_awesome</span>
+                            ${label}
+                        </span>
+                        <strong style="color: #f8fafc;">${temp.specialEffectValue}</strong>
+                    </div>
+                `;
+    }
+
+    if (!statsHtml && !isConsumable) return '';
+
+    let html = `
+                <div style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:#f8fafc; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:4px;">${temp.name}</div>
+                <div style="display:flex; flex-direction:column; gap:4px;">${statsHtml}</div>
+            `;
+    return html.replace(/"/g, '&quot;');
+}
+
+window.showTooltipFixed = function (el) {
+    let tooltip = document.getElementById('globalFixedTooltip');
+    if (!tooltip) {
+        tooltip = document.createElement('div');
+        tooltip.id = 'globalFixedTooltip';
+        tooltip.style.position = 'fixed';
+        tooltip.style.zIndex = '999999';
+        tooltip.style.visibility = 'visible';
+        tooltip.style.opacity = '1';
+        tooltip.style.pointerEvents = 'none';
+        tooltip.style.transform = 'none';
+        tooltip.style.background = 'rgba(15, 23, 42, 0.95)';
+        tooltip.style.border = '1px solid rgba(168, 85, 247, 0.5)';
+        tooltip.style.borderRadius = '8px';
+        tooltip.style.padding = '10px';
+        tooltip.style.color = '#f8fafc';
+        tooltip.style.fontSize = '0.8rem';
+        tooltip.style.lineHeight = '1.4';
+        tooltip.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.5)';
+        tooltip.style.maxWidth = 'max-content';
+        tooltip.style.whiteSpace = 'nowrap';
+        tooltip.style.wordWrap = 'normal';
+        tooltip.style.textAlign = 'left';
+        document.body.appendChild(tooltip);
+    }
+    tooltip.innerHTML = el.getAttribute('data-tooltip-html');
+    const elColor = el.getAttribute('data-color') || el.style.color || '#a855f7';
+    tooltip.style.border = '1px solid ' + elColor;
+    const titleEl = tooltip.querySelector('.anomaly-tooltip-title');
+    if (titleEl) {
+        titleEl.style.color = elColor;
+        titleEl.style.borderBottom = '1px solid ' + elColor;
+    }
+    tooltip.style.display = 'block';
+
+    const rect = el.getBoundingClientRect();
+    let top = rect.bottom + 8;
+    let left = rect.left + rect.width / 2 - tooltip.offsetWidth / 2;
+
+    if (top + tooltip.offsetHeight > window.innerHeight) {
+        top = rect.top - tooltip.offsetHeight - 8;
+    }
+    if (left < 10) left = 10;
+    if (left + tooltip.offsetWidth > window.innerWidth - 10) {
+        left = window.innerWidth - tooltip.offsetWidth - 10;
+    }
+
+    tooltip.style.top = top + 'px';
+    tooltip.style.left = left + 'px';
+};
+
+window.hideTooltipFixed = function () {
+    const tooltip = document.getElementById('globalFixedTooltip');
+    if (tooltip) tooltip.style.display = 'none';
+};
+
+
+

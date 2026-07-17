@@ -10,3 +10,4 @@ public enum SpellCondition {
     HIGHER_RESISTANCE,
     HIGHER_ARMURE,
 }
+

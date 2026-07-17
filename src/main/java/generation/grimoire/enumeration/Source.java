@@ -1,5 +1,6 @@
 package generation.grimoire.enumeration;
 
+
 // Pour le calcul des statistiques
 public enum Source {
     CASTER_POWER("Puiss. Lanceur"),
@@ -28,4 +29,5 @@ public enum Source {
     public String getName() { return name(); }
     public String getLabel() { return label; }
 }
+
 

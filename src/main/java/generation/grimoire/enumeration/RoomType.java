@@ -6,3 +6,4 @@ public enum RoomType {
     EVENT,
     BOSS
 }
+

@@ -6,3 +6,4 @@ public enum EventSubType {
     PIEGE,
     PORTE_ETRANGE
 }
+

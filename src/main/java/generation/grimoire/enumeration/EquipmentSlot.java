@@ -1,5 +1,6 @@
 package generation.grimoire.enumeration;
 
+
 public enum EquipmentSlot {
     CASQUE("Casque", "masks", "#a855f7", "flip-icon"),
     PLASTRON("Plastron", "shield", "#3b82f6", ""),
@@ -32,4 +33,5 @@ public enum EquipmentSlot {
     public String getColorHex() { return colorHex; }
     public String getExtraClass() { return extraClass; }
 }
+
 

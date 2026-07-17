@@ -24,6 +24,9 @@ public class KarmaPassiveEffect extends SpiritualitePassiveEffect {
         super.onEvent(event);
 
         if (event instanceof SpellCostAdjustEvent e) {
+            if (e.getSpell().getSpiritualite() == null || this.getSpiritualite() == null || !e.getSpell().getSpiritualite().getId().equals(this.getSpiritualite().getId())) {
+                return;
+            }
             if (e.getSource().getPassiveState("karma_harmony", 0) == 1) {
                 if (e.getSpell().getKarmaAlignment() == KarmaAlignment.PROTECTIVE) {
                     e.getCosts()[0] = (int)(e.getCosts()[0] * 0.8);
@@ -33,6 +36,9 @@ public class KarmaPassiveEffect extends SpiritualitePassiveEffect {
                 }
             }
         } else if (event instanceof SpellCostPaidEvent e) {
+            if (e.getSpell().getSpiritualite() == null || this.getSpiritualite() == null || !e.getSpell().getSpiritualite().getId().equals(this.getSpiritualite().getId())) {
+                return;
+            }
             if (e.getSource().getPassiveState("karma_harmony", 0) == 1) {
                 if (e.getSpell().getKarmaAlignment() == KarmaAlignment.RESTORATIVE) {
                     Personnage caster = e.getSource();

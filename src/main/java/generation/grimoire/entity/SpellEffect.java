@@ -55,6 +55,13 @@ public abstract class SpellEffect {
     public void applyModifierFromBuff(BuffDebuffEffect buff, Personnage caster, Personnage target) {
         // Par défaut, ne fait rien
     }
+
+    /**
+     * Réinitialise les modificateurs appliqués par des buffs consommables.
+     */
+    public void resetModifiers() {
+        // Par défaut, ne fait rien
+    }
     /**
      * Calcule si le sort déclenche un coup critique.
      */

@@ -43,6 +43,7 @@ public class EnumMetaController {
                     m.put("name", e.name());
                     m.put("label", e.getLabel());
                     m.put("cssClass", e.getCssClass());
+                    m.put("color", e.getColor());
                     return m;
                 })
                 .collect(Collectors.toList());

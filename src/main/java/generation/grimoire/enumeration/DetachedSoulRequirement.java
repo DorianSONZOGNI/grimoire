@@ -5,3 +5,4 @@ public enum DetachedSoulRequirement {
     REQUIRED,     // Only triggers if "âme détachée" is present
     FORBIDDEN     // Only triggers if "âme détachée" is NOT present
 }
+

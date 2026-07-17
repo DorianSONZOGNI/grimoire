@@ -27,6 +27,7 @@ public class DungeonController {
     private final DonjonRepository donjonRepository;
 
     @GetMapping
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public ResponseEntity<List<Donjon>> getAvailableDungeons() {
         // Here we could filter based on player level in the future
         return ResponseEntity.ok(pvEAdminService.getAllDungeons());
