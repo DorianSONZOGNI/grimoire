@@ -13,7 +13,9 @@ import lombok.ToString;
 @EqualsAndHashCode(exclude = {"personnage", "user"})
 @ToString(exclude = {"personnage", "user"})
 @Entity
-@Table(name = "Equipment")
+@Table(name = "Equipment", indexes = {
+    @Index(name = "idx_equipment_owner", columnList = "owner_username")
+})
 public class Equipment {
 
     @Id

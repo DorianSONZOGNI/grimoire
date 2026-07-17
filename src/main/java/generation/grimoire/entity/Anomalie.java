@@ -11,7 +11,9 @@ import lombok.NoArgsConstructor;
 @Data
 @NoArgsConstructor
 @Entity
-@Table(name = "Anomalie")
+@Table(name = "Anomalie", indexes = {
+    @Index(name = "idx_anomalie_owner", columnList = "ownerUsername")
+})
 public class Anomalie {
 
     @Id

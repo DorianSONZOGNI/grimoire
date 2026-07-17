@@ -8,5 +8,10 @@ import java.util.List;
 
 @Repository
 public interface PersonnageRepository extends JpaRepository<Personnage, Long> {
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"voie", "spiritualite", "user"})
     List<Personnage> findByUser_Username(String username);
+
+    @org.springframework.lang.NonNull
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"voie", "spiritualite", "user"})
+    List<Personnage> findAll();
 }

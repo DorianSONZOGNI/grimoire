@@ -213,9 +213,7 @@ public class ShopController {
     public ResponseEntity<?> getTemplates(Principal principal) {
         if (principal == null || !isAdmin(principal))
             return ResponseEntity.status(403).build();
-        List<Equipment> templates = equipmentRepository.findAll().stream()
-                .filter(e -> e != null && e.isTemplate())
-                .collect(Collectors.toList());
+        List<Equipment> templates = equipmentRepository.findByIsTemplateTrue();
         return ResponseEntity.ok(templates.stream().map(this::toShopDto).toList());
     }
 
