@@ -1976,7 +1976,10 @@ window.renderDungeonsList = function () {
 
         list.innerHTML += `
             <div class="monster-card">
-                <div class="monster-level-badge">Lvl ${d.recommendedLevel || 1}</div>
+                <div class="absolute" style="top: -0.8rem; left: -0.8rem; display: flex; gap: 0.4rem; z-index: 10;">
+                    ${d.requiredSecret ? `<div class="flex-center" title="${d.requiredSecret}" style="background: rgba(15, 23, 42, 0.9); color: ${secretMeta.color}; padding: 0.2rem 0.4rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); border: 1px solid ${secretMeta.color}60; justify-content: center;"><span class="material-symbols-outlined" style="font-size: 1.1rem;">${secretMeta.icon}</span></div>` : ''}
+                    <div class="monster-level-badge" style="position: relative; top: 0; left: 0; margin: 0;">Lvl ${d.recommendedLevel || 1}</div>
+                </div>
                 <div class="flex-between" style="align-items: flex-start; gap: 0.5rem; margin-bottom: 0.5rem;">
                     <div class="monster-card-title" style="margin-bottom: 0;">${d.name}</div>
                     <div class="flex-shrink-0" style="display: flex; gap: 0.2rem;">
