@@ -100,6 +100,7 @@ public class PvEAdminService {
             dto.setRequiredSecretLevel(d.getRequiredSecretLevel());
             dto.setEntryCostGold(d.getEntryCostGold());
             dto.setDisplayOrder(d.getDisplayOrder());
+            dto.setSalles(d.getSalles());
             return dto;
         }).toList();
     }
