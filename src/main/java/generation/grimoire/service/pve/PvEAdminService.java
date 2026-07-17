@@ -86,6 +86,24 @@ public class PvEAdminService {
         return donjonRepository.findAllByOrderByDisplayOrderAsc();
     }
 
+    public List<generation.grimoire.DTO.pve.DonjonSummaryDTO> getDungeonSummaries() {
+        return donjonRepository.findAllByOrderByDisplayOrderAsc().stream().map(d -> {
+            generation.grimoire.DTO.pve.DonjonSummaryDTO dto = new generation.grimoire.DTO.pve.DonjonSummaryDTO();
+            dto.setId(d.getId());
+            dto.setName(d.getName());
+            dto.setDescription(d.getDescription());
+            dto.setImageUrl(d.getImageUrl());
+            dto.setRecommendedLevel(d.getRecommendedLevel());
+            dto.setMaxHeroes(d.getMaxHeroes());
+            dto.setUnlockCostGold(d.getUnlockCostGold());
+            dto.setRequiredSecret(d.getRequiredSecret());
+            dto.setRequiredSecretLevel(d.getRequiredSecretLevel());
+            dto.setEntryCostGold(d.getEntryCostGold());
+            dto.setDisplayOrder(d.getDisplayOrder());
+            return dto;
+        }).toList();
+    }
+
     public Donjon getDungeonById(@NonNull Long id) {
         return donjonRepository.findById(id)
                 .orElseThrow(() -> new NoSuchElementException("Donjon introuvable avec l'id : " + id));

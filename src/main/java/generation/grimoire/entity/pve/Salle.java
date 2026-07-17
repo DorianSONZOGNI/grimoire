@@ -34,6 +34,7 @@ public class Salle {
         joinColumns = @JoinColumn(name = "salle_id"),
         inverseJoinColumns = @JoinColumn(name = "monstre_id")
     )
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"spells", "possibleLoots"})
     private List<Monstre> monsters = new ArrayList<>();
 
     // IF TREASURE

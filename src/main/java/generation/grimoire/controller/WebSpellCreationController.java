@@ -273,11 +273,13 @@ public class WebSpellCreationController {
         return ResponseEntity.ok(meta);
     }
 
+    @org.springframework.cache.annotation.Cacheable("allSpells")
     @GetMapping
     public ResponseEntity<List<Spell>> getAllCreatedSpells() {
         return ResponseEntity.ok(spellRepository.findAll());
     }
 
+    @org.springframework.cache.annotation.CacheEvict(value = "allSpells", allEntries = true)
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteSpell(@PathVariable @org.springframework.lang.NonNull Long id) {
         if (spellRepository.existsById(id)) {
@@ -287,6 +289,7 @@ public class WebSpellCreationController {
         return ResponseEntity.notFound().build();
     }
 
+    @org.springframework.cache.annotation.CacheEvict(value = "allSpells", allEntries = true)
     @PostMapping
     public ResponseEntity<String> createSpellPayload(@RequestBody SpellCreationDto dto) {
         Spell spell;

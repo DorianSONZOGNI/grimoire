@@ -89,19 +89,19 @@ public class AnomalieController {
         return ResponseEntity.ok(anomalieRepository.findDistinctNames());
     }
 
+    @org.springframework.cache.annotation.Cacheable("anomalyTemplates")
     @GetMapping("/all-templates")
     public ResponseEntity<List<Anomalie>> getAllAnomalyTemplates() {
-        List<String> names = anomalieRepository.findDistinctNames();
-        List<Anomalie> templates = new java.util.ArrayList<>();
-        for (String name : names) {
-            if (name != null && !name.trim().isEmpty()) {
-                Anomalie template = anomalieRepository.findFirstByNameAndIsTemplateTrueOrderByIdAsc(name);
-                if (template != null) {
-                    templates.add(template);
+        List<Anomalie> allTemplates = anomalieRepository.findByIsTemplateTrue();
+        java.util.Map<String, Anomalie> uniqueMap = new java.util.HashMap<>();
+        for (Anomalie a : allTemplates) {
+            if (a.getName() != null && !a.getName().trim().isEmpty()) {
+                if (!uniqueMap.containsKey(a.getName()) || uniqueMap.get(a.getName()).getId() > a.getId()) {
+                    uniqueMap.put(a.getName(), a);
                 }
             }
         }
-        return ResponseEntity.ok(templates);
+        return ResponseEntity.ok(new java.util.ArrayList<>(uniqueMap.values()));
     }
 
     @PostMapping

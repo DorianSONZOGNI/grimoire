@@ -61,19 +61,19 @@ public class EquipmentController {
 
     /** Récupérer tous les templates publiquement */
     @GetMapping("/templates/public")
+    @org.springframework.cache.annotation.Cacheable("publicEquipmentTemplates")
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public ResponseEntity<List<Map<String, Object>>> getPublicTemplates() {
-        List<String> names = equipmentRepository.findDistinctNames();
-        List<Equipment> templates = new java.util.ArrayList<>();
-        for (String name : names) {
-            if (name != null && !name.trim().isEmpty()) {
-                Equipment template = equipmentRepository.findFirstByNameAndIsTemplateTrueOrderByIdAsc(name);
-                if (template != null) {
-                    templates.add(template);
+        List<Equipment> allTemplates = equipmentRepository.findByIsTemplateTrue();
+        java.util.Map<String, Equipment> uniqueMap = new java.util.HashMap<>();
+        for (Equipment e : allTemplates) {
+            if (e.getName() != null && !e.getName().trim().isEmpty()) {
+                if (!uniqueMap.containsKey(e.getName()) || uniqueMap.get(e.getName()).getId() > e.getId()) {
+                    uniqueMap.put(e.getName(), e);
                 }
             }
         }
-        return ResponseEntity.ok(templates.stream().map(this::toDto).toList());
+        return ResponseEntity.ok(uniqueMap.values().stream().map(this::toDto).toList());
     }
 
     /** Liste les équipements d'un personnage */
