@@ -55,6 +55,7 @@ public class Monstre {
     private String nativeSecret;
 
     @ManyToMany(fetch = FetchType.EAGER)
+    @org.hibernate.annotations.Fetch(org.hibernate.annotations.FetchMode.SUBSELECT)
     @JoinTable(
         name = "monstre_mutations",
         joinColumns = @JoinColumn(name = "monstre_id"),

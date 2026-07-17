@@ -28,6 +28,7 @@ public class Salle {
 
     // IF COMBAT
     @ManyToMany(fetch = FetchType.LAZY)
+    @org.hibernate.annotations.Fetch(org.hibernate.annotations.FetchMode.SUBSELECT)
     @JoinTable(
         name = "salle_monstre",
         joinColumns = @JoinColumn(name = "salle_id"),
@@ -81,5 +82,6 @@ public class Salle {
     private String doorOutcomes; // JSON: [{"type":"BOSS","probability":20},{"type":"ITEM","probability":50}]
 
     @OneToMany(mappedBy = "salle", cascade = CascadeType.ALL, orphanRemoval = true)
+    @org.hibernate.annotations.Fetch(org.hibernate.annotations.FetchMode.SUBSELECT)
     private List<LootEntry> lootTable = new ArrayList<>();
 }
