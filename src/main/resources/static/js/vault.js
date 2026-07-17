@@ -63,7 +63,11 @@ function calculateWeight(eq) {
         const effectVal = eq.specialEffectValue || 0;
 
         if (specialEffect && specialEffect !== 'NONE' && effectVal !== 0) {
-            w += effectVal * 1.5;
+            if (rarity === 'MAUDIT') {
+                w += effectVal * 0.2;
+            } else {
+                w += effectVal * 1.5;
+            }
         }
     }
     return w;
