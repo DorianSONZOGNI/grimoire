@@ -33,9 +33,7 @@ public class ShopController {
 
     @GetMapping("/daily")
     public ResponseEntity<Map<String, Object>> getDailyShop() {
-        List<Equipment> templates = equipmentRepository.findAll().stream()
-                .filter(e -> e != null && e.isTemplate())
-                .collect(Collectors.toList());
+        List<Equipment> templates = equipmentRepository.findByIsTemplateTrue();
 
         List<Equipment> equipmentTemplates = templates.stream()
                 .filter(e -> e.getSlot() != EquipmentSlot.CONSOMMABLE)
@@ -111,9 +109,7 @@ public class ShopController {
         // Verify it's in today's selection
         long seed = LocalDate.now().toEpochDay();
         Random random = new Random(seed);
-        List<Equipment> allTemplates = equipmentRepository.findAll().stream()
-                .filter(e -> e != null && e.isTemplate())
-                .toList();
+        List<Equipment> allTemplates = equipmentRepository.findByIsTemplateTrue();
         
         List<Equipment> equipmentTemplates = allTemplates.stream()
                 .filter(e -> e.getSlot() != EquipmentSlot.CONSOMMABLE)

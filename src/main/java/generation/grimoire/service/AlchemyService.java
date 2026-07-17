@@ -15,6 +15,8 @@ import generation.grimoire.repository.PersonnageRepository;
 import generation.grimoire.repository.pve.LootEntryRepository;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.cache.annotation.Cacheable;
+import org.springframework.cache.annotation.CacheEvict;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -44,14 +46,17 @@ public class AlchemyService {
         this.lootEntryRepository = lootEntryRepository;
     }
 
+    @Cacheable(value = "alchemyRecipes")
     public List<AlchemyRecipe> getAllRecipes() {
         return recipeRepository.findAll();
     }
 
+    @CacheEvict(value = "alchemyRecipes", allEntries = true)
     public AlchemyRecipe saveRecipe(AlchemyRecipe recipe) {
         return recipeRepository.save(java.util.Objects.requireNonNull(recipe));
     }
 
+    @CacheEvict(value = "alchemyRecipes", allEntries = true)
     public void deleteRecipe(Long id) {
         recipeRepository.deleteById(java.util.Objects.requireNonNull(id));
     }

@@ -20,6 +20,7 @@ public class CombatSession {
     private Donjon donjon;
     private String donjonName;
     private int totalRooms;
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"equipments", "anomalies", "specialItems", "user"})
     private List<Personnage> players = new ArrayList<>();
     private List<generation.grimoire.entity.Equipment> activeConsumables = new ArrayList<>();
 
