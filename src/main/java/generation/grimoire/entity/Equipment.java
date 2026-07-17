@@ -80,6 +80,7 @@ public class Equipment {
     private boolean availableInShop = false;
 
     @ElementCollection
+    @org.hibernate.annotations.Fetch(org.hibernate.annotations.FetchMode.SUBSELECT)
     @CollectionTable(name = "equipment_anomaly_prices", joinColumns = @JoinColumn(name = "equipment_id"))
     @MapKeyColumn(name = "anomaly_name")
     @Column(name = "quantity")

@@ -78,7 +78,12 @@ window.addEventListener('authLoaded', async () => {
 
 async function loadItems() {
     try {
-        const resA = await globalFetch('/api/anomalies/all-templates');
+        const [resA, resT, resE] = await Promise.all([
+            globalFetch('/api/anomalies/all-templates'),
+            globalFetch('/api/shop/templates'),
+            globalFetch('/api/equipments/all')
+        ]);
+
         if (resA && resA.ok) {
             pageState.allAnomalies = await resA.json();
             pageState.allAnomalies.sort((a, b) => {
@@ -93,27 +98,13 @@ async function loadItems() {
                 return a.name.localeCompare(b.name);
             });
         }
-    } catch (e) {
-        console.error("Erreur chargement anomalies", e);
-    }
 
-    let templates = [];
-    try {
-        const resT = await globalFetch('/api/shop/templates');
+        let templates = [];
         if (resT && resT.ok) templates = await resT.json();
-    } catch (e) {
-        console.error("Erreur chargement templates boutique", e);
-    }
 
-    let instances = [];
-    try {
-        const resE = await globalFetch('/api/equipments/all');
+        let instances = [];
         if (resE && resE.ok) instances = await resE.json();
-    } catch (e) {
-        console.error("Erreur chargement équipements", e);
-    }
 
-    try {
         let merged = [...templates, ...instances];
         let map = new Map();
         merged.forEach(e => {
@@ -135,8 +126,9 @@ async function loadItems() {
             const sName = typeof e.slot === 'object' ? e.slot?.name : e.slot;
             return sName === 'CONSOMMABLE';
         });
+
     } catch (e) {
-        console.error("Erreur merge équipements", e);
+        console.error("Erreur chargement / merge items :", e);
     }
 
     // AFFICHER LE DEBUG SUR LA PAGE

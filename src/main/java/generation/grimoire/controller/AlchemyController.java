@@ -19,6 +19,7 @@ public class AlchemyController {
     }
 
     @GetMapping("/recipes")
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public ResponseEntity<List<AlchemyRecipe>> getAllRecipes() {
         return ResponseEntity.ok(alchemyService.getAllRecipes());
     }

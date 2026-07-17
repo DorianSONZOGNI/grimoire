@@ -29,6 +29,7 @@ public class AlchemyRecipe {
 
     // Ingrédients : Anomalies requises (Nom de l'anomalie -> Quantité)
     @ElementCollection
+    @org.hibernate.annotations.Fetch(org.hibernate.annotations.FetchMode.SUBSELECT)
     @CollectionTable(name = "recipe_required_anomalies", joinColumns = @JoinColumn(name = "recipe_id"))
     @MapKeyColumn(name = "anomaly_name")
     @Column(name = "quantity")
@@ -36,6 +37,7 @@ public class AlchemyRecipe {
 
     // Ingrédients : Consommables requis (Nom du consommable -> Quantité)
     @ElementCollection
+    @org.hibernate.annotations.Fetch(org.hibernate.annotations.FetchMode.SUBSELECT)
     @CollectionTable(name = "recipe_required_consumables", joinColumns = @JoinColumn(name = "recipe_id"))
     @MapKeyColumn(name = "consumable_name")
     @Column(name = "quantity")

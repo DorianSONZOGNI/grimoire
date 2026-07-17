@@ -36,6 +36,7 @@ public class EquipmentController {
 
     /** Liste tous les équipements du joueur */
     @GetMapping
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public ResponseEntity<List<Map<String, Object>>> getAll(java.security.Principal principal) {
         if (principal == null)
             return ResponseEntity.status(401).build();
@@ -45,6 +46,7 @@ public class EquipmentController {
 
     /** Liste TOUS les équipements (réservé aux admins) */
     @GetMapping("/all")
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public ResponseEntity<List<Map<String, Object>>> getAllAdmin(java.security.Principal principal) {
         if (principal == null)
             return ResponseEntity.status(401).build();
@@ -59,6 +61,7 @@ public class EquipmentController {
 
     /** Récupérer tous les templates publiquement */
     @GetMapping("/templates/public")
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public ResponseEntity<List<Map<String, Object>>> getPublicTemplates() {
         List<String> names = equipmentRepository.findDistinctNames();
         List<Equipment> templates = new java.util.ArrayList<>();
@@ -75,6 +78,7 @@ public class EquipmentController {
 
     /** Liste les équipements d'un personnage */
     @GetMapping("/personnage/{personnageId}")
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public ResponseEntity<List<Map<String, Object>>> getByPersonnage(@PathVariable Long personnageId,
             java.security.Principal principal) {
         if (principal == null)
@@ -91,6 +95,7 @@ public class EquipmentController {
 
     /** Liste les équipements non-assignés (inventaire libre) */
     @GetMapping("/unassigned")
+    @org.springframework.transaction.annotation.Transactional(readOnly = true)
     public ResponseEntity<List<Map<String, Object>>> getUnassigned(java.security.Principal principal) {
         if (principal == null)
             return ResponseEntity.status(401).build();

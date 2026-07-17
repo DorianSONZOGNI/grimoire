@@ -39,25 +39,26 @@ window.addEventListener('authLoaded', async () => {
     } else {
         Promise.all([
             fetchUserInventory(),
-            fetchUserCharacters()
+            fetchUserCharacters(),
+            globalFetch('/api/alchemy/recipes').then(res => res.json()).then(data => pageState.allRecipes = data)
         ]).then(() => {
-            loadPlayerRecipes();
-        });
+            renderRecipesList();
+        }).catch(e => console.error("Erreur chargement alchimie:", e));
     }
 });
 
 async function fetchUserInventory() {
     try {
-        const resT = await globalFetch('/api/anomalies/all-templates');
+        const [resT, resA, resEq, resC] = await Promise.all([
+            globalFetch('/api/anomalies/all-templates'),
+            globalFetch('/api/anomalies'),
+            globalFetch('/api/equipments/templates/public'),
+            globalFetch('/api/equipments')
+        ]);
+
         if (resT && resT.ok) pageState.allAnomalyTemplates = await resT.json();
-
-        const resA = await globalFetch('/api/anomalies');
         if (resA && resA.ok) pageState.userAnomalies = await resA.json();
-
-        const resEq = await globalFetch('/api/equipments/templates/public');
         if (resEq && resEq.ok) pageState.allEquipmentTemplates = await resEq.json();
-
-        const resC = await globalFetch('/api/equipments');
         if (resC && resC.ok) {
             const equips = await resC.json();
             pageState.userConsumables = equips.filter(e => e.slot === 'CONSOMMABLE');
@@ -67,17 +68,7 @@ async function fetchUserInventory() {
     }
 }
 
-async function loadPlayerRecipes() {
-    try {
-        const res = await globalFetch('/api/alchemy/recipes');
-        if (res && res.ok) {
-            pageState.allRecipes = await res.json();
-            renderRecipesList();
-        }
-    } catch (e) {
-        console.error("Erreur chargement recettes:", e);
-    }
-}
+
 
 function canCraftRecipe(r) {
     if (r.costGold > 0 && (window.currentUser?.monnaie || 0) < r.costGold) return false;
