@@ -207,8 +207,8 @@ public class PersonnageController {
         map.put("ownerUsername", p.getUser() != null ? p.getUser().getUsername() : "Inconnu");
 
         // Base stats pour le formulaire d'édition
-        map.put("healthMax", p.getHealthMax());
-        map.put("manaMax", p.getManaMax());
+        map.put("healthMax", p.getBaseHealthMax());
+        map.put("manaMax", p.getBaseManaMax());
         map.put("power", p.getPower());
         map.put("strength", p.getStrength());
         map.put("armor", p.getArmor());
@@ -221,7 +221,7 @@ public class PersonnageController {
         }
 
         map.put("regenHp", p.getRegenHp());
-        map.put("regenMana", p.getRegenMana() + voieManaRegen);
+        map.put("regenMana", p.getRegenMana());
 
         // Total stats pour l'affichage (inclus équipements, buffs, passifs)
         map.put("totalHealthMax", p.getTotalHealthMax());
