@@ -3212,7 +3212,7 @@ function renderSpells(spells) {
     } else if (currentSpellsTab === 'SPIRIT') {
         filteredSpells = spells.filter(s => s.spiritualite != null);
     } else if (currentSpellsTab === 'ALL') {
-        filteredSpells = spells;
+        filteredSpells = spells.filter(s => s.voie != null || s.spiritualite != null);
     }
 
     // Update counts
@@ -3221,7 +3221,7 @@ function renderSpells(spells) {
     const countSPIRIT = document.getElementById('countSPIRIT');
     if (countSPIRIT) countSPIRIT.textContent = spells.filter(s => s.spiritualite != null).length;
     const countALL = document.getElementById('countALL');
-    if (countALL) countALL.textContent = spells.length;
+    if (countALL) countALL.textContent = spells.filter(s => s.voie != null || s.spiritualite != null).length;
 
     // Apply secondary filters
     const typeFilterEl = document.querySelector('input[name="filterCastingType"]:checked');
