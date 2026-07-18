@@ -462,6 +462,11 @@ public class WebSpellCreationController {
                         hote.setSource(eDto.getSource() != null ? eDto.getSource() : Source.TARGET_HEALTH_MAX);
                         effect = hote;
                         break;
+                    case "BUD":
+                        generation.grimoire.entity.spell.type.effect.BudEffect budEffect = new generation.grimoire.entity.spell.type.effect.BudEffect();
+                        budEffect.setAmount(eDto.getFlatValue());
+                        effect = budEffect;
+                        break;
                 }
 
                 if (effect != null) {

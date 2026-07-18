@@ -8,25 +8,33 @@ import generation.grimoire.event.*;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import lombok.Data;
+import lombok.NoArgsConstructor;
 import lombok.EqualsAndHashCode;
 
 /**
  * Passif de la Voie de la Création.
  * <p>
- * Effet sur le 1er sort du tour selon son type d'action :
+ * S'active en consommant un bourgeon (stack). Effet selon le type d'action du sort :
  * <ul>
  *   <li>Instantané (action=1) → coût gratuit</li>
  *   <li>Banal (action=2) → lancé comme un instantané</li>
  *   <li>Canalisé (action≥3) → donne un bouclier = mana dépensé (durée = durée du sort)</li>
  * </ul>
  * <p>
- * Cette classe est migrée vers le système d'événements unifié via {@link #onEvent(GameEvent)}.
+ * Le passif ne se déclenche que si le personnage possède au moins 1 bourgeon.
+ * Un bourgeon est consommé à chaque activation.
+ * Le personnage commence le combat avec 1 bourgeon.
  */
 @EqualsAndHashCode(callSuper = true)
 @Data
+@NoArgsConstructor
 @Entity
 @DiscriminatorValue("CREATION_PASSIVE")
 public class CreationPassiveEffect extends VoiePassiveEffect {
+
+    private static final String STATE_BUDS = "creation_buds";
+    private static final String STATE_INITIALIZED = "creation_initialized";
+    private static final String STATE_USED_THIS_TURN = "creation_used_this_turn";
 
     @Override
     public int getPriority() {
@@ -50,17 +58,35 @@ public class CreationPassiveEffect extends VoiePassiveEffect {
         }
     }
 
+    // ─── Helpers ───
+
+    private boolean hasBuds(Personnage p) {
+        return p.getPassiveState(STATE_BUDS, 0) > 0;
+    }
+
+    private boolean canUsePassiveThisTurn(Personnage p) {
+        return p.getPassiveState(STATE_USED_THIS_TURN, 0) == 0;
+    }
+
+    private void consumeBudAndMarkUsed(Personnage p) {
+        int buds = p.getPassiveState(STATE_BUDS, 0);
+        if (buds > 0) {
+            p.setPassiveState(STATE_BUDS, buds - 1);
+            System.out.println("🌱 [Création] " + p.getName() + " consomme un bourgeon (" + (buds - 1) + " restant(s)).");
+        }
+        p.setPassiveState(STATE_USED_THIS_TURN, 1);
+    }
+
     // ─── Handlers d'événements ───
 
     private void handleCastingTypeAdjust(CastingTypeAdjustEvent event) {
         Personnage caster = event.getSource();
         Spell spell = event.getSpell();
-        int spellsCastThisTurn = caster.getPassiveState("creation_spells_cast", 0);
 
-        if (spellsCastThisTurn == 0) {
+        if (hasBuds(caster) && canUsePassiveThisTurn(caster)) {
             int spellAction = resolveSpellAction(spell, event.getCurrentType());
             if (spellAction == 2) {
-                System.out.println("✨ [Création] " + caster.getName() + " transforme le sort banal " + spell.getNom() + " en sort instantané.");
+                System.out.println("✨ [Création] " + caster.getName() + " transforme le sort banal " + spell.getNom() + " en sort instantané (bourgeon).");
                 event.setCurrentType(SpellCastingType.INSTANTANE);
             }
         }
@@ -69,14 +95,13 @@ public class CreationPassiveEffect extends VoiePassiveEffect {
     private void handleCostAdjust(SpellCostAdjustEvent event) {
         Personnage caster = event.getSource();
         Spell spell = event.getSpell();
-        int spellsCastThisTurn = caster.getPassiveState("creation_spells_cast", 0);
 
-        if (spellsCastThisTurn == 0) {
+        if (hasBuds(caster) && canUsePassiveThisTurn(caster)) {
             int spellAction = resolveSpellAction(spell, spell.getCastingType());
             if (spellAction == 1) {
                 event.getCosts()[0] = 0; // mana cost
                 event.getCosts()[1] = 0; // heal cost
-                System.out.println("✨ [Création] " + caster.getName() + " lance " + spell.getNom() + " gratuitement (coût en mana et PV annulé).");
+                System.out.println("✨ [Création] " + caster.getName() + " lance " + spell.getNom() + " gratuitement grâce à un bourgeon.");
             }
         }
     }
@@ -84,16 +109,16 @@ public class CreationPassiveEffect extends VoiePassiveEffect {
     private void handleCostPaid(SpellCostPaidEvent event) {
         Personnage caster = event.getSource();
         Spell spell = event.getSpell();
-        int spellsCastThisTurn = caster.getPassiveState("creation_spells_cast", 0);
 
-        if (spellsCastThisTurn == 0) {
+        if (hasBuds(caster) && canUsePassiveThisTurn(caster)) {
             int spellAction = resolveSpellAction(spell, spell.getCastingType());
             if (spellAction >= 3) {
                 int shieldDuration = spell.getChannelingDuration();
                 if (shieldDuration <= 0) {
                     shieldDuration = 3;
                 }
-                caster.addShield(event.getManaPaid(), shieldDuration, "Création");
+                int shieldAmount = (int) (event.getManaPaid() * 0.3);
+                caster.addShield(shieldAmount, shieldDuration, "Création");
             }
         }
     }
@@ -101,23 +126,31 @@ public class CreationPassiveEffect extends VoiePassiveEffect {
     private void handleSpellCast(SpellCastEvent event) {
         Personnage personnage = event.getSource();
         Spell spell = event.getSpell();
-        int spellsCastThisTurn = personnage.getPassiveState("creation_spells_cast", 0);
 
-        if (spellsCastThisTurn == 0) {
+        if (hasBuds(personnage) && canUsePassiveThisTurn(personnage)) {
+            consumeBudAndMarkUsed(personnage);
+
             int spellAction = resolveSpellAction(spell, spell.getCastingType());
             if (spellAction == 1) {
-                System.out.println(personnage.getName() + " lance un sort instantané gratuit (Création).");
+                System.out.println(personnage.getName() + " lance un sort instantané gratuit (Création, bourgeon consommé).");
             } else if (spellAction == 2) {
-                System.out.println(personnage.getName() + " transforme un sort banal en instantané (Création).");
+                System.out.println(personnage.getName() + " transforme un sort banal en instantané (Création, bourgeon consommé).");
             } else if (spellAction >= 3) {
-                System.out.println(personnage.getName() + " obtient un bouclier équivalent au mana dépensé pour le sort lent (Création), mais ne peut pas se déplacer.");
+                System.out.println(personnage.getName() + " obtient un bouclier pour le sort canalisé (Création, bourgeon consommé).");
             }
         }
-        personnage.setPassiveState("creation_spells_cast", Math.min(spellsCastThisTurn + 1, 3));
     }
 
     private void handleTurnStart(TurnStartEvent event) {
-        event.getSource().setPassiveState("creation_spells_cast", 0);
+        Personnage p = event.getSource();
+        // Initialisation au premier tour : 1 bourgeon de départ
+        if (p.getPassiveState(STATE_INITIALIZED, 0) == 0) {
+            p.setPassiveState(STATE_BUDS, 1);
+            p.setPassiveState(STATE_INITIALIZED, 1);
+            System.out.println("🌱 [Création] " + p.getName() + " commence avec 1 bourgeon.");
+        }
+        // Reset du flag de consommation
+        p.setPassiveState(STATE_USED_THIS_TURN, 0);
     }
 
     // ─── Utilitaires ───
