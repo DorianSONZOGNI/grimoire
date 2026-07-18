@@ -431,12 +431,7 @@ window.confirmCombatCast = confirmCombatCast;
 window.cancelCombatCast = cancelCombatCast;
 
 
-window.filterSpells = function (filter) {
-    pageState.currentSpellFilter = filter;
-    if (pageState.currentSessionData) {
-        renderSpells(pageState.currentSessionData.availableSpells);
-    }
-};
+
 
 
 

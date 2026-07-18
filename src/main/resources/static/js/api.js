@@ -40,13 +40,6 @@ export async function getSpells() {
     return res.json();
 }
 
-export async function createSpell(spellDto) {
-    return globalFetch('/api/spells-editor', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(spellDto)
-    });
-}
 
 export async function deleteSpellAPI(id) {
     return globalFetch(`/api/spells-editor/${id}`, { method: 'DELETE' });

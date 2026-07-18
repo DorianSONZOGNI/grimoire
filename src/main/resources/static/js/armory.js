@@ -510,17 +510,6 @@ function getSpiritInfo(nom) {
     return { icon: 'psychology', color: '#a78bfa' };
 }
 
-function getLevelInfo(lvl) {
-    switch (parseInt(lvl)) {
-        case 1: return { icon: 'looks_one', color: '#cbd5e1' };
-        case 2: return { icon: 'looks_two', color: '#10b981' };
-        case 3: return { icon: 'looks_3', color: '#3b82f6' };
-        case 4: return { icon: 'looks_4', color: '#a855f7' };
-        case 5: return { icon: 'looks_5', color: '#f59e0b' };
-        default: return { icon: 'stairs', color: '#10b981' };
-    }
-}
-
 function populateSelects() {
     const charVoieOptions = document.getElementById('charVoieOptions');
     const charSpiritOptions = document.getElementById('charSpiritOptions');

@@ -484,47 +484,12 @@
     z-index: 99999 !important;
 }
 
-/* Custom Switch Slider */
-.switch-container {
-    display: flex;
-    align-items: center;
-    gap: 0.8rem;
-    cursor: pointer;
-    user-select: none;
-}
-
 .switch {
     position: relative;
     display: inline-block;
     width: 44px;
     height: 22px;
 }
-
-.slider {
-    position: absolute;
-    cursor: pointer;
-    top: 0;
-    left: 0;
-    right: 0;
-    bottom: 0;
-    background-color: rgba(0, 0, 0, 0.3);
-    border: 1px solid var(--glass-border);
-    transition: .3s;
-    border-radius: 22px;
-}
-
-.slider:before {
-    position: absolute;
-    content: "";
-    height: 14px;
-    width: 14px;
-    left: 3px;
-    bottom: 3px;
-    background-color: white;
-    transition: .3s;
-    border-radius: 50%;
-}
-
 
 /* Unified Navigation Button Styles */
 .top-nav-link {
@@ -687,11 +652,6 @@
     transition: transform 0.6s ease;
 }
 
-.target-toggle-container.hero-mode:hover::before {
-    background-image: linear-gradient(90deg, rgba(168, 85, 247, 0) 0%, rgba(168, 85, 247, 0.1) 50%, rgba(168, 85, 247, 0) 100%);
-    transform: translateX(100%);
-}
-
 .target-toggle-container.monster-mode:hover::before {
     background-image: linear-gradient(90deg, rgba(239, 68, 68, 0) 0%, rgba(239, 68, 68, 0.1) 50%, rgba(239, 68, 68, 0) 100%);
     transform: translateX(100%);
@@ -721,14 +681,6 @@
     transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
 }
 
-.target-radio:checked ~ .target-icon-wrap.hero-icon {
-    background: rgba(168, 85, 247, 0.2);
-    border-color: #a855f7;
-    color: #a855f7;
-    box-shadow: 0 0 15px rgba(168, 85, 247, 0.4), inset 0 0 8px rgba(168, 85, 247, 0.2);
-    transform: scale(1.1);
-}
-
 .target-radio:checked ~ .target-icon-wrap.monster-icon {
     background: rgba(239, 68, 68, 0.2);
     border-color: #ef4444;
@@ -751,18 +703,9 @@
     opacity: 0.7;
 }
 
-.target-radio:checked ~ .target-text.hero-text {
-    color: #d8b4fe;
-    text-shadow: 0 0 8px rgba(168, 85, 247, 0.3);
-}
-
 .target-radio:checked ~ .target-text.monster-text {
     color: #fca5a5;
     text-shadow: 0 0 8px rgba(239, 68, 68, 0.3);
-}
-.target-toggle-container.hero-mode:has(.target-radio:checked) {
-    border-color: rgba(168, 85, 247, 0.4);
-    background: rgba(168, 85, 247, 0.05);
 }
 .target-toggle-container.monster-mode:has(.target-radio:checked) {
     border-color: rgba(239, 68, 68, 0.4);

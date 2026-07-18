@@ -126,10 +126,6 @@
             border-left-color: var(--caster-color);
         }
 
-.effect-item.target-target{
-            border-left-color: var(--target-color);
-        }
-
 .effect-item.target-ally{
             border-left-color: #60a5fa;
         }
@@ -218,13 +214,6 @@
             display: flex;
             align-items: center;
             gap: 0.5rem;
-        }
-
-.spell-effects-trigger{
-            position: relative;
-            display: inline-flex;
-            align-items: center;
-            cursor: help;
         }
 
 #globalSpellTooltip .effect-line, #globalFixedTooltip .effect-line{

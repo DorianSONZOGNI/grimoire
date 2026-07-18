@@ -2379,23 +2379,6 @@ window.showNotif = function (message, isError = false) {
     }, 3000);
 };
 
-window.toggleTrapTypeSelect = function (rIndex) {
-    const wrapper = document.getElementById(`room_trap_type_wrapper_${rIndex}`);
-    if (wrapper) {
-        document.querySelectorAll('.custom-select-wrapper.open').forEach(el => {
-            if (el !== wrapper) el.classList.remove('open');
-        });
-        wrapper.classList.toggle('open');
-    }
-};
-
-window.selectTrapType = function (rIndex, val, label) {
-    updateRoomField(rIndex, 'trapType', val);
-    const triggerLabel = document.getElementById(`room_trap_type_label_${rIndex}`);
-    if (triggerLabel) triggerLabel.innerHTML = label;
-    const wrapper = document.getElementById(`room_trap_type_wrapper_${rIndex}`);
-    if (wrapper) wrapper.classList.remove('open');
-};
 
 window.toggleDoorOutcomeSelect = function (rIndex) {
     const wrapper = document.getElementById(`room_door_outcome_wrapper_${rIndex}`);
