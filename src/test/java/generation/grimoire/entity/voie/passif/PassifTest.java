@@ -4,7 +4,9 @@ import generation.grimoire.entity.Spell;
 import generation.grimoire.entity.personnage.Personnage;
 import generation.grimoire.entity.voie.passif.specific.*;
 import generation.grimoire.enumeration.SpellCategory;
+import generation.grimoire.enumeration.SpellCastingType;
 import generation.grimoire.enumeration.StatType;
+import generation.grimoire.event.*;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -249,5 +251,107 @@ class PassifTest {
         trahison.onTurnStart(hero);
         trahison.onPhysicalHit(hero, enemy, 100);
         assertThat(enemy.getHealthCurrent()).isLessThan(hpAfterFirst); // debuff bonus is available again!
+    }
+
+    @Test
+    void shouldApplyConvictionPassive() {
+        ConvictionPassiveEffect conviction = new ConvictionPassiveEffect();
+        hero.setVoieLevel(3); // Niveau 3
+        hero.setManaMax(100);
+        hero.setManaCurrent(50);
+
+        // Au début du tour : regen 25 + (3 - 1)*4 = 33
+        conviction.onTurnStart(hero);
+        assertThat(hero.getManaCurrent()).isEqualTo(83); // 50 + 33 = 83
+
+        // Si la régénération dépasse le max, ça s'arrête au max
+        conviction.onTurnStart(hero);
+        assertThat(hero.getManaCurrent()).isEqualTo(100);
+
+        // Test d'ajustement du mana max : 100 + (3 - 1)*20 = 140
+        int newMax = conviction.adjustMaxMana(hero, 100);
+        assertThat(newMax).isEqualTo(140);
+    }
+
+    @Test
+    void shouldApplyCreationPassive() {
+        CreationPassiveEffect creation = new CreationPassiveEffect();
+        
+        // --- 1. Tour 1 : 1 bourgeon initialisé ---
+        creation.onEvent(new TurnStartEvent(hero));
+        assertThat(hero.getPassiveState("creation_buds", 0)).isEqualTo(1);
+        assertThat(hero.getPassiveState("creation_initialized", 0)).isEqualTo(1);
+
+        // --- 2. Test Ajustement Type : banal -> instantané ---
+        Spell banalSpell = new Spell();
+        banalSpell.setNom("Banal Spell");
+        banalSpell.setAction(2); // banal
+        banalSpell.setCastingType(SpellCastingType.BANAL);
+        
+        CastingTypeAdjustEvent castTypeEvent = new CastingTypeAdjustEvent(hero, enemy, banalSpell, banalSpell.getCastingType());
+        creation.onEvent(castTypeEvent);
+        // Le type doit devenir instantané
+        assertThat(castTypeEvent.getCurrentType()).isEqualTo(SpellCastingType.INSTANTANE);
+        // L'état n'est pas encore consommé (dry run/simul)
+        assertThat(hero.getPassiveState("creation_used_this_turn", 0)).isEqualTo(0);
+
+        // --- 3. Test Lancement réel : consommation du bourgeon ---
+        SpellCastEvent spellCastEvent = new SpellCastEvent(hero, enemy, banalSpell);
+        creation.onEvent(spellCastEvent);
+        // Bourgeon consommé (1 -> 0)
+        assertThat(hero.getPassiveState("creation_buds", 0)).isEqualTo(0);
+        // Marqué comme utilisé ce tour-ci
+        assertThat(hero.getPassiveState("creation_used_this_turn", 0)).isEqualTo(1);
+
+        // --- 4. Un autre sort dans le même tour ne déclenche rien ---
+        hero.setPassiveState("creation_buds", 5); // on triche pour avoir des bourgeons
+        CastingTypeAdjustEvent castTypeEvent2 = new CastingTypeAdjustEvent(hero, enemy, banalSpell, banalSpell.getCastingType());
+        creation.onEvent(castTypeEvent2);
+        // Le type ne change pas car on a déjà utilisé le passif ce tour
+        assertThat(castTypeEvent2.getCurrentType()).isEqualTo(SpellCastingType.BANAL);
+
+        // --- 5. Tour 2 : reset du flag d'utilisation ---
+        creation.onEvent(new TurnStartEvent(hero));
+        assertThat(hero.getPassiveState("creation_used_this_turn", 0)).isEqualTo(0);
+
+        // --- 6. Test Ajustement Coût : sort instantané -> gratuit ---
+        Spell instantSpell = new Spell();
+        instantSpell.setNom("Instant Spell");
+        instantSpell.setAction(1); // instant
+        instantSpell.setCastingType(SpellCastingType.INSTANTANE);
+        int[] costs = { 50, 20, 10 }; // mana, heal, heat
+        
+        SpellCostAdjustEvent costEvent = new SpellCostAdjustEvent(hero, enemy, instantSpell, costs);
+        creation.onEvent(costEvent);
+        // Les coûts mana et heal doivent tomber à 0 (costs[0] et costs[1])
+        assertThat(costEvent.getCosts()[0]).isEqualTo(0);
+        assertThat(costEvent.getCosts()[1]).isEqualTo(0);
+
+        // Lancement réel du sort instantané -> consomme le bourgeon
+        creation.onEvent(new SpellCastEvent(hero, enemy, instantSpell));
+        assertThat(hero.getPassiveState("creation_buds", 0)).isEqualTo(4); // 5 - 1 = 4
+        assertThat(hero.getPassiveState("creation_used_this_turn", 0)).isEqualTo(1);
+
+        // --- 7. Tour 3 : reset ---
+        creation.onEvent(new TurnStartEvent(hero));
+
+        // --- 8. Test Coût Payé : sort canalisé -> bouclier ---
+        Spell canaliseSpell = new Spell();
+        canaliseSpell.setNom("Canalise Spell");
+        canaliseSpell.setAction(3); // canalisé
+        canaliseSpell.setCastingType(SpellCastingType.CANALISE);
+        canaliseSpell.setChannelingDuration(2);
+        
+        // On simule le coût payé (100 mana par exemple)
+        SpellCostPaidEvent costPaidEvent = new SpellCostPaidEvent(hero, enemy, canaliseSpell, 100, 0, 0);
+        creation.onEvent(costPaidEvent);
+        // Bouclier = 30% de 100 mana = 30
+        assertThat(hero.getActiveShields()).hasSize(1);
+        assertThat(hero.getActiveShields().get(0).getAmount()).isEqualTo(30);
+        assertThat(hero.getActiveShields().get(0).getDuration()).isEqualTo(2);
+
+        // Lancement réel du sort canalisé -> consomme le bourgeon
+        creation.onEvent(new SpellCastEvent(hero, enemy, canaliseSpell));
+        assertThat(hero.getPassiveState("creation_buds", 0)).isEqualTo(3); // 4 - 1 = 3
     }
 }

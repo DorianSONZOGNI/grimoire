@@ -170,6 +170,7 @@ export function getSpellEffectsSummaryHtml(sp) {
                 const targetText = effectTargetLabels[target] || 'Cible';
 
                 let rawType = e.effectType || e.effect_type || '';
+                rawType = javaClassToCode[rawType] || rawType;
                 if ((rawType === 'BUFF_DEBUFF' || rawType === 'BuffDebuffEffect') && (e.statAffected === 'POISON' || e.statAffected === 'BURN' || e.statAffected === 'AME_DETACHEE')) {
                     rawType = e.statAffected;
                 }
@@ -235,7 +236,9 @@ export function getSpellEffectsSummaryHtml(sp) {
                     'PERCENTAGE_MANA': 'Mana %',
                     'BuffDebuffEffect': 'Buff/Débuff',
                     'BUFF_DEBUFF': 'Buff/Débuff',
+                    'CONSUMABLE_BUFF': 'Buff Consommable',
                     'DamageOverTimeEffect': 'DoT',
+                    'DAMAGE_OVER_TIME': 'DoT',
                     'DOT': 'DoT',
                     'HealOverTimeEffect': 'HoT',
                     'HOT': 'HoT',
@@ -245,6 +248,7 @@ export function getSpellEffectsSummaryHtml(sp) {
                     'MANA_OVER_TIME': 'MoT',
                     'PurgeEffect': 'Dissipation',
                     'PURGE': 'Dissipation',
+                    'DISPEL': 'Dissipation (Dispel)',
                     'ShieldEffect': 'Bouclier',
                     'SHIELD': 'Bouclier',
                     'HeatFixedEffect': 'Chaleur Fixe',

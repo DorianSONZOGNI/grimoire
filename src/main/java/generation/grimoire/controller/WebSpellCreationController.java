@@ -279,7 +279,13 @@ public class WebSpellCreationController {
         return ResponseEntity.ok(spellRepository.findAll());
     }
 
-    @org.springframework.cache.annotation.CacheEvict(value = "allSpells", allEntries = true)
+    @org.springframework.cache.annotation.Caching(evict = {
+        @org.springframework.cache.annotation.CacheEvict(value = "allSpells", allEntries = true),
+        @org.springframework.cache.annotation.CacheEvict(value = "spells", allEntries = true),
+        @org.springframework.cache.annotation.CacheEvict(value = "spellById", allEntries = true),
+        @org.springframework.cache.annotation.CacheEvict(value = "spellsByVariant", allEntries = true),
+        @org.springframework.cache.annotation.CacheEvict(value = "spellsByMutation", allEntries = true)
+    })
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteSpell(@PathVariable @org.springframework.lang.NonNull Long id) {
         if (spellRepository.existsById(id)) {
@@ -289,7 +295,13 @@ public class WebSpellCreationController {
         return ResponseEntity.notFound().build();
     }
 
-    @org.springframework.cache.annotation.CacheEvict(value = "allSpells", allEntries = true)
+    @org.springframework.cache.annotation.Caching(evict = {
+        @org.springframework.cache.annotation.CacheEvict(value = "allSpells", allEntries = true),
+        @org.springframework.cache.annotation.CacheEvict(value = "spells", allEntries = true),
+        @org.springframework.cache.annotation.CacheEvict(value = "spellById", allEntries = true),
+        @org.springframework.cache.annotation.CacheEvict(value = "spellsByVariant", allEntries = true),
+        @org.springframework.cache.annotation.CacheEvict(value = "spellsByMutation", allEntries = true)
+    })
     @PostMapping
     public ResponseEntity<String> createSpellPayload(@RequestBody SpellCreationDto dto) {
         Spell spell;
