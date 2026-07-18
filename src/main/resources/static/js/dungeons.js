@@ -1,4 +1,4 @@
-window.switchDungeonTab = function(tabName) {
+window.switchDungeonTab = function (tabName) {
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
 
@@ -7,13 +7,13 @@ window.switchDungeonTab = function(tabName) {
 };
 
 const pageState = {
-  currentDungeonId: null,
-  selectedCharIds: null,
-  currentMaxHeroes: null,
-  selectedConsumableIds: null,
-  userCharacters: null,
-  availableConsumables: null,
-  activeConsumableFilters: null,
+    currentDungeonId: null,
+    selectedCharIds: null,
+    currentMaxHeroes: null,
+    selectedConsumableIds: null,
+    userCharacters: null,
+    availableConsumables: null,
+    activeConsumableFilters: null,
 };
 pageState.currentDungeonId = null;
 pageState.selectedCharIds = [];
@@ -107,7 +107,7 @@ async function loadDungeons() {
             if (activeBtn) {
                 activeTabId = activeBtn.id.replace('tab-btn-', '');
             }
-            
+
             tabsHeader.innerHTML = '';
             contentContainer.innerHTML = '';
 
@@ -146,7 +146,7 @@ async function loadDungeons() {
                     const hasMatchingHero = pageState.userCharacters.some(c => (c.voieLevel || 1) >= (d.recommendedLevel || 1));
                     if (!hasMatchingHero) return; // Skip if no hero has exactly this level or higher
                 }
-                
+
                 if (d.requiredSecret && d.requiredSecret.trim() !== '') {
                     const userSecrets = window.currentUser?.unlockedSecrets || {};
                     const userLevel = userSecrets[d.requiredSecret] || 0;
@@ -157,7 +157,7 @@ async function loadDungeons() {
                     catId = 'secret-' + d.requiredSecret.replace(/\s+/g, '-').toLowerCase();
                     label = d.requiredSecret.replace(/^Secret (de la |du |de l'|des |d'|de )/i, '');
                     label = label.charAt(0).toUpperCase() + label.slice(1);
-                    
+
                     const meta = DEFAULT_SECRETS_META.find(s => s.name.toLowerCase() === d.requiredSecret.toLowerCase()) || { icon: "key", color: "#f59e0b" };
                     icon = meta.icon;
                     color = meta.color;
@@ -194,7 +194,7 @@ async function loadDungeons() {
                 if (cat.id === 'free') btn.classList.add('tab-free');
                 else if (cat.id === 'gold') btn.classList.add('tab-gold');
                 else btn.classList.add('tab-secret'); // Use secret style for all secret tabs
-                
+
                 // Add inline style for custom active color
                 btn.innerHTML = `<span class="material-symbols-outlined" style="color: ${cat.color};">${cat.icon}</span> ${cat.label} <span class="tab-badge">${cat.dungeons.length}</span>`;
                 btn.onclick = () => switchDungeonTab(cat.id);
@@ -204,7 +204,7 @@ async function loadDungeons() {
                 const section = document.createElement('div');
                 section.className = `tab-content ${isActive ? 'active' : ''}`;
                 section.id = `${cat.id}DungeonsSection`;
-                
+
                 const grid = document.createElement('div');
                 grid.className = 'dungeons-grid';
                 section.appendChild(grid);
@@ -380,9 +380,9 @@ async function loadConsumables() {
 
 
 
-window.toggleConsumableFilter = function(btn, type) {
+window.toggleConsumableFilter = function (btn, type) {
     pageState.activeConsumableFilters[type] = !pageState.activeConsumableFilters[type];
-    
+
     if (pageState.activeConsumableFilters[type]) {
         btn.style.opacity = '1';
         btn.style.boxShadow = '0 0 8px currentColor';
@@ -390,7 +390,7 @@ window.toggleConsumableFilter = function(btn, type) {
         btn.style.opacity = '0.4';
         btn.style.boxShadow = 'none';
     }
-    
+
     renderConsumablesList();
 };
 
@@ -414,22 +414,22 @@ function renderConsumablesList() {
 
     let filteredConsumables = pageState.availableConsumables;
     const hasFilter = pageState.activeConsumableFilters.hp || pageState.activeConsumableFilters.mana || pageState.activeConsumableFilters.util;
-    
+
     if (hasFilter) {
         filteredConsumables = pageState.availableConsumables.filter(c => {
-            const hasHp = (c.consumableHpPercent && c.consumableHpPercent > 0) || 
-                          (c.consumableMissingHpPercent && c.consumableMissingHpPercent > 0) || 
-                          (c.bonusHealthMax && c.bonusHealthMax > 0) ||
-                          c.consumableCategory === 'POTION_ROUGE' || 
-                          c.consumableCategory === 'POTION_ROSE' || 
-                          c.consumableCategory === 'NOURRITURE';
-            
-            const hasMana = (c.consumableManaPercent && c.consumableManaPercent > 0) || 
-                            (c.consumableMissingManaPercent && c.consumableMissingManaPercent > 0) || 
-                            (c.bonusManaMax && c.bonusManaMax > 0) ||
-                            c.consumableCategory === 'POTION_BLEUE' || 
-                            c.consumableCategory === 'POTION_VIOLETTE';
-            
+            const hasHp = (c.consumableHpPercent && c.consumableHpPercent > 0) ||
+                (c.consumableMissingHpPercent && c.consumableMissingHpPercent > 0) ||
+                (c.bonusHealthMax && c.bonusHealthMax > 0) ||
+                c.consumableCategory === 'POTION_ROUGE' ||
+                c.consumableCategory === 'POTION_ROSE' ||
+                c.consumableCategory === 'NOURRITURE';
+
+            const hasMana = (c.consumableManaPercent && c.consumableManaPercent > 0) ||
+                (c.consumableMissingManaPercent && c.consumableMissingManaPercent > 0) ||
+                (c.bonusManaMax && c.bonusManaMax > 0) ||
+                c.consumableCategory === 'POTION_BLEUE' ||
+                c.consumableCategory === 'POTION_VIOLETTE';
+
             const hasUtil = !hasHp && !hasMana;
 
             let match = true;
@@ -509,7 +509,7 @@ window.selectCharacter = async function (id) {
         }
         pageState.selectedCharIds.push(id);
     }
-    
+
     renderConsumablesList();
     updateHeroCountDisplay();
 
@@ -661,7 +661,7 @@ window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost,
         c.style.opacity = '1';
         c.style.pointerEvents = 'all';
     });
-    
+
     // Grey out characters with level < window.currentDungeonReqLevel
     pageState.userCharacters.forEach(c => {
         const charLevel = c.voieLevel || 1;
@@ -826,6 +826,13 @@ function showEntryModal(cost) {
         document.addEventListener('keydown', onKeydown);
     });
 }
+
+window.closeEntryModal = function () {
+    document.getElementById('entryModal').classList.remove('active');
+};
+
+
+
 
 window.closeEntryModal = function () {
     document.getElementById('entryModal').classList.remove('active');
