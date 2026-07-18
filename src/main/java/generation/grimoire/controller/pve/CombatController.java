@@ -84,6 +84,7 @@ public class CombatController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
     @PostMapping("/{sessionId}/flee")
     public ResponseEntity<?> fleeCombat(@PathVariable("sessionId") String sessionId) {
         try {
@@ -194,6 +195,7 @@ public class CombatController {
             return ResponseEntity.badRequest().body(e.getMessage());
         }
     }
+
     @PostMapping("/{sessionId}/add-consumable-by-name")
     public ResponseEntity<?> addConsumableByName(
             @PathVariable("sessionId") String sessionId,
