@@ -159,6 +159,7 @@ public class Personnage {
         return user != null ? (int) user.getMonnaie() : 0;
     }
 
+    @com.fasterxml.jackson.annotation.JsonIgnore
     @OneToMany(mappedBy = "personnage", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
 
     private List<generation.grimoire.entity.Equipment> equipments = new ArrayList<>();
@@ -211,6 +212,7 @@ public class Personnage {
     private boolean allowInstantDuringCurrentChanneling = true;
 
     @Transient
+    @com.fasterxml.jackson.annotation.JsonIgnore
     private Spell channeledSpell;
 
     @Transient
