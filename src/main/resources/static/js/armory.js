@@ -268,11 +268,13 @@ async function loadAllEquipments() {
     try {
         const url = window.isAdmin ? '/api/equipments/all' : '/api/equipments';
         const res = await globalFetch(url);
-        if (res) {
-            pageState.allEquipments = await res.json();
+        if (res.ok) {
+            const rawEquips = await res.json();
+            // Filter out templates so they cannot be equipped, even for admins
+            pageState.allEquipments = rawEquips.filter(e => !e.isTemplate);
         }
     } catch (e) {
-        console.error('Erreur chargement équipements:', e);
+        console.error('Erreur chargement de tous les équipements:', e);
         pageState.allEquipments = [];
     }
 }
@@ -886,6 +888,18 @@ function renderEquipModal() {
                 return a.name.localeCompare(b.name);
             });
 
+            // Filter out duplicates by name and rarity so they don't flood the list
+            const uniqueAvailable = [];
+            const seen = new Set();
+            for (const item of available) {
+                const rName = item.rarity ? (typeof item.rarity === 'object' ? item.rarity.name : item.rarity) : '';
+                const key = item.name + '_' + rName;
+                if (!seen.has(key)) {
+                    seen.add(key);
+                    uniqueAvailable.push(item);
+                }
+            }
+            available = uniqueAvailable;
 
             let availableHtml = '';
             if (available.length > 0) {
@@ -915,11 +929,24 @@ function renderEquipModal() {
                             'THORNS': 'Épines',
                             'MANA_SHIELD': 'Bouclier de Mana',
                             'CHEAT_DEATH': 'Ange Gardien',
-                            'CRIT_DAMAGE': 'Dégâts Critiques'
+                            'CRIT_DAMAGE': 'Dégâts Critiques',
+                            'CURSED_MANA_DRAIN': 'Famine (Drain Mana)',
+                            'CURSED_HP_LOSS_ON_MANA': 'Brèche spirituelle (- hp % en mana Act.)',
+                            'CURSED_MAGIC_DAMAGE_REDUCTION': 'Folie (% dégâts magique -)',
+                            'CURSED_PHYSICAL_DAMAGE_REDUCTION': 'Faiblesse (% dégâts physique -)',
+                            'CURSED_VULNERABILITY': 'Vulnérabilité (Dégâts subis % +)',
+                            'CURSED_HEALING_REDUCTION': 'Chair putréfiée (Soins % -)',
+                            'EXECUTION': 'Exécution (% Phy)',
+                            'MAGIC_OVERLOAD': 'Surcharge (% Mag mana Act)'
                         };
                         const label = effectLabels[a.specialEffect] || a.specialEffect;
-                        aSpecialEffectHtml = `<div style="margin-top: 0.3rem; font-size: 0.7rem; color: #c084fc; background: rgba(168, 85, 247, 0.1); padding: 0.1rem 0.4rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 0.2rem;">
-                                    <span class="material-symbols-outlined text-xs">auto_awesome</span>
+                        const isCursed = a.specialEffect.startsWith('CURSED_');
+                        const icon = isCursed ? 'skull' : 'auto_awesome';
+                        const color = isCursed ? '#9b2d2d' : '#c084fc';
+                        const bg = isCursed ? 'rgba(156, 163, 175, 0.15)' : 'rgba(168, 85, 247, 0.1)';
+
+                        aSpecialEffectHtml = `<div style="margin-top: 0.3rem; font-size: 0.7rem; color: ${color}; background: ${bg}; padding: 0.1rem 0.4rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 0.2rem; border: ${isCursed ? '1px solid rgba(156, 163, 175, 0.2)' : 'none'};">
+                                    <span class="material-symbols-outlined text-xs">${icon}</span>
                                     ${label} : ${a.specialEffectValue}
                                 </div>`;
                     }
