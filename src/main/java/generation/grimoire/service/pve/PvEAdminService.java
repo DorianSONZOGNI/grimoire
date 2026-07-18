@@ -36,6 +36,7 @@ public class PvEAdminService {
     }
 
     @Transactional
+    @org.springframework.cache.annotation.CacheEvict(value = {"monstres", "monstreById"}, allEntries = true)
     public Monstre createOrUpdateMonster(@NonNull Monstre monstre) {
         if (monstre.getMutations() != null) {
             java.util.List<Mutation> hydratedMutations = new java.util.ArrayList<>();
@@ -51,6 +52,7 @@ public class PvEAdminService {
     }
 
     @Transactional
+    @org.springframework.cache.annotation.CacheEvict(value = {"monstres", "monstreById"}, allEntries = true)
     public void deleteMonster(@NonNull Long id) {
         monstreRepository.deleteById(id);
     }
@@ -71,11 +73,13 @@ public class PvEAdminService {
     }
 
     @Transactional
+    @org.springframework.cache.annotation.CacheEvict(value = {"mutations", "mutationById"}, allEntries = true)
     public Mutation createOrUpdateMutation(@NonNull Mutation mutation) {
         return mutationRepository.save(mutation);
     }
 
     @Transactional
+    @org.springframework.cache.annotation.CacheEvict(value = {"mutations", "mutationById"}, allEntries = true)
     public void deleteMutation(@NonNull Long id) {
         mutationRepository.deleteById(id);
     }
