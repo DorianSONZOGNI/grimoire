@@ -897,13 +897,25 @@ function buildEquipmentTooltipHTML(name, isConsumable = false) {
             'THORNS': 'Épines',
             'MANA_SHIELD': 'Bouclier de Mana',
             'CHEAT_DEATH': 'Ange Gardien',
-            'CRIT_DAMAGE': 'Dégâts Critiques'
+            'CRIT_DAMAGE': 'Dégâts Critiques',
+            'CURSED_MANA_DRAIN': 'Famine (Drain Mana)',
+            'CURSED_HP_LOSS_ON_MANA': 'Brèche spirituelle (- hp % en mana Act.)',
+            'CURSED_MAGIC_DAMAGE_REDUCTION': 'Folie (% dégâts magique -)',
+            'CURSED_PHYSICAL_DAMAGE_REDUCTION': 'Faiblesse (% dégâts physique -)',
+            'CURSED_VULNERABILITY': 'Vulnérabilité (Dégâts subis % +)',
+            'CURSED_HEALING_REDUCTION': 'Chair putréfiée (Soins % -)',
+            'EXECUTION': 'Exécution (% Phy)',
+            'MAGIC_OVERLOAD': 'Surcharge (% Mag mana Act)'
         };
         const label = effectLabels[temp.specialEffect] || temp.specialEffect;
+        const isCursed = temp.specialEffect.startsWith('CURSED_');
+        const icon = isCursed ? 'skull' : 'auto_awesome';
+        const color = isCursed ? '#ef4444' : '#c084fc';
+        
         statsHtml += `
                     <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; min-width: 160px; gap: 16px; font-size: 0.85rem; margin-top: 4px; padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.1);">
-                        <span style="display:flex; align-items:center; gap:4px; color: #c084fc;">
-                            <span class="material-symbols-outlined" style="font-size: 1rem;">auto_awesome</span>
+                        <span style="display:flex; align-items:center; gap:4px; color: ${color};">
+                            <span class="material-symbols-outlined" style="font-size: 1rem;">${icon}</span>
                             ${label}
                         </span>
                         <strong style="color: #f8fafc;">${temp.specialEffectValue}</strong>

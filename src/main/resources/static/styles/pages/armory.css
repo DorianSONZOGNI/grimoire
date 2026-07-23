@@ -1,35 +1,4 @@
-/* ===== Armory Page Layout ===== */
-.armory-header {
-    padding: 1.5rem 5%;
-    border-bottom: 1px solid var(--glass-border);
-    background: rgba(11, 15, 25, 0.6);
-    backdrop-filter: blur(12px);
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    box-shadow: 0 4px 30px rgba(0, 0, 0, 0.5);
-}
 
-.armory-logo {
-    font-family: 'Outfit', sans-serif;
-    font-size: 1.8rem;
-    font-weight: 700;
-    background: linear-gradient(to right, #f59e0b, #ef4444);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-}
-
-.armory-logo .material-symbols-outlined {
-    font-size: 2rem;
-    background: linear-gradient(to right, #f59e0b, #ef4444);
-    -webkit-background-clip: text;
-    background-clip: text;
-    -webkit-text-fill-color: transparent;
-}
 
 .armory-nav-link {
     display: inline-flex;
@@ -136,10 +105,6 @@
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 0.8rem;
-}
-
-.armory-form-row.triple {
-    grid-template-columns: 1fr 1fr 1fr;
 }
 
 .armory-form-row.quad {
@@ -386,18 +351,6 @@
     border: 1px solid;
 }
 
-.char-badge-voie {
-    color: #a855f7;
-    border-color: rgba(168, 85, 247, 0.3);
-    background: rgba(168, 85, 247, 0.08);
-}
-
-.char-badge-spirit {
-    color: #fb923c;
-    border-color: rgba(251, 146, 60, 0.3);
-    background: rgba(251, 146, 60, 0.08);
-}
-
 .char-card-stats {
     display: flex;
     flex-wrap: wrap;
@@ -419,16 +372,6 @@
 
 .char-stat-chip .material-symbols-outlined {
     font-size: 0.85rem;
-}
-
-/* ===== Inventory Placeholder ===== */
-.armory-inventory-section {
-    margin-top: 1rem;
-    padding: 1.5rem;
-    background: rgba(0, 0, 0, 0.15);
-    border: 1px dashed rgba(255, 255, 255, 0.08);
-    border-radius: 12px;
-    text-align: center;
 }
 
 /* ===== Character XP Bar ===== */
@@ -469,29 +412,6 @@
     background: linear-gradient(90deg, #fb923c, #f59e0b);
     border-radius: 3px;
     box-shadow: 0 0 8px rgba(245, 158, 11, 0.5);
-}
-
-.armory-inventory-title {
-    font-family: 'Outfit', sans-serif;
-    font-size: 1rem;
-    font-weight: 600;
-    color: var(--text-muted);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0.4rem;
-    margin-bottom: 0.5rem;
-}
-
-.armory-inventory-title .material-symbols-outlined {
-    font-size: 1.2rem;
-    color: #64748b;
-}
-
-.armory-inventory-placeholder {
-    font-size: 0.85rem;
-    color: #475569;
-    font-style: italic;
 }
 
 /* ===== Empty State ===== */
@@ -869,23 +789,6 @@
 
 .eq-unequip-btn:hover {
     background: rgba(244, 63, 94, 0.15);
-}
-
-.eq-assign-select {
-    padding: 0.3rem 0.5rem;
-    font-size: 0.78rem;
-    background: rgba(0, 0, 0, 0.35);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 6px;
-    color: #fff;
-    outline: none;
-    font-family: 'Inter', sans-serif;
-    cursor: pointer;
-    margin-top: 0.2rem;
-}
-
-.eq-assign-select:focus {
-    border-color: #f59e0b;
 }
 
 /* ===== Create Equipment Form in Modal ===== */

@@ -5,8 +5,9 @@ import com.fasterxml.jackson.annotation.JsonFormat;
 @JsonFormat(shape = JsonFormat.Shape.OBJECT)
 public enum MonsterBehavior {
     NORMAL("Normal", "Cible aléatoire", "casino"),
-    PREDATEUR("Prédateur", "Toujours la même cible tant qu'elle est vivante", "my_location"),
-    CORRUPTEUR("Corrupteur", "Cible le joueur avec le plus de Mana restant et lui retire 5% de son mana actuel", "bolt"),
+    PREDATEUR("Prédateur", "Attaque toujours la même cible tant qu'elle est vivante", "my_location"),
+    CORRUPTEUR("Corrupteur", "Cible le joueur avec le plus de Mana restant et lui retire 5% de son mana actuel",
+            "bolt"),
     LEADER("Leader", "Force tous les alliés monstres à attaquer la même cible", "military_tech"),
     ASSASSIN("Assassin", "Cible le joueur avec le moins de Résistance", "visibility"),
     BRUTAL("Brutal", "Dégâts bruts (ignore armure/résistance)", "local_fire_department"),
@@ -22,10 +23,21 @@ public enum MonsterBehavior {
         this.icon = icon;
     }
 
-    public String getName() { return name(); }
-    public String getLabel() { return label; }
-    public String getDescription() { return description; }
-    public String getIcon() { return icon; }
+    public String getName() {
+        return name();
+    }
+
+    public String getLabel() {
+        return label;
+    }
+
+    public String getDescription() {
+        return description;
+    }
+
+    public String getIcon() {
+        return icon;
+    }
 
     @com.fasterxml.jackson.annotation.JsonCreator
     public static MonsterBehavior fromNode(com.fasterxml.jackson.databind.JsonNode node) {
@@ -35,5 +47,3 @@ public enum MonsterBehavior {
         return MonsterBehavior.valueOf(node.asText());
     }
 }
-
-

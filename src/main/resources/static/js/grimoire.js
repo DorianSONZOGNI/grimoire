@@ -170,6 +170,7 @@ export function getSpellEffectsSummaryHtml(sp) {
                 const targetText = effectTargetLabels[target] || 'Cible';
 
                 let rawType = e.effectType || e.effect_type || '';
+                rawType = javaClassToCode[rawType] || rawType;
                 if ((rawType === 'BUFF_DEBUFF' || rawType === 'BuffDebuffEffect') && (e.statAffected === 'POISON' || e.statAffected === 'BURN' || e.statAffected === 'AME_DETACHEE')) {
                     rawType = e.statAffected;
                 }
@@ -191,6 +192,7 @@ export function getSpellEffectsSummaryHtml(sp) {
                 if (['Shield', 'SHIELD'].includes(t)) indicatorColor = '#3b82f6';
                 if (['ManaFixed', 'FIXED_MANA', 'ManaPercentage', 'PERCENTAGE_MANA', 'ManaOverTime', 'MOT', 'MANA_OVER_TIME'].includes(t)) indicatorColor = '#38bdf8';
                 if (['HeatFixed', 'HEAT_FIXED', 'HeatPercentage', 'HEAT_PERCENTAGE', 'HeatOverTime', 'HEAT_OVER_TIME', 'Heat', 'HEAT'].includes(t)) indicatorColor = '#f97316';
+                if (t === 'BUD') indicatorColor = '#10b981';
 
                 let iconName = 'stars';
                 if (['DamageFixed', 'FIXED_DAMAGE', 'DamagePercentage', 'PERCENTAGE_DAMAGE', 'DamageOverTime', 'DOT'].includes(t)) {
@@ -215,6 +217,7 @@ export function getSpellEffectsSummaryHtml(sp) {
                 if (['HeatFixed', 'HEAT_FIXED', 'HeatPercentage', 'HEAT_PERCENTAGE', 'HeatOverTime', 'HEAT_OVER_TIME', 'Heat', 'HEAT', 'BURN'].includes(t)) iconName = 'local_fire_department';
                 if (t === 'POISON') iconName = 'science';
                 if (t === 'AME_DETACHEE') iconName = 'person_cancel';
+                if (t === 'BUD') iconName = 'yard';
                 if (t === 'Purge' || t === 'PURGE') iconName = 'cleaning_services';
                 if (['BuffDebuff', 'BUFF_DEBUFF'].includes(t)) iconName = isBad ? 'trending_down' : 'trending_up';
 
@@ -233,7 +236,9 @@ export function getSpellEffectsSummaryHtml(sp) {
                     'PERCENTAGE_MANA': 'Mana %',
                     'BuffDebuffEffect': 'Buff/Débuff',
                     'BUFF_DEBUFF': 'Buff/Débuff',
+                    'CONSUMABLE_BUFF': 'Buff Consommable',
                     'DamageOverTimeEffect': 'DoT',
+                    'DAMAGE_OVER_TIME': 'DoT',
                     'DOT': 'DoT',
                     'HealOverTimeEffect': 'HoT',
                     'HOT': 'HoT',
@@ -243,6 +248,7 @@ export function getSpellEffectsSummaryHtml(sp) {
                     'MANA_OVER_TIME': 'MoT',
                     'PurgeEffect': 'Dissipation',
                     'PURGE': 'Dissipation',
+                    'DISPEL': 'Dissipation (Dispel)',
                     'ShieldEffect': 'Bouclier',
                     'SHIELD': 'Bouclier',
                     'HeatFixedEffect': 'Chaleur Fixe',
@@ -255,7 +261,8 @@ export function getSpellEffectsSummaryHtml(sp) {
                     'HEAT': 'Chaleur',
                     'POISON': 'Poison',
                     'BURN': 'Brûlure',
-                    'AME_DETACHEE': 'Âme Détachée'
+                    'AME_DETACHEE': 'Âme Détachée',
+                    'BUD': 'Bourgeon'
                 };
                 const eTypeStr = typeNames[rawType] || rawType || 'Effet';
 
@@ -347,6 +354,9 @@ export function getSpellEffectsSummaryHtml(sp) {
                     } else {
                         detailsStr = `➔ génère ${amt} Chaleur`;
                     }
+                } else if (t === 'BUD') {
+                    const amt = e.amount || e.flatValue || 1;
+                    detailsStr = `➔ génère ${amt} Bourgeon(s)`;
                 } else if (t === 'HeatPercentage' || t === 'HEAT_PERCENTAGE') {
                     const pct = Math.round((e.percentage || 0) * 100);
                     if (pct < 0) {

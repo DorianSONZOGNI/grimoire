@@ -51,12 +51,12 @@ public class AlchemyService {
         return recipeRepository.findAll();
     }
 
-    @CacheEvict(value = "alchemyRecipes", allEntries = true)
+    @CacheEvict(value = {"alchemyRecipes", "alchemyRecipesList", "alchemyRecipeById"}, allEntries = true)
     public AlchemyRecipe saveRecipe(AlchemyRecipe recipe) {
         return recipeRepository.save(java.util.Objects.requireNonNull(recipe));
     }
 
-    @CacheEvict(value = "alchemyRecipes", allEntries = true)
+    @CacheEvict(value = {"alchemyRecipes", "alchemyRecipesList", "alchemyRecipeById"}, allEntries = true)
     public void deleteRecipe(Long id) {
         recipeRepository.deleteById(java.util.Objects.requireNonNull(id));
     }

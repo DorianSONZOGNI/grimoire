@@ -234,17 +234,21 @@ class SpellIntegrationTest {
         instantSpell.setCastingType(generation.grimoire.enumeration.SpellCastingType.INSTANTANE);
         instantSpell.setVoie(voieCreation);
 
+        hero.startTurn();
+        creationEffect.onTurnStart(hero);
+
         int manaBefore = hero.getManaCurrent();
         spellService.castSpell(instantSpell, hero, enemy, null);
         // Doit avoir coûté 0 mana car premier sort du tour
         assertThat(hero.getManaCurrent()).isEqualTo(manaBefore);
         // A consommé l'effet passif de création pour ce tour
-        assertThat(hero.getPassiveState("creation_spells_cast", 0)).isEqualTo(1);
+        assertThat(hero.getPassiveState("creation_used_this_turn", 0)).isEqualTo(1);
 
         // Reset du tour et du passif
         hero.startTurn();
         creationEffect.onTurnStart(hero);
-        assertThat(hero.getPassiveState("creation_spells_cast", 0)).isEqualTo(0);
+        hero.setPassiveState("creation_buds", 1);
+        assertThat(hero.getPassiveState("creation_used_this_turn", 0)).isEqualTo(0);
 
         // --- Cas 2 : Sort banal (action = 2) -> Lancé comme un instantané ---
         Spell banalSpell = new Spell();
@@ -264,6 +268,7 @@ class SpellIntegrationTest {
         // Reset
         hero.startTurn();
         creationEffect.onTurnStart(hero);
+        hero.setPassiveState("creation_buds", 1);
         hero.setManaCurrent(manaBefore);
 
         // --- Cas 3 : Sort canalisé (action >= 3) -> Donne un bouclier = mana dépensé
@@ -279,9 +284,9 @@ class SpellIntegrationTest {
         spellService.castSpell(channeledSpell, hero, enemy, null);
         // Doit coûter du mana
         assertThat(hero.getManaCurrent()).isEqualTo(manaBefore - 25);
-        // Doit avoir généré un bouclier égal au coût en mana dépensé (25) pour la durée
+        // Doit avoir généré un bouclier égal à 30% du coût en mana dépensé (25 * 0.3 = 7) pour la durée
         // du sort (3 tours)
-        assertThat(hero.getTotalShield()).isEqualTo(25);
+        assertThat(hero.getTotalShield()).isEqualTo(7);
     }
 
     @Test

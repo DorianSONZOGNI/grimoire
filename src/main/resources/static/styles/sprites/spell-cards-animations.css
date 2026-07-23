@@ -33,10 +33,6 @@
             }
         }
 
-.spell-card-lvl-5.lvl5-enter-raison{
-            animation: lvl5-wind 0.7s cubic-bezier(0.25, 0.46, 0.45, 0.94);
-        }
-
 /* dézoom Raison : le cadre s'incline légèrement à droite comme soufflé */
         @keyframes lvl5-wind-leave{
             0% {
@@ -54,10 +50,6 @@
             100% {
                 transform: translateY(0) scale(1) skewX(0deg);
             }
-        }
-
-.spell-card-lvl-5.lvl5-leave-raison{
-            animation: lvl5-wind-leave 0.5s ease-out;
         }
 
 /* --- EAU (Sûreté) : ondulation douce, la carte flotte sur une vague --- */
@@ -85,10 +77,6 @@
             }
         }
 
-.spell-card-lvl-5.lvl5-enter-surete{
-            animation: lvl5-water 0.9s ease-in-out;
-        }
-
 /* dézoom Sûreté : le cadre plonge légèrement vers le bas */
         @keyframes lvl5-water-leave{
             0% {
@@ -106,10 +94,6 @@
             100% {
                 transform: translateY(0) scale(1);
             }
-        }
-
-.spell-card-lvl-5.lvl5-leave-surete{
-            animation: lvl5-water-leave 0.6s ease-out;
         }
 
 /* --- POISON (Trahison) : distorsion subtile + teinte verdâtre empoisonnée --- */
@@ -146,10 +130,6 @@
             }
         }
 
-.spell-card-lvl-5.lvl5-enter-trahison{
-            animation: lvl5-poison 0.75s ease-in-out;
-        }
-
 /* dézoom Trahison : teinte poison qui s'estompe avec un dernier frisson */
         @keyframes lvl5-poison-leave{
             0% {
@@ -170,10 +150,6 @@
             100% {
                 filter: brightness(1) hue-rotate(0deg);
             }
-        }
-
-.spell-card-lvl-5.lvl5-leave-trahison{
-            animation: lvl5-poison-leave 0.6s ease-out;
         }
 
 /* --- TERRE (Consolidation) : grondement tellurique, la carte s'enfonce puis remonte --- */
@@ -218,10 +194,6 @@
             }
         }
 
-.spell-card-lvl-5.lvl5-enter-consolidation{
-            animation: lvl5-earth 0.7s ease-in-out;
-        }
-
 /* dézoom Consolidation : chute lourde + vibration finale */
         @keyframes lvl5-earth-leave{
             0% {
@@ -247,10 +219,6 @@
             100% {
                 transform: translateY(0) scale(1);
             }
-        }
-
-.spell-card-lvl-5.lvl5-leave-consolidation{
-            animation: lvl5-earth-leave 0.55s cubic-bezier(0.36, 0.07, 0.19, 0.97);
         }
 
 /* --- LAVE (Conviction) : surchauffe progressive, la carte pulse comme un magma --- */
@@ -292,10 +260,6 @@
             }
         }
 
-.spell-card-lvl-5.lvl5-enter-conviction{
-            animation: lvl5-lava 0.8s ease-out;
-        }
-
 /* dézoom Conviction : refroidissement — la carte retombe lourdement */
         @keyframes lvl5-lava-leave{
             0% {
@@ -317,10 +281,6 @@
                 transform: translateY(0) scale(1);
                 filter: brightness(1);
             }
-        }
-
-.spell-card-lvl-5.lvl5-leave-conviction{
-            animation: lvl5-lava-leave 0.5s ease-in;
         }
 
 /* --- PLANTE (Création) : croissance organique, la carte s'étire vers le haut et s'épanouit --- */
@@ -359,10 +319,6 @@
             }
         }
 
-.spell-card-lvl-5.lvl5-enter-creation{
-            animation: lvl5-plant 0.85s cubic-bezier(0.34, 1.56, 0.64, 1);
-        }
-
 /* dézoom Création : retombée souple comme une plante qui se courbe sous son poids */
         @keyframes lvl5-plant-leave{
             0% {
@@ -382,10 +338,6 @@
             100% {
                 transform: translateY(0) scale(1);
             }
-        }
-
-.spell-card-lvl-5.lvl5-leave-creation{
-            animation: lvl5-plant-leave 0.6s ease-out;
         }
 
 /* --- FEU (Destruction) : explosion soudaine, la carte clignote comme des flammes --- */
@@ -436,10 +388,6 @@
             }
         }
 
-.spell-card-lvl-5.lvl5-enter-destruction{
-            animation: lvl5-fire 0.7s ease-out;
-        }
-
 /* dézoom Destruction : extinction brusque, la carte retombe comme de la braise froide */
         @keyframes lvl5-fire-leave{
             0% {
@@ -466,10 +414,6 @@
                 transform: translateY(0) scale(1);
                 filter: brightness(1);
             }
-        }
-
-.spell-card-lvl-5.lvl5-leave-destruction{
-            animation: lvl5-fire-leave 0.45s ease-out;
         }
 
 /* --- EXPLOSION (Violence) : choc cinétique brutal, onde de compression-expansion --- */
@@ -518,10 +462,6 @@
             }
         }
 
-.spell-card-lvl-5.lvl5-enter-violence{
-            animation: lvl5-blast 0.55s cubic-bezier(0.36, 0.07, 0.19, 0.97);
-        }
-
 /* dézoom Violence : recul d'impact — la carte rebondit en arrière */
         @keyframes lvl5-blast-leave{
             0% {
@@ -543,10 +483,6 @@
             100% {
                 transform: translateY(0) scale(1) rotate(0deg);
             }
-        }
-
-.spell-card-lvl-5.lvl5-leave-violence{
-            animation: lvl5-blast-leave 0.5s cubic-bezier(0.36, 0.07, 0.19, 0.97);
         }
 
 /* --- ESPRIT : la carte devient éthérée, semi-transparente, lumineuse --- */
@@ -585,10 +521,6 @@
             }
         }
 
-.spell-card-lvl-5.lvl5-enter-esprit{
-            animation: lvl5-spirit 0.9s ease-out;
-        }
-
 /* dézoom Esprit : dissolution spectrale — la carte s'efface légèrement puis revient */
         @keyframes lvl5-spirit-leave{
             0% {
@@ -610,10 +542,6 @@
                 transform: translateY(0) scale(1);
                 filter: brightness(1) opacity(1);
             }
-        }
-
-.spell-card-lvl-5.lvl5-leave-esprit{
-            animation: lvl5-spirit-leave 0.7s ease-out;
         }
 
 /* --- TÉNÈBRES : absorption dans le vide, la carte s'assombrit et se contracte --- */
@@ -654,10 +582,6 @@
             }
         }
 
-.spell-card-lvl-5.lvl5-enter-tenebres{
-            animation: lvl5-dark 0.85s ease-out;
-        }
-
 /* dézoom Ténèbres : relâchement du vide — un voile sombre se dissipe */
         @keyframes lvl5-dark-leave{
             0% {
@@ -679,10 +603,6 @@
                 transform: translateY(0) scale(1);
                 filter: brightness(1);
             }
-        }
-
-.spell-card-lvl-5.lvl5-leave-tenebres{
-            animation: lvl5-dark-leave 0.65s ease-out;
         }
 
 /* --- KARMA : pendule cosmique — balance entre lumière et ombre, or et argent --- */
@@ -722,10 +642,6 @@
             }
         }
 
-.spell-card-lvl-5.lvl5-enter-karma{
-            animation: lvl5-karma 0.9s cubic-bezier(0.34, 1.2, 0.64, 1);
-        }
-
 /* dézoom Karma : équilibre retrouvé — oscillation qui s'amortit */
         @keyframes lvl5-karma-leave{
             0% {
@@ -747,18 +663,6 @@
             100% {
                 transform: translateY(0) scale(1) rotate(0deg);
             }
-        }
-
-.spell-card-lvl-5.lvl5-leave-karma{
-            animation: lvl5-karma-leave 0.6s ease-out;
-        }
-
-/* === Particules flottantes pour les cartes lvl-5 === */
-        .lvl5-particle{
-            position: fixed;
-            pointer-events: none;
-            z-index: 9998;
-            border-radius: 50%;
         }
 
 @keyframes fadeIn{
@@ -859,7 +763,6 @@
                 box-shadow: 0 0 0 rgba(120, 255, 150, 0);
             }
         }
-
 
 .consolidation-wall{
             position: fixed;

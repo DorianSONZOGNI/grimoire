@@ -1726,8 +1726,17 @@ window.renderMonstersList = function () {
             mutationsHtml += `</div>`;
         }
 
-        let mTypeName = m.monsterType && typeof m.monsterType === 'object' ? m.monsterType.name : m.monsterType;
-        let mBehaviorName = m.behavior && typeof m.behavior === 'object' ? m.behavior.name : m.behavior;
+        let mTypeObj = typeof m.monsterType === 'object' ? m.monsterType : null;
+        let mTypeName = mTypeObj ? mTypeObj.name : m.monsterType;
+        let mTypeLabel = mTypeObj && mTypeObj.label ? mTypeObj.label : mTypeName;
+        let mTypeDesc = mTypeObj && mTypeObj.description ? mTypeObj.description : '';
+        let mTypeIcon = mTypeObj && mTypeObj.icon ? mTypeObj.icon : 'check_box_outline_blank';
+
+        let mBehaviorObj = typeof m.behavior === 'object' ? m.behavior : null;
+        let mBehaviorName = mBehaviorObj ? mBehaviorObj.name : m.behavior;
+        let mBehaviorLabel = mBehaviorObj && mBehaviorObj.label ? mBehaviorObj.label : mBehaviorName;
+        let mBehaviorDesc = mBehaviorObj && mBehaviorObj.description ? mBehaviorObj.description : '';
+        let mBehaviorIcon = mBehaviorObj && mBehaviorObj.icon ? mBehaviorObj.icon : 'check_box_outline_blank';
 
         list.innerHTML += `
             <div class="monster-card">
@@ -1752,8 +1761,8 @@ window.renderMonstersList = function () {
                     <div style="flex: 1; min-width: 0; display: flex; flex-direction: column;">
                         <div class="text-xs text-muted" style="margin-bottom: 0.5rem;">${m.description || ''}</div>
                         <div style="display: flex; gap: 0.5rem; flex-wrap: wrap; margin-bottom: 0.5rem;">
-                            ${mTypeName && mTypeName !== 'NORMAL' ? `<span class="text-error" onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null" style="cursor: help; font-size: 0.75rem; background: rgba(239, 68, 68, 0.15); padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><template class="tooltip-data"><div style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:#ef4444; border-bottom: 1px solid #ef4444; padding-bottom: 4px;">${{ 'DEMON': 'Démon', 'REPTILE': 'Reptile', 'MORT_VIVANT': 'Mort-vivant', 'HYBRIDE': 'Hybride', 'VAMPIRE': 'Vampire', 'ECTOPLASME': 'Ectoplasme' }[mTypeName] || mTypeName}</div><div style="font-style:italic; color:#cbd5e1; margin-top:8px; max-width: 350px; line-height: 1.4; white-space: normal !important; word-wrap: break-word;">${{ 'DEMON': 'Démon : 10% des dégâts infligés le sont en dégâts bruts supplémentaires.', 'REPTILE': 'Reptile : Réduit les dégâts physiques subis de 15%.', 'MORT_VIVANT': 'Mort-vivant : Régénère 5% de ses PV max au début de son tour.', 'HYBRIDE': 'Hybride : Ses dégâts valent (Force + Puissance) * 1.2, répartis en 50% Physique et 50% Magique.', 'VAMPIRE': 'Vampire : Se soigne de 20% des dégâts infligés.', 'ECTOPLASME': 'Ectoplasme : Ces attaques appliquent un débuff de résistance magique (-5 res pendant 3 tours).' }[mTypeName] || ''}</div></template><span class="material-symbols-outlined text-sm">${{ 'DEMON': 'rib_cage', 'REPTILE': 'grass', 'MORT_VIVANT': 'skull', 'HYBRIDE': 'network_node', 'VAMPIRE': 'bloodtype', 'ECTOPLASME': 'candle' }[mTypeName] || 'check_box_outline_blank'}</span>${{ 'DEMON': 'Démon', 'REPTILE': 'Reptile', 'MORT_VIVANT': 'Mort-vivant', 'HYBRIDE': 'Hybride', 'VAMPIRE': 'Vampire', 'ECTOPLASME': 'Ectoplasme' }[mTypeName] || mTypeName}</span>` : ''}
-                            ${mBehaviorName && mBehaviorName !== 'NORMAL' ? `<span onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null" style="cursor: help; font-size: 0.75rem; background: rgba(139, 92, 246, 0.15); color: #8b5cf6; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(139, 92, 246, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><template class="tooltip-data"><div style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:#8b5cf6; border-bottom: 1px solid #8b5cf6; padding-bottom: 4px;">${{ 'PREDATEUR': 'Prédateur', 'CORRUPTEUR': 'Corrupteur', 'LEADER': 'Leader', 'ASSASSIN': 'Assassin', 'BRUTAL': 'Brutal', 'TRANSCENDANT': 'Transcendant' }[mBehaviorName] || mBehaviorName}</div><div style="font-style:italic; color:#cbd5e1; margin-top:8px; max-width: 350px; line-height: 1.4; white-space: normal !important; word-wrap: break-word;">${{ 'PREDATEUR': 'Prédateur : Verrouille une cible et l&apos;attaque jusqu&apos;à sa mort.', 'CORRUPTEUR': 'Corrupteur : Cible toujours le joueur avec le plus de Mana et lui retire 5% Mana Act.', 'LEADER': 'Leader : Ordonne à tous les autres monstres d&apos;attaquer sa cible.', 'ASSASSIN': 'Assassin : Vise systématiquement le joueur avec le moins de Résistance.', 'BRUTAL': 'Brutal : Vise le joueur avec le moins de PV Max et inflige des dégâts bruts (ignore l&apos;armure).', 'TRANSCENDANT': 'Transcendant : Il attaque toutes les cibles adverse à la fois.' }[mBehaviorName] || ''}</div></template><span class="material-symbols-outlined text-sm">${{ 'PREDATEUR': 'track_changes', 'CORRUPTEUR': 'allergy', 'LEADER': 'crown', 'ASSASSIN': 'gps_fixed', 'BRUTAL': 'shield', 'TRANSCENDANT': 'grid_view' }[mBehaviorName] || 'check_box_outline_blank'}</span>${{ 'PREDATEUR': 'Prédateur', 'CORRUPTEUR': 'Corrupteur', 'LEADER': 'Leader', 'ASSASSIN': 'Assassin', 'BRUTAL': 'Brutal', 'TRANSCENDANT': 'Transcendant' }[mBehaviorName] || mBehaviorName}</span>` : ''}
+                            ${mTypeName && mTypeName !== 'NORMAL' ? `<span class="text-error" onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null" style="cursor: help; font-size: 0.75rem; background: rgba(239, 68, 68, 0.15); padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><template class="tooltip-data"><div style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:#ef4444; border-bottom: 1px solid #ef4444; padding-bottom: 4px;">${mTypeLabel}</div><div style="font-style:italic; color:#cbd5e1; margin-top:8px; max-width: 350px; line-height: 1.4; white-space: normal !important; word-wrap: break-word;">${mTypeDesc}</div></template><span class="material-symbols-outlined text-sm">${mTypeIcon}</span>${mTypeLabel}</span>` : ''}
+                            ${mBehaviorName && mBehaviorName !== 'NORMAL' ? `<span onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null" style="cursor: help; font-size: 0.75rem; background: rgba(139, 92, 246, 0.15); color: #8b5cf6; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(139, 92, 246, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><template class="tooltip-data"><div style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:#8b5cf6; border-bottom: 1px solid #8b5cf6; padding-bottom: 4px;">${mBehaviorLabel}</div><div style="font-style:italic; color:#cbd5e1; margin-top:8px; max-width: 350px; line-height: 1.4; white-space: normal !important; word-wrap: break-word;">${mBehaviorDesc}</div></template><span class="material-symbols-outlined text-sm">${mBehaviorIcon}</span>${mBehaviorLabel}</span>` : ''}
                         </div>
                         <div class="monster-card-stats">
                             <span class="flex-center" style="gap: 0.2rem;"><span class="material-symbols-outlined" style="font-size: 1rem; color: #ec4899;">favorite</span> PV: ${m.healthMax}</span>
@@ -2379,23 +2388,6 @@ window.showNotif = function (message, isError = false) {
     }, 3000);
 };
 
-window.toggleTrapTypeSelect = function (rIndex) {
-    const wrapper = document.getElementById(`room_trap_type_wrapper_${rIndex}`);
-    if (wrapper) {
-        document.querySelectorAll('.custom-select-wrapper.open').forEach(el => {
-            if (el !== wrapper) el.classList.remove('open');
-        });
-        wrapper.classList.toggle('open');
-    }
-};
-
-window.selectTrapType = function (rIndex, val, label) {
-    updateRoomField(rIndex, 'trapType', val);
-    const triggerLabel = document.getElementById(`room_trap_type_label_${rIndex}`);
-    if (triggerLabel) triggerLabel.innerHTML = label;
-    const wrapper = document.getElementById(`room_trap_type_wrapper_${rIndex}`);
-    if (wrapper) wrapper.classList.remove('open');
-};
 
 window.toggleDoorOutcomeSelect = function (rIndex) {
     const wrapper = document.getElementById(`room_door_outcome_wrapper_${rIndex}`);
@@ -2785,7 +2777,7 @@ window.toggleMutationSelection = (id) => {
     renderMutationsSelector();
 };
 
-window.toggleBuffCombobox = function(rIndex) {
+window.toggleBuffCombobox = function (rIndex) {
     const menu = document.getElementById(`room_boss_buff_menu_${rIndex}`);
     if (menu.style.display === 'none' || menu.style.display === '') {
         document.querySelectorAll('.custom-combobox-menu').forEach(el => el.style.display = 'none');
@@ -2795,13 +2787,13 @@ window.toggleBuffCombobox = function(rIndex) {
     }
 };
 
-window.selectBuffType = function(rIndex, value, label, icon, iconColorClass) {
+window.selectBuffType = function (rIndex, value, label, icon, iconColorClass) {
     document.getElementById(`room_boss_buff_type_${rIndex}`).value = value;
     document.getElementById(`room_boss_buff_label_${rIndex}`).innerHTML = `<span class="material-symbols-outlined ${iconColorClass}" style="font-size: 1.1rem;">${icon}</span> <span>${label}</span>`;
     document.getElementById(`room_boss_buff_menu_${rIndex}`).style.display = 'none';
 };
 
-document.addEventListener('click', function(e) {
+document.addEventListener('click', function (e) {
     if (!e.target.closest('.custom-combobox')) {
         document.querySelectorAll('.custom-combobox-menu').forEach(el => el.style.display = 'none');
     }

@@ -431,12 +431,7 @@ window.confirmCombatCast = confirmCombatCast;
 window.cancelCombatCast = cancelCombatCast;
 
 
-window.filterSpells = function (filter) {
-    pageState.currentSpellFilter = filter;
-    if (pageState.currentSessionData) {
-        renderSpells(pageState.currentSessionData.availableSpells);
-    }
-};
+
 
 
 
@@ -2582,9 +2577,10 @@ function generateFighterHtml(c, isHero) {
     }
 
     if (c.voie && c.voie.nom && (c.voie.nom.toLowerCase().includes('création') || c.voie.nom.toLowerCase().includes('creation'))) {
-        let isAvail = !(c.passiveStates && c.passiveStates['creation_spells_cast'] > 0);
-        let styleCreation = isAvail ? 'border-color: rgba(16, 185, 129, 0.6); color: #10b981;' : 'border-color: #4b5563; color: #6b7280; opacity: 0.5;';
-        statsHtml += `<span class="hero-stat-chip" title="Bonus sur le premier sort" style="${styleCreation}"><span class="material-symbols-outlined" style="color: inherit;">auto_awesome</span>Graine</span>`;
+        let buds = (c.passiveStates && c.passiveStates['creation_buds']) || 0;
+        let hasBuds = buds > 0;
+        let styleCreation = hasBuds ? 'border-color: rgba(16, 185, 129, 0.6); color: #10b981;' : 'border-color: #4b5563; color: #6b7280; opacity: 0.5;';
+        statsHtml += `<span class="hero-stat-chip" title="Bourgeons : ${buds}" style="${styleCreation}"><span class="material-symbols-outlined" style="color: inherit;">yard</span>${buds}</span>`;
     }
 
     if (c.voie && c.voie.nom && c.voie.nom.toLowerCase().includes('consolidation')) {

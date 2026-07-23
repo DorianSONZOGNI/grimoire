@@ -103,6 +103,7 @@ export function updateSpecialVoieConfig() {
     const voieId = document.getElementById('voieSelect').value;
     let isDestruction = false;
     let isViolence = false;
+    let isCreation = false;
     if (voieId && state.metaData.voies) {
         const v = state.metaData.voies.find(vo => vo.id == voieId);
         if (v && v.nom) {
@@ -112,6 +113,9 @@ export function updateSpecialVoieConfig() {
             }
             if (lNom.includes('violence')) {
                 isViolence = true;
+            }
+            if (lNom.includes('création') || lNom.includes('creation')) {
+                isCreation = true;
             }
         }
     }
@@ -135,6 +139,19 @@ export function updateSpecialVoieConfig() {
         const hasHeat = state.currentEffects.some(e => heatTypes.includes(e.effectType));
         if (hasHeat) {
             state.currentEffects = state.currentEffects.filter(e => !heatTypes.includes(e.effectType));
+            renderEffects();
+        }
+    }
+
+    const budButton = document.getElementById('budEffectButton');
+    if (budButton) {
+        budButton.style.display = isCreation ? 'grid' : 'none';
+    }
+
+    if (!isCreation) {
+        const hasBud = state.currentEffects.some(e => e.effectType === 'BUD');
+        if (hasBud) {
+            state.currentEffects = state.currentEffects.filter(e => e.effectType !== 'BUD');
             renderEffects();
         }
     }
@@ -310,12 +327,12 @@ export function addEffectPanel(type) {
     const effectObj = {
         id: Date.now() + Math.random(),
         effectType: type,
-        effectTarget: (type.startsWith('HEAT') || type === 'AME_DETACHEE') ? 'CASTER' : 'TARGET',
+        effectTarget: (type.startsWith('HEAT') || type === 'AME_DETACHEE' || type === 'BUD') ? 'CASTER' : 'TARGET',
         damage: 20,
         healAmount: 20,
         manaAmount: 20,
         percentage: 0.10,
-        flatValue: type === 'AME_DETACHEE' ? 5 : 5,
+        flatValue: type === 'BUD' ? 1 : (type === 'AME_DETACHEE' ? 5 : 5),
         modifier: type === 'AME_DETACHEE' ? 0.40 : 0.20,
         duration: 2,
         damageType: 'MAGIC',
@@ -413,7 +430,8 @@ export function renderEffects() {
             'HEAT_OVER_TIME': 'Chaleur Tick',
             'POISON': 'Poison',
             'BURN': 'Brûlure',
-            'AME_DETACHEE': 'Âme Détachée'
+            'AME_DETACHEE': 'Âme Détachée',
+            'BUD': 'Bourgeon'
         };
         const typeLabel = labelObj ? labelObj.label : (customLabels[eff.effectType] || eff.effectType);
 
@@ -679,6 +697,13 @@ export function renderEffects() {
                         <div class="form-group">
                             <label>Montant de Chaleur Générée (Fixe)</label>
                             <input type="number" min="0" value="${eff.flatValue || 0}" onchange="updateEffectProp('${eff.id}', 'flatValue', this.value)">
+                        </div>
+                    `;
+        } else if (eff.effectType === 'BUD') {
+            fieldsHtml = `
+                        <div class="form-group">
+                            <label>Bourgeons Générés</label>
+                            <input type="number" min="1" value="${eff.flatValue || 1}" onchange="updateEffectProp('${eff.id}', 'flatValue', this.value)">
                         </div>
                     `;
         } else if (eff.effectType === 'HEAT_PERCENTAGE') {

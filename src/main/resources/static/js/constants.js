@@ -1,6 +1,12 @@
 export const GLOBAL_STAT_LABELS = {};
 export const GLOBAL_SRC_LABELS = {};
-export const javaClassToCode = {};
+export const javaClassToCode = {
+    'DAMAGE_OVER_TIME': 'DOT',
+    'HEAL_OVER_TIME': 'HOT',
+    'MANA_OVER_TIME': 'MOT',
+    'CONSUMABLE_BUFF': 'BUFF_DEBUFF',
+    'DISPEL': 'PURGE'
+};
 
 export const STAT_DEFS = [
     { key: 'bonusHealthMax', label: 'PV', icon: 'favorite', color: '#ec4899' },
