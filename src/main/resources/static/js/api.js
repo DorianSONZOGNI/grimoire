@@ -228,7 +228,7 @@ export async function submitSpell() {
             // Réinitialiser le formulaire et l'état d'édition
             state.editingSpellId = null;
             document.getElementById('spellForgePanel').classList.remove('editing-mode');
-            document.getElementById('submitSpellBtn').innerText = 'âœ¦ Forger le Sort';
+            document.getElementById('submitSpellBtn').innerText = '✦ Forger le Sort';
             nomInput.value = '';
             document.getElementById('description').value = '';
             state.currentEffects = [];
