@@ -96,7 +96,7 @@ public class WebSpellCreationController {
         passifsVoies.put("Voie de la Conviction",
                 "Régénère [c=primary]25 points de mana[/c] par tour ([c=primary]+4[/c] par niveau de Voie).\nAugmente le [c=primary]mana maximum de 20[/c] par niveau au-delà du premier.");
         passifsVoies.put("Voie de la Création",
-                "Modifie le [c=warning]1er sort du tour[/c] :\n[ul][li]Un sort Instantané devient [c=success]gratuit[/c][/li][li]Un sort Banal devient [c=warning]Instantané[/c][/li][li]Un sort Canalisé octroie un [c=primary]bouclier[/c] égal au mana dépensé[/li][/ul]");
+                "Chaque tour, le 1er sort lancé consomme un [c=success]bourgeon[/c] s'il vous en reste en stock.\nVoici les effets du [c=success]bourgeon[/c] pour chaque type de sort :\n[ul][li]Un sort Instantané devient [c=success]gratuit[/c][/li][li]Un sort Banal devient [c=warning]Instantané[/c][/li][li]Un sort Canalisé octroie un [c=primary]bouclier[/c] (30% du mana dépensé)[/li][/ul]");
         passifsVoies.put("Voie de la Destruction",
                 "Accumule de la [c=danger]Chaleur[/c] en lançant des sorts.\nLorsque la chaleur atteint [c=danger]100[/c], le prochain sort lancé est entièrement [c=success]gratuit[/c].");
         passifsVoies.put("Voie de la Violence",
@@ -280,11 +280,11 @@ public class WebSpellCreationController {
     }
 
     @org.springframework.cache.annotation.Caching(evict = {
-        @org.springframework.cache.annotation.CacheEvict(value = "allSpells", allEntries = true),
-        @org.springframework.cache.annotation.CacheEvict(value = "spells", allEntries = true),
-        @org.springframework.cache.annotation.CacheEvict(value = "spellById", allEntries = true),
-        @org.springframework.cache.annotation.CacheEvict(value = "spellsByVariant", allEntries = true),
-        @org.springframework.cache.annotation.CacheEvict(value = "spellsByMutation", allEntries = true)
+            @org.springframework.cache.annotation.CacheEvict(value = "allSpells", allEntries = true),
+            @org.springframework.cache.annotation.CacheEvict(value = "spells", allEntries = true),
+            @org.springframework.cache.annotation.CacheEvict(value = "spellById", allEntries = true),
+            @org.springframework.cache.annotation.CacheEvict(value = "spellsByVariant", allEntries = true),
+            @org.springframework.cache.annotation.CacheEvict(value = "spellsByMutation", allEntries = true)
     })
     @DeleteMapping("/{id}")
     public ResponseEntity<String> deleteSpell(@PathVariable @org.springframework.lang.NonNull Long id) {
@@ -296,11 +296,11 @@ public class WebSpellCreationController {
     }
 
     @org.springframework.cache.annotation.Caching(evict = {
-        @org.springframework.cache.annotation.CacheEvict(value = "allSpells", allEntries = true),
-        @org.springframework.cache.annotation.CacheEvict(value = "spells", allEntries = true),
-        @org.springframework.cache.annotation.CacheEvict(value = "spellById", allEntries = true),
-        @org.springframework.cache.annotation.CacheEvict(value = "spellsByVariant", allEntries = true),
-        @org.springframework.cache.annotation.CacheEvict(value = "spellsByMutation", allEntries = true)
+            @org.springframework.cache.annotation.CacheEvict(value = "allSpells", allEntries = true),
+            @org.springframework.cache.annotation.CacheEvict(value = "spells", allEntries = true),
+            @org.springframework.cache.annotation.CacheEvict(value = "spellById", allEntries = true),
+            @org.springframework.cache.annotation.CacheEvict(value = "spellsByVariant", allEntries = true),
+            @org.springframework.cache.annotation.CacheEvict(value = "spellsByMutation", allEntries = true)
     })
     @PostMapping
     public ResponseEntity<String> createSpellPayload(@RequestBody SpellCreationDto dto) {
