@@ -325,35 +325,9 @@ async function updateRewardNameInput() {
     }
 }
 
-function getSpiritualiteColor(sp) {
-    if (!sp) return '#a855f7';
-    switch (sp.toUpperCase()) {
-        case 'ESPRIT': return '#38bdf8';
-        case 'KARMA': return '#e7d198';
-        case 'TENEBRES': return '#a855f7';
-        case 'VIOLENCE': return '#a70740';
-        case 'TRAHISON': return '#ed5677';
-        case 'SURETE': return '#00e5cc';
-        case 'RAISON': return '#3b82f6';
-        case 'DESTRUCTION': return '#ff0000';
-        case 'CREATION': return '#10b981';
-        case 'CONVICTION': return '#b74c0b';
-        case 'CONSOLIDATION': return '#99674c';
-        default: return '#a855f7';
-    }
-}
 
-function getLevelColor(lvl) {
-    const l = parseInt(lvl) || 1;
-    if (l === 1) return '#10b981'; // Vert
-    if (l === 2) return '#3b82f6'; // Bleu
-    if (l >= 3) return '#f59e0b'; // Or
-    return '#94a3b8'; // Gris par défaut
-}
 
-function getTypeColor(isMagic) {
-    return isMagic ? '#ec4899' : '#b45309'; // Rose : Marron
-}
+
 
 window.showTooltipFixed = function (el) {
     let tooltip = document.getElementById('globalFixedTooltip');

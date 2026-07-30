@@ -190,37 +190,9 @@ async function loadEquipments() {
     }
 }
 
-function getSpiritualiteColor(sp) {
-    if (!sp) return '#cbd5e1';
-    switch (sp) {
-        case 'TENEBRES': return '#a855f7';
-        case 'ESPRIT': return '#38bdf8';
-        case 'KARMA': return '#e7d198';
-        case 'VIOLENCE': return '#a70740';
-        case 'TRAHISON': return '#ed5677';
-        case 'SURETE': return '#00e5cc';
-        case 'RAISON': return '#3b82f6';
-        case 'DESTRUCTION': return '#ff0000';
-        case 'CREATION': return '#10b981';
-        case 'CONVICTION': return '#b74c0b';
-        case 'CONSOLIDATION': return '#99674c';
-        default: return '#94a3b8';
-    }
-}
 
-function getLevelColor(lvl) {
-    const l = parseInt(lvl) || 1;
-    if (l === 1) return '#10b981'; // Vert
-    if (l === 2) return '#3b82f6'; // Bleu
-    if (l === 3) return '#a855f7'; // Violet
-    if (l === 4) return '#f59e0b'; // Or
-    if (l >= 5) return '#ef4444'; // Rouge
-    return '#10b981';
-}
 
-function getTypeColor(isMagic) {
-    return isMagic ? '#ec4899' : '#b45309'; // Rose : Marron
-}
+
 
 async function loadAnomalies() {
     try {
@@ -509,8 +481,8 @@ function renderGrid(equipments) {
                                 };
                                 const catIcon = aTemp && aTemp.category ? (CATEGORY_ICONS[aTemp.category] || 'category') : 'star';
                                 const spiriColor = aTemp && aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
-                                const tooltipData = `
-                                            <div class="anomaly-tooltip-title" style="color: ${spiriColor}; border-bottom: 1px solid ${spiriColor}40; padding-bottom: 4px;">${aTemp ? aTemp.name : n}</div>
+                                        const tooltipData = `
+                                            <div class="anomaly-tooltip-title" style="color: ${spiriColor}; border-bottom: 1px solid ${spiriColor}40; padding-bottom: 4px;"><span class="material-symbols-outlined" style="font-size: 1rem; margin-right: 4px;">${catIcon}</span>${aTemp ? aTemp.name : n}</div>
                                             <div style="display: flex; gap: 6px; margin: 6px 0; flex-wrap: wrap;">
                                                 <span class="font-bold" style="border: 1px solid ${getLevelColor(aTemp ? aTemp.level : 1)}; color: ${getLevelColor(aTemp ? aTemp.level : 1)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem;">
                                                     Lvl ${aTemp ? aTemp.level || 1 : 1}

@@ -1,20 +1,4 @@
-function getSpiritualiteColor(sp) {
-    if (!sp) return '#a855f7';
-    switch (sp.toUpperCase()) {
-        case 'ESPRIT': return '#38bdf8';
-        case 'KARMA': return '#e7d198';
-        case 'TENEBRES': return '#a855f7';
-        case 'VIOLENCE': return '#a70740';
-        case 'TRAHISON': return '#ed5677';
-        case 'SURETE': return '#00e5cc';
-        case 'RAISON': return '#3b82f6';
-        case 'DESTRUCTION': return '#ff0000';
-        case 'CREATION': return '#10b981';
-        case 'CONVICTION': return '#b74c0b';
-        case 'CONSOLIDATION': return '#99674c';
-        default: return '#a855f7';
-    }
-}
+
 import * as ui from './ui.js?v=2';
 import { getSpellEffectsSummaryHtml } from './grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from './filters.js';
@@ -473,7 +457,23 @@ window.showNotif = function (message, isError = false) {
     }, 3000);
 };
 
+async function loadAnomaliesCombat() {
+    if (!window.allAnomaliesCombat || !Array.isArray(window.allAnomaliesCombat) || window.allAnomaliesCombat.length === 0) {
+        try {
+            const res = await window.globalFetch('/api/anomalies/all-templates');
+            if (res.ok) {
+                const data = await res.json();
+                if (Array.isArray(data)) window.allAnomaliesCombat = data;
+            }
+        } catch(e) {
+            console.error("Failed to load anomalies templates:", e);
+            window.allAnomaliesCombat = [];
+        }
+    }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
+    await loadAnomaliesCombat();
     window.dungeonMusic = null;
 
     const tryPlayMusic = () => {

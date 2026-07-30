@@ -104,6 +104,42 @@ public class AnomalieController {
         return ResponseEntity.ok(new java.util.ArrayList<>(uniqueMap.values()));
     }
 
+    @org.springframework.cache.annotation.CacheEvict(value = {"anomalyTemplates", "anomalieTemplates", "anomalieTemplateByName", "anomalieDistinctNames"}, allEntries = true)
+    @PutMapping("/{id}")
+    public ResponseEntity<?> updateAnomalie(@PathVariable Long id, @RequestBody Anomalie anomalieDetails) {
+        String username = getCurrentUsername();
+        if (username == null) {
+            return ResponseEntity.status(401).body("Non autorisé");
+        }
+        
+        Optional<AppUser> userOpt = userRepository.findByUsername(username);
+        if (userOpt.isEmpty()) {
+            return ResponseEntity.status(404).body("Utilisateur introuvable");
+        }
+
+        Optional<Anomalie> existingOpt = anomalieRepository.findById(id);
+        if (existingOpt.isEmpty()) {
+            return ResponseEntity.status(404).body("Anomalie introuvable");
+        }
+
+        Anomalie existing = existingOpt.get();
+        boolean isAdmin = "ADMIN".equals(userOpt.get().getRole());
+        if (!isAdmin && !existing.getOwnerUsername().equals(username)) {
+            return ResponseEntity.status(403).body("Ce n'est pas votre anomalie.");
+        }
+
+        existing.setName(anomalieDetails.getName());
+        existing.setSpiritualite(anomalieDetails.getSpiritualite());
+        existing.setCategory(anomalieDetails.getCategory());
+        existing.setDescription(anomalieDetails.getDescription());
+        existing.setLevel(anomalieDetails.getLevel());
+        existing.setMagicObject(anomalieDetails.isMagicObject());
+
+        anomalieRepository.save(existing);
+        return ResponseEntity.ok(existing);
+    }
+
+    @org.springframework.cache.annotation.CacheEvict(value = {"anomalyTemplates", "anomalieTemplates", "anomalieTemplateByName", "anomalieDistinctNames"}, allEntries = true)
     @PostMapping
     public ResponseEntity<?> createAnomalie(@RequestBody Anomalie anomalie) {
         String username = getCurrentUsername();
@@ -155,6 +191,7 @@ public class AnomalieController {
         return ResponseEntity.ok(saved);
     }
 
+    @org.springframework.cache.annotation.CacheEvict(value = {"anomalyTemplates", "anomalieTemplates", "anomalieTemplateByName", "anomalieDistinctNames"}, allEntries = true)
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteAnomalie(@PathVariable Long id) {
         String username = getCurrentUsername();

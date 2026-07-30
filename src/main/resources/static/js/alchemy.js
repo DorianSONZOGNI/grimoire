@@ -195,23 +195,7 @@ const CATEGORY_ICONS = {
     'AUTRE': 'category'
 };
 
-function getSpiritualiteColor(sp) {
-    if (!sp) return '#a855f7';
-    switch (sp.toUpperCase()) {
-        case 'ESPRIT': return '#38bdf8';
-        case 'KARMA': return '#e7d198';
-        case 'TENEBRES': return '#a855f7';
-        case 'VIOLENCE': return '#a70740';
-        case 'TRAHISON': return '#ed5677';
-        case 'SURETE': return '#00e5cc';
-        case 'RAISON': return '#3b82f6';
-        case 'DESTRUCTION': return '#ff0000';
-        case 'CREATION': return '#10b981';
-        case 'CONVICTION': return '#b74c0b';
-        case 'CONSOLIDATION': return '#99674c';
-        default: return '#a855f7';
-    }
-}
+
 
 function getItemStyle(name, defaultType) {
     const lower = name.toLowerCase();
@@ -832,13 +816,6 @@ function createMagicParticles() {
             p.remove();
         }, duration + 100);
     }
-}
-function getLevelColor(lvl) {
-    if (lvl === 1) return '#10b981';
-    if (lvl === 2) return '#3b82f6';
-    if (lvl === 3) return '#8b5cf6';
-    if (lvl === 4) return '#f59e0b';
-    return '#ef4444';
 }
 
 function buildAnomalyTooltipHTML(name) {
