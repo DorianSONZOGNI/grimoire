@@ -3780,7 +3780,35 @@ function playDungeonMusic(data) {
         }
         window.dungeonMusic = new Audio(targetSrc);
         window.dungeonMusic.loop = true;
-        window.dungeonMusic.volume = 0.5;
+        
+        const savedVolume = localStorage.getItem('grimoire_music_volume');
+        const savedMuted = localStorage.getItem('grimoire_music_muted');
+        
+        if (savedVolume !== null) {
+            window.dungeonMusic.volume = parseInt(savedVolume) / 100;
+            const slider = document.getElementById('musicVolumeSlider');
+            if (slider) slider.value = savedVolume;
+        } else {
+            window.dungeonMusic.volume = 0.5;
+            const slider = document.getElementById('musicVolumeSlider');
+            if (slider) slider.value = 50;
+        }
+        
+        if (savedMuted === 'true') {
+            window.dungeonMusic.muted = true;
+            const btn = document.getElementById('musicToggleBtn');
+            if (btn) {
+                btn.textContent = 'volume_off';
+                btn.style.color = '#ef4444';
+            }
+        } else {
+            window.dungeonMusic.muted = false;
+            const btn = document.getElementById('musicToggleBtn');
+            if (btn) {
+                btn.textContent = 'volume_up';
+                btn.style.color = '#10b981';
+            }
+        }
 
         const tryPlay = () => {
             window.dungeonMusic.play().catch(e => {
@@ -3807,6 +3835,31 @@ function playDungeonMusic(data) {
             document.addEventListener('click', playOnInteraction);
         });
     }
-
-
 }
+
+window.toggleMusic = function() {
+    if (!window.dungeonMusic) return;
+    const btn = document.getElementById('musicToggleBtn');
+    if (window.dungeonMusic.muted) {
+        window.dungeonMusic.muted = false;
+        if (btn) {
+            btn.textContent = 'volume_up';
+            btn.style.color = '#10b981';
+        }
+        localStorage.setItem('grimoire_music_muted', 'false');
+    } else {
+        window.dungeonMusic.muted = true;
+        if (btn) {
+            btn.textContent = 'volume_off';
+            btn.style.color = '#ef4444';
+        }
+        localStorage.setItem('grimoire_music_muted', 'true');
+    }
+};
+
+window.changeMusicVolume = function(value) {
+    if (window.dungeonMusic) {
+        window.dungeonMusic.volume = value / 100;
+    }
+    localStorage.setItem('grimoire_music_volume', value);
+};

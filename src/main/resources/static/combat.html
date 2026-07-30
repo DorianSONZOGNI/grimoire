@@ -966,8 +966,14 @@
             <span class="material-symbols-outlined logo-icon-gradient logo-dungeon">swords</span>
             <span class="logo-text-gradient logo-dungeon" id="headerDungeonName">Combat en cours...</span>
         </div>
-        <div style="font-family: 'Outfit'; color: var(--text-muted);">
-            Tour <span id="turnCounter" style="color: #f8fafc; font-weight: 600;">1</span>
+        <div style="display: flex; align-items: center; gap: 1.5rem;">
+            <div style="display: flex; align-items: center; gap: 0.5rem; background: rgba(255,255,255,0.05); padding: 0.3rem 0.8rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
+                <span class="material-symbols-outlined" id="musicToggleBtn" style="cursor: pointer; color: #10b981; font-size: 1.4rem; user-select: none;" onclick="window.toggleMusic()" title="Couper/Activer la musique">volume_up</span>
+                <input type="range" id="musicVolumeSlider" min="0" max="100" value="50" style="width: 80px; accent-color: #10b981; cursor: pointer;" oninput="window.changeMusicVolume(this.value)" title="Volume">
+            </div>
+            <div style="font-family: 'Outfit'; color: var(--text-muted);">
+                Tour <span id="turnCounter" style="color: #f8fafc; font-weight: 600;">1</span>
+            </div>
         </div>
     </div>
 
@@ -1267,7 +1273,7 @@
     </div>
 
     <script type="module" src="/js/auth.js?v=10"></script>
-    <script type="module" src="/js/combat.js?v=107"></script>
+    <script type="module" src="/js/combat.js?v=108"></script>
 </body>
 
 </html>
