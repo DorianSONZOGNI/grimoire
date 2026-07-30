@@ -449,6 +449,17 @@ window.showNotif = function (message, isError = false) {
 };
 
 document.addEventListener('DOMContentLoaded', async () => {
+    window.dungeonMusic = null;
+
+    const tryPlayMusic = () => {
+        if (window.dungeonMusic && window.dungeonMusic.paused) {
+            window.dungeonMusic.play().catch(e => console.log("Music auto-play blocked", e));
+        }
+        document.removeEventListener('click', tryPlayMusic);
+    };
+    tryPlayMusic();
+    document.addEventListener('click', tryPlayMusic);
+
     try { if (window.initAppMeta) await window.initAppMeta(); } catch (e) { console.warn('Meta loading skipped:', e); }
     // Check for active combat in localStorage
     const savedCombatId = localStorage.getItem('activeCombatId');
@@ -1320,7 +1331,7 @@ async function addLootedConsumable(itemName, iconElement) {
             return;
         }
         const updatedSession = await res.json();
-        
+
         // Success
         iconElement.style.color = '#10b981';
         iconElement.style.opacity = '1';
@@ -1329,7 +1340,7 @@ async function addLootedConsumable(itemName, iconElement) {
         iconElement.onmouseout = null;
         iconElement.onclick = null;
         iconElement.title = "Dans l'inventaire du groupe";
-        
+
         pageState.currentSessionData = updatedSession;
         if (typeof window.renderOverlayInventory === 'function') {
             window.renderOverlayInventory('eventOverlayInventoryList');
@@ -1399,6 +1410,9 @@ function updateUI(data) {
 
     if (data.finished) {
         localStorage.removeItem('activeCombatId');
+        if (window.dungeonMusic) {
+            window.dungeonMusic.pause();
+        }
     }
 
     let isActiveEnemy = false;
@@ -1414,6 +1428,9 @@ function updateUI(data) {
 
     if (data.donjonName) {
         document.getElementById('headerDungeonName').textContent = data.donjonName + " - Étape " + (data.currentRoomIndex + 1);
+        if (!data.finished) {
+            playDungeonMusic(data);
+        }
     }
     document.getElementById('turnCounter').textContent = data.turnNumber;
 
@@ -1693,7 +1710,7 @@ function updateUI(data) {
                                     const tooltipAttrs = tooltipDataHtml ? 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"' : '';
 
                                     let inventoryStatus = log.includes("ajouté à l'inventaire") ? 'in_inventory' : (log.includes("envoyé au coffre") ? 'in_vault' : 'unknown');
-                                    
+
                                     let inventoryIconHtml = '';
                                     if (eq && eq.slot === 'CONSOMMABLE') {
                                         if (inventoryStatus === 'in_inventory') {
@@ -3738,3 +3755,58 @@ window.confirmConsumeItem = async function (consumableId, characterId) {
 
 
 
+function playDungeonMusic(data) {
+    if (!data) return;
+
+    let musicFile = 'dunjon-calm.mp3'; // Défaut
+
+    const secret = data.donjonSecret ? data.donjonSecret.toLowerCase() : null;
+
+    if (!secret || secret === 'aucun' || secret === 'null') {
+        const level = data.donjonLevel || 1;
+        musicFile = `libre-lvl${level}.mp3`;
+    } else {
+        const level = data.donjonSecretLevel || 1;
+        // Nettoyer le secret : minuscule, enlève les accents, remplace les espaces par des tirets
+        const cleanSecret = secret.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, '-');
+        musicFile = `${cleanSecret}-lvl${level}.mp3`;
+    }
+
+    const targetSrc = '/sons/' + musicFile;
+
+    if (!window.dungeonMusic || !window.dungeonMusic.src.endsWith(targetSrc)) {
+        if (window.dungeonMusic) {
+            window.dungeonMusic.pause();
+        }
+        window.dungeonMusic = new Audio(targetSrc);
+        window.dungeonMusic.loop = true;
+        window.dungeonMusic.volume = 0.5;
+
+        const tryPlay = () => {
+            window.dungeonMusic.play().catch(e => {
+                console.log("Autoplay bloqué, attente d'un clic...", e);
+                const playOnInteraction = () => {
+                    if (window.dungeonMusic && window.dungeonMusic.paused) {
+                        window.dungeonMusic.play();
+                    }
+                    document.removeEventListener('click', playOnInteraction);
+                };
+                document.addEventListener('click', playOnInteraction);
+            });
+        };
+        tryPlay();
+    } else if (window.dungeonMusic && window.dungeonMusic.paused) {
+        window.dungeonMusic.play().catch(e => {
+            console.log("Autoplay bloqué, attente d'un clic...", e);
+            const playOnInteraction = () => {
+                if (window.dungeonMusic && window.dungeonMusic.paused) {
+                    window.dungeonMusic.play();
+                }
+                document.removeEventListener('click', playOnInteraction);
+            };
+            document.addEventListener('click', playOnInteraction);
+        });
+    }
+
+
+}
