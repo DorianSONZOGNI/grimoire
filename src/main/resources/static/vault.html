@@ -22,48 +22,7 @@
 
 <body>
 
-    <header class="top-header">
-        <div class="page-logo">
-            <span class="material-symbols-outlined logo-icon-gradient logo-vault">inventory_2</span>
-            <span class="logo-text-gradient logo-vault">Coffres</span>
-        </div>
-        <div class="header-actions">
-            <div style="font-size: 0.9rem; color: var(--text-muted);">Un butin bien mérité.
-            </div>
-            <a href="/" class="top-nav-link nav-grimoire">
-                <span class="material-symbols-outlined" style="font-size: 1.1rem;">auto_awesome</span> Grimoire
-            </a>
-            <a href="/armory.html" class="top-nav-link nav-armory">
-                <span class="material-symbols-outlined" style="font-size: 1.1rem;">shield</span> Armurerie
-            </a>
-            <a href="/dungeons.html" class="top-nav-link nav-dungeon">
-                <span class="material-symbols-outlined" style="font-size: 1.1rem;">swords</span> Donjons
-            </a>
-            <a href="/vault.html" class="top-nav-link nav-vault active">
-                <span class="material-symbols-outlined" style="font-size: 1.1rem;">money_bag</span> Coffres
-            </a>
-            <a href="/shop.html" class="top-nav-link nav-shop">
-                <span class="material-symbols-outlined" style="font-size: 1.1rem;">storefront</span> Boutique
-            </a>
-            <a href="/alchemy.html" class="top-nav-link nav-alchemy">
-                <span class="material-symbols-outlined" style="font-size: 1.1rem;">science</span> Alchimie
-            </a>
-            <a href="/shop-admin.html" id="adminShopLink" class="top-nav-link nav-admin" style="display: none;">
-                <span class="material-symbols-outlined" style="font-size: 1.1rem;">settings</span> Admin Boutique
-            </a>
-            <a href="/pve-admin.html" id="adminPvELink" class="top-nav-link nav-admin" style="display: none;">
-                <span class="material-symbols-outlined" style="font-size: 1.1rem;">admin_panel_settings</span> Admin
-                PvE
-            </a>
-            <a href="/alchemy-admin.html" id="adminAlchemyLink" class="top-nav-link nav-admin" style="display: none;">
-                <span class="material-symbols-outlined" style="font-size: 1.1rem;">science</span> Admin Alchimie
-            </a>
-            <div id="authNavContainer"
-                style="display: flex; align-items: center; gap: 0.5rem; margin-left: 1rem; padding-left: 1rem; border-left: 1px solid var(--glass-border);">
-                <span style="font-size: 0.85rem; color: var(--text-muted);">Chargement...</span>
-            </div>
-        </div>
-    </header>
+    <app-navbar active-page="vault"></app-navbar>
     <div class="fox-cycle">
         <div class="fox"></div>
     </div>
@@ -1446,6 +1405,7 @@
     </script>
     <script src="/js/vault.js?v=99"></script>
     <script type="module" src="/js/auth.js?v=10"></script>
+    <script src="/js/components/navbar.js"></script>
 </body>
 
 </html>
