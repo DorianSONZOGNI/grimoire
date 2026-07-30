@@ -114,7 +114,7 @@ public class AnomalieController {
         return ResponseEntity.ok(new java.util.ArrayList<>(uniqueMap.values()));
     }
 
-    @org.springframework.cache.annotation.CacheEvict(value = {"anomalyTemplates", "anomalieTemplates", "anomalieTemplateByName", "anomalieDistinctNames"}, allEntries = true)
+    @org.springframework.cache.annotation.CacheEvict(value = {"anomalyTemplates", "anomalieTemplates", "anomalieTemplateByName", "anomalieDistinctNames", "alchemyRecipes", "alchemyRecipesList", "alchemyRecipeById", "equipmentTemplates", "equipmentTemplateByName", "publicEquipmentTemplates", "equipmentShopTemplates", "equipmentDistinctNames"}, allEntries = true)
     @PutMapping("/{id}")
     public ResponseEntity<?> updateAnomalie(@PathVariable Long id, @RequestBody Anomalie anomalieDetails) {
         String username = getCurrentUsername();
@@ -149,7 +149,7 @@ public class AnomalieController {
         return ResponseEntity.ok(existing);
     }
 
-    @org.springframework.cache.annotation.CacheEvict(value = {"anomalyTemplates", "anomalieTemplates", "anomalieTemplateByName", "anomalieDistinctNames"}, allEntries = true)
+    @org.springframework.cache.annotation.CacheEvict(value = {"anomalyTemplates", "anomalieTemplates", "anomalieTemplateByName", "anomalieDistinctNames", "alchemyRecipes", "alchemyRecipesList", "alchemyRecipeById", "equipmentTemplates", "equipmentTemplateByName", "publicEquipmentTemplates", "equipmentShopTemplates", "equipmentDistinctNames"}, allEntries = true)
     @PostMapping
     public ResponseEntity<?> createAnomalie(@RequestBody Anomalie anomalie) {
         String username = getCurrentUsername();
@@ -235,7 +235,7 @@ public class AnomalieController {
         return ResponseEntity.ok(saved);
     }
 
-    @org.springframework.cache.annotation.CacheEvict(value = {"anomalyTemplates", "anomalieTemplates", "anomalieTemplateByName", "anomalieDistinctNames"}, allEntries = true)
+    @org.springframework.cache.annotation.CacheEvict(value = {"anomalyTemplates", "anomalieTemplates", "anomalieTemplateByName", "anomalieDistinctNames", "alchemyRecipes", "alchemyRecipesList", "alchemyRecipeById", "equipmentTemplates", "equipmentTemplateByName", "publicEquipmentTemplates", "equipmentShopTemplates", "equipmentDistinctNames"}, allEntries = true)
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteAnomalie(@PathVariable Long id) {
         String username = getCurrentUsername();
