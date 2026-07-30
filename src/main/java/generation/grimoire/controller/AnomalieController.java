@@ -4,6 +4,10 @@ import generation.grimoire.entity.Anomalie;
 import generation.grimoire.entity.auth.AppUser;
 import generation.grimoire.repository.AnomalieRepository;
 import generation.grimoire.repository.auth.UserRepository;
+import generation.grimoire.repository.EquipmentRepository;
+import generation.grimoire.service.AlchemyService;
+import generation.grimoire.entity.AlchemyRecipe;
+import generation.grimoire.entity.Equipment;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -22,6 +26,12 @@ public class AnomalieController {
 
     @Autowired
     private UserRepository userRepository;
+
+    @Autowired
+    private AlchemyService alchemyService;
+
+    @Autowired
+    private EquipmentRepository equipmentRepository;
 
     private String getCurrentUsername() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
@@ -171,6 +181,40 @@ public class AnomalieController {
                     a.setLevel(anomalie.getLevel() != null ? anomalie.getLevel() : 1);
                     a.setMagicObject(anomalie.isMagicObject());
                 }
+                
+                if (!originalName.equals(anomalie.getName())) {
+                    String newName = anomalie.getName();
+                    
+                    // Update Recipes
+                    List<AlchemyRecipe> allRecipes = alchemyService.getAllRecipes();
+                    for (AlchemyRecipe r : allRecipes) {
+                        boolean modified = false;
+                        if (generation.grimoire.enumeration.RecipeRewardType.GIVE_ANOMALY.equals(r.getRewardType()) 
+                            && originalName.equals(r.getRewardName())) {
+                            r.setRewardName(newName);
+                            modified = true;
+                        }
+                        if (r.getRequiredAnomalies() != null && r.getRequiredAnomalies().containsKey(originalName)) {
+                            Integer qty = r.getRequiredAnomalies().remove(originalName);
+                            r.getRequiredAnomalies().put(newName, qty);
+                            modified = true;
+                        }
+                        if (modified) {
+                            alchemyService.saveRecipe(r);
+                        }
+                    }
+                    
+                    // Update Equipments
+                    List<Equipment> allEquipments = equipmentRepository.findAll();
+                    for (Equipment eq : allEquipments) {
+                        if (eq.getPriceAnomalies() != null && eq.getPriceAnomalies().containsKey(originalName)) {
+                            Integer qty = eq.getPriceAnomalies().remove(originalName);
+                            eq.getPriceAnomalies().put(newName, qty);
+                            equipmentRepository.save(eq);
+                        }
+                    }
+                }
+                
                 anomalieRepository.saveAll(java.util.Objects.requireNonNull(sameAnomalies));
                 return ResponseEntity.ok(existing);
             }

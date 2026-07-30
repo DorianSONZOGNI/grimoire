@@ -642,14 +642,14 @@ document.getElementById('recipeForm').addEventListener('submit', async (e) => {
 
     const anoms = document.getElementById('reqAnomaliesList').children;
     for (let a of anoms) {
-        const name = a.querySelector('.req-name').value.trim();
+        const name = a.querySelector('.req-name').value;
         const qty = parseInt(a.querySelector('.req-qty').value);
         if (name && qty > 0) recipe.requiredAnomalies[name] = qty;
     }
 
     const cons = document.getElementById('reqConsumablesList').children;
     for (let c of cons) {
-        const name = c.querySelector('.req-name').value.trim();
+        const name = c.querySelector('.req-name').value;
         const qty = parseInt(c.querySelector('.req-qty').value);
         if (name && qty > 0) recipe.requiredConsumables[name] = qty;
     }
