@@ -1,1 +1,0 @@
-import { test } from './test.mjs'; global.foo = () => console.log('works'); test();
