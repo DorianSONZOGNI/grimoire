@@ -6,6 +6,12 @@
 
 // ---- Color helpers ----
 
+window.ALL_SPIRITUALITIES = [
+    'TENEBRES', 'ESPRIT', 'KARMA', 'VIOLENCE', 'TRAHISON', 
+    'SURETE', 'RAISON', 'DESTRUCTION', 'CREATION', 'CONVICTION', 'CONSOLIDATION'
+];
+
+
 function getSpiritualiteColor(sp) {
     if (!sp) return '#cbd5e1';
     switch (sp.toUpperCase ? sp.toUpperCase() : sp) {
@@ -21,6 +27,24 @@ function getSpiritualiteColor(sp) {
         case 'CONVICTION': return '#b74c0b';
         case 'CONSOLIDATION': return '#99674c';
         default: return '#cbd5e1';
+    }
+}
+
+function getSpiritualiteIcon(sp) {
+    if (!sp) return 'radio_button_unchecked';
+    switch (sp.toUpperCase ? sp.toUpperCase() : sp) {
+        case 'TENEBRES': return 'dark_mode';
+        case 'ESPRIT': return 'blur_on';
+        case 'KARMA': return 'all_inclusive';
+        case 'VIOLENCE': return 'explosion';
+        case 'TRAHISON': return 'visibility_off';
+        case 'SURETE': return 'water_drop';
+        case 'RAISON': return 'psychology';
+        case 'DESTRUCTION': return 'local_fire_department';
+        case 'CREATION': return 'eco';
+        case 'CONVICTION': return 'volcano';
+        case 'CONSOLIDATION': return 'foundation';
+        default: return 'radio_button_unchecked';
     }
 }
 

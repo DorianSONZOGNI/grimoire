@@ -1288,20 +1288,16 @@ function renderRooms() {
                                             <div class="custom-select-wrapper" id="altar_spirituality_wrapper_${rIndex}_${oIndex}" style="margin-top: 0.2rem; z-index: ${152 - (rIndex * 10 + oIndex * 3)};">
                                                 <div class="custom-select-trigger" onclick="toggleAltarSpiritualitySelect(${rIndex}, ${oIndex})" style="padding: 0.5rem; font-size: 0.85rem; border-radius: 8px;">
                                                     <span class="cs-label" id="altar_spirituality_label_${rIndex}_${oIndex}">
-                                                        ${outcome.altarSpirituality === 'ESPRIT' ? '<span class="material-symbols-outlined cs-icon align-middle" style="color: #3b82f6; font-size: 1.1rem; margin-right: 4px;">blur_on</span> Esprit' : outcome.altarSpirituality === 'KARMA' ? '<span class="material-symbols-outlined cs-icon align-middle" style="color: #e7d198; font-size: 1.1rem; margin-right: 4px;">all_inclusive</span> Karma' : '<span class="material-symbols-outlined cs-icon align-middle" style="color: #d946ef; font-size: 1.1rem; margin-right: 4px;">dark_mode</span> Ténèbres'}
+                                                        <span class="material-symbols-outlined cs-icon align-middle" style="color: ${getSpiritualiteColor(outcome.altarSpirituality || 'TENEBRES')}; font-size: 1.1rem; margin-right: 4px;">${getSpiritualiteIcon(outcome.altarSpirituality || 'TENEBRES')}</span> ${outcome.altarSpirituality || 'Ténèbres'}
                                                     </span>
                                                     <span class="material-symbols-outlined">expand_more</span>
                                                 </div>
                                                 <div class="custom-select-options" id="altar_spirituality_options_${rIndex}_${oIndex}">
-                                                    <div class="custom-option" onclick="updateAltarField(${rIndex}, ${oIndex}, 'altarSpirituality', 'TENEBRES')">
-                                                        <span class="material-symbols-outlined cs-icon align-middle" style="color: #d946ef; font-size: 1.1rem; margin-right: 4px;">dark_mode</span> Ténèbres
+                                                    ${(window.ALL_SPIRITUALITIES || ['TENEBRES', 'ESPRIT', 'KARMA', 'VIOLENCE', 'TRAHISON', 'SURETE', 'RAISON', 'DESTRUCTION', 'CREATION', 'CONVICTION', 'CONSOLIDATION']).map(sp => `
+                                                    <div class="custom-option" onclick="updateAltarField(${rIndex}, ${oIndex}, 'altarSpirituality', '${sp}')">
+                                                        <span class="material-symbols-outlined cs-icon align-middle" style="color: ${getSpiritualiteColor(sp)}; font-size: 1.1rem; margin-right: 4px;">${getSpiritualiteIcon(sp)}</span> ${sp}
                                                     </div>
-                                                    <div class="custom-option" onclick="updateAltarField(${rIndex}, ${oIndex}, 'altarSpirituality', 'ESPRIT')">
-                                                        <span class="material-symbols-outlined cs-icon align-middle" style="color: #3b82f6; font-size: 1.1rem; margin-right: 4px;">blur_on</span> Esprit
-                                                    </div>
-                                                    <div class="custom-option" onclick="updateAltarField(${rIndex}, ${oIndex}, 'altarSpirituality', 'KARMA')">
-                                                        <span class="material-symbols-outlined cs-icon align-middle" style="color: #e7d198; font-size: 1.1rem; margin-right: 4px;">all_inclusive</span> Karma
-                                                    </div>
+                                                    `).join('')}
                                                 </div>
                                             </div>
                                         </div>
