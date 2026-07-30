@@ -8,6 +8,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -16,6 +17,11 @@ import org.springframework.security.web.SecurityFilterChain;
 @EnableWebSecurity
 @EnableMethodSecurity // Permet l'utilisation de @PreAuthorize sur les contrôleurs
 public class SecurityConfig {
+
+    @Bean
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring().requestMatchers("/sons/**");
+    }
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
@@ -29,7 +35,7 @@ public class SecurityConfig {
                 // --- Public : statiques + auth ---
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/meta/**").permitAll()
-                .requestMatchers("/js/**", "/styles/**", "/images/**", "/favicon.ico", "/favicon.svg", "/*.html", "/").permitAll()
+                .requestMatchers("/js/**", "/styles/**", "/images/**", "/sons/**", "/favicon.ico", "/favicon.svg", "/*.html", "/").permitAll()
 
                 // --- Admin uniquement : CRUD entités de jeu ---
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
