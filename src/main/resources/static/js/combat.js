@@ -1,3 +1,20 @@
+function getSpiritualiteColor(sp) {
+    if (!sp) return '#a855f7';
+    switch (sp.toUpperCase()) {
+        case 'ESPRIT': return '#38bdf8';
+        case 'KARMA': return '#e7d198';
+        case 'TENEBRES': return '#a855f7';
+        case 'VIOLENCE': return '#a70740';
+        case 'TRAHISON': return '#ed5677';
+        case 'SURETE': return '#00e5cc';
+        case 'RAISON': return '#3b82f6';
+        case 'DESTRUCTION': return '#ff0000';
+        case 'CREATION': return '#10b981';
+        case 'CONVICTION': return '#b74c0b';
+        case 'CONSOLIDATION': return '#99674c';
+        default: return '#a855f7';
+    }
+}
 import * as ui from './ui.js?v=2';
 import { getSpellEffectsSummaryHtml } from './grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from './filters.js';
@@ -42,11 +59,9 @@ export function createAnomalyBadgeHtml(anomalyName, showName = false) {
             if (an.level) anomLevel = an.level;
             if (an.magicObject) isMagic = true;
             if (an.category) catIcon = CATEGORY_ICONS[an.category] || 'category';
-            if (an.spiritualite) {
+                        if (an.spiritualite) {
                 anomSpiri = an.spiritualite;
-                if (an.spiritualite === 'ESPRIT') tColor = '#38bdf8';
-                else if (an.spiritualite === 'KARMA') tColor = '#e7d198';
-                else if (an.spiritualite === 'TENEBRES') tColor = '#a855f7';
+                tColor = getSpiritualiteColor(an.spiritualite);
             }
         }
     }
@@ -1880,7 +1895,7 @@ function updateUI(data) {
                             });
                         } else if (data.currentRoom.alterationType === 'AUTEL') {
                             btnText = `Sacrifier l'Objet`;
-                            let spColor = data.currentRoom.altarRequiredSpirituality === 'TENEBRES' ? '#d946ef' : data.currentRoom.altarRequiredSpirituality === 'ESPRIT' ? '#3b82f6' : data.currentRoom.altarRequiredSpirituality === 'KARMA' ? '#e7d198' : '#f59e0b';
+                            let spColor = getSpiritualiteColor(data.currentRoom.altarRequiredSpirituality);
                             warningHtml = `<div class="text-center" style="color: ${spColor}; font-size: 0.85rem; margin-top: 0.5rem; background: ${spColor}1A; padding: 0.5rem; border-radius: 6px; border: 1px solid ${spColor}4D;"><span class="material-symbols-outlined align-middle" style="font-size: 1rem;">warning</span> <strong>Offrande :</strong> Cet autel réclame le sacrifice d'un <strong>Magique</strong> de spiritualité <strong>${data.currentRoom.altarRequiredSpirituality}</strong>.</div>`;
 
                             let altarRewardHtml = '';
@@ -2078,9 +2093,7 @@ function updateUI(data) {
                                         if (Array.isArray(window.allAnomaliesCombat)) {
                                             const an = window.allAnomaliesCombat.find(a => a.name === itemName);
                                             if (an) {
-                                                if (an.spiritualite === 'TENEBRES') spColor = '#a855f7';
-                                                else if (an.spiritualite === 'ESPRIT') spColor = '#38bdf8';
-                                                else if (an.spiritualite === 'KARMA') spColor = '#e7d198';
+                                                spColor = getSpiritualiteColor(an.spiritualite);
                                                 catIcon = an.category ? (CATEGORY_ICONS[an.category] || 'category') : 'star';
                                             }
                                         }
@@ -2136,11 +2149,10 @@ function updateUI(data) {
                                 nameHtml = entry.specialItemName;
                                 rarityColor = '#d946ef';
                                 let catIcon = 'star';
-                                if (Array.isArray(window.allAnomaliesCombat)) {
+                                                                if (Array.isArray(window.allAnomaliesCombat)) {
                                     const an = window.allAnomaliesCombat.find(a => a.name === entry.specialItemName);
                                     if (an) {
-                                        if (an.spiritualite === 'ESPRIT') rarityColor = '#38bdf8';
-                                        else if (an.spiritualite === 'KARMA') rarityColor = '#e7d198';
+                                        rarityColor = getSpiritualiteColor(an.spiritualite);
                                         catIcon = an.category ? (CATEGORY_ICONS[an.category] || 'category') : 'star';
                                     }
                                 }
@@ -2166,8 +2178,7 @@ function updateUI(data) {
                                 if (Array.isArray(window.allAnomaliesCombat)) {
                                     const anPrice = window.allAnomaliesCombat.find(a => a.name === entry.priceSpecialItemName);
                                     if (anPrice) {
-                                        if (anPrice.spiritualite === 'ESPRIT') priceColor = '#38bdf8';
-                                        else if (anPrice.spiritualite === 'KARMA') priceColor = '#e7d198';
+                                        priceColor = getSpiritualiteColor(anPrice.spiritualite);
                                         priceIcon = anPrice.category ? (CATEGORY_ICONS[anPrice.category] || 'category') : 'star';
                                     }
                                 }
@@ -2216,11 +2227,9 @@ function updateUI(data) {
                                         if (an.level) anomLevel = an.level;
                                         if (an.magicObject) isMagic = true;
                                         if (an.category) catIcon2 = CATEGORY_ICONS[an.category] || 'category';
-                                        if (an.spiritualite) {
+                                                                                if (an.spiritualite) {
                                             anomSpiri = an.spiritualite;
-                                            if (an.spiritualite === 'ESPRIT') tColor = '#38bdf8';
-                                            else if (an.spiritualite === 'KARMA') tColor = '#e7d198';
-                                            else if (an.spiritualite === 'TENEBRES') tColor = '#a855f7';
+                                            tColor = getSpiritualiteColor(an.spiritualite);
                                         }
                                     }
                                 }

@@ -156,6 +156,14 @@ export function getSpiritIcon(nom) {
     if (n.includes('esprit')) return 'blur_on';
     if (n.includes('ténèbres') || n.includes('tenebres')) return 'dark_mode';
     if (n.includes('karma')) return 'all_inclusive';
+    if (n.includes('violence')) return 'explosion';
+    if (n.includes('trahison')) return 'visibility_off';
+    if (n.includes('surete') || n.includes('sûreté')) return 'water_drop';
+    if (n.includes('raison')) return 'psychology';
+    if (n.includes('destruction')) return 'local_fire_department';
+    if (n.includes('creation') || n.includes('création')) return 'eco';
+    if (n.includes('conviction')) return 'volcano';
+    if (n.includes('consolidation')) return 'foundation';
     return 'radio_button_unchecked';
 }
 

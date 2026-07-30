@@ -246,7 +246,7 @@ window.deleteEquipment = function (idsStr) {
     if (!eq) return;
 
     const weightStr = eq._weight % 1 === 0 ? eq._weight : eq._weight.toFixed(1);
-    
+
     showModal({
         title: "Détruire l'équipement ?",
         body: `Voulez-vous vraiment détruire <strong style="color:#fff;">${eq.name}</strong> ?<br><br>Vous récupérerez ${weightStr} <span class="material-symbols-outlined align-middle" style="font-size: 1rem; margin-top: -2px;">monetization_on</span>.`,
@@ -397,21 +397,17 @@ function renderGrid(equipments) {
 
         if (eq.isAnomalie) {
             const spColors = {
-                'NATURE': '#10b981',
-                'NECROMANCIE': '#8b5cf6',
-                'EAU': '#3b82f6',
-                'FEU': '#ef4444',
-                'TERRE': '#f59e0b',
-                'AIR': '#06b6d4',
-                'LUMIERE': '#fde047',
-                'NEANT': '#000000',
-                'FOUDRE': '#fbbf24',
-                'SANG': '#991b1b',
-                'POISON': '#22c55e',
-                'GLACE': '#93c5fd',
                 'ESPRIT': '#38bdf8',
                 'KARMA': '#e7d198',
-                'TENEBRES': '#a855f7'
+                'TENEBRES': '#a855f7',
+                'VIOLENCE': '#a70740',
+                'TRAHISON': '#ed5677',
+                'SURETE': '#00e5cc',
+                'RAISON': '#3b82f6',
+                'DESTRUCTION': '#ff0000',
+                'CREATION': '#10b981',
+                'CONVICTION': '#b74c0b',
+                'CONSOLIDATION': '#99674c'
             };
             const spColor = spColors[eq.spiritualite] || '#d946ef';
 
