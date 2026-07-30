@@ -1,19 +1,12 @@
-<!DOCTYPE html>
-<html lang="fr">
-
-<head>
+<!DOCTYPE html><html lang="fr"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Grimoire - Boutique</title>
     <link rel="icon" type="image/png" href="/favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap"
-        rel="stylesheet">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
-        rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&amp;family=Inter:wght@300;400;500&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
     <link rel="stylesheet" href="/styles/variables.css">
     <link rel="stylesheet" href="/styles/ui/components.css">
     <link rel="stylesheet" href="/styles/ui/utilities.css">
@@ -248,11 +241,9 @@
 
     <div class="vault-main">
         <div class="panel">
-            <div
-                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 1rem;">
                 <div style="display: flex; align-items: center; gap: 1rem;">
-                    <div
-                        style="width: 48px; height: 48px; border-radius: 12px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); display: flex; align-items: center; justify-content: center; color: #10b981;">
+                    <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); display: flex; align-items: center; justify-content: center; color: #10b981;">
                         <span class="material-symbols-outlined" style="font-size: 1.8rem;">storefront</span>
                     </div>
                     <div>
@@ -268,15 +259,13 @@
                 <div style="color: #94a3b8; font-style: italic;">Chargement de la boutique...</div>
             </div>
 
-            <div
-                style="display: flex; justify-content: space-between; align-items: center; margin-top: 3rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 1rem;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 3rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 1rem;">
                 <div style="display: flex; align-items: center; gap: 1rem;">
-                    <div
-                        style="width: 48px; height: 48px; border-radius: 12px; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); display: flex; align-items: center; justify-content: center; color: #f59e0b;">
+                    <div style="width: 48px; height: 48px; border-radius: 12px; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); display: flex; align-items: center; justify-content: center; color: #f59e0b;">
                         <span class="material-symbols-outlined" style="font-size: 1.8rem;">local_offer</span>
                     </div>
                     <div>
-                        <h2 style="margin: 0; font-family: 'Outfit', sans-serif; font-size: 1.5rem;">Offres Spéciales &
+                        <h2 style="margin: 0; font-family: 'Outfit', sans-serif; font-size: 1.5rem;">Offres Spéciales &amp;
                             Consomables</h2>
                         <div style="color: #94a3b8; font-size: 0.9rem;">Promotions et objets utiles pour les
                             expéditions.</div>
@@ -291,8 +280,7 @@
     </div>
 
     <!-- Notification Toast -->
-    <div id="shopNotif"
-        style="position: fixed; bottom: 2rem; right: 2rem; background: #10b981; color: #fff; padding: 1rem 2rem; border-radius: 12px; font-weight: 500; font-family: 'Outfit', sans-serif; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3); transform: translateY(100px); opacity: 0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 9999;">
+    <div id="shopNotif" style="position: fixed; bottom: 2rem; right: 2rem; background: #10b981; color: #fff; padding: 1rem 2rem; border-radius: 12px; font-weight: 500; font-family: 'Outfit', sans-serif; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3); transform: translateY(100px); opacity: 0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 9999;">
         <div style="display: flex; align-items: center; gap: 0.5rem;">
             <span class="material-symbols-outlined" style="font-size: 1.2rem;">check_circle</span>
             <span id="shopNotifText">Action réussie</span>
@@ -300,27 +288,7 @@
     </div>
 
     <!-- Buy Confirmation Modal -->
-    <div id="buyConfirmModal" class="vault-modal-overlay">
-        <div class="vault-modal-content small" style="border-color: rgba(245, 158, 11, 0.4);">
-            <div class="vault-modal-icon"
-                style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 2px solid rgba(245, 158, 11, 0.2);">
-                <span class="material-symbols-outlined" style="font-size: 2rem;">shopping_cart_checkout</span>
-            </div>
-            <div
-                style="font-size: 1.2rem; font-weight: 600; font-family: 'Outfit', sans-serif; color: #fff; margin-bottom: 0.8rem;">
-                Acheter cet équipement ?</div>
-            <div style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 1.5rem; line-height: 1.5;">Êtes-vous sûr de
-                vouloir acheter <strong id="buyTargetName" style="color:#fff;">cet objet</strong> ? Il sera ajouté à
-                votre Salle des Coffres.</div>
-            <div style="display: flex; gap: 1rem;">
-                <button onclick="closeBuyModal()"
-                    style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 0.6rem; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.2s ease;">Annuler</button>
-                <button id="buyConfirmBtn"
-                    style="flex: 1; background: #f59e0b; border: none; color: #fff; padding: 0.6rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);">Oui,
-                    acheter</button>
-            </div>
-        </div>
-    </div>
+    
 
     <script>
         window.addEventListener('authLoaded', () => {
@@ -355,6 +323,6 @@
     <script src="/js/shop.js?v=99"></script>
     <script type="module" src="/js/auth.js?v=10"></script>
     <script src="/js/components/navbar.js"></script>
-</body>
 
-</html>
+
+</body></html>

@@ -397,33 +397,43 @@ window.hideGlobalTooltip = ui.hideGlobalTooltip;
 
 
 
-window.fleeCombatAction = async function () {
-    try {
-        pageState.isFleeing = true;
-        const btn = document.querySelector('#fleeConfirmModal button:last-child');
-        if (btn) {
-            btn.disabled = true;
-            btn.textContent = "Fuite...";
-        }
-        const res = await globalFetch(`/api/pve/combat/${pageState.sessionId}/flee`, { method: 'POST' });
-        if (!res.ok) {
-            pageState.isFleeing = false;
-            const err = await res.text();
-            if (typeof showNotif !== 'undefined') showNotif("Erreur lors de la fuite : " + err, true);
-            else ui.showNotif("Erreur lors de la fuite : " + err, true);
-            if (btn) {
-                btn.disabled = false;
-                btn.textContent = "Oui, fuir";
+window.promptFlee = function () {
+    ui.showModal({
+        title: 'Fuir le combat ?',
+        body: `Êtes-vous sûr de vouloir fuir ?<br><br><span id="fleePenaltyText" style="font-size:0.9rem; color:#f87171;">Calcul de la pénalité...</span>`,
+        icon: 'directions_run',
+        confirmText: 'Oui, fuir',
+        onConfirm: async () => {
+            try {
+                pageState.isFleeing = true;
+                const res = await globalFetch(`/api/pve/combat/${pageState.sessionId}/flee`, { method: 'POST' });
+                if (!res.ok) {
+                    pageState.isFleeing = false;
+                    const err = await res.text();
+                    ui.showNotif("Erreur lors de la fuite : " + err, true);
+                    return;
+                }
+                localStorage.removeItem('activeCombatId');
+                window.location.href = '/dungeons.html';
+            } catch (e) {
+                console.error(e);
+                localStorage.removeItem('activeCombatId');
+                window.location.href = '/dungeons.html';
             }
-            return;
         }
-        localStorage.removeItem('activeCombatId');
-        window.location.href = '/dungeons.html';
-    } catch (e) {
-        console.error(e);
-        localStorage.removeItem('activeCombatId');
-        window.location.href = '/dungeons.html';
-    }
+    });
+
+    // Populate penalty text
+    setTimeout(() => {
+        if (!pageState.sessionId || !pageState.currentSessionData || pageState.currentSessionData.finished) return;
+        const totalLvl = pageState.currentSessionData.players.reduce((sum, p) => sum + p.level, 0);
+        const xpLossPerHero = pageState.currentSessionData.dungeon.level * 10;
+        const goldLoss = Math.floor(pageState.currentSessionData.dungeon.level * (totalLvl / 2));
+        const fleePenaltySpan = document.getElementById('fleePenaltyText');
+        if (fleePenaltySpan) {
+            fleePenaltySpan.innerHTML = `Perte d'xp et Or : <span style="color: #f87171;">-${xpLossPerHero} XP normal</span> (par perso) et <span style="color: #fbbf24;">-${goldLoss} Or</span> (au total).`;
+        }
+    }, 100);
 };
 
 window.initiateCombatCast = initiateCombatCast;
@@ -1211,25 +1221,15 @@ async function buyMerchantItem(lootIndex) {
 }
 
 function openBuyModal(idx, itemName, goldPrice = 0) {
-    if (goldPrice > 0) {
-        const playerGold = pageState.currentSessionData?.players?.[0]?.gold || 0;
-        if (playerGold < goldPrice) {
-            showNotif("Vous n'avez pas assez d'or pour acheter cet objet !", true);
-            return;
+    ui.showModal({
+        title: 'Acheter cet objet ?',
+        body: `Voulez-vous vraiment acheter <strong style="color:#fff;">${itemName}</strong> ?<br>Cela coûtera <strong style="color:#fbbf24;">${goldPrice}</strong> Or.`,
+        icon: 'shopping_cart',
+        confirmText: 'Oui, acheter',
+        onConfirm: async () => {
+            await buyMerchantItem(idx);
         }
-    }
-
-    const modal = document.getElementById('buyConfirmModal');
-    const targetName = document.getElementById('buyTargetName');
-    const confirmBtn = document.getElementById('buyConfirmBtn');
-    if (modal && targetName && confirmBtn) {
-        targetName.innerHTML = itemName;
-        confirmBtn.onclick = function () {
-            closeBuyModal();
-            buyMerchantItem(idx);
-        };
-        modal.classList.add('show');
-    }
+    });
 }
 
 function closeBuyModal() {
@@ -3705,17 +3705,14 @@ window.renderOverlayInventory = function (containerId) {
 };
 
 window.openConsumeModal = function (consumableId, consumableName) {
-    document.getElementById('consumeTargetName').innerText = consumableName;
-    const btnContainer = document.getElementById('consumeTargetButtons');
-    btnContainer.innerHTML = '';
-
+    let btnContainerHtml = '';
     pageState.currentSessionData.players.forEach(p => {
         let hpColor = p.healthCurrent <= 0 ? '#ef4444' : (p.healthCurrent < p.healthMax ? '#f59e0b' : '#10b981');
         let mpColor = p.manaCurrent < p.manaMax ? '#3b82f6' : '#60a5fa';
-        btnContainer.innerHTML += `
-            <button class="flex-between" onclick="window.confirmConsumeItem(${consumableId}, ${p.id})"
+        btnContainerHtml += `
+            <button class="flex-between w-100" onclick="document.querySelector('app-modal').closeModal(); window.confirmConsumeItem(${consumableId}, ${p.id})"
                 ${p.healthCurrent <= 0 ? 'disabled' : ''}
-                style="align-items: center; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 0.8rem; border-radius: 8px; cursor: ${p.healthCurrent <= 0 ? 'not-allowed' : 'pointer'}; opacity: ${p.healthCurrent <= 0 ? '0.5' : '1'}; transition: all 0.2s ease;">
+                style="align-items: center; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 0.8rem; border-radius: 8px; cursor: ${p.healthCurrent <= 0 ? 'not-allowed' : 'pointer'}; opacity: ${p.healthCurrent <= 0 ? '0.5' : '1'}; transition: all 0.2s ease; margin-bottom: 8px; width: 100%;">
                 <span style="font-weight: 600;">${p.name}</span>
                 <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.2rem;">
                     <span style="font-size: 0.85rem; color: ${hpColor};"><b>${p.healthCurrent}</b> / ${p.healthMax} PV</span>
@@ -3725,11 +3722,13 @@ window.openConsumeModal = function (consumableId, consumableName) {
         `;
     });
 
-    document.getElementById('consumeTargetModal').classList.add('show');
-};
-
-window.closeConsumeModal = function () {
-    document.getElementById('consumeTargetModal').classList.remove('show');
+    ui.showModal({
+        title: 'Consommer un objet',
+        body: `Qui doit utiliser <strong style="color:#fff;">${consumableName}</strong> ?<br><br><div style="display: flex; flex-direction: column; width: 100%;">${btnContainerHtml}</div>`,
+        icon: 'science',
+        hideConfirm: true,
+        cancelText: 'Fermer'
+    });
 };
 
 window.confirmConsumeItem = async function (consumableId, characterId) {
@@ -3740,16 +3739,15 @@ window.confirmConsumeItem = async function (consumableId, characterId) {
         });
         if (res.ok) {
             pageState.currentSessionData = await res.json();
-            window.closeConsumeModal();
-            window.showNotif("Objet consommé avec succès !");
+            ui.showNotif("Objet consommé avec succès !");
             updateUI(pageState.currentSessionData);
         } else {
             const err = await res.text();
-            window.showNotif("Erreur: " + err, true);
+            ui.showNotif("Erreur: " + err, true);
         }
     } catch (e) {
         console.error(e);
-        window.showNotif("Erreur lors de la consommation.", true);
+        ui.showNotif("Erreur lors de la consommation.", true);
     }
 };
 

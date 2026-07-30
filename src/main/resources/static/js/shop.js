@@ -76,20 +76,14 @@ async function loadShop() {
     }
 }
 
-function showNotif(message, isError = false) {
-    const notif = document.getElementById('shopNotif');
-    const text = document.getElementById('shopNotifText');
-    text.textContent = message;
+async function showNotif(message, isError = false) {
+    const ui = await import('/js/ui.js');
+    ui.showNotif(message, isError);
+}
 
-    notif.style.background = isError ? '#ef4444' : '#10b981';
-    notif.style.boxShadow = isError ? '0 10px 25px rgba(239, 68, 68, 0.3)' : '0 10px 25px rgba(16, 185, 129, 0.3)';
-
-    notif.style.opacity = '1';
-    notif.style.transform = 'translateY(0)';
-    setTimeout(() => {
-        notif.style.opacity = '0';
-        notif.style.transform = 'translateY(100px)';
-    }, 3000);
+async function showModal(options) {
+    const ui = await import('/js/ui.js');
+    return ui.showModal(options);
 }
 
 function generateStandHtml(eq) {
@@ -367,13 +361,10 @@ window.openBuyModal = function (id, isConsumable = false) {
 
     if (!eq) return;
 
-    pageState.itemToBuy = { id, isConsumable, price: eq.shopPrice, priceAnomalies: eq.priceAnomalies };
-
-    document.getElementById('buyTargetName').textContent = eq.name;
-
-    const priceStr = eq.shopPrice % 1 === 0 ? eq.shopPrice : eq.shopPrice.toFixed(1);
-    let btnHtml = `<div class="flex-center" style="gap: 6px; justify-content: center; flex-wrap: wrap;">`;
-    btnHtml += `<span>Acheter pour ${priceStr} <span class="material-symbols-outlined align-middle" style="font-size: 1rem; margin-top: -2px;">monetization_on</span></span>`;
+    let priceHtml = ``;
+    if (eq.priceGold > 0) {
+        priceHtml += `${eq.priceGold} <span class="material-symbols-outlined align-middle" style="font-size: 1.1rem; color:#fcd34d;">monetization_on</span>`;
+    }
     if (eq.priceAnomalies && Object.keys(eq.priceAnomalies).length > 0) {
         let anos = [];
         for (const [n, q] of Object.entries(eq.priceAnomalies)) {
@@ -390,66 +381,37 @@ window.openBuyModal = function (id, isConsumable = false) {
             };
             const catIcon = aTemp && aTemp.category ? (CATEGORY_ICONS[aTemp.category] || 'category') : 'star';
             const spiriColor = aTemp && aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
-            const tooltipData = `
-                    <div class="anomaly-tooltip-title"><span class="material-symbols-outlined" style="font-size: 1rem; margin-right: 4px;">${catIcon}</span>${aTemp ? aTemp.name : n}</div>
-                    <div style="display: flex; gap: 6px; margin: 6px 0; flex-wrap: wrap;">
-                        <span class="font-bold" style="border: 1px solid ${getLevelColor(aTemp ? aTemp.level : 1)}; color: ${getLevelColor(aTemp ? aTemp.level : 1)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem;">
-                            Lvl ${aTemp ? aTemp.level || 1 : 1}
-                        </span>
-                        <span class="flex-center font-bold" style="border: 1px solid ${getTypeColor(aTemp && aTemp.magicObject)}; color: ${getTypeColor(aTemp && aTemp.magicObject)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; gap: 4px;">
-                            <span class="material-symbols-outlined text-sm">${aTemp && aTemp.magicObject ? 'star' : 'category'}</span>
-                            ${aTemp && aTemp.magicObject ? 'Magique' : 'Matériau'}
-                        </span>
-                        ${aTemp && aTemp.spiritualite ?
-                    `<span class="font-bold" style="border: 1px solid ${getSpiritualiteColor(aTemp.spiritualite)}; color: ${getSpiritualiteColor(aTemp.spiritualite)}; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; background: rgba(0,0,0,0.3);">
-                            ${aTemp.spiritualite}
-                        </span>` : ''}
-                    </div>
-                    <div class="anomaly-tooltip-desc">${aTemp && aTemp.description ? aTemp.description : 'Aucune description'}</div>
-            `;
-            anos.push(`<span class="anomaly-badge" style="border-color: ${spiriColor}; background: linear-gradient(${spiriColor}25, ${spiriColor}25), #1e293b; color: ${spiriColor};" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}">
-                <span class="material-symbols-outlined align-middle" style="font-size: 1rem; color: ${spiriColor};">${catIcon}</span> ${q}
-            </span>`);
+            anos.push(`<span style="color: ${spiriColor};"><span class="material-symbols-outlined align-middle" style="font-size: 1rem;">${catIcon}</span> ${q}</span>`);
         }
-        btnHtml += `<span class="text-muted">+</span> ${anos.join(' ')}`;
+        if (priceHtml !== '') priceHtml += ` <span class="text-muted">+</span> `;
+        priceHtml += anos.join(' <span class="text-muted">+</span> ');
     }
-    btnHtml += `</div>`;
-    document.getElementById('buyConfirmBtn').innerHTML = btnHtml;
 
-    document.getElementById('buyConfirmModal').style.opacity = '1';
-    document.getElementById('buyConfirmModal').style.pointerEvents = 'all';
-}
+    showModal({
+        title: 'Acheter cet objet ?',
+        body: `Êtes-vous sûr de vouloir acheter <strong style="color:#fff;">${eq.name}</strong> pour ${priceHtml} ?`,
+        icon: 'shopping_cart',
+        confirmText: 'Oui, acheter',
+        onConfirm: async () => {
+            try {
+                let url = `/api/shop/buy/${id}`;
+                const res = await globalFetch(url, { method: 'POST' });
+                const data = await res.json();
 
-window.closeBuyModal = function () {
-    document.getElementById('buyConfirmModal').style.opacity = '0';
-    document.getElementById('buyConfirmModal').style.pointerEvents = 'none';
-    pageState.itemToBuy = null;
-}
-
-document.getElementById('buyConfirmBtn').addEventListener('click', async () => {
-    if (!pageState.itemToBuy) return;
-
-    const { id } = pageState.itemToBuy;
-    closeBuyModal();
-
-    try {
-        let url = `/api/shop/buy/${id}`;
-
-        const res = await globalFetch(url, { method: 'POST' });
-        const data = await res.json();
-
-        if (res.ok) {
-            showNotif('Achat réussi !');
-            if (window.checkAuthStatus) {
-                window.checkAuthStatus(); // Met à jour l'or affiché
+                if (res.ok) {
+                    showNotif('Achat réussi !');
+                    if (window.checkAuthStatus) {
+                        window.checkAuthStatus(); // Met à jour l'or affiché
+                    }
+                } else {
+                    showNotif(data.message || "Erreur lors de l'achat.", true);
+                }
+            } catch (e) {
+                showNotif('Erreur réseau.', true);
             }
-        } else {
-            showNotif(data.message || "Erreur lors de l'achat.", true);
         }
-    } catch (e) {
-        showNotif('Erreur réseau.', true);
-    }
-});
+    });
+}
 
 window.addEventListener('DOMContentLoaded', async () => {
     if (window.initAppMeta) await window.initAppMeta();

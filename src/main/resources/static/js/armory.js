@@ -233,36 +233,37 @@ async function updateCharLimitUI() {
 }
 
 window.buyRosterSlot = function (cost) {
-    document.getElementById('rosterSlotCostText').textContent = cost;
-    document.getElementById('buyRosterModal').classList.add('show');
-};
+    showModal({
+        title: 'Agrandir le Roster ?',
+        body: `Voulez-vous acheter un nouvel emplacement de personnage pour <strong style="color:#fbbf24;">${cost}</strong> Or ?`,
+        icon: 'shopping_cart',
+        confirmText: 'Oui, acheter',
+        onConfirm: async () => {
+            try {
+                const res = await globalFetch('/api/auth/unlock/roster', { method: 'POST' });
+                if (res.ok) {
+                    const data = await res.json();
+                    showNotif(data.message);
+                    // Update auth state so UI syncs
+                    await globalFetch('/api/auth/me').then(r => r.json()).then(u => {
+                        if (window.updateGoldDisplay) window.updateGoldDisplay(u.monnaie);
+                        window.currentUser = u;
+                    });
+                    await updateCharLimitUI();
 
-window.closeRosterModal = function () {
-    document.getElementById('buyRosterModal').classList.remove('show');
-};
-
-document.getElementById('buyRosterConfirmBtn').addEventListener('click', async () => {
-    closeRosterModal();
-    try {
-        const res = await globalFetch('/api/auth/unlock/roster', { method: 'POST' });
-        if (res) {
-            const data = await res.json();
-            showNotif(data.message);
-            // Update auth state so UI syncs
-            await globalFetch('/api/auth/me').then(r => r.json()).then(u => {
-                if (window.updateGoldDisplay) window.updateGoldDisplay(u.monnaie);
-                window.currentUser = u;
-            });
-            await updateCharLimitUI();
-
-            // Si le panneau de création était caché par applyRbac (pas géré directement mais au cas où)
-            const eqCreateSection = document.querySelector('.equip-create-section');
-            if (eqCreateSection && window.currentUser) eqCreateSection.style.display = 'block';
+                    const eqCreateSection = document.querySelector('.equip-create-section');
+                    if (eqCreateSection && window.currentUser) eqCreateSection.style.display = 'block';
+                } else {
+                    const err = await res.json();
+                    showNotif(err.message || "Erreur lors de l'achat", true);
+                }
+            } catch (e) {
+                console.error(e);
+                showNotif("Erreur réseau.", true);
+            }
         }
-    } catch (e) {
-        showNotif('Erreur réseau', true);
-    }
-});
+    });
+};
 
 async function loadAllEquipments() {
     try {
@@ -335,38 +336,32 @@ async function submitPersonnage() {
     }
 }
 
-let persoToDelete = null;
-
-function deletePersonnage(id) {
-    persoToDelete = id;
+window.deletePersonnage = function (id) {
     const p = pageState.personnages.find(p => p.id === id);
-    if (p) {
-        document.getElementById('deletePersoTargetName').textContent = p.name;
-    }
-    document.getElementById('deletePersonnageModal').classList.add('show');
-}
+    if (!p) return;
 
-window.closeDeletePersoModal = function () {
-    document.getElementById('deletePersonnageModal').classList.remove('show');
-    persoToDelete = null;
-};
-
-document.getElementById('deletePersoConfirmBtn').addEventListener('click', async () => {
-    if (!persoToDelete) return;
-    const id = persoToDelete;
-    closeDeletePersoModal();
-
-    try {
-        const res = await globalFetch(`/api/personnages/${id}`, { method: 'DELETE' });
-        if (res) {
-            showNotif('Personnage supprimé.');
-            if (pageState.editingId === id) resetForm();
-            await loadPersonnages();
+    showModal({
+        title: 'Supprimer ce personnage ?',
+        body: `Voulez-vous vraiment supprimer définitivement <strong style="color:#fff;">${p.name}</strong> ?<br><br>Cette action est irréversible.`,
+        icon: 'warning',
+        confirmText: 'Oui, supprimer',
+        onConfirm: async () => {
+            try {
+                const res = await globalFetch(`/api/personnages/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    showNotif('Personnage supprimé.');
+                    if (pageState.editingId === id) resetForm();
+                    await loadPersonnages();
+                } else {
+                    showNotif("Erreur lors de la suppression.", true);
+                }
+            } catch (e) {
+                console.error(e);
+                showNotif('Erreur réseau lors de la suppression.', true);
+            }
         }
-    } catch (e) {
-        showNotif('Erreur lors de la suppression.', true);
-    }
-});
+    });
+}
 
 // ===== Equipment API =====
 
@@ -1099,15 +1094,14 @@ function resetForm() {
     document.getElementById('cancelBtn').style.display = 'none';
 }
 
-function showNotif(message, isError = false) {
-    const notif = document.getElementById('armoryNotif');
-    notif.textContent = message;
-    notif.classList.remove('error');
-    if (isError) notif.classList.add('error');
-    notif.classList.add('show');
-    setTimeout(() => {
-        notif.classList.remove('show');
-    }, 3000);
+async function showNotif(message, isError = false) {
+    const ui = await import('/js/ui.js');
+    ui.showNotif(message, isError);
+}
+
+async function showModal(options) {
+    const ui = await import('/js/ui.js');
+    return ui.showModal(options);
 }
 
 // ===== Custom Select Logic (Event Delegation) =====

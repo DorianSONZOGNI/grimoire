@@ -73,16 +73,14 @@ function calculateWeight(eq) {
     return w;
 }
 
-function showNotif(message, isError = false) {
-    const notif = document.getElementById('vaultNotif');
-    const text = document.getElementById('vaultNotifText');
-    text.textContent = message;
-    notif.classList.remove('error');
-    if (isError) notif.classList.add('error');
-    notif.classList.add('show');
-    setTimeout(() => {
-        notif.classList.remove('show');
-    }, 3000);
+async function showNotif(message, isError = false) {
+    const ui = await import('/js/ui.js');
+    ui.showNotif(message, isError);
+}
+
+async function showModal(options) {
+    const ui = await import('/js/ui.js');
+    return ui.showModal(options);
 }
 
 // ===== Custom Select Logic =====
@@ -211,73 +209,69 @@ async function loadEquipments() {
 
 
 window.deleteAnomalie = function (idsStr) {
-    pageState.anomalieToDelete = String(idsStr).split(',');
-    pageState.equipmentToDelete = null;
-    const firstId = Number(pageState.anomalieToDelete[0]);
+    const ids = String(idsStr).split(',');
+    const firstId = Number(ids[0]);
     const eq = pageState.allEquipments.find(e => e.id === firstId && e.isAnomalie);
-    if (eq) {
-        document.getElementById('deleteTargetName').textContent = eq.name;
-        document.getElementById('deleteConfirmBtn').innerHTML = `Oui, détruire l'anomalie`;
-    }
-    document.getElementById('deleteConfirmModal').classList.add('show');
+    if (!eq) return;
+
+    showModal({
+        title: "Détruire l'anomalie ?",
+        body: `Voulez-vous vraiment détruire l'anomalie <strong style="color:#fff;">${eq.name}</strong> ?`,
+        icon: 'warning',
+        confirmText: "Oui, détruire l'anomalie",
+        onConfirm: async () => {
+            try {
+                let success = false;
+                for (let id of ids) {
+                    const res = await globalFetch(`/api/anomalies/${id}`, { method: 'DELETE' });
+                    if (res.ok) {
+                        success = true;
+                        showNotif('Anomalie détruite.');
+                        await loadEquipments();
+                        break;
+                    }
+                }
+                if (!success) showNotif('Impossible de détruire cette anomalie (liée).', true);
+            } catch (e) {
+                showNotif('Erreur réseau.', true);
+            }
+        }
+    });
 }
 
 window.deleteEquipment = function (idsStr) {
-    pageState.equipmentToDelete = String(idsStr).split(',');
-    pageState.anomalieToDelete = null;
-    const firstId = Number(pageState.equipmentToDelete[0]);
+    const ids = String(idsStr).split(',');
+    const firstId = Number(ids[0]);
     const eq = pageState.allEquipments.find(e => e.id === firstId && !e.isAnomalie);
-    if (eq) {
-        document.getElementById('deleteTargetName').textContent = eq.name;
-        const weightStr = eq._weight % 1 === 0 ? eq._weight : eq._weight.toFixed(1);
-        document.getElementById('deleteConfirmBtn').innerHTML = `Oui, détruire pour ${weightStr} <span class="material-symbols-outlined align-middle" style="font-size: 1rem; margin-top: -2px;">monetization_on</span>`;
-    }
-    document.getElementById('deleteConfirmModal').classList.add('show');
-}
+    if (!eq) return;
 
-function closeDeleteModal() {
-    document.getElementById('deleteConfirmModal').classList.remove('show');
-    pageState.equipmentToDelete = null;
-}
-
-document.getElementById('deleteConfirmBtn').addEventListener('click', async () => {
-    if (!pageState.equipmentToDelete && !pageState.anomalieToDelete) return;
-
-    const idsEq = pageState.equipmentToDelete;
-    const idsAn = pageState.anomalieToDelete;
-    closeDeleteModal();
-
-    try {
-        if (idsEq) {
-            let success = false;
-            for (let id of idsEq) {
-                const res = await globalFetch(`/api/equipments/${id}`, { method: 'DELETE' });
-                if (res.ok) {
-                    success = true;
-                    showNotif('Équipement détruit.');
-                    await loadEquipments();
-                    if (window.checkAuthStatus) window.checkAuthStatus();
-                    break;
+    const weightStr = eq._weight % 1 === 0 ? eq._weight : eq._weight.toFixed(1);
+    
+    showModal({
+        title: "Détruire l'équipement ?",
+        body: `Voulez-vous vraiment détruire <strong style="color:#fff;">${eq.name}</strong> ?<br><br>Vous récupérerez ${weightStr} <span class="material-symbols-outlined align-middle" style="font-size: 1rem; margin-top: -2px;">monetization_on</span>.`,
+        icon: 'warning',
+        confirmText: `Oui, détruire`,
+        onConfirm: async () => {
+            try {
+                let success = false;
+                for (let id of ids) {
+                    const res = await globalFetch(`/api/equipments/${id}`, { method: 'DELETE' });
+                    if (res.ok) {
+                        success = true;
+                        showNotif('Équipement détruit.');
+                        await loadEquipments();
+                        if (window.checkAuthStatus) window.checkAuthStatus();
+                        break;
+                    }
                 }
+                if (!success) showNotif('Impossible de détruire cet objet (lié).', true);
+            } catch (e) {
+                showNotif('Erreur réseau.', true);
             }
-            if (!success) showNotif('Impossible de détruire cet objet (lié).', true);
-        } else if (idsAn) {
-            let success = false;
-            for (let id of idsAn) {
-                const res = await globalFetch(`/api/anomalies/${id}`, { method: 'DELETE' });
-                if (res.ok) {
-                    success = true;
-                    showNotif('Anomalie détruite.');
-                    await loadEquipments();
-                    break;
-                }
-            }
-            if (!success) showNotif('Impossible de détruire cette anomalie (liée).', true);
         }
-    } catch (e) {
-        showNotif('Erreur réseau.', true);
-    }
-});
+    });
+}
 
 function groupEquipments(list) {
     let stacked = [];

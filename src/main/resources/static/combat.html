@@ -1,19 +1,12 @@
-<!DOCTYPE html>
-<html lang="fr">
-
-<head>
+<!DOCTYPE html><html lang="fr"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Grimoire - Combat</title>
     <link rel="icon" type="image/png" href="/favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link
-        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap"
-        rel="stylesheet">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
-        rel="stylesheet" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&amp;family=Inter:wght@300;400;500&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
     <link rel="stylesheet" href="/styles/variables.css">
     <link rel="stylesheet" href="/styles/ui/components.css">
     <link rel="stylesheet" href="/styles/ui/utilities.css">
@@ -985,8 +978,7 @@
 
         <!-- Log -->
         <div class="combat-log-container">
-            <div
-                style="font-family: 'Outfit'; font-weight: 600; color: #f8fafc; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem;">
+            <div style="font-family: 'Outfit'; font-weight: 600; color: #f8fafc; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem;">
                 Journal de combat
             </div>
             <div class="combat-log" id="combatLog">
@@ -1013,36 +1005,29 @@
                     </div>
                 </div>
                 <!-- Toggle Tab -->
-                <div onclick="const w = document.getElementById('eventInventoryWrapper'); w.style.transform = w.style.transform === 'translateX(0px)' ? 'translateX(-320px)' : 'translateX(0px)';"
-                     style="position: absolute; right: -40px; top: 50%; transform: translateY(-50%); width: 40px; height: 100px; background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(255, 255, 255, 0.1); border-left: none; border-radius: 0 8px 8px 0; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #10b981; box-shadow: 5px 0 10px rgba(0,0,0,0.3);">
+                <div onclick="const w = document.getElementById('eventInventoryWrapper'); w.style.transform = w.style.transform === 'translateX(0px)' ? 'translateX(-320px)' : 'translateX(0px)';" style="position: absolute; right: -40px; top: 50%; transform: translateY(-50%); width: 40px; height: 100px; background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(255, 255, 255, 0.1); border-left: none; border-radius: 0 8px 8px 0; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #10b981; box-shadow: 5px 0 10px rgba(0,0,0,0.3);">
                     <span class="material-symbols-outlined">inventory_2</span>
                 </div>
             </div>
 
             <!-- Right: Event Content -->
             <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 3rem; position: relative; max-width: 800px; width: 100%; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);">
-                <span class="material-symbols-outlined" id="eventIcon"
-                    style="font-size: 5rem; margin-bottom: 1rem; color: #f59e0b;">money_bag</span>
+                <span class="material-symbols-outlined" id="eventIcon" style="font-size: 5rem; margin-bottom: 1rem; color: #f59e0b;">money_bag</span>
                 <div class="result-title" id="eventTitle" style="font-size: 3rem; margin-bottom: 1rem;">Trésor !</div>
-                <p style="color: #94a3b8; font-size: 1.2rem; margin-bottom: 2rem; max-width: 600px; text-align: center;"
-                    id="eventDesc">Vous avez trouvé un trésor.</p>
+                <p style="color: #94a3b8; font-size: 1.2rem; margin-bottom: 2rem; max-width: 600px; text-align: center;" id="eventDesc">Vous avez trouvé un trésor.</p>
 
-                <div id="eventLootContainer"
-                    style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; margin-bottom: 2rem; width: 100%;">
+                <div id="eventLootContainer" style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; margin-bottom: 2rem; width: 100%;">
                     <!-- Rempli par JS (Items / XP animation) -->
                 </div>
 
                 <div id="eventActionContainer" style="display: flex; gap: 1rem;">
-                    <button class="action-btn" id="btnOpenChest" onclick="openChest(false)"
-                        style="background: rgba(245, 158, 11, 0.2); color: #f59e0b; border-color: rgba(245, 158, 11, 0.4); display: none;">
+                    <button class="action-btn" id="btnOpenChest" onclick="openChest(false)" style="background: rgba(245, 158, 11, 0.2); color: #f59e0b; border-color: rgba(245, 158, 11, 0.4); display: none;">
                         <span class="material-symbols-outlined">lock_open</span> Ouvrir le coffre
                     </button>
-                    <button class="action-btn" id="btnOpenChestKey" onclick="openChest(true)"
-                        style="background: rgba(168, 85, 247, 0.2); color: #c084fc; border-color: rgba(168, 85, 247, 0.4); display: none;">
+                    <button class="action-btn" id="btnOpenChestKey" onclick="openChest(true)" style="background: rgba(168, 85, 247, 0.2); color: #c084fc; border-color: rgba(168, 85, 247, 0.4); display: none;">
                         <span class="material-symbols-outlined">vpn_key</span> Ouvrir (Clé : +10% de butin)
                     </button>
-                    <button class="action-btn" id="btnContinueEvent" onclick="nextRoom()"
-                        style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; border-color: rgba(59, 130, 246, 0.4);">
+                    <button class="action-btn" id="btnContinueEvent" onclick="nextRoom()" style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; border-color: rgba(59, 130, 246, 0.4);">
                         Continuer
                     </button>
                 </div>
@@ -1063,26 +1048,21 @@
                     </div>
                 </div>
                 <!-- Toggle Tab -->
-                <div onclick="const w = document.getElementById('combatVictoryInventoryWrapper'); w.style.transform = w.style.transform === 'translateX(0px)' ? 'translateX(-320px)' : 'translateX(0px)';"
-                     style="position: absolute; right: -40px; top: 50%; transform: translateY(-50%); width: 40px; height: 100px; background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(255, 255, 255, 0.1); border-left: none; border-radius: 0 8px 8px 0; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #10b981; box-shadow: 5px 0 10px rgba(0,0,0,0.3);">
+                <div onclick="const w = document.getElementById('combatVictoryInventoryWrapper'); w.style.transform = w.style.transform === 'translateX(0px)' ? 'translateX(-320px)' : 'translateX(0px)';" style="position: absolute; right: -40px; top: 50%; transform: translateY(-50%); width: 40px; height: 100px; background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(255, 255, 255, 0.1); border-left: none; border-radius: 0 8px 8px 0; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #10b981; box-shadow: 5px 0 10px rgba(0,0,0,0.3);">
                     <span class="material-symbols-outlined">inventory_2</span>
                 </div>
             </div>
 
             <!-- Right: Victory Content -->
             <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 3rem; position: relative; max-width: 800px; width: 100%; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);">
-                <span class="material-symbols-outlined"
-                    style="font-size: 5rem; margin-bottom: 1rem; color: #10b981;">emoji_events</span>
+                <span class="material-symbols-outlined" style="font-size: 5rem; margin-bottom: 1rem; color: #10b981;">emoji_events</span>
                 <div class="result-title" style="font-size: 3rem; margin-bottom: 1rem; color: #10b981;">Victoire !</div>
-                <p style="color: #94a3b8; font-size: 1.2rem; margin-bottom: 2rem; max-width: 600px; text-align: center;"
-                    id="combatVictoryDesc">
+                <p style="color: #94a3b8; font-size: 1.2rem; margin-bottom: 2rem; max-width: 600px; text-align: center;" id="combatVictoryDesc">
                 </p>
-                <div id="combatVictoryXpContainer"
-                    style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; margin-bottom: 2rem; width: 100%;">
+                <div id="combatVictoryXpContainer" style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; margin-bottom: 2rem; width: 100%;">
                     <!-- Rempli par JS -->
                 </div>
-                <button class="action-btn" onclick="nextRoom()"
-                    style="background: rgba(16, 185, 129, 0.2); color: #34d399; border-color: rgba(16, 185, 129, 0.4);">
+                <button class="action-btn" onclick="nextRoom()" style="background: rgba(16, 185, 129, 0.2); color: #34d399; border-color: rgba(16, 185, 129, 0.4);">
                     Continuer l'exploration
                 </button>
             </div>
@@ -1122,29 +1102,19 @@
             <div class="csp-filters">
                 <div class="filter-group">
                     <span class="filter-label">Type:</span>
-                    <label class="filter-radio"><input type="radio" name="filterCastingType" value="ALL" checked
-                            onchange="applySpellFilters(this)"><span>Tous</span></label>
-                    <label class="filter-radio"><input type="radio" name="filterCastingType" value="INSTANTANE"
-                            onchange="applySpellFilters(this)"><span>Instantané</span></label>
-                    <label class="filter-radio"><input type="radio" name="filterCastingType" value="BANAL"
-                            onchange="applySpellFilters(this)"><span>Banal</span></label>
-                    <label class="filter-radio"><input type="radio" name="filterCastingType" value="CANALISE"
-                            onchange="applySpellFilters(this)"><span>Canalisé</span></label>
+                    <label class="filter-radio"><input type="radio" name="filterCastingType" value="ALL" checked="" onchange="applySpellFilters(this)"><span>Tous</span></label>
+                    <label class="filter-radio"><input type="radio" name="filterCastingType" value="INSTANTANE" onchange="applySpellFilters(this)"><span>Instantané</span></label>
+                    <label class="filter-radio"><input type="radio" name="filterCastingType" value="BANAL" onchange="applySpellFilters(this)"><span>Banal</span></label>
+                    <label class="filter-radio"><input type="radio" name="filterCastingType" value="CANALISE" onchange="applySpellFilters(this)"><span>Canalisé</span></label>
                 </div>
                 <div class="filter-group">
                     <span class="filter-label">Niveau:</span>
-                    <label class="filter-radio"><input type="checkbox" name="filterLevel" value="ALL" checked
-                            onchange="applySpellFilters(this)"><span>Tous</span></label>
-                    <label class="filter-radio"><input type="checkbox" name="filterLevel" value="1"
-                            onchange="applySpellFilters(this)"><span>1</span></label>
-                    <label class="filter-radio"><input type="checkbox" name="filterLevel" value="2"
-                            onchange="applySpellFilters(this)"><span>2</span></label>
-                    <label class="filter-radio"><input type="checkbox" name="filterLevel" value="3"
-                            onchange="applySpellFilters(this)"><span>3</span></label>
-                    <label class="filter-radio"><input type="checkbox" name="filterLevel" value="4"
-                            onchange="applySpellFilters(this)"><span>4</span></label>
-                    <label class="filter-radio"><input type="checkbox" name="filterLevel" value="5"
-                            onchange="applySpellFilters(this)"><span>5</span></label>
+                    <label class="filter-radio"><input type="checkbox" name="filterLevel" value="ALL" checked="" onchange="applySpellFilters(this)"><span>Tous</span></label>
+                    <label class="filter-radio"><input type="checkbox" name="filterLevel" value="1" onchange="applySpellFilters(this)"><span>1</span></label>
+                    <label class="filter-radio"><input type="checkbox" name="filterLevel" value="2" onchange="applySpellFilters(this)"><span>2</span></label>
+                    <label class="filter-radio"><input type="checkbox" name="filterLevel" value="3" onchange="applySpellFilters(this)"><span>3</span></label>
+                    <label class="filter-radio"><input type="checkbox" name="filterLevel" value="4" onchange="applySpellFilters(this)"><span>4</span></label>
+                    <label class="filter-radio"><input type="checkbox" name="filterLevel" value="5" onchange="applySpellFilters(this)"><span>5</span></label>
                 </div>
             </div>
 
@@ -1156,21 +1126,18 @@
 
         <!-- Sidebar Actions (Right) -->
         <div class="csp-sidebar csp-sidebar-right">
-            <button class="action-btn attack" id="btnAttack" onclick="initiateCombatCast(null)" disabled
-                style="width: 100%; justify-content: center; margin-bottom: 0.5rem; white-space: nowrap;">
+            <button class="action-btn attack" id="btnAttack" onclick="initiateCombatCast(null)" disabled="" style="width: 100%; justify-content: center; margin-bottom: 0.5rem; white-space: nowrap;">
                 <span class="material-symbols-outlined">swords</span>
                 Attaque
             </button>
 
             <div style="flex: 1;"></div> <!-- Spacer -->
 
-            <button class="action-btn" id="btnEndTurn" onclick="endTurn()"
-                style="background: rgba(139, 92, 246, 0.2); color: #c084fc; border-color: rgba(139, 92, 246, 0.4); width: 100%; justify-content: center; white-space: nowrap;">
+            <button class="action-btn" id="btnEndTurn" onclick="endTurn()" style="background: rgba(139, 92, 246, 0.2); color: #c084fc; border-color: rgba(139, 92, 246, 0.4); width: 100%; justify-content: center; white-space: nowrap;">
                 <span class="material-symbols-outlined">hourglass_top</span>
                 Fin de Tour
             </button>
-            <button onclick="document.getElementById('fleeConfirmModal').classList.add('show')" class="action-btn flee"
-                style="width: 100%; justify-content: center; white-space: nowrap;">
+            <button onclick="window.promptFlee()" class="action-btn flee" style="width: 100%; justify-content: center; white-space: nowrap;">
                 <span class="material-symbols-outlined">directions_run</span>
                 Fuir
             </button>
@@ -1187,93 +1154,16 @@
     <!-- Target Selection Context Menu -->
     <div id="targetContextMenu" class="context-menu" style="display: none;"></div>
 
-    <div id="fleeConfirmModal" class="vault-modal-overlay">
-        <div class="vault-modal-content small"
-            style="border-color: rgba(239, 68, 68, 0.4); max-width: 400px; padding: 2rem;">
-            <div class="vault-modal-icon"
-                style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 2px solid rgba(239, 68, 68, 0.2); width: 64px; height: 64px; border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto;">
-                <span class="material-symbols-outlined" style="font-size: 2rem;">directions_run</span>
-            </div>
-            <div
-                style="font-size: 1.2rem; font-weight: 600; font-family: 'Outfit', sans-serif; color: #fff; margin-bottom: 0.8rem; text-align: center;">
-                Fuir le donjon ?
-            </div>
-            <div
-                style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 1.5rem; line-height: 1.5; text-align: center;">
-                Êtes-vous sûr de vouloir abandonner l'exploration et fuir ? Toute progression dans ce donjon sera
-                perdue.
-                <br><br>
-                <span id="fleePenaltyText" style="color: #ef4444; font-weight: bold;">Pénalité de fuite : calcul en cours...</span>
-            </div>
-            <div style="display: flex; gap: 1rem;">
-                <button onclick="document.getElementById('fleeConfirmModal').classList.remove('show')"
-                    style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 0.6rem; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.2s ease;"
-                    onmouseover="this.style.background='rgba(255,255,255,0.1)'"
-                    onmouseout="this.style.background='rgba(255,255,255,0.05)'">Annuler</button>
-                <button onclick="window.fleeCombatAction()"
-                    style="display: flex; align-items: center; justify-content: center; flex: 1; background: #ef4444; border: none; color: #fff; padding: 0.6rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(239, 68, 68, 0.3);"
-                    onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter='none'">
-                    Oui, fuir
-                </button>
-            </div>
-        </div>
-    </div>
+    
 
     <!-- Buy Confirmation Modal -->
-    <div id="buyConfirmModal" class="vault-modal-overlay">
-        <div class="vault-modal-content small"
-            style="border-color: rgba(245, 158, 11, 0.4); max-width: 400px; padding: 2rem;">
-            <div class="vault-modal-icon"
-                style="background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 2px solid rgba(245, 158, 11, 0.2); width: 64px; height: 64px; border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto;">
-                <span class="material-symbols-outlined" style="font-size: 2rem;">shopping_cart_checkout</span>
-            </div>
-            <div
-                style="font-size: 1.2rem; font-weight: 600; font-family: 'Outfit', sans-serif; color: #fff; margin-bottom: 0.8rem; text-align: center;">
-                Acheter cet objet ?</div>
-            <div
-                style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 1.5rem; line-height: 1.5; text-align: center;">
-                Êtes-vous sûr de
-                vouloir acheter <strong id="buyTargetName" style="color:#fff;">cet objet</strong> ? Il sera ajouté à
-                votre inventaire de combat (et dans vos objets).</div>
-            <div style="display: flex; gap: 1rem;">
-                <button onclick="window.closeBuyModal()"
-                    style="flex: 1; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 0.6rem; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.2s ease;"
-                    onmouseover="this.style.background='rgba(255,255,255,0.1)'"
-                    onmouseout="this.style.background='rgba(255,255,255,0.05)'">Annuler</button>
-                <button id="buyConfirmBtn"
-                    style="flex: 1; background: #f59e0b; border: none; color: #fff; padding: 0.6rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.3);"
-                    onmouseover="this.style.filter='brightness(1.1)'" onmouseout="this.style.filter='none'">Oui,
-                    acheter</button>
-            </div>
-        </div>
-    </div>
+    
 
     <!-- Consume Target Selection Modal -->
-    <div id="consumeTargetModal" class="vault-modal-overlay">
-        <div class="vault-modal-content small"
-            style="border-color: rgba(16, 185, 129, 0.4); max-width: 400px; padding: 2rem;">
-            <div class="vault-modal-icon"
-                style="background: rgba(16, 185, 129, 0.1); color: #10b981; border: 2px solid rgba(16, 185, 129, 0.2); width: 64px; height: 64px; border-radius: 16px; display: flex; align-items: center; justify-content: center; margin: 0 auto 1.5rem auto;">
-                <span class="material-symbols-outlined" style="font-size: 2rem;">local_hospital</span>
-            </div>
-            <div
-                style="font-size: 1.2rem; font-weight: 600; font-family: 'Outfit', sans-serif; color: #fff; margin-bottom: 0.8rem; text-align: center;">
-                Utiliser sur qui ?</div>
-            <div
-                style="font-size: 0.9rem; color: #94a3b8; margin-bottom: 1.5rem; line-height: 1.5; text-align: center;">
-                Sélectionnez le personnage sur lequel vous souhaitez utiliser <strong id="consumeTargetName" style="color:#fff;">cet objet</strong>.</div>
-            <div id="consumeTargetButtons" style="display: flex; flex-direction: column; gap: 0.8rem; margin-bottom: 1.5rem;">
-                <!-- Filled by JS -->
-            </div>
-            <button onclick="window.closeConsumeModal()"
-                style="width: 100%; background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 0.6rem; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.2s ease;"
-                onmouseover="this.style.background='rgba(255,255,255,0.1)'"
-                onmouseout="this.style.background='rgba(255,255,255,0.05)'">Annuler</button>
-        </div>
-    </div>
+    
 
     <script type="module" src="/js/auth.js?v=10"></script>
     <script type="module" src="/js/combat.js?v=108"></script>
-</body>
 
-</html>
+
+</body></html>

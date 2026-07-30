@@ -458,13 +458,37 @@ export function makeCustomSelect(selectIdOrElement) {
     select.parentNode.insertBefore(wrapper, select.nextSibling);
 }
 
-export function showNotif(text) {
-    const notif = document.getElementById('notif');
+export function showNotif(text, isError = false) {
+    let notif = document.getElementById('notif');
+    if (!notif) {
+        notif = document.createElement('div');
+        notif.id = 'notif';
+        notif.className = 'notification';
+        document.body.appendChild(notif);
+    }
     notif.innerText = text;
+    if (isError) {
+        notif.style.background = 'rgba(239, 68, 68, 0.9)'; // Red
+    } else {
+        notif.style.background = 'rgba(16, 185, 129, 0.9)'; // Green
+    }
     notif.classList.add('show');
-    setTimeout(() => {
+    if (notif.hideTimeout) clearTimeout(notif.hideTimeout);
+    notif.hideTimeout = setTimeout(() => {
         notif.classList.remove('show');
     }, 4000);
+}
+
+export async function showModal(options) {
+    if (!customElements.get('app-modal')) {
+        await import('./components/modal.js');
+    }
+    let modal = document.querySelector('app-modal');
+    if (!modal) {
+        modal = document.createElement('app-modal');
+        document.body.appendChild(modal);
+    }
+    return modal.show(options);
 }
 
 export function showGlobalTooltip(el) {

@@ -73,16 +73,14 @@ function calculateWeight(eq) {
     return w;
 }
 
-function showNotif(message, isError = false) {
-    const notif = document.getElementById('vaultNotif');
-    const text = document.getElementById('vaultNotifText');
-    text.textContent = message;
-    notif.classList.remove('error');
-    if (isError) notif.classList.add('error');
-    notif.classList.add('show');
-    setTimeout(() => {
-        notif.classList.remove('show');
-    }, 3000);
+async function showNotif(message, isError = false) {
+    const ui = await import('/js/ui.js');
+    ui.showNotif(message, isError);
+}
+
+async function showModal(options) {
+    const ui = await import('/js/ui.js');
+    return ui.showModal(options);
 }
 
 // ===== Custom Select Logic =====
@@ -311,42 +309,32 @@ function addAnomalyRow(selectedName = '', qty = 1) {
 
 
 function deleteEquipment(id) {
-    pageState.equipmentToDelete = id;
     const eq = pageState.allEquipments.find(e => e.id === id);
-    if (eq) {
-        document.getElementById('deleteTargetName').textContent = eq.name;
-        const weightStr = eq._weight % 1 === 0 ? eq._weight : eq._weight.toFixed(1);
-        document.getElementById('deleteConfirmBtn').innerHTML = `Oui, détruire pour ${weightStr} <span class="material-symbols-outlined align-middle" style="font-size: 1rem; margin-top: -2px;">monetization_on</span>`;
-    }
-    document.getElementById('deleteConfirmModal').classList.add('show');
-}
+    if (!eq) return;
 
-function closeDeleteModal() {
-    document.getElementById('deleteConfirmModal').classList.remove('show');
-    pageState.equipmentToDelete = null;
-}
-
-document.getElementById('deleteConfirmBtn').addEventListener('click', async () => {
-    if (!pageState.equipmentToDelete) return;
-
-    const id = pageState.equipmentToDelete;
-    closeDeleteModal();
-
-    try {
-        const res = await globalFetch(`/api/shop/templates/${id}`, { method: 'DELETE' });
-        if (res.ok) {
-            showNotif('Équipement détruit.');
-            await loadEquipments();
-            if (window.checkAuthStatus) {
-                window.checkAuthStatus();
+    const weightStr = eq._weight % 1 === 0 ? eq._weight : eq._weight.toFixed(1);
+    
+    showModal({
+        title: "Détruire l'équipement ?",
+        body: `Voulez-vous vraiment détruire l'équipement <strong style="color:#fff;">${eq.name}</strong> ?<br><br>Cette action est définitive (pour la template de la boutique).`,
+        icon: 'warning',
+        confirmText: `Oui, détruire`,
+        onConfirm: async () => {
+            try {
+                const res = await globalFetch(`/api/shop/templates/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    showNotif('Équipement détruit.');
+                    await loadEquipments();
+                    if (window.checkAuthStatus) window.checkAuthStatus();
+                } else {
+                    showNotif('Erreur lors de la suppression.', true);
+                }
+            } catch (e) {
+                showNotif('Erreur réseau.', true);
             }
-        } else {
-            showNotif('Erreur lors de la suppression.', true);
         }
-    } catch (e) {
-        showNotif('Erreur réseau.', true);
-    }
-});
+    });
+}
 
 // ===== Rendu =====
 function renderVault() {
