@@ -533,8 +533,8 @@ function renderGrid(equipments) {
 // Init
 window.addEventListener('DOMContentLoaded', async () => {
     if (window.initAppMeta) await window.initAppMeta();
+    await loadAnomalies();
     loadEquipments();
-    loadAnomalies();
 
     if (document.getElementById('addAnomalyPriceBtn')) {
         document.getElementById('addAnomalyPriceBtn').addEventListener('click', () => {
