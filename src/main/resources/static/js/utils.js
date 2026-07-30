@@ -127,7 +127,7 @@ async function showModal(options) {
 
 // ---- Shared constants ----
 
-const RARITY_COLORS = {
+window.RARITY_COLORS = {
     COMMUN: '#94a3b8',
     INHABITUEL: '#22c55e',
     RARE: '#3b82f6',
@@ -151,7 +151,7 @@ function getCategoryIcon(categoryName) {
     return CATEGORY_ICONS_FALLBACK[categoryName] || 'category';
 }
 
-const DEFAULT_SECRETS_META = [
+window.DEFAULT_SECRETS_META = [
     { name: "Secret du Chaos", icon: "local_fire_department", color: "#ff0000" },
     { name: "Secret de l'Abondance", icon: "eco", color: "#10b981" },
     { name: "Secret de la Préservation", icon: "foundation", color: "#99674c" },

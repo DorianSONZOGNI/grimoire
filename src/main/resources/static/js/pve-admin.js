@@ -1887,7 +1887,7 @@ window.renderDungeonsList = function () {
         let secretMeta = { icon: "key", color: "#f59e0b" };
         if (d.requiredSecret) {
             
-            secretMeta = DEFAULT_SECRETS_META.find(s => s.name === d.requiredSecret) || secretMeta;
+            secretMeta = window.DEFAULT_SECRETS_META.find(s => s.name === d.requiredSecret) || secretMeta;
         }
 
         list.innerHTML += `

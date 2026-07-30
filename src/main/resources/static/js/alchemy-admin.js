@@ -239,7 +239,7 @@ async function updateRewardNameInput() {
         // Fetch dungeons to get available secrets
         let secretOptions = '';
 
-        const defaultSecrets = DEFAULT_SECRETS_META;
+        const defaultSecrets = window.DEFAULT_SECRETS_META;
 
         defaultSecrets.forEach(ds => {
             secretOptions += `<div class="custom-option" data-value="${ds.name}">
@@ -549,7 +549,7 @@ window.renderRecipesList = function () {
         } else if (r.rewardType === 'GIVE_SPIRIT_XP') {
             rewardHtml = `<span class="anomaly-badge" style="border: 1px solid #38bdf8; background: linear-gradient(#38bdf825, #38bdf825), #1e293b; color: #38bdf8; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block;"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; color: #38bdf8;">self_improvement</span> ${r.rewardQuantity} XP Spiritualité</span>`;
         } else if (r.rewardType === 'UNLOCK_FEATURE') {
-            const meta = DEFAULT_SECRETS_META.find(s => s.name === r.rewardName) || { icon: "key", color: "#f59e0b" };
+            const meta = window.DEFAULT_SECRETS_META.find(s => s.name === r.rewardName) || { icon: "key", color: "#f59e0b" };
             rewardHtml = `<span class="anomaly-badge" style="border: 1px solid ${meta.color}; background: linear-gradient(${meta.color}25, ${meta.color}25), #1e293b; color: ${meta.color}; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block;"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; color: ${meta.color};">${meta.icon}</span> Secret - ${r.rewardName} <span style="opacity: 0.8; font-size: 0.85em;">(Niv. ${r.rewardLevel || 1})</span></span>`;
         } else {
             rewardHtml = `<span style="color: #f59e0b;">${r.rewardType} - ${r.rewardQuantity}x ${r.rewardName}</span>`;
