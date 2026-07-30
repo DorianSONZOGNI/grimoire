@@ -29,6 +29,9 @@ public class ShopController {
     @Autowired
     private AnomalieRepository anomalieRepository;
 
+    @Autowired
+    private generation.grimoire.service.RenameCascadeService renameCascadeService;
+
     // --- DAILY SHOP ---
 
     @GetMapping("/daily")
@@ -225,7 +228,7 @@ public class ShopController {
     }
 
     @PostMapping("/templates")
-    @org.springframework.cache.annotation.CacheEvict(value = {"equipmentTemplates", "equipmentShopTemplates", "equipmentTemplateByName"}, allEntries = true)
+    @org.springframework.cache.annotation.CacheEvict(value = {"equipmentTemplates", "equipmentShopTemplates", "equipmentTemplateByName", "publicEquipmentTemplates", "equipmentDistinctNames", "alchemyRecipes", "alchemyRecipesList", "alchemyRecipeById", "lootEntriesByEquipment", "salles", "monstres"}, allEntries = true)
     public ResponseEntity<?> createTemplate(
             @RequestBody generation.grimoire.controller.EquipmentController.EquipmentDto dto, Principal principal) {
         if (principal == null || !isAdmin(principal))
@@ -241,7 +244,7 @@ public class ShopController {
     }
 
     @PutMapping("/templates/{id}")
-    @org.springframework.cache.annotation.CacheEvict(value = {"equipmentTemplates", "equipmentShopTemplates", "equipmentTemplateByName"}, allEntries = true)
+    @org.springframework.cache.annotation.CacheEvict(value = {"equipmentTemplates", "equipmentShopTemplates", "equipmentTemplateByName", "publicEquipmentTemplates", "equipmentDistinctNames", "alchemyRecipes", "alchemyRecipesList", "alchemyRecipeById", "lootEntriesByEquipment", "salles", "monstres"}, allEntries = true)
     public ResponseEntity<?> updateTemplate(@PathVariable @org.springframework.lang.NonNull Long id,
             @RequestBody generation.grimoire.controller.EquipmentController.EquipmentDto dto, Principal principal) {
         if (principal == null || !isAdmin(principal))
@@ -265,6 +268,7 @@ public class ShopController {
                     instance.setTemplate(false); // ensure it remains an instance
                     equipmentRepository.save(instance);
                 }
+                renameCascadeService.cascadeEquipmentRename(oldName, eq.getName());
             }
 
             return ResponseEntity.ok(toShopDto(eq));
@@ -272,7 +276,7 @@ public class ShopController {
     }
 
     @DeleteMapping("/templates/{id}")
-    @org.springframework.cache.annotation.CacheEvict(value = {"equipmentTemplates", "equipmentShopTemplates", "equipmentTemplateByName"}, allEntries = true)
+    @org.springframework.cache.annotation.CacheEvict(value = {"equipmentTemplates", "equipmentShopTemplates", "equipmentTemplateByName", "publicEquipmentTemplates", "equipmentDistinctNames", "alchemyRecipes", "alchemyRecipesList", "alchemyRecipeById", "lootEntriesByEquipment", "salles", "monstres"}, allEntries = true)
     public ResponseEntity<?> deleteTemplate(@PathVariable @org.springframework.lang.NonNull Long id,
             Principal principal) {
         if (principal == null || !isAdmin(principal))

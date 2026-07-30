@@ -33,6 +33,9 @@ public class AnomalieController {
     @Autowired
     private EquipmentRepository equipmentRepository;
 
+    @Autowired
+    private generation.grimoire.service.RenameCascadeService renameCascadeService;
+
     private String getCurrentUsername() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         if (auth != null && auth.isAuthenticated() && !auth.getPrincipal().equals("anonymousUser")) {
@@ -47,7 +50,7 @@ public class AnomalieController {
         if (username == null) {
             return ResponseEntity.status(401).build();
         }
-        
+
         Optional<AppUser> userOpt = userRepository.findByUsername(username);
         if (userOpt.isPresent() && "ADMIN".equals(userOpt.get().getRole())) {
             syncAdminAnomalies(userOpt.get());
@@ -59,22 +62,24 @@ public class AnomalieController {
     @GetMapping("/all")
     public ResponseEntity<List<Anomalie>> getAllAdmin() {
         String username = getCurrentUsername();
-        if (username == null) return ResponseEntity.status(401).build();
-        
+        if (username == null)
+            return ResponseEntity.status(401).build();
+
         Optional<AppUser> userOpt = userRepository.findByUsername(username);
         if (userOpt.isEmpty() || !"ADMIN".equals(userOpt.get().getRole())) {
             return ResponseEntity.status(403).build();
         }
-        
+
         return ResponseEntity.ok(anomalieRepository.findAll());
     }
-    
+
     private void syncAdminAnomalies(AppUser adminUser) {
         List<String> distinctNames = anomalieRepository.findDistinctNames();
         List<Anomalie> adminAnomalies = anomalieRepository.findByOwnerUsername(adminUser.getUsername());
-        
+
         for (String name : distinctNames) {
-            if (name == null || name.trim().isEmpty()) continue;
+            if (name == null || name.trim().isEmpty())
+                continue;
             boolean hasIt = adminAnomalies.stream().anyMatch(a -> name.equals(a.getName()));
             if (!hasIt) {
                 Anomalie template = anomalieRepository.findFirstByNameAndIsTemplateTrueOrderByIdAsc(name);
@@ -114,14 +119,18 @@ public class AnomalieController {
         return ResponseEntity.ok(new java.util.ArrayList<>(uniqueMap.values()));
     }
 
-    @org.springframework.cache.annotation.CacheEvict(value = {"anomalyTemplates", "anomalieTemplates", "anomalieTemplateByName", "anomalieDistinctNames", "alchemyRecipes", "alchemyRecipesList", "alchemyRecipeById", "equipmentTemplates", "equipmentTemplateByName", "publicEquipmentTemplates", "equipmentShopTemplates", "equipmentDistinctNames"}, allEntries = true)
+    @org.springframework.cache.annotation.CacheEvict(value = { "anomalyTemplates", "anomalieTemplates",
+            "anomalieTemplateByName", "anomalieDistinctNames", "alchemyRecipes", "alchemyRecipesList",
+            "alchemyRecipeById", "equipmentTemplates", "equipmentTemplateByName", "publicEquipmentTemplates",
+            "equipmentShopTemplates", "equipmentDistinctNames", "donjons", "monstres", "salles",
+            "lootEntriesByEquipment" }, allEntries = true)
     @PutMapping("/{id}")
     public ResponseEntity<?> updateAnomalie(@PathVariable Long id, @RequestBody Anomalie anomalieDetails) {
         String username = getCurrentUsername();
         if (username == null) {
             return ResponseEntity.status(401).body("Non autorisé");
         }
-        
+
         Optional<AppUser> userOpt = userRepository.findByUsername(username);
         if (userOpt.isEmpty()) {
             return ResponseEntity.status(404).body("Utilisateur introuvable");
@@ -138,6 +147,7 @@ public class AnomalieController {
             return ResponseEntity.status(403).body("Ce n'est pas votre anomalie.");
         }
 
+        String originalName = existing.getName();
         existing.setName(anomalieDetails.getName());
         existing.setSpiritualite(anomalieDetails.getSpiritualite());
         existing.setCategory(anomalieDetails.getCategory());
@@ -145,32 +155,48 @@ public class AnomalieController {
         existing.setLevel(anomalieDetails.getLevel());
         existing.setMagicObject(anomalieDetails.isMagicObject());
 
-        anomalieRepository.save(existing);
+        List<Anomalie> sameAnomalies = anomalieRepository.findByName(originalName);
+        for (Anomalie a : sameAnomalies) {
+            a.setName(existing.getName());
+            a.setSpiritualite(existing.getSpiritualite());
+            a.setCategory(existing.getCategory());
+            a.setDescription(existing.getDescription());
+            a.setLevel(existing.getLevel());
+            a.setMagicObject(existing.isMagicObject());
+        }
+
+        renameCascadeService.cascadeAnomalyRename(originalName, existing.getName());
+        anomalieRepository.saveAll(sameAnomalies);
         return ResponseEntity.ok(existing);
     }
 
-    @org.springframework.cache.annotation.CacheEvict(value = {"anomalyTemplates", "anomalieTemplates", "anomalieTemplateByName", "anomalieDistinctNames", "alchemyRecipes", "alchemyRecipesList", "alchemyRecipeById", "equipmentTemplates", "equipmentTemplateByName", "publicEquipmentTemplates", "equipmentShopTemplates", "equipmentDistinctNames"}, allEntries = true)
+    @org.springframework.cache.annotation.CacheEvict(value = { "anomalyTemplates", "anomalieTemplates",
+            "anomalieTemplateByName", "anomalieDistinctNames", "alchemyRecipes", "alchemyRecipesList",
+            "alchemyRecipeById", "equipmentTemplates", "equipmentTemplateByName", "publicEquipmentTemplates",
+            "equipmentShopTemplates", "equipmentDistinctNames", "donjons", "monstres", "salles",
+            "lootEntriesByEquipment" }, allEntries = true)
     @PostMapping
     public ResponseEntity<?> createAnomalie(@RequestBody Anomalie anomalie) {
         String username = getCurrentUsername();
         if (username == null) {
             return ResponseEntity.status(401).body("Non autorisé");
         }
-        
+
         Optional<AppUser> userOpt = userRepository.findByUsername(username);
         if (userOpt.isEmpty()) {
             return ResponseEntity.status(404).body("Utilisateur introuvable");
         }
 
         if (anomalie.getId() != null) {
-            Optional<Anomalie> existingOpt = anomalieRepository.findById(java.util.Objects.requireNonNull(anomalie.getId()));
+            Optional<Anomalie> existingOpt = anomalieRepository
+                    .findById(java.util.Objects.requireNonNull(anomalie.getId()));
             if (existingOpt.isPresent()) {
                 Anomalie existing = existingOpt.get();
                 boolean isAdmin = "ADMIN".equals(userOpt.get().getRole());
                 if (!isAdmin && !existing.getOwnerUsername().equals(username)) {
                     return ResponseEntity.status(403).body("Ce n'est pas votre anomalie.");
                 }
-                
+
                 String originalName = existing.getName();
                 List<Anomalie> sameAnomalies = anomalieRepository.findByName(originalName);
                 for (Anomalie a : sameAnomalies) {
@@ -181,40 +207,9 @@ public class AnomalieController {
                     a.setLevel(anomalie.getLevel() != null ? anomalie.getLevel() : 1);
                     a.setMagicObject(anomalie.isMagicObject());
                 }
-                
-                if (!originalName.equals(anomalie.getName())) {
-                    String newName = anomalie.getName();
-                    
-                    // Update Recipes
-                    List<AlchemyRecipe> allRecipes = alchemyService.getAllRecipes();
-                    for (AlchemyRecipe r : allRecipes) {
-                        boolean modified = false;
-                        if (generation.grimoire.enumeration.RecipeRewardType.GIVE_ANOMALY.equals(r.getRewardType()) 
-                            && originalName.equals(r.getRewardName())) {
-                            r.setRewardName(newName);
-                            modified = true;
-                        }
-                        if (r.getRequiredAnomalies() != null && r.getRequiredAnomalies().containsKey(originalName)) {
-                            Integer qty = r.getRequiredAnomalies().remove(originalName);
-                            r.getRequiredAnomalies().put(newName, qty);
-                            modified = true;
-                        }
-                        if (modified) {
-                            alchemyService.saveRecipe(r);
-                        }
-                    }
-                    
-                    // Update Equipments
-                    List<Equipment> allEquipments = equipmentRepository.findAll();
-                    for (Equipment eq : allEquipments) {
-                        if (eq.getPriceAnomalies() != null && eq.getPriceAnomalies().containsKey(originalName)) {
-                            Integer qty = eq.getPriceAnomalies().remove(originalName);
-                            eq.getPriceAnomalies().put(newName, qty);
-                            equipmentRepository.save(eq);
-                        }
-                    }
-                }
-                
+
+                renameCascadeService.cascadeAnomalyRename(originalName, anomalie.getName());
+
                 anomalieRepository.saveAll(java.util.Objects.requireNonNull(sameAnomalies));
                 return ResponseEntity.ok(existing);
             }
@@ -230,22 +225,26 @@ public class AnomalieController {
             anomalie.setOwnerUsername(username);
             anomalie.setUser(userOpt.get());
         }
-        
+
         Anomalie saved = anomalieRepository.save(anomalie);
         return ResponseEntity.ok(saved);
     }
 
-    @org.springframework.cache.annotation.CacheEvict(value = {"anomalyTemplates", "anomalieTemplates", "anomalieTemplateByName", "anomalieDistinctNames", "alchemyRecipes", "alchemyRecipesList", "alchemyRecipeById", "equipmentTemplates", "equipmentTemplateByName", "publicEquipmentTemplates", "equipmentShopTemplates", "equipmentDistinctNames"}, allEntries = true)
+    @org.springframework.cache.annotation.CacheEvict(value = { "anomalyTemplates", "anomalieTemplates",
+            "anomalieTemplateByName", "anomalieDistinctNames", "alchemyRecipes", "alchemyRecipesList",
+            "alchemyRecipeById", "equipmentTemplates", "equipmentTemplateByName", "publicEquipmentTemplates",
+            "equipmentShopTemplates", "equipmentDistinctNames", "donjons", "monstres", "salles",
+            "lootEntriesByEquipment" }, allEntries = true)
     @DeleteMapping("/{id}")
     public ResponseEntity<?> deleteAnomalie(@PathVariable Long id) {
         String username = getCurrentUsername();
         if (username == null) {
             return ResponseEntity.status(401).body("Non autorisé");
         }
-        
+
         Optional<AppUser> userOpt = userRepository.findByUsername(username);
         boolean isAdmin = userOpt.isPresent() && "ADMIN".equals(userOpt.get().getRole());
-        
+
         Optional<Anomalie> opt = anomalieRepository.findById(java.util.Objects.requireNonNull(id));
         if (opt.isPresent()) {
             Anomalie a = opt.get();
