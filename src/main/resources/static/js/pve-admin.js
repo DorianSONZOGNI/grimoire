@@ -1333,12 +1333,9 @@ function renderRooms() {
                         } else if (outcome.type === 'TRESOR') {
                             if (!outcome.treasureAnomalieId) outcome.treasureAnomalieId = pageState.allAnomalies.length > 0 ? pageState.allAnomalies[0].id : '';
                             const selAnomalie = pageState.allAnomalies.find(a => a.id == outcome.treasureAnomalieId) || pageState.allAnomalies[0];
-                            let selAnColor = '#94a3b8';
+                            let selAnColor = getSpiritualiteColor(selAnomalie?.spiritualite);
                             let selCatIcon = 'star';
                             if (selAnomalie) {
-                                if (selAnomalie.spiritualite === 'TENEBRES') selAnColor = '#a855f7';
-                                else if (selAnomalie.spiritualite === 'ESPRIT') selAnColor = '#38bdf8';
-                                else if (selAnomalie.spiritualite === 'KARMA') selAnColor = '#e7d198';
                                 selCatIcon = selAnomalie.category ? (getCategoryIcon(selAnomalie.category)) : 'star';
                             }
                             const selAnHtml = selAnomalie ? `<span class="material-symbols-outlined cs-icon align-middle" style="color: ${selAnColor}; font-size: 1.1rem; margin-right: 4px;">${selCatIcon}</span>${selAnomalie.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${selAnomalie.level || 1})</span>` : 'Aucune anomalie disponible';
