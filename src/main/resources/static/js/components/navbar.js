@@ -20,7 +20,10 @@ class AppNavbar extends HTMLElement {
             'shop': { icon: 'storefront', cls: 'logo-shop', title: 'Boutique', subtitle: "Touché c'est acheté !" },
             'alchemy': { icon: 'science', cls: 'logo-alchemy', title: 'Alchimie', subtitle: 'Mélangez vos ingrédients...' },
             'secret': { icon: 'key', cls: 'logo-secret', title: 'Mes Secrets', subtitle: 'Savoir mystique...' },
-            'admin': { icon: 'admin_panel_settings', cls: 'logo-admin', title: 'Administration', subtitle: 'Section restreinte.' }
+            'admin': { icon: 'admin_panel_settings', cls: 'logo-admin', title: 'Administration', subtitle: 'Section restreinte.' },
+            'shop-admin': { icon: 'settings', cls: 'logo-admin', title: 'Admin Boutique', subtitle: 'Gestion de la boutique' },
+            'pve-admin': { icon: 'admin_panel_settings', cls: 'logo-admin', title: 'Admin PvE', subtitle: 'Gestion des donjons' },
+            'alchemy-admin': { icon: 'science', cls: 'logo-admin', title: 'Admin Alchimie', subtitle: 'Gestion des recettes' }
         };
 
         const config = pageConfig[activePage] || pageConfig['grimoire'];
@@ -54,13 +57,13 @@ class AppNavbar extends HTMLElement {
                     <span class="material-symbols-outlined" style="font-size: 1.1rem;">science</span> Alchimie
                 </a>
                 
-                <a href="/shop-admin.html" id="adminShopLink" class="top-nav-link nav-admin ${activePage === 'admin' ? 'active' : ''}" style="display: none;">
+                <a href="/shop-admin.html" id="adminShopLink" class="top-nav-link nav-admin ${activePage === 'shop-admin' ? 'active' : ''}" style="display: none;">
                     <span class="material-symbols-outlined" style="font-size: 1.1rem;">settings</span> Admin Boutique
                 </a>
-                <a href="/pve-admin.html" id="adminPvELink" class="top-nav-link nav-admin ${activePage === 'admin' ? 'active' : ''}" style="display: none;">
+                <a href="/pve-admin.html" id="adminPvELink" class="top-nav-link nav-admin ${activePage === 'pve-admin' ? 'active' : ''}" style="display: none;">
                     <span class="material-symbols-outlined" style="font-size: 1.1rem;">admin_panel_settings</span> Admin PvE
                 </a>
-                <a href="/alchemy-admin.html" id="adminAlchemyLink" class="top-nav-link nav-admin ${activePage === 'admin' ? 'active' : ''}" style="display: none;">
+                <a href="/alchemy-admin.html" id="adminAlchemyLink" class="top-nav-link nav-admin ${activePage === 'alchemy-admin' ? 'active' : ''}" style="display: none;">
                     <span class="material-symbols-outlined" style="font-size: 1.1rem;">science</span> Admin Alchimie
                 </a>
 
