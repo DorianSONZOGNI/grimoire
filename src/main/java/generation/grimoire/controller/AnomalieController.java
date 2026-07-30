@@ -4,10 +4,6 @@ import generation.grimoire.entity.Anomalie;
 import generation.grimoire.entity.auth.AppUser;
 import generation.grimoire.repository.AnomalieRepository;
 import generation.grimoire.repository.auth.UserRepository;
-import generation.grimoire.repository.EquipmentRepository;
-import generation.grimoire.service.AlchemyService;
-import generation.grimoire.entity.AlchemyRecipe;
-import generation.grimoire.entity.Equipment;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -26,12 +22,6 @@ public class AnomalieController {
 
     @Autowired
     private UserRepository userRepository;
-
-    @Autowired
-    private AlchemyService alchemyService;
-
-    @Autowired
-    private EquipmentRepository equipmentRepository;
 
     @Autowired
     private generation.grimoire.service.RenameCascadeService renameCascadeService;
@@ -156,17 +146,21 @@ public class AnomalieController {
         existing.setMagicObject(anomalieDetails.isMagicObject());
 
         List<Anomalie> sameAnomalies = anomalieRepository.findByName(originalName);
-        for (Anomalie a : sameAnomalies) {
-            a.setName(existing.getName());
-            a.setSpiritualite(existing.getSpiritualite());
-            a.setCategory(existing.getCategory());
-            a.setDescription(existing.getDescription());
-            a.setLevel(existing.getLevel());
-            a.setMagicObject(existing.isMagicObject());
-        }
+        if (sameAnomalies != null) {
+            for (Anomalie a : sameAnomalies) {
+                a.setName(existing.getName());
+                a.setSpiritualite(existing.getSpiritualite());
+                a.setCategory(existing.getCategory());
+                a.setDescription(existing.getDescription());
+                a.setLevel(existing.getLevel());
+                a.setMagicObject(existing.isMagicObject());
+            }
 
-        renameCascadeService.cascadeAnomalyRename(originalName, existing.getName());
-        anomalieRepository.saveAll(sameAnomalies);
+            renameCascadeService.cascadeAnomalyRename(originalName, existing.getName());
+            anomalieRepository.saveAll(sameAnomalies);
+        } else {
+            renameCascadeService.cascadeAnomalyRename(originalName, existing.getName());
+        }
         return ResponseEntity.ok(existing);
     }
 
