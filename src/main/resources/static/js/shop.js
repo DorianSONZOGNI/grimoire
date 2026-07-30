@@ -1,32 +1,4 @@
-// Replaced by window.SLOT_LABELS
-function getSlotInfo(eq) {
-    if (!eq) return { icon: 'help', color: '#94a3b8', label: '?' };
-    const sName = typeof eq.slot === 'object' ? eq.slot?.name : eq.slot;
-    const info = Object.assign({}, (window.SLOT_LABELS && window.SLOT_LABELS[sName]) ? window.SLOT_LABELS[sName] : { label: sName || '?', icon: 'help', color: '#94a3b8' });
-
-    if (sName === 'CONSOMMABLE' && eq.consumableCategory) {
-        const catName = typeof eq.consumableCategory === 'object' ? eq.consumableCategory?.name : eq.consumableCategory;
-        if (catName && window.CONSUMABLE_CATEGORIES && window.CONSUMABLE_CATEGORIES[catName]) {
-            const catInfo = window.CONSUMABLE_CATEGORIES[catName];
-            info.icon = catInfo.icon;
-            info.color = catInfo.color;
-        }
-    }
-    return info;
-}
-
-
-
-const RARITY_COLORS = {
-    COMMUN: '#94a3b8',
-    INHABITUEL: '#22c55e',
-    RARE: '#3b82f6',
-    MYTHIQUE: '#f97316',
-    LEGENDAIRE: '#eab308',
-    EPIQUE: '#ef4444',
-    RELIQUE: '#a855f7',
-    MAUDIT: '#7f1d1d'
-};
+// getSlotInfo, RARITY_COLORS, showNotif, showModal → utils.js
 
 const pageState = {
     shopItems: [],
@@ -54,15 +26,6 @@ async function loadShop() {
     }
 }
 
-async function showNotif(message, isError = false) {
-    const ui = await import('/js/ui.js');
-    ui.showNotif(message, isError);
-}
-
-async function showModal(options) {
-    const ui = await import('/js/ui.js');
-    return ui.showModal(options);
-}
 
 function generateStandHtml(eq) {
     const isPromo = eq.isDiscount;
@@ -171,17 +134,7 @@ function generateStandHtml(eq) {
                 for (const [n, q] of Object.entries(eq.priceAnomalies)) {
                     let aTemp = pageState.allAnomalies.find(a => a.name === n);
 
-                    const CATEGORY_ICONS = {
-                        'PIERRE': 'landslide',
-                        'METAL': 'hardware',
-                        'COEUR': 'favorite',
-                        'ORBE': 'lens',
-                        'CRISTAL': 'diamond',
-                        'PLUME': 'history_edu',
-                        'ECAILLE': 'waves',
-                        'AUTRE': 'category'
-                    };
-                    const catIcon = aTemp && aTemp.category ? (CATEGORY_ICONS[aTemp.category] || 'category') : 'star';
+                    const catIcon = aTemp && aTemp.category ? getCategoryIcon(aTemp.category) : 'star';
 
                     const spiriColor = aTemp && aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
                     const tooltipData = `
@@ -347,17 +300,7 @@ window.openBuyModal = function (id, isConsumable = false) {
         let anos = [];
         for (const [n, q] of Object.entries(eq.priceAnomalies)) {
             let aTemp = pageState.allAnomalies.find(a => a.name === n);
-            const CATEGORY_ICONS = {
-                'PIERRE': 'landslide',
-                'METAL': 'hardware',
-                'COEUR': 'favorite',
-                'ORBE': 'lens',
-                'CRISTAL': 'diamond',
-                'PLUME': 'history_edu',
-                'ECAILLE': 'waves',
-                'AUTRE': 'category'
-            };
-            const catIcon = aTemp && aTemp.category ? (CATEGORY_ICONS[aTemp.category] || 'category') : 'star';
+                        const catIcon = aTemp && aTemp.category ? getCategoryIcon(aTemp.category) : 'star';
             const spiriColor = aTemp && aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
             anos.push(`<span style="color: ${spiriColor};"><span class="material-symbols-outlined align-middle" style="font-size: 1rem;">${catIcon}</span> ${q}</span>`);
         }

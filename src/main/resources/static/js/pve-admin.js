@@ -23,43 +23,9 @@ pageState.selectedRooms = [];
 pageState.selectedMutationIds = [];
 // Replaced by window.SLOT_LABELS
 
-function getSlotInfo(eq) {
-    if (!eq) return { icon: 'help', color: '#94a3b8', label: '?' };
-    const sName = typeof eq.slot === 'object' ? eq.slot?.name : eq.slot;
-    const info = Object.assign({}, (window.SLOT_LABELS && window.SLOT_LABELS[sName]) ? window.SLOT_LABELS[sName] : { label: sName || '?', icon: 'help', color: '#94a3b8' });
+// getSlotInfo -> utils.js
 
-    if (sName === 'CONSOMMABLE' && eq.consumableCategory) {
-        const catName = typeof eq.consumableCategory === 'object' ? eq.consumableCategory?.name : eq.consumableCategory;
-        if (catName && window.CONSUMABLE_CATEGORIES && window.CONSUMABLE_CATEGORIES[catName]) {
-            const catInfo = window.CONSUMABLE_CATEGORIES[catName];
-            info.icon = catInfo.icon;
-            info.color = catInfo.color;
-        }
-    }
-    return info;
-}
-
-const RARITY_COLORS = {
-    COMMUN: '#94a3b8',
-    INHABITUEL: '#22c55e',
-    RARE: '#3b82f6',
-    MYTHIQUE: '#f97316',
-    LEGENDAIRE: '#eab308',
-    EPIQUE: '#ef4444',
-    RELIQUE: '#a855f7',
-    MAUDIT: '#7f1d1d'
-};
-
-
-
-
-
-
-
-
-
-
-
+// RARITY_COLORS -> utils.js
 const SECRETS_META = [
     { name: "Secret du Chaos", icon: "local_fire_department", color: "#ef4444" },
     { name: "Secret de l'Abondance", icon: "eco", color: "#10b981" },
@@ -795,16 +761,11 @@ function renderRooms() {
                         ` : `
                             <label class="text-xs text-muted">Item Spécial Donné en récompense</label>
                             ${(() => {
-                            const CATEGORY_ICONS = {
-                                'PIERRE': 'landslide', 'METAL': 'hardware', 'COEUR': 'favorite',
-                                'ORBE': 'lens', 'CRISTAL': 'diamond', 'PLUME': 'history_edu',
-                                'ECAILLE': 'waves', 'AUTRE': 'category'
-                            };
                             const selAnomalie = pageState.allAnomalies.find(a => a.name === room.alterationSpecialItemReward);
                             let selHtml = '<span class="material-symbols-outlined cs-icon text-muted">star</span> Choisir une anomalie...';
                             if (selAnomalie) {
                                 let color = getSpiritualiteColor(selAnomalie.spiritualite);
-                                const icon = CATEGORY_ICONS[selAnomalie.category] || 'category';
+                                const icon = getCategoryIcon(selAnomalie.category);
                                 selHtml = `<span class="material-symbols-outlined cs-icon" style="color: ${color};">${icon}</span> ${selAnomalie.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${selAnomalie.level || 1})</span>`;
                             }
                             return `
@@ -816,7 +777,7 @@ function renderRooms() {
                                     <div class="custom-select-options" style="max-height: 200px; overflow-y: auto;">
                                         ${pageState.allAnomalies.map(a => {
                                 let color = getSpiritualiteColor(a.spiritualite);
-                                const icon = CATEGORY_ICONS[a.category] || 'category';
+                                const icon = getCategoryIcon(a.category);
                                 return `<div class="custom-option" onclick="updateRoomField(${rIndex}, 'alterationSpecialItemReward', '${a.name.replace(/'/g, "\\'")}'); renderRooms();"><span class="material-symbols-outlined cs-icon" style="color: ${color};">${icon}</span> ${a.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${a.level || 1})</span></div>`;
                             }).join('')}
                                     </div>
@@ -831,16 +792,11 @@ function renderRooms() {
                     <div style="margin-top: 0.75rem;">
                         <label class="text-xs text-muted">Item Spécial Requis (que le joueur donne)</label>
                         ${(() => {
-                            const CATEGORY_ICONS = {
-                                'PIERRE': 'landslide', 'METAL': 'hardware', 'COEUR': 'favorite',
-                                'ORBE': 'lens', 'CRISTAL': 'diamond', 'PLUME': 'history_edu',
-                                'ECAILLE': 'waves', 'AUTRE': 'category'
-                            };
                             const selAnomalie = pageState.allAnomalies.find(a => a.name === room.alterationRequiredItem);
                             let selHtml = '<span class="material-symbols-outlined cs-icon text-muted">star</span> Choisir une anomalie...';
                             if (selAnomalie) {
                                 let color = getSpiritualiteColor(selAnomalie.spiritualite);
-                                const icon = CATEGORY_ICONS[selAnomalie.category] || 'category';
+                                const icon = getCategoryIcon(selAnomalie.category);
                                 selHtml = `<span class="material-symbols-outlined cs-icon" style="color: ${color};">${icon}</span> ${selAnomalie.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${selAnomalie.level || 1})</span>`;
                             }
                             return `
@@ -852,7 +808,7 @@ function renderRooms() {
                                 <div class="custom-select-options" style="max-height: 200px; overflow-y: auto;">
                                     ${pageState.allAnomalies.map(a => {
                                 let color = getSpiritualiteColor(a.spiritualite);
-                                const icon = CATEGORY_ICONS[a.category] || 'category';
+                                const icon = getCategoryIcon(a.category);
                                 return `<div class="custom-option" onclick="updateRoomField(${rIndex}, 'alterationRequiredItem', '${a.name.replace(/'/g, "\\'")}'); renderRooms();"><span class="material-symbols-outlined cs-icon" style="color: ${color};">${icon}</span> ${a.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${a.level || 1})</span></div>`;
                             }).join('')}
                                 </div>
@@ -876,12 +832,6 @@ function renderRooms() {
                     shopHtml += `<div class="text-muted" style="font-size:0.8rem;">Aucun objet en vente.</div>`;
                 } else {
                     room.lootTable.forEach((loot, lIndex) => {
-                        const CATEGORY_ICONS = {
-                            'PIERRE': 'landslide', 'METAL': 'hardware', 'COEUR': 'favorite',
-                            'ORBE': 'lens', 'CRISTAL': 'diamond', 'PLUME': 'history_edu',
-                            'ECAILLE': 'waves', 'AUTRE': 'category'
-                        };
-
                         let nameHtml = '';
                         if (loot.specialItemName) {
                             let color = '#d946ef';
@@ -890,7 +840,7 @@ function renderRooms() {
                                                         const an = pageState.allAnomalies.find(a => a.name === loot.specialItemName);
                             if (an) {
                                 if (an.spiritualite) color = getSpiritualiteColor(an.spiritualite);
-                                icon = CATEGORY_ICONS[an.category] || 'category';
+                                icon = getCategoryIcon(an.category);
                                 if (an.description) tooltipDesc = an.description.replace(/'/g, "&#39;").replace(/"/g, "&quot;");
                             }
                             const lvlColor = an && an.level ? (an.level === 1 ? '#10b981' : an.level === 2 ? '#3b82f6' : an.level === 3 ? '#a855f7' : an.level === 4 ? '#f59e0b' : '#ef4444') : '#10b981';
@@ -937,7 +887,7 @@ function renderRooms() {
                                                         const anPrice = pageState.allAnomalies.find(a => a.name === loot.priceSpecialItemName);
                             if (anPrice) {
                                 if (anPrice.spiritualite) priceColor = getSpiritualiteColor(anPrice.spiritualite);
-                                priceIcon = CATEGORY_ICONS[anPrice.category] || 'category';
+                                priceIcon = getCategoryIcon(anPrice.category);
                                 if (anPrice.description) tooltipDesc = anPrice.description.replace(/'/g, "&#39;").replace(/"/g, "&quot;");
                             }
                             const lvlColor = anPrice && anPrice.level ? (anPrice.level === 1 ? '#10b981' : anPrice.level === 2 ? '#3b82f6' : anPrice.level === 3 ? '#a855f7' : anPrice.level === 4 ? '#f59e0b' : '#ef4444') : '#10b981';
@@ -1022,13 +972,8 @@ function renderRooms() {
                                 <div class="custom-select-options" id="room_merchant_special_options_${rIndex}" style="max-height: 200px; overflow-y: auto;">
                                     <div class="custom-option" onclick="selectMerchantSpecial(${rIndex}, '', 'Choisir un item spécial...')"><span class="material-symbols-outlined cs-icon text-muted">diamond</span> Choisir un item spécial...</div>
                                     ${pageState.allAnomalies.map(a => {
-                    const CATEGORY_ICONS = {
-                        'PIERRE': 'landslide', 'METAL': 'hardware', 'COEUR': 'favorite',
-                        'ORBE': 'lens', 'CRISTAL': 'diamond', 'PLUME': 'history_edu',
-                        'ECAILLE': 'waves', 'AUTRE': 'category'
-                    };
                     let color = getSpiritualiteColor(a.spiritualite);
-                    const icon = CATEGORY_ICONS[a.category] || 'category';
+                    const icon = getCategoryIcon(a.category);
                     return `<div class="custom-option" onclick="selectMerchantSpecial(${rIndex}, '${a.name.replace(/'/g, "\\'")}', '${a.name.replace(/'/g, "\\'")}', '${color}')"><span class="material-symbols-outlined cs-icon" style="color: ${color};">${icon}</span> ${a.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${a.level || 1})</span></div>`;
                 }).join('')}
                                 </div>
@@ -1050,13 +995,8 @@ function renderRooms() {
                                     <div class="custom-select-options" id="room_merchant_cost_options_${rIndex}" style="max-height: 200px; overflow-y: auto;">
                                         <div class="custom-option" onclick="selectMerchantCost(${rIndex}, '', 'Sélectionner (Optionnel)')"><span class="material-symbols-outlined cs-icon text-muted">diamond</span> Sélectionner (Optionnel)</div>
                                         ${pageState.allAnomalies.map(a => {
-                    const CATEGORY_ICONS = {
-                        'PIERRE': 'landslide', 'METAL': 'hardware', 'COEUR': 'favorite',
-                        'ORBE': 'lens', 'CRISTAL': 'diamond', 'PLUME': 'history_edu',
-                        'ECAILLE': 'waves', 'AUTRE': 'category'
-                    };
                     let color = getSpiritualiteColor(a.spiritualite);
-                    const icon = CATEGORY_ICONS[a.category] || 'category';
+                    const icon = getCategoryIcon(a.category);
                     return `<div class="custom-option" onclick="selectMerchantCost(${rIndex}, '${a.name.replace(/'/g, "\\'")}', '${a.name.replace(/'/g, "\\'")}', '${color}')"><span class="material-symbols-outlined cs-icon" style="color: ${color};">${icon}</span> ${a.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${a.level || 1})</span></div>`;
                 }).join('')}
                                     </div>
@@ -1397,18 +1337,13 @@ function renderRooms() {
                         } else if (outcome.type === 'TRESOR') {
                             if (!outcome.treasureAnomalieId) outcome.treasureAnomalieId = pageState.allAnomalies.length > 0 ? pageState.allAnomalies[0].id : '';
                             const selAnomalie = pageState.allAnomalies.find(a => a.id == outcome.treasureAnomalieId) || pageState.allAnomalies[0];
-                            const CATEGORY_ICONS = {
-                                'PIERRE': 'landslide', 'METAL': 'hardware', 'COEUR': 'favorite',
-                                'ORBE': 'lens', 'CRISTAL': 'diamond', 'PLUME': 'history_edu',
-                                'ECAILLE': 'waves', 'AUTRE': 'category'
-                            };
                             let selAnColor = '#94a3b8';
                             let selCatIcon = 'star';
                             if (selAnomalie) {
                                 if (selAnomalie.spiritualite === 'TENEBRES') selAnColor = '#a855f7';
                                 else if (selAnomalie.spiritualite === 'ESPRIT') selAnColor = '#38bdf8';
                                 else if (selAnomalie.spiritualite === 'KARMA') selAnColor = '#e7d198';
-                                selCatIcon = selAnomalie.category ? (CATEGORY_ICONS[selAnomalie.category] || 'category') : 'star';
+                                selCatIcon = selAnomalie.category ? (getCategoryIcon(selAnomalie.category)) : 'star';
                             }
                             const selAnHtml = selAnomalie ? `<span class="material-symbols-outlined cs-icon align-middle" style="color: ${selAnColor}; font-size: 1.1rem; margin-right: 4px;">${selCatIcon}</span>${selAnomalie.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${selAnomalie.level || 1})</span>` : 'Aucune anomalie disponible';
 
@@ -1427,7 +1362,7 @@ function renderRooms() {
                                 let anColor = getSpiritualiteColor(an.spiritualite);
                                 return `
                                                 <div class="custom-option" onclick="updateAltarField(${rIndex}, ${oIndex}, 'treasureAnomalieId', ${an.id})">
-                                                    <span class="material-symbols-outlined cs-icon align-middle" style="color: ${anColor}; font-size: 1.1rem; margin-right: 4px;">${an.category ? (CATEGORY_ICONS[an.category] || 'category') : 'star'}</span>${an.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${an.level || 1})</span>
+                                                    <span class="material-symbols-outlined cs-icon align-middle" style="color: ${anColor}; font-size: 1.1rem; margin-right: 4px;">${an.category ? (getCategoryIcon(an.category)) : 'star'}</span>${an.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${an.level || 1})</span>
                                                 </div>
                                                 `;
                             }).join('')}
@@ -1951,19 +1886,7 @@ window.renderDungeonsList = function () {
 
         let secretMeta = { icon: "key", color: "#f59e0b" };
         if (d.requiredSecret) {
-            const DEFAULT_SECRETS_META = [
-                { name: "Secret du Chaos", icon: "local_fire_department", color: "#ff0000" },
-                { name: "Secret de l'Abondance", icon: "eco", color: "#10b981" },
-                { name: "Secret de la Préservation", icon: "foundation", color: "#99674c" },
-                { name: "Secret de la Sérénité", icon: "water_drop", color: "#00e5cc" },
-                { name: "Secret de la Chasse", icon: "visibility_off", color: "#ed5677" },
-                { name: "Secret du Carnage", icon: "explosion", color: "#a70740" },
-                { name: "Secret de la Joie", icon: "volcano", color: "#b74c0b" },
-                { name: "Secret du Savoir", icon: "psychology", color: "#3b82f6" },
-                { name: "Secret du Destin", icon: "all_inclusive", color: "#e7d198" },
-                { name: "Secret de l'Éther", icon: "blur_on", color: "#38bdf8" },
-                { name: "Secret des Abysses", icon: "dark_mode", color: "#c084fc" }
-            ];
+            
             secretMeta = DEFAULT_SECRETS_META.find(s => s.name === d.requiredSecret) || secretMeta;
         }
 

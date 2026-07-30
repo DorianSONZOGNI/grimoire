@@ -22,12 +22,6 @@ if (!window.allAnomaliesCombat || !Array.isArray(window.allAnomaliesCombat)) {
 export function createAnomalyBadgeHtml(anomalyName, showName = false) {
     if (!anomalyName || anomalyName === 'Item') return anomalyName;
 
-    const CATEGORY_ICONS = {
-        'PIERRE': 'landslide', 'METAL': 'hardware', 'COEUR': 'favorite',
-        'ORBE': 'lens', 'CRISTAL': 'diamond', 'PLUME': 'history_edu',
-        'ECAILLE': 'waves', 'AUTRE': 'category'
-    };
-
     let tooltipTitle = anomalyName;
     let tooltipDesc = 'Cet objet aura un effet unique !';
     let tColor = '#d946ef';
@@ -42,7 +36,7 @@ export function createAnomalyBadgeHtml(anomalyName, showName = false) {
             if (an.description) tooltipDesc = an.description;
             if (an.level) anomLevel = an.level;
             if (an.magicObject) isMagic = true;
-            if (an.category) catIcon = CATEGORY_ICONS[an.category] || 'category';
+            if (an.category) catIcon = getCategoryIcon(an.category);
                         if (an.spiritualite) {
                 anomSpiri = an.spiritualite;
                 tColor = getSpiritualiteColor(an.spiritualite);
@@ -77,34 +71,7 @@ export function createAnomalyBadgeHtml(anomalyName, showName = false) {
     return `<span class="anomaly-badge align-middle" ${tooltipAttrs} ${extraAttrs} style="display: inline-flex; align-items: center; justify-content: center; border: 1px solid ${tColor}; background: linear-gradient(${tColor}25, ${tColor}25), rgba(15,23,42,0.8); color: ${tColor}; ${padStyle} border-radius: 6px; font-weight:bold; cursor: help;"><template class="tooltip-data">${tooltipDataHtml}</template><span class="material-symbols-outlined" style="font-size: 1.2rem;">${catIcon}</span>${nameHtml}</span>`;
 }
 
-// Replaced by window.SLOT_LABELS
-
-function getSlotInfo(eq) {
-    if (!eq) return { icon: 'help', color: '#94a3b8', label: '?' };
-    const sName = typeof eq.slot === 'object' ? eq.slot?.name : eq.slot;
-    const info = Object.assign({}, (window.SLOT_LABELS && window.SLOT_LABELS[sName]) ? window.SLOT_LABELS[sName] : { label: sName || '?', icon: 'help', color: '#94a3b8' });
-
-    if (sName === 'CONSOMMABLE' && eq.consumableCategory) {
-        const catName = typeof eq.consumableCategory === 'object' ? eq.consumableCategory?.name : eq.consumableCategory;
-        if (catName && window.CONSUMABLE_CATEGORIES && window.CONSUMABLE_CATEGORIES[catName]) {
-            const catInfo = window.CONSUMABLE_CATEGORIES[catName];
-            info.icon = catInfo.icon;
-            info.color = catInfo.color;
-        }
-    }
-    return info;
-}
-
-const RARITY_COLORS = {
-    COMMUN: '#94a3b8',
-    INHABITUEL: '#22c55e',
-    RARE: '#3b82f6',
-    MYTHIQUE: '#f97316',
-    LEGENDAIRE: '#eab308',
-    EPIQUE: '#ef4444',
-    RELIQUE: '#a855f7',
-    MAUDIT: '#7f1d1d'
-};
+// getSlotInfo and RARITY_COLORS → utils.js
 
 export const pageState = {
     lastCombatLogCount: null,
@@ -1958,12 +1925,7 @@ function updateUI(data) {
                                 }
 
                                 const first = eligible[0];
-                                const CATEGORY_ICONS = {
-                                    'PIERRE': 'landslide', 'METAL': 'hardware', 'COEUR': 'favorite',
-                                    'ORBE': 'lens', 'CRISTAL': 'diamond', 'PLUME': 'history_edu',
-                                    'ECAILLE': 'waves', 'AUTRE': 'category'
-                                };
-                                let firstCatIcon = first.category ? (CATEGORY_ICONS[first.category] || 'category') : 'star';
+                                let firstCatIcon = first.category ? (getCategoryIcon(first.category)) : 'star';
                                 let selectHtml = `
                                 <div class="custom-select-wrapper" id="altarAnomalySelectWrapper" style="width: 100%; max-width: 350px; margin: 0 auto; z-index: 100;">
                                     <div class="custom-select-trigger" onclick="document.getElementById('altarAnomalySelectWrapper').classList.toggle('open')" style="padding: 0.6rem 1rem; border-radius: 8px; border: 1px solid ${spColor}; text-align: left; background: rgba(0,0,0,0.5);">
@@ -1975,7 +1937,7 @@ function updateUI(data) {
                                     <div class="custom-select-options" style="max-height: 200px; overflow-y: auto; text-align: left;">
                                 `;
                                 eligible.forEach(a => {
-                                    let catIcon = a.category ? (CATEGORY_ICONS[a.category] || 'category') : 'star';
+                                    let catIcon = a.category ? (getCategoryIcon(a.category)) : 'star';
                                     selectHtml += `<div class="custom-option" onclick="document.getElementById('altarAnomalySelectLabel').innerHTML = this.innerHTML; document.getElementById('altarAnomalySelect').value = '${a.id}'; document.getElementById('altarAnomalySelectWrapper').classList.remove('open'); if(window.updateAltarDropChance) window.updateAltarDropChance(${a.level || 1});"><span class="material-symbols-outlined cs-icon" style="color: ${spColor};">${catIcon}</span> ${a.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${a.level || 1})</span></div>`;
                                 });
                                 selectHtml += `
@@ -2058,12 +2020,6 @@ function updateUI(data) {
                                 for (let i = data.combatLog.length - 1; i >= 0; i--) {
                                     const log = data.combatLog[i];
 
-                                    const CATEGORY_ICONS = {
-                                        'PIERRE': 'landslide', 'METAL': 'hardware', 'COEUR': 'favorite',
-                                        'ORBE': 'lens', 'CRISTAL': 'diamond', 'PLUME': 'history_edu',
-                                        'ECAILLE': 'waves', 'AUTRE': 'category'
-                                    };
-
                                     const lostMatch = log.match(/sacrifi. l'item : (.*) !/);
                                     if (lostMatch) {
                                         const itemName = lostMatch[1].trim();
@@ -2075,7 +2031,7 @@ function updateUI(data) {
                                                 if (an.spiritualite === 'TENEBRES') spColor = '#a855f7';
                                                 else if (an.spiritualite === 'ESPRIT') spColor = '#38bdf8';
                                                 else if (an.spiritualite === 'KARMA') spColor = '#e7d198';
-                                                catIcon = an.category ? (CATEGORY_ICONS[an.category] || 'category') : 'star';
+                                                catIcon = an.category ? (getCategoryIcon(an.category)) : 'star';
                                             }
                                         }
                                         gainedItemsHtml += `
@@ -2094,7 +2050,7 @@ function updateUI(data) {
                                             const an = window.allAnomaliesCombat.find(a => a.name === itemName);
                                             if (an) {
                                                 spColor = getSpiritualiteColor(an.spiritualite);
-                                                catIcon = an.category ? (CATEGORY_ICONS[an.category] || 'category') : 'star';
+                                                catIcon = an.category ? (getCategoryIcon(an.category)) : 'star';
                                             }
                                         }
                                         gainedItemsHtml += `
@@ -2139,12 +2095,6 @@ function updateUI(data) {
                             let iconHtml = '';
                             let rarityColor = '#10b981';
 
-                            const CATEGORY_ICONS = {
-                                'PIERRE': 'landslide', 'METAL': 'hardware', 'COEUR': 'favorite',
-                                'ORBE': 'lens', 'CRISTAL': 'diamond', 'PLUME': 'history_edu',
-                                'ECAILLE': 'waves', 'AUTRE': 'category'
-                            };
-
                             if (entry.specialItemName) {
                                 nameHtml = entry.specialItemName;
                                 rarityColor = '#d946ef';
@@ -2153,7 +2103,7 @@ function updateUI(data) {
                                     const an = window.allAnomaliesCombat.find(a => a.name === entry.specialItemName);
                                     if (an) {
                                         rarityColor = getSpiritualiteColor(an.spiritualite);
-                                        catIcon = an.category ? (CATEGORY_ICONS[an.category] || 'category') : 'star';
+                                        catIcon = an.category ? (getCategoryIcon(an.category)) : 'star';
                                     }
                                 }
                                 iconHtml = `<span class="material-symbols-outlined" style="color: ${rarityColor}; font-size: 1.2rem;">${catIcon}</span>`;
@@ -2179,7 +2129,7 @@ function updateUI(data) {
                                     const anPrice = window.allAnomaliesCombat.find(a => a.name === entry.priceSpecialItemName);
                                     if (anPrice) {
                                         priceColor = getSpiritualiteColor(anPrice.spiritualite);
-                                        priceIcon = anPrice.category ? (CATEGORY_ICONS[anPrice.category] || 'category') : 'star';
+                                        priceIcon = anPrice.category ? (getCategoryIcon(anPrice.category)) : 'star';
                                     }
                                 }
                                 priceHtml += `<span class="flex-center" style="color: ${priceColor}; gap: 0.3rem; margin-left: ${goldPrice > 0 ? '0.8rem' : '0'};"><span class="material-symbols-outlined" style="font-size: 1.1rem;">${priceIcon}</span>1x ${entry.priceSpecialItemName}</span>`;
@@ -2226,7 +2176,7 @@ function updateUI(data) {
                                         if (an.description) tooltipDesc = an.description;
                                         if (an.level) anomLevel = an.level;
                                         if (an.magicObject) isMagic = true;
-                                        if (an.category) catIcon2 = CATEGORY_ICONS[an.category] || 'category';
+                                        if (an.category) catIcon2 = getCategoryIcon(an.category);
                                                                                 if (an.spiritualite) {
                                             anomSpiri = an.spiritualite;
                                             tColor = getSpiritualiteColor(an.spiritualite);

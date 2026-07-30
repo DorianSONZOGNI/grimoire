@@ -1,34 +1,6 @@
 
 
-function getSlotInfo(eq) {
-    if (!eq) return { icon: 'help', color: '#94a3b8', label: '?' };
-    const sName = typeof eq.slot === 'object' ? eq.slot?.name : eq.slot;
-    const info = Object.assign({}, (window.SLOT_LABELS && window.SLOT_LABELS[sName]) ? window.SLOT_LABELS[sName] : { label: sName || '?', icon: 'help', color: '#94a3b8' });
-
-    if (sName === 'CONSOMMABLE' && eq.consumableCategory) {
-        const catName = typeof eq.consumableCategory === 'object' ? eq.consumableCategory?.name : eq.consumableCategory;
-        if (catName && window.CONSUMABLE_CATEGORIES && window.CONSUMABLE_CATEGORIES[catName]) {
-            const catInfo = window.CONSUMABLE_CATEGORIES[catName];
-            info.icon = catInfo.icon;
-            info.color = catInfo.color;
-        }
-    }
-    return info;
-}
-
-const DEFAULT_SECRETS_META = [
-    { name: "Secret du Chaos", icon: "local_fire_department", color: "#ff0000" },
-    { name: "Secret de l'Abondance", icon: "eco", color: "#10b981" },
-    { name: "Secret de la Préservation", icon: "foundation", color: "#99674c" },
-    { name: "Secret de la Sérénité", icon: "water_drop", color: "#00e5cc" },
-    { name: "Secret de la Chasse", icon: "visibility_off", color: "#ed5677" },
-    { name: "Secret du Carnage", icon: "explosion", color: "#a70740" },
-    { name: "Secret de la Joie", icon: "volcano", color: "#b74c0b" },
-    { name: "Secret du Savoir", icon: "psychology", color: "#3b82f6" },
-    { name: "Secret du Destin", icon: "all_inclusive", color: "#e7d198" },
-    { name: "Secret de l'Éther", icon: "blur_on", color: "#38bdf8" },
-    { name: "Secret des Abysses", icon: "dark_mode", color: "#c084fc" }
-];
+// getSlotInfo and DEFAULT_SECRETS_META → utils.js
 
 const pageState = {
     allAnomalies: [],
@@ -185,7 +157,7 @@ async function updateRewardNameInput() {
 
     if (type === 'GIVE_ANOMALY') {
         pageState.allAnomalies.forEach(a => {
-            const catIcon = a.category ? (CATEGORY_ICONS[a.category] || 'category') : 'star';
+            const catIcon = a.category ? (getCategoryIcon(a.category)) : 'star';
             const spiriColor = a.spiritualite ? getSpiritualiteColor(a.spiritualite) : '#a855f7';
             optionsHtml += `<div class="custom-option" data-value="${a.name}">
                                         <span class="material-symbols-outlined cs-icon" style="color: ${spiriColor};">${catIcon}</span>
@@ -385,17 +357,6 @@ window.hideTooltipFixed = function () {
     if (tooltip) tooltip.style.display = 'none';
 };
 
-const CATEGORY_ICONS = {
-    'PIERRE': 'landslide',
-    'METAL': 'hardware',
-    'COEUR': 'favorite',
-    'ORBE': 'lens',
-    'CRISTAL': 'diamond',
-    'PLUME': 'history_edu',
-    'ECAILLE': 'waves',
-    'AUTRE': 'category'
-};
-
 function addRequirement(type, selectedName = '', qty = 1) {
     const list = document.getElementById(type === 'anomalie' ? 'reqAnomaliesList' : 'reqConsumablesList');
     const div = document.createElement('div');
@@ -409,7 +370,7 @@ function addRequirement(type, selectedName = '', qty = 1) {
 
     if (type === 'anomalie') {
         pageState.allAnomalies.forEach(a => {
-            const catIcon = a.category ? (CATEGORY_ICONS[a.category] || 'category') : 'star';
+            const catIcon = a.category ? (getCategoryIcon(a.category)) : 'star';
             const spiriColor = a.spiritualite ? getSpiritualiteColor(a.spiritualite) : '#a855f7';
             optionsHtml += `<div class="custom-option" data-value="${a.name}">
                                         <span class="material-symbols-outlined cs-icon" style="color: ${spiriColor};">${catIcon}</span>
@@ -420,7 +381,7 @@ function addRequirement(type, selectedName = '', qty = 1) {
         if (selectedName) {
             const selA = pageState.allAnomalies.find(a => a.name === selectedName);
             if (selA) {
-                const catIcon = selA.category ? (CATEGORY_ICONS[selA.category] || 'category') : 'star';
+                const catIcon = selA.category ? (getCategoryIcon(selA.category)) : 'star';
                 const spiriColor = selA.spiritualite ? getSpiritualiteColor(selA.spiritualite) : '#a855f7';
                 displayLabel = `<span class="material-symbols-outlined cs-icon" style="color: ${spiriColor};">${catIcon}</span> ${selectedName} (Niv. ${selA.level || 1})`;
             } else {
@@ -517,7 +478,7 @@ window.renderRecipesList = function () {
             for (const [k, v] of Object.entries(r.requiredAnomalies)) {
                 const aTemp = pageState.allAnomalies.find(a => a.name === k);
                 if (aTemp) {
-                    const catIcon = aTemp.category ? (CATEGORY_ICONS[aTemp.category] || 'category') : 'star';
+                    const catIcon = aTemp.category ? (getCategoryIcon(aTemp.category)) : 'star';
                     const spiriColor = aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
                     const tooltipData = `
                                 <div class="anomaly-tooltip-title" style="color: ${spiriColor}; border-bottom: 1px solid ${spiriColor}40; padding-bottom: 4px;">${aTemp.name}</div>
@@ -553,7 +514,7 @@ window.renderRecipesList = function () {
         if (r.rewardType === 'GIVE_ANOMALY') {
             const aTemp = pageState.allAnomalies.find(a => a.name === r.rewardName);
             if (aTemp) {
-                const catIcon = aTemp.category ? (CATEGORY_ICONS[aTemp.category] || 'category') : 'star';
+                const catIcon = aTemp.category ? (getCategoryIcon(aTemp.category)) : 'star';
                 const spiriColor = aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
                 const tooltipData = `
                             <div class="anomaly-tooltip-title" style="color: ${spiriColor}; border-bottom: 1px solid ${spiriColor}40; padding-bottom: 4px;">${aTemp.name}</div>

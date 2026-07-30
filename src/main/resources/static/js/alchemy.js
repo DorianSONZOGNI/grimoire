@@ -184,19 +184,6 @@ function selectRecipe(recipe, element) {
     renderCauldron(recipe);
 }
 
-const CATEGORY_ICONS = {
-    'PIERRE': 'landslide',
-    'METAL': 'hardware',
-    'COEUR': 'favorite',
-    'ORBE': 'lens',
-    'CRISTAL': 'diamond',
-    'PLUME': 'history_edu',
-    'ECAILLE': 'waves',
-    'AUTRE': 'category'
-};
-
-
-
 function getItemStyle(name, defaultType) {
     const lower = name.toLowerCase();
     if (lower.includes('cristal')) return { icon: 'diamond', color: '#38bdf8' }; // light blue
@@ -266,7 +253,7 @@ function renderCauldron(r) {
 
             const temp = pageState.allAnomalyTemplates.find(a => a.name === name) || {};
             const style = {
-                icon: temp.category ? (CATEGORY_ICONS[temp.category] || 'category') : 'star',
+                icon: temp.category ? (getCategoryIcon(temp.category)) : 'star',
                 color: temp.spiritualite ? getSpiritualiteColor(temp.spiritualite) : '#a855f7'
             };
 
@@ -825,7 +812,7 @@ function buildAnomalyTooltipHTML(name) {
     const isMagic = temp.magicObject ? true : false;
     const typeColor = isMagic ? '#ec4899' : '#b45309';
     const typeLabel = isMagic ? 'Magique' : 'Matériau';
-    const catIcon = temp.category ? (CATEGORY_ICONS[temp.category] || 'category') : 'star';
+    const catIcon = temp.category ? (getCategoryIcon(temp.category)) : 'star';
     const spiriColor = temp.spiritualite ? getSpiritualiteColor(temp.spiritualite) : '#a855f7';
 
     return `
@@ -839,29 +826,14 @@ function buildAnomalyTooltipHTML(name) {
             `.replace(/"/g, '&quot;');
 }
 
-const STAT_DEFS = [
-    { key: 'bonusHealthMax', label: 'PV', icon: 'favorite', color: '#ec4899' },
-    { key: 'bonusManaMax', label: 'Mana', icon: 'water_drop', color: '#38bdf8' },
-    { key: 'bonusPower', label: 'Pui', icon: 'auto_awesome', color: '#a855f7' },
-    { key: 'bonusStrength', label: 'For', icon: 'fitness_center', color: '#f43f5e' },
-    { key: 'bonusArmor', label: 'Arm', icon: 'shield', color: '#3b82f6' },
-    { key: 'bonusResistance', label: 'Rés', icon: 'shield', color: '#10b981' },
-    { key: 'bonusSpeed', label: 'Vit', icon: 'bolt', color: '#f59e0b' },
-    { key: 'bonusCrit', label: 'Crit', icon: 'gps_fixed', color: '#ef4444' },
-    { key: 'regenHealthPerTurn', label: 'PV/t', icon: 'healing', color: '#10b981' },
-    { key: 'regenManaPerTurn', label: 'Mana/t', icon: 'cyclone', color: '#38bdf8' },
-    { key: 'consumableHpPercent', label: 'PV Max', icon: 'favorite', color: '#ec4899', isPercent: true },
-    { key: 'consumableManaPercent', label: 'Mana Max', icon: 'water_drop', color: '#38bdf8', isPercent: true },
-    { key: 'consumableMissingHpPercent', label: 'PV Manq', icon: 'healing', color: '#f43f5e', isPercent: true },
-    { key: 'consumableMissingManaPercent', label: 'Mana Manq', icon: 'cyclone', color: '#a855f7', isPercent: true }
-];
+// STAT_DEFS → constants.js (window.STAT_DEFS)
 
 function buildEquipmentTooltipHTML(name, isConsumable = false) {
     let temp = pageState.allEquipmentTemplates.find(e => e.name === name);
     if (!temp) return '';
 
     let statsHtml = '';
-    STAT_DEFS.forEach(def => {
+    window.STAT_DEFS.forEach(def => {
         if (temp[def.key]) {
             const val = temp[def.key] > 0 ? '+' + temp[def.key] : temp[def.key];
             const suffix = def.isPercent ? '%' : '';

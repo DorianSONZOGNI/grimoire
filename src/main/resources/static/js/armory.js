@@ -32,24 +32,6 @@ const pageState = {
 
 // Replaced by window.SLOT_LABELS and window.CONSUMABLE_CATEGORIES
 
-function getSlotInfo(eq) {
-    if (!eq) return { icon: 'help', color: '#94a3b8', label: '?' };
-    const sName = typeof eq.slot === 'object' ? eq.slot?.name : eq.slot;
-    const info = Object.assign({}, (window.SLOT_LABELS && window.SLOT_LABELS[sName]) ? window.SLOT_LABELS[sName] : { label: sName || '?', icon: 'help', color: '#94a3b8' });
-    
-    if (sName === 'CONSOMMABLE' && eq.consumableCategory) {
-        const catName = typeof eq.consumableCategory === 'object' ? eq.consumableCategory?.name : eq.consumableCategory;
-        if (catName && window.CONSUMABLE_CATEGORIES && window.CONSUMABLE_CATEGORIES[catName]) {
-            const catInfo = window.CONSUMABLE_CATEGORIES[catName];
-            info.icon = catInfo.icon;
-            info.color = catInfo.color;
-        }
-    }
-    return info;
-}
-
-
-
 function buildEquipmentDto() {
     const slot = document.getElementById('eqSlot')?.value || '';
     const rarity = document.getElementById('eqRarity')?.value || 'COMMUN';
@@ -1094,15 +1076,7 @@ function resetForm() {
     document.getElementById('cancelBtn').style.display = 'none';
 }
 
-async function showNotif(message, isError = false) {
-    const ui = await import('/js/ui.js');
-    ui.showNotif(message, isError);
-}
-
-async function showModal(options) {
-    const ui = await import('/js/ui.js');
-    return ui.showModal(options);
-}
+// showNotif, showModal → utils.js
 
 // ===== Custom Select Logic (Event Delegation) =====
 document.addEventListener('click', (e) => {

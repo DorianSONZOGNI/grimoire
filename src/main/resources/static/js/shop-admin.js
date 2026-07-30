@@ -1,87 +1,7 @@
 const pageState = { allEquipments: [], equipmentToDelete: null, editingEquipmentId: null };
 
-// Replaced by window.SLOT_LABELS
-function getSlotInfo(eq) {
-    if (!eq) return { icon: 'help', color: '#94a3b8', label: '?' };
-    const sName = typeof eq.slot === 'object' ? eq.slot?.name : eq.slot;
-    const info = Object.assign({}, (window.SLOT_LABELS && window.SLOT_LABELS[sName]) ? window.SLOT_LABELS[sName] : { label: sName || '?', icon: 'help', color: '#94a3b8' });
+// getSlotInfo, calculateWeight, showNotif, showModal → utils.js
 
-    if (sName === 'CONSOMMABLE' && eq.consumableCategory) {
-        const catName = typeof eq.consumableCategory === 'object' ? eq.consumableCategory?.name : eq.consumableCategory;
-        if (catName && window.CONSUMABLE_CATEGORIES && window.CONSUMABLE_CATEGORIES[catName]) {
-            const catInfo = window.CONSUMABLE_CATEGORIES[catName];
-            info.icon = catInfo.icon;
-            info.color = catInfo.color;
-        }
-    }
-    return info;
-}
-
-
-
-function calculateWeight(eq) {
-    let w = eq.baseWeight || 0;
-
-    let mHp = 0.2, mMana = 0.2, mPow = 2.0, mStr = 2.0, mArm = 1.0, mRes = 1.0;
-    let mSpd = 3.0, mCrit = 1.5, mRegHp = 3.0, mRegMana = 1.5;
-
-    const s = eq.slot;
-    if (s === 'ARME_GAUCHE' || s === 'ARME_DROITE' || s === 'ARME_DEUX_MAINS') {
-        mArm = 1.5; mRes = 1.5;
-        mHp = 0.4; mMana = 0.4;
-        mStr = 1.8; mPow = 1.8;
-        mRegHp = 2.4; mRegMana = 1.2;
-    } else if (s === 'CASQUE' || s === 'PLASTRON') {
-        mArm = 0.8; mRes = 0.8;
-        mStr = 2.5; mPow = 2.5;
-        mSpd = 3.5;
-        mCrit = 2.0;
-    } else if (s === 'ANNEAU_GAUCHE' || s === 'ANNEAU_DROIT') {
-        mMana = 0.1;
-        mArm = 2.0; mRes = 2.0;
-        mRegMana = 0.8;
-    } else if (s === 'BOTTES') {
-        mSpd = 1.5;
-    } else if (s === 'CAPE') {
-        mCrit = 1.5;
-    }
-
-    w += (eq.bonusHealthMax || 0) * mHp;
-    w += (eq.bonusManaMax || 0) * mMana;
-    w += (eq.bonusPower || 0) * mPow;
-    w += (eq.bonusStrength || 0) * mStr;
-    w += (eq.bonusArmor || 0) * mArm;
-    w += (eq.bonusResistance || 0) * mRes;
-    w += (eq.bonusSpeed || 0) * mSpd;
-    w += (eq.bonusCrit || 0) * mCrit;
-    w += (eq.regenHealthPerTurn || 0) * mRegHp;
-    w += (eq.regenManaPerTurn || 0) * mRegMana;
-
-    const rarity = eq.rarity;
-    if (rarity === 'EPIQUE' || rarity === 'RELIQUE' || rarity === 'MAUDIT') {
-        const specialEffect = eq.specialEffect;
-        const effectVal = eq.specialEffectValue || 0;
-
-        if (specialEffect && specialEffect !== 'NONE' && effectVal !== 0) {
-            if (rarity === 'MAUDIT') {
-                w += effectVal * 0.2;
-            } else {
-                w += effectVal * 1.5;
-            }
-        }
-    }
-    return w;
-}
-
-async function showNotif(message, isError = false) {
-    const ui = await import('/js/ui.js');
-    ui.showNotif(message, isError);
-}
-
-async function showModal(options) {
-    const ui = await import('/js/ui.js');
-    return ui.showModal(options);
-}
 
 // ===== Custom Select Logic =====
 document.addEventListener('click', (e) => {
@@ -226,20 +146,9 @@ function addAnomalyRow(selectedName = '', qty = 1) {
     row.style.gap = '0.5rem';
     row.style.alignItems = 'center';
 
-    const CATEGORY_ICONS = {
-        'PIERRE': 'landslide',
-        'METAL': 'hardware',
-        'COEUR': 'favorite',
-        'ORBE': 'lens',
-        'CRISTAL': 'diamond',
-        'PLUME': 'history_edu',
-        'ECAILLE': 'waves',
-        'AUTRE': 'category'
-    };
-
     let optionsHtml = '';
     (window.allAnomalies || []).forEach(n => {
-        const catIcon = n.category ? (CATEGORY_ICONS[n.category] || 'category') : 'star';
+        const catIcon = n.category ? getCategoryIcon(n.category) : 'star';
         const spiriColor = n.spiritualite ? getSpiritualiteColor(n.spiritualite) : '#a855f7';
         optionsHtml += `<div class="custom-option" data-value="${n.name}">
                             <span class="material-symbols-outlined cs-icon" style="color: ${spiriColor};">${catIcon}</span>
@@ -469,17 +378,7 @@ function renderGrid(equipments) {
                             let anos = [];
                             for (const [n, q] of Object.entries(eq.priceAnomalies)) {
                                 let aTemp = window.allAnomalies ? window.allAnomalies.find(a => a.name === n) : null;
-                                const CATEGORY_ICONS = {
-                                    'PIERRE': 'landslide',
-                                    'METAL': 'hardware',
-                                    'COEUR': 'favorite',
-                                    'ORBE': 'lens',
-                                    'CRISTAL': 'diamond',
-                                    'PLUME': 'history_edu',
-                                    'ECAILLE': 'waves',
-                                    'AUTRE': 'category'
-                                };
-                                const catIcon = aTemp && aTemp.category ? (CATEGORY_ICONS[aTemp.category] || 'category') : 'star';
+                                const catIcon = aTemp && aTemp.category ? getCategoryIcon(aTemp.category) : 'star';
                                 const spiriColor = aTemp && aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
                                         const tooltipData = `
                                             <div class="anomaly-tooltip-title" style="color: ${spiriColor}; border-bottom: 1px solid ${spiriColor}40; padding-bottom: 4px;"><span class="material-symbols-outlined" style="font-size: 1rem; margin-right: 4px;">${catIcon}</span>${aTemp ? aTemp.name : n}</div>
