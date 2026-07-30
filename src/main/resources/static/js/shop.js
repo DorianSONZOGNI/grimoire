@@ -215,7 +215,7 @@ function generateStandHtml(eq) {
 
                     const spiriColor = aTemp && aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
                     const tooltipData = `
-                                    <div class="anomaly-tooltip-title" style="color: ${color}; border-bottom: 1px solid ${color}40; padding-bottom: 4px;"><span class="material-symbols-outlined" style="font-size: 1rem; margin-right: 4px;">${catIcon}</span>${aTemp ? aTemp.name : n}</div>
+                                    <div class="anomaly-tooltip-title" style="color: ${spiriColor}; border-bottom: 1px solid ${spiriColor}40; padding-bottom: 4px;"><span class="material-symbols-outlined" style="font-size: 1rem; margin-right: 4px;">${catIcon}</span>${aTemp ? aTemp.name : n}</div>
                                     <div style="display: flex; gap: 6px; margin: 6px 0; flex-wrap: wrap;">
                                         <span class="font-bold" style="border: 1px solid ${getLevelColor(aTemp ? aTemp.level : 1)}; color: ${getLevelColor(aTemp ? aTemp.level : 1)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem;">
                                             Lvl ${aTemp ? aTemp.level || 1 : 1}

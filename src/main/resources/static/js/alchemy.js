@@ -198,9 +198,17 @@ const CATEGORY_ICONS = {
 function getSpiritualiteColor(sp) {
     if (!sp) return '#a855f7';
     switch (sp.toUpperCase()) {
-        case 'TENEBRES': return '#a855f7';
         case 'ESPRIT': return '#38bdf8';
         case 'KARMA': return '#e7d198';
+        case 'TENEBRES': return '#a855f7';
+        case 'VIOLENCE': return '#a70740';
+        case 'TRAHISON': return '#ed5677';
+        case 'SURETE': return '#00e5cc';
+        case 'RAISON': return '#3b82f6';
+        case 'DESTRUCTION': return '#ff0000';
+        case 'CREATION': return '#10b981';
+        case 'CONVICTION': return '#b74c0b';
+        case 'CONSOLIDATION': return '#99674c';
         default: return '#a855f7';
     }
 }
@@ -841,9 +849,10 @@ function buildAnomalyTooltipHTML(name) {
     const typeColor = isMagic ? '#ec4899' : '#b45309';
     const typeLabel = isMagic ? 'Magique' : 'Matériau';
     const catIcon = temp.category ? (CATEGORY_ICONS[temp.category] || 'category') : 'star';
+    const spiriColor = temp.spiritualite ? getSpiritualiteColor(temp.spiritualite) : '#a855f7';
 
     return `
-                <div class="anomaly-tooltip-title" style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:#c084fc;">${temp.name}</div>
+                <div class="anomaly-tooltip-title" style="font-weight:bold; font-size:1rem; margin-bottom:6px; color: ${spiriColor}; border-bottom: 1px solid ${spiriColor}40; padding-bottom: 4px;">${temp.name}</div>
                 <div style="display: flex; gap: 6px; margin: 6px 0; flex-wrap: wrap;">
                     <span style="border: 1px solid ${getLevelColor(temp.level)}; color: ${getLevelColor(temp.level)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold;">Lvl ${temp.level}</span>
                     <span style="border: 1px solid ${typeColor}; color: ${typeColor}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; display: flex; align-items: center; gap: 4px;"><span class="material-symbols-outlined" style="font-size: 0.9rem;">${catIcon}</span>${typeLabel}</span>
@@ -911,7 +920,7 @@ function buildEquipmentTooltipHTML(name, isConsumable = false) {
         const isCursed = temp.specialEffect.startsWith('CURSED_');
         const icon = isCursed ? 'skull' : 'auto_awesome';
         const color = isCursed ? '#ef4444' : '#c084fc';
-        
+
         statsHtml += `
                     <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; min-width: 160px; gap: 16px; font-size: 0.85rem; margin-top: 4px; padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.1);">
                         <span style="display:flex; align-items:center; gap:4px; color: ${color};">

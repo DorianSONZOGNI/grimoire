@@ -326,12 +326,20 @@ async function updateRewardNameInput() {
 }
 
 function getSpiritualiteColor(sp) {
-    if (!sp) return '#cbd5e1';
+    if (!sp) return '#a855f7';
     switch (sp.toUpperCase()) {
-        case 'TENEBRES': return '#a855f7';
         case 'ESPRIT': return '#38bdf8';
         case 'KARMA': return '#e7d198';
-        default: return '#cbd5e1';
+        case 'TENEBRES': return '#a855f7';
+        case 'VIOLENCE': return '#a70740';
+        case 'TRAHISON': return '#ed5677';
+        case 'SURETE': return '#00e5cc';
+        case 'RAISON': return '#3b82f6';
+        case 'DESTRUCTION': return '#ff0000';
+        case 'CREATION': return '#10b981';
+        case 'CONVICTION': return '#b74c0b';
+        case 'CONSOLIDATION': return '#99674c';
+        default: return '#a855f7';
     }
 }
 
@@ -538,7 +546,7 @@ window.renderRecipesList = function () {
                     const catIcon = aTemp.category ? (CATEGORY_ICONS[aTemp.category] || 'category') : 'star';
                     const spiriColor = aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
                     const tooltipData = `
-                                <div class="anomaly-tooltip-title">${aTemp.name}</div>
+                                <div class="anomaly-tooltip-title" style="color: ${spiriColor}; border-bottom: 1px solid ${spiriColor}40; padding-bottom: 4px;">${aTemp.name}</div>
                                 <div style="display: flex; gap: 6px; margin: 6px 0; flex-wrap: wrap;">
                                     <span style="border: 1px solid ${getLevelColor(aTemp.level)}; color: ${getLevelColor(aTemp.level)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold;">
                                         Lvl ${aTemp.level || 1}
@@ -574,7 +582,7 @@ window.renderRecipesList = function () {
                 const catIcon = aTemp.category ? (CATEGORY_ICONS[aTemp.category] || 'category') : 'star';
                 const spiriColor = aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
                 const tooltipData = `
-                            <div class="anomaly-tooltip-title">${aTemp.name}</div>
+                            <div class="anomaly-tooltip-title" style="color: ${spiriColor}; border-bottom: 1px solid ${spiriColor}40; padding-bottom: 4px;">${aTemp.name}</div>
                             <div style="display: flex; gap: 6px; margin: 6px 0; flex-wrap: wrap;">
                                 <span style="border: 1px solid ${getLevelColor(aTemp.level)}; color: ${getLevelColor(aTemp.level)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold;">
                                     Lvl ${r.rewardLevel || aTemp.level || 1}
