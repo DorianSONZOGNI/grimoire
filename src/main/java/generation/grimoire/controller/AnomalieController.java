@@ -117,7 +117,7 @@ public class AnomalieController {
             return ResponseEntity.status(404).body("Utilisateur introuvable");
         }
 
-        Optional<Anomalie> existingOpt = anomalieRepository.findById(id);
+        Optional<Anomalie> existingOpt = anomalieRepository.findById(java.util.Objects.requireNonNull(id));
         if (existingOpt.isEmpty()) {
             return ResponseEntity.status(404).body("Anomalie introuvable");
         }
@@ -206,7 +206,7 @@ public class AnomalieController {
         if (opt.isPresent()) {
             Anomalie a = opt.get();
             if (isAdmin || a.getOwnerUsername().equals(username)) {
-                anomalieRepository.deleteById(id);
+                anomalieRepository.deleteById(java.util.Objects.requireNonNull(id));
                 return ResponseEntity.ok("Anomalie supprimée.");
             } else {
                 return ResponseEntity.status(403).body("Ce n'est pas votre anomalie.");
