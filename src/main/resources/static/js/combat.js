@@ -3412,12 +3412,13 @@ function renderSpellCard(sp) {
     }
 
     return `
-        <div id="spell-card-${sp.id}" class="combat-spell-card spell-btn${disabledClass}" style="border-top: 2px solid ${titleColor};" ${onClickAttr} ${tooltipAttrs}>
-            <div class="combat-spell-header">
-                <div class="combat-spell-name" title="${sp.nom}" style="color: ${titleColor};">${sp.nom}</div>
-                <div class="combat-spell-level">Lvl ${sp.niveau}</div>
+        <div id="spell-card-${sp.id}" class="combat-spell-card spell-btn${disabledClass}" style="border-top: 2px solid ${titleColor}; position: relative;" ${onClickAttr} ${tooltipAttrs}>
+            <div class="absolute" style="top: -9px; left: -5px; background: #0f172a; border: 1px solid ${titleColor}; color: ${titleColor}; border-radius: 4px; padding: 0.1rem 0.4rem; font-size: 0.65rem; font-weight: bold; z-index: 5;">Lvl ${sp.niveau}</div>
+            
+            <div class="combat-spell-header" style="margin-top: 0.2rem;">
+                <div class="combat-spell-name" title="${sp.nom}" style="color: ${titleColor}; text-align: left; width: 100%;">${sp.nom}</div>
             </div>
-            <div class="combat-spell-icons flex-center" style="flex-wrap: wrap; gap: 0.3rem;">
+            <div class="combat-spell-icons flex-center" style="flex-wrap: wrap; gap: 0.3rem; justify-content: flex-start; margin-bottom: 0.3rem;">
                 ${castingTypeHtml}
                 ${categoryHtml}
                 ${karmaAlignHtml}
