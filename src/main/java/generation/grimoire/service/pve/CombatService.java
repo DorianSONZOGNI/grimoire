@@ -1248,9 +1248,19 @@ public class CombatService {
             }
         }
 
-        checkDeaths(session);
+        try {
+            checkDeaths(session);
+        } catch (Exception e) {
+            session.addLog("❌ Erreur lors de la vérification des morts : " + e.getMessage());
+            e.printStackTrace();
+        }
 
-        computeSpellAvailability(session);
+        try {
+            computeSpellAvailability(session);
+        } catch (Exception e) {
+            session.addLog("❌ Erreur lors du calcul de disponibilité des sorts.");
+            e.printStackTrace();
+        }
         return session;
     }
 
@@ -2076,7 +2086,8 @@ public class CombatService {
         }
 
         // Rule B: Si un sort banal ou une attaque a déjà été lancé ce tour
-        if (p.isBanalSpellCastThisTurn()) {
+        // (sauf pendant une canalisation, où seuls les sorts instantanés sont autorisés — déjà filtré par Rule A)
+        if (p.isBanalSpellCastThisTurn() && p.getRemainingChannelingTurns() == 0) {
             return SpellAvailability.blocked(spell.getId(), "ACTION_LIMIT",
                     "Action majeure déjà effectuée ce tour (les sorts instantanés doivent être lancés avant)");
         }

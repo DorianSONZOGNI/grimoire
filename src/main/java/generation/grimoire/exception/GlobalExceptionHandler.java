@@ -50,7 +50,7 @@ public class GlobalExceptionHandler {
         log.error("Erreur interne inattendue", ex);
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "Erreur interne du serveur"));
+                .body(Map.of("error", "Erreur interne du serveur: [" + ex.getClass().getSimpleName() + "] " + ex.getMessage()));
     }
 
     @ExceptionHandler(Exception.class)
@@ -58,6 +58,6 @@ public class GlobalExceptionHandler {
         log.error("Erreur non gérée", ex);
         return ResponseEntity
                 .status(HttpStatus.INTERNAL_SERVER_ERROR)
-                .body(Map.of("error", "Erreur interne du serveur"));
+                .body(Map.of("error", "Erreur interne du serveur: [" + ex.getClass().getSimpleName() + "] " + ex.getMessage()));
     }
 }

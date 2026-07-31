@@ -12,6 +12,7 @@ import lombok.EqualsAndHashCode;
 @Data
 @Entity
 @DiscriminatorValue("DAMAGE_OVER_TIME")
+@com.fasterxml.jackson.annotation.JsonIgnoreProperties({"caster"})
 public class DamageOverTimeEffect extends DamageEffect {
 
     /**

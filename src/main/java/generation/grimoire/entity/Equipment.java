@@ -16,6 +16,7 @@ import lombok.ToString;
 @Table(name = "Equipment", indexes = {
     @Index(name = "idx_equipment_owner", columnList = "owner_username")
 })
+@com.fasterxml.jackson.annotation.JsonIgnoreProperties({"personnage", "user"})
 public class Equipment {
 
     @Id

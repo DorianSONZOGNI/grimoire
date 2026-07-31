@@ -10,6 +10,7 @@ import lombok.EqualsAndHashCode;
 @Data
 @Entity
 @DiscriminatorValue("MANA_OVER_TIME")
+@com.fasterxml.jackson.annotation.JsonIgnoreProperties({"caster"})
 public class ManaOverTimeEffect extends ManaEffect {
 
     /**

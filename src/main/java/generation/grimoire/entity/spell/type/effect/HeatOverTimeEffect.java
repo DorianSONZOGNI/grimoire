@@ -14,6 +14,7 @@ import lombok.ToString;
 @Data
 @Entity
 @DiscriminatorValue("HEAT_OVER_TIME")
+@com.fasterxml.jackson.annotation.JsonIgnoreProperties({"caster"})
 public class HeatOverTimeEffect extends SpellEffect {
 
     private int fixedValue;

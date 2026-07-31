@@ -11,6 +11,7 @@ import lombok.EqualsAndHashCode;
 @Data
 @Entity
 @DiscriminatorValue("HEAL_OVER_TIME")
+@com.fasterxml.jackson.annotation.JsonIgnoreProperties({"caster"})
 public class HealOverTimeEffect extends HealEffect {
 
     /**

@@ -33,6 +33,7 @@ import java.util.HashMap;
         "channelingTarget" })
 @Entity
 @Table(name = "Personnage")
+@com.fasterxml.jackson.annotation.JsonIgnoreProperties({"channelingTarget", "channelingAlly", "channeledSpell"})
 public class Personnage {
 
     @Id
