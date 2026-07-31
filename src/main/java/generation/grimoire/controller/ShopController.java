@@ -164,6 +164,7 @@ public class ShopController {
         }
 
         List<Anomalie> toConsumeList = new ArrayList<>();
+        List<String> missingAnomaliesMsg = new ArrayList<>();
         if (template.getPriceAnomalies() != null && !template.getPriceAnomalies().isEmpty()) {
             List<Anomalie> userAnomalies = anomalieRepository.findByOwnerUsername(user.getUsername());
 
@@ -176,21 +177,23 @@ public class ShopController {
                         .collect(Collectors.toList());
 
                 if (matches.size() < reqQuantity) {
-                    return ResponseEntity.badRequest()
-                            .body(Map.of("message", "Fonds insuffisants. Vous n'avez pas assez d'anomalies : " + reqName
-                                    + " (" + matches.size() + "/" + reqQuantity + ")"));
-                }
+                    missingAnomaliesMsg.add(reqName + " (" + matches.size() + "/" + reqQuantity + ")");
+                } else {
+                    boolean isAdmin = "ADMIN".equals(user.getRole());
+                    int qtyToConsume = reqQuantity;
+                    if (isAdmin && matches.size() == reqQuantity) {
+                        qtyToConsume = reqQuantity - 1;
+                    }
 
-                boolean isAdmin = "ADMIN".equals(user.getRole());
-                int qtyToConsume = reqQuantity;
-                if (isAdmin && matches.size() == reqQuantity) {
-                    qtyToConsume = reqQuantity - 1;
+                    for (int i = 0; i < qtyToConsume; i++) {
+                        toConsumeList.add(matches.get(i));
+                        userAnomalies.remove(matches.get(i));
+                    }
                 }
-
-                for (int i = 0; i < qtyToConsume; i++) {
-                    toConsumeList.add(matches.get(i));
-                    userAnomalies.remove(matches.get(i));
-                }
+            }
+            if (!missingAnomaliesMsg.isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("message", "Fonds insuffisants. Il vous manque des anomalies : " + String.join(", ", missingAnomaliesMsg)));
             }
         }
 

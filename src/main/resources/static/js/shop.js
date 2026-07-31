@@ -300,7 +300,11 @@ window.openBuyModal = function (id, isConsumable = false) {
                     showNotif(data.message || "Erreur lors de l'achat.", true);
                 }
             } catch (e) {
-                showNotif('Erreur réseau.', true);
+                if (e.message && e.message !== 'Failed to fetch') {
+                    showNotif(e.message, true);
+                } else {
+                    showNotif('Erreur réseau.', true);
+                }
             }
         }
     });
