@@ -180,6 +180,17 @@ public class Personnage {
     private List<ManaOverTimeEffect> activeManaOverTimeEffects = new ArrayList<>();
 
     @Transient
+    private boolean usedCheatDeath = false;
+
+    public boolean isUsedCheatDeath() {
+        return usedCheatDeath;
+    }
+
+    public void setUsedCheatDeath(boolean usedCheatDeath) {
+        this.usedCheatDeath = usedCheatDeath;
+    }
+
+    @Transient
     private List<DamageOverTimeEffect> activeDamageOverTimeEffects = new ArrayList<>();
 
     @Transient
@@ -481,22 +492,19 @@ public class Personnage {
         this.healthCurrent = Math.max(0, this.healthCurrent - totalDamageToHealth);
 
         // CHEAT DEATH
-        if (this.healthCurrent <= 0) {
+        if (this.healthCurrent <= 0 && !this.usedCheatDeath) {
             int cheatDeathValue = getSpecialEffectValue(
                     generation.grimoire.enumeration.EquipmentEffectType.CHEAT_DEATH);
             if (cheatDeathValue > 0) {
-                this.healthCurrent = cheatDeathValue * 5;
+                this.usedCheatDeath = true;
+                
+                int revivedHp = (int) (this.getTotalHealthMax() * 0.05 * cheatDeathValue);
+                if (revivedHp < 1) revivedHp = 1;
+                if (revivedHp > this.getTotalHealthMax()) revivedHp = this.getTotalHealthMax();
+                
+                this.healthCurrent = revivedHp;
                 System.out.println(
-                        "👼 Ange Gardien activé ! Le personnage survit avec " + (cheatDeathValue * 5) + " PV.");
-                // Consomme l'effet pour la session/combat
-                if (this.equipments != null) {
-                    for (generation.grimoire.entity.Equipment eq : this.equipments) {
-                        if (eq.getSpecialEffect() == generation.grimoire.enumeration.EquipmentEffectType.CHEAT_DEATH) {
-                            eq.setSpecialEffect(generation.grimoire.enumeration.EquipmentEffectType.NONE);
-                            eq.setSpecialEffectValue(0);
-                        }
-                    }
-                }
+                        "👼 Ange Gardien activé ! Le personnage survit avec " + revivedHp + " PV.");
             }
         }
 
