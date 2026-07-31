@@ -38,7 +38,7 @@ export function createAnomalyBadgeHtml(anomalyName, showName = false) {
             if (an.level) anomLevel = an.level;
             if (an.magicObject) isMagic = true;
             if (an.category) catIcon = getCategoryIcon(an.category);
-                        if (an.spiritualite) {
+            if (an.spiritualite) {
                 anomSpiri = an.spiritualite;
                 tColor = getSpiritualiteColor(an.spiritualite);
             }
@@ -416,7 +416,7 @@ async function loadAnomaliesCombat() {
                 const data = await res.json();
                 if (Array.isArray(data)) window.allAnomaliesCombat = data;
             }
-        } catch(e) {
+        } catch (e) {
             console.error("Failed to load anomalies templates:", e);
             window.allAnomaliesCombat = [];
         }
@@ -2104,7 +2104,7 @@ function updateUI(data) {
                                 nameHtml = entry.specialItemName;
                                 rarityColor = '#d946ef';
                                 let catIcon = 'star';
-                                                                if (Array.isArray(window.allAnomaliesCombat)) {
+                                if (Array.isArray(window.allAnomaliesCombat)) {
                                     const an = window.allAnomaliesCombat.find(a => a.name === entry.specialItemName);
                                     if (an) {
                                         rarityColor = getSpiritualiteColor(an.spiritualite);
@@ -3732,10 +3732,10 @@ function playDungeonMusic(data) {
         }
         window.dungeonMusic = new Audio(targetSrc);
         window.dungeonMusic.loop = true;
-        
+
         const savedVolume = localStorage.getItem('grimoire_music_volume');
         const savedMuted = localStorage.getItem('grimoire_music_muted');
-        
+
         if (savedVolume !== null) {
             window.dungeonMusic.volume = parseInt(savedVolume) / 100;
             const slider = document.getElementById('musicVolumeSlider');
@@ -3745,7 +3745,7 @@ function playDungeonMusic(data) {
             const slider = document.getElementById('musicVolumeSlider');
             if (slider) slider.value = 50;
         }
-        
+
         if (savedMuted === 'true') {
             window.dungeonMusic.muted = true;
             const btn = document.getElementById('musicToggleBtn');
@@ -3789,7 +3789,7 @@ function playDungeonMusic(data) {
     }
 }
 
-window.toggleMusic = function() {
+window.toggleMusic = function () {
     if (!window.dungeonMusic) return;
     const btn = document.getElementById('musicToggleBtn');
     if (window.dungeonMusic.muted) {
@@ -3809,7 +3809,7 @@ window.toggleMusic = function() {
     }
 };
 
-window.changeMusicVolume = function(value) {
+window.changeMusicVolume = function (value) {
     if (window.dungeonMusic) {
         window.dungeonMusic.volume = value / 100;
     }

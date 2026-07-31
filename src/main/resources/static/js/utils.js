@@ -7,7 +7,7 @@
 // ---- Color helpers ----
 
 window.ALL_SPIRITUALITIES = [
-    'TENEBRES', 'ESPRIT', 'KARMA', 'VIOLENCE', 'TRAHISON', 
+    'TENEBRES', 'ESPRIT', 'KARMA', 'VIOLENCE', 'TRAHISON',
     'SURETE', 'RAISON', 'DESTRUCTION', 'CREATION', 'CONVICTION', 'CONSOLIDATION'
 ];
 
@@ -193,7 +193,7 @@ function getAnomalyTooltipHTML(aTemp, fallbackName) {
     const n = aTemp ? aTemp.name : fallbackName;
     const catIcon = aTemp && aTemp.category ? getCategoryIcon(aTemp.category) : 'star';
     const spiriColor = aTemp && aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
-    
+
     let html = `
         <div class="anomaly-tooltip-title" style="color: ${spiriColor}; border-bottom: 1px solid ${spiriColor}40; padding-bottom: 4px;">
             <span class="material-symbols-outlined" style="font-size: 1rem; margin-right: 4px;">${catIcon}</span>${n}
@@ -206,18 +206,18 @@ function getAnomalyTooltipHTML(aTemp, fallbackName) {
                 <span class="material-symbols-outlined text-sm">${aTemp && aTemp.magicObject ? 'star' : 'category'}</span>
                 ${aTemp && aTemp.magicObject ? 'Magique' : 'Matériau'}
             </span>`;
-            
+
     if (aTemp && aTemp.spiritualite) {
         html += `
             <span class="font-bold" style="border: 1px solid ${getSpiritualiteColor(aTemp.spiritualite)}; color: ${getSpiritualiteColor(aTemp.spiritualite)}; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; background: rgba(0,0,0,0.3);">
                 ${aTemp.spiritualite}
             </span>`;
     }
-    
+
     html += `
         </div>
         <div class="anomaly-tooltip-desc">${aTemp && aTemp.description ? aTemp.description : 'Aucune description'}</div>
     `;
-    
+
     return html;
 }
