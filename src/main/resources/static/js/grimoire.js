@@ -34,6 +34,8 @@ export function renderFilteredSpells() {
         if (window.isAdmin && mutationVal !== 'ALL') {
             if (mutationVal === 'NONE') {
                 if (sp.mutation) return false;
+            } else if (mutationVal === 'ONLY_MUTATIONS') {
+                if (!sp.mutation) return false;
             } else {
                 if (!sp.mutation || sp.mutation.id != mutationVal) return false;
             }
