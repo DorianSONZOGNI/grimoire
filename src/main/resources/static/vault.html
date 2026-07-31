@@ -677,14 +677,14 @@
                         }
                     </style>
                     <label class="type-toggle" title="Afficher uniquement les consommables">
-                        <input type="checkbox" id="filterConsommableOnly" onchange="filterVault()">
+                        <input type="checkbox" id="filterConsommableOnly" onchange="if(this.checked) document.getElementById('filterAnomalieOnly').checked = false; filterVault();">
                         <span class="toggle-btn cons">
                             <span class="material-symbols-outlined"
                                 style="font-size: 1.1rem; color: #fca5a5;">inventory_2</span> Consommables
                         </span>
                     </label>
                     <label class="type-toggle" title="Afficher uniquement les anomalies">
-                        <input type="checkbox" id="filterAnomalieOnly" onchange="filterVault()">
+                        <input type="checkbox" id="filterAnomalieOnly" onchange="if(this.checked) document.getElementById('filterConsommableOnly').checked = false; filterVault();">
                         <span class="toggle-btn ano">
                             <span class="material-symbols-outlined"
                                 style="font-size: 1.1rem; color: #f0abfc;">star</span> Anomalies
