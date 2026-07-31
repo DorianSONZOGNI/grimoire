@@ -293,24 +293,24 @@ window.openBuyModal = function (id, isConsumable = false) {
     if (!eq) return;
 
     let priceHtml = ``;
-    if (eq.priceGold > 0) {
-        priceHtml += `${eq.priceGold} <span class="material-symbols-outlined align-middle" style="font-size: 1.1rem; color:#fcd34d;">monetization_on</span>`;
+    if (eq.shopPrice !== undefined && eq.shopPrice > 0) {
+        priceHtml += `<strong style="color:#fbbf24; display: inline-flex; align-items: center; gap: 0.2rem;">${eq.shopPrice} <span class="material-symbols-outlined align-middle" style="font-size: 1.1rem; color:#fcd34d;">monetization_on</span></strong>`;
     }
     if (eq.priceAnomalies && Object.keys(eq.priceAnomalies).length > 0) {
         let anos = [];
         for (const [n, q] of Object.entries(eq.priceAnomalies)) {
             let aTemp = pageState.allAnomalies.find(a => a.name === n);
-                        const catIcon = aTemp && aTemp.category ? getCategoryIcon(aTemp.category) : 'star';
+            const catIcon = aTemp && aTemp.category ? getCategoryIcon(aTemp.category) : 'star';
             const spiriColor = aTemp && aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
-            anos.push(`<span style="color: ${spiriColor};"><span class="material-symbols-outlined align-middle" style="font-size: 1rem;">${catIcon}</span> ${q}</span>`);
+            anos.push(`<span class="anomaly-badge" style="border: 1px solid ${spiriColor}; background: linear-gradient(${spiriColor}25, ${spiriColor}25), #1e293b; color: ${spiriColor}; padding: 0.2rem 0.4rem; border-radius: 6px; display: inline-flex; align-items: center; gap: 0.3rem; font-weight: 600;"><span class="material-symbols-outlined align-middle" style="font-size: 1rem; color: ${spiriColor};">${catIcon}</span> ${q}x ${n}</span>`);
         }
-        if (priceHtml !== '') priceHtml += ` <span class="text-muted">+</span> `;
-        priceHtml += anos.join(' <span class="text-muted">+</span> ');
+        if (priceHtml !== '') priceHtml += ` <span class="text-muted" style="margin: 0 0.4rem;">et</span> `;
+        priceHtml += anos.join(' <span class="text-muted" style="margin: 0 0.4rem;">+</span> ');
     }
 
     showModal({
         title: 'Acheter cet objet ?',
-        body: `Êtes-vous sûr de vouloir acheter <strong style="color:#fff;">${eq.name}</strong> pour ${priceHtml} ?`,
+        body: `Êtes-vous sûr de vouloir acheter <strong style="color:#fff;">${eq.name}</strong> pour <div style="display:inline-flex; align-items:center; justify-content:center; flex-wrap:wrap; margin-top:0.3rem;">${priceHtml}</div> ?`,
         icon: 'shopping_cart',
         confirmText: 'Oui, acheter',
         onConfirm: async () => {
