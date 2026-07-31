@@ -974,7 +974,7 @@ function renderRooms() {
                                     ${pageState.allAnomalies.map(a => {
                     let color = getSpiritualiteColor(a.spiritualite);
                     const icon = getCategoryIcon(a.category);
-                    return `<div class="custom-option" onclick="selectMerchantSpecial(${rIndex}, '${a.name.replace(/'/g, "\\'")}', '${a.name.replace(/'/g, "\\'")}', '${color}')"><span class="material-symbols-outlined cs-icon" style="color: ${color};">${icon}</span> ${a.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${a.level || 1})</span></div>`;
+                    return `<div class="custom-option" onclick="selectMerchantSpecial(${rIndex}, '${a.name.replace(/'/g, "\\'")}', '${a.name.replace(/'/g, "\\'")}', '${color}', '${icon}', ${a.level || 1})"><span class="material-symbols-outlined cs-icon" style="color: ${color};">${icon}</span> ${a.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${a.level || 1})</span></div>`;
                 }).join('')}
                                 </div>
                                 <input type="hidden" id="room_merchant_special_${rIndex}" value="">
@@ -997,7 +997,7 @@ function renderRooms() {
                                         ${pageState.allAnomalies.map(a => {
                     let color = getSpiritualiteColor(a.spiritualite);
                     const icon = getCategoryIcon(a.category);
-                    return `<div class="custom-option" onclick="selectMerchantCost(${rIndex}, '${a.name.replace(/'/g, "\\'")}', '${a.name.replace(/'/g, "\\'")}', '${color}')"><span class="material-symbols-outlined cs-icon" style="color: ${color};">${icon}</span> ${a.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${a.level || 1})</span></div>`;
+                    return `<div class="custom-option" onclick="selectMerchantCost(${rIndex}, '${a.name.replace(/'/g, "\\'")}', '${a.name.replace(/'/g, "\\'")}', '${color}', '${icon}', ${a.level || 1})"><span class="material-symbols-outlined cs-icon" style="color: ${color};">${icon}</span> ${a.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${a.level || 1})</span></div>`;
                 }).join('')}
                                     </div>
                                     <input type="hidden" id="room_merchant_cost_item_${rIndex}" value="">
@@ -2145,16 +2145,16 @@ window.toggleMerchantSpecialSelect = function (rIndex) {
     }
 };
 
-window.selectMerchantSpecial = function (rIndex, value, labelStr, color = '#d946ef', level = 1) {
+window.selectMerchantSpecial = function (rIndex, value, labelStr, color = '#d946ef', icon = 'star', level = 1) {
     const select = document.getElementById(`room_merchant_special_${rIndex}`);
     if (select) select.value = value;
 
     const label = document.getElementById(`room_merchant_special_label_${rIndex}`);
     if (label) {
         if (!value) {
-            label.innerHTML = `<span class="material-symbols-outlined cs-icon text-muted">star</span> ${labelStr}`;
+            label.innerHTML = `<span class="material-symbols-outlined cs-icon text-muted">diamond</span> ${labelStr}`;
         } else {
-            label.innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: ${color};">star</span> ${labelStr} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${level})</span>`;
+            label.innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: ${color};">${icon}</span> ${labelStr} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${level})</span>`;
         }
     }
 
@@ -2171,7 +2171,7 @@ window.toggleMerchantCostSelect = function (rIndex) {
     }
 };
 
-window.selectMerchantCost = function (rIndex, value, labelStr, color = '#f472b6', level = 1) {
+window.selectMerchantCost = function (rIndex, value, labelStr, color = '#f472b6', icon = 'star', level = 1) {
     const select = document.getElementById(`room_merchant_cost_item_${rIndex}`);
     if (select) select.value = value;
 
@@ -2180,7 +2180,7 @@ window.selectMerchantCost = function (rIndex, value, labelStr, color = '#f472b6'
         if (!value) {
             label.innerHTML = `<span class="material-symbols-outlined cs-icon text-muted">star</span> ${labelStr}`;
         } else {
-            label.innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: ${color};">star</span> ${labelStr} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${level})</span>`;
+            label.innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: ${color};">${icon}</span> ${labelStr} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${level})</span>`;
         }
     }
 
