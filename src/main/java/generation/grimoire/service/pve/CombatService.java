@@ -341,18 +341,7 @@ public class CombatService {
                     Equipment clone = new Equipment();
                     clone.copyStatsFrom(template);
 
-                    if (session.getReloadCount() > 0) {
-                        double penaltyFactor = Math.max(0.1, 1.0 - (session.getReloadCount() * 0.1));
-                        clone.setBonusHealthMax((int) (clone.getBonusHealthMax() * penaltyFactor));
-                        clone.setBonusManaMax((int) (clone.getBonusManaMax() * penaltyFactor));
-                        clone.setBonusPower((int) (clone.getBonusPower() * penaltyFactor));
-                        clone.setBonusStrength((int) (clone.getBonusStrength() * penaltyFactor));
-                        clone.setBonusArmor((int) (clone.getBonusArmor() * penaltyFactor));
-                        clone.setBonusResistance((int) (clone.getBonusResistance() * penaltyFactor));
-                        clone.setBonusSpeed((int) (clone.getBonusSpeed() * penaltyFactor));
-                        clone.setBonusCrit((int) (clone.getBonusCrit() * penaltyFactor));
-                        session.addLog("Un équipement a été dégradé à cause des recharges abusives.");
-                    }
+
 
                     clone.setTemplate(false);
                     clone.setUser(user);
@@ -949,6 +938,7 @@ public class CombatService {
                     personnageRepository.save(java.util.Objects.requireNonNull(p));
                 }
             }
+            activeSessions.remove(sessionId);
         }
 
         computeSpellAvailability(session);

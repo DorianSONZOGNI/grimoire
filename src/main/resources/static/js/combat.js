@@ -29,9 +29,10 @@ export function createAnomalyBadgeHtml(anomalyName, showName = false) {
     let anomSpiri = 'Inconnu';
     let catIcon = 'star';
     let isMagic = false;
+    let an = null;
 
     if (Array.isArray(window.allAnomaliesCombat)) {
-        const an = window.allAnomaliesCombat.find(a => a.name === anomalyName);
+        an = window.allAnomaliesCombat.find(a => a.name === anomalyName);
         if (an) {
             if (an.description) tooltipDesc = an.description;
             if (an.level) anomLevel = an.level;
@@ -526,6 +527,7 @@ async function startCombat(characterIds, dungeonId, consumableIds) {
         console.error(e);
         if (typeof showNotif !== 'undefined') showNotif("Erreur de connexion.", true);
         else ui.showNotif("Erreur de connexion.", true);
+        window.location.href = '/dungeons.html';
     }
 }
 
@@ -1030,9 +1032,17 @@ async function endTurn() {
 
     } catch (e) {
         console.error(e);
-        showNotif("Erreur de connexion", true);
         pageState.isProcessing = false;
         setButtonsProcessing(false);
+        // Retry from server state to recover
+        try {
+            const retryRes = await globalFetch(`/api/pve/combat/${pageState.sessionId}/resume`, { method: 'POST' });
+            const retryData = await retryRes.json();
+            updateUI(retryData);
+        } catch (e2) {
+            console.error('Recovery failed:', e2);
+            showNotif("Erreur critique. Rechargez la page.", true);
+        }
     }
 }
 
@@ -1059,6 +1069,14 @@ async function nextRoom() {
     } catch (e) {
         console.error(e);
         showNotif("Erreur lors du passage à la salle suivante", true);
+        // Retry from server state
+        try {
+            const retryRes = await globalFetch(`/api/pve/combat/${pageState.sessionId}/resume`, { method: 'POST' });
+            const retryData = await retryRes.json();
+            updateUI(retryData);
+        } catch (e2) {
+            console.error('Recovery failed:', e2);
+        }
     } finally {
         pageState.isProcessing = false;
         setButtonsProcessing(false);
@@ -2345,7 +2363,23 @@ function updateUI(data) {
                     const newData = await res.json();
                     updateUI(newData);
                 } catch (e) {
-                    console.error(e);
+                    console.error('Auto-turn error:', e);
+                    // Retry: re-fetch current state to unblock UI
+                    try {
+                        const retryRes = await globalFetch(`/api/pve/combat/${pageState.sessionId}/resume`, { method: 'POST' });
+                        const retryData = await retryRes.json();
+                        updateUI(retryData);
+                    } catch (e2) {
+                        console.error('Auto-turn recovery failed:', e2);
+                        // Last resort: re-enable buttons so user isn't stuck
+                        const btnAttack = document.getElementById('btnAttack');
+                        if (btnAttack) { btnAttack.disabled = false; btnAttack.style.pointerEvents = 'auto'; btnAttack.style.opacity = '1'; }
+                        const btnEnd = document.getElementById('btnEndTurn');
+                        if (btnEnd) { btnEnd.disabled = false; }
+                        const spellButtons = document.querySelectorAll('.spell-btn, .filter-chip');
+                        spellButtons.forEach(btn => { btn.disabled = false; btn.classList.remove('disabled'); btn.style.pointerEvents = ''; });
+                        showNotif("Erreur de synchronisation. Veuillez réessayer.", true);
+                    }
                 }
             }, 600); // Fetch next turn
         }, 500); // Pause before attack animation
