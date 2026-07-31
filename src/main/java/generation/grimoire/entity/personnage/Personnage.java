@@ -231,6 +231,10 @@ public class Personnage {
     private Personnage channelingTarget;
 
     @Transient
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    private Personnage channelingAlly;
+
+    @Transient
     private Integer channelingChoiceKey;
 
     public void startTurn() {

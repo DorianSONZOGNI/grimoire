@@ -188,6 +188,7 @@ public class SpellService {
             caster.setAllowInstantDuringCurrentChanneling(toCast.isAllowInstantDuringChanneling());
             caster.setChanneledSpell(toCast);
             caster.setChannelingTarget(target);
+            caster.setChannelingAlly(null); // Simple castSpell doesn't have ally parameter
             caster.setChannelingChoiceKey(choiceKey);
             System.out.println(caster.getName() + " commence à canaliser " + toCast.getNom() + " pour " + toCast.getChannelingDuration() + " tours.");
         }
@@ -382,6 +383,7 @@ public class SpellService {
             caster.setAllowInstantDuringCurrentChanneling(toCast.isAllowInstantDuringChanneling());
             caster.setChanneledSpell(toCast);
             caster.setChannelingTarget(target);
+            caster.setChannelingAlly(ally);
             caster.setChannelingChoiceKey(choiceKey);
             System.out.println(caster.getName() + " commence à canaliser " + toCast.getNom() + " pour " + toCast.getChannelingDuration() + " tours.");
         }
@@ -600,6 +602,7 @@ public class SpellService {
         if (newRemaining <= 0) {
             caster.setChanneledSpell(null);
             caster.setChannelingTarget(null);
+            caster.setChannelingAlly(null);
             caster.setChannelingChoiceKey(null);
         }
 
@@ -656,6 +659,7 @@ public class SpellService {
         if (newRemaining <= 0) {
             caster.setChanneledSpell(null);
             caster.setChannelingTarget(null);
+            caster.setChannelingAlly(null);
             caster.setChannelingChoiceKey(null);
         }
 

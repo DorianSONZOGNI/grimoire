@@ -1404,7 +1404,7 @@ public class CombatService {
                     List<Personnage> allAllies = session.getPlayers().stream().filter(pl -> pl.getHealthCurrent() > 0)
                             .toList();
                     List<Personnage> allEnemies = session.getEnemies().stream().map(m -> m.getAsPersonnage()).toList();
-                    spellService.tickChanneling(p, channelingTarget, p.getChannelingChoiceKey(), p, allAllies,
+                    spellService.tickChanneling(p, channelingTarget, p.getChannelingChoiceKey(), p.getChannelingAlly(), allAllies,
                             allEnemies);
                 }
             });
@@ -1497,7 +1497,7 @@ public class CombatService {
                                 .toList();
                         List<Personnage> allEnemies = session.getPlayers().stream()
                                 .filter(pl -> pl.getHealthCurrent() > 0).toList();
-                        spellService.tickChanneling(mp, cTarget, mp.getChannelingChoiceKey(), mp, allAllies,
+                        spellService.tickChanneling(mp, cTarget, mp.getChannelingChoiceKey(), mp.getChannelingAlly(), allAllies,
                                 allEnemies);
                     } else {
                         List<Personnage> alivePlayers = session.getPlayers().stream()
