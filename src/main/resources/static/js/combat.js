@@ -3598,7 +3598,7 @@ window.renderOverlayInventory = function (containerId) {
     }
 
     pageState.currentSessionData.activeConsumables.forEach(c => {
-        const canConsume = true;
+        const canConsume = Boolean(c.bonusHealthMax || c.bonusManaMax || c.consumableHpPercent || c.consumableManaPercent || c.consumableMissingHpPercent || c.consumableMissingManaPercent);
         const onClickAttr = canConsume ? `onclick="window.openConsumeModal(${c.id}, '${c.name.replace(/'/g, "\\'")}')"` : '';
         const cursorStyle = canConsume ? 'cursor: pointer;' : '';
         const hoverClass = canConsume ? 'consumable-hover' : '';
