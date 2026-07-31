@@ -1095,21 +1095,16 @@
                 Spiritualités (<span id="countSPIRIT">0</span>)
             </button>
 
-        </div>
-
-        <!-- Center Column -->
-        <div class="csp-center-col">
-            <!-- Filter Bar -->
-            <div class="csp-filters">
-                <div class="filter-group">
-                    <span class="filter-label">Type:</span>
+            <div style="margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem; display: flex; flex-direction: column; gap: 1rem;">
+                <div class="filter-group" style="flex-wrap: wrap;">
+                    <span class="filter-label" style="width: 100%;">Type:</span>
                     <label class="filter-radio"><input type="radio" name="filterCastingType" value="ALL" checked="" onchange="applySpellFilters(this)"><span>Tous</span></label>
                     <label class="filter-radio"><input type="radio" name="filterCastingType" value="INSTANTANE" onchange="applySpellFilters(this)"><span>Instantané</span></label>
                     <label class="filter-radio"><input type="radio" name="filterCastingType" value="BANAL" onchange="applySpellFilters(this)"><span>Banal</span></label>
                     <label class="filter-radio"><input type="radio" name="filterCastingType" value="CANALISE" onchange="applySpellFilters(this)"><span>Canalisé</span></label>
                 </div>
-                <div class="filter-group">
-                    <span class="filter-label">Niveau:</span>
+                <div class="filter-group" style="flex-wrap: wrap;">
+                    <span class="filter-label" style="width: 100%;">Niveau:</span>
                     <label class="filter-radio"><input type="checkbox" name="filterLevel" value="ALL" checked="" onchange="applySpellFilters(this)"><span>Tous</span></label>
                     <label class="filter-radio"><input type="checkbox" name="filterLevel" value="1" onchange="applySpellFilters(this)"><span>1</span></label>
                     <label class="filter-radio"><input type="checkbox" name="filterLevel" value="2" onchange="applySpellFilters(this)"><span>2</span></label>
@@ -1118,6 +1113,10 @@
                     <label class="filter-radio"><input type="checkbox" name="filterLevel" value="5" onchange="applySpellFilters(this)"><span>5</span></label>
                 </div>
             </div>
+        </div>
+
+        <!-- Center Column -->
+        <div class="csp-center-col">
 
             <!-- Main Spells Area -->
             <div class="csp-main" id="spellsContainer">
