@@ -376,9 +376,10 @@ window.promptFlee = function () {
     // Populate penalty text
     setTimeout(() => {
         if (!pageState.sessionId || !pageState.currentSessionData || pageState.currentSessionData.finished) return;
-        const totalLvl = pageState.currentSessionData.players.reduce((sum, p) => sum + p.level, 0);
-        const xpLossPerHero = pageState.currentSessionData.dungeon.level * 10;
-        const goldLoss = Math.floor(pageState.currentSessionData.dungeon.level * (totalLvl / 2));
+        const roomsCount = Math.max(1, pageState.currentSessionData.totalRooms || 1);
+        const nbHeroes = Math.max(1, (pageState.currentSessionData.players || []).length);
+        const xpLossPerHero = Math.floor((10 * roomsCount) / nbHeroes);
+        const goldLoss = 10 * roomsCount;
         const fleePenaltySpan = document.getElementById('fleePenaltyText');
         if (fleePenaltySpan) {
             fleePenaltySpan.innerHTML = `Perte d'xp et Or : <span style="color: #f87171;">-${xpLossPerHero} XP normal</span> (par perso) et <span style="color: #fbbf24;">-${goldLoss} Or</span> (au total).`;
