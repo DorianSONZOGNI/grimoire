@@ -341,7 +341,7 @@ async function loadCharacters() {
                             <div class="flex-center" style="color: #f8fafc; font-weight: 600; font-family: 'Outfit'; font-size: 1.1rem;">
                                 ${c.name} ${iconsHtml}
                             </div>
-                            <div class="text-muted" style="font-size: 0.85rem;">Niv. ${c.voieLevel || 1} &bull; ${c.healthMax} PV max</div>
+                            <div class="text-muted" style="font-size: 0.85rem;">Niv. ${c.voieLevel || 1} &bull; ${c.totalHealthMax !== undefined ? c.totalHealthMax : c.healthMax} PV max</div>
                         </div>
                     </div>
                 `;
