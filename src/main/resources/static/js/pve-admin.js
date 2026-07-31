@@ -1283,14 +1283,15 @@ function renderRooms() {
                                 <div style="margin-top: 0.8rem; padding-top: 0.8rem; border-top: 1px dashed rgba(255,255,255,0.15); width: 100%;">
                                     <label class="text-xs" style="color: #f97316;">Configuration du Sacrifice</label>
                                     <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; margin-top: 0.5rem;">
-                                        <div>
+                                        <div style="min-width: 0;">
                                             <label class="text-muted" style="font-size: 0.75rem;">Spiritualité acceptée</label>
                                             <div class="custom-select-wrapper" id="altar_spirituality_wrapper_${rIndex}_${oIndex}" style="margin-top: 0.2rem; z-index: ${152 - (rIndex * 10 + oIndex * 3)};">
-                                                <div class="custom-select-trigger" onclick="toggleAltarSpiritualitySelect(${rIndex}, ${oIndex})" style="padding: 0.5rem; font-size: 0.85rem; border-radius: 8px;">
+                                                <div class="custom-select-trigger" onclick="toggleAltarSpiritualitySelect(${rIndex}, ${oIndex})" style="padding: 0.5rem; font-size: 0.85rem; border-radius: 8px; min-width: 0;">
                                                     <span class="cs-label" id="altar_spirituality_label_${rIndex}_${oIndex}">
-                                                        <span class="material-symbols-outlined cs-icon align-middle" style="color: ${getSpiritualiteColor(outcome.altarSpirituality || 'TENEBRES')}; font-size: 1.1rem; margin-right: 4px;">${getSpiritualiteIcon(outcome.altarSpirituality || 'TENEBRES')}</span> ${outcome.altarSpirituality || 'Ténèbres'}
+                                                        <span class="material-symbols-outlined cs-icon align-middle" style="color: ${getSpiritualiteColor(outcome.altarSpirituality || 'TENEBRES')}; font-size: 1.1rem; margin-right: 4px; flex-shrink: 0;">${getSpiritualiteIcon(outcome.altarSpirituality || 'TENEBRES')}</span>
+                                                        <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;">${outcome.altarSpirituality || 'Ténèbres'}</span>
                                                     </span>
-                                                    <span class="material-symbols-outlined">expand_more</span>
+                                                    <span class="material-symbols-outlined" style="flex-shrink: 0;">expand_more</span>
                                                 </div>
                                                 <div class="custom-select-options" id="altar_spirituality_options_${rIndex}_${oIndex}">
                                                     ${(window.ALL_SPIRITUALITIES || ['TENEBRES', 'ESPRIT', 'KARMA', 'VIOLENCE', 'TRAHISON', 'SURETE', 'RAISON', 'DESTRUCTION', 'CREATION', 'CONVICTION', 'CONSOLIDATION']).map(sp => `
@@ -1301,14 +1302,14 @@ function renderRooms() {
                                                 </div>
                                             </div>
                                         </div>
-                                        <div>
+                                        <div style="min-width: 0;">
                                             <label class="text-muted" style="font-size: 0.75rem;">Type de récompense</label>
                                             <div class="custom-select-wrapper" id="altar_reward_wrapper_${rIndex}_${oIndex}" style="margin-top: 0.2rem; z-index: ${151 - (rIndex * 10 + oIndex * 3)};">
-                                                <div class="custom-select-trigger" onclick="toggleAltarRewardSelect(${rIndex}, ${oIndex})" style="padding: 0.5rem; font-size: 0.85rem; border-radius: 8px;">
+                                                <div class="custom-select-trigger" onclick="toggleAltarRewardSelect(${rIndex}, ${oIndex})" style="padding: 0.5rem; font-size: 0.85rem; border-radius: 8px; min-width: 0;">
                                                     <span class="cs-label" id="altar_reward_label_${rIndex}_${oIndex}">
-                                                        ${outcome.altarRewardType === 'XP' ? '<span class="material-symbols-outlined cs-icon align-middle" style="color: #38bdf8; font-size: 1.1rem; margin-right: 4px;">auto_awesome</span> XP Spiritualité' : outcome.altarRewardType === 'ITEM' ? '<span class="material-symbols-outlined cs-icon align-middle" style="color: #8b5cf6; font-size: 1.1rem; margin-right: 4px;">redeem</span> Équipement' : '<span class="material-symbols-outlined cs-icon align-middle" style="color: #eab308; font-size: 1.1rem; margin-right: 4px;">monetization_on</span> Or (Gold)'}
+                                                        ${outcome.altarRewardType === 'XP' ? '<span class="material-symbols-outlined cs-icon align-middle" style="color: #38bdf8; font-size: 1.1rem; margin-right: 4px; flex-shrink: 0;">auto_awesome</span> <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;">XP Spiritualité</span>' : outcome.altarRewardType === 'ITEM' ? '<span class="material-symbols-outlined cs-icon align-middle" style="color: #8b5cf6; font-size: 1.1rem; margin-right: 4px; flex-shrink: 0;">redeem</span> <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;">Équipement</span>' : '<span class="material-symbols-outlined cs-icon align-middle" style="color: #eab308; font-size: 1.1rem; margin-right: 4px; flex-shrink: 0;">monetization_on</span> <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; display: block;">Or (Gold)</span>'}
                                                     </span>
-                                                    <span class="material-symbols-outlined">expand_more</span>
+                                                    <span class="material-symbols-outlined" style="flex-shrink: 0;">expand_more</span>
                                                 </div>
                                                 <div class="custom-select-options" id="altar_reward_options_${rIndex}_${oIndex}">
                                                     <div class="custom-option" onclick="updateAltarField(${rIndex}, ${oIndex}, 'altarRewardType', 'GOLD')">
