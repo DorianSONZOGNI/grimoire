@@ -2427,9 +2427,26 @@ function updateUI(data) {
     processNewDeathLogs(data.combatLog);
 }
 
+function getBossBuffsHtml(c) {
+    if (!c.passiveStates) return '';
+    
+    let html = '';
+    const hasArmorBuff = (c.activeBuffs || c.buffs || []).some(b => b.statAffected === 'ARMURE' && b.flatValue === c.passiveStates['BOSS_BUFF_ARMOR']);
+    const hasResistBuff = (c.activeBuffs || c.buffs || []).some(b => b.statAffected === 'RESISTANCE' && b.flatValue === c.passiveStates['BOSS_BUFF_RESIST']);
+
+    if (c.passiveStates['BOSS_BUFF_HP']) html += `<span class="text-success" title="+${c.passiveStates['BOSS_BUFF_HP']}% PV Max (Boss Buff)" style="cursor: help; font-size: 0.75rem; background: rgba(16, 185, 129, 0.15); padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined text-sm">favorite</span>+${c.passiveStates['BOSS_BUFF_HP']}% PV</span>`;
+    if (c.passiveStates['BOSS_BUFF_SHIELD'] && c.shieldTotal > 0) html += `<span title="+${c.passiveStates['BOSS_BUFF_SHIELD']}% Bouclier (Boss Buff)" style="cursor: help; font-size: 0.75rem; background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined text-sm">shield</span>+${c.passiveStates['BOSS_BUFF_SHIELD']}% Boucl.</span>`;
+    if (c.passiveStates['BOSS_BUFF_ARMOR'] && hasArmorBuff) html += `<span title="+${c.passiveStates['BOSS_BUFF_ARMOR']} Armure (Boss Buff)" style="cursor: help; font-size: 0.75rem; background: rgba(139, 92, 246, 0.15); color: #8b5cf6; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(139, 92, 246, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined text-sm">security</span>+${c.passiveStates['BOSS_BUFF_ARMOR']} Arm.</span>`;
+    if (c.passiveStates['BOSS_BUFF_RESIST'] && hasResistBuff) html += `<span title="+${c.passiveStates['BOSS_BUFF_RESIST']} Résistance (Boss Buff)" style="cursor: help; font-size: 0.75rem; background: rgba(217, 70, 239, 0.15); color: #d946ef; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(217, 70, 239, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined text-sm">health_and_safety</span>+${c.passiveStates['BOSS_BUFF_RESIST']} Rés.</span>`;
+    if (c.passiveStates['BOSS_BUFF_BURN']) html += `<span class="text-error" title="Brûlure sur coup (Boss Buff)" style="cursor: help; font-size: 0.75rem; background: rgba(239, 68, 68, 0.15); padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined text-sm">local_fire_department</span>Brûlure</span>`;
+    if (c.passiveStates['BOSS_BUFF_POISON']) html += `<span title="Poison sur coup (Boss Buff)" style="cursor: help; font-size: 0.75rem; background: rgba(34, 197, 94, 0.15); color: #22c55e; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(34, 197, 94, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined text-sm">pest_control</span>Poison</span>`;
+    
+    return html;
+}
+
 // Removed GLOBAL_STAT_LABELS and formatStat (imported from ui.js)
 
-function generateFighterHtml(c, isHero) {
+function generateFighterHtml(c, isHero, skipBadges = false) {
     const hpPct = c.healthMax > 0 ? Math.max(0, Math.min(100, (c.healthCurrent / c.healthMax) * 100)) : 0;
     let hpLabel = `${c.healthCurrent} / ${c.healthMax}`;
     if (c.shieldTotal > 0) hpLabel += ` (+${c.shieldTotal} 🛡️)`;
@@ -2724,16 +2741,8 @@ function generateFighterHtml(c, isHero) {
     if (!isHero) {
         monsterBadgesHtml += `<div style="display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; margin-bottom: 0.5rem;">`;
 
-        if (c.passiveStates) {
-            const hasArmorBuff = (c.activeBuffs || c.buffs || []).some(b => b.statAffected === 'ARMURE' && b.flatValue === c.passiveStates['BOSS_BUFF_ARMOR']);
-            const hasResistBuff = (c.activeBuffs || c.buffs || []).some(b => b.statAffected === 'RESISTANCE' && b.flatValue === c.passiveStates['BOSS_BUFF_RESIST']);
-
-            if (c.passiveStates['BOSS_BUFF_HP']) monsterBadgesHtml += `<span class="text-success" title="+${c.passiveStates['BOSS_BUFF_HP']}% PV Max (Boss Buff)" style="cursor: help; font-size: 0.75rem; background: rgba(16, 185, 129, 0.15); padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined text-sm">favorite</span>+${c.passiveStates['BOSS_BUFF_HP']}% PV</span>`;
-            if (c.passiveStates['BOSS_BUFF_SHIELD'] && c.shieldTotal > 0) monsterBadgesHtml += `<span title="+${c.passiveStates['BOSS_BUFF_SHIELD']}% Bouclier (Boss Buff)" style="cursor: help; font-size: 0.75rem; background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined text-sm">shield</span>+${c.passiveStates['BOSS_BUFF_SHIELD']}% Boucl.</span>`;
-            if (c.passiveStates['BOSS_BUFF_ARMOR'] && hasArmorBuff) monsterBadgesHtml += `<span title="+${c.passiveStates['BOSS_BUFF_ARMOR']} Armure (Boss Buff)" style="cursor: help; font-size: 0.75rem; background: rgba(139, 92, 246, 0.15); color: #8b5cf6; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(139, 92, 246, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined text-sm">security</span>+${c.passiveStates['BOSS_BUFF_ARMOR']} Arm.</span>`;
-            if (c.passiveStates['BOSS_BUFF_RESIST'] && hasResistBuff) monsterBadgesHtml += `<span title="+${c.passiveStates['BOSS_BUFF_RESIST']} Résistance (Boss Buff)" style="cursor: help; font-size: 0.75rem; background: rgba(217, 70, 239, 0.15); color: #d946ef; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(217, 70, 239, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined text-sm">health_and_safety</span>+${c.passiveStates['BOSS_BUFF_RESIST']} Rés.</span>`;
-            if (c.passiveStates['BOSS_BUFF_BURN']) monsterBadgesHtml += `<span class="text-error" title="Brûlure sur coup (Boss Buff)" style="cursor: help; font-size: 0.75rem; background: rgba(239, 68, 68, 0.15); padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined text-sm">local_fire_department</span>Brûlure</span>`;
-            if (c.passiveStates['BOSS_BUFF_POISON']) monsterBadgesHtml += `<span title="Poison sur coup (Boss Buff)" style="cursor: help; font-size: 0.75rem; background: rgba(34, 197, 94, 0.15); color: #22c55e; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(34, 197, 94, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined text-sm">pest_control</span>Poison</span>`;
+        if (!skipBadges && c.passiveStates) {
+            monsterBadgesHtml += getBossBuffsHtml(c);
         }
 
         let typeName = typeof c.monsterType === 'object' ? c.monsterType?.name : c.monsterType;
@@ -2756,6 +2765,7 @@ function generateFighterHtml(c, isHero) {
         }
         monsterBadgesHtml += `</div>`;
     }
+
     let mutationsHtml = '';
     if (!isHero && c.mutations && c.mutations.length > 0) {
         mutationsHtml = `<div class="absolute" style="right: -1rem; top: 4rem; display: flex; flex-direction: column; gap: 0.6rem; z-index: 10;">`;
@@ -2806,6 +2816,13 @@ function generateFighterHtml(c, isHero) {
 function renderEnemies(enemies) {
     const container = document.getElementById('enemiesContainer');
     container.innerHTML = '';
+    
+    const bossBuffsContainer = document.getElementById('bossBuffsContainer');
+    if (bossBuffsContainer) {
+        bossBuffsContainer.innerHTML = '';
+    }
+
+    let bossBuffsRendered = false;
 
     enemies.forEach((activeMonster, index) => {
         const m = activeMonster.base;
@@ -2844,7 +2861,17 @@ function renderEnemies(enemies) {
             div.style.transform = 'scale(0.95)';
         }
 
-        div.innerHTML = generateFighterHtml(pMonster, false);
+        const isBoss = pMonster.passiveStates && Object.keys(pMonster.passiveStates).some(k => k.startsWith('BOSS_BUFF_'));
+        
+        if (isBoss && bossBuffsContainer && !bossBuffsRendered) {
+            const bossHtml = getBossBuffsHtml(pMonster);
+            if (bossHtml) {
+                bossBuffsContainer.innerHTML = bossHtml;
+                bossBuffsRendered = true;
+            }
+        }
+
+        div.innerHTML = generateFighterHtml(pMonster, false, isBoss);
         container.appendChild(div);
     });
 }
