@@ -470,7 +470,7 @@ function renderRooms() {
             }
             monstersHtml += `</div>
                 <div class="relative" style="display: flex; gap: 0.5rem; margin-top: 0.5rem; align-items: stretch;">
-                    <div class="custom-select-wrapper" id="room_select_wrapper_${rIndex}" style="flex: 1; z-index: ${100 - rIndex}; margin: 0;">
+                    <div class="custom-select-wrapper" id="room_select_wrapper_${rIndex}" style="flex: 1; min-width: 0; z-index: ${100 - rIndex}; margin: 0;">
                         <div class="custom-select-trigger" onclick="toggleMonsterSelect(${rIndex})" style="padding: 0.6rem 1rem; border-radius: 8px;">
                             <span class="cs-label" id="room_select_label_${rIndex}"><span class="material-symbols-outlined cs-icon text-muted">pest_control</span> Sélectionner un monstre...</span>
                             <span class="material-symbols-outlined">expand_more</span>
@@ -480,8 +480,8 @@ function renderRooms() {
                         </div>
                         <input type="hidden" id="room_monster_select_${rIndex}" value="">
                     </div>
-                    <button class="flex-center text-sm" type="button" onclick="addMonsterToRoom(${rIndex})" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(59, 130, 246, 0.5)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 8px rgba(59, 130, 246, 0.3)';" style="background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; padding: 0 1.2rem; font-weight: 600; border-radius: 8px; cursor: pointer; gap: 0.3rem; transition: transform 0.1s, box-shadow 0.2s; box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3);">
-                        <span class="material-symbols-outlined" style="font-size: 1.1rem;">add</span> Ajouter
+                    <button class="flex-center text-sm" type="button" onclick="addMonsterToRoom(${rIndex})" onmouseover="this.style.transform='translateY(-1px)'; this.style.boxShadow='0 4px 12px rgba(59, 130, 246, 0.5)';" onmouseout="this.style.transform='none'; this.style.boxShadow='0 2px 8px rgba(59, 130, 246, 0.3)';" style="background: linear-gradient(135deg, #3b82f6, #2563eb); color: white; border: none; width: 2.5rem; padding: 0; font-weight: 600; border-radius: 8px; cursor: pointer; transition: transform 0.1s, box-shadow 0.2s; box-shadow: 0 2px 8px rgba(59, 130, 246, 0.3); font-size: 1.2rem; justify-content: center;">
+                        +
                     </button>
                 </div>
             `;
@@ -509,7 +509,7 @@ function renderRooms() {
             }
             monstersHtml += `</div>
                 <div class="relative" style="display: flex; gap: 0.5rem; margin-top: 0.5rem; align-items: stretch;">
-                    <div class="custom-select-wrapper" id="room_select_wrapper_${rIndex}" style="flex: 1; z-index: ${100 - rIndex}; margin: 0;">
+                    <div class="custom-select-wrapper" id="room_select_wrapper_${rIndex}" style="flex: 1; min-width: 0; z-index: ${100 - rIndex}; margin: 0;">
                         <div class="custom-select-trigger" onclick="toggleMonsterSelect(${rIndex})" style="padding: 0.6rem 1rem; border-radius: 8px;">
                             <span class="cs-label" id="room_select_label_${rIndex}"><span class="material-symbols-outlined cs-icon text-muted">pest_control</span> Sélectionner un boss/monstre...</span>
                             <span class="material-symbols-outlined">expand_more</span>
@@ -519,8 +519,8 @@ function renderRooms() {
                         </div>
                         <input type="hidden" id="room_monster_select_${rIndex}" value="">
                     </div>
-                    <button class="flex-center text-sm" type="button" onclick="addMonsterToRoom(${rIndex})" style="background: linear-gradient(135deg, #e11d48, #be123c); color: white; border: none; padding: 0 1.2rem; font-weight: 600; border-radius: 8px; cursor: pointer; gap: 0.3rem;">
-                        <span class="material-symbols-outlined" style="font-size: 1.1rem;">add</span> Ajouter
+                    <button class="flex-center text-sm" type="button" onclick="addMonsterToRoom(${rIndex})" style="background: linear-gradient(135deg, #e11d48, #be123c); color: white; border: none; width: 2.5rem; padding: 0; font-weight: 600; border-radius: 8px; cursor: pointer; font-size: 1.2rem; justify-content: center;">
+                        +
                     </button>
                 </div>
             `;
@@ -837,7 +837,7 @@ function renderRooms() {
                             let color = '#d946ef';
                             let icon = 'star';
                             let tooltipDesc = 'Cet objet aura un effet unique !';
-                                                        const an = pageState.allAnomalies.find(a => a.name === loot.specialItemName);
+                            const an = pageState.allAnomalies.find(a => a.name === loot.specialItemName);
                             if (an) {
                                 if (an.spiritualite) color = getSpiritualiteColor(an.spiritualite);
                                 icon = getCategoryIcon(an.category);
@@ -884,7 +884,7 @@ function renderRooms() {
                             let priceColor = '#d946ef';
                             let priceIcon = 'star';
                             let tooltipDesc = 'Cet objet aura un effet unique !';
-                                                        const anPrice = pageState.allAnomalies.find(a => a.name === loot.priceSpecialItemName);
+                            const anPrice = pageState.allAnomalies.find(a => a.name === loot.priceSpecialItemName);
                             if (anPrice) {
                                 if (anPrice.spiritualite) priceColor = getSpiritualiteColor(anPrice.spiritualite);
                                 priceIcon = getCategoryIcon(anPrice.category);
@@ -1880,7 +1880,7 @@ window.renderDungeonsList = function () {
 
         let secretMeta = { icon: "key", color: "#f59e0b" };
         if (d.requiredSecret) {
-            
+
             secretMeta = window.DEFAULT_SECRETS_META.find(s => s.name === d.requiredSecret) || secretMeta;
         }
 
