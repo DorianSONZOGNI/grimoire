@@ -854,8 +854,15 @@ function buildEquipmentTooltipHTML(name, isConsumable = false) {
 
     if (!statsHtml && !isConsumable) return '';
 
+    const slotInfo = getSlotInfo(temp);
+    const rName = typeof temp.rarity === 'object' ? temp.rarity?.name : temp.rarity;
+    const rarityColor = window.RARITY_COLORS ? (window.RARITY_COLORS[rName] || '#fbbf24') : '#fbbf24';
+
     let html = `
-                <div style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:#f8fafc; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:4px;">${temp.name}</div>
+                <div style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:${rarityColor}; border-bottom:1px solid ${rarityColor}40; padding-bottom:4px; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="display: flex; align-items: center; gap: 6px;">${temp.name}</span>
+                    <span class="material-symbols-outlined ${slotInfo.extraClass || ''}" style="font-size: 1.1rem; color: ${slotInfo.color};" title="${slotInfo.label}">${slotInfo.icon}</span>
+                </div>
                 <div style="display:flex; flex-direction:column; gap:4px;">${statsHtml}</div>
             `;
     return html.replace(/"/g, '&quot;');
