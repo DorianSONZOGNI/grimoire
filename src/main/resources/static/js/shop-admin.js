@@ -380,23 +380,7 @@ function renderGrid(equipments) {
                                 let aTemp = window.allAnomalies ? window.allAnomalies.find(a => a.name === n) : null;
                                 const catIcon = aTemp && aTemp.category ? getCategoryIcon(aTemp.category) : 'star';
                                 const spiriColor = aTemp && aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
-                                        const tooltipData = `
-                                            <div class="anomaly-tooltip-title" style="color: ${spiriColor}; border-bottom: 1px solid ${spiriColor}40; padding-bottom: 4px;"><span class="material-symbols-outlined" style="font-size: 1rem; margin-right: 4px;">${catIcon}</span>${aTemp ? aTemp.name : n}</div>
-                                            <div style="display: flex; gap: 6px; margin: 6px 0; flex-wrap: wrap;">
-                                                <span class="font-bold" style="border: 1px solid ${getLevelColor(aTemp ? aTemp.level : 1)}; color: ${getLevelColor(aTemp ? aTemp.level : 1)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem;">
-                                                    Lvl ${aTemp ? aTemp.level || 1 : 1}
-                                                </span>
-                                                <span class="flex-center font-bold" style="border: 1px solid ${getTypeColor(aTemp && aTemp.magicObject)}; color: ${getTypeColor(aTemp && aTemp.magicObject)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; gap: 4px;">
-                                                    <span class="material-symbols-outlined text-sm">${catIcon}</span>
-                                                    ${aTemp && aTemp.magicObject ? 'Magique' : 'Matériau'}
-                                                </span>
-                                                ${aTemp && aTemp.spiritualite ?
-                                        `<span class="font-bold" style="border: 1px solid ${getSpiritualiteColor(aTemp.spiritualite)}; color: ${getSpiritualiteColor(aTemp.spiritualite)}; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; background: rgba(0,0,0,0.3);">
-                                                    ${aTemp.spiritualite}
-                                                </span>` : ''}
-                                            </div>
-                                            <div class="anomaly-tooltip-desc">${aTemp && aTemp.description ? aTemp.description : 'Aucune description'}</div>
-                                    `;
+                                        const tooltipData = getAnomalyTooltipHTML(aTemp, n);
                                 anos.push(`<span class="anomaly-badge" style="border-color: ${spiriColor}; background: ${spiriColor}25; color: ${spiriColor};" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}">
                                         <span class="material-symbols-outlined text-sm align-middle" style="color: ${spiriColor};">${catIcon}</span> ${q}
                                     </span>`);

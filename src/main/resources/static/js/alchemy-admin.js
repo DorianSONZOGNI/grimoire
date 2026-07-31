@@ -480,22 +480,7 @@ window.renderRecipesList = function () {
                 if (aTemp) {
                     const catIcon = aTemp.category ? (getCategoryIcon(aTemp.category)) : 'star';
                     const spiriColor = aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
-                    const tooltipData = `
-                                <div class="anomaly-tooltip-title" style="color: ${spiriColor}; border-bottom: 1px solid ${spiriColor}40; padding-bottom: 4px;">${aTemp.name}</div>
-                                <div style="display: flex; gap: 6px; margin: 6px 0; flex-wrap: wrap;">
-                                    <span style="border: 1px solid ${getLevelColor(aTemp.level)}; color: ${getLevelColor(aTemp.level)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold;">
-                                        Lvl ${aTemp.level || 1}
-                                    </span>
-                                    <span style="border: 1px solid ${getTypeColor(aTemp.magicObject)}; color: ${getTypeColor(aTemp.magicObject)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; display: flex; align-items: center; gap: 4px;">
-                                        <span class="material-symbols-outlined" style="font-size: 0.9rem;">${catIcon}</span>
-                                        ${aTemp.magicObject ? 'Magique' : 'Matériau'}
-                                    </span>
-                                    ${aTemp.spiritualite ? `<span style="border: 1px solid ${getSpiritualiteColor(aTemp.spiritualite)}; color: ${getSpiritualiteColor(aTemp.spiritualite)}; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; background: rgba(0,0,0,0.3); text-transform: uppercase;">
-                                        ${aTemp.spiritualite}
-                                    </span>` : ''}
-                                </div>
-                                <div class="anomaly-tooltip-desc">${aTemp.description ? aTemp.description : 'Aucune description'}</div>
-                            `;
+                    const tooltipData = getAnomalyTooltipHTML(aTemp, k);
                     reqs.push(`<span class="anomaly-badge" style="border: 1px solid ${spiriColor}; background: linear-gradient(${spiriColor}25, ${spiriColor}25), #1e293b; color: ${spiriColor}; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block; cursor: help;" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}"><span class="material-symbols-outlined" style="font-size: 0.9rem; vertical-align: middle; color: ${spiriColor};">${catIcon}</span> ${v}x ${k}</span>`);
                 } else {
                     reqs.push(`${v}x [A] ${k}`);
@@ -516,22 +501,7 @@ window.renderRecipesList = function () {
             if (aTemp) {
                 const catIcon = aTemp.category ? (getCategoryIcon(aTemp.category)) : 'star';
                 const spiriColor = aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
-                const tooltipData = `
-                            <div class="anomaly-tooltip-title" style="color: ${spiriColor}; border-bottom: 1px solid ${spiriColor}40; padding-bottom: 4px;">${aTemp.name}</div>
-                            <div style="display: flex; gap: 6px; margin: 6px 0; flex-wrap: wrap;">
-                                <span style="border: 1px solid ${getLevelColor(aTemp.level)}; color: ${getLevelColor(aTemp.level)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold;">
-                                    Lvl ${r.rewardLevel || aTemp.level || 1}
-                                </span>
-                                <span style="border: 1px solid ${getTypeColor(aTemp.magicObject)}; color: ${getTypeColor(aTemp.magicObject)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; display: flex; align-items: center; gap: 4px;">
-                                    <span class="material-symbols-outlined" style="font-size: 0.9rem;">${catIcon}</span>
-                                    ${aTemp.magicObject ? 'Magique' : 'Matériau'}
-                                </span>
-                                ${aTemp.spiritualite ? `<span style="border: 1px solid ${getSpiritualiteColor(aTemp.spiritualite)}; color: ${getSpiritualiteColor(aTemp.spiritualite)}; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; background: rgba(0,0,0,0.3); text-transform: uppercase;">
-                                    ${aTemp.spiritualite}
-                                </span>` : ''}
-                            </div>
-                            <div class="anomaly-tooltip-desc">${aTemp.description ? aTemp.description : 'Aucune description'}</div>
-                        `;
+                const tooltipData = getAnomalyTooltipHTML(aTemp, r.rewardName);
                 rewardHtml = `<span class="anomaly-badge" style="border: 1px solid ${spiriColor}; background: linear-gradient(${spiriColor}25, ${spiriColor}25), #1e293b; color: ${spiriColor}; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block; cursor: help;" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; color: ${spiriColor};">${catIcon}</span> ${r.rewardQuantity}x ${r.rewardName}</span>`;
             } else {
                 rewardHtml = `<span style="color: #10b981;">${r.rewardType} - ${r.rewardQuantity}x ${r.rewardName} (Niv. ${r.rewardLevel})</span>`;

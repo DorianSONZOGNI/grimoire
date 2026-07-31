@@ -809,21 +809,7 @@ function buildAnomalyTooltipHTML(name) {
     let temp = pageState.allAnomalyTemplates.find(a => a.name === name);
     if (!temp) temp = { name: name, level: 1, spiritualite: 'Inconnu', description: 'Aucune description' };
 
-    const isMagic = temp.magicObject ? true : false;
-    const typeColor = isMagic ? '#ec4899' : '#b45309';
-    const typeLabel = isMagic ? 'Magique' : 'Matériau';
-    const catIcon = temp.category ? (getCategoryIcon(temp.category)) : 'star';
-    const spiriColor = temp.spiritualite ? getSpiritualiteColor(temp.spiritualite) : '#a855f7';
-
-    return `
-                <div class="anomaly-tooltip-title" style="font-weight:bold; font-size:1rem; margin-bottom:6px; color: ${spiriColor}; border-bottom: 1px solid ${spiriColor}40; padding-bottom: 4px;">${temp.name}</div>
-                <div style="display: flex; gap: 6px; margin: 6px 0; flex-wrap: wrap;">
-                    <span style="border: 1px solid ${getLevelColor(temp.level)}; color: ${getLevelColor(temp.level)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold;">Lvl ${temp.level}</span>
-                    <span style="border: 1px solid ${typeColor}; color: ${typeColor}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; display: flex; align-items: center; gap: 4px;"><span class="material-symbols-outlined" style="font-size: 0.9rem;">${catIcon}</span>${typeLabel}</span>
-                    <span style="border: 1px solid ${getSpiritualiteColor(temp.spiritualite)}; color: ${getSpiritualiteColor(temp.spiritualite)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase;">${temp.spiritualite || 'Autre'}</span>
-                </div>
-                <div style="font-style:italic; color:#cbd5e1; margin-top:8px; max-width: 350px; line-height: 1.4; white-space: normal !important; word-wrap: break-word;">${temp.description || 'Aucune description'}</div>
-            `.replace(/"/g, '&quot;');
+    return getAnomalyTooltipHTML(temp, name).replace(/"/g, '&quot;');
 }
 
 // STAT_DEFS → constants.js (window.STAT_DEFS)

@@ -845,23 +845,7 @@ function renderRooms() {
                             }
                             const lvlColor = an && an.level ? (an.level === 1 ? '#10b981' : an.level === 2 ? '#3b82f6' : an.level === 3 ? '#a855f7' : an.level === 4 ? '#f59e0b' : '#ef4444') : '#10b981';
                             const typeColor = an && an.magicObject ? '#ec4899' : '#b45309';
-                            const tooltipDataHtml = `
-                                    <div class="anomaly-tooltip-title" style="color: ${color}; border-bottom: 1px solid ${color}40; padding-bottom: 4px;">${loot.specialItemName}</div>
-                                    <div style="display: flex; gap: 6px; margin: 6px 0; flex-wrap: wrap;">
-                                        <span class="font-bold" style="border: 1px solid ${lvlColor}; color: ${lvlColor}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem;">
-                                            Lvl ${an ? an.level || 1 : 1}
-                                        </span>
-                                        <span class="flex-center font-bold" style="border: 1px solid ${typeColor}; color: ${typeColor}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; gap: 4px;">
-                                            <span class="material-symbols-outlined text-sm">${icon}</span>
-                                            ${an && an.magicObject ? 'Magique' : 'Matériau'}
-                                        </span>
-                                        ${an && an.spiritualite ?
-                                    `<span class="font-bold" style="border: 1px solid ${color}; color: ${color}; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; background: rgba(0,0,0,0.3);">
-                                            ${an.spiritualite}
-                                        </span>` : ''}
-                                    </div>
-                                    <div class="anomaly-tooltip-desc">${tooltipDesc}</div>
-                            `;
+                            const tooltipDataHtml = getAnomalyTooltipHTML(an, loot.specialItemName);
                             nameHtml = `<span class="anomaly-badge" style="border-color: ${color}; background: ${color}25; color: ${color}; cursor: help;" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipDataHtml.replace(/"/g, '&quot;')}">
                                 <span class="material-symbols-outlined align-middle" style="font-size: 1.1rem; color: ${color};">${icon}</span>
                             </span>`;
@@ -892,23 +876,7 @@ function renderRooms() {
                             }
                             const lvlColor = anPrice && anPrice.level ? (anPrice.level === 1 ? '#10b981' : anPrice.level === 2 ? '#3b82f6' : anPrice.level === 3 ? '#a855f7' : anPrice.level === 4 ? '#f59e0b' : '#ef4444') : '#10b981';
                             const typeColor = anPrice && anPrice.magicObject ? '#ec4899' : '#b45309';
-                            const tooltipDataHtml2 = `
-                                    <div class="anomaly-tooltip-title" style="color: ${priceColor}; border-bottom: 1px solid ${priceColor}40; padding-bottom: 4px;">${loot.priceSpecialItemName}</div>
-                                    <div style="display: flex; gap: 6px; margin: 6px 0; flex-wrap: wrap;">
-                                        <span class="font-bold" style="border: 1px solid ${lvlColor}; color: ${lvlColor}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem;">
-                                            Lvl ${anPrice ? anPrice.level || 1 : 1}
-                                        </span>
-                                        <span class="flex-center font-bold" style="border: 1px solid ${typeColor}; color: ${typeColor}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; gap: 4px;">
-                                            <span class="material-symbols-outlined text-sm">${priceIcon}</span>
-                                            ${anPrice && anPrice.magicObject ? 'Magique' : 'Matériau'}
-                                        </span>
-                                        ${anPrice && anPrice.spiritualite ?
-                                    `<span class="font-bold" style="border: 1px solid ${priceColor}; color: ${priceColor}; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; background: rgba(0,0,0,0.3);">
-                                            ${anPrice.spiritualite}
-                                        </span>` : ''}
-                                    </div>
-                                    <div class="anomaly-tooltip-desc">${tooltipDesc}</div>
-                            `;
+                            const tooltipDataHtml2 = getAnomalyTooltipHTML(anPrice, loot.priceSpecialItemName);
                             priceHtml += `<span class="anomaly-badge" style="border-color: ${priceColor}; background: ${priceColor}25; color: ${priceColor}; margin-left: 0.5rem; cursor: help; display: inline-flex; align-items: center; gap: 0.2rem;" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipDataHtml2.replace(/"/g, '&quot;')}">
                                 <span class="material-symbols-outlined text-sm align-middle" style="color: ${priceColor};">${priceIcon}</span> 1x
                             </span>`;

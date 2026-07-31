@@ -44,24 +44,7 @@ export function createAnomalyBadgeHtml(anomalyName, showName = false) {
         }
     }
 
-    let lvlColor = '#10b981';
-    if (anomLevel === 2) lvlColor = '#3b82f6';
-    else if (anomLevel === 3) lvlColor = '#8b5cf6';
-    else if (anomLevel === 4) lvlColor = '#f59e0b';
-    else if (anomLevel >= 5) lvlColor = '#ef4444';
-
-    const typeColor = isMagic ? '#ec4899' : '#b45309';
-    const typeLabel = isMagic ? 'Magique' : 'Matériau';
-
-    const tooltipDataHtml = `
-        <div class="anomaly-tooltip-title" style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:${tColor}; border-bottom: 1px solid ${tColor}; padding-bottom: 4px;">${tooltipTitle}</div>
-        <div style="display: flex; gap: 6px; margin: 6px 0; flex-wrap: wrap;">
-            <span class="font-bold" style="border: 1px solid ${lvlColor}; color: ${lvlColor}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem;">Lvl ${anomLevel}</span>
-            <span class="flex-center font-bold" style="border: 1px solid ${typeColor}; color: ${typeColor}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; gap: 4px;"><span class="material-symbols-outlined text-sm">${catIcon}</span>${typeLabel}</span>
-            <span class="font-bold" style="border: 1px solid ${tColor}; color: ${tColor}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; text-transform: uppercase;">${anomSpiri}</span>
-        </div>
-        <div style="font-style:italic; color:#cbd5e1; margin-top:8px; max-width: 350px; line-height: 1.4; white-space: normal !important; word-wrap: break-word;">${tooltipDesc}</div>
-    `;
+    const tooltipDataHtml = getAnomalyTooltipHTML(an, tooltipTitle);
 
     const tooltipAttrs = 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"';
     const extraAttrs = `data-color="${tColor}"`;
@@ -2192,36 +2175,9 @@ function updateUI(data) {
                                 if (Array.isArray(window.allAnomaliesCombat)) {
                                     const an = window.allAnomaliesCombat.find(a => a.name === entry.specialItemName);
                                     if (an) {
-                                        tooltipTitle = an.name;
-                                        if (an.description) tooltipDesc = an.description;
-                                        if (an.level) anomLevel = an.level;
-                                        if (an.magicObject) isMagic = true;
-                                        if (an.category) catIcon2 = getCategoryIcon(an.category);
-                                                                                if (an.spiritualite) {
-                                            anomSpiri = an.spiritualite;
-                                            tColor = getSpiritualiteColor(an.spiritualite);
-                                        }
+                                        tooltipDataHtml = getAnomalyTooltipHTML(an, entry.specialItemName);
                                     }
                                 }
-
-                                let lvlColor = '#10b981';
-                                if (anomLevel === 2) lvlColor = '#3b82f6';
-                                else if (anomLevel === 3) lvlColor = '#8b5cf6';
-                                else if (anomLevel === 4) lvlColor = '#f59e0b';
-                                else if (anomLevel >= 5) lvlColor = '#ef4444';
-
-                                const typeColor = isMagic ? '#ec4899' : '#b45309';
-                                const typeLabel = isMagic ? 'Magique' : 'Matériau';
-
-                                tooltipDataHtml = `
-                                    <div class="anomaly-tooltip-title" style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:${tColor}; border-bottom: 1px solid ${tColor}; padding-bottom: 4px;">${tooltipTitle}</div>
-                                    <div style="display: flex; gap: 6px; margin: 6px 0; flex-wrap: wrap;">
-                                        <span class="font-bold" style="border: 1px solid ${lvlColor}; color: ${lvlColor}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem;">Lvl ${anomLevel}</span>
-                                        <span class="flex-center font-bold" style="border: 1px solid ${typeColor}; color: ${typeColor}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; gap: 4px;"><span class="material-symbols-outlined text-sm">${catIcon2}</span>${typeLabel}</span>
-                                        <span class="font-bold" style="border: 1px solid ${tColor}; color: ${tColor}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; text-transform: uppercase;">${anomSpiri}</span>
-                                    </div>
-                                    <div style="font-style:italic; color:#cbd5e1; margin-top:8px; max-width: 350px; line-height: 1.4; white-space: normal !important; word-wrap: break-word;">${tooltipDesc}</div>
-                                `;
                             }
 
                             const tooltipAttrs = tooltipDataHtml ? 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"' : '';
