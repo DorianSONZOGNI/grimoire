@@ -1202,10 +1202,29 @@ async function buyMerchantItem(lootIndex) {
     }
 }
 
-function openBuyModal(idx, itemName, goldPrice = 0) {
+function openBuyModal(idx, itemName, goldPrice = 0, specialItemName = null) {
+    let costText = '';
+    if (goldPrice > 0) {
+        costText += `<strong style="color:#fbbf24;">${goldPrice}</strong> Or`;
+    }
+    if (specialItemName) {
+        let priceColor = '#d946ef';
+        let priceIcon = 'star';
+        if (Array.isArray(window.allAnomaliesCombat)) {
+            const anPrice = window.allAnomaliesCombat.find(a => a.name === specialItemName);
+            if (anPrice) {
+                priceColor = getSpiritualiteColor(anPrice.spiritualite);
+                priceIcon = anPrice.category ? getCategoryIcon(anPrice.category) : 'star';
+            }
+        }
+        if (costText !== '') costText += ' et ';
+        costText += `<span style="display:inline-flex; align-items:center; color:${priceColor}; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size:1.1rem; vertical-align:middle;">${priceIcon}</span> 1x ${specialItemName}</span>`;
+    }
+    if (costText === '') costText = 'rien du tout';
+
     ui.showModal({
         title: 'Acheter cet objet ?',
-        body: `Voulez-vous vraiment acheter <strong style="color:#fff;">${itemName}</strong> ?<br>Cela coûtera <strong style="color:#fbbf24;">${goldPrice}</strong> Or.`,
+        body: `Voulez-vous vraiment acheter <strong style="color:#fff;">${itemName}</strong> ?<br>Cela coûtera ${costText}.`,
         icon: 'shopping_cart',
         confirmText: 'Oui, acheter',
         onConfirm: async () => {
@@ -2151,7 +2170,8 @@ function updateUI(data) {
                                                   Vendu
                                               </button>`;
                             } else {
-                                buttonHtml = `<button class="flex-center" id="btn_buy_${idx}" type="button" onclick="openBuyModal(${idx}, \`${nameHtml.replace(/'/g, "\\'").replace(/"/g, '&quot;')}\`, ${goldPrice})" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='none'" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 8px; padding: 0.6rem 1.2rem; font-weight: 700; font-size: 1rem; cursor: pointer; gap: 0.5rem; transition: all 0.2s ease; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);">
+                                let specialItemNameArg = entry.priceSpecialItemName ? `\`${entry.priceSpecialItemName.replace(/'/g, "\\'").replace(/"/g, '&quot;')}\`` : 'null';
+                                buttonHtml = `<button class="flex-center" id="btn_buy_${idx}" type="button" onclick="openBuyModal(${idx}, \`${nameHtml.replace(/'/g, "\\'").replace(/"/g, '&quot;')}\`, ${goldPrice}, ${specialItemNameArg})" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='none'" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 8px; padding: 0.6rem 1.2rem; font-weight: 700; font-size: 1rem; cursor: pointer; gap: 0.5rem; transition: all 0.2s ease; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);">
                                                   <span class="material-symbols-outlined" style="font-size: 1.2rem;">shopping_cart</span>
                                                   Acheter
                                               </button>`;
