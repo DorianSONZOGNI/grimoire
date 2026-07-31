@@ -587,7 +587,7 @@ window.updateSpellCardState = function (spellId) {
             }
         });
 
-        const playerHeat = pageState.currentSessionData.activePlayer.passiveStates ? (pageState.currentSessionData.activePlayer.passiveStates['destruction_heat'] || 0) : 0;
+        const playerHeat = pageState.currentSessionData.activePlayer?.passiveStates ? (pageState.currentSessionData.activePlayer.passiveStates['destruction_heat'] || 0) : 0;
         const totalHeatCost = (sp.heatCost || 0) + requiredHeatFromEffects;
 
         if (playerHeat < totalHeatCost) {
@@ -602,7 +602,7 @@ window.updateSpellCardState = function (spellId) {
         });
 
         if (targetsOnlyAlly && isCastable) {
-            const hasOtherAlly = pageState.currentSessionData.players && pageState.currentSessionData.players.some(p => p.healthCurrent > 0 && p.id !== pageState.currentSessionData.activePlayer.id);
+            const hasOtherAlly = pageState.currentSessionData.players && pageState.currentSessionData.activePlayer && pageState.currentSessionData.players.some(p => p.healthCurrent > 0 && p.id !== pageState.currentSessionData.activePlayer.id);
             if (!hasOtherAlly) {
                 isCastable = false;
                 dynamicReason = 'NO_OTHER_ALLY';
@@ -701,7 +701,7 @@ function initiateCombatCast(spellId) {
             }
         });
 
-        const playerHeat = pageState.currentSessionData.activePlayer.passiveStates ? (pageState.currentSessionData.activePlayer.passiveStates['destruction_heat'] || 0) : 0;
+        const playerHeat = pageState.currentSessionData.activePlayer?.passiveStates ? (pageState.currentSessionData.activePlayer.passiveStates['destruction_heat'] || 0) : 0;
         const totalHeatCost = (sp.heatCost || 0) + requiredHeatFromEffects;
 
         if (playerHeat < totalHeatCost) {
