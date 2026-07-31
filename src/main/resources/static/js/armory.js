@@ -785,22 +785,7 @@ function renderEquipModal() {
 
             let specialEffectHtml = '';
             if (equipped.specialEffect && equipped.specialEffect !== 'NONE') {
-                const effectLabels = {
-                    'LIFESTEAL': 'Vol de Vie',
-                    'THORNS': 'Épines',
-                    'MANA_SHIELD': 'Bouclier de Mana',
-                    'CHEAT_DEATH': 'Ange Gardien',
-                    'CRIT_DAMAGE': 'Dégâts Critiques',
-                    'CURSED_MANA_DRAIN': 'Famine (Drain Mana)',
-                    'CURSED_HP_LOSS_ON_MANA': 'Brèche spirituelle (- hp % en mana Act.)',
-                    'CURSED_MAGIC_DAMAGE_REDUCTION': 'Folie (% dégâts magique -)',
-                    'CURSED_PHYSICAL_DAMAGE_REDUCTION': 'Faiblesse (% dégâts physique -)',
-                    'CURSED_VULNERABILITY': 'Vulnérabilité (Dégâts subis % +)',
-                    'CURSED_HEALING_REDUCTION': 'Chair putréfiée (Soins % -)',
-                    'EXECUTION': 'Exécution (% Phy)',
-                    'MAGIC_OVERLOAD': 'Surcharge (% Mag mana Act)'
-                };
-                const label = effectLabels[equipped.specialEffect] || equipped.specialEffect;
+                const label = window.EFFECT_LABELS[equipped.specialEffect] || equipped.specialEffect;
                 const isCursed = equipped.specialEffect.startsWith('CURSED_');
                 const icon = isCursed ? 'skull' : 'auto_awesome';
                 const color = isCursed ? '#9b2d2d' : '#c084fc';
@@ -901,22 +886,7 @@ function renderEquipModal() {
 
                     let aSpecialEffectHtml = '';
                     if (a.specialEffect && a.specialEffect !== 'NONE') {
-                        const effectLabels = {
-                            'LIFESTEAL': 'Vol de Vie',
-                            'THORNS': 'Épines',
-                            'MANA_SHIELD': 'Bouclier de Mana',
-                            'CHEAT_DEATH': 'Ange Gardien',
-                            'CRIT_DAMAGE': 'Dégâts Critiques',
-                            'CURSED_MANA_DRAIN': 'Famine (Drain Mana)',
-                            'CURSED_HP_LOSS_ON_MANA': 'Brèche spirituelle (- hp % en mana Act.)',
-                            'CURSED_MAGIC_DAMAGE_REDUCTION': 'Folie (% dégâts magique -)',
-                            'CURSED_PHYSICAL_DAMAGE_REDUCTION': 'Faiblesse (% dégâts physique -)',
-                            'CURSED_VULNERABILITY': 'Vulnérabilité (Dégâts subis % +)',
-                            'CURSED_HEALING_REDUCTION': 'Chair putréfiée (Soins % -)',
-                            'EXECUTION': 'Exécution (% Phy)',
-                            'MAGIC_OVERLOAD': 'Surcharge (% Mag mana Act)'
-                        };
-                        const label = effectLabels[a.specialEffect] || a.specialEffect;
+                        const label = window.EFFECT_LABELS[a.specialEffect] || a.specialEffect;
                         const isCursed = a.specialEffect.startsWith('CURSED_');
                         const icon = isCursed ? 'skull' : 'auto_awesome';
                         const color = isCursed ? '#9b2d2d' : '#c084fc';
