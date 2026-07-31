@@ -3255,49 +3255,16 @@ function renderSpells(spells) {
         return;
     }
 
-    // Group spells by category instead of level
-    const groupsMap = new Map();
-    filteredSpells.forEach(sp => {
-        let groupKey = '';
-        if (currentSpellsTab === 'VOIE') {
-            if (sp.voie && sp.voie.nom) {
-                groupKey = sp.voie.nom.toLowerCase().startsWith('voie') ? sp.voie.nom : `Voie de ${sp.voie.nom}`;
-            } else {
-                groupKey = 'Autres';
-            }
-        } else if (currentSpellsTab === 'SPIRIT') {
-            if (sp.spiritualite && sp.spiritualite.nom) {
-                groupKey = sp.spiritualite.nom.toLowerCase().startsWith('spiritualité') || sp.spiritualite.nom.toLowerCase().startsWith('spiritualite')
-                    ? sp.spiritualite.nom
-                    : `Spiritualité de ${sp.spiritualite.nom}`;
-            } else {
-                groupKey = 'Autres';
-            }
-        } else {
-            groupKey = ''; // No title for ALL
-        }
+    // We sort all filtered spells by level, no grouping to save space
+    filteredSpells.sort((a, b) => (a.niveau || 1) - (b.niveau || 1));
 
-        if (!groupsMap.has(groupKey)) groupsMap.set(groupKey, []);
-        groupsMap.get(groupKey).push(sp);
-    });
-
-    let html = '';
-    const sortedGroups = Array.from(groupsMap.keys()).sort();
-
-    sortedGroups.forEach(groupKey => {
-        const groupSpells = groupsMap.get(groupKey);
-        // Sort spells by level inside the group
-        groupSpells.sort((a, b) => (a.niveau || 1) - (b.niveau || 1));
-
-        html += `
-            <div class="csp-level-group">
-                ${groupKey ? `<div class="csp-level-title">${groupKey}</div>` : ''}
-                <div class="csp-grid">
-                    ${groupSpells.map(sp => renderSpellCard(sp)).join('')}
-                </div>
+    let html = `
+        <div class="csp-level-group" style="padding-top: 0.5rem;">
+            <div class="csp-grid">
+                ${filteredSpells.map(sp => renderSpellCard(sp)).join('')}
             </div>
-        `;
-    });
+        </div>
+    `;
 
     container.innerHTML = html;
 
