@@ -35,6 +35,8 @@ public class HealOverTimeEffect extends HealEffect {
     @jakarta.persistence.Enumerated(jakarta.persistence.EnumType.STRING)
     private generation.grimoire.enumeration.Source healSource = generation.grimoire.enumeration.Source.TARGET_HEALTH_MAX;
 
+    @EqualsAndHashCode.Exclude
+    @lombok.ToString.Exclude
     @jakarta.persistence.Transient
     @com.fasterxml.jackson.annotation.JsonIgnore
     private Personnage caster;

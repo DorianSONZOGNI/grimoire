@@ -27,10 +27,10 @@ import java.util.HashMap;
 @NoArgsConstructor
 @EqualsAndHashCode(exclude = { "user", "equipments", "activeBuffs", "activeShields", "activeHealOverTimeEffects",
         "activeManaOverTimeEffects", "activeDamageOverTimeEffects", "activeHeatOverTimeEffects", "consumableSpellBuffs",
-        "channelingTarget" })
+        "channelingTarget", "channelingAlly", "channeledSpell" })
 @ToString(exclude = { "user", "equipments", "activeBuffs", "activeShields", "activeHealOverTimeEffects",
         "activeManaOverTimeEffects", "activeDamageOverTimeEffects", "activeHeatOverTimeEffects", "consumableSpellBuffs",
-        "channelingTarget" })
+        "channelingTarget", "channelingAlly", "channeledSpell" })
 @Entity
 @Table(name = "Personnage")
 @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"channelingTarget", "channelingAlly", "channeledSpell"})

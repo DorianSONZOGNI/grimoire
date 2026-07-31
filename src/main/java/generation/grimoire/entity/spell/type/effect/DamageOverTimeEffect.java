@@ -51,6 +51,8 @@ public class DamageOverTimeEffect extends DamageEffect {
     @Enumerated(jakarta.persistence.EnumType.STRING)
     private generation.grimoire.enumeration.Source damageSource = generation.grimoire.enumeration.Source.TARGET_HEALTH_MAX;
 
+    @EqualsAndHashCode.Exclude
+    @lombok.ToString.Exclude
     @jakarta.persistence.Transient
     @com.fasterxml.jackson.annotation.JsonIgnore
     private Personnage caster;

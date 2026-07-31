@@ -42,7 +42,6 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.POST, "/api/spells-editor").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/spells-editor/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/equipments").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/api/equipments/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/shop/templates/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/shop/templates/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/shop/templates/**").hasRole("ADMIN")

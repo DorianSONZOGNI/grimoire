@@ -32,6 +32,8 @@ public class ManaOverTimeEffect extends ManaEffect {
     @jakarta.persistence.Enumerated(jakarta.persistence.EnumType.STRING)
     private generation.grimoire.enumeration.Source manaSource = generation.grimoire.enumeration.Source.TARGET_MANA_MAX;
 
+    @EqualsAndHashCode.Exclude
+    @lombok.ToString.Exclude
     @jakarta.persistence.Transient
     @com.fasterxml.jackson.annotation.JsonIgnore
     private Personnage caster;
