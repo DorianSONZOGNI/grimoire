@@ -614,7 +614,13 @@ document.getElementById('recipeForm').addEventListener('submit', async (e) => {
 });
 
 async function deleteRecipe(id) {
-    if (!confirm("Supprimer cette recette ?")) return;
+    const confirmed = await window.showModal({
+        title: 'Suppression',
+        body: 'Voulez-vous vraiment supprimer cette recette ?',
+        icon: 'warning',
+        confirmText: 'Supprimer'
+    });
+    if (!confirmed) return;
     try {
         await globalFetch('/api/alchemy/admin/recipe/' + id, { method: 'DELETE' });
         loadRecipes();

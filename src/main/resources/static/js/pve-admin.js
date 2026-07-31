@@ -1769,7 +1769,13 @@ window.cancelMonsterEdit = function () {
 };
 
 async function deleteMonster(id) {
-    if (!confirm('Voulez-vous vraiment supprimer ce monstre ?')) return;
+    const confirmed = await window.showModal({
+        title: 'Suppression',
+        body: 'Voulez-vous vraiment supprimer ce monstre ?',
+        icon: 'warning',
+        confirmText: 'Supprimer'
+    });
+    if (!confirmed) return;
     try {
         const res = await globalFetch('/api/admin/pve/monsters/' + id, { method: 'DELETE' });
         if (res.ok) {
@@ -2042,7 +2048,13 @@ window.cancelDungeonEdit = function () {
 };
 
 async function deleteDungeon(id) {
-    if (!confirm('Voulez-vous vraiment supprimer ce donjon ?')) return;
+    const confirmed = await window.showModal({
+        title: 'Suppression',
+        body: 'Voulez-vous vraiment supprimer ce donjon ?',
+        icon: 'warning',
+        confirmText: 'Supprimer'
+    });
+    if (!confirmed) return;
     try {
         const res = await globalFetch('/api/admin/pve/dungeons/' + id, { method: 'DELETE' });
         if (res.ok) {
@@ -2563,7 +2575,13 @@ window.editMutation = (id) => {
 };
 
 window.deleteMutation = async (id) => {
-    if (!confirm('Voulez-vous vraiment supprimer cette mutation ?')) return;
+    const confirmed = await window.showModal({
+        title: 'Suppression',
+        body: 'Voulez-vous vraiment supprimer cette mutation ?',
+        icon: 'warning',
+        confirmText: 'Supprimer'
+    });
+    if (!confirmed) return;
     try {
         const res = await globalFetch(`/api/admin/pve/mutations/${id}`, { method: 'DELETE' });
         if (res.ok) {
