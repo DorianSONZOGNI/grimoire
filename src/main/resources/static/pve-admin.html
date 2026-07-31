@@ -637,6 +637,34 @@
                                     </div>
                                     <input type="hidden" id="monsterLevelFilter" value="">
                                 </div>
+                                <div style="width: 260px; position: relative;">
+                                    <div id="mListSecretFilterWrapper" class="custom-select-wrapper" style="width: 100%; height: 100%;">
+                                        <div class="custom-select-trigger" onclick="toggleMonsterSecretSelect()" id="mListSecretFilterTrigger" style="padding: 0.8rem; font-size: 0.9rem;">
+                                            <span class="material-symbols-outlined cs-icon" style="color: #94a3b8; font-size: 1.1rem;">filter_list</span> <span style="flex:1; text-align:left;">Tous les secrets</span>
+                                            <span class="material-symbols-outlined" style="color: #94a3b8; font-size: 1.2rem; pointer-events: none;">expand_more</span>
+                                        </div>
+                                        <div class="custom-select-options" style="min-width: 260px;">
+                                            <div class="custom-option" onclick="selectMonsterSecretOption('', 'Tous les secrets', 'filter_list', '#94a3b8')">
+                                                <span class="material-symbols-outlined cs-icon" style="color: #94a3b8; font-size: 1.1rem;">filter_list</span> Tous les secrets
+                                            </div>
+                                            <div class="custom-option" onclick="selectMonsterSecretOption('Aucun', 'Sans secret', 'close', '#94a3b8')">
+                                                <span class="material-symbols-outlined cs-icon" style="color: #94a3b8; font-size: 1.1rem;">close</span> Sans secret
+                                            </div>
+                                            <div class="custom-option" onclick="selectMonsterSecretOption('Secret du Chaos', 'Secret du Chaos', 'local_fire_department', '#ff0000')"><span class="material-symbols-outlined cs-icon" style="color: #ff0000; font-size: 1.1rem;">local_fire_department</span> Secret du Chaos</div>
+                                            <div class="custom-option" onclick="selectMonsterSecretOption('Secret de l\'Abondance', 'Secret de l\'Abondance', 'eco', '#10b981')"><span class="material-symbols-outlined cs-icon" style="color: #10b981; font-size: 1.1rem;">eco</span> Secret de l'Abondance</div>
+                                            <div class="custom-option" onclick="selectMonsterSecretOption('Secret de la Préservation', 'Secret de la Préservation', 'foundation', '#99674c')"><span class="material-symbols-outlined cs-icon" style="color: #99674c; font-size: 1.1rem;">foundation</span> Secret de la Préservation</div>
+                                            <div class="custom-option" onclick="selectMonsterSecretOption('Secret de la Sérénité', 'Secret de la Sérénité', 'water_drop', '#00e5cc')"><span class="material-symbols-outlined cs-icon" style="color: #00e5cc; font-size: 1.1rem;">water_drop</span> Secret de la Sérénité</div>
+                                            <div class="custom-option" onclick="selectMonsterSecretOption('Secret de la Chasse', 'Secret de la Chasse', 'visibility_off', '#ed5677')"><span class="material-symbols-outlined cs-icon" style="color: #ed5677; font-size: 1.1rem;">visibility_off</span> Secret de la Chasse</div>
+                                            <div class="custom-option" onclick="selectMonsterSecretOption('Secret du Carnage', 'Secret du Carnage', 'explosion', '#a70740')"><span class="material-symbols-outlined cs-icon" style="color: #a70740; font-size: 1.1rem;">explosion</span> Secret du Carnage</div>
+                                            <div class="custom-option" onclick="selectMonsterSecretOption('Secret de la Joie', 'Secret de la Joie', 'volcano', '#b74c0b')"><span class="material-symbols-outlined cs-icon" style="color: #b74c0b; font-size: 1.1rem;">volcano</span> Secret de la Joie</div>
+                                            <div class="custom-option" onclick="selectMonsterSecretOption('Secret du Savoir', 'Secret du Savoir', 'psychology', '#3b82f6')"><span class="material-symbols-outlined cs-icon" style="color: #3b82f6; font-size: 1.1rem;">psychology</span> Secret du Savoir</div>
+                                            <div class="custom-option" onclick="selectMonsterSecretOption('Secret du Destin', 'Secret du Destin', 'all_inclusive', '#e7d198')"><span class="material-symbols-outlined cs-icon" style="color: #e7d198; font-size: 1.1rem;">all_inclusive</span> Secret du Destin</div>
+                                            <div class="custom-option" onclick="selectMonsterSecretOption('Secret de l\'Éther', 'Secret de l\'Éther', 'blur_on', '#38bdf8')"><span class="material-symbols-outlined cs-icon" style="color: #38bdf8; font-size: 1.1rem;">blur_on</span> Secret de l'Éther</div>
+                                            <div class="custom-option" onclick="selectMonsterSecretOption('Secret des Abysses', 'Secret des Abysses', 'dark_mode', '#c084fc')"><span class="material-symbols-outlined cs-icon" style="color: #c084fc; font-size: 1.1rem;">dark_mode</span> Secret des Abysses</div>
+                                        </div>
+                                    </div>
+                                    <input type="hidden" id="monsterSecretFilter" value="">
+                                </div>
                                 <div style="width: 220px; position: relative;">
                                     <div id="mSortWrapper" class="custom-select-wrapper" style="width: 100%; height: 100%;">
                                         <div class="custom-select-trigger" onclick="toggleSortSelect()" id="mSortTrigger" style="padding: 0.8rem; font-size: 0.9rem;">

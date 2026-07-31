@@ -1540,6 +1540,17 @@ window.toggleFilterLevelSelect = function () {
     document.getElementById('mLevelFilterWrapper').classList.toggle('open');
 };
 
+window.toggleMonsterSecretSelect = function () {
+    document.getElementById('mListSecretFilterWrapper').classList.toggle('open');
+};
+
+window.selectMonsterSecretOption = function (val, label, icon, color) {
+    document.getElementById('monsterSecretFilter').value = val;
+    document.getElementById('mListSecretFilterTrigger').innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: ${color}; font-size: 1.1rem;">${icon}</span> <span style="flex:1; text-align:left;">${label}</span> <span class="material-symbols-outlined" style="color: #94a3b8; font-size: 1.2rem; pointer-events: none;">expand_more</span>`;
+    document.getElementById('mListSecretFilterWrapper').classList.remove('open');
+    window.renderMonstersList();
+};
+
 window.selectFilterLevelOption = function (val, label, color, icon) {
     document.getElementById('monsterLevelFilter').value = val;
     document.getElementById('mLevelFilterTrigger').innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: ${color}; font-size: 1.1rem;">${icon}</span> <span style="flex:1; text-align:center;">${label}</span>`;
@@ -1575,6 +1586,15 @@ window.renderMonstersList = function () {
     if (searchLvl && searchLvl.value) {
         const lvl = parseInt(searchLvl.value);
         filtered = filtered.filter(m => (m.level || 1) === lvl);
+    }
+
+    const searchSecret = document.getElementById('monsterSecretFilter');
+    if (searchSecret && searchSecret.value) {
+        if (searchSecret.value === 'Aucun') {
+            filtered = filtered.filter(m => !m.nativeSecret || m.nativeSecret === '');
+        } else {
+            filtered = filtered.filter(m => m.nativeSecret === searchSecret.value);
+        }
     }
 
     const sort = document.getElementById('monsterSort');
