@@ -2150,15 +2150,33 @@ function updateUI(data) {
                                 isPurchased = true;
                             }
 
+                            let canAfford = true;
+                            let playerGold = (data.players && data.players[0]) ? (data.players[0].gold || 0) : 0;
+                            if (goldPrice > 0 && playerGold < goldPrice) {
+                                canAfford = false;
+                            }
+                            if (entry.priceSpecialItemName) {
+                                let playerSpecialItems = (data.players && data.players[0] && data.players[0].specialItems) ? data.players[0].specialItems : {};
+                                let qte = playerSpecialItems[entry.priceSpecialItemName] || 0;
+                                if (qte < 1) {
+                                    canAfford = false;
+                                }
+                            }
+
                             let buttonHtml = '';
                             if (isPurchased) {
                                 buttonHtml = `<button class="flex-center" id="btn_buy_${idx}" type="button" style="background: linear-gradient(135deg, #ef4444, #b91c1c); color: white; border: none; border-radius: 8px; padding: 0.6rem 1.2rem; font-weight: 700; font-size: 1rem; cursor: not-allowed; gap: 0.5rem; opacity: 0.7;">
                                                   <span class="material-symbols-outlined" style="font-size: 1.2rem;">remove_shopping_cart</span>
                                                   Vendu
                                               </button>`;
+                            } else if (!canAfford) {
+                                buttonHtml = `<button class="flex-center" id="btn_buy_${idx}" type="button" style="background: rgba(148, 163, 184, 0.2); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.3); border-radius: 8px; padding: 0.6rem 1.2rem; font-weight: 700; font-size: 1rem; cursor: not-allowed; gap: 0.5rem; transition: all 0.2s ease;" title="Fonds insuffisants">
+                                                  <span class="material-symbols-outlined" style="font-size: 1.2rem;">shopping_cart</span>
+                                                  Acheter
+                                              </button>`;
                             } else {
-                                let specialItemNameArg = entry.priceSpecialItemName ? `\`${entry.priceSpecialItemName.replace(/'/g, "\\'").replace(/"/g, '&quot;')}\`` : 'null';
-                                buttonHtml = `<button class="flex-center" id="btn_buy_${idx}" type="button" onclick="openBuyModal(${idx}, \`${nameHtml.replace(/'/g, "\\'").replace(/"/g, '&quot;')}\`, ${goldPrice}, ${specialItemNameArg})" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='none'" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 8px; padding: 0.6rem 1.2rem; font-weight: 700; font-size: 1rem; cursor: pointer; gap: 0.5rem; transition: all 0.2s ease; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);">
+                                let specialItemNameArg = entry.priceSpecialItemName ? `'${entry.priceSpecialItemName.replace(/'/g, "\\'").replace(/"/g, '&quot;')}'` : 'null';
+                                buttonHtml = `<button class="flex-center" id="btn_buy_${idx}" type="button" onclick="openBuyModal(${idx}, '${nameHtml.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', ${goldPrice}, ${specialItemNameArg})" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='none'" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 8px; padding: 0.6rem 1.2rem; font-weight: 700; font-size: 1rem; cursor: pointer; gap: 0.5rem; transition: all 0.2s ease; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);">
                                                   <span class="material-symbols-outlined" style="font-size: 1.2rem;">shopping_cart</span>
                                                   Acheter
                                               </button>`;
@@ -3665,7 +3683,7 @@ window.openConsumeModal = function (consumableId, consumableName) {
         let hpColor = p.healthCurrent <= 0 ? '#ef4444' : (p.healthCurrent < p.healthMax ? '#f59e0b' : '#10b981');
         let mpColor = p.manaCurrent < p.manaMax ? '#3b82f6' : '#60a5fa';
         btnContainerHtml += `
-            <button class="flex-between w-100" onclick="document.querySelector('app-modal').closeModal(); window.confirmConsumeItem(${consumableId}, ${p.id})"
+            <button class="flex-between w-100" onclick="document.querySelector('app-modal').hide(false); window.confirmConsumeItem(${consumableId}, ${p.id})"
                 ${p.healthCurrent <= 0 ? 'disabled' : ''}
                 style="align-items: center; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 0.8rem; border-radius: 8px; cursor: ${p.healthCurrent <= 0 ? 'not-allowed' : 'pointer'}; opacity: ${p.healthCurrent <= 0 ? '0.5' : '1'}; transition: all 0.2s ease; margin-bottom: 8px; width: 100%;">
                 <span style="font-weight: 600;">${p.name}</span>
