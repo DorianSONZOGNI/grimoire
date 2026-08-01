@@ -32,24 +32,6 @@ const pageState = {
 
 // Replaced by window.SLOT_LABELS and window.CONSUMABLE_CATEGORIES
 
-function getSlotInfo(eq) {
-    if (!eq) return { icon: 'help', color: '#94a3b8', label: '?' };
-    const sName = typeof eq.slot === 'object' ? eq.slot?.name : eq.slot;
-    const info = Object.assign({}, (window.SLOT_LABELS && window.SLOT_LABELS[sName]) ? window.SLOT_LABELS[sName] : { label: sName || '?', icon: 'help', color: '#94a3b8' });
-    
-    if (sName === 'CONSOMMABLE' && eq.consumableCategory) {
-        const catName = typeof eq.consumableCategory === 'object' ? eq.consumableCategory?.name : eq.consumableCategory;
-        if (catName && window.CONSUMABLE_CATEGORIES && window.CONSUMABLE_CATEGORIES[catName]) {
-            const catInfo = window.CONSUMABLE_CATEGORIES[catName];
-            info.icon = catInfo.icon;
-            info.color = catInfo.color;
-        }
-    }
-    return info;
-}
-
-
-
 function buildEquipmentDto() {
     const slot = document.getElementById('eqSlot')?.value || '';
     const rarity = document.getElementById('eqRarity')?.value || 'COMMUN';
@@ -233,36 +215,37 @@ async function updateCharLimitUI() {
 }
 
 window.buyRosterSlot = function (cost) {
-    document.getElementById('rosterSlotCostText').textContent = cost;
-    document.getElementById('buyRosterModal').classList.add('show');
-};
+    showModal({
+        title: 'Agrandir le Roster ?',
+        body: `Voulez-vous acheter un nouvel emplacement de personnage pour <strong style="color:#fbbf24;">${cost}</strong> Or ?`,
+        icon: 'shopping_cart',
+        confirmText: 'Oui, acheter',
+        onConfirm: async () => {
+            try {
+                const res = await globalFetch('/api/auth/unlock/roster', { method: 'POST' });
+                if (res.ok) {
+                    const data = await res.json();
+                    showNotif(data.message);
+                    // Update auth state so UI syncs
+                    await globalFetch('/api/auth/me').then(r => r.json()).then(u => {
+                        if (window.updateGoldDisplay) window.updateGoldDisplay(u.monnaie);
+                        window.currentUser = u;
+                    });
+                    await updateCharLimitUI();
 
-window.closeRosterModal = function () {
-    document.getElementById('buyRosterModal').classList.remove('show');
-};
-
-document.getElementById('buyRosterConfirmBtn').addEventListener('click', async () => {
-    closeRosterModal();
-    try {
-        const res = await globalFetch('/api/auth/unlock/roster', { method: 'POST' });
-        if (res) {
-            const data = await res.json();
-            showNotif(data.message);
-            // Update auth state so UI syncs
-            await globalFetch('/api/auth/me').then(r => r.json()).then(u => {
-                if (window.updateGoldDisplay) window.updateGoldDisplay(u.monnaie);
-                window.currentUser = u;
-            });
-            await updateCharLimitUI();
-
-            // Si le panneau de création était caché par applyRbac (pas géré directement mais au cas où)
-            const eqCreateSection = document.querySelector('.equip-create-section');
-            if (eqCreateSection && window.currentUser) eqCreateSection.style.display = 'block';
+                    const eqCreateSection = document.querySelector('.equip-create-section');
+                    if (eqCreateSection && window.currentUser) eqCreateSection.style.display = 'block';
+                } else {
+                    const err = await res.json();
+                    showNotif(err.message || "Erreur lors de l'achat", true);
+                }
+            } catch (e) {
+                console.error(e);
+                showNotif("Erreur réseau.", true);
+            }
         }
-    } catch (e) {
-        showNotif('Erreur réseau', true);
-    }
-});
+    });
+};
 
 async function loadAllEquipments() {
     try {
@@ -335,38 +318,32 @@ async function submitPersonnage() {
     }
 }
 
-let persoToDelete = null;
-
-function deletePersonnage(id) {
-    persoToDelete = id;
+window.deletePersonnage = function (id) {
     const p = pageState.personnages.find(p => p.id === id);
-    if (p) {
-        document.getElementById('deletePersoTargetName').textContent = p.name;
-    }
-    document.getElementById('deletePersonnageModal').classList.add('show');
-}
+    if (!p) return;
 
-window.closeDeletePersoModal = function () {
-    document.getElementById('deletePersonnageModal').classList.remove('show');
-    persoToDelete = null;
-};
-
-document.getElementById('deletePersoConfirmBtn').addEventListener('click', async () => {
-    if (!persoToDelete) return;
-    const id = persoToDelete;
-    closeDeletePersoModal();
-
-    try {
-        const res = await globalFetch(`/api/personnages/${id}`, { method: 'DELETE' });
-        if (res) {
-            showNotif('Personnage supprimé.');
-            if (pageState.editingId === id) resetForm();
-            await loadPersonnages();
+    showModal({
+        title: 'Supprimer ce personnage ?',
+        body: `Voulez-vous vraiment supprimer définitivement <strong style="color:#fff;">${p.name}</strong> ?<br><br>Cette action est irréversible.`,
+        icon: 'warning',
+        confirmText: 'Oui, supprimer',
+        onConfirm: async () => {
+            try {
+                const res = await globalFetch(`/api/personnages/${id}`, { method: 'DELETE' });
+                if (res.ok) {
+                    showNotif('Personnage supprimé.');
+                    if (pageState.editingId === id) resetForm();
+                    await loadPersonnages();
+                } else {
+                    showNotif("Erreur lors de la suppression.", true);
+                }
+            } catch (e) {
+                console.error(e);
+                showNotif('Erreur réseau lors de la suppression.', true);
+            }
         }
-    } catch (e) {
-        showNotif('Erreur lors de la suppression.', true);
-    }
-});
+    });
+}
 
 // ===== Equipment API =====
 
@@ -808,22 +785,7 @@ function renderEquipModal() {
 
             let specialEffectHtml = '';
             if (equipped.specialEffect && equipped.specialEffect !== 'NONE') {
-                const effectLabels = {
-                    'LIFESTEAL': 'Vol de Vie',
-                    'THORNS': 'Épines',
-                    'MANA_SHIELD': 'Bouclier de Mana',
-                    'CHEAT_DEATH': 'Ange Gardien',
-                    'CRIT_DAMAGE': 'Dégâts Critiques',
-                    'CURSED_MANA_DRAIN': 'Famine (Drain Mana)',
-                    'CURSED_HP_LOSS_ON_MANA': 'Brèche spirituelle (- hp % en mana Act.)',
-                    'CURSED_MAGIC_DAMAGE_REDUCTION': 'Folie (% dégâts magique -)',
-                    'CURSED_PHYSICAL_DAMAGE_REDUCTION': 'Faiblesse (% dégâts physique -)',
-                    'CURSED_VULNERABILITY': 'Vulnérabilité (Dégâts subis % +)',
-                    'CURSED_HEALING_REDUCTION': 'Chair putréfiée (Soins % -)',
-                    'EXECUTION': 'Exécution (% Phy)',
-                    'MAGIC_OVERLOAD': 'Surcharge (% Mag mana Act)'
-                };
-                const label = effectLabels[equipped.specialEffect] || equipped.specialEffect;
+                const label = window.EFFECT_LABELS[equipped.specialEffect] || equipped.specialEffect;
                 const isCursed = equipped.specialEffect.startsWith('CURSED_');
                 const icon = isCursed ? 'skull' : 'auto_awesome';
                 const color = isCursed ? '#9b2d2d' : '#c084fc';
@@ -924,22 +886,7 @@ function renderEquipModal() {
 
                     let aSpecialEffectHtml = '';
                     if (a.specialEffect && a.specialEffect !== 'NONE') {
-                        const effectLabels = {
-                            'LIFESTEAL': 'Vol de Vie',
-                            'THORNS': 'Épines',
-                            'MANA_SHIELD': 'Bouclier de Mana',
-                            'CHEAT_DEATH': 'Ange Gardien',
-                            'CRIT_DAMAGE': 'Dégâts Critiques',
-                            'CURSED_MANA_DRAIN': 'Famine (Drain Mana)',
-                            'CURSED_HP_LOSS_ON_MANA': 'Brèche spirituelle (- hp % en mana Act.)',
-                            'CURSED_MAGIC_DAMAGE_REDUCTION': 'Folie (% dégâts magique -)',
-                            'CURSED_PHYSICAL_DAMAGE_REDUCTION': 'Faiblesse (% dégâts physique -)',
-                            'CURSED_VULNERABILITY': 'Vulnérabilité (Dégâts subis % +)',
-                            'CURSED_HEALING_REDUCTION': 'Chair putréfiée (Soins % -)',
-                            'EXECUTION': 'Exécution (% Phy)',
-                            'MAGIC_OVERLOAD': 'Surcharge (% Mag mana Act)'
-                        };
-                        const label = effectLabels[a.specialEffect] || a.specialEffect;
+                        const label = window.EFFECT_LABELS[a.specialEffect] || a.specialEffect;
                         const isCursed = a.specialEffect.startsWith('CURSED_');
                         const icon = isCursed ? 'skull' : 'auto_awesome';
                         const color = isCursed ? '#9b2d2d' : '#c084fc';
@@ -1099,16 +1046,7 @@ function resetForm() {
     document.getElementById('cancelBtn').style.display = 'none';
 }
 
-function showNotif(message, isError = false) {
-    const notif = document.getElementById('armoryNotif');
-    notif.textContent = message;
-    notif.classList.remove('error');
-    if (isError) notif.classList.add('error');
-    notif.classList.add('show');
-    setTimeout(() => {
-        notif.classList.remove('show');
-    }, 3000);
-}
+// showNotif, showModal → utils.js
 
 // ===== Custom Select Logic (Event Delegation) =====
 document.addEventListener('click', (e) => {

@@ -4,14 +4,50 @@ window.initAppMeta = async function () {
     return initMeta();
 };
 
+let accessToken = null;
+
+window.setAccessToken = function(token) {
+    accessToken = token;
+};
+
 window.globalFetch = async function (url, options = {}) {
+    if (!options.headers) options.headers = {};
+    if (accessToken) {
+        options.headers['Authorization'] = `Bearer ${accessToken}`;
+    }
+
     try {
-        const res = await fetch(url, options);
-        if (res.status === 401 || res.status === 403) {
-            window.location.href = '/login.html';
-            // Throw so callers' catch blocks fire instead of processing null
-            throw new Error('Session expirée');
+        let res = await fetch(url, options);
+
+        if (res.status === 401 && !url.includes('/api/auth/refresh') && !url.includes('/api/auth/login') && !url.includes('/api/auth/register')) {
+            // Attempt to refresh
+            try {
+                const refreshRes = await fetch('/api/auth/refresh', { method: 'POST', credentials: 'same-origin' });
+                if (refreshRes.ok) {
+                    const data = await refreshRes.json();
+                    accessToken = data.token;
+                    // Retry original request
+                    options.headers['Authorization'] = `Bearer ${accessToken}`;
+                    res = await fetch(url, options);
+                } else {
+                    if (!url.includes('/api/auth/me')) {
+                        window.location.href = '/login.html';
+                    }
+                    throw new Error('Session expirée');
+                }
+            } catch (e) {
+                if (!url.includes('/api/auth/me')) {
+                    window.location.href = '/login.html';
+                }
+                throw new Error('Session expirée');
+            }
+        } else if (res.status === 403) {
+            if (!url.includes('/api/auth/me')) {
+                window.location.href = '/login.html';
+            }
+            throw new Error('Accès refusé');
         }
+
         if (!res.ok) {
             let errorMsg = "Erreur serveur";
             try {
@@ -30,7 +66,8 @@ window.globalFetch = async function (url, options = {}) {
         if (typeof showNotif !== 'undefined') {
             showNotif(error.message, true);
         } else if (typeof alert !== 'undefined') {
-            ui.showNotif(error.message, true);
+            if (window.ui) ui.showNotif(error.message, true);
+            else console.error(error.message);
         }
         throw error;
     }
@@ -73,7 +110,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     errorDiv.innerText = data.message || "Erreur de connexion";
                     errorDiv.style.display = 'block';
                 } else {
-                    // Success, redirect to index
+                    if (data.token) {
+                        window.setAccessToken(data.token);
+                    }
                     window.location.href = '/';
                 }
             } catch (err) {
@@ -115,6 +154,9 @@ document.addEventListener('DOMContentLoaded', () => {
                     errorDiv.innerText = data.message || "Erreur lors de l'inscription";
                     errorDiv.style.display = 'block';
                 } else {
+                    if (data.token) {
+                        window.setAccessToken(data.token);
+                    }
                     successDiv.innerText = data.message || "Inscription réussie ! Redirection...";
                     successDiv.style.display = 'block';
                     setTimeout(() => {
@@ -138,7 +180,7 @@ document.addEventListener('DOMContentLoaded', () => {
 window.checkAuthStatus = async function checkAuthStatus() {
     const container = document.getElementById('authNavContainer');
     try {
-        const res = await fetch('/api/auth/me', { credentials: 'same-origin' });
+        const res = await globalFetch('/api/auth/me', { credentials: 'same-origin' });
         if (res.ok) {
             const data = await res.json();
             window.currentUser = data;
@@ -171,7 +213,17 @@ window.checkAuthStatus = async function checkAuthStatus() {
             `;
         }
     } catch (e) {
-        container.innerHTML = `<span class="text-xs text-error">Erreur auth</span>`;
+        window.currentUser = null;
+        window.isAdmin = false;
+        window.dispatchEvent(new Event('authLoaded'));
+        container.innerHTML = `
+            <a class="font-medium" href="/login.html" style="color: #3b82f6; text-decoration: none; font-size: 0.85rem; padding: 0.3rem 0.6rem; border-radius: 6px; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); transition: all 0.2s;">
+                Se connecter
+            </a>
+            <a class="font-medium text-success" href="/register.html" style="text-decoration: none; font-size: 0.85rem; padding: 0.3rem 0.6rem; border-radius: 6px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); transition: all 0.2s;">
+                S'inscrire
+            </a>
+        `;
     }
 }
 

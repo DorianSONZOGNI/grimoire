@@ -184,27 +184,6 @@ function selectRecipe(recipe, element) {
     renderCauldron(recipe);
 }
 
-const CATEGORY_ICONS = {
-    'PIERRE': 'landslide',
-    'METAL': 'hardware',
-    'COEUR': 'favorite',
-    'ORBE': 'lens',
-    'CRISTAL': 'diamond',
-    'PLUME': 'history_edu',
-    'ECAILLE': 'waves',
-    'AUTRE': 'category'
-};
-
-function getSpiritualiteColor(sp) {
-    if (!sp) return '#a855f7';
-    switch (sp.toUpperCase()) {
-        case 'TENEBRES': return '#a855f7';
-        case 'ESPRIT': return '#38bdf8';
-        case 'KARMA': return '#e7d198';
-        default: return '#a855f7';
-    }
-}
-
 function getItemStyle(name, defaultType) {
     const lower = name.toLowerCase();
     if (lower.includes('cristal')) return { icon: 'diamond', color: '#38bdf8' }; // light blue
@@ -274,7 +253,7 @@ function renderCauldron(r) {
 
             const temp = pageState.allAnomalyTemplates.find(a => a.name === name) || {};
             const style = {
-                icon: temp.category ? (CATEGORY_ICONS[temp.category] || 'category') : 'star',
+                icon: temp.category ? (getCategoryIcon(temp.category)) : 'star',
                 color: temp.spiritualite ? getSpiritualiteColor(temp.spiritualite) : '#a855f7'
             };
 
@@ -825,57 +804,22 @@ function createMagicParticles() {
         }, duration + 100);
     }
 }
-function getLevelColor(lvl) {
-    if (lvl === 1) return '#10b981';
-    if (lvl === 2) return '#3b82f6';
-    if (lvl === 3) return '#8b5cf6';
-    if (lvl === 4) return '#f59e0b';
-    return '#ef4444';
-}
 
 function buildAnomalyTooltipHTML(name) {
     let temp = pageState.allAnomalyTemplates.find(a => a.name === name);
     if (!temp) temp = { name: name, level: 1, spiritualite: 'Inconnu', description: 'Aucune description' };
 
-    const isMagic = temp.magicObject ? true : false;
-    const typeColor = isMagic ? '#ec4899' : '#b45309';
-    const typeLabel = isMagic ? 'Magique' : 'Matériau';
-    const catIcon = temp.category ? (CATEGORY_ICONS[temp.category] || 'category') : 'star';
-
-    return `
-                <div class="anomaly-tooltip-title" style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:#c084fc;">${temp.name}</div>
-                <div style="display: flex; gap: 6px; margin: 6px 0; flex-wrap: wrap;">
-                    <span style="border: 1px solid ${getLevelColor(temp.level)}; color: ${getLevelColor(temp.level)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold;">Lvl ${temp.level}</span>
-                    <span style="border: 1px solid ${typeColor}; color: ${typeColor}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; display: flex; align-items: center; gap: 4px;"><span class="material-symbols-outlined" style="font-size: 0.9rem;">${catIcon}</span>${typeLabel}</span>
-                    <span style="border: 1px solid ${getSpiritualiteColor(temp.spiritualite)}; color: ${getSpiritualiteColor(temp.spiritualite)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; font-weight: bold; text-transform: uppercase;">${temp.spiritualite || 'Autre'}</span>
-                </div>
-                <div style="font-style:italic; color:#cbd5e1; margin-top:8px; max-width: 350px; line-height: 1.4; white-space: normal !important; word-wrap: break-word;">${temp.description || 'Aucune description'}</div>
-            `.replace(/"/g, '&quot;');
+    return getAnomalyTooltipHTML(temp, name).replace(/"/g, '&quot;');
 }
 
-const STAT_DEFS = [
-    { key: 'bonusHealthMax', label: 'PV', icon: 'favorite', color: '#ec4899' },
-    { key: 'bonusManaMax', label: 'Mana', icon: 'water_drop', color: '#38bdf8' },
-    { key: 'bonusPower', label: 'Pui', icon: 'auto_awesome', color: '#a855f7' },
-    { key: 'bonusStrength', label: 'For', icon: 'fitness_center', color: '#f43f5e' },
-    { key: 'bonusArmor', label: 'Arm', icon: 'shield', color: '#3b82f6' },
-    { key: 'bonusResistance', label: 'Rés', icon: 'shield', color: '#10b981' },
-    { key: 'bonusSpeed', label: 'Vit', icon: 'bolt', color: '#f59e0b' },
-    { key: 'bonusCrit', label: 'Crit', icon: 'gps_fixed', color: '#ef4444' },
-    { key: 'regenHealthPerTurn', label: 'PV/t', icon: 'healing', color: '#10b981' },
-    { key: 'regenManaPerTurn', label: 'Mana/t', icon: 'cyclone', color: '#38bdf8' },
-    { key: 'consumableHpPercent', label: 'PV Max', icon: 'favorite', color: '#ec4899', isPercent: true },
-    { key: 'consumableManaPercent', label: 'Mana Max', icon: 'water_drop', color: '#38bdf8', isPercent: true },
-    { key: 'consumableMissingHpPercent', label: 'PV Manq', icon: 'healing', color: '#f43f5e', isPercent: true },
-    { key: 'consumableMissingManaPercent', label: 'Mana Manq', icon: 'cyclone', color: '#a855f7', isPercent: true }
-];
+// STAT_DEFS → constants.js (window.STAT_DEFS)
 
 function buildEquipmentTooltipHTML(name, isConsumable = false) {
     let temp = pageState.allEquipmentTemplates.find(e => e.name === name);
     if (!temp) return '';
 
     let statsHtml = '';
-    STAT_DEFS.forEach(def => {
+    window.STAT_DEFS.forEach(def => {
         if (temp[def.key]) {
             const val = temp[def.key] > 0 ? '+' + temp[def.key] : temp[def.key];
             const suffix = def.isPercent ? '%' : '';
@@ -892,26 +836,11 @@ function buildEquipmentTooltipHTML(name, isConsumable = false) {
     });
 
     if (temp.specialEffect && temp.specialEffect !== 'NONE') {
-        const effectLabels = {
-            'LIFESTEAL': 'Vol de Vie',
-            'THORNS': 'Épines',
-            'MANA_SHIELD': 'Bouclier de Mana',
-            'CHEAT_DEATH': 'Ange Gardien',
-            'CRIT_DAMAGE': 'Dégâts Critiques',
-            'CURSED_MANA_DRAIN': 'Famine (Drain Mana)',
-            'CURSED_HP_LOSS_ON_MANA': 'Brèche spirituelle (- hp % en mana Act.)',
-            'CURSED_MAGIC_DAMAGE_REDUCTION': 'Folie (% dégâts magique -)',
-            'CURSED_PHYSICAL_DAMAGE_REDUCTION': 'Faiblesse (% dégâts physique -)',
-            'CURSED_VULNERABILITY': 'Vulnérabilité (Dégâts subis % +)',
-            'CURSED_HEALING_REDUCTION': 'Chair putréfiée (Soins % -)',
-            'EXECUTION': 'Exécution (% Phy)',
-            'MAGIC_OVERLOAD': 'Surcharge (% Mag mana Act)'
-        };
-        const label = effectLabels[temp.specialEffect] || temp.specialEffect;
+        const label = window.EFFECT_LABELS[temp.specialEffect] || temp.specialEffect;
         const isCursed = temp.specialEffect.startsWith('CURSED_');
         const icon = isCursed ? 'skull' : 'auto_awesome';
         const color = isCursed ? '#ef4444' : '#c084fc';
-        
+
         statsHtml += `
                     <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; min-width: 160px; gap: 16px; font-size: 0.85rem; margin-top: 4px; padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.1);">
                         <span style="display:flex; align-items:center; gap:4px; color: ${color};">
@@ -925,8 +854,15 @@ function buildEquipmentTooltipHTML(name, isConsumable = false) {
 
     if (!statsHtml && !isConsumable) return '';
 
+    const slotInfo = getSlotInfo(temp);
+    const rName = typeof temp.rarity === 'object' ? temp.rarity?.name : temp.rarity;
+    const rarityColor = window.RARITY_COLORS ? (window.RARITY_COLORS[rName] || '#fbbf24') : '#fbbf24';
+
     let html = `
-                <div style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:#f8fafc; border-bottom:1px solid rgba(255,255,255,0.1); padding-bottom:4px;">${temp.name}</div>
+                <div style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:${rarityColor}; border-bottom:1px solid ${rarityColor}40; padding-bottom:4px; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="display: flex; align-items: center; gap: 6px;">${temp.name}</span>
+                    <span class="material-symbols-outlined ${slotInfo.extraClass || ''}" style="font-size: 1.1rem; color: ${slotInfo.color};" title="${slotInfo.label}">${slotInfo.icon}</span>
+                </div>
                 <div style="display:flex; flex-direction:column; gap:4px;">${statsHtml}</div>
             `;
     return html.replace(/"/g, '&quot;');

@@ -1,89 +1,7 @@
 const pageState = { allEquipments: [], equipmentToDelete: null, anomalieToDelete: null, editingEquipmentId: null, editingAnomalieId: null };
 
-// Replaced by window.SLOT_LABELS
-function getSlotInfo(eq) {
-    if (!eq) return { icon: 'help', color: '#94a3b8', label: '?' };
-    const sName = typeof eq.slot === 'object' ? eq.slot?.name : eq.slot;
-    const info = Object.assign({}, (window.SLOT_LABELS && window.SLOT_LABELS[sName]) ? window.SLOT_LABELS[sName] : { label: sName || '?', icon: 'help', color: '#94a3b8' });
+// getSlotInfo, calculateWeight, showNotif, showModal → utils.js
 
-    if (sName === 'CONSOMMABLE' && eq.consumableCategory) {
-        const catName = typeof eq.consumableCategory === 'object' ? eq.consumableCategory?.name : eq.consumableCategory;
-        if (catName && window.CONSUMABLE_CATEGORIES && window.CONSUMABLE_CATEGORIES[catName]) {
-            const catInfo = window.CONSUMABLE_CATEGORIES[catName];
-            info.icon = catInfo.icon;
-            info.color = catInfo.color;
-        }
-    }
-    return info;
-}
-
-
-function calculateWeight(eq) {
-    if (eq.isAnomalie) return 0;
-    let w = eq.baseWeight || 0;
-
-    let mHp = 0.2, mMana = 0.2, mPow = 2.0, mStr = 2.0, mArm = 1.0, mRes = 1.0;
-    let mSpd = 3.0, mCrit = 1.5, mRegHp = 3.0, mRegMana = 1.5;
-
-    const s = eq.slot;
-    if (s === 'ARME_GAUCHE' || s === 'ARME_DROITE' || s === 'ARME_DEUX_MAINS') {
-        mArm = 1.5; mRes = 1.5;
-        mHp = 0.4; mMana = 0.4;
-        mStr = 1.8; mPow = 1.8;
-        mRegHp = 2.4; mRegMana = 1.2;
-    } else if (s === 'CASQUE' || s === 'PLASTRON') {
-        mArm = 0.8; mRes = 0.8;
-        mStr = 2.5; mPow = 2.5;
-        mSpd = 3.5;
-        mCrit = 2.0;
-    } else if (s === 'ANNEAU_GAUCHE' || s === 'ANNEAU_DROIT') {
-        mMana = 0.1;
-        mArm = 2.0; mRes = 2.0;
-        mRegMana = 0.8;
-    } else if (s === 'BOTTES') {
-        mSpd = 1.5;
-    } else if (s === 'CAPE') {
-        mCrit = 1.5;
-    }
-
-    w += (eq.bonusHealthMax || 0) * mHp;
-    w += (eq.bonusManaMax || 0) * mMana;
-    w += (eq.bonusPower || 0) * mPow;
-    w += (eq.bonusStrength || 0) * mStr;
-    w += (eq.bonusArmor || 0) * mArm;
-    w += (eq.bonusResistance || 0) * mRes;
-    w += (eq.bonusSpeed || 0) * mSpd;
-    w += (eq.bonusCrit || 0) * mCrit;
-    w += (eq.regenHealthPerTurn || 0) * mRegHp;
-    w += (eq.regenManaPerTurn || 0) * mRegMana;
-
-    const rarity = typeof eq.rarity === 'object' ? eq.rarity?.name : eq.rarity;
-    if (rarity === 'EPIQUE' || rarity === 'RELIQUE' || rarity === 'MAUDIT') {
-        const specialEffect = eq.specialEffect;
-        const effectVal = eq.specialEffectValue || 0;
-
-        if (specialEffect && specialEffect !== 'NONE' && effectVal !== 0) {
-            if (rarity === 'MAUDIT') {
-                w += effectVal * 0.2;
-            } else {
-                w += effectVal * 1.5;
-            }
-        }
-    }
-    return w;
-}
-
-function showNotif(message, isError = false) {
-    const notif = document.getElementById('vaultNotif');
-    const text = document.getElementById('vaultNotifText');
-    text.textContent = message;
-    notif.classList.remove('error');
-    if (isError) notif.classList.add('error');
-    notif.classList.add('show');
-    setTimeout(() => {
-        notif.classList.remove('show');
-    }, 3000);
-}
 
 // ===== Custom Select Logic =====
 document.addEventListener('click', (e) => {
@@ -211,73 +129,69 @@ async function loadEquipments() {
 
 
 window.deleteAnomalie = function (idsStr) {
-    pageState.anomalieToDelete = String(idsStr).split(',');
-    pageState.equipmentToDelete = null;
-    const firstId = Number(pageState.anomalieToDelete[0]);
+    const ids = String(idsStr).split(',');
+    const firstId = Number(ids[0]);
     const eq = pageState.allEquipments.find(e => e.id === firstId && e.isAnomalie);
-    if (eq) {
-        document.getElementById('deleteTargetName').textContent = eq.name;
-        document.getElementById('deleteConfirmBtn').innerHTML = `Oui, détruire l'anomalie`;
-    }
-    document.getElementById('deleteConfirmModal').classList.add('show');
+    if (!eq) return;
+
+    showModal({
+        title: "Détruire l'anomalie ?",
+        body: `Voulez-vous vraiment détruire l'anomalie <strong style="color:#fff;">${eq.name}</strong> ?`,
+        icon: 'warning',
+        confirmText: "Oui, détruire l'anomalie",
+        onConfirm: async () => {
+            try {
+                let success = false;
+                for (let id of ids) {
+                    const res = await globalFetch(`/api/anomalies/${id}`, { method: 'DELETE' });
+                    if (res.ok) {
+                        success = true;
+                        showNotif('Anomalie détruite.');
+                        await loadEquipments();
+                        break;
+                    }
+                }
+                if (!success) showNotif('Impossible de détruire cette anomalie (liée).', true);
+            } catch (e) {
+                showNotif('Erreur réseau.', true);
+            }
+        }
+    });
 }
 
 window.deleteEquipment = function (idsStr) {
-    pageState.equipmentToDelete = String(idsStr).split(',');
-    pageState.anomalieToDelete = null;
-    const firstId = Number(pageState.equipmentToDelete[0]);
+    const ids = String(idsStr).split(',');
+    const firstId = Number(ids[0]);
     const eq = pageState.allEquipments.find(e => e.id === firstId && !e.isAnomalie);
-    if (eq) {
-        document.getElementById('deleteTargetName').textContent = eq.name;
-        const weightStr = eq._weight % 1 === 0 ? eq._weight : eq._weight.toFixed(1);
-        document.getElementById('deleteConfirmBtn').innerHTML = `Oui, détruire pour ${weightStr} <span class="material-symbols-outlined align-middle" style="font-size: 1rem; margin-top: -2px;">monetization_on</span>`;
-    }
-    document.getElementById('deleteConfirmModal').classList.add('show');
-}
+    if (!eq) return;
 
-function closeDeleteModal() {
-    document.getElementById('deleteConfirmModal').classList.remove('show');
-    pageState.equipmentToDelete = null;
-}
+    const weightStr = eq._weight % 1 === 0 ? eq._weight : eq._weight.toFixed(1);
 
-document.getElementById('deleteConfirmBtn').addEventListener('click', async () => {
-    if (!pageState.equipmentToDelete && !pageState.anomalieToDelete) return;
-
-    const idsEq = pageState.equipmentToDelete;
-    const idsAn = pageState.anomalieToDelete;
-    closeDeleteModal();
-
-    try {
-        if (idsEq) {
-            let success = false;
-            for (let id of idsEq) {
-                const res = await globalFetch(`/api/equipments/${id}`, { method: 'DELETE' });
-                if (res.ok) {
-                    success = true;
-                    showNotif('Équipement détruit.');
-                    await loadEquipments();
-                    if (window.checkAuthStatus) window.checkAuthStatus();
-                    break;
+    showModal({
+        title: "Détruire l'équipement ?",
+        body: `Voulez-vous vraiment détruire <strong style="color:#fff;">${eq.name}</strong> ?<br><br>Vous récupérerez ${weightStr} <span class="material-symbols-outlined align-middle" style="font-size: 1rem; margin-top: -2px;">monetization_on</span>.`,
+        icon: 'warning',
+        confirmText: `Oui, détruire`,
+        onConfirm: async () => {
+            try {
+                let success = false;
+                for (let id of ids) {
+                    const res = await globalFetch(`/api/equipments/${id}`, { method: 'DELETE' });
+                    if (res.ok) {
+                        success = true;
+                        showNotif('Équipement détruit.');
+                        await loadEquipments();
+                        if (window.checkAuthStatus) window.checkAuthStatus();
+                        break;
+                    }
                 }
+                if (!success) showNotif('Impossible de détruire cet objet (lié).', true);
+            } catch (e) {
+                showNotif('Erreur réseau.', true);
             }
-            if (!success) showNotif('Impossible de détruire cet objet (lié).', true);
-        } else if (idsAn) {
-            let success = false;
-            for (let id of idsAn) {
-                const res = await globalFetch(`/api/anomalies/${id}`, { method: 'DELETE' });
-                if (res.ok) {
-                    success = true;
-                    showNotif('Anomalie détruite.');
-                    await loadEquipments();
-                    break;
-                }
-            }
-            if (!success) showNotif('Impossible de détruire cette anomalie (liée).', true);
         }
-    } catch (e) {
-        showNotif('Erreur réseau.', true);
-    }
-});
+    });
+}
 
 function groupEquipments(list) {
     let stacked = [];
@@ -403,21 +317,17 @@ function renderGrid(equipments) {
 
         if (eq.isAnomalie) {
             const spColors = {
-                'NATURE': '#10b981',
-                'NECROMANCIE': '#8b5cf6',
-                'EAU': '#3b82f6',
-                'FEU': '#ef4444',
-                'TERRE': '#f59e0b',
-                'AIR': '#06b6d4',
-                'LUMIERE': '#fde047',
-                'NEANT': '#000000',
-                'FOUDRE': '#fbbf24',
-                'SANG': '#991b1b',
-                'POISON': '#22c55e',
-                'GLACE': '#93c5fd',
                 'ESPRIT': '#38bdf8',
                 'KARMA': '#e7d198',
-                'TENEBRES': '#a855f7'
+                'TENEBRES': '#a855f7',
+                'VIOLENCE': '#a70740',
+                'TRAHISON': '#ed5677',
+                'SURETE': '#00e5cc',
+                'RAISON': '#3b82f6',
+                'DESTRUCTION': '#ff0000',
+                'CREATION': '#10b981',
+                'CONVICTION': '#b74c0b',
+                'CONSOLIDATION': '#99674c'
             };
             const spColor = spColors[eq.spiritualite] || '#d946ef';
 
@@ -501,22 +411,7 @@ function renderGrid(equipments) {
 
         let effectHtml = '';
         if (eq.specialEffect && eq.specialEffect !== 'NONE') {
-            const effectLabels = {
-                'LIFESTEAL': 'Vol de Vie',
-                'THORNS': 'Épines',
-                'MANA_SHIELD': 'Bouclier de Mana',
-                'CHEAT_DEATH': 'Ange Gardien',
-                'CRIT_DAMAGE': 'Dégâts Critiques',
-                'CURSED_MANA_DRAIN': 'Famine (Drain Mana)',
-                'CURSED_HP_LOSS_ON_MANA': 'Brèche spirituelle (- hp % en mana Act.)',
-                'CURSED_MAGIC_DAMAGE_REDUCTION': 'Folie (% dégâts magique -)',
-                'CURSED_PHYSICAL_DAMAGE_REDUCTION': 'Faiblesse (% dégâts physique -)',
-                'CURSED_VULNERABILITY': 'Vulnérabilité (Dégâts subis % +)',
-                'CURSED_HEALING_REDUCTION': 'Chair putréfiée (Soins % -)',
-                'EXECUTION': 'Exécution (% Phy)',
-                'MAGIC_OVERLOAD': 'Surcharge (% Mag mana Act)'
-            };
-            const label = effectLabels[eq.specialEffect] || eq.specialEffect;
+            const label = window.EFFECT_LABELS[eq.specialEffect] || eq.specialEffect;
             const isCursed = eq.specialEffect.startsWith('CURSED_');
             const icon = isCursed ? 'skull' : 'auto_awesome';
             const color = isCursed ? '#9b2d2d' : '#c084fc';
@@ -676,57 +571,7 @@ window.closeCreateEqModal = function () {
     resetEqForm();
 }
 
-function resetEqForm() {
-    document.getElementById('eqName').value = '';
-    document.getElementById('eqHp').value = 0;
-    document.getElementById('eqMana').value = 0;
-    document.getElementById('eqPower').value = 0;
-    document.getElementById('eqStr').value = 0;
-    document.getElementById('eqArmor').value = 0;
-    document.getElementById('eqRes').value = 0;
-    document.getElementById('eqSpeed').value = 0;
-    document.getElementById('eqCrit').value = 0;
-    if (document.getElementById('eqAvailableInShop')) {
-        document.getElementById('eqAvailableInShop').checked = false;
-    }
-    document.getElementById('eqRegenHp').value = 0;
-    document.getElementById('eqRegenMana').value = 0;
-    if (document.getElementById('eqConsumableHpPercent')) document.getElementById('eqConsumableHpPercent').value = 0;
-    if (document.getElementById('eqConsumableManaPercent')) document.getElementById('eqConsumableManaPercent').value = 0;
-    if (document.getElementById('eqConsumableMissingHpPercent')) document.getElementById('eqConsumableMissingHpPercent').value = 0;
-    if (document.getElementById('eqConsumableMissingManaPercent')) document.getElementById('eqConsumableMissingManaPercent').value = 0;
-    if (document.getElementById('eqBaseWeight')) document.getElementById('eqBaseWeight').value = 0;
 
-    const catInput = document.getElementById('eqConsumableCategory');
-    if (catInput) {
-        catInput.value = 'AUTRE';
-        document.getElementById('eqConsumableCategoryLabel').innerHTML = '<span class="material-symbols-outlined cs-icon text-muted">inventory_2</span> Autre';
-    }
-
-    // Reset Rarity
-    const rarityInput = document.getElementById('eqRarity');
-    if (rarityInput) {
-        rarityInput.value = 'COMMUN';
-        document.getElementById('eqRarityLabel').innerHTML = '<span class="cs-icon font-bold text-muted">C</span> Commun';
-        const row = document.getElementById('eqSpecialEffectRow');
-        if (row) row.style.display = 'none';
-    }
-
-    // Reset Special Effect
-    const effectInput = document.getElementById('eqSpecialEffect');
-    if (effectInput) {
-        effectInput.value = 'NONE';
-        document.getElementById('eqSpecialEffectLabel').innerHTML = '<span class="material-symbols-outlined cs-icon text-muted">not_interested</span> Aucun';
-        document.getElementById('eqSpecialEffectValue').value = 0;
-    }
-
-    // Reset Slot
-    const slotInput = document.getElementById('eqSlot');
-    if (slotInput) {
-        slotInput.value = '';
-        document.getElementById('eqSlotLabel').innerHTML = 'Choisir un slot...';
-    }
-}
 
 window.editEquipment = function (id) {
     pageState.editingEquipmentId = id;
@@ -1052,38 +897,7 @@ window.submitEquipment = async function () {
     }
 }
 
-function getFormEquipmentData() {
-    const slot = document.getElementById('eqSlot').value;
-    const rarity = document.getElementById('eqRarity').value;
-    const specialEffect = document.getElementById('eqSpecialEffect').value;
-    const specialEffectValue = parseInt(document.getElementById('eqSpecialEffectValue').value) || 0;
 
-    return {
-        name: document.getElementById('eqName').value,
-        availableInShop: document.getElementById('eqAvailableInShop') ? document.getElementById('eqAvailableInShop').checked : false,
-        slot,
-        bonusHealthMax: parseInt(document.getElementById('eqHp').value) || 0,
-        bonusManaMax: parseInt(document.getElementById('eqMana').value) || 0,
-        bonusPower: parseInt(document.getElementById('eqPower').value) || 0,
-        bonusStrength: parseInt(document.getElementById('eqStr').value) || 0,
-        bonusArmor: parseInt(document.getElementById('eqArmor').value) || 0,
-        bonusResistance: parseInt(document.getElementById('eqRes').value) || 0,
-        bonusSpeed: parseInt(document.getElementById('eqSpeed').value) || 0,
-        bonusCrit: parseInt(document.getElementById('eqCrit').value) || 0,
-        regenHealthPerTurn: parseInt(document.getElementById('eqRegenHp').value) || 0,
-        regenManaPerTurn: parseInt(document.getElementById('eqRegenMana').value) || 0,
-        consumableHpPercent: document.getElementById('eqConsumableHpPercent') ? (parseInt(document.getElementById('eqConsumableHpPercent').value) || 0) : 0,
-        consumableManaPercent: document.getElementById('eqConsumableManaPercent') ? (parseInt(document.getElementById('eqConsumableManaPercent').value) || 0) : 0,
-        consumableMissingHpPercent: document.getElementById('eqConsumableMissingHpPercent') ? (parseInt(document.getElementById('eqConsumableMissingHpPercent').value) || 0) : 0,
-        consumableMissingManaPercent: document.getElementById('eqConsumableMissingManaPercent') ? (parseInt(document.getElementById('eqConsumableMissingManaPercent').value) || 0) : 0,
-        baseWeight: document.getElementById('eqBaseWeight') ? (parseFloat(document.getElementById('eqBaseWeight').value) || 0.0) : 0.0,
-        consumableCategory: document.getElementById('eqConsumableCategory') ? document.getElementById('eqConsumableCategory').value : 'AUTRE',
-        rarity,
-        specialEffect,
-        specialEffectValue,
-        isAnomalie: false
-    };
-}
 
 window.updateWeightUI = async function () {
     const slot = document.getElementById('eqSlot').value;

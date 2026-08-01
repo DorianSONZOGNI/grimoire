@@ -98,6 +98,11 @@
 .opacity-50 {
     opacity: 0.5;
 }
+
+.flip-icon {
+    transform: rotate(180deg) !important;
+    display: inline-block !important;
+}
 .opacity-80 {
     opacity: 0.8;
 }

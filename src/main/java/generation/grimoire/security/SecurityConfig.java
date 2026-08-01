@@ -8,6 +8,7 @@ import org.springframework.security.config.annotation.authentication.configurati
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
+import org.springframework.security.config.annotation.web.configuration.WebSecurityCustomizer;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.security.web.SecurityFilterChain;
@@ -18,25 +19,26 @@ import org.springframework.security.web.SecurityFilterChain;
 public class SecurityConfig {
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public WebSecurityCustomizer webSecurityCustomizer() {
+        return (web) -> web.ignoring().requestMatchers("/sons/**");
+    }
+
+    @Bean
+    public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
         http
-            // CSRF désactivé : API REST stateless consommée exclusivement par du JS same-origin.
-            // Le navigateur envoie le cookie JSESSIONID automatiquement ; pas de token CSRF nécessaire
-            // tant que l'API n'est pas consommée par des clients tiers.
-            // À terme, envisager un header custom X-Requested-With vérifié côté serveur.
             .csrf(csrf -> csrf.disable())
+            .sessionManagement(session -> session.sessionCreationPolicy(org.springframework.security.config.http.SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 // --- Public : statiques + auth ---
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/meta/**").permitAll()
-                .requestMatchers("/js/**", "/styles/**", "/images/**", "/favicon.ico", "/favicon.svg", "/*.html", "/").permitAll()
+                .requestMatchers("/js/**", "/styles/**", "/images/**", "/sons/**", "/favicon.ico", "/favicon.svg", "/*.html", "/").permitAll()
 
                 // --- Admin uniquement : CRUD entités de jeu ---
                 .requestMatchers("/api/admin/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/spells-editor").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/spells-editor/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/equipments").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/api/equipments/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/shop/templates/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.PUT, "/api/shop/templates/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/shop/templates/**").hasRole("ADMIN")
@@ -51,12 +53,9 @@ public class SecurityConfig {
                 // --- Tout le reste nécessite une authentification ---
                 .anyRequest().authenticated()
             )
-            .logout(logout -> logout
-                .logoutUrl("/api/auth/logout")
-                .logoutSuccessUrl("/")
-                .invalidateHttpSession(true)
-                .deleteCookies("JSESSIONID")
-            );
+            .exceptionHandling(ex -> ex.authenticationEntryPoint(new org.springframework.security.web.authentication.HttpStatusEntryPoint(org.springframework.http.HttpStatus.UNAUTHORIZED)));
+
+        http.addFilterBefore(jwtAuthenticationFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }

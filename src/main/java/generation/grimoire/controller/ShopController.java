@@ -29,6 +29,9 @@ public class ShopController {
     @Autowired
     private AnomalieRepository anomalieRepository;
 
+    @Autowired
+    private generation.grimoire.service.RenameCascadeService renameCascadeService;
+
     // --- DAILY SHOP ---
 
     @GetMapping("/daily")
@@ -161,6 +164,7 @@ public class ShopController {
         }
 
         List<Anomalie> toConsumeList = new ArrayList<>();
+        List<String> missingAnomaliesMsg = new ArrayList<>();
         if (template.getPriceAnomalies() != null && !template.getPriceAnomalies().isEmpty()) {
             List<Anomalie> userAnomalies = anomalieRepository.findByOwnerUsername(user.getUsername());
 
@@ -173,21 +177,23 @@ public class ShopController {
                         .collect(Collectors.toList());
 
                 if (matches.size() < reqQuantity) {
-                    return ResponseEntity.badRequest()
-                            .body(Map.of("message", "Fonds insuffisants. Vous n'avez pas assez d'anomalies : " + reqName
-                                    + " (" + matches.size() + "/" + reqQuantity + ")"));
-                }
+                    missingAnomaliesMsg.add(reqName + " (" + matches.size() + "/" + reqQuantity + ")");
+                } else {
+                    boolean isAdmin = "ADMIN".equals(user.getRole());
+                    int qtyToConsume = reqQuantity;
+                    if (isAdmin && matches.size() == reqQuantity) {
+                        qtyToConsume = reqQuantity - 1;
+                    }
 
-                boolean isAdmin = "ADMIN".equals(user.getRole());
-                int qtyToConsume = reqQuantity;
-                if (isAdmin && matches.size() == reqQuantity) {
-                    qtyToConsume = reqQuantity - 1;
+                    for (int i = 0; i < qtyToConsume; i++) {
+                        toConsumeList.add(matches.get(i));
+                        userAnomalies.remove(matches.get(i));
+                    }
                 }
-
-                for (int i = 0; i < qtyToConsume; i++) {
-                    toConsumeList.add(matches.get(i));
-                    userAnomalies.remove(matches.get(i));
-                }
+            }
+            if (!missingAnomaliesMsg.isEmpty()) {
+                return ResponseEntity.badRequest()
+                        .body(Map.of("message", "Fonds insuffisants. Il vous manque des anomalies : " + String.join(", ", missingAnomaliesMsg)));
             }
         }
 
@@ -225,7 +231,7 @@ public class ShopController {
     }
 
     @PostMapping("/templates")
-    @org.springframework.cache.annotation.CacheEvict(value = {"equipmentTemplates", "equipmentShopTemplates", "equipmentTemplateByName"}, allEntries = true)
+    @org.springframework.cache.annotation.CacheEvict(value = {"equipmentTemplates", "equipmentShopTemplates", "equipmentTemplateByName", "publicEquipmentTemplates", "equipmentDistinctNames", "alchemyRecipes", "alchemyRecipesList", "alchemyRecipeById", "lootEntriesByEquipment", "salles", "monstres"}, allEntries = true)
     public ResponseEntity<?> createTemplate(
             @RequestBody generation.grimoire.controller.EquipmentController.EquipmentDto dto, Principal principal) {
         if (principal == null || !isAdmin(principal))
@@ -241,7 +247,7 @@ public class ShopController {
     }
 
     @PutMapping("/templates/{id}")
-    @org.springframework.cache.annotation.CacheEvict(value = {"equipmentTemplates", "equipmentShopTemplates", "equipmentTemplateByName"}, allEntries = true)
+    @org.springframework.cache.annotation.CacheEvict(value = {"equipmentTemplates", "equipmentShopTemplates", "equipmentTemplateByName", "publicEquipmentTemplates", "equipmentDistinctNames", "alchemyRecipes", "alchemyRecipesList", "alchemyRecipeById", "lootEntriesByEquipment", "salles", "monstres"}, allEntries = true)
     public ResponseEntity<?> updateTemplate(@PathVariable @org.springframework.lang.NonNull Long id,
             @RequestBody generation.grimoire.controller.EquipmentController.EquipmentDto dto, Principal principal) {
         if (principal == null || !isAdmin(principal))
@@ -265,6 +271,7 @@ public class ShopController {
                     instance.setTemplate(false); // ensure it remains an instance
                     equipmentRepository.save(instance);
                 }
+                renameCascadeService.cascadeEquipmentRename(oldName, eq.getName());
             }
 
             return ResponseEntity.ok(toShopDto(eq));
@@ -272,7 +279,7 @@ public class ShopController {
     }
 
     @DeleteMapping("/templates/{id}")
-    @org.springframework.cache.annotation.CacheEvict(value = {"equipmentTemplates", "equipmentShopTemplates", "equipmentTemplateByName"}, allEntries = true)
+    @org.springframework.cache.annotation.CacheEvict(value = {"equipmentTemplates", "equipmentShopTemplates", "equipmentTemplateByName", "publicEquipmentTemplates", "equipmentDistinctNames", "alchemyRecipes", "alchemyRecipesList", "alchemyRecipeById", "lootEntriesByEquipment", "salles", "monstres"}, allEntries = true)
     public ResponseEntity<?> deleteTemplate(@PathVariable @org.springframework.lang.NonNull Long id,
             Principal principal) {
         if (principal == null || !isAdmin(principal))

@@ -364,53 +364,35 @@ export async function loadSpells() {
 
 
 
-let spellToDelete = null;
-
 export function deleteSpell(id) {
-    spellToDelete = id;
     const s = state.loadedSpells.find(sp => sp.id === id);
-    if (s) {
-        document.getElementById('deleteSpellTargetName').textContent = s.nom;
-    }
-    document.getElementById('deleteSpellModal').classList.add('show');
-}
-
-window.closeDeleteSpellModal = function() {
-    document.getElementById('deleteSpellModal').classList.remove('show');
-    spellToDelete = null;
-};
-
-document.getElementById('deleteSpellConfirmBtn')?.addEventListener('click', async () => {
-    if (!spellToDelete) return;
-    const id = spellToDelete;
-    closeDeleteSpellModal();
+    const spellName = s ? s.nom : 'ce sort';
     
-    try {
-        const res = await deleteSpellAPI(id);
-        if (res.ok) {
-            const msg = await res.text();
-            ui.showNotif(msg);
-            if (state.editingSpellId === id) {
-                ui.cancelEditSpell();
+    ui.showModal({
+        title: 'Détruire le sort ?',
+        body: `Êtes-vous sûr de vouloir détruire <strong style="color:#fff;">${spellName}</strong> ? Cette action est définitive.`,
+        icon: 'warning',
+        confirmText: 'Oui, détruire',
+        onConfirm: async () => {
+            try {
+                const res = await deleteSpellAPI(id);
+                if (res.ok) {
+                    const msg = await res.text();
+                    ui.showNotif(msg);
+                    if (state.editingSpellId === id) {
+                        ui.cancelEditSpell();
+                    }
+                    await loadSpells();
+                } else {
+                    ui.showNotif("Erreur lors de la suppression du sort.");
+                }
+            } catch (err) {
+                console.error("Erreur delete spell:", err);
+                ui.showNotif("Erreur inattendue");
             }
-            await loadSpells();
-        } else {
-            ui.showNotif("Erreur lors de la suppression du sort.");
         }
-    } catch (err) {
-        console.error(err);
-        ui.showNotif("Erreur de connexion au serveur.");
-    }
-});
-
-
-
-
-
-
-
-
-
+    });
+};
 
 
 

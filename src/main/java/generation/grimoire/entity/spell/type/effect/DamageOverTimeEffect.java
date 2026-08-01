@@ -12,6 +12,7 @@ import lombok.EqualsAndHashCode;
 @Data
 @Entity
 @DiscriminatorValue("DAMAGE_OVER_TIME")
+@com.fasterxml.jackson.annotation.JsonIgnoreProperties({"caster"})
 public class DamageOverTimeEffect extends DamageEffect {
 
     /**
@@ -50,6 +51,8 @@ public class DamageOverTimeEffect extends DamageEffect {
     @Enumerated(jakarta.persistence.EnumType.STRING)
     private generation.grimoire.enumeration.Source damageSource = generation.grimoire.enumeration.Source.TARGET_HEALTH_MAX;
 
+    @EqualsAndHashCode.Exclude
+    @lombok.ToString.Exclude
     @jakarta.persistence.Transient
     @com.fasterxml.jackson.annotation.JsonIgnore
     private Personnage caster;

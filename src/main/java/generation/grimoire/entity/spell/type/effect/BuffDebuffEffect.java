@@ -40,6 +40,9 @@ public class BuffDebuffEffect extends SpellEffect {
     /**
      * Liste des sorts qui ont été impactés par ce buff (pour suivi ou log).
      */
+    @EqualsAndHashCode.Exclude
+    @lombok.ToString.Exclude
+    @com.fasterxml.jackson.annotation.JsonIgnore
     @Transient
     private List<Spell> impactedSpells = new ArrayList<>();
 

@@ -13,6 +13,7 @@ import lombok.EqualsAndHashCode;
 @Table(name = "spell_effect")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)
 @DiscriminatorColumn(name = "effect_type", discriminatorType = DiscriminatorType.STRING)
+@com.fasterxml.jackson.annotation.JsonIgnoreProperties({"spell"})
 public abstract class SpellEffect {
 
     @Id

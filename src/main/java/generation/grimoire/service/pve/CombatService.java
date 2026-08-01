@@ -341,19 +341,6 @@ public class CombatService {
                     Equipment clone = new Equipment();
                     clone.copyStatsFrom(template);
 
-                    if (session.getReloadCount() > 0) {
-                        double penaltyFactor = Math.max(0.1, 1.0 - (session.getReloadCount() * 0.1));
-                        clone.setBonusHealthMax((int) (clone.getBonusHealthMax() * penaltyFactor));
-                        clone.setBonusManaMax((int) (clone.getBonusManaMax() * penaltyFactor));
-                        clone.setBonusPower((int) (clone.getBonusPower() * penaltyFactor));
-                        clone.setBonusStrength((int) (clone.getBonusStrength() * penaltyFactor));
-                        clone.setBonusArmor((int) (clone.getBonusArmor() * penaltyFactor));
-                        clone.setBonusResistance((int) (clone.getBonusResistance() * penaltyFactor));
-                        clone.setBonusSpeed((int) (clone.getBonusSpeed() * penaltyFactor));
-                        clone.setBonusCrit((int) (clone.getBonusCrit() * penaltyFactor));
-                        session.addLog("Un équipement a été dégradé à cause des recharges abusives.");
-                    }
-
                     clone.setTemplate(false);
                     clone.setUser(user);
                     clone.setOwnerUsername(user.getUsername());
@@ -365,6 +352,23 @@ public class CombatService {
                         lootedConsumables.add(clone);
                     } else {
                         lootedOthers.add(clone);
+                    }
+                } else if (roll <= proba && entry.getSpecialItemName() != null && !entry.getSpecialItemName().trim().isEmpty()) {
+                    String anomalyName = entry.getSpecialItemName();
+                    generation.grimoire.entity.Anomalie template = anomalieRepository.findFirstByNameAndIsTemplateTrueOrderByIdAsc(anomalyName);
+                    if (template != null) {
+                        generation.grimoire.entity.Anomalie clone = new generation.grimoire.entity.Anomalie();
+                        clone.setName(template.getName());
+                        clone.setDescription(template.getDescription());
+                        clone.setSpiritualite(template.getSpiritualite());
+                        clone.setCategory(template.getCategory());
+                        clone.setLevel(template.getLevel() != null ? template.getLevel() : 1);
+                        clone.setMagicObject(template.isMagicObject());
+                        clone.setTemplate(false);
+                        clone.setOwnerUsername(user.getUsername());
+                        clone.setUser(user);
+                        anomalieRepository.save(clone);
+                        session.addLog("Vous avez obtenu l'item : " + clone.getName() + " !");
                     }
                 }
             }
@@ -381,7 +385,8 @@ public class CombatService {
         for (Equipment clone : lootedConsumables) {
             if (canFitAll) {
                 session.getActiveConsumables().add(clone);
-                session.addLog("Vous avez trouvé un objet : " + clone.getName() + " et il a été ajouté à l'inventaire du groupe.");
+                session.addLog("Vous avez trouvé un objet : " + clone.getName()
+                        + " et il a été ajouté à l'inventaire du groupe.");
             } else {
                 session.addLog("Vous avez trouvé un objet : " + clone.getName() + " (envoyé au coffre, choix manuel).");
             }
@@ -624,9 +629,11 @@ public class CombatService {
 
                             if (currentWeight + clone.calculateWeight() <= maxWeight) {
                                 session.getActiveConsumables().add(clone);
-                                session.addLog("L'autel vous a offert un équipement : " + template.getName() + " et il a été ajouté à l'inventaire du groupe.");
+                                session.addLog("L'autel vous a offert un équipement : " + template.getName()
+                                        + " et il a été ajouté à l'inventaire du groupe.");
                             } else {
-                                session.addLog("L'autel vous a offert un équipement : " + template.getName() + " (envoyé au coffre, poids max atteint).");
+                                session.addLog("L'autel vous a offert un équipement : " + template.getName()
+                                        + " (envoyé au coffre, poids max atteint).");
                             }
                         } else {
                             session.addLog("L'autel vous a offert un équipement : " + template.getName() + " !");
@@ -949,6 +956,7 @@ public class CombatService {
                     personnageRepository.save(java.util.Objects.requireNonNull(p));
                 }
             }
+            activeSessions.remove(sessionId);
         }
 
         computeSpellAvailability(session);
@@ -1097,7 +1105,7 @@ public class CombatService {
 
                 session.addLog("Vous avez ouvert la porte... Un puissant Boss vous attend !");
             } else if ("ITEM".equals(type)) {
-                session.addLog("Vous avez ouvert la porte et trouvé une salle remplie de trésors !");
+                session.addLog("Vous avez ouvert la porte et trouvé de l'équipement !");
                 room.setType(generation.grimoire.enumeration.RoomType.TREASURE);
                 room.setEventSubType(null);
                 room.setTreasureGold(0);
@@ -1118,12 +1126,46 @@ public class CombatService {
                     room.setAltarRewardEquipment(eq);
                 }
                 room.setEventText("Un autel mystique (" + spirituality + ") réclame une offrande magique.");
+                room.setLootTable(null);
             } else if ("TRESOR".equals(type)) {
-                session.addLog("Vous avez ouvert la porte et trouvé une montagne d'or !");
-                room.setType(generation.grimoire.enumeration.RoomType.TREASURE);
-                room.setEventSubType(null);
-                room.setTreasureGold(100);
-                room.setTreasureExp(50);
+                long anomalieId = selectedOutcome.path("treasureAnomalieId").asLong(0);
+                String anomalyName = null;
+                
+                if (anomalieId > 0) {
+                    generation.grimoire.entity.Anomalie template = anomalieRepository.findById(anomalieId).orElse(null);
+                    if (template != null) {
+                        generation.grimoire.entity.Anomalie clone = new generation.grimoire.entity.Anomalie();
+                        clone.setName(template.getName());
+                        clone.setDescription(template.getDescription());
+                        clone.setSpiritualite(template.getSpiritualite());
+                        clone.setCategory(template.getCategory());
+                        clone.setLevel(template.getLevel() != null ? template.getLevel() : 1);
+                        clone.setMagicObject(template.isMagicObject());
+                        clone.setTemplate(false);
+                        
+                        AppUser user = null;
+                        if (!session.getPlayers().isEmpty()) {
+                            user = session.getPlayers().get(0).getUser();
+                        }
+                        
+                        if (user != null) {
+                            clone.setOwnerUsername(user.getUsername());
+                            clone.setUser(user);
+                            anomalieRepository.save(clone);
+                            anomalyName = clone.getName();
+                            session.addLog("Vous avez obtenu l'item : " + anomalyName + " !");
+                        }
+                    }
+                }
+                
+                if (anomalyName != null) {
+                    session.addLog("Derrière la porte, vous découvrez l'anomalie : " + anomalyName + " !");
+                    room.setEventText("Derrière la porte, vous découvrez l'anomalie : " + anomalyName + " !");
+                } else {
+                    session.addLog("Vous avez ouvert la porte... mais le trésor a disparu.");
+                    room.setEventText("Vous avez ouvert la porte... mais le trésor a disparu.");
+                }
+                session.setRoomEventCompleted(true);
             } else if ("PIEGE".equals(type)) {
                 session.addLog("Vous avez ouvert la porte... et déclenché un piège mortel !");
                 room.setEventSubType(generation.grimoire.enumeration.EventSubType.PIEGE);
@@ -1132,6 +1174,7 @@ public class CombatService {
                 room.setTrapHasRopeOption(selectedOutcome.path("trapHasRopeOption").asBoolean(false));
                 room.setTrapDamageHpPct(selectedOutcome.path("trapDamageHpPct").asInt(0));
                 room.setTrapDamageManaPct(selectedOutcome.path("trapDamageManaPct").asInt(0));
+                room.setLootTable(null);
                 room.setTrapDamageHpFixed(selectedOutcome.path("trapDamageHpFixed").asInt(0));
                 room.setTrapDamageManaFixed(selectedOutcome.path("trapDamageManaFixed").asInt(0));
             } else {
@@ -1251,14 +1294,25 @@ public class CombatService {
 
                     System.out.println(p.getName() + " attaque " + targetMonster.getBase().getName() + " ("
                             + (isCrit ? "Critique : " : "Force : ") + playerDmg + ") !");
-                    p.dealDamage(targetMonster.getAsPersonnage(), playerDmg, generation.grimoire.enumeration.DamageType.PHYSIC);
+                    p.dealDamage(targetMonster.getAsPersonnage(), playerDmg,
+                            generation.grimoire.enumeration.DamageType.PHYSIC);
                 });
             }
         }
 
-        checkDeaths(session);
+        try {
+            checkDeaths(session);
+        } catch (Exception e) {
+            session.addLog("❌ Erreur lors de la vérification des morts : " + e.getMessage());
+            e.printStackTrace();
+        }
 
-        computeSpellAvailability(session);
+        try {
+            computeSpellAvailability(session);
+        } catch (Exception e) {
+            session.addLog("❌ Erreur lors du calcul de disponibilité des sorts.");
+            e.printStackTrace();
+        }
         return session;
     }
 
@@ -1412,7 +1466,8 @@ public class CombatService {
                     List<Personnage> allAllies = session.getPlayers().stream().filter(pl -> pl.getHealthCurrent() > 0)
                             .toList();
                     List<Personnage> allEnemies = session.getEnemies().stream().map(m -> m.getAsPersonnage()).toList();
-                    spellService.tickChanneling(p, channelingTarget, p.getChannelingChoiceKey(), p, allAllies,
+                    spellService.tickChanneling(p, channelingTarget, p.getChannelingChoiceKey(), p.getChannelingAlly(),
+                            allAllies,
                             allEnemies);
                 }
             });
@@ -1505,7 +1560,8 @@ public class CombatService {
                                 .toList();
                         List<Personnage> allEnemies = session.getPlayers().stream()
                                 .filter(pl -> pl.getHealthCurrent() > 0).toList();
-                        spellService.tickChanneling(mp, cTarget, mp.getChannelingChoiceKey(), mp, allAllies,
+                        spellService.tickChanneling(mp, cTarget, mp.getChannelingChoiceKey(), mp.getChannelingAlly(),
+                                allAllies,
                                 allEnemies);
                     } else {
                         List<Personnage> alivePlayers = session.getPlayers().stream()
@@ -1568,7 +1624,8 @@ public class CombatService {
                                                 .filter(a -> a != m.getAsPersonnage() && a.getHealthCurrent() > 0)
                                                 .toList();
                                         if (!validAllies.isEmpty()) {
-                                            mutAlly = validAllies.get(new java.util.Random().nextInt(validAllies.size()));
+                                            mutAlly = validAllies
+                                                    .get(new java.util.Random().nextInt(validAllies.size()));
                                         }
 
                                         session.addLog(
@@ -1620,20 +1677,28 @@ public class CombatService {
                                         System.out.println(m.getBase().getName() + " attaque " + targetPlayer.getName()
                                                 + " et inflige " + monsterDmg + " dégâts bruts.");
                                         if (monsterDmg > 0) {
-                                            m.getAsPersonnage().dealDamage(targetPlayer, monsterDmg, generation.grimoire.enumeration.DamageType.BRUT);
+                                            m.getAsPersonnage().dealDamage(targetPlayer, monsterDmg,
+                                                    generation.grimoire.enumeration.DamageType.BRUT);
                                         }
                                     } else {
-                                        if (str > 0) m.getAsPersonnage().dealDamage(targetPlayer, str, generation.grimoire.enumeration.DamageType.PHYSIC);
-                                        if (pwr > 0) m.getAsPersonnage().dealDamage(targetPlayer, pwr, generation.grimoire.enumeration.DamageType.MAGIC);
-                                        
+                                        if (str > 0)
+                                            m.getAsPersonnage().dealDamage(targetPlayer, str,
+                                                    generation.grimoire.enumeration.DamageType.PHYSIC);
+                                        if (pwr > 0)
+                                            m.getAsPersonnage().dealDamage(targetPlayer, pwr,
+                                                    generation.grimoire.enumeration.DamageType.MAGIC);
+
                                         StringBuilder logMsg = new StringBuilder();
-                                        if (str > 0) logMsg.append(str).append(" dégâts physiques");
+                                        if (str > 0)
+                                            logMsg.append(str).append(" dégâts physiques");
                                         if (pwr > 0) {
-                                            if (str > 0) logMsg.append(" et ");
+                                            if (str > 0)
+                                                logMsg.append(" et ");
                                             logMsg.append(pwr).append(" dégâts magiques");
                                         }
-                                        if (str == 0 && pwr == 0) logMsg.append("0 dégât");
-                                        
+                                        if (str == 0 && pwr == 0)
+                                            logMsg.append("0 dégât");
+
                                         System.out.println(m.getBase().getName() + " attaque " + targetPlayer.getName()
                                                 + " et inflige " + logMsg.toString() + ".");
                                     }
@@ -1700,11 +1765,11 @@ public class CombatService {
             session.setPlayerWon(false);
             session.addLog("Toute l'équipe a été vaincue...");
 
-            // Defeat penalty: 8 gold per room
+            // Defeat penalty: 4 gold per room (half of flee penalty)
             int roomsCount = (session.getDonjon() != null && session.getDonjon().getSalles() != null)
                     ? session.getDonjon().getSalles().size()
                     : 1;
-            int goldLoss = 8 * roomsCount;
+            int goldLoss = 4 * roomsCount;
             session.setTotalGoldLostOnDefeat(goldLoss);
 
             if (!session.getPlayers().isEmpty() && session.getPlayers().get(0).getId() != null) {
@@ -1814,7 +1879,7 @@ public class CombatService {
                     : session.getEnemies().get(e.getIndex()).getBase().getName();
             session.addLog(name + " | Init: " + e.getInitiativeScore() + " (Vitesse: " + e.getSpeedStat() + ")");
         }
-        
+
         // Clear leader forced targets at start of each round
         for (generation.grimoire.model.pve.ActiveMonster am : session.getEnemies()) {
             am.setLeaderForcedTargetId(null);
@@ -1833,7 +1898,8 @@ public class CombatService {
         List<Equipment> userEquipments = equipmentRepository.findByOwnerUsername(username);
         Equipment targetEquipment = null;
         for (Equipment eq : userEquipments) {
-            if (eq.getSlot() == generation.grimoire.enumeration.EquipmentSlot.CONSOMMABLE && eq.getName().trim().equalsIgnoreCase(itemName.trim())) {
+            if (eq.getSlot() == generation.grimoire.enumeration.EquipmentSlot.CONSOMMABLE
+                    && eq.getName().trim().equalsIgnoreCase(itemName.trim())) {
                 boolean isActive = session.getActiveConsumables().stream()
                         .filter(java.util.Objects::nonNull)
                         .anyMatch(activeEq -> activeEq.getId() != null && activeEq.getId().equals(eq.getId()));
@@ -1858,17 +1924,20 @@ public class CombatService {
             throw new RuntimeException("Pas assez de place dans l'inventaire du groupe (poids maximum atteint).");
         }
 
-        // Initialize lazy collection before returning to avoid LazyInitializationException during JSON serialization
+        // Initialize lazy collection before returning to avoid
+        // LazyInitializationException during JSON serialization
         if (targetEquipment.getPriceAnomalies() != null) {
             targetEquipment.getPriceAnomalies().size();
         }
 
         session.getActiveConsumables().add(targetEquipment);
 
-        String searchStr = "Vous avez trouvé un objet : " + targetEquipment.getName() + " (envoyé au coffre, choix manuel).";
+        String searchStr = "Vous avez trouvé un objet : " + targetEquipment.getName()
+                + " (envoyé au coffre, choix manuel).";
         for (int i = 0; i < session.getCombatLog().size(); i++) {
             if (session.getCombatLog().get(i).equals(searchStr)) {
-                session.getCombatLog().set(i, "Vous avez trouvé un objet : " + targetEquipment.getName() + " et il a été ajouté à l'inventaire du groupe.");
+                session.getCombatLog().set(i, "Vous avez trouvé un objet : " + targetEquipment.getName()
+                        + " et il a été ajouté à l'inventaire du groupe.");
                 break;
             }
         }
@@ -2071,7 +2140,9 @@ public class CombatService {
         }
 
         // Rule B: Si un sort banal ou une attaque a déjà été lancé ce tour
-        if (p.isBanalSpellCastThisTurn()) {
+        // (sauf pendant une canalisation, où seuls les sorts instantanés sont autorisés
+        // — déjà filtré par Rule A)
+        if (p.isBanalSpellCastThisTurn() && p.getRemainingChannelingTurns() == 0) {
             return SpellAvailability.blocked(spell.getId(), "ACTION_LIMIT",
                     "Action majeure déjà effectuée ce tour (les sorts instantanés doivent être lancés avant)");
         }

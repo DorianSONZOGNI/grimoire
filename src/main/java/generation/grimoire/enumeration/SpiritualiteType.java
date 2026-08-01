@@ -3,6 +3,14 @@ package generation.grimoire.enumeration;
 public enum SpiritualiteType {
     TENEBRES,
     ESPRIT,
-    KARMA
+    KARMA,
+    VIOLENCE,
+    TRAHISON,
+    SURETE,
+    RAISON,
+    DESTRUCTION,
+    CREATION,
+    CONVICTION,
+    CONSOLIDATION
 }
 

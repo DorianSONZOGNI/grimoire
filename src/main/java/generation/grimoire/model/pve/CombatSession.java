@@ -19,8 +19,11 @@ public class CombatSession {
     @com.fasterxml.jackson.annotation.JsonIgnore
     private Donjon donjon;
     private String donjonName;
+    private String donjonSecret;
+    private int donjonSecretLevel;
+    private int donjonLevel;
     private int totalRooms;
-    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"equipments", "anomalies", "specialItems", "user"})
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"equipments", "anomalies", "user"})
     private List<Personnage> players = new ArrayList<>();
     private List<generation.grimoire.entity.Equipment> activeConsumables = new ArrayList<>();
 
@@ -64,6 +67,9 @@ public class CombatSession {
         this.dungeonId = donjon.getId();
         this.donjon = donjon;
         this.donjonName = donjon.getName();
+        this.donjonSecret = donjon.getRequiredSecret();
+        this.donjonSecretLevel = donjon.getRequiredSecretLevel();
+        this.donjonLevel = donjon.getRecommendedLevel();
         this.totalRooms = donjon.getSalles() != null ? donjon.getSalles().size() : 0;
         this.players = players;
 

@@ -27,12 +27,13 @@ import java.util.HashMap;
 @NoArgsConstructor
 @EqualsAndHashCode(exclude = { "user", "equipments", "activeBuffs", "activeShields", "activeHealOverTimeEffects",
         "activeManaOverTimeEffects", "activeDamageOverTimeEffects", "activeHeatOverTimeEffects", "consumableSpellBuffs",
-        "channelingTarget" })
+        "channelingTarget", "channelingAlly", "channeledSpell" })
 @ToString(exclude = { "user", "equipments", "activeBuffs", "activeShields", "activeHealOverTimeEffects",
         "activeManaOverTimeEffects", "activeDamageOverTimeEffects", "activeHeatOverTimeEffects", "consumableSpellBuffs",
-        "channelingTarget" })
+        "channelingTarget", "channelingAlly", "channeledSpell" })
 @Entity
 @Table(name = "Personnage")
+@com.fasterxml.jackson.annotation.JsonIgnoreProperties({"channelingTarget", "channelingAlly", "channeledSpell"})
 public class Personnage {
 
     @Id
@@ -68,36 +69,99 @@ public class Personnage {
 
     private int experience = 0;
 
+    private int voieLevel = 1;
+
+    public void setExperience(int newExperience) {
+        this.experience = newExperience;
+
+        int newCalculated = 1;
+        if (this.experience >= 1000)
+            newCalculated = 5;
+        else if (this.experience >= 600)
+            newCalculated = 4;
+        else if (this.experience >= 300)
+            newCalculated = 3;
+        else if (this.experience >= 100)
+            newCalculated = 2;
+
+        if (newCalculated > this.voieLevel) {
+            int levelsGained = newCalculated - this.voieLevel;
+            this.voieLevel = newCalculated;
+            applyVoieLevelUpStats(levelsGained);
+        }
+    }
+
+    private void applyVoieLevelUpStats(int levelsGained) {
+        if (this.voie == null || this.voie.getNom() == null)
+            return;
+        String nomVoie = this.voie.getNom().toLowerCase();
+
+        for (int i = 0; i < levelsGained; i++) {
+            if (nomVoie.contains("conviction")) {
+                this.power += 1;
+                this.resistance += 2;
+                this.healthMax += 7;
+                this.healthCurrent += 7;
+            } else if (nomVoie.contains("raison")) {
+                this.healthMax += 6;
+                this.healthCurrent += 6;
+                this.manaMax += 6;
+                this.manaCurrent += 6;
+                this.speed += 1;
+            } else if (nomVoie.contains("violence")) {
+                this.power += 1;
+                this.strength += 1;
+                this.manaMax += 8;
+                this.manaCurrent += 8;
+            } else if (nomVoie.contains("création") || nomVoie.contains("creation")) {
+                this.healthMax += 5;
+                this.healthCurrent += 5;
+                this.regenHp += 2;
+                this.armor += 1;
+            } else if (nomVoie.contains("trahison")) {
+                this.strength += 1;
+                this.crit += 2;
+                this.speed += 1;
+            } else if (nomVoie.contains("sureté") || nomVoie.contains("surete") || nomVoie.contains("sûreté")) {
+                this.manaMax += 12;
+                this.manaCurrent += 12;
+                this.resistance += 1;
+                this.regenMana += 2;
+            } else if (nomVoie.contains("consolidation")) {
+                this.armor += 2;
+                this.resistance += 2;
+                this.healthMax += 5;
+                this.healthCurrent += 5;
+            } else if (nomVoie.contains("destruction")) {
+                this.power += 2;
+                this.regenMana += 2;
+                this.manaMax += 8;
+                this.manaCurrent += 8;
+            }
+        }
+    }
+
     @Access(AccessType.PROPERTY)
     @Column(name = "voie_level", nullable = false)
     public int getVoieLevel() {
+        int calculated = 1;
         if (experience >= 1000)
-            return 5;
-        if (experience >= 600)
-            return 4;
-        if (experience >= 300)
-            return 3;
-        if (experience >= 100)
-            return 2;
-        return 1;
+            calculated = 5;
+        else if (experience >= 600)
+            calculated = 4;
+        else if (experience >= 300)
+            calculated = 3;
+        else if (experience >= 100)
+            calculated = 2;
+
+        if (calculated > this.voieLevel) {
+            this.voieLevel = calculated;
+        }
+        return this.voieLevel;
     }
 
     public void setVoieLevel(int level) {
-        // Ignoré car calculé depuis l'expérience, mais laissé pour compatibilité avec
-        // certains setter implicites (ex: Jackson si besoin, ou si du code existant
-        // tente de le modifier)
-        // Si on force un setVoieLevel manuel (ex: admin), on pourrait affecter l'xp
-        // minimale correspondante :
-        if (level == 5)
-            this.experience = Math.max(this.experience, 1000);
-        else if (level == 4)
-            this.experience = Math.max(this.experience, 600);
-        else if (level == 3)
-            this.experience = Math.max(this.experience, 300);
-        else if (level == 2)
-            this.experience = Math.max(this.experience, 100);
-        else if (level == 1)
-            this.experience = Math.max(this.experience, 0);
+        this.voieLevel = level;
     }
 
     @ManyToOne
@@ -129,23 +193,25 @@ public class Personnage {
         }
     }
 
+    private int spiritualiteLevel = 1;
+
     @Access(AccessType.PROPERTY)
     @Column(name = "spiritualite_level", nullable = false)
     public int getSpiritualiteLevel() {
+        int calculated = 1;
         if (spiritualiteExperience >= 300)
-            return 3;
-        if (spiritualiteExperience >= 100)
-            return 2;
-        return 1;
+            calculated = 3;
+        else if (spiritualiteExperience >= 100)
+            calculated = 2;
+
+        if (calculated > this.spiritualiteLevel) {
+            this.spiritualiteLevel = calculated;
+        }
+        return this.spiritualiteLevel;
     }
 
     public void setSpiritualiteLevel(int level) {
-        if (level == 3)
-            this.spiritualiteExperience = Math.max(this.spiritualiteExperience, 300);
-        else if (level == 2)
-            this.spiritualiteExperience = Math.max(this.spiritualiteExperience, 100);
-        else if (level == 1)
-            this.spiritualiteExperience = Math.max(this.spiritualiteExperience, 0);
+        this.spiritualiteLevel = level;
     }
 
     @ManyToOne
@@ -178,6 +244,17 @@ public class Personnage {
 
     @Transient
     private List<ManaOverTimeEffect> activeManaOverTimeEffects = new ArrayList<>();
+
+    @Transient
+    private boolean usedCheatDeath = false;
+
+    public boolean isUsedCheatDeath() {
+        return usedCheatDeath;
+    }
+
+    public void setUsedCheatDeath(boolean usedCheatDeath) {
+        this.usedCheatDeath = usedCheatDeath;
+    }
 
     @Transient
     private List<DamageOverTimeEffect> activeDamageOverTimeEffects = new ArrayList<>();
@@ -220,15 +297,20 @@ public class Personnage {
     private Personnage channelingTarget;
 
     @Transient
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    private Personnage channelingAlly;
+
+    @Transient
     private Integer channelingChoiceKey;
 
     public void startTurn() {
         this.instantSpellCastThisTurn = false;
         this.banalSpellCastThisTurn = false;
-        
+
         if (this.remainingChannelingTurns > 0) {
             // On ne décrémente PAS ici car c'est tickChanneling() qui gère l'avancement.
-            // On empêche simplement le personnage de lancer un autre sort banal pendant qu'il canalise.
+            // On empêche simplement le personnage de lancer un autre sort banal pendant
+            // qu'il canalise.
             this.banalSpellCastThisTurn = true;
             System.out.println(name + " continue de canaliser (tours restants : " + remainingChannelingTurns + ").");
         }
@@ -248,13 +330,14 @@ public class Personnage {
             } else if (totalHpRegen < 0) {
                 this.takeDamage(-totalHpRegen, generation.grimoire.enumeration.DamageType.BRUT);
             }
-            
+
             // Malédiction: Famine (Drain de mana par tour)
-            int cursedManaDrain = getSpecialEffectValue(generation.grimoire.enumeration.EquipmentEffectType.CURSED_MANA_DRAIN);
+            int cursedManaDrain = getSpecialEffectValue(
+                    generation.grimoire.enumeration.EquipmentEffectType.CURSED_MANA_DRAIN);
             if (cursedManaDrain != 0) {
                 totalManaRegen -= Math.abs(cursedManaDrain);
             }
-            
+
             if (totalManaRegen != 0) {
                 this.setManaCurrent(this.manaCurrent + totalManaRegen);
             }
@@ -302,7 +385,8 @@ public class Personnage {
 
         double constant; // La constante K qui détermine la courbe.
 
-        if (this.monsterType == generation.grimoire.enumeration.MonsterType.REPTILE && damageType == DamageType.PHYSIC) {
+        if (this.monsterType == generation.grimoire.enumeration.MonsterType.REPTILE
+                && damageType == DamageType.PHYSIC) {
             damage = (int) Math.ceil(damage * 0.85);
             System.out.println("🦎 " + this.getName() + " réduit les dégâts physiques subis de 15% (Reptile).");
         }
@@ -481,22 +565,21 @@ public class Personnage {
         this.healthCurrent = Math.max(0, this.healthCurrent - totalDamageToHealth);
 
         // CHEAT DEATH
-        if (this.healthCurrent <= 0) {
+        if (this.healthCurrent <= 0 && !this.usedCheatDeath) {
             int cheatDeathValue = getSpecialEffectValue(
                     generation.grimoire.enumeration.EquipmentEffectType.CHEAT_DEATH);
             if (cheatDeathValue > 0) {
-                this.healthCurrent = cheatDeathValue * 5;
+                this.usedCheatDeath = true;
+
+                int revivedHp = (int) (this.getTotalHealthMax() * 0.05 * cheatDeathValue);
+                if (revivedHp < 1)
+                    revivedHp = 1;
+                if (revivedHp > this.getTotalHealthMax())
+                    revivedHp = this.getTotalHealthMax();
+
+                this.healthCurrent = revivedHp;
                 System.out.println(
-                        "👼 Ange Gardien activé ! Le personnage survit avec " + (cheatDeathValue * 5) + " PV.");
-                // Consomme l'effet pour la session/combat
-                if (this.equipments != null) {
-                    for (generation.grimoire.entity.Equipment eq : this.equipments) {
-                        if (eq.getSpecialEffect() == generation.grimoire.enumeration.EquipmentEffectType.CHEAT_DEATH) {
-                            eq.setSpecialEffect(generation.grimoire.enumeration.EquipmentEffectType.NONE);
-                            eq.setSpecialEffectValue(0);
-                        }
-                    }
-                }
+                        "👼 Ange Gardien activé ! Le personnage survit avec " + revivedHp + " PV.");
             }
         }
 
@@ -555,12 +638,13 @@ public class Personnage {
      */
     public void heal(int healAmount) {
         double multiplier = getStatBuffMultiplier(StatType.HEAL_RECEIVED);
-        
-        int cursedHeal = getSpecialEffectValue(generation.grimoire.enumeration.EquipmentEffectType.CURSED_HEALING_REDUCTION);
+
+        int cursedHeal = getSpecialEffectValue(
+                generation.grimoire.enumeration.EquipmentEffectType.CURSED_HEALING_REDUCTION);
         if (cursedHeal != 0) {
             multiplier -= (Math.abs(cursedHeal) / 100.0);
         }
-        
+
         int finalHeal = (int) (healAmount * Math.max(0, multiplier));
         this.healthCurrent += finalHeal;
         if (this.healthCurrent > this.getTotalHealthMax()) {
@@ -950,7 +1034,8 @@ public class Personnage {
         // pour respecter strictement "accès QU'AUX sorts de la voie de la raison" sauf
         // "attaque basic"
         if (!hasVoieReq && !hasSpiritReq) {
-            if (spell.getMutation() != null) return null; // Sort de mutation → toujours autorisé
+            if (spell.getMutation() != null)
+                return null; // Sort de mutation → toujours autorisé
             if (this.voie != null || this.spiritualite != null) {
                 // Sauf exceptions explicites si besoin, mais le prompt disait "uniquement les
                 // sorts de sa voie"
@@ -1157,7 +1242,7 @@ public class Personnage {
             int total = (int) (baseDamage * 1.2);
             target.takeDamage(total / 2, DamageType.PHYSIC, this);
             target.takeDamage(total - (total / 2), DamageType.MAGIC, this);
-            baseDamage = total; 
+            baseDamage = total;
         } else {
             target.takeDamage(baseDamage, type, this);
         }
@@ -1166,7 +1251,8 @@ public class Personnage {
             int brutDmg = (int) Math.ceil(baseDamage * 0.10);
             if (brutDmg > 0) {
                 target.takeDamage(brutDmg, DamageType.BRUT, this);
-                System.out.println("🔥 " + this.getName() + " inflige " + brutDmg + " dégâts bruts supplémentaires (Démon).");
+                System.out.println(
+                        "🔥 " + this.getName() + " inflige " + brutDmg + " dégâts bruts supplémentaires (Démon).");
             }
         }
 

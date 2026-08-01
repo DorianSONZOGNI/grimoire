@@ -17,7 +17,7 @@ public class CombatTimeoutScheduler {
 
     @Scheduled(fixedRate = 60000)
     public void checkAndTimeoutCombats() {
-        Instant threshold = Instant.now().minus(2, ChronoUnit.HOURS);
+        Instant threshold = Instant.now().minus(10, ChronoUnit.MINUTES);
 
         for (Map.Entry<String, CombatSession> entry : combatService.getActiveSessions().entrySet()) {
             CombatSession session = entry.getValue();

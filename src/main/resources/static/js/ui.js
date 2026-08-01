@@ -1,5 +1,6 @@
 import { state } from './state.js';
 import { GLOBAL_STAT_LABELS, GLOBAL_SRC_LABELS } from './constants.js';
+import { getVoieButtonColor, getSpiritButtonColor } from './filters.js';
 
 export function formatStat(stat) {
     return GLOBAL_STAT_LABELS[stat] || stat;
@@ -156,6 +157,14 @@ export function getSpiritIcon(nom) {
     if (n.includes('esprit')) return 'blur_on';
     if (n.includes('ténèbres') || n.includes('tenebres')) return 'dark_mode';
     if (n.includes('karma')) return 'all_inclusive';
+    if (n.includes('violence')) return 'explosion';
+    if (n.includes('trahison')) return 'visibility_off';
+    if (n.includes('surete') || n.includes('sûreté')) return 'water_drop';
+    if (n.includes('raison')) return 'psychology';
+    if (n.includes('destruction')) return 'local_fire_department';
+    if (n.includes('creation') || n.includes('création')) return 'eco';
+    if (n.includes('conviction')) return 'volcano';
+    if (n.includes('consolidation')) return 'foundation';
     return 'radio_button_unchecked';
 }
 
@@ -205,7 +214,7 @@ export function makeCustomSelect(selectIdOrElement) {
 
     const getIconInfo = (id, optionOrText) => {
         const text = typeof optionOrText === 'string' ? optionOrText : (optionOrText.text || '');
-        
+
         if (id === 'mutationSelect' || id === 'filterMutation') {
             if (text.includes('Aucune') || text.includes('Neutre') || text.includes('Toutes') || text.includes('Sans')) return { icon: 'trip_origin', color: '#94a3b8' };
             if (typeof optionOrText === 'object' && optionOrText.dataset && optionOrText.dataset.icon) {
@@ -242,7 +251,7 @@ export function makeCustomSelect(selectIdOrElement) {
             const t = text.toLowerCase();
             if (t.includes('magic') || t.includes('magique')) return { icon: 'auto_awesome', color: '#a855f7' };
             if (t.includes('physic') || t.includes('physique')) return { icon: 'swords', color: '#f43f5e' };
-            if (t.includes('brut')) return { icon: 'bloodtype', color: '#ef4444' };
+            if (t.includes('brut')) return { icon: 'bloodtype', color: '#790000ff' };
             return { icon: 'star', color: '#94a3b8' };
         }
         if (id === 'filterEffect') {
@@ -458,13 +467,37 @@ export function makeCustomSelect(selectIdOrElement) {
     select.parentNode.insertBefore(wrapper, select.nextSibling);
 }
 
-export function showNotif(text) {
-    const notif = document.getElementById('notif');
+export function showNotif(text, isError = false) {
+    let notif = document.getElementById('notif');
+    if (!notif) {
+        notif = document.createElement('div');
+        notif.id = 'notif';
+        notif.className = 'notification';
+        document.body.appendChild(notif);
+    }
     notif.innerText = text;
+    if (isError) {
+        notif.style.background = 'rgba(239, 68, 68, 0.9)'; // Red
+    } else {
+        notif.style.background = 'rgba(16, 185, 129, 0.9)'; // Green
+    }
     notif.classList.add('show');
-    setTimeout(() => {
+    if (notif.hideTimeout) clearTimeout(notif.hideTimeout);
+    notif.hideTimeout = setTimeout(() => {
         notif.classList.remove('show');
     }, 4000);
+}
+
+export async function showModal(options) {
+    if (!customElements.get('app-modal')) {
+        await import('./components/modal.js');
+    }
+    let modal = document.querySelector('app-modal');
+    if (!modal) {
+        modal = document.createElement('app-modal');
+        document.body.appendChild(modal);
+    }
+    return modal.show(options);
 }
 
 export function showGlobalTooltip(el) {
@@ -486,7 +519,7 @@ export function showGlobalTooltip(el) {
     if (!dataEl) return;
 
     tooltip.innerHTML = dataEl.innerHTML;
-    
+
     const elColor = el.getAttribute('data-color');
     if (elColor) {
         tooltip.style.borderColor = elColor;
@@ -504,7 +537,7 @@ export function showGlobalTooltip(el) {
             titleEl.style.borderBottom = 'none';
         }
     }
-    
+
     tooltip.style.display = 'flex';
     tooltip.style.maxHeight = '60vh';
     tooltip.style.overflowY = 'auto';
@@ -512,7 +545,7 @@ export function showGlobalTooltip(el) {
 
     const rect = el.getBoundingClientRect();
     const tooltipHeight = tooltip.offsetHeight;
-    
+
     let topPos = rect.top - tooltipHeight - 8;
     if (topPos < 10) {
         topPos = rect.bottom + 8;

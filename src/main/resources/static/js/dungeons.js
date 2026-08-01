@@ -124,19 +124,7 @@ async function loadDungeons() {
             // Force Libre to be the first key in the map to guarantee tab order
             categories.set('free', { id: 'free', label: 'Libres', icon: 'public', color: '#38bdf8', dungeons: [] });
 
-            const DEFAULT_SECRETS_META = [
-                { name: "Secret du Chaos", icon: "local_fire_department", color: "#ff0000" },
-                { name: "Secret de l'Abondance", icon: "eco", color: "#10b981" },
-                { name: "Secret de la Préservation", icon: "foundation", color: "#99674c" },
-                { name: "Secret de la Sérénité", icon: "water_drop", color: "#00e5cc" },
-                { name: "Secret de la Chasse", icon: "visibility_off", color: "#ed5677" },
-                { name: "Secret du Carnage", icon: "explosion", color: "#a70740" },
-                { name: "Secret de la Joie", icon: "volcano", color: "#b74c0b" },
-                { name: "Secret du Savoir", icon: "psychology", color: "#3b82f6" },
-                { name: "Secret du Destin", icon: "all_inclusive", color: "#e7d198" },
-                { name: "Secret de l'Éther", icon: "blur_on", color: "#38bdf8" },
-                { name: "Secret des Abysses", icon: "dark_mode", color: "#c084fc" }
-            ];
+
 
             dungeons.forEach(d => {
                 let catId, label, icon, color;
@@ -158,7 +146,7 @@ async function loadDungeons() {
                     label = d.requiredSecret.replace(/^Secret (de la |du |de l'|des |d'|de )/i, '');
                     label = label.charAt(0).toUpperCase() + label.slice(1);
 
-                    const meta = DEFAULT_SECRETS_META.find(s => s.name.toLowerCase() === d.requiredSecret.toLowerCase()) || { icon: "key", color: "#f59e0b" };
+                    const meta = window.DEFAULT_SECRETS_META.find(s => s.name.toLowerCase() === d.requiredSecret.toLowerCase()) || { icon: "key", color: "#f59e0b" };
                     icon = meta.icon;
                     color = meta.color;
                 } else {
@@ -353,7 +341,7 @@ async function loadCharacters() {
                             <div class="flex-center" style="color: #f8fafc; font-weight: 600; font-family: 'Outfit'; font-size: 1.1rem;">
                                 ${c.name} ${iconsHtml}
                             </div>
-                            <div class="text-muted" style="font-size: 0.85rem;">Niv. ${c.voieLevel || 1} &bull; ${c.healthMax} PV max</div>
+                            <div class="text-muted" style="font-size: 0.85rem;">Niv. ${c.voieLevel || 1} &bull; ${c.totalHealthMax !== undefined ? c.totalHealthMax : c.healthMax} PV max</div>
                         </div>
                     </div>
                 `;

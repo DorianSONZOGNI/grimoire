@@ -1,1 +1,0 @@
-export function test() { try { foo(); } catch(e) { console.log(e.name); } }

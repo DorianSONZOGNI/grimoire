@@ -1,4 +1,5 @@
-import * as ui from './ui.js?v=2';
+
+import * as ui from './ui.js?v=3';
 import { getSpellEffectsSummaryHtml } from './grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from './filters.js';
 
@@ -21,12 +22,6 @@ if (!window.allAnomaliesCombat || !Array.isArray(window.allAnomaliesCombat)) {
 export function createAnomalyBadgeHtml(anomalyName, showName = false) {
     if (!anomalyName || anomalyName === 'Item') return anomalyName;
 
-    const CATEGORY_ICONS = {
-        'PIERRE': 'landslide', 'METAL': 'hardware', 'COEUR': 'favorite',
-        'ORBE': 'lens', 'CRISTAL': 'diamond', 'PLUME': 'history_edu',
-        'ECAILLE': 'waves', 'AUTRE': 'category'
-    };
-
     let tooltipTitle = anomalyName;
     let tooltipDesc = 'Cet objet aura un effet unique !';
     let tColor = '#d946ef';
@@ -34,41 +29,23 @@ export function createAnomalyBadgeHtml(anomalyName, showName = false) {
     let anomSpiri = 'Inconnu';
     let catIcon = 'star';
     let isMagic = false;
+    let an = null;
 
     if (Array.isArray(window.allAnomaliesCombat)) {
-        const an = window.allAnomaliesCombat.find(a => a.name === anomalyName);
+        an = window.allAnomaliesCombat.find(a => a.name === anomalyName);
         if (an) {
             if (an.description) tooltipDesc = an.description;
             if (an.level) anomLevel = an.level;
             if (an.magicObject) isMagic = true;
-            if (an.category) catIcon = CATEGORY_ICONS[an.category] || 'category';
+            if (an.category) catIcon = getCategoryIcon(an.category);
             if (an.spiritualite) {
                 anomSpiri = an.spiritualite;
-                if (an.spiritualite === 'ESPRIT') tColor = '#38bdf8';
-                else if (an.spiritualite === 'KARMA') tColor = '#e7d198';
-                else if (an.spiritualite === 'TENEBRES') tColor = '#a855f7';
+                tColor = getSpiritualiteColor(an.spiritualite);
             }
         }
     }
 
-    let lvlColor = '#10b981';
-    if (anomLevel === 2) lvlColor = '#3b82f6';
-    else if (anomLevel === 3) lvlColor = '#8b5cf6';
-    else if (anomLevel === 4) lvlColor = '#f59e0b';
-    else if (anomLevel >= 5) lvlColor = '#ef4444';
-
-    const typeColor = isMagic ? '#ec4899' : '#b45309';
-    const typeLabel = isMagic ? 'Magique' : 'Matériau';
-
-    const tooltipDataHtml = `
-        <div class="anomaly-tooltip-title" style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:${tColor}; border-bottom: 1px solid ${tColor}; padding-bottom: 4px;">${tooltipTitle}</div>
-        <div style="display: flex; gap: 6px; margin: 6px 0; flex-wrap: wrap;">
-            <span class="font-bold" style="border: 1px solid ${lvlColor}; color: ${lvlColor}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem;">Lvl ${anomLevel}</span>
-            <span class="flex-center font-bold" style="border: 1px solid ${typeColor}; color: ${typeColor}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; gap: 4px;"><span class="material-symbols-outlined text-sm">${catIcon}</span>${typeLabel}</span>
-            <span class="font-bold" style="border: 1px solid ${tColor}; color: ${tColor}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; text-transform: uppercase;">${anomSpiri}</span>
-        </div>
-        <div style="font-style:italic; color:#cbd5e1; margin-top:8px; max-width: 350px; line-height: 1.4; white-space: normal !important; word-wrap: break-word;">${tooltipDesc}</div>
-    `;
+    const tooltipDataHtml = getAnomalyTooltipHTML(an, tooltipTitle);
 
     const tooltipAttrs = 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"';
     const extraAttrs = `data-color="${tColor}"`;
@@ -78,34 +55,7 @@ export function createAnomalyBadgeHtml(anomalyName, showName = false) {
     return `<span class="anomaly-badge align-middle" ${tooltipAttrs} ${extraAttrs} style="display: inline-flex; align-items: center; justify-content: center; border: 1px solid ${tColor}; background: linear-gradient(${tColor}25, ${tColor}25), rgba(15,23,42,0.8); color: ${tColor}; ${padStyle} border-radius: 6px; font-weight:bold; cursor: help;"><template class="tooltip-data">${tooltipDataHtml}</template><span class="material-symbols-outlined" style="font-size: 1.2rem;">${catIcon}</span>${nameHtml}</span>`;
 }
 
-// Replaced by window.SLOT_LABELS
-
-function getSlotInfo(eq) {
-    if (!eq) return { icon: 'help', color: '#94a3b8', label: '?' };
-    const sName = typeof eq.slot === 'object' ? eq.slot?.name : eq.slot;
-    const info = Object.assign({}, (window.SLOT_LABELS && window.SLOT_LABELS[sName]) ? window.SLOT_LABELS[sName] : { label: sName || '?', icon: 'help', color: '#94a3b8' });
-
-    if (sName === 'CONSOMMABLE' && eq.consumableCategory) {
-        const catName = typeof eq.consumableCategory === 'object' ? eq.consumableCategory?.name : eq.consumableCategory;
-        if (catName && window.CONSUMABLE_CATEGORIES && window.CONSUMABLE_CATEGORIES[catName]) {
-            const catInfo = window.CONSUMABLE_CATEGORIES[catName];
-            info.icon = catInfo.icon;
-            info.color = catInfo.color;
-        }
-    }
-    return info;
-}
-
-const RARITY_COLORS = {
-    COMMUN: '#94a3b8',
-    INHABITUEL: '#22c55e',
-    RARE: '#3b82f6',
-    MYTHIQUE: '#f97316',
-    LEGENDAIRE: '#eab308',
-    EPIQUE: '#ef4444',
-    RELIQUE: '#a855f7',
-    MAUDIT: '#7f1d1d'
-};
+// getSlotInfo and RARITY_COLORS → utils.js
 
 export const pageState = {
     lastCombatLogCount: null,
@@ -178,21 +128,6 @@ function processNewDeathLogs(combatLogs) {
     }
     pageState.lastCombatLogCount = combatLogs.length;
 }
-
-function getSpellColor(sp) {
-    if (sp.voie && sp.voie.nom) {
-        return getVoieButtonColor(sp.voie);
-    }
-    if (sp.spiritualite && sp.spiritualite.nom) {
-        return getSpiritButtonColor(sp.spiritualite);
-    }
-    return '#ffffff';
-}
-
-
-
-
-
 
 function setButtonsProcessing(isProc) {
     const buttons = document.querySelectorAll('.action-btn, .btn');
@@ -397,33 +332,44 @@ window.hideGlobalTooltip = ui.hideGlobalTooltip;
 
 
 
-window.fleeCombatAction = async function () {
-    try {
-        pageState.isFleeing = true;
-        const btn = document.querySelector('#fleeConfirmModal button:last-child');
-        if (btn) {
-            btn.disabled = true;
-            btn.textContent = "Fuite...";
-        }
-        const res = await globalFetch(`/api/pve/combat/${pageState.sessionId}/flee`, { method: 'POST' });
-        if (!res.ok) {
-            pageState.isFleeing = false;
-            const err = await res.text();
-            if (typeof showNotif !== 'undefined') showNotif("Erreur lors de la fuite : " + err, true);
-            else ui.showNotif("Erreur lors de la fuite : " + err, true);
-            if (btn) {
-                btn.disabled = false;
-                btn.textContent = "Oui, fuir";
+window.promptFlee = function () {
+    ui.showModal({
+        title: 'Fuir le combat ?',
+        body: `Êtes-vous sûr de vouloir fuir ?<br><br><span id="fleePenaltyText" style="font-size:0.9rem; color:#f87171;">Calcul de la pénalité...</span>`,
+        icon: 'directions_run',
+        confirmText: 'Oui, fuir',
+        onConfirm: async () => {
+            try {
+                pageState.isFleeing = true;
+                const res = await globalFetch(`/api/pve/combat/${pageState.sessionId}/flee`, { method: 'POST' });
+                if (!res.ok) {
+                    pageState.isFleeing = false;
+                    const err = await res.text();
+                    ui.showNotif("Erreur lors de la fuite : " + err, true);
+                    return;
+                }
+                localStorage.removeItem('activeCombatId');
+                window.location.href = '/dungeons.html';
+            } catch (e) {
+                console.error(e);
+                localStorage.removeItem('activeCombatId');
+                window.location.href = '/dungeons.html';
             }
-            return;
         }
-        localStorage.removeItem('activeCombatId');
-        window.location.href = '/dungeons.html';
-    } catch (e) {
-        console.error(e);
-        localStorage.removeItem('activeCombatId');
-        window.location.href = '/dungeons.html';
-    }
+    });
+
+    // Populate penalty text
+    setTimeout(() => {
+        if (!pageState.sessionId || !pageState.currentSessionData || pageState.currentSessionData.finished) return;
+        const roomsCount = Math.max(1, pageState.currentSessionData.totalRooms || 1);
+        const nbHeroes = Math.max(1, (pageState.currentSessionData.players || []).length);
+        const xpLossPerHero = Math.floor((10 * roomsCount) / nbHeroes);
+        const goldLoss = 10 * roomsCount;
+        const fleePenaltySpan = document.getElementById('fleePenaltyText');
+        if (fleePenaltySpan) {
+            fleePenaltySpan.innerHTML = `Perte d'xp et Or : <span style="color: #f87171;">-${xpLossPerHero} XP normal</span> (par perso) et <span style="color: #fbbf24;">-${goldLoss} Or</span> (au total).`;
+        }
+    }, 100);
 };
 
 window.initiateCombatCast = initiateCombatCast;
@@ -448,7 +394,34 @@ window.showNotif = function (message, isError = false) {
     }, 3000);
 };
 
+async function loadAnomaliesCombat() {
+    if (!window.allAnomaliesCombat || !Array.isArray(window.allAnomaliesCombat) || window.allAnomaliesCombat.length === 0) {
+        try {
+            const res = await window.globalFetch('/api/anomalies/all-templates');
+            if (res.ok) {
+                const data = await res.json();
+                if (Array.isArray(data)) window.allAnomaliesCombat = data;
+            }
+        } catch (e) {
+            console.error("Failed to load anomalies templates:", e);
+            window.allAnomaliesCombat = [];
+        }
+    }
+}
+
 document.addEventListener('DOMContentLoaded', async () => {
+    await loadAnomaliesCombat();
+    window.dungeonMusic = null;
+
+    const tryPlayMusic = () => {
+        if (window.dungeonMusic && window.dungeonMusic.paused) {
+            window.dungeonMusic.play().catch(e => console.log("Music auto-play blocked", e));
+        }
+        document.removeEventListener('click', tryPlayMusic);
+    };
+    tryPlayMusic();
+    document.addEventListener('click', tryPlayMusic);
+
     try { if (window.initAppMeta) await window.initAppMeta(); } catch (e) { console.warn('Meta loading skipped:', e); }
     // Check for active combat in localStorage
     const savedCombatId = localStorage.getItem('activeCombatId');
@@ -540,6 +513,7 @@ async function startCombat(characterIds, dungeonId, consumableIds) {
         console.error(e);
         if (typeof showNotif !== 'undefined') showNotif("Erreur de connexion.", true);
         else ui.showNotif("Erreur de connexion.", true);
+        window.location.href = '/dungeons.html';
     }
 }
 
@@ -598,7 +572,7 @@ window.updateSpellCardState = function (spellId) {
             }
         });
 
-        const playerHeat = pageState.currentSessionData.activePlayer.passiveStates ? (pageState.currentSessionData.activePlayer.passiveStates['destruction_heat'] || 0) : 0;
+        const playerHeat = pageState.currentSessionData.activePlayer?.passiveStates ? (pageState.currentSessionData.activePlayer.passiveStates['destruction_heat'] || 0) : 0;
         const totalHeatCost = (sp.heatCost || 0) + requiredHeatFromEffects;
 
         if (playerHeat < totalHeatCost) {
@@ -613,7 +587,7 @@ window.updateSpellCardState = function (spellId) {
         });
 
         if (targetsOnlyAlly && isCastable) {
-            const hasOtherAlly = pageState.currentSessionData.players && pageState.currentSessionData.players.some(p => p.healthCurrent > 0 && p.id !== pageState.currentSessionData.activePlayer.id);
+            const hasOtherAlly = pageState.currentSessionData.players && pageState.currentSessionData.activePlayer && pageState.currentSessionData.players.some(p => p.healthCurrent > 0 && p.id !== pageState.currentSessionData.activePlayer.id);
             if (!hasOtherAlly) {
                 isCastable = false;
                 dynamicReason = 'NO_OTHER_ALLY';
@@ -712,7 +686,7 @@ function initiateCombatCast(spellId) {
             }
         });
 
-        const playerHeat = pageState.currentSessionData.activePlayer.passiveStates ? (pageState.currentSessionData.activePlayer.passiveStates['destruction_heat'] || 0) : 0;
+        const playerHeat = pageState.currentSessionData.activePlayer?.passiveStates ? (pageState.currentSessionData.activePlayer.passiveStates['destruction_heat'] || 0) : 0;
         const totalHeatCost = (sp.heatCost || 0) + requiredHeatFromEffects;
 
         if (playerHeat < totalHeatCost) {
@@ -1044,9 +1018,17 @@ async function endTurn() {
 
     } catch (e) {
         console.error(e);
-        showNotif("Erreur de connexion", true);
         pageState.isProcessing = false;
         setButtonsProcessing(false);
+        // Retry from server state to recover
+        try {
+            const retryRes = await globalFetch(`/api/pve/combat/${pageState.sessionId}/resume`, { method: 'POST' });
+            const retryData = await retryRes.json();
+            updateUI(retryData);
+        } catch (e2) {
+            console.error('Recovery failed:', e2);
+            showNotif("Erreur critique. Rechargez la page.", true);
+        }
     }
 }
 
@@ -1073,6 +1055,14 @@ async function nextRoom() {
     } catch (e) {
         console.error(e);
         showNotif("Erreur lors du passage à la salle suivante", true);
+        // Retry from server state
+        try {
+            const retryRes = await globalFetch(`/api/pve/combat/${pageState.sessionId}/resume`, { method: 'POST' });
+            const retryData = await retryRes.json();
+            updateUI(retryData);
+        } catch (e2) {
+            console.error('Recovery failed:', e2);
+        }
     } finally {
         pageState.isProcessing = false;
         setButtonsProcessing(false);
@@ -1199,26 +1189,35 @@ async function buyMerchantItem(lootIndex) {
     }
 }
 
-function openBuyModal(idx, itemName, goldPrice = 0) {
+function openBuyModal(idx, itemName, goldPrice = 0, specialItemName = null) {
+    let costText = '';
     if (goldPrice > 0) {
-        const playerGold = pageState.currentSessionData?.players?.[0]?.gold || 0;
-        if (playerGold < goldPrice) {
-            showNotif("Vous n'avez pas assez d'or pour acheter cet objet !", true);
-            return;
+        costText += `<strong style="color:#fbbf24;">${goldPrice}</strong> Or`;
+    }
+    if (specialItemName) {
+        let priceColor = '#d946ef';
+        let priceIcon = 'star';
+        if (Array.isArray(window.allAnomaliesCombat)) {
+            const anPrice = window.allAnomaliesCombat.find(a => a.name === specialItemName);
+            if (anPrice) {
+                priceColor = getSpiritualiteColor(anPrice.spiritualite);
+                priceIcon = anPrice.category ? getCategoryIcon(anPrice.category) : 'star';
+            }
         }
+        if (costText !== '') costText += ' et ';
+        costText += `<span style="display:inline-flex; align-items:center; color:${priceColor}; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size:1.1rem; vertical-align:middle;">${priceIcon}</span> 1x ${specialItemName}</span>`;
     }
+    if (costText === '') costText = 'rien du tout';
 
-    const modal = document.getElementById('buyConfirmModal');
-    const targetName = document.getElementById('buyTargetName');
-    const confirmBtn = document.getElementById('buyConfirmBtn');
-    if (modal && targetName && confirmBtn) {
-        targetName.innerHTML = itemName;
-        confirmBtn.onclick = function () {
-            closeBuyModal();
-            buyMerchantItem(idx);
-        };
-        modal.classList.add('show');
-    }
+    ui.showModal({
+        title: 'Acheter cet objet ?',
+        body: `Voulez-vous vraiment acheter <strong style="color:#fff;">${itemName}</strong> ?<br>Cela coûtera ${costText}.`,
+        icon: 'shopping_cart',
+        confirmText: 'Oui, acheter',
+        onConfirm: async () => {
+            await buyMerchantItem(idx);
+        }
+    });
 }
 
 function closeBuyModal() {
@@ -1267,22 +1266,7 @@ function generateEquipmentTooltipHTML(eq) {
 
     let effectHtml = '';
     if (eq.specialEffect && eq.specialEffect !== 'NONE') {
-        const effectLabels = {
-            'LIFESTEAL': 'Vol de Vie',
-            'THORNS': 'Épines',
-            'MANA_SHIELD': 'Bouclier de Mana',
-            'CHEAT_DEATH': 'Ange Gardien',
-            'CRIT_DAMAGE': 'Dégâts Critiques',
-            'CURSED_MANA_DRAIN': 'Famine (Drain Mana)',
-            'CURSED_HP_LOSS_ON_MANA': 'Brèche spirituelle (- hp % en mana Act.)',
-            'CURSED_MAGIC_DAMAGE_REDUCTION': 'Folie (% dégâts magique -)',
-            'CURSED_PHYSICAL_DAMAGE_REDUCTION': 'Faiblesse (% dégâts physique -)',
-            'CURSED_VULNERABILITY': 'Vulnérabilité (Dégâts subis % +)',
-            'CURSED_HEALING_REDUCTION': 'Chair putréfiée (Soins % -)',
-            'EXECUTION': 'Exécution (% Phy)',
-            'MAGIC_OVERLOAD': 'Surcharge (% Mag mana Act)'
-        };
-        const label = effectLabels[eq.specialEffect] || eq.specialEffect;
+        const label = window.EFFECT_LABELS[eq.specialEffect] || eq.specialEffect;
         const isCursed = eq.specialEffect.startsWith('CURSED_');
         const icon = isCursed ? 'skull' : 'auto_awesome';
         const color = isCursed ? '#9b2d2d' : '#c084fc';
@@ -1320,7 +1304,7 @@ async function addLootedConsumable(itemName, iconElement) {
             return;
         }
         const updatedSession = await res.json();
-        
+
         // Success
         iconElement.style.color = '#10b981';
         iconElement.style.opacity = '1';
@@ -1329,7 +1313,7 @@ async function addLootedConsumable(itemName, iconElement) {
         iconElement.onmouseout = null;
         iconElement.onclick = null;
         iconElement.title = "Dans l'inventaire du groupe";
-        
+
         pageState.currentSessionData = updatedSession;
         if (typeof window.renderOverlayInventory === 'function') {
             window.renderOverlayInventory('eventOverlayInventoryList');
@@ -1399,6 +1383,9 @@ function updateUI(data) {
 
     if (data.finished) {
         localStorage.removeItem('activeCombatId');
+        if (window.dungeonMusic) {
+            window.dungeonMusic.pause();
+        }
     }
 
     let isActiveEnemy = false;
@@ -1414,6 +1401,9 @@ function updateUI(data) {
 
     if (data.donjonName) {
         document.getElementById('headerDungeonName').textContent = data.donjonName + " - Étape " + (data.currentRoomIndex + 1);
+        if (!data.finished) {
+            playDungeonMusic(data);
+        }
     }
     document.getElementById('turnCounter').textContent = data.turnNumber;
 
@@ -1674,26 +1664,33 @@ function updateUI(data) {
                             }
 
                             chestLogs.forEach(log => {
-                                const itemNameMatch = log.match(/Vous avez trouvé un objet : (.*?)(?: !| et il a été ajouté| \(envoyé)/);
+                                const itemNameMatch = log.match(/Vous avez (?:obtenu l'item|trouvé un objet)\s*:\s*(.*?)(?: !| et il a été ajouté| \(envoyé)/);
                                 if (itemNameMatch) {
                                     const eqName = itemNameMatch[1];
                                     let eq = null;
+                                    let an = null;
                                     if (data.currentRoom && data.currentRoom.lootTable) {
                                         const entry = data.currentRoom.lootTable.find(l => l.equipment && l.equipment.name === eqName);
                                         if (entry) eq = entry.equipment;
                                     }
-                                    const slotInfo = eq ? (getSlotInfo(eq) || { icon: 'help', color: '#94a3b8' }) : { icon: 'swords', color: '#f59e0b' };
-                                    const rarityColor = eq ? (RARITY_COLORS[typeof eq.rarity === 'object' ? eq.rarity?.name : eq.rarity] || '#ef4444') : '#f59e0b';
+                                    if (!eq && Array.isArray(window.allAnomaliesCombat)) {
+                                        an = window.allAnomaliesCombat.find(a => a.name === eqName);
+                                    }
+                                    
+                                    const slotInfo = eq ? (getSlotInfo(eq) || { icon: 'help', color: '#94a3b8' }) : (an ? { icon: (an.category ? (getCategoryIcon(an.category)) : 'star'), color: getSpiritualiteColor(an.spiritualite) } : { icon: 'swords', color: '#f59e0b' });
+                                    const rarityColor = eq ? (RARITY_COLORS[typeof eq.rarity === 'object' ? eq.rarity?.name : eq.rarity] || '#ef4444') : (an ? getSpiritualiteColor(an.spiritualite) : '#f59e0b');
                                     const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
 
                                     let tooltipDataHtml = '';
                                     if (eq && typeof generateEquipmentTooltipHTML === 'function') {
                                         tooltipDataHtml = generateEquipmentTooltipHTML(eq);
+                                    } else if (an && typeof getAnomalyTooltipHTML === 'function') {
+                                        tooltipDataHtml = getAnomalyTooltipHTML(an, eqName);
                                     }
                                     const tooltipAttrs = tooltipDataHtml ? 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"' : '';
 
                                     let inventoryStatus = log.includes("ajouté à l'inventaire") ? 'in_inventory' : (log.includes("envoyé au coffre") ? 'in_vault' : 'unknown');
-                                    
+
                                     let inventoryIconHtml = '';
                                     if (eq && eq.slot === 'CONSOMMABLE') {
                                         if (inventoryStatus === 'in_inventory') {
@@ -1863,7 +1860,7 @@ function updateUI(data) {
                             });
                         } else if (data.currentRoom.alterationType === 'AUTEL') {
                             btnText = `Sacrifier l'Objet`;
-                            let spColor = data.currentRoom.altarRequiredSpirituality === 'TENEBRES' ? '#d946ef' : data.currentRoom.altarRequiredSpirituality === 'ESPRIT' ? '#3b82f6' : data.currentRoom.altarRequiredSpirituality === 'KARMA' ? '#e7d198' : '#f59e0b';
+                            let spColor = getSpiritualiteColor(data.currentRoom.altarRequiredSpirituality);
                             warningHtml = `<div class="text-center" style="color: ${spColor}; font-size: 0.85rem; margin-top: 0.5rem; background: ${spColor}1A; padding: 0.5rem; border-radius: 6px; border: 1px solid ${spColor}4D;"><span class="material-symbols-outlined align-middle" style="font-size: 1rem;">warning</span> <strong>Offrande :</strong> Cet autel réclame le sacrifice d'un <strong>Magique</strong> de spiritualité <strong>${data.currentRoom.altarRequiredSpirituality}</strong>.</div>`;
 
                             let altarRewardHtml = '';
@@ -1926,12 +1923,7 @@ function updateUI(data) {
                                 }
 
                                 const first = eligible[0];
-                                const CATEGORY_ICONS = {
-                                    'PIERRE': 'landslide', 'METAL': 'hardware', 'COEUR': 'favorite',
-                                    'ORBE': 'lens', 'CRISTAL': 'diamond', 'PLUME': 'history_edu',
-                                    'ECAILLE': 'waves', 'AUTRE': 'category'
-                                };
-                                let firstCatIcon = first.category ? (CATEGORY_ICONS[first.category] || 'category') : 'star';
+                                let firstCatIcon = first.category ? (getCategoryIcon(first.category)) : 'star';
                                 let selectHtml = `
                                 <div class="custom-select-wrapper" id="altarAnomalySelectWrapper" style="width: 100%; max-width: 350px; margin: 0 auto; z-index: 100;">
                                     <div class="custom-select-trigger" onclick="document.getElementById('altarAnomalySelectWrapper').classList.toggle('open')" style="padding: 0.6rem 1rem; border-radius: 8px; border: 1px solid ${spColor}; text-align: left; background: rgba(0,0,0,0.5);">
@@ -1943,7 +1935,7 @@ function updateUI(data) {
                                     <div class="custom-select-options" style="max-height: 200px; overflow-y: auto; text-align: left;">
                                 `;
                                 eligible.forEach(a => {
-                                    let catIcon = a.category ? (CATEGORY_ICONS[a.category] || 'category') : 'star';
+                                    let catIcon = a.category ? (getCategoryIcon(a.category)) : 'star';
                                     selectHtml += `<div class="custom-option" onclick="document.getElementById('altarAnomalySelectLabel').innerHTML = this.innerHTML; document.getElementById('altarAnomalySelect').value = '${a.id}'; document.getElementById('altarAnomalySelectWrapper').classList.remove('open'); if(window.updateAltarDropChance) window.updateAltarDropChance(${a.level || 1});"><span class="material-symbols-outlined cs-icon" style="color: ${spColor};">${catIcon}</span> ${a.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${a.level || 1})</span></div>`;
                                 });
                                 selectHtml += `
@@ -2026,12 +2018,6 @@ function updateUI(data) {
                                 for (let i = data.combatLog.length - 1; i >= 0; i--) {
                                     const log = data.combatLog[i];
 
-                                    const CATEGORY_ICONS = {
-                                        'PIERRE': 'landslide', 'METAL': 'hardware', 'COEUR': 'favorite',
-                                        'ORBE': 'lens', 'CRISTAL': 'diamond', 'PLUME': 'history_edu',
-                                        'ECAILLE': 'waves', 'AUTRE': 'category'
-                                    };
-
                                     const lostMatch = log.match(/sacrifi. l'item : (.*) !/);
                                     if (lostMatch) {
                                         const itemName = lostMatch[1].trim();
@@ -2043,7 +2029,7 @@ function updateUI(data) {
                                                 if (an.spiritualite === 'TENEBRES') spColor = '#a855f7';
                                                 else if (an.spiritualite === 'ESPRIT') spColor = '#38bdf8';
                                                 else if (an.spiritualite === 'KARMA') spColor = '#e7d198';
-                                                catIcon = an.category ? (CATEGORY_ICONS[an.category] || 'category') : 'star';
+                                                catIcon = an.category ? (getCategoryIcon(an.category)) : 'star';
                                             }
                                         }
                                         gainedItemsHtml += `
@@ -2061,10 +2047,8 @@ function updateUI(data) {
                                         if (Array.isArray(window.allAnomaliesCombat)) {
                                             const an = window.allAnomaliesCombat.find(a => a.name === itemName);
                                             if (an) {
-                                                if (an.spiritualite === 'TENEBRES') spColor = '#a855f7';
-                                                else if (an.spiritualite === 'ESPRIT') spColor = '#38bdf8';
-                                                else if (an.spiritualite === 'KARMA') spColor = '#e7d198';
-                                                catIcon = an.category ? (CATEGORY_ICONS[an.category] || 'category') : 'star';
+                                                spColor = getSpiritualiteColor(an.spiritualite);
+                                                catIcon = an.category ? (getCategoryIcon(an.category)) : 'star';
                                             }
                                         }
                                         gainedItemsHtml += `
@@ -2109,12 +2093,6 @@ function updateUI(data) {
                             let iconHtml = '';
                             let rarityColor = '#10b981';
 
-                            const CATEGORY_ICONS = {
-                                'PIERRE': 'landslide', 'METAL': 'hardware', 'COEUR': 'favorite',
-                                'ORBE': 'lens', 'CRISTAL': 'diamond', 'PLUME': 'history_edu',
-                                'ECAILLE': 'waves', 'AUTRE': 'category'
-                            };
-
                             if (entry.specialItemName) {
                                 nameHtml = entry.specialItemName;
                                 rarityColor = '#d946ef';
@@ -2122,9 +2100,8 @@ function updateUI(data) {
                                 if (Array.isArray(window.allAnomaliesCombat)) {
                                     const an = window.allAnomaliesCombat.find(a => a.name === entry.specialItemName);
                                     if (an) {
-                                        if (an.spiritualite === 'ESPRIT') rarityColor = '#38bdf8';
-                                        else if (an.spiritualite === 'KARMA') rarityColor = '#e7d198';
-                                        catIcon = an.category ? (CATEGORY_ICONS[an.category] || 'category') : 'star';
+                                        rarityColor = getSpiritualiteColor(an.spiritualite);
+                                        catIcon = an.category ? (getCategoryIcon(an.category)) : 'star';
                                     }
                                 }
                                 iconHtml = `<span class="material-symbols-outlined" style="color: ${rarityColor}; font-size: 1.2rem;">${catIcon}</span>`;
@@ -2149,9 +2126,8 @@ function updateUI(data) {
                                 if (Array.isArray(window.allAnomaliesCombat)) {
                                     const anPrice = window.allAnomaliesCombat.find(a => a.name === entry.priceSpecialItemName);
                                     if (anPrice) {
-                                        if (anPrice.spiritualite === 'ESPRIT') priceColor = '#38bdf8';
-                                        else if (anPrice.spiritualite === 'KARMA') priceColor = '#e7d198';
-                                        priceIcon = anPrice.category ? (CATEGORY_ICONS[anPrice.category] || 'category') : 'star';
+                                        priceColor = getSpiritualiteColor(anPrice.spiritualite);
+                                        priceIcon = anPrice.category ? (getCategoryIcon(anPrice.category)) : 'star';
                                     }
                                 }
                                 priceHtml += `<span class="flex-center" style="color: ${priceColor}; gap: 0.3rem; margin-left: ${goldPrice > 0 ? '0.8rem' : '0'};"><span class="material-symbols-outlined" style="font-size: 1.1rem;">${priceIcon}</span>1x ${entry.priceSpecialItemName}</span>`;
@@ -2166,14 +2142,33 @@ function updateUI(data) {
                                 isPurchased = true;
                             }
 
+                            let canAfford = true;
+                            let playerGold = (data.players && data.players[0]) ? (data.players[0].gold || 0) : 0;
+                            if (goldPrice > 0 && playerGold < goldPrice) {
+                                canAfford = false;
+                            }
+                            if (entry.priceSpecialItemName) {
+                                let playerSpecialItems = (data.players && data.players[0] && data.players[0].specialItems) ? data.players[0].specialItems : {};
+                                let qte = playerSpecialItems[entry.priceSpecialItemName] || 0;
+                                if (qte < 1) {
+                                    canAfford = false;
+                                }
+                            }
+
                             let buttonHtml = '';
                             if (isPurchased) {
                                 buttonHtml = `<button class="flex-center" id="btn_buy_${idx}" type="button" style="background: linear-gradient(135deg, #ef4444, #b91c1c); color: white; border: none; border-radius: 8px; padding: 0.6rem 1.2rem; font-weight: 700; font-size: 1rem; cursor: not-allowed; gap: 0.5rem; opacity: 0.7;">
                                                   <span class="material-symbols-outlined" style="font-size: 1.2rem;">remove_shopping_cart</span>
                                                   Vendu
                                               </button>`;
+                            } else if (!canAfford) {
+                                buttonHtml = `<button class="flex-center" id="btn_buy_${idx}" type="button" style="background: rgba(148, 163, 184, 0.2); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.3); border-radius: 8px; padding: 0.6rem 1.2rem; font-weight: 700; font-size: 1rem; cursor: not-allowed; gap: 0.5rem; transition: all 0.2s ease;" title="Fonds insuffisants">
+                                                  <span class="material-symbols-outlined" style="font-size: 1.2rem;">shopping_cart</span>
+                                                  Acheter
+                                              </button>`;
                             } else {
-                                buttonHtml = `<button class="flex-center" id="btn_buy_${idx}" type="button" onclick="openBuyModal(${idx}, \`${nameHtml.replace(/'/g, "\\'").replace(/"/g, '&quot;')}\`, ${goldPrice})" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='none'" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 8px; padding: 0.6rem 1.2rem; font-weight: 700; font-size: 1rem; cursor: pointer; gap: 0.5rem; transition: all 0.2s ease; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);">
+                                let specialItemNameArg = entry.priceSpecialItemName ? `'${entry.priceSpecialItemName.replace(/'/g, "\\'").replace(/"/g, '&quot;')}'` : 'null';
+                                buttonHtml = `<button class="flex-center" id="btn_buy_${idx}" type="button" onclick="openBuyModal(${idx}, '${nameHtml.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', ${goldPrice}, ${specialItemNameArg})" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='none'" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 8px; padding: 0.6rem 1.2rem; font-weight: 700; font-size: 1rem; cursor: pointer; gap: 0.5rem; transition: all 0.2s ease; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);">
                                                   <span class="material-symbols-outlined" style="font-size: 1.2rem;">shopping_cart</span>
                                                   Acheter
                                               </button>`;
@@ -2194,38 +2189,9 @@ function updateUI(data) {
                                 if (Array.isArray(window.allAnomaliesCombat)) {
                                     const an = window.allAnomaliesCombat.find(a => a.name === entry.specialItemName);
                                     if (an) {
-                                        tooltipTitle = an.name;
-                                        if (an.description) tooltipDesc = an.description;
-                                        if (an.level) anomLevel = an.level;
-                                        if (an.magicObject) isMagic = true;
-                                        if (an.category) catIcon2 = CATEGORY_ICONS[an.category] || 'category';
-                                        if (an.spiritualite) {
-                                            anomSpiri = an.spiritualite;
-                                            if (an.spiritualite === 'ESPRIT') tColor = '#38bdf8';
-                                            else if (an.spiritualite === 'KARMA') tColor = '#e7d198';
-                                            else if (an.spiritualite === 'TENEBRES') tColor = '#a855f7';
-                                        }
+                                        tooltipDataHtml = getAnomalyTooltipHTML(an, entry.specialItemName);
                                     }
                                 }
-
-                                let lvlColor = '#10b981';
-                                if (anomLevel === 2) lvlColor = '#3b82f6';
-                                else if (anomLevel === 3) lvlColor = '#8b5cf6';
-                                else if (anomLevel === 4) lvlColor = '#f59e0b';
-                                else if (anomLevel >= 5) lvlColor = '#ef4444';
-
-                                const typeColor = isMagic ? '#ec4899' : '#b45309';
-                                const typeLabel = isMagic ? 'Magique' : 'Matériau';
-
-                                tooltipDataHtml = `
-                                    <div class="anomaly-tooltip-title" style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:${tColor}; border-bottom: 1px solid ${tColor}; padding-bottom: 4px;">${tooltipTitle}</div>
-                                    <div style="display: flex; gap: 6px; margin: 6px 0; flex-wrap: wrap;">
-                                        <span class="font-bold" style="border: 1px solid ${lvlColor}; color: ${lvlColor}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem;">Lvl ${anomLevel}</span>
-                                        <span class="flex-center font-bold" style="border: 1px solid ${typeColor}; color: ${typeColor}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; gap: 4px;"><span class="material-symbols-outlined text-sm">${catIcon2}</span>${typeLabel}</span>
-                                        <span class="font-bold" style="border: 1px solid ${tColor}; color: ${tColor}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; text-transform: uppercase;">${anomSpiri}</span>
-                                    </div>
-                                    <div style="font-style:italic; color:#cbd5e1; margin-top:8px; max-width: 350px; line-height: 1.4; white-space: normal !important; word-wrap: break-word;">${tooltipDesc}</div>
-                                `;
                             }
 
                             const tooltipAttrs = tooltipDataHtml ? 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"' : '';
@@ -2313,12 +2279,54 @@ function updateUI(data) {
 
                     if (data.roomEventCompleted) {
                         icon.style.color = '#94a3b8'; // Grisé
-                        desc.innerHTML = 'Vous avez ouvert la porte... mais il n\'y a absolument rien derrière.';
+                        desc.innerHTML = data.currentRoom.eventText || 'Vous avez ouvert la porte... mais il n\'y a absolument rien derrière.';
                         btnOpen.style.display = 'none';
                         btnCont.style.display = 'block';
                         btnCont.textContent = 'Continuer';
                         btnCont.onclick = nextRoom;
-                        lootContainer.style.display = 'none';
+                        
+                        let anomalyHtml = '';
+                        if (data.combatLog) {
+                            for (let i = data.combatLog.length - 1; i >= Math.max(0, data.combatLog.length - 5); i--) {
+                                const log = data.combatLog[i];
+                                const match = log.match(/Vous avez obtenu l'item : (.*?) !/);
+                                if (match && Array.isArray(window.allAnomaliesCombat)) {
+                                    const eqName = match[1];
+                                    const an = window.allAnomaliesCombat.find(a => a.name === eqName);
+                                    if (an) {
+                                        icon.textContent = 'crown';
+                                        icon.style.color = '#f59e0b';
+                                        title.textContent = 'Trésor';
+                                        
+                                        const spColor = getSpiritualiteColor(an.spiritualite);
+                                        const catIcon = an.category ? getCategoryIcon(an.category) : 'star';
+                                        let tooltipDataHtml = '';
+                                        if (typeof getAnomalyTooltipHTML === 'function') {
+                                            tooltipDataHtml = getAnomalyTooltipHTML(an, eqName);
+                                        }
+                                        const tooltipAttrs = tooltipDataHtml ? 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"' : '';
+                                        
+                                        anomalyHtml += `
+                                            <div class="flex-center relative" ${tooltipAttrs} style="cursor: ${tooltipDataHtml ? 'help' : 'default'}; background: rgba(0, 0, 0, 0.4); border: 1px solid ${spColor}80; padding: 0.8rem 1rem; border-radius: 8px; color: ${spColor}; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; transform: scale(0.8);">
+                                                ${tooltipDataHtml ? `<template class="tooltip-data">${tooltipDataHtml}</template>` : ''}
+                                                <span class="material-symbols-outlined" style="color: ${spColor};">${catIcon}</span> <span style="${tooltipDataHtml ? `border-bottom: 1px dashed ${spColor};` : ''}">${eqName}</span>
+                                            </div>
+                                        `;
+                                    }
+                                }
+                            }
+                        }
+                        
+                        if (anomalyHtml) {
+                            lootContainer.style.display = 'flex';
+                            lootContainer.innerHTML = `
+                                <div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; width: 100%; margin-top: 1rem;">
+                                    ${anomalyHtml}
+                                </div>
+                            `;
+                        } else {
+                            lootContainer.style.display = 'none';
+                        }
                     } else {
                         icon.style.color = '#fbbf24'; // Jaune
                         desc.innerHTML = data.currentRoom.eventText || 'Une porte mystérieuse se dresse devant vous...';
@@ -2408,7 +2416,23 @@ function updateUI(data) {
                     const newData = await res.json();
                     updateUI(newData);
                 } catch (e) {
-                    console.error(e);
+                    console.error('Auto-turn error:', e);
+                    // Retry: re-fetch current state to unblock UI
+                    try {
+                        const retryRes = await globalFetch(`/api/pve/combat/${pageState.sessionId}/resume`, { method: 'POST' });
+                        const retryData = await retryRes.json();
+                        updateUI(retryData);
+                    } catch (e2) {
+                        console.error('Auto-turn recovery failed:', e2);
+                        // Last resort: re-enable buttons so user isn't stuck
+                        const btnAttack = document.getElementById('btnAttack');
+                        if (btnAttack) { btnAttack.disabled = false; btnAttack.style.pointerEvents = 'auto'; btnAttack.style.opacity = '1'; }
+                        const btnEnd = document.getElementById('btnEndTurn');
+                        if (btnEnd) { btnEnd.disabled = false; }
+                        const spellButtons = document.querySelectorAll('.spell-btn, .filter-chip');
+                        spellButtons.forEach(btn => { btn.disabled = false; btn.classList.remove('disabled'); btn.style.pointerEvents = ''; });
+                        showNotif("Erreur de synchronisation. Veuillez réessayer.", true);
+                    }
                 }
             }, 600); // Fetch next turn
         }, 500); // Pause before attack animation
@@ -2437,9 +2461,26 @@ function updateUI(data) {
     processNewDeathLogs(data.combatLog);
 }
 
+function getBossBuffsHtml(c) {
+    if (!c.passiveStates) return '';
+
+    let html = '';
+    const hasArmorBuff = (c.activeBuffs || c.buffs || []).some(b => b.statAffected === 'ARMURE' && b.flatValue === c.passiveStates['BOSS_BUFF_ARMOR']);
+    const hasResistBuff = (c.activeBuffs || c.buffs || []).some(b => b.statAffected === 'RESISTANCE' && b.flatValue === c.passiveStates['BOSS_BUFF_RESIST']);
+
+    if (c.passiveStates['BOSS_BUFF_HP']) html += `<span class="text-success" title="+${c.passiveStates['BOSS_BUFF_HP']}% PV Max (Boss Buff)" style="cursor: help; font-size: 0.75rem; background: rgba(16, 185, 129, 0.15); padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined text-sm">favorite</span>+${c.passiveStates['BOSS_BUFF_HP']}% PV</span>`;
+    if (c.passiveStates['BOSS_BUFF_SHIELD'] && c.shieldTotal > 0) html += `<span title="+${c.passiveStates['BOSS_BUFF_SHIELD']}% Bouclier (Boss Buff)" style="cursor: help; font-size: 0.75rem; background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined text-sm">shield</span>+${c.passiveStates['BOSS_BUFF_SHIELD']}% Boucl.</span>`;
+    if (c.passiveStates['BOSS_BUFF_ARMOR'] && hasArmorBuff) html += `<span title="+${c.passiveStates['BOSS_BUFF_ARMOR']} Armure (Boss Buff)" style="cursor: help; font-size: 0.75rem; background: rgba(139, 92, 246, 0.15); color: #8b5cf6; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(139, 92, 246, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined text-sm">security</span>+${c.passiveStates['BOSS_BUFF_ARMOR']} Arm.</span>`;
+    if (c.passiveStates['BOSS_BUFF_RESIST'] && hasResistBuff) html += `<span title="+${c.passiveStates['BOSS_BUFF_RESIST']} Résistance (Boss Buff)" style="cursor: help; font-size: 0.75rem; background: rgba(217, 70, 239, 0.15); color: #d946ef; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(217, 70, 239, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined text-sm">health_and_safety</span>+${c.passiveStates['BOSS_BUFF_RESIST']} Rés.</span>`;
+    if (c.passiveStates['BOSS_BUFF_BURN']) html += `<span class="text-error" title="Brûlure sur coup (Boss Buff)" style="cursor: help; font-size: 0.75rem; background: rgba(239, 68, 68, 0.15); padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined text-sm">local_fire_department</span>Brûlure</span>`;
+    if (c.passiveStates['BOSS_BUFF_POISON']) html += `<span title="Poison sur coup (Boss Buff)" style="cursor: help; font-size: 0.75rem; background: rgba(34, 197, 94, 0.15); color: #22c55e; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(34, 197, 94, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined text-sm">pest_control</span>Poison</span>`;
+
+    return html;
+}
+
 // Removed GLOBAL_STAT_LABELS and formatStat (imported from ui.js)
 
-function generateFighterHtml(c, isHero) {
+function generateFighterHtml(c, isHero, skipBadges = false) {
     const hpPct = c.healthMax > 0 ? Math.max(0, Math.min(100, (c.healthCurrent / c.healthMax) * 100)) : 0;
     let hpLabel = `${c.healthCurrent} / ${c.healthMax}`;
     if (c.shieldTotal > 0) hpLabel += ` (+${c.shieldTotal} 🛡️)`;
@@ -2734,16 +2775,8 @@ function generateFighterHtml(c, isHero) {
     if (!isHero) {
         monsterBadgesHtml += `<div style="display: flex; gap: 0.5rem; justify-content: center; flex-wrap: wrap; margin-bottom: 0.5rem;">`;
 
-        if (c.passiveStates) {
-            const hasArmorBuff = (c.activeBuffs || c.buffs || []).some(b => b.statAffected === 'ARMURE' && b.flatValue === c.passiveStates['BOSS_BUFF_ARMOR']);
-            const hasResistBuff = (c.activeBuffs || c.buffs || []).some(b => b.statAffected === 'RESISTANCE' && b.flatValue === c.passiveStates['BOSS_BUFF_RESIST']);
-
-            if (c.passiveStates['BOSS_BUFF_HP']) monsterBadgesHtml += `<span class="text-success" title="+${c.passiveStates['BOSS_BUFF_HP']}% PV Max (Boss Buff)" style="cursor: help; font-size: 0.75rem; background: rgba(16, 185, 129, 0.15); padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined text-sm">favorite</span>+${c.passiveStates['BOSS_BUFF_HP']}% PV</span>`;
-            if (c.passiveStates['BOSS_BUFF_SHIELD'] && c.shieldTotal > 0) monsterBadgesHtml += `<span title="+${c.passiveStates['BOSS_BUFF_SHIELD']}% Bouclier (Boss Buff)" style="cursor: help; font-size: 0.75rem; background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined text-sm">shield</span>+${c.passiveStates['BOSS_BUFF_SHIELD']}% Boucl.</span>`;
-            if (c.passiveStates['BOSS_BUFF_ARMOR'] && hasArmorBuff) monsterBadgesHtml += `<span title="+${c.passiveStates['BOSS_BUFF_ARMOR']} Armure (Boss Buff)" style="cursor: help; font-size: 0.75rem; background: rgba(139, 92, 246, 0.15); color: #8b5cf6; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(139, 92, 246, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined text-sm">security</span>+${c.passiveStates['BOSS_BUFF_ARMOR']} Arm.</span>`;
-            if (c.passiveStates['BOSS_BUFF_RESIST'] && hasResistBuff) monsterBadgesHtml += `<span title="+${c.passiveStates['BOSS_BUFF_RESIST']} Résistance (Boss Buff)" style="cursor: help; font-size: 0.75rem; background: rgba(217, 70, 239, 0.15); color: #d946ef; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(217, 70, 239, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined text-sm">health_and_safety</span>+${c.passiveStates['BOSS_BUFF_RESIST']} Rés.</span>`;
-            if (c.passiveStates['BOSS_BUFF_BURN']) monsterBadgesHtml += `<span class="text-error" title="Brûlure sur coup (Boss Buff)" style="cursor: help; font-size: 0.75rem; background: rgba(239, 68, 68, 0.15); padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined text-sm">local_fire_department</span>Brûlure</span>`;
-            if (c.passiveStates['BOSS_BUFF_POISON']) monsterBadgesHtml += `<span title="Poison sur coup (Boss Buff)" style="cursor: help; font-size: 0.75rem; background: rgba(34, 197, 94, 0.15); color: #22c55e; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(34, 197, 94, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined text-sm">pest_control</span>Poison</span>`;
+        if (!skipBadges && c.passiveStates) {
+            monsterBadgesHtml += getBossBuffsHtml(c);
         }
 
         let typeName = typeof c.monsterType === 'object' ? c.monsterType?.name : c.monsterType;
@@ -2766,6 +2799,7 @@ function generateFighterHtml(c, isHero) {
         }
         monsterBadgesHtml += `</div>`;
     }
+
     let mutationsHtml = '';
     if (!isHero && c.mutations && c.mutations.length > 0) {
         mutationsHtml = `<div class="absolute" style="right: -1rem; top: 4rem; display: flex; flex-direction: column; gap: 0.6rem; z-index: 10;">`;
@@ -2789,11 +2823,29 @@ function generateFighterHtml(c, isHero) {
     let hpRegenBadge = (!isHero && c.regenHp && c.regenHp > 0) ? `<span title="Régénère ${c.regenHp} PV au début du tour" style="cursor: help; margin-left: 0.5rem; font-size: 0.7rem; background: rgba(244, 114, 182, 0.15); color: #f472b6; padding: 0.1rem 0.35rem; border-radius: 4px; border: 1px solid rgba(244, 114, 182, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.15rem; vertical-align: text-bottom;"><span class="material-symbols-outlined" style="font-size: 0.85rem;">healing</span>${c.regenHp} PV/t</span>` : '';
     let manaRegenBadge = (!isHero && c.regenMana && c.regenMana > 0) ? `<span title="Régénère ${c.regenMana} Mana au début du tour" style="cursor: help; margin-left: 0.5rem; font-size: 0.7rem; background: rgba(125, 211, 252, 0.15); color: #7dd3fc; padding: 0.1rem 0.35rem; border-radius: 4px; border: 1px solid rgba(125, 211, 252, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.15rem; vertical-align: text-bottom;"><span class="material-symbols-outlined" style="font-size: 0.85rem;">opacity</span>${c.regenMana} MP/t</span>` : '';
 
+    let avatarHtml = isHero ? '🧙‍♂️' : '👹';
+    if (isHero && c.voie && c.voie.nom) {
+        const vNom = c.voie.nom.toLowerCase();
+        let avatarName = '';
+        if (vNom.includes('consolidation')) avatarName = 'consolidation';
+        else if (vNom.includes('conviction')) avatarName = 'conviction';
+        else if (vNom.includes('création') || vNom.includes('creation')) avatarName = 'creation';
+        else if (vNom.includes('destruction')) avatarName = 'destruction';
+        else if (vNom.includes('raison')) avatarName = 'raison';
+        else if (vNom.includes('sûreté') || vNom.includes('surete')) avatarName = 'surete';
+        else if (vNom.includes('trahison')) avatarName = 'trahison';
+        else if (vNom.includes('violence')) avatarName = 'violence';
+
+        if (avatarName) {
+            avatarHtml = `<img src="/images/avatar/${avatarName}.png" alt="${avatarName}" style="width: 64px; height: 64px; object-fit: contain; margin-top: -12px; margin-bottom: -12px; margin-right: 0.1rem; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));">`;
+        }
+    }
+
     return `
         ${mutationsHtml}
         ${channelingBadgeHtml}
-        <div class="fighter-name" style="color: ${isHero ? '#f8fafc' : '#ef4444'}; font-size: 1.2rem; display: flex; justify-content: center; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-            ${isHero ? '🧙‍♂️' : '👹'} ${titleIconsHtml} ${c.name}
+        <div class="fighter-name" style="color: ${isHero ? '#f8fafc' : '#ef4444'}; font-size: 1.3rem; display: flex; justify-content: center; align-items: center; gap: 0.2rem; margin-bottom: 0.8rem;">
+            ${avatarHtml} <div style="display: flex; align-items: center; gap: 0.3rem;">${titleIconsHtml} ${c.name}</div>
         </div>
         ${monsterBadgesHtml}
         ${statsHtml}
@@ -2816,6 +2868,13 @@ function generateFighterHtml(c, isHero) {
 function renderEnemies(enemies) {
     const container = document.getElementById('enemiesContainer');
     container.innerHTML = '';
+
+    const bossBuffsContainer = document.getElementById('bossBuffsContainer');
+    if (bossBuffsContainer) {
+        bossBuffsContainer.innerHTML = '';
+    }
+
+    let bossBuffsRendered = false;
 
     enemies.forEach((activeMonster, index) => {
         const m = activeMonster.base;
@@ -2854,7 +2913,17 @@ function renderEnemies(enemies) {
             div.style.transform = 'scale(0.95)';
         }
 
-        div.innerHTML = generateFighterHtml(pMonster, false);
+        const isBoss = pMonster.passiveStates && Object.keys(pMonster.passiveStates).some(k => k.startsWith('BOSS_BUFF_'));
+
+        if (isBoss && bossBuffsContainer && !bossBuffsRendered) {
+            const bossHtml = getBossBuffsHtml(pMonster);
+            if (bossHtml) {
+                bossBuffsContainer.innerHTML = bossHtml;
+                bossBuffsRendered = true;
+            }
+        }
+
+        div.innerHTML = generateFighterHtml(pMonster, false, isBoss);
         container.appendChild(div);
     });
 }
@@ -3029,7 +3098,7 @@ function renderBuffsHtml(buffList, motList, hotList) {
                 else if (sa === 'DAMAGE_TAKEN_BRUT') statIcon = { icon: 'explosion', color: '#b91c1c' };
                 else if (sa === 'DAMAGE_GIVEN_MAGIC') statIcon = { icon: 'auto_awesome', color: '#a855f7' };
                 else if (sa === 'DAMAGE_GIVEN_PHYSIC') statIcon = { icon: 'swords', color: '#f43f5e' };
-                else if (sa === 'DAMAGE_GIVEN_BRUT') statIcon = { icon: 'bloodtype', color: '#ef4444' };
+                else if (sa === 'DAMAGE_GIVEN_BRUT') statIcon = { icon: 'bloodtype', color: '#790000ff' };
                 else if (sa === 'DAMAGE_GIVEN_MAGIC_TO_SHIELD') statIcon = { icon: 'gavel', color: '#d946ef' };
                 else if (sa === 'DAMAGE_GIVEN_PHYSIC_TO_SHIELD') statIcon = { icon: 'gavel', color: '#f43f5e' };
                 else if (sa.includes('DAMAGE_TAKEN')) statIcon = { icon: 'explosion', color: '#ef4444' };
@@ -3238,49 +3307,16 @@ function renderSpells(spells) {
         return;
     }
 
-    // Group spells by category instead of level
-    const groupsMap = new Map();
-    filteredSpells.forEach(sp => {
-        let groupKey = '';
-        if (currentSpellsTab === 'VOIE') {
-            if (sp.voie && sp.voie.nom) {
-                groupKey = sp.voie.nom.toLowerCase().startsWith('voie') ? sp.voie.nom : `Voie de ${sp.voie.nom}`;
-            } else {
-                groupKey = 'Autres';
-            }
-        } else if (currentSpellsTab === 'SPIRIT') {
-            if (sp.spiritualite && sp.spiritualite.nom) {
-                groupKey = sp.spiritualite.nom.toLowerCase().startsWith('spiritualité') || sp.spiritualite.nom.toLowerCase().startsWith('spiritualite')
-                    ? sp.spiritualite.nom
-                    : `Spiritualité de ${sp.spiritualite.nom}`;
-            } else {
-                groupKey = 'Autres';
-            }
-        } else {
-            groupKey = ''; // No title for ALL
-        }
+    // We sort all filtered spells by level, no grouping to save space
+    filteredSpells.sort((a, b) => (a.niveau || 1) - (b.niveau || 1));
 
-        if (!groupsMap.has(groupKey)) groupsMap.set(groupKey, []);
-        groupsMap.get(groupKey).push(sp);
-    });
-
-    let html = '';
-    const sortedGroups = Array.from(groupsMap.keys()).sort();
-
-    sortedGroups.forEach(groupKey => {
-        const groupSpells = groupsMap.get(groupKey);
-        // Sort spells by level inside the group
-        groupSpells.sort((a, b) => (a.niveau || 1) - (b.niveau || 1));
-
-        html += `
-            <div class="csp-level-group">
-                ${groupKey ? `<div class="csp-level-title">${groupKey}</div>` : ''}
-                <div class="csp-grid">
-                    ${groupSpells.map(sp => renderSpellCard(sp)).join('')}
-                </div>
+    let html = `
+        <div class="csp-level-group" style="padding-top: 0.5rem;">
+            <div class="csp-grid">
+                ${filteredSpells.map(sp => renderSpellCard(sp)).join('')}
             </div>
-        `;
-    });
+        </div>
+    `;
 
     container.innerHTML = html;
 
@@ -3293,7 +3329,7 @@ function renderSpells(spells) {
 }
 
 function renderSpellCard(sp) {
-    const titleColor = getSpellColor(sp);
+    const titleColor = ui.getSpellColor(sp);
 
     const effectsList = sp.effects || [];
     const choiceKeys = [...new Set(effectsList.map(e => e.requiredChoiceKey).filter(k => k != null))];
@@ -3428,12 +3464,13 @@ function renderSpellCard(sp) {
     }
 
     return `
-        <div id="spell-card-${sp.id}" class="combat-spell-card spell-btn${disabledClass}" style="border-top: 2px solid ${titleColor};" ${onClickAttr} ${tooltipAttrs}>
-            <div class="combat-spell-header">
-                <div class="combat-spell-name" title="${sp.nom}" style="color: ${titleColor};">${sp.nom}</div>
-                <div class="combat-spell-level">Lvl ${sp.niveau}</div>
+        <div id="spell-card-${sp.id}" class="combat-spell-card spell-btn${disabledClass}" style="border-top: 2px solid ${titleColor}; position: relative;" ${onClickAttr} ${tooltipAttrs}>
+            <div class="absolute" style="top: -9px; left: -5px; background: #0f172a; border: 1px solid ${titleColor}; color: ${titleColor}; border-radius: 4px; padding: 0.1rem 0.4rem; font-size: 0.65rem; font-weight: bold; z-index: 5;">Lvl ${sp.niveau}</div>
+            
+            <div class="combat-spell-header" style="margin-top: 0.2rem;">
+                <div class="combat-spell-name" title="${sp.nom}" style="color: ${titleColor}; text-align: left; width: 100%;">${sp.nom}</div>
             </div>
-            <div class="combat-spell-icons flex-center" style="flex-wrap: wrap; gap: 0.3rem;">
+            <div class="combat-spell-icons flex-center" style="flex-wrap: wrap; gap: 0.3rem; justify-content: flex-start; margin-bottom: 0.3rem;">
                 ${castingTypeHtml}
                 ${categoryHtml}
                 ${karmaAlignHtml}
@@ -3661,7 +3698,7 @@ window.renderOverlayInventory = function (containerId) {
     }
 
     pageState.currentSessionData.activeConsumables.forEach(c => {
-        const canConsume = true;
+        const canConsume = Boolean(c.bonusHealthMax || c.bonusManaMax || c.consumableHpPercent || c.consumableManaPercent || c.consumableMissingHpPercent || c.consumableMissingManaPercent);
         const onClickAttr = canConsume ? `onclick="window.openConsumeModal(${c.id}, '${c.name.replace(/'/g, "\\'")}')"` : '';
         const cursorStyle = canConsume ? 'cursor: pointer;' : '';
         const hoverClass = canConsume ? 'consumable-hover' : '';
@@ -3688,17 +3725,14 @@ window.renderOverlayInventory = function (containerId) {
 };
 
 window.openConsumeModal = function (consumableId, consumableName) {
-    document.getElementById('consumeTargetName').innerText = consumableName;
-    const btnContainer = document.getElementById('consumeTargetButtons');
-    btnContainer.innerHTML = '';
-
+    let btnContainerHtml = '';
     pageState.currentSessionData.players.forEach(p => {
         let hpColor = p.healthCurrent <= 0 ? '#ef4444' : (p.healthCurrent < p.healthMax ? '#f59e0b' : '#10b981');
         let mpColor = p.manaCurrent < p.manaMax ? '#3b82f6' : '#60a5fa';
-        btnContainer.innerHTML += `
-            <button class="flex-between" onclick="window.confirmConsumeItem(${consumableId}, ${p.id})"
+        btnContainerHtml += `
+            <button class="flex-between w-100" onclick="document.querySelector('app-modal').hide(false); window.confirmConsumeItem(${consumableId}, ${p.id})"
                 ${p.healthCurrent <= 0 ? 'disabled' : ''}
-                style="align-items: center; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 0.8rem; border-radius: 8px; cursor: ${p.healthCurrent <= 0 ? 'not-allowed' : 'pointer'}; opacity: ${p.healthCurrent <= 0 ? '0.5' : '1'}; transition: all 0.2s ease;">
+                style="align-items: center; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 0.8rem; border-radius: 8px; cursor: ${p.healthCurrent <= 0 ? 'not-allowed' : 'pointer'}; opacity: ${p.healthCurrent <= 0 ? '0.5' : '1'}; transition: all 0.2s ease; margin-bottom: 8px; width: 100%;">
                 <span style="font-weight: 600;">${p.name}</span>
                 <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.2rem;">
                     <span style="font-size: 0.85rem; color: ${hpColor};"><b>${p.healthCurrent}</b> / ${p.healthMax} PV</span>
@@ -3708,11 +3742,13 @@ window.openConsumeModal = function (consumableId, consumableName) {
         `;
     });
 
-    document.getElementById('consumeTargetModal').classList.add('show');
-};
-
-window.closeConsumeModal = function () {
-    document.getElementById('consumeTargetModal').classList.remove('show');
+    ui.showModal({
+        title: 'Consommer un objet',
+        body: `Qui doit utiliser <strong style="color:#fff;">${consumableName}</strong> ?<br><br><div style="display: flex; flex-direction: column; width: 100%;">${btnContainerHtml}</div>`,
+        icon: 'science',
+        hideConfirm: true,
+        cancelText: 'Fermer'
+    });
 };
 
 window.confirmConsumeItem = async function (consumableId, characterId) {
@@ -3723,18 +3759,125 @@ window.confirmConsumeItem = async function (consumableId, characterId) {
         });
         if (res.ok) {
             pageState.currentSessionData = await res.json();
-            window.closeConsumeModal();
-            window.showNotif("Objet consommé avec succès !");
+            ui.showNotif("Objet consommé avec succès !");
             updateUI(pageState.currentSessionData);
         } else {
             const err = await res.text();
-            window.showNotif("Erreur: " + err, true);
+            ui.showNotif("Erreur: " + err, true);
         }
     } catch (e) {
         console.error(e);
-        window.showNotif("Erreur lors de la consommation.", true);
+        ui.showNotif("Erreur lors de la consommation.", true);
     }
 };
 
 
 
+function playDungeonMusic(data) {
+    if (!data) return;
+
+    let musicFile = 'dunjon-calm.mp3'; // Défaut
+
+    const secret = data.donjonSecret ? data.donjonSecret.toLowerCase() : null;
+
+    if (!secret || secret === 'aucun' || secret === 'null') {
+        const level = data.donjonLevel || 1;
+        musicFile = `libre-lvl${level}.mp3`;
+    } else {
+        const level = data.donjonSecretLevel || 1;
+        // Nettoyer le secret : minuscule, enlève les accents, remplace les espaces par des tirets
+        const cleanSecret = secret.normalize("NFD").replace(/[\u0300-\u036f]/g, "").replace(/[^a-z0-9]/g, '-');
+        musicFile = `${cleanSecret}-lvl${level}.mp3`;
+    }
+
+    const targetSrc = '/sons/' + musicFile;
+
+    if (!window.dungeonMusic || !window.dungeonMusic.src.endsWith(targetSrc)) {
+        if (window.dungeonMusic) {
+            window.dungeonMusic.pause();
+        }
+        window.dungeonMusic = new Audio(targetSrc);
+        window.dungeonMusic.loop = true;
+
+        const savedVolume = localStorage.getItem('grimoire_music_volume');
+        const savedMuted = localStorage.getItem('grimoire_music_muted');
+
+        if (savedVolume !== null) {
+            window.dungeonMusic.volume = parseInt(savedVolume) / 100;
+            const slider = document.getElementById('musicVolumeSlider');
+            if (slider) slider.value = savedVolume;
+        } else {
+            window.dungeonMusic.volume = 0.5;
+            const slider = document.getElementById('musicVolumeSlider');
+            if (slider) slider.value = 50;
+        }
+
+        if (savedMuted === 'true') {
+            window.dungeonMusic.muted = true;
+            const btn = document.getElementById('musicToggleBtn');
+            if (btn) {
+                btn.textContent = 'volume_off';
+                btn.style.color = '#ef4444';
+            }
+        } else {
+            window.dungeonMusic.muted = false;
+            const btn = document.getElementById('musicToggleBtn');
+            if (btn) {
+                btn.textContent = 'volume_up';
+                btn.style.color = '#10b981';
+            }
+        }
+
+        const tryPlay = () => {
+            window.dungeonMusic.play().catch(e => {
+                console.log("Autoplay bloqué, attente d'un clic...", e);
+                const playOnInteraction = () => {
+                    if (window.dungeonMusic && window.dungeonMusic.paused) {
+                        window.dungeonMusic.play();
+                    }
+                    document.removeEventListener('click', playOnInteraction);
+                };
+                document.addEventListener('click', playOnInteraction);
+            });
+        };
+        tryPlay();
+    } else if (window.dungeonMusic && window.dungeonMusic.paused) {
+        window.dungeonMusic.play().catch(e => {
+            console.log("Autoplay bloqué, attente d'un clic...", e);
+            const playOnInteraction = () => {
+                if (window.dungeonMusic && window.dungeonMusic.paused) {
+                    window.dungeonMusic.play();
+                }
+                document.removeEventListener('click', playOnInteraction);
+            };
+            document.addEventListener('click', playOnInteraction);
+        });
+    }
+}
+
+window.toggleMusic = function () {
+    if (!window.dungeonMusic) return;
+    const btn = document.getElementById('musicToggleBtn');
+    if (window.dungeonMusic.muted) {
+        window.dungeonMusic.muted = false;
+        if (btn) {
+            btn.textContent = 'volume_up';
+            btn.style.color = '#10b981';
+        }
+        localStorage.setItem('grimoire_music_muted', 'false');
+    } else {
+        window.dungeonMusic.muted = true;
+        if (btn) {
+            btn.textContent = 'volume_off';
+            btn.style.color = '#ef4444';
+        }
+        localStorage.setItem('grimoire_music_muted', 'true');
+    }
+};
+
+window.changeMusicVolume = function (value) {
+    if (window.dungeonMusic) {
+        window.dungeonMusic.volume = value / 100;
+    }
+    localStorage.setItem('grimoire_music_volume', value);
+};

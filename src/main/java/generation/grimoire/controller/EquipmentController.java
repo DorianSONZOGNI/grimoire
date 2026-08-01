@@ -23,15 +23,18 @@ public class EquipmentController {
     private final PersonnageService personnageService;
     private final generation.grimoire.repository.auth.UserRepository userRepository;
     private final LootEntryRepository lootEntryRepository;
+    private final generation.grimoire.service.RenameCascadeService renameCascadeService;
 
     public EquipmentController(EquipmentRepository equipmentRepository,
             PersonnageService personnageService,
             generation.grimoire.repository.auth.UserRepository userRepository,
-            LootEntryRepository lootEntryRepository) {
+            LootEntryRepository lootEntryRepository,
+            generation.grimoire.service.RenameCascadeService renameCascadeService) {
         this.equipmentRepository = equipmentRepository;
         this.personnageService = personnageService;
         this.userRepository = userRepository;
         this.lootEntryRepository = lootEntryRepository;
+        this.renameCascadeService = renameCascadeService;
     }
 
     /** Liste tous les équipements du joueur */
@@ -293,7 +296,7 @@ public class EquipmentController {
 
     /** Créer ou mettre à jour un équipement */
     @PostMapping
-    @org.springframework.cache.annotation.CacheEvict(value = {"equipmentTemplates", "equipmentShopTemplates", "equipmentTemplateByName"}, allEntries = true)
+    @org.springframework.cache.annotation.CacheEvict(value = {"equipmentTemplates", "equipmentShopTemplates", "equipmentTemplateByName", "publicEquipmentTemplates", "equipmentDistinctNames", "alchemyRecipes", "alchemyRecipesList", "alchemyRecipeById", "lootEntriesByEquipment", "salles", "monstres"}, allEntries = true)
     public ResponseEntity<Map<String, Object>> createOrUpdate(@RequestBody EquipmentDto dto,
             java.security.Principal principal) {
         if (principal == null)
@@ -373,6 +376,7 @@ public class EquipmentController {
                 updateEquipmentFromDto(instance, dto);
                 equipmentRepository.save(instance);
             }
+            renameCascadeService.cascadeEquipmentRename(oldName, saved.getName());
         }
 
         Map<String, Object> response = new HashMap<>();
@@ -532,7 +536,7 @@ public class EquipmentController {
     /** Supprimer un équipement */
     @Transactional
     @DeleteMapping("/{id}")
-    @org.springframework.cache.annotation.CacheEvict(value = {"equipmentTemplates", "equipmentShopTemplates", "equipmentTemplateByName"}, allEntries = true)
+    @org.springframework.cache.annotation.CacheEvict(value = {"equipmentTemplates", "equipmentShopTemplates", "equipmentTemplateByName", "publicEquipmentTemplates", "equipmentDistinctNames", "alchemyRecipes", "alchemyRecipesList", "alchemyRecipeById", "lootEntriesByEquipment", "salles", "monstres"}, allEntries = true)
     public ResponseEntity<String> delete(@PathVariable @org.springframework.lang.NonNull Long id,
             java.security.Principal principal) {
         if (principal == null)

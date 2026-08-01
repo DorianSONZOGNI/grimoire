@@ -1,32 +1,4 @@
-// Replaced by window.SLOT_LABELS
-function getSlotInfo(eq) {
-    if (!eq) return { icon: 'help', color: '#94a3b8', label: '?' };
-    const sName = typeof eq.slot === 'object' ? eq.slot?.name : eq.slot;
-    const info = Object.assign({}, (window.SLOT_LABELS && window.SLOT_LABELS[sName]) ? window.SLOT_LABELS[sName] : { label: sName || '?', icon: 'help', color: '#94a3b8' });
-
-    if (sName === 'CONSOMMABLE' && eq.consumableCategory) {
-        const catName = typeof eq.consumableCategory === 'object' ? eq.consumableCategory?.name : eq.consumableCategory;
-        if (catName && window.CONSUMABLE_CATEGORIES && window.CONSUMABLE_CATEGORIES[catName]) {
-            const catInfo = window.CONSUMABLE_CATEGORIES[catName];
-            info.icon = catInfo.icon;
-            info.color = catInfo.color;
-        }
-    }
-    return info;
-}
-
-
-
-const RARITY_COLORS = {
-    COMMUN: '#94a3b8',
-    INHABITUEL: '#22c55e',
-    RARE: '#3b82f6',
-    MYTHIQUE: '#f97316',
-    LEGENDAIRE: '#eab308',
-    EPIQUE: '#ef4444',
-    RELIQUE: '#a855f7',
-    MAUDIT: '#7f1d1d'
-};
+// getSlotInfo, RARITY_COLORS, showNotif, showModal → utils.js
 
 const pageState = {
     shopItems: [],
@@ -34,29 +6,7 @@ const pageState = {
     allAnomalies: []
 };
 
-function getSpiritualiteColor(sp) {
-    if (!sp) return '#cbd5e1';
-    switch (sp.toUpperCase()) {
-        case 'TENEBRES': return '#a855f7';
-        case 'ESPRIT': return '#38bdf8';
-        case 'KARMA': return '#e7d198';
-        default: return '#cbd5e1';
-    }
-}
 
-function getLevelColor(lvl) {
-    const l = parseInt(lvl) || 1;
-    if (l === 1) return '#10b981'; // Vert
-    if (l === 2) return '#3b82f6'; // Bleu
-    if (l === 3) return '#a855f7'; // Violet
-    if (l === 4) return '#f59e0b'; // Or
-    if (l >= 5) return '#ef4444'; // Rouge
-    return '#10b981';
-}
-
-function getTypeColor(isMagic) {
-    return isMagic ? '#ec4899' : '#b45309'; // Rose : Marron
-}
 
 async function loadShop() {
     try {
@@ -76,21 +26,6 @@ async function loadShop() {
     }
 }
 
-function showNotif(message, isError = false) {
-    const notif = document.getElementById('shopNotif');
-    const text = document.getElementById('shopNotifText');
-    text.textContent = message;
-
-    notif.style.background = isError ? '#ef4444' : '#10b981';
-    notif.style.boxShadow = isError ? '0 10px 25px rgba(239, 68, 68, 0.3)' : '0 10px 25px rgba(16, 185, 129, 0.3)';
-
-    notif.style.opacity = '1';
-    notif.style.transform = 'translateY(0)';
-    setTimeout(() => {
-        notif.style.opacity = '0';
-        notif.style.transform = 'translateY(100px)';
-    }, 3000);
-}
 
 function generateStandHtml(eq) {
     const isPromo = eq.isDiscount;
@@ -119,22 +54,7 @@ function generateStandHtml(eq) {
 
     let effectHtml = '';
     if (eq.specialEffect && eq.specialEffect !== 'NONE') {
-        const effectLabels = {
-            'LIFESTEAL': 'Vol de Vie',
-            'THORNS': 'Épines',
-            'MANA_SHIELD': 'Bouclier de Mana',
-            'CHEAT_DEATH': 'Ange Gardien',
-            'CRIT_DAMAGE': 'Dégâts Critiques',
-            'CURSED_MANA_DRAIN': 'Famine (Drain Mana)',
-            'CURSED_HP_LOSS_ON_MANA': 'Brèche spirituelle (- hp % en mana Act.)',
-            'CURSED_MAGIC_DAMAGE_REDUCTION': 'Folie (% dégâts magique -)',
-            'CURSED_PHYSICAL_DAMAGE_REDUCTION': 'Faiblesse (% dégâts physique -)',
-            'CURSED_VULNERABILITY': 'Vulnérabilité (Dégâts subis % +)',
-            'CURSED_HEALING_REDUCTION': 'Chair putréfiée (Soins % -)',
-            'EXECUTION': 'Exécution (% Phy)',
-            'MAGIC_OVERLOAD': 'Surcharge (% Mag mana Act)'
-        };
-        const label = effectLabels[eq.specialEffect] || eq.specialEffect;
+        const label = window.EFFECT_LABELS[eq.specialEffect] || eq.specialEffect;
         const isCursed = eq.specialEffect.startsWith('CURSED_');
         const icon = isCursed ? 'skull' : 'auto_awesome';
         const color = isCursed ? '#9b2d2d' : '#c084fc';
@@ -199,36 +119,10 @@ function generateStandHtml(eq) {
                 for (const [n, q] of Object.entries(eq.priceAnomalies)) {
                     let aTemp = pageState.allAnomalies.find(a => a.name === n);
 
-                    const CATEGORY_ICONS = {
-                        'PIERRE': 'landslide',
-                        'METAL': 'hardware',
-                        'COEUR': 'favorite',
-                        'ORBE': 'lens',
-                        'CRISTAL': 'diamond',
-                        'PLUME': 'history_edu',
-                        'ECAILLE': 'waves',
-                        'AUTRE': 'category'
-                    };
-                    const catIcon = aTemp && aTemp.category ? (CATEGORY_ICONS[aTemp.category] || 'category') : 'star';
+                    const catIcon = aTemp && aTemp.category ? getCategoryIcon(aTemp.category) : 'star';
 
                     const spiriColor = aTemp && aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
-                    const tooltipData = `
-                                    <div class="anomaly-tooltip-title"><span class="material-symbols-outlined" style="font-size: 1rem; margin-right: 4px;">${catIcon}</span>${aTemp ? aTemp.name : n}</div>
-                                    <div style="display: flex; gap: 6px; margin: 6px 0; flex-wrap: wrap;">
-                                        <span class="font-bold" style="border: 1px solid ${getLevelColor(aTemp ? aTemp.level : 1)}; color: ${getLevelColor(aTemp ? aTemp.level : 1)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem;">
-                                            Lvl ${aTemp ? aTemp.level || 1 : 1}
-                                        </span>
-                                        <span class="flex-center font-bold" style="border: 1px solid ${getTypeColor(aTemp && aTemp.magicObject)}; color: ${getTypeColor(aTemp && aTemp.magicObject)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; gap: 4px;">
-                                            <span class="material-symbols-outlined text-sm">${aTemp && aTemp.magicObject ? 'star' : 'category'}</span>
-                                            ${aTemp && aTemp.magicObject ? 'Magique' : 'Matériau'}
-                                        </span>
-                                        ${aTemp && aTemp.spiritualite ?
-                            `<span class="font-bold" style="border: 1px solid ${getSpiritualiteColor(aTemp.spiritualite)}; color: ${getSpiritualiteColor(aTemp.spiritualite)}; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; background: rgba(0,0,0,0.3);">
-                                            ${aTemp.spiritualite}
-                                        </span>` : ''}
-                                    </div>
-                                    <div class="anomaly-tooltip-desc">${aTemp && aTemp.description ? aTemp.description : 'Aucune description'}</div>
-                            `;
+                    const tooltipData = getAnomalyTooltipHTML(aTemp, n);
                     anos.push(`<span class="anomaly-badge" style="border-color: ${spiriColor}; background: linear-gradient(${spiriColor}25, ${spiriColor}25), #1e293b; color: ${spiriColor};" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}">
                                 <span class="material-symbols-outlined align-middle" style="font-size: 1rem; color: ${spiriColor};">${catIcon}</span> ${q}
                             </span>`);
@@ -367,89 +261,54 @@ window.openBuyModal = function (id, isConsumable = false) {
 
     if (!eq) return;
 
-    pageState.itemToBuy = { id, isConsumable, price: eq.shopPrice, priceAnomalies: eq.priceAnomalies };
-
-    document.getElementById('buyTargetName').textContent = eq.name;
-
-    const priceStr = eq.shopPrice % 1 === 0 ? eq.shopPrice : eq.shopPrice.toFixed(1);
-    let btnHtml = `<div class="flex-center" style="gap: 6px; justify-content: center; flex-wrap: wrap;">`;
-    btnHtml += `<span>Acheter pour ${priceStr} <span class="material-symbols-outlined align-middle" style="font-size: 1rem; margin-top: -2px;">monetization_on</span></span>`;
+    let priceHtml = ``;
+    if (eq.shopPrice !== undefined && eq.shopPrice > 0) {
+        priceHtml += `<strong style="color:#fbbf24; display: inline-flex; align-items: center; gap: 0.2rem;">${eq.shopPrice} <span class="material-symbols-outlined align-middle" style="font-size: 1.1rem; color:#fcd34d;">monetization_on</span></strong>`;
+    }
     if (eq.priceAnomalies && Object.keys(eq.priceAnomalies).length > 0) {
         let anos = [];
         for (const [n, q] of Object.entries(eq.priceAnomalies)) {
             let aTemp = pageState.allAnomalies.find(a => a.name === n);
-            const CATEGORY_ICONS = {
-                'PIERRE': 'landslide',
-                'METAL': 'hardware',
-                'COEUR': 'favorite',
-                'ORBE': 'lens',
-                'CRISTAL': 'diamond',
-                'PLUME': 'history_edu',
-                'ECAILLE': 'waves',
-                'AUTRE': 'category'
-            };
-            const catIcon = aTemp && aTemp.category ? (CATEGORY_ICONS[aTemp.category] || 'category') : 'star';
+            const catIcon = aTemp && aTemp.category ? getCategoryIcon(aTemp.category) : 'star';
             const spiriColor = aTemp && aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
-            const tooltipData = `
-                    <div class="anomaly-tooltip-title"><span class="material-symbols-outlined" style="font-size: 1rem; margin-right: 4px;">${catIcon}</span>${aTemp ? aTemp.name : n}</div>
-                    <div style="display: flex; gap: 6px; margin: 6px 0; flex-wrap: wrap;">
-                        <span class="font-bold" style="border: 1px solid ${getLevelColor(aTemp ? aTemp.level : 1)}; color: ${getLevelColor(aTemp ? aTemp.level : 1)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem;">
-                            Lvl ${aTemp ? aTemp.level || 1 : 1}
-                        </span>
-                        <span class="flex-center font-bold" style="border: 1px solid ${getTypeColor(aTemp && aTemp.magicObject)}; color: ${getTypeColor(aTemp && aTemp.magicObject)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; gap: 4px;">
-                            <span class="material-symbols-outlined text-sm">${aTemp && aTemp.magicObject ? 'star' : 'category'}</span>
-                            ${aTemp && aTemp.magicObject ? 'Magique' : 'Matériau'}
-                        </span>
-                        ${aTemp && aTemp.spiritualite ?
-                    `<span class="font-bold" style="border: 1px solid ${getSpiritualiteColor(aTemp.spiritualite)}; color: ${getSpiritualiteColor(aTemp.spiritualite)}; padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; background: rgba(0,0,0,0.3);">
-                            ${aTemp.spiritualite}
-                        </span>` : ''}
-                    </div>
-                    <div class="anomaly-tooltip-desc">${aTemp && aTemp.description ? aTemp.description : 'Aucune description'}</div>
-            `;
-            anos.push(`<span class="anomaly-badge" style="border-color: ${spiriColor}; background: linear-gradient(${spiriColor}25, ${spiriColor}25), #1e293b; color: ${spiriColor};" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}">
-                <span class="material-symbols-outlined align-middle" style="font-size: 1rem; color: ${spiriColor};">${catIcon}</span> ${q}
-            </span>`);
+            
+            const tooltipData = getAnomalyTooltipHTML(aTemp, n);
+            
+            anos.push(`<span class="anomaly-badge tooltip-trigger" style="border: 1px solid ${spiriColor}; background: linear-gradient(${spiriColor}25, ${spiriColor}25), #1e293b; color: ${spiriColor}; padding: 0.2rem 0.4rem; border-radius: 6px; display: inline-flex; align-items: center; gap: 0.3rem; font-weight: 600; cursor: help;" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}"><span class="material-symbols-outlined align-middle" style="font-size: 1rem; color: ${spiriColor};">${catIcon}</span> ${q}x ${n}</span>`);
         }
-        btnHtml += `<span class="text-muted">+</span> ${anos.join(' ')}`;
+        if (priceHtml !== '') priceHtml += ` <span class="text-muted" style="margin: 0 0.4rem;">et</span> `;
+        priceHtml += anos.join(' <span class="text-muted" style="margin: 0 0.4rem;">+</span> ');
     }
-    btnHtml += `</div>`;
-    document.getElementById('buyConfirmBtn').innerHTML = btnHtml;
 
-    document.getElementById('buyConfirmModal').style.opacity = '1';
-    document.getElementById('buyConfirmModal').style.pointerEvents = 'all';
-}
+    showModal({
+        title: 'Acheter cet objet ?',
+        body: `Êtes-vous sûr de vouloir acheter <strong style="color:#fff;">${eq.name}</strong> pour <div style="display:inline-flex; align-items:center; justify-content:center; flex-wrap:wrap; margin-top:0.3rem;">${priceHtml}</div> ?`,
+        icon: 'shopping_cart',
+        confirmText: 'Oui, acheter',
+        onConfirm: async () => {
+            try {
+                let url = `/api/shop/buy/${id}`;
+                const res = await globalFetch(url, { method: 'POST' });
+                const data = await res.json();
 
-window.closeBuyModal = function () {
-    document.getElementById('buyConfirmModal').style.opacity = '0';
-    document.getElementById('buyConfirmModal').style.pointerEvents = 'none';
-    pageState.itemToBuy = null;
-}
-
-document.getElementById('buyConfirmBtn').addEventListener('click', async () => {
-    if (!pageState.itemToBuy) return;
-
-    const { id } = pageState.itemToBuy;
-    closeBuyModal();
-
-    try {
-        let url = `/api/shop/buy/${id}`;
-
-        const res = await globalFetch(url, { method: 'POST' });
-        const data = await res.json();
-
-        if (res.ok) {
-            showNotif('Achat réussi !');
-            if (window.checkAuthStatus) {
-                window.checkAuthStatus(); // Met à jour l'or affiché
+                if (res.ok) {
+                    showNotif('Achat réussi !');
+                    if (window.checkAuthStatus) {
+                        window.checkAuthStatus(); // Met à jour l'or affiché
+                    }
+                } else {
+                    showNotif(data.message || "Erreur lors de l'achat.", true);
+                }
+            } catch (e) {
+                if (e.message && e.message !== 'Failed to fetch') {
+                    showNotif(e.message, true);
+                } else {
+                    showNotif('Erreur réseau.', true);
+                }
             }
-        } else {
-            showNotif(data.message || "Erreur lors de l'achat.", true);
         }
-    } catch (e) {
-        showNotif('Erreur réseau.', true);
-    }
-});
+    });
+}
 
 window.addEventListener('DOMContentLoaded', async () => {
     if (window.initAppMeta) await window.initAppMeta();
