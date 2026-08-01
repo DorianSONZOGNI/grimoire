@@ -2789,11 +2789,29 @@ function generateFighterHtml(c, isHero, skipBadges = false) {
     let hpRegenBadge = (!isHero && c.regenHp && c.regenHp > 0) ? `<span title="Régénère ${c.regenHp} PV au début du tour" style="cursor: help; margin-left: 0.5rem; font-size: 0.7rem; background: rgba(244, 114, 182, 0.15); color: #f472b6; padding: 0.1rem 0.35rem; border-radius: 4px; border: 1px solid rgba(244, 114, 182, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.15rem; vertical-align: text-bottom;"><span class="material-symbols-outlined" style="font-size: 0.85rem;">healing</span>${c.regenHp} PV/t</span>` : '';
     let manaRegenBadge = (!isHero && c.regenMana && c.regenMana > 0) ? `<span title="Régénère ${c.regenMana} Mana au début du tour" style="cursor: help; margin-left: 0.5rem; font-size: 0.7rem; background: rgba(125, 211, 252, 0.15); color: #7dd3fc; padding: 0.1rem 0.35rem; border-radius: 4px; border: 1px solid rgba(125, 211, 252, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.15rem; vertical-align: text-bottom;"><span class="material-symbols-outlined" style="font-size: 0.85rem;">opacity</span>${c.regenMana} MP/t</span>` : '';
 
+    let avatarHtml = isHero ? '🧙‍♂️' : '👹';
+    if (isHero && c.voie && c.voie.nom) {
+        const vNom = c.voie.nom.toLowerCase();
+        let avatarName = '';
+        if (vNom.includes('consolidation')) avatarName = 'consolidation';
+        else if (vNom.includes('conviction')) avatarName = 'conviction';
+        else if (vNom.includes('création') || vNom.includes('creation')) avatarName = 'creation';
+        else if (vNom.includes('destruction')) avatarName = 'destruction';
+        else if (vNom.includes('raison')) avatarName = 'raison';
+        else if (vNom.includes('sûreté') || vNom.includes('surete')) avatarName = 'surete';
+        else if (vNom.includes('trahison')) avatarName = 'trahison';
+        else if (vNom.includes('violence')) avatarName = 'violence';
+        
+        if (avatarName) {
+            avatarHtml = `<img src="/images/avatar/${avatarName}.png" alt="${avatarName}" style="width: 64px; height: 64px; object-fit: contain; margin-top: -12px; margin-bottom: -12px; margin-right: 0.1rem; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));">`;
+        }
+    }
+
     return `
         ${mutationsHtml}
         ${channelingBadgeHtml}
-        <div class="fighter-name" style="color: ${isHero ? '#f8fafc' : '#ef4444'}; font-size: 1.2rem; display: flex; justify-content: center; align-items: center; gap: 0.5rem; margin-bottom: 0.5rem;">
-            ${isHero ? '🧙‍♂️' : '👹'} ${titleIconsHtml} ${c.name}
+        <div class="fighter-name" style="color: ${isHero ? '#f8fafc' : '#ef4444'}; font-size: 1.3rem; display: flex; justify-content: center; align-items: center; gap: 0.2rem; margin-bottom: 0.8rem;">
+            ${avatarHtml} <div style="display: flex; align-items: center; gap: 0.3rem;">${titleIconsHtml} ${c.name}</div>
         </div>
         ${monsterBadgesHtml}
         ${statsHtml}
