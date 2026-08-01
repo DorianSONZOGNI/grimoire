@@ -24,13 +24,10 @@ public class SecurityConfig {
     }
 
     @Bean
-    public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+    public SecurityFilterChain filterChain(HttpSecurity http, JwtAuthenticationFilter jwtAuthenticationFilter) throws Exception {
         http
-            // CSRF désactivé : API REST stateless consommée exclusivement par du JS same-origin.
-            // Le navigateur envoie le cookie JSESSIONID automatiquement ; pas de token CSRF nécessaire
-            // tant que l'API n'est pas consommée par des clients tiers.
-            // À terme, envisager un header custom X-Requested-With vérifié côté serveur.
             .csrf(csrf -> csrf.disable())
+            .sessionManagement(session -> session.sessionCreationPolicy(org.springframework.security.config.http.SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
                 // --- Public : statiques + auth ---
                 .requestMatchers("/api/auth/**").permitAll()
@@ -56,12 +53,9 @@ public class SecurityConfig {
                 // --- Tout le reste nécessite une authentification ---
                 .anyRequest().authenticated()
             )
-            .logout(logout -> logout
-                .logoutUrl("/api/auth/logout")
-                .logoutSuccessUrl("/")
-                .invalidateHttpSession(true)
-                .deleteCookies("JSESSIONID")
-            );
+            .exceptionHandling(ex -> ex.authenticationEntryPoint(new org.springframework.security.web.authentication.HttpStatusEntryPoint(org.springframework.http.HttpStatus.UNAUTHORIZED)));
+
+        http.addFilterBefore(jwtAuthenticationFilter, org.springframework.security.web.authentication.UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
