@@ -352,6 +352,13 @@ public class EquipmentController {
                 return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
             }
 
+            // Vérifier les conflits potentiels avant de déséquiper ou assigner
+            try {
+                checkSlotConflicts(personnage.getId(), dto.getSlot(), equipment);
+            } catch (IllegalArgumentException e) {
+                return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
+            }
+
             // Vérifier si le slot est déjà occupé
             equipmentRepository.findByPersonnageIdAndSlot(personnage.getId(), dto.getSlot())
                     .ifPresent(existing -> {
@@ -428,7 +435,7 @@ public class EquipmentController {
         }
 
         try {
-            checkSlotConflicts(personnageId, finalSlot);
+            checkSlotConflicts(personnageId, finalSlot, equipment);
         } catch (IllegalArgumentException e) {
             return ResponseEntity.badRequest().body(Map.of("message", e.getMessage()));
         }
@@ -489,23 +496,44 @@ public class EquipmentController {
         return ResponseEntity.ok(response);
     }
 
-    private void checkSlotConflicts(Long personnageId, generation.grimoire.enumeration.EquipmentSlot slotToEquip) {
+    private void checkSlotConflicts(Long personnageId, generation.grimoire.enumeration.EquipmentSlot slotToEquip, Equipment equipment) {
         if (slotToEquip == generation.grimoire.enumeration.EquipmentSlot.ARME_DEUX_MAINS) {
             if (equipmentRepository
                     .findByPersonnageIdAndSlot(personnageId, generation.grimoire.enumeration.EquipmentSlot.ARME_GAUCHE)
+                    .filter(e -> equipment.getId() == null || !e.getId().equals(equipment.getId()))
                     .isPresent() ||
                     equipmentRepository.findByPersonnageIdAndSlot(personnageId,
-                            generation.grimoire.enumeration.EquipmentSlot.ARME_DROITE).isPresent()) {
+                            generation.grimoire.enumeration.EquipmentSlot.ARME_DROITE)
+                    .filter(e -> equipment.getId() == null || !e.getId().equals(equipment.getId()))
+                    .isPresent()) {
                 throw new IllegalArgumentException(
                         "Impossible d'équiper une arme à 2 mains : l'emplacement est déjà occupé.");
             }
         } else if (slotToEquip == generation.grimoire.enumeration.EquipmentSlot.ARME_GAUCHE
                 || slotToEquip == generation.grimoire.enumeration.EquipmentSlot.ARME_DROITE) {
             if (equipmentRepository.findByPersonnageIdAndSlot(personnageId,
-                    generation.grimoire.enumeration.EquipmentSlot.ARME_DEUX_MAINS).isPresent()) {
+                    generation.grimoire.enumeration.EquipmentSlot.ARME_DEUX_MAINS)
+                    .filter(e -> equipment.getId() == null || !e.getId().equals(equipment.getId()))
+                    .isPresent()) {
                 throw new IllegalArgumentException(
                         "Impossible d'équiper cette arme : une arme à 2 mains est déjà équipée.");
             }
+        }
+
+        if (slotToEquip == generation.grimoire.enumeration.EquipmentSlot.ANNEAU_GAUCHE) {
+            equipmentRepository.findByPersonnageIdAndSlot(personnageId, generation.grimoire.enumeration.EquipmentSlot.ANNEAU_DROIT)
+                    .ifPresent(otherRing -> {
+                        if (otherRing.getName().equals(equipment.getName()) && (equipment.getId() == null || !otherRing.getId().equals(equipment.getId()))) {
+                            throw new IllegalArgumentException("Impossible d'équiper deux anneaux identiques.");
+                        }
+                    });
+        } else if (slotToEquip == generation.grimoire.enumeration.EquipmentSlot.ANNEAU_DROIT) {
+            equipmentRepository.findByPersonnageIdAndSlot(personnageId, generation.grimoire.enumeration.EquipmentSlot.ANNEAU_GAUCHE)
+                    .ifPresent(otherRing -> {
+                        if (otherRing.getName().equals(equipment.getName()) && (equipment.getId() == null || !otherRing.getId().equals(equipment.getId()))) {
+                            throw new IllegalArgumentException("Impossible d'équiper deux anneaux identiques.");
+                        }
+                    });
         }
     }
 

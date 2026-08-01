@@ -430,7 +430,7 @@ async function equipItem(equipmentId, personnageId, targetSlot = null) {
             await loadPersonnages();
         }
     } catch (e) {
-        showNotif('Erreur lors de l\'équipement.', true);
+        showNotif(e.message || 'Erreur lors de l\'équipement.', true);
     }
 }
 
@@ -445,7 +445,7 @@ async function unequipItem(equipmentId) {
             await loadPersonnages();
         }
     } catch (e) {
-        showNotif('Erreur lors du déséquipement.', true);
+        showNotif(e.message || 'Erreur lors du déséquipement.', true);
     }
 }
 
