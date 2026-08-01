@@ -91,3 +91,15 @@ body{ overflow-y: scroll;
 .text-indigo { color: #6366f1 !important; }
 .text-orange { color: #f97316 !important; }
 .text-karma { color: var(--karma) !important; }
+/* Semantic stat colors */
+.text-pv { color: #ec4899 !important; }
+.text-mana { color: #38bdf8 !important; }
+.text-power { color: #a855f7 !important; }
+.text-physic { color: #f43f5e !important; }
+.text-armor { color: #3b82f6 !important; }
+.text-resist { color: #10b981 !important; }
+.text-speed { color: #f59e0b !important; }
+.text-crit { color: #ef4444 !important; }
+.text-brut { color: #790000 !important; }
+.text-heal { color: #10b981 !important; }
+.text-shield { color: #3b82f6 !important; }

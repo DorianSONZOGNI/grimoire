@@ -66,7 +66,7 @@ public class WebSpellCreationController {
         descriptionsVoies.put("Voie de la Destruction",
                 "La destruction, c'est très parlant. Ici on envoie des boules de feu, des lasers, et autres joyeusetés.");
         descriptionsVoies.put("Voie de la Violence",
-                "Un cible mortel fait pour exterminer des groupes entier d'un simple claquement de doigts.");
+                "Un style de combat mortel conçu pour exterminer ces adverssaires d'un simple claquement de doigts.");
 
         // 2. Initialiser les rangs personnalisés par Voie (basé sur tes captures
         // d'écran)
@@ -86,21 +86,21 @@ public class WebSpellCreationController {
 
         Map<String, String> passifsVoies = new HashMap<>();
         passifsVoies.put("Voie de la Raison",
-                "Lancer un sort de Raison confère [c=warning]+1 Vitesse[/c] au tour suivant (max [c=warning]10 cumuls[/c], perdus si aucun n'est lancé).\nDe plus, le score de [c=danger]Critique[/c] est augmenté d'un montant égal au [c=success]double de la Vitesse[/c].");
+                "Lancer un sort de Raison confère [c=speed]+1 Vitesse[/c] au tour suivant (max [c=warning]10 cumuls[/c], perdus si aucun n'est lancé).\nDe plus, le score de [c=crit]Critique[/c] est augmenté d'un montant égal au [c=speed]double de la Vitesse[/c].");
         passifsVoies.put("Voie de la Sûreté",
-                "Accumule des [c=primary]points de Sûreté[/c] (10/tour et 20% du mana dépensé).\nÀ [c=indigo]100 points[/c], octroie [c=danger]+15% de Critique[/c], ou [c=danger]+25%[/c] si le palier est atteint passivement en début de tour.");
+                "Accumule des [c=shield]points de Sûreté[/c] (10/tour et 20% du [c=mana]mana[/c] dépensé).\nÀ [c=warning]100 points[/c], octroie [c=crit]+15% de Critique[/c], ou [c=crit]+25%[/c] si le palier est atteint passivement en début de tour.");
         passifsVoies.put("Voie de Trahison",
-                "Une fois par tour, vos [c=danger]attaques physiques[/c] infligent des dégâts bruts bonus [c=success]qui vous soignent[/c] :\n[ul][li][c=warning]+10%[/c] de base[/li][li][c=warning]+15%[/c] si la cible a moins de 50% PV[/li][li][c=warning]+10%[/c] si elle a un malus[/li][/ul]");
+                "Une fois par tour, vos [c=physic]attaques physiques[/c] infligent des dégâts bruts bonus [c=heal]qui vous soignent[/c] :\n[ul][li][c=brut]+10%[/c] de base[/li][li][c=brut]+15%[/c] si la cible a moins de 50% [c=pv]PV[/c][/li][li][c=brut]+10%[/c] si elle a un malus[/li][/ul]");
         passifsVoies.put("Voie de la Consolidation",
-                "Octroie [c=primary]+5% d'Armure[/c] par défaut. Lancer un sort remplace ce bonus selon son niveau :\n[ul][li]Nv1: [c=warning]+1 Vitesse[/c][/li][li]Nv2: [c=primary]+10% Armure[/c][/li][li]Nv3: [c=purple]+10% Résistance Magique[/c][/li][li]Nv4: Coût des sorts [c=success]-20%[/c][/li][li]Nv5: [c=warning]+8% Armure et Résistance[/c][/li][/ul]");
+                "Octroie [c=armor]+5% d'Armure[/c] par défaut. Lancer un sort remplace ce bonus selon son niveau :\n[ul][li]Nv1: [c=speed]+1 Vitesse[/c][/li][li]Nv2: [c=armor]+10% Armure[/c][/li][li]Nv3: [c=resist]+10% Résistance Magique[/c][/li][li]Nv4: Coût des sorts [c=mana]-20%[/c][/li][li]Nv5: [c=armor]+8% Armure[/c] et [c=resist]Résistance[/c][/li][/ul]");
         passifsVoies.put("Voie de la Conviction",
-                "Régénère [c=primary]25 points de mana[/c] par tour ([c=primary]+4[/c] par niveau de Voie).\nAugmente le [c=primary]mana maximum de 20[/c] par niveau au-delà du premier.");
+                "Régénère [c=mana]25 points de mana[/c] par tour ([c=mana]+4[/c] par niveau de Voie).\nAugmente le [c=mana]mana maximum de 20[/c] par niveau au-delà du premier.");
         passifsVoies.put("Voie de la Création",
-                "Chaque tour, le 1er sort lancé consomme un [c=success]bourgeon[/c] s'il vous en reste en stock.\nVoici les effets du [c=success]bourgeon[/c] pour chaque type de sort :\n[ul][li]Un sort Instantané devient [c=success]gratuit[/c][/li][li]Un sort Banal devient [c=warning]Instantané[/c][/li][li]Un sort Canalisé octroie un [c=primary]bouclier[/c] (30% du mana dépensé)[/li][/ul]");
+                "Chaque tour, le 1er sort lancé consomme un [c=heal]bourgeon[/c] s'il vous en reste en stock.\nVoici les effets du [c=heal]bourgeon[/c] pour chaque type de sort :\n[ul][li]Un sort Instantané devient [c=mana]gratuit[/c][/li][li]Un sort Banal devient [c=warning]Instantané[/c][/li][li]Un sort Canalisé octroie un [c=shield]bouclier[/c] (30% du [c=mana]mana[/c] dépensé)[/li][/ul]");
         passifsVoies.put("Voie de la Destruction",
-                "Accumule de la [c=danger]Chaleur[/c] en lançant des sorts.\nLorsque la chaleur atteint [c=danger]100[/c], le prochain sort lancé est entièrement [c=success]gratuit[/c].");
+                "Accumule de la [c=crit]Chaleur[/c] en lançant des sorts.\nLorsque la chaleur atteint [c=warning]100[/c], le prochain sort lancé est entièrement [c=mana]gratuit[/c].");
         passifsVoies.put("Voie de la Violence",
-                "Le lancement d'un sort octroie des effets d'[c=warning]Inspiration[/c] ou d'[c=purple]Expiration[/c] supplémentaires.");
+                "Lancer un sort octroie une charge d'[c=warning]Inspiration[/c] ou d'[c=power]Expiration[/c] selon le sort :\n[ul][li][c=warning]Inspiration[/c] : [c=crit]+2% Critique[/c] par cumul (max 5)[/li][li][c=power]Expiration[/c] : [c=power]+2 Puissance[/c] par cumul (max 10)[/li][/ul]Attention : Lancer un sort d'une affinité consomme tous les cumuls de l'autre. Les cumuls sont perdus si aucun sort de la Voie n'est lancé pendant le tour.");
 
         String[] voies = { "Voie de la Raison", "Voie de la Sûreté", "Voie de Trahison", "Voie de la Consolidation",
                 "Voie de la Conviction", "Voie de la Création", "Voie de la Destruction", "Voie de la Violence" };
@@ -231,13 +231,13 @@ public class WebSpellCreationController {
         for (Spiritualite sp : spiritualiteRepository.findAll()) {
             if ("Esprit".equals(sp.getNom())) {
                 sp.setPassiveDescription(
-                        "Les sorts de cette spiritualité ne peuvent être lancés que si vous possédez au moins [c=success]20% de vos PV max[/c] ET [c=primary]20% de votre Mana max[/c].");
+                        "Les sorts de cette spiritualité ne peuvent être lancés que si vous possédez au moins [c=pv]20% de vos PV max[/c] ET [c=mana]20% de votre Mana max[/c].");
             } else if ("Ténèbres".equals(sp.getNom())) {
                 sp.setPassiveDescription(
-                        "Sauf pour les sorts de base, le lancement nécessite d'avoir [c=warning]80% ou moins de vos PV max[/c] OU [c=primary]80% ou moins de votre Mana max[/c].");
+                        "Sauf pour les sorts de base, le lancement nécessite d'avoir [c=pv]80% ou moins de vos PV max[/c] OU [c=mana]80% ou moins de votre Mana max[/c].");
             } else if ("Karma".equals(sp.getNom())) {
                 sp.setPassiveDescription(
-                        "Gère une jauge affectée par l'alignement des sorts ([c=purple]Ténèbres[/c], [c=karma]Harmonie[/c], [c=warning]Lumière[/c]).\n[ul][li]À [c=warning]0[/c] ([c=karma]Harmonie[/c]) : octroie des bonus sur vos sorts.[/li][li]À [c=warning]+4 ou -4[/c] : verrouille la magie karmique (sauf sorts d'[c=karma]Harmonie[/c]) pendant [c=warning]6 tours[/c], mais confère un buff massif d'[c=success]Illumination (+Armure/Résist)[/c] ou de [c=danger]Corruption (+Dégâts)[/c].[/li][/ul]Astuce : On peut réduire ce timer en lançant des sorts d'[c=karma]Harmonie[/c].");
+                        "Gère une jauge affectée par l'alignement des sorts ([c=purple]Ténèbres[/c], [c=karma]Harmonie[/c], [c=warning]Lumière[/c]).\n[ul][li]À [c=warning]0[/c] ([c=karma]Harmonie[/c]) : octroie des bonus sur vos sorts.[/li][li]À [c=warning]+4 ou -4[/c] : verrouille la magie karmique (sauf sorts d'[c=karma]Harmonie[/c]) pendant [c=warning]6 tours[/c], mais confère un buff massif d'[c=armor]Illumination (+Armure/Résist)[/c] ou de [c=power]Corruption (+Dégâts)[/c].[/li][/ul]Astuce : On peut réduire ce timer en lançant des sorts d'[c=karma]Harmonie[/c].");
             }
             spiritualiteRepository.save(sp);
         }
