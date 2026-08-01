@@ -1,5 +1,6 @@
 import { state } from './state.js';
 import { GLOBAL_STAT_LABELS, GLOBAL_SRC_LABELS } from './constants.js';
+import { getVoieButtonColor, getSpiritButtonColor } from './filters.js';
 
 export function formatStat(stat) {
     return GLOBAL_STAT_LABELS[stat] || stat;

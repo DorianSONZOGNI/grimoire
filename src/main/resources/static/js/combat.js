@@ -1,5 +1,5 @@
 
-import * as ui from './ui.js?v=2';
+import * as ui from './ui.js?v=3';
 import { getSpellEffectsSummaryHtml } from './grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from './filters.js';
 
@@ -128,21 +128,6 @@ function processNewDeathLogs(combatLogs) {
     }
     pageState.lastCombatLogCount = combatLogs.length;
 }
-
-function getSpellColor(sp) {
-    if (sp.voie && sp.voie.nom) {
-        return getVoieButtonColor(sp.voie);
-    }
-    if (sp.spiritualite && sp.spiritualite.nom) {
-        return getSpiritButtonColor(sp.spiritualite);
-    }
-    return '#ffffff';
-}
-
-
-
-
-
 
 function setButtonsProcessing(isProc) {
     const buttons = document.querySelectorAll('.action-btn, .btn');
@@ -3344,7 +3329,7 @@ function renderSpells(spells) {
 }
 
 function renderSpellCard(sp) {
-    const titleColor = getSpellColor(sp);
+    const titleColor = ui.getSpellColor(sp);
 
     const effectsList = sp.effects || [];
     const choiceKeys = [...new Set(effectsList.map(e => e.requiredChoiceKey).filter(k => k != null))];

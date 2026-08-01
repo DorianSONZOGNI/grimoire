@@ -571,57 +571,7 @@ window.closeCreateEqModal = function () {
     resetEqForm();
 }
 
-function resetEqForm() {
-    document.getElementById('eqName').value = '';
-    document.getElementById('eqHp').value = 0;
-    document.getElementById('eqMana').value = 0;
-    document.getElementById('eqPower').value = 0;
-    document.getElementById('eqStr').value = 0;
-    document.getElementById('eqArmor').value = 0;
-    document.getElementById('eqRes').value = 0;
-    document.getElementById('eqSpeed').value = 0;
-    document.getElementById('eqCrit').value = 0;
-    if (document.getElementById('eqAvailableInShop')) {
-        document.getElementById('eqAvailableInShop').checked = false;
-    }
-    document.getElementById('eqRegenHp').value = 0;
-    document.getElementById('eqRegenMana').value = 0;
-    if (document.getElementById('eqConsumableHpPercent')) document.getElementById('eqConsumableHpPercent').value = 0;
-    if (document.getElementById('eqConsumableManaPercent')) document.getElementById('eqConsumableManaPercent').value = 0;
-    if (document.getElementById('eqConsumableMissingHpPercent')) document.getElementById('eqConsumableMissingHpPercent').value = 0;
-    if (document.getElementById('eqConsumableMissingManaPercent')) document.getElementById('eqConsumableMissingManaPercent').value = 0;
-    if (document.getElementById('eqBaseWeight')) document.getElementById('eqBaseWeight').value = 0;
 
-    const catInput = document.getElementById('eqConsumableCategory');
-    if (catInput) {
-        catInput.value = 'AUTRE';
-        document.getElementById('eqConsumableCategoryLabel').innerHTML = '<span class="material-symbols-outlined cs-icon text-muted">inventory_2</span> Autre';
-    }
-
-    // Reset Rarity
-    const rarityInput = document.getElementById('eqRarity');
-    if (rarityInput) {
-        rarityInput.value = 'COMMUN';
-        document.getElementById('eqRarityLabel').innerHTML = '<span class="cs-icon font-bold text-muted">C</span> Commun';
-        const row = document.getElementById('eqSpecialEffectRow');
-        if (row) row.style.display = 'none';
-    }
-
-    // Reset Special Effect
-    const effectInput = document.getElementById('eqSpecialEffect');
-    if (effectInput) {
-        effectInput.value = 'NONE';
-        document.getElementById('eqSpecialEffectLabel').innerHTML = '<span class="material-symbols-outlined cs-icon text-muted">not_interested</span> Aucun';
-        document.getElementById('eqSpecialEffectValue').value = 0;
-    }
-
-    // Reset Slot
-    const slotInput = document.getElementById('eqSlot');
-    if (slotInput) {
-        slotInput.value = '';
-        document.getElementById('eqSlotLabel').innerHTML = 'Choisir un slot...';
-    }
-}
 
 window.editEquipment = function (id) {
     pageState.editingEquipmentId = id;
@@ -947,38 +897,7 @@ window.submitEquipment = async function () {
     }
 }
 
-function getFormEquipmentData() {
-    const slot = document.getElementById('eqSlot').value;
-    const rarity = document.getElementById('eqRarity').value;
-    const specialEffect = document.getElementById('eqSpecialEffect').value;
-    const specialEffectValue = parseInt(document.getElementById('eqSpecialEffectValue').value) || 0;
 
-    return {
-        name: document.getElementById('eqName').value,
-        availableInShop: document.getElementById('eqAvailableInShop') ? document.getElementById('eqAvailableInShop').checked : false,
-        slot,
-        bonusHealthMax: parseInt(document.getElementById('eqHp').value) || 0,
-        bonusManaMax: parseInt(document.getElementById('eqMana').value) || 0,
-        bonusPower: parseInt(document.getElementById('eqPower').value) || 0,
-        bonusStrength: parseInt(document.getElementById('eqStr').value) || 0,
-        bonusArmor: parseInt(document.getElementById('eqArmor').value) || 0,
-        bonusResistance: parseInt(document.getElementById('eqRes').value) || 0,
-        bonusSpeed: parseInt(document.getElementById('eqSpeed').value) || 0,
-        bonusCrit: parseInt(document.getElementById('eqCrit').value) || 0,
-        regenHealthPerTurn: parseInt(document.getElementById('eqRegenHp').value) || 0,
-        regenManaPerTurn: parseInt(document.getElementById('eqRegenMana').value) || 0,
-        consumableHpPercent: document.getElementById('eqConsumableHpPercent') ? (parseInt(document.getElementById('eqConsumableHpPercent').value) || 0) : 0,
-        consumableManaPercent: document.getElementById('eqConsumableManaPercent') ? (parseInt(document.getElementById('eqConsumableManaPercent').value) || 0) : 0,
-        consumableMissingHpPercent: document.getElementById('eqConsumableMissingHpPercent') ? (parseInt(document.getElementById('eqConsumableMissingHpPercent').value) || 0) : 0,
-        consumableMissingManaPercent: document.getElementById('eqConsumableMissingManaPercent') ? (parseInt(document.getElementById('eqConsumableMissingManaPercent').value) || 0) : 0,
-        baseWeight: document.getElementById('eqBaseWeight') ? (parseFloat(document.getElementById('eqBaseWeight').value) || 0.0) : 0.0,
-        consumableCategory: document.getElementById('eqConsumableCategory') ? document.getElementById('eqConsumableCategory').value : 'AUTRE',
-        rarity,
-        specialEffect,
-        specialEffectValue,
-        isAnomalie: false
-    };
-}
 
 window.updateWeightUI = async function () {
     const slot = document.getElementById('eqSlot').value;
