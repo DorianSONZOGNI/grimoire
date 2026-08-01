@@ -2429,7 +2429,7 @@ function updateUI(data) {
 
 function getBossBuffsHtml(c) {
     if (!c.passiveStates) return '';
-    
+
     let html = '';
     const hasArmorBuff = (c.activeBuffs || c.buffs || []).some(b => b.statAffected === 'ARMURE' && b.flatValue === c.passiveStates['BOSS_BUFF_ARMOR']);
     const hasResistBuff = (c.activeBuffs || c.buffs || []).some(b => b.statAffected === 'RESISTANCE' && b.flatValue === c.passiveStates['BOSS_BUFF_RESIST']);
@@ -2440,7 +2440,7 @@ function getBossBuffsHtml(c) {
     if (c.passiveStates['BOSS_BUFF_RESIST'] && hasResistBuff) html += `<span title="+${c.passiveStates['BOSS_BUFF_RESIST']} Résistance (Boss Buff)" style="cursor: help; font-size: 0.75rem; background: rgba(217, 70, 239, 0.15); color: #d946ef; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(217, 70, 239, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined text-sm">health_and_safety</span>+${c.passiveStates['BOSS_BUFF_RESIST']} Rés.</span>`;
     if (c.passiveStates['BOSS_BUFF_BURN']) html += `<span class="text-error" title="Brûlure sur coup (Boss Buff)" style="cursor: help; font-size: 0.75rem; background: rgba(239, 68, 68, 0.15); padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined text-sm">local_fire_department</span>Brûlure</span>`;
     if (c.passiveStates['BOSS_BUFF_POISON']) html += `<span title="Poison sur coup (Boss Buff)" style="cursor: help; font-size: 0.75rem; background: rgba(34, 197, 94, 0.15); color: #22c55e; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(34, 197, 94, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined text-sm">pest_control</span>Poison</span>`;
-    
+
     return html;
 }
 
@@ -2801,7 +2801,7 @@ function generateFighterHtml(c, isHero, skipBadges = false) {
         else if (vNom.includes('sûreté') || vNom.includes('surete')) avatarName = 'surete';
         else if (vNom.includes('trahison')) avatarName = 'trahison';
         else if (vNom.includes('violence')) avatarName = 'violence';
-        
+
         if (avatarName) {
             avatarHtml = `<img src="/images/avatar/${avatarName}.png" alt="${avatarName}" style="width: 64px; height: 64px; object-fit: contain; margin-top: -12px; margin-bottom: -12px; margin-right: 0.1rem; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));">`;
         }
@@ -2834,7 +2834,7 @@ function generateFighterHtml(c, isHero, skipBadges = false) {
 function renderEnemies(enemies) {
     const container = document.getElementById('enemiesContainer');
     container.innerHTML = '';
-    
+
     const bossBuffsContainer = document.getElementById('bossBuffsContainer');
     if (bossBuffsContainer) {
         bossBuffsContainer.innerHTML = '';
@@ -2880,7 +2880,7 @@ function renderEnemies(enemies) {
         }
 
         const isBoss = pMonster.passiveStates && Object.keys(pMonster.passiveStates).some(k => k.startsWith('BOSS_BUFF_'));
-        
+
         if (isBoss && bossBuffsContainer && !bossBuffsRendered) {
             const bossHtml = getBossBuffsHtml(pMonster);
             if (bossHtml) {
@@ -3064,7 +3064,7 @@ function renderBuffsHtml(buffList, motList, hotList) {
                 else if (sa === 'DAMAGE_TAKEN_BRUT') statIcon = { icon: 'explosion', color: '#b91c1c' };
                 else if (sa === 'DAMAGE_GIVEN_MAGIC') statIcon = { icon: 'auto_awesome', color: '#a855f7' };
                 else if (sa === 'DAMAGE_GIVEN_PHYSIC') statIcon = { icon: 'swords', color: '#f43f5e' };
-                else if (sa === 'DAMAGE_GIVEN_BRUT') statIcon = { icon: 'bloodtype', color: '#ef4444' };
+                else if (sa === 'DAMAGE_GIVEN_BRUT') statIcon = { icon: 'bloodtype', color: '#790000ff' };
                 else if (sa === 'DAMAGE_GIVEN_MAGIC_TO_SHIELD') statIcon = { icon: 'gavel', color: '#d946ef' };
                 else if (sa === 'DAMAGE_GIVEN_PHYSIC_TO_SHIELD') statIcon = { icon: 'gavel', color: '#f43f5e' };
                 else if (sa.includes('DAMAGE_TAKEN')) statIcon = { icon: 'explosion', color: '#ef4444' };

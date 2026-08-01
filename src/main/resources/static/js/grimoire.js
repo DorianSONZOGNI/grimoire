@@ -271,7 +271,7 @@ export function getSpellEffectsSummaryHtml(sp) {
                 const dt = (e.damageType || 'MAGIC').toLowerCase();
                 let dtColor = '#a855f7';
                 if (dt === 'physic') dtColor = '#f43f5e';
-                if (dt === 'brut') dtColor = '#ef4444';
+                if (dt === 'brut') dtColor = '#790000ff';
 
                 const dtStr = dt === 'magic' ? 'Magiques' : (dt === 'physic' ? 'Physiques' : 'Bruts');
                 const dtHtml = `<span class="font-bold" style="color: ${dtColor};">${dtStr}</span>`;
@@ -422,7 +422,7 @@ export function getSpellEffectsSummaryHtml(sp) {
                     else if (sa === 'DAMAGE_TAKEN_BRUT') statIcon = { icon: 'explosion', color: '#b91c1c' };
                     else if (sa === 'DAMAGE_GIVEN_MAGIC') statIcon = { icon: 'auto_awesome', color: '#a855f7' };
                     else if (sa === 'DAMAGE_GIVEN_PHYSIC') statIcon = { icon: 'swords', color: '#f43f5e' };
-                    else if (sa === 'DAMAGE_GIVEN_BRUT') statIcon = { icon: 'bloodtype', color: '#ef4444' };
+                    else if (sa === 'DAMAGE_GIVEN_BRUT') statIcon = { icon: 'bloodtype', color: '#ffffff' };
                     else if (sa === 'DAMAGE_GIVEN_MAGIC_TO_SHIELD') statIcon = { icon: 'gavel', color: '#d946ef' };
                     else if (sa === 'DAMAGE_GIVEN_PHYSIC_TO_SHIELD') statIcon = { icon: 'gavel', color: '#f43f5e' };
                     else if (sa.includes('DAMAGE_TAKEN')) statIcon = { icon: 'explosion', color: '#ef4444' };

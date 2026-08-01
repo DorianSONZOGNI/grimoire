@@ -213,7 +213,7 @@ export function makeCustomSelect(selectIdOrElement) {
 
     const getIconInfo = (id, optionOrText) => {
         const text = typeof optionOrText === 'string' ? optionOrText : (optionOrText.text || '');
-        
+
         if (id === 'mutationSelect' || id === 'filterMutation') {
             if (text.includes('Aucune') || text.includes('Neutre') || text.includes('Toutes') || text.includes('Sans')) return { icon: 'trip_origin', color: '#94a3b8' };
             if (typeof optionOrText === 'object' && optionOrText.dataset && optionOrText.dataset.icon) {
@@ -250,7 +250,7 @@ export function makeCustomSelect(selectIdOrElement) {
             const t = text.toLowerCase();
             if (t.includes('magic') || t.includes('magique')) return { icon: 'auto_awesome', color: '#a855f7' };
             if (t.includes('physic') || t.includes('physique')) return { icon: 'swords', color: '#f43f5e' };
-            if (t.includes('brut')) return { icon: 'bloodtype', color: '#ef4444' };
+            if (t.includes('brut')) return { icon: 'bloodtype', color: '#790000ff' };
             return { icon: 'star', color: '#94a3b8' };
         }
         if (id === 'filterEffect') {
@@ -518,7 +518,7 @@ export function showGlobalTooltip(el) {
     if (!dataEl) return;
 
     tooltip.innerHTML = dataEl.innerHTML;
-    
+
     const elColor = el.getAttribute('data-color');
     if (elColor) {
         tooltip.style.borderColor = elColor;
@@ -536,7 +536,7 @@ export function showGlobalTooltip(el) {
             titleEl.style.borderBottom = 'none';
         }
     }
-    
+
     tooltip.style.display = 'flex';
     tooltip.style.maxHeight = '60vh';
     tooltip.style.overflowY = 'auto';
@@ -544,7 +544,7 @@ export function showGlobalTooltip(el) {
 
     const rect = el.getBoundingClientRect();
     const tooltipHeight = tooltip.offsetHeight;
-    
+
     let topPos = rect.top - tooltipHeight - 8;
     if (topPos < 10) {
         topPos = rect.bottom + 8;
