@@ -353,6 +353,23 @@ public class CombatService {
                     } else {
                         lootedOthers.add(clone);
                     }
+                } else if (roll <= proba && entry.getSpecialItemName() != null && !entry.getSpecialItemName().trim().isEmpty()) {
+                    String anomalyName = entry.getSpecialItemName();
+                    generation.grimoire.entity.Anomalie template = anomalieRepository.findFirstByNameAndIsTemplateTrueOrderByIdAsc(anomalyName);
+                    if (template != null) {
+                        generation.grimoire.entity.Anomalie clone = new generation.grimoire.entity.Anomalie();
+                        clone.setName(template.getName());
+                        clone.setDescription(template.getDescription());
+                        clone.setSpiritualite(template.getSpiritualite());
+                        clone.setCategory(template.getCategory());
+                        clone.setLevel(template.getLevel() != null ? template.getLevel() : 1);
+                        clone.setMagicObject(template.isMagicObject());
+                        clone.setTemplate(false);
+                        clone.setOwnerUsername(user.getUsername());
+                        clone.setUser(user);
+                        anomalieRepository.save(clone);
+                        session.addLog("Vous avez obtenu l'item : " + clone.getName() + " !");
+                    }
                 }
             }
         }
@@ -1088,7 +1105,7 @@ public class CombatService {
 
                 session.addLog("Vous avez ouvert la porte... Un puissant Boss vous attend !");
             } else if ("ITEM".equals(type)) {
-                session.addLog("Vous avez ouvert la porte et trouvé une salle remplie de trésors !");
+                session.addLog("Vous avez ouvert la porte et trouvé de l'équipement !");
                 room.setType(generation.grimoire.enumeration.RoomType.TREASURE);
                 room.setEventSubType(null);
                 room.setTreasureGold(0);
@@ -1109,12 +1126,46 @@ public class CombatService {
                     room.setAltarRewardEquipment(eq);
                 }
                 room.setEventText("Un autel mystique (" + spirituality + ") réclame une offrande magique.");
+                room.setLootTable(null);
             } else if ("TRESOR".equals(type)) {
-                session.addLog("Vous avez ouvert la porte et trouvé une montagne d'or !");
-                room.setType(generation.grimoire.enumeration.RoomType.TREASURE);
-                room.setEventSubType(null);
-                room.setTreasureGold(100);
-                room.setTreasureExp(50);
+                long anomalieId = selectedOutcome.path("treasureAnomalieId").asLong(0);
+                String anomalyName = null;
+                
+                if (anomalieId > 0) {
+                    generation.grimoire.entity.Anomalie template = anomalieRepository.findById(anomalieId).orElse(null);
+                    if (template != null) {
+                        generation.grimoire.entity.Anomalie clone = new generation.grimoire.entity.Anomalie();
+                        clone.setName(template.getName());
+                        clone.setDescription(template.getDescription());
+                        clone.setSpiritualite(template.getSpiritualite());
+                        clone.setCategory(template.getCategory());
+                        clone.setLevel(template.getLevel() != null ? template.getLevel() : 1);
+                        clone.setMagicObject(template.isMagicObject());
+                        clone.setTemplate(false);
+                        
+                        AppUser user = null;
+                        if (!session.getPlayers().isEmpty()) {
+                            user = session.getPlayers().get(0).getUser();
+                        }
+                        
+                        if (user != null) {
+                            clone.setOwnerUsername(user.getUsername());
+                            clone.setUser(user);
+                            anomalieRepository.save(clone);
+                            anomalyName = clone.getName();
+                            session.addLog("Vous avez obtenu l'item : " + anomalyName + " !");
+                        }
+                    }
+                }
+                
+                if (anomalyName != null) {
+                    session.addLog("Derrière la porte, vous découvrez l'anomalie : " + anomalyName + " !");
+                    room.setEventText("Derrière la porte, vous découvrez l'anomalie : " + anomalyName + " !");
+                } else {
+                    session.addLog("Vous avez ouvert la porte... mais le trésor a disparu.");
+                    room.setEventText("Vous avez ouvert la porte... mais le trésor a disparu.");
+                }
+                session.setRoomEventCompleted(true);
             } else if ("PIEGE".equals(type)) {
                 session.addLog("Vous avez ouvert la porte... et déclenché un piège mortel !");
                 room.setEventSubType(generation.grimoire.enumeration.EventSubType.PIEGE);
@@ -1123,6 +1174,7 @@ public class CombatService {
                 room.setTrapHasRopeOption(selectedOutcome.path("trapHasRopeOption").asBoolean(false));
                 room.setTrapDamageHpPct(selectedOutcome.path("trapDamageHpPct").asInt(0));
                 room.setTrapDamageManaPct(selectedOutcome.path("trapDamageManaPct").asInt(0));
+                room.setLootTable(null);
                 room.setTrapDamageHpFixed(selectedOutcome.path("trapDamageHpFixed").asInt(0));
                 room.setTrapDamageManaFixed(selectedOutcome.path("trapDamageManaFixed").asInt(0));
             } else {
@@ -1414,7 +1466,8 @@ public class CombatService {
                     List<Personnage> allAllies = session.getPlayers().stream().filter(pl -> pl.getHealthCurrent() > 0)
                             .toList();
                     List<Personnage> allEnemies = session.getEnemies().stream().map(m -> m.getAsPersonnage()).toList();
-                    spellService.tickChanneling(p, channelingTarget, p.getChannelingChoiceKey(), p.getChannelingAlly(), allAllies,
+                    spellService.tickChanneling(p, channelingTarget, p.getChannelingChoiceKey(), p.getChannelingAlly(),
+                            allAllies,
                             allEnemies);
                 }
             });
@@ -1507,7 +1560,8 @@ public class CombatService {
                                 .toList();
                         List<Personnage> allEnemies = session.getPlayers().stream()
                                 .filter(pl -> pl.getHealthCurrent() > 0).toList();
-                        spellService.tickChanneling(mp, cTarget, mp.getChannelingChoiceKey(), mp.getChannelingAlly(), allAllies,
+                        spellService.tickChanneling(mp, cTarget, mp.getChannelingChoiceKey(), mp.getChannelingAlly(),
+                                allAllies,
                                 allEnemies);
                     } else {
                         List<Personnage> alivePlayers = session.getPlayers().stream()
@@ -2086,7 +2140,8 @@ public class CombatService {
         }
 
         // Rule B: Si un sort banal ou une attaque a déjà été lancé ce tour
-        // (sauf pendant une canalisation, où seuls les sorts instantanés sont autorisés — déjà filtré par Rule A)
+        // (sauf pendant une canalisation, où seuls les sorts instantanés sont autorisés
+        // — déjà filtré par Rule A)
         if (p.isBanalSpellCastThisTurn() && p.getRemainingChannelingTurns() == 0) {
             return SpellAvailability.blocked(spell.getId(), "ACTION_LIMIT",
                     "Action majeure déjà effectuée ce tour (les sorts instantanés doivent être lancés avant)");

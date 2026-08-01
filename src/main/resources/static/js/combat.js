@@ -1679,21 +1679,28 @@ function updateUI(data) {
                             }
 
                             chestLogs.forEach(log => {
-                                const itemNameMatch = log.match(/Vous avez trouvé un objet : (.*?)(?: !| et il a été ajouté| \(envoyé)/);
+                                const itemNameMatch = log.match(/Vous avez (?:obtenu l'item|trouvé un objet)\s*:\s*(.*?)(?: !| et il a été ajouté| \(envoyé)/);
                                 if (itemNameMatch) {
                                     const eqName = itemNameMatch[1];
                                     let eq = null;
+                                    let an = null;
                                     if (data.currentRoom && data.currentRoom.lootTable) {
                                         const entry = data.currentRoom.lootTable.find(l => l.equipment && l.equipment.name === eqName);
                                         if (entry) eq = entry.equipment;
                                     }
-                                    const slotInfo = eq ? (getSlotInfo(eq) || { icon: 'help', color: '#94a3b8' }) : { icon: 'swords', color: '#f59e0b' };
-                                    const rarityColor = eq ? (RARITY_COLORS[typeof eq.rarity === 'object' ? eq.rarity?.name : eq.rarity] || '#ef4444') : '#f59e0b';
+                                    if (!eq && Array.isArray(window.allAnomaliesCombat)) {
+                                        an = window.allAnomaliesCombat.find(a => a.name === eqName);
+                                    }
+                                    
+                                    const slotInfo = eq ? (getSlotInfo(eq) || { icon: 'help', color: '#94a3b8' }) : (an ? { icon: (an.category ? (getCategoryIcon(an.category)) : 'star'), color: getSpiritualiteColor(an.spiritualite) } : { icon: 'swords', color: '#f59e0b' });
+                                    const rarityColor = eq ? (RARITY_COLORS[typeof eq.rarity === 'object' ? eq.rarity?.name : eq.rarity] || '#ef4444') : (an ? getSpiritualiteColor(an.spiritualite) : '#f59e0b');
                                     const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
 
                                     let tooltipDataHtml = '';
                                     if (eq && typeof generateEquipmentTooltipHTML === 'function') {
                                         tooltipDataHtml = generateEquipmentTooltipHTML(eq);
+                                    } else if (an && typeof getAnomalyTooltipHTML === 'function') {
+                                        tooltipDataHtml = getAnomalyTooltipHTML(an, eqName);
                                     }
                                     const tooltipAttrs = tooltipDataHtml ? 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"' : '';
 
@@ -2287,12 +2294,54 @@ function updateUI(data) {
 
                     if (data.roomEventCompleted) {
                         icon.style.color = '#94a3b8'; // Grisé
-                        desc.innerHTML = 'Vous avez ouvert la porte... mais il n\'y a absolument rien derrière.';
+                        desc.innerHTML = data.currentRoom.eventText || 'Vous avez ouvert la porte... mais il n\'y a absolument rien derrière.';
                         btnOpen.style.display = 'none';
                         btnCont.style.display = 'block';
                         btnCont.textContent = 'Continuer';
                         btnCont.onclick = nextRoom;
-                        lootContainer.style.display = 'none';
+                        
+                        let anomalyHtml = '';
+                        if (data.combatLog) {
+                            for (let i = data.combatLog.length - 1; i >= Math.max(0, data.combatLog.length - 5); i--) {
+                                const log = data.combatLog[i];
+                                const match = log.match(/Vous avez obtenu l'item : (.*?) !/);
+                                if (match && Array.isArray(window.allAnomaliesCombat)) {
+                                    const eqName = match[1];
+                                    const an = window.allAnomaliesCombat.find(a => a.name === eqName);
+                                    if (an) {
+                                        icon.textContent = 'crown';
+                                        icon.style.color = '#f59e0b';
+                                        title.textContent = 'Trésor';
+                                        
+                                        const spColor = getSpiritualiteColor(an.spiritualite);
+                                        const catIcon = an.category ? getCategoryIcon(an.category) : 'star';
+                                        let tooltipDataHtml = '';
+                                        if (typeof getAnomalyTooltipHTML === 'function') {
+                                            tooltipDataHtml = getAnomalyTooltipHTML(an, eqName);
+                                        }
+                                        const tooltipAttrs = tooltipDataHtml ? 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"' : '';
+                                        
+                                        anomalyHtml += `
+                                            <div class="flex-center relative" ${tooltipAttrs} style="cursor: ${tooltipDataHtml ? 'help' : 'default'}; background: rgba(0, 0, 0, 0.4); border: 1px solid ${spColor}80; padding: 0.8rem 1rem; border-radius: 8px; color: ${spColor}; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; transform: scale(0.8);">
+                                                ${tooltipDataHtml ? `<template class="tooltip-data">${tooltipDataHtml}</template>` : ''}
+                                                <span class="material-symbols-outlined" style="color: ${spColor};">${catIcon}</span> <span style="${tooltipDataHtml ? `border-bottom: 1px dashed ${spColor};` : ''}">${eqName}</span>
+                                            </div>
+                                        `;
+                                    }
+                                }
+                            }
+                        }
+                        
+                        if (anomalyHtml) {
+                            lootContainer.style.display = 'flex';
+                            lootContainer.innerHTML = `
+                                <div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; width: 100%; margin-top: 1rem;">
+                                    ${anomalyHtml}
+                                </div>
+                            `;
+                        } else {
+                            lootContainer.style.display = 'none';
+                        }
                     } else {
                         icon.style.color = '#fbbf24'; // Jaune
                         desc.innerHTML = data.currentRoom.eventText || 'Une porte mystérieuse se dresse devant vous...';
