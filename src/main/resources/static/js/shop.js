@@ -272,9 +272,9 @@ window.openBuyModal = function (id, isConsumable = false) {
             let aTemp = pageState.allAnomalies.find(a => a.name === n);
             const catIcon = aTemp && aTemp.category ? getCategoryIcon(aTemp.category) : 'star';
             const spiriColor = aTemp && aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
-            
+
             const tooltipData = getAnomalyTooltipHTML(aTemp, n);
-            
+
             anos.push(`<span class="anomaly-badge tooltip-trigger" style="border: 1px solid ${spiriColor}; background: linear-gradient(${spiriColor}25, ${spiriColor}25), #1e293b; color: ${spiriColor}; padding: 0.2rem 0.4rem; border-radius: 6px; display: inline-flex; align-items: center; gap: 0.3rem; font-weight: 600; cursor: help;" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}"><span class="material-symbols-outlined align-middle" style="font-size: 1rem; color: ${spiriColor};">${catIcon}</span> ${q}x ${n}</span>`);
         }
         if (priceHtml !== '') priceHtml += ` <span class="text-muted" style="margin: 0 0.4rem;">et</span> `;
@@ -379,5 +379,31 @@ window.hideTooltipFixed = function () {
     if (tooltip) tooltip.style.display = 'none';
 };
 
-
-
+window.addEventListener('authLoaded', () => {
+    if (!window.currentUser) {
+        document.querySelector('.vault-main').style.display = 'none';
+        document.querySelector('.vault-main').insertAdjacentHTML('beforebegin', `
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 80vh; text-align: center; color: white;">
+                        <span class="material-symbols-outlined" style="font-size: 4rem; color: #ef4444; margin-bottom: 1rem;">lock</span>
+                        <h1 style="font-size: 2rem; margin-bottom: 1rem; font-family: 'Outfit', sans-serif;">Veuillez vous connecter</h1>
+                        <p style="color: #94a3b8; max-width: 400px; margin-bottom: 2rem; font-size: 1.1rem;">
+                            Vous devez être connecté pour accéder à cette page.
+                        </p>
+                    </div>
+                `);
+    } else if (!window.currentUser.unlockedShop) {
+        document.querySelector('.vault-main').style.display = 'none';
+        document.querySelector('.vault-main').insertAdjacentHTML('beforebegin', `
+                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 80vh; text-align: center; color: white;">
+                        <span class="material-symbols-outlined" style="font-size: 4rem; color: #ef4444; margin-bottom: 1rem;">lock</span>
+                        <h1 style="font-size: 2rem; margin-bottom: 1rem; font-family: 'Outfit', sans-serif;">Boutique Bloquée</h1>
+                        <p style="color: #94a3b8; max-width: 400px; margin-bottom: 2rem; font-size: 1.1rem;">
+                            Vous devez débloquer la Boutique pour y accéder. L'accès coûte 75 or.
+                        </p>
+                        <button onclick="promptUnlockFeature('shop', 'Boutique', 75)" style="background: #10b981; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 8px; font-weight: 600; font-family: 'Outfit', sans-serif; cursor: pointer; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); transition: all 0.2s;">
+                            Débloquer pour 75 <span class="material-symbols-outlined" style="font-size: 1.2rem; vertical-align: middle; color: #fcd34d;">monetization_on</span>
+                        </button>
+                    </div>
+                `);
+    }
+});
