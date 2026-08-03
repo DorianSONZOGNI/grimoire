@@ -72,8 +72,9 @@ function generateStandHtml(eq) {
     const priceStr = eq.shopPrice !== undefined ? (eq.shopPrice % 1 === 0 ? eq.shopPrice : eq.shopPrice.toFixed(1)) : '?';
     const oldPriceStr = eq.originalPrice !== undefined ? (eq.originalPrice % 1 === 0 ? eq.originalPrice : eq.originalPrice.toFixed(1)) : '';
 
-    const rName = typeof eq.rarity === 'object' ? eq.rarity?.name : eq.rarity;
-    const rarityColor = RARITY_COLORS[rName] || (isConsumable ? '#c084fc' : '#ef4444');
+    const rName = getRarityName(eq.rarity);
+    let rarityColor = getRarityColor(rName);
+    if (rarityColor === '#ef4444' && isConsumable) rarityColor = '#c084fc';
     const promoBadge = isPromo ? `<div class="text-xs font-bold absolute" style="top: -10px; right: -10px; background: #ef4444; color: white; padding: 0.2rem 0.5rem; border-radius: 8px; transform: rotate(15deg); box-shadow: 0 4px 6px rgba(0,0,0,0.3);">-20%</div>` : '';
     const oldPriceHtml = isPromo ? `<span class="text-xs text-error" style="text-decoration: line-through; opacity: 0.7;">${oldPriceStr}</span>` : '';
 
@@ -209,7 +210,7 @@ function renderSpecials() {
 
     if (discountItem) {
         const rarity = discountItem.rarity || 'COMMUN';
-        const color = RARITY_COLORS[rarity] || '#ef4444';
+        const color = getRarityColor(rarity);
 
         let r = 239, g = 68, b = 68;
         if (color === '#94a3b8') { r = 148; g = 163; b = 184; }

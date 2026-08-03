@@ -645,7 +645,7 @@ function renderRooms() {
                     const eq = pageState.allEquipments.find(x => x.id === loot.equipmentId);
                     if (eq) {
                         const slotInfo = getSlotInfo(eq);
-                        const rarityColor = RARITY_COLORS[typeof eq.rarity === 'object' ? eq.rarity.name : eq.rarity] || '#ef4444';
+                        const rarityColor = getRarityColor(eq.rarity);
                         const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
                         lootHtml += `
                             <div class="flex-between" style="align-items: center; background: rgba(0,0,0,0.3); padding: 0.4rem 0.8rem; border-radius: 4px;">
@@ -667,7 +667,7 @@ function renderRooms() {
             `;
             pageState.allEquipments.forEach(eq => {
                 const slotInfo = getSlotInfo(eq);
-                const rarityColor = RARITY_COLORS[typeof eq.rarity === 'object' ? eq.rarity.name : eq.rarity] || '#ef4444';
+                const rarityColor = getRarityColor(eq.rarity);
                 const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
                 lootHtml += `<div class="custom-option" onclick="selectLootOption(${rIndex}, ${eq.id}, '${eq.name.replace(/'/g, "\\'")}', '${slotInfo.icon}', '${slotInfo.color}', '${rarityColor}', '${slotInfo.extraClass || ''}')"><span class="material-symbols-outlined cs-icon${extraClass}" style="color: ${slotInfo.color};">${slotInfo.icon}</span> <span style="color: ${rarityColor};">${eq.name}</span></div>`;
             });
@@ -853,7 +853,7 @@ function renderRooms() {
                             const eq = pageState.allEquipments.find(x => x.id === loot.equipmentId);
                             if (eq) {
                                 const slotInfo = getSlotInfo(eq);
-                                const rarityColor = RARITY_COLORS[typeof eq.rarity === 'object' ? eq.rarity.name : eq.rarity] || '#ef4444';
+                                const rarityColor = getRarityColor(eq.rarity);
                                 const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
                                 nameHtml = `<span class="material-symbols-outlined${extraClass}" style="font-size:1rem; color:${slotInfo.color};">${slotInfo.icon}</span> <span style="color:${rarityColor};">${eq.name}</span>`;
                             } else {
@@ -922,7 +922,7 @@ function renderRooms() {
                 `;
                 pageState.allEquipments.forEach(eq => {
                     const slotInfo = getSlotInfo(eq);
-                    const rarityColor = RARITY_COLORS[typeof eq.rarity === 'object' ? eq.rarity.name : eq.rarity] || '#ef4444';
+                    const rarityColor = getRarityColor(eq.rarity);
                     const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
                     shopHtml += `<div class="custom-option" onclick="selectLootOption(${rIndex}, ${eq.id}, '${eq.name.replace(/'/g, "\\'")}', '${slotInfo.icon}', '${slotInfo.color}', '${rarityColor}', '${slotInfo.extraClass || ''}')"><span class="material-symbols-outlined cs-icon${extraClass}" style="color: ${slotInfo.color};">${slotInfo.icon}</span> <span style="color: ${rarityColor};">${eq.name}</span></div>`;
                 });
@@ -1041,7 +1041,7 @@ function renderRooms() {
                         const eq = pageState.allEquipments.find(x => x.id === loot.equipmentId);
                         if (eq) {
                             const slotInfo = getSlotInfo(eq);
-                            const rarityColor = RARITY_COLORS[typeof eq.rarity === 'object' ? eq.rarity.name : eq.rarity] || '#ef4444';
+                            const rarityColor = getRarityColor(eq.rarity);
                             const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
                             doorLootHtml += `
                                 <div class="flex-between" style="align-items: center; background: rgba(0,0,0,0.3); padding: 0.4rem 0.8rem; border-radius: 4px;">
@@ -1063,7 +1063,7 @@ function renderRooms() {
                 `;
                 pageState.allEquipments.forEach(eq => {
                     const slotInfo = getSlotInfo(eq);
-                    const rarityColor = RARITY_COLORS[typeof eq.rarity === 'object' ? eq.rarity.name : eq.rarity] || '#ef4444';
+                    const rarityColor = getRarityColor(eq.rarity);
                     const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
                     doorLootHtml += `<div class="custom-option" onclick="selectLootOption(${rIndex}, ${eq.id}, '${eq.name.replace(/'/g, "\\'")}', '${slotInfo.icon}', '${slotInfo.color}', '${rarityColor}', '${slotInfo.extraClass || ''}')"><span class="material-symbols-outlined cs-icon${extraClass}" style="color: ${slotInfo.color};">${slotInfo.icon}</span> <span style="color: ${rarityColor};">${eq.name}</span></div>`;
                 });
@@ -1221,7 +1221,7 @@ function renderRooms() {
                                 const getEqHtml = (eq) => {
                                     if (!eq) return 'Choisir un objet';
                                     const slotInfo = getSlotInfo(eq);
-                                    const rarityColor = RARITY_COLORS[typeof eq.rarity === 'object' ? eq.rarity.name : eq.rarity] || '#94a3b8';
+                                    const rarityColor = getRarityColor(eq.rarity);
                                     const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
                                     return `<span style="display:flex; align-items:center; gap:0.4rem;"><span class="material-symbols-outlined${extraClass}" style="font-size:1.1rem; color:${slotInfo.color};">${slotInfo.icon}</span> <span style="color:${rarityColor};">${eq.name}</span></span>`;
                                 };
@@ -1519,8 +1519,8 @@ async function loadEquipments() {
         // Sort by rarity, then name
         const rarityOrder = { 'MAUDIT': 1, 'RELIQUE': 2, 'EPIQUE': 3, 'LEGENDAIRE': 4, 'MYTHIQUE': 5, 'RARE': 6, 'INHABITUEL': 7, 'COMMUN': 8 };
         pageState.allEquipments = Array.from(map.values()).sort((a, b) => {
-            const rNameA = typeof a.rarity === 'object' ? a.rarity?.name : a.rarity;
-            const rNameB = typeof b.rarity === 'object' ? b.rarity?.name : b.rarity;
+            const rNameA = getRarityName(a.rarity);
+            const rNameB = getRarityName(b.rarity);
             const rA = rarityOrder[rNameA] ?? 100;
             const rB = rarityOrder[rNameB] ?? 100;
             if (rA !== rB) return rA - rB;

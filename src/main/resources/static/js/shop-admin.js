@@ -232,8 +232,8 @@ function renderVault() {
     const slotOrder = { 'CASQUE': 1, 'PLASTRON': 2, 'ARME_DEUX_MAINS': 3, 'ARME_GAUCHE': 4, 'ARME_DROITE': 5, 'ANNEAU_GAUCHE': 6, 'ANNEAU_DROIT': 7, 'BOTTES': 8, 'CAPE': 9, 'CONSOMMABLE': 10 };
 
     let sorted = [...pageState.allEquipments].sort((a, b) => {
-        const rNameA = typeof a.rarity === 'object' ? a.rarity?.name : a.rarity;
-        const rNameB = typeof b.rarity === 'object' ? b.rarity?.name : b.rarity;
+        const rNameA = getRarityName(a.rarity);
+        const rNameB = getRarityName(b.rarity);
         const rA = rarityOrder[rNameA || 'COMMUN'] ?? 100;
         const rB = rarityOrder[rNameB || 'COMMUN'] ?? 100;
         if (rA !== rB) return rA - rB;
@@ -529,7 +529,7 @@ window.editEquipment = function (id) {
 
     // Rarity Setup
     const rarityInput = document.getElementById('eqRarity');
-    const eqRarityName = eq.rarity && typeof eq.rarity === 'object' ? eq.rarity.name : eq.rarity;
+    const eqRarityName = getRarityName(eq.rarity);
     if (rarityInput && eqRarityName) {
         rarityInput.value = eqRarityName;
         const option = document.querySelector(`.custom-option.rarity-${eqRarityName}`);
