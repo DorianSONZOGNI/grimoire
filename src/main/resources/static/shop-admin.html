@@ -26,18 +26,14 @@
 
     <div class="vault-main">
         <div class="panel">
-            <div
-                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 1rem;">
-                <div style="display: flex; align-items: center; gap: 1rem;">
-                    <div
-                        style="width: 48px; height: 48px; border-radius: 12px; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.2); display: flex; align-items: center; justify-content: center; color: #f59e0b;">
+            <div class="page-header">
+                <div class="page-header-content">
+                    <div class="page-header-icon warning">
                         <span class="material-symbols-outlined" style="font-size: 1.8rem;">settings</span>
                     </div>
                     <div>
-                        <h2 style="margin: 0; font-family: 'Outfit', sans-serif; font-size: 1.4rem; color: #fff;">
-                            Gestion de la Boutique</h2>
-                        <div style="font-size: 0.85rem; color: var(--text-muted); margin-top: 0.2rem;">Création et
-                            gestion des articles pour la boutique</div>
+                        <h2 class="page-header-title" style="font-size: 1.4rem;">Gestion de la Boutique</h2>
+                        <div class="page-header-subtitle">Création et gestion des articles pour la boutique</div>
                     </div>
                 </div>
 
@@ -51,17 +47,8 @@
             </div>
 
             <div id="vaultGrid" style="margin-top: 1rem;">
-                <div style="color: #94a3b8; font-style: italic;">Chargement des articles...</div>
+                <div class="text-muted font-italic">Chargement des articles...</div>
             </div>
-        </div>
-    </div>
-
-    <!-- Notification Toast -->
-    <div id="vaultNotif"
-        style="position: fixed; bottom: 2rem; right: 2rem; background: #10b981; color: #fff; padding: 1rem 2rem; border-radius: 12px; font-weight: 500; font-family: 'Outfit', sans-serif; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3); transform: translateY(100px); opacity: 0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 9999;">
-        <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <span class="material-symbols-outlined" style="font-size: 1.2rem;">info</span>
-            <span id="vaultNotifText">Action réussie</span>
         </div>
     </div>
 

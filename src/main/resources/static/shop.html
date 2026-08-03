@@ -26,55 +26,37 @@
 
     <div class="vault-main">
         <div class="panel">
-            <div
-                style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1.5rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 1rem;">
-                <div style="display: flex; align-items: center; gap: 1rem;">
-                    <div
-                        style="width: 48px; height: 48px; border-radius: 12px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); display: flex; align-items: center; justify-content: center; color: #10b981;">
+            <div class="page-header">
+                <div class="page-header-content">
+                    <div class="page-header-icon success">
                         <span class="material-symbols-outlined" style="font-size: 1.8rem;">storefront</span>
                     </div>
                     <div>
-                        <h2 style="margin: 0; font-family: 'Outfit', sans-serif; font-size: 1.5rem;">Boutique du Jour
-                        </h2>
-                        <div style="color: #94a3b8; font-size: 0.9rem;">Ces objets changent tous les jours à minuit.
-                        </div>
+                        <h2 class="page-header-title">Boutique du Jour</h2>
+                        <div class="page-header-subtitle">Ces objets changent tous les jours à minuit.</div>
                     </div>
                 </div>
             </div>
 
             <div id="shopGrid" class="shop-showcase">
-                <div style="color: #94a3b8; font-style: italic;">Chargement de la boutique...</div>
+                <div class="text-muted font-italic">Chargement de la boutique...</div>
             </div>
 
-            <div
-                style="display: flex; justify-content: space-between; align-items: center; margin-top: 3rem; margin-bottom: 1.5rem; border-bottom: 1px solid var(--glass-border); padding-bottom: 1rem;">
-                <div style="display: flex; align-items: center; gap: 1rem;">
-                    <div
-                        style="width: 48px; height: 48px; border-radius: 12px; background: rgba(245, 158, 11, 0.1); border: 1px solid rgba(245, 158, 11, 0.3); display: flex; align-items: center; justify-content: center; color: #f59e0b;">
+            <div class="page-header mt-3">
+                <div class="page-header-content">
+                    <div class="page-header-icon warning">
                         <span class="material-symbols-outlined" style="font-size: 1.8rem;">local_offer</span>
                     </div>
                     <div>
-                        <h2 style="margin: 0; font-family: 'Outfit', sans-serif; font-size: 1.5rem;">Offres Spéciales
-                            &amp;
-                            Consomables</h2>
-                        <div style="color: #94a3b8; font-size: 0.9rem;">Promotions et objets utiles pour les
-                            expéditions.</div>
+                        <h2 class="page-header-title">Offres Spéciales &amp; Consomables</h2>
+                        <div class="page-header-subtitle">Promotions et objets utiles pour les expéditions.</div>
                     </div>
                 </div>
             </div>
 
             <div id="specialsGrid" class="shop-showcase">
-                <div style="color: #94a3b8; font-style: italic;">Chargement des offres...</div>
+                <div class="text-muted font-italic">Chargement des offres...</div>
             </div>
-        </div>
-    </div>
-
-    <!-- Notification Toast -->
-    <div id="shopNotif"
-        style="position: fixed; bottom: 2rem; right: 2rem; background: #10b981; color: #fff; padding: 1rem 2rem; border-radius: 12px; font-weight: 500; font-family: 'Outfit', sans-serif; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3); transform: translateY(100px); opacity: 0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 9999;">
-        <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <span class="material-symbols-outlined" style="font-size: 1.2rem;">check_circle</span>
-            <span id="shopNotifText">Action réussie</span>
         </div>
     </div>
 
