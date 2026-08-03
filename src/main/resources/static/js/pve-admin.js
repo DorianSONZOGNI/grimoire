@@ -2705,3 +2705,97 @@ document.addEventListener('click', function (e) {
         document.querySelectorAll('.custom-combobox-menu').forEach(el => el.style.display = 'none');
     }
 });
+
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.custom-select-wrapper')) {
+        document.querySelectorAll('.custom-select-wrapper.open').forEach(w => w.classList.remove('open'));
+    }
+
+    const trigger = e.target.closest('.custom-select-trigger');
+    if (trigger) {
+        const wrapper = trigger.closest('.custom-select-wrapper');
+        document.querySelectorAll('.custom-select-wrapper.open').forEach(w => {
+            if (w !== wrapper) w.classList.remove('open');
+        });
+        if (!trigger.hasAttribute('onclick')) {
+            wrapper.classList.toggle('open');
+        }
+        return;
+    }
+
+    const option = e.target.closest('.custom-option');
+    if (option) {
+        if (!option.hasAttribute('onclick')) {
+            const wrapper = option.closest('.custom-select-wrapper');
+            const hiddenInput = wrapper.querySelector('input[type="hidden"]');
+            const labelEl = wrapper.querySelector('.cs-label');
+
+            hiddenInput.value = option.getAttribute('data-value');
+            labelEl.innerHTML = option.innerHTML;
+            wrapper.classList.remove('open');
+            hiddenInput.dispatchEvent(new Event('change'));
+        }
+    }
+});
+
+// Intercept assignments to dRequiredSecret to update the UI
+const inputEl = document.getElementById('dRequiredSecret');
+if (inputEl) {
+    const originalSet = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+    Object.defineProperty(inputEl, 'value', {
+        set: function (val) {
+            originalSet.call(this, val);
+            const wrapper = this.closest('.custom-select-wrapper');
+            if (wrapper) {
+                const labelEl = wrapper.querySelector('.cs-label');
+                const options = wrapper.querySelectorAll('.custom-option');
+                let found = false;
+                options.forEach(opt => {
+                    if (opt.getAttribute('data-value') === (val || '')) {
+                        labelEl.innerHTML = opt.innerHTML;
+                        found = true;
+                    }
+                });
+                if (!found && val) {
+                    labelEl.innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: #f59e0b;">key</span> ${val}`;
+                } else if (!val && !found) {
+                    labelEl.innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: #64748b;">close</span> Aucun (Optionnel)`;
+                }
+            }
+        },
+        get: function () {
+            return Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').get.call(this);
+        }
+    });
+}
+
+// Intercept assignments to mNativeSecret to update the UI
+const mInputEl = document.getElementById('mNativeSecret');
+if (mInputEl) {
+    const originalSet = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+    Object.defineProperty(mInputEl, 'value', {
+        set: function (val) {
+            originalSet.call(this, val);
+            const wrapper = this.closest('.custom-select-wrapper');
+            if (wrapper) {
+                const labelEl = wrapper.querySelector('.cs-label');
+                const options = wrapper.querySelectorAll('.custom-option');
+                let found = false;
+                options.forEach(opt => {
+                    if (opt.getAttribute('data-value') === (val || '')) {
+                        labelEl.innerHTML = opt.innerHTML;
+                        found = true;
+                    }
+                });
+                if (!found && val) {
+                    labelEl.innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: #f59e0b;">explore</span> ${val}`;
+                } else if (!val && !found) {
+                    labelEl.innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: #64748b;">close</span> Aucun (Optionnel)`;
+                }
+            }
+        },
+        get: function () {
+            return Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').get.call(this);
+        }
+    });
+}
