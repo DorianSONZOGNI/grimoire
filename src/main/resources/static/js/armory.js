@@ -659,7 +659,7 @@ function renderPersonnages() {
                         .filter(s => eq[s.key] && eq[s.key] !== 0)
                         .map(s => `${eq[s.key] > 0 ? '+' : ''}${eq[s.key]}${s.isPercent ? '%' : ''} ${s.label}`)
                         .join(', ');
-                    const rarityName = typeof eq.rarity === 'object' ? eq.rarity?.name : eq.rarity;
+                    const rarityName = getRarityName(eq.rarity);
                     const rarityClass = rarityName ? `rarity-${rarityName}` : '';
                     let effectStar = '';
                     if (eq.specialEffect && eq.specialEffect !== 'NONE') {
@@ -780,7 +780,7 @@ function renderEquipModal() {
                     return `<span class="eq-stat-mini ${isMalus ? 'malus' : ''}" title="${s.label}"><span class="material-symbols-outlined" style="color:${isMalus ? '#ef4444' : s.color}; font-size:0.75rem;">${s.icon}</span>${sign}${val}${suffix}</span>`;
                 })
                 .join('');
-            const rarityName = typeof equipped.rarity === 'object' ? equipped.rarity?.name : equipped.rarity;
+            const rarityName = getRarityName(equipped.rarity);
             const rarityClass = rarityName ? `rarity-${rarityName}` : '';
 
             let specialEffectHtml = '';
@@ -844,8 +844,8 @@ function renderEquipModal() {
                 'MAUDIT': 99
             };
             available.sort((a, b) => {
-                const rA = a.rarity ? rarityOrder[typeof a.rarity === 'object' ? a.rarity.name : a.rarity] || 0 : 0;
-                const rB = b.rarity ? rarityOrder[typeof b.rarity === 'object' ? b.rarity.name : b.rarity] || 0 : 0;
+                const rA = a.rarity ? rarityOrder[getRarityName(a.rarity)] || 0 : 0;
+                const rB = b.rarity ? rarityOrder[getRarityName(b.rarity)] || 0 : 0;
                 if (rA !== rB) return rB - rA;
                 return a.name.localeCompare(b.name);
             });
@@ -854,7 +854,7 @@ function renderEquipModal() {
             const uniqueAvailable = [];
             const seen = new Set();
             for (const item of available) {
-                const rName = item.rarity ? (typeof item.rarity === 'object' ? item.rarity.name : item.rarity) : '';
+                const rName = item.rarity ? (getRarityName(item.rarity)) : '';
                 const key = item.name + '_' + rName;
                 if (!seen.has(key)) {
                     seen.add(key);
@@ -898,7 +898,7 @@ function renderEquipModal() {
                                 </div>`;
                     }
 
-                    const aRarityName = typeof a.rarity === 'object' ? a.rarity?.name : a.rarity;
+                    const aRarityName = getRarityName(eq.rarity);
                     const aRarityLabel = typeof a.rarity === 'object' ? a.rarity?.label : a.rarity;
 
                     const tooltipHtml = `

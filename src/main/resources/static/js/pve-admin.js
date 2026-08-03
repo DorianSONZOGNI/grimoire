@@ -645,7 +645,7 @@ function renderRooms() {
                     const eq = pageState.allEquipments.find(x => x.id === loot.equipmentId);
                     if (eq) {
                         const slotInfo = getSlotInfo(eq);
-                        const rarityColor = RARITY_COLORS[typeof eq.rarity === 'object' ? eq.rarity.name : eq.rarity] || '#ef4444';
+                        const rarityColor = getRarityColor(eq.rarity);
                         const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
                         lootHtml += `
                             <div class="flex-between" style="align-items: center; background: rgba(0,0,0,0.3); padding: 0.4rem 0.8rem; border-radius: 4px;">
@@ -667,7 +667,7 @@ function renderRooms() {
             `;
             pageState.allEquipments.forEach(eq => {
                 const slotInfo = getSlotInfo(eq);
-                const rarityColor = RARITY_COLORS[typeof eq.rarity === 'object' ? eq.rarity.name : eq.rarity] || '#ef4444';
+                const rarityColor = getRarityColor(eq.rarity);
                 const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
                 lootHtml += `<div class="custom-option" onclick="selectLootOption(${rIndex}, ${eq.id}, '${eq.name.replace(/'/g, "\\'")}', '${slotInfo.icon}', '${slotInfo.color}', '${rarityColor}', '${slotInfo.extraClass || ''}')"><span class="material-symbols-outlined cs-icon${extraClass}" style="color: ${slotInfo.color};">${slotInfo.icon}</span> <span style="color: ${rarityColor};">${eq.name}</span></div>`;
             });
@@ -853,7 +853,7 @@ function renderRooms() {
                             const eq = pageState.allEquipments.find(x => x.id === loot.equipmentId);
                             if (eq) {
                                 const slotInfo = getSlotInfo(eq);
-                                const rarityColor = RARITY_COLORS[typeof eq.rarity === 'object' ? eq.rarity.name : eq.rarity] || '#ef4444';
+                                const rarityColor = getRarityColor(eq.rarity);
                                 const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
                                 nameHtml = `<span class="material-symbols-outlined${extraClass}" style="font-size:1rem; color:${slotInfo.color};">${slotInfo.icon}</span> <span style="color:${rarityColor};">${eq.name}</span>`;
                             } else {
@@ -922,7 +922,7 @@ function renderRooms() {
                 `;
                 pageState.allEquipments.forEach(eq => {
                     const slotInfo = getSlotInfo(eq);
-                    const rarityColor = RARITY_COLORS[typeof eq.rarity === 'object' ? eq.rarity.name : eq.rarity] || '#ef4444';
+                    const rarityColor = getRarityColor(eq.rarity);
                     const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
                     shopHtml += `<div class="custom-option" onclick="selectLootOption(${rIndex}, ${eq.id}, '${eq.name.replace(/'/g, "\\'")}', '${slotInfo.icon}', '${slotInfo.color}', '${rarityColor}', '${slotInfo.extraClass || ''}')"><span class="material-symbols-outlined cs-icon${extraClass}" style="color: ${slotInfo.color};">${slotInfo.icon}</span> <span style="color: ${rarityColor};">${eq.name}</span></div>`;
                 });
@@ -1041,7 +1041,7 @@ function renderRooms() {
                         const eq = pageState.allEquipments.find(x => x.id === loot.equipmentId);
                         if (eq) {
                             const slotInfo = getSlotInfo(eq);
-                            const rarityColor = RARITY_COLORS[typeof eq.rarity === 'object' ? eq.rarity.name : eq.rarity] || '#ef4444';
+                            const rarityColor = getRarityColor(eq.rarity);
                             const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
                             doorLootHtml += `
                                 <div class="flex-between" style="align-items: center; background: rgba(0,0,0,0.3); padding: 0.4rem 0.8rem; border-radius: 4px;">
@@ -1063,7 +1063,7 @@ function renderRooms() {
                 `;
                 pageState.allEquipments.forEach(eq => {
                     const slotInfo = getSlotInfo(eq);
-                    const rarityColor = RARITY_COLORS[typeof eq.rarity === 'object' ? eq.rarity.name : eq.rarity] || '#ef4444';
+                    const rarityColor = getRarityColor(eq.rarity);
                     const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
                     doorLootHtml += `<div class="custom-option" onclick="selectLootOption(${rIndex}, ${eq.id}, '${eq.name.replace(/'/g, "\\'")}', '${slotInfo.icon}', '${slotInfo.color}', '${rarityColor}', '${slotInfo.extraClass || ''}')"><span class="material-symbols-outlined cs-icon${extraClass}" style="color: ${slotInfo.color};">${slotInfo.icon}</span> <span style="color: ${rarityColor};">${eq.name}</span></div>`;
                 });
@@ -1221,7 +1221,7 @@ function renderRooms() {
                                 const getEqHtml = (eq) => {
                                     if (!eq) return 'Choisir un objet';
                                     const slotInfo = getSlotInfo(eq);
-                                    const rarityColor = RARITY_COLORS[typeof eq.rarity === 'object' ? eq.rarity.name : eq.rarity] || '#94a3b8';
+                                    const rarityColor = getRarityColor(eq.rarity);
                                     const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
                                     return `<span style="display:flex; align-items:center; gap:0.4rem;"><span class="material-symbols-outlined${extraClass}" style="font-size:1.1rem; color:${slotInfo.color};">${slotInfo.icon}</span> <span style="color:${rarityColor};">${eq.name}</span></span>`;
                                 };
@@ -1519,8 +1519,8 @@ async function loadEquipments() {
         // Sort by rarity, then name
         const rarityOrder = { 'MAUDIT': 1, 'RELIQUE': 2, 'EPIQUE': 3, 'LEGENDAIRE': 4, 'MYTHIQUE': 5, 'RARE': 6, 'INHABITUEL': 7, 'COMMUN': 8 };
         pageState.allEquipments = Array.from(map.values()).sort((a, b) => {
-            const rNameA = typeof a.rarity === 'object' ? a.rarity?.name : a.rarity;
-            const rNameB = typeof b.rarity === 'object' ? b.rarity?.name : b.rarity;
+            const rNameA = getRarityName(a.rarity);
+            const rNameB = getRarityName(b.rarity);
             const rA = rarityOrder[rNameA] ?? 100;
             const rB = rarityOrder[rNameB] ?? 100;
             if (rA !== rB) return rA - rB;
@@ -2705,3 +2705,97 @@ document.addEventListener('click', function (e) {
         document.querySelectorAll('.custom-combobox-menu').forEach(el => el.style.display = 'none');
     }
 });
+
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.custom-select-wrapper')) {
+        document.querySelectorAll('.custom-select-wrapper.open').forEach(w => w.classList.remove('open'));
+    }
+
+    const trigger = e.target.closest('.custom-select-trigger');
+    if (trigger) {
+        const wrapper = trigger.closest('.custom-select-wrapper');
+        document.querySelectorAll('.custom-select-wrapper.open').forEach(w => {
+            if (w !== wrapper) w.classList.remove('open');
+        });
+        if (!trigger.hasAttribute('onclick')) {
+            wrapper.classList.toggle('open');
+        }
+        return;
+    }
+
+    const option = e.target.closest('.custom-option');
+    if (option) {
+        if (!option.hasAttribute('onclick')) {
+            const wrapper = option.closest('.custom-select-wrapper');
+            const hiddenInput = wrapper.querySelector('input[type="hidden"]');
+            const labelEl = wrapper.querySelector('.cs-label');
+
+            hiddenInput.value = option.getAttribute('data-value');
+            labelEl.innerHTML = option.innerHTML;
+            wrapper.classList.remove('open');
+            hiddenInput.dispatchEvent(new Event('change'));
+        }
+    }
+});
+
+// Intercept assignments to dRequiredSecret to update the UI
+const inputEl = document.getElementById('dRequiredSecret');
+if (inputEl) {
+    const originalSet = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+    Object.defineProperty(inputEl, 'value', {
+        set: function (val) {
+            originalSet.call(this, val);
+            const wrapper = this.closest('.custom-select-wrapper');
+            if (wrapper) {
+                const labelEl = wrapper.querySelector('.cs-label');
+                const options = wrapper.querySelectorAll('.custom-option');
+                let found = false;
+                options.forEach(opt => {
+                    if (opt.getAttribute('data-value') === (val || '')) {
+                        labelEl.innerHTML = opt.innerHTML;
+                        found = true;
+                    }
+                });
+                if (!found && val) {
+                    labelEl.innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: #f59e0b;">key</span> ${val}`;
+                } else if (!val && !found) {
+                    labelEl.innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: #64748b;">close</span> Aucun (Optionnel)`;
+                }
+            }
+        },
+        get: function () {
+            return Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').get.call(this);
+        }
+    });
+}
+
+// Intercept assignments to mNativeSecret to update the UI
+const mInputEl = document.getElementById('mNativeSecret');
+if (mInputEl) {
+    const originalSet = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+    Object.defineProperty(mInputEl, 'value', {
+        set: function (val) {
+            originalSet.call(this, val);
+            const wrapper = this.closest('.custom-select-wrapper');
+            if (wrapper) {
+                const labelEl = wrapper.querySelector('.cs-label');
+                const options = wrapper.querySelectorAll('.custom-option');
+                let found = false;
+                options.forEach(opt => {
+                    if (opt.getAttribute('data-value') === (val || '')) {
+                        labelEl.innerHTML = opt.innerHTML;
+                        found = true;
+                    }
+                });
+                if (!found && val) {
+                    labelEl.innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: #f59e0b;">explore</span> ${val}`;
+                } else if (!val && !found) {
+                    labelEl.innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: #64748b;">close</span> Aucun (Optionnel)`;
+                }
+            }
+        },
+        get: function () {
+            return Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').get.call(this);
+        }
+    });
+}

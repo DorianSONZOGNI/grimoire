@@ -704,21 +704,7 @@
         </div>
     </div>
 
-    <!-- Notifications -->
-    <div id="vaultNotif" class="armory-notif"
-        style="position: fixed; bottom: 20px; right: 20px; background: #10b981; color: #fff; padding: 1rem 1.5rem; border-radius: 8px; font-weight: 500; font-family: 'Inter', sans-serif; box-shadow: 0 4px 12px rgba(0,0,0,0.3); transform: translateY(100px); opacity: 0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 9999; display: flex; align-items: center; gap: 0.5rem; border: 1px solid rgba(255,255,255,0.2);">
-        <span class="material-symbols-outlined">info</span>
-        <span id="vaultNotifText">Notification</span>
-    </div>
-    <style>
-        .armory-notif.show {
-            transform: translateY(0);
-            opacity: 1;
-        }
-
-        .armory-notif.error {
-            background: #ef4444;
-        }
+    <!-- Notifications handled by ui.js -->
 
         /* Delete Confirmation Modal */
         .vault-modal-overlay {

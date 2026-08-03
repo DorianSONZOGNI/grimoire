@@ -394,8 +394,8 @@ function renderCauldron(r) {
     if (resultType === 'EQUIPMENT' || resultType === 'CONSUMABLE') {
         const eqTemp = pageState.allEquipmentTemplates.find(e => e.name === r.rewardName);
         if (eqTemp && eqTemp.rarity) {
-            const rName = typeof eqTemp.rarity === 'object' ? eqTemp.rarity.name : eqTemp.rarity;
-            if (window.RARITY_COLORS && window.RARITY_COLORS[rName]) resultColor = window.RARITY_COLORS[rName];
+            const rName = getRarityName(eqTemp.rarity);
+            resultColor = getRarityColor(rName);
         }
     } else if (resultType === 'ANOMALY') {
         const anomTemp = pageState.allAnomalyTemplates.find(a => a.name === r.rewardName);
@@ -855,8 +855,8 @@ function buildEquipmentTooltipHTML(name, isConsumable = false) {
     if (!statsHtml && !isConsumable) return '';
 
     const slotInfo = getSlotInfo(temp);
-    const rName = typeof temp.rarity === 'object' ? temp.rarity?.name : temp.rarity;
-    const rarityColor = window.RARITY_COLORS ? (window.RARITY_COLORS[rName] || '#fbbf24') : '#fbbf24';
+    const rName = getRarityName(temp.rarity);
+    const rarityColor = getRarityColor(rName);
 
     let html = `
                 <div style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:${rarityColor}; border-bottom:1px solid ${rarityColor}40; padding-bottom:4px; display: flex; justify-content: space-between; align-items: center;">
