@@ -499,7 +499,8 @@
 }
 
 .custom-select-options::-webkit-scrollbar,
-.custom-scrollbar::-webkit-scrollbar {
+.custom-scrollbar::-webkit-scrollbar,
+.custom-options::-webkit-scrollbar {
     width: 6px;
 }
 

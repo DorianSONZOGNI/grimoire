@@ -273,11 +273,6 @@
     background: linear-gradient(180deg, rgba(60, 35, 35, 0.15) 0%, rgba(30, 41, 59, 0.4) 30%);
 }
 
-.custom-select-options::-webkit-scrollbar,
-.custom-options::-webkit-scrollbar {
-    width: 6px;
-}
-
 .custom-select-options::-webkit-scrollbar-track,
 .custom-options::-webkit-scrollbar-track {
     background: transparent;
