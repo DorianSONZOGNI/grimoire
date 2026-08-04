@@ -878,33 +878,6 @@
     box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
 }
 
-.custom-select-wrapper.open .custom-select-options {
-    display: block;
-}
-
-.custom-select-wrapper.open .cs-arrow {
-    transform: rotate(180deg);
-}
-
-.custom-option {
-    padding: 0.4rem 0.6rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.8rem;
-    transition: background 0.2s ease;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.02);
-}
-
-.custom-option:last-child {
-    border-bottom: none;
-}
-
-.custom-option:hover {
-    background: rgba(245, 158, 11, 0.15);
-}
-
 .cs-icon {
     font-size: 1rem;
 }

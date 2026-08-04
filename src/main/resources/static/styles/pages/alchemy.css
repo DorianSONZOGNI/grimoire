@@ -143,22 +143,3 @@
     color: var(--text-muted);
     line-height: 1.6;
 }
-
-.custom-select-wrapper.open .custom-select-options {
-    display: block;
-}
-
-.custom-option {
-    padding: 0.4rem 0.6rem;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    gap: 0.5rem;
-    font-size: 0.8rem;
-    transition: background 0.2s ease;
-    border-bottom: 1px solid rgba(255, 255, 255, 0.02);
-}
-
-.custom-option:hover {
-    background: rgba(16, 185, 129, 0.15);
-}
