@@ -174,7 +174,7 @@ function addAnomalyRow(selectedName = '', qty = 1) {
                 <span class="cs-label flex-center" style="color: #cbd5e1; font-size: 0.85rem; gap: 0.3rem;">${displayLabel}</span>
                 <span class="material-symbols-outlined" style="color: #64748b; font-size: 1.1rem;">expand_more</span>
             </div>
-            <div class="custom-select-options custom-options" style="max-height: 150px; overflow-y: auto;">
+            <div class="custom-select-options custom-options">
                 ${optionsHtml}
             </div>
             <input type="hidden" class="anomaly-select-hidden" value="${selectedName}">

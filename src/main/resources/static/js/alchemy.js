@@ -476,7 +476,7 @@ function buildCustomSelect(containerDiv, options, hiddenInputClass, hiddenInputI
                         <div class="cs-label" style="flex: 1; margin-right: 0.5rem; display: flex; align-items: center;">${selectedOption.html}</div>
                         <span class="material-symbols-outlined" style="font-size:1.2rem;">expand_more</span>
                     </div>
-                    <div class="custom-select-options" style="display:none; position:absolute; top:calc(100% + 4px); left:0; right:0; background:rgba(15,23,42,0.95); border:1px solid var(--glass-border); border-radius:6px; z-index:100; max-height:180px; overflow-y:auto; box-shadow:0 10px 25px rgba(0,0,0,0.5); font-size:0.9rem;">
+                    <div class="custom-select-options">
                         ${optionsHTML}
                     </div>
                     <input type="hidden" class="${hiddenInputClass}" id="${hiddenInputId}" value="${selectedOption.value}">

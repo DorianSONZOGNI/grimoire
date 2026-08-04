@@ -475,7 +475,7 @@ function renderRooms() {
                             <span class="cs-label" id="room_select_label_${rIndex}"><span class="material-symbols-outlined cs-icon text-muted">pest_control</span> Sélectionner un monstre...</span>
                             <span class="material-symbols-outlined">expand_more</span>
                         </div>
-                        <div class="custom-select-options" id="room_select_options_${rIndex}" style="max-height: 200px; overflow-y: auto;">
+                        <div class="custom-select-options" id="room_select_options_${rIndex}">
                             ${optionsHtml}
                         </div>
                         <input type="hidden" id="room_monster_select_${rIndex}" value="">
@@ -514,7 +514,7 @@ function renderRooms() {
                             <span class="cs-label" id="room_select_label_${rIndex}"><span class="material-symbols-outlined cs-icon text-muted">pest_control</span> Sélectionner un boss/monstre...</span>
                             <span class="material-symbols-outlined">expand_more</span>
                         </div>
-                        <div class="custom-select-options" id="room_select_options_${rIndex}" style="max-height: 200px; overflow-y: auto;">
+                        <div class="custom-select-options" id="room_select_options_${rIndex}">
                             ${optionsHtml}
                         </div>
                         <input type="hidden" id="room_monster_select_${rIndex}" value="">
@@ -663,7 +663,7 @@ function renderRooms() {
                             <span class="cs-label" id="room_loot_label_${rIndex}"><span class="material-symbols-outlined cs-icon text-muted">category</span> Objet...</span>
                             <span class="material-symbols-outlined">expand_more</span>
                         </div>
-                        <div class="custom-select-options" id="room_loot_options_${rIndex}" style="max-height: 200px; overflow-y: auto;">
+                        <div class="custom-select-options" id="room_loot_options_${rIndex}">
             `;
             pageState.allEquipments.forEach(eq => {
                 const slotInfo = getSlotInfo(eq);
@@ -774,7 +774,7 @@ function renderRooms() {
                                         <span class="cs-label" id="room_alt_reward_label_${rIndex}">${selHtml}</span>
                                         <span class="material-symbols-outlined">expand_more</span>
                                     </div>
-                                    <div class="custom-select-options" style="max-height: 200px; overflow-y: auto;">
+                                    <div class="custom-select-options">
                                         ${pageState.allAnomalies.map(a => {
                                 let color = getSpiritualiteColor(a.spiritualite);
                                 const icon = getCategoryIcon(a.category);
@@ -805,7 +805,7 @@ function renderRooms() {
                                     <span class="cs-label" id="room_alt_req_label_${rIndex}">${selHtml}</span>
                                     <span class="material-symbols-outlined">expand_more</span>
                                 </div>
-                                <div class="custom-select-options" style="max-height: 200px; overflow-y: auto;">
+                                <div class="custom-select-options">
                                     ${pageState.allAnomalies.map(a => {
                                 let color = getSpiritualiteColor(a.spiritualite);
                                 const icon = getCategoryIcon(a.category);
@@ -918,7 +918,7 @@ function renderRooms() {
                                     <span class="cs-label" id="room_loot_label_${rIndex}"><span class="material-symbols-outlined cs-icon text-muted">category</span> Objet...</span>
                                     <span class="material-symbols-outlined">expand_more</span>
                                 </div>
-                                <div class="custom-select-options" id="room_loot_options_${rIndex}" style="max-height: 200px; overflow-y: auto;">
+                                <div class="custom-select-options" id="room_loot_options_${rIndex}">
                 `;
                 pageState.allEquipments.forEach(eq => {
                     const slotInfo = getSlotInfo(eq);
@@ -937,7 +937,7 @@ function renderRooms() {
                                     <span class="cs-label" id="room_merchant_special_label_${rIndex}"><span class="material-symbols-outlined cs-icon text-muted">diamond</span> Choisir un item spécial...</span>
                                     <span class="material-symbols-outlined">expand_more</span>
                                 </div>
-                                <div class="custom-select-options" id="room_merchant_special_options_${rIndex}" style="max-height: 200px; overflow-y: auto;">
+                                <div class="custom-select-options" id="room_merchant_special_options_${rIndex}">
                                     <div class="custom-option" onclick="selectMerchantSpecial(${rIndex}, '', 'Choisir un item spécial...')"><span class="material-symbols-outlined cs-icon text-muted">diamond</span> Choisir un item spécial...</div>
                                     ${pageState.allAnomalies.map(a => {
                     let color = getSpiritualiteColor(a.spiritualite);
@@ -960,7 +960,7 @@ function renderRooms() {
                                         <span class="cs-label" id="room_merchant_cost_label_${rIndex}"><span class="material-symbols-outlined cs-icon text-muted">diamond</span> Sélectionner (Optionnel)</span>
                                         <span class="material-symbols-outlined">expand_more</span>
                                     </div>
-                                    <div class="custom-select-options" id="room_merchant_cost_options_${rIndex}" style="max-height: 200px; overflow-y: auto;">
+                                    <div class="custom-select-options" id="room_merchant_cost_options_${rIndex}">
                                         <div class="custom-option" onclick="selectMerchantCost(${rIndex}, '', 'Sélectionner (Optionnel)')"><span class="material-symbols-outlined cs-icon text-muted">diamond</span> Sélectionner (Optionnel)</div>
                                         ${pageState.allAnomalies.map(a => {
                     let color = getSpiritualiteColor(a.spiritualite);
@@ -1059,7 +1059,7 @@ function renderRooms() {
                                 <span class="cs-label" id="room_loot_label_${rIndex}"><span class="material-symbols-outlined cs-icon text-muted">category</span> Objet...</span>
                                 <span class="material-symbols-outlined">expand_more</span>
                             </div>
-                            <div class="custom-select-options" id="room_loot_options_${rIndex}" style="max-height: 200px; overflow-y: auto;">
+                            <div class="custom-select-options" id="room_loot_options_${rIndex}">
                 `;
                 pageState.allEquipments.forEach(eq => {
                     const slotInfo = getSlotInfo(eq);
@@ -1119,7 +1119,7 @@ function renderRooms() {
                                             <span class="cs-label" id="room_door_boss_label_${rIndex}_${oIndex}"><span class="material-symbols-outlined cs-icon text-muted">pest_control</span> Sélectionner un boss...</span>
                                             <span class="material-symbols-outlined">expand_more</span>
                                         </div>
-                                        <div class="custom-select-options" id="room_door_boss_options_${rIndex}_${oIndex}" style="max-height: 200px; overflow-y: auto;">
+                                        <div class="custom-select-options" id="room_door_boss_options_${rIndex}_${oIndex}">
                                             ${pageState.allMonsters.map(m => `
                                                 <div class="custom-option" onclick="selectDoorBossOption(${rIndex}, ${oIndex}, ${m.id}, '${m.name.replace(/'/g, "\\'")}', ${m.level || 1})">
                                                     ${getSecretIconOnlyHtml(m)}<span class="material-symbols-outlined cs-icon text-error">pest_control</span> ${m.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${m.level || 1})</span>
@@ -1234,7 +1234,7 @@ function renderRooms() {
                                             </span>
                                             <span class="material-symbols-outlined">expand_more</span>
                                         </div>
-                                        <div class="custom-select-options" id="altar_rewardval_options_${rIndex}_${oIndex}" style="max-height: 200px; overflow-y: auto;">
+                                        <div class="custom-select-options" id="altar_rewardval_options_${rIndex}_${oIndex}">
                                             ${pageState.allEquipments.map(eq => `
                                                 <div class="custom-option" onclick="updateAltarField(${rIndex}, ${oIndex}, 'altarRewardValue', ${eq.id})">
                                                     ${getEqHtml(eq)}
@@ -1319,7 +1319,7 @@ function renderRooms() {
                                             </span>
                                             <span class="material-symbols-outlined">expand_more</span>
                                         </div>
-                                        <div class="custom-select-options" id="altar_treasure_options_${rIndex}_${oIndex}" style="max-height: 200px; overflow-y: auto;">
+                                        <div class="custom-select-options" id="altar_treasure_options_${rIndex}_${oIndex}">
                                             ${pageState.allAnomalies.map(an => {
                                 let anColor = getSpiritualiteColor(an.spiritualite);
                                 return `

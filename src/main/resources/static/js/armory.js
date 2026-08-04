@@ -871,7 +871,7 @@ function renderEquipModal() {
                         <span class="cs-label text-muted">Choisir un équipement...</span>
                         <span class="material-symbols-outlined cs-arrow text-muted" style="font-size: 1.1rem;">expand_more</span>
                     </div>
-                    <div class="custom-select-options" style="font-size: 0.85rem;">
+                    <div class="custom-select-options">
                         <div class="custom-option" data-value=""><span class="text-muted">Choisir...</span></div>
                         ${available.map(a => {
                     const aStatsChips = STAT_DEFS

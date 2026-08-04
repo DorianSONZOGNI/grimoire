@@ -215,21 +215,6 @@
     display: inline-block;
 }
 
-.custom-select-options {
-    position: absolute;
-    top: calc(100% + 5px);
-    left: 0;
-    right: 0;
-    background: #0f172a;
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 8px;
-    box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-    z-index: 100;
-    display: none;
-    max-height: 200px;
-    overflow-y: auto;
-}
-
 .custom-select-options::-webkit-scrollbar {
     width: 6px;
 }

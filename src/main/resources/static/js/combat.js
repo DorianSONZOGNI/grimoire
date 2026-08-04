@@ -1932,7 +1932,7 @@ function updateUI(data) {
                                         </span>
                                         <span class="material-symbols-outlined">expand_more</span>
                                     </div>
-                                    <div class="custom-select-options" style="max-height: 200px; overflow-y: auto; text-align: left;">
+                                    <div class="custom-select-options">
                                 `;
                                 eligible.forEach(a => {
                                     let catIcon = a.category ? (getCategoryIcon(a.category)) : 'star';
