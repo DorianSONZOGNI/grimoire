@@ -174,7 +174,7 @@ function addAnomalyRow(selectedName = '', qty = 1) {
                 <span class="cs-label flex-center" style="color: #cbd5e1; font-size: 0.85rem; gap: 0.3rem;">${displayLabel}</span>
                 <span class="material-symbols-outlined" style="color: #64748b; font-size: 1.1rem;">expand_more</span>
             </div>
-            <div class="custom-select-options custom-options" style="max-height: 150px; overflow-y: auto;">
+            <div class="custom-select-options custom-options">
                 ${optionsHtml}
             </div>
             <input type="hidden" class="anomaly-select-hidden" value="${selectedName}">
@@ -202,7 +202,7 @@ function deleteEquipment(id) {
     if (!eq) return;
 
     const weightStr = eq._weight % 1 === 0 ? eq._weight : eq._weight.toFixed(1);
-    
+
     showModal({
         title: "Détruire l'équipement ?",
         body: `Voulez-vous vraiment détruire l'équipement <strong style="color:#fff;">${eq.name}</strong> ?<br><br>Cette action est définitive (pour la template de la boutique).`,
@@ -365,7 +365,7 @@ function renderGrid(equipments) {
                                 let aTemp = window.allAnomalies ? window.allAnomalies.find(a => a.name === n) : null;
                                 const catIcon = aTemp && aTemp.category ? getCategoryIcon(aTemp.category) : 'star';
                                 const spiriColor = aTemp && aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
-                                        const tooltipData = getAnomalyTooltipHTML(aTemp, n);
+                                const tooltipData = getAnomalyTooltipHTML(aTemp, n);
                                 anos.push(`<span class="anomaly-badge" style="border-color: ${spiriColor}; background: ${spiriColor}25; color: ${spiriColor};" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}">
                                         <span class="material-symbols-outlined text-sm align-middle" style="color: ${spiriColor};">${catIcon}</span> ${q}
                                     </span>`);

@@ -44,21 +44,22 @@
                             oninput="renderRecipesList()">
                     </div>
                     <div class="custom-select-wrapper" style="flex: 1; z-index: 20;">
-                        <div class="custom-select-trigger"
-                            style="background: rgba(15,23,42,0.6); padding: 0.6rem; border-radius: 8px;">
+                        <div class="custom-select-trigger">
                             <span class="cs-label" style="font-size: 0.85rem;">Recettes</span>
                             <span class="material-symbols-outlined"
                                 style="color: #64748b; font-size: 1rem;">expand_more</span>
                         </div>
                         <div class="custom-select-options custom-options">
                             <div class="custom-option" data-value="">
-                                <span class="material-symbols-outlined cs-icon text-muted">filter_list_off</span> Recettes
+                                <span class="material-symbols-outlined cs-icon text-muted">filter_list_off</span>
+                                Recettes
                             </div>
                             <div class="custom-option" data-value="GIVE_ANOMALY">
                                 <span class="material-symbols-outlined cs-icon text-purple">star</span> Anomalie
                             </div>
                             <div class="custom-option" data-value="GIVE_CONSUMABLE">
-                                <span class="material-symbols-outlined cs-icon text-success">inventory_2</span> Consommable
+                                <span class="material-symbols-outlined cs-icon text-success">inventory_2</span>
+                                Consommable
                             </div>
                             <div class="custom-option" data-value="GIVE_EQUIPMENT">
                                 <span class="material-symbols-outlined cs-icon text-warning">shield</span> Equipement
@@ -67,7 +68,8 @@
                                 <span class="material-symbols-outlined cs-icon text-warning">key</span> Secret
                             </div>
                             <div class="custom-option" data-value="GIVE_SPIRIT_XP">
-                                <span class="material-symbols-outlined cs-icon text-mana">self_improvement</span> XP Spiritualité
+                                <span class="material-symbols-outlined cs-icon text-mana">self_improvement</span> XP
+                                Spiritualité
                             </div>
                         </div>
                         <input type="hidden" id="filterRewardType" value="" onchange="renderRecipesList()">

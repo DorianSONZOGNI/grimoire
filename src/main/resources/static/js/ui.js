@@ -207,7 +207,7 @@ export function makeCustomSelect(selectIdOrElement) {
     optionsContainer.style.borderRadius = '8px';
     optionsContainer.style.marginTop = '4px';
     optionsContainer.style.zIndex = '999999';
-    optionsContainer.style.maxHeight = '220px';
+    optionsContainer.style.maxHeight = '350px';
     optionsContainer.style.overflowY = 'auto';
     optionsContainer.style.display = 'none';
     optionsContainer.style.boxShadow = '0 10px 25px rgba(0,0,0,0.5)';

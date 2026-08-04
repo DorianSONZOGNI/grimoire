@@ -166,7 +166,7 @@ async function updateRewardNameInput() {
         });
         container.innerHTML = `
                     <label>Nom de l'objet (Résultat)</label>
-                    <div class="custom-select-wrapper" style="width: 100%; z-index: 9;">
+                    <div class="custom-select-wrapper" style="z-index: 9;">
                         <div class="custom-select-trigger" style="background: rgba(15,23,42,0.6); padding: 0.6rem; border-radius: 8px;">
                             <span class="cs-label" style="font-size: 0.9rem;">${displayLabel}</span>
                             <span class="material-symbols-outlined" style="color: #64748b; font-size: 1.1rem;">expand_more</span>
@@ -193,7 +193,7 @@ async function updateRewardNameInput() {
         });
         container.innerHTML = `
                     <label>Nom de l'équipement (Résultat)</label>
-                    <div class="custom-select-wrapper" style="width: 100%; z-index: 9;">
+                    <div class="custom-select-wrapper" style="z-index: 9;">
                         <div class="custom-select-trigger" style="background: rgba(15,23,42,0.6); padding: 0.6rem; border-radius: 8px;">
                             <span class="cs-label" style="font-size: 0.9rem;">${displayLabel}</span>
                             <span class="material-symbols-outlined" style="color: #64748b; font-size: 1.1rem;">expand_more</span>
@@ -214,7 +214,7 @@ async function updateRewardNameInput() {
         });
         container.innerHTML = `
                     <label>Nom de l'objet (Résultat)</label>
-                    <div class="custom-select-wrapper" style="width: 100%; z-index: 9;">
+                    <div class="custom-select-wrapper" style="z-index: 9;">
                         <div class="custom-select-trigger" style="background: rgba(15,23,42,0.6); padding: 0.6rem; border-radius: 8px;">
                             <span class="cs-label" style="font-size: 0.9rem;">${displayLabel}</span>
                             <span class="material-symbols-outlined" style="color: #64748b; font-size: 1.1rem;">expand_more</span>
@@ -228,7 +228,7 @@ async function updateRewardNameInput() {
     } else if (type === 'GIVE_SPIRIT_XP') {
         container.innerHTML = `
                     <label>Nom de l'objet (Résultat)</label>
-                    <div class="custom-select-wrapper disabled" style="width: 100%; opacity: 0.5; pointer-events: none;">
+                    <div class="custom-select-wrapper disabled" style="opacity: 0.5; pointer-events: none;">
                         <div class="custom-select-trigger" style="background: rgba(15,23,42,0.6); padding: 0.6rem; border-radius: 8px;">
                             <span class="cs-label" style="font-size: 0.9rem;">- XP Spiritualité -</span>
                         </div>
@@ -275,7 +275,7 @@ async function updateRewardNameInput() {
 
         container.innerHTML = `
                     <label>Secret / D\u00e9blocage (R\u00e9sultat)</label>
-                    <div class="custom-select-wrapper" style="width: 100%; z-index: 9;">
+                    <div class="custom-select-wrapper" style="z-index: 9;">
                         <div class="custom-select-trigger" style="background: rgba(15,23,42,0.6); padding: 0.6rem; border-radius: 8px;">
                             <span class="cs-label" style="font-size: 0.9rem;">
                                 <span class="material-symbols-outlined cs-icon" style="color: #f59e0b;">key</span>
