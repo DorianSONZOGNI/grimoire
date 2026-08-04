@@ -394,8 +394,8 @@ function renderCauldron(r) {
     if (resultType === 'EQUIPMENT' || resultType === 'CONSUMABLE') {
         const eqTemp = pageState.allEquipmentTemplates.find(e => e.name === r.rewardName);
         if (eqTemp && eqTemp.rarity) {
-            const rName = typeof eqTemp.rarity === 'object' ? eqTemp.rarity.name : eqTemp.rarity;
-            if (window.RARITY_COLORS && window.RARITY_COLORS[rName]) resultColor = window.RARITY_COLORS[rName];
+            const rName = getRarityName(eqTemp.rarity);
+            resultColor = getRarityColor(rName);
         }
     } else if (resultType === 'ANOMALY') {
         const anomTemp = pageState.allAnomalyTemplates.find(a => a.name === r.rewardName);
@@ -471,12 +471,12 @@ function buildCustomSelect(containerDiv, options, hiddenInputClass, hiddenInputI
     });
 
     containerDiv.innerHTML = `
-                <div class="custom-select-wrapper" style="width: 100%; position: relative;">
+                <div class="custom-select-wrapper" style="position: relative;">
                     <div class="custom-select-trigger" style="display:flex; justify-content:space-between; align-items:center; background: rgba(0,0,0,0.5); padding: 0.5rem 0.8rem; border: 1px solid var(--glass-border); color: #fff; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-size:0.9rem;">
                         <div class="cs-label" style="flex: 1; margin-right: 0.5rem; display: flex; align-items: center;">${selectedOption.html}</div>
                         <span class="material-symbols-outlined" style="font-size:1.2rem;">expand_more</span>
                     </div>
-                    <div class="custom-select-options" style="display:none; position:absolute; top:calc(100% + 4px); left:0; right:0; background:rgba(15,23,42,0.95); border:1px solid var(--glass-border); border-radius:6px; z-index:100; max-height:180px; overflow-y:auto; box-shadow:0 10px 25px rgba(0,0,0,0.5); font-size:0.9rem;">
+                    <div class="custom-select-options">
                         ${optionsHTML}
                     </div>
                     <input type="hidden" class="${hiddenInputClass}" id="${hiddenInputId}" value="${selectedOption.value}">
@@ -519,7 +519,6 @@ document.addEventListener('click', (e) => {
     if (!e.target.closest('.custom-select-wrapper')) {
         document.querySelectorAll('.custom-select-wrapper.open').forEach(w => w.classList.remove('open'));
         document.querySelectorAll('.custom-select-options').forEach(m => m.style.display = 'none');
-        document.querySelectorAll('.custom-select-trigger').forEach(t => t.style.borderColor = 'var(--glass-border)');
     }
 
     const trigger = e.target.closest('.custom-select-trigger');
@@ -530,20 +529,15 @@ document.addEventListener('click', (e) => {
                 w.classList.remove('open');
                 const m = w.querySelector('.custom-select-options');
                 if (m) m.style.display = 'none';
-                const t = w.querySelector('.custom-select-trigger');
-                if (t) t.style.borderColor = 'var(--glass-border)';
             }
         });
 
-        // If it's a static select without display block logic hooked in buildCustomSelect
         const optionsMenu = wrapper.querySelector('.custom-select-options');
-        if (optionsMenu && !optionsMenu.style.display || optionsMenu.style.display === 'none') {
+        if (optionsMenu && (!optionsMenu.style.display || optionsMenu.style.display === 'none')) {
             optionsMenu.style.display = 'block';
-            trigger.style.borderColor = '#10b981';
             wrapper.classList.add('open');
         } else if (optionsMenu) {
             optionsMenu.style.display = 'none';
-            trigger.style.borderColor = 'var(--glass-border)';
             wrapper.classList.remove('open');
         }
         return;
@@ -561,8 +555,7 @@ document.addEventListener('click', (e) => {
             wrapper.classList.remove('open');
             const optionsMenu = wrapper.querySelector('.custom-select-options');
             if (optionsMenu) optionsMenu.style.display = 'none';
-            const tr = wrapper.querySelector('.custom-select-trigger');
-            if (tr) tr.style.borderColor = 'var(--glass-border)';
+
             hiddenInput.dispatchEvent(new Event('change'));
         }
     }
@@ -855,8 +848,8 @@ function buildEquipmentTooltipHTML(name, isConsumable = false) {
     if (!statsHtml && !isConsumable) return '';
 
     const slotInfo = getSlotInfo(temp);
-    const rName = typeof temp.rarity === 'object' ? temp.rarity?.name : temp.rarity;
-    const rarityColor = window.RARITY_COLORS ? (window.RARITY_COLORS[rName] || '#fbbf24') : '#fbbf24';
+    const rName = getRarityName(temp.rarity);
+    const rarityColor = getRarityColor(rName);
 
     let html = `
                 <div style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:${rarityColor}; border-bottom:1px solid ${rarityColor}40; padding-bottom:4px; display: flex; justify-content: space-between; align-items: center;">

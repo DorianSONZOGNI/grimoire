@@ -382,33 +382,33 @@ async function submitEquipment() {
         if (res) {
             const data = await res.json();
             showNotif(data.message || 'Équipement créé !');
-        // Reset equipment form
-        document.getElementById('eqName').value = '';
-        document.getElementById('eqHp').value = 0;
-        document.getElementById('eqMana').value = 0;
-        document.getElementById('eqPower').value = 0;
-        document.getElementById('eqStr').value = 0;
-        document.getElementById('eqArmor').value = 0;
-        document.getElementById('eqRes').value = 0;
-        document.getElementById('eqSpeed').value = 0;
-        document.getElementById('eqCrit').value = 0;
-        document.getElementById('eqRegenHp').value = 0;
-        document.getElementById('eqRegenMana').value = 0;
-        if (document.getElementById('eqConsumableHpPercent')) document.getElementById('eqConsumableHpPercent').value = 0;
-        if (document.getElementById('eqConsumableManaPercent')) document.getElementById('eqConsumableManaPercent').value = 0;
-        if (document.getElementById('eqConsumableMissingHpPercent')) document.getElementById('eqConsumableMissingHpPercent').value = 0;
-        if (document.getElementById('eqConsumableMissingManaPercent')) document.getElementById('eqConsumableMissingManaPercent').value = 0;
-        if (document.getElementById('eqBaseWeight')) document.getElementById('eqBaseWeight').value = 0;
-        document.getElementById('eqRarity').value = 'COMMUN';
-        document.getElementById('eqSpecialEffect').value = 'NONE';
-        document.getElementById('eqSpecialEffectValue').value = 0;
-        document.getElementById('eqSpecialEffectRow').style.display = 'none';
+            // Reset equipment form
+            document.getElementById('eqName').value = '';
+            document.getElementById('eqHp').value = 0;
+            document.getElementById('eqMana').value = 0;
+            document.getElementById('eqPower').value = 0;
+            document.getElementById('eqStr').value = 0;
+            document.getElementById('eqArmor').value = 0;
+            document.getElementById('eqRes').value = 0;
+            document.getElementById('eqSpeed').value = 0;
+            document.getElementById('eqCrit').value = 0;
+            document.getElementById('eqRegenHp').value = 0;
+            document.getElementById('eqRegenMana').value = 0;
+            if (document.getElementById('eqConsumableHpPercent')) document.getElementById('eqConsumableHpPercent').value = 0;
+            if (document.getElementById('eqConsumableManaPercent')) document.getElementById('eqConsumableManaPercent').value = 0;
+            if (document.getElementById('eqConsumableMissingHpPercent')) document.getElementById('eqConsumableMissingHpPercent').value = 0;
+            if (document.getElementById('eqConsumableMissingManaPercent')) document.getElementById('eqConsumableMissingManaPercent').value = 0;
+            if (document.getElementById('eqBaseWeight')) document.getElementById('eqBaseWeight').value = 0;
+            document.getElementById('eqRarity').value = 'COMMUN';
+            document.getElementById('eqSpecialEffect').value = 'NONE';
+            document.getElementById('eqSpecialEffectValue').value = 0;
+            document.getElementById('eqSpecialEffectRow').style.display = 'none';
 
-        updateWeightUI(); // Update UI after reset
+            updateWeightUI(); // Update UI after reset
 
-        await loadAllEquipments();
-        renderEquipModal();
-        await loadPersonnages();
+            await loadAllEquipments();
+            renderEquipModal();
+            await loadPersonnages();
         }
     } catch (e) {
         showNotif('Erreur création équipement.', true);
@@ -659,7 +659,7 @@ function renderPersonnages() {
                         .filter(s => eq[s.key] && eq[s.key] !== 0)
                         .map(s => `${eq[s.key] > 0 ? '+' : ''}${eq[s.key]}${s.isPercent ? '%' : ''} ${s.label}`)
                         .join(', ');
-                    const rarityName = typeof eq.rarity === 'object' ? eq.rarity?.name : eq.rarity;
+                    const rarityName = getRarityName(eq.rarity);
                     const rarityClass = rarityName ? `rarity-${rarityName}` : '';
                     let effectStar = '';
                     if (eq.specialEffect && eq.specialEffect !== 'NONE') {
@@ -780,7 +780,7 @@ function renderEquipModal() {
                     return `<span class="eq-stat-mini ${isMalus ? 'malus' : ''}" title="${s.label}"><span class="material-symbols-outlined" style="color:${isMalus ? '#ef4444' : s.color}; font-size:0.75rem;">${s.icon}</span>${sign}${val}${suffix}</span>`;
                 })
                 .join('');
-            const rarityName = typeof equipped.rarity === 'object' ? equipped.rarity?.name : equipped.rarity;
+            const rarityName = getRarityName(equipped.rarity);
             const rarityClass = rarityName ? `rarity-${rarityName}` : '';
 
             let specialEffectHtml = '';
@@ -844,8 +844,8 @@ function renderEquipModal() {
                 'MAUDIT': 99
             };
             available.sort((a, b) => {
-                const rA = a.rarity ? rarityOrder[typeof a.rarity === 'object' ? a.rarity.name : a.rarity] || 0 : 0;
-                const rB = b.rarity ? rarityOrder[typeof b.rarity === 'object' ? b.rarity.name : b.rarity] || 0 : 0;
+                const rA = a.rarity ? rarityOrder[getRarityName(a.rarity)] || 0 : 0;
+                const rB = b.rarity ? rarityOrder[getRarityName(b.rarity)] || 0 : 0;
                 if (rA !== rB) return rB - rA;
                 return a.name.localeCompare(b.name);
             });
@@ -854,7 +854,7 @@ function renderEquipModal() {
             const uniqueAvailable = [];
             const seen = new Set();
             for (const item of available) {
-                const rName = item.rarity ? (typeof item.rarity === 'object' ? item.rarity.name : item.rarity) : '';
+                const rName = item.rarity ? (getRarityName(item.rarity)) : '';
                 const key = item.name + '_' + rName;
                 if (!seen.has(key)) {
                     seen.add(key);
@@ -866,12 +866,12 @@ function renderEquipModal() {
             let availableHtml = '';
             if (available.length > 0) {
                 availableHtml = `
-                <div class="custom-select-wrapper" tabindex="0" style="margin-top: 0.5rem; width: 100%;">
+                <div class="custom-select-wrapper" tabindex="0" style="margin-top: 0.5rem;">
                     <div class="custom-select-trigger text-xs" style="padding: 0.4rem 0.6rem; border-color: rgba(255,255,255,0.1); background: rgba(0,0,0,0.2);">
                         <span class="cs-label text-muted">Choisir un équipement...</span>
                         <span class="material-symbols-outlined cs-arrow text-muted" style="font-size: 1.1rem;">expand_more</span>
                     </div>
-                    <div class="custom-select-options" style="font-size: 0.85rem;">
+                    <div class="custom-select-options">
                         <div class="custom-option" data-value=""><span class="text-muted">Choisir...</span></div>
                         ${available.map(a => {
                     const aStatsChips = STAT_DEFS
@@ -898,7 +898,7 @@ function renderEquipModal() {
                                 </div>`;
                     }
 
-                    const aRarityName = typeof a.rarity === 'object' ? a.rarity?.name : a.rarity;
+                    const aRarityName = getRarityName(a.rarity);
                     const aRarityLabel = typeof a.rarity === 'object' ? a.rarity?.label : a.rarity;
 
                     const tooltipHtml = `
@@ -1070,18 +1070,18 @@ document.addEventListener('click', (e) => {
                 }
             }
         });
-        
+
         const isOpen = wrapper.classList.toggle('open');
         const optionsContainer = wrapper.querySelector('.custom-select-options');
         if (optionsContainer && isOpen) {
             // Position dropdown upwards if there is not enough space below
             const rect = trigger.getBoundingClientRect();
-            
+
             // Check against both window and modal boundary
             const modal = trigger.closest('.equip-modal');
             const modalBottom = modal ? modal.getBoundingClientRect().bottom : window.innerHeight;
             const spaceBelow = modalBottom - rect.bottom;
-            
+
             const dropdownHeight = 220; // matches max-height of optionsContainer
 
             if (spaceBelow < dropdownHeight && rect.top > dropdownHeight) {

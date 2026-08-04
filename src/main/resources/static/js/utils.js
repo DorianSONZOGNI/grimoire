@@ -121,7 +121,7 @@ function calculateWeight(eq) {
     w += (eq.regenHealthPerTurn || 0) * mRegHp;
     w += (eq.regenManaPerTurn || 0) * mRegMana;
 
-    const rarity = typeof eq.rarity === 'object' ? eq.rarity?.name : eq.rarity;
+    const rarity = getRarityName(eq.rarity);
     if (rarity === 'EPIQUE' || rarity === 'RELIQUE' || rarity === 'MAUDIT') {
         const specialEffect = eq.specialEffect;
         const effectVal = eq.specialEffectValue || 0;
@@ -151,16 +151,16 @@ async function showModal(options) {
 
 // ---- Shared constants ----
 
-window.RARITY_COLORS = {
-    COMMUN: '#94a3b8',
-    INHABITUEL: '#22c55e',
-    RARE: '#3b82f6',
-    MYTHIQUE: '#f97316',
-    LEGENDAIRE: '#eab308',
-    EPIQUE: '#ef4444',
-    RELIQUE: '#a855f7',
-    MAUDIT: '#7f1d1d'
-};
+function getRarityName(rarity) {
+    if (!rarity) return null;
+    return typeof rarity === 'object' ? (rarity.name || null) : rarity;
+}
+
+function getRarityColor(rarity) {
+    const rName = getRarityName(rarity);
+    if (!rName) return '#ef4444';
+    return (window.RARITY_COLORS && window.RARITY_COLORS[rName]) ? window.RARITY_COLORS[rName] : '#ef4444';
+}
 
 const CATEGORY_ICONS_FALLBACK = {
     'PIERRE': 'landslide', 'METAL': 'hardware', 'COEUR': 'favorite',

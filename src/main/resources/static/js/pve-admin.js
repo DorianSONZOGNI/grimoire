@@ -475,7 +475,7 @@ function renderRooms() {
                             <span class="cs-label" id="room_select_label_${rIndex}"><span class="material-symbols-outlined cs-icon text-muted">pest_control</span> Sélectionner un monstre...</span>
                             <span class="material-symbols-outlined">expand_more</span>
                         </div>
-                        <div class="custom-select-options" id="room_select_options_${rIndex}" style="max-height: 200px; overflow-y: auto;">
+                        <div class="custom-select-options" id="room_select_options_${rIndex}">
                             ${optionsHtml}
                         </div>
                         <input type="hidden" id="room_monster_select_${rIndex}" value="">
@@ -514,7 +514,7 @@ function renderRooms() {
                             <span class="cs-label" id="room_select_label_${rIndex}"><span class="material-symbols-outlined cs-icon text-muted">pest_control</span> Sélectionner un boss/monstre...</span>
                             <span class="material-symbols-outlined">expand_more</span>
                         </div>
-                        <div class="custom-select-options" id="room_select_options_${rIndex}" style="max-height: 200px; overflow-y: auto;">
+                        <div class="custom-select-options" id="room_select_options_${rIndex}">
                             ${optionsHtml}
                         </div>
                         <input type="hidden" id="room_monster_select_${rIndex}" value="">
@@ -645,7 +645,7 @@ function renderRooms() {
                     const eq = pageState.allEquipments.find(x => x.id === loot.equipmentId);
                     if (eq) {
                         const slotInfo = getSlotInfo(eq);
-                        const rarityColor = RARITY_COLORS[typeof eq.rarity === 'object' ? eq.rarity.name : eq.rarity] || '#ef4444';
+                        const rarityColor = getRarityColor(eq.rarity);
                         const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
                         lootHtml += `
                             <div class="flex-between" style="align-items: center; background: rgba(0,0,0,0.3); padding: 0.4rem 0.8rem; border-radius: 4px;">
@@ -663,11 +663,11 @@ function renderRooms() {
                             <span class="cs-label" id="room_loot_label_${rIndex}"><span class="material-symbols-outlined cs-icon text-muted">category</span> Objet...</span>
                             <span class="material-symbols-outlined">expand_more</span>
                         </div>
-                        <div class="custom-select-options" id="room_loot_options_${rIndex}" style="max-height: 200px; overflow-y: auto;">
+                        <div class="custom-select-options" id="room_loot_options_${rIndex}">
             `;
             pageState.allEquipments.forEach(eq => {
                 const slotInfo = getSlotInfo(eq);
-                const rarityColor = RARITY_COLORS[typeof eq.rarity === 'object' ? eq.rarity.name : eq.rarity] || '#ef4444';
+                const rarityColor = getRarityColor(eq.rarity);
                 const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
                 lootHtml += `<div class="custom-option" onclick="selectLootOption(${rIndex}, ${eq.id}, '${eq.name.replace(/'/g, "\\'")}', '${slotInfo.icon}', '${slotInfo.color}', '${rarityColor}', '${slotInfo.extraClass || ''}')"><span class="material-symbols-outlined cs-icon${extraClass}" style="color: ${slotInfo.color};">${slotInfo.icon}</span> <span style="color: ${rarityColor};">${eq.name}</span></div>`;
             });
@@ -709,7 +709,7 @@ function renderRooms() {
                     </div>
                     <div style="margin-top: 0.75rem;">
                         <label class="text-xs text-muted">Possibilité offerte</label>
-                        <div class="custom-select-wrapper" id="room_alt_type_wrapper_${rIndex}" style="width: 100%; z-index: ${102 - rIndex}; margin: 0; margin-top: 0.2rem;">
+                        <div class="custom-select-wrapper" id="room_alt_type_wrapper_${rIndex}" style="z-index: ${102 - rIndex}; margin: 0; margin-top: 0.2rem;">
                             <div class="custom-select-trigger" onclick="const w = document.getElementById('room_alt_type_wrapper_${rIndex}'); document.querySelectorAll('.custom-select-wrapper.open').forEach(el => { if(el !== w) el.classList.remove('open'); }); w.classList.toggle('open');" style="padding: 0.6rem 1rem; border-radius: 8px;">
                                 <span class="cs-label" id="room_alt_type_label_${rIndex}">
                                     ${altType === 'VIE_XP' ? '<span class="material-symbols-outlined cs-icon text-error">favorite</span> Don de vie et/ou d\'xp' :
@@ -742,7 +742,7 @@ function renderRooms() {
                     </div>
                     <div style="margin-top: 0.75rem; background: rgba(0,0,0,0.2); padding: 0.5rem; border-radius: 4px;">
                         <label class="text-xs" style="color: #fbbf24;">Récompense en échange</label>
-                        <div class="custom-select-wrapper" id="room_alt_reward_type_wrapper_${rIndex}" style="width: 100%; z-index: ${105 - rIndex}; margin: 0; margin-top: 0.2rem; margin-bottom: 0.5rem;">
+                        <div class="custom-select-wrapper" id="room_alt_reward_type_wrapper_${rIndex}" style="z-index: ${105 - rIndex}; margin: 0; margin-top: 0.2rem; margin-bottom: 0.5rem;">
                             <div class="custom-select-trigger" onclick="const w = document.getElementById('room_alt_reward_type_wrapper_${rIndex}'); document.querySelectorAll('.custom-select-wrapper.open').forEach(el => { if(el !== w) el.classList.remove('open'); }); w.classList.toggle('open');" style="padding: 0.6rem 1rem; border-radius: 8px;">
                                 <span class="cs-label" id="room_alt_reward_type_label_${rIndex}">
                                     ${rewType === 'SPIRITUAL_XP' ? '<span class="material-symbols-outlined cs-icon" style="color: #8b5cf6;">blur_on</span> XP de Spiritualité' :
@@ -774,7 +774,7 @@ function renderRooms() {
                                         <span class="cs-label" id="room_alt_reward_label_${rIndex}">${selHtml}</span>
                                         <span class="material-symbols-outlined">expand_more</span>
                                     </div>
-                                    <div class="custom-select-options" style="max-height: 200px; overflow-y: auto;">
+                                    <div class="custom-select-options">
                                         ${pageState.allAnomalies.map(a => {
                                 let color = getSpiritualiteColor(a.spiritualite);
                                 const icon = getCategoryIcon(a.category);
@@ -805,7 +805,7 @@ function renderRooms() {
                                     <span class="cs-label" id="room_alt_req_label_${rIndex}">${selHtml}</span>
                                     <span class="material-symbols-outlined">expand_more</span>
                                 </div>
-                                <div class="custom-select-options" style="max-height: 200px; overflow-y: auto;">
+                                <div class="custom-select-options">
                                     ${pageState.allAnomalies.map(a => {
                                 let color = getSpiritualiteColor(a.spiritualite);
                                 const icon = getCategoryIcon(a.category);
@@ -853,7 +853,7 @@ function renderRooms() {
                             const eq = pageState.allEquipments.find(x => x.id === loot.equipmentId);
                             if (eq) {
                                 const slotInfo = getSlotInfo(eq);
-                                const rarityColor = RARITY_COLORS[typeof eq.rarity === 'object' ? eq.rarity.name : eq.rarity] || '#ef4444';
+                                const rarityColor = getRarityColor(eq.rarity);
                                 const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
                                 nameHtml = `<span class="material-symbols-outlined${extraClass}" style="font-size:1rem; color:${slotInfo.color};">${slotInfo.icon}</span> <span style="color:${rarityColor};">${eq.name}</span>`;
                             } else {
@@ -900,7 +900,7 @@ function renderRooms() {
                 shopHtml += `</div>
                     <div style="display: flex; flex-direction: column; gap: 0.5rem; margin-top: 0.5rem; background: rgba(0,0,0,0.2); padding: 0.8rem; border-radius: 6px;">
                         <div class="relative" style="display: flex; flex-direction: column; gap: 0.5rem;">
-                            <div class="custom-select-wrapper" id="room_merchant_type_wrapper_${rIndex}" style="width: 100%; z-index: ${102 - rIndex}; margin: 0;">
+                            <div class="custom-select-wrapper" id="room_merchant_type_wrapper_${rIndex}" style="z-index: ${102 - rIndex}; margin: 0;">
                                 <div class="custom-select-trigger" onclick="toggleMerchantTypeSelect(${rIndex})" style="padding: 0.6rem 1rem; border-radius: 8px;">
                                     <span class="cs-label" id="room_merchant_type_label_${rIndex}"><span class="material-symbols-outlined cs-icon text-muted">category</span> Équipement</span>
                                     <span class="material-symbols-outlined">expand_more</span>
@@ -913,16 +913,16 @@ function renderRooms() {
                             </div>
                             
                             <!-- Mode Equipement -->
-                            <div class="custom-select-wrapper" id="room_loot_select_wrapper_${rIndex}" style="width: 100%; z-index: ${101 - rIndex}; margin: 0;">
+                            <div class="custom-select-wrapper" id="room_loot_select_wrapper_${rIndex}" style="z-index: ${101 - rIndex}; margin: 0;">
                                 <div class="custom-select-trigger" onclick="toggleLootSelect(${rIndex})" style="padding: 0.6rem 1rem; border-radius: 8px;">
                                     <span class="cs-label" id="room_loot_label_${rIndex}"><span class="material-symbols-outlined cs-icon text-muted">category</span> Objet...</span>
                                     <span class="material-symbols-outlined">expand_more</span>
                                 </div>
-                                <div class="custom-select-options" id="room_loot_options_${rIndex}" style="max-height: 200px; overflow-y: auto;">
+                                <div class="custom-select-options" id="room_loot_options_${rIndex}">
                 `;
                 pageState.allEquipments.forEach(eq => {
                     const slotInfo = getSlotInfo(eq);
-                    const rarityColor = RARITY_COLORS[typeof eq.rarity === 'object' ? eq.rarity.name : eq.rarity] || '#ef4444';
+                    const rarityColor = getRarityColor(eq.rarity);
                     const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
                     shopHtml += `<div class="custom-option" onclick="selectLootOption(${rIndex}, ${eq.id}, '${eq.name.replace(/'/g, "\\'")}', '${slotInfo.icon}', '${slotInfo.color}', '${rarityColor}', '${slotInfo.extraClass || ''}')"><span class="material-symbols-outlined cs-icon${extraClass}" style="color: ${slotInfo.color};">${slotInfo.icon}</span> <span style="color: ${rarityColor};">${eq.name}</span></div>`;
                 });
@@ -932,12 +932,12 @@ function renderRooms() {
                             </div>
                             
                             <!-- Mode Spécial -->
-                            <div class="custom-select-wrapper" id="room_merchant_special_wrapper_${rIndex}" style="width: 100%; display: none; z-index: ${101 - rIndex}; margin: 0;">
+                            <div class="custom-select-wrapper" id="room_merchant_special_wrapper_${rIndex}" style="display: none; z-index: ${101 - rIndex}; margin: 0;">
                                 <div class="custom-select-trigger" onclick="toggleMerchantSpecialSelect(${rIndex})" style="padding: 0.6rem 1rem; border-radius: 8px;">
                                     <span class="cs-label" id="room_merchant_special_label_${rIndex}"><span class="material-symbols-outlined cs-icon text-muted">diamond</span> Choisir un item spécial...</span>
                                     <span class="material-symbols-outlined">expand_more</span>
                                 </div>
-                                <div class="custom-select-options" id="room_merchant_special_options_${rIndex}" style="max-height: 200px; overflow-y: auto;">
+                                <div class="custom-select-options" id="room_merchant_special_options_${rIndex}">
                                     <div class="custom-option" onclick="selectMerchantSpecial(${rIndex}, '', 'Choisir un item spécial...')"><span class="material-symbols-outlined cs-icon text-muted">diamond</span> Choisir un item spécial...</div>
                                     ${pageState.allAnomalies.map(a => {
                     let color = getSpiritualiteColor(a.spiritualite);
@@ -955,12 +955,12 @@ function renderRooms() {
                             </div>
                             <div class="relative" style="z-index: ${99 - rIndex};">
                                 <label class="text-xs text-muted" style="display: block; margin-bottom: 0.3rem;">Ou Prix en Item Spécial</label>
-                                <div class="custom-select-wrapper" id="room_merchant_cost_item_wrapper_${rIndex}" style="width: 100%; margin: 0;">
+                                <div class="custom-select-wrapper" id="room_merchant_cost_item_wrapper_${rIndex}" style="margin: 0;">
                                     <div class="custom-select-trigger" onclick="toggleMerchantCostSelect(${rIndex})" style="padding: 0.6rem 1rem; border-radius: 8px;">
                                         <span class="cs-label" id="room_merchant_cost_label_${rIndex}"><span class="material-symbols-outlined cs-icon text-muted">diamond</span> Sélectionner (Optionnel)</span>
                                         <span class="material-symbols-outlined">expand_more</span>
                                     </div>
-                                    <div class="custom-select-options" id="room_merchant_cost_options_${rIndex}" style="max-height: 200px; overflow-y: auto;">
+                                    <div class="custom-select-options" id="room_merchant_cost_options_${rIndex}">
                                         <div class="custom-option" onclick="selectMerchantCost(${rIndex}, '', 'Sélectionner (Optionnel)')"><span class="material-symbols-outlined cs-icon text-muted">diamond</span> Sélectionner (Optionnel)</div>
                                         ${pageState.allAnomalies.map(a => {
                     let color = getSpiritualiteColor(a.spiritualite);
@@ -1041,7 +1041,7 @@ function renderRooms() {
                         const eq = pageState.allEquipments.find(x => x.id === loot.equipmentId);
                         if (eq) {
                             const slotInfo = getSlotInfo(eq);
-                            const rarityColor = RARITY_COLORS[typeof eq.rarity === 'object' ? eq.rarity.name : eq.rarity] || '#ef4444';
+                            const rarityColor = getRarityColor(eq.rarity);
                             const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
                             doorLootHtml += `
                                 <div class="flex-between" style="align-items: center; background: rgba(0,0,0,0.3); padding: 0.4rem 0.8rem; border-radius: 4px;">
@@ -1059,11 +1059,11 @@ function renderRooms() {
                                 <span class="cs-label" id="room_loot_label_${rIndex}"><span class="material-symbols-outlined cs-icon text-muted">category</span> Objet...</span>
                                 <span class="material-symbols-outlined">expand_more</span>
                             </div>
-                            <div class="custom-select-options" id="room_loot_options_${rIndex}" style="max-height: 200px; overflow-y: auto;">
+                            <div class="custom-select-options" id="room_loot_options_${rIndex}">
                 `;
                 pageState.allEquipments.forEach(eq => {
                     const slotInfo = getSlotInfo(eq);
-                    const rarityColor = RARITY_COLORS[typeof eq.rarity === 'object' ? eq.rarity.name : eq.rarity] || '#ef4444';
+                    const rarityColor = getRarityColor(eq.rarity);
                     const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
                     doorLootHtml += `<div class="custom-option" onclick="selectLootOption(${rIndex}, ${eq.id}, '${eq.name.replace(/'/g, "\\'")}', '${slotInfo.icon}', '${slotInfo.color}', '${rarityColor}', '${slotInfo.extraClass || ''}')"><span class="material-symbols-outlined cs-icon${extraClass}" style="color: ${slotInfo.color};">${slotInfo.icon}</span> <span style="color: ${rarityColor};">${eq.name}</span></div>`;
                 });
@@ -1119,7 +1119,7 @@ function renderRooms() {
                                             <span class="cs-label" id="room_door_boss_label_${rIndex}_${oIndex}"><span class="material-symbols-outlined cs-icon text-muted">pest_control</span> Sélectionner un boss...</span>
                                             <span class="material-symbols-outlined">expand_more</span>
                                         </div>
-                                        <div class="custom-select-options" id="room_door_boss_options_${rIndex}_${oIndex}" style="max-height: 200px; overflow-y: auto;">
+                                        <div class="custom-select-options" id="room_door_boss_options_${rIndex}_${oIndex}">
                                             ${pageState.allMonsters.map(m => `
                                                 <div class="custom-option" onclick="selectDoorBossOption(${rIndex}, ${oIndex}, ${m.id}, '${m.name.replace(/'/g, "\\'")}', ${m.level || 1})">
                                                     ${getSecretIconOnlyHtml(m)}<span class="material-symbols-outlined cs-icon text-error">pest_control</span> ${m.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${m.level || 1})</span>
@@ -1221,7 +1221,7 @@ function renderRooms() {
                                 const getEqHtml = (eq) => {
                                     if (!eq) return 'Choisir un objet';
                                     const slotInfo = getSlotInfo(eq);
-                                    const rarityColor = RARITY_COLORS[typeof eq.rarity === 'object' ? eq.rarity.name : eq.rarity] || '#94a3b8';
+                                    const rarityColor = getRarityColor(eq.rarity);
                                     const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
                                     return `<span style="display:flex; align-items:center; gap:0.4rem;"><span class="material-symbols-outlined${extraClass}" style="font-size:1.1rem; color:${slotInfo.color};">${slotInfo.icon}</span> <span style="color:${rarityColor};">${eq.name}</span></span>`;
                                 };
@@ -1234,7 +1234,7 @@ function renderRooms() {
                                             </span>
                                             <span class="material-symbols-outlined">expand_more</span>
                                         </div>
-                                        <div class="custom-select-options" id="altar_rewardval_options_${rIndex}_${oIndex}" style="max-height: 200px; overflow-y: auto;">
+                                        <div class="custom-select-options" id="altar_rewardval_options_${rIndex}_${oIndex}">
                                             ${pageState.allEquipments.map(eq => `
                                                 <div class="custom-option" onclick="updateAltarField(${rIndex}, ${oIndex}, 'altarRewardValue', ${eq.id})">
                                                     ${getEqHtml(eq)}
@@ -1319,7 +1319,7 @@ function renderRooms() {
                                             </span>
                                             <span class="material-symbols-outlined">expand_more</span>
                                         </div>
-                                        <div class="custom-select-options" id="altar_treasure_options_${rIndex}_${oIndex}" style="max-height: 200px; overflow-y: auto;">
+                                        <div class="custom-select-options" id="altar_treasure_options_${rIndex}_${oIndex}">
                                             ${pageState.allAnomalies.map(an => {
                                 let anColor = getSpiritualiteColor(an.spiritualite);
                                 return `
@@ -1519,8 +1519,8 @@ async function loadEquipments() {
         // Sort by rarity, then name
         const rarityOrder = { 'MAUDIT': 1, 'RELIQUE': 2, 'EPIQUE': 3, 'LEGENDAIRE': 4, 'MYTHIQUE': 5, 'RARE': 6, 'INHABITUEL': 7, 'COMMUN': 8 };
         pageState.allEquipments = Array.from(map.values()).sort((a, b) => {
-            const rNameA = typeof a.rarity === 'object' ? a.rarity?.name : a.rarity;
-            const rNameB = typeof b.rarity === 'object' ? b.rarity?.name : b.rarity;
+            const rNameA = getRarityName(a.rarity);
+            const rNameB = getRarityName(b.rarity);
             const rA = rarityOrder[rNameA] ?? 100;
             const rB = rarityOrder[rNameB] ?? 100;
             if (rA !== rB) return rA - rB;
@@ -2705,3 +2705,97 @@ document.addEventListener('click', function (e) {
         document.querySelectorAll('.custom-combobox-menu').forEach(el => el.style.display = 'none');
     }
 });
+
+document.addEventListener('click', (e) => {
+    if (!e.target.closest('.custom-select-wrapper')) {
+        document.querySelectorAll('.custom-select-wrapper.open').forEach(w => w.classList.remove('open'));
+    }
+
+    const trigger = e.target.closest('.custom-select-trigger');
+    if (trigger) {
+        const wrapper = trigger.closest('.custom-select-wrapper');
+        document.querySelectorAll('.custom-select-wrapper.open').forEach(w => {
+            if (w !== wrapper) w.classList.remove('open');
+        });
+        if (!trigger.hasAttribute('onclick')) {
+            wrapper.classList.toggle('open');
+        }
+        return;
+    }
+
+    const option = e.target.closest('.custom-option');
+    if (option) {
+        if (!option.hasAttribute('onclick')) {
+            const wrapper = option.closest('.custom-select-wrapper');
+            const hiddenInput = wrapper.querySelector('input[type="hidden"]');
+            const labelEl = wrapper.querySelector('.cs-label');
+
+            hiddenInput.value = option.getAttribute('data-value');
+            labelEl.innerHTML = option.innerHTML;
+            wrapper.classList.remove('open');
+            hiddenInput.dispatchEvent(new Event('change'));
+        }
+    }
+});
+
+// Intercept assignments to dRequiredSecret to update the UI
+const inputEl = document.getElementById('dRequiredSecret');
+if (inputEl) {
+    const originalSet = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+    Object.defineProperty(inputEl, 'value', {
+        set: function (val) {
+            originalSet.call(this, val);
+            const wrapper = this.closest('.custom-select-wrapper');
+            if (wrapper) {
+                const labelEl = wrapper.querySelector('.cs-label');
+                const options = wrapper.querySelectorAll('.custom-option');
+                let found = false;
+                options.forEach(opt => {
+                    if (opt.getAttribute('data-value') === (val || '')) {
+                        labelEl.innerHTML = opt.innerHTML;
+                        found = true;
+                    }
+                });
+                if (!found && val) {
+                    labelEl.innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: #f59e0b;">key</span> ${val}`;
+                } else if (!val && !found) {
+                    labelEl.innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: #64748b;">close</span> Aucun (Optionnel)`;
+                }
+            }
+        },
+        get: function () {
+            return Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').get.call(this);
+        }
+    });
+}
+
+// Intercept assignments to mNativeSecret to update the UI
+const mInputEl = document.getElementById('mNativeSecret');
+if (mInputEl) {
+    const originalSet = Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').set;
+    Object.defineProperty(mInputEl, 'value', {
+        set: function (val) {
+            originalSet.call(this, val);
+            const wrapper = this.closest('.custom-select-wrapper');
+            if (wrapper) {
+                const labelEl = wrapper.querySelector('.cs-label');
+                const options = wrapper.querySelectorAll('.custom-option');
+                let found = false;
+                options.forEach(opt => {
+                    if (opt.getAttribute('data-value') === (val || '')) {
+                        labelEl.innerHTML = opt.innerHTML;
+                        found = true;
+                    }
+                });
+                if (!found && val) {
+                    labelEl.innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: #f59e0b;">explore</span> ${val}`;
+                } else if (!val && !found) {
+                    labelEl.innerHTML = `<span class="material-symbols-outlined cs-icon" style="color: #64748b;">close</span> Aucun (Optionnel)`;
+                }
+            }
+        },
+        get: function () {
+            return Object.getOwnPropertyDescriptor(HTMLInputElement.prototype, 'value').get.call(this);
+        }
+    });
+}

@@ -1,12 +1,19 @@
-<!DOCTYPE html><html lang="fr"><head>
+<!DOCTYPE html>
+<html lang="fr">
+
+<head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Grimoire - Combat</title>
     <link rel="icon" type="image/png" href="/favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&amp;family=Inter:wght@300;400;500&amp;display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&amp;family=Inter:wght@300;400;500&amp;display=swap"
+        rel="stylesheet">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
+        rel="stylesheet">
     <link rel="stylesheet" href="/styles/variables.css">
     <link rel="stylesheet" href="/styles/ui/components.css">
     <link rel="stylesheet" href="/styles/ui/utilities.css">
@@ -702,7 +709,7 @@
             filter: grayscale(0.6);
         }
 
-        .combat-spell-card.spell-disabled .combat-spell-icons > *:not(.spell-choice-mini) {
+        .combat-spell-card.spell-disabled .combat-spell-icons>*:not(.spell-choice-mini) {
             opacity: 0.45;
             filter: grayscale(0.6);
         }
@@ -858,88 +865,6 @@
             box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
         }
 
-        /* ===== Custom Select ===== */
-        .custom-select-wrapper {
-            position: relative;
-            user-select: none;
-            width: 100%;
-        }
-
-        .custom-select-trigger {
-            background: rgba(0, 0, 0, 0.3);
-            border: 1px solid rgba(255, 255, 255, 0.08);
-            border-radius: 6px;
-            padding: 0.35rem 0.5rem;
-            font-size: 0.8rem;
-            color: #fff;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            cursor: pointer;
-            transition: all 0.2s ease;
-            height: 100%;
-            min-height: 28px;
-        }
-
-        .custom-select-trigger:hover,
-        .custom-select-wrapper.open .custom-select-trigger {
-            border-color: #f59e0b;
-        }
-
-        .custom-select-options {
-            position: absolute;
-            top: calc(100% + 5px);
-            left: 0;
-            right: 0;
-            background: #0f172a;
-            border: 1px solid rgba(255, 255, 255, 0.1);
-            border-radius: 6px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
-            z-index: 100;
-            display: none;
-        }
-
-        .custom-select-options::-webkit-scrollbar {
-            width: 6px;
-        }
-
-        .custom-select-options::-webkit-scrollbar-track {
-            background: transparent;
-            border-radius: 6px;
-        }
-
-        .custom-select-options::-webkit-scrollbar-thumb {
-            background: rgba(255, 255, 255, 0.15);
-            border-radius: 6px;
-        }
-
-        .custom-select-options::-webkit-scrollbar-thumb:hover {
-            background: rgba(255, 255, 255, 0.25);
-        }
-
-        .custom-select-wrapper.open .custom-select-options {
-            display: block;
-        }
-
-        .custom-option {
-            padding: 0.4rem 0.6rem;
-            cursor: pointer;
-            display: flex;
-            align-items: center;
-            gap: 0.5rem;
-            font-size: 0.8rem;
-            transition: background 0.2s ease;
-            border-bottom: 1px solid rgba(255, 255, 255, 0.02);
-        }
-
-        .custom-option:last-child {
-            border-bottom: none;
-        }
-
-        .custom-option:hover {
-            background: rgba(245, 158, 11, 0.15);
-        }
-
         .cs-icon {
             font-size: 1rem;
         }
@@ -962,11 +887,18 @@
         </div>
         <div style="display: flex; align-items: center; gap: 1.5rem;">
             <!-- New Boss Buff Container -->
-            <div id="bossBuffsContainer" style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; justify-content: flex-end; max-width: 50vw;"></div>
-            
-            <div style="display: flex; align-items: center; gap: 0.5rem; background: rgba(255,255,255,0.05); padding: 0.3rem 0.8rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
-                <span class="material-symbols-outlined" id="musicToggleBtn" style="cursor: pointer; color: #10b981; font-size: 1.4rem; user-select: none;" onclick="window.toggleMusic()" title="Couper/Activer la musique">volume_up</span>
-                <input type="range" id="musicVolumeSlider" min="0" max="100" value="50" style="width: 80px; accent-color: #10b981; cursor: pointer;" oninput="window.changeMusicVolume(this.value)" title="Volume">
+            <div id="bossBuffsContainer"
+                style="display: flex; gap: 0.5rem; align-items: center; flex-wrap: wrap; justify-content: flex-end; max-width: 50vw;">
+            </div>
+
+            <div
+                style="display: flex; align-items: center; gap: 0.5rem; background: rgba(255,255,255,0.05); padding: 0.3rem 0.8rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1);">
+                <span class="material-symbols-outlined" id="musicToggleBtn"
+                    style="cursor: pointer; color: #10b981; font-size: 1.4rem; user-select: none;"
+                    onclick="window.toggleMusic()" title="Couper/Activer la musique">volume_up</span>
+                <input type="range" id="musicVolumeSlider" min="0" max="100" value="50"
+                    style="width: 80px; accent-color: #10b981; cursor: pointer;"
+                    oninput="window.changeMusicVolume(this.value)" title="Volume">
             </div>
             <div style="font-family: 'Outfit'; color: var(--text-muted);">
                 Tour <span id="turnCounter" style="color: #f8fafc; font-weight: 600;">1</span>
@@ -982,7 +914,8 @@
 
         <!-- Log -->
         <div class="combat-log-container">
-            <div style="font-family: 'Outfit'; font-weight: 600; color: #f8fafc; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem;">
+            <div
+                style="font-family: 'Outfit'; font-weight: 600; color: #f8fafc; margin-bottom: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem;">
                 Journal de combat
             </div>
             <div class="combat-log" id="combatLog">
@@ -998,40 +931,52 @@
         <!-- Room Event Overlay (Treasure/Event) -->
         <div class="event-overlay" id="eventOverlay">
             <!-- Left: Inventory Panel Wrapper -->
-            <div id="eventInventoryWrapper" style="position: absolute; left: 0; top: 0; bottom: 0; width: 320px; z-index: 20; transform: translateX(-320px); transition: transform 0.3s ease;">
-                <div class="custom-scrollbar" style="width: 100%; height: 100%; background: rgba(15, 23, 42, 0.95); border-right: 1px solid rgba(255, 255, 255, 0.1); padding: 1.5rem; display: flex; flex-direction: column; overflow-y: auto; position: relative;">
-                    <h3 style="color: #10b981; font-size: 1.2rem; margin-bottom: 1rem; text-align: center; font-family: 'Outfit', sans-serif; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+            <div id="eventInventoryWrapper"
+                style="position: absolute; left: 0; top: 0; bottom: 0; width: 320px; z-index: 20; transform: translateX(-320px); transition: transform 0.3s ease;">
+                <div class="custom-scrollbar"
+                    style="width: 100%; height: 100%; background: rgba(15, 23, 42, 0.95); border-right: 1px solid rgba(255, 255, 255, 0.1); padding: 1.5rem; display: flex; flex-direction: column; overflow-y: auto; position: relative;">
+                    <h3
+                        style="color: #10b981; font-size: 1.2rem; margin-bottom: 1rem; text-align: center; font-family: 'Outfit', sans-serif; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
                         <span class="material-symbols-outlined">inventory_2</span> Inventaire
-                        <span class="inventory-weight-display" style="font-size: 0.9rem; color: #94a3b8; font-weight: 400;"></span>
+                        <span class="inventory-weight-display"
+                            style="font-size: 0.9rem; color: #94a3b8; font-weight: 400;"></span>
                     </h3>
                     <div id="eventOverlayInventoryList" style="display: flex; flex-direction: column; gap: 0.8rem;">
                         <!-- JS injects consumable cards here -->
                     </div>
                 </div>
                 <!-- Toggle Tab -->
-                <div onclick="const w = document.getElementById('eventInventoryWrapper'); w.style.transform = w.style.transform === 'translateX(0px)' ? 'translateX(-320px)' : 'translateX(0px)';" style="position: absolute; right: -40px; top: 50%; transform: translateY(-50%); width: 40px; height: 100px; background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(255, 255, 255, 0.1); border-left: none; border-radius: 0 8px 8px 0; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #10b981; box-shadow: 5px 0 10px rgba(0,0,0,0.3);">
+                <div onclick="const w = document.getElementById('eventInventoryWrapper'); w.style.transform = w.style.transform === 'translateX(0px)' ? 'translateX(-320px)' : 'translateX(0px)';"
+                    style="position: absolute; right: -40px; top: 50%; transform: translateY(-50%); width: 40px; height: 100px; background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(255, 255, 255, 0.1); border-left: none; border-radius: 0 8px 8px 0; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #10b981; box-shadow: 5px 0 10px rgba(0,0,0,0.3);">
                     <span class="material-symbols-outlined">inventory_2</span>
                 </div>
             </div>
 
             <!-- Right: Event Content -->
-            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 3rem; position: relative; max-width: 800px; width: 100%; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);">
-                <span class="material-symbols-outlined" id="eventIcon" style="font-size: 5rem; margin-bottom: 1rem; color: #f59e0b;">money_bag</span>
+            <div
+                style="display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 3rem; position: relative; max-width: 800px; width: 100%; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);">
+                <span class="material-symbols-outlined" id="eventIcon"
+                    style="font-size: 5rem; margin-bottom: 1rem; color: #f59e0b;">money_bag</span>
                 <div class="result-title" id="eventTitle" style="font-size: 3rem; margin-bottom: 1rem;">Trésor !</div>
-                <p style="color: #94a3b8; font-size: 1.2rem; margin-bottom: 2rem; max-width: 600px; text-align: center;" id="eventDesc">Vous avez trouvé un trésor.</p>
+                <p style="color: #94a3b8; font-size: 1.2rem; margin-bottom: 2rem; max-width: 600px; text-align: center;"
+                    id="eventDesc">Vous avez trouvé un trésor.</p>
 
-                <div id="eventLootContainer" style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; margin-bottom: 2rem; width: 100%;">
+                <div id="eventLootContainer"
+                    style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; margin-bottom: 2rem; width: 100%;">
                     <!-- Rempli par JS (Items / XP animation) -->
                 </div>
 
                 <div id="eventActionContainer" style="display: flex; gap: 1rem;">
-                    <button class="action-btn" id="btnOpenChest" onclick="openChest(false)" style="background: rgba(245, 158, 11, 0.2); color: #f59e0b; border-color: rgba(245, 158, 11, 0.4); display: none;">
+                    <button class="action-btn" id="btnOpenChest" onclick="openChest(false)"
+                        style="background: rgba(245, 158, 11, 0.2); color: #f59e0b; border-color: rgba(245, 158, 11, 0.4); display: none;">
                         <span class="material-symbols-outlined">lock_open</span> Ouvrir le coffre
                     </button>
-                    <button class="action-btn" id="btnOpenChestKey" onclick="openChest(true)" style="background: rgba(168, 85, 247, 0.2); color: #c084fc; border-color: rgba(168, 85, 247, 0.4); display: none;">
+                    <button class="action-btn" id="btnOpenChestKey" onclick="openChest(true)"
+                        style="background: rgba(168, 85, 247, 0.2); color: #c084fc; border-color: rgba(168, 85, 247, 0.4); display: none;">
                         <span class="material-symbols-outlined">vpn_key</span> Ouvrir (Clé : +10% de butin)
                     </button>
-                    <button class="action-btn" id="btnContinueEvent" onclick="nextRoom()" style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; border-color: rgba(59, 130, 246, 0.4);">
+                    <button class="action-btn" id="btnContinueEvent" onclick="nextRoom()"
+                        style="background: rgba(59, 130, 246, 0.2); color: #60a5fa; border-color: rgba(59, 130, 246, 0.4);">
                         Continuer
                     </button>
                 </div>
@@ -1041,32 +986,42 @@
         <!-- Combat Victory Overlay -->
         <div class="event-overlay" id="combatVictoryOverlay">
             <!-- Left: Inventory Panel Wrapper -->
-            <div id="combatVictoryInventoryWrapper" style="position: absolute; left: 0; top: 0; bottom: 0; width: 320px; z-index: 20; transform: translateX(-320px); transition: transform 0.3s ease;">
-                <div class="custom-scrollbar" style="width: 100%; height: 100%; background: rgba(15, 23, 42, 0.95); border-right: 1px solid rgba(255, 255, 255, 0.1); padding: 1.5rem; display: flex; flex-direction: column; overflow-y: auto; position: relative;">
-                    <h3 style="color: #10b981; font-size: 1.2rem; margin-bottom: 1rem; text-align: center; font-family: 'Outfit', sans-serif; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
+            <div id="combatVictoryInventoryWrapper"
+                style="position: absolute; left: 0; top: 0; bottom: 0; width: 320px; z-index: 20; transform: translateX(-320px); transition: transform 0.3s ease;">
+                <div class="custom-scrollbar"
+                    style="width: 100%; height: 100%; background: rgba(15, 23, 42, 0.95); border-right: 1px solid rgba(255, 255, 255, 0.1); padding: 1.5rem; display: flex; flex-direction: column; overflow-y: auto; position: relative;">
+                    <h3
+                        style="color: #10b981; font-size: 1.2rem; margin-bottom: 1rem; text-align: center; font-family: 'Outfit', sans-serif; display: flex; align-items: center; justify-content: center; gap: 0.5rem;">
                         <span class="material-symbols-outlined">inventory_2</span> Inventaire
-                        <span class="inventory-weight-display" style="font-size: 0.9rem; color: #94a3b8; font-weight: 400;"></span>
+                        <span class="inventory-weight-display"
+                            style="font-size: 0.9rem; color: #94a3b8; font-weight: 400;"></span>
                     </h3>
                     <div id="combatVictoryInventoryList" style="display: flex; flex-direction: column; gap: 0.8rem;">
                         <!-- JS injects consumable cards here -->
                     </div>
                 </div>
                 <!-- Toggle Tab -->
-                <div onclick="const w = document.getElementById('combatVictoryInventoryWrapper'); w.style.transform = w.style.transform === 'translateX(0px)' ? 'translateX(-320px)' : 'translateX(0px)';" style="position: absolute; right: -40px; top: 50%; transform: translateY(-50%); width: 40px; height: 100px; background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(255, 255, 255, 0.1); border-left: none; border-radius: 0 8px 8px 0; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #10b981; box-shadow: 5px 0 10px rgba(0,0,0,0.3);">
+                <div onclick="const w = document.getElementById('combatVictoryInventoryWrapper'); w.style.transform = w.style.transform === 'translateX(0px)' ? 'translateX(-320px)' : 'translateX(0px)';"
+                    style="position: absolute; right: -40px; top: 50%; transform: translateY(-50%); width: 40px; height: 100px; background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(255, 255, 255, 0.1); border-left: none; border-radius: 0 8px 8px 0; display: flex; align-items: center; justify-content: center; cursor: pointer; color: #10b981; box-shadow: 5px 0 10px rgba(0,0,0,0.3);">
                     <span class="material-symbols-outlined">inventory_2</span>
                 </div>
             </div>
 
             <!-- Right: Victory Content -->
-            <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 3rem; position: relative; max-width: 800px; width: 100%; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);">
-                <span class="material-symbols-outlined" style="font-size: 5rem; margin-bottom: 1rem; color: #10b981;">emoji_events</span>
+            <div
+                style="display: flex; flex-direction: column; align-items: center; justify-content: center; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; padding: 3rem; position: relative; max-width: 800px; width: 100%; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);">
+                <span class="material-symbols-outlined"
+                    style="font-size: 5rem; margin-bottom: 1rem; color: #10b981;">emoji_events</span>
                 <div class="result-title" style="font-size: 3rem; margin-bottom: 1rem; color: #10b981;">Victoire !</div>
-                <p style="color: #94a3b8; font-size: 1.2rem; margin-bottom: 2rem; max-width: 600px; text-align: center;" id="combatVictoryDesc">
+                <p style="color: #94a3b8; font-size: 1.2rem; margin-bottom: 2rem; max-width: 600px; text-align: center;"
+                    id="combatVictoryDesc">
                 </p>
-                <div id="combatVictoryXpContainer" style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; margin-bottom: 2rem; width: 100%;">
+                <div id="combatVictoryXpContainer"
+                    style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; margin-bottom: 2rem; width: 100%;">
                     <!-- Rempli par JS -->
                 </div>
-                <button class="action-btn" onclick="nextRoom()" style="background: rgba(16, 185, 129, 0.2); color: #34d399; border-color: rgba(16, 185, 129, 0.4);">
+                <button class="action-btn" onclick="nextRoom()"
+                    style="background: rgba(16, 185, 129, 0.2); color: #34d399; border-color: rgba(16, 185, 129, 0.4);">
                     Continuer l'exploration
                 </button>
             </div>
@@ -1095,22 +1050,33 @@
                 Spiritualités (<span id="countSPIRIT">0</span>)
             </button>
 
-            <div style="margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem; display: flex; flex-direction: column; gap: 1rem;">
+            <div
+                style="margin-top: 1rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 1rem; display: flex; flex-direction: column; gap: 1rem;">
                 <div class="filter-group" style="flex-wrap: wrap;">
                     <span class="filter-label" style="width: 100%;">Type:</span>
-                    <label class="filter-radio"><input type="radio" name="filterCastingType" value="ALL" checked="" onchange="applySpellFilters(this)"><span>Tous</span></label>
-                    <label class="filter-radio"><input type="radio" name="filterCastingType" value="INSTANTANE" onchange="applySpellFilters(this)"><span>Instantané</span></label>
-                    <label class="filter-radio"><input type="radio" name="filterCastingType" value="BANAL" onchange="applySpellFilters(this)"><span>Banal</span></label>
-                    <label class="filter-radio"><input type="radio" name="filterCastingType" value="CANALISE" onchange="applySpellFilters(this)"><span>Canalisé</span></label>
+                    <label class="filter-radio"><input type="radio" name="filterCastingType" value="ALL" checked=""
+                            onchange="applySpellFilters(this)"><span>Tous</span></label>
+                    <label class="filter-radio"><input type="radio" name="filterCastingType" value="INSTANTANE"
+                            onchange="applySpellFilters(this)"><span>Instantané</span></label>
+                    <label class="filter-radio"><input type="radio" name="filterCastingType" value="BANAL"
+                            onchange="applySpellFilters(this)"><span>Banal</span></label>
+                    <label class="filter-radio"><input type="radio" name="filterCastingType" value="CANALISE"
+                            onchange="applySpellFilters(this)"><span>Canalisé</span></label>
                 </div>
                 <div class="filter-group" style="flex-wrap: wrap;">
                     <span class="filter-label" style="width: 100%;">Niveau:</span>
-                    <label class="filter-radio"><input type="checkbox" name="filterLevel" value="ALL" checked="" onchange="applySpellFilters(this)"><span>Tous</span></label>
-                    <label class="filter-radio"><input type="checkbox" name="filterLevel" value="1" onchange="applySpellFilters(this)"><span>1</span></label>
-                    <label class="filter-radio"><input type="checkbox" name="filterLevel" value="2" onchange="applySpellFilters(this)"><span>2</span></label>
-                    <label class="filter-radio"><input type="checkbox" name="filterLevel" value="3" onchange="applySpellFilters(this)"><span>3</span></label>
-                    <label class="filter-radio"><input type="checkbox" name="filterLevel" value="4" onchange="applySpellFilters(this)"><span>4</span></label>
-                    <label class="filter-radio"><input type="checkbox" name="filterLevel" value="5" onchange="applySpellFilters(this)"><span>5</span></label>
+                    <label class="filter-radio"><input type="checkbox" name="filterLevel" value="ALL" checked=""
+                            onchange="applySpellFilters(this)"><span>Tous</span></label>
+                    <label class="filter-radio"><input type="checkbox" name="filterLevel" value="1"
+                            onchange="applySpellFilters(this)"><span>1</span></label>
+                    <label class="filter-radio"><input type="checkbox" name="filterLevel" value="2"
+                            onchange="applySpellFilters(this)"><span>2</span></label>
+                    <label class="filter-radio"><input type="checkbox" name="filterLevel" value="3"
+                            onchange="applySpellFilters(this)"><span>3</span></label>
+                    <label class="filter-radio"><input type="checkbox" name="filterLevel" value="4"
+                            onchange="applySpellFilters(this)"><span>4</span></label>
+                    <label class="filter-radio"><input type="checkbox" name="filterLevel" value="5"
+                            onchange="applySpellFilters(this)"><span>5</span></label>
                 </div>
             </div>
         </div>
@@ -1126,18 +1092,21 @@
 
         <!-- Sidebar Actions (Right) -->
         <div class="csp-sidebar csp-sidebar-right">
-            <button class="action-btn attack" id="btnAttack" onclick="initiateCombatCast(null)" disabled="" style="width: 100%; justify-content: center; margin-bottom: 0.5rem; white-space: nowrap;">
+            <button class="action-btn attack" id="btnAttack" onclick="initiateCombatCast(null)" disabled=""
+                style="width: 100%; justify-content: center; margin-bottom: 0.5rem; white-space: nowrap;">
                 <span class="material-symbols-outlined">swords</span>
                 Attaque
             </button>
 
             <div style="flex: 1;"></div> <!-- Spacer -->
 
-            <button class="action-btn" id="btnEndTurn" onclick="endTurn()" style="background: rgba(139, 92, 246, 0.2); color: #c084fc; border-color: rgba(139, 92, 246, 0.4); width: 100%; justify-content: center; white-space: nowrap;">
+            <button class="action-btn" id="btnEndTurn" onclick="endTurn()"
+                style="background: rgba(139, 92, 246, 0.2); color: #c084fc; border-color: rgba(139, 92, 246, 0.4); width: 100%; justify-content: center; white-space: nowrap;">
                 <span class="material-symbols-outlined">hourglass_top</span>
                 Fin de Tour
             </button>
-            <button onclick="window.promptFlee()" class="action-btn flee" style="width: 100%; justify-content: center; white-space: nowrap;">
+            <button onclick="window.promptFlee()" class="action-btn flee"
+                style="width: 100%; justify-content: center; white-space: nowrap;">
                 <span class="material-symbols-outlined">directions_run</span>
                 Fuir
             </button>
@@ -1154,16 +1123,18 @@
     <!-- Target Selection Context Menu -->
     <div id="targetContextMenu" class="context-menu" style="display: none;"></div>
 
-    
+
 
     <!-- Buy Confirmation Modal -->
-    
+
 
     <!-- Consume Target Selection Modal -->
-    
+
 
     <script type="module" src="/js/auth.js?v=10"></script>
     <script type="module" src="/js/combat.js?v=111"></script>
 
 
-</body></html>
+</body>
+
+</html>

@@ -260,7 +260,7 @@ function filterVault() {
             }
         }
 
-        const rarityName = typeof eq.rarity === 'object' ? eq.rarity?.name : eq.rarity;
+        const rarityName = getRarityName(eq.rarity);
         const matchRarity = !filterRarity || rarityName === filterRarity;
 
         let matchStatus = true;
@@ -312,7 +312,7 @@ function renderGrid(equipments) {
     }
 
     container.innerHTML = equipments.map(eq => {
-        const rarityName = typeof eq.rarity === 'object' ? eq.rarity?.name : eq.rarity;
+        const rarityName = getRarityName(eq.rarity);
         const rarityClass = rarityName ? `rarity-${rarityName}` : 'rarity-COMMUN';
 
         if (eq.isAnomalie) {
@@ -621,7 +621,7 @@ window.editEquipment = function (id) {
     }
 
     const rarityInput = document.getElementById('eqRarity');
-    const eqRarityName = typeof eq.rarity === 'object' ? eq.rarity?.name : eq.rarity;
+    const eqRarityName = getRarityName(eq.rarity);
     if (rarityInput && eqRarityName) {
         rarityInput.value = eqRarityName;
         const option = document.querySelector(`.custom-option.rarity-${eqRarityName}`);

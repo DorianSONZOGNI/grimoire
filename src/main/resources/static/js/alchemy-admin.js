@@ -84,8 +84,8 @@ async function loadItems() {
         });
         const rarityOrder = { 'MAUDIT': 1, 'RELIQUE': 2, 'EPIQUE': 3, 'LEGENDAIRE': 4, 'MYTHIQUE': 5, 'RARE': 6, 'INHABITUEL': 7, 'COMMUN': 8 };
         pageState.allEquipments = Array.from(map.values()).sort((a, b) => {
-            const rNameA = typeof a.rarity === 'object' ? a.rarity?.name : a.rarity;
-            const rNameB = typeof b.rarity === 'object' ? b.rarity?.name : b.rarity;
+            const rNameA = getRarityName(a.rarity);
+            const rNameB = getRarityName(b.rarity);
             const rA = rarityOrder[rNameA] || 99;
             const rB = rarityOrder[rNameB] || 99;
             if (rA !== rB) return rA - rB;
@@ -166,7 +166,7 @@ async function updateRewardNameInput() {
         });
         container.innerHTML = `
                     <label>Nom de l'objet (Résultat)</label>
-                    <div class="custom-select-wrapper" style="width: 100%; z-index: 9;">
+                    <div class="custom-select-wrapper" style="z-index: 9;">
                         <div class="custom-select-trigger" style="background: rgba(15,23,42,0.6); padding: 0.6rem; border-radius: 8px;">
                             <span class="cs-label" style="font-size: 0.9rem;">${displayLabel}</span>
                             <span class="material-symbols-outlined" style="color: #64748b; font-size: 1.1rem;">expand_more</span>
@@ -183,8 +183,8 @@ async function updateRewardNameInput() {
             return sName !== 'CONSOMMABLE';
         }).forEach(eq => {
             const slotInfo = getSlotInfo(eq);
-            const rName = typeof eq.rarity === 'object' ? eq.rarity?.name : eq.rarity;
-            const rarityColor = window.RARITY_COLORS[rName] || '#ef4444';
+            const rName = getRarityName(eq.rarity);
+            const rarityColor = getRarityColor(rName);
             const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
             optionsHtml += `<div class="custom-option" data-value="${eq.name}">
                                         <span class="material-symbols-outlined cs-icon${extraClass}" style="color: ${slotInfo.color};">${slotInfo.icon}</span>
@@ -193,7 +193,7 @@ async function updateRewardNameInput() {
         });
         container.innerHTML = `
                     <label>Nom de l'équipement (Résultat)</label>
-                    <div class="custom-select-wrapper" style="width: 100%; z-index: 9;">
+                    <div class="custom-select-wrapper" style="z-index: 9;">
                         <div class="custom-select-trigger" style="background: rgba(15,23,42,0.6); padding: 0.6rem; border-radius: 8px;">
                             <span class="cs-label" style="font-size: 0.9rem;">${displayLabel}</span>
                             <span class="material-symbols-outlined" style="color: #64748b; font-size: 1.1rem;">expand_more</span>
@@ -214,7 +214,7 @@ async function updateRewardNameInput() {
         });
         container.innerHTML = `
                     <label>Nom de l'objet (Résultat)</label>
-                    <div class="custom-select-wrapper" style="width: 100%; z-index: 9;">
+                    <div class="custom-select-wrapper" style="z-index: 9;">
                         <div class="custom-select-trigger" style="background: rgba(15,23,42,0.6); padding: 0.6rem; border-radius: 8px;">
                             <span class="cs-label" style="font-size: 0.9rem;">${displayLabel}</span>
                             <span class="material-symbols-outlined" style="color: #64748b; font-size: 1.1rem;">expand_more</span>
@@ -228,7 +228,7 @@ async function updateRewardNameInput() {
     } else if (type === 'GIVE_SPIRIT_XP') {
         container.innerHTML = `
                     <label>Nom de l'objet (Résultat)</label>
-                    <div class="custom-select-wrapper disabled" style="width: 100%; opacity: 0.5; pointer-events: none;">
+                    <div class="custom-select-wrapper disabled" style="opacity: 0.5; pointer-events: none;">
                         <div class="custom-select-trigger" style="background: rgba(15,23,42,0.6); padding: 0.6rem; border-radius: 8px;">
                             <span class="cs-label" style="font-size: 0.9rem;">- XP Spiritualité -</span>
                         </div>
@@ -275,7 +275,7 @@ async function updateRewardNameInput() {
 
         container.innerHTML = `
                     <label>Secret / D\u00e9blocage (R\u00e9sultat)</label>
-                    <div class="custom-select-wrapper" style="width: 100%; z-index: 9;">
+                    <div class="custom-select-wrapper" style="z-index: 9;">
                         <div class="custom-select-trigger" style="background: rgba(15,23,42,0.6); padding: 0.6rem; border-radius: 8px;">
                             <span class="cs-label" style="font-size: 0.9rem;">
                                 <span class="material-symbols-outlined cs-icon" style="color: #f59e0b;">key</span>
@@ -514,7 +514,7 @@ window.renderRecipesList = function () {
             const eqTemp = pageState.allEquipments.find(e => e.name === r.rewardName);
             const slotInfo = getSlotInfo(eqTemp);
             const rNameTemp = typeof eqTemp?.rarity === 'object' ? eqTemp.rarity?.name : eqTemp?.rarity;
-            const rColor = eqTemp ? (window.RARITY_COLORS[rNameTemp] || '#fbbf24') : '#fbbf24';
+            const rColor = eqTemp ? (getRarityColor(rNameTemp)) : '#fbbf24';
             rewardHtml = `<span class="anomaly-badge" style="border: 1px solid ${rColor}; background: linear-gradient(${rColor}25, ${rColor}25), #1e293b; color: ${rColor}; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block;"><span class="material-symbols-outlined ${slotInfo.extraClass || ''}" style="font-size: 1rem; vertical-align: middle; color: ${slotInfo.color};">${slotInfo.icon}</span> ${r.rewardQuantity}x ${r.rewardName}</span>`;
         } else if (r.rewardType === 'GIVE_SPIRIT_XP') {
             rewardHtml = `<span class="anomaly-badge" style="border: 1px solid #38bdf8; background: linear-gradient(#38bdf825, #38bdf825), #1e293b; color: #38bdf8; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block;"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; color: #38bdf8;">self_improvement</span> ${r.rewardQuantity} XP Spiritualité</span>`;
