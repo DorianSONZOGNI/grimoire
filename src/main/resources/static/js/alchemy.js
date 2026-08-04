@@ -471,7 +471,7 @@ function buildCustomSelect(containerDiv, options, hiddenInputClass, hiddenInputI
     });
 
     containerDiv.innerHTML = `
-                <div class="custom-select-wrapper" style="width: 100%; position: relative;">
+                <div class="custom-select-wrapper" style="position: relative;">
                     <div class="custom-select-trigger" style="display:flex; justify-content:space-between; align-items:center; background: rgba(0,0,0,0.5); padding: 0.5rem 0.8rem; border: 1px solid var(--glass-border); color: #fff; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-size:0.9rem;">
                         <div class="cs-label" style="flex: 1; margin-right: 0.5rem; display: flex; align-items: center;">${selectedOption.html}</div>
                         <span class="material-symbols-outlined" style="font-size:1.2rem;">expand_more</span>

@@ -1676,7 +1676,7 @@ function updateUI(data) {
                                     if (!eq && Array.isArray(window.allAnomaliesCombat)) {
                                         an = window.allAnomaliesCombat.find(a => a.name === eqName);
                                     }
-                                    
+
                                     const slotInfo = eq ? (getSlotInfo(eq) || { icon: 'help', color: '#94a3b8' }) : (an ? { icon: (an.category ? (getCategoryIcon(an.category)) : 'star'), color: getSpiritualiteColor(an.spiritualite) } : { icon: 'swords', color: '#f59e0b' });
                                     const rarityColor = eq ? (getRarityColor(eq.rarity)) : (an ? getSpiritualiteColor(an.spiritualite) : '#f59e0b');
                                     const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
@@ -1925,7 +1925,7 @@ function updateUI(data) {
                                 const first = eligible[0];
                                 let firstCatIcon = first.category ? (getCategoryIcon(first.category)) : 'star';
                                 let selectHtml = `
-                                <div class="custom-select-wrapper" id="altarAnomalySelectWrapper" style="width: 100%; max-width: 350px; margin: 0 auto; z-index: 100;">
+                                <div class="custom-select-wrapper" id="altarAnomalySelectWrapper" style="max-width: 350px; margin: 0 auto; z-index: 100;">
                                     <div class="custom-select-trigger" onclick="document.getElementById('altarAnomalySelectWrapper').classList.toggle('open')" style="padding: 0.6rem 1rem; border-radius: 8px; border: 1px solid ${spColor}; text-align: left; background: rgba(0,0,0,0.5);">
                                         <span class="cs-label" id="altarAnomalySelectLabel">
                                             <span class="material-symbols-outlined cs-icon" style="color: ${spColor};">${firstCatIcon}</span> ${first.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${first.level || 1})</span>
@@ -2284,7 +2284,7 @@ function updateUI(data) {
                         btnCont.style.display = 'block';
                         btnCont.textContent = 'Continuer';
                         btnCont.onclick = nextRoom;
-                        
+
                         let anomalyHtml = '';
                         if (data.combatLog) {
                             for (let i = data.combatLog.length - 1; i >= Math.max(0, data.combatLog.length - 5); i--) {
@@ -2297,7 +2297,7 @@ function updateUI(data) {
                                         icon.textContent = 'crown';
                                         icon.style.color = '#f59e0b';
                                         title.textContent = 'Trésor';
-                                        
+
                                         const spColor = getSpiritualiteColor(an.spiritualite);
                                         const catIcon = an.category ? getCategoryIcon(an.category) : 'star';
                                         let tooltipDataHtml = '';
@@ -2305,7 +2305,7 @@ function updateUI(data) {
                                             tooltipDataHtml = getAnomalyTooltipHTML(an, eqName);
                                         }
                                         const tooltipAttrs = tooltipDataHtml ? 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"' : '';
-                                        
+
                                         anomalyHtml += `
                                             <div class="flex-center relative" ${tooltipAttrs} style="cursor: ${tooltipDataHtml ? 'help' : 'default'}; background: rgba(0, 0, 0, 0.4); border: 1px solid ${spColor}80; padding: 0.8rem 1rem; border-radius: 8px; color: ${spColor}; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; transform: scale(0.8);">
                                                 ${tooltipDataHtml ? `<template class="tooltip-data">${tooltipDataHtml}</template>` : ''}
@@ -2316,7 +2316,7 @@ function updateUI(data) {
                                 }
                             }
                         }
-                        
+
                         if (anomalyHtml) {
                             lootContainer.style.display = 'flex';
                             lootContainer.innerHTML = `

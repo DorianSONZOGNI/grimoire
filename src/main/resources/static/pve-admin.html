@@ -62,7 +62,7 @@
                                                     style="font-size: 1.1rem; color: #38bdf8;">star_rate</span>
                                                 Lvl</label>
 
-                                            <div id="mLevelWrapper" class="custom-select-wrapper" style="width: 100%;">
+                                            <div id="mLevelWrapper" class="custom-select-wrapper">
                                                 <div class="custom-select-trigger" onclick="toggleLevelSelect()"
                                                     id="mLevelTrigger" style="padding: 0.8rem; font-size: 0.9rem;">
                                                     <span class="material-symbols-outlined cs-icon"
@@ -212,7 +212,7 @@
                                             class="material-symbols-outlined"
                                             style="font-size: 1.1rem; color: #ef4444;">genetics</span> Type</label>
                                     <input type="hidden" id="mType" value="NORMAL">
-                                    <div id="mTypeWrapper" class="custom-select-wrapper" style="width: 100%;">
+                                    <div id="mTypeWrapper" class="custom-select-wrapper">
                                         <div class="custom-select-trigger" onclick="toggleMonsterTypeSelect()"
                                             id="mTypeTrigger" style="padding: 0.8rem; font-size: 0.9rem;">
                                             <span class="material-symbols-outlined cs-icon"
@@ -266,7 +266,7 @@
                                             style="font-size: 1.1rem; color: #8b5cf6;">neurology</span> Comportement
                                         IA</label>
                                     <input type="hidden" id="mBehavior" value="NORMAL">
-                                    <div id="mBehaviorWrapper" class="custom-select-wrapper" style="width: 100%;">
+                                    <div id="mBehaviorWrapper" class="custom-select-wrapper">
                                         <div class="custom-select-trigger" onclick="toggleMonsterBehaviorSelect()"
                                             id="mBehaviorTrigger" style="padding: 0.8rem; font-size: 0.9rem;">
                                             <span class="material-symbols-outlined cs-icon"
@@ -319,8 +319,7 @@
                                             class="material-symbols-outlined"
                                             style="font-size: 1.1rem; color: #10b981;">explore</span>
                                         Voie Native (Secret)</label>
-                                    <div class="custom-select-wrapper" id="mNativeSecretWrapper"
-                                        style="z-index: 95; width: 100%;">
+                                    <div class="custom-select-wrapper" id="mNativeSecretWrapper" style="z-index: 95;">
                                         <div class="custom-select-trigger" style="padding: 0.8rem;">
                                             <span class="cs-label"
                                                 style="display: flex; align-items: center; gap: 0.4rem;">
@@ -441,8 +440,7 @@
                                         placeholder="Rechercher par nom..." oninput="renderMonstersList()">
                                 </div>
                                 <div style="width: 140px; position: relative;">
-                                    <div id="mLevelFilterWrapper" class="custom-select-wrapper"
-                                        style="width: 100%; height: 100%;">
+                                    <div id="mLevelFilterWrapper" class="custom-select-wrapper" style="height: 100%;">
                                         <div class="custom-select-trigger" onclick="toggleFilterLevelSelect()"
                                             id="mLevelFilterTrigger" style="padding: 0.8rem; font-size: 0.9rem;">
                                             <span class="material-symbols-outlined cs-icon"
@@ -481,7 +479,7 @@
                                 </div>
                                 <div style="width: 260px; position: relative;">
                                     <div id="mListSecretFilterWrapper" class="custom-select-wrapper"
-                                        style="width: 100%; height: 100%;">
+                                        style="height: 100%;">
                                         <div class="custom-select-trigger" onclick="toggleMonsterSecretSelect()"
                                             id="mListSecretFilterTrigger" style="padding: 0.8rem; font-size: 0.9rem;">
                                             <span class="material-symbols-outlined cs-icon"
@@ -573,8 +571,7 @@
                                     <input type="hidden" id="monsterSecretFilter" value="">
                                 </div>
                                 <div style="width: 220px; position: relative;">
-                                    <div id="mSortWrapper" class="custom-select-wrapper"
-                                        style="width: 100%; height: 100%;">
+                                    <div id="mSortWrapper" class="custom-select-wrapper" style="height: 100%;">
                                         <div class="custom-select-trigger" onclick="toggleSortSelect()"
                                             id="mSortTrigger" style="padding: 0.8rem; font-size: 0.9rem;">
                                             <span class="material-symbols-outlined cs-icon"

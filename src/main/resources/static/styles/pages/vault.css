@@ -273,13 +273,6 @@
     background: linear-gradient(180deg, rgba(60, 35, 35, 0.15) 0%, rgba(30, 41, 59, 0.4) 30%);
 }
 
-/* ===== Custom Select ===== */
-.custom-select-wrapper {
-    position: relative;
-    user-select: none;
-    width: 100%;
-}
-
 .custom-select-trigger {
     background: rgba(0, 0, 0, 0.3);
     border: 1px solid rgba(255, 255, 255, 0.08);

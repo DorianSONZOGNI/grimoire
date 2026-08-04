@@ -202,7 +202,7 @@ function deleteEquipment(id) {
     if (!eq) return;
 
     const weightStr = eq._weight % 1 === 0 ? eq._weight : eq._weight.toFixed(1);
-    
+
     showModal({
         title: "Détruire l'équipement ?",
         body: `Voulez-vous vraiment détruire l'équipement <strong style="color:#fff;">${eq.name}</strong> ?<br><br>Cette action est définitive (pour la template de la boutique).`,
@@ -365,7 +365,7 @@ function renderGrid(equipments) {
                                 let aTemp = window.allAnomalies ? window.allAnomalies.find(a => a.name === n) : null;
                                 const catIcon = aTemp && aTemp.category ? getCategoryIcon(aTemp.category) : 'star';
                                 const spiriColor = aTemp && aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
-                                        const tooltipData = getAnomalyTooltipHTML(aTemp, n);
+                                const tooltipData = getAnomalyTooltipHTML(aTemp, n);
                                 anos.push(`<span class="anomaly-badge" style="border-color: ${spiriColor}; background: ${spiriColor}25; color: ${spiriColor};" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}">
                                         <span class="material-symbols-outlined text-sm align-middle" style="color: ${spiriColor};">${catIcon}</span> ${q}
                                     </span>`);
