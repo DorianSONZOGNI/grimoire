@@ -511,13 +511,15 @@
 }
 
 .custom-select-options::-webkit-scrollbar-thumb,
-.custom-scrollbar::-webkit-scrollbar-thumb {
+.custom-scrollbar::-webkit-scrollbar-thumb,
+.custom-options::-webkit-scrollbar-thumb {
     background: var(--glass-border, rgba(255, 255, 255, 0.2));
     border-radius: 4px;
 }
 
 .custom-select-options::-webkit-scrollbar-thumb:hover,
-.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+.custom-scrollbar::-webkit-scrollbar-thumb:hover,
+.custom-options::-webkit-scrollbar-thumb:hover {
     background: rgba(255, 255, 255, 0.4);
 }
 

@@ -273,17 +273,6 @@
     background: linear-gradient(180deg, rgba(60, 35, 35, 0.15) 0%, rgba(30, 41, 59, 0.4) 30%);
 }
 
-.custom-select-options::-webkit-scrollbar-thumb,
-.custom-options::-webkit-scrollbar-thumb {
-    background: rgba(255, 255, 255, 0.15);
-    border-radius: 6px;
-}
-
-.custom-select-options::-webkit-scrollbar-thumb:hover,
-.custom-options::-webkit-scrollbar-thumb:hover {
-    background: rgba(255, 255, 255, 0.25);
-}
-
 .custom-select-wrapper.open .custom-select-options {
     display: block;
 }
