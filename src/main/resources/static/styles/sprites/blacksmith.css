@@ -33,7 +33,7 @@
 
 /* work1 (5 frames) : boucle interne 1s. Visibility sur 8.2s. */
 .blacksmith.work1 {
-    background-image: url('images/forgeron-work-1.png');
+    background-image: url('../../images/forgeron-work-1.png');
     animation:
         anim_work1 1.0s steps(5) infinite,
         /* 5 frames x 0.2s = 1s */
@@ -43,7 +43,7 @@
 
 /* work2 (6 frames) : boucle interne 1.2s. Visibility sur 8.2s. */
 .blacksmith.work2 {
-    background-image: url('images/forgeron-work-2.png');
+    background-image: url('../../images/forgeron-work-2.png');
     animation:
         anim_work2 1.2s steps(6) infinite,
         /* 6 frames x 0.2s = 1.2s */
@@ -52,7 +52,7 @@
 
 /* bored (10 frames) : boucle interne 2.0s. Visibility sur 8.2s. */
 .blacksmith.bored {
-    background-image: url('images/forgeron-bored.png');
+    background-image: url('../../images/forgeron-bored.png');
     animation:
         anim_bored 2.0s steps(10) infinite,
         /* 10 frames x 0.2s = 2s */
