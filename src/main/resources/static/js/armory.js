@@ -898,7 +898,7 @@ function renderEquipModal() {
                                 </div>`;
                     }
 
-                    const aRarityName = getRarityName(eq.rarity);
+                    const aRarityName = getRarityName(a.rarity);
                     const aRarityLabel = typeof a.rarity === 'object' ? a.rarity?.label : a.rarity;
 
                     const tooltipHtml = `
