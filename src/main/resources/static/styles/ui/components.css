@@ -548,6 +548,11 @@
     font-size: 0.9rem;
 }
 
+.custom-select-trigger:hover,
+.custom-select-wrapper.open .custom-select-trigger {
+    border-color: #f59e0b;
+}
+
 .custom-select-wrapper.open {
     z-index: 99999 !important;
 }

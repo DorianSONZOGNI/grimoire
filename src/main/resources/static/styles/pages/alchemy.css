@@ -144,11 +144,6 @@
     line-height: 1.6;
 }
 
-.custom-select-trigger:hover,
-.custom-select-wrapper.open .custom-select-trigger {
-    border-color: #10b981;
-}
-
 .custom-select-options {
     position: absolute;
     top: calc(100% + 5px);

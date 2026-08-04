@@ -519,7 +519,6 @@ document.addEventListener('click', (e) => {
     if (!e.target.closest('.custom-select-wrapper')) {
         document.querySelectorAll('.custom-select-wrapper.open').forEach(w => w.classList.remove('open'));
         document.querySelectorAll('.custom-select-options').forEach(m => m.style.display = 'none');
-        document.querySelectorAll('.custom-select-trigger').forEach(t => t.style.borderColor = 'var(--glass-border)');
     }
 
     const trigger = e.target.closest('.custom-select-trigger');
@@ -530,20 +529,15 @@ document.addEventListener('click', (e) => {
                 w.classList.remove('open');
                 const m = w.querySelector('.custom-select-options');
                 if (m) m.style.display = 'none';
-                const t = w.querySelector('.custom-select-trigger');
-                if (t) t.style.borderColor = 'var(--glass-border)';
             }
         });
 
-        // If it's a static select without display block logic hooked in buildCustomSelect
         const optionsMenu = wrapper.querySelector('.custom-select-options');
-        if (optionsMenu && !optionsMenu.style.display || optionsMenu.style.display === 'none') {
+        if (optionsMenu && (!optionsMenu.style.display || optionsMenu.style.display === 'none')) {
             optionsMenu.style.display = 'block';
-            trigger.style.borderColor = '#10b981';
             wrapper.classList.add('open');
         } else if (optionsMenu) {
             optionsMenu.style.display = 'none';
-            trigger.style.borderColor = 'var(--glass-border)';
             wrapper.classList.remove('open');
         }
         return;
@@ -561,8 +555,7 @@ document.addEventListener('click', (e) => {
             wrapper.classList.remove('open');
             const optionsMenu = wrapper.querySelector('.custom-select-options');
             if (optionsMenu) optionsMenu.style.display = 'none';
-            const tr = wrapper.querySelector('.custom-select-trigger');
-            if (tr) tr.style.borderColor = 'var(--glass-border)';
+
             hiddenInput.dispatchEvent(new Event('change'));
         }
     }

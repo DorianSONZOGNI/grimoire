@@ -30,11 +30,6 @@
      align-items: center;
  }
 
- .custom-select-trigger:hover,
- .custom-select-wrapper.open .custom-select-trigger {
-     border-color: #f59e0b;
- }
-
  .custom-select-options {
      position: absolute;
      top: calc(100% + 5px);
