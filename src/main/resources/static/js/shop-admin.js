@@ -92,14 +92,7 @@ document.addEventListener('click', (e) => {
 // ===== API =====
 async function loadEquipments() {
     try {
-        const res = await globalFetch('/api/shop/templates');
-        if (!res.ok) {
-            if (res.status === 403 || res.status === 401) {
-                document.getElementById('vaultGrid').innerHTML = `<div class="text-error"><span class="material-symbols-outlined">error</span> Accès refusé.</div>`;
-            }
-            return;
-        }
-        pageState.allEquipments = await res.json();
+        pageState.allEquipments = await api.loadEquipments({ sources: ['/api/shop/templates'] });
         pageState.allEquipments.forEach(eq => {
             eq._weight = calculateWeight(eq);
         });
@@ -164,17 +157,17 @@ function addAnomalyRow(selectedName = '', qty = 1) {
             const spiriColor = selA.spiritualite ? getSpiritualiteColor(selA.spiritualite) : '#a855f7';
             displayLabel = `<span class="material-symbols-outlined cs-icon" style="color: ${spiriColor};">${catIcon}</span> ${selectedName} (Niv. ${selA.level || 1})`;
         } else {
-            displayLabel = `<span class="material-symbols-outlined cs-icon" style="color: #a855f7;">star</span> ${selectedName}`;
+            displayLabel = `<span class="material-symbols-outlined cs-icon text-purple">star</span> ${selectedName}`;
         }
     }
 
     row.innerHTML = `
-        <div class="custom-select-wrapper" style="flex: 1;">
+        <div class="custom-select-wrapper flex-1">
             <div class="custom-select-trigger flex-between" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 0.6rem; cursor: pointer; align-items: center; width: 100%;">
                 <span class="cs-label flex-center" style="color: #cbd5e1; font-size: 0.85rem; gap: 0.3rem;">${displayLabel}</span>
                 <span class="material-symbols-outlined" style="color: #64748b; font-size: 1.1rem;">expand_more</span>
             </div>
-            <div class="custom-select-options custom-options" style="max-height: 150px; overflow-y: auto;">
+            <div class="custom-select-options custom-options">
                 ${optionsHtml}
             </div>
             <input type="hidden" class="anomaly-select-hidden" value="${selectedName}">
@@ -184,7 +177,7 @@ function addAnomalyRow(selectedName = '', qty = 1) {
             <input type="number" class="anomaly-qty-input" value="${qty}" min="1" style="width: 60px; padding: 0.5rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-family: 'Outfit', sans-serif;">
         </div>
         <button type="button" class="btn-remove-row" style="background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5; border-radius: 6px; cursor: pointer; padding: 0.4rem; display: flex; justify-content: center; align-items: center;">
-            <span class="material-symbols-outlined" style="font-size: 1rem;">delete</span>
+            <span class="material-symbols-outlined icon-sm">delete</span>
         </button>
     `;
 
@@ -202,10 +195,10 @@ function deleteEquipment(id) {
     if (!eq) return;
 
     const weightStr = eq._weight % 1 === 0 ? eq._weight : eq._weight.toFixed(1);
-    
+
     showModal({
         title: "Détruire l'équipement ?",
-        body: `Voulez-vous vraiment détruire l'équipement <strong style="color:#fff;">${eq.name}</strong> ?<br><br>Cette action est définitive (pour la template de la boutique).`,
+        body: `Voulez-vous vraiment détruire l'équipement <strong class="text-white">${eq.name}</strong> ?<br><br>Cette action est définitive (pour la template de la boutique).`,
         icon: 'warning',
         confirmText: `Oui, détruire`,
         onConfirm: async () => {
@@ -232,8 +225,8 @@ function renderVault() {
     const slotOrder = { 'CASQUE': 1, 'PLASTRON': 2, 'ARME_DEUX_MAINS': 3, 'ARME_GAUCHE': 4, 'ARME_DROITE': 5, 'ANNEAU_GAUCHE': 6, 'ANNEAU_DROIT': 7, 'BOTTES': 8, 'CAPE': 9, 'CONSOMMABLE': 10 };
 
     let sorted = [...pageState.allEquipments].sort((a, b) => {
-        const rNameA = typeof a.rarity === 'object' ? a.rarity?.name : a.rarity;
-        const rNameB = typeof b.rarity === 'object' ? b.rarity?.name : b.rarity;
+        const rNameA = getRarityName(a.rarity);
+        const rNameB = getRarityName(b.rarity);
         const rA = rarityOrder[rNameA || 'COMMUN'] ?? 100;
         const rB = rarityOrder[rNameB || 'COMMUN'] ?? 100;
         if (rA !== rB) return rA - rB;
@@ -256,7 +249,7 @@ function renderGrid(equipments) {
     if (equipments.length === 0) {
         container.innerHTML = `
             <div class="vault-empty-state">
-                <span class="material-symbols-outlined opacity-50" style="font-size: 3rem;">search_off</span>
+                <span class="material-symbols-outlined opacity-50 icon-lg">search_off</span>
                 Aucun objet ne correspond à votre recherche.
             </div>`;
         return;
@@ -358,15 +351,15 @@ function renderGrid(equipments) {
 
                     <div class="shop-admin-row-price">
                         ${(() => {
-                        let priceHtml = `${displayPrice} <span class="material-symbols-outlined" style="font-size: 1.1rem;">monetization_on</span>`;
+                        let priceHtml = `${displayPrice} <span class="material-symbols-outlined text-lg">monetization_on</span>`;
                         if (eq.priceAnomalies && Object.keys(eq.priceAnomalies).length > 0) {
                             let anos = [];
                             for (const [n, q] of Object.entries(eq.priceAnomalies)) {
                                 let aTemp = window.allAnomalies ? window.allAnomalies.find(a => a.name === n) : null;
                                 const catIcon = aTemp && aTemp.category ? getCategoryIcon(aTemp.category) : 'star';
                                 const spiriColor = aTemp && aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
-                                        const tooltipData = getAnomalyTooltipHTML(aTemp, n);
-                                anos.push(`<span class="anomaly-badge" style="border-color: ${spiriColor}; background: ${spiriColor}25; color: ${spiriColor};" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}">
+                                const tooltipData = getAnomalyTooltipHTML(aTemp, n);
+                                anos.push(`<span class="anomaly-badge" style="border-color: ${spiriColor}; background: ${spiriColor}25; color: ${spiriColor};" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}">
                                         <span class="material-symbols-outlined text-sm align-middle" style="color: ${spiriColor};">${catIcon}</span> ${q}
                                     </span>`);
                             }
@@ -378,10 +371,10 @@ function renderGrid(equipments) {
 
                     <div class="shop-admin-row-actions">
                         ${window.isAdmin ? `<button class="vault-btn-edit" onclick="editEquipment(${eq.id})" title="Modifier l'objet" style="padding: 0.4rem; border-radius: 6px;">
-                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">edit</span>
+                            <span class="material-symbols-outlined text-lg">edit</span>
                         </button>` : ''}
                         ${(window.isAdmin || eq.ownerUsername === window.currentUser?.username) ? `<button class="vault-btn-delete" onclick="deleteEquipment(${eq.id})" title="Détruire l'objet" style="padding: 0.4rem; border-radius: 6px;">
-                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">delete</span>
+                            <span class="material-symbols-outlined text-lg">delete</span>
                         </button>` : ''}
                     </div>
                 </div>
@@ -458,7 +451,7 @@ window.addEventListener('authLoaded', () => {
 window.openCreateEqModal = function () {
     pageState.editingEquipmentId = null;
     document.getElementById('equipModalTitle').innerHTML = 'Forger un objet';
-    document.getElementById('submitEquipmentBtn').innerHTML = '<span class="material-symbols-outlined" style="font-size: 1.2rem;">add</span> Forger';
+    document.getElementById('submitEquipmentBtn').innerHTML = '<span class="material-symbols-outlined icon-md">add</span> Forger';
     resetEqForm();
     document.getElementById('equipCreateModal').classList.add('show');
     updateWeightUI();
@@ -477,7 +470,7 @@ window.editEquipment = function (id) {
     if (!eq) return;
 
     document.getElementById('equipModalTitle').innerHTML = 'Modifier un objet';
-    document.getElementById('submitEquipmentBtn').innerHTML = '<span class="material-symbols-outlined" style="font-size: 1.2rem;">save</span> Enregistrer';
+    document.getElementById('submitEquipmentBtn').innerHTML = '<span class="material-symbols-outlined icon-md">save</span> Enregistrer';
 
     document.getElementById('eqName').value = eq.name || '';
     if (document.getElementById('eqAvailableInShop')) {
@@ -529,7 +522,7 @@ window.editEquipment = function (id) {
 
     // Rarity Setup
     const rarityInput = document.getElementById('eqRarity');
-    const eqRarityName = eq.rarity && typeof eq.rarity === 'object' ? eq.rarity.name : eq.rarity;
+    const eqRarityName = getRarityName(eq.rarity);
     if (rarityInput && eqRarityName) {
         rarityInput.value = eqRarityName;
         const option = document.querySelector(`.custom-option.rarity-${eqRarityName}`);
@@ -775,65 +768,13 @@ window.updateWeightUI = async function () {
     const priceEl = document.getElementById('eqPriceText');
     if (priceEl) {
         const displayPrice = price % 1 === 0 ? price : price.toFixed(1);
-        priceEl.innerHTML = `${displayPrice} <span class="material-symbols-outlined" style="font-size: 1.2rem;">monetization_on</span>`;
+        priceEl.innerHTML = `${displayPrice} <span class="material-symbols-outlined icon-md">monetization_on</span>`;
     }
 }
 
-window.showTooltipFixed = function (el) {
-    let tooltip = document.getElementById('globalFixedTooltip');
-    if (!tooltip) {
-        tooltip = document.createElement('div');
-        tooltip.id = 'globalFixedTooltip';
-        tooltip.style.position = 'fixed';
-        tooltip.style.zIndex = '999999';
-        tooltip.style.visibility = 'visible';
-        tooltip.style.opacity = '1';
-        tooltip.style.pointerEvents = 'none';
-        tooltip.style.transform = 'none';
-        tooltip.style.background = 'rgba(15, 23, 42, 0.95)';
-        tooltip.style.border = '1px solid rgba(168, 85, 247, 0.5)';
-        tooltip.style.borderRadius = '8px';
-        tooltip.style.padding = '10px';
-        tooltip.style.color = '#f8fafc';
-        tooltip.style.fontSize = '0.8rem';
-        tooltip.style.lineHeight = '1.4';
-        tooltip.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.5)';
-        tooltip.style.maxWidth = 'max-content';
-        tooltip.style.whiteSpace = 'nowrap';
-        tooltip.style.wordWrap = 'normal';
-        tooltip.style.textAlign = 'left';
-        document.body.appendChild(tooltip);
-    }
-    tooltip.innerHTML = el.getAttribute('data-tooltip-html');
-    const elColor = el.style.color || '#a855f7';
-    tooltip.style.border = '1px solid ' + elColor;
-    const titleEl = tooltip.querySelector('.anomaly-tooltip-title');
-    if (titleEl) {
-        titleEl.style.color = elColor;
-        titleEl.style.borderBottom = '1px solid ' + elColor;
-    }
-    tooltip.style.display = 'block';
+;
 
-    const rect = el.getBoundingClientRect();
-    let top = rect.bottom + 8;
-    let left = rect.left + rect.width / 2 - tooltip.offsetWidth / 2;
 
-    if (top + tooltip.offsetHeight > window.innerHeight) {
-        top = rect.top - tooltip.offsetHeight - 8;
-    }
-    if (left < 10) left = 10;
-    if (left + tooltip.offsetWidth > window.innerWidth - 10) {
-        left = window.innerWidth - tooltip.offsetWidth - 10;
-    }
-
-    tooltip.style.top = top + 'px';
-    tooltip.style.left = left + 'px';
-};
-
-window.hideTooltipFixed = function () {
-    const tooltip = document.getElementById('globalFixedTooltip');
-    if (tooltip) tooltip.style.display = 'none';
-};
 
 
 

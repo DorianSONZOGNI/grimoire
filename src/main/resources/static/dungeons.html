@@ -649,21 +649,21 @@
 
     <app-navbar active-page="dungeon"></app-navbar>
 
-    <main class="vault-container" style="width: 100%; max-width: 1200px; margin: 0 auto; padding: 2rem;">
+    <main class="vault-container"   style="width: 100%; max-width: 1200px; margin: 0 auto; padding: 2rem">
 
-        <div id="authWarning" style="display: none; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; padding: 1rem; border-radius: 8px; margin-bottom: 2rem; text-align: center;">
-            <span class="material-symbols-outlined" style="vertical-align: middle; margin-right: 0.5rem;">error</span>
+        <div class="text-danger"  id="authWarning" style="display: none; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3);  padding: 1rem; border-radius: 8px; margin-bottom: 2rem; text-align: center">
+            <span class="material-symbols-outlined"   style="vertical-align: middle; margin-right: 0.5rem">error</span>
             Vous devez être connecté pour entrer dans un donjon.
         </div>
 
-        <div id="dungeonsContent" style="display: none;">
-            <h2 style="font-family: 'Outfit'; font-size: 2rem; margin-bottom: 0.5rem;">
-                <span class="logo-text-gradient logo-dungeon">Exploration</span>
+        <div id="dungeonsContent" style="display: none">
+            <h2 class="mb-2" style="font-family: 'Outfit'; font-size: 2rem">
+                <span class="logo-text-gradient logo-dungeon"  >Exploration</span>
             </h2>
-            <p style="color: var(--text-muted); margin-bottom: 2rem;">Choisissez un donjon à affronter. La mort n'est
+            <p style="color: var(--text-muted); margin-bottom: 2rem">Choisissez un donjon à affronter. La mort n'est
                 qu'un léger contretemps.</p>
 
-            <div class="tabs-header" id="dungeonsTabs" style="display: none;">
+            <div class="tabs-header"   id="dungeonsTabs" style="display: none">
                 <!-- Rempli par JS -->
             </div>
 
@@ -671,31 +671,31 @@
                 <!-- Rempli par JS -->
             </div>
 
-            <div id="noDungeonsMsg" style="color: var(--text-muted); display: none;">Aucun donjon disponible pour le
+            <div id="noDungeonsMsg" style="color: var(--text-muted); display: none">Aucun donjon disponible pour le
                 moment.</div>
         </div>
 
-        <div id="prepInterface" style="display: none;">
-            <div class="prep-header">
+        <div id="prepInterface" style="display: none">
+            <div class="prep-header"  >
                 <div>
-                    <h2 style="font-family: 'Outfit'; font-size: 2rem; color: #f8fafc; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 0.5rem;">
-                        <span class="material-symbols-outlined logo-icon-gradient logo-dungeon" style="font-size: 2.5rem;">swords</span>
-                        <span id="prepDungeonTitle" class="logo-text-gradient logo-dungeon">Préparation</span>
+                    <h2 class="mb-2" style="font-family: 'Outfit'; font-size: 2rem; color: #f8fafc;  display: flex; align-items: center; gap: 0.5rem">
+                        <span class="material-symbols-outlined logo-icon-gradient logo-dungeon"   style="font-size: 2.5rem">swords</span>
+                        <span class="logo-text-gradient logo-dungeon"  id="prepDungeonTitle" >Préparation</span>
                     </h2>
-                    <div id="prepDungeonDesc" style="color: var(--text-muted);">Préparez votre équipe et votre
+                    <div id="prepDungeonDesc" style="color: var(--text-muted)">Préparez votre équipe et votre
                         équipement avant de plonger.</div>
                 </div>
-                <button onclick="closePrepInterface()" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #f8fafc; padding: 0.8rem 1.5rem; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-family: 'Inter', sans-serif;">
-                    <span class="material-symbols-outlined" style="font-size: 1.2rem;">arrow_back</span> Retour
+                <button onclick="closePrepInterface()" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); color: #f8fafc; padding: 0.8rem 1.5rem; border-radius: 8px; cursor: pointer; display: flex; align-items: center; gap: 0.5rem; font-family: 'Inter', sans-serif">
+                    <span class="material-symbols-outlined"   style="font-size: 1.2rem">arrow_back</span> Retour
                 </button>
             </div>
 
-            <div class="prep-layout">
+            <div class="prep-layout"  >
                 <!-- Colonne Gauche : Sélection Personnage -->
                 <div>
-                    <h3 style="font-family: 'Outfit'; font-size: 1.2rem; color: #f8fafc; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
-                        <span class="material-symbols-outlined" style="color: #0ea5e9;">group</span> Sélection du Héros
-                        <span id="heroCountDisplay" style="font-size: 0.9rem; color: #94a3b8; font-weight: normal; margin-left: auto;">(0 /
+                    <h3 style="font-family: 'Outfit'; font-size: 1.2rem; color: #f8fafc; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem">
+                        <span class="material-symbols-outlined"   style="color: #0ea5e9">group</span> Sélection du Héros
+                        <span class="text-muted"  id="heroCountDisplay" style="font-size: 0.9rem;  font-weight: normal; margin-left: auto">(0 /
                             1)</span>
                     </h3>
                     <div id="prepCharList">
@@ -705,93 +705,93 @@
 
                 <!-- Colonne Centrale : Aperçu des Stats et Equipement -->
                 <div>
-                    <h3 style="font-family: 'Outfit'; font-size: 1.2rem; color: #f8fafc; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem;">
-                        <span class="material-symbols-outlined" style="color: #a855f7;">analytics</span> Statistiques
+                    <h3 style="font-family: 'Outfit'; font-size: 1.2rem; color: #f8fafc; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem">
+                        <span class="material-symbols-outlined text-purple"  >analytics</span> Statistiques
                         Totales
                     </h3>
 
-                    <div id="prepStatGrid" class="stat-grid" style="display: none;">
+                    <div class="stat-grid"  id="prepStatGrid"  style="display: none">
                         <!-- Rempli par JS -->
                     </div>
-                    <div id="prepStatEmpty" style="display: flex; align-items: center; justify-content: center; height: 194px; width: 100%; text-align: center; color: var(--text-muted); padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 12px; border: 1px dashed rgba(255,255,255,0.1); margin-bottom: 2rem; box-sizing: border-box;">
+                    <div id="prepStatEmpty" style="display: flex; align-items: center; justify-content: center; height: 194px; width: 100%; text-align: center; color: var(--text-muted); padding: 1rem; background: rgba(0,0,0,0.2); border-radius: 12px; border: 1px dashed rgba(255,255,255,0.1); margin-bottom: 2rem; box-sizing: border-box">
                         Veuillez sélectionner un personnage pour voir ses statistiques.
                     </div>
 
-                    <h3 style="font-family: 'Outfit'; font-size: 1.2rem; color: #f8fafc; margin-bottom: 1rem; display: flex; align-items: center; gap: 0.5rem;">
-                        <span class="material-symbols-outlined" style="color: #f59e0b;">shield</span> Équipement Actuel
+                    <h3 class="mb-4" style="font-family: 'Outfit'; font-size: 1.2rem; color: #f8fafc;  display: flex; align-items: center; gap: 0.5rem">
+                        <span class="material-symbols-outlined text-warning"  >shield</span> Équipement Actuel
                     </h3>
                     <div id="prepEquipList">
-                        <div style="color: var(--text-muted); font-size: 0.9rem;">Aucun équipement à afficher.</div>
+                        <div style="color: var(--text-muted); font-size: 0.9rem">Aucun équipement à afficher.</div>
                     </div>
                 </div>
 
                 <!-- Colonne Droite : Consommable & Bouton d'entrée -->
                 <div>
-                    <h3 style="font-family: 'Outfit'; font-size: 1.2rem; color: #f8fafc; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem; justify-content: space-between;">
-                        <div style="display: flex; align-items: center; gap: 0.5rem;">
-                            <span class="material-symbols-outlined" style="color: #10b981;">inventory_2</span>
+                    <h3 style="font-family: 'Outfit'; font-size: 1.2rem; color: #f8fafc; margin-bottom: 1.5rem; display: flex; align-items: center; gap: 0.5rem; justify-content: space-between">
+                        <div style="display: flex; align-items: center; gap: 0.5rem">
+                            <span class="material-symbols-outlined text-success"  >inventory_2</span>
                             Inventaire
                         </div>
                     </h3>
 
-                    <div style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
-                        <button class="consumable-filter" onclick="toggleConsumableFilter(this, 'hp')" style="cursor: pointer; padding: 0.3rem 0.6rem; border-radius: 8px; font-size: 0.75rem; font-weight: 600; border: 1px solid rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.1); color: #fca5a5; display: flex; align-items: center; gap: 0.3rem; opacity: 0.4; transition: all 0.2s;">
-                            <span class="material-symbols-outlined" style="font-size: 0.9rem;">favorite</span> HP
+                    <div class="mb-4" style="display: flex; gap: 0.5rem">
+                        <button class="consumable-filter"   onclick="toggleConsumableFilter(this, 'hp')" style="cursor: pointer; padding: 0.3rem 0.6rem; border-radius: 8px; font-size: 0.75rem; font-weight: 600; border: 1px solid rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.1); color: #fca5a5; display: flex; align-items: center; gap: 0.3rem; opacity: 0.4; transition: all 0.2s">
+                            <span class="material-symbols-outlined"   style="font-size: 0.9rem">favorite</span> HP
                         </button>
-                        <button class="consumable-filter" onclick="toggleConsumableFilter(this, 'mana')" style="cursor: pointer; padding: 0.3rem 0.6rem; border-radius: 8px; font-size: 0.75rem; font-weight: 600; border: 1px solid rgba(59, 130, 246, 0.4); background: rgba(59, 130, 246, 0.1); color: #93c5fd; display: flex; align-items: center; gap: 0.3rem; opacity: 0.4; transition: all 0.2s;">
-                            <span class="material-symbols-outlined" style="font-size: 0.9rem;">water_drop</span> Mana
+                        <button class="consumable-filter"   onclick="toggleConsumableFilter(this, 'mana')" style="cursor: pointer; padding: 0.3rem 0.6rem; border-radius: 8px; font-size: 0.75rem; font-weight: 600; border: 1px solid rgba(59, 130, 246, 0.4); background: rgba(59, 130, 246, 0.1); color: #93c5fd; display: flex; align-items: center; gap: 0.3rem; opacity: 0.4; transition: all 0.2s">
+                            <span class="material-symbols-outlined"   style="font-size: 0.9rem">water_drop</span> Mana
                         </button>
-                        <button class="consumable-filter" onclick="toggleConsumableFilter(this, 'util')" style="cursor: pointer; padding: 0.3rem 0.6rem; border-radius: 8px; font-size: 0.75rem; font-weight: 600; border: 1px solid rgba(168, 85, 247, 0.4); background: rgba(168, 85, 247, 0.1); color: #d8b4fe; display: flex; align-items: center; gap: 0.3rem; opacity: 0.4; transition: all 0.2s;">
-                            <span class="material-symbols-outlined" style="font-size: 0.9rem;">construction</span> Util
+                        <button class="consumable-filter"   onclick="toggleConsumableFilter(this, 'util')" style="cursor: pointer; padding: 0.3rem 0.6rem; border-radius: 8px; font-size: 0.75rem; font-weight: 600; border: 1px solid rgba(168, 85, 247, 0.4); background: rgba(168, 85, 247, 0.1); color: #d8b4fe; display: flex; align-items: center; gap: 0.3rem; opacity: 0.4; transition: all 0.2s">
+                            <span class="material-symbols-outlined"   style="font-size: 0.9rem">construction</span> Util
                         </button>
                     </div>
 
-                    <div id="prepConsumableList" style="margin-bottom: 2rem; max-height: 250px; overflow-y: auto; overflow-x: hidden; padding-right: 0.5rem;">
+                    <div id="prepConsumableList" style="margin-bottom: 2rem; max-height: 250px; overflow-y: auto; overflow-x: hidden; padding-right: 0.5rem">
                         <!-- Rempli par JS -->
                     </div>
 
-                    <div style="background: rgba(220, 38, 38, 0.05); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(220, 38, 38, 0.2); margin-bottom: 1.5rem;">
-                        <div style="font-size: 0.9rem; color: #fca5a5; margin-bottom: 1rem; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">
+                    <div style="background: rgba(220, 38, 38, 0.05); padding: 1.5rem; border-radius: 12px; border: 1px solid rgba(220, 38, 38, 0.2); margin-bottom: 1.5rem">
+                        <div class="mb-4" style="font-size: 0.9rem; color: #fca5a5;  font-weight: 600; text-transform: uppercase; letter-spacing: 1px">
                             Ennemis détectés</div>
-                        <div id="prepMonstersList" style="color: #ef4444; font-weight: 500;">
+                        <div class="text-danger"  id="prepMonstersList" style="font-weight: 500">
                             <!-- Rempli par JS -->
                         </div>
                     </div>
 
-                    <button class="btn-fight" id="btnEnterDungeon" onclick="startCombat()" style="opacity: 0.5; pointer-events: none;">
-                        <span class="material-symbols-outlined">swords</span>
+                    <button class="btn-fight"   id="btnEnterDungeon" onclick="startCombat()" style="opacity: 0.5; pointer-events: none">
+                        <span class="material-symbols-outlined"  >swords</span>
                         ENTRER DANS LE DONJON
                     </button>
                 </div>
             </div>
         </div>
-        <div class="character-agis"></div>
+        <div class="character-agis"  ></div>
     </main>
     <!-- Notification Toast -->
-    <div id="dungeonNotif" style="position: fixed; bottom: 2rem; right: 2rem; background: #10b981; color: #fff; padding: 1rem 2rem; border-radius: 12px; font-weight: 500; font-family: 'Outfit', sans-serif; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3); transform: translateY(100px); opacity: 0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 9999;">
-        <div style="display: flex; align-items: center; gap: 0.5rem;">
-            <span class="material-symbols-outlined" id="dungeonNotifIcon" style="font-size: 1.2rem;">error</span>
+    <div id="dungeonNotif" style="position: fixed; bottom: 2rem; right: 2rem; background: #10b981; color: #fff; padding: 1rem 2rem; border-radius: 12px; font-weight: 500; font-family: 'Outfit', sans-serif; box-shadow: 0 10px 25px rgba(16, 185, 129, 0.3); transform: translateY(100px); opacity: 0; transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1); z-index: 9999">
+        <div style="display: flex; align-items: center; gap: 0.5rem">
+            <span class="material-symbols-outlined"   id="dungeonNotifIcon" style="font-size: 1.2rem">error</span>
             <span id="dungeonNotifText">Action réussie</span>
         </div>
     </div>
 
     <!-- Unlock Dungeon Modal -->
-    <div class="unlock-overlay" id="unlockModal">
-        <div class="unlock-modal">
-            <div class="unlock-modal-icon">
-                <span class="material-symbols-outlined" style="font-size: 2.2rem; color: #fbbf24;">lock_open</span>
+    <div class="unlock-overlay"   id="unlockModal">
+        <div class="unlock-modal"  >
+            <div class="unlock-modal-icon"  >
+                <span class="material-symbols-outlined text-gold"   style="font-size: 2.2rem">lock_open</span>
             </div>
-            <div class="unlock-modal-title">Débloquer ce donjon ?</div>
-            <div class="unlock-modal-desc">Ce dévérouillage est <strong style="color: #f8fafc;">définitif</strong> pour
+            <div class="unlock-modal-title"  >Débloquer ce donjon ?</div>
+            <div class="unlock-modal-desc"  >Ce dévérouillage est <strong style="color: #f8fafc">définitif</strong> pour
                 votre compte. Vous n’aurez plus jamais à payer ce coût.</div>
-            <div class="unlock-modal-cost">
-                <span class="material-symbols-outlined" style="font-size: 1.3rem;">monetization_on</span>
+            <div class="unlock-modal-cost"  >
+                <span class="material-symbols-outlined"   style="font-size: 1.3rem">monetization_on</span>
                 <span id="unlockModalCost">0</span> Or
             </div>
-            <div class="unlock-modal-actions">
-                <button class="unlock-btn-cancel" onclick="closeUnlockModal()">Annuler</button>
-                <button class="unlock-btn-confirm" id="unlockModalConfirmBtn">
-                    <span class="material-symbols-outlined" style="font-size: 1.1rem;">lock_open</span>
+            <div class="unlock-modal-actions"  >
+                <button class="unlock-btn-cancel"   onclick="closeUnlockModal()">Annuler</button>
+                <button class="unlock-btn-confirm"   id="unlockModalConfirmBtn">
+                    <span class="material-symbols-outlined text-lg"  >lock_open</span>
                     Débloquer
                 </button>
             </div>
@@ -799,22 +799,22 @@
     </div>
 
     <!-- Entry Cost Modal -->
-    <div class="entry-overlay" id="entryModal">
-        <div class="entry-modal">
-            <div class="entry-modal-icon">
-                <span class="material-symbols-outlined" style="font-size: 2.2rem; color: #ef4444;">swords</span>
+    <div class="entry-overlay"   id="entryModal">
+        <div class="entry-modal"  >
+            <div class="entry-modal-icon"  >
+                <span class="material-symbols-outlined text-danger"   style="font-size: 2.2rem">swords</span>
             </div>
-            <div class="unlock-modal-title">Entrer dans le donjon ?</div>
-            <div class="unlock-modal-desc">Le coût d'entrée sera déduit de votre Or. Ce coût
-                est prélevé à <strong style="color: #f8fafc;">chaque tentative</strong>.</div>
-            <div class="unlock-modal-cost" style="border-color: rgba(220, 38, 38, 0.25); background: rgba(220, 38, 38, 0.1); color: #fca5a5;">
-                <span class="material-symbols-outlined" style="font-size: 1.3rem;">monetization_on</span>
+            <div class="unlock-modal-title"  >Entrer dans le donjon ?</div>
+            <div class="unlock-modal-desc"  >Le coût d'entrée sera déduit de votre Or. Ce coût
+                est prélevé à <strong style="color: #f8fafc">chaque tentative</strong>.</div>
+            <div class="unlock-modal-cost"   style="border-color: rgba(220, 38, 38, 0.25); background: rgba(220, 38, 38, 0.1); color: #fca5a5">
+                <span class="material-symbols-outlined"   style="font-size: 1.3rem">monetization_on</span>
                 <span id="entryModalCost">0</span> Or
             </div>
-            <div class="unlock-modal-actions">
-                <button class="unlock-btn-cancel" onclick="closeEntryModal()">Annuler</button>
-                <button class="entry-btn-confirm" id="entryModalConfirmBtn">
-                    <span class="material-symbols-outlined" style="font-size: 1.1rem;">swords</span>
+            <div class="unlock-modal-actions"  >
+                <button class="unlock-btn-cancel"   onclick="closeEntryModal()">Annuler</button>
+                <button class="entry-btn-confirm"   id="entryModalConfirmBtn">
+                    <span class="material-symbols-outlined text-lg"  >swords</span>
                     Payer &amp; Entrer
                 </button>
             </div>

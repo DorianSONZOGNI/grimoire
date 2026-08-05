@@ -207,7 +207,7 @@ export function makeCustomSelect(selectIdOrElement) {
     optionsContainer.style.borderRadius = '8px';
     optionsContainer.style.marginTop = '4px';
     optionsContainer.style.zIndex = '999999';
-    optionsContainer.style.maxHeight = '220px';
+    optionsContainer.style.maxHeight = '350px';
     optionsContainer.style.overflowY = 'auto';
     optionsContainer.style.display = 'none';
     optionsContainer.style.boxShadow = '0 10px 25px rgba(0,0,0,0.5)';
@@ -488,6 +488,8 @@ export function showNotif(text, isError = false) {
     }, 4000);
 }
 
+window.showNotif = showNotif;
+
 export async function showModal(options) {
     if (!customElements.get('app-modal')) {
         await import('./components/modal.js');
@@ -501,74 +503,69 @@ export async function showModal(options) {
 }
 
 export function showGlobalTooltip(el) {
-    let tooltip = document.getElementById('globalSpellTooltip');
+    let tooltip = document.getElementById('globalFixedTooltip');
     if (!tooltip) {
         tooltip = document.createElement('div');
-        tooltip.id = 'globalSpellTooltip';
-        tooltip.onmouseenter = () => {
-            if (tooltip.hideTimeout) clearTimeout(tooltip.hideTimeout);
-        };
-        tooltip.onmouseleave = () => {
-            tooltip.style.display = 'none';
-        };
+        tooltip.id = 'globalFixedTooltip';
+        tooltip.className = 'global-tooltip';
         document.body.appendChild(tooltip);
     }
+    
     if (tooltip.hideTimeout) clearTimeout(tooltip.hideTimeout);
 
     const dataEl = el.querySelector('.tooltip-data');
-    if (!dataEl) return;
-
-    tooltip.innerHTML = dataEl.innerHTML;
+    if (dataEl) {
+        tooltip.innerHTML = dataEl.innerHTML;
+    } else if (el.hasAttribute('data-tooltip-html')) {
+        tooltip.innerHTML = el.getAttribute('data-tooltip-html');
+    } else {
+        return;
+    }
 
     const elColor = el.getAttribute('data-color');
     if (elColor) {
         tooltip.style.borderColor = elColor;
-        const titleEl = tooltip.querySelector('.anomaly-tooltip-title');
+        const titleEl = tooltip.querySelector('.anomaly-tooltip-title, .tooltip-title');
         if (titleEl) {
             titleEl.style.color = elColor;
             titleEl.style.borderBottom = '1px solid ' + elColor;
         }
     } else {
-        tooltip.style.borderColor = 'rgba(255, 255, 255, 0.15)';
-        const titleEl = tooltip.querySelector('.anomaly-tooltip-title');
-        if (titleEl) {
-            // Restore default if any
-            titleEl.style.color = '#c084fc';
-            titleEl.style.borderBottom = 'none';
-        }
+        tooltip.style.borderColor = 'rgba(168, 85, 247, 0.5)';
     }
 
-    tooltip.style.display = 'flex';
-    tooltip.style.maxHeight = '60vh';
-    tooltip.style.overflowY = 'auto';
-    tooltip.style.pointerEvents = 'auto';
+    tooltip.style.display = 'block';
 
     const rect = el.getBoundingClientRect();
     const tooltipHeight = tooltip.offsetHeight;
+    const tooltipWidth = tooltip.offsetWidth;
 
-    let topPos = rect.top - tooltipHeight - 8;
-    if (topPos < 10) {
-        topPos = rect.bottom + 8;
-        if (topPos + tooltipHeight > window.innerHeight - 10) {
-            topPos = Math.max(10, window.innerHeight - tooltipHeight - 10);
-        }
+    let topPos = rect.bottom + 8;
+    let leftPos = rect.left + rect.width / 2 - tooltipWidth / 2;
+
+    if (topPos + tooltipHeight > window.innerHeight) {
+        topPos = rect.top - tooltipHeight - 8;
     }
-
-    let leftPos = rect.right - tooltip.offsetWidth;
+    
     if (leftPos < 10) leftPos = 10;
+    if (leftPos + tooltipWidth > window.innerWidth - 10) {
+        leftPos = window.innerWidth - tooltipWidth - 10;
+    }
 
     tooltip.style.top = topPos + 'px';
     tooltip.style.left = leftPos + 'px';
 }
 
 export function hideGlobalTooltip() {
-    const tooltip = document.getElementById('globalSpellTooltip');
+    const tooltip = document.getElementById('globalFixedTooltip');
     if (tooltip) {
-        tooltip.hideTimeout = setTimeout(() => {
-            tooltip.style.display = 'none';
-        }, 150);
+        tooltip.style.display = 'none';
+        if (tooltip.hideTimeout) clearTimeout(tooltip.hideTimeout);
     }
 }
+
+window.showGlobalTooltip = showGlobalTooltip;
+window.hideGlobalTooltip = hideGlobalTooltip;
 
 
 

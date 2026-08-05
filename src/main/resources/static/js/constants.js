@@ -21,7 +21,8 @@ window.EFFECT_LABELS = {
     'CURSED_VULNERABILITY': 'Vulnérabilité (Dégâts subis % +)',
     'CURSED_HEALING_REDUCTION': 'Chair putréfiée (Soins % -)',
     'EXECUTION': 'Exécution (% Phy)',
-    'MAGIC_OVERLOAD': 'Surcharge (% Mag mana Act)'
+    'MAGIC_OVERLOAD': 'Surcharge (% Mag mana Act)',
+    'VITAL_ARCANE': 'Arcane Vitale (Régen X% mana)'
 };
 
 export const STAT_DEFS = [
@@ -85,10 +86,60 @@ export async function initMeta() {
             }
 
             window.RARITY_COLORS = {};
+            let rarityStyles = '';
             if (allMeta.equipmentRarities) {
                 allMeta.equipmentRarities.forEach(r => {
-                    window.RARITY_COLORS[r.name] = r.color || '#fbbf24';
+                    let color = r.color || '#fbbf24';
+                    window.RARITY_COLORS[r.name] = color;
+                    
+                    let weight = 600;
+                    let shadow = 5;
+                    if (r.name === 'EPIQUE') { weight = 700; shadow = 8; }
+                    else if (r.name === 'RELIQUE' || r.name === 'MAUDIT') { weight = 800; shadow = 10; }
+                    
+                    rarityStyles += `
+                    .rarity-${r.name} {
+                        color: ${color} !important;
+                        text-shadow: 0 0 ${shadow}px color-mix(in srgb, ${color} 40%, transparent);
+                        font-weight: ${weight};
+                    }
+                    
+                    /* vault.css */
+                    .vault-card.rarity-${r.name} {
+                        border-top: 2px solid ${color};
+                    }
+                    `;
+                    
+                    if (r.name !== 'COMMUN') {
+                        rarityStyles += `
+                        .vault-card.rarity-${r.name} {
+                            background: linear-gradient(180deg, color-mix(in srgb, ${color} 5%, transparent) 0%, rgba(30, 41, 59, 0.4) 30%);
+                        }
+                        `;
+                    }
+                    
+                    rarityStyles += `
+                    /* shop.css */
+                    .shop-rarity-group.group-${r.name} {
+                        border-top: 3px solid ${color};
+                    }
+                    .group-${r.name} .shop-rarity-title {
+                        color: ${color};
+                        border-color: color-mix(in srgb, ${color} 30%, transparent);
+                    }
+                    
+                    /* shop-admin.css */
+                    .shop-admin-header.rarity-${r.name} {
+                        background: color-mix(in srgb, ${color} 10%, transparent);
+                        color: ${color};
+                        border-bottom: 1px solid color-mix(in srgb, ${color} 20%, transparent);
+                    }
+                    `;
                 });
+                const styleEl = document.createElement('style');
+                styleEl.id = 'dynamic-rarity-styles';
+                styleEl.innerHTML = rarityStyles;
+                document.head.appendChild(styleEl);
             }
         }
     } catch (e) {

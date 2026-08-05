@@ -9,8 +9,8 @@ public enum EquipmentRarity {
     RARE("Rare", "rarity-rare", "#3b82f6"),
     MYTHIQUE("Mythique", "rarity-mythique", "#f97316"),
     LEGENDAIRE("Légendaire", "rarity-legendaire", "#eab308"),
-    EPIQUE("Épique", "rarity-epique", "#a855f7"),
-    RELIQUE("Relique", "rarity-relique", "#ef4444"),
+    EPIQUE("Épique", "rarity-epique", "#ef4444"),
+    RELIQUE("Relique", "rarity-relique", "#a855f7"),
     MAUDIT("Maudit", "rarity-maudit", "#7f1d1d");
 
     private final String label;

@@ -52,7 +52,7 @@ export function createAnomalyBadgeHtml(anomalyName, showName = false) {
 
     const nameHtml = showName ? `<span style="margin-left: 0.2rem;">${anomalyName}</span>` : '';
     const padStyle = showName ? 'padding: 0.1rem 0.4rem;' : 'padding: 0.3rem;';
-    return `<span class="anomaly-badge align-middle" ${tooltipAttrs} ${extraAttrs} style="display: inline-flex; align-items: center; justify-content: center; border: 1px solid ${tColor}; background: linear-gradient(${tColor}25, ${tColor}25), rgba(15,23,42,0.8); color: ${tColor}; ${padStyle} border-radius: 6px; font-weight:bold; cursor: help;"><template class="tooltip-data">${tooltipDataHtml}</template><span class="material-symbols-outlined" style="font-size: 1.2rem;">${catIcon}</span>${nameHtml}</span>`;
+    return `<span class="anomaly-badge align-middle" ${tooltipAttrs} ${extraAttrs} style="display: inline-flex; align-items: center; justify-content: center; border: 1px solid ${tColor}; background: linear-gradient(${tColor}25, ${tColor}25), rgba(15,23,42,0.8); color: ${tColor}; ${padStyle} border-radius: 6px; font-weight:bold; cursor: help;"><template class="tooltip-data">${tooltipDataHtml}</template><span class="material-symbols-outlined icon-md">${catIcon}</span>${nameHtml}</span>`;
 }
 
 // getSlotInfo and RARITY_COLORS → utils.js
@@ -345,7 +345,7 @@ window.promptFlee = function () {
                 if (!res.ok) {
                     pageState.isFleeing = false;
                     const err = await res.text();
-                    ui.showNotif("Erreur lors de la fuite : " + err, true);
+                    ui.window.showNotif("Erreur lors de la fuite : " + err, true);
                     return;
                 }
                 localStorage.removeItem('activeCombatId');
@@ -367,7 +367,7 @@ window.promptFlee = function () {
         const goldLoss = 10 * roomsCount;
         const fleePenaltySpan = document.getElementById('fleePenaltyText');
         if (fleePenaltySpan) {
-            fleePenaltySpan.innerHTML = `Perte d'xp et Or : <span style="color: #f87171;">-${xpLossPerHero} XP normal</span> (par perso) et <span style="color: #fbbf24;">-${goldLoss} Or</span> (au total).`;
+            fleePenaltySpan.innerHTML = `Perte d'xp et Or : <span style="color: #f87171;">-${xpLossPerHero} XP normal</span> (par perso) et <span class="text-warning">-${goldLoss} Or</span> (au total).`;
         }
     }, 100);
 };
@@ -381,18 +381,7 @@ window.cancelCombatCast = cancelCombatCast;
 
 
 
-window.showNotif = function (message, isError = false) {
-    const notif = document.getElementById('combatNotif');
-    const text = document.getElementById('combatNotifText');
-    if (!notif || !text) return;
-    text.textContent = message;
-    notif.classList.remove('error');
-    if (isError) notif.classList.add('error');
-    notif.classList.add('show');
-    setTimeout(() => {
-        notif.classList.remove('show');
-    }, 3000);
-};
+
 
 async function loadAnomaliesCombat() {
     if (!window.allAnomaliesCombat || !Array.isArray(window.allAnomaliesCombat) || window.allAnomaliesCombat.length === 0) {
@@ -436,8 +425,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const consumableIds = urlParams.get('consumableIds');
 
     if (!dungeonId || !characterIds) {
-        if (typeof showNotif !== 'undefined') showNotif("Paramètres de combat manquants.", true);
-        else ui.showNotif("Paramètres de combat manquants.", true);
+        if (typeof showNotif !== 'undefined') window.showNotif("Paramètres de combat manquants.", true);
+        else ui.window.showNotif("Paramètres de combat manquants.", true);
         window.location.href = '/vault.html';
         return;
     }
@@ -459,8 +448,8 @@ async function resumeCombat(savedSessionId) {
         const res = await globalFetch(`/api/pve/combat/${savedSessionId}/resume`, { method: 'POST' });
         if (!res.ok) {
             localStorage.removeItem('activeCombatId');
-            if (typeof showNotif !== 'undefined') showNotif("Combat introuvable ou expiré.", true);
-            else ui.showNotif("Combat introuvable ou expiré.", true);
+            if (typeof showNotif !== 'undefined') window.showNotif("Combat introuvable ou expiré.", true);
+            else ui.window.showNotif("Combat introuvable ou expiré.", true);
             window.location.href = '/vault.html';
             return;
         }
@@ -492,8 +481,8 @@ async function startCombat(characterIds, dungeonId, consumableIds) {
         });
 
         if (!res.ok) {
-            if (typeof showNotif !== 'undefined') showNotif("Erreur lors de l'initialisation du donjon.", true);
-            else ui.showNotif("Erreur lors de l'initialisation du donjon.", true);
+            if (typeof showNotif !== 'undefined') window.showNotif("Erreur lors de l'initialisation du donjon.", true);
+            else ui.window.showNotif("Erreur lors de l'initialisation du donjon.", true);
             window.location.href = '/vault.html';
             return;
         }
@@ -511,8 +500,8 @@ async function startCombat(characterIds, dungeonId, consumableIds) {
         updateUI(data);
     } catch (e) {
         console.error(e);
-        if (typeof showNotif !== 'undefined') showNotif("Erreur de connexion.", true);
-        else ui.showNotif("Erreur de connexion.", true);
+        if (typeof showNotif !== 'undefined') window.showNotif("Erreur de connexion.", true);
+        else ui.window.showNotif("Erreur de connexion.", true);
         window.location.href = '/dungeons.html';
     }
 }
@@ -977,7 +966,7 @@ async function doAction(spellId = null) {
         if (!res.ok) {
             const errText = await res.text();
             console.error('Server error:', errText);
-            showNotif(errText || "Erreur serveur", true);
+            window.showNotif(errText || "Erreur serveur", true);
             pageState.isProcessing = false;
             setButtonsProcessing(false);
             return;
@@ -994,7 +983,7 @@ async function doAction(spellId = null) {
 
     } catch (e) {
         console.error(e);
-        showNotif("Erreur de connexion", true);
+        window.showNotif("Erreur de connexion", true);
         pageState.isProcessing = false;
         setButtonsProcessing(false);
     }
@@ -1027,7 +1016,7 @@ async function endTurn() {
             updateUI(retryData);
         } catch (e2) {
             console.error('Recovery failed:', e2);
-            showNotif("Erreur critique. Rechargez la page.", true);
+            window.showNotif("Erreur critique. Rechargez la page.", true);
         }
     }
 }
@@ -1054,7 +1043,7 @@ async function nextRoom() {
         updateUI(data);
     } catch (e) {
         console.error(e);
-        showNotif("Erreur lors du passage à la salle suivante", true);
+        window.showNotif("Erreur lors du passage à la salle suivante", true);
         // Retry from server state
         try {
             const retryRes = await globalFetch(`/api/pve/combat/${pageState.sessionId}/resume`, { method: 'POST' });
@@ -1082,7 +1071,7 @@ async function openStrangeDoor() {
         const res = await globalFetch(`/api/pve/combat/${pageState.sessionId}/open-strange-door`, { method: 'POST' });
         if (!res.ok) {
             const errText = await res.text();
-            showNotif(errText || "Erreur lors de l'ouverture de la porte", true);
+            window.showNotif(errText || "Erreur lors de l'ouverture de la porte", true);
             pageState.isProcessing = false;
             setButtonsProcessing(false);
             return;
@@ -1098,7 +1087,7 @@ async function openStrangeDoor() {
         updateUI(data);
     } catch (e) {
         console.error(e);
-        showNotif("Erreur lors de l'ouverture de la porte", true);
+        window.showNotif("Erreur lors de l'ouverture de la porte", true);
     } finally {
         pageState.isProcessing = false;
         setButtonsProcessing(false);
@@ -1120,7 +1109,7 @@ async function acceptAlteration() {
         });
         if (!res.ok) {
             const err = await res.text();
-            showNotif(err || "Action impossible", true);
+            window.showNotif(err || "Action impossible", true);
             pageState.isProcessing = false;
             setButtonsProcessing(false);
             return;
@@ -1129,7 +1118,7 @@ async function acceptAlteration() {
         updateUI(data);
     } catch (e) {
         console.error(e);
-        showNotif("Erreur lors de l'altération", true);
+        window.showNotif("Erreur lors de l'altération", true);
     } finally {
         pageState.isProcessing = false;
         setButtonsProcessing(false);
@@ -1146,7 +1135,7 @@ async function useRope() {
         });
         if (!res.ok) {
             const err = await res.text();
-            showNotif(err || "Action impossible", true);
+            window.showNotif(err || "Action impossible", true);
             pageState.isProcessing = false;
             return;
         }
@@ -1154,7 +1143,7 @@ async function useRope() {
         updateUI(data);
     } catch (e) {
         console.error(e);
-        showNotif("Erreur lors de l'utilisation de la corde", true);
+        window.showNotif("Erreur lors de l'utilisation de la corde", true);
     } finally {
         pageState.isProcessing = false;
         setButtonsProcessing(false);
@@ -1174,15 +1163,15 @@ async function buyMerchantItem(lootIndex) {
         const res = await globalFetch(`/api/pve/combat/${pageState.sessionId}/merchant-buy?lootIndex=${lootIndex}&characterId=${charId}`, { method: 'POST' });
         if (!res.ok) {
             const errorText = await res.text();
-            showNotif(errorText || "Vous n'avez pas les ressources nécessaires.", true);
-            if (btn) btn.innerHTML = '<span class="material-symbols-outlined" style="font-size: 1.2rem;">shopping_cart</span>Acheter';
+            window.showNotif(errorText || "Vous n'avez pas les ressources nécessaires.", true);
+            if (btn) btn.innerHTML = '<span class="material-symbols-outlined icon-md">shopping_cart</span>Acheter';
             return;
         }
         const data = await res.json();
         updateUI(data);
     } catch (e) {
         console.error(e);
-        showNotif("Erreur lors de l'achat.", true);
+        window.showNotif("Erreur lors de l'achat.", true);
     } finally {
         pageState.isProcessing = false;
         setButtonsProcessing(false);
@@ -1211,7 +1200,7 @@ function openBuyModal(idx, itemName, goldPrice = 0, specialItemName = null) {
 
     ui.showModal({
         title: 'Acheter cet objet ?',
-        body: `Voulez-vous vraiment acheter <strong style="color:#fff;">${itemName}</strong> ?<br>Cela coûtera ${costText}.`,
+        body: `Voulez-vous vraiment acheter <strong class="text-white">${itemName}</strong> ?<br>Cela coûtera ${costText}.`,
         icon: 'shopping_cart',
         confirmText: 'Oui, acheter',
         onConfirm: async () => {
@@ -1230,65 +1219,8 @@ function closeBuyModal() {
 window.openBuyModal = openBuyModal;
 window.closeBuyModal = closeBuyModal;
 
-function generateEquipmentTooltipHTML(eq) {
-    if (!eq) return '';
-    const statsDef = [
-        { key: 'bonusHealthMax', label: 'PV', icon: 'favorite', color: '#ec4899' },
-        { key: 'bonusManaMax', label: 'Mana', icon: 'water_drop', color: '#38bdf8' },
-        { key: 'bonusPower', label: 'Pui', icon: 'auto_awesome', color: '#a855f7' },
-        { key: 'bonusStrength', label: 'For', icon: 'fitness_center', color: '#f43f5e' },
-        { key: 'bonusArmor', label: 'Arm', icon: 'shield', color: '#3b82f6' },
-        { key: 'bonusResistance', label: 'Rés', icon: 'shield', color: '#10b981' },
-        { key: 'bonusSpeed', label: 'Vit', icon: 'bolt', color: '#f59e0b' },
-        { key: 'bonusCrit', label: 'Crit', icon: 'gps_fixed', color: '#ef4444' },
-        { key: 'regenHealthPerTurn', label: 'PV/t', icon: 'healing', color: '#10b981' },
-        { key: 'regenManaPerTurn', label: 'Mana/t', icon: 'cyclone', color: '#38bdf8' },
-        { key: 'consumableHpPercent', label: 'PV Max', icon: 'favorite', color: '#ec4899', isPercent: true },
-        { key: 'consumableManaPercent', label: 'Mana Max', icon: 'water_drop', color: '#38bdf8', isPercent: true },
-        { key: 'consumableMissingHpPercent', label: 'PV Manq', icon: 'healing', color: '#f43f5e', isPercent: true },
-        { key: 'consumableMissingManaPercent', label: 'Mana Manq', icon: 'cyclone', color: '#a855f7', isPercent: true }
-    ];
-    let statsHtml = statsDef
-        .filter(s => eq[s.key] && eq[s.key] !== 0)
-        .map(s => {
-            const val = eq[s.key];
-            const isMalus = val < 0;
-            const sign = val > 0 ? '+' : '';
-            const suffix = s.isPercent ? '%' : '';
-            return `<div class="flex-between" style="gap: 1rem; margin-bottom: 0.3rem;">
-                <div class="flex-center text-muted" style="gap: 0.3rem;">
-                    <span class="material-symbols-outlined" style="color:${isMalus ? '#ef4444' : s.color}; font-size: 1rem;">${s.icon}</span>
-                    ${s.label}
-                </div>
-                <span style="font-weight: 600; color: ${isMalus ? '#ef4444' : '#fff'};">${sign}${val}${suffix}</span>
-            </div>`;
-        }).join('');
 
-    let effectHtml = '';
-    if (eq.specialEffect && eq.specialEffect !== 'NONE') {
-        const label = window.EFFECT_LABELS[eq.specialEffect] || eq.specialEffect;
-        const isCursed = eq.specialEffect.startsWith('CURSED_');
-        const icon = isCursed ? 'skull' : 'auto_awesome';
-        const color = isCursed ? '#9b2d2d' : '#c084fc';
 
-        effectHtml = `<div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
-            <div class="flex-center" style="color: ${color}; justify-content: space-between; gap: 0.3rem;">
-                <div class="flex-center" style="gap: 0.3rem;">
-                    <span class="material-symbols-outlined" style="font-size: 1rem;">${icon}</span>
-                    ${label}
-                </div>
-                <span style="font-weight: 600; color: #fff;">${eq.specialEffectValue || ''}</span>
-            </div>
-        </div>`;
-    }
-
-    if (!statsHtml && !effectHtml) return `<div class="font-italic text-muted text-center" style="min-width: 150px; padding: 0.5rem;">Aucun attribut</div>`;
-
-    return `<div style="min-width: 150px; padding: 0.5rem;">
-        ${statsHtml}
-        ${effectHtml}
-    </div>`;
-}
 
 async function addLootedConsumable(itemName, iconElement) {
     if (!pageState.sessionId) return;
@@ -1347,8 +1279,8 @@ async function openChest(useKey = false) {
         const res = await globalFetch(`/api/pve/combat/${pageState.sessionId}/open-chest?useKey=${useKey}`, { method: 'POST' });
         if (!res.ok) {
             const err = await res.text();
-            if (typeof showNotif !== 'undefined') showNotif("Erreur : " + err, true);
-            else ui.showNotif("Erreur : " + err, true);
+            if (typeof showNotif !== 'undefined') window.showNotif("Erreur : " + err, true);
+            else ui.window.showNotif("Erreur : " + err, true);
             pageState.isProcessing = false;
             return;
         }
@@ -1370,8 +1302,8 @@ async function openChest(useKey = false) {
 
     } catch (e) {
         console.error(e);
-        if (typeof showNotif !== 'undefined') showNotif("Erreur lors de l'ouverture du coffre.", true);
-        else ui.showNotif("Erreur lors de l'ouverture du coffre.", true);
+        if (typeof showNotif !== 'undefined') window.showNotif("Erreur lors de l'ouverture du coffre.", true);
+        else ui.window.showNotif("Erreur lors de l'ouverture du coffre.", true);
     } finally {
         pageState.isProcessing = false;
         setButtonsProcessing(false);
@@ -1415,7 +1347,7 @@ function updateUI(data) {
         const totalXpLoss = 10 * nbRooms;
         const xpLossPerHero = Math.floor(totalXpLoss / nbHeroes);
         const goldLoss = 10 * nbRooms;
-        fleePenaltySpan.innerHTML = `Perte d'xp et Or : <span style="color: #f87171;">-${xpLossPerHero} XP normal</span> (par perso) et <span style="color: #fbbf24;">-${goldLoss} Or</span> (au total).`;
+        fleePenaltySpan.innerHTML = `Perte d'xp et Or : <span style="color: #f87171;">-${xpLossPerHero} XP normal</span> (par perso) et <span class="text-warning">-${goldLoss} Or</span> (au total).`;
     }
 
     // Players
@@ -1529,8 +1461,8 @@ function updateUI(data) {
                             let baseContent = '';
                             if (goldAmount > 0) {
                                 baseContent += `
-                                    <span class="material-symbols-outlined" style="color: #f59e0b;">monetization_on</span>
-                                    <span style="color: #f59e0b;">+${goldAmount} Or</span>
+                                    <span class="material-symbols-outlined text-warning">monetization_on</span>
+                                    <span class="text-warning">+${goldAmount} Or</span>
                                 `;
                             }
                             if (goldAmount > 0 && xpAmount > 0) {
@@ -1538,8 +1470,8 @@ function updateUI(data) {
                             }
                             if (xpAmount > 0) {
                                 baseContent += `
-                                    <span class="material-symbols-outlined" style="color: #38bdf8;">upgrade</span>
-                                    <span style="color: #38bdf8;">+${xpAmount} XP</span>
+                                    <span class="material-symbols-outlined text-info">upgrade</span>
+                                    <span class="text-info">+${xpAmount} XP</span>
                                 `;
                             }
 
@@ -1564,8 +1496,8 @@ function updateUI(data) {
                             // Ajout de l'Or si présent
                             if (bossBonusGold > 0) {
                                 innerContent += `
-                                    <span class="material-symbols-outlined" style="color: #f59e0b;">monetization_on</span>
-                                    <span style="color: #f59e0b;">+${bossBonusGold} Or</span>
+                                    <span class="material-symbols-outlined text-warning">monetization_on</span>
+                                    <span class="text-warning">+${bossBonusGold} Or</span>
                                 `;
                             }
 
@@ -1676,14 +1608,14 @@ function updateUI(data) {
                                     if (!eq && Array.isArray(window.allAnomaliesCombat)) {
                                         an = window.allAnomaliesCombat.find(a => a.name === eqName);
                                     }
-                                    
+
                                     const slotInfo = eq ? (getSlotInfo(eq) || { icon: 'help', color: '#94a3b8' }) : (an ? { icon: (an.category ? (getCategoryIcon(an.category)) : 'star'), color: getSpiritualiteColor(an.spiritualite) } : { icon: 'swords', color: '#f59e0b' });
-                                    const rarityColor = eq ? (RARITY_COLORS[typeof eq.rarity === 'object' ? eq.rarity?.name : eq.rarity] || '#ef4444') : (an ? getSpiritualiteColor(an.spiritualite) : '#f59e0b');
+                                    const rarityColor = eq ? (getRarityColor(eq.rarity)) : (an ? getSpiritualiteColor(an.spiritualite) : '#f59e0b');
                                     const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
 
                                     let tooltipDataHtml = '';
-                                    if (eq && typeof generateEquipmentTooltipHTML === 'function') {
-                                        tooltipDataHtml = generateEquipmentTooltipHTML(eq);
+                                    if (eq && typeof window.getEquipmentTooltipHTML === 'function') {
+                                        tooltipDataHtml = window.getEquipmentTooltipHTML(eq);
                                     } else if (an && typeof getAnomalyTooltipHTML === 'function') {
                                         tooltipDataHtml = getAnomalyTooltipHTML(an, eqName);
                                     }
@@ -1714,7 +1646,7 @@ function updateUI(data) {
                             if (expAmount > 0) {
                                 gainedItemsHtml = `
                                     <div class="flex-center" style="background: rgba(0, 0, 0, 0.4); border: 1px solid #38bdf880; padding: 0.8rem 1rem; border-radius: 8px; color: #38bdf8; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8); animation-delay: 0.1s;">
-                                        <span class="material-symbols-outlined" style="color: #38bdf8;">upgrade</span> +${expAmount} XP
+                                        <span class="material-symbols-outlined text-info">upgrade</span> +${expAmount} XP
                                     </div>
                                 ` + gainedItemsHtml;
                             }
@@ -1722,7 +1654,7 @@ function updateUI(data) {
                             if (goldAmount > 0) {
                                 gainedItemsHtml = `
                                     <div class="flex-center" style="background: rgba(0, 0, 0, 0.4); border: 1px solid #f59e0b80; padding: 0.8rem 1rem; border-radius: 8px; color: #f59e0b; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
-                                        <span class="material-symbols-outlined" style="color: #f59e0b;">monetization_on</span> +${goldAmount} Or
+                                        <span class="material-symbols-outlined text-warning">monetization_on</span> +${goldAmount} Or
                                     </div>
                                 ` + gainedItemsHtml;
                             }
@@ -1793,35 +1725,35 @@ function updateUI(data) {
 
                             warningHtml = '';
                             if (hp < 0) {
-                                warningHtml += `<div class="text-error text-center" style="font-size: 0.85rem; margin-top: 0.5rem; background: rgba(239, 68, 68, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3);"><span class="material-symbols-outlined align-middle" style="font-size: 1rem;">favorite</span> <strong>Coût :</strong> ${hp} PV (par héros)</div>`;
+                                warningHtml += `<div class="text-error text-center" style="font-size: 0.85rem; margin-top: 0.5rem; background: rgba(239, 68, 68, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3);"><span class="material-symbols-outlined align-middle icon-sm">favorite</span> <strong>Coût :</strong> ${hp} PV (par héros)</div>`;
                             } else if (hp > 0) {
-                                warningHtml += `<div class="text-success text-center" style="font-size: 0.85rem; margin-top: 0.5rem; background: rgba(16, 185, 129, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.3);"><span class="material-symbols-outlined align-middle" style="font-size: 1rem;">favorite</span> <strong>Gain :</strong> +${hp} PV (par héros)</div>`;
+                                warningHtml += `<div class="text-success text-center" style="font-size: 0.85rem; margin-top: 0.5rem; background: rgba(16, 185, 129, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.3);"><span class="material-symbols-outlined align-middle icon-sm">favorite</span> <strong>Gain :</strong> +${hp} PV (par héros)</div>`;
                             }
 
                             if (xp > 0) {
-                                warningHtml += `<div class="text-center" style="color: #38bdf8; font-size: 0.85rem; margin-top: 0.5rem; background: rgba(56, 189, 248, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.3);"><span class="material-symbols-outlined align-middle" style="font-size: 1rem;">star</span> <strong>Récompense :</strong> +${xp} XP de Voie (par héros)</div>`;
+                                warningHtml += `<div class="text-center" style="color: #38bdf8; font-size: 0.85rem; margin-top: 0.5rem; background: rgba(56, 189, 248, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.3);"><span class="material-symbols-outlined align-middle icon-sm">star</span> <strong>Récompense :</strong> +${xp} XP de Voie (par héros)</div>`;
                             } else if (xp < 0) {
-                                warningHtml += `<div class="text-error text-center" style="font-size: 0.85rem; margin-top: 0.5rem; background: rgba(239, 68, 68, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3);"><span class="material-symbols-outlined align-middle" style="font-size: 1rem;">star</span> <strong>Perte :</strong> ${xp} XP de Voie (par héros)</div>`;
+                                warningHtml += `<div class="text-error text-center" style="font-size: 0.85rem; margin-top: 0.5rem; background: rgba(239, 68, 68, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3);"><span class="material-symbols-outlined align-middle icon-sm">star</span> <strong>Perte :</strong> ${xp} XP de Voie (par héros)</div>`;
                             }
 
                             if (data.currentRoom.alterationRewardType === 'SPIRITUAL_XP') {
-                                specialItemHtml = `<div class="text-center" style="color: #c084fc; font-size: 0.85rem; margin-top: 0.5rem; background: rgba(192, 132, 252, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(192, 132, 252, 0.3);"><span class="material-symbols-outlined align-middle" style="font-size: 1rem;">star</span> <strong>Récompense :</strong> Vous obtiendrez +${data.currentRoom.alterationSpiritualXpReward || 0} XP Spirituel !</div>`;
+                                specialItemHtml = `<div class="text-center" style="color: #c084fc; font-size: 0.85rem; margin-top: 0.5rem; background: rgba(192, 132, 252, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(192, 132, 252, 0.3);"><span class="material-symbols-outlined align-middle icon-sm">star</span> <strong>Récompense :</strong> Vous obtiendrez +${data.currentRoom.alterationSpiritualXpReward || 0} XP Spirituel !</div>`;
                             } else if (data.currentRoom.alterationRewardType === 'SPECIAL_ITEM') {
                                 let badge = data.currentRoom.alterationSpecialItemReward ? createAnomalyBadgeHtml(data.currentRoom.alterationSpecialItemReward) : '"Item"';
-                                specialItemHtml = `<div class="text-center" style="color: #d946ef; font-size: 0.85rem; margin-top: 0.5rem; background: rgba(217, 70, 239, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(217, 70, 239, 0.3);"><span class="material-symbols-outlined align-middle" style="font-size: 1rem;">star</span> <strong>Récompense :</strong> Vous obtiendrez l'item spécial ${badge}</div>`;
+                                specialItemHtml = `<div class="text-center" style="color: #d946ef; font-size: 0.85rem; margin-top: 0.5rem; background: rgba(217, 70, 239, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(217, 70, 239, 0.3);"><span class="material-symbols-outlined align-middle icon-sm">star</span> <strong>Récompense :</strong> Vous obtiendrez l'item spécial ${badge}</div>`;
                             }
 
                             btnText = `Accepter`;
                         } else if (data.currentRoom.alterationType === 'ITEM') {
                             btnText = `Donner l'item et Toucher`;
                             let reqBadge = data.currentRoom.alterationRequiredItem ? createAnomalyBadgeHtml(data.currentRoom.alterationRequiredItem) : '"spécial"';
-                            warningHtml = `<div class="text-error text-center" style="font-size: 0.85rem; margin-top: 0.5rem; background: rgba(239, 68, 68, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3);"><span class="material-symbols-outlined align-middle" style="font-size: 1rem;">warning</span> <strong>Attention :</strong> L'item ${reqBadge} sera définitivement détruit de l'inventaire d'un de vos héros s'il accepte cette offre.</div>`;
+                            warningHtml = `<div class="text-error text-center" style="font-size: 0.85rem; margin-top: 0.5rem; background: rgba(239, 68, 68, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3);"><span class="material-symbols-outlined align-middle icon-sm">warning</span> <strong>Attention :</strong> L'item ${reqBadge} sera définitivement détruit de l'inventaire.</div>`;
 
                             if (data.currentRoom.alterationRewardType === 'SPIRITUAL_XP') {
-                                specialItemHtml = `<div class="text-center" style="color: #38bdf8; font-size: 0.85rem; margin-top: 0.5rem; background: rgba(56, 189, 248, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.3);"><span class="material-symbols-outlined align-middle" style="font-size: 1rem;">star</span> <strong>Récompense :</strong> Vous obtiendrez +${data.currentRoom.alterationSpiritualXpReward || 0} XP Spirituel !</div>`;
+                                specialItemHtml = `<div class="text-center" style="color: #38bdf8; font-size: 0.85rem; margin-top: 0.5rem; background: rgba(56, 189, 248, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.3);"><span class="material-symbols-outlined align-middle icon-sm">star</span> <strong>Récompense :</strong> Vous obtiendrez +${data.currentRoom.alterationSpiritualXpReward || 0} XP Spirituel !</div>`;
                             } else if (data.currentRoom.alterationRewardType === 'SPECIAL_ITEM') {
                                 let badge = data.currentRoom.alterationSpecialItemReward ? createAnomalyBadgeHtml(data.currentRoom.alterationSpecialItemReward) : '"Item"';
-                                specialItemHtml = `<div class="text-center" style="color: #d946ef; font-size: 0.85rem; margin-top: 0.5rem; background: rgba(217, 70, 239, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(217, 70, 239, 0.3);"><span class="material-symbols-outlined align-middle" style="font-size: 1rem;">star</span> <strong>Récompense :</strong> Vous obtiendrez l'item spécial ${badge}</div>`;
+                                specialItemHtml = `<div class="text-center" style="color: #d946ef; font-size: 0.85rem; margin-top: 0.5rem; background: rgba(217, 70, 239, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(217, 70, 239, 0.3);"><span class="material-symbols-outlined align-middle icon-sm">star</span> <strong>Récompense :</strong> Vous obtiendrez l'item spécial ${badge}</div>`;
                             }
 
                             specialItemHtml += `<div class="text-center" id="itemAlterationCheckContainer" style="margin-top: 1rem; width: 100%;">
@@ -1861,7 +1793,7 @@ function updateUI(data) {
                         } else if (data.currentRoom.alterationType === 'AUTEL') {
                             btnText = `Sacrifier l'Objet`;
                             let spColor = getSpiritualiteColor(data.currentRoom.altarRequiredSpirituality);
-                            warningHtml = `<div class="text-center" style="color: ${spColor}; font-size: 0.85rem; margin-top: 0.5rem; background: ${spColor}1A; padding: 0.5rem; border-radius: 6px; border: 1px solid ${spColor}4D;"><span class="material-symbols-outlined align-middle" style="font-size: 1rem;">warning</span> <strong>Offrande :</strong> Cet autel réclame le sacrifice d'un <strong>Magique</strong> de spiritualité <strong>${data.currentRoom.altarRequiredSpirituality}</strong>.</div>`;
+                            warningHtml = `<div class="text-center" style="color: ${spColor}; font-size: 0.85rem; margin-top: 0.5rem; background: ${spColor}1A; padding: 0.5rem; border-radius: 6px; border: 1px solid ${spColor}4D;"><span class="material-symbols-outlined align-middle icon-sm">warning</span> <strong>Offrande :</strong> Cet autel réclame le sacrifice d'un <strong>Magique</strong> de spiritualité <strong>${data.currentRoom.altarRequiredSpirituality}</strong>.</div>`;
 
                             let altarRewardHtml = '';
                             if (data.currentRoom.altarRewardType === 'GOLD') {
@@ -1872,8 +1804,8 @@ function updateUI(data) {
                                 const eq = data.currentRoom.altarRewardEquipment;
                                 if (eq) {
                                     const rarityColors = { 'COMMUN': '#94a3b8', 'INHABITUEL': '#22c55e', 'RARE': '#3b82f6', 'MYTHIQUE': '#f97316', 'LEGENDAIRE': '#eab308', 'EPIQUE': '#ef4444', 'RELIQUE': '#a855f7', 'MAUDIT': '#6b5252' };
-                                    const rarityColor = rarityColors[typeof eq.rarity === 'object' ? eq.rarity?.name : eq.rarity] || '#94a3b8';
-                                    const tooltipDataHtml = typeof generateEquipmentTooltipHTML === 'function' ? generateEquipmentTooltipHTML(eq) : '';
+                                    const rarityColor = getRarityColor(eq.rarity);
+                                    const tooltipDataHtml = typeof window.getEquipmentTooltipHTML === 'function' ? window.getEquipmentTooltipHTML(eq) : '';
                                     const tooltipAttrs = tooltipDataHtml ? 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"' : '';
                                     altarRewardHtml = `<div class="text-center" style="margin-top: 0.5rem; background: rgba(192, 132, 252, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(192, 132, 252, 0.3);"><span style="color: #cbd5e1; margin-right: 0.5rem;"><strong>Récompense :</strong></span> <span class="font-bold relative" ${tooltipAttrs} style="color: ${rarityColor}; cursor: help; border-bottom: 1px dashed ${rarityColor};">${eq.name}${tooltipDataHtml ? `<template class="tooltip-data">${tooltipDataHtml}</template>` : ''}</span> <span class="text-sm font-bold" id="altarDropChance" style="margin-left: 0.5rem;"></span></div>`;
                                 } else {
@@ -1925,14 +1857,14 @@ function updateUI(data) {
                                 const first = eligible[0];
                                 let firstCatIcon = first.category ? (getCategoryIcon(first.category)) : 'star';
                                 let selectHtml = `
-                                <div class="custom-select-wrapper" id="altarAnomalySelectWrapper" style="width: 100%; max-width: 350px; margin: 0 auto; z-index: 100;">
+                                <div class="custom-select-wrapper" id="altarAnomalySelectWrapper" style="max-width: 350px; margin: 0 auto; z-index: 100;">
                                     <div class="custom-select-trigger" onclick="document.getElementById('altarAnomalySelectWrapper').classList.toggle('open')" style="padding: 0.6rem 1rem; border-radius: 8px; border: 1px solid ${spColor}; text-align: left; background: rgba(0,0,0,0.5);">
                                         <span class="cs-label" id="altarAnomalySelectLabel">
                                             <span class="material-symbols-outlined cs-icon" style="color: ${spColor};">${firstCatIcon}</span> ${first.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${first.level || 1})</span>
                                         </span>
                                         <span class="material-symbols-outlined">expand_more</span>
                                     </div>
-                                    <div class="custom-select-options" style="max-height: 200px; overflow-y: auto; text-align: left;">
+                                    <div class="custom-select-options">
                                 `;
                                 eligible.forEach(a => {
                                     let catIcon = a.category ? (getCategoryIcon(a.category)) : 'star';
@@ -2108,7 +2040,7 @@ function updateUI(data) {
                             } else if (entry.equipment) {
                                 const eq = entry.equipment;
                                 const slotInfo = getSlotInfo(eq);
-                                rarityColor = RARITY_COLORS[typeof eq.rarity === 'object' ? eq.rarity?.name : eq.rarity] || '#ef4444';
+                                rarityColor = getRarityColor(eq.rarity);
                                 const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
                                 nameHtml = eq.name;
                                 iconHtml = `<span class="material-symbols-outlined${extraClass}" style="color: ${slotInfo.color}; font-size: 1.2rem;">${slotInfo.icon}</span>`;
@@ -2118,7 +2050,7 @@ function updateUI(data) {
                             const goldPrice = entry.priceGold != null ? entry.priceGold : (entry.probability || 0);
 
                             if (goldPrice > 0) {
-                                priceHtml += `<span class="flex-center" style="color: #f59e0b; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem;">monetization_on</span>${goldPrice}</span>`;
+                                priceHtml += `<span class="flex-center" style="color: #f59e0b; gap: 0.3rem;"><span class="material-symbols-outlined text-lg">monetization_on</span>${goldPrice}</span>`;
                             }
                             if (entry.priceSpecialItemName) {
                                 let priceColor = '#d946ef';
@@ -2130,11 +2062,11 @@ function updateUI(data) {
                                         priceIcon = anPrice.category ? (getCategoryIcon(anPrice.category)) : 'star';
                                     }
                                 }
-                                priceHtml += `<span class="flex-center" style="color: ${priceColor}; gap: 0.3rem; margin-left: ${goldPrice > 0 ? '0.8rem' : '0'};"><span class="material-symbols-outlined" style="font-size: 1.1rem;">${priceIcon}</span>1x ${entry.priceSpecialItemName}</span>`;
+                                priceHtml += `<span class="flex-center" style="color: ${priceColor}; gap: 0.3rem; margin-left: ${goldPrice > 0 ? '0.8rem' : '0'};"><span class="material-symbols-outlined text-lg">${priceIcon}</span>1x ${entry.priceSpecialItemName}</span>`;
                             }
 
                             if (priceHtml === '') {
-                                priceHtml = `<span class="flex-center text-success" style="gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem;">sell</span>Gratuit</span>`;
+                                priceHtml = `<span class="flex-center text-success" style="gap: 0.3rem;"><span class="material-symbols-outlined text-lg">sell</span>Gratuit</span>`;
                             }
 
                             let isPurchased = false;
@@ -2158,25 +2090,25 @@ function updateUI(data) {
                             let buttonHtml = '';
                             if (isPurchased) {
                                 buttonHtml = `<button class="flex-center" id="btn_buy_${idx}" type="button" style="background: linear-gradient(135deg, #ef4444, #b91c1c); color: white; border: none; border-radius: 8px; padding: 0.6rem 1.2rem; font-weight: 700; font-size: 1rem; cursor: not-allowed; gap: 0.5rem; opacity: 0.7;">
-                                                  <span class="material-symbols-outlined" style="font-size: 1.2rem;">remove_shopping_cart</span>
+                                                  <span class="material-symbols-outlined icon-md">remove_shopping_cart</span>
                                                   Vendu
                                               </button>`;
                             } else if (!canAfford) {
                                 buttonHtml = `<button class="flex-center" id="btn_buy_${idx}" type="button" style="background: rgba(148, 163, 184, 0.2); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.3); border-radius: 8px; padding: 0.6rem 1.2rem; font-weight: 700; font-size: 1rem; cursor: not-allowed; gap: 0.5rem; transition: all 0.2s ease;" title="Fonds insuffisants">
-                                                  <span class="material-symbols-outlined" style="font-size: 1.2rem;">shopping_cart</span>
+                                                  <span class="material-symbols-outlined icon-md">shopping_cart</span>
                                                   Acheter
                                               </button>`;
                             } else {
                                 let specialItemNameArg = entry.priceSpecialItemName ? `'${entry.priceSpecialItemName.replace(/'/g, "\\'").replace(/"/g, '&quot;')}'` : 'null';
                                 buttonHtml = `<button class="flex-center" id="btn_buy_${idx}" type="button" onclick="openBuyModal(${idx}, '${nameHtml.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', ${goldPrice}, ${specialItemNameArg})" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='none'" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 8px; padding: 0.6rem 1.2rem; font-weight: 700; font-size: 1rem; cursor: pointer; gap: 0.5rem; transition: all 0.2s ease; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);">
-                                                  <span class="material-symbols-outlined" style="font-size: 1.2rem;">shopping_cart</span>
+                                                  <span class="material-symbols-outlined icon-md">shopping_cart</span>
                                                   Acheter
                                               </button>`;
                             }
 
                             let tooltipDataHtml = '';
                             if (entry.equipment) {
-                                tooltipDataHtml = generateEquipmentTooltipHTML(entry.equipment);
+                                tooltipDataHtml = window.getEquipmentTooltipHTML(entry.equipment);
                             } else if (entry.specialItemName) {
                                 let tooltipTitle = 'Objet Spécial';
                                 let tooltipDesc = 'Cet objet aura un effet unique !';
@@ -2284,7 +2216,7 @@ function updateUI(data) {
                         btnCont.style.display = 'block';
                         btnCont.textContent = 'Continuer';
                         btnCont.onclick = nextRoom;
-                        
+
                         let anomalyHtml = '';
                         if (data.combatLog) {
                             for (let i = data.combatLog.length - 1; i >= Math.max(0, data.combatLog.length - 5); i--) {
@@ -2297,7 +2229,7 @@ function updateUI(data) {
                                         icon.textContent = 'crown';
                                         icon.style.color = '#f59e0b';
                                         title.textContent = 'Trésor';
-                                        
+
                                         const spColor = getSpiritualiteColor(an.spiritualite);
                                         const catIcon = an.category ? getCategoryIcon(an.category) : 'star';
                                         let tooltipDataHtml = '';
@@ -2305,7 +2237,7 @@ function updateUI(data) {
                                             tooltipDataHtml = getAnomalyTooltipHTML(an, eqName);
                                         }
                                         const tooltipAttrs = tooltipDataHtml ? 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"' : '';
-                                        
+
                                         anomalyHtml += `
                                             <div class="flex-center relative" ${tooltipAttrs} style="cursor: ${tooltipDataHtml ? 'help' : 'default'}; background: rgba(0, 0, 0, 0.4); border: 1px solid ${spColor}80; padding: 0.8rem 1rem; border-radius: 8px; color: ${spColor}; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; transform: scale(0.8);">
                                                 ${tooltipDataHtml ? `<template class="tooltip-data">${tooltipDataHtml}</template>` : ''}
@@ -2316,7 +2248,7 @@ function updateUI(data) {
                                 }
                             }
                         }
-                        
+
                         if (anomalyHtml) {
                             lootContainer.style.display = 'flex';
                             lootContainer.innerHTML = `
@@ -2431,7 +2363,7 @@ function updateUI(data) {
                         if (btnEnd) { btnEnd.disabled = false; }
                         const spellButtons = document.querySelectorAll('.spell-btn, .filter-chip');
                         spellButtons.forEach(btn => { btn.disabled = false; btn.classList.remove('disabled'); btn.style.pointerEvents = ''; });
-                        showNotif("Erreur de synchronisation. Veuillez réessayer.", true);
+                        window.showNotif("Erreur de synchronisation. Veuillez réessayer.", true);
                     }
                 }
             }, 600); // Fetch next turn
@@ -2562,11 +2494,11 @@ function generateFighterHtml(c, isHero, skipBadges = false) {
     const crit = getEffectiveStat('CRIT');
 
     let statsHtml = `<div class="hero-stats-row" style="margin-bottom: 0.5rem; justify-content: center; display: flex; flex-wrap: wrap; gap: 0.3rem;">`;
-    statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #a855f7;">auto_awesome</span>${pui} Pui</span>`;
+    statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined text-purple">auto_awesome</span>${pui} Pui</span>`;
     statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #f43f5e;">fitness_center</span>${forPhy} For</span>`;
     statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #3b82f6;">shield</span>${arm} Arm</span>`;
     statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined text-success">shield</span>${res} Rés</span>`;
-    statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #f59e0b;">bolt</span>${vit} Vit</span>`;
+    statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined text-warning">bolt</span>${vit} Vit</span>`;
     statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined text-error">gps_fixed</span>${crit}% Crit</span>`;
 
     if (c.voie && c.voie.nom && c.voie.nom.toLowerCase().includes('destruction')) {
@@ -2813,15 +2745,15 @@ function generateFighterHtml(c, isHero, skipBadges = false) {
                         <div style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:${color}; border-bottom: 1px solid ${color}; padding-bottom: 4px;">${mut.nom} <span class="text-xs" style="color: #cbd5e1;">(Lvl ${mut.level || 1})</span></div>
                         <div style="font-style:italic; color:#cbd5e1; margin-top:8px; max-width: 350px; line-height: 1.4; white-space: normal !important; word-wrap: break-word;">${mut.description || 'Une mutation monstrueuse.'}</div>
                     </template>
-                    <span class="material-symbols-outlined" style="font-size: 1.1rem;">${icon}</span>
+                    <span class="material-symbols-outlined text-lg">${icon}</span>
                 </div>
             `;
         });
         mutationsHtml += `</div>`;
     }
 
-    let hpRegenBadge = (!isHero && c.regenHp && c.regenHp > 0) ? `<span title="Régénère ${c.regenHp} PV au début du tour" style="cursor: help; margin-left: 0.5rem; font-size: 0.7rem; background: rgba(244, 114, 182, 0.15); color: #f472b6; padding: 0.1rem 0.35rem; border-radius: 4px; border: 1px solid rgba(244, 114, 182, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.15rem; vertical-align: text-bottom;"><span class="material-symbols-outlined" style="font-size: 0.85rem;">healing</span>${c.regenHp} PV/t</span>` : '';
-    let manaRegenBadge = (!isHero && c.regenMana && c.regenMana > 0) ? `<span title="Régénère ${c.regenMana} Mana au début du tour" style="cursor: help; margin-left: 0.5rem; font-size: 0.7rem; background: rgba(125, 211, 252, 0.15); color: #7dd3fc; padding: 0.1rem 0.35rem; border-radius: 4px; border: 1px solid rgba(125, 211, 252, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.15rem; vertical-align: text-bottom;"><span class="material-symbols-outlined" style="font-size: 0.85rem;">opacity</span>${c.regenMana} MP/t</span>` : '';
+    let hpRegenBadge = (!isHero && c.regenHp && c.regenHp > 0) ? `<span title="Régénère ${c.regenHp} PV au début du tour" style="cursor: help; margin-left: 0.5rem; font-size: 0.7rem; background: rgba(244, 114, 182, 0.15); color: #f472b6; padding: 0.1rem 0.35rem; border-radius: 4px; border: 1px solid rgba(244, 114, 182, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.15rem; vertical-align: text-bottom;"><span class="material-symbols-outlined text-sm">healing</span>${c.regenHp} PV/t</span>` : '';
+    let manaRegenBadge = (!isHero && c.regenMana && c.regenMana > 0) ? `<span title="Régénère ${c.regenMana} Mana au début du tour" style="cursor: help; margin-left: 0.5rem; font-size: 0.7rem; background: rgba(125, 211, 252, 0.15); color: #7dd3fc; padding: 0.1rem 0.35rem; border-radius: 4px; border: 1px solid rgba(125, 211, 252, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.15rem; vertical-align: text-bottom;"><span class="material-symbols-outlined text-sm">opacity</span>${c.regenMana} MP/t</span>` : '';
 
     let avatarHtml = isHero ? '🧙‍♂️' : '👹';
     if (isHero && c.voie && c.voie.nom) {
@@ -3507,25 +3439,7 @@ function showResult(data) {
     overlay.classList.add('show');
 }
 
-function showNotif(msg, isError = false) {
-    const notif = document.getElementById('combatNotif');
-    const notifText = document.getElementById('combatNotifText');
-    const notifIcon = notif.querySelector('.notif-icon');
 
-    notifText.textContent = msg;
-    if (isError) {
-        notif.style.background = 'rgba(239, 68, 68, 0.9)';
-        notifIcon.textContent = 'error';
-    } else {
-        notif.style.background = 'rgba(16, 185, 129, 0.9)';
-        notifIcon.textContent = 'check_circle';
-    }
-
-    notif.classList.add('show');
-    setTimeout(() => {
-        notif.classList.remove('show');
-    }, 3000);
-}
 
 
 
@@ -3593,61 +3507,9 @@ function renderDotsHtml(dotList) {
     `;
 }
 
-window.showGlobalTooltip = function (el) {
-    let tooltip = document.getElementById('globalFixedTooltip');
-    if (!tooltip) {
-        tooltip = document.createElement('div');
-        tooltip.id = 'globalFixedTooltip';
-        tooltip.style.position = 'fixed';
-        tooltip.style.zIndex = '999999';
-        tooltip.style.visibility = 'visible';
-        tooltip.style.opacity = '1';
-        tooltip.style.pointerEvents = 'none';
-        tooltip.style.transform = 'none';
-        tooltip.style.background = 'rgba(15, 23, 42, 0.95)';
-        tooltip.style.border = '1px solid rgba(168, 85, 247, 0.5)';
-        tooltip.style.borderRadius = '8px';
-        tooltip.style.padding = '10px';
-        tooltip.style.color = '#f8fafc';
-        tooltip.style.fontSize = '0.8rem';
-        tooltip.style.lineHeight = '1.4';
-        tooltip.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.5)';
-        tooltip.style.maxWidth = 'max-content';
-        tooltip.style.whiteSpace = 'nowrap';
-        tooltip.style.wordWrap = 'normal';
-        tooltip.style.textAlign = 'left';
-        document.body.appendChild(tooltip);
-    }
 
-    const tmpl = el.querySelector('.tooltip-data');
-    if (tmpl) {
-        tooltip.innerHTML = tmpl.innerHTML;
-    } else {
-        return;
-    }
 
-    tooltip.style.display = 'block';
 
-    const rect = el.getBoundingClientRect();
-    let top = rect.bottom + 8;
-    let left = rect.left + rect.width / 2 - tooltip.offsetWidth / 2;
-
-    if (top + tooltip.offsetHeight > window.innerHeight) {
-        top = rect.top - tooltip.offsetHeight - 8;
-    }
-    if (left < 10) left = 10;
-    if (left + tooltip.offsetWidth > window.innerWidth - 10) {
-        left = window.innerWidth - tooltip.offsetWidth - 10;
-    }
-
-    tooltip.style.top = top + 'px';
-    tooltip.style.left = left + 'px';
-};
-
-window.hideGlobalTooltip = function () {
-    const tooltip = document.getElementById('globalFixedTooltip');
-    if (tooltip) tooltip.style.display = 'none';
-};
 
 window.renderOverlayInventory = function (containerId) {
     const list = document.getElementById(containerId);
@@ -3685,7 +3547,7 @@ window.renderOverlayInventory = function (containerId) {
     list.innerHTML += `
         <div class="flex-center" style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px; padding: 0.8rem; gap: 0.8rem; margin-bottom: 0.5rem;">
             <span class="material-symbols-outlined" style="font-size: 1.5rem; color: #f59e0b;">monetization_on</span>
-            <div style="flex: 1;">
+            <div class="flex-1">
                 <div class="text-sm" style="color: #f8fafc; font-weight: 600;">Or du compte</div>
                 <div style="color: #f59e0b; font-weight: 700; font-size: 1.1rem;">${goldAmount}</div>
             </div>
@@ -3707,7 +3569,7 @@ window.renderOverlayInventory = function (containerId) {
         list.innerHTML += `
             <div class="${hoverClass} flex-center" ${onClickAttr} style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 0.8rem; gap: 0.8rem; transition: all 0.2s; ${cursorStyle};">
                 <span class="material-symbols-outlined" style="font-size: 1.5rem; color: ${slotInfo.color};">${slotInfo.icon}</span>
-                <div style="flex: 1;">
+                <div class="flex-1">
                     <div class="text-sm" style="color: #f8fafc; font-weight: 600;">${c.name}</div>
                     <div class="text-xs text-muted" style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin-bottom: 4px;">
                         ${c.bonusHealthMax ? `<span style="display:inline-flex; align-items:center; color:#ec4899;" title="PV">+${c.bonusHealthMax}<span class="material-symbols-outlined" style="font-size:0.85rem; margin-left:2px;">favorite</span></span>` : ''}
@@ -3744,7 +3606,7 @@ window.openConsumeModal = function (consumableId, consumableName) {
 
     ui.showModal({
         title: 'Consommer un objet',
-        body: `Qui doit utiliser <strong style="color:#fff;">${consumableName}</strong> ?<br><br><div style="display: flex; flex-direction: column; width: 100%;">${btnContainerHtml}</div>`,
+        body: `Qui doit utiliser <strong class="text-white">${consumableName}</strong> ?<br><br><div style="display: flex; flex-direction: column; width: 100%;">${btnContainerHtml}</div>`,
         icon: 'science',
         hideConfirm: true,
         cancelText: 'Fermer'
@@ -3759,15 +3621,15 @@ window.confirmConsumeItem = async function (consumableId, characterId) {
         });
         if (res.ok) {
             pageState.currentSessionData = await res.json();
-            ui.showNotif("Objet consommé avec succès !");
+            ui.window.showNotif("Objet consommé avec succès !");
             updateUI(pageState.currentSessionData);
         } else {
             const err = await res.text();
-            ui.showNotif("Erreur: " + err, true);
+            ui.window.showNotif("Erreur: " + err, true);
         }
     } catch (e) {
         console.error(e);
-        ui.showNotif("Erreur lors de la consommation.", true);
+        ui.window.showNotif("Erreur lors de la consommation.", true);
     }
 };
 

@@ -169,18 +169,18 @@ class SpellIntegrationTest {
         // Sort de Sûreté
         Spell safeSpell = new Spell();
         safeSpell.setNom("Esprit Protectrice");
-        safeSpell.setManaCost(100);
+        safeSpell.setManaCost(143);
         safeSpell.setVoie(voieSurete);
 
-        // Lance le sort 5 fois (5 * 20 points = 100 points -> déclenche le buff crit)
-        for (int i = 0; i < 5; i++) {
+        // Lance le sort 2 fois (2 * 50 points = 100 points -> déclenche le buff crit)
+        for (int i = 0; i < 2; i++) {
             hero.startTurn();
             spellService.castSpell(safeSpell, hero, enemy, null);
         }
 
         // Vérifications
-        assertThat(hero.getManaCurrent()).isEqualTo(0); // 500 - (5*100) = 0
-        assertThat(hero.getPassiveState("surete_points", -1)).isEqualTo(0); // Les points ont reset
+        assertThat(hero.getManaCurrent()).isEqualTo(500 - (2 * 143)); // 214
+        assertThat(hero.getPassiveState("surete_points", -1)).isEqualTo(0); // 2 casts of 50 = 100, buff triggers, 0 left
 
         // Un buff de critique a dû être appliqué (pour le tour suivant)
         assertThat(hero.getActiveBuffs()).hasSize(1);

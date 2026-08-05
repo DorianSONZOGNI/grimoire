@@ -258,14 +258,14 @@ function renderCauldron(r) {
             };
 
             const tooltipData = buildAnomalyTooltipHTML(name);
-            reqsHTML += `<div data-color="${style.color}" style="background:rgba(0,0,0,0.4); padding:0.6rem; border-radius:8px; border:1px solid ${style.color}40; margin-bottom: 0.4rem; cursor: help;" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipData}">
+            reqsHTML += `<div data-color="${style.color}" style="background:rgba(0,0,0,0.4); padding:0.6rem; border-radius:8px; border:1px solid ${style.color}40; margin-bottom: 0.4rem; cursor: help;" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData}">
                         <div style="display:flex; align-items:center; justify-content: space-between; gap:0.5rem; margin-bottom: ${(!isIdentical && hasEnough) ? '0.5rem' : '0'};">
                             <div style="display:flex; align-items:center; gap:0.5rem;">
                                 <span class="material-symbols-outlined" style="color: ${style.color}; font-size:1.2rem;">${style.icon}</span>
                                 <span style="font-weight: 600; font-size:0.9rem; color: #fff;">${qty}x ${name}</span>
                             </div>
                             <div style="display:flex; align-items:center; gap:0.3rem; color: ${statusColor}; font-size: 0.85rem; font-weight: 600;">
-                                <span class="material-symbols-outlined" style="font-size: 1.1rem;">${statusIcon}</span>
+                                <span class="material-symbols-outlined text-lg">${statusIcon}</span>
                                 ${matching.length}/${qty}
                             </div>
                         </div>`;
@@ -319,8 +319,18 @@ function renderCauldron(r) {
             const statusIcon = hasEnough ? 'check_circle' : 'cancel';
 
             const style = getItemStyle(name, 'CONSUMABLE');
-            const tooltipData = buildEquipmentTooltipHTML(name, true);
-            const tooltipAttrs = tooltipData ? `data-color="${style.color}" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipData}" style="cursor: help; background:rgba(0,0,0,0.4); padding:0.6rem; border-radius:8px; border:1px solid ${style.color}40; margin-bottom: 0.4rem;"` : `style="background:rgba(0,0,0,0.4); padding:0.6rem; border-radius:8px; border:1px solid ${style.color}40; margin-bottom: 0.4rem;"`;
+            const temp = pageState.allEquipmentTemplates.find(e => e.name === name);
+            const statsData = window.getEquipmentTooltipHTML(temp);
+            const slotInfo = getSlotInfo(temp);
+            const rarityColor = getRarityColor(temp.rarity);
+            const tooltipData = `
+                <div style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:${rarityColor}; border-bottom:1px solid ${rarityColor}40; padding-bottom:4px; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="display: flex; align-items: center; gap: 6px;">${temp.name}</span>
+                    <span class="material-symbols-outlined ${slotInfo.extraClass || ''}" style="font-size: 1.1rem; color: ${slotInfo.color};" title="${slotInfo.label}">${slotInfo.icon}</span>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:4px;">${statsData}</div>
+            `.replace(/"/g, '&quot;');
+            const tooltipAttrs = tooltipData ? `data-color="${style.color}" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData}" style="cursor: help; background:rgba(0,0,0,0.4); padding:0.6rem; border-radius:8px; border:1px solid ${style.color}40; margin-bottom: 0.4rem;"` : `style="background:rgba(0,0,0,0.4); padding:0.6rem; border-radius:8px; border:1px solid ${style.color}40; margin-bottom: 0.4rem;"`;
 
             reqsHTML += `<div ${tooltipAttrs}>
                         <div style="display:flex; align-items:center; justify-content: space-between; gap:0.5rem;">
@@ -329,7 +339,7 @@ function renderCauldron(r) {
                                 <span style="font-weight: 600; font-size:0.9rem; color: #fff;">${qty}x ${name}</span>
                             </div>
                             <div style="display:flex; align-items:center; gap:0.3rem; color: ${statusColor}; font-size: 0.85rem; font-weight: 600;">
-                                <span class="material-symbols-outlined" style="font-size: 1.1rem;">${statusIcon}</span>
+                                <span class="material-symbols-outlined text-lg">${statusIcon}</span>
                                 ${matching.length}/${qty}
                             </div>
                         </div>`;
@@ -394,8 +404,8 @@ function renderCauldron(r) {
     if (resultType === 'EQUIPMENT' || resultType === 'CONSUMABLE') {
         const eqTemp = pageState.allEquipmentTemplates.find(e => e.name === r.rewardName);
         if (eqTemp && eqTemp.rarity) {
-            const rName = typeof eqTemp.rarity === 'object' ? eqTemp.rarity.name : eqTemp.rarity;
-            if (window.RARITY_COLORS && window.RARITY_COLORS[rName]) resultColor = window.RARITY_COLORS[rName];
+            const rName = getRarityName(eqTemp.rarity);
+            resultColor = getRarityColor(rName);
         }
     } else if (resultType === 'ANOMALY') {
         const anomTemp = pageState.allAnomalyTemplates.find(a => a.name === r.rewardName);
@@ -414,11 +424,21 @@ function renderCauldron(r) {
     let resultTooltipAttr = '';
     if (resultType === 'ANOMALY') {
         const tooltipData = buildAnomalyTooltipHTML(r.rewardName);
-        resultTooltipAttr = `data-color="${resultColor}" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipData}"`;
+        resultTooltipAttr = `data-color="${resultColor}" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData}"`;
     } else if (resultType === 'EQUIPMENT' || resultType === 'CONSUMABLE') {
-        const tooltipData = buildEquipmentTooltipHTML(r.rewardName, resultType === 'CONSUMABLE');
+        const temp = pageState.allEquipmentTemplates.find(e => e.name === r.rewardName);
+        const statsData = window.getEquipmentTooltipHTML(temp);
+        const slotInfo = getSlotInfo(temp);
+        const rarityColor = getRarityColor(temp.rarity);
+        const tooltipData = `
+            <div style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:${rarityColor}; border-bottom:1px solid ${rarityColor}40; padding-bottom:4px; display: flex; justify-content: space-between; align-items: center;">
+                <span style="display: flex; align-items: center; gap: 6px;">${temp.name}</span>
+                <span class="material-symbols-outlined ${slotInfo.extraClass || ''}" style="font-size: 1.1rem; color: ${slotInfo.color};" title="${slotInfo.label}">${slotInfo.icon}</span>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:4px;">${statsData}</div>
+        `.replace(/"/g, '&quot;');
         if (tooltipData) {
-            resultTooltipAttr = `data-color="${resultColor}" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipData}"`;
+            resultTooltipAttr = `data-color="${resultColor}" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData}"`;
         }
     }
 
@@ -445,7 +465,7 @@ function renderCauldron(r) {
 
                     <div style="width: 100%; max-width: 500px; background: linear-gradient(135deg, ${resultColor}15, rgba(0,0,0,0.2)); border: 1px solid ${resultColor}50; border-radius: 12px; padding: 1rem; text-align: center; ${resultTooltipAttr ? 'cursor: help;' : ''}" ${resultTooltipAttr}>
                         <span style="display:flex; justify-content:center; align-items:center; gap:0.3rem; font-size: 0.8rem; color: ${resultColor}; text-transform: uppercase; font-weight: 700; letter-spacing: 1px; margin-bottom: 0.3rem;">
-                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">${resultIcon}</span>
+                            <span class="material-symbols-outlined text-lg">${resultIcon}</span>
                             ${resultLabel}
                         </span>
                         <strong style="font-size: 1.2rem; color: ${resultColor};">${quantityDisplay}</strong>
@@ -471,12 +491,12 @@ function buildCustomSelect(containerDiv, options, hiddenInputClass, hiddenInputI
     });
 
     containerDiv.innerHTML = `
-                <div class="custom-select-wrapper" style="width: 100%; position: relative;">
+                <div class="custom-select-wrapper" style="position: relative;">
                     <div class="custom-select-trigger" style="display:flex; justify-content:space-between; align-items:center; background: rgba(0,0,0,0.5); padding: 0.5rem 0.8rem; border: 1px solid var(--glass-border); color: #fff; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-size:0.9rem;">
                         <div class="cs-label" style="flex: 1; margin-right: 0.5rem; display: flex; align-items: center;">${selectedOption.html}</div>
                         <span class="material-symbols-outlined" style="font-size:1.2rem;">expand_more</span>
                     </div>
-                    <div class="custom-select-options" style="display:none; position:absolute; top:calc(100% + 4px); left:0; right:0; background:rgba(15,23,42,0.95); border:1px solid var(--glass-border); border-radius:6px; z-index:100; max-height:180px; overflow-y:auto; box-shadow:0 10px 25px rgba(0,0,0,0.5); font-size:0.9rem;">
+                    <div class="custom-select-options">
                         ${optionsHTML}
                     </div>
                     <input type="hidden" class="${hiddenInputClass}" id="${hiddenInputId}" value="${selectedOption.value}">
@@ -519,7 +539,6 @@ document.addEventListener('click', (e) => {
     if (!e.target.closest('.custom-select-wrapper')) {
         document.querySelectorAll('.custom-select-wrapper.open').forEach(w => w.classList.remove('open'));
         document.querySelectorAll('.custom-select-options').forEach(m => m.style.display = 'none');
-        document.querySelectorAll('.custom-select-trigger').forEach(t => t.style.borderColor = 'var(--glass-border)');
     }
 
     const trigger = e.target.closest('.custom-select-trigger');
@@ -530,20 +549,15 @@ document.addEventListener('click', (e) => {
                 w.classList.remove('open');
                 const m = w.querySelector('.custom-select-options');
                 if (m) m.style.display = 'none';
-                const t = w.querySelector('.custom-select-trigger');
-                if (t) t.style.borderColor = 'var(--glass-border)';
             }
         });
 
-        // If it's a static select without display block logic hooked in buildCustomSelect
         const optionsMenu = wrapper.querySelector('.custom-select-options');
-        if (optionsMenu && !optionsMenu.style.display || optionsMenu.style.display === 'none') {
+        if (optionsMenu && (!optionsMenu.style.display || optionsMenu.style.display === 'none')) {
             optionsMenu.style.display = 'block';
-            trigger.style.borderColor = '#10b981';
             wrapper.classList.add('open');
         } else if (optionsMenu) {
             optionsMenu.style.display = 'none';
-            trigger.style.borderColor = 'var(--glass-border)';
             wrapper.classList.remove('open');
         }
         return;
@@ -561,8 +575,7 @@ document.addEventListener('click', (e) => {
             wrapper.classList.remove('open');
             const optionsMenu = wrapper.querySelector('.custom-select-options');
             if (optionsMenu) optionsMenu.style.display = 'none';
-            const tr = wrapper.querySelector('.custom-select-trigger');
-            if (tr) tr.style.borderColor = 'var(--glass-border)';
+
             hiddenInput.dispatchEvent(new Event('change'));
         }
     }
@@ -814,115 +827,11 @@ function buildAnomalyTooltipHTML(name) {
 
 // STAT_DEFS → constants.js (window.STAT_DEFS)
 
-function buildEquipmentTooltipHTML(name, isConsumable = false) {
-    let temp = pageState.allEquipmentTemplates.find(e => e.name === name);
-    if (!temp) return '';
 
-    let statsHtml = '';
-    window.STAT_DEFS.forEach(def => {
-        if (temp[def.key]) {
-            const val = temp[def.key] > 0 ? '+' + temp[def.key] : temp[def.key];
-            const suffix = def.isPercent ? '%' : '';
-            statsHtml += `
-                        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; min-width: 160px; gap: 16px; font-size: 0.85rem;">
-                            <span style="display:flex; align-items:center; gap:4px; color: ${def.color};">
-                                <span class="material-symbols-outlined" style="font-size: 1rem;">${def.icon}</span>
-                                ${def.label}
-                            </span>
-                            <strong style="color: #f8fafc;">${val}${suffix}</strong>
-                        </div>
-                    `;
-        }
-    });
 
-    if (temp.specialEffect && temp.specialEffect !== 'NONE') {
-        const label = window.EFFECT_LABELS[temp.specialEffect] || temp.specialEffect;
-        const isCursed = temp.specialEffect.startsWith('CURSED_');
-        const icon = isCursed ? 'skull' : 'auto_awesome';
-        const color = isCursed ? '#ef4444' : '#c084fc';
+;
 
-        statsHtml += `
-                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; min-width: 160px; gap: 16px; font-size: 0.85rem; margin-top: 4px; padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.1);">
-                        <span style="display:flex; align-items:center; gap:4px; color: ${color};">
-                            <span class="material-symbols-outlined" style="font-size: 1rem;">${icon}</span>
-                            ${label}
-                        </span>
-                        <strong style="color: #f8fafc;">${temp.specialEffectValue}</strong>
-                    </div>
-                `;
-    }
 
-    if (!statsHtml && !isConsumable) return '';
-
-    const slotInfo = getSlotInfo(temp);
-    const rName = typeof temp.rarity === 'object' ? temp.rarity?.name : temp.rarity;
-    const rarityColor = window.RARITY_COLORS ? (window.RARITY_COLORS[rName] || '#fbbf24') : '#fbbf24';
-
-    let html = `
-                <div style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:${rarityColor}; border-bottom:1px solid ${rarityColor}40; padding-bottom:4px; display: flex; justify-content: space-between; align-items: center;">
-                    <span style="display: flex; align-items: center; gap: 6px;">${temp.name}</span>
-                    <span class="material-symbols-outlined ${slotInfo.extraClass || ''}" style="font-size: 1.1rem; color: ${slotInfo.color};" title="${slotInfo.label}">${slotInfo.icon}</span>
-                </div>
-                <div style="display:flex; flex-direction:column; gap:4px;">${statsHtml}</div>
-            `;
-    return html.replace(/"/g, '&quot;');
-}
-
-window.showTooltipFixed = function (el) {
-    let tooltip = document.getElementById('globalFixedTooltip');
-    if (!tooltip) {
-        tooltip = document.createElement('div');
-        tooltip.id = 'globalFixedTooltip';
-        tooltip.style.position = 'fixed';
-        tooltip.style.zIndex = '999999';
-        tooltip.style.visibility = 'visible';
-        tooltip.style.opacity = '1';
-        tooltip.style.pointerEvents = 'none';
-        tooltip.style.transform = 'none';
-        tooltip.style.background = 'rgba(15, 23, 42, 0.95)';
-        tooltip.style.border = '1px solid rgba(168, 85, 247, 0.5)';
-        tooltip.style.borderRadius = '8px';
-        tooltip.style.padding = '10px';
-        tooltip.style.color = '#f8fafc';
-        tooltip.style.fontSize = '0.8rem';
-        tooltip.style.lineHeight = '1.4';
-        tooltip.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.5)';
-        tooltip.style.maxWidth = 'max-content';
-        tooltip.style.whiteSpace = 'nowrap';
-        tooltip.style.wordWrap = 'normal';
-        tooltip.style.textAlign = 'left';
-        document.body.appendChild(tooltip);
-    }
-    tooltip.innerHTML = el.getAttribute('data-tooltip-html');
-    const elColor = el.getAttribute('data-color') || el.style.color || '#a855f7';
-    tooltip.style.border = '1px solid ' + elColor;
-    const titleEl = tooltip.querySelector('.anomaly-tooltip-title');
-    if (titleEl) {
-        titleEl.style.color = elColor;
-        titleEl.style.borderBottom = '1px solid ' + elColor;
-    }
-    tooltip.style.display = 'block';
-
-    const rect = el.getBoundingClientRect();
-    let top = rect.bottom + 8;
-    let left = rect.left + rect.width / 2 - tooltip.offsetWidth / 2;
-
-    if (top + tooltip.offsetHeight > window.innerHeight) {
-        top = rect.top - tooltip.offsetHeight - 8;
-    }
-    if (left < 10) left = 10;
-    if (left + tooltip.offsetWidth > window.innerWidth - 10) {
-        left = window.innerWidth - tooltip.offsetWidth - 10;
-    }
-
-    tooltip.style.top = top + 'px';
-    tooltip.style.left = left + 'px';
-};
-
-window.hideTooltipFixed = function () {
-    const tooltip = document.getElementById('globalFixedTooltip');
-    if (tooltip) tooltip.style.display = 'none';
-};
 
 
 

@@ -173,3 +173,90 @@ option{
             width: 0;
             height: 0;
         }
+/* Audit additions */
+.form-group label { margin-bottom: 0.2rem; font-size: 0.85rem; }
+.form-group input, .form-group select, .form-group textarea { padding: 0.4rem; font-size: 0.9rem; }
+
+/* Equipment Create Form Styles */
+.eq-create-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.8rem;
+    margin-bottom: 0.8rem;
+}
+
+.eq-create-row.quad {
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+}
+
+@media (max-width: 500px) {
+    .eq-create-row.quad {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.eq-create-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+}
+
+.eq-create-field label {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    font-weight: 500;
+}
+
+.eq-create-field input,
+.eq-create-field select,
+.eq-create-field textarea {
+    padding: 0.6rem 0.8rem;
+    font-size: 0.9rem;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 8px;
+    color: #fff;
+    outline: none;
+    font-family: 'Inter', sans-serif;
+    width: 100%;
+    box-sizing: border-box;
+    min-width: 0;
+    transition: all 0.3s ease;
+}
+
+.eq-create-field textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.eq-create-field input:focus,
+.eq-create-field select:focus,
+.eq-create-field textarea:focus {
+    border-color: var(--primary, #f59e0b);
+    box-shadow: 0 0 12px rgba(245, 158, 11, 0.2);
+}
+
+.eq-create-btn {
+    background: #10b981;
+    color: white;
+    padding: 0.8rem;
+    border: none;
+    border-radius: 8px;
+    font-weight: 600;
+    font-family: 'Outfit', sans-serif;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    transition: all 0.2s;
+    width: 100%;
+    font-size: 1rem;
+    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
+}
+
+.eq-create-btn:hover {
+    background: #059669;
+    transform: translateY(-2px);
+    box-shadow: 0 6px 20px rgba(16, 185, 129, 0.5);
+}

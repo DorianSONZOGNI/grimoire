@@ -1,0 +1,122 @@
+.vault-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+    gap: 1.5rem;
+    margin-top: 1rem;
+}
+
+.shop-admin-section {
+    margin-top: 1rem;
+    margin-bottom: 2rem;
+    background: rgba(15, 23, 42, 0.4);
+    border-radius: 12px;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    /* Removed overflow: hidden; to allow tooltips to show */
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1), 0 2px 4px -1px rgba(0, 0, 0, 0.06);
+}
+
+.shop-admin-header {
+    padding: 0.8rem 1.2rem;
+    font-family: 'Outfit', sans-serif;
+    font-weight: 600;
+    font-size: 1.1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    border-top-left-radius: 12px;
+    border-top-right-radius: 12px;
+}
+
+
+
+.shop-admin-row {
+    display: grid;
+    grid-template-columns: 2fr 4fr 1fr auto;
+    align-items: center;
+    padding: 0.8rem 1.2rem;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.03);
+    transition: background 0.2s;
+    gap: 1rem;
+}
+
+.shop-admin-row:last-child {
+    border-bottom: none;
+    border-bottom-left-radius: 12px;
+    border-bottom-right-radius: 12px;
+}
+
+.shop-admin-row:hover {
+    background: rgba(255, 255, 255, 0.03);
+}
+
+.shop-admin-row-name {
+    display: flex;
+    align-items: center;
+    gap: 0.8rem;
+    font-weight: 500;
+    color: #f8fafc;
+}
+
+.shop-admin-row-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+    font-size: 0.8rem;
+    align-items: center;
+}
+
+.shop-admin-row-price {
+    display: flex;
+    align-items: center;
+    gap: 0.3rem;
+    font-weight: bold;
+    color: #f59e0b;
+    font-size: 0.95rem;
+    justify-content: flex-end;
+    background: rgba(245, 158, 11, 0.1);
+    padding: 0.2rem 0.6rem;
+    border-radius: 6px;
+    border: 1px solid rgba(245, 158, 11, 0.2);
+    white-space: nowrap;
+}
+
+.shop-admin-row-actions {
+    display: flex;
+    gap: 0.4rem;
+}
+
+.stat-badge {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    display: flex;
+    align-items: center;
+    gap: 0.2rem;
+    color: #cbd5e1;
+}
+
+.stat-badge.malus {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+}
+
+@media (max-width: 900px) {
+    .shop-admin-row {
+        grid-template-columns: 1fr;
+        gap: 0.5rem;
+    }
+
+    .shop-admin-row-price {
+        justify-content: flex-start;
+        width: max-content;
+    }
+}
+
+.flip-icon {
+    transform: scaleX(-1);
+    display: inline-block;
+    transform: rotate(180deg) !important;
+}

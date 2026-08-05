@@ -69,29 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-function showNotif(message, isError = false) {
-    const notif = document.getElementById('dungeonNotif');
-    const text = document.getElementById('dungeonNotifText');
-    const icon = document.getElementById('dungeonNotifIcon');
-    text.textContent = message;
 
-    if (isError) {
-        icon.textContent = 'error_outline';
-        notif.style.background = '#ef4444';
-        notif.style.boxShadow = '0 10px 25px rgba(239, 68, 68, 0.3)';
-    } else {
-        icon.textContent = 'check_circle';
-        notif.style.background = '#10b981';
-        notif.style.boxShadow = '0 10px 25px rgba(16, 185, 129, 0.3)';
-    }
-
-    notif.style.opacity = '1';
-    notif.style.transform = 'translateY(0)';
-    setTimeout(() => {
-        notif.style.opacity = '0';
-        notif.style.transform = 'translateY(100px)';
-    }, 3000);
-}
 
 async function loadDungeons() {
     try {
@@ -242,12 +220,12 @@ async function loadDungeons() {
                             lockedHtml = `<div class="dungeon-lock-overlay" style="background: rgba(15, 23, 42, 0.75); color: #f59e0b;">
                                 <span class="material-symbols-outlined opacity-80" style="font-size: 3.5rem; margin-bottom: 0.5rem;">lock</span>
                                 <div style="font-family: 'Outfit'; font-size: 1.2rem; font-weight: 700; color: #f8fafc; margin-bottom: 1rem;">Donjon Verrouillé</div>
-                                <button class="btn btn-primary flex-center" onclick="event.stopPropagation(); unlockDungeon(${d.id}, ${d.unlockCostGold}, event)" style="width: 80%; justify-content: center; gap: 0.4rem; padding: 0.6rem; border-radius: 8px; border: none; background: linear-gradient(135deg, #f59e0b, #d97706); color: #0f172a; font-family: 'Outfit', sans-serif; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);"><span class="material-symbols-outlined" style="font-size: 1.1rem;">lock_open</span> D\u00e9bloquer (${d.unlockCostGold} Or)</button>
+                                <button class="btn btn-primary flex-center" onclick="event.stopPropagation(); unlockDungeon(${d.id}, ${d.unlockCostGold}, event)" style="width: 80%; justify-content: center; gap: 0.4rem; padding: 0.6rem; border-radius: 8px; border: none; background: linear-gradient(135deg, #f59e0b, #d97706); color: #0f172a; font-family: 'Outfit', sans-serif; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);"><span class="material-symbols-outlined text-lg">lock_open</span> D\u00e9bloquer (${d.unlockCostGold} Or)</button>
                             </div>`;
                         }
                     }
 
-                    const entryCostHtml = d.entryCostGold > 0 ? `<div class="text-sm" style="color: #f59e0b; font-weight: 600; margin-top: 0.5rem;"><span class="material-symbols-outlined align-middle" style="font-size: 1rem;">monetization_on</span> Co\u00fbt d'entr\u00e9e : ${d.entryCostGold} Or</div>` : '';
+                    const entryCostHtml = d.entryCostGold > 0 ? `<div class="text-sm" style="color: #f59e0b; font-weight: 600; margin-top: 0.5rem;"><span class="material-symbols-outlined align-middle icon-sm">monetization_on</span> Co\u00fbt d'entr\u00e9e : ${d.entryCostGold} Or</div>` : '';
 
                     const cardHtml = `
                         <div class="dungeon-card ${isLocked ? 'locked' : ''}" ${isLocked ? '' : `onclick="openPrepInterface(${d.id}, '${d.name.replace(/'/g, "\\'")}', '${sallesData}', ${d.maxHeroes || 1}, ${d.entryCostGold || 0}, ${d.recommendedLevel || 1})"`}>
@@ -261,20 +239,20 @@ async function loadDungeons() {
                             ${entryCostHtml}
                             <div style="font-size: 0.85rem; color: #f8fafc; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.1); display: grid; gap: 0.4rem;">
                                 <div class="flex-center" style="color: #0ea5e9; font-weight: 600; gap: 0.3rem;">
-                                    <span class="material-symbols-outlined" style="font-size: 1.1rem;">group</span> H\u00e9ros max : ${d.maxHeroes || 1}
+                                    <span class="material-symbols-outlined text-lg">group</span> H\u00e9ros max : ${d.maxHeroes || 1}
                                 </div>
                                 <div><span style="font-weight: 600;">Salles totales :</span> ${totalSalles}</div>
                                 ${combats > 0 ? `<div class="flex-center text-error" style="margin-left: 0.5rem; gap: 0.3rem;">
-                                    <span class="material-symbols-outlined" style="font-size: 1rem;">swords</span> Combats : ${combats} (avec ${totalMobs} mob${totalMobs > 1 ? 's' : ''})
+                                    <span class="material-symbols-outlined icon-sm">swords</span> Combats : ${combats} (avec ${totalMobs} mob${totalMobs > 1 ? 's' : ''})
                                 </div>` : ''}
                                 ${bosses > 0 ? `<div class="flex-center" style="color: #dc2626; margin-left: 0.5rem; gap: 0.3rem;">
-                                    <span class="material-symbols-outlined" style="font-size: 1rem;">skull</span> Boss : ${bosses} (avec ${totalBossMobs} mob${totalBossMobs > 1 ? 's' : ''})
+                                    <span class="material-symbols-outlined icon-sm">skull</span> Boss : ${bosses} (avec ${totalBossMobs} mob${totalBossMobs > 1 ? 's' : ''})
                                 </div>` : ''}
                                 ${treasures > 0 ? `<div class="flex-center" style="color: #f59e0b; margin-left: 0.5rem; gap: 0.3rem;">
-                                    <span class="material-symbols-outlined" style="font-size: 1rem;">shopping_bag</span> Tr\u00e9sors : ${treasures}
+                                    <span class="material-symbols-outlined icon-sm">shopping_bag</span> Tr\u00e9sors : ${treasures}
                                 </div>` : ''}
                                 <div class="flex-center" style="color: #8b5cf6; margin-left: 0.5rem; gap: 0.3rem;">
-                                    <span class="material-symbols-outlined" style="font-size: 1rem;">auto_awesome</span> \u00c9v\u00e9nements : ${events}
+                                    <span class="material-symbols-outlined icon-sm">auto_awesome</span> \u00c9v\u00e9nements : ${events}
                                 </div>
                             </div>
                         </div>
@@ -341,7 +319,7 @@ async function loadCharacters() {
                             <div class="flex-center" style="color: #f8fafc; font-weight: 600; font-family: 'Outfit'; font-size: 1.1rem;">
                                 ${c.name} ${iconsHtml}
                             </div>
-                            <div class="text-muted" style="font-size: 0.85rem;">Niv. ${c.voieLevel || 1} &bull; ${c.totalHealthMax !== undefined ? c.totalHealthMax : c.healthMax} PV max</div>
+                            <div class="text-muted text-sm">Niv. ${c.voieLevel || 1} &bull; ${c.totalHealthMax !== undefined ? c.totalHealthMax : c.healthMax} PV max</div>
                         </div>
                     </div>
                 `;
@@ -475,7 +453,7 @@ window.selectConsumable = function (id) {
         const c = pageState.availableConsumables.find(item => item.id === id);
         const itemWeight = c ? (c.weight || 0) : 0;
         if (getCurrentWeight() + itemWeight > getMaxWeight()) {
-            showNotif(`Le poids maximum serait d\u00e9pass\u00e9 !`, true);
+            window.showNotif(`Le poids maximum serait d\u00e9pass\u00e9 !`, true);
             return;
         }
         pageState.selectedConsumableIds.push(id);
@@ -488,11 +466,11 @@ window.selectCharacter = async function (id) {
         pageState.selectedCharIds = pageState.selectedCharIds.filter(cid => cid !== id);
         if (getCurrentWeight() > getMaxWeight()) {
             pageState.selectedConsumableIds = [];
-            showNotif(`Inventaire r\u00e9initialis\u00e9 car le poids max a diminu\u00e9.`, true);
+            window.showNotif(`Inventaire r\u00e9initialis\u00e9 car le poids max a diminu\u00e9.`, true);
         }
     } else {
         if (pageState.selectedCharIds.length >= pageState.currentMaxHeroes) {
-            showNotif(`Ce donjon est limit\u00e9 \u00e0 ${pageState.currentMaxHeroes} h\u00e9ros maximum.`, true);
+            window.showNotif(`Ce donjon est limit\u00e9 \u00e0 ${pageState.currentMaxHeroes} h\u00e9ros maximum.`, true);
             return;
         }
         pageState.selectedCharIds.push(id);
@@ -561,14 +539,14 @@ window.selectCharacter = async function (id) {
     grid.style.display = 'grid';
     grid.innerHTML = `
         <div class="stat-item" style="color: #ec4899;"><span class="material-symbols-outlined">favorite</span> ${totalStats.healthMax} PV</div>
-        <div class="stat-item" style="color: #38bdf8;"><span class="material-symbols-outlined">water_drop</span> ${totalStats.manaMax} Mana</div>
+        <div class="stat-item text-info"><span class="material-symbols-outlined">water_drop</span> ${totalStats.manaMax} Mana</div>
         <div class="stat-item" style="color: #ec4899;"><span class="material-symbols-outlined">healing</span> ${totalStats.regenHealthPerTurn > 0 ? '+' : ''}${totalStats.regenHealthPerTurn} Régen PV</div>
-        <div class="stat-item" style="color: #38bdf8;"><span class="material-symbols-outlined">cyclone</span> ${totalStats.regenManaPerTurn > 0 ? '+' : ''}${totalStats.regenManaPerTurn} Régen Mana</div>
-        <div class="stat-item" style="color: #a855f7;"><span class="material-symbols-outlined">auto_awesome</span> ${totalStats.power} Puissance</div>
+        <div class="stat-item text-info"><span class="material-symbols-outlined">cyclone</span> ${totalStats.regenManaPerTurn > 0 ? '+' : ''}${totalStats.regenManaPerTurn} Régen Mana</div>
+        <div class="stat-item text-purple"><span class="material-symbols-outlined">auto_awesome</span> ${totalStats.power} Puissance</div>
         <div class="stat-item" style="color: #f43f5e;"><span class="material-symbols-outlined">fitness_center</span> ${totalStats.strength} Force</div>
         <div class="stat-item" style="color: #3b82f6;"><span class="material-symbols-outlined">shield</span> ${totalStats.armor} Armure</div>
         <div class="stat-item text-success"><span class="material-symbols-outlined">shield</span> ${totalStats.resistance} R\u00e9sist</div>
-        <div class="stat-item" style="color: #f59e0b;"><span class="material-symbols-outlined">bolt</span> ${totalStats.speed} Vitesse</div>
+        <div class="stat-item text-warning"><span class="material-symbols-outlined">bolt</span> ${totalStats.speed} Vitesse</div>
         <div class="stat-item text-error"><span class="material-symbols-outlined">gps_fixed</span> ${totalStats.crit}% Crit</div>
     `;
 
@@ -591,7 +569,6 @@ window.selectCharacter = async function (id) {
                     <div class="equip-slot-icon"><span class="material-symbols-outlined ${slotInfo.extraClass}" style="color: ${slotInfo.color};">${slotInfo.icon}</span></div>
                     <div class="equip-slot-content">
                         <div class="text-sm" style="color: ${rarityColor}; font-weight: 600;">${eq.name}</div>
-                        <div class="text-muted" style="font-size: 0.75rem;">${slotName}</div>
                     </div>
                 </div>
             `;
@@ -627,7 +604,7 @@ window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost,
         let html = '';
         salles.forEach((s, index) => {
             if (s.type === 'COMBAT' || s.type === 'BOSS') {
-                html += `<div class="flex-center text-error" style="margin-bottom: 0.5rem; font-weight: 600; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem;">${s.type === 'BOSS' ? 'skull' : 'swords'}</span> \u00c9tape ${index + 1} : ${s.type === 'BOSS' ? 'Boss' : 'Combat'}</div>`;
+                html += `<div class="flex-center text-error" style="margin-bottom: 0.5rem; font-weight: 600; gap: 0.3rem;"><span class="material-symbols-outlined icon-sm">${s.type === 'BOSS' ? 'skull' : 'swords'}</span> \u00c9tape ${index + 1} : ${s.type === 'BOSS' ? 'Boss' : 'Combat'}</div>`;
                 if (!s.monsters || s.monsters.length === 0) {
                     html += `<div class="text-muted" style="margin-left: 1.5rem; margin-bottom: 0.5rem; font-size: 0.85rem;">Aucun ennemi d\u00e9tect\u00e9</div>`;
                 } else {
@@ -635,9 +612,9 @@ window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost,
                     html += `<div style="margin-left: 1.5rem; margin-bottom: 0.5rem; font-size: 0.85rem; color: #f8fafc;">${count} ennemi${count > 1 ? 's' : ''}</div>`;
                 }
             } else if (s.type === 'TREASURE') {
-                html += `<div class="flex-center" style="margin-bottom: 0.5rem; color: #f59e0b; font-weight: 600; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem;">shopping_bag</span> \u00c9tape ${index + 1} : Tr\u00e9sor</div>`;
+                html += `<div class="flex-center" style="margin-bottom: 0.5rem; color: #f59e0b; font-weight: 600; gap: 0.3rem;"><span class="material-symbols-outlined icon-sm">shopping_bag</span> \u00c9tape ${index + 1} : Tr\u00e9sor</div>`;
             } else if (s.type === 'EVENT') {
-                html += `<div class="flex-center" style="margin-bottom: 0.5rem; color: #8b5cf6; font-weight: 600; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem;">auto_awesome</span> \u00c9tape ${index + 1} : \u00c9v\u00e9nement</div>`;
+                html += `<div class="flex-center" style="margin-bottom: 0.5rem; color: #8b5cf6; font-weight: 600; gap: 0.3rem;"><span class="material-symbols-outlined icon-sm">auto_awesome</span> \u00c9tape ${index + 1} : \u00c9v\u00e9nement</div>`;
             }
         });
         list.innerHTML = html;
@@ -690,13 +667,13 @@ window.closePrepInterface = function () {
 
 window.startCombat = async function () {
     if (pageState.selectedCharIds.length === 0) {
-        showNotif("Veuillez s\u00e9lectionner au moins un personnage.", true);
+        window.showNotif("Veuillez s\u00e9lectionner au moins un personnage.", true);
         return;
     }
 
     if (window.currentDungeonEntryCost > 0) {
         if (window.currentUser && window.currentUser.monnaie < window.currentDungeonEntryCost) {
-            showNotif(`Fonds insuffisants. Il vous faut ${window.currentDungeonEntryCost} Or.`, true);
+            window.showNotif(`Fonds insuffisants. Il vous faut ${window.currentDungeonEntryCost} Or.`, true);
             return;
         }
         const confirmed = await showEntryModal(window.currentDungeonEntryCost);
@@ -723,16 +700,16 @@ window.unlockDungeon = async function (id, cost, event) {
                 overlay.classList.add('unlocking');
                 await new Promise(r => setTimeout(r, 800));
             }
-            showNotif("Donjon d\u00e9bloqu\u00e9 !");
+            window.showNotif("Donjon d\u00e9bloqu\u00e9 !");
             const authRes = await globalFetch('/api/auth/me', { credentials: 'same-origin' });
             if (authRes.ok) window.currentUser = await authRes.json();
             loadDungeons();
         } else {
             const err = await res.text();
-            showNotif(err, true);
+            window.showNotif(err, true);
         }
     } catch (e) {
-        showNotif("Erreur serveur", true);
+        window.showNotif("Erreur serveur", true);
         console.error(e);
     }
 };

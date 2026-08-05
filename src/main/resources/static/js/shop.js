@@ -72,10 +72,11 @@ function generateStandHtml(eq) {
     const priceStr = eq.shopPrice !== undefined ? (eq.shopPrice % 1 === 0 ? eq.shopPrice : eq.shopPrice.toFixed(1)) : '?';
     const oldPriceStr = eq.originalPrice !== undefined ? (eq.originalPrice % 1 === 0 ? eq.originalPrice : eq.originalPrice.toFixed(1)) : '';
 
-    const rName = typeof eq.rarity === 'object' ? eq.rarity?.name : eq.rarity;
-    const rarityColor = RARITY_COLORS[rName] || (isConsumable ? '#c084fc' : '#ef4444');
-    const promoBadge = isPromo ? `<div class="text-xs font-bold absolute" style="top: -10px; right: -10px; background: #ef4444; color: white; padding: 0.2rem 0.5rem; border-radius: 8px; transform: rotate(15deg); box-shadow: 0 4px 6px rgba(0,0,0,0.3);">-20%</div>` : '';
-    const oldPriceHtml = isPromo ? `<span class="text-xs text-error" style="text-decoration: line-through; opacity: 0.7;">${oldPriceStr}</span>` : '';
+    const rName = getRarityName(eq.rarity);
+    let rarityColor = getRarityColor(rName);
+    if (rarityColor === '#ef4444' && isConsumable) rarityColor = '#c084fc';
+    const promoBadge = isPromo ? `<div class="text-xs font-bold absolute promo-badge">-20%</div>` : '';
+    const oldPriceHtml = isPromo ? `<span class="text-xs text-error old-price">${oldPriceStr}</span>` : '';
 
     let isHighRarity = !isConsumable && (rName !== 'COMMUN' && rName !== 'INHABITUEL');
 
@@ -106,13 +107,13 @@ function generateStandHtml(eq) {
             <div class="shop-stand-name">${eq.name}</div>
             
             <div class="shop-stand-stats">
-                ${statsHtml ? statsHtml : (!isConsumable ? '<div style="color:#64748b; font-style:italic; font-size: 0.85rem; margin-top: 0.5rem;">Aucune stat</div>' : '')}
+                ${statsHtml ? statsHtml : (!isConsumable ? '<div class="text-muted text-sm font-italic mt-2">Aucune stat</div>' : '')}
                 ${effectHtml}
-                ${eq.description ? `<div class="font-italic text-muted text-center" style="font-size: 0.85rem; margin-top: 0.5rem;">${eq.description}</div>` : ''}
+                ${eq.description ? `<div class="font-italic text-muted text-center text-sm mt-2">${eq.description}</div>` : ''}
             </div>
             
-            <button class="shop-stand-price" onclick="window.openBuyModal('${eq.id}', ${isConsumable})" style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
-                <div>${oldPriceHtml} ${priceStr} <span class="material-symbols-outlined align-middle" style="font-size: 1.2rem;">monetization_on</span></div>
+            <button class="shop-stand-price flex-col-center gap-1" onclick="window.openBuyModal('${eq.id}', ${isConsumable})">
+                <div>${oldPriceHtml} ${priceStr} <span class="material-symbols-outlined align-middle icon-md">monetization_on</span></div>
                 ${(() => {
             if (eq.priceAnomalies && Object.keys(eq.priceAnomalies).length > 0) {
                 let anos = [];
@@ -123,7 +124,7 @@ function generateStandHtml(eq) {
 
                     const spiriColor = aTemp && aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
                     const tooltipData = getAnomalyTooltipHTML(aTemp, n);
-                    anos.push(`<span class="anomaly-badge" style="border-color: ${spiriColor}; background: linear-gradient(${spiriColor}25, ${spiriColor}25), #1e293b; color: ${spiriColor};" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}">
+                    anos.push(`<span class="anomaly-badge" style="border-color: ${spiriColor}; background: linear-gradient(${spiriColor}25, ${spiriColor}25), #1e293b; color: ${spiriColor};" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}">
                                 <span class="material-symbols-outlined align-middle" style="font-size: 1rem; color: ${spiriColor};">${catIcon}</span> ${q}
                             </span>`);
                 }
@@ -209,7 +210,7 @@ function renderSpecials() {
 
     if (discountItem) {
         const rarity = discountItem.rarity || 'COMMUN';
-        const color = RARITY_COLORS[rarity] || '#ef4444';
+        const color = getRarityColor(rarity);
 
         let r = 239, g = 68, b = 68;
         if (color === '#94a3b8') { r = 148; g = 163; b = 184; }
@@ -271,10 +272,10 @@ window.openBuyModal = function (id, isConsumable = false) {
             let aTemp = pageState.allAnomalies.find(a => a.name === n);
             const catIcon = aTemp && aTemp.category ? getCategoryIcon(aTemp.category) : 'star';
             const spiriColor = aTemp && aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
-            
+
             const tooltipData = getAnomalyTooltipHTML(aTemp, n);
-            
-            anos.push(`<span class="anomaly-badge tooltip-trigger" style="border: 1px solid ${spiriColor}; background: linear-gradient(${spiriColor}25, ${spiriColor}25), #1e293b; color: ${spiriColor}; padding: 0.2rem 0.4rem; border-radius: 6px; display: inline-flex; align-items: center; gap: 0.3rem; font-weight: 600; cursor: help;" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}"><span class="material-symbols-outlined align-middle" style="font-size: 1rem; color: ${spiriColor};">${catIcon}</span> ${q}x ${n}</span>`);
+
+            anos.push(`<span class="anomaly-badge tooltip-trigger" style="border: 1px solid ${spiriColor}; background: linear-gradient(${spiriColor}25, ${spiriColor}25), #1e293b; color: ${spiriColor}; padding: 0.2rem 0.4rem; border-radius: 6px; display: inline-flex; align-items: center; gap: 0.3rem; font-weight: 600; cursor: help;" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}"><span class="material-symbols-outlined align-middle" style="font-size: 1rem; color: ${spiriColor};">${catIcon}</span> ${q}x ${n}</span>`);
         }
         if (priceHtml !== '') priceHtml += ` <span class="text-muted" style="margin: 0 0.4rem;">et</span> `;
         priceHtml += anos.join(' <span class="text-muted" style="margin: 0 0.4rem;">+</span> ');
@@ -321,62 +322,4 @@ window.addEventListener('authLoaded', () => {
         adminLink.style.display = window.isAdmin ? 'inline-flex' : 'none';
     }
 });
-
-window.showTooltipFixed = function (el) {
-    let tooltip = document.getElementById('globalFixedTooltip');
-    if (!tooltip) {
-        tooltip = document.createElement('div');
-        tooltip.id = 'globalFixedTooltip';
-        tooltip.style.position = 'fixed';
-        tooltip.style.zIndex = '999999';
-        tooltip.style.visibility = 'visible';
-        tooltip.style.opacity = '1';
-        tooltip.style.pointerEvents = 'none';
-        tooltip.style.transform = 'none';
-        tooltip.style.background = 'rgba(15, 23, 42, 0.95)';
-        tooltip.style.border = '1px solid rgba(168, 85, 247, 0.5)';
-        tooltip.style.borderRadius = '8px';
-        tooltip.style.padding = '10px';
-        tooltip.style.color = '#f8fafc';
-        tooltip.style.fontSize = '0.8rem';
-        tooltip.style.lineHeight = '1.4';
-        tooltip.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.5)';
-        tooltip.style.maxWidth = 'max-content';
-        tooltip.style.whiteSpace = 'nowrap';
-        tooltip.style.wordWrap = 'normal';
-        tooltip.style.textAlign = 'left';
-        document.body.appendChild(tooltip);
-    }
-    tooltip.innerHTML = el.getAttribute('data-tooltip-html');
-    const elColor = el.style.color || '#a855f7';
-    tooltip.style.border = '1px solid ' + elColor;
-    const titleEl = tooltip.querySelector('.anomaly-tooltip-title');
-    if (titleEl) {
-        titleEl.style.color = elColor;
-        titleEl.style.borderBottom = '1px solid ' + elColor;
-    }
-    tooltip.style.display = 'block';
-
-    const rect = el.getBoundingClientRect();
-    let top = rect.bottom + 8;
-    let left = rect.left + rect.width / 2 - tooltip.offsetWidth / 2;
-
-    if (top + tooltip.offsetHeight > window.innerHeight) {
-        top = rect.top - tooltip.offsetHeight - 8;
-    }
-    if (left < 10) left = 10;
-    if (left + tooltip.offsetWidth > window.innerWidth - 10) {
-        left = window.innerWidth - tooltip.offsetWidth - 10;
-    }
-
-    tooltip.style.top = top + 'px';
-    tooltip.style.left = left + 'px';
-};
-
-window.hideTooltipFixed = function () {
-    const tooltip = document.getElementById('globalFixedTooltip');
-    if (tooltip) tooltip.style.display = 'none';
-};
-
-
-
+
