@@ -41,7 +41,7 @@
             <!-- Nom -->
             <div class="armory-field">
                 <label for="charName">
-                    <span class="material-symbols-outlined" style="color: #f59e0b;">badge</span>
+                    <span class="material-symbols-outlined text-warning">badge</span>
                     Nom du personnage
                 </label>
                 <input type="text" id="charName" placeholder="Ex: Aldric le Sage, Sombria..." required="">
@@ -49,7 +49,7 @@
 
             <!-- Voie & Spiritualité -->
             <div class="armory-section-title" style="display: flex; align-items: center; gap: 0.5rem;">
-                <span class="material-symbols-outlined" style="color: #a855f7;">auto_awesome</span>
+                <span class="material-symbols-outlined text-purple">auto_awesome</span>
                 Voie &amp; Spiritualité
             </div>
 
@@ -57,11 +57,11 @@
                 <div style="display: flex; flex-direction: column; gap: 1rem;">
                     <div class="armory-field">
                         <label for="charVoie" style="display: flex; align-items: center; gap: 0.3rem;">
-                            <span class="material-symbols-outlined" style="color: #a855f7;">route</span>
+                            <span class="material-symbols-outlined text-purple">route</span>
                             Voie
                             <span id="charVoieInfoIcon" class="material-symbols-outlined"
                                 style="font-size: 1.1rem; color: #a855f7; cursor: help; display: none;"
-                                onmouseenter="showEqTooltip(this)" onmouseleave="hideEqTooltip()">
+                                onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()">
                                 info
                                 <template class="tooltip-data"></template>
                             </span>
@@ -69,14 +69,12 @@
                         <div class="custom-select-wrapper" id="charVoieWrapper" tabindex="0">
                             <div class="custom-select-trigger" id="charVoieTrigger">
                                 <span class="cs-label" id="charVoieLabel"><span
-                                        class="material-symbols-outlined cs-icon"
-                                        style="color: #94a3b8;">trip_origin</span> — Aucune —</span>
+                                        class="material-symbols-outlined cs-icon text-muted">trip_origin</span> — Aucune —</span>
                                 <span class="material-symbols-outlined cs-arrow"
                                     style="font-size: 1.1rem;">expand_more</span>
                             </div>
                             <div class="custom-select-options" id="charVoieOptions">
-                                <div class="custom-option" data-value=""><span class="material-symbols-outlined cs-icon"
-                                        style="color: #94a3b8;">trip_origin</span> — Aucune —</div>
+                                <div class="custom-option" data-value=""><span class="material-symbols-outlined cs-icon text-muted">trip_origin</span> — Aucune —</div>
                             </div>
                             <input type="hidden" id="charVoie" value="">
                         </div>
@@ -84,7 +82,7 @@
 
                     <div class="armory-field">
                         <label for="charExperience">
-                            <span class="material-symbols-outlined" style="color: #a855f7;">star</span>
+                            <span class="material-symbols-outlined text-purple">star</span>
                             Expérience
                         </label>
                         <input type="number" id="charExperience" min="0" value="0">
@@ -96,7 +94,7 @@
                             Spiritualité
                             <span id="charSpiritInfoIcon" class="material-symbols-outlined"
                                 style="font-size: 1.1rem; color: #fb923c; cursor: help; display: none;"
-                                onmouseenter="showEqTooltip(this)" onmouseleave="hideEqTooltip()">
+                                onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()">
                                 info
                                 <template class="tooltip-data"></template>
                             </span>
@@ -104,14 +102,12 @@
                         <div class="custom-select-wrapper" id="charSpiritWrapper" tabindex="0">
                             <div class="custom-select-trigger" id="charSpiritTrigger">
                                 <span class="cs-label" id="charSpiritLabel"><span
-                                        class="material-symbols-outlined cs-icon"
-                                        style="color: #94a3b8;">trip_origin</span> — Aucune —</span>
+                                        class="material-symbols-outlined cs-icon text-muted">trip_origin</span> — Aucune —</span>
                                 <span class="material-symbols-outlined cs-arrow"
                                     style="font-size: 1.1rem;">expand_more</span>
                             </div>
                             <div class="custom-select-options" id="charSpiritOptions">
-                                <div class="custom-option" data-value=""><span class="material-symbols-outlined cs-icon"
-                                        style="color: #94a3b8;">trip_origin</span> — Aucune —</div>
+                                <div class="custom-option" data-value=""><span class="material-symbols-outlined cs-icon text-muted">trip_origin</span> — Aucune —</div>
                             </div>
                             <input type="hidden" id="charSpirit" value="">
                         </div>
@@ -128,7 +124,7 @@
 
                 <div class="armory-field">
                     <label style="display: flex; align-items: center; gap: 0.3rem;">
-                        <span class="material-symbols-outlined" style="color: #10b981;">bar_chart</span>
+                        <span class="material-symbols-outlined text-success">bar_chart</span>
                         Modificateurs de Base
                     </label>
                     <div id="voieStatsDiff"
@@ -142,7 +138,7 @@
             <!-- Stats -->
             <div id="baseStatsSection" style="display: flex; flex-direction: column; gap: 1.2rem;">
                 <div class="armory-section-title">
-                    <span class="material-symbols-outlined" style="color: #10b981;">monitoring</span>
+                    <span class="material-symbols-outlined text-success">monitoring</span>
                     Statistiques de Base
                 </div>
 
@@ -166,7 +162,7 @@
                 <div class="armory-form-row quad">
                     <div class="armory-field">
                         <label for="charPower">
-                            <span class="material-symbols-outlined" style="color: #a855f7;">auto_awesome</span>
+                            <span class="material-symbols-outlined text-purple">auto_awesome</span>
                             Puissance
                         </label>
                         <input type="number" id="charPower" min="0" value="10">
@@ -180,14 +176,14 @@
                     </div>
                     <div class="armory-field">
                         <label for="charArmor">
-                            <span class="material-symbols-outlined" style="color: #3b82f6;">shield</span>
+                            <span class="material-symbols-outlined text-info">shield</span>
                             Armure
                         </label>
                         <input type="number" id="charArmor" min="0" value="5">
                     </div>
                     <div class="armory-field">
                         <label for="charResistance">
-                            <span class="material-symbols-outlined" style="color: #10b981;">shield</span>
+                            <span class="material-symbols-outlined text-success">shield</span>
                             Résistance
                         </label>
                         <input type="number" id="charResistance" min="0" value="5">
@@ -197,14 +193,14 @@
                 <div class="armory-form-row">
                     <div class="armory-field">
                         <label for="charSpeed">
-                            <span class="material-symbols-outlined" style="color: #f59e0b;">bolt</span>
+                            <span class="material-symbols-outlined text-warning">bolt</span>
                             Vitesse
                         </label>
                         <input type="number" id="charSpeed" min="0" value="1">
                     </div>
                     <div class="armory-field">
                         <label for="charCrit">
-                            <span class="material-symbols-outlined" style="color: #ef4444;">gps_fixed</span>
+                            <span class="material-symbols-outlined text-danger">gps_fixed</span>
                             Critique (%)
                         </label>
                         <input type="number" id="charCrit" min="0" max="100" value="5">
@@ -249,7 +245,7 @@
                 style="flex: 1; margin: 0; display: flex; flex-direction: column; max-height: calc(100vh - 140px);">
                 <div class="armory-panel-title" style="justify-content: space-between;">
                     <span style="display: flex; align-items: center; gap: 0.5rem;">
-                        <span class="material-symbols-outlined" style="color: #3b82f6;">groups</span>
+                        <span class="material-symbols-outlined text-info">groups</span>
                         Personnages
                     </span>
                     <button type="button" class="armory-nav-link" onclick="loadPersonnages()"
@@ -288,14 +284,12 @@
                         <div class="custom-select-wrapper" id="searchVoieWrapper" tabindex="0">
                             <div class="custom-select-trigger" id="searchVoieTrigger">
                                 <span class="cs-label" id="searchVoieLabel"><span
-                                        class="material-symbols-outlined cs-icon"
-                                        style="color: #94a3b8;">trip_origin</span> Toutes</span>
+                                        class="material-symbols-outlined cs-icon text-muted">trip_origin</span> Toutes</span>
                                 <span class="material-symbols-outlined cs-arrow"
                                     style="font-size: 1.1rem;">expand_more</span>
                             </div>
                             <div class="custom-select-options" id="searchVoieOptions">
-                                <div class="custom-option" data-value=""><span class="material-symbols-outlined cs-icon"
-                                        style="color: #94a3b8;">trip_origin</span> Toutes</div>
+                                <div class="custom-option" data-value=""><span class="material-symbols-outlined cs-icon text-muted">trip_origin</span> Toutes</div>
                             </div>
                             <input type="hidden" id="searchVoie" value="">
                         </div>
@@ -308,15 +302,13 @@
                         <div class="custom-select-wrapper" id="searchSpiritWrapper" tabindex="0">
                             <div class="custom-select-trigger" id="searchSpiritTrigger">
                                 <span class="cs-label" id="searchSpiritLabel"><span
-                                        class="material-symbols-outlined cs-icon"
-                                        style="color: #94a3b8;">trip_origin</span>
+                                        class="material-symbols-outlined cs-icon text-muted">trip_origin</span>
                                     Toutes</span>
                                 <span class="material-symbols-outlined cs-arrow"
                                     style="font-size: 1.1rem;">expand_more</span>
                             </div>
                             <div class="custom-select-options" id="searchSpiritOptions">
-                                <div class="custom-option" data-value=""><span class="material-symbols-outlined cs-icon"
-                                        style="color: #94a3b8;">trip_origin</span> Toutes</div>
+                                <div class="custom-option" data-value=""><span class="material-symbols-outlined cs-icon text-muted">trip_origin</span> Toutes</div>
                             </div>
                             <input type="hidden" id="searchSpirit" value="">
                         </div>
@@ -335,7 +327,7 @@
         <div class="equip-modal">
             <div class="equip-modal-header">
                 <div class="equip-modal-title">
-                    <span class="material-symbols-outlined" style="color: #f59e0b;">shield</span>
+                    <span class="material-symbols-outlined text-warning">shield</span>
                     <span id="equipModalTitle">Équipement</span>
                 </div>
                 <button class="equip-modal-close" onclick="closeEquipModal()">
@@ -419,32 +411,28 @@
                             <div class="custom-select-trigger" id="eqSpecialEffectTrigger"
                                 style="border-color: rgba(192, 132, 252, 0.3);">
                                 <span class="cs-label" id="eqSpecialEffectLabel">
-                                    <span class="material-symbols-outlined cs-icon"
-                                        style="color: #94a3b8;">not_interested</span> Aucun
+                                    <span class="material-symbols-outlined cs-icon text-muted">not_interested</span> Aucun
                                 </span>
                                 <span class="material-symbols-outlined cs-arrow"
                                     style="font-size: 1.1rem;">expand_more</span>
                             </div>
                             <div class="custom-select-options" id="eqSpecialEffectOptions">
                                 <div class="custom-option effect-NONE" data-value="NONE"><span
-                                        class="material-symbols-outlined cs-icon"
-                                        style="color: #94a3b8;">not_interested</span> Aucun</div>
+                                        class="material-symbols-outlined cs-icon text-muted">not_interested</span> Aucun</div>
                                 <div class="custom-option effect-LIFESTEAL" data-value="LIFESTEAL"><span
-                                        class="material-symbols-outlined cs-icon"
-                                        style="color: #ef4444;">water_drop</span> Vol de Vie (%)</div>
+                                        class="material-symbols-outlined cs-icon text-danger">water_drop</span> Vol de Vie (%)</div>
                                 <div class="custom-option effect-THORNS" data-value="THORNS"><span
                                         class="material-symbols-outlined cs-icon"
                                         style="color: #eab308;">explosion</span> Épines (Renvoi dégâts %)</div>
                                 <div class="custom-option effect-MANA_SHIELD" data-value="MANA_SHIELD"><span
-                                        class="material-symbols-outlined cs-icon" style="color: #3b82f6;">shield</span>
+                                        class="material-symbols-outlined cs-icon text-info">shield</span>
                                     Bouclier de Mana (%)</div>
                                 <div class="custom-option effect-CHEAT_DEATH" data-value="CHEAT_DEATH"><span
                                         class="material-symbols-outlined cs-icon"
                                         style="color: #fce7f3;">self_improvement</span> Ange Gardien (X% PV MAX)
                                 </div>
                                 <div class="custom-option effect-CRIT_DAMAGE" data-value="CRIT_DAMAGE"><span
-                                        class="material-symbols-outlined cs-icon"
-                                        style="color: #f97316;">local_fire_department</span> Dégâts Critiques Bonus (%)
+                                        class="material-symbols-outlined cs-icon text-orange">local_fire_department</span> Dégâts Critiques Bonus (%)
                                 </div>
                                 <div class="custom-option effect-VITAL_ARCANE" data-value="VITAL_ARCANE"><span
                                         class="material-symbols-outlined cs-icon"

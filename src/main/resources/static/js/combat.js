@@ -345,7 +345,7 @@ window.promptFlee = function () {
                 if (!res.ok) {
                     pageState.isFleeing = false;
                     const err = await res.text();
-                    ui.showNotif("Erreur lors de la fuite : " + err, true);
+                    ui.window.showNotif("Erreur lors de la fuite : " + err, true);
                     return;
                 }
                 localStorage.removeItem('activeCombatId');
@@ -436,8 +436,8 @@ document.addEventListener('DOMContentLoaded', async () => {
     const consumableIds = urlParams.get('consumableIds');
 
     if (!dungeonId || !characterIds) {
-        if (typeof showNotif !== 'undefined') showNotif("Paramètres de combat manquants.", true);
-        else ui.showNotif("Paramètres de combat manquants.", true);
+        if (typeof showNotif !== 'undefined') window.showNotif("Paramètres de combat manquants.", true);
+        else ui.window.showNotif("Paramètres de combat manquants.", true);
         window.location.href = '/vault.html';
         return;
     }
@@ -459,8 +459,8 @@ async function resumeCombat(savedSessionId) {
         const res = await globalFetch(`/api/pve/combat/${savedSessionId}/resume`, { method: 'POST' });
         if (!res.ok) {
             localStorage.removeItem('activeCombatId');
-            if (typeof showNotif !== 'undefined') showNotif("Combat introuvable ou expiré.", true);
-            else ui.showNotif("Combat introuvable ou expiré.", true);
+            if (typeof showNotif !== 'undefined') window.showNotif("Combat introuvable ou expiré.", true);
+            else ui.window.showNotif("Combat introuvable ou expiré.", true);
             window.location.href = '/vault.html';
             return;
         }
@@ -492,8 +492,8 @@ async function startCombat(characterIds, dungeonId, consumableIds) {
         });
 
         if (!res.ok) {
-            if (typeof showNotif !== 'undefined') showNotif("Erreur lors de l'initialisation du donjon.", true);
-            else ui.showNotif("Erreur lors de l'initialisation du donjon.", true);
+            if (typeof showNotif !== 'undefined') window.showNotif("Erreur lors de l'initialisation du donjon.", true);
+            else ui.window.showNotif("Erreur lors de l'initialisation du donjon.", true);
             window.location.href = '/vault.html';
             return;
         }
@@ -511,8 +511,8 @@ async function startCombat(characterIds, dungeonId, consumableIds) {
         updateUI(data);
     } catch (e) {
         console.error(e);
-        if (typeof showNotif !== 'undefined') showNotif("Erreur de connexion.", true);
-        else ui.showNotif("Erreur de connexion.", true);
+        if (typeof showNotif !== 'undefined') window.showNotif("Erreur de connexion.", true);
+        else ui.window.showNotif("Erreur de connexion.", true);
         window.location.href = '/dungeons.html';
     }
 }
@@ -977,7 +977,7 @@ async function doAction(spellId = null) {
         if (!res.ok) {
             const errText = await res.text();
             console.error('Server error:', errText);
-            showNotif(errText || "Erreur serveur", true);
+            window.showNotif(errText || "Erreur serveur", true);
             pageState.isProcessing = false;
             setButtonsProcessing(false);
             return;
@@ -994,7 +994,7 @@ async function doAction(spellId = null) {
 
     } catch (e) {
         console.error(e);
-        showNotif("Erreur de connexion", true);
+        window.showNotif("Erreur de connexion", true);
         pageState.isProcessing = false;
         setButtonsProcessing(false);
     }
@@ -1027,7 +1027,7 @@ async function endTurn() {
             updateUI(retryData);
         } catch (e2) {
             console.error('Recovery failed:', e2);
-            showNotif("Erreur critique. Rechargez la page.", true);
+            window.showNotif("Erreur critique. Rechargez la page.", true);
         }
     }
 }
@@ -1054,7 +1054,7 @@ async function nextRoom() {
         updateUI(data);
     } catch (e) {
         console.error(e);
-        showNotif("Erreur lors du passage à la salle suivante", true);
+        window.showNotif("Erreur lors du passage à la salle suivante", true);
         // Retry from server state
         try {
             const retryRes = await globalFetch(`/api/pve/combat/${pageState.sessionId}/resume`, { method: 'POST' });
@@ -1082,7 +1082,7 @@ async function openStrangeDoor() {
         const res = await globalFetch(`/api/pve/combat/${pageState.sessionId}/open-strange-door`, { method: 'POST' });
         if (!res.ok) {
             const errText = await res.text();
-            showNotif(errText || "Erreur lors de l'ouverture de la porte", true);
+            window.showNotif(errText || "Erreur lors de l'ouverture de la porte", true);
             pageState.isProcessing = false;
             setButtonsProcessing(false);
             return;
@@ -1098,7 +1098,7 @@ async function openStrangeDoor() {
         updateUI(data);
     } catch (e) {
         console.error(e);
-        showNotif("Erreur lors de l'ouverture de la porte", true);
+        window.showNotif("Erreur lors de l'ouverture de la porte", true);
     } finally {
         pageState.isProcessing = false;
         setButtonsProcessing(false);
@@ -1120,7 +1120,7 @@ async function acceptAlteration() {
         });
         if (!res.ok) {
             const err = await res.text();
-            showNotif(err || "Action impossible", true);
+            window.showNotif(err || "Action impossible", true);
             pageState.isProcessing = false;
             setButtonsProcessing(false);
             return;
@@ -1129,7 +1129,7 @@ async function acceptAlteration() {
         updateUI(data);
     } catch (e) {
         console.error(e);
-        showNotif("Erreur lors de l'altération", true);
+        window.showNotif("Erreur lors de l'altération", true);
     } finally {
         pageState.isProcessing = false;
         setButtonsProcessing(false);
@@ -1146,7 +1146,7 @@ async function useRope() {
         });
         if (!res.ok) {
             const err = await res.text();
-            showNotif(err || "Action impossible", true);
+            window.showNotif(err || "Action impossible", true);
             pageState.isProcessing = false;
             return;
         }
@@ -1154,7 +1154,7 @@ async function useRope() {
         updateUI(data);
     } catch (e) {
         console.error(e);
-        showNotif("Erreur lors de l'utilisation de la corde", true);
+        window.showNotif("Erreur lors de l'utilisation de la corde", true);
     } finally {
         pageState.isProcessing = false;
         setButtonsProcessing(false);
@@ -1174,7 +1174,7 @@ async function buyMerchantItem(lootIndex) {
         const res = await globalFetch(`/api/pve/combat/${pageState.sessionId}/merchant-buy?lootIndex=${lootIndex}&characterId=${charId}`, { method: 'POST' });
         if (!res.ok) {
             const errorText = await res.text();
-            showNotif(errorText || "Vous n'avez pas les ressources nécessaires.", true);
+            window.showNotif(errorText || "Vous n'avez pas les ressources nécessaires.", true);
             if (btn) btn.innerHTML = '<span class="material-symbols-outlined" style="font-size: 1.2rem;">shopping_cart</span>Acheter';
             return;
         }
@@ -1182,7 +1182,7 @@ async function buyMerchantItem(lootIndex) {
         updateUI(data);
     } catch (e) {
         console.error(e);
-        showNotif("Erreur lors de l'achat.", true);
+        window.showNotif("Erreur lors de l'achat.", true);
     } finally {
         pageState.isProcessing = false;
         setButtonsProcessing(false);
@@ -1347,8 +1347,8 @@ async function openChest(useKey = false) {
         const res = await globalFetch(`/api/pve/combat/${pageState.sessionId}/open-chest?useKey=${useKey}`, { method: 'POST' });
         if (!res.ok) {
             const err = await res.text();
-            if (typeof showNotif !== 'undefined') showNotif("Erreur : " + err, true);
-            else ui.showNotif("Erreur : " + err, true);
+            if (typeof showNotif !== 'undefined') window.showNotif("Erreur : " + err, true);
+            else ui.window.showNotif("Erreur : " + err, true);
             pageState.isProcessing = false;
             return;
         }
@@ -1370,8 +1370,8 @@ async function openChest(useKey = false) {
 
     } catch (e) {
         console.error(e);
-        if (typeof showNotif !== 'undefined') showNotif("Erreur lors de l'ouverture du coffre.", true);
-        else ui.showNotif("Erreur lors de l'ouverture du coffre.", true);
+        if (typeof showNotif !== 'undefined') window.showNotif("Erreur lors de l'ouverture du coffre.", true);
+        else ui.window.showNotif("Erreur lors de l'ouverture du coffre.", true);
     } finally {
         pageState.isProcessing = false;
         setButtonsProcessing(false);
@@ -2431,7 +2431,7 @@ function updateUI(data) {
                         if (btnEnd) { btnEnd.disabled = false; }
                         const spellButtons = document.querySelectorAll('.spell-btn, .filter-chip');
                         spellButtons.forEach(btn => { btn.disabled = false; btn.classList.remove('disabled'); btn.style.pointerEvents = ''; });
-                        showNotif("Erreur de synchronisation. Veuillez réessayer.", true);
+                        window.showNotif("Erreur de synchronisation. Veuillez réessayer.", true);
                     }
                 }
             }, 600); // Fetch next turn
@@ -3507,25 +3507,7 @@ function showResult(data) {
     overlay.classList.add('show');
 }
 
-function showNotif(msg, isError = false) {
-    const notif = document.getElementById('combatNotif');
-    const notifText = document.getElementById('combatNotifText');
-    const notifIcon = notif.querySelector('.notif-icon');
 
-    notifText.textContent = msg;
-    if (isError) {
-        notif.style.background = 'rgba(239, 68, 68, 0.9)';
-        notifIcon.textContent = 'error';
-    } else {
-        notif.style.background = 'rgba(16, 185, 129, 0.9)';
-        notifIcon.textContent = 'check_circle';
-    }
-
-    notif.classList.add('show');
-    setTimeout(() => {
-        notif.classList.remove('show');
-    }, 3000);
-}
 
 
 
@@ -3593,61 +3575,9 @@ function renderDotsHtml(dotList) {
     `;
 }
 
-window.showGlobalTooltip = function (el) {
-    let tooltip = document.getElementById('globalFixedTooltip');
-    if (!tooltip) {
-        tooltip = document.createElement('div');
-        tooltip.id = 'globalFixedTooltip';
-        tooltip.style.position = 'fixed';
-        tooltip.style.zIndex = '999999';
-        tooltip.style.visibility = 'visible';
-        tooltip.style.opacity = '1';
-        tooltip.style.pointerEvents = 'none';
-        tooltip.style.transform = 'none';
-        tooltip.style.background = 'rgba(15, 23, 42, 0.95)';
-        tooltip.style.border = '1px solid rgba(168, 85, 247, 0.5)';
-        tooltip.style.borderRadius = '8px';
-        tooltip.style.padding = '10px';
-        tooltip.style.color = '#f8fafc';
-        tooltip.style.fontSize = '0.8rem';
-        tooltip.style.lineHeight = '1.4';
-        tooltip.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.5)';
-        tooltip.style.maxWidth = 'max-content';
-        tooltip.style.whiteSpace = 'nowrap';
-        tooltip.style.wordWrap = 'normal';
-        tooltip.style.textAlign = 'left';
-        document.body.appendChild(tooltip);
-    }
 
-    const tmpl = el.querySelector('.tooltip-data');
-    if (tmpl) {
-        tooltip.innerHTML = tmpl.innerHTML;
-    } else {
-        return;
-    }
 
-    tooltip.style.display = 'block';
 
-    const rect = el.getBoundingClientRect();
-    let top = rect.bottom + 8;
-    let left = rect.left + rect.width / 2 - tooltip.offsetWidth / 2;
-
-    if (top + tooltip.offsetHeight > window.innerHeight) {
-        top = rect.top - tooltip.offsetHeight - 8;
-    }
-    if (left < 10) left = 10;
-    if (left + tooltip.offsetWidth > window.innerWidth - 10) {
-        left = window.innerWidth - tooltip.offsetWidth - 10;
-    }
-
-    tooltip.style.top = top + 'px';
-    tooltip.style.left = left + 'px';
-};
-
-window.hideGlobalTooltip = function () {
-    const tooltip = document.getElementById('globalFixedTooltip');
-    if (tooltip) tooltip.style.display = 'none';
-};
 
 window.renderOverlayInventory = function (containerId) {
     const list = document.getElementById(containerId);
@@ -3759,15 +3689,15 @@ window.confirmConsumeItem = async function (consumableId, characterId) {
         });
         if (res.ok) {
             pageState.currentSessionData = await res.json();
-            ui.showNotif("Objet consommé avec succès !");
+            ui.window.showNotif("Objet consommé avec succès !");
             updateUI(pageState.currentSessionData);
         } else {
             const err = await res.text();
-            ui.showNotif("Erreur: " + err, true);
+            ui.window.showNotif("Erreur: " + err, true);
         }
     } catch (e) {
         console.error(e);
-        ui.showNotif("Erreur lors de la consommation.", true);
+        ui.window.showNotif("Erreur lors de la consommation.", true);
     }
 };
 

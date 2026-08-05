@@ -598,6 +598,27 @@
     border-bottom: none;
 }
 
+.global-tooltip {
+    position: fixed;
+    z-index: 999999;
+    visibility: visible;
+    opacity: 1;
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid rgba(168, 85, 247, 0.5);
+    border-radius: 8px;
+    padding: 10px;
+    color: #f8fafc;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    max-width: max-content;
+    white-space: nowrap;
+    word-wrap: normal;
+    text-align: left;
+    display: none;
+    pointer-events: none;
+}
+
 .custom-option:hover {
     background: rgba(245, 158, 11, 0.15);
 }

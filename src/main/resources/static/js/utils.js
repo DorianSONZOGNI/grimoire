@@ -144,6 +144,25 @@ async function showNotif(message, isError = false) {
     ui.showNotif(message, isError);
 }
 
+window.showGlobalTooltip = async function(el) {
+    const ui = await import('/js/ui.js');
+    ui.showGlobalTooltip(el);
+}
+
+window.hideGlobalTooltip = async function() {
+    const ui = await import('/js/ui.js');
+    ui.hideGlobalTooltip();
+}
+
+// Make them available globally without window. prefix as well
+function showGlobalTooltip(el) {
+    window.showGlobalTooltip(el);
+}
+
+function hideGlobalTooltip() {
+    window.hideGlobalTooltip();
+}
+
 async function showModal(options) {
     const ui = await import('/js/ui.js');
     return ui.showModal(options);

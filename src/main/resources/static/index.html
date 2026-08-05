@@ -98,14 +98,14 @@
 
             <!-- SECTION DES COÛTS DU SORT -->
             <div class="cost-section">
-                <div class="cost-section-title" style="display: flex; align-items: center; gap: 0.4rem;">
+                <div class="cost-section-title" class="flex-center flex-center-gap">
                     <span class="material-symbols-outlined" style="font-size: 1.2rem; color: #f59e0b;">electric_bolt</span>
                     <span>Coûts du Sort</span>
                 </div>
 
                 <!-- Coûts en Mana -->
                 <div class="cost-card mana">
-                    <div class="cost-card-header" style="display: flex; align-items: center; gap: 0.4rem;">
+                    <div class="cost-card-header" class="flex-center flex-center-gap">
                         <span class="material-symbols-outlined" style="font-size: 1.1rem; color: #38bdf8;">water_drop</span>
                         <span>Mana</span>
                     </div>
@@ -127,7 +127,7 @@
 
                 <!-- Coûts en PV -->
                 <div class="cost-card health">
-                    <div class="cost-card-header" style="display: flex; align-items: center; gap: 0.4rem;">
+                    <div class="cost-card-header" class="flex-center flex-center-gap">
                         <span class="material-symbols-outlined" style="font-size: 1.1rem; color: #ef4444;">bloodtype</span>
                         <span>Sacrifice (Points de Vie)</span>
                     </div>
@@ -149,7 +149,7 @@
 
                 <!-- Coût en Chaleur (Voie de la Destruction) -->
                 <div class="cost-card health" id="heatCostCard" style="display: none; border-left-color: #f97316;">
-                    <div class="cost-card-header" style="display: flex; align-items: center; gap: 0.4rem;">
+                    <div class="cost-card-header" class="flex-center flex-center-gap">
                         <span class="material-symbols-outlined" style="font-size: 1.1rem; color: #f97316;">local_fire_department</span>
                         <span>Coût en Chaleur</span>
                     </div>
@@ -172,7 +172,7 @@
                 <textarea id="description" rows="2" placeholder="Effets narratifs ou secrets de ce sort..."></textarea>
             </div>
 
-            <div class="form-row" style="margin-bottom: 1rem;">
+            <div class="form-row" class="mb-4">
                 <div class="form-group" style="justify-content: center; align-items: flex-start;">
                     <label class="target-toggle-container monster-mode" style="width: max-content;" title="Si activé, ce sort sera une Mutation pour monstre">
                         <input type="checkbox" id="isMonsterSpell" class="target-radio" onchange="toggleSpellTargetType()">
@@ -188,13 +188,13 @@
             </div>
 
             <div class="form-row" id="heroAffinityRow" style="display: flex; gap: 1rem;">
-                <div class="form-group" style="flex: 1;">
+                <div class="form-group" class="flex-1">
                     <label for="voieSelect" style="display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem;">route</span>Voie Associée</label>
                     <select id="voieSelect" onchange="handleAffinityChange('voie');">
                         <option value="">-- Aucune (Neutre) --</option>
                     </select>
                 </div>
-                <div class="form-group" style="flex: 1;">
+                <div class="form-group" class="flex-1">
                     <label for="spiritSelect" style="display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem;">psychology</span>Spiritualité</label>
                     <select id="spiritSelect" onchange="handleAffinityChange('spirit');">
                         <option value="">-- Aucune (Neutre) --</option>
@@ -203,7 +203,7 @@
             </div>
 
             <div class="form-row" id="monsterAffinityRow" style="display: none; gap: 1rem;">
-                <div class="form-group" style="flex: 1;">
+                <div class="form-group" class="flex-1">
                     <label for="mutationSelect" style="display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem;">pets</span>Mutation</label>
                     <select id="mutationSelect" onchange="handleAffinityChange('mutation');">
                         <option value="">-- Aucune (Neutre) --</option>
@@ -392,7 +392,7 @@
 
                 <!-- Section Filtrage par Spiritualité et Mutation -->
                 <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-start;">
-                    <div style="flex: 1;">
+                    <div class="flex-1">
                         <label style="font-size: 0.65rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.4rem; font-weight: 700; letter-spacing: 0.5px;">
                             <span class="material-symbols-outlined" style="font-size: 0.95rem; color: #fb923c;">grade</span>
                             FILTRER PAR SPIRITUALITÉ

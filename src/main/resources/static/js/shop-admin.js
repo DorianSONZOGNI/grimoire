@@ -366,7 +366,7 @@ function renderGrid(equipments) {
                                 const catIcon = aTemp && aTemp.category ? getCategoryIcon(aTemp.category) : 'star';
                                 const spiriColor = aTemp && aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
                                 const tooltipData = getAnomalyTooltipHTML(aTemp, n);
-                                anos.push(`<span class="anomaly-badge" style="border-color: ${spiriColor}; background: ${spiriColor}25; color: ${spiriColor};" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}">
+                                anos.push(`<span class="anomaly-badge" style="border-color: ${spiriColor}; background: ${spiriColor}25; color: ${spiriColor};" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}">
                                         <span class="material-symbols-outlined text-sm align-middle" style="color: ${spiriColor};">${catIcon}</span> ${q}
                                     </span>`);
                             }
@@ -779,56 +779,7 @@ window.updateWeightUI = async function () {
     }
 }
 
-window.showTooltipFixed = function (el) {
-    let tooltip = document.getElementById('globalFixedTooltip');
-    if (!tooltip) {
-        tooltip = document.createElement('div');
-        tooltip.id = 'globalFixedTooltip';
-        tooltip.style.position = 'fixed';
-        tooltip.style.zIndex = '999999';
-        tooltip.style.visibility = 'visible';
-        tooltip.style.opacity = '1';
-        tooltip.style.pointerEvents = 'none';
-        tooltip.style.transform = 'none';
-        tooltip.style.background = 'rgba(15, 23, 42, 0.95)';
-        tooltip.style.border = '1px solid rgba(168, 85, 247, 0.5)';
-        tooltip.style.borderRadius = '8px';
-        tooltip.style.padding = '10px';
-        tooltip.style.color = '#f8fafc';
-        tooltip.style.fontSize = '0.8rem';
-        tooltip.style.lineHeight = '1.4';
-        tooltip.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.5)';
-        tooltip.style.maxWidth = 'max-content';
-        tooltip.style.whiteSpace = 'nowrap';
-        tooltip.style.wordWrap = 'normal';
-        tooltip.style.textAlign = 'left';
-        document.body.appendChild(tooltip);
-    }
-    tooltip.innerHTML = el.getAttribute('data-tooltip-html');
-    const elColor = el.style.color || '#a855f7';
-    tooltip.style.border = '1px solid ' + elColor;
-    const titleEl = tooltip.querySelector('.anomaly-tooltip-title');
-    if (titleEl) {
-        titleEl.style.color = elColor;
-        titleEl.style.borderBottom = '1px solid ' + elColor;
-    }
-    tooltip.style.display = 'block';
-
-    const rect = el.getBoundingClientRect();
-    let top = rect.bottom + 8;
-    let left = rect.left + rect.width / 2 - tooltip.offsetWidth / 2;
-
-    if (top + tooltip.offsetHeight > window.innerHeight) {
-        top = rect.top - tooltip.offsetHeight - 8;
-    }
-    if (left < 10) left = 10;
-    if (left + tooltip.offsetWidth > window.innerWidth - 10) {
-        left = window.innerWidth - tooltip.offsetWidth - 10;
-    }
-
-    tooltip.style.top = top + 'px';
-    tooltip.style.left = left + 'px';
-};
+;
 
 window.hideTooltipFixed = function () {
     const tooltip = document.getElementById('globalFixedTooltip');

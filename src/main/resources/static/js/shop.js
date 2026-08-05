@@ -124,7 +124,7 @@ function generateStandHtml(eq) {
 
                     const spiriColor = aTemp && aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
                     const tooltipData = getAnomalyTooltipHTML(aTemp, n);
-                    anos.push(`<span class="anomaly-badge" style="border-color: ${spiriColor}; background: linear-gradient(${spiriColor}25, ${spiriColor}25), #1e293b; color: ${spiriColor};" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}">
+                    anos.push(`<span class="anomaly-badge" style="border-color: ${spiriColor}; background: linear-gradient(${spiriColor}25, ${spiriColor}25), #1e293b; color: ${spiriColor};" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}">
                                 <span class="material-symbols-outlined align-middle" style="font-size: 1rem; color: ${spiriColor};">${catIcon}</span> ${q}
                             </span>`);
                 }
@@ -275,7 +275,7 @@ window.openBuyModal = function (id, isConsumable = false) {
 
             const tooltipData = getAnomalyTooltipHTML(aTemp, n);
 
-            anos.push(`<span class="anomaly-badge tooltip-trigger" style="border: 1px solid ${spiriColor}; background: linear-gradient(${spiriColor}25, ${spiriColor}25), #1e293b; color: ${spiriColor}; padding: 0.2rem 0.4rem; border-radius: 6px; display: inline-flex; align-items: center; gap: 0.3rem; font-weight: 600; cursor: help;" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}"><span class="material-symbols-outlined align-middle" style="font-size: 1rem; color: ${spiriColor};">${catIcon}</span> ${q}x ${n}</span>`);
+            anos.push(`<span class="anomaly-badge tooltip-trigger" style="border: 1px solid ${spiriColor}; background: linear-gradient(${spiriColor}25, ${spiriColor}25), #1e293b; color: ${spiriColor}; padding: 0.2rem 0.4rem; border-radius: 6px; display: inline-flex; align-items: center; gap: 0.3rem; font-weight: 600; cursor: help;" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}"><span class="material-symbols-outlined align-middle" style="font-size: 1rem; color: ${spiriColor};">${catIcon}</span> ${q}x ${n}</span>`);
         }
         if (priceHtml !== '') priceHtml += ` <span class="text-muted" style="margin: 0 0.4rem;">et</span> `;
         priceHtml += anos.join(' <span class="text-muted" style="margin: 0 0.4rem;">+</span> ');
@@ -322,88 +322,4 @@ window.addEventListener('authLoaded', () => {
         adminLink.style.display = window.isAdmin ? 'inline-flex' : 'none';
     }
 });
-
-window.showTooltipFixed = function (el) {
-    let tooltip = document.getElementById('globalFixedTooltip');
-    if (!tooltip) {
-        tooltip = document.createElement('div');
-        tooltip.id = 'globalFixedTooltip';
-        tooltip.style.position = 'fixed';
-        tooltip.style.zIndex = '999999';
-        tooltip.style.visibility = 'visible';
-        tooltip.style.opacity = '1';
-        tooltip.style.pointerEvents = 'none';
-        tooltip.style.transform = 'none';
-        tooltip.style.background = 'rgba(15, 23, 42, 0.95)';
-        tooltip.style.border = '1px solid rgba(168, 85, 247, 0.5)';
-        tooltip.style.borderRadius = '8px';
-        tooltip.style.padding = '10px';
-        tooltip.style.color = '#f8fafc';
-        tooltip.style.fontSize = '0.8rem';
-        tooltip.style.lineHeight = '1.4';
-        tooltip.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.5)';
-        tooltip.style.maxWidth = 'max-content';
-        tooltip.style.whiteSpace = 'nowrap';
-        tooltip.style.wordWrap = 'normal';
-        tooltip.style.textAlign = 'left';
-        document.body.appendChild(tooltip);
-    }
-    tooltip.innerHTML = el.getAttribute('data-tooltip-html');
-    const elColor = el.style.color || '#a855f7';
-    tooltip.style.border = '1px solid ' + elColor;
-    const titleEl = tooltip.querySelector('.anomaly-tooltip-title');
-    if (titleEl) {
-        titleEl.style.color = elColor;
-        titleEl.style.borderBottom = '1px solid ' + elColor;
-    }
-    tooltip.style.display = 'block';
-
-    const rect = el.getBoundingClientRect();
-    let top = rect.bottom + 8;
-    let left = rect.left + rect.width / 2 - tooltip.offsetWidth / 2;
-
-    if (top + tooltip.offsetHeight > window.innerHeight) {
-        top = rect.top - tooltip.offsetHeight - 8;
-    }
-    if (left < 10) left = 10;
-    if (left + tooltip.offsetWidth > window.innerWidth - 10) {
-        left = window.innerWidth - tooltip.offsetWidth - 10;
-    }
-
-    tooltip.style.top = top + 'px';
-    tooltip.style.left = left + 'px';
-};
-
-window.hideTooltipFixed = function () {
-    const tooltip = document.getElementById('globalFixedTooltip');
-    if (tooltip) tooltip.style.display = 'none';
-};
-
-window.addEventListener('authLoaded', () => {
-    if (!window.currentUser) {
-        document.querySelector('.vault-main').style.display = 'none';
-        document.querySelector('.vault-main').insertAdjacentHTML('beforebegin', `
-                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 80vh; text-align: center; color: white;">
-                        <span class="material-symbols-outlined" style="font-size: 4rem; color: #ef4444; margin-bottom: 1rem;">lock</span>
-                        <h1 style="font-size: 2rem; margin-bottom: 1rem; font-family: 'Outfit', sans-serif;">Veuillez vous connecter</h1>
-                        <p style="color: #94a3b8; max-width: 400px; margin-bottom: 2rem; font-size: 1.1rem;">
-                            Vous devez être connecté pour accéder à cette page.
-                        </p>
-                    </div>
-                `);
-    } else if (!window.currentUser.unlockedShop) {
-        document.querySelector('.vault-main').style.display = 'none';
-        document.querySelector('.vault-main').insertAdjacentHTML('beforebegin', `
-                    <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 80vh; text-align: center; color: white;">
-                        <span class="material-symbols-outlined" style="font-size: 4rem; color: #ef4444; margin-bottom: 1rem;">lock</span>
-                        <h1 style="font-size: 2rem; margin-bottom: 1rem; font-family: 'Outfit', sans-serif;">Boutique Bloquée</h1>
-                        <p style="color: #94a3b8; max-width: 400px; margin-bottom: 2rem; font-size: 1.1rem;">
-                            Vous devez débloquer la Boutique pour y accéder. L'accès coûte 75 or.
-                        </p>
-                        <button onclick="promptUnlockFeature('shop', 'Boutique', 75)" style="background: #10b981; color: white; border: none; padding: 0.8rem 1.5rem; border-radius: 8px; font-weight: 600; font-family: 'Outfit', sans-serif; cursor: pointer; font-size: 1.1rem; box-shadow: 0 4px 15px rgba(16, 185, 129, 0.4); transition: all 0.2s;">
-                            Débloquer pour 75 <span class="material-symbols-outlined" style="font-size: 1.2rem; vertical-align: middle; color: #fcd34d;">monetization_on</span>
-                        </button>
-                    </div>
-                `);
-    }
-});
+

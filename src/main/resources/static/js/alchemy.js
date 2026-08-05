@@ -258,7 +258,7 @@ function renderCauldron(r) {
             };
 
             const tooltipData = buildAnomalyTooltipHTML(name);
-            reqsHTML += `<div data-color="${style.color}" style="background:rgba(0,0,0,0.4); padding:0.6rem; border-radius:8px; border:1px solid ${style.color}40; margin-bottom: 0.4rem; cursor: help;" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipData}">
+            reqsHTML += `<div data-color="${style.color}" style="background:rgba(0,0,0,0.4); padding:0.6rem; border-radius:8px; border:1px solid ${style.color}40; margin-bottom: 0.4rem; cursor: help;" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData}">
                         <div style="display:flex; align-items:center; justify-content: space-between; gap:0.5rem; margin-bottom: ${(!isIdentical && hasEnough) ? '0.5rem' : '0'};">
                             <div style="display:flex; align-items:center; gap:0.5rem;">
                                 <span class="material-symbols-outlined" style="color: ${style.color}; font-size:1.2rem;">${style.icon}</span>
@@ -320,7 +320,7 @@ function renderCauldron(r) {
 
             const style = getItemStyle(name, 'CONSUMABLE');
             const tooltipData = buildEquipmentTooltipHTML(name, true);
-            const tooltipAttrs = tooltipData ? `data-color="${style.color}" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipData}" style="cursor: help; background:rgba(0,0,0,0.4); padding:0.6rem; border-radius:8px; border:1px solid ${style.color}40; margin-bottom: 0.4rem;"` : `style="background:rgba(0,0,0,0.4); padding:0.6rem; border-radius:8px; border:1px solid ${style.color}40; margin-bottom: 0.4rem;"`;
+            const tooltipAttrs = tooltipData ? `data-color="${style.color}" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData}" style="cursor: help; background:rgba(0,0,0,0.4); padding:0.6rem; border-radius:8px; border:1px solid ${style.color}40; margin-bottom: 0.4rem;"` : `style="background:rgba(0,0,0,0.4); padding:0.6rem; border-radius:8px; border:1px solid ${style.color}40; margin-bottom: 0.4rem;"`;
 
             reqsHTML += `<div ${tooltipAttrs}>
                         <div style="display:flex; align-items:center; justify-content: space-between; gap:0.5rem;">
@@ -414,11 +414,11 @@ function renderCauldron(r) {
     let resultTooltipAttr = '';
     if (resultType === 'ANOMALY') {
         const tooltipData = buildAnomalyTooltipHTML(r.rewardName);
-        resultTooltipAttr = `data-color="${resultColor}" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipData}"`;
+        resultTooltipAttr = `data-color="${resultColor}" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData}"`;
     } else if (resultType === 'EQUIPMENT' || resultType === 'CONSUMABLE') {
         const tooltipData = buildEquipmentTooltipHTML(r.rewardName, resultType === 'CONSUMABLE');
         if (tooltipData) {
-            resultTooltipAttr = `data-color="${resultColor}" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipData}"`;
+            resultTooltipAttr = `data-color="${resultColor}" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData}"`;
         }
     }
 
@@ -861,56 +861,7 @@ function buildEquipmentTooltipHTML(name, isConsumable = false) {
     return html.replace(/"/g, '&quot;');
 }
 
-window.showTooltipFixed = function (el) {
-    let tooltip = document.getElementById('globalFixedTooltip');
-    if (!tooltip) {
-        tooltip = document.createElement('div');
-        tooltip.id = 'globalFixedTooltip';
-        tooltip.style.position = 'fixed';
-        tooltip.style.zIndex = '999999';
-        tooltip.style.visibility = 'visible';
-        tooltip.style.opacity = '1';
-        tooltip.style.pointerEvents = 'none';
-        tooltip.style.transform = 'none';
-        tooltip.style.background = 'rgba(15, 23, 42, 0.95)';
-        tooltip.style.border = '1px solid rgba(168, 85, 247, 0.5)';
-        tooltip.style.borderRadius = '8px';
-        tooltip.style.padding = '10px';
-        tooltip.style.color = '#f8fafc';
-        tooltip.style.fontSize = '0.8rem';
-        tooltip.style.lineHeight = '1.4';
-        tooltip.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.5)';
-        tooltip.style.maxWidth = 'max-content';
-        tooltip.style.whiteSpace = 'nowrap';
-        tooltip.style.wordWrap = 'normal';
-        tooltip.style.textAlign = 'left';
-        document.body.appendChild(tooltip);
-    }
-    tooltip.innerHTML = el.getAttribute('data-tooltip-html');
-    const elColor = el.getAttribute('data-color') || el.style.color || '#a855f7';
-    tooltip.style.border = '1px solid ' + elColor;
-    const titleEl = tooltip.querySelector('.anomaly-tooltip-title');
-    if (titleEl) {
-        titleEl.style.color = elColor;
-        titleEl.style.borderBottom = '1px solid ' + elColor;
-    }
-    tooltip.style.display = 'block';
-
-    const rect = el.getBoundingClientRect();
-    let top = rect.bottom + 8;
-    let left = rect.left + rect.width / 2 - tooltip.offsetWidth / 2;
-
-    if (top + tooltip.offsetHeight > window.innerHeight) {
-        top = rect.top - tooltip.offsetHeight - 8;
-    }
-    if (left < 10) left = 10;
-    if (left + tooltip.offsetWidth > window.innerWidth - 10) {
-        left = window.innerWidth - tooltip.offsetWidth - 10;
-    }
-
-    tooltip.style.top = top + 'px';
-    tooltip.style.left = left + 'px';
-};
+;
 
 window.hideTooltipFixed = function () {
     const tooltip = document.getElementById('globalFixedTooltip');

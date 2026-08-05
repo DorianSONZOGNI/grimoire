@@ -603,7 +603,7 @@ function renderPersonnages() {
             const vColor = getVoieColor(p.voie.nom);
             const vFull = pageState.voies.find(v => v.id == p.voie.id) || p.voie;
             const info = getVoieInfo(p.voie.nom);
-            badges += `<span class="char-badge" style="color: ${vColor}; border-color: ${vColor}40; background: ${vColor}15; cursor: help;" onmouseenter="showEqTooltip(this)" onmouseleave="hideEqTooltip()">
+            badges += `<span class="char-badge" style="color: ${vColor}; border-color: ${vColor}40; background: ${vColor}15; cursor: help;" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()">
                 <span class="material-symbols-outlined text-xs">route</span>
                 ${p.voie.nom} Lvl ${p.voieLevel}
                 <template class="tooltip-data">
@@ -623,7 +623,7 @@ function renderPersonnages() {
             const sColor = getSpiritColor(p.spiritualite.nom);
             const sFull = pageState.spiritualites.find(s => s.id == p.spiritualite.id) || p.spiritualite;
             const info = getSpiritInfo(p.spiritualite.nom);
-            badges += `<span class="char-badge" style="color: ${sColor}; border-color: ${sColor}40; background: ${sColor}15; cursor: help;" onmouseenter="showEqTooltip(this)" onmouseleave="hideEqTooltip()">
+            badges += `<span class="char-badge" style="color: ${sColor}; border-color: ${sColor}40; background: ${sColor}15; cursor: help;" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()">
                 <span class="material-symbols-outlined text-xs">psychology</span>
                 ${p.spiritualite.nom} Lvl ${p.spiritualiteLevel}
                 <template class="tooltip-data">
@@ -912,7 +912,7 @@ function renderEquipModal() {
                             `;
 
                     return `
-                                <div class="custom-option" data-value="${a.id}" onmouseenter="showEqTooltip(this)" onmouseleave="hideEqTooltip()">
+                                <div class="custom-option" data-value="${a.id}" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()">
                                     <span class="${aRarityName ? 'rarity-' + aRarityName : ''}">${a.name}</span>
                                     ${aRarityLabel ? '<span class="opacity-50" style="font-size: 0.7rem; margin-left: 0.3rem;">(' + aRarityLabel + ')</span>' : ''}
                                     ${(a.slot?.name || a.slot) === 'ARME_DEUX_MAINS' ? '<span class="font-bold text-error" style="font-size: 0.7rem; margin-left: 0.3rem;">[2 Mains]</span>' : ''}
@@ -1366,29 +1366,7 @@ window.addEventListener('authLoaded', async () => {
     await loadPersonnages();
 });
 
-window.showEqTooltip = function (el) {
-    let tooltip = document.getElementById('globalSpellTooltip');
-    if (!tooltip) {
-        tooltip = document.createElement('div');
-        tooltip.id = 'globalSpellTooltip';
-        document.body.appendChild(tooltip);
-    }
-    const dataEl = el.querySelector('.tooltip-data');
-    if (!dataEl) return;
-
-    tooltip.innerHTML = dataEl.innerHTML;
-    tooltip.style.display = 'flex';
-
-    const rect = el.getBoundingClientRect();
-    let topPos = rect.top - tooltip.offsetHeight - 8;
-    if (topPos < 10) topPos = rect.bottom + 8;
-
-    let leftPos = rect.right - tooltip.offsetWidth;
-    if (leftPos < 10) leftPos = 10;
-
-    tooltip.style.top = topPos + 'px';
-    tooltip.style.left = leftPos + 'px';
-};
+;
 
 window.hideEqTooltip = function () {
     const tooltip = document.getElementById('globalSpellTooltip');

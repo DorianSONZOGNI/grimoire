@@ -296,67 +296,6 @@ async function updateRewardNameInput() {
                 `;
     }
 }
-
-
-
-
-
-window.showTooltipFixed = function (el) {
-    let tooltip = document.getElementById('globalFixedTooltip');
-    if (!tooltip) {
-        tooltip = document.createElement('div');
-        tooltip.id = 'globalFixedTooltip';
-        tooltip.style.position = 'fixed';
-        tooltip.style.zIndex = '999999';
-        tooltip.style.visibility = 'visible';
-        tooltip.style.opacity = '1';
-        tooltip.style.pointerEvents = 'none';
-        tooltip.style.transform = 'none';
-        tooltip.style.background = 'rgba(15, 23, 42, 0.95)';
-        tooltip.style.border = '1px solid rgba(168, 85, 247, 0.5)';
-        tooltip.style.borderRadius = '8px';
-        tooltip.style.padding = '10px';
-        tooltip.style.color = '#f8fafc';
-        tooltip.style.fontSize = '0.8rem';
-        tooltip.style.lineHeight = '1.4';
-        tooltip.style.boxShadow = '0 10px 25px rgba(0, 0, 0, 0.5)';
-        tooltip.style.maxWidth = 'max-content';
-        tooltip.style.whiteSpace = 'nowrap';
-        tooltip.style.wordWrap = 'normal';
-        tooltip.style.textAlign = 'left';
-        document.body.appendChild(tooltip);
-    }
-    tooltip.innerHTML = el.getAttribute('data-tooltip-html');
-    const elColor = el.style.color || '#a855f7';
-    tooltip.style.border = '1px solid ' + elColor;
-    const titleEl = tooltip.querySelector('.anomaly-tooltip-title');
-    if (titleEl) {
-        titleEl.style.color = elColor;
-        titleEl.style.borderBottom = '1px solid ' + elColor;
-    }
-    tooltip.style.display = 'block';
-
-    const rect = el.getBoundingClientRect();
-    let top = rect.bottom + 8;
-    let left = rect.left + rect.width / 2 - tooltip.offsetWidth / 2;
-
-    if (top + tooltip.offsetHeight > window.innerHeight) {
-        top = rect.top - tooltip.offsetHeight - 8;
-    }
-    if (left < 10) left = 10;
-    if (left + tooltip.offsetWidth > window.innerWidth - 10) {
-        left = window.innerWidth - tooltip.offsetWidth - 10;
-    }
-
-    tooltip.style.top = top + 'px';
-    tooltip.style.left = left + 'px';
-};
-
-window.hideTooltipFixed = function () {
-    const tooltip = document.getElementById('globalFixedTooltip');
-    if (tooltip) tooltip.style.display = 'none';
-};
-
 function addRequirement(type, selectedName = '', qty = 1) {
     const list = document.getElementById(type === 'anomalie' ? 'reqAnomaliesList' : 'reqConsumablesList');
     const div = document.createElement('div');
@@ -481,7 +420,7 @@ window.renderRecipesList = function () {
                     const catIcon = aTemp.category ? (getCategoryIcon(aTemp.category)) : 'star';
                     const spiriColor = aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
                     const tooltipData = getAnomalyTooltipHTML(aTemp, k);
-                    reqs.push(`<span class="anomaly-badge" style="border: 1px solid ${spiriColor}; background: linear-gradient(${spiriColor}25, ${spiriColor}25), #1e293b; color: ${spiriColor}; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block; cursor: help;" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}"><span class="material-symbols-outlined" style="font-size: 0.9rem; vertical-align: middle; color: ${spiriColor};">${catIcon}</span> ${v}x ${k}</span>`);
+                    reqs.push(`<span class="anomaly-badge" style="border: 1px solid ${spiriColor}; background: linear-gradient(${spiriColor}25, ${spiriColor}25), #1e293b; color: ${spiriColor}; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block; cursor: help;" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}"><span class="material-symbols-outlined" style="font-size: 0.9rem; vertical-align: middle; color: ${spiriColor};">${catIcon}</span> ${v}x ${k}</span>`);
                 } else {
                     reqs.push(`${v}x [A] ${k}`);
                 }
@@ -502,7 +441,7 @@ window.renderRecipesList = function () {
                 const catIcon = aTemp.category ? (getCategoryIcon(aTemp.category)) : 'star';
                 const spiriColor = aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
                 const tooltipData = getAnomalyTooltipHTML(aTemp, r.rewardName);
-                rewardHtml = `<span class="anomaly-badge" style="border: 1px solid ${spiriColor}; background: linear-gradient(${spiriColor}25, ${spiriColor}25), #1e293b; color: ${spiriColor}; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block; cursor: help;" onmouseenter="showTooltipFixed(this)" onmouseleave="hideTooltipFixed()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; color: ${spiriColor};">${catIcon}</span> ${r.rewardQuantity}x ${r.rewardName}</span>`;
+                rewardHtml = `<span class="anomaly-badge" style="border: 1px solid ${spiriColor}; background: linear-gradient(${spiriColor}25, ${spiriColor}25), #1e293b; color: ${spiriColor}; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block; cursor: help;" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; color: ${spiriColor};">${catIcon}</span> ${r.rewardQuantity}x ${r.rewardName}</span>`;
             } else {
                 rewardHtml = `<span style="color: #10b981;">${r.rewardType} - ${r.rewardQuantity}x ${r.rewardName} (Niv. ${r.rewardLevel})</span>`;
             }

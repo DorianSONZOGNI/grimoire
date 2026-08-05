@@ -69,29 +69,7 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 });
 
-function showNotif(message, isError = false) {
-    const notif = document.getElementById('dungeonNotif');
-    const text = document.getElementById('dungeonNotifText');
-    const icon = document.getElementById('dungeonNotifIcon');
-    text.textContent = message;
 
-    if (isError) {
-        icon.textContent = 'error_outline';
-        notif.style.background = '#ef4444';
-        notif.style.boxShadow = '0 10px 25px rgba(239, 68, 68, 0.3)';
-    } else {
-        icon.textContent = 'check_circle';
-        notif.style.background = '#10b981';
-        notif.style.boxShadow = '0 10px 25px rgba(16, 185, 129, 0.3)';
-    }
-
-    notif.style.opacity = '1';
-    notif.style.transform = 'translateY(0)';
-    setTimeout(() => {
-        notif.style.opacity = '0';
-        notif.style.transform = 'translateY(100px)';
-    }, 3000);
-}
 
 async function loadDungeons() {
     try {
@@ -475,7 +453,7 @@ window.selectConsumable = function (id) {
         const c = pageState.availableConsumables.find(item => item.id === id);
         const itemWeight = c ? (c.weight || 0) : 0;
         if (getCurrentWeight() + itemWeight > getMaxWeight()) {
-            showNotif(`Le poids maximum serait d\u00e9pass\u00e9 !`, true);
+            window.showNotif(`Le poids maximum serait d\u00e9pass\u00e9 !`, true);
             return;
         }
         pageState.selectedConsumableIds.push(id);
@@ -488,11 +466,11 @@ window.selectCharacter = async function (id) {
         pageState.selectedCharIds = pageState.selectedCharIds.filter(cid => cid !== id);
         if (getCurrentWeight() > getMaxWeight()) {
             pageState.selectedConsumableIds = [];
-            showNotif(`Inventaire r\u00e9initialis\u00e9 car le poids max a diminu\u00e9.`, true);
+            window.showNotif(`Inventaire r\u00e9initialis\u00e9 car le poids max a diminu\u00e9.`, true);
         }
     } else {
         if (pageState.selectedCharIds.length >= pageState.currentMaxHeroes) {
-            showNotif(`Ce donjon est limit\u00e9 \u00e0 ${pageState.currentMaxHeroes} h\u00e9ros maximum.`, true);
+            window.showNotif(`Ce donjon est limit\u00e9 \u00e0 ${pageState.currentMaxHeroes} h\u00e9ros maximum.`, true);
             return;
         }
         pageState.selectedCharIds.push(id);
@@ -690,13 +668,13 @@ window.closePrepInterface = function () {
 
 window.startCombat = async function () {
     if (pageState.selectedCharIds.length === 0) {
-        showNotif("Veuillez s\u00e9lectionner au moins un personnage.", true);
+        window.showNotif("Veuillez s\u00e9lectionner au moins un personnage.", true);
         return;
     }
 
     if (window.currentDungeonEntryCost > 0) {
         if (window.currentUser && window.currentUser.monnaie < window.currentDungeonEntryCost) {
-            showNotif(`Fonds insuffisants. Il vous faut ${window.currentDungeonEntryCost} Or.`, true);
+            window.showNotif(`Fonds insuffisants. Il vous faut ${window.currentDungeonEntryCost} Or.`, true);
             return;
         }
         const confirmed = await showEntryModal(window.currentDungeonEntryCost);
@@ -723,16 +701,16 @@ window.unlockDungeon = async function (id, cost, event) {
                 overlay.classList.add('unlocking');
                 await new Promise(r => setTimeout(r, 800));
             }
-            showNotif("Donjon d\u00e9bloqu\u00e9 !");
+            window.showNotif("Donjon d\u00e9bloqu\u00e9 !");
             const authRes = await globalFetch('/api/auth/me', { credentials: 'same-origin' });
             if (authRes.ok) window.currentUser = await authRes.json();
             loadDungeons();
         } else {
             const err = await res.text();
-            showNotif(err, true);
+            window.showNotif(err, true);
         }
     } catch (e) {
-        showNotif("Erreur serveur", true);
+        window.showNotif("Erreur serveur", true);
         console.error(e);
     }
 };

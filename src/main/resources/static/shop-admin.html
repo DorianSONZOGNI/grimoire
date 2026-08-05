@@ -55,12 +55,12 @@
     <!-- Create/Edit Equipment Modal -->
     <div id="equipCreateModal" class="vault-modal-overlay">
         <div class="equip-modal"
-            style="background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; width: 90%; max-width: 600px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); position: relative;">
+            style="background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; width: 90%; max-width: 630px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); position: relative;">
             <div class="equip-modal-header"
                 style="padding: 1.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.05); display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2);">
                 <div class="equip-modal-title"
                     style="display: flex; align-items: center; gap: 0.8rem; font-size: 1.3rem; font-weight: 600; color: #fff; font-family: 'Outfit', sans-serif;">
-                    <span class="material-symbols-outlined" style="color: #10b981;">build</span>
+                    <span class="material-symbols-outlined text-success">build</span>
                     <span id="equipModalTitle">Forger un objet</span>
                 </div>
                 <button class="equip-modal-close" onclick="closeCreateEqModal()"
@@ -71,7 +71,7 @@
 
             <div class="equip-modal-body" style="padding: 1.5rem; overflow-y: auto;">
                 <div class="equip-create-section">
-                    <div class="eq-create-row" style="margin-bottom: 1rem;">
+                    <div class="eq-create-row" class="mb-4">
                         <div class="form-group"
                             style="justify-content: flex-start; align-items: flex-start; margin: 0;">
                             <label class="target-toggle-container shop-mode" style="width: max-content;"
@@ -148,16 +148,16 @@
                             <div class="custom-select-wrapper" id="eqConsumableCategoryWrapper" tabindex="0">
                                 <div class="custom-select-trigger" id="eqConsumableCategoryTrigger">
                                     <span class="cs-label" id="eqConsumableCategoryLabel">
-                                        <span class="material-symbols-outlined cs-icon"
-                                            style="color: #94a3b8;">inventory_2</span> Autre
+                                        <span class="material-symbols-outlined cs-icon text-muted">inventory_2</span>
+                                        Autre
                                     </span>
                                     <span class="material-symbols-outlined cs-arrow"
                                         style="font-size: 1.1rem;">expand_more</span>
                                 </div>
                                 <div class="custom-select-options" id="eqConsumableCategoryOptions">
                                     <div class="custom-option" data-value="AUTRE"><span
-                                            class="material-symbols-outlined cs-icon"
-                                            style="color: #94a3b8;">inventory_2</span> Autre</div>
+                                            class="material-symbols-outlined cs-icon text-muted">inventory_2</span>
+                                        Autre</div>
                                     <div class="custom-option" data-value="POTION_ROSE"><span
                                             class="material-symbols-outlined cs-icon"
                                             style="color: #ec4899;">science</span> Potion Rose</div>
@@ -165,11 +165,11 @@
                                             class="material-symbols-outlined cs-icon"
                                             style="color: #0ea5e9;">science</span> Potion Bleue</div>
                                     <div class="custom-option" data-value="POTION_ROUGE"><span
-                                            class="material-symbols-outlined cs-icon"
-                                            style="color: #ef4444;">science</span> Potion Rouge</div>
+                                            class="material-symbols-outlined cs-icon text-danger">science</span> Potion
+                                        Rouge</div>
                                     <div class="custom-option" data-value="POTION_VIOLETTE"><span
-                                            class="material-symbols-outlined cs-icon"
-                                            style="color: #a855f7;">science</span> Potion Violette</div>
+                                            class="material-symbols-outlined cs-icon text-purple">science</span> Potion
+                                        Violette</div>
                                     <div class="custom-option" data-value="CLE"><span
                                             class="material-symbols-outlined cs-icon"
                                             style="color: #eab308;">vpn_key</span> Clé</div>
@@ -180,8 +180,8 @@
                                             class="material-symbols-outlined cs-icon"
                                             style="color: #64748b;">construction</span> Outil</div>
                                     <div class="custom-option" data-value="PARCHEMIN"><span
-                                            class="material-symbols-outlined cs-icon"
-                                            style="color: #f59e0b;">history_edu</span> Parchemin</div>
+                                            class="material-symbols-outlined cs-icon text-warning">history_edu</span>
+                                        Parchemin</div>
                                     <div class="custom-option" data-value="NOURRITURE"><span
                                             class="material-symbols-outlined cs-icon"
                                             style="color: #f43f5e;">restaurant</span> Nourriture</div>
@@ -199,33 +199,32 @@
                                 <div class="custom-select-trigger" id="eqSpecialEffectTrigger"
                                     style="border-color: rgba(192, 132, 252, 0.3);">
                                     <span class="cs-label" id="eqSpecialEffectLabel">
-                                        <span class="material-symbols-outlined cs-icon"
-                                            style="color: #94a3b8;">not_interested</span> Aucun
+                                        <span class="material-symbols-outlined cs-icon text-muted">not_interested</span>
+                                        Aucun
                                     </span>
                                     <span class="material-symbols-outlined cs-arrow"
                                         style="font-size: 1.1rem;">expand_more</span>
                                 </div>
                                 <div class="custom-select-options" id="eqSpecialEffectOptions">
                                     <div class="custom-option effect-NONE" data-value="NONE"><span
-                                            class="material-symbols-outlined cs-icon"
-                                            style="color: #94a3b8;">not_interested</span> Aucun</div>
+                                            class="material-symbols-outlined cs-icon text-muted">not_interested</span>
+                                        Aucun</div>
                                     <div class="custom-option effect-LIFESTEAL" data-value="LIFESTEAL"><span
-                                            class="material-symbols-outlined cs-icon"
-                                            style="color: #ef4444;">water_drop</span> Vol de Vie (%)</div>
+                                            class="material-symbols-outlined cs-icon text-danger">water_drop</span> Vol
+                                        de Vie (%)</div>
                                     <div class="custom-option effect-THORNS" data-value="THORNS"><span
                                             class="material-symbols-outlined cs-icon"
                                             style="color: #eab308;">explosion</span> Épines (Renvoi dégâts %)</div>
                                     <div class="custom-option effect-MANA_SHIELD" data-value="MANA_SHIELD"><span
-                                            class="material-symbols-outlined cs-icon"
-                                            style="color: #3b82f6;">shield</span>
+                                            class="material-symbols-outlined cs-icon text-info">shield</span>
                                         Bouclier de Mana (%)</div>
                                     <div class="custom-option effect-CHEAT_DEATH" data-value="CHEAT_DEATH"><span
                                             class="material-symbols-outlined cs-icon"
                                             style="color: #fce7f3;">self_improvement</span> Ange Gardien (X% PV MAX)
                                     </div>
                                     <div class="custom-option effect-CRIT_DAMAGE" data-value="CRIT_DAMAGE"><span
-                                            class="material-symbols-outlined cs-icon"
-                                            style="color: #f97316;">local_fire_department</span> Dégâts Critiques Bonus
+                                            class="material-symbols-outlined cs-icon text-orange">local_fire_department</span>
+                                        Dégâts Critiques Bonus
                                         (%)
                                     </div>
                                     <div class="custom-option effect-CURSED_MANA_DRAIN" data-value="CURSED_MANA_DRAIN">
@@ -259,12 +258,12 @@
                                             style="color: #555555;">healing</span> Chair putréfiée (Soins % -)
                                     </div>
                                     <div class="custom-option effect-EXECUTION" data-value="EXECUTION"><span
-                                            class="material-symbols-outlined cs-icon"
-                                            style="color: #ef4444;">swords</span> Exécution (% Phy)
+                                            class="material-symbols-outlined cs-icon text-danger">swords</span>
+                                        Exécution (% Phy)
                                     </div>
                                     <div class="custom-option effect-MAGIC_OVERLOAD" data-value="MAGIC_OVERLOAD"><span
-                                            class="material-symbols-outlined cs-icon"
-                                            style="color: #a855f7;">electric_bolt</span> Surcharge (% Mag mana Act)
+                                            class="material-symbols-outlined cs-icon text-purple">electric_bolt</span>
+                                        Surcharge (% Mag mana Act)
                                     </div>
                                     <div class="custom-option effect-VITAL_ARCANE" data-value="VITAL_ARCANE"><span
                                             class="material-symbols-outlined cs-icon"
@@ -408,7 +407,7 @@
                         </div>
                     </div>
 
-                    <div class="eq-create-field" style="margin-bottom: 1rem;">
+                    <div class="eq-create-field" class="mb-4">
                         <label
                             style="color: #f59e0b; display: flex; justify-content: space-between; align-items: center;">
                             <span><span class="material-symbols-outlined"
@@ -429,7 +428,7 @@
 
                     <div class="eq-price-container"
                         style="margin-bottom: 1.5rem; padding: 0.8rem; background: rgba(245,158,11,0.05); border-radius: 8px; border: 1px dashed rgba(245,158,11,0.3);">
-                        <div style="display: flex; justify-content: space-between; align-items: center;">
+                        <div class="flex-between flex-center">
                             <span style="font-size: 0.85rem; color: #cbd5e1; font-weight: 500;"><span
                                     class="material-symbols-outlined"
                                     style="font-size: 1rem; vertical-align: middle; margin-right: 4px; color: #f59e0b;">payments</span>Prix

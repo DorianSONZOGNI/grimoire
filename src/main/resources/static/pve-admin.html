@@ -40,7 +40,7 @@
                 <section class="admin-section" id="monsterFormPanel" style="margin: 0; transition: all 0.3s;">
                     <div class="admin-section-header">
                         <div class="admin-section-title">
-                            <span class="material-symbols-outlined" style="color: #ef4444;">pest_control</span>
+                            <span class="material-symbols-outlined text-danger">pest_control</span>
                             Créer un Monstre
                         </div>
                     </div>
@@ -49,15 +49,15 @@
                             <div class="form-grid">
                                 <div class="form-group" style="grid-column: span 2;">
                                     <div style="display: flex; gap: 1rem; align-items: flex-end;">
-                                        <div style="flex: 1;">
-                                            <label style="display: flex; align-items: center; gap: 0.4rem;"><span
+                                        <div class="flex-1">
+                                            <label class="flex-center flex-center-gap"><span
                                                     class="material-symbols-outlined"
                                                     style="font-size: 1.1rem; color: #f8fafc;">badge</span> Nom du
                                                 monstre</label>
                                             <input type="text" id="mName" class="form-control" required="">
                                         </div>
                                         <div style="width: 100px; position: relative;" id="mLevelContainer">
-                                            <label style="display: flex; align-items: center; gap: 0.4rem;"><span
+                                            <label class="flex-center flex-center-gap"><span
                                                     class="material-symbols-outlined"
                                                     style="font-size: 1.1rem; color: #38bdf8;">star_rate</span>
                                                 Lvl</label>
@@ -65,35 +65,29 @@
                                             <div id="mLevelWrapper" class="custom-select-wrapper">
                                                 <div class="custom-select-trigger custom-select-larger"
                                                     onclick="toggleLevelSelect()" id="mLevelTrigger">
-                                                    <span class="material-symbols-outlined cs-icon"
-                                                        style="color: #94a3b8; font-size: 1.1rem;">star</span> <span
+                                                    <span class="material-symbols-outlined cs-icon text-muted">star</span> <span
                                                         style="flex:1; text-align:center;">1</span>
                                                 </div>
                                                 <div class="custom-select-options">
                                                     <div class="custom-option"
                                                         onclick="selectLevelOption(1, '#94a3b8')"><span
-                                                            class="material-symbols-outlined cs-icon"
-                                                            style="color: #94a3b8; font-size: 1.1rem;">star</span> 1
+                                                            class="material-symbols-outlined cs-icon text-muted">star</span> 1
                                                     </div>
                                                     <div class="custom-option"
                                                         onclick="selectLevelOption(2, '#10b981')"><span
-                                                            class="material-symbols-outlined cs-icon"
-                                                            style="color: #10b981; font-size: 1.1rem;">star</span> 2
+                                                            class="material-symbols-outlined cs-icon text-success">star</span> 2
                                                     </div>
                                                     <div class="custom-option"
                                                         onclick="selectLevelOption(3, '#3b82f6')"><span
-                                                            class="material-symbols-outlined cs-icon"
-                                                            style="color: #3b82f6; font-size: 1.1rem;">star</span> 3
+                                                            class="material-symbols-outlined cs-icon text-info">star</span> 3
                                                     </div>
                                                     <div class="custom-option"
                                                         onclick="selectLevelOption(4, '#a855f7')"><span
-                                                            class="material-symbols-outlined cs-icon"
-                                                            style="color: #a855f7; font-size: 1.1rem;">star</span> 4
+                                                            class="material-symbols-outlined cs-icon text-purple">star</span> 4
                                                     </div>
                                                     <div class="custom-option"
                                                         onclick="selectLevelOption(5, '#f59e0b')"><span
-                                                            class="material-symbols-outlined cs-icon"
-                                                            style="color: #f59e0b; font-size: 1.1rem;">star</span> 5
+                                                            class="material-symbols-outlined cs-icon text-warning">star</span> 5
                                                     </div>
                                                 </div>
                                             </div>
@@ -103,14 +97,14 @@
                                     </div>
                                 </div>
                                 <div class="form-group" style="grid-column: span 2;">
-                                    <label style="display: flex; align-items: center; gap: 0.4rem;"><span
+                                    <label class="flex-center flex-center-gap"><span
                                             class="material-symbols-outlined"
                                             style="font-size: 1.1rem; color: #94a3b8;">description</span>
                                         Description</label>
                                     <input type="text" id="mDesc" class="form-control">
                                 </div>
                                 <div class="form-group">
-                                    <label style="display: flex; align-items: center; gap: 0.4rem;"><span
+                                    <label class="flex-center flex-center-gap"><span
                                             class="material-symbols-outlined"
                                             style="font-size: 1.1rem; color: #ec4899;">favorite</span> PV Max</label>
                                     <div style="display: flex; gap: 0.5rem; align-items: center;">
@@ -125,13 +119,13 @@
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label style="display: flex; align-items: center; gap: 0.4rem;"><span
+                                    <label class="flex-center flex-center-gap"><span
                                             class="material-symbols-outlined"
                                             style="font-size: 1.1rem; color: #f472b6;">healing</span> Régén. PV</label>
                                     <input type="number" id="mRegenHp" class="form-control" value="0" required="">
                                 </div>
                                 <div class="form-group">
-                                    <label style="display: flex; align-items: center; gap: 0.4rem;"><span
+                                    <label class="flex-center flex-center-gap"><span
                                             class="material-symbols-outlined"
                                             style="font-size: 1.1rem; color: #38bdf8;">water_drop</span> Mana
                                         Max</label>
@@ -148,75 +142,74 @@
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label style="display: flex; align-items: center; gap: 0.4rem;"><span
+                                    <label class="flex-center flex-center-gap"><span
                                             class="material-symbols-outlined"
                                             style="font-size: 1.1rem; color: #7dd3fc;">opacity</span> Régén.
                                         Mana</label>
                                     <input type="number" id="mRegenMana" class="form-control" value="0" required="">
                                 </div>
                                 <div class="form-group">
-                                    <label style="display: flex; align-items: center; gap: 0.4rem;"><span
+                                    <label class="flex-center flex-center-gap"><span
                                             class="material-symbols-outlined"
                                             style="font-size: 1.1rem; color: #f59e0b;">bolt</span> Vitesse</label>
                                     <input type="number" id="mSpeed" class="form-control" value="10" required="">
                                 </div>
                                 <div class="form-group">
-                                    <label style="display: flex; align-items: center; gap: 0.4rem;"><span
+                                    <label class="flex-center flex-center-gap"><span
                                             class="material-symbols-outlined"
                                             style="font-size: 1.1rem; color: #ef4444;">gps_fixed</span> Critique
                                         (%)</label>
                                     <input type="number" id="mCrit" class="form-control" value="5" required="">
                                 </div>
                                 <div class="form-group">
-                                    <label style="display: flex; align-items: center; gap: 0.4rem;"><span
+                                    <label class="flex-center flex-center-gap"><span
                                             class="material-symbols-outlined"
                                             style="font-size: 1.1rem; color: #f43f5e;">fitness_center</span>
                                         Force</label>
                                     <input type="number" id="mStrength" class="form-control" value="10" required="">
                                 </div>
                                 <div class="form-group">
-                                    <label style="display: flex; align-items: center; gap: 0.4rem;"><span
+                                    <label class="flex-center flex-center-gap"><span
                                             class="material-symbols-outlined"
                                             style="font-size: 1.1rem; color: #a855f7;">auto_awesome</span>
                                         Puissance</label>
                                     <input type="number" id="mPower" class="form-control" value="0" required="">
                                 </div>
                                 <div class="form-group">
-                                    <label style="display: flex; align-items: center; gap: 0.4rem;"><span
+                                    <label class="flex-center flex-center-gap"><span
                                             class="material-symbols-outlined"
                                             style="font-size: 1.1rem; color: #3b82f6;">shield</span> Armure</label>
                                     <input type="number" id="mArmor" class="form-control" value="5" required="">
                                 </div>
                                 <div class="form-group">
-                                    <label style="display: flex; align-items: center; gap: 0.4rem;"><span
+                                    <label class="flex-center flex-center-gap"><span
                                             class="material-symbols-outlined"
                                             style="font-size: 1.1rem; color: #10b981;">shield</span> Résistance</label>
                                     <input type="number" id="mResist" class="form-control" value="5" required="">
                                 </div>
                                 <div class="form-group">
-                                    <label style="display: flex; align-items: center; gap: 0.4rem;"><span
+                                    <label class="flex-center flex-center-gap"><span
                                             class="material-symbols-outlined"
                                             style="font-size: 1.1rem; color: #f59e0b;">monetization_on</span> Récompense
                                         Or</label>
                                     <input type="number" id="mGold" class="form-control" value="10" required="">
                                 </div>
                                 <div class="form-group">
-                                    <label style="display: flex; align-items: center; gap: 0.4rem;"><span
+                                    <label class="flex-center flex-center-gap"><span
                                             class="material-symbols-outlined"
                                             style="font-size: 1.1rem; color: #fcd34d;">stars</span> Récompense
                                         XP</label>
                                     <input type="number" id="mXp" class="form-control" value="20" required="">
                                 </div>
                                 <div class="form-group">
-                                    <label style="display: flex; align-items: center; gap: 0.4rem;"><span
+                                    <label class="flex-center flex-center-gap"><span
                                             class="material-symbols-outlined"
                                             style="font-size: 1.1rem; color: #ef4444;">genetics</span> Type</label>
                                     <input type="hidden" id="mType" value="NORMAL">
                                     <div id="mTypeWrapper" class="custom-select-wrapper">
                                         <div class="custom-select-trigger custom-select-larger"
                                             onclick="toggleMonsterTypeSelect()" id="mTypeTrigger">
-                                            <span class="material-symbols-outlined cs-icon"
-                                                style="color: #94a3b8; font-size: 1.1rem;">check_box_outline_blank</span>
+                                            <span class="material-symbols-outlined cs-icon text-muted">check_box_outline_blank</span>
                                             <span style="flex:1; text-align:left;">Normal</span>
                                             <span class="material-symbols-outlined"
                                                 style="color: #94a3b8; font-size: 1.2rem; pointer-events: none;">expand_more</span>
@@ -224,28 +217,23 @@
                                         <div class="custom-select-options">
                                             <div class="custom-option"
                                                 onclick="selectMonsterType('NORMAL', 'Normal', 'check_box_outline_blank', '#94a3b8')">
-                                                <span class="material-symbols-outlined cs-icon"
-                                                    style="color: #94a3b8;">check_box_outline_blank</span>Normal
+                                                <span class="material-symbols-outlined cs-icon text-muted">check_box_outline_blank</span>Normal
                                             </div>
                                             <div class="custom-option"
                                                 onclick="selectMonsterType('DEMON', 'Démon', 'rib_cage', '#ef4444')">
-                                                <span class="material-symbols-outlined cs-icon"
-                                                    style="color: #ef4444;">rib_cage</span>Démon
+                                                <span class="material-symbols-outlined cs-icon text-danger">rib_cage</span>Démon
                                             </div>
                                             <div class="custom-option"
                                                 onclick="selectMonsterType('REPTILE', 'Reptile', 'grass', '#10b981')">
-                                                <span class="material-symbols-outlined cs-icon"
-                                                    style="color: #10b981;">grass</span>Reptile
+                                                <span class="material-symbols-outlined cs-icon text-success">grass</span>Reptile
                                             </div>
                                             <div class="custom-option"
                                                 onclick="selectMonsterType('MORT_VIVANT', 'Mort-vivant', 'skull', '#94a3b8')">
-                                                <span class="material-symbols-outlined cs-icon"
-                                                    style="color: #94a3b8;">skull</span>Mort-vivant
+                                                <span class="material-symbols-outlined cs-icon text-muted">skull</span>Mort-vivant
                                             </div>
                                             <div class="custom-option"
                                                 onclick="selectMonsterType('HYBRIDE', 'Hybride', 'network_node', '#3b82f6')">
-                                                <span class="material-symbols-outlined cs-icon"
-                                                    style="color: #3b82f6;">network_node</span>Hybride
+                                                <span class="material-symbols-outlined cs-icon text-info">network_node</span>Hybride
                                             </div>
                                             <div class="custom-option"
                                                 onclick="selectMonsterType('VAMPIRE', 'Vampire', 'bloodtype', '#e11d48')">
@@ -254,14 +242,13 @@
                                             </div>
                                             <div class="custom-option"
                                                 onclick="selectMonsterType('ECTOPLASME', 'Ectoplasme', 'candle', '#a855f7')">
-                                                <span class="material-symbols-outlined cs-icon"
-                                                    style="color: #a855f7;">candle</span>Ectoplasme
+                                                <span class="material-symbols-outlined cs-icon text-purple">candle</span>Ectoplasme
                                             </div>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="form-group">
-                                    <label style="display: flex; align-items: center; gap: 0.4rem;"><span
+                                    <label class="flex-center flex-center-gap"><span
                                             class="material-symbols-outlined"
                                             style="font-size: 1.1rem; color: #8b5cf6;">neurology</span> Comportement
                                         IA</label>
@@ -269,8 +256,7 @@
                                     <div id="mBehaviorWrapper" class="custom-select-wrapper">
                                         <div class="custom-select-trigger custom-select-larger"
                                             onclick="toggleMonsterBehaviorSelect()" id="mBehaviorTrigger">
-                                            <span class="material-symbols-outlined cs-icon"
-                                                style="color: #94a3b8; font-size: 1.1rem;">check_box_outline_blank</span>
+                                            <span class="material-symbols-outlined cs-icon text-muted">check_box_outline_blank</span>
                                             <span style="flex:1; text-align:left;">Normal</span>
                                             <span class="material-symbols-outlined"
                                                 style="color: #94a3b8; font-size: 1.2rem; pointer-events: none;">expand_more</span>
@@ -278,13 +264,11 @@
                                         <div class="custom-select-options">
                                             <div class="custom-option"
                                                 onclick="selectMonsterBehavior('NORMAL', 'Normal', 'check_box_outline_blank', '#94a3b8')">
-                                                <span class="material-symbols-outlined cs-icon"
-                                                    style="color: #94a3b8;">check_box_outline_blank</span>Normal
+                                                <span class="material-symbols-outlined cs-icon text-muted">check_box_outline_blank</span>Normal
                                             </div>
                                             <div class="custom-option"
                                                 onclick="selectMonsterBehavior('PREDATEUR', 'Prédateur', 'track_changes', '#f59e0b')">
-                                                <span class="material-symbols-outlined cs-icon"
-                                                    style="color: #f59e0b;">track_changes</span>Prédateur
+                                                <span class="material-symbols-outlined cs-icon text-warning">track_changes</span>Prédateur
                                             </div>
                                             <div class="custom-option"
                                                 onclick="selectMonsterBehavior('CORRUPTEUR', 'Corrupteur', 'allergy', '#8b5cf6')">
@@ -298,8 +282,7 @@
                                             </div>
                                             <div class="custom-option"
                                                 onclick="selectMonsterBehavior('ASSASSIN', 'Assassin', 'gps_fixed', '#ef4444')">
-                                                <span class="material-symbols-outlined cs-icon"
-                                                    style="color: #ef4444;">gps_fixed</span>Assassin
+                                                <span class="material-symbols-outlined cs-icon text-danger">gps_fixed</span>Assassin
                                             </div>
                                             <div class="custom-option"
                                                 onclick="selectMonsterBehavior('BRUTAL', 'Brutal', 'shield', '#9ca3af')">
@@ -315,14 +298,14 @@
                                     </div>
                                 </div>
                                 <div class="form-group" style="grid-column: span 2;">
-                                    <label style="display: flex; align-items: center; gap: 0.4rem;"><span
+                                    <label class="flex-center flex-center-gap"><span
                                             class="material-symbols-outlined"
                                             style="font-size: 1.1rem; color: #10b981;">explore</span>
                                         Voie Native (Secret)</label>
                                     <div class="custom-select-wrapper" id="mNativeSecretWrapper" style="z-index: 95;">
                                         <div class="custom-select-trigger" style="padding: 0.8rem;">
                                             <span class="cs-label"
-                                                style="display: flex; align-items: center; gap: 0.4rem;">
+                                                class="flex-center flex-center-gap">
                                                 <span class="material-symbols-outlined cs-icon"
                                                     style="color: #64748b; font-size: 1.1rem;">close</span>
                                                 Aucun (Optionnel)
@@ -342,8 +325,7 @@
                                                 Secret du Chaos
                                             </div>
                                             <div class="custom-option" data-value="Secret de l'Abondance">
-                                                <span class="material-symbols-outlined cs-icon"
-                                                    style="color: #10b981;">eco</span>
+                                                <span class="material-symbols-outlined cs-icon text-success">eco</span>
                                                 Secret de l'Abondance
                                             </div>
                                             <div class="custom-option" data-value="Secret de la Préservation">
@@ -372,8 +354,7 @@
                                                 Secret de la Joie
                                             </div>
                                             <div class="custom-option" data-value="Secret du Savoir">
-                                                <span class="material-symbols-outlined cs-icon"
-                                                    style="color: #3b82f6;">psychology</span>
+                                                <span class="material-symbols-outlined cs-icon text-info">psychology</span>
                                                 Secret du Savoir
                                             </div>
                                             <div class="custom-option" data-value="Secret du Destin">
@@ -396,7 +377,7 @@
                                     </div>
                                 </div>
                                 <div class="form-group" style="grid-column: span 2;">
-                                    <label style="display: flex; align-items: center; gap: 0.4rem;"><span
+                                    <label class="flex-center flex-center-gap"><span
                                             class="material-symbols-outlined"
                                             style="font-size: 1.1rem; color: #e879f9;">pets</span>
                                         Mutations (Optionnel)</label>
@@ -423,8 +404,7 @@
                         style="position: absolute; inset: 0; margin: 0; display: flex; flex-direction: column; overflow: hidden;">
                         <div class="admin-section-header" style="flex-shrink: 0;">
                             <div class="admin-section-title">
-                                <span class="material-symbols-outlined"
-                                    style="color: #ef4444;">format_list_bulleted</span>
+                                <span class="material-symbols-outlined text-danger">format_list_bulleted</span>
                                 Monstres Existants
                             </div>
                         </div>
@@ -443,36 +423,29 @@
                                     <div id="mLevelFilterWrapper" class="custom-select-wrapper" style="height: 100%;">
                                         <div class="custom-select-trigger custom-select-larger"
                                             onclick="toggleFilterLevelSelect()" id="mLevelFilterTrigger">
-                                            <span class="material-symbols-outlined cs-icon"
-                                                style="color: #94a3b8; font-size: 1.1rem;">filter_alt</span> <span
+                                            <span class="material-symbols-outlined cs-icon text-muted">filter_alt</span> <span
                                                 style="flex:1; text-align:center;">Lvl exact</span>
                                         </div>
                                         <div class="custom-select-options">
                                             <div class="custom-option"
                                                 onclick="selectFilterLevelOption('', 'Lvl exact', '#94a3b8', 'filter_alt')">
-                                                <span class="material-symbols-outlined cs-icon"
-                                                    style="color: #94a3b8; font-size: 1.1rem;">filter_alt</span> Tous
+                                                <span class="material-symbols-outlined cs-icon text-muted">filter_alt</span> Tous
                                             </div>
                                             <div class="custom-option"
                                                 onclick="selectFilterLevelOption(1, '1', '#94a3b8', 'star')"><span
-                                                    class="material-symbols-outlined cs-icon"
-                                                    style="color: #94a3b8; font-size: 1.1rem;">star</span> 1</div>
+                                                    class="material-symbols-outlined cs-icon text-muted">star</span> 1</div>
                                             <div class="custom-option"
                                                 onclick="selectFilterLevelOption(2, '2', '#10b981', 'star')"><span
-                                                    class="material-symbols-outlined cs-icon"
-                                                    style="color: #10b981; font-size: 1.1rem;">star</span> 2</div>
+                                                    class="material-symbols-outlined cs-icon text-success">star</span> 2</div>
                                             <div class="custom-option"
                                                 onclick="selectFilterLevelOption(3, '3', '#3b82f6', 'star')"><span
-                                                    class="material-symbols-outlined cs-icon"
-                                                    style="color: #3b82f6; font-size: 1.1rem;">star</span> 3</div>
+                                                    class="material-symbols-outlined cs-icon text-info">star</span> 3</div>
                                             <div class="custom-option"
                                                 onclick="selectFilterLevelOption(4, '4', '#a855f7', 'star')"><span
-                                                    class="material-symbols-outlined cs-icon"
-                                                    style="color: #a855f7; font-size: 1.1rem;">star</span> 4</div>
+                                                    class="material-symbols-outlined cs-icon text-purple">star</span> 4</div>
                                             <div class="custom-option"
                                                 onclick="selectFilterLevelOption(5, '5', '#f59e0b', 'star')"><span
-                                                    class="material-symbols-outlined cs-icon"
-                                                    style="color: #f59e0b; font-size: 1.1rem;">star</span> 5</div>
+                                                    class="material-symbols-outlined cs-icon text-warning">star</span> 5</div>
                                         </div>
                                     </div>
                                     <input type="hidden" id="monsterLevelFilter" value="">
@@ -482,8 +455,7 @@
                                         style="height: 100%;">
                                         <div class="custom-select-trigger custom-select-larger"
                                             onclick="toggleMonsterSecretSelect()" id="mListSecretFilterTrigger">
-                                            <span class="material-symbols-outlined cs-icon"
-                                                style="color: #94a3b8; font-size: 1.1rem;">filter_list</span> <span
+                                            <span class="material-symbols-outlined cs-icon text-muted">filter_list</span> <span
                                                 style="flex:1; text-align:left;">Tous les secrets</span>
                                             <span class="material-symbols-outlined"
                                                 style="color: #94a3b8; font-size: 1.2rem; pointer-events: none;">expand_more</span>
@@ -491,14 +463,12 @@
                                         <div class="custom-select-options">
                                             <div class="custom-option"
                                                 onclick="selectMonsterSecretOption('', 'Tous les secrets', 'filter_list', '#94a3b8')">
-                                                <span class="material-symbols-outlined cs-icon"
-                                                    style="color: #94a3b8; font-size: 1.1rem;">filter_list</span> Tous
+                                                <span class="material-symbols-outlined cs-icon text-muted">filter_list</span> Tous
                                                 les secrets
                                             </div>
                                             <div class="custom-option"
                                                 onclick="selectMonsterSecretOption('Aucun', 'Sans secret', 'close', '#94a3b8')">
-                                                <span class="material-symbols-outlined cs-icon"
-                                                    style="color: #94a3b8; font-size: 1.1rem;">close</span> Sans secret
+                                                <span class="material-symbols-outlined cs-icon text-muted">close</span> Sans secret
                                             </div>
                                             <div class="custom-option"
                                                 onclick="selectMonsterSecretOption('Secret du Chaos', 'Secret du Chaos', 'local_fire_department', '#ff0000')">
@@ -508,8 +478,7 @@
                                             </div>
                                             <div class="custom-option"
                                                 onclick="selectMonsterSecretOption('Secret de l\'Abondance', 'Secret de l\'Abondance', 'eco', '#10b981')">
-                                                <span class="material-symbols-outlined cs-icon"
-                                                    style="color: #10b981; font-size: 1.1rem;">eco</span> Secret de
+                                                <span class="material-symbols-outlined cs-icon text-success">eco</span> Secret de
                                                 l'Abondance
                                             </div>
                                             <div class="custom-option"
@@ -544,8 +513,7 @@
                                             </div>
                                             <div class="custom-option"
                                                 onclick="selectMonsterSecretOption('Secret du Savoir', 'Secret du Savoir', 'psychology', '#3b82f6')">
-                                                <span class="material-symbols-outlined cs-icon"
-                                                    style="color: #3b82f6; font-size: 1.1rem;">psychology</span> Secret
+                                                <span class="material-symbols-outlined cs-icon text-info">psychology</span> Secret
                                                 du Savoir
                                             </div>
                                             <div class="custom-option"
@@ -574,8 +542,7 @@
                                     <div id="mSortWrapper" class="custom-select-wrapper" style="height: 100%;">
                                         <div class="custom-select-trigger custom-select-larger"
                                             onclick="toggleSortSelect()" id="mSortTrigger">
-                                            <span class="material-symbols-outlined cs-icon"
-                                                style="color: #a855f7; font-size: 1.1rem;">explore</span> <span
+                                            <span class="material-symbols-outlined cs-icon text-purple">explore</span> <span
                                                 style="flex:1; text-align:left;">Secret (Défaut)</span>
                                             <span class="material-symbols-outlined"
                                                 style="color: #94a3b8; font-size: 1.2rem; pointer-events: none;">expand_more</span>
@@ -583,14 +550,12 @@
                                         <div class="custom-select-options">
                                             <div class="custom-option"
                                                 onclick="selectSortOption('secret', 'Secret (Défaut)', 'explore', '#a855f7')">
-                                                <span class="material-symbols-outlined cs-icon"
-                                                    style="color: #a855f7; font-size: 1.1rem;">explore</span> Secret
+                                                <span class="material-symbols-outlined cs-icon text-purple">explore</span> Secret
                                                 (Défaut)
                                             </div>
                                             <div class="custom-option"
                                                 onclick="selectSortOption('name_asc', 'Nom (A-Z)', 'sort_by_alpha', '#94a3b8')">
-                                                <span class="material-symbols-outlined cs-icon"
-                                                    style="color: #94a3b8; font-size: 1.1rem;">sort_by_alpha</span> Nom
+                                                <span class="material-symbols-outlined cs-icon text-muted">sort_by_alpha</span> Nom
                                                 (A-Z)
                                             </div>
                                             <div class="custom-option"
@@ -601,14 +566,12 @@
                                             </div>
                                             <div class="custom-option"
                                                 onclick="selectSortOption('lvl_desc', 'Niveau (Décroissant)', 'star', '#f59e0b')">
-                                                <span class="material-symbols-outlined cs-icon"
-                                                    style="color: #f59e0b; font-size: 1.1rem;">star</span> Niveau
+                                                <span class="material-symbols-outlined cs-icon text-warning">star</span> Niveau
                                                 (Décroissant)
                                             </div>
                                             <div class="custom-option"
                                                 onclick="selectSortOption('lvl_asc', 'Niveau (Croissant)', 'star', '#3b82f6')">
-                                                <span class="material-symbols-outlined cs-icon"
-                                                    style="color: #3b82f6; font-size: 1.1rem;">star</span> Niveau
+                                                <span class="material-symbols-outlined cs-icon text-info">star</span> Niveau
                                                 (Croissant)
                                             </div>
                                         </div>
@@ -639,7 +602,7 @@
                         <form id="mutationForm">
                             <div class="form-grid">
                                 <div class="form-group" style="grid-column: span 2;">
-                                    <label style="display: flex; align-items: center; gap: 0.4rem;"><span
+                                    <label class="flex-center flex-center-gap"><span
                                             class="material-symbols-outlined"
                                             style="font-size: 1.1rem; color: #e879f9;">badge</span> Nom de la
                                         mutation</label>
@@ -647,7 +610,7 @@
                                         placeholder="Ex: Griffes d'acier" required="">
                                 </div>
                                 <div class="form-group" style="grid-column: span 2;">
-                                    <label style="display: flex; align-items: center; gap: 0.4rem;"><span
+                                    <label class="flex-center flex-center-gap"><span
                                             class="material-symbols-outlined"
                                             style="font-size: 1.1rem; color: #94a3b8;">description</span>
                                         Description</label>
@@ -655,14 +618,14 @@
                                         placeholder="Description courte..." required=""></textarea>
                                 </div>
                                 <div class="form-group">
-                                    <label style="display: flex; align-items: center; gap: 0.4rem;"><span
+                                    <label class="flex-center flex-center-gap"><span
                                             class="material-symbols-outlined"
                                             style="font-size: 1.1rem; color: #10b981;">star</span> Niveau</label>
                                     <input type="number" id="mutLevel" class="form-control" value="1" min="1" max="5"
                                         required="">
                                 </div>
                                 <div class="form-group">
-                                    <label style="display: flex; align-items: center; gap: 0.4rem;"><span
+                                    <label class="flex-center flex-center-gap"><span
                                             class="material-symbols-outlined"
                                             style="font-size: 1.1rem; color: #fbbf24;">palette</span> Couleur
                                         HEX</label>
@@ -670,7 +633,7 @@
                                         placeholder="#RRGGBB">
                                 </div>
                                 <div class="form-group" style="grid-column: span 2;">
-                                    <label style="display: flex; align-items: center; gap: 0.4rem;"><span
+                                    <label class="flex-center flex-center-gap"><span
                                             class="material-symbols-outlined"
                                             style="font-size: 1.1rem; color: #38bdf8;">add_reaction</span> Icone
                                         (Material)</label>
@@ -717,7 +680,7 @@
                 <section class="admin-section" id="dungeonFormPanel" style="margin: 0; transition: all 0.3s;">
                     <div class="admin-section-header">
                         <div class="admin-section-title">
-                            <span class="material-symbols-outlined" style="color: #ef4444;">castle</span>
+                            <span class="material-symbols-outlined text-danger">castle</span>
                             Créer un Donjon
                         </div>
                     </div>
@@ -775,8 +738,7 @@
                                                     Secret du Chaos
                                                 </div>
                                                 <div class="custom-option" data-value="Secret de l'Abondance">
-                                                    <span class="material-symbols-outlined cs-icon"
-                                                        style="color: #10b981;">eco</span>
+                                                    <span class="material-symbols-outlined cs-icon text-success">eco</span>
                                                     Secret de l'Abondance
                                                 </div>
                                                 <div class="custom-option" data-value="Secret de la Préservation">
@@ -805,8 +767,7 @@
                                                     Secret de la Joie
                                                 </div>
                                                 <div class="custom-option" data-value="Secret du Savoir">
-                                                    <span class="material-symbols-outlined cs-icon"
-                                                        style="color: #3b82f6;">psychology</span>
+                                                    <span class="material-symbols-outlined cs-icon text-info">psychology</span>
                                                     Secret du Savoir
                                                 </div>
                                                 <div class="custom-option" data-value="Secret du Destin">
@@ -827,7 +788,7 @@
                                             </div>
                                             <input type="hidden" id="dRequiredSecret" value="">
                                         </div>
-                                        <div style="flex: 1;">
+                                        <div class="flex-1">
                                             <input type="number" id="dRequiredSecretLevel" class="form-control"
                                                 value="1" min="1" placeholder="Niveau" title="Niveau du secret"
                                                 style="min-height: 42px;">
@@ -909,36 +870,32 @@
                         <div class="admin-section-header"
                             style="flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
                             <div class="admin-section-title">
-                                <span class="material-symbols-outlined" style="color: #ef4444;">map</span>
+                                <span class="material-symbols-outlined text-danger">map</span>
                                 Donjons Existants
                             </div>
                             <div style="display: flex; gap: 0.5rem;">
                                 <div class="custom-select-wrapper" style="width: 250px; z-index: 100;">
                                     <div class="custom-select-trigger"
                                         style="min-height: 36px; padding: 0.4rem 0.8rem; font-size: 0.85rem;">
-                                        <span class="cs-label"><span class="material-symbols-outlined cs-icon"
-                                                style="color: #94a3b8; font-size: 1rem;">filter_list</span> Tous les
+                                        <span class="cs-label"><span class="material-symbols-outlined cs-icon text-muted">filter_list</span> Tous les
                                             secrets</span>
                                         <span class="material-symbols-outlined"
                                             style="font-size: 1rem;">expand_more</span>
                                     </div>
                                     <div class="custom-select-options custom-options">
                                         <div class="custom-option" data-value="">
-                                            <span class="material-symbols-outlined cs-icon"
-                                                style="color: #94a3b8; font-size: 1rem;">filter_list</span> Tous les
+                                            <span class="material-symbols-outlined cs-icon text-muted">filter_list</span> Tous les
                                             secrets
                                         </div>
                                         <div class="custom-option" data-value="Aucun">
-                                            <span class="material-symbols-outlined cs-icon"
-                                                style="color: #94a3b8; font-size: 1rem;">close</span> Sans secret
+                                            <span class="material-symbols-outlined cs-icon text-muted">close</span> Sans secret
                                         </div>
                                         <div class="custom-option" data-value="Secret du Chaos"><span
                                                 class="material-symbols-outlined cs-icon"
                                                 style="color: #ff0000; font-size: 1rem;">local_fire_department</span>
                                             Secret du Chaos</div>
                                         <div class="custom-option" data-value="Secret de l'Abondance"><span
-                                                class="material-symbols-outlined cs-icon"
-                                                style="color: #10b981; font-size: 1rem;">eco</span> Secret de
+                                                class="material-symbols-outlined cs-icon text-success">eco</span> Secret de
                                             l'Abondance</div>
                                         <div class="custom-option" data-value="Secret de la Préservation"><span
                                                 class="material-symbols-outlined cs-icon"
@@ -961,8 +918,7 @@
                                                 style="color: #b74c0b; font-size: 1rem;">volcano</span> Secret de la
                                             Joie</div>
                                         <div class="custom-option" data-value="Secret du Savoir"><span
-                                                class="material-symbols-outlined cs-icon"
-                                                style="color: #3b82f6; font-size: 1rem;">psychology</span> Secret du
+                                                class="material-symbols-outlined cs-icon text-info">psychology</span> Secret du
                                             Savoir</div>
                                         <div class="custom-option" data-value="Secret du Destin"><span
                                                 class="material-symbols-outlined cs-icon"
@@ -983,32 +939,25 @@
                                 <div class="custom-select-wrapper" style="width: 140px; z-index: 100;">
                                     <div class="custom-select-trigger"
                                         style="min-height: 36px; padding: 0.4rem 0.8rem; font-size: 0.85rem;">
-                                        <span class="cs-label"><span class="material-symbols-outlined cs-icon"
-                                                style="color: #94a3b8; font-size: 1rem;">filter_alt</span> Lvl
+                                        <span class="cs-label"><span class="material-symbols-outlined cs-icon text-muted">filter_alt</span> Lvl
                                             exact</span>
                                         <span class="material-symbols-outlined"
                                             style="font-size: 1rem;">expand_more</span>
                                     </div>
                                     <div class="custom-select-options custom-options">
                                         <div class="custom-option" data-value="">
-                                            <span class="material-symbols-outlined cs-icon"
-                                                style="color: #94a3b8; font-size: 1rem;">filter_alt</span> Tous
+                                            <span class="material-symbols-outlined cs-icon text-muted">filter_alt</span> Tous
                                         </div>
                                         <div class="custom-option" data-value="1"><span
-                                                class="material-symbols-outlined cs-icon"
-                                                style="color: #94a3b8; font-size: 1rem;">star</span> 1</div>
+                                                class="material-symbols-outlined cs-icon text-muted">star</span> 1</div>
                                         <div class="custom-option" data-value="2"><span
-                                                class="material-symbols-outlined cs-icon"
-                                                style="color: #10b981; font-size: 1rem;">star</span> 2</div>
+                                                class="material-symbols-outlined cs-icon text-success">star</span> 2</div>
                                         <div class="custom-option" data-value="3"><span
-                                                class="material-symbols-outlined cs-icon"
-                                                style="color: #3b82f6; font-size: 1rem;">star</span> 3</div>
+                                                class="material-symbols-outlined cs-icon text-info">star</span> 3</div>
                                         <div class="custom-option" data-value="4"><span
-                                                class="material-symbols-outlined cs-icon"
-                                                style="color: #a855f7; font-size: 1rem;">star</span> 4</div>
+                                                class="material-symbols-outlined cs-icon text-purple">star</span> 4</div>
                                         <div class="custom-option" data-value="5"><span
-                                                class="material-symbols-outlined cs-icon"
-                                                style="color: #f59e0b; font-size: 1rem;">star</span> 5</div>
+                                                class="material-symbols-outlined cs-icon text-warning">star</span> 5</div>
                                     </div>
                                     <input type="hidden" id="dungeonLevelFilter" value=""
                                         onchange="renderDungeonsList()">
