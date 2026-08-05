@@ -42,18 +42,18 @@
     <app-navbar active-page="grimoire"></app-navbar>
 
     <main>
-        <div class="magic-rock"></div>
+        <div class="magic-rock"  ></div>
         <!-- Colonne Gauche : Paramètres de Base du Sort -->
-        <div class="panel" id="spellForgePanel">
-            <div class="panel-title">Forge des Âmes</div>
+        <div class="panel"   id="spellForgePanel">
+            <div class="panel-title"  >Forge des Âmes</div>
 
-            <div class="form-group">
+            <div class="form-group"  >
                 <label for="nom">Nom du sort</label>
                 <input type="text" id="nom" placeholder="Ex: Lame d'Infini, Éruption d'Ombre..." required="">
             </div>
 
-            <div class="form-row">
-                <div class="form-group">
+            <div class="form-row"  >
+                <div class="form-group"  >
                     <label for="niveau">Niveau</label>
                     <select id="niveau" onchange="updateRankTitle()">
                         <option value="1" selected="">Niveau 1</option>
@@ -62,11 +62,11 @@
                         <option value="4">Niveau 4</option>
                         <option value="5">Niveau 5</option>
                     </select>
-                    <div class="helper-text" id="lvl-helper">Voie : 1-5 max / Spiritualité : 1-3 max</div>
-                    <div id="rankTitleDisplay" style="margin-top: 0.3rem; font-weight: 600; color: #10b981; font-size: 0.85rem; display: none;">
+                    <div class="helper-text"   id="lvl-helper">Voie : 1-5 max / Spiritualité : 1-3 max</div>
+                    <div class="text-emerald"  id="rankTitleDisplay" style="margin-top: 0.3rem; font-weight: 600;  font-size: 0.85rem; display: none">
                     </div>
                 </div>
-                <div class="form-group">
+                <div class="form-group"  >
                     <label for="castingTypeSelect">Catégorie d'Action (Tour)</label>
                     <select id="castingTypeSelect">
                         <option value="INSTANTANE">Instantané (Action Libre)</option>
@@ -77,48 +77,48 @@
             </div>
 
             <!-- Options spécifiques pour sort canalisé -->
-            <div id="channelingConfig" class="form-row" style="display: none; margin-top: 1rem;">
-                <div class="form-group">
+            <div class="form-row mt-4"  id="channelingConfig"  style="display: none">
+                <div class="form-group"  >
                     <label for="channelingDuration">Durée de canalisation (Tours)</label>
                     <input type="number" id="channelingDuration" min="1" value="1" oninput="renderEffects()">
                 </div>
-                <div class="form-group" style="justify-content: center; align-items: flex-start; height: 100%;">
-                    <label class="instant-toggle-container" style="margin-top: 1.5rem;" title="Permet de lancer des sorts instantanés pendant la canalisation">
-                        <input type="checkbox" id="allowInstantDuringChanneling" class="instant-checkbox" checked="">
-                        <div class="instant-icon-wrap">
-                            <span class="material-symbols-outlined" style="font-size: 1.3rem;">bolt</span>
+                <div class="form-group"   style="justify-content: center; align-items: flex-start; height: 100%">
+                    <label class="instant-toggle-container"   style="margin-top: 1.5rem" title="Permet de lancer des sorts instantanés pendant la canalisation">
+                        <input class="instant-checkbox"  type="checkbox" id="allowInstantDuringChanneling"  checked="">
+                        <div class="instant-icon-wrap"  >
+                            <span class="material-symbols-outlined"   style="font-size: 1.3rem">bolt</span>
                         </div>
-                        <div class="instant-text">
+                        <div class="instant-text"  >
                             Autoriser les instantanés
-                            <span class="instant-text-sub">Pendant la canalisation</span>
+                            <span class="instant-text-sub"  >Pendant la canalisation</span>
                         </div>
                     </label>
                 </div>
             </div>
 
             <!-- SECTION DES COÛTS DU SORT -->
-            <div class="cost-section">
-                <div class="cost-section-title" class="flex-center flex-center-gap">
-                    <span class="material-symbols-outlined" style="font-size: 1.2rem; color: #f59e0b;">electric_bolt</span>
+            <div class="cost-section"  >
+                <div class="cost-section-title"   class="flex-center flex-center-gap">
+                    <span class="material-symbols-outlined text-amber"   style="font-size: 1.2rem">electric_bolt</span>
                     <span>Coûts du Sort</span>
                 </div>
 
                 <!-- Coûts en Mana -->
-                <div class="cost-card mana">
-                    <div class="cost-card-header" class="flex-center flex-center-gap">
-                        <span class="material-symbols-outlined text-lg text-info">water_drop</span>
+                <div class="cost-card mana"  >
+                    <div class="cost-card-header"   class="flex-center flex-center-gap">
+                        <span class="material-symbols-outlined text-lg text-info"  >water_drop</span>
                         <span>Mana</span>
                     </div>
-                    <div class="cost-inputs-grid">
-                        <label for="manaCost" style="color: #fff;">Montant Fixe :</label>
+                    <div class="cost-inputs-grid"  >
+                        <label for="manaCost" style="color: #fff">Montant Fixe :</label>
                         <input type="number" id="manaCost" min="0" value="10">
                     </div>
-                    <div class="cost-inputs-grid">
-                        <label for="percentManaCost" style="color: #fff;">Ratio :</label>
-                        <div class="flex-center gap-2">
-                            <input type="number" id="percentManaCost" min="0" value="0" style="width: 70px;">
-                            <span style="color: var(--text-muted);">% de</span>
-                            <select id="percentManaCostSource" style="flex: 1; padding: 0.4rem; font-size: 0.85rem;">
+                    <div class="cost-inputs-grid"  >
+                        <label for="percentManaCost" style="color: #fff">Ratio :</label>
+                        <div class="flex-center gap-2"  >
+                            <input type="number" id="percentManaCost" min="0" value="0" style="width: 70px">
+                            <span style="color: var(--text-muted)">% de</span>
+                            <select class="flex-1" id="percentManaCostSource" style="padding: 0.4rem; font-size: 0.85rem">
                                 <!-- Rempli dynamiquement -->
                             </select>
                         </div>
@@ -126,21 +126,21 @@
                 </div>
 
                 <!-- Coûts en PV -->
-                <div class="cost-card health">
-                    <div class="cost-card-header" class="flex-center flex-center-gap">
-                        <span class="material-symbols-outlined text-lg text-danger">bloodtype</span>
+                <div class="cost-card health"  >
+                    <div class="cost-card-header"   class="flex-center flex-center-gap">
+                        <span class="material-symbols-outlined text-lg text-danger"  >bloodtype</span>
                         <span>Sacrifice (Points de Vie)</span>
                     </div>
-                    <div class="cost-inputs-grid">
-                        <label for="healCost" style="color: #fff;">Montant Fixe :</label>
+                    <div class="cost-inputs-grid"  >
+                        <label for="healCost" style="color: #fff">Montant Fixe :</label>
                         <input type="number" id="healCost" min="0" value="0">
                     </div>
-                    <div class="cost-inputs-grid">
-                        <label for="percentHealCost" style="color: #fff;">Ratio :</label>
-                        <div class="flex-center gap-2">
-                            <input type="number" id="percentHealCost" min="0" value="0" style="width: 70px;">
-                            <span style="color: var(--text-muted);">% de</span>
-                            <select id="percentHealCostSource" style="flex: 1; padding: 0.4rem; font-size: 0.85rem;">
+                    <div class="cost-inputs-grid"  >
+                        <label for="percentHealCost" style="color: #fff">Ratio :</label>
+                        <div class="flex-center gap-2"  >
+                            <input type="number" id="percentHealCost" min="0" value="0" style="width: 70px">
+                            <span style="color: var(--text-muted)">% de</span>
+                            <select class="flex-1" id="percentHealCostSource" style="padding: 0.4rem; font-size: 0.85rem">
                                 <!-- Rempli dynamiquement -->
                             </select>
                         </div>
@@ -148,63 +148,63 @@
                 </div>
 
                 <!-- Coût en Chaleur (Voie de la Destruction) -->
-                <div class="cost-card health" id="heatCostCard" style="display: none; border-left-color: #f97316;">
-                    <div class="cost-card-header" class="flex-center flex-center-gap">
-                        <span class="material-symbols-outlined" style="font-size: 1.1rem; color: #f97316;">local_fire_department</span>
+                <div class="cost-card health"   id="heatCostCard" style="display: none; border-left-color: #f97316">
+                    <div class="cost-card-header"   class="flex-center flex-center-gap">
+                        <span class="material-symbols-outlined"   style="font-size: 1.1rem; color: #f97316">local_fire_department</span>
                         <span>Coût en Chaleur</span>
                     </div>
-                    <div class="cost-inputs-grid">
-                        <label for="heatCost" style="color: #fff;">Montant Fixe :</label>
+                    <div class="cost-inputs-grid"  >
+                        <label for="heatCost" style="color: #fff">Montant Fixe :</label>
                         <input type="number" id="heatCost" min="0" value="0">
                     </div>
-                    <div class="cost-inputs-grid">
-                        <label for="percentHeatCost" style="color: #fff;">Ratio :</label>
-                        <div class="flex-center gap-2">
-                            <input type="number" id="percentHeatCost" min="0" value="0" style="width: 70px;">
-                            <span style="color: var(--text-muted);">% de la chaleur max (100)</span>
+                    <div class="cost-inputs-grid"  >
+                        <label for="percentHeatCost" style="color: #fff">Ratio :</label>
+                        <div class="flex-center gap-2"  >
+                            <input type="number" id="percentHeatCost" min="0" value="0" style="width: 70px">
+                            <span style="color: var(--text-muted)">% de la chaleur max (100)</span>
                         </div>
                     </div>
                 </div>
             </div>
 
-            <div class="form-group">
+            <div class="form-group"  >
                 <label for="description">Description</label>
                 <textarea id="description" rows="2" placeholder="Effets narratifs ou secrets de ce sort..."></textarea>
             </div>
 
-            <div class="form-row" class="mb-4">
-                <div class="form-group" style="justify-content: center; align-items: flex-start;">
-                    <label class="target-toggle-container monster-mode" style="width: max-content;" title="Si activé, ce sort sera une Mutation pour monstre">
-                        <input type="checkbox" id="isMonsterSpell" class="target-radio" onchange="toggleSpellTargetType()">
-                        <div class="target-icon-wrap monster-icon">
-                            <span class="material-symbols-outlined" style="font-size: 1.3rem;">pets</span>
+            <div class="form-row"   class="mb-4">
+                <div class="form-group"   style="justify-content: center; align-items: flex-start">
+                    <label class="target-toggle-container monster-mode"   style="width: max-content" title="Si activé, ce sort sera une Mutation pour monstre">
+                        <input class="target-radio"  type="checkbox" id="isMonsterSpell"  onchange="toggleSpellTargetType()">
+                        <div class="target-icon-wrap monster-icon"  >
+                            <span class="material-symbols-outlined"   style="font-size: 1.3rem">pets</span>
                         </div>
-                        <div class="target-text monster-text">
+                        <div class="target-text monster-text"  >
                             Mutation
-                            <span class="target-text-sub">Sort pour monstre</span>
+                            <span class="target-text-sub"  >Sort pour monstre</span>
                         </div>
                     </label>
                 </div>
             </div>
 
-            <div class="form-row" id="heroAffinityRow" style="display: flex; gap: 1rem;">
-                <div class="form-group" class="flex-1">
-                    <label for="voieSelect" style="display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem;">route</span>Voie Associée</label>
+            <div class="form-row"   id="heroAffinityRow" style="display: flex; gap: 1rem">
+                <div class="form-group"   class="flex-1">
+                    <label for="voieSelect" style="display: flex; align-items: center; gap: 0.3rem"><span class="material-symbols-outlined"   style="font-size: 1rem">route</span>Voie Associée</label>
                     <select id="voieSelect" onchange="handleAffinityChange('voie');">
                         <option value="">-- Aucune (Neutre) --</option>
                     </select>
                 </div>
-                <div class="form-group" class="flex-1">
-                    <label for="spiritSelect" style="display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem;">psychology</span>Spiritualité</label>
+                <div class="form-group"   class="flex-1">
+                    <label for="spiritSelect" style="display: flex; align-items: center; gap: 0.3rem"><span class="material-symbols-outlined"   style="font-size: 1rem">psychology</span>Spiritualité</label>
                     <select id="spiritSelect" onchange="handleAffinityChange('spirit');">
                         <option value="">-- Aucune (Neutre) --</option>
                     </select>
                 </div>
             </div>
 
-            <div class="form-row" id="monsterAffinityRow" style="display: none; gap: 1rem;">
-                <div class="form-group" class="flex-1">
-                    <label for="mutationSelect" style="display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1rem;">pets</span>Mutation</label>
+            <div class="form-row"   id="monsterAffinityRow" style="display: none; gap: 1rem">
+                <div class="form-group"   class="flex-1">
+                    <label for="mutationSelect" style="display: flex; align-items: center; gap: 0.3rem"><span class="material-symbols-outlined"   style="font-size: 1rem">pets</span>Mutation</label>
                     <select id="mutationSelect" onchange="handleAffinityChange('mutation');">
                         <option value="">-- Aucune (Neutre) --</option>
                     </select>
@@ -212,37 +212,37 @@
             </div>
 
             <!-- Options spécifiques pour la Voie de la Violence -->
-            <div id="violenceConfig" class="form-group" style="display: none; margin-top: 1rem;">
-                <input type="checkbox" id="isInspiration" checked="" style="display: none;" onchange="updateViolenceLabel()">
-                <div class="violence-segmented-control" style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--glass-border); padding: 0.4rem; border-radius: 12px;">
-                    <button type="button" id="btnInspiration" onclick="setViolenceType(true)" style="background: transparent; border: 1px solid transparent; border-radius: 8px; padding: 0.8rem 0.5rem; display: flex; flex-direction: column; align-items: center; gap: 0.3rem; cursor: pointer; transition: all 0.3s ease;">
-                        <span class="material-symbols-outlined" style="font-size: 1.5rem; transition: transform 0.3s;">storm</span>
-                        <span style="font-size: 0.9rem; font-weight: 600;">Inspiration</span>
-                        <span style="font-size: 0.75rem; opacity: 0.8;">+Critique</span>
+            <div class="form-group mt-4"  id="violenceConfig"  style="display: none">
+                <input type="checkbox" id="isInspiration" checked="" style="display: none" onchange="updateViolenceLabel()">
+                <div class="violence-segmented-control"   style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--glass-border); padding: 0.4rem; border-radius: 12px">
+                    <button type="button" id="btnInspiration" onclick="setViolenceType(true)" style="background: transparent; border: 1px solid transparent; border-radius: 8px; padding: 0.8rem 0.5rem; display: flex; flex-direction: column; align-items: center; gap: 0.3rem; cursor: pointer; transition: all 0.3s ease">
+                        <span class="material-symbols-outlined"   style="font-size: 1.5rem; transition: transform 0.3s">storm</span>
+                        <span style="font-size: 0.9rem; font-weight: 600">Inspiration</span>
+                        <span style="font-size: 0.75rem; opacity: 0.8">+Critique</span>
                     </button>
-                    <button type="button" id="btnExpiration" onclick="setViolenceType(false)" style="background: transparent; border: 1px solid transparent; border-radius: 8px; padding: 0.8rem 0.5rem; display: flex; flex-direction: column; align-items: center; gap: 0.3rem; cursor: pointer; transition: all 0.3s ease;">
-                        <span class="material-symbols-outlined" style="font-size: 1.5rem; transition: transform 0.3s;">air</span>
-                        <span style="font-size: 0.9rem; font-weight: 600;">Expiration</span>
-                        <span style="font-size: 0.75rem; opacity: 0.8;">+Puissance</span>
+                    <button type="button" id="btnExpiration" onclick="setViolenceType(false)" style="background: transparent; border: 1px solid transparent; border-radius: 8px; padding: 0.8rem 0.5rem; display: flex; flex-direction: column; align-items: center; gap: 0.3rem; cursor: pointer; transition: all 0.3s ease">
+                        <span class="material-symbols-outlined"   style="font-size: 1.5rem; transition: transform 0.3s">air</span>
+                        <span style="font-size: 0.9rem; font-weight: 600">Expiration</span>
+                        <span style="font-size: 0.75rem; opacity: 0.8">+Puissance</span>
                     </button>
                 </div>
             </div>
 
             <!-- Options spécifiques pour la Spiritualité Karma -->
-            <div id="karmaConfig" class="form-group" style="display: none; margin-top: 1rem;">
+            <div class="form-group mt-4"  id="karmaConfig"  style="display: none">
                 <input type="hidden" id="karmaAlignment" value="NONE">
-                <div class="karma-segmented-control" style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--glass-border); padding: 0.4rem; border-radius: 12px;">
-                    <button type="button" id="btnKarmaOffensive" onclick="setKarmaAlignment('OFFENSIVE')" style="background: transparent; border: 1px solid transparent; border-radius: 8px; padding: 0.8rem 0.5rem; display: flex; flex-direction: column; align-items: center; gap: 0.3rem; cursor: pointer; transition: all 0.3s ease;">
-                        <span class="material-symbols-outlined" style="font-size: 1.5rem; transition: transform 0.3s;">dark_mode</span>
-                        <span style="font-size: 0.85rem; font-weight: 600;">Ténèbres</span>
+                <div class="karma-segmented-control"   style="display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 0.5rem; background: rgba(0, 0, 0, 0.4); border: 1px solid var(--glass-border); padding: 0.4rem; border-radius: 12px">
+                    <button type="button" id="btnKarmaOffensive" onclick="setKarmaAlignment('OFFENSIVE')" style="background: transparent; border: 1px solid transparent; border-radius: 8px; padding: 0.8rem 0.5rem; display: flex; flex-direction: column; align-items: center; gap: 0.3rem; cursor: pointer; transition: all 0.3s ease">
+                        <span class="material-symbols-outlined"   style="font-size: 1.5rem; transition: transform 0.3s">dark_mode</span>
+                        <span style="font-size: 0.85rem; font-weight: 600">Ténèbres</span>
                     </button>
-                    <button type="button" id="btnKarmaRestorative" onclick="setKarmaAlignment('RESTORATIVE')" style="background: transparent; border: 1px solid transparent; border-radius: 8px; padding: 0.8rem 0.5rem; display: flex; flex-direction: column; align-items: center; gap: 0.3rem; cursor: pointer; transition: all 0.3s ease;">
-                        <span class="material-symbols-outlined" style="font-size: 1.5rem; transition: transform 0.3s;">brightness_medium</span>
-                        <span style="font-size: 0.85rem; font-weight: 600;">Harmonie</span>
+                    <button type="button" id="btnKarmaRestorative" onclick="setKarmaAlignment('RESTORATIVE')" style="background: transparent; border: 1px solid transparent; border-radius: 8px; padding: 0.8rem 0.5rem; display: flex; flex-direction: column; align-items: center; gap: 0.3rem; cursor: pointer; transition: all 0.3s ease">
+                        <span class="material-symbols-outlined"   style="font-size: 1.5rem; transition: transform 0.3s">brightness_medium</span>
+                        <span style="font-size: 0.85rem; font-weight: 600">Harmonie</span>
                     </button>
-                    <button type="button" id="btnKarmaProtective" onclick="setKarmaAlignment('PROTECTIVE')" style="background: transparent; border: 1px solid transparent; border-radius: 8px; padding: 0.8rem 0.5rem; display: flex; flex-direction: column; align-items: center; gap: 0.3rem; cursor: pointer; transition: all 0.3s ease;">
-                        <span class="material-symbols-outlined" style="font-size: 1.5rem; transition: transform 0.3s;">light_mode</span>
-                        <span style="font-size: 0.85rem; font-weight: 600;">Lumière</span>
+                    <button type="button" id="btnKarmaProtective" onclick="setKarmaAlignment('PROTECTIVE')" style="background: transparent; border: 1px solid transparent; border-radius: 8px; padding: 0.8rem 0.5rem; display: flex; flex-direction: column; align-items: center; gap: 0.3rem; cursor: pointer; transition: all 0.3s ease">
+                        <span class="material-symbols-outlined"   style="font-size: 1.5rem; transition: transform 0.3s">light_mode</span>
+                        <span style="font-size: 0.85rem; font-weight: 600">Lumière</span>
                     </button>
                 </div>
             </div>
@@ -251,163 +251,163 @@
 
 
 
-            <hr style="border-color: var(--glass-border); margin: 0.5rem 0;">
+            <hr style="border-color: var(--glass-border); margin: 0.5rem 0">
 
-            <div class="form-group">
-                <label style="color: #fff; font-weight: 600; margin-bottom: 0.3rem;">Ajouter une ligne d'effet au sort
+            <div class="form-group"  >
+                <label style="color: #fff; font-weight: 600; margin-bottom: 0.3rem">Ajouter une ligne d'effet au sort
                     :</label>
-                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.5rem;">
-                    <button type="button" class="btn-effect-add dmg" onclick="addEffectPanel('FIXED_DAMAGE')">
-                        <span class="material-symbols-outlined text-lg">swords</span> Dégâts Fixes
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.5rem">
+                    <button class="btn-effect-add dmg"  type="button"  onclick="addEffectPanel('FIXED_DAMAGE')">
+                        <span class="material-symbols-outlined text-lg"  >swords</span> Dégâts Fixes
                     </button>
-                    <button type="button" class="btn-effect-add dmg" onclick="addEffectPanel('PERCENTAGE_DAMAGE')">
-                        <span class="material-symbols-outlined text-lg">explosion</span> Dégâts %
+                    <button class="btn-effect-add dmg"  type="button"  onclick="addEffectPanel('PERCENTAGE_DAMAGE')">
+                        <span class="material-symbols-outlined text-lg"  >explosion</span> Dégâts %
                     </button>
-                    <button type="button" class="btn-effect-add dmg" onclick="addEffectPanel('DOT')">
-                        <span class="material-symbols-outlined text-lg">whatshot</span> Tick Dégâts
+                    <button class="btn-effect-add dmg"  type="button"  onclick="addEffectPanel('DOT')">
+                        <span class="material-symbols-outlined text-lg"  >whatshot</span> Tick Dégâts
                         (DoT)
                     </button>
-                    <button type="button" class="btn-effect-add heal" onclick="addEffectPanel('FIXED_HEAL')">
-                        <span class="material-symbols-outlined text-lg">favorite</span> Soins Fixes
+                    <button class="btn-effect-add heal"  type="button"  onclick="addEffectPanel('FIXED_HEAL')">
+                        <span class="material-symbols-outlined text-lg"  >favorite</span> Soins Fixes
                     </button>
-                    <button type="button" class="btn-effect-add heal" onclick="addEffectPanel('PERCENTAGE_HEAL')">
-                        <span class="material-symbols-outlined text-lg">favorite</span> Soins %
+                    <button class="btn-effect-add heal"  type="button"  onclick="addEffectPanel('PERCENTAGE_HEAL')">
+                        <span class="material-symbols-outlined text-lg"  >favorite</span> Soins %
                     </button>
-                    <button type="button" class="btn-effect-add heal" onclick="addEffectPanel('HOT')">
-                        <span class="material-symbols-outlined text-lg">healing</span> Tick Soins
+                    <button class="btn-effect-add heal"  type="button"  onclick="addEffectPanel('HOT')">
+                        <span class="material-symbols-outlined text-lg"  >healing</span> Tick Soins
                         (HoT)
                     </button>
-                    <button type="button" class="btn-effect-add mana" onclick="addEffectPanel('FIXED_MANA')">
-                        <span class="material-symbols-outlined text-lg">water_drop</span> Mana Fixe
+                    <button class="btn-effect-add mana"  type="button"  onclick="addEffectPanel('FIXED_MANA')">
+                        <span class="material-symbols-outlined text-lg"  >water_drop</span> Mana Fixe
                     </button>
-                    <button type="button" class="btn-effect-add mana" onclick="addEffectPanel('PERCENTAGE_MANA')">
-                        <span class="material-symbols-outlined text-lg">water_drop</span> Mana %
+                    <button class="btn-effect-add mana"  type="button"  onclick="addEffectPanel('PERCENTAGE_MANA')">
+                        <span class="material-symbols-outlined text-lg"  >water_drop</span> Mana %
                     </button>
-                    <button type="button" class="btn-effect-add mana" onclick="addEffectPanel('MOT')">
-                        <span class="material-symbols-outlined text-lg">cyclone</span> Tick Mana
+                    <button class="btn-effect-add mana"  type="button"  onclick="addEffectPanel('MOT')">
+                        <span class="material-symbols-outlined text-lg"  >cyclone</span> Tick Mana
                         (MoT)
                     </button>
-                    <button type="button" class="btn-effect-add buff" onclick="addEffectPanel('BUFF_DEBUFF')">
-                        <span class="material-symbols-outlined">auto_awesome</span>
+                    <button class="btn-effect-add buff"  type="button"  onclick="addEffectPanel('BUFF_DEBUFF')">
+                        <span class="material-symbols-outlined"  >auto_awesome</span>
                         Buff / Débuff
                     </button>
-                    <button type="button" class="btn-effect-add buff" onclick="addEffectPanel('SHIELD')">
-                        <span class="material-symbols-outlined text-lg">shield</span> Bouclier
+                    <button class="btn-effect-add buff"  type="button"  onclick="addEffectPanel('SHIELD')">
+                        <span class="material-symbols-outlined text-lg"  >shield</span> Bouclier
                     </button>
-                    <button type="button" class="btn-effect-add purge" onclick="addEffectPanel('PURGE')">
-                        <span class="material-symbols-outlined text-lg">air</span> Purge / Dissip.
+                    <button class="btn-effect-add purge"  type="button"  onclick="addEffectPanel('PURGE')">
+                        <span class="material-symbols-outlined text-lg"  >air</span> Purge / Dissip.
                     </button>
-                    <button type="button" class="btn-effect-add poison" onclick="addEffectPanel('POISON')">
-                        <span class="material-symbols-outlined">science</span>
+                    <button class="btn-effect-add poison"  type="button"  onclick="addEffectPanel('POISON')">
+                        <span class="material-symbols-outlined"  >science</span>
                         Poison
                     </button>
-                    <button type="button" class="btn-effect-add burn" onclick="addEffectPanel('BURN')">
-                        <span class="material-symbols-outlined">local_fire_department</span>
+                    <button class="btn-effect-add burn"  type="button"  onclick="addEffectPanel('BURN')">
+                        <span class="material-symbols-outlined"  >local_fire_department</span>
                         Brûlure
                     </button>
 
                     <!-- Boutons de Chaleur (spécifique Voie de la Destruction) -->
-                    <div id="heatEffectButtons" style="display: none; grid-column: 1 / -1; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.5rem; margin-top: 0.5rem; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 0.5rem; width: 100%;">
-                        <button type="button" class="btn-effect-add" style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.35);" onclick="addEffectPanel('HEAT_FIXED')">
-                            <span class="material-symbols-outlined text-lg">whatshot</span> Chaleur
+                    <div class="mt-2" id="heatEffectButtons" style="display: none; grid-column: 1 / -1; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.5rem;  border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 0.5rem; width: 100%">
+                        <button class="btn-effect-add"  type="button"  style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.35)" onclick="addEffectPanel('HEAT_FIXED')">
+                            <span class="material-symbols-outlined text-lg"  >whatshot</span> Chaleur
                             Fixe
                         </button>
-                        <button type="button" class="btn-effect-add" style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.35);" onclick="addEffectPanel('HEAT_PERCENTAGE')">
-                            <span class="material-symbols-outlined text-lg">explosion</span> Chaleur
+                        <button class="btn-effect-add"  type="button"  style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.35)" onclick="addEffectPanel('HEAT_PERCENTAGE')">
+                            <span class="material-symbols-outlined text-lg"  >explosion</span> Chaleur
                             %
                         </button>
-                        <button type="button" class="btn-effect-add" style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.35);" onclick="addEffectPanel('HEAT_OVER_TIME')">
-                            <span class="material-symbols-outlined text-lg">cyclone</span> Tick
+                        <button class="btn-effect-add"  type="button"  style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.35)" onclick="addEffectPanel('HEAT_OVER_TIME')">
+                            <span class="material-symbols-outlined text-lg"  >cyclone</span> Tick
                             Chaleur
                         </button>
                     </div>
 
                     <!-- Bouton Âme Détachée (spécifique Spiritualité Ténèbres) -->
-                    <div id="ameDetacheeEffectButton" style="display: none; grid-column: 1 / -1; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.5rem; margin-top: 0.5rem; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 0.5rem; width: 100%;">
-                        <button type="button" class="btn-effect-add" style="background: rgba(244, 63, 94, 0.2); color: #fda4af; border: 1px solid rgba(244, 63, 94, 0.35);" onclick="addEffectPanel('AME_DETACHEE')">
-                            <span class="material-symbols-outlined text-lg">dark_mode</span> Âme
+                    <div class="mt-2" id="ameDetacheeEffectButton" style="display: none; grid-column: 1 / -1; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.5rem;  border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 0.5rem; width: 100%">
+                        <button class="btn-effect-add"  type="button"  style="background: rgba(244, 63, 94, 0.2); color: #fda4af; border: 1px solid rgba(244, 63, 94, 0.35)" onclick="addEffectPanel('AME_DETACHEE')">
+                            <span class="material-symbols-outlined text-lg"  >dark_mode</span> Âme
                             Détachée
                         </button>
                     </div>
 
                     <!-- Bouton Bourgeon (spécifique Voie de la Création) -->
-                    <div id="budEffectButton" style="display: none; grid-column: 1 / -1; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.5rem; margin-top: 0.5rem; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 0.5rem; width: 100%;">
-                        <button type="button" class="btn-effect-add" style="background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.35);" onclick="addEffectPanel('BUD')">
-                            <span class="material-symbols-outlined text-lg">yard</span> Bourgeon
+                    <div class="mt-2" id="budEffectButton" style="display: none; grid-column: 1 / -1; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.5rem;  border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 0.5rem; width: 100%">
+                        <button class="btn-effect-add"  type="button"  style="background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.35)" onclick="addEffectPanel('BUD')">
+                            <span class="material-symbols-outlined text-lg"  >yard</span> Bourgeon
                         </button>
                     </div>
                 </div>
             </div>
 
             <!-- Conteneur des effets ajoutés -->
-            <div class="effects-container" id="effectsList">
+            <div class="effects-container"   id="effectsList">
                 <!-- Les panels d'effets s'injectent ici -->
             </div>
 
-            <button type="button" id="submitSpellBtn" class="btn" style="margin-top: 1rem;" onclick="submitSpell()">✦
+            <button class="btn mt-4"  type="button" id="submitSpellBtn"   onclick="submitSpell()">✦
                 Forger le Sort</button>
         </div>
 
         <!-- Colonne Droite : Liste des Sorts Existants -->
-        <div class="panel">
-            <div class="panel-title">
+        <div class="panel"  >
+            <div class="panel-title"  >
                 <span>Grimoire des Sorts</span>
-                <div class="flex-center gap-2">
-                    <button type="button" id="btnToggleDisplayMode" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.35rem;" onclick="toggleDisplayMode()" title="Basculer entre le mode défilement (hauteur de la Forge) et le mode étendu (tous les sorts)">
-                        <span class="material-symbols-outlined" style="font-size: 1.1rem; line-height: 1;" id="toggleDisplayIcon">unfold_less</span>
+                <div class="flex-center gap-2"  >
+                    <button class="btn btn-secondary"  type="button" id="btnToggleDisplayMode"  style="padding: 0.4rem 0.8rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.35rem" onclick="toggleDisplayMode()" title="Basculer entre le mode défilement (hauteur de la Forge) et le mode étendu (tous les sorts)">
+                        <span class="material-symbols-outlined"   style="font-size: 1.1rem; line-height: 1" id="toggleDisplayIcon">unfold_less</span>
                         <span id="toggleDisplayText">Mode Scroll</span>
                     </button>
-                    <button type="button" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem;" onclick="loadSpells()">Actualiser</button>
+                    <button class="btn btn-secondary"  type="button"  style="padding: 0.4rem 0.8rem; font-size: 0.85rem" onclick="loadSpells()">Actualiser</button>
                 </div>
             </div>
 
             <!-- Barre de Filtres et Tris Premium -->
-            <div id="grimoireFiltersContainer" style="background: linear-gradient(145deg, rgba(30, 41, 59, 0.4), rgba(15, 23, 42, 0.6)); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 8px 20px rgba(0,0,0,0.25); border-radius: 12px; padding: 1.2rem; margin-bottom: 1.2rem; display: flex; flex-direction: column; gap: 1rem; backdrop-filter: blur(8px); position: relative; z-index: 9999999;">
-                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.6rem;">
-                    <div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: var(--primary); display: flex; align-items: center; gap: 0.5rem;">
-                        <span class="material-symbols-outlined" style="font-size: 1.2rem;">visibility</span>
+            <div id="grimoireFiltersContainer" style="background: linear-gradient(145deg, rgba(30, 41, 59, 0.4), rgba(15, 23, 42, 0.6)); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 8px 20px rgba(0,0,0,0.25); border-radius: 12px; padding: 1.2rem; margin-bottom: 1.2rem; display: flex; flex-direction: column; gap: 1rem; backdrop-filter: blur(8px); position: relative; z-index: 9999999">
+                <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.6rem">
+                    <div style="font-size: 0.75rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1.2px; color: var(--primary); display: flex; align-items: center; gap: 0.5rem">
+                        <span class="material-symbols-outlined"   style="font-size: 1.2rem">visibility</span>
                         <span>Perception Arcanique</span>
                     </div>
-                    <div style="display: flex; align-items: center; gap: 0.6rem;">
-                        <button type="button" class="btn-secondary" style="padding: 0.2rem 0.5rem; font-size: 0.7rem; line-height: 1.2; border-radius: 4px; border: none; background: rgba(244,63,94,0.1); color: #f43f5e; display: inline-flex; align-items: center; gap: 0.2rem;" onclick="resetFilters()" title="Réinitialiser les sélecteurs"><span class="material-symbols-outlined" style="font-size: 0.95rem;">restart_alt</span>Réinitialiser</button>
-                        <span id="filterCountBadge" class="badge" style="background: rgba(16,185,129,0.15); color: #10b981; font-weight: 600;">0 sort</span>
+                    <div style="display: flex; align-items: center; gap: 0.6rem">
+                        <button class="btn-secondary"  type="button"  style="padding: 0.2rem 0.5rem; font-size: 0.7rem; line-height: 1.2; border-radius: 4px; border: none; background: rgba(244,63,94,0.1); color: #f43f5e; display: inline-flex; align-items: center; gap: 0.2rem" onclick="resetFilters()" title="Réinitialiser les sélecteurs"><span class="material-symbols-outlined"   style="font-size: 0.95rem">restart_alt</span>Réinitialiser</button>
+                        <span class="badge text-emerald"  id="filterCountBadge"  style="background: rgba(16,185,129,0.15);  font-weight: 600">0 sort</span>
                     </div>
                 </div>
 
-                <div style="position: relative;">
-                    <span class="material-symbols-outlined" style="position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%); font-size: 1.1rem; opacity: 0.6; color: var(--text-muted);">search</span>
-                    <input type="text" id="filterSearch" placeholder="Rechercher par lettre dans le nom ou la description..." style="width: 100%; font-size: 0.85rem; padding: 0.6rem 1rem 0.6rem 2.2rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; outline: none; transition: border-color 0.2s;" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'" oninput="renderFilteredSpells()">
+                <div style="position: relative">
+                    <span class="material-symbols-outlined"   style="position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%); font-size: 1.1rem; opacity: 0.6; color: var(--text-muted)">search</span>
+                    <input type="text" id="filterSearch" placeholder="Rechercher par lettre dans le nom ou la description..." style="width: 100%; font-size: 0.85rem; padding: 0.6rem 1rem 0.6rem 2.2rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; outline: none; transition: border-color 0.2s" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'" oninput="renderFilteredSpells()">
                 </div>
 
                 <!-- Section Filtrage par Voie (Boutons uniques) -->
                 <div>
-                    <label style="font-size: 0.65rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.4rem; font-weight: 700; letter-spacing: 0.5px;">
-                        <span class="material-symbols-outlined" style="font-size: 0.95rem; color: #a855f7;">auto_awesome</span>
+                    <label style="font-size: 0.65rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.4rem; font-weight: 700; letter-spacing: 0.5px">
+                        <span class="material-symbols-outlined text-purple"   style="font-size: 0.95rem">auto_awesome</span>
                         FILTRER PAR VOIE
                     </label>
-                    <div id="filterVoiesButtonsContainer" style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
+                    <div id="filterVoiesButtonsContainer" style="display: flex; flex-wrap: wrap; gap: 0.4rem">
                         <!-- Injecté dynamiquement en JS -->
                     </div>
                 </div>
 
                 <!-- Section Filtrage par Spiritualité et Mutation -->
-                <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-start;">
-                    <div class="flex-1">
-                        <label style="font-size: 0.65rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.4rem; font-weight: 700; letter-spacing: 0.5px;">
-                            <span class="material-symbols-outlined" style="font-size: 0.95rem; color: #fb923c;">grade</span>
+                <div style="display: flex; gap: 1rem; flex-wrap: wrap; align-items: flex-start">
+                    <div class="flex-1"  >
+                        <label style="font-size: 0.65rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.4rem; font-weight: 700; letter-spacing: 0.5px">
+                            <span class="material-symbols-outlined"   style="font-size: 0.95rem; color: #fb923c">grade</span>
                             FILTRER PAR SPIRITUALITÉ
                         </label>
-                        <div id="filterSpiritsButtonsContainer" style="display: flex; flex-wrap: wrap; gap: 0.4rem;">
+                        <div id="filterSpiritsButtonsContainer" style="display: flex; flex-wrap: wrap; gap: 0.4rem">
                             <!-- Injecté dynamiquement en JS -->
                         </div>
                     </div>
 
-                    <div id="filterMutationAdminContainer" style="display: none; flex: 1;">
-                        <label style="font-size: 0.65rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.4rem; font-weight: 700; letter-spacing: 0.5px;">
-                            <span class="material-symbols-outlined" style="font-size: 0.95rem; color: #e879f9;">pets</span>
+                    <div class="flex-1" id="filterMutationAdminContainer" style="display: none">
+                        <label style="font-size: 0.65rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.4rem; font-weight: 700; letter-spacing: 0.5px">
+                            <span class="material-symbols-outlined text-purple"   style="font-size: 0.95rem">pets</span>
                             FILTRER PAR MUTATION
                         </label>
-                        <select id="filterMutation" onchange="renderFilteredSpells()" style="font-size: 0.8rem; padding: 0.4rem 0.6rem; width: 100%; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; border-radius: 6px; cursor: pointer; outline: none;">
+                        <select id="filterMutation" onchange="renderFilteredSpells()" style="font-size: 0.8rem; padding: 0.4rem 0.6rem; width: 100%; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; border-radius: 6px; cursor: pointer; outline: none">
                             <option value="ALL">Toutes les mutations</option>
                             <option value="ONLY_MUTATIONS">Mutations uniquement</option>
                             <option value="NONE">Sans mutation</option>
@@ -415,13 +415,13 @@
                     </div>
                 </div>
 
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.8rem;">
+                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(130px, 1fr)); gap: 0.8rem">
                     <div>
-                        <label style="font-size: 0.65rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.3rem; font-weight: 700; letter-spacing: 0.5px;">
-                            <span class="material-symbols-outlined" style="font-size: 0.95rem; color: #10b981;">category</span>
+                        <label style="font-size: 0.65rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.3rem; font-weight: 700; letter-spacing: 0.5px">
+                            <span class="material-symbols-outlined text-emerald"   style="font-size: 0.95rem">category</span>
                             NATURE D'EFFET
                         </label>
-                        <select id="filterEffect" style="font-size: 0.8rem; padding: 0.4rem 0.6rem; width: 100%; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; border-radius: 6px; cursor: pointer; outline: none;" onchange="renderFilteredSpells()">
+                        <select id="filterEffect" style="font-size: 0.8rem; padding: 0.4rem 0.6rem; width: 100%; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; border-radius: 6px; cursor: pointer; outline: none" onchange="renderFilteredSpells()">
                             <option value="ALL">Tous effets</option>
                             <option value="GROUP_DAMAGE">Dégâts</option>
                             <option value="GROUP_HEAL">Soins</option>
@@ -446,11 +446,11 @@
                         </select>
                     </div>
                     <div>
-                        <label style="font-size: 0.65rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.3rem; font-weight: 700; letter-spacing: 0.5px;">
-                            <span class="material-symbols-outlined" style="font-size: 0.95rem; color: #f59e0b;">workspace_premium</span>
+                        <label style="font-size: 0.65rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.3rem; font-weight: 700; letter-spacing: 0.5px">
+                            <span class="material-symbols-outlined text-amber"   style="font-size: 0.95rem">workspace_premium</span>
                             PALIER (NIVEAU)
                         </label>
-                        <select id="filterLevel" style="font-size: 0.8rem; padding: 0.4rem 0.6rem; width: 100%; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; border-radius: 6px; cursor: pointer; outline: none;" onchange="renderFilteredSpells()">
+                        <select id="filterLevel" style="font-size: 0.8rem; padding: 0.4rem 0.6rem; width: 100%; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; border-radius: 6px; cursor: pointer; outline: none" onchange="renderFilteredSpells()">
                             <option value="ALL">Tous niveaux</option>
                             <option value="1">Niveau 1</option>
                             <option value="2">Niveau 2</option>
@@ -460,11 +460,11 @@
                         </select>
                     </div>
                     <div>
-                        <label style="font-size: 0.65rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.3rem; font-weight: 700; letter-spacing: 0.5px;">
-                            <span class="material-symbols-outlined" style="font-size: 0.95rem; color: #a78bfa;">sort</span>
+                        <label style="font-size: 0.65rem; color: var(--text-muted); display: flex; align-items: center; gap: 0.35rem; margin-bottom: 0.3rem; font-weight: 700; letter-spacing: 0.5px">
+                            <span class="material-symbols-outlined"   style="font-size: 0.95rem; color: #a78bfa">sort</span>
                             ORDONNANCEMENT
                         </label>
-                        <select id="sortBy" style="font-size: 0.8rem; padding: 0.4rem 0.6rem; width: 100%; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; border-radius: 6px; cursor: pointer; outline: none;" onchange="renderFilteredSpells()">
+                        <select id="sortBy" style="font-size: 0.8rem; padding: 0.4rem 0.6rem; width: 100%; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; border-radius: 6px; cursor: pointer; outline: none" onchange="renderFilteredSpells()">
                             <option value="NEWEST">Plus récents</option>
                             <option value="NAME_ASC">Nom (A-Z)</option>
                             <option value="LEVEL_ASC">Niveau croissant</option>
@@ -475,20 +475,20 @@
                 </div>
             </div>
 
-            <div class="spells-list" id="createdSpellsContainer">
-                <div class="empty-state">Chargement des sorts...</div>
+            <div class="spells-list"   id="createdSpellsContainer">
+                <div class="empty-state"  >Chargement des sorts...</div>
             </div>
         </div>
     </main>
 
     <!-- Aperçu du sort en cours d'édition (Flottant) -->
-    <div class="editing-preview-container" id="editingSpellPreview">
-        <div class="editing-preview-header">
-            <div class="editing-preview-title">
-                <span class="material-symbols-outlined text-lg">edit_note</span>
+    <div class="editing-preview-container"   id="editingSpellPreview">
+        <div class="editing-preview-header"  >
+            <div class="editing-preview-title"  >
+                <span class="material-symbols-outlined text-lg"  >edit_note</span>
                 <span>Sort en cours d'édition</span>
             </div>
-            <button type="button" class="btn-danger" style="padding: 0.2rem 0.5rem; font-size: 0.75rem; border-radius: 4px;" onclick="cancelEditSpell()" title="Annuler l'édition">Annuler x</button>
+            <button class="btn-danger"  type="button"  style="padding: 0.2rem 0.5rem; font-size: 0.75rem; border-radius: 4px" onclick="cancelEditSpell()" title="Annuler l'édition">Annuler x</button>
         </div>
         <div id="editingSpellCardBody"></div>
     </div>

@@ -25,203 +25,203 @@
 
     <app-navbar active-page="armory"></app-navbar>
 
-    <div class="armory-main">
+    <div class="armory-main"  >
         <!-- Colonne Gauche : Formulaire de Création -->
-        <div class="armory-form-panel" id="charFormPanel">
-            <div class="armory-panel-title" id="formTitle" style="display: flex; justify-content: space-between;">
-                <span id="formTitleText" style="display: flex; align-items: center; gap: 0.5rem;">
-                    <span class="material-symbols-outlined">person_add</span>
+        <div class="armory-form-panel"   id="charFormPanel">
+            <div class="armory-panel-title"   id="formTitle" style="display: flex; justify-content: space-between">
+                <span id="formTitleText" style="display: flex; align-items: center; gap: 0.5rem">
+                    <span class="material-symbols-outlined"  >person_add</span>
                     Recruter à la taverne
                 </span>
-                <div id="charLimitContainer" style="display: flex; align-items: center;">
-                    <span id="charLimitText" style="font-size: 0.9rem; color: #94a3b8; font-weight: 500;">-/-</span>
+                <div id="charLimitContainer" style="display: flex; align-items: center">
+                    <span class="text-muted"  id="charLimitText" style="font-size: 0.9rem;  font-weight: 500">-/-</span>
                 </div>
             </div>
 
             <!-- Nom -->
-            <div class="armory-field">
+            <div class="armory-field"  >
                 <label for="charName">
-                    <span class="material-symbols-outlined text-warning">badge</span>
+                    <span class="material-symbols-outlined text-warning"  >badge</span>
                     Nom du personnage
                 </label>
                 <input type="text" id="charName" placeholder="Ex: Aldric le Sage, Sombria..." required="">
             </div>
 
             <!-- Voie & Spiritualité -->
-            <div class="armory-section-title" style="display: flex; align-items: center; gap: 0.5rem;">
-                <span class="material-symbols-outlined text-purple">auto_awesome</span>
+            <div class="armory-section-title"   style="display: flex; align-items: center; gap: 0.5rem">
+                <span class="material-symbols-outlined text-purple"  >auto_awesome</span>
                 Voie &amp; Spiritualité
             </div>
 
-            <div class="armory-form-row" style="align-items: start;">
-                <div style="display: flex; flex-direction: column; gap: 1rem;">
-                    <div class="armory-field">
-                        <label for="charVoie" style="display: flex; align-items: center; gap: 0.3rem;">
-                            <span class="material-symbols-outlined text-purple">route</span>
+            <div class="armory-form-row"   style="align-items: start">
+                <div style="display: flex; flex-direction: column; gap: 1rem">
+                    <div class="armory-field"  >
+                        <label for="charVoie" style="display: flex; align-items: center; gap: 0.3rem">
+                            <span class="material-symbols-outlined text-purple"  >route</span>
                             Voie
-                            <span id="charVoieInfoIcon" class="material-symbols-outlined"
-                                style="font-size: 1.1rem; color: #a855f7; cursor: help; display: none;"
+                            <span class="material-symbols-outlined text-purple"  id="charVoieInfoIcon" 
+                                style="font-size: 1.1rem;  cursor: help; display: none"
                                 onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()">
                                 info
-                                <template class="tooltip-data"></template>
+                                <template class="tooltip-data"  ></template>
                             </span>
                         </label>
-                        <div class="custom-select-wrapper" id="charVoieWrapper" tabindex="0">
-                            <div class="custom-select-trigger" id="charVoieTrigger">
-                                <span class="cs-label" id="charVoieLabel"><span
-                                        class="material-symbols-outlined cs-icon text-muted">trip_origin</span> — Aucune
+                        <div class="custom-select-wrapper"   id="charVoieWrapper" tabindex="0">
+                            <div class="custom-select-trigger"   id="charVoieTrigger">
+                                <span class="cs-label"   id="charVoieLabel"><span class="material-symbols-outlined cs-icon text-muted" 
+                                        >trip_origin</span> — Aucune
                                     —</span>
-                                <span class="material-symbols-outlined cs-arrow text-lg">expand_more</span>
+                                <span class="material-symbols-outlined cs-arrow text-lg"  >expand_more</span>
                             </div>
-                            <div class="custom-select-options" id="charVoieOptions">
-                                <div class="custom-option" data-value=""><span
-                                        class="material-symbols-outlined cs-icon text-muted">trip_origin</span> — Aucune
+                            <div class="custom-select-options"   id="charVoieOptions">
+                                <div class="custom-option"   data-value=""><span class="material-symbols-outlined cs-icon text-muted" 
+                                        >trip_origin</span> — Aucune
                                     —</div>
                             </div>
                             <input type="hidden" id="charVoie" value="">
                         </div>
                     </div>
 
-                    <div class="armory-field">
+                    <div class="armory-field"  >
                         <label for="charExperience">
-                            <span class="material-symbols-outlined text-purple">star</span>
+                            <span class="material-symbols-outlined text-purple"  >star</span>
                             Expérience
                         </label>
                         <input type="number" id="charExperience" min="0" value="0">
                     </div>
 
-                    <div class="armory-field">
-                        <label for="charSpirit" style="display: flex; align-items: center; gap: 0.3rem;">
-                            <span class="material-symbols-outlined" style="color: #fb923c;">psychology</span>
+                    <div class="armory-field"  >
+                        <label for="charSpirit" style="display: flex; align-items: center; gap: 0.3rem">
+                            <span class="material-symbols-outlined"   style="color: #fb923c">psychology</span>
                             Spiritualité
-                            <span id="charSpiritInfoIcon" class="material-symbols-outlined"
-                                style="font-size: 1.1rem; color: #fb923c; cursor: help; display: none;"
+                            <span class="material-symbols-outlined"  id="charSpiritInfoIcon" 
+                                style="font-size: 1.1rem; color: #fb923c; cursor: help; display: none"
                                 onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()">
                                 info
-                                <template class="tooltip-data"></template>
+                                <template class="tooltip-data"  ></template>
                             </span>
                         </label>
-                        <div class="custom-select-wrapper" id="charSpiritWrapper" tabindex="0">
-                            <div class="custom-select-trigger" id="charSpiritTrigger">
-                                <span class="cs-label" id="charSpiritLabel"><span
-                                        class="material-symbols-outlined cs-icon text-muted">trip_origin</span> — Aucune
+                        <div class="custom-select-wrapper"   id="charSpiritWrapper" tabindex="0">
+                            <div class="custom-select-trigger"   id="charSpiritTrigger">
+                                <span class="cs-label"   id="charSpiritLabel"><span class="material-symbols-outlined cs-icon text-muted" 
+                                        >trip_origin</span> — Aucune
                                     —</span>
-                                <span class="material-symbols-outlined cs-arrow text-lg">expand_more</span>
+                                <span class="material-symbols-outlined cs-arrow text-lg"  >expand_more</span>
                             </div>
-                            <div class="custom-select-options" id="charSpiritOptions">
-                                <div class="custom-option" data-value=""><span
-                                        class="material-symbols-outlined cs-icon text-muted">trip_origin</span> — Aucune
+                            <div class="custom-select-options"   id="charSpiritOptions">
+                                <div class="custom-option"   data-value=""><span class="material-symbols-outlined cs-icon text-muted" 
+                                        >trip_origin</span> — Aucune
                                     —</div>
                             </div>
                             <input type="hidden" id="charSpirit" value="">
                         </div>
                     </div>
 
-                    <div class="armory-field">
+                    <div class="armory-field"  >
                         <label for="charSpiritExperience">
-                            <span class="material-symbols-outlined" style="color: #fb923c;">star</span>
+                            <span class="material-symbols-outlined"   style="color: #fb923c">star</span>
                             Expérience Spirituelle
                         </label>
                         <input type="number" id="charSpiritExperience" min="0" value="0">
                     </div>
                 </div>
 
-                <div class="armory-field">
-                    <label style="display: flex; align-items: center; gap: 0.3rem;">
-                        <span class="material-symbols-outlined text-success">bar_chart</span>
+                <div class="armory-field"  >
+                    <label style="display: flex; align-items: center; gap: 0.3rem">
+                        <span class="material-symbols-outlined text-success"  >bar_chart</span>
                         Modificateurs de Base
                     </label>
                     <div id="voieStatsDiff"
-                        style="background: rgba(30,41,59,0.5); border: 1px solid #334155; border-radius: 0.4rem; padding: 0.8rem; display: flex; flex-direction: column; gap: 0.4rem; min-height: 100px;">
-                        <span style="color: #94a3b8; font-style: italic; font-size: 0.85rem;">Sélectionnez une
+                        style="background: rgba(30,41,59,0.5); border: 1px solid #334155; border-radius: 0.4rem; padding: 0.8rem; display: flex; flex-direction: column; gap: 0.4rem; min-height: 100px">
+                        <span class="text-muted"  style="font-style: italic; font-size: 0.85rem">Sélectionnez une
                             voie...</span>
                     </div>
                 </div>
             </div>
 
             <!-- Stats -->
-            <div id="baseStatsSection" style="display: flex; flex-direction: column; gap: 1.2rem;">
-                <div class="armory-section-title">
-                    <span class="material-symbols-outlined text-success">monitoring</span>
+            <div id="baseStatsSection" style="display: flex; flex-direction: column; gap: 1.2rem">
+                <div class="armory-section-title"  >
+                    <span class="material-symbols-outlined text-success"  >monitoring</span>
                     Statistiques de Base
                 </div>
 
-                <div class="armory-form-row">
-                    <div class="armory-field">
+                <div class="armory-form-row"  >
+                    <div class="armory-field"  >
                         <label for="charHp">
-                            <span class="material-symbols-outlined" style="color: #ec4899;">favorite</span>
+                            <span class="material-symbols-outlined text-pink"   >favorite</span>
                             PV Max
                         </label>
                         <input type="number" id="charHp" min="1" value="100">
                     </div>
-                    <div class="armory-field">
+                    <div class="armory-field"  >
                         <label for="charMana">
-                            <span class="material-symbols-outlined text-info">water_drop</span>
+                            <span class="material-symbols-outlined text-info"  >water_drop</span>
                             Mana Max
                         </label>
                         <input type="number" id="charMana" min="0" value="100">
                     </div>
                 </div>
 
-                <div class="armory-form-row quad">
-                    <div class="armory-field">
+                <div class="armory-form-row quad"  >
+                    <div class="armory-field"  >
                         <label for="charPower">
-                            <span class="material-symbols-outlined text-purple">auto_awesome</span>
+                            <span class="material-symbols-outlined text-purple"  >auto_awesome</span>
                             Puissance
                         </label>
                         <input type="number" id="charPower" min="0" value="10">
                     </div>
-                    <div class="armory-field">
+                    <div class="armory-field"  >
                         <label for="charStrength">
-                            <span class="material-symbols-outlined" style="color: #f43f5e;">fitness_center</span>
+                            <span class="material-symbols-outlined"   style="color: #f43f5e">fitness_center</span>
                             Force
                         </label>
                         <input type="number" id="charStrength" min="0" value="10">
                     </div>
-                    <div class="armory-field">
+                    <div class="armory-field"  >
                         <label for="charArmor">
-                            <span class="material-symbols-outlined text-info">shield</span>
+                            <span class="material-symbols-outlined text-info"  >shield</span>
                             Armure
                         </label>
                         <input type="number" id="charArmor" min="0" value="5">
                     </div>
-                    <div class="armory-field">
+                    <div class="armory-field"  >
                         <label for="charResistance">
-                            <span class="material-symbols-outlined text-success">shield</span>
+                            <span class="material-symbols-outlined text-success"  >shield</span>
                             Résistance
                         </label>
                         <input type="number" id="charResistance" min="0" value="5">
                     </div>
                 </div>
 
-                <div class="armory-form-row">
-                    <div class="armory-field">
+                <div class="armory-form-row"  >
+                    <div class="armory-field"  >
                         <label for="charSpeed">
-                            <span class="material-symbols-outlined text-warning">bolt</span>
+                            <span class="material-symbols-outlined text-warning"  >bolt</span>
                             Vitesse
                         </label>
                         <input type="number" id="charSpeed" min="0" value="1">
                     </div>
-                    <div class="armory-field">
+                    <div class="armory-field"  >
                         <label for="charCrit">
-                            <span class="material-symbols-outlined text-danger">gps_fixed</span>
+                            <span class="material-symbols-outlined text-danger"  >gps_fixed</span>
                             Critique (%)
                         </label>
                         <input type="number" id="charCrit" min="0" max="100" value="5">
                     </div>
                 </div>
 
-                <div class="armory-form-row">
-                    <div class="armory-field">
+                <div class="armory-form-row"  >
+                    <div class="armory-field"  >
                         <label for="charRegenHp">
-                            <span class="material-symbols-outlined" style="color: #ec4899;">healing</span>
+                            <span class="material-symbols-outlined text-pink"   >healing</span>
                             Régen PV
                         </label>
                         <input type="number" id="charRegenHp" min="0" value="2">
                     </div>
-                    <div class="armory-field">
+                    <div class="armory-field"  >
                         <label for="charRegenMana">
-                            <span class="material-symbols-outlined text-info">cyclone</span>
+                            <span class="material-symbols-outlined text-info"  >cyclone</span>
                             Régen Mana
                         </label>
                         <input type="number" id="charRegenMana" min="0" value="4">
@@ -231,12 +231,12 @@
             </div>
 
             <!-- Boutons -->
-            <div style="display: flex; gap: 0.6rem; align-items: center;">
-                <button type="button" class="armory-submit-btn" id="submitBtn" onclick="submitPersonnage()">
-                    <span class="material-symbols-outlined text-lg">person_add</span>
+            <div style="display: flex; gap: 0.6rem; align-items: center">
+                <button class="armory-submit-btn"  type="button"  id="submitBtn" onclick="submitPersonnage()">
+                    <span class="material-symbols-outlined text-lg"  >person_add</span>
                     Forger le Personnage
                 </button>
-                <button type="button" class="armory-nav-link" id="cancelBtn" style="display: none;"
+                <button class="armory-nav-link"  type="button"  id="cancelBtn" style="display: none"
                     onclick="resetForm()">
                     Annuler
                 </button>
@@ -244,77 +244,77 @@
         </div>
 
         <!-- Colonne Droite : Liste des Personnages -->
-        <div style="display: flex; flex-direction: column;">
-            <div class="armory-list-panel"
-                style="flex: 1; margin: 0; display: flex; flex-direction: column; max-height: calc(100vh - 140px);">
-                <div class="armory-panel-title" style="justify-content: space-between;">
-                    <span style="display: flex; align-items: center; gap: 0.5rem;">
-                        <span class="material-symbols-outlined text-info">groups</span>
+        <div style="display: flex; flex-direction: column">
+            <div class="armory-list-panel flex-1"  
+                style="margin: 0; display: flex; flex-direction: column; max-height: calc(100vh - 140px)">
+                <div class="armory-panel-title"   style="justify-content: space-between">
+                    <span style="display: flex; align-items: center; gap: 0.5rem">
+                        <span class="material-symbols-outlined text-info"  >groups</span>
                         Personnages
                     </span>
-                    <button type="button" class="armory-nav-link" onclick="loadPersonnages()"
-                        style="font-size: 0.8rem;">
-                        <span class="material-symbols-outlined" style="font-size: 1rem;">refresh</span>
+                    <button class="armory-nav-link"  type="button"  onclick="loadPersonnages()"
+                        style="font-size: 0.8rem">
+                        <span class="material-symbols-outlined"   style="font-size: 1rem">refresh</span>
                         Actualiser
                     </button>
                 </div>
 
-                <div
-                    style="display: flex; gap: 0.5rem; margin-bottom: 1rem; flex-wrap: wrap; background: rgba(0,0,0,0.2); padding: 0.8rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                <div class="mb-4"
+                    style="display: flex; gap: 0.5rem;  flex-wrap: wrap; background: rgba(0,0,0,0.2); padding: 0.8rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05)">
 
                     <!-- Trier par removed as per user request -->
 
                     <!-- User Filter Input (hidden by default, for admins) -->
-                    <div class="armory-field" id="searchOwnerContainer"
-                        style="flex: 1; min-width: 150px; display: none;">
-                        <label style="font-size: 0.7rem; color: #64748b; margin-bottom: 0.2rem; display: block;"><span
-                                class="material-symbols-outlined"
-                                style="font-size: 0.9rem; vertical-align: bottom;">person_search</span> Nom de
+                    <div class="armory-field flex-1"   id="searchOwnerContainer"
+                        style="min-width: 150px; display: none">
+                        <label style="font-size: 0.7rem; color: #64748b; margin-bottom: 0.2rem; display: block"><span class="material-symbols-outlined" 
+                                
+                                style="font-size: 0.9rem; vertical-align: bottom">person_search</span> Nom de
                             compte</label>
                         <input type="text" id="searchOwner" placeholder="Ex: Admin..." oninput="filterPersonnages()"
-                            style="padding: 0.35rem 0.5rem; font-size: 0.8rem; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; color: #fff; width: 100%;">
+                            style="padding: 0.35rem 0.5rem; font-size: 0.8rem; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; color: #fff; width: 100%">
                     </div>
-                    <div class="armory-field" style="flex: 1.5; min-width: 150px;">
-                        <label style="font-size: 0.7rem; color: #64748b; margin-bottom: 0.2rem; display: block;"><span
-                                class="material-symbols-outlined"
-                                style="font-size: 0.9rem; vertical-align: bottom;">search</span> Prénom</label>
+                    <div class="armory-field flex-1"   style=".5; min-width: 150px">
+                        <label style="font-size: 0.7rem; color: #64748b; margin-bottom: 0.2rem; display: block"><span class="material-symbols-outlined" 
+                                
+                                style="font-size: 0.9rem; vertical-align: bottom">search</span> Prénom</label>
                         <input type="text" id="searchName" placeholder="Ex: Lancelot..." oninput="filterPersonnages()"
-                            style="padding: 0.35rem 0.5rem; font-size: 0.8rem; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; color: #fff; width: 100%;">
+                            style="padding: 0.35rem 0.5rem; font-size: 0.8rem; background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px; color: #fff; width: 100%">
                     </div>
-                    <div class="armory-field" style="flex: 1; min-width: 120px;">
-                        <label style="font-size: 0.7rem; color: #64748b; margin-bottom: 0.2rem; display: block;"><span
-                                class="material-symbols-outlined"
-                                style="font-size: 0.9rem; vertical-align: bottom;">route</span> Voie</label>
-                        <div class="custom-select-wrapper" id="searchVoieWrapper" tabindex="0">
-                            <div class="custom-select-trigger" id="searchVoieTrigger">
-                                <span class="cs-label" id="searchVoieLabel"><span
-                                        class="material-symbols-outlined cs-icon text-muted">trip_origin</span>
+                    <div class="armory-field flex-1"   style="min-width: 120px">
+                        <label style="font-size: 0.7rem; color: #64748b; margin-bottom: 0.2rem; display: block"><span class="material-symbols-outlined" 
+                                
+                                style="font-size: 0.9rem; vertical-align: bottom">route</span> Voie</label>
+                        <div class="custom-select-wrapper"   id="searchVoieWrapper" tabindex="0">
+                            <div class="custom-select-trigger"   id="searchVoieTrigger">
+                                <span class="cs-label"   id="searchVoieLabel"><span class="material-symbols-outlined cs-icon text-muted" 
+                                        >trip_origin</span>
                                     Toutes</span>
-                                <span class="material-symbols-outlined cs-arrow text-lg">expand_more</span>
+                                <span class="material-symbols-outlined cs-arrow text-lg"  >expand_more</span>
                             </div>
-                            <div class="custom-select-options" id="searchVoieOptions">
-                                <div class="custom-option" data-value=""><span
-                                        class="material-symbols-outlined cs-icon text-muted">trip_origin</span> Toutes
+                            <div class="custom-select-options"   id="searchVoieOptions">
+                                <div class="custom-option"   data-value=""><span class="material-symbols-outlined cs-icon text-muted" 
+                                        >trip_origin</span> Toutes
                                 </div>
                             </div>
                             <input type="hidden" id="searchVoie" value="">
                         </div>
                     </div>
-                    <div class="armory-field" style="flex: 1; min-width: 120px;">
-                        <label style="font-size: 0.7rem; color: #64748b; margin-bottom: 0.2rem; display: block;"><span
-                                class="material-symbols-outlined"
-                                style="font-size: 0.9rem; vertical-align: bottom;">psychology</span>
+                    <div class="armory-field flex-1"   style="min-width: 120px">
+                        <label style="font-size: 0.7rem; color: #64748b; margin-bottom: 0.2rem; display: block"><span class="material-symbols-outlined" 
+                                
+                                style="font-size: 0.9rem; vertical-align: bottom">psychology</span>
                             Spiritualité</label>
-                        <div class="custom-select-wrapper" id="searchSpiritWrapper" tabindex="0">
-                            <div class="custom-select-trigger" id="searchSpiritTrigger">
-                                <span class="cs-label" id="searchSpiritLabel"><span
-                                        class="material-symbols-outlined cs-icon text-muted">trip_origin</span>
+                        <div class="custom-select-wrapper"   id="searchSpiritWrapper" tabindex="0">
+                            <div class="custom-select-trigger"   id="searchSpiritTrigger">
+                                <span class="cs-label"   id="searchSpiritLabel"><span class="material-symbols-outlined cs-icon text-muted" 
+                                        >trip_origin</span>
                                     Toutes</span>
-                                <span class="material-symbols-outlined cs-arrow text-lg">expand_more</span>
+                                <span class="material-symbols-outlined cs-arrow text-lg"  >expand_more</span>
                             </div>
-                            <div class="custom-select-options" id="searchSpiritOptions">
-                                <div class="custom-option" data-value=""><span
-                                        class="material-symbols-outlined cs-icon text-muted">trip_origin</span> Toutes
+                            <div class="custom-select-options"   id="searchSpiritOptions">
+                                <div class="custom-option"   data-value=""><span class="material-symbols-outlined cs-icon text-muted" 
+                                        >trip_origin</span> Toutes
                                 </div>
                             </div>
                             <input type="hidden" id="searchSpirit" value="">
@@ -322,41 +322,41 @@
                     </div>
                 </div>
 
-                <div class="armory-characters-grid" id="personnagesList">
-                    <div class="armory-empty-state">Chargement...</div>
+                <div class="armory-characters-grid"   id="personnagesList">
+                    <div class="armory-empty-state"  >Chargement...</div>
                 </div>
             </div>
         </div>
     </div>
 
     <!-- Equipment Modal -->
-    <div class="equip-modal-overlay" id="equipModalOverlay" onclick="if(event.target===this) closeEquipModal()">
-        <div class="equip-modal">
-            <div class="equip-modal-header">
-                <div class="equip-modal-title">
-                    <span class="material-symbols-outlined text-warning">shield</span>
+    <div class="equip-modal-overlay"   id="equipModalOverlay" onclick="if(event.target===this) closeEquipModal()">
+        <div class="equip-modal"  >
+            <div class="equip-modal-header"  >
+                <div class="equip-modal-title"  >
+                    <span class="material-symbols-outlined text-warning"  >shield</span>
                     <span id="equipModalTitle">Équipement</span>
                 </div>
-                <button class="equip-modal-close" onclick="closeEquipModal()">
-                    <span class="material-symbols-outlined" style="font-size: 1.5rem;">close</span>
+                <button class="equip-modal-close"   onclick="closeEquipModal()">
+                    <span class="material-symbols-outlined"   style="font-size: 1.5rem">close</span>
                 </button>
             </div>
 
-            <div class="equip-modal-body">
+            <div class="equip-modal-body"  >
                 <!-- Grille des 6 slots -->
-                <div class="equip-slots-grid" id="equipSlotsContainer"></div>
+                <div class="equip-slots-grid"   id="equipSlotsContainer"></div>
 
 
             </div>
         </div>
     </div>
-    <div class="blacksmith-cycle">
-        <div class="blacksmith work2"></div>
-        <div class="blacksmith work1"></div>
-        <div class="blacksmith bored"></div>
+    <div class="blacksmith-cycle"  >
+        <div class="blacksmith work2"  ></div>
+        <div class="blacksmith work1"  ></div>
+        <div class="blacksmith bored"  ></div>
     </div>
     <!-- Notification -->
-    <div class="armory-notif" id="armoryNotif"></div>
+    <div class="armory-notif"   id="armoryNotif"></div>
 
     <!-- Delete Personnage Confirmation Modal -->
 

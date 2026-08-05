@@ -27,104 +27,104 @@
 
     <app-navbar active-page="alchemy-admin"></app-navbar>
 
-    <main style="display: block;">
-        <div class="form-container"
-            style="max-width: 1200px; margin: 2rem auto; display: flex; gap: 2rem; align-items: stretch;">
+    <main style="display: block">
+        <div class="form-container"  
+            style="max-width: 1200px; margin: 2rem auto; display: flex; gap: 2rem; align-items: stretch">
 
-            <div class="panel" id="recipePanel" style="flex: 1; transition: all 0.3s ease;">
-                <div class="panel-title">
-                    <span class="material-symbols-outlined" style="color: #06b6d4;">science</span>
+            <div class="panel flex-1"   id="recipePanel" style="transition: all 0.3s ease">
+                <div class="panel-title"  >
+                    <span class="material-symbols-outlined text-info"   >science</span>
                     Créer/Éditer une Recette Alchimique
                 </div>
 
-                <form id="recipeForm" style="display: flex; flex-direction: column; gap: 0.5rem;">
+                <form id="recipeForm" style="display: flex; flex-direction: column; gap: 0.5rem">
                     <input type="hidden" id="recipeId" value="">
-                    <div class="form-row">
-                        <div class="form-group" class="flex-1">
+                    <div class="form-row"  >
+                        <div class="form-group"   class="flex-1">
                             <label>Nom de la recette</label>
                             <input type="text" id="recipeName" required="" placeholder="Ex: Transmutation Majeure"
                                >
                         </div>
-                        <div class="form-group" style="flex: 2;">
+                        <div class="form-group"   style="flex: 2">
                             <label>Description</label>
                             <input type="text" id="recipeDesc" placeholder="Ex: Convertit des anomalies en golem."
                                >
                         </div>
                     </div>
 
-                    <div class="form-row">
-                        <div class="form-group">
-                            <label style="color: #f59e0b; margin-bottom: 0.2rem; font-size: 0.85rem;"><span
-                                    class="material-symbols-outlined"
-                                    style="font-size: 0.9rem; vertical-align: middle;">monetization_on</span> Coût
+                    <div class="form-row"  >
+                        <div class="form-group"  >
+                            <label class="text-amber"  style="margin-bottom: 0.2rem; font-size: 0.85rem"><span class="material-symbols-outlined" 
+                                    
+                                    style="font-size: 0.9rem; vertical-align: middle">monetization_on</span> Coût
                                 Or</label>
                             <input type="number" id="costGold" value="0" min="0" step="0.1"
                                >
                         </div>
-                        <div class="form-group">
-                            <label style="color: #10b981; margin-bottom: 0.2rem; font-size: 0.85rem;"><span
-                                    class="material-symbols-outlined"
-                                    style="font-size: 0.9rem; vertical-align: middle;">star</span> Coût XP
+                        <div class="form-group"  >
+                            <label class="text-emerald"  style="margin-bottom: 0.2rem; font-size: 0.85rem"><span class="material-symbols-outlined" 
+                                    
+                                    style="font-size: 0.9rem; vertical-align: middle">star</span> Coût XP
                                 Spirit</label>
                             <input type="number" id="costSpirit" value="0" min="0"
                                >
                         </div>
                     </div>
 
-                    <hr style="border-color: rgba(255,255,255,0.05); margin: 0.3rem 0;">
+                    <hr style="border-color: rgba(255,255,255,0.05); margin: 0.3rem 0">
 
-                    <div class="form-group" style="margin: 0;">
+                    <div class="form-group"   style="margin: 0">
                         <label>Ingrédients : Anomalies</label>
-                        <div id="reqAnomaliesList" class="req-list" style="margin-bottom: 0.3rem;"></div>
-                        <button type="button" class="btn btn-secondary" onclick="addRequirement('anomalie')"
-                            style="padding: 0.3rem 0.5rem; font-size: 0.8rem; width: 100%;">+ Ajouter Anomalie</button>
+                        <div class="req-list"  id="reqAnomaliesList"  style="margin-bottom: 0.3rem"></div>
+                        <button class="btn btn-secondary"  type="button"  onclick="addRequirement('anomalie')"
+                            style="padding: 0.3rem 0.5rem; font-size: 0.8rem; width: 100%">+ Ajouter Anomalie</button>
                     </div>
-                    <div class="form-group" style="margin: 0;">
+                    <div class="form-group"   style="margin: 0">
                         <label>Ingrédients : Consommables</label>
-                        <div id="reqConsumablesList" class="req-list" style="margin-bottom: 0.3rem;"></div>
-                        <button type="button" class="btn btn-secondary" onclick="addRequirement('consumable')"
-                            style="padding: 0.3rem 0.5rem; font-size: 0.8rem; width: 100%;">+ Ajouter
+                        <div class="req-list"  id="reqConsumablesList"  style="margin-bottom: 0.3rem"></div>
+                        <button class="btn btn-secondary"  type="button"  onclick="addRequirement('consumable')"
+                            style="padding: 0.3rem 0.5rem; font-size: 0.8rem; width: 100%">+ Ajouter
                             Consommable</button>
                     </div>
 
-                    <hr style="border-color: rgba(255,255,255,0.05); margin: 0.3rem 0;">
+                    <hr style="border-color: rgba(255,255,255,0.05); margin: 0.3rem 0">
 
-                    <div class="panel-title"
-                        style="font-size: 0.95rem; margin-bottom: 0; padding-bottom: 0; border: none;">
-                        <span class="material-symbols-outlined text-purple">auto_awesome</span> Résultat
+                    <div class="panel-title"  
+                        style="font-size: 0.95rem; margin-bottom: 0; padding-bottom: 0; border: none">
+                        <span class="material-symbols-outlined text-purple"  >auto_awesome</span> Résultat
                     </div>
 
-                    <div class="form-row" style="margin-bottom: 0;">
-                        <div class="form-group" style="flex: 1.5;">
+                    <div class="form-row"   style="margin-bottom: 0">
+                        <div class="form-group flex-1"   style=".5">
                             <label>Type de récompense</label>
-                            <div class="custom-select-wrapper" style="z-index: 10;">
-                                <div class="custom-select-trigger">
-                                    <span class="cs-label" style="font-size: 0.85rem;">
-                                        <span class="material-symbols-outlined cs-icon text-purple">star</span> Donner Anomalie
+                            <div class="custom-select-wrapper"   style="z-index: 10">
+                                <div class="custom-select-trigger"  >
+                                    <span class="cs-label"   style="font-size: 0.85rem">
+                                        <span class="material-symbols-outlined cs-icon text-purple"  >star</span> Donner Anomalie
                                     </span>
-                                    <span class="material-symbols-outlined"
-                                        style="color: #64748b; font-size: 1rem;">expand_more</span>
+                                    <span class="material-symbols-outlined"  
+                                        style="color: #64748b; font-size: 1rem">expand_more</span>
                                 </div>
-                                <div class="custom-select-options custom-options">
-                                    <div class="custom-option" data-value="GIVE_ANOMALY">
-                                        <span class="material-symbols-outlined cs-icon text-purple">star</span> Donner
+                                <div class="custom-select-options custom-options"  >
+                                    <div class="custom-option"   data-value="GIVE_ANOMALY">
+                                        <span class="material-symbols-outlined cs-icon text-purple"  >star</span> Donner
                                         Anomalie
                                     </div>
-                                    <div class="custom-option" data-value="GIVE_CONSUMABLE">
-                                        <span class="material-symbols-outlined cs-icon text-success">inventory_2</span>
+                                    <div class="custom-option"   data-value="GIVE_CONSUMABLE">
+                                        <span class="material-symbols-outlined cs-icon text-success"  >inventory_2</span>
                                         Donner
                                         Consommable
                                     </div>
-                                    <div class="custom-option" data-value="GIVE_EQUIPMENT">
-                                        <span class="material-symbols-outlined cs-icon text-warning">shield</span>
+                                    <div class="custom-option"   data-value="GIVE_EQUIPMENT">
+                                        <span class="material-symbols-outlined cs-icon text-warning"  >shield</span>
                                         Donner Equipement
                                     </div>
-                                    <div class="custom-option" data-value="UNLOCK_FEATURE">
-                                        <span class="material-symbols-outlined cs-icon text-warning">key</span> Secret
+                                    <div class="custom-option"   data-value="UNLOCK_FEATURE">
+                                        <span class="material-symbols-outlined cs-icon text-warning"  >key</span> Secret
                                     </div>
-                                    <div class="custom-option" data-value="GIVE_SPIRIT_XP">
-                                        <span
-                                            class="material-symbols-outlined cs-icon text-mana">self_improvement</span>
+                                    <div class="custom-option"   data-value="GIVE_SPIRIT_XP">
+                                        <span class="material-symbols-outlined cs-icon text-mana" 
+                                            >self_improvement</span>
                                         Gagner XP
                                         Spiritualité
                                     </div>
@@ -132,20 +132,20 @@
                                 <input type="hidden" id="rewardType" value="GIVE_ANOMALY">
                             </div>
                         </div>
-                        <div class="form-group" id="rewardNameContainer" style="flex: 2;">
+                        <div class="form-group"   id="rewardNameContainer" style="flex: 2">
                             <label>Nom de l'objet (Résultat)</label>
                             <input type="text" id="rewardName" required="" placeholder="Ex: Potion"
                                >
                         </div>
                     </div>
 
-                    <div class="form-row">
-                        <div class="form-group">
+                    <div class="form-row"  >
+                        <div class="form-group"  >
                             <label>Quantité</label>
                             <input type="number" id="rewardQty" value="1" min="1"
                                >
                         </div>
-                        <div class="form-group">
+                        <div class="form-group"  >
                             <label id="rewardLevelLabel">Niveau
                                 du Secret</label>
                             <input type="number" id="rewardLevel" value="1" min="1"
@@ -153,63 +153,63 @@
                         </div>
                     </div>
 
-                    <div style="display: flex; gap: 0.5rem; margin-top: 0.5rem;">
-                        <button type="submit" class="btn" style="flex: 1; padding: 0.5rem;">Enregistrer la
+                    <div class="mt-2" style="display: flex; gap: 0.5rem">
+                        <button class="btn flex-1"  type="submit"  style="padding: 0.5rem">Enregistrer la
                             recette</button>
-                        <button type="button" id="cancelEditBtn" class="btn btn-secondary"
-                            style="flex: 1; padding: 0.5rem; display: none; background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.4); color: #fca5a5;"
+                        <button class="btn btn-secondary flex-1"  type="button" id="cancelEditBtn" 
+                            style="padding: 0.5rem; display: none; background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.4); color: #fca5a5"
                             onclick="cancelEdit()">Annuler l'édition</button>
                     </div>
-                    <div id="formMsg"
-                        style="margin-top: 0.5rem; font-weight: bold; text-align: center; font-size: 0.85rem;"></div>
+                    <div class="mt-2" id="formMsg"
+                        style="font-weight: bold; text-align: center; font-size: 0.85rem"></div>
                 </form>
             </div>
 
-            <div style="flex: 1; position: relative;">
-                <div class="panel"
-                    style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; margin: 0;">
-                    <div class="panel-title"
+            <div class="flex-1" style="position: relative">
+                <div class="panel"  
+                    style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; margin: 0">
+                    <div class="panel-title"  
                         class="flex-between flex-center">
                         <div>
-                            <span class="material-symbols-outlined text-purple">auto_awesome</span>
+                            <span class="material-symbols-outlined text-purple"  >auto_awesome</span>
                             Recettes Existantes
                         </div>
                     </div>
 
-                    <div class="filters-container" style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
-                        <div class="flex-1">
-                            <input type="text" id="searchRecipeName" class="form-control"
+                    <div class="filters-container mb-4"   style="display: flex; gap: 0.5rem">
+                        <div class="flex-1"  >
+                            <input class="form-control"  type="text" id="searchRecipeName" 
                                 placeholder="Rechercher par nom..."
-                                style="margin: 0; padding: 0.6rem; font-size: 0.85rem;" oninput="renderRecipesList()">
+                                style="margin: 0; padding: 0.6rem; font-size: 0.85rem" oninput="renderRecipesList()">
                         </div>
-                        <div class="custom-select-wrapper" style="flex: 1; z-index: 20;">
-                            <div class="custom-select-trigger">
-                                <span class="cs-label" style="font-size: 0.85rem;">Toutes les recettes</span>
-                                <span class="material-symbols-outlined"
-                                    style="color: #64748b; font-size: 1rem;">expand_more</span>
+                        <div class="custom-select-wrapper flex-1"   style="z-index: 20">
+                            <div class="custom-select-trigger"  >
+                                <span class="cs-label"   style="font-size: 0.85rem">Toutes les recettes</span>
+                                <span class="material-symbols-outlined"  
+                                    style="color: #64748b; font-size: 1rem">expand_more</span>
                             </div>
-                            <div class="custom-select-options custom-options">
-                                <div class="custom-option" data-value="">
-                                    <span class="material-symbols-outlined cs-icon text-muted">filter_list_off</span>
+                            <div class="custom-select-options custom-options"  >
+                                <div class="custom-option"   data-value="">
+                                    <span class="material-symbols-outlined cs-icon text-muted"  >filter_list_off</span>
                                     Toutes les
                                     recettes
                                 </div>
-                                <div class="custom-option" data-value="GIVE_ANOMALY">
-                                    <span class="material-symbols-outlined cs-icon text-purple">star</span> Anomalie
+                                <div class="custom-option"   data-value="GIVE_ANOMALY">
+                                    <span class="material-symbols-outlined cs-icon text-purple"  >star</span> Anomalie
                                 </div>
-                                <div class="custom-option" data-value="GIVE_CONSUMABLE">
-                                    <span class="material-symbols-outlined cs-icon text-success">inventory_2</span>
+                                <div class="custom-option"   data-value="GIVE_CONSUMABLE">
+                                    <span class="material-symbols-outlined cs-icon text-success"  >inventory_2</span>
                                     Consommable
                                 </div>
-                                <div class="custom-option" data-value="GIVE_EQUIPMENT">
-                                    <span class="material-symbols-outlined cs-icon text-warning">shield</span>
+                                <div class="custom-option"   data-value="GIVE_EQUIPMENT">
+                                    <span class="material-symbols-outlined cs-icon text-warning"  >shield</span>
                                     Equipement
                                 </div>
-                                <div class="custom-option" data-value="UNLOCK_FEATURE">
-                                    <span class="material-symbols-outlined cs-icon text-warning">key</span> Secret
+                                <div class="custom-option"   data-value="UNLOCK_FEATURE">
+                                    <span class="material-symbols-outlined cs-icon text-warning"  >key</span> Secret
                                 </div>
-                                <div class="custom-option" data-value="GIVE_SPIRIT_XP">
-                                    <span class="material-symbols-outlined cs-icon text-mana">self_improvement</span> XP
+                                <div class="custom-option"   data-value="GIVE_SPIRIT_XP">
+                                    <span class="material-symbols-outlined cs-icon text-mana"  >self_improvement</span> XP
                                     Spiritualité
                                 </div>
                             </div>
@@ -217,8 +217,8 @@
                         </div>
                     </div>
 
-                    <div id="recipesList"
-                        style="display: flex; flex-direction: column; gap: 1rem; overflow-y: auto; padding-right: 0.5rem; flex: 1;">
+                    <div class="flex-1" id="recipesList"
+                        style="display: flex; flex-direction: column; gap: 1rem; overflow-y: auto; padding-right: 0.5rem">
                         Chargement...
                     </div>
                 </div>

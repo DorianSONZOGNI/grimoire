@@ -192,39 +192,39 @@
 </head>
 
 <body>
-    <div class="ambient-light"></div>
-    <div class="ambient-light-2"></div>
+    <div class="ambient-light"  ></div>
+    <div class="ambient-light-2"  ></div>
 
-    <div class="auth-container">
-        <div class="auth-header">
-            <div class="auth-logo">
-                <span class="material-symbols-outlined"
-                    style="color: #10b981; text-shadow: 0 0 15px rgba(16, 185, 129, 0.5);">auto_stories</span>
+    <div class="auth-container"  >
+        <div class="auth-header"  >
+            <div class="auth-logo"  >
+                <span class="material-symbols-outlined text-emerald"  
+                    style="text-shadow: 0 0 15px rgba(16, 185, 129, 0.5)">auto_stories</span>
                 Grimoire
             </div>
-            <div class="auth-subtitle">Créer un nouveau compte</div>
+            <div class="auth-subtitle"  >Créer un nouveau compte</div>
         </div>
 
-        <div id="authError" class="auth-error"></div>
-        <div id="authSuccess" class="auth-success"></div>
+        <div class="auth-error"  id="authError" ></div>
+        <div class="auth-success"  id="authSuccess" ></div>
 
-        <form id="registerForm" class="auth-form">
-            <div class="auth-field">
+        <form class="auth-form"  id="registerForm" >
+            <div class="auth-field"  >
                 <label for="username">Nom d'utilisateur</label>
                 <input type="text" id="username" required autocomplete="username" minlength="3" maxlength="30">
             </div>
-            <div class="auth-field">
+            <div class="auth-field"  >
                 <label for="password">Mot de passe</label>
                 <input type="password" id="password" required autocomplete="new-password" minlength="4">
             </div>
-            <div class="auth-field">
+            <div class="auth-field"  >
                 <label for="confirmPassword">Confirmer le mot de passe</label>
                 <input type="password" id="confirmPassword" required autocomplete="new-password" minlength="4">
             </div>
-            <button type="submit" class="auth-btn">Créer le compte</button>
+            <button class="auth-btn"  type="submit" >Créer le compte</button>
         </form>
 
-        <div class="auth-footer">
+        <div class="auth-footer"  >
             Déjà inscrit ? <a href="/login.html">Se connecter</a>
         </div>
     </div>

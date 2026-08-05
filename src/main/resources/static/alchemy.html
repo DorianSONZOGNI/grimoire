@@ -26,68 +26,68 @@
 
     <app-navbar active-page="alchemy"></app-navbar>
 
-    <main style="display: block;">
-        <div class="alchemy-main"
-            style="max-width: 1400px; margin: 2rem auto; flex-direction: row; gap: 2rem; align-items: stretch; justify-content: center; height: calc(100vh - 160px);">
+    <main style="display: block">
+        <div class="alchemy-main"  
+            style="max-width: 1400px; margin: 2rem auto; flex-direction: row; gap: 2rem; align-items: stretch; justify-content: center; height: calc(100vh - 160px)">
 
             <!-- Left: List of recipes -->
-            <div class="panel" style="flex: 1; max-width: 450px; display: flex; flex-direction: column;">
-                <div class="panel-title">
-                    <span class="material-symbols-outlined text-purple">menu_book</span>
+            <div class="panel flex-1"   style="max-width: 450px; display: flex; flex-direction: column">
+                <div class="panel-title"  >
+                    <span class="material-symbols-outlined text-purple"  >menu_book</span>
                     Recettes Alchimique
                 </div>
 
-                <div class="filters-container" style="display: flex; gap: 0.5rem; margin-bottom: 1rem;">
-                    <div class="flex-1">
-                        <input type="text" id="searchRecipeName" class="form-control"
-                            placeholder="Rechercher par nom..." style="margin: 0; padding: 0.6rem; font-size: 0.85rem;"
+                <div class="filters-container mb-4"   style="display: flex; gap: 0.5rem">
+                    <div class="flex-1"  >
+                        <input class="form-control"  type="text" id="searchRecipeName" 
+                            placeholder="Rechercher par nom..." style="margin: 0; padding: 0.6rem; font-size: 0.85rem"
                             oninput="renderRecipesList()">
                     </div>
-                    <div class="custom-select-wrapper" style="flex: 1; z-index: 20;">
-                        <div class="custom-select-trigger">
-                            <span class="cs-label" style="font-size: 0.85rem;">Recettes</span>
-                            <span class="material-symbols-outlined"
-                                style="color: #64748b; font-size: 1rem;">expand_more</span>
+                    <div class="custom-select-wrapper flex-1"   style="z-index: 20">
+                        <div class="custom-select-trigger"  >
+                            <span class="cs-label"   style="font-size: 0.85rem">Recettes</span>
+                            <span class="material-symbols-outlined"  
+                                style="color: #64748b; font-size: 1rem">expand_more</span>
                         </div>
-                        <div class="custom-select-options custom-options">
-                            <div class="custom-option" data-value="">
-                                <span class="material-symbols-outlined cs-icon text-muted">filter_list_off</span>
+                        <div class="custom-select-options custom-options"  >
+                            <div class="custom-option"   data-value="">
+                                <span class="material-symbols-outlined cs-icon text-muted"  >filter_list_off</span>
                                 Recettes
                             </div>
-                            <div class="custom-option" data-value="GIVE_ANOMALY">
-                                <span class="material-symbols-outlined cs-icon text-purple">star</span>Anomalie
+                            <div class="custom-option"   data-value="GIVE_ANOMALY">
+                                <span class="material-symbols-outlined cs-icon text-purple"  >star</span>Anomalie
                             </div>
-                            <div class="custom-option" data-value="GIVE_CONSUMABLE">
-                                <span class="material-symbols-outlined cs-icon text-success">inventory_2</span>Consommable
+                            <div class="custom-option"   data-value="GIVE_CONSUMABLE">
+                                <span class="material-symbols-outlined cs-icon text-success"  >inventory_2</span>Consommable
                             </div>
-                            <div class="custom-option" data-value="GIVE_EQUIPMENT">
-                                <span class="material-symbols-outlined cs-icon text-warning">shield</span>Equipement
+                            <div class="custom-option"   data-value="GIVE_EQUIPMENT">
+                                <span class="material-symbols-outlined cs-icon text-warning"  >shield</span>Equipement
                             </div>
-                            <div class="custom-option" data-value="UNLOCK_FEATURE">
-                                <span class="material-symbols-outlined cs-icon text-warning">key</span>Secret
+                            <div class="custom-option"   data-value="UNLOCK_FEATURE">
+                                <span class="material-symbols-outlined cs-icon text-warning"  >key</span>Secret
                             </div>
-                            <div class="custom-option" data-value="GIVE_SPIRIT_XP">
-                                <span class="material-symbols-outlined cs-icon text-mana">self_improvement</span>XP Spiritualité
+                            <div class="custom-option"   data-value="GIVE_SPIRIT_XP">
+                                <span class="material-symbols-outlined cs-icon text-mana"  >self_improvement</span>XP Spiritualité
                             </div>
                         </div>
                         <input type="hidden" id="filterRewardType" value="" onchange="renderRecipesList()">
                     </div>
                 </div>
-                <div id="playerRecipesList" class="custom-scrollbar"
-                    style="display: flex; flex-direction: column; gap: 1rem; flex: 1; overflow-y: auto; padding-right: 0.5rem;">
-                    <p style="color: var(--text-muted); text-align: center; margin-top: 2rem;">Chargement du Grimoire
+                <div class="custom-scrollbar flex-1"  id="playerRecipesList" 
+                    style="display: flex; flex-direction: column; gap: 1rem;  overflow-y: auto; padding-right: 0.5rem">
+                    <p style="color: var(--text-muted); text-align: center; margin-top: 2rem">Chargement du Grimoire
                         Alchimique...</p>
                 </div>
             </div>
 
             <!-- Right: The Cauldron / Crafting Area -->
-            <div class="alchemy-panel"
-                style="flex: 2; display: flex; justify-content: center; align-items: center; min-height: 500px;"
+            <div class="alchemy-panel"  
+                style="flex: 2; display: flex; justify-content: center; align-items: center; min-height: 500px"
                 id="cauldronPanel">
-                <div style="text-align: center; color: var(--text-muted);">
-                    <span class="material-symbols-outlined"
-                        style="font-size: 4rem; color: rgba(16, 185, 129, 0.3);">experiment</span>
-                    <p style="margin-top: 1rem;">Sélectionnez une recette dans le grimoire à gauche pour l'étudier.</p>
+                <div style="text-align: center; color: var(--text-muted)">
+                    <span class="material-symbols-outlined"  
+                        style="font-size: 4rem; color: rgba(16, 185, 129, 0.3)">experiment</span>
+                    <p class="mt-4" >Sélectionnez une recette dans le grimoire à gauche pour l'étudier.</p>
                 </div>
             </div>
 
