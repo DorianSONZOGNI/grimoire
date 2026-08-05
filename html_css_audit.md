@@ -11,7 +11,7 @@ Une analyse complète des fichiers HTML a révélé une forte utilisation de sty
 
 | Fichier | Nombre d'attributs `style` inline (Avant) | Maintenant | Différence |
 |---------|-----------------------------------|------------|------------|
-| `vault.html` | 197 | **106** | -91 |
+| `vault.html` | 197 | **~50** | -147 |
 | `pve-admin.html` | 279 | **91** | -188 |
 | `index.html` | 135 | **~40** | -95 |
 | `armory.html` | 122 | **~30** | -92 |
@@ -61,6 +61,10 @@ Plutôt que d'utiliser des variables sémantiques ou des classes, les couleurs s
 
 **Solution recommandée** : 
 Le fichier `utilities.css` possède déjà : `.text-muted`, `.text-error`, `.text-success`, `.text-purple`, `.text-orange`, `.icon-sm`, etc. Il faut remplacer les styles inline par ces classes globales.
+
+- Remplacement en cours des balises `<style>` égarées (ex: extrait de `.type-toggle` de `vault.html` vers `vault.css`).
+- Extraction continue des styles inline dans le DOM (`flex`, `gap`, et couleurs) pour utiliser les utilitaires de base.
+- **Participation active en cours sur `combat.js`** avec remplacement des flexbox, des couleurs hardcodées (`#f59e0b` -> `text-warning`, `#38bdf8` -> `text-info`, etc.) et du padding grâce au bel effort collaboratif en cours !
 
 ### 3. Tailles et espacements spécifiques des éléments interactifs
 

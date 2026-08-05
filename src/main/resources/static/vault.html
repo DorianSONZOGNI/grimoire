@@ -18,7 +18,7 @@
     <link rel="stylesheet" href="/styles/ui/components.css">
     <link rel="stylesheet" href="/styles/ui/utilities.css?v=2">
     <link rel="stylesheet" href="/styles/ui/forms.css?v=5">
-    <link rel="stylesheet" href="/styles/pages/vault.css?v=4">
+    <link rel="stylesheet" href="/styles/pages/vault.css?v=5">
     <link rel="stylesheet" href="/styles/sprites/fox.css?v=1">
 </head>
 
@@ -30,32 +30,27 @@
     </div>
     <div class="vault-main"  > <!-- Toolbar -->
         <div class="vault-toolbar"  >
-            <div class="flex-1" style="display: flex; gap: 1rem">
-                <div class="search-bar"   class="flex-1">
-                    <span class="material-symbols-outlined"  
-                        style="color: var(--text-muted); font-size: 1.2rem">search</span>
+            <div class="flex-1 flex gap-4">
+                <div class="search-bar flex-1">
+                    <span class="material-symbols-outlined text-muted text-xl">search</span>
                     <input type="text" id="searchItemName" placeholder="Rechercher un objet..." oninput="filterVault()">
                 </div>
-                <div class="search-bar flex-1"  id="searchOwnerContainer"  style="max-width: 250px; display: none">
-                    <span class="material-symbols-outlined"  
-                        style="color: var(--text-muted); font-size: 1.2rem">person_search</span>
+                <div class="search-bar flex-1" id="searchOwnerContainer" style="max-width: 250px; display: none">
+                    <span class="material-symbols-outlined text-muted text-xl">person_search</span>
                     <input type="text" id="searchOwnerName" placeholder="Nom de compte..." oninput="filterVault()">
                 </div>
-                <button class="vault-btn-create"  id="btnCreateVaultEq"  onclick="openCreateEqModal()"
-                    style="display: none; align-items: center; gap: 0.5rem; background: var(--primary); color: white; border: none; padding: 0 1rem; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.2s">
-                    <span class="material-symbols-outlined"   style="font-size: 1.2rem">add_circle</span>
+                <button class="btn btn-primary vault-btn-create" id="btnCreateVaultEq" onclick="openCreateEqModal()" style="display: none;">
+                    <span class="material-symbols-outlined icon-md">add_circle</span>
                     Forger un Objet
                 </button>
-                <button class="vault-btn-create"  id="btnCreateAnomalie"  onclick="openCreateAnomalieModal()"
-                    style="display: none; align-items: center; gap: 0.5rem; background: #d946ef; color: white; border: none; padding: 0 1rem; border-radius: 8px; font-weight: 500; cursor: pointer; transition: all 0.2s">
-                    <span class="material-symbols-outlined"   style="font-size: 1.2rem">star</span>
+                <button class="btn vault-btn-create" id="btnCreateAnomalie" onclick="openCreateAnomalieModal()" style="display: none; background: linear-gradient(135deg, #d946ef, #c026d3);">
+                    <span class="material-symbols-outlined icon-md">star</span>
                     Créer une Anomalie
                 </button>
             </div>
 
-            <div class="filter-group"  >
-                <span class="material-symbols-outlined"  
-                    style="color: var(--text-muted); font-size: 1.2rem">filter_list</span>
+            <div class="filter-group">
+                <span class="material-symbols-outlined text-muted text-xl">filter_list</span>
 
                 <!-- Custom Select Slot -->
                 <div class="custom-select-wrapper"   style="width: 160px; z-index: 100">
@@ -181,58 +176,19 @@
 
                 <div style="width: 1px; height: 30px; background: rgba(255,255,255,0.1); margin: 0 0.5rem"></div>
 
-                <div class="type-toggles"   style="display: flex; gap: 0.5rem">
-                    <style>
-                        .type-toggle input {
-                            display: none;
-                        }
-
-                        .type-toggle input:checked+.toggle-btn.cons {
-                            background: rgba(252, 165, 165, 0.2) !important;
-                            border-color: #fca5a5 !important;
-                            color: #f8fafc !important;
-                        }
-
-                        .type-toggle input:checked+.toggle-btn.ano {
-                            background: rgba(240, 171, 252, 0.2) !important;
-                            border-color: #f0abfc !important;
-                            color: #f8fafc !important;
-                        }
-
-                        .type-toggle .toggle-btn {
-                            display: inline-flex;
-                            align-items: center;
-                            gap: 0.4rem;
-                            padding: 0.4rem 0.8rem;
-                            background: rgba(255, 255, 255, 0.05);
-                            border-radius: 8px;
-                            cursor: pointer;
-                            border: 1px solid rgba(255, 255, 255, 0.1);
-                            color: #94a3b8;
-                            font-weight: 500;
-                            font-size: 0.85rem;
-                            font-family: 'Outfit', sans-serif;
-                            transition: all 0.2s;
-                        }
-
-                        .type-toggle .toggle-btn:hover {
-                            background: rgba(255, 255, 255, 0.1);
-                        }
-                    </style>
-                    <label class="type-toggle"   title="Afficher uniquement les consommables">
+                <div class="type-toggles flex gap-2">
+                    <label class="type-toggle" title="Afficher uniquement les consommables">
                         <input type="checkbox" id="filterConsommableOnly"
                             onchange="if(this.checked) document.getElementById('filterAnomalieOnly').checked = false; filterVault();">
-                        <span class="toggle-btn cons"  >
-                            <span class="material-symbols-outlined"  
-                                style="font-size: 1.1rem; color: #fca5a5">inventory_2</span> Consommables
+                        <span class="toggle-btn cons">
+                            <span class="material-symbols-outlined text-danger-light text-lg">inventory_2</span> Consommables
                         </span>
                     </label>
-                    <label class="type-toggle"   title="Afficher uniquement les anomalies">
+                    <label class="type-toggle" title="Afficher uniquement les anomalies">
                         <input type="checkbox" id="filterAnomalieOnly"
                             onchange="if(this.checked) document.getElementById('filterConsommableOnly').checked = false; filterVault();">
-                        <span class="toggle-btn ano"  >
-                            <span class="material-symbols-outlined"  
-                                style="font-size: 1.1rem; color: #f0abfc">star</span> Anomalies
+                        <span class="toggle-btn ano">
+                            <span class="material-symbols-outlined text-lg" style="color: #f0abfc">star</span> Anomalies
                         </span>
                     </label>
                 </div>
