@@ -41,14 +41,14 @@
                     <input type="hidden" id="recipeId" value="">
                     <div class="form-row">
                         <div class="form-group" class="flex-1">
-                            <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">Nom de la recette</label>
+                            <label>Nom de la recette</label>
                             <input type="text" id="recipeName" required="" placeholder="Ex: Transmutation Majeure"
-                                style="padding: 0.4rem; font-size: 0.9rem;">
+                               >
                         </div>
                         <div class="form-group" style="flex: 2;">
-                            <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">Description</label>
+                            <label>Description</label>
                             <input type="text" id="recipeDesc" placeholder="Ex: Convertit des anomalies en golem."
-                                style="padding: 0.4rem; font-size: 0.9rem;">
+                               >
                         </div>
                     </div>
 
@@ -59,7 +59,7 @@
                                     style="font-size: 0.9rem; vertical-align: middle;">monetization_on</span> Coût
                                 Or</label>
                             <input type="number" id="costGold" value="0" min="0" step="0.1"
-                                style="padding: 0.4rem; font-size: 0.9rem;">
+                               >
                         </div>
                         <div class="form-group">
                             <label style="color: #10b981; margin-bottom: 0.2rem; font-size: 0.85rem;"><span
@@ -67,20 +67,20 @@
                                     style="font-size: 0.9rem; vertical-align: middle;">star</span> Coût XP
                                 Spirit</label>
                             <input type="number" id="costSpirit" value="0" min="0"
-                                style="padding: 0.4rem; font-size: 0.9rem;">
+                               >
                         </div>
                     </div>
 
                     <hr style="border-color: rgba(255,255,255,0.05); margin: 0.3rem 0;">
 
                     <div class="form-group" style="margin: 0;">
-                        <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">Ingrédients : Anomalies</label>
+                        <label>Ingrédients : Anomalies</label>
                         <div id="reqAnomaliesList" class="req-list" style="margin-bottom: 0.3rem;"></div>
                         <button type="button" class="btn btn-secondary" onclick="addRequirement('anomalie')"
                             style="padding: 0.3rem 0.5rem; font-size: 0.8rem; width: 100%;">+ Ajouter Anomalie</button>
                     </div>
                     <div class="form-group" style="margin: 0;">
-                        <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">Ingrédients : Consommables</label>
+                        <label>Ingrédients : Consommables</label>
                         <div id="reqConsumablesList" class="req-list" style="margin-bottom: 0.3rem;"></div>
                         <button type="button" class="btn btn-secondary" onclick="addRequirement('consumable')"
                             style="padding: 0.3rem 0.5rem; font-size: 0.8rem; width: 100%;">+ Ajouter
@@ -96,7 +96,7 @@
 
                     <div class="form-row" style="margin-bottom: 0;">
                         <div class="form-group" style="flex: 1.5;">
-                            <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">Type de récompense</label>
+                            <label>Type de récompense</label>
                             <div class="custom-select-wrapper" style="z-index: 10;">
                                 <div class="custom-select-trigger">
                                     <span class="cs-label" style="font-size: 0.85rem;">
@@ -133,23 +133,23 @@
                             </div>
                         </div>
                         <div class="form-group" id="rewardNameContainer" style="flex: 2;">
-                            <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">Nom de l'objet (Résultat)</label>
+                            <label>Nom de l'objet (Résultat)</label>
                             <input type="text" id="rewardName" required="" placeholder="Ex: Potion"
-                                style="padding: 0.4rem; font-size: 0.9rem;">
+                               >
                         </div>
                     </div>
 
                     <div class="form-row">
                         <div class="form-group">
-                            <label style="margin-bottom: 0.2rem; font-size: 0.85rem;">Quantité</label>
+                            <label>Quantité</label>
                             <input type="number" id="rewardQty" value="1" min="1"
-                                style="padding: 0.4rem; font-size: 0.9rem;">
+                               >
                         </div>
                         <div class="form-group">
-                            <label id="rewardLevelLabel" style="margin-bottom: 0.2rem; font-size: 0.85rem;">Niveau
+                            <label id="rewardLevelLabel">Niveau
                                 du Secret</label>
                             <input type="number" id="rewardLevel" value="1" min="1"
-                                style="padding: 0.4rem; font-size: 0.9rem;">
+                               >
                         </div>
                     </div>
 
