@@ -391,7 +391,7 @@
                         </div>
                     </div>
                     <div class="eq-create-row quad">
-                        <div class="eq-create-field" style="grid-column: span 2;">
+                        <div class="eq-create-field col-span-2">
                             <label>Nom</label>
                             <input type="text" id="eqName" placeholder="Ex: Casque de Fer">
                         </div>
@@ -400,8 +400,7 @@
                             <div class="custom-select-wrapper" id="eqSlotWrapper" tabindex="0">
                                 <div class="custom-select-trigger" id="eqSlotTrigger">
                                     <span class="cs-label" id="eqSlotLabel">Choisir un slot...</span>
-                                    <span class="material-symbols-outlined cs-arrow"
-                                        style="font-size: 1.1rem;">expand_more</span>
+                                    <span class="material-symbols-outlined cs-arrow text-lg">expand_more</span>
                                 </div>
                                 <div class="custom-select-options" id="eqSlotOptions"></div>
                                 <input type="hidden" id="eqSlot" value="">
@@ -414,8 +413,7 @@
                                     <span class="cs-label" id="eqRarityLabel">
                                         <span class="cs-icon" style="color: #94a3b8; font-weight: bold;">C</span> Commun
                                     </span>
-                                    <span class="material-symbols-outlined cs-arrow"
-                                        style="font-size: 1.1rem;">expand_more</span>
+                                    <span class="material-symbols-outlined cs-arrow text-lg">expand_more</span>
                                 </div>
                                 <div class="custom-select-options" id="eqRarityOptions">
                                     <div class="custom-option rarity-COMMUN" data-value="COMMUN" data-color="#94a3b8"
@@ -454,8 +452,7 @@
                                         <span class="material-symbols-outlined cs-icon text-muted">inventory_2</span>
                                         Autre
                                     </span>
-                                    <span class="material-symbols-outlined cs-arrow"
-                                        style="font-size: 1.1rem;">expand_more</span>
+                                    <span class="material-symbols-outlined cs-arrow text-lg">expand_more</span>
                                 </div>
                                 <div class="custom-select-options" id="eqConsumableCategoryOptions">
                                     <div class="custom-option" data-value="AUTRE"><span
@@ -480,8 +477,7 @@
                                             class="material-symbols-outlined cs-icon"
                                             style="color: #8b4513;">gesture</span> Corde</div>
                                     <div class="custom-option" data-value="OUTIL"><span
-                                            class="material-symbols-outlined cs-icon"
-                                            style="color: #64748b;">construction</span> Outil</div>
+                                            class="material-symbols-outlined cs-icon text-muted">construction</span> Outil</div>
                                     <div class="custom-option" data-value="PARCHEMIN"><span
                                             class="material-symbols-outlined cs-icon text-warning">history_edu</span>
                                         Parchemin</div>
@@ -505,8 +501,7 @@
                                         <span class="material-symbols-outlined cs-icon text-muted">not_interested</span>
                                         Aucun
                                     </span>
-                                    <span class="material-symbols-outlined cs-arrow"
-                                        style="font-size: 1.1rem;">expand_more</span>
+                                    <span class="material-symbols-outlined cs-arrow text-lg">expand_more</span>
                                 </div>
                                 <div class="custom-select-options" id="eqSpecialEffectOptions">
                                     <div class="custom-option effect-NONE" data-value="NONE"><span
@@ -569,8 +564,7 @@
                                         Surcharge (% Mag mana Act)
                                     </div>
                                     <div class="custom-option effect-VITAL_ARCANE" data-value="VITAL_ARCANE"><span
-                                            class="material-symbols-outlined cs-icon"
-                                            style="color: #38bdf8;">change_circle</span> Arcane Vitale (Régen X% mana)
+                                            class="material-symbols-outlined cs-icon text-info">change_circle</span> Arcane Vitale (Régen X% mana)
                                     </div>
                                 </div>
                                 <input type="hidden" id="eqSpecialEffect" value="NONE">
@@ -754,8 +748,7 @@
                                     <span class="material-symbols-outlined cs-icon"
                                         style="color: #d946ef;">dark_mode</span> Ténèbres
                                 </span>
-                                <span class="material-symbols-outlined cs-arrow"
-                                    style="font-size: 1.1rem;">expand_more</span>
+                                <span class="material-symbols-outlined cs-arrow text-lg">expand_more</span>
                             </div>
                             <div class="custom-select-options" id="anomalieSpiritualiteOptions">
                                 <div class="custom-option" data-value="TENEBRES"><span
@@ -768,29 +761,24 @@
                                         class="material-symbols-outlined cs-icon text-warning">all_inclusive</span>
                                     Karma</div>
                                 <div class="custom-option" data-value="VIOLENCE"><span
-                                        class="material-symbols-outlined cs-icon"
-                                        style="color: #a70740;">explosion</span> Violence</div>
+                                        class="material-symbols-outlined cs-icon text-crimson">explosion</span> Violence</div>
                                 <div class="custom-option" data-value="TRAHISON"><span
-                                        class="material-symbols-outlined cs-icon"
-                                        style="color: #ed5677;">visibility_off</span> Trahison</div>
+                                        class="material-symbols-outlined cs-icon text-pink">visibility_off</span> Trahison</div>
                                 <div class="custom-option" data-value="SURETE"><span
-                                        class="material-symbols-outlined cs-icon"
-                                        style="color: #00e5cc;">water_drop</span> Sûreté</div>
+                                        class="material-symbols-outlined cs-icon text-teal">water_drop</span> Sûreté</div>
                                 <div class="custom-option" data-value="RAISON"><span
                                         class="material-symbols-outlined cs-icon text-info">psychology</span> Raison
                                 </div>
                                 <div class="custom-option" data-value="DESTRUCTION"><span
-                                        class="material-symbols-outlined cs-icon"
-                                        style="color: #ff0000;">local_fire_department</span> Destruction</div>
+                                        class="material-symbols-outlined cs-icon text-danger">local_fire_department</span> Destruction</div>
                                 <div class="custom-option" data-value="CREATION"><span
                                         class="material-symbols-outlined cs-icon text-success">eco</span>
                                     Création</div>
                                 <div class="custom-option" data-value="CONVICTION"><span
-                                        class="material-symbols-outlined cs-icon" style="color: #b74c0b;">volcano</span>
+                                        class="material-symbols-outlined cs-icon text-amber">volcano</span>
                                     Conviction</div>
                                 <div class="custom-option" data-value="CONSOLIDATION"><span
-                                        class="material-symbols-outlined cs-icon"
-                                        style="color: #99674c;">foundation</span> Consolidation</div>
+                                        class="material-symbols-outlined cs-icon text-brown">foundation</span> Consolidation</div>
                             </div>
                             <input type="hidden" id="anomalieSpiritualite" value="TENEBRES">
                         </div>
@@ -803,8 +791,7 @@
                                 <span class="cs-label" id="anomalieCategoryLabel">
                                     <span class="material-symbols-outlined cs-icon text-muted">category</span> Autre
                                 </span>
-                                <span class="material-symbols-outlined cs-arrow"
-                                    style="font-size: 1.1rem;">expand_more</span>
+                                <span class="material-symbols-outlined cs-arrow text-lg">expand_more</span>
                             </div>
                             <div class="custom-select-options" id="anomalieCategoryOptions">
                                 <div class="custom-option" data-value="PIERRE"><span
@@ -871,8 +858,7 @@
                                     <span class="material-symbols-outlined cs-icon text-success">looks_one</span> Niveau
                                     1
                                 </span>
-                                <span class="material-symbols-outlined cs-arrow"
-                                    style="font-size: 1.1rem;">expand_more</span>
+                                <span class="material-symbols-outlined cs-arrow text-lg">expand_more</span>
                             </div>
                             <div class="custom-select-options" id="anomalieLevelOptions">
                                 <div class="custom-option" data-value="1"><span

@@ -106,7 +106,7 @@
                 <!-- Coûts en Mana -->
                 <div class="cost-card mana">
                     <div class="cost-card-header" class="flex-center flex-center-gap">
-                        <span class="material-symbols-outlined" style="font-size: 1.1rem; color: #38bdf8;">water_drop</span>
+                        <span class="material-symbols-outlined text-lg text-info">water_drop</span>
                         <span>Mana</span>
                     </div>
                     <div class="cost-inputs-grid">
@@ -115,7 +115,7 @@
                     </div>
                     <div class="cost-inputs-grid">
                         <label for="percentManaCost" style="color: #fff;">Ratio :</label>
-                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <div class="flex-center gap-2">
                             <input type="number" id="percentManaCost" min="0" value="0" style="width: 70px;">
                             <span style="color: var(--text-muted);">% de</span>
                             <select id="percentManaCostSource" style="flex: 1; padding: 0.4rem; font-size: 0.85rem;">
@@ -128,7 +128,7 @@
                 <!-- Coûts en PV -->
                 <div class="cost-card health">
                     <div class="cost-card-header" class="flex-center flex-center-gap">
-                        <span class="material-symbols-outlined" style="font-size: 1.1rem; color: #ef4444;">bloodtype</span>
+                        <span class="material-symbols-outlined text-lg text-danger">bloodtype</span>
                         <span>Sacrifice (Points de Vie)</span>
                     </div>
                     <div class="cost-inputs-grid">
@@ -137,7 +137,7 @@
                     </div>
                     <div class="cost-inputs-grid">
                         <label for="percentHealCost" style="color: #fff;">Ratio :</label>
-                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <div class="flex-center gap-2">
                             <input type="number" id="percentHealCost" min="0" value="0" style="width: 70px;">
                             <span style="color: var(--text-muted);">% de</span>
                             <select id="percentHealCostSource" style="flex: 1; padding: 0.4rem; font-size: 0.85rem;">
@@ -159,7 +159,7 @@
                     </div>
                     <div class="cost-inputs-grid">
                         <label for="percentHeatCost" style="color: #fff;">Ratio :</label>
-                        <div style="display: flex; gap: 0.5rem; align-items: center;">
+                        <div class="flex-center gap-2">
                             <input type="number" id="percentHeatCost" min="0" value="0" style="width: 70px;">
                             <span style="color: var(--text-muted);">% de la chaleur max (100)</span>
                         </div>
@@ -258,33 +258,33 @@
                     :</label>
                 <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.5rem;">
                     <button type="button" class="btn-effect-add dmg" onclick="addEffectPanel('FIXED_DAMAGE')">
-                        <span class="material-symbols-outlined" style="font-size: 1.1rem;">swords</span> Dégâts Fixes
+                        <span class="material-symbols-outlined text-lg">swords</span> Dégâts Fixes
                     </button>
                     <button type="button" class="btn-effect-add dmg" onclick="addEffectPanel('PERCENTAGE_DAMAGE')">
-                        <span class="material-symbols-outlined" style="font-size: 1.1rem;">explosion</span> Dégâts %
+                        <span class="material-symbols-outlined text-lg">explosion</span> Dégâts %
                     </button>
                     <button type="button" class="btn-effect-add dmg" onclick="addEffectPanel('DOT')">
-                        <span class="material-symbols-outlined" style="font-size: 1.1rem;">whatshot</span> Tick Dégâts
+                        <span class="material-symbols-outlined text-lg">whatshot</span> Tick Dégâts
                         (DoT)
                     </button>
                     <button type="button" class="btn-effect-add heal" onclick="addEffectPanel('FIXED_HEAL')">
-                        <span class="material-symbols-outlined" style="font-size: 1.1rem;">favorite</span> Soins Fixes
+                        <span class="material-symbols-outlined text-lg">favorite</span> Soins Fixes
                     </button>
                     <button type="button" class="btn-effect-add heal" onclick="addEffectPanel('PERCENTAGE_HEAL')">
-                        <span class="material-symbols-outlined" style="font-size: 1.1rem;">favorite</span> Soins %
+                        <span class="material-symbols-outlined text-lg">favorite</span> Soins %
                     </button>
                     <button type="button" class="btn-effect-add heal" onclick="addEffectPanel('HOT')">
-                        <span class="material-symbols-outlined" style="font-size: 1.1rem;">healing</span> Tick Soins
+                        <span class="material-symbols-outlined text-lg">healing</span> Tick Soins
                         (HoT)
                     </button>
                     <button type="button" class="btn-effect-add mana" onclick="addEffectPanel('FIXED_MANA')">
-                        <span class="material-symbols-outlined" style="font-size: 1.1rem;">water_drop</span> Mana Fixe
+                        <span class="material-symbols-outlined text-lg">water_drop</span> Mana Fixe
                     </button>
                     <button type="button" class="btn-effect-add mana" onclick="addEffectPanel('PERCENTAGE_MANA')">
-                        <span class="material-symbols-outlined" style="font-size: 1.1rem;">water_drop</span> Mana %
+                        <span class="material-symbols-outlined text-lg">water_drop</span> Mana %
                     </button>
                     <button type="button" class="btn-effect-add mana" onclick="addEffectPanel('MOT')">
-                        <span class="material-symbols-outlined" style="font-size: 1.1rem;">cyclone</span> Tick Mana
+                        <span class="material-symbols-outlined text-lg">cyclone</span> Tick Mana
                         (MoT)
                     </button>
                     <button type="button" class="btn-effect-add buff" onclick="addEffectPanel('BUFF_DEBUFF')">
@@ -292,10 +292,10 @@
                         Buff / Débuff
                     </button>
                     <button type="button" class="btn-effect-add buff" onclick="addEffectPanel('SHIELD')">
-                        <span class="material-symbols-outlined" style="font-size: 1.1rem;">shield</span> Bouclier
+                        <span class="material-symbols-outlined text-lg">shield</span> Bouclier
                     </button>
                     <button type="button" class="btn-effect-add purge" onclick="addEffectPanel('PURGE')">
-                        <span class="material-symbols-outlined" style="font-size: 1.1rem;">air</span> Purge / Dissip.
+                        <span class="material-symbols-outlined text-lg">air</span> Purge / Dissip.
                     </button>
                     <button type="button" class="btn-effect-add poison" onclick="addEffectPanel('POISON')">
                         <span class="material-symbols-outlined">science</span>
@@ -309,15 +309,15 @@
                     <!-- Boutons de Chaleur (spécifique Voie de la Destruction) -->
                     <div id="heatEffectButtons" style="display: none; grid-column: 1 / -1; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.5rem; margin-top: 0.5rem; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 0.5rem; width: 100%;">
                         <button type="button" class="btn-effect-add" style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.35);" onclick="addEffectPanel('HEAT_FIXED')">
-                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">whatshot</span> Chaleur
+                            <span class="material-symbols-outlined text-lg">whatshot</span> Chaleur
                             Fixe
                         </button>
                         <button type="button" class="btn-effect-add" style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.35);" onclick="addEffectPanel('HEAT_PERCENTAGE')">
-                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">explosion</span> Chaleur
+                            <span class="material-symbols-outlined text-lg">explosion</span> Chaleur
                             %
                         </button>
                         <button type="button" class="btn-effect-add" style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.35);" onclick="addEffectPanel('HEAT_OVER_TIME')">
-                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">cyclone</span> Tick
+                            <span class="material-symbols-outlined text-lg">cyclone</span> Tick
                             Chaleur
                         </button>
                     </div>
@@ -325,7 +325,7 @@
                     <!-- Bouton Âme Détachée (spécifique Spiritualité Ténèbres) -->
                     <div id="ameDetacheeEffectButton" style="display: none; grid-column: 1 / -1; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.5rem; margin-top: 0.5rem; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 0.5rem; width: 100%;">
                         <button type="button" class="btn-effect-add" style="background: rgba(244, 63, 94, 0.2); color: #fda4af; border: 1px solid rgba(244, 63, 94, 0.35);" onclick="addEffectPanel('AME_DETACHEE')">
-                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">dark_mode</span> Âme
+                            <span class="material-symbols-outlined text-lg">dark_mode</span> Âme
                             Détachée
                         </button>
                     </div>
@@ -333,7 +333,7 @@
                     <!-- Bouton Bourgeon (spécifique Voie de la Création) -->
                     <div id="budEffectButton" style="display: none; grid-column: 1 / -1; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 0.5rem; margin-top: 0.5rem; border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 0.5rem; width: 100%;">
                         <button type="button" class="btn-effect-add" style="background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.35);" onclick="addEffectPanel('BUD')">
-                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">yard</span> Bourgeon
+                            <span class="material-symbols-outlined text-lg">yard</span> Bourgeon
                         </button>
                     </div>
                 </div>
@@ -352,7 +352,7 @@
         <div class="panel">
             <div class="panel-title">
                 <span>Grimoire des Sorts</span>
-                <div style="display: flex; gap: 0.5rem; align-items: center;">
+                <div class="flex-center gap-2">
                     <button type="button" id="btnToggleDisplayMode" class="btn btn-secondary" style="padding: 0.4rem 0.8rem; font-size: 0.85rem; display: inline-flex; align-items: center; gap: 0.35rem;" onclick="toggleDisplayMode()" title="Basculer entre le mode défilement (hauteur de la Forge) et le mode étendu (tous les sorts)">
                         <span class="material-symbols-outlined" style="font-size: 1.1rem; line-height: 1;" id="toggleDisplayIcon">unfold_less</span>
                         <span id="toggleDisplayText">Mode Scroll</span>
@@ -485,7 +485,7 @@
     <div class="editing-preview-container" id="editingSpellPreview">
         <div class="editing-preview-header">
             <div class="editing-preview-title">
-                <span class="material-symbols-outlined" style="font-size: 1.1rem;">edit_note</span>
+                <span class="material-symbols-outlined text-lg">edit_note</span>
                 <span>Sort en cours d'édition</span>
             </div>
             <button type="button" class="btn-danger" style="padding: 0.2rem 0.5rem; font-size: 0.75rem; border-radius: 4px;" onclick="cancelEditSpell()" title="Annuler l'édition">Annuler x</button>
