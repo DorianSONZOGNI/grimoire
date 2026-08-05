@@ -233,45 +233,7 @@
     border: 1px solid rgba(16, 185, 129, 0.3);
 }
 
-/* Rarity specific stylings for cards */
-.vault-card.rarity-COMMUN {
-    border-top: 2px solid #94a3b8;
-}
 
-.vault-card.rarity-INHABITUEL {
-    border-top: 2px solid #22c55e;
-    background: linear-gradient(180deg, rgba(34, 197, 94, 0.05) 0%, rgba(30, 41, 59, 0.4) 30%);
-}
-
-.vault-card.rarity-RARE {
-    border-top: 2px solid #3b82f6;
-    background: linear-gradient(180deg, rgba(59, 130, 246, 0.05) 0%, rgba(30, 41, 59, 0.4) 30%);
-}
-
-.vault-card.rarity-MYTHIQUE {
-    border-top: 2px solid #f97316;
-    background: linear-gradient(180deg, rgba(249, 115, 22, 0.05) 0%, rgba(30, 41, 59, 0.4) 30%);
-}
-
-.vault-card.rarity-LEGENDAIRE {
-    border-top: 2px solid #f59e0b;
-    background: linear-gradient(180deg, rgba(245, 158, 11, 0.05) 0%, rgba(30, 41, 59, 0.4) 30%);
-}
-
-.vault-card.rarity-EPIQUE {
-    border-top: 2px solid #ef4444;
-    background: linear-gradient(180deg, rgba(239, 68, 68, 0.05) 0%, rgba(30, 41, 59, 0.4) 30%);
-}
-
-.vault-card.rarity-RELIQUE {
-    border-top: 2px solid #a855f7;
-    background: linear-gradient(180deg, rgba(168, 85, 247, 0.05) 0%, rgba(30, 41, 59, 0.4) 30%);
-}
-
-.vault-card.rarity-MAUDIT {
-    border-top: 2px solid #6b5252;
-    background: linear-gradient(180deg, rgba(60, 35, 35, 0.15) 0%, rgba(30, 41, 59, 0.4) 30%);
-}
 
 .cs-icon {
     font-size: 1rem;
