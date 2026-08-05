@@ -16,9 +16,10 @@
         rel="stylesheet">
     <link rel="stylesheet" href="/styles/variables.css">
     <link rel="stylesheet" href="/styles/ui/components.css">
-    <link rel="stylesheet" href="/styles/ui/utilities.css">
+    <link rel="stylesheet" href="/styles/ui/utilities.css?v=3">
+    <link rel="stylesheet" href="/styles/ui/forms.css?v=5">
     <link rel="stylesheet" href="/styles/pages/vault.css?v=3">
-    <link rel="stylesheet" href="/styles/pages/shop-admin.css?v=1">
+    <link rel="stylesheet" href="/styles/pages/shop-admin.css?v=2">
 </head>
 
 <body>
@@ -29,18 +30,18 @@
             <div class="page-header"  >
                 <div class="page-header-content"  >
                     <div class="page-header-icon warning"  >
-                        <span class="material-symbols-outlined"   style="font-size: 1.8rem">settings</span>
+                        <span class="material-symbols-outlined text-3xl" >settings</span>
                     </div>
                     <div>
-                        <h2 class="page-header-title"   style="font-size: 1.4rem">Gestion de la Boutique</h2>
+                        <h2 class="page-header-title text-2xl" >Gestion de la Boutique</h2>
                         <div class="page-header-subtitle"  >Création et gestion des articles pour la boutique</div>
                     </div>
                 </div>
 
-                <div style="display: flex; gap: 1rem">
-                    <button id="btnCreateVaultEq" onclick="openCreateEqModal()"
-                        style="display: flex; align-items: center; gap: 0.5rem; background: #f59e0b; border: none; color: #1e293b; font-weight: 600; padding: 0.6rem 1rem; border-radius: 8px; cursor: pointer; transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2)">
-                        <span class="material-symbols-outlined"   style="font-size: 1.2rem">add</span>
+                <div class="flex gap-4" >
+                    <button class="px-4 py-2 flex items-center gap-2 font-semibold cursor-pointer border-none rounded-lg" id="btnCreateVaultEq" onclick="openCreateEqModal()"
+                        style="background: #f59e0b;  color: #1e293b;     transition: all 0.2s ease; box-shadow: 0 4px 12px rgba(245, 158, 11, 0.2)">
+                        <span class="material-symbols-outlined text-xl" >add</span>
                         Forger un article
                     </button>
                 </div>
@@ -61,20 +62,19 @@
                     <span id="equipModalTitle">Forger un objet</span>
                 </div>
                 <button class="equip-modal-close"   onclick="closeCreateEqModal()">
-                    <span class="material-symbols-outlined"   style="font-size: 1.5rem">close</span>
+                    <span class="material-symbols-outlined text-2xl" >close</span>
                 </button>
             </div>
 
             <div class="equip-modal-body"  >
                 <div class="equip-create-section"  >
                     <div class="eq-create-row"   class="mb-4">
-                        <div class="form-group"  
-                            style="justify-content: flex-start; align-items: flex-start; margin: 0">
+                        <div class="form-group m-0 items-start justify-start" >
                             <label class="target-toggle-container shop-mode"   style="width: max-content"
                                 title="Si activé, cet objet sera vendu dans la boutique">
                                 <input class="target-radio"  type="checkbox" id="eqAvailableInShop"  checked="">
                                 <div class="target-icon-wrap shop-icon"  >
-                                    <span class="material-symbols-outlined"   style="font-size: 1.3rem">storefront</span>
+                                    <span class="material-symbols-outlined text-xl" >storefront</span>
                                 </div>
                                 <div class="target-text shop-text"  >
                                     Boutique
@@ -104,35 +104,27 @@
                             <div class="custom-select-wrapper"   id="eqRarityWrapper" tabindex="0">
                                 <div class="custom-select-trigger"   id="eqRarityTrigger">
                                     <span class="cs-label"   id="eqRarityLabel">
-                                        <span class="cs-icon text-muted"   style="font-weight: bold">C</span> Commun
+                                        <span class="cs-icon text-muted font-bold" >C</span> Commun
                                     </span>
                                     <span class="material-symbols-outlined cs-arrow text-lg"  >expand_more</span>
                                 </div>
                                 <div class="custom-select-options"   id="eqRarityOptions">
                                     <div class="custom-option rarity-COMMUN"   data-value="COMMUN" data-color="#94a3b8"
-                                        data-letter="C"><span class="cs-icon text-muted"  
-                                            style="font-weight: bold">C</span> Commun</div>
+                                        data-letter="C"><span class="cs-icon text-muted font-bold" >C</span> Commun</div>
                                     <div class="custom-option rarity-INHABITUEL"   data-value="INHABITUEL"
-                                        data-color="#22c55e" data-letter="I"><span class="cs-icon"  
-                                            style="color: #22c55e; font-weight: bold">I</span> Inhabituel</div>
+                                        data-color="#22c55e" data-letter="I"><span class="cs-icon text-success font-bold" >I</span> Inhabituel</div>
                                     <div class="custom-option rarity-RARE"   data-value="RARE" data-color="#3b82f6"
-                                        data-letter="R"><span class="cs-icon text-info"  
-                                            style="font-weight: bold">R</span> Rare</div>
+                                        data-letter="R"><span class="cs-icon text-info font-bold" >R</span> Rare</div>
                                     <div class="custom-option rarity-MYTHIQUE"   data-value="MYTHIQUE"
-                                        data-color="#f97316" data-letter="M"><span class="cs-icon"  
-                                            style="color: #f97316; font-weight: bold">M</span> Mythique</div>
+                                        data-color="#f97316" data-letter="M"><span class="cs-icon text-amber font-bold" >M</span> Mythique</div>
                                     <div class="custom-option rarity-LEGENDAIRE"   data-value="LEGENDAIRE"
-                                        data-color="#eab308" data-letter="L"><span class="cs-icon"  
-                                            style="color: #eab308; font-weight: bold">L</span> Légendaire</div>
+                                        data-color="#eab308" data-letter="L"><span class="cs-icon text-warning font-bold" >L</span> Légendaire</div>
                                     <div class="custom-option rarity-EPIQUE"   data-value="EPIQUE" data-color="#ef4444"
-                                        data-letter="E"><span class="cs-icon text-danger"  
-                                            style="font-weight: bold">E</span> Épique (Max 1)</div>
+                                        data-letter="E"><span class="cs-icon text-danger font-bold" >E</span> Épique (Max 1)</div>
                                     <div class="custom-option rarity-RELIQUE"   data-value="RELIQUE" data-color="#a855f7"
-                                        data-letter="R"><span class="cs-icon text-purple"  
-                                            style="font-weight: bold">R</span> Relique (Max 1)</div>
+                                        data-letter="R"><span class="cs-icon text-purple font-bold" >R</span> Relique (Max 1)</div>
                                     <div class="custom-option rarity-MAUDIT"   data-value="MAUDIT" data-color="#7f1d1d"
-                                        data-letter="M"><span class="cs-icon"  
-                                            style="color: #7f1d1d; font-weight: bold">M</span> Maudit</div>
+                                        data-letter="M"><span class="cs-icon text-danger font-bold" >M</span> Maudit</div>
                                 </div>
                                 <input type="hidden" id="eqRarity" value="COMMUN">
                             </div>
@@ -154,18 +146,14 @@
                                     <div class="custom-option"   data-value="POTION_ROSE"><span class="material-symbols-outlined cs-icon text-pink" 
                                             
                                             >science</span> Potion Rose</div>
-                                    <div class="custom-option"   data-value="POTION_BLEUE"><span class="material-symbols-outlined cs-icon" 
-                                            
-                                            style="color: #0ea5e9">science</span> Potion Bleue</div>
+                                    <div class="custom-option"   data-value="POTION_BLEUE"><span class="material-symbols-outlined cs-icon text-info" >science</span> Potion Bleue</div>
                                     <div class="custom-option"   data-value="POTION_ROUGE"><span class="material-symbols-outlined cs-icon text-danger" 
                                             >science</span> Potion
                                         Rouge</div>
                                     <div class="custom-option"   data-value="POTION_VIOLETTE"><span class="material-symbols-outlined cs-icon text-purple" 
                                             >science</span> Potion
                                         Violette</div>
-                                    <div class="custom-option"   data-value="CLE"><span class="material-symbols-outlined cs-icon" 
-                                            
-                                            style="color: #eab308">vpn_key</span> Clé</div>
+                                    <div class="custom-option"   data-value="CLE"><span class="material-symbols-outlined cs-icon text-warning" >vpn_key</span> Clé</div>
                                     <div class="custom-option"   data-value="CORDE"><span class="material-symbols-outlined cs-icon text-brown" 
                                             
                                             >gesture</span> Corde</div>
@@ -184,10 +172,10 @@
                         </div>
                     </div>
 
-                    <div class="eq-create-row mb-4"   id="eqSpecialEffectRow"
-                        style="display: none; background: rgba(168, 85, 247, 0.05); border: 1px dashed rgba(168, 85, 247, 0.3); padding: 0.8rem; border-radius: 8px">
+                    <div class="eq-create-row mb-4 p-3 rounded-lg"   id="eqSpecialEffectRow"
+                        style="display: none; background: rgba(168, 85, 247, 0.05); border: 1px dashed rgba(168, 85, 247, 0.3)">
                         <div class="eq-create-field"  >
-                            <label id="eqSpecialEffectLabelTitle" style="color: #c084fc">Effet Spécial</label>
+                            <label class="text-purple" id="eqSpecialEffectLabelTitle" >Effet Spécial</label>
                             <div class="custom-select-wrapper"   id="eqSpecialEffectWrapper" tabindex="0">
                                 <div class="custom-select-trigger"   id="eqSpecialEffectTrigger"
                                     style="border-color: rgba(192, 132, 252, 0.3)">
@@ -204,15 +192,11 @@
                                     <div class="custom-option effect-LIFESTEAL"   data-value="LIFESTEAL"><span class="material-symbols-outlined cs-icon text-danger" 
                                             >water_drop</span> Vol
                                         de Vie (%)</div>
-                                    <div class="custom-option effect-THORNS"   data-value="THORNS"><span class="material-symbols-outlined cs-icon" 
-                                            
-                                            style="color: #eab308">explosion</span> Épines (Renvoi dégâts %)</div>
+                                    <div class="custom-option effect-THORNS"   data-value="THORNS"><span class="material-symbols-outlined cs-icon text-warning" >explosion</span> Épines (Renvoi dégâts %)</div>
                                     <div class="custom-option effect-MANA_SHIELD"   data-value="MANA_SHIELD"><span class="material-symbols-outlined cs-icon text-info" 
                                             >shield</span>
                                         Bouclier de Mana (%)</div>
-                                    <div class="custom-option effect-CHEAT_DEATH"   data-value="CHEAT_DEATH"><span class="material-symbols-outlined cs-icon" 
-                                            
-                                            style="color: #fce7f3">self_improvement</span> Ange Gardien (X% PV MAX)
+                                    <div class="custom-option effect-CHEAT_DEATH"   data-value="CHEAT_DEATH"><span class="material-symbols-outlined cs-icon text-pink-100" >self_improvement</span> Ange Gardien (X% PV MAX)
                                     </div>
                                     <div class="custom-option effect-CRIT_DAMAGE"   data-value="CRIT_DAMAGE"><span class="material-symbols-outlined cs-icon text-orange" 
                                             >local_fire_department</span>
@@ -220,34 +204,23 @@
                                         (%)
                                     </div>
                                     <div class="custom-option effect-CURSED_MANA_DRAIN"   data-value="CURSED_MANA_DRAIN">
-                                        <span class="material-symbols-outlined cs-icon"  
-                                            style="color: #555555">opacity</span> Famine (Drain de mana par tour)
+                                        <span class="material-symbols-outlined cs-icon text-dark-gray" >opacity</span> Famine (Drain de mana par tour)
                                     </div>
                                     <div class="custom-option effect-CURSED_HP_LOSS_ON_MANA"  
-                                        data-value="CURSED_HP_LOSS_ON_MANA"><span class="material-symbols-outlined cs-icon" 
-                                            
-                                            style="color: #555555">heart_broken</span> Brèche spirituelle (- hp % en
+                                        data-value="CURSED_HP_LOSS_ON_MANA"><span class="material-symbols-outlined cs-icon text-dark-gray" >heart_broken</span> Brèche spirituelle (- hp % en
                                         mana Act.)
                                     </div>
                                     <div class="custom-option effect-CURSED_MAGIC_DAMAGE_REDUCTION"  
-                                        data-value="CURSED_MAGIC_DAMAGE_REDUCTION"><span class="material-symbols-outlined cs-icon" 
-                                            
-                                            style="color: #555555">psychology</span> Folie (% dégâts magique -)
+                                        data-value="CURSED_MAGIC_DAMAGE_REDUCTION"><span class="material-symbols-outlined cs-icon text-dark-gray" >psychology</span> Folie (% dégâts magique -)
                                     </div>
                                     <div class="custom-option effect-CURSED_PHYSICAL_DAMAGE_REDUCTION"  
-                                        data-value="CURSED_PHYSICAL_DAMAGE_REDUCTION"><span class="material-symbols-outlined cs-icon" 
-                                            
-                                            style="color: #555555">sword_rose</span> Faiblesse (% dégâts physique -)
+                                        data-value="CURSED_PHYSICAL_DAMAGE_REDUCTION"><span class="material-symbols-outlined cs-icon text-dark-gray" >sword_rose</span> Faiblesse (% dégâts physique -)
                                     </div>
                                     <div class="custom-option effect-CURSED_VULNERABILITY"  
-                                        data-value="CURSED_VULNERABILITY"><span class="material-symbols-outlined cs-icon" 
-                                            
-                                            style="color: #555555">gpp_bad</span> Vulnérabilité (Dégâts subis % +)
+                                        data-value="CURSED_VULNERABILITY"><span class="material-symbols-outlined cs-icon text-dark-gray" >gpp_bad</span> Vulnérabilité (Dégâts subis % +)
                                     </div>
                                     <div class="custom-option effect-CURSED_HEALING_REDUCTION"  
-                                        data-value="CURSED_HEALING_REDUCTION"><span class="material-symbols-outlined cs-icon" 
-                                            
-                                            style="color: #555555">healing</span> Chair putréfiée (Soins % -)
+                                        data-value="CURSED_HEALING_REDUCTION"><span class="material-symbols-outlined cs-icon text-dark-gray" >healing</span> Chair putréfiée (Soins % -)
                                     </div>
                                     <div class="custom-option effect-EXECUTION"   data-value="EXECUTION"><span class="material-symbols-outlined cs-icon text-danger" 
                                             >swords</span>
@@ -266,7 +239,7 @@
                             </div>
                         </div>
                         <div class="eq-create-field"  >
-                            <label id="eqSpecialEffectValueTitle" style="color: #c084fc">Puissance (Valeur)</label>
+                            <label class="text-purple" id="eqSpecialEffectValueTitle" >Puissance (Valeur)</label>
                             <input type="number" id="eqSpecialEffectValue" value="0"
                                 style="border-color: rgba(192, 132, 252, 0.3)">
                         </div>
@@ -274,26 +247,23 @@
 
                     <div class="eq-create-row quad"  >
                         <div class="eq-create-field"  >
-                            <label><span class="material-symbols-outlined text-pink"  
-                                    style="font-size: 1rem; vertical-align: bottom">favorite</span>
+                            <label><span class="material-symbols-outlined text-pink text-base align-bottom" >favorite</span>
                                 PV</label>
                             <input type="number" id="eqHp" value="0">
                         </div>
                         <div class="eq-create-field"  >
-                            <label><span class="material-symbols-outlined"  
-                                    style="font-size: 1rem; vertical-align: bottom; color: #38bdf8">water_drop</span>
+                            <label><span class="material-symbols-outlined text-info text-base align-bottom" >water_drop</span>
                                 Mana</label>
                             <input type="number" id="eqMana" value="0">
                         </div>
                         <div class="eq-create-field non-consumable-stat"  >
-                            <label><span class="material-symbols-outlined text-purple"  
-                                    style="font-size: 1rem; vertical-align: bottom">auto_awesome</span>
+                            <label><span class="material-symbols-outlined text-purple text-base align-bottom" >auto_awesome</span>
                                 Puissance</label>
                             <input type="number" id="eqPower" value="0">
                         </div>
                         <div class="eq-create-field non-consumable-stat"  >
-                            <label><span class="material-symbols-outlined"  
-                                    style="font-size: 1rem; vertical-align: bottom; color: #f43f5e">fitness_center</span>
+                            <label><span class="material-symbols-outlined text-base align-bottom"  
+                                    style="color: #f43f5e">fitness_center</span>
                                 Force</label>
                             <input type="number" id="eqStr" value="0">
                         </div>
@@ -301,26 +271,22 @@
 
                     <div class="eq-create-row quad non-consumable-stat"  >
                         <div class="eq-create-field"  >
-                            <label><span class="material-symbols-outlined text-info"  
-                                    style="font-size: 1rem; vertical-align: bottom">shield</span>
+                            <label><span class="material-symbols-outlined text-info text-base align-bottom" >shield</span>
                                 Armure</label>
                             <input type="number" id="eqArmor" value="0">
                         </div>
                         <div class="eq-create-field"  >
-                            <label><span class="material-symbols-outlined text-emerald"  
-                                    style="font-size: 1rem; vertical-align: bottom">shield</span>
+                            <label><span class="material-symbols-outlined text-emerald text-base align-bottom" >shield</span>
                                 Résistance</label>
                             <input type="number" id="eqRes" value="0">
                         </div>
                         <div class="eq-create-field"  >
-                            <label><span class="material-symbols-outlined text-amber"  
-                                    style="font-size: 1rem; vertical-align: bottom">bolt</span>
+                            <label><span class="material-symbols-outlined text-amber text-base align-bottom" >bolt</span>
                                 Vitesse</label>
                             <input type="number" id="eqSpeed" value="0">
                         </div>
                         <div class="eq-create-field"  >
-                            <label><span class="material-symbols-outlined text-danger"  
-                                    style="font-size: 1rem; vertical-align: bottom">gps_fixed</span>
+                            <label><span class="material-symbols-outlined text-danger text-base align-bottom" >gps_fixed</span>
                                 Critique</label>
                             <input type="number" id="eqCrit" value="0">
                         </div>
@@ -328,15 +294,13 @@
 
                     <div class="eq-create-row non-consumable-stat"  >
                         <div class="eq-create-field"  >
-                            <label><span class="material-symbols-outlined text-emerald"  
-                                    style="font-size: 1rem; vertical-align: bottom">healing</span>
+                            <label><span class="material-symbols-outlined text-emerald text-base align-bottom" >healing</span>
                                 Régen PV
                                 / tour</label>
                             <input type="number" id="eqRegenHp" value="0" placeholder="Positif ou Négatif">
                         </div>
                         <div class="eq-create-field"  >
-                            <label><span class="material-symbols-outlined"  
-                                    style="font-size: 1rem; vertical-align: bottom; color: #38bdf8">cyclone</span>
+                            <label><span class="material-symbols-outlined text-info text-base align-bottom" >cyclone</span>
                                 Régen
                                 Mana / tour</label>
                             <input type="number" id="eqRegenMana" value="0" placeholder="Positif ou Négatif">
@@ -345,26 +309,23 @@
 
                     <div class="eq-create-row quad consumable-stat"   style="display: none">
                         <div class="eq-create-field"  >
-                            <label><span class="material-symbols-outlined text-pink"  
-                                    style="font-size: 1rem; vertical-align: bottom">percent</span> PV
+                            <label><span class="material-symbols-outlined text-pink text-base align-bottom" >percent</span> PV
                                 (Max)</label>
                             <input type="number" id="eqConsumableHpPercent" value="0">
                         </div>
                         <div class="eq-create-field"  >
-                            <label><span class="material-symbols-outlined"  
-                                    style="font-size: 1rem; vertical-align: bottom; color: #38bdf8">percent</span> Mana
+                            <label><span class="material-symbols-outlined text-info text-base align-bottom" >percent</span> Mana
                                 (Max)</label>
                             <input type="number" id="eqConsumableManaPercent" value="0">
                         </div>
                         <div class="eq-create-field"  >
-                            <label><span class="material-symbols-outlined"  
-                                    style="font-size: 1rem; vertical-align: bottom; color: #f43f5e">heart_broken</span>
+                            <label><span class="material-symbols-outlined text-base align-bottom"  
+                                    style="color: #f43f5e">heart_broken</span>
                                 PV (Manq)</label>
                             <input type="number" id="eqConsumableMissingHpPercent" value="0">
                         </div>
                         <div class="eq-create-field"  >
-                            <label><span class="material-symbols-outlined text-purple"  
-                                    style="font-size: 1rem; vertical-align: bottom">water_drop</span>
+                            <label><span class="material-symbols-outlined text-purple text-base align-bottom" >water_drop</span>
                                 Mana (Manq)</label>
                             <input type="number" id="eqConsumableMissingManaPercent" value="0">
                         </div>
@@ -372,23 +333,21 @@
 
                     <div class="eq-create-row mb-4"   id="eqBaseWeightRow" style="display: none">
                         <div class="eq-create-field"  >
-                            <label><span class="material-symbols-outlined text-muted"  
-                                    style="font-size: 1rem; vertical-align: bottom">scale</span>
+                            <label><span class="material-symbols-outlined text-muted text-base align-bottom" >scale</span>
                                 Poids de base (Consommable)</label>
                             <input type="number" step="0.1" id="eqBaseWeight" value="0">
                         </div>
                     </div>
 
-                    <div class="eq-weight-container mb-4"  
-                        style="padding: 0.8rem; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05)">
-                        <div
-                            style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem">
-                            <span style="font-size: 0.85rem; color: #cbd5e1; font-weight: 500"><span class="material-symbols-outlined" 
+                    <div class="eq-weight-container mb-4 p-3 rounded-lg"  
+                        style="background: rgba(0,0,0,0.2);  border: 1px solid rgba(255,255,255,0.05)">
+                        <div class="mb-2 flex items-center justify-between" >
+                            <span class="text-slate-300 font-medium text-sm" ><span class="material-symbols-outlined text-base align-middle" 
                                     
-                                    style="font-size: 1rem; vertical-align: middle; margin-right: 4px">scale</span>Poids
+                                    style="margin-right: 4px">scale</span>Poids
                                 de
                                 l'équipement</span>
-                            <span class="text-emerald"  id="eqWeightText" style="font-size: 0.85rem; font-weight: bold">0 /
+                            <span class="text-emerald font-bold text-sm" id="eqWeightText" >0 /
                                 0</span>
                         </div>
                         <div class="gauge-track"  
@@ -400,41 +359,37 @@
                     </div>
 
                     <div class="eq-create-field"   class="mb-4">
-                        <label class="text-amber" 
-                            style="display: flex; justify-content: space-between; align-items: center">
-                            <span><span class="material-symbols-outlined"  
-                                    style="font-size: 1rem; vertical-align: bottom; margin-right: 0.2rem">auto_awesome</span>
+                        <label class="text-amber flex items-center justify-between" >
+                            <span><span class="material-symbols-outlined text-base align-bottom"  
+                                    style="margin-right: 0.2rem">auto_awesome</span>
                                 Prix en Anomalies (Optionnel, Cumulatif)</span>
-                            <button type="button" id="addAnomalyPriceBtn"
-                                style="background: rgba(168, 85, 247, 0.2); border: 1px solid rgba(168, 85, 247, 0.4); color: #d8b4fe; border-radius: 4px; cursor: pointer; padding: 2px 8px; font-size: 0.8rem; display: flex; align-items: center; gap: 4px">
-                                <span class="material-symbols-outlined"   style="font-size: 1rem">add</span> Ajouter
+                            <button class="flex items-center gap-1 text-sm cursor-pointer rounded" type="button" id="addAnomalyPriceBtn"
+                                style="background: rgba(168, 85, 247, 0.2); border: 1px solid rgba(168, 85, 247, 0.4); color: #d8b4fe;   padding: 2px 8px">
+                                <span class="material-symbols-outlined text-base" >add</span> Ajouter
                             </button>
                         </label>
-                        <div class="mt-2" id="priceAnomaliesContainer"
-                            style="display: flex; flex-direction: column; gap: 0.5rem">
+                        <div class="mt-2 flex flex-col gap-2" id="priceAnomaliesContainer" >
                             <!-- Rows injected via JS -->
                         </div>
-                        <div class="text-muted"  style="font-size: 0.75rem;  margin-top: 0.3rem">Les anomalies s'ajoutent au
+                        <div class="text-muted mt-1 text-xs" >Les anomalies s'ajoutent au
                             prix en Or (paiement cumulatif).</div>
                     </div>
 
-                    <div class="eq-price-container"  
-                        style="margin-bottom: 1.5rem; padding: 0.8rem; background: rgba(245,158,11,0.05); border-radius: 8px; border: 1px dashed rgba(245,158,11,0.3)">
+                    <div class="eq-price-container mb-6 p-3 rounded-lg"  
+                        style="background: rgba(245,158,11,0.05);  border: 1px dashed rgba(245,158,11,0.3)">
                         <div class="flex-between flex-center"  >
-                            <span style="font-size: 0.85rem; color: #cbd5e1; font-weight: 500"><span class="material-symbols-outlined text-amber" 
+                            <span class="text-slate-300 font-medium text-sm" ><span class="material-symbols-outlined text-amber text-base align-middle" 
                                     
-                                    style="font-size: 1rem; vertical-align: middle; margin-right: 4px">payments</span>Prix
+                                    style="margin-right: 4px">payments</span>Prix
                                 en boutique</span>
-                            <span class="text-amber"  id="eqPriceText"
-                                style="font-size: 1.1rem; font-weight: bold;  display: flex; align-items: center; gap: 0.2rem">0
-                                <span class="material-symbols-outlined"  
-                                    style="font-size: 1.2rem">monetization_on</span></span>
+                            <span class="text-amber flex items-center gap-1 font-bold text-lg" id="eqPriceText" >0
+                                <span class="material-symbols-outlined text-xl" >monetization_on</span></span>
                         </div>
                     </div>
 
-                    <button class="eq-create-btn"  type="button" id="submitEquipmentBtn"  onclick="submitEquipment()"
-                        style="width: 100%; padding: 0.8rem; border-radius: 8px; background: #10b981; color: white; border: none; font-family: 'Outfit', sans-serif; font-weight: 600; font-size: 1rem; cursor: pointer; display: flex; align-items: center; justify-content: center; gap: 0.5rem; transition: background 0.2s">
-                        <span class="material-symbols-outlined"   style="font-size: 1.2rem">add</span>
+                    <button class="eq-create-btn text-white p-3 flex items-center justify-center w-full gap-2 font-semibold text-base cursor-pointer border-none rounded-lg"  type="button" id="submitEquipmentBtn"  onclick="submitEquipment()"
+                        style="background: #10b981;   font-family: 'Outfit', sans-serif;        transition: background 0.2s">
+                        <span class="material-symbols-outlined text-xl" >add</span>
                         Forger
                     </button>
                 </div>
@@ -443,7 +398,10 @@
     </div>
     <!-- Delete Confirmation Modal -->
 
-
+    <script type="module">
+        import * as api from '/js/api.js';
+        window.api = api;
+    </script>
     <script src="/js/utils.js"></script>
     <script src="/js/equipment-form.js"></script>
     <script src="/js/shop-admin.js?v=99"></script>

@@ -45,9 +45,57 @@ export async function deleteSpellAPI(id) {
     return globalFetch(`/api/spells-editor/${id}`, { method: 'DELETE' });
 }
 
+export async function loadEquipments(options = {}) {
+    const {
+        sources = ['/api/shop/templates'],
+        includeAnomalies = false,
+        isAdmin = false
+    } = options;
 
+    let results = [];
 
+    for (const source of sources) {
+        try {
+            const res = await globalFetch(source);
+            if (res.ok) {
+                const data = await res.json();
+                results = results.concat(data);
+            }
+        } catch (e) {
+            console.error(`Erreur chargement ${source}:`, e);
+        }
+    }
 
+    if (includeAnomalies) {
+        try {
+            const aUrl = isAdmin ? '/api/anomalies/all' : '/api/anomalies';
+            const aRes = await globalFetch(aUrl);
+            if (aRes.ok) {
+                const aData = await aRes.json();
+                aData.forEach(a => {
+                    a.isAnomalie = true;
+                    a.slot = 'ANOMALIE';
+                    a.rarity = 'RELIQUE';
+                });
+                results = results.concat(aData);
+            }
+        } catch(e) {
+            console.error('Erreur chargement anomalies:', e);
+        }
+    }
+
+    if (sources.length > 1) {
+        let map = new Map();
+        results.forEach(eq => {
+            if (!map.has(eq.name)) {
+                map.set(eq.name, eq);
+            }
+        });
+        results = Array.from(map.values());
+    }
+
+    return results;
+}
 
 
 

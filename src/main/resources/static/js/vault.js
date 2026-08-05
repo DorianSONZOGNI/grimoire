@@ -93,23 +93,7 @@ document.addEventListener('click', (e) => {
 async function loadEquipments() {
     try {
         const url = window.isAdmin ? '/api/equipments/all' : '/api/equipments';
-        const res = await globalFetch(url);
-        let eqData = await res.json();
-
-        let anomaliesData = [];
-        try {
-            const aUrl = window.isAdmin ? '/api/anomalies/all' : '/api/anomalies';
-            const aRes = await globalFetch(aUrl);
-            if (aRes.ok) anomaliesData = await aRes.json();
-        } catch (e) { console.error('Erreur chargement anomalies:', e); }
-
-        anomaliesData.forEach(a => {
-            a.isAnomalie = true;
-            a.slot = 'ANOMALIE';
-            a.rarity = 'RELIQUE';
-        });
-
-        pageState.allEquipments = eqData.concat(anomaliesData);
+        pageState.allEquipments = await api.loadEquipments({ sources: [url], includeAnomalies: true, isAdmin: window.isAdmin });
 
         // Pré-calculer le poids pour le tri
         pageState.allEquipments.forEach(eq => {

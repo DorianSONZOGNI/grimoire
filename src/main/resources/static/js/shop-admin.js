@@ -92,14 +92,7 @@ document.addEventListener('click', (e) => {
 // ===== API =====
 async function loadEquipments() {
     try {
-        const res = await globalFetch('/api/shop/templates');
-        if (!res.ok) {
-            if (res.status === 403 || res.status === 401) {
-                document.getElementById('vaultGrid').innerHTML = `<div class="text-error"><span class="material-symbols-outlined">error</span> Accès refusé.</div>`;
-            }
-            return;
-        }
-        pageState.allEquipments = await res.json();
+        pageState.allEquipments = await api.loadEquipments({ sources: ['/api/shop/templates'] });
         pageState.allEquipments.forEach(eq => {
             eq._weight = calculateWeight(eq);
         });
@@ -781,10 +774,7 @@ window.updateWeightUI = async function () {
 
 ;
 
-window.hideTooltipFixed = function () {
-    const tooltip = document.getElementById('globalFixedTooltip');
-    if (tooltip) tooltip.style.display = 'none';
-};
+
 
 
 

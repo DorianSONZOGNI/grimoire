@@ -34,7 +34,7 @@
     <link rel="stylesheet" href="/styles/sprites/spell-cards-animations.css?v=4">
 
     <link rel="stylesheet" href="/styles/ui/components.css?v=4">
-    <link rel="stylesheet" href="/styles/ui/utilities.css">
+    <link rel="stylesheet" href="/styles/ui/utilities.css?v=4">
 </head>
 
 <body>
@@ -148,7 +148,7 @@
                 </div>
 
                 <!-- Coût en Chaleur (Voie de la Destruction) -->
-                <div class="cost-card health text-amber"   id="heatCostCard" style="display: none; border-left-">
+                <div class="cost-card health text-amber"   id="heatCostCard" style="display: none; border-left: 3px solid #f59e0b;">
                     <div class="cost-card-header"   class="flex-center flex-center-gap">
                         <span class="material-symbols-outlined text-amber text-lg" >local_fire_department</span>
                         <span>Coût en Chaleur</span>
@@ -353,11 +353,11 @@
             <div class="panel-title"  >
                 <span>Grimoire des Sorts</span>
                 <div class="flex-center gap-2"  >
-                    <button class="btn btn-secondary items-center gap-1 text-sm"  type="button" id="btnToggleDisplayMode"  style="0.8rem;  display: inline-flex" onclick="toggleDisplayMode()" title="Basculer entre le mode défilement (hauteur de la Forge) et le mode étendu (tous les sorts)">
+                    <button class="btn btn-secondary items-center gap-1 text-sm"  type="button" id="btnToggleDisplayMode"  style="padding: 0.8rem; display: inline-flex" onclick="toggleDisplayMode()" title="Basculer entre le mode défilement (hauteur de la Forge) et le mode étendu (tous les sorts)">
                         <span class="material-symbols-outlined text-lg"   style="line-height: 1" id="toggleDisplayIcon">unfold_less</span>
                         <span id="toggleDisplayText">Mode Scroll</span>
                     </button>
-                    <button class="btn btn-secondary text-sm"  type="button"  style="0.8rem" onclick="loadSpells()">Actualiser</button>
+                    <button class="btn btn-secondary text-sm"  type="button"  style="padding: 0.8rem" onclick="loadSpells()">Actualiser</button>
                 </div>
             </div>
 
@@ -407,7 +407,7 @@
                             <span class="material-symbols-outlined text-purple text-md" >pets</span>
                             FILTRER PAR MUTATION
                         </label>
-                        <select class="w-full text-sm" id="filterMutation" onchange="renderFilteredSpells()" style="0.6rem;  background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; border-radius: 6px; cursor: pointer; outline: none">
+                        <select class="w-full text-sm" id="filterMutation" onchange="renderFilteredSpells()" style="padding: 0.6rem; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; border-radius: 6px; cursor: pointer; outline: none">
                             <option value="ALL">Toutes les mutations</option>
                             <option value="ONLY_MUTATIONS">Mutations uniquement</option>
                             <option value="NONE">Sans mutation</option>
@@ -421,7 +421,7 @@
                             <span class="material-symbols-outlined text-emerald text-md" >category</span>
                             NATURE D'EFFET
                         </label>
-                        <select class="w-full text-sm" id="filterEffect" style="0.6rem;  background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; border-radius: 6px; cursor: pointer; outline: none" onchange="renderFilteredSpells()">
+                        <select class="w-full text-sm" id="filterEffect" style="padding: 0.6rem; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; border-radius: 6px; cursor: pointer; outline: none" onchange="renderFilteredSpells()">
                             <option value="ALL">Tous effets</option>
                             <option value="GROUP_DAMAGE">Dégâts</option>
                             <option value="GROUP_HEAL">Soins</option>
@@ -450,7 +450,7 @@
                             <span class="material-symbols-outlined text-amber text-md" >workspace_premium</span>
                             PALIER (NIVEAU)
                         </label>
-                        <select class="w-full text-sm" id="filterLevel" style="0.6rem;  background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; border-radius: 6px; cursor: pointer; outline: none" onchange="renderFilteredSpells()">
+                        <select class="w-full text-sm" id="filterLevel" style="padding: 0.6rem; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; border-radius: 6px; cursor: pointer; outline: none" onchange="renderFilteredSpells()">
                             <option value="ALL">Tous niveaux</option>
                             <option value="1">Niveau 1</option>
                             <option value="2">Niveau 2</option>
@@ -464,7 +464,7 @@
                             <span class="material-symbols-outlined text-md"   style="color: #a78bfa">sort</span>
                             ORDONNANCEMENT
                         </label>
-                        <select class="w-full text-sm" id="sortBy" style="0.6rem;  background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; border-radius: 6px; cursor: pointer; outline: none" onchange="renderFilteredSpells()">
+                        <select class="w-full text-sm" id="sortBy" style="padding: 0.6rem; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; border-radius: 6px; cursor: pointer; outline: none" onchange="renderFilteredSpells()">
                             <option value="NEWEST">Plus récents</option>
                             <option value="NAME_ASC">Nom (A-Z)</option>
                             <option value="LEVEL_ASC">Niveau croissant</option>

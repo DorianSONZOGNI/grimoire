@@ -381,18 +381,7 @@ window.cancelCombatCast = cancelCombatCast;
 
 
 
-window.showNotif = function (message, isError = false) {
-    const notif = document.getElementById('combatNotif');
-    const text = document.getElementById('combatNotifText');
-    if (!notif || !text) return;
-    text.textContent = message;
-    notif.classList.remove('error');
-    if (isError) notif.classList.add('error');
-    notif.classList.add('show');
-    setTimeout(() => {
-        notif.classList.remove('show');
-    }, 3000);
-};
+
 
 async function loadAnomaliesCombat() {
     if (!window.allAnomaliesCombat || !Array.isArray(window.allAnomaliesCombat) || window.allAnomaliesCombat.length === 0) {
@@ -1230,65 +1219,8 @@ function closeBuyModal() {
 window.openBuyModal = openBuyModal;
 window.closeBuyModal = closeBuyModal;
 
-function generateEquipmentTooltipHTML(eq) {
-    if (!eq) return '';
-    const statsDef = [
-        { key: 'bonusHealthMax', label: 'PV', icon: 'favorite', color: '#ec4899' },
-        { key: 'bonusManaMax', label: 'Mana', icon: 'water_drop', color: '#38bdf8' },
-        { key: 'bonusPower', label: 'Pui', icon: 'auto_awesome', color: '#a855f7' },
-        { key: 'bonusStrength', label: 'For', icon: 'fitness_center', color: '#f43f5e' },
-        { key: 'bonusArmor', label: 'Arm', icon: 'shield', color: '#3b82f6' },
-        { key: 'bonusResistance', label: 'Rés', icon: 'shield', color: '#10b981' },
-        { key: 'bonusSpeed', label: 'Vit', icon: 'bolt', color: '#f59e0b' },
-        { key: 'bonusCrit', label: 'Crit', icon: 'gps_fixed', color: '#ef4444' },
-        { key: 'regenHealthPerTurn', label: 'PV/t', icon: 'healing', color: '#10b981' },
-        { key: 'regenManaPerTurn', label: 'Mana/t', icon: 'cyclone', color: '#38bdf8' },
-        { key: 'consumableHpPercent', label: 'PV Max', icon: 'favorite', color: '#ec4899', isPercent: true },
-        { key: 'consumableManaPercent', label: 'Mana Max', icon: 'water_drop', color: '#38bdf8', isPercent: true },
-        { key: 'consumableMissingHpPercent', label: 'PV Manq', icon: 'healing', color: '#f43f5e', isPercent: true },
-        { key: 'consumableMissingManaPercent', label: 'Mana Manq', icon: 'cyclone', color: '#a855f7', isPercent: true }
-    ];
-    let statsHtml = statsDef
-        .filter(s => eq[s.key] && eq[s.key] !== 0)
-        .map(s => {
-            const val = eq[s.key];
-            const isMalus = val < 0;
-            const sign = val > 0 ? '+' : '';
-            const suffix = s.isPercent ? '%' : '';
-            return `<div class="flex-between" style="gap: 1rem; margin-bottom: 0.3rem;">
-                <div class="flex-center text-muted" style="gap: 0.3rem;">
-                    <span class="material-symbols-outlined" style="color:${isMalus ? '#ef4444' : s.color}; font-size: 1rem;">${s.icon}</span>
-                    ${s.label}
-                </div>
-                <span style="font-weight: 600; color: ${isMalus ? '#ef4444' : '#fff'};">${sign}${val}${suffix}</span>
-            </div>`;
-        }).join('');
 
-    let effectHtml = '';
-    if (eq.specialEffect && eq.specialEffect !== 'NONE') {
-        const label = window.EFFECT_LABELS[eq.specialEffect] || eq.specialEffect;
-        const isCursed = eq.specialEffect.startsWith('CURSED_');
-        const icon = isCursed ? 'skull' : 'auto_awesome';
-        const color = isCursed ? '#9b2d2d' : '#c084fc';
 
-        effectHtml = `<div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
-            <div class="flex-center" style="color: ${color}; justify-content: space-between; gap: 0.3rem;">
-                <div class="flex-center" style="gap: 0.3rem;">
-                    <span class="material-symbols-outlined icon-sm">${icon}</span>
-                    ${label}
-                </div>
-                <span style="font-weight: 600; color: #fff;">${eq.specialEffectValue || ''}</span>
-            </div>
-        </div>`;
-    }
-
-    if (!statsHtml && !effectHtml) return `<div class="font-italic text-muted text-center" style="min-width: 150px; padding: 0.5rem;">Aucun attribut</div>`;
-
-    return `<div style="min-width: 150px; padding: 0.5rem;">
-        ${statsHtml}
-        ${effectHtml}
-    </div>`;
-}
 
 async function addLootedConsumable(itemName, iconElement) {
     if (!pageState.sessionId) return;
@@ -1682,8 +1614,8 @@ function updateUI(data) {
                                     const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
 
                                     let tooltipDataHtml = '';
-                                    if (eq && typeof generateEquipmentTooltipHTML === 'function') {
-                                        tooltipDataHtml = generateEquipmentTooltipHTML(eq);
+                                    if (eq && typeof window.getEquipmentTooltipHTML === 'function') {
+                                        tooltipDataHtml = window.getEquipmentTooltipHTML(eq);
                                     } else if (an && typeof getAnomalyTooltipHTML === 'function') {
                                         tooltipDataHtml = getAnomalyTooltipHTML(an, eqName);
                                     }
@@ -1815,7 +1747,7 @@ function updateUI(data) {
                         } else if (data.currentRoom.alterationType === 'ITEM') {
                             btnText = `Donner l'item et Toucher`;
                             let reqBadge = data.currentRoom.alterationRequiredItem ? createAnomalyBadgeHtml(data.currentRoom.alterationRequiredItem) : '"spécial"';
-                            warningHtml = `<div class="text-error text-center" style="font-size: 0.85rem; margin-top: 0.5rem; background: rgba(239, 68, 68, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3);"><span class="material-symbols-outlined align-middle icon-sm">warning</span> <strong>Attention :</strong> L'item ${reqBadge} sera définitivement détruit de l'inventaire d'un de vos héros s'il accepte cette offre.</div>`;
+                            warningHtml = `<div class="text-error text-center" style="font-size: 0.85rem; margin-top: 0.5rem; background: rgba(239, 68, 68, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3);"><span class="material-symbols-outlined align-middle icon-sm">warning</span> <strong>Attention :</strong> L'item ${reqBadge} sera définitivement détruit de l'inventaire.</div>`;
 
                             if (data.currentRoom.alterationRewardType === 'SPIRITUAL_XP') {
                                 specialItemHtml = `<div class="text-center" style="color: #38bdf8; font-size: 0.85rem; margin-top: 0.5rem; background: rgba(56, 189, 248, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.3);"><span class="material-symbols-outlined align-middle icon-sm">star</span> <strong>Récompense :</strong> Vous obtiendrez +${data.currentRoom.alterationSpiritualXpReward || 0} XP Spirituel !</div>`;
@@ -1873,7 +1805,7 @@ function updateUI(data) {
                                 if (eq) {
                                     const rarityColors = { 'COMMUN': '#94a3b8', 'INHABITUEL': '#22c55e', 'RARE': '#3b82f6', 'MYTHIQUE': '#f97316', 'LEGENDAIRE': '#eab308', 'EPIQUE': '#ef4444', 'RELIQUE': '#a855f7', 'MAUDIT': '#6b5252' };
                                     const rarityColor = getRarityColor(eq.rarity);
-                                    const tooltipDataHtml = typeof generateEquipmentTooltipHTML === 'function' ? generateEquipmentTooltipHTML(eq) : '';
+                                    const tooltipDataHtml = typeof window.getEquipmentTooltipHTML === 'function' ? window.getEquipmentTooltipHTML(eq) : '';
                                     const tooltipAttrs = tooltipDataHtml ? 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"' : '';
                                     altarRewardHtml = `<div class="text-center" style="margin-top: 0.5rem; background: rgba(192, 132, 252, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(192, 132, 252, 0.3);"><span style="color: #cbd5e1; margin-right: 0.5rem;"><strong>Récompense :</strong></span> <span class="font-bold relative" ${tooltipAttrs} style="color: ${rarityColor}; cursor: help; border-bottom: 1px dashed ${rarityColor};">${eq.name}${tooltipDataHtml ? `<template class="tooltip-data">${tooltipDataHtml}</template>` : ''}</span> <span class="text-sm font-bold" id="altarDropChance" style="margin-left: 0.5rem;"></span></div>`;
                                 } else {
@@ -2176,7 +2108,7 @@ function updateUI(data) {
 
                             let tooltipDataHtml = '';
                             if (entry.equipment) {
-                                tooltipDataHtml = generateEquipmentTooltipHTML(entry.equipment);
+                                tooltipDataHtml = window.getEquipmentTooltipHTML(entry.equipment);
                             } else if (entry.specialItemName) {
                                 let tooltipTitle = 'Objet Spécial';
                                 let tooltipDesc = 'Cet objet aura un effet unique !';

@@ -240,3 +240,65 @@ function getAnomalyTooltipHTML(aTemp, fallbackName) {
 
     return html;
 }
+
+function getEquipmentTooltipHTML(eq) {
+    if (!eq) return '';
+    const statsDef = [
+        { key: 'bonusHealthMax', label: 'PV', icon: 'favorite', color: '#ec4899' },
+        { key: 'bonusManaMax', label: 'Mana', icon: 'water_drop', color: '#38bdf8' },
+        { key: 'bonusPower', label: 'Puiss', icon: 'auto_awesome', color: '#a855f7' },
+        { key: 'bonusStrength', label: 'Force', icon: 'fitness_center', color: '#f43f5e' },
+        { key: 'bonusArmor', label: 'Armure', icon: 'shield', color: '#3b82f6' },
+        { key: 'bonusResistance', label: 'Résist', icon: 'shield', color: '#10b981' },
+        { key: 'bonusSpeed', label: 'Vitesse', icon: 'bolt', color: '#f59e0b' },
+        { key: 'bonusCrit', label: 'Crit', icon: 'gps_fixed', color: '#ef4444' },
+        { key: 'regenHealthPerTurn', label: 'PV/t', icon: 'healing', color: '#10b981' },
+        { key: 'regenManaPerTurn', label: 'Mana/t', icon: 'cyclone', color: '#38bdf8' },
+        { key: 'consumableHpPercent', label: 'PV Max', icon: 'favorite', color: '#ec4899', isPercent: true },
+        { key: 'consumableManaPercent', label: 'Mana Max', icon: 'water_drop', color: '#38bdf8', isPercent: true },
+        { key: 'consumableMissingHpPercent', label: 'PV Manq', icon: 'healing', color: '#f43f5e', isPercent: true },
+        { key: 'consumableMissingManaPercent', label: 'Mana Manq', icon: 'cyclone', color: '#a855f7', isPercent: true }
+    ];
+    let statsHtml = statsDef
+        .filter(s => eq[s.key] && eq[s.key] !== 0)
+        .map(s => {
+            const val = eq[s.key];
+            const isMalus = val < 0;
+            const sign = val > 0 ? '+' : '';
+            const suffix = s.isPercent ? '%' : '';
+            return `<div class="flex-between" style="gap: 1rem; margin-bottom: 0.3rem;">
+                <div class="flex-center text-muted" style="gap: 0.3rem;">
+                    <span class="material-symbols-outlined" style="color:${isMalus ? '#ef4444' : s.color}; font-size: 1rem;">${s.icon}</span>
+                    ${s.label}
+                </div>
+                <span style="font-weight: 600; color: ${isMalus ? '#ef4444' : '#fff'};">${sign}${val}${suffix}</span>
+            </div>`;
+        }).join('');
+
+    let effectHtml = '';
+    if (eq.specialEffect && eq.specialEffect !== 'NONE') {
+        const label = (window.EFFECT_LABELS && window.EFFECT_LABELS[eq.specialEffect]) || eq.specialEffect;
+        const isCursed = eq.specialEffect.startsWith('CURSED_');
+        const icon = isCursed ? 'skull' : 'auto_awesome';
+        const color = isCursed ? '#ef4444' : '#c084fc';
+
+        effectHtml = `<div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
+            <div class="flex-center" style="color: ${color}; justify-content: space-between; gap: 0.3rem;">
+                <div class="flex-center" style="gap: 0.3rem;">
+                    <span class="material-symbols-outlined icon-sm">${icon}</span>
+                    ${label}
+                </div>
+                <span style="font-weight: 600; color: #fff;">${eq.specialEffectValue || ''}</span>
+            </div>
+        </div>`;
+    }
+
+    if (!statsHtml && !effectHtml) return `<div class="font-italic text-muted text-center" style="min-width: 150px; padding: 0.5rem;">Aucun attribut</div>`;
+
+    return `<div style="min-width: 150px; padding: 0.5rem;">
+        ${statsHtml}
+        ${effectHtml}
+    </div>`;
+}
+
+window.getEquipmentTooltipHTML = getEquipmentTooltipHTML;

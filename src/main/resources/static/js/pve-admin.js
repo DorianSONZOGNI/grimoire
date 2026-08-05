@@ -1498,27 +1498,11 @@ async function loadAnomalies() {
 
 async function loadEquipments() {
     try {
-        const res1 = await globalFetch('/api/shop/templates');
-        const res2 = await globalFetch('/api/equipments/all');
-
-        let templates = [];
-        let instances = [];
-
-        if (res1.ok) templates = await res1.json();
-        if (res2.ok) instances = await res2.json();
-
-        // Merge and deduplicate by name, preferring templates
-        let merged = [...templates, ...instances];
-        let map = new Map();
-        merged.forEach(eq => {
-            if (!map.has(eq.name)) {
-                map.set(eq.name, eq);
-            }
-        });
+        let merged = await api.loadEquipments({ sources: ['/api/shop/templates', '/api/equipments/all'] });
 
         // Sort by rarity, then name
         const rarityOrder = { 'MAUDIT': 1, 'RELIQUE': 2, 'EPIQUE': 3, 'LEGENDAIRE': 4, 'MYTHIQUE': 5, 'RARE': 6, 'INHABITUEL': 7, 'COMMUN': 8 };
-        pageState.allEquipments = Array.from(map.values()).sort((a, b) => {
+        pageState.allEquipments = merged.sort((a, b) => {
             const rNameA = getRarityName(a.rarity);
             const rNameB = getRarityName(b.rarity);
             const rA = rarityOrder[rNameA] ?? 100;

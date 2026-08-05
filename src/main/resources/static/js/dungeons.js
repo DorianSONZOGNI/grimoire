@@ -569,7 +569,6 @@ window.selectCharacter = async function (id) {
                     <div class="equip-slot-icon"><span class="material-symbols-outlined ${slotInfo.extraClass}" style="color: ${slotInfo.color};">${slotInfo.icon}</span></div>
                     <div class="equip-slot-content">
                         <div class="text-sm" style="color: ${rarityColor}; font-weight: 600;">${eq.name}</div>
-                        <div class="text-muted text-xs">${slotName}</div>
                     </div>
                 </div>
             `;

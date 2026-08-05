@@ -15,7 +15,7 @@ Une analyse complète des fichiers HTML a révélé une forte utilisation de sty
 | `pve-admin.html` | 279 | **91** | -188 |
 | `index.html` | 135 | **~40** | -95 |
 | `armory.html` | 122 | **~30** | -92 |
-| `shop-admin.html` | 110 | **75** | -35 |
+| `shop-admin.html` | 110 | **~25** | -85 |
 
 ---
 

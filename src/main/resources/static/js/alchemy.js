@@ -319,7 +319,17 @@ function renderCauldron(r) {
             const statusIcon = hasEnough ? 'check_circle' : 'cancel';
 
             const style = getItemStyle(name, 'CONSUMABLE');
-            const tooltipData = buildEquipmentTooltipHTML(name, true);
+            const temp = pageState.allEquipmentTemplates.find(e => e.name === name);
+            const statsData = window.getEquipmentTooltipHTML(temp);
+            const slotInfo = getSlotInfo(temp);
+            const rarityColor = getRarityColor(temp.rarity);
+            const tooltipData = `
+                <div style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:${rarityColor}; border-bottom:1px solid ${rarityColor}40; padding-bottom:4px; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="display: flex; align-items: center; gap: 6px;">${temp.name}</span>
+                    <span class="material-symbols-outlined ${slotInfo.extraClass || ''}" style="font-size: 1.1rem; color: ${slotInfo.color};" title="${slotInfo.label}">${slotInfo.icon}</span>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:4px;">${statsData}</div>
+            `.replace(/"/g, '&quot;');
             const tooltipAttrs = tooltipData ? `data-color="${style.color}" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData}" style="cursor: help; background:rgba(0,0,0,0.4); padding:0.6rem; border-radius:8px; border:1px solid ${style.color}40; margin-bottom: 0.4rem;"` : `style="background:rgba(0,0,0,0.4); padding:0.6rem; border-radius:8px; border:1px solid ${style.color}40; margin-bottom: 0.4rem;"`;
 
             reqsHTML += `<div ${tooltipAttrs}>
@@ -416,7 +426,17 @@ function renderCauldron(r) {
         const tooltipData = buildAnomalyTooltipHTML(r.rewardName);
         resultTooltipAttr = `data-color="${resultColor}" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData}"`;
     } else if (resultType === 'EQUIPMENT' || resultType === 'CONSUMABLE') {
-        const tooltipData = buildEquipmentTooltipHTML(r.rewardName, resultType === 'CONSUMABLE');
+        const temp = pageState.allEquipmentTemplates.find(e => e.name === r.rewardName);
+        const statsData = window.getEquipmentTooltipHTML(temp);
+        const slotInfo = getSlotInfo(temp);
+        const rarityColor = getRarityColor(temp.rarity);
+        const tooltipData = `
+            <div style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:${rarityColor}; border-bottom:1px solid ${rarityColor}40; padding-bottom:4px; display: flex; justify-content: space-between; align-items: center;">
+                <span style="display: flex; align-items: center; gap: 6px;">${temp.name}</span>
+                <span class="material-symbols-outlined ${slotInfo.extraClass || ''}" style="font-size: 1.1rem; color: ${slotInfo.color};" title="${slotInfo.label}">${slotInfo.icon}</span>
+            </div>
+            <div style="display:flex; flex-direction:column; gap:4px;">${statsData}</div>
+        `.replace(/"/g, '&quot;');
         if (tooltipData) {
             resultTooltipAttr = `data-color="${resultColor}" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData}"`;
         }
@@ -807,66 +827,11 @@ function buildAnomalyTooltipHTML(name) {
 
 // STAT_DEFS → constants.js (window.STAT_DEFS)
 
-function buildEquipmentTooltipHTML(name, isConsumable = false) {
-    let temp = pageState.allEquipmentTemplates.find(e => e.name === name);
-    if (!temp) return '';
 
-    let statsHtml = '';
-    window.STAT_DEFS.forEach(def => {
-        if (temp[def.key]) {
-            const val = temp[def.key] > 0 ? '+' + temp[def.key] : temp[def.key];
-            const suffix = def.isPercent ? '%' : '';
-            statsHtml += `
-                        <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; min-width: 160px; gap: 16px; font-size: 0.85rem;">
-                            <span style="display:flex; align-items:center; gap:4px; color: ${def.color};">
-                                <span class="material-symbols-outlined icon-sm">${def.icon}</span>
-                                ${def.label}
-                            </span>
-                            <strong style="color: #f8fafc;">${val}${suffix}</strong>
-                        </div>
-                    `;
-        }
-    });
-
-    if (temp.specialEffect && temp.specialEffect !== 'NONE') {
-        const label = window.EFFECT_LABELS[temp.specialEffect] || temp.specialEffect;
-        const isCursed = temp.specialEffect.startsWith('CURSED_');
-        const icon = isCursed ? 'skull' : 'auto_awesome';
-        const color = isCursed ? '#ef4444' : '#c084fc';
-
-        statsHtml += `
-                    <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; min-width: 160px; gap: 16px; font-size: 0.85rem; margin-top: 4px; padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.1);">
-                        <span style="display:flex; align-items:center; gap:4px; color: ${color};">
-                            <span class="material-symbols-outlined icon-sm">${icon}</span>
-                            ${label}
-                        </span>
-                        <strong style="color: #f8fafc;">${temp.specialEffectValue}</strong>
-                    </div>
-                `;
-    }
-
-    if (!statsHtml && !isConsumable) return '';
-
-    const slotInfo = getSlotInfo(temp);
-    const rName = getRarityName(temp.rarity);
-    const rarityColor = getRarityColor(rName);
-
-    let html = `
-                <div style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:${rarityColor}; border-bottom:1px solid ${rarityColor}40; padding-bottom:4px; display: flex; justify-content: space-between; align-items: center;">
-                    <span style="display: flex; align-items: center; gap: 6px;">${temp.name}</span>
-                    <span class="material-symbols-outlined ${slotInfo.extraClass || ''}" style="font-size: 1.1rem; color: ${slotInfo.color};" title="${slotInfo.label}">${slotInfo.icon}</span>
-                </div>
-                <div style="display:flex; flex-direction:column; gap:4px;">${statsHtml}</div>
-            `;
-    return html.replace(/"/g, '&quot;');
-}
 
 ;
 
-window.hideTooltipFixed = function () {
-    const tooltip = document.getElementById('globalFixedTooltip');
-    if (tooltip) tooltip.style.display = 'none';
-};
+
 
 
 
