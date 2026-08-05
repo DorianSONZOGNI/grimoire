@@ -13,8 +13,8 @@ Une analyse complète des fichiers HTML a révélé une forte utilisation de sty
 |---------|-----------------------------------|------------|------------|
 | `vault.html` | 197 | **106** | -91 |
 | `pve-admin.html` | 279 | **91** | -188 |
-| `index.html` | 135 | **103** | -32 |
-| `armory.html` | 122 | **85** | -37 |
+| `index.html` | 135 | **~40** | -95 |
+| `armory.html` | 122 | **~30** | -92 |
 | `shop-admin.html` | 110 | **75** | -35 |
 
 ---
