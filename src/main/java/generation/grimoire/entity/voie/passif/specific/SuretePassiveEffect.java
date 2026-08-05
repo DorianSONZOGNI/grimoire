@@ -22,18 +22,19 @@ public class SuretePassiveEffect extends VoiePassiveEffect {
     @Override
     public void onSpellCostPaid(Personnage personnage, Spell spell, int manaPaid) {
         int storedPoints = personnage.getPassiveState("surete_points", 0);
-        int pointsGained = (int) Math.round(manaPaid * 0.20);
+        int pointsGained = (int) Math.round(manaPaid * 0.35);
         storedPoints += pointsGained;
-        System.out.println(personnage.getName() + " stocke " + pointsGained + " points de sûreté (20% de " + manaPaid + " mana). Total: " + storedPoints + "/100");
+        System.out.println(personnage.getName() + " stocke " + pointsGained + " points de sûreté (35% de " + manaPaid
+                + " mana). Total: " + storedPoints + "/100");
         if (storedPoints >= 100) {
             System.out.println(personnage.getName() + " obtient +15% de critique pour le prochain tour (Sûreté).");
-            
+
             generation.grimoire.entity.spell.type.effect.BuffDebuffEffect buff = new generation.grimoire.entity.spell.type.effect.BuffDebuffEffect();
             buff.setStatAffected(generation.grimoire.enumeration.StatType.CRIT);
             buff.setFlatValue(15);
             buff.setDuration(2); // Active during next turn (decays from 2 to 1 at start of next turn)
             personnage.getActiveBuffs().add(buff);
-            
+
             storedPoints -= 100;
         }
         personnage.setPassiveState("surete_points", storedPoints);
@@ -43,18 +44,20 @@ public class SuretePassiveEffect extends VoiePassiveEffect {
     public void onTurnStart(Personnage personnage) {
         int storedPoints = personnage.getPassiveState("surete_points", 0);
         storedPoints += 10;
-        System.out.println(personnage.getName() + " gagne passivement 10 points de sûreté (Total: " + storedPoints + "/100).");
-        
+        System.out.println(
+                personnage.getName() + " gagne passivement 10 points de sûreté (Total: " + storedPoints + "/100).");
+
         if (storedPoints >= 100) {
             // Déclenché passivement en début de tour : bonus supérieur (+25%)
             System.out.println(personnage.getName() + " obtient +25% de critique pour ce tour (Sûreté passive).");
-            
+
             generation.grimoire.entity.spell.type.effect.BuffDebuffEffect buff = new generation.grimoire.entity.spell.type.effect.BuffDebuffEffect();
             buff.setStatAffected(generation.grimoire.enumeration.StatType.CRIT);
             buff.setFlatValue(25);
-            buff.setDuration(1); // Active during the current turn (since turn start updates have already processed)
+            buff.setDuration(1); // Active during the current turn (since turn start updates have already
+                                 // processed)
             personnage.getActiveBuffs().add(buff);
-            
+
             storedPoints -= 100;
         }
         personnage.setPassiveState("surete_points", storedPoints);

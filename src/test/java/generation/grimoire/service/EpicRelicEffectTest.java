@@ -106,8 +106,8 @@ class EpicRelicEffectTest {
         // Let's assert > 0 for now.
         assertThat(hero.getHealthCurrent()).isGreaterThan(0);
 
-        // Equipment effect should be set to NONE
-        assertThat(cheatDeathEq.getSpecialEffect()).isEqualTo(EquipmentEffectType.NONE);
+        // Equipment effect should be marked as used on the hero
+        assertThat(hero.isUsedCheatDeath()).isTrue();
     }
 
     @Test

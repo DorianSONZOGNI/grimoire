@@ -88,7 +88,7 @@ public class WebSpellCreationController {
         passifsVoies.put("Voie de la Raison",
                 "Lancer un sort de Raison confère [c=speed]+1 Vitesse[/c] au tour suivant (max [c=warning]10 cumuls[/c], perdus si aucun n'est lancé).\nDe plus, le score de [c=crit]Critique[/c] est augmenté d'un montant égal au [c=speed]double de la Vitesse[/c].");
         passifsVoies.put("Voie de la Sûreté",
-                "Accumule des [c=shield]points de Sûreté[/c] (10/tour et 20% du [c=mana]mana[/c] dépensé).\nÀ [c=warning]100 points[/c], octroie [c=crit]+15% de Critique[/c], ou [c=crit]+25%[/c] si le palier est atteint passivement en début de tour.");
+                "Accumule des [c=shield]points de Sûreté[/c] (10/tour et 35% du [c=mana]mana[/c] dépensé).\nÀ [c=warning]100 points[/c], octroie [c=crit]+15% de Critique[/c], ou [c=crit]+25%[/c] si le palier est atteint passivement en début de tour.");
         passifsVoies.put("Voie de Trahison",
                 "Une fois par tour, vos [c=physic]attaques physiques[/c] infligent des dégâts bruts bonus [c=heal]qui vous soignent[/c] :\n[ul][li][c=brut]+10%[/c] de base[/li][li][c=brut]+15%[/c] si la cible a moins de 50% [c=pv]PV[/c][/li][li][c=brut]+10%[/c] si elle a un malus[/li][/ul]");
         passifsVoies.put("Voie de la Consolidation",
