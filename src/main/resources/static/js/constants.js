@@ -21,7 +21,8 @@ window.EFFECT_LABELS = {
     'CURSED_VULNERABILITY': 'Vulnérabilité (Dégâts subis % +)',
     'CURSED_HEALING_REDUCTION': 'Chair putréfiée (Soins % -)',
     'EXECUTION': 'Exécution (% Phy)',
-    'MAGIC_OVERLOAD': 'Surcharge (% Mag mana Act)'
+    'MAGIC_OVERLOAD': 'Surcharge (% Mag mana Act)',
+    'VITAL_ARCANE': 'Arcane Vitale (Régen X% mana)'
 };
 
 export const STAT_DEFS = [

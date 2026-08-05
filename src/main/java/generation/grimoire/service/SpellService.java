@@ -159,6 +159,18 @@ public class SpellService {
                 }
             }
         }
+
+        // Relique: Arcane Vitale (Régénération HP en % du mana consommé)
+        if (actualManaCost > 0) {
+            int vitalArcanePct = caster.getSpecialEffectValue(generation.grimoire.enumeration.EquipmentEffectType.VITAL_ARCANE);
+            if (vitalArcanePct > 0) {
+                int heal = (int) (actualManaCost * vitalArcanePct / 100.0);
+                if (heal > 0) {
+                    caster.heal(heal);
+                    System.out.println("✨ Arcane Vitale soigne " + caster.getName() + " de " + heal + " PV.");
+                }
+            }
+        }
         caster.setPassiveState("destruction_heat", currentHeat - actualHeatCost);
         
         String costMsg = "";
@@ -353,6 +365,18 @@ public class SpellService {
                 if (hpLoss > 0) {
                     caster.takeDamage(hpLoss, generation.grimoire.enumeration.DamageType.BRUT, caster);
                     System.out.println(caster.getName() + " subit " + hpLoss + " dégâts de malédiction (Hémorragie magique) !");
+                }
+            }
+        }
+
+        // Relique: Arcane Vitale (Régénération HP en % du mana consommé)
+        if (actualManaCost > 0) {
+            int vitalArcanePct = caster.getSpecialEffectValue(generation.grimoire.enumeration.EquipmentEffectType.VITAL_ARCANE);
+            if (vitalArcanePct > 0) {
+                int heal = (int) (actualManaCost * vitalArcanePct / 100.0);
+                if (heal > 0) {
+                    caster.heal(heal);
+                    System.out.println("✨ Arcane Vitale soigne " + caster.getName() + " de " + heal + " PV.");
                 }
             }
         }

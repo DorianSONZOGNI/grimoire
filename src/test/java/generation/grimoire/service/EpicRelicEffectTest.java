@@ -196,4 +196,29 @@ class EpicRelicEffectTest {
         // Bonus: 10% of 50 = 5 damage
         assertThat(enemy.getHealthCurrent()).isEqualTo(45); // 70 - (20 + 5) = 45
     }
+
+    @Test
+    void testVitalArcane() {
+        Equipment vitalArcaneEq = new Equipment();
+        vitalArcaneEq.setSpecialEffect(EquipmentEffectType.VITAL_ARCANE);
+        vitalArcaneEq.setSpecialEffectValue(50); // 50% mana consumed to HP
+        hero.getEquipments().add(vitalArcaneEq);
+
+        hero.setHealthMax(200);
+        hero.setHealthCurrent(100);
+        hero.setManaMax(200);
+        hero.setManaCurrent(200);
+
+        generation.grimoire.entity.Spell spell = new generation.grimoire.entity.Spell();
+        spell.setNom("Mana Drainer");
+        spell.setManaCost(100);
+
+        SpellService spellService = new SpellService(null, null, new generation.grimoire.service.PassiveDispatcher());
+        spellService.castSpell(spell, hero, enemy, null);
+
+        // 100 mana spent * 50% = 50 HP healed.
+        // 100 + 50 = 150 HP.
+        assertThat(hero.getHealthCurrent()).isEqualTo(150);
+        assertThat(hero.getManaCurrent()).isEqualTo(100);
+    }
 }
