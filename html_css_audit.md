@@ -2,7 +2,7 @@
 
 Une analyse complète des fichiers HTML a révélé une forte utilisation de styles CSS en ligne (attributs `style="..."`). Cela pose des problèmes de maintenabilité, gonfle la taille du DOM et augmente la consommation de tokens lors de l'édition du code.
 
-**Bilan global** : **650 styles inline** détectés (contre 1 088 initialement, soit **438 styles éliminés !**).
+**Bilan global** : **622 styles inline** détectés (contre 1 088 initialement, soit **466 styles éliminés !**).
 
 ---
 
@@ -10,8 +10,8 @@ Une analyse complète des fichiers HTML a révélé une forte utilisation de sty
 
 | Fichier | Nombre d'attributs `style` inline (Avant) | Maintenant | Différence |
 |---------|-----------------------------------|------------|------------|
-| `vault.html` | 197 | **111** | -86 |
-| `pve-admin.html` | 279 | **106** | -173 |
+| `vault.html` | 197 | **106** | -91 |
+| `pve-admin.html` | 279 | **91** | -188 |
 | `index.html` | 135 | **103** | -32 |
 | `armory.html` | 122 | **85** | -37 |
 | `shop-admin.html` | 110 | **75** | -35 |

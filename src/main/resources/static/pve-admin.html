@@ -25,7 +25,7 @@
 
     <app-navbar active-page="pve-admin"></app-navbar>
 
-    <main class="vault-container" style="width: 100%; max-width: 1200px; margin: 0 auto; padding: 2rem;">
+    <main class="vault-container admin-container">
 
         <div id="adminWarning"
             style="display: none; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3); color: #ef4444; padding: 1rem; border-radius: 8px; margin-bottom: 2rem; text-align: center;">
@@ -35,8 +35,7 @@
 
         <div id="adminContent" style="display: none;">
 
-            <div
-                style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 2rem; margin-bottom: 2rem; align-items: stretch;">
+            <div class="admin-split-layout">
                 <section class="admin-section" id="monsterFormPanel" style="margin: 0; transition: all 0.3s;">
                     <div class="admin-section-header">
                         <div class="admin-section-title">
@@ -106,8 +105,7 @@
                                             style="font-size: 1.1rem; color: #ec4899;">favorite</span> PV Max</label>
                                     <div class="flex-center gap-2">
                                         <input type="number" id="mHp" class="form-control" value="100" required="">
-                                        <div
-                                            style="display: flex; align-items: center; gap: 0.2rem; background: rgba(255,255,255,0.05); padding: 0.2rem 0.5rem; border-radius: 6px;">
+                                        <div class="compact-badge">
                                             <span class="text-xs text-muted"></span>
                                             <input type="number" id="mStartHpPct" class="form-control w-70p p-1" value="100" title="% PV au début"
                                                 required=""><span class="text-xs text-muted">%</span>
@@ -126,8 +124,7 @@
                                         Max</label>
                                     <div class="flex-center gap-2">
                                         <input type="number" id="mMana" class="form-control" value="0" required="">
-                                        <div
-                                            style="display: flex; align-items: center; gap: 0.2rem; background: rgba(255,255,255,0.05); padding: 0.2rem 0.5rem; border-radius: 6px;">
+                                        <div class="compact-badge">
                                             <span class="text-xs text-muted"></span>
                                             <input type="number" id="mStartManaPct" class="form-control w-70p p-1" value="100"
                                                 title="% Mana au début" required=""><span class="text-xs text-muted">%</span>
@@ -374,17 +371,15 @@
                     </div>
                 </section>
 
-                <div style="position: relative; height: 100%; min-height: 608px;">
-                    <section class="admin-section"
-                        style="position: absolute; inset: 0; margin: 0; display: flex; flex-direction: column; overflow: hidden;">
+                <div class="relative h-full min-h-600">
+                    <section class="admin-section absolute-panel-wrapper">
                         <div class="admin-section-header" style="flex-shrink: 0;">
                             <div class="admin-section-title">
                                 <span class="material-symbols-outlined text-danger">format_list_bulleted</span>
                                 Monstres Existants
                             </div>
                         </div>
-                        <div class="admin-section-content"
-                            style="flex: 1; display: flex; flex-direction: column; min-height: 0; padding-bottom: 0; padding-left: 0.5rem; padding-top: 0.5rem;">
+                        <div class="admin-section-content panel-content-flex">
                             <div
                                 style="display: flex; gap: 1rem; margin-bottom: 1.5rem; align-items: center; flex-wrap: wrap; flex-shrink: 0;">
                                 <div style="flex: 1; min-width: 200px; position: relative;">
@@ -558,8 +553,7 @@
             </div>
 
             <!-- === MUTATIONS === -->
-            <div
-                style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 2rem; margin-bottom: 2rem; align-items: stretch;">
+            <div class="admin-split-layout">
                 <section class="admin-section" id="mutationFormPanel" style="margin: 0; transition: all 0.3s;">
                     <div class="admin-section-header">
                         <div class="admin-section-title">
@@ -619,9 +613,8 @@
                     </div>
                 </section>
 
-                <div style="position: relative; height: 100%; min-height: 400px;">
-                    <section class="admin-section"
-                        style="position: absolute; inset: 0; margin: 0; display: flex; flex-direction: column; overflow: hidden;">
+                <div class="relative h-full min-h-400">
+                    <section class="admin-section absolute-panel-wrapper">
                         <div class="admin-section-header" style="flex-shrink: 0;">
                             <div class="admin-section-title">
                                 <span class="material-symbols-outlined"
@@ -629,8 +622,7 @@
                                 Mutations Existantes
                             </div>
                         </div>
-                        <div class="admin-section-content"
-                            style="flex: 1; display: flex; flex-direction: column; min-height: 0; padding-bottom: 0; padding-left: 0.5rem; padding-top: 0.5rem;">
+                        <div class="admin-section-content panel-content-flex">
                             <div id="mutationsList" class="pve-list custom-scrollbar"
                                 style="flex: 1; overflow-y: auto; min-height: 0; padding-right: 1rem; margin-right: -0.5rem; padding-bottom: 1rem;">
                                 <!-- Mutations rendered here -->
@@ -641,8 +633,7 @@
             </div>
 
             <!-- === DONJONS === -->
-            <div
-                style="display: grid; grid-template-columns: 1fr 1.5fr; gap: 2rem; margin-bottom: 2rem; align-items: stretch;">
+            <div class="admin-split-layout">
                 <section class="admin-section" id="dungeonFormPanel" style="margin: 0; transition: all 0.3s;">
                     <div class="admin-section-header">
                         <div class="admin-section-title">
@@ -813,9 +804,8 @@
                     </div>
                 </section>
 
-                <div style="position: relative; height: 100%; min-height: 400px;">
-                    <section class="admin-section"
-                        style="position: absolute; inset: 0; margin: 0; display: flex; flex-direction: column; overflow: hidden;">
+                <div class="relative h-full min-h-400">
+                    <section class="admin-section absolute-panel-wrapper">
                         <div class="admin-section-header"
                             style="flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem;">
                             <div class="admin-section-title">
@@ -913,8 +903,7 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="admin-section-content"
-                            style="flex: 1; display: flex; flex-direction: column; min-height: 0; padding-bottom: 0; padding-left: 0.5rem; padding-top: 0.5rem;">
+                        <div class="admin-section-content panel-content-flex">
                             <div class="pve-grid" id="dungeonsList"
                                 style="flex: 1; overflow-y: auto; min-height: 0; padding-bottom: 1.5rem; padding-left: 1rem; padding-top: 1.2rem; overflow-x: hidden;">
                                 <!-- Rempli par JS -->

@@ -684,8 +684,7 @@
                         </div>
                     </div>
 
-                    <div class="eq-weight-container"
-                        style="margin-bottom: 1rem; padding: 0.8rem; background: rgba(0,0,0,0.2); border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
+                    <div class="eq-weight-container weight-gauge-container">
                         <div
                             style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.4rem;">
                             <span style="font-size: 0.85rem; color: #cbd5e1; font-weight: 500;"><span
@@ -696,10 +695,8 @@
                             <span id="eqWeightText" style="font-size: 0.85rem; font-weight: bold; color: #10b981;">0 /
                                 0</span>
                         </div>
-                        <div class="gauge-track"
-                            style="height: 6px; background: rgba(255,255,255,0.1); border-radius: 3px; overflow: hidden;">
-                            <div id="eqWeightFill" class="gauge-fill hp"
-                                style="height: 100%; width: 0%; background: #10b981; transition: width 0.3s ease, background 0.3s ease;">
+                        <div class="gauge-track weight-gauge-track">
+                            <div id="eqWeightFill" class="gauge-fill hp weight-gauge-fill">
                             </div>
                         </div>
                     </div>
@@ -832,9 +829,8 @@
                             <span style="font-size: 0.75rem; color: #94a3b8;">Désactivez pour en faire un
                                 Matériau.</span>
                         </div>
-                        <label
-                            style="position: relative; display: block; width: 40px; height: 24px; margin: 0; flex-shrink: 0;">
-                            <input type="checkbox" id="anomalieMagicToggle" style="opacity: 0; width: 0; height: 0;"
+                        <label class="magic-toggle-switch">
+                            <input type="checkbox" id="anomalieMagicToggle" class="magic-toggle-input"
                                 checked="" onchange="
                                     this.nextElementSibling.style.backgroundColor = this.checked ? '#d946ef' : 'rgba(255, 255, 255, 0.1)';
                                     this.nextElementSibling.children[0].style.transform = this.checked ? 'translateX(16px)' : 'translateX(0)';
