@@ -136,7 +136,7 @@ window.deleteAnomalie = function (idsStr) {
 
     showModal({
         title: "Détruire l'anomalie ?",
-        body: `Voulez-vous vraiment détruire l'anomalie <strong style="color:#fff;">${eq.name}</strong> ?`,
+        body: `Voulez-vous vraiment détruire l'anomalie <strong class="text-white">${eq.name}</strong> ?`,
         icon: 'warning',
         confirmText: "Oui, détruire l'anomalie",
         onConfirm: async () => {
@@ -169,7 +169,7 @@ window.deleteEquipment = function (idsStr) {
 
     showModal({
         title: "Détruire l'équipement ?",
-        body: `Voulez-vous vraiment détruire <strong style="color:#fff;">${eq.name}</strong> ?<br><br>Vous récupérerez ${weightStr} <span class="material-symbols-outlined align-middle" style="font-size: 1rem; margin-top: -2px;">monetization_on</span>.`,
+        body: `Voulez-vous vraiment détruire <strong class="text-white">${eq.name}</strong> ?<br><br>Vous récupérerez ${weightStr} <span class="material-symbols-outlined align-middle" class="icon-sm mt-neg-1">monetization_on</span>.`,
         icon: 'warning',
         confirmText: `Oui, détruire`,
         onConfirm: async () => {
@@ -305,7 +305,7 @@ function renderGrid(equipments) {
     if (equipments.length === 0) {
         container.innerHTML = `
             <div class="vault-empty-state">
-                <span class="material-symbols-outlined opacity-50" style="font-size: 3rem;">search_off</span>
+                <span class="material-symbols-outlined opacity-50 icon-lg">search_off</span>
                 Aucun objet ne correspond à votre recherche.
             </div>`;
         return;
@@ -342,17 +342,17 @@ function renderGrid(equipments) {
             }
 
             const badgeHtml = (eq.stackCount && eq.stackCount > 1)
-                ? `<div class="font-bold absolute" style="top: -10px; right: -10px; background: #ef4444; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.85rem; border: 2px solid #1e293b; z-index: 5; box-shadow: 0 2px 4px rgba(0,0,0,0.5);">x${eq.stackCount}</div>`
+                ? `<div class="stack-count-badge">x${eq.stackCount}</div>`
                 : '';
 
             let adminOwnerHtml = '';
             if (window.isAdmin) {
                 if (eq.isTemplate || eq.ownerUsername === 'MODELE') {
-                    adminOwnerHtml = `<span class="flex-shrink-0 text-xxs font-bold text-error whitespace-nowrap align-middle inline-block" style="padding: 0.15rem 0.4rem; background: rgba(239, 68, 68, 0.2); border-radius: 4px; border: 1px solid rgba(239, 68, 68, 0.3);">[MODÈLE]</span>`;
+                    adminOwnerHtml = `<span class="admin-badge admin-badge-model">[MODÈLE]</span>`;
                 } else {
                     const displayOwner = eq._groupOwner || eq.ownerUsername;
                     if (displayOwner) {
-                        adminOwnerHtml = `<span class="flex-shrink-0 text-xxs whitespace-nowrap align-middle inline-block" style="padding: 0.15rem 0.4rem; background: ${displayOwner === window.currentUser?.username ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.1)'}; color: ${displayOwner === window.currentUser?.username ? '#34d399' : '#cbd5e1'}; border-radius: 4px; border: 1px solid ${displayOwner === window.currentUser?.username ? 'rgba(16, 185, 129, 0.3)' : 'rgba(255, 255, 255, 0.1)'};"><span class="material-symbols-outlined align-middle" style="font-size: 0.7rem; margin-right: 2px;">account_circle</span>${displayOwner}</span>`;
+                        adminOwnerHtml = `<span class="admin-badge ${displayOwner === window.currentUser?.username ? 'admin-badge-self' : 'admin-badge-other'}"><span class="material-symbols-outlined align-middle" style="font-size: 0.7rem; margin-right: 2px;">account_circle</span>${displayOwner}</span>`;
                     }
                 }
             }
@@ -364,7 +364,7 @@ function renderGrid(equipments) {
                     <div class="vault-card-name-group">
                         <div class="vault-card-slot">
                             <span class="material-symbols-outlined text-sm" style="color: ${spColor};">${typeIcon}</span>
-                            ${typeStr} <span style="opacity:0.5; margin-left:4px;">${eq.spiritualite}</span> <span style="opacity:0.5; margin-left:4px;">(Niv. ${eq.level || 1})</span>
+                            ${typeStr} <span class="opacity-50 ml-1">${eq.spiritualite}</span> <span class="opacity-50 ml-1">(Niv. ${eq.level || 1})</span>
                         </div>
                         <div class="vault-card-name flex-start-gap" style="color: #fdf4ff;">
                             <span class="material-symbols-outlined flex-shrink-0 opacity-80" style="font-size: 1.2rem; color: ${spColor}; margin-top: 2px;">${catIcon}</span>
@@ -453,17 +453,17 @@ function renderGrid(equipments) {
         }
 
         const badgeHtml = (eq.stackCount && eq.stackCount > 1)
-            ? `<div class="font-bold absolute" style="top: -10px; right: -10px; background: #ef4444; color: white; padding: 2px 8px; border-radius: 12px; font-size: 0.85rem; border: 2px solid #1e293b; z-index: 5; box-shadow: 0 2px 4px rgba(0,0,0,0.5);">x${eq.stackCount}</div>`
+            ? `<div class="stack-count-badge">x${eq.stackCount}</div>`
             : '';
 
         let adminOwnerHtml = '';
         if (window.isAdmin) {
             if (eq.isTemplate || eq.ownerUsername === 'MODELE') {
-                adminOwnerHtml = `<span class="flex-shrink-0 text-xxs font-bold text-error whitespace-nowrap align-middle inline-block" style="padding: 0.15rem 0.4rem; background: rgba(239, 68, 68, 0.2); border-radius: 4px; border: 1px solid rgba(239, 68, 68, 0.3);">[MODÈLE]</span>`;
+                adminOwnerHtml = `<span class="admin-badge admin-badge-model">[MODÈLE]</span>`;
             } else {
                 const displayOwner = eq._groupOwner || eq.ownerUsername;
                 if (displayOwner) {
-                    adminOwnerHtml = `<span class="flex-shrink-0 text-xxs whitespace-nowrap align-middle inline-block" style="padding: 0.15rem 0.4rem; background: ${displayOwner === window.currentUser?.username ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.1)'}; color: ${displayOwner === window.currentUser?.username ? '#34d399' : '#cbd5e1'}; border-radius: 4px; border: 1px solid ${displayOwner === window.currentUser?.username ? 'rgba(16, 185, 129, 0.3)' : 'rgba(255, 255, 255, 0.1)'};"><span class="material-symbols-outlined align-middle" style="font-size: 0.7rem; margin-right: 2px;">account_circle</span>${displayOwner}</span>`;
+                    adminOwnerHtml = `<span class="admin-badge ${displayOwner === window.currentUser?.username ? 'admin-badge-self' : 'admin-badge-other'}"><span class="material-symbols-outlined align-middle" style="font-size: 0.7rem; margin-right: 2px;">account_circle</span>${displayOwner}</span>`;
                 }
             }
         }
@@ -475,7 +475,7 @@ function renderGrid(equipments) {
                     <div class="vault-card-name-group">
                         <div class="vault-card-slot">
                             <span class="material-symbols-outlined ${slotInfo.extraClass || ''} text-sm" style="color: ${slotInfo.color};">${slotInfo.icon}</span>
-                            ${slotInfo.label} ${eq.rarity ? `<span style="opacity:0.5; margin-left:4px;">${typeof eq.rarity === 'object' ? eq.rarity.label : eq.rarity}</span>` : ''}
+                            ${slotInfo.label} ${eq.rarity ? `<span class="opacity-50 ml-1">${typeof eq.rarity === 'object' ? eq.rarity.label : eq.rarity}</span>` : ''}
                         </div>
                         <div class="vault-card-name word-break">
                             ${eq.name}
@@ -493,7 +493,7 @@ function renderGrid(equipments) {
                 </div>
                 
                 <div class="vault-card-stats">
-                    ${statsHtml || '<span style="color:#64748b; font-size:0.85rem; font-style:italic;">Aucune statistique de base</span>'}
+                    ${statsHtml || '<span class="text-muted text-sm font-italic">Aucune statistique de base</span>'}
                 </div>
                 ${effectHtml}
                 
@@ -560,7 +560,7 @@ window.addEventListener('authLoaded', async () => {
 window.openCreateEqModal = function () {
     pageState.editingEquipmentId = null;
     document.getElementById('equipModalTitle').innerHTML = 'Forger un objet';
-    document.getElementById('submitEquipmentBtn').innerHTML = '<span class="material-symbols-outlined" style="font-size: 1.2rem;">add</span> Forger';
+    document.getElementById('submitEquipmentBtn').innerHTML = '<span class="material-symbols-outlined icon-md">add</span> Forger';
     resetEqForm();
     document.getElementById('equipCreateModal').classList.add('show');
     updateWeightUI();
@@ -579,7 +579,7 @@ window.editEquipment = function (id) {
     if (!eq) return;
 
     document.getElementById('equipModalTitle').innerHTML = 'Modifier un objet';
-    document.getElementById('submitEquipmentBtn').innerHTML = '<span class="material-symbols-outlined" style="font-size: 1.2rem;">save</span> Enregistrer';
+    document.getElementById('submitEquipmentBtn').innerHTML = '<span class="material-symbols-outlined icon-md">save</span> Enregistrer';
 
     document.getElementById('eqName').value = eq.name || '';
     if (document.getElementById('eqAvailableInShop')) {

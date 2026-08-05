@@ -52,7 +52,7 @@ export function createAnomalyBadgeHtml(anomalyName, showName = false) {
 
     const nameHtml = showName ? `<span style="margin-left: 0.2rem;">${anomalyName}</span>` : '';
     const padStyle = showName ? 'padding: 0.1rem 0.4rem;' : 'padding: 0.3rem;';
-    return `<span class="anomaly-badge align-middle" ${tooltipAttrs} ${extraAttrs} style="display: inline-flex; align-items: center; justify-content: center; border: 1px solid ${tColor}; background: linear-gradient(${tColor}25, ${tColor}25), rgba(15,23,42,0.8); color: ${tColor}; ${padStyle} border-radius: 6px; font-weight:bold; cursor: help;"><template class="tooltip-data">${tooltipDataHtml}</template><span class="material-symbols-outlined" style="font-size: 1.2rem;">${catIcon}</span>${nameHtml}</span>`;
+    return `<span class="anomaly-badge align-middle" ${tooltipAttrs} ${extraAttrs} style="display: inline-flex; align-items: center; justify-content: center; border: 1px solid ${tColor}; background: linear-gradient(${tColor}25, ${tColor}25), rgba(15,23,42,0.8); color: ${tColor}; ${padStyle} border-radius: 6px; font-weight:bold; cursor: help;"><template class="tooltip-data">${tooltipDataHtml}</template><span class="material-symbols-outlined icon-md">${catIcon}</span>${nameHtml}</span>`;
 }
 
 // getSlotInfo and RARITY_COLORS → utils.js
@@ -367,7 +367,7 @@ window.promptFlee = function () {
         const goldLoss = 10 * roomsCount;
         const fleePenaltySpan = document.getElementById('fleePenaltyText');
         if (fleePenaltySpan) {
-            fleePenaltySpan.innerHTML = `Perte d'xp et Or : <span style="color: #f87171;">-${xpLossPerHero} XP normal</span> (par perso) et <span style="color: #fbbf24;">-${goldLoss} Or</span> (au total).`;
+            fleePenaltySpan.innerHTML = `Perte d'xp et Or : <span style="color: #f87171;">-${xpLossPerHero} XP normal</span> (par perso) et <span class="text-warning">-${goldLoss} Or</span> (au total).`;
         }
     }, 100);
 };
@@ -1175,7 +1175,7 @@ async function buyMerchantItem(lootIndex) {
         if (!res.ok) {
             const errorText = await res.text();
             window.showNotif(errorText || "Vous n'avez pas les ressources nécessaires.", true);
-            if (btn) btn.innerHTML = '<span class="material-symbols-outlined" style="font-size: 1.2rem;">shopping_cart</span>Acheter';
+            if (btn) btn.innerHTML = '<span class="material-symbols-outlined icon-md">shopping_cart</span>Acheter';
             return;
         }
         const data = await res.json();
@@ -1211,7 +1211,7 @@ function openBuyModal(idx, itemName, goldPrice = 0, specialItemName = null) {
 
     ui.showModal({
         title: 'Acheter cet objet ?',
-        body: `Voulez-vous vraiment acheter <strong style="color:#fff;">${itemName}</strong> ?<br>Cela coûtera ${costText}.`,
+        body: `Voulez-vous vraiment acheter <strong class="text-white">${itemName}</strong> ?<br>Cela coûtera ${costText}.`,
         icon: 'shopping_cart',
         confirmText: 'Oui, acheter',
         onConfirm: async () => {
@@ -1274,7 +1274,7 @@ function generateEquipmentTooltipHTML(eq) {
         effectHtml = `<div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
             <div class="flex-center" style="color: ${color}; justify-content: space-between; gap: 0.3rem;">
                 <div class="flex-center" style="gap: 0.3rem;">
-                    <span class="material-symbols-outlined" style="font-size: 1rem;">${icon}</span>
+                    <span class="material-symbols-outlined icon-sm">${icon}</span>
                     ${label}
                 </div>
                 <span style="font-weight: 600; color: #fff;">${eq.specialEffectValue || ''}</span>
@@ -1415,7 +1415,7 @@ function updateUI(data) {
         const totalXpLoss = 10 * nbRooms;
         const xpLossPerHero = Math.floor(totalXpLoss / nbHeroes);
         const goldLoss = 10 * nbRooms;
-        fleePenaltySpan.innerHTML = `Perte d'xp et Or : <span style="color: #f87171;">-${xpLossPerHero} XP normal</span> (par perso) et <span style="color: #fbbf24;">-${goldLoss} Or</span> (au total).`;
+        fleePenaltySpan.innerHTML = `Perte d'xp et Or : <span style="color: #f87171;">-${xpLossPerHero} XP normal</span> (par perso) et <span class="text-warning">-${goldLoss} Or</span> (au total).`;
     }
 
     // Players
@@ -1529,8 +1529,8 @@ function updateUI(data) {
                             let baseContent = '';
                             if (goldAmount > 0) {
                                 baseContent += `
-                                    <span class="material-symbols-outlined" style="color: #f59e0b;">monetization_on</span>
-                                    <span style="color: #f59e0b;">+${goldAmount} Or</span>
+                                    <span class="material-symbols-outlined text-warning">monetization_on</span>
+                                    <span class="text-warning">+${goldAmount} Or</span>
                                 `;
                             }
                             if (goldAmount > 0 && xpAmount > 0) {
@@ -1538,8 +1538,8 @@ function updateUI(data) {
                             }
                             if (xpAmount > 0) {
                                 baseContent += `
-                                    <span class="material-symbols-outlined" style="color: #38bdf8;">upgrade</span>
-                                    <span style="color: #38bdf8;">+${xpAmount} XP</span>
+                                    <span class="material-symbols-outlined text-info">upgrade</span>
+                                    <span class="text-info">+${xpAmount} XP</span>
                                 `;
                             }
 
@@ -1564,8 +1564,8 @@ function updateUI(data) {
                             // Ajout de l'Or si présent
                             if (bossBonusGold > 0) {
                                 innerContent += `
-                                    <span class="material-symbols-outlined" style="color: #f59e0b;">monetization_on</span>
-                                    <span style="color: #f59e0b;">+${bossBonusGold} Or</span>
+                                    <span class="material-symbols-outlined text-warning">monetization_on</span>
+                                    <span class="text-warning">+${bossBonusGold} Or</span>
                                 `;
                             }
 
@@ -1714,7 +1714,7 @@ function updateUI(data) {
                             if (expAmount > 0) {
                                 gainedItemsHtml = `
                                     <div class="flex-center" style="background: rgba(0, 0, 0, 0.4); border: 1px solid #38bdf880; padding: 0.8rem 1rem; border-radius: 8px; color: #38bdf8; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8); animation-delay: 0.1s;">
-                                        <span class="material-symbols-outlined" style="color: #38bdf8;">upgrade</span> +${expAmount} XP
+                                        <span class="material-symbols-outlined text-info">upgrade</span> +${expAmount} XP
                                     </div>
                                 ` + gainedItemsHtml;
                             }
@@ -1722,7 +1722,7 @@ function updateUI(data) {
                             if (goldAmount > 0) {
                                 gainedItemsHtml = `
                                     <div class="flex-center" style="background: rgba(0, 0, 0, 0.4); border: 1px solid #f59e0b80; padding: 0.8rem 1rem; border-radius: 8px; color: #f59e0b; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
-                                        <span class="material-symbols-outlined" style="color: #f59e0b;">monetization_on</span> +${goldAmount} Or
+                                        <span class="material-symbols-outlined text-warning">monetization_on</span> +${goldAmount} Or
                                     </div>
                                 ` + gainedItemsHtml;
                             }
@@ -1793,35 +1793,35 @@ function updateUI(data) {
 
                             warningHtml = '';
                             if (hp < 0) {
-                                warningHtml += `<div class="text-error text-center" style="font-size: 0.85rem; margin-top: 0.5rem; background: rgba(239, 68, 68, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3);"><span class="material-symbols-outlined align-middle" style="font-size: 1rem;">favorite</span> <strong>Coût :</strong> ${hp} PV (par héros)</div>`;
+                                warningHtml += `<div class="text-error text-center" style="font-size: 0.85rem; margin-top: 0.5rem; background: rgba(239, 68, 68, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3);"><span class="material-symbols-outlined align-middle icon-sm">favorite</span> <strong>Coût :</strong> ${hp} PV (par héros)</div>`;
                             } else if (hp > 0) {
-                                warningHtml += `<div class="text-success text-center" style="font-size: 0.85rem; margin-top: 0.5rem; background: rgba(16, 185, 129, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.3);"><span class="material-symbols-outlined align-middle" style="font-size: 1rem;">favorite</span> <strong>Gain :</strong> +${hp} PV (par héros)</div>`;
+                                warningHtml += `<div class="text-success text-center" style="font-size: 0.85rem; margin-top: 0.5rem; background: rgba(16, 185, 129, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.3);"><span class="material-symbols-outlined align-middle icon-sm">favorite</span> <strong>Gain :</strong> +${hp} PV (par héros)</div>`;
                             }
 
                             if (xp > 0) {
-                                warningHtml += `<div class="text-center" style="color: #38bdf8; font-size: 0.85rem; margin-top: 0.5rem; background: rgba(56, 189, 248, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.3);"><span class="material-symbols-outlined align-middle" style="font-size: 1rem;">star</span> <strong>Récompense :</strong> +${xp} XP de Voie (par héros)</div>`;
+                                warningHtml += `<div class="text-center" style="color: #38bdf8; font-size: 0.85rem; margin-top: 0.5rem; background: rgba(56, 189, 248, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.3);"><span class="material-symbols-outlined align-middle icon-sm">star</span> <strong>Récompense :</strong> +${xp} XP de Voie (par héros)</div>`;
                             } else if (xp < 0) {
-                                warningHtml += `<div class="text-error text-center" style="font-size: 0.85rem; margin-top: 0.5rem; background: rgba(239, 68, 68, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3);"><span class="material-symbols-outlined align-middle" style="font-size: 1rem;">star</span> <strong>Perte :</strong> ${xp} XP de Voie (par héros)</div>`;
+                                warningHtml += `<div class="text-error text-center" style="font-size: 0.85rem; margin-top: 0.5rem; background: rgba(239, 68, 68, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3);"><span class="material-symbols-outlined align-middle icon-sm">star</span> <strong>Perte :</strong> ${xp} XP de Voie (par héros)</div>`;
                             }
 
                             if (data.currentRoom.alterationRewardType === 'SPIRITUAL_XP') {
-                                specialItemHtml = `<div class="text-center" style="color: #c084fc; font-size: 0.85rem; margin-top: 0.5rem; background: rgba(192, 132, 252, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(192, 132, 252, 0.3);"><span class="material-symbols-outlined align-middle" style="font-size: 1rem;">star</span> <strong>Récompense :</strong> Vous obtiendrez +${data.currentRoom.alterationSpiritualXpReward || 0} XP Spirituel !</div>`;
+                                specialItemHtml = `<div class="text-center" style="color: #c084fc; font-size: 0.85rem; margin-top: 0.5rem; background: rgba(192, 132, 252, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(192, 132, 252, 0.3);"><span class="material-symbols-outlined align-middle icon-sm">star</span> <strong>Récompense :</strong> Vous obtiendrez +${data.currentRoom.alterationSpiritualXpReward || 0} XP Spirituel !</div>`;
                             } else if (data.currentRoom.alterationRewardType === 'SPECIAL_ITEM') {
                                 let badge = data.currentRoom.alterationSpecialItemReward ? createAnomalyBadgeHtml(data.currentRoom.alterationSpecialItemReward) : '"Item"';
-                                specialItemHtml = `<div class="text-center" style="color: #d946ef; font-size: 0.85rem; margin-top: 0.5rem; background: rgba(217, 70, 239, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(217, 70, 239, 0.3);"><span class="material-symbols-outlined align-middle" style="font-size: 1rem;">star</span> <strong>Récompense :</strong> Vous obtiendrez l'item spécial ${badge}</div>`;
+                                specialItemHtml = `<div class="text-center" style="color: #d946ef; font-size: 0.85rem; margin-top: 0.5rem; background: rgba(217, 70, 239, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(217, 70, 239, 0.3);"><span class="material-symbols-outlined align-middle icon-sm">star</span> <strong>Récompense :</strong> Vous obtiendrez l'item spécial ${badge}</div>`;
                             }
 
                             btnText = `Accepter`;
                         } else if (data.currentRoom.alterationType === 'ITEM') {
                             btnText = `Donner l'item et Toucher`;
                             let reqBadge = data.currentRoom.alterationRequiredItem ? createAnomalyBadgeHtml(data.currentRoom.alterationRequiredItem) : '"spécial"';
-                            warningHtml = `<div class="text-error text-center" style="font-size: 0.85rem; margin-top: 0.5rem; background: rgba(239, 68, 68, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3);"><span class="material-symbols-outlined align-middle" style="font-size: 1rem;">warning</span> <strong>Attention :</strong> L'item ${reqBadge} sera définitivement détruit de l'inventaire d'un de vos héros s'il accepte cette offre.</div>`;
+                            warningHtml = `<div class="text-error text-center" style="font-size: 0.85rem; margin-top: 0.5rem; background: rgba(239, 68, 68, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3);"><span class="material-symbols-outlined align-middle icon-sm">warning</span> <strong>Attention :</strong> L'item ${reqBadge} sera définitivement détruit de l'inventaire d'un de vos héros s'il accepte cette offre.</div>`;
 
                             if (data.currentRoom.alterationRewardType === 'SPIRITUAL_XP') {
-                                specialItemHtml = `<div class="text-center" style="color: #38bdf8; font-size: 0.85rem; margin-top: 0.5rem; background: rgba(56, 189, 248, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.3);"><span class="material-symbols-outlined align-middle" style="font-size: 1rem;">star</span> <strong>Récompense :</strong> Vous obtiendrez +${data.currentRoom.alterationSpiritualXpReward || 0} XP Spirituel !</div>`;
+                                specialItemHtml = `<div class="text-center" style="color: #38bdf8; font-size: 0.85rem; margin-top: 0.5rem; background: rgba(56, 189, 248, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.3);"><span class="material-symbols-outlined align-middle icon-sm">star</span> <strong>Récompense :</strong> Vous obtiendrez +${data.currentRoom.alterationSpiritualXpReward || 0} XP Spirituel !</div>`;
                             } else if (data.currentRoom.alterationRewardType === 'SPECIAL_ITEM') {
                                 let badge = data.currentRoom.alterationSpecialItemReward ? createAnomalyBadgeHtml(data.currentRoom.alterationSpecialItemReward) : '"Item"';
-                                specialItemHtml = `<div class="text-center" style="color: #d946ef; font-size: 0.85rem; margin-top: 0.5rem; background: rgba(217, 70, 239, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(217, 70, 239, 0.3);"><span class="material-symbols-outlined align-middle" style="font-size: 1rem;">star</span> <strong>Récompense :</strong> Vous obtiendrez l'item spécial ${badge}</div>`;
+                                specialItemHtml = `<div class="text-center" style="color: #d946ef; font-size: 0.85rem; margin-top: 0.5rem; background: rgba(217, 70, 239, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(217, 70, 239, 0.3);"><span class="material-symbols-outlined align-middle icon-sm">star</span> <strong>Récompense :</strong> Vous obtiendrez l'item spécial ${badge}</div>`;
                             }
 
                             specialItemHtml += `<div class="text-center" id="itemAlterationCheckContainer" style="margin-top: 1rem; width: 100%;">
@@ -1861,7 +1861,7 @@ function updateUI(data) {
                         } else if (data.currentRoom.alterationType === 'AUTEL') {
                             btnText = `Sacrifier l'Objet`;
                             let spColor = getSpiritualiteColor(data.currentRoom.altarRequiredSpirituality);
-                            warningHtml = `<div class="text-center" style="color: ${spColor}; font-size: 0.85rem; margin-top: 0.5rem; background: ${spColor}1A; padding: 0.5rem; border-radius: 6px; border: 1px solid ${spColor}4D;"><span class="material-symbols-outlined align-middle" style="font-size: 1rem;">warning</span> <strong>Offrande :</strong> Cet autel réclame le sacrifice d'un <strong>Magique</strong> de spiritualité <strong>${data.currentRoom.altarRequiredSpirituality}</strong>.</div>`;
+                            warningHtml = `<div class="text-center" style="color: ${spColor}; font-size: 0.85rem; margin-top: 0.5rem; background: ${spColor}1A; padding: 0.5rem; border-radius: 6px; border: 1px solid ${spColor}4D;"><span class="material-symbols-outlined align-middle icon-sm">warning</span> <strong>Offrande :</strong> Cet autel réclame le sacrifice d'un <strong>Magique</strong> de spiritualité <strong>${data.currentRoom.altarRequiredSpirituality}</strong>.</div>`;
 
                             let altarRewardHtml = '';
                             if (data.currentRoom.altarRewardType === 'GOLD') {
@@ -2118,7 +2118,7 @@ function updateUI(data) {
                             const goldPrice = entry.priceGold != null ? entry.priceGold : (entry.probability || 0);
 
                             if (goldPrice > 0) {
-                                priceHtml += `<span class="flex-center" style="color: #f59e0b; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem;">monetization_on</span>${goldPrice}</span>`;
+                                priceHtml += `<span class="flex-center" style="color: #f59e0b; gap: 0.3rem;"><span class="material-symbols-outlined text-lg">monetization_on</span>${goldPrice}</span>`;
                             }
                             if (entry.priceSpecialItemName) {
                                 let priceColor = '#d946ef';
@@ -2130,11 +2130,11 @@ function updateUI(data) {
                                         priceIcon = anPrice.category ? (getCategoryIcon(anPrice.category)) : 'star';
                                     }
                                 }
-                                priceHtml += `<span class="flex-center" style="color: ${priceColor}; gap: 0.3rem; margin-left: ${goldPrice > 0 ? '0.8rem' : '0'};"><span class="material-symbols-outlined" style="font-size: 1.1rem;">${priceIcon}</span>1x ${entry.priceSpecialItemName}</span>`;
+                                priceHtml += `<span class="flex-center" style="color: ${priceColor}; gap: 0.3rem; margin-left: ${goldPrice > 0 ? '0.8rem' : '0'};"><span class="material-symbols-outlined text-lg">${priceIcon}</span>1x ${entry.priceSpecialItemName}</span>`;
                             }
 
                             if (priceHtml === '') {
-                                priceHtml = `<span class="flex-center text-success" style="gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem;">sell</span>Gratuit</span>`;
+                                priceHtml = `<span class="flex-center text-success" style="gap: 0.3rem;"><span class="material-symbols-outlined text-lg">sell</span>Gratuit</span>`;
                             }
 
                             let isPurchased = false;
@@ -2158,18 +2158,18 @@ function updateUI(data) {
                             let buttonHtml = '';
                             if (isPurchased) {
                                 buttonHtml = `<button class="flex-center" id="btn_buy_${idx}" type="button" style="background: linear-gradient(135deg, #ef4444, #b91c1c); color: white; border: none; border-radius: 8px; padding: 0.6rem 1.2rem; font-weight: 700; font-size: 1rem; cursor: not-allowed; gap: 0.5rem; opacity: 0.7;">
-                                                  <span class="material-symbols-outlined" style="font-size: 1.2rem;">remove_shopping_cart</span>
+                                                  <span class="material-symbols-outlined icon-md">remove_shopping_cart</span>
                                                   Vendu
                                               </button>`;
                             } else if (!canAfford) {
                                 buttonHtml = `<button class="flex-center" id="btn_buy_${idx}" type="button" style="background: rgba(148, 163, 184, 0.2); color: #94a3b8; border: 1px solid rgba(148, 163, 184, 0.3); border-radius: 8px; padding: 0.6rem 1.2rem; font-weight: 700; font-size: 1rem; cursor: not-allowed; gap: 0.5rem; transition: all 0.2s ease;" title="Fonds insuffisants">
-                                                  <span class="material-symbols-outlined" style="font-size: 1.2rem;">shopping_cart</span>
+                                                  <span class="material-symbols-outlined icon-md">shopping_cart</span>
                                                   Acheter
                                               </button>`;
                             } else {
                                 let specialItemNameArg = entry.priceSpecialItemName ? `'${entry.priceSpecialItemName.replace(/'/g, "\\'").replace(/"/g, '&quot;')}'` : 'null';
                                 buttonHtml = `<button class="flex-center" id="btn_buy_${idx}" type="button" onclick="openBuyModal(${idx}, '${nameHtml.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', ${goldPrice}, ${specialItemNameArg})" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='none'" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 8px; padding: 0.6rem 1.2rem; font-weight: 700; font-size: 1rem; cursor: pointer; gap: 0.5rem; transition: all 0.2s ease; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);">
-                                                  <span class="material-symbols-outlined" style="font-size: 1.2rem;">shopping_cart</span>
+                                                  <span class="material-symbols-outlined icon-md">shopping_cart</span>
                                                   Acheter
                                               </button>`;
                             }
@@ -2562,11 +2562,11 @@ function generateFighterHtml(c, isHero, skipBadges = false) {
     const crit = getEffectiveStat('CRIT');
 
     let statsHtml = `<div class="hero-stats-row" style="margin-bottom: 0.5rem; justify-content: center; display: flex; flex-wrap: wrap; gap: 0.3rem;">`;
-    statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #a855f7;">auto_awesome</span>${pui} Pui</span>`;
+    statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined text-purple">auto_awesome</span>${pui} Pui</span>`;
     statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #f43f5e;">fitness_center</span>${forPhy} For</span>`;
     statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #3b82f6;">shield</span>${arm} Arm</span>`;
     statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined text-success">shield</span>${res} Rés</span>`;
-    statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #f59e0b;">bolt</span>${vit} Vit</span>`;
+    statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined text-warning">bolt</span>${vit} Vit</span>`;
     statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined text-error">gps_fixed</span>${crit}% Crit</span>`;
 
     if (c.voie && c.voie.nom && c.voie.nom.toLowerCase().includes('destruction')) {
@@ -2813,15 +2813,15 @@ function generateFighterHtml(c, isHero, skipBadges = false) {
                         <div style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:${color}; border-bottom: 1px solid ${color}; padding-bottom: 4px;">${mut.nom} <span class="text-xs" style="color: #cbd5e1;">(Lvl ${mut.level || 1})</span></div>
                         <div style="font-style:italic; color:#cbd5e1; margin-top:8px; max-width: 350px; line-height: 1.4; white-space: normal !important; word-wrap: break-word;">${mut.description || 'Une mutation monstrueuse.'}</div>
                     </template>
-                    <span class="material-symbols-outlined" style="font-size: 1.1rem;">${icon}</span>
+                    <span class="material-symbols-outlined text-lg">${icon}</span>
                 </div>
             `;
         });
         mutationsHtml += `</div>`;
     }
 
-    let hpRegenBadge = (!isHero && c.regenHp && c.regenHp > 0) ? `<span title="Régénère ${c.regenHp} PV au début du tour" style="cursor: help; margin-left: 0.5rem; font-size: 0.7rem; background: rgba(244, 114, 182, 0.15); color: #f472b6; padding: 0.1rem 0.35rem; border-radius: 4px; border: 1px solid rgba(244, 114, 182, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.15rem; vertical-align: text-bottom;"><span class="material-symbols-outlined" style="font-size: 0.85rem;">healing</span>${c.regenHp} PV/t</span>` : '';
-    let manaRegenBadge = (!isHero && c.regenMana && c.regenMana > 0) ? `<span title="Régénère ${c.regenMana} Mana au début du tour" style="cursor: help; margin-left: 0.5rem; font-size: 0.7rem; background: rgba(125, 211, 252, 0.15); color: #7dd3fc; padding: 0.1rem 0.35rem; border-radius: 4px; border: 1px solid rgba(125, 211, 252, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.15rem; vertical-align: text-bottom;"><span class="material-symbols-outlined" style="font-size: 0.85rem;">opacity</span>${c.regenMana} MP/t</span>` : '';
+    let hpRegenBadge = (!isHero && c.regenHp && c.regenHp > 0) ? `<span title="Régénère ${c.regenHp} PV au début du tour" style="cursor: help; margin-left: 0.5rem; font-size: 0.7rem; background: rgba(244, 114, 182, 0.15); color: #f472b6; padding: 0.1rem 0.35rem; border-radius: 4px; border: 1px solid rgba(244, 114, 182, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.15rem; vertical-align: text-bottom;"><span class="material-symbols-outlined text-sm">healing</span>${c.regenHp} PV/t</span>` : '';
+    let manaRegenBadge = (!isHero && c.regenMana && c.regenMana > 0) ? `<span title="Régénère ${c.regenMana} Mana au début du tour" style="cursor: help; margin-left: 0.5rem; font-size: 0.7rem; background: rgba(125, 211, 252, 0.15); color: #7dd3fc; padding: 0.1rem 0.35rem; border-radius: 4px; border: 1px solid rgba(125, 211, 252, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.15rem; vertical-align: text-bottom;"><span class="material-symbols-outlined text-sm">opacity</span>${c.regenMana} MP/t</span>` : '';
 
     let avatarHtml = isHero ? '🧙‍♂️' : '👹';
     if (isHero && c.voie && c.voie.nom) {
@@ -3615,7 +3615,7 @@ window.renderOverlayInventory = function (containerId) {
     list.innerHTML += `
         <div class="flex-center" style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px; padding: 0.8rem; gap: 0.8rem; margin-bottom: 0.5rem;">
             <span class="material-symbols-outlined" style="font-size: 1.5rem; color: #f59e0b;">monetization_on</span>
-            <div style="flex: 1;">
+            <div class="flex-1">
                 <div class="text-sm" style="color: #f8fafc; font-weight: 600;">Or du compte</div>
                 <div style="color: #f59e0b; font-weight: 700; font-size: 1.1rem;">${goldAmount}</div>
             </div>
@@ -3637,7 +3637,7 @@ window.renderOverlayInventory = function (containerId) {
         list.innerHTML += `
             <div class="${hoverClass} flex-center" ${onClickAttr} style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 0.8rem; gap: 0.8rem; transition: all 0.2s; ${cursorStyle};">
                 <span class="material-symbols-outlined" style="font-size: 1.5rem; color: ${slotInfo.color};">${slotInfo.icon}</span>
-                <div style="flex: 1;">
+                <div class="flex-1">
                     <div class="text-sm" style="color: #f8fafc; font-weight: 600;">${c.name}</div>
                     <div class="text-xs text-muted" style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin-bottom: 4px;">
                         ${c.bonusHealthMax ? `<span style="display:inline-flex; align-items:center; color:#ec4899;" title="PV">+${c.bonusHealthMax}<span class="material-symbols-outlined" style="font-size:0.85rem; margin-left:2px;">favorite</span></span>` : ''}
@@ -3674,7 +3674,7 @@ window.openConsumeModal = function (consumableId, consumableName) {
 
     ui.showModal({
         title: 'Consommer un objet',
-        body: `Qui doit utiliser <strong style="color:#fff;">${consumableName}</strong> ?<br><br><div style="display: flex; flex-direction: column; width: 100%;">${btnContainerHtml}</div>`,
+        body: `Qui doit utiliser <strong class="text-white">${consumableName}</strong> ?<br><br><div style="display: flex; flex-direction: column; width: 100%;">${btnContainerHtml}</div>`,
         icon: 'science',
         hideConfirm: true,
         cancelText: 'Fermer'

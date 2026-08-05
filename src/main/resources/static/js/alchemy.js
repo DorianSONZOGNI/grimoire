@@ -265,7 +265,7 @@ function renderCauldron(r) {
                                 <span style="font-weight: 600; font-size:0.9rem; color: #fff;">${qty}x ${name}</span>
                             </div>
                             <div style="display:flex; align-items:center; gap:0.3rem; color: ${statusColor}; font-size: 0.85rem; font-weight: 600;">
-                                <span class="material-symbols-outlined" style="font-size: 1.1rem;">${statusIcon}</span>
+                                <span class="material-symbols-outlined text-lg">${statusIcon}</span>
                                 ${matching.length}/${qty}
                             </div>
                         </div>`;
@@ -329,7 +329,7 @@ function renderCauldron(r) {
                                 <span style="font-weight: 600; font-size:0.9rem; color: #fff;">${qty}x ${name}</span>
                             </div>
                             <div style="display:flex; align-items:center; gap:0.3rem; color: ${statusColor}; font-size: 0.85rem; font-weight: 600;">
-                                <span class="material-symbols-outlined" style="font-size: 1.1rem;">${statusIcon}</span>
+                                <span class="material-symbols-outlined text-lg">${statusIcon}</span>
                                 ${matching.length}/${qty}
                             </div>
                         </div>`;
@@ -445,7 +445,7 @@ function renderCauldron(r) {
 
                     <div style="width: 100%; max-width: 500px; background: linear-gradient(135deg, ${resultColor}15, rgba(0,0,0,0.2)); border: 1px solid ${resultColor}50; border-radius: 12px; padding: 1rem; text-align: center; ${resultTooltipAttr ? 'cursor: help;' : ''}" ${resultTooltipAttr}>
                         <span style="display:flex; justify-content:center; align-items:center; gap:0.3rem; font-size: 0.8rem; color: ${resultColor}; text-transform: uppercase; font-weight: 700; letter-spacing: 1px; margin-bottom: 0.3rem;">
-                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">${resultIcon}</span>
+                            <span class="material-symbols-outlined text-lg">${resultIcon}</span>
                             ${resultLabel}
                         </span>
                         <strong style="font-size: 1.2rem; color: ${resultColor};">${quantityDisplay}</strong>
@@ -819,7 +819,7 @@ function buildEquipmentTooltipHTML(name, isConsumable = false) {
             statsHtml += `
                         <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; min-width: 160px; gap: 16px; font-size: 0.85rem;">
                             <span style="display:flex; align-items:center; gap:4px; color: ${def.color};">
-                                <span class="material-symbols-outlined" style="font-size: 1rem;">${def.icon}</span>
+                                <span class="material-symbols-outlined icon-sm">${def.icon}</span>
                                 ${def.label}
                             </span>
                             <strong style="color: #f8fafc;">${val}${suffix}</strong>
@@ -837,7 +837,7 @@ function buildEquipmentTooltipHTML(name, isConsumable = false) {
         statsHtml += `
                     <div style="display: flex; justify-content: space-between; align-items: center; width: 100%; min-width: 160px; gap: 16px; font-size: 0.85rem; margin-top: 4px; padding-top: 4px; border-top: 1px solid rgba(255,255,255,0.1);">
                         <span style="display:flex; align-items:center; gap:4px; color: ${color};">
-                            <span class="material-symbols-outlined" style="font-size: 1rem;">${icon}</span>
+                            <span class="material-symbols-outlined icon-sm">${icon}</span>
                             ${label}
                         </span>
                         <strong style="color: #f8fafc;">${temp.specialEffectValue}</strong>

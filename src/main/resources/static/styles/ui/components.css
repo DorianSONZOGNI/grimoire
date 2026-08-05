@@ -575,12 +575,24 @@
     box-shadow: 0 4px 20px rgba(0, 0, 0, 0.5);
     z-index: 100;
     display: none;
-    max-height: 330px;
+    max-height: 350px;
     overflow-y: auto;
 }
 
 .custom-select-wrapper.open {
     z-index: 99999 !important;
+}
+
+
+.cs-label {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.cs-icon {
+    font-size: 1.1rem;
+    /* Adjust to match standard material-symbols-outlined inside buttons/labels if needed, or leave inherited */
 }
 
 .custom-option {
@@ -936,7 +948,9 @@
 .page-header-subtitle {
     color: var(--text-muted);
     font-size: 0.9rem;
-}/* ===== Base Modals (Toolbox) ===== */
+}
+
+/* ===== Base Modals (Toolbox) ===== */
 .equip-modal-overlay,
 .vault-modal-overlay {
     position: fixed;
@@ -986,7 +1000,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    background: rgba(0,0,0,0.2);
+    background: rgba(0, 0, 0, 0.2);
 }
 
 .equip-modal-title {

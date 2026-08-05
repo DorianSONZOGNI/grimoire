@@ -164,12 +164,12 @@ function addAnomalyRow(selectedName = '', qty = 1) {
             const spiriColor = selA.spiritualite ? getSpiritualiteColor(selA.spiritualite) : '#a855f7';
             displayLabel = `<span class="material-symbols-outlined cs-icon" style="color: ${spiriColor};">${catIcon}</span> ${selectedName} (Niv. ${selA.level || 1})`;
         } else {
-            displayLabel = `<span class="material-symbols-outlined cs-icon" style="color: #a855f7;">star</span> ${selectedName}`;
+            displayLabel = `<span class="material-symbols-outlined cs-icon text-purple">star</span> ${selectedName}`;
         }
     }
 
     row.innerHTML = `
-        <div class="custom-select-wrapper" style="flex: 1;">
+        <div class="custom-select-wrapper flex-1">
             <div class="custom-select-trigger flex-between" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 0.6rem; cursor: pointer; align-items: center; width: 100%;">
                 <span class="cs-label flex-center" style="color: #cbd5e1; font-size: 0.85rem; gap: 0.3rem;">${displayLabel}</span>
                 <span class="material-symbols-outlined" style="color: #64748b; font-size: 1.1rem;">expand_more</span>
@@ -184,7 +184,7 @@ function addAnomalyRow(selectedName = '', qty = 1) {
             <input type="number" class="anomaly-qty-input" value="${qty}" min="1" style="width: 60px; padding: 0.5rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-family: 'Outfit', sans-serif;">
         </div>
         <button type="button" class="btn-remove-row" style="background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5; border-radius: 6px; cursor: pointer; padding: 0.4rem; display: flex; justify-content: center; align-items: center;">
-            <span class="material-symbols-outlined" style="font-size: 1rem;">delete</span>
+            <span class="material-symbols-outlined icon-sm">delete</span>
         </button>
     `;
 
@@ -205,7 +205,7 @@ function deleteEquipment(id) {
 
     showModal({
         title: "Détruire l'équipement ?",
-        body: `Voulez-vous vraiment détruire l'équipement <strong style="color:#fff;">${eq.name}</strong> ?<br><br>Cette action est définitive (pour la template de la boutique).`,
+        body: `Voulez-vous vraiment détruire l'équipement <strong class="text-white">${eq.name}</strong> ?<br><br>Cette action est définitive (pour la template de la boutique).`,
         icon: 'warning',
         confirmText: `Oui, détruire`,
         onConfirm: async () => {
@@ -256,7 +256,7 @@ function renderGrid(equipments) {
     if (equipments.length === 0) {
         container.innerHTML = `
             <div class="vault-empty-state">
-                <span class="material-symbols-outlined opacity-50" style="font-size: 3rem;">search_off</span>
+                <span class="material-symbols-outlined opacity-50 icon-lg">search_off</span>
                 Aucun objet ne correspond à votre recherche.
             </div>`;
         return;
@@ -358,7 +358,7 @@ function renderGrid(equipments) {
 
                     <div class="shop-admin-row-price">
                         ${(() => {
-                        let priceHtml = `${displayPrice} <span class="material-symbols-outlined" style="font-size: 1.1rem;">monetization_on</span>`;
+                        let priceHtml = `${displayPrice} <span class="material-symbols-outlined text-lg">monetization_on</span>`;
                         if (eq.priceAnomalies && Object.keys(eq.priceAnomalies).length > 0) {
                             let anos = [];
                             for (const [n, q] of Object.entries(eq.priceAnomalies)) {
@@ -378,10 +378,10 @@ function renderGrid(equipments) {
 
                     <div class="shop-admin-row-actions">
                         ${window.isAdmin ? `<button class="vault-btn-edit" onclick="editEquipment(${eq.id})" title="Modifier l'objet" style="padding: 0.4rem; border-radius: 6px;">
-                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">edit</span>
+                            <span class="material-symbols-outlined text-lg">edit</span>
                         </button>` : ''}
                         ${(window.isAdmin || eq.ownerUsername === window.currentUser?.username) ? `<button class="vault-btn-delete" onclick="deleteEquipment(${eq.id})" title="Détruire l'objet" style="padding: 0.4rem; border-radius: 6px;">
-                            <span class="material-symbols-outlined" style="font-size: 1.1rem;">delete</span>
+                            <span class="material-symbols-outlined text-lg">delete</span>
                         </button>` : ''}
                     </div>
                 </div>
@@ -458,7 +458,7 @@ window.addEventListener('authLoaded', () => {
 window.openCreateEqModal = function () {
     pageState.editingEquipmentId = null;
     document.getElementById('equipModalTitle').innerHTML = 'Forger un objet';
-    document.getElementById('submitEquipmentBtn').innerHTML = '<span class="material-symbols-outlined" style="font-size: 1.2rem;">add</span> Forger';
+    document.getElementById('submitEquipmentBtn').innerHTML = '<span class="material-symbols-outlined icon-md">add</span> Forger';
     resetEqForm();
     document.getElementById('equipCreateModal').classList.add('show');
     updateWeightUI();
@@ -477,7 +477,7 @@ window.editEquipment = function (id) {
     if (!eq) return;
 
     document.getElementById('equipModalTitle').innerHTML = 'Modifier un objet';
-    document.getElementById('submitEquipmentBtn').innerHTML = '<span class="material-symbols-outlined" style="font-size: 1.2rem;">save</span> Enregistrer';
+    document.getElementById('submitEquipmentBtn').innerHTML = '<span class="material-symbols-outlined icon-md">save</span> Enregistrer';
 
     document.getElementById('eqName').value = eq.name || '';
     if (document.getElementById('eqAvailableInShop')) {
@@ -775,7 +775,7 @@ window.updateWeightUI = async function () {
     const priceEl = document.getElementById('eqPriceText');
     if (priceEl) {
         const displayPrice = price % 1 === 0 ? price : price.toFixed(1);
-        priceEl.innerHTML = `${displayPrice} <span class="material-symbols-outlined" style="font-size: 1.2rem;">monetization_on</span>`;
+        priceEl.innerHTML = `${displayPrice} <span class="material-symbols-outlined icon-md">monetization_on</span>`;
     }
 }
 

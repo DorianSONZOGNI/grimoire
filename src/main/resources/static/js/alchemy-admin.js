@@ -256,7 +256,7 @@ async function updateRewardNameInput() {
                 secretDungeons.forEach(d => {
                     if (!defaultSecrets.some(ds => ds.name === d.requiredSecret)) {
                         secretOptions += `<div class="custom-option" data-value="${d.requiredSecret}">
-                                    <span class="material-symbols-outlined cs-icon" style="color: #f59e0b;">key</span>
+                                    <span class="material-symbols-outlined cs-icon text-warning">key</span>
                                     ${d.requiredSecret} <span style="color: #64748b; font-size: 0.8rem;">(Donjon: ${d.name})</span>
                                 </div>`;
                     }
@@ -268,7 +268,7 @@ async function updateRewardNameInput() {
 
         if (!secretOptions) {
             secretOptions = `<div class="custom-option" data-value="" style="pointer-events: none; opacity: 0.5;">
-                        <span class="material-symbols-outlined cs-icon" style="color: #64748b;">warning</span>
+                        <span class="material-symbols-outlined cs-icon text-muted">warning</span>
                         Aucun secret configur\u00e9 dans les donjons
                     </div>`;
         }
@@ -278,7 +278,7 @@ async function updateRewardNameInput() {
                     <div class="custom-select-wrapper" style="z-index: 9;">
                         <div class="custom-select-trigger" style="background: rgba(15,23,42,0.6); padding: 0.6rem; border-radius: 8px;">
                             <span class="cs-label" style="font-size: 0.9rem;">
-                                <span class="material-symbols-outlined cs-icon" style="color: #f59e0b;">key</span>
+                                <span class="material-symbols-outlined cs-icon text-warning">key</span>
                                 Choisir un secret...
                             </span>
                             <span class="material-symbols-outlined" style="color: #64748b; font-size: 1.1rem;">expand_more</span>
@@ -324,7 +324,7 @@ function addRequirement(type, selectedName = '', qty = 1) {
                 const spiriColor = selA.spiritualite ? getSpiritualiteColor(selA.spiritualite) : '#a855f7';
                 displayLabel = `<span class="material-symbols-outlined cs-icon" style="color: ${spiriColor};">${catIcon}</span> ${selectedName} (Niv. ${selA.level || 1})`;
             } else {
-                displayLabel = `<span class="material-symbols-outlined cs-icon" style="color: #a855f7;">star</span> ${selectedName}`;
+                displayLabel = `<span class="material-symbols-outlined cs-icon text-purple">star</span> ${selectedName}`;
             }
         }
     } else {
@@ -342,7 +342,7 @@ function addRequirement(type, selectedName = '', qty = 1) {
                 const slotInfo = getSlotInfo(selC);
                 displayLabel = `<span class="material-symbols-outlined cs-icon ${slotInfo.extraClass || ''}" style="color: ${slotInfo.color};">${slotInfo.icon}</span> ${selectedName}`;
             } else {
-                displayLabel = `<span class="material-symbols-outlined cs-icon" style="color: #10b981;">inventory_2</span> ${selectedName}`;
+                displayLabel = `<span class="material-symbols-outlined cs-icon text-success">inventory_2</span> ${selectedName}`;
             }
         }
     }
@@ -360,7 +360,7 @@ function addRequirement(type, selectedName = '', qty = 1) {
                 </div>
                 <input type="number" value="${qty}" min="1" class="req-qty form-control" style="flex: 1; padding: 0.6rem; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); color: white; border-radius: 8px;">
                 <button type="button" class="btn-remove-row" style="background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5; border-radius: 6px; cursor: pointer; padding: 0.6rem; display: flex; justify-content: center; align-items: center;">
-                    <span class="material-symbols-outlined" style="font-size: 1.1rem;">delete</span>
+                    <span class="material-symbols-outlined text-lg">delete</span>
                 </button>
             `;
 
@@ -443,7 +443,7 @@ window.renderRecipesList = function () {
                 const tooltipData = getAnomalyTooltipHTML(aTemp, r.rewardName);
                 rewardHtml = `<span class="anomaly-badge" style="border: 1px solid ${spiriColor}; background: linear-gradient(${spiriColor}25, ${spiriColor}25), #1e293b; color: ${spiriColor}; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block; cursor: help;" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; color: ${spiriColor};">${catIcon}</span> ${r.rewardQuantity}x ${r.rewardName}</span>`;
             } else {
-                rewardHtml = `<span style="color: #10b981;">${r.rewardType} - ${r.rewardQuantity}x ${r.rewardName} (Niv. ${r.rewardLevel})</span>`;
+                rewardHtml = `<span class="text-success">${r.rewardType} - ${r.rewardQuantity}x ${r.rewardName} (Niv. ${r.rewardLevel})</span>`;
             }
         } else if (r.rewardType === 'GIVE_CONSUMABLE') {
             const consTemp = pageState.allConsumables.find(c => c.name === r.rewardName);
@@ -461,7 +461,7 @@ window.renderRecipesList = function () {
             const meta = window.DEFAULT_SECRETS_META.find(s => s.name === r.rewardName) || { icon: "key", color: "#f59e0b" };
             rewardHtml = `<span class="anomaly-badge" style="border: 1px solid ${meta.color}; background: linear-gradient(${meta.color}25, ${meta.color}25), #1e293b; color: ${meta.color}; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block;"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; color: ${meta.color};">${meta.icon}</span> Secret - ${r.rewardName} <span style="opacity: 0.8; font-size: 0.85em;">(Niv. ${r.rewardLevel || 1})</span></span>`;
         } else {
-            rewardHtml = `<span style="color: #f59e0b;">${r.rewardType} - ${r.rewardQuantity}x ${r.rewardName}</span>`;
+            rewardHtml = `<span class="text-warning">${r.rewardType} - ${r.rewardQuantity}x ${r.rewardName}</span>`;
         }
 
         div.innerHTML = `
@@ -476,7 +476,7 @@ window.renderRecipesList = function () {
                         </div>
                     </div>
                     <div style="font-size: 0.85rem; margin-top: 0.5rem; display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
-                        <strong>Coût :</strong> ${reqs.length > 0 ? reqs.join(' ') : '<span style="color: #f59e0b;">Gratuit</span>'}
+                        <strong>Coût :</strong> ${reqs.length > 0 ? reqs.join(' ') : '<span class="text-warning">Gratuit</span>'}
                     </div>
                     <div style="font-size: 0.85rem; margin-top: 0.5rem; display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
                         <strong>Résultat :</strong> ${rewardHtml}

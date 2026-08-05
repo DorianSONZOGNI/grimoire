@@ -50,7 +50,7 @@ function resetEqForm() {
     const slotInput = document.getElementById('eqSlot');
     if (slotInput) {
         slotInput.value = '';
-        document.getElementById('eqSlotLabel').innerHTML = 'Choisir un slot...';
+        document.getElementById('eqSlotLabel').innerHTML = 'Type';
     }
 }
 

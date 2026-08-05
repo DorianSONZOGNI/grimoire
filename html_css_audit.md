@@ -2,7 +2,8 @@
 
 Une analyse complète des fichiers HTML a révélé une forte utilisation de styles CSS en ligne (attributs `style="..."`). Cela pose des problèmes de maintenabilité, gonfle la taille du DOM et augmente la consommation de tokens lors de l'édition du code.
 
-**Bilan global** : **622 styles inline** détectés (contre 1 088 initialement, soit **466 styles éliminés !**).
+**Bilan HTML** : **622 styles inline** détectés (contre 1 088 initialement, soit **466 styles éliminés !**).
+**Bilan JavaScript** : Plus de **350** attributs `style` en dur (générant du HTML statique) ont été remplacés par des classes utilitaires dans les templates littéraux des fichiers JS (`vault.js`, `pve-admin.js`, etc.). Les styles restants sont quasi-exclusivement des couleurs calculées dynamiquement.
 
 ---
 

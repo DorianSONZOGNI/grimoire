@@ -75,8 +75,8 @@ function generateStandHtml(eq) {
     const rName = getRarityName(eq.rarity);
     let rarityColor = getRarityColor(rName);
     if (rarityColor === '#ef4444' && isConsumable) rarityColor = '#c084fc';
-    const promoBadge = isPromo ? `<div class="text-xs font-bold absolute" style="top: -10px; right: -10px; background: #ef4444; color: white; padding: 0.2rem 0.5rem; border-radius: 8px; transform: rotate(15deg); box-shadow: 0 4px 6px rgba(0,0,0,0.3);">-20%</div>` : '';
-    const oldPriceHtml = isPromo ? `<span class="text-xs text-error" style="text-decoration: line-through; opacity: 0.7;">${oldPriceStr}</span>` : '';
+    const promoBadge = isPromo ? `<div class="text-xs font-bold absolute promo-badge">-20%</div>` : '';
+    const oldPriceHtml = isPromo ? `<span class="text-xs text-error old-price">${oldPriceStr}</span>` : '';
 
     let isHighRarity = !isConsumable && (rName !== 'COMMUN' && rName !== 'INHABITUEL');
 
@@ -107,13 +107,13 @@ function generateStandHtml(eq) {
             <div class="shop-stand-name">${eq.name}</div>
             
             <div class="shop-stand-stats">
-                ${statsHtml ? statsHtml : (!isConsumable ? '<div style="color:#64748b; font-style:italic; font-size: 0.85rem; margin-top: 0.5rem;">Aucune stat</div>' : '')}
+                ${statsHtml ? statsHtml : (!isConsumable ? '<div class="text-muted text-sm font-italic mt-2">Aucune stat</div>' : '')}
                 ${effectHtml}
-                ${eq.description ? `<div class="font-italic text-muted text-center" style="font-size: 0.85rem; margin-top: 0.5rem;">${eq.description}</div>` : ''}
+                ${eq.description ? `<div class="font-italic text-muted text-center text-sm mt-2">${eq.description}</div>` : ''}
             </div>
             
-            <button class="shop-stand-price" onclick="window.openBuyModal('${eq.id}', ${isConsumable})" style="display: flex; flex-direction: column; align-items: center; gap: 4px;">
-                <div>${oldPriceHtml} ${priceStr} <span class="material-symbols-outlined align-middle" style="font-size: 1.2rem;">monetization_on</span></div>
+            <button class="shop-stand-price flex-col-center gap-1" onclick="window.openBuyModal('${eq.id}', ${isConsumable})">
+                <div>${oldPriceHtml} ${priceStr} <span class="material-symbols-outlined align-middle icon-md">monetization_on</span></div>
                 ${(() => {
             if (eq.priceAnomalies && Object.keys(eq.priceAnomalies).length > 0) {
                 let anos = [];

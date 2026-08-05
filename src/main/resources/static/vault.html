@@ -399,7 +399,7 @@
                             <label>Slot</label>
                             <div class="custom-select-wrapper" id="eqSlotWrapper" tabindex="0">
                                 <div class="custom-select-trigger" id="eqSlotTrigger">
-                                    <span class="cs-label" id="eqSlotLabel">Choisir un slot...</span>
+                                    <span class="cs-label" id="eqSlotLabel">Type</span>
                                     <span class="material-symbols-outlined cs-arrow text-lg">expand_more</span>
                                 </div>
                                 <div class="custom-select-options" id="eqSlotOptions"></div>
@@ -477,7 +477,8 @@
                                             class="material-symbols-outlined cs-icon"
                                             style="color: #8b4513;">gesture</span> Corde</div>
                                     <div class="custom-option" data-value="OUTIL"><span
-                                            class="material-symbols-outlined cs-icon text-muted">construction</span> Outil</div>
+                                            class="material-symbols-outlined cs-icon text-muted">construction</span>
+                                        Outil</div>
                                     <div class="custom-option" data-value="PARCHEMIN"><span
                                             class="material-symbols-outlined cs-icon text-warning">history_edu</span>
                                         Parchemin</div>
@@ -564,7 +565,8 @@
                                         Surcharge (% Mag mana Act)
                                     </div>
                                     <div class="custom-option effect-VITAL_ARCANE" data-value="VITAL_ARCANE"><span
-                                            class="material-symbols-outlined cs-icon text-info">change_circle</span> Arcane Vitale (Régen X% mana)
+                                            class="material-symbols-outlined cs-icon text-info">change_circle</span>
+                                        Arcane Vitale (Régen X% mana)
                                     </div>
                                 </div>
                                 <input type="hidden" id="eqSpecialEffect" value="NONE">
@@ -758,16 +760,20 @@
                                         class="material-symbols-outlined cs-icon text-warning">all_inclusive</span>
                                     Karma</div>
                                 <div class="custom-option" data-value="VIOLENCE"><span
-                                        class="material-symbols-outlined cs-icon text-crimson">explosion</span> Violence</div>
+                                        class="material-symbols-outlined cs-icon text-crimson">explosion</span> Violence
+                                </div>
                                 <div class="custom-option" data-value="TRAHISON"><span
-                                        class="material-symbols-outlined cs-icon text-pink">visibility_off</span> Trahison</div>
+                                        class="material-symbols-outlined cs-icon text-pink">visibility_off</span>
+                                    Trahison</div>
                                 <div class="custom-option" data-value="SURETE"><span
-                                        class="material-symbols-outlined cs-icon text-teal">water_drop</span> Sûreté</div>
+                                        class="material-symbols-outlined cs-icon text-teal">water_drop</span> Sûreté
+                                </div>
                                 <div class="custom-option" data-value="RAISON"><span
                                         class="material-symbols-outlined cs-icon text-info">psychology</span> Raison
                                 </div>
                                 <div class="custom-option" data-value="DESTRUCTION"><span
-                                        class="material-symbols-outlined cs-icon text-danger">local_fire_department</span> Destruction</div>
+                                        class="material-symbols-outlined cs-icon text-danger">local_fire_department</span>
+                                    Destruction</div>
                                 <div class="custom-option" data-value="CREATION"><span
                                         class="material-symbols-outlined cs-icon text-success">eco</span>
                                     Création</div>
@@ -775,7 +781,8 @@
                                         class="material-symbols-outlined cs-icon text-amber">volcano</span>
                                     Conviction</div>
                                 <div class="custom-option" data-value="CONSOLIDATION"><span
-                                        class="material-symbols-outlined cs-icon text-brown">foundation</span> Consolidation</div>
+                                        class="material-symbols-outlined cs-icon text-brown">foundation</span>
+                                    Consolidation</div>
                             </div>
                             <input type="hidden" id="anomalieSpiritualite" value="TENEBRES">
                         </div>
@@ -830,8 +837,8 @@
                                 Matériau.</span>
                         </div>
                         <label class="magic-toggle-switch">
-                            <input type="checkbox" id="anomalieMagicToggle" class="magic-toggle-input"
-                                checked="" onchange="
+                            <input type="checkbox" id="anomalieMagicToggle" class="magic-toggle-input" checked=""
+                                onchange="
                                     this.nextElementSibling.style.backgroundColor = this.checked ? '#d946ef' : 'rgba(255, 255, 255, 0.1)';
                                     this.nextElementSibling.children[0].style.transform = this.checked ? 'translateX(16px)' : 'translateX(0)';
                                     document.getElementById('anomalieMagicToggleText').innerText = this.checked ? 'Magique' : 'Matériau';

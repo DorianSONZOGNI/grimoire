@@ -746,13 +746,3 @@
     transform: translateY(-1px);
     box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);
 }
-
-.cs-icon {
-    font-size: 1rem;
-}
-
-.cs-label {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-}

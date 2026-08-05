@@ -235,15 +235,9 @@
 
 
 
-.cs-icon {
-    font-size: 1rem;
-}
 
-.cs-label {
-    display: flex;
-    align-items: center;
-    gap: 0.4rem;
-}
+
+
 
 /* ===== Form Styles (Migrated from Armory) ===== */
 .eq-create-row {

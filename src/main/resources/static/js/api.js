@@ -370,7 +370,7 @@ export function deleteSpell(id) {
     
     ui.showModal({
         title: 'Détruire le sort ?',
-        body: `Êtes-vous sûr de vouloir détruire <strong style="color:#fff;">${spellName}</strong> ? Cette action est définitive.`,
+        body: `Êtes-vous sûr de vouloir détruire <strong class="text-white">${spellName}</strong> ? Cette action est définitive.`,
         icon: 'warning',
         confirmText: 'Oui, détruire',
         onConfirm: async () => {

@@ -92,7 +92,7 @@ export function updateRankTitle() {
 
     if (rankName) {
         display.style.display = 'block';
-        display.innerHTML = `<span class="material-symbols-outlined text-success align-middle" style="font-size: 1.1rem; margin-right: 0.2rem;">workspace_premium</span>Titre : <span style="color:#fff;">"${rankName}"</span> <span style="font-size:0.75rem; color:var(--text-muted);">(${sourceNom})</span>`;
+        display.innerHTML = `<span class="material-symbols-outlined text-success align-middle" style="font-size: 1.1rem; margin-right: 0.2rem;">workspace_premium</span>Titre : <span class="text-white">"${rankName}"</span> <span style="font-size:0.75rem; color:var(--text-muted);">(${sourceNom})</span>`;
     } else {
         display.style.display = 'none';
         display.innerHTML = '';
@@ -404,7 +404,7 @@ export function renderEffects() {
     container.innerHTML = '';
 
     if (state.currentEffects.length === 0) {
-        container.innerHTML = `<div class="text-muted text-center" style="font-size: 0.85rem;">Aucun effet configuré. Le sort n'aura que ses coûts.</div>`;
+        container.innerHTML = `<div class="text-muted text-center text-sm">Aucun effet configuré. Le sort n'aura que ses coûts.</div>`;
         return;
     }
 
@@ -826,7 +826,7 @@ export function renderEffects() {
                             <div style="display: flex; gap: 0.5rem; align-items: center; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px dashed rgba(255,255,255,0.05);">
                                 <label class="text-xs" style="color: #f59e0b; font-weight:600; display:flex; align-items:center; gap:0.3rem;"><span class="material-symbols-outlined" style="font-size:1.1rem;">key</span> S'active uniquement si l'Option de sort choisie est :</label>
                                 <input type="number" value="${eff.requiredChoiceKey !== undefined && eff.requiredChoiceKey !== null ? eff.requiredChoiceKey : ''}" placeholder="Toutes (Par défaut)" style="width: 140px; font-size: 0.85rem; padding: 0.2rem 0.4rem; background: var(--glass-bg); color: #fff; border: 1px solid var(--glass-border); border-radius: 4px;" onchange="updateEffectProp('${eff.id}', 'requiredChoiceKey', this.value ? parseInt(this.value) : null)">
-                                <span class="text-muted" style="font-size: 0.75rem;">Ex: 1 pour la ligne Soin, 2 pour la ligne Mana. Laissez vide pour s'activer toujours.</span>
+                                <span class="text-muted text-xs">Ex: 1 pour la ligne Soin, 2 pour la ligne Mana. Laissez vide pour s'activer toujours.</span>
                             </div>
 
                             <!-- Condition Âme Détachée -->
@@ -834,7 +834,7 @@ export function renderEffects() {
                         <div style="margin-top: 0.8rem; display: flex; flex-direction: column; gap: 0.4rem; padding-top: 0.5rem; border-top: 1px dashed rgba(255,255,255,0.05);">
                             <div class="flex-center" style="justify-content: space-between;">
                                 <label class="flex-center" style="color: #fda4af; font-weight: 600; font-size: 0.85rem; gap: 0.3rem;">
-                                    <span class="material-symbols-outlined" style="font-size: 1.1rem;">hand_bones</span> Condition "Âme Détachée"
+                                    <span class="material-symbols-outlined text-lg">hand_bones</span> Condition "Âme Détachée"
                                 </label>
                                 ${(() => {
                                     const r = eff.detachedSoulRequirement || 'NOT_AFFECTED';

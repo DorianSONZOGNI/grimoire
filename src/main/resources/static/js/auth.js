@@ -188,15 +188,15 @@ window.checkAuthStatus = async function checkAuthStatus() {
             window.dispatchEvent(new Event('authLoaded'));
             container.innerHTML = `
                 <a class="flex-center font-medium text-success" href="/secrets.html" onmouseover="this.style.background='rgba(16, 185, 129, 0.1)'" onmouseout="this.style.background='transparent'" style="gap: 0.3rem; font-size: 0.85rem; text-decoration: none; padding: 0.2rem 0.5rem; border-radius: 6px; transition: background 0.2s;">
-                    <span class="material-symbols-outlined" style="font-size: 1.1rem;">account_circle</span>
+                    <span class="material-symbols-outlined text-lg">account_circle</span>
                     ${data.username}
                 </a>
                 <div class="flex-center" title="Monnaie" style="gap: 0.2rem; color: #f59e0b; font-weight: 600; font-size: 0.85rem; margin-left: 0.5rem;">
-                    <span class="material-symbols-outlined" style="font-size: 1.1rem;">monetization_on</span>
+                    <span class="material-symbols-outlined text-lg">monetization_on</span>
                     ${data.monnaie !== undefined ? (data.monnaie % 1 === 0 ? data.monnaie : data.monnaie.toFixed(1)) : '0'}
                 </div>
                 <button class="flex-center text-xs text-error" onclick="logout()" style="background: transparent; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 6px; padding: 0.25rem 0.5rem; cursor: pointer; font-family: 'Outfit'; margin-left: 0.5rem; transition: all 0.2s;">
-                    <span class="material-symbols-outlined" style="font-size: 1rem;">logout</span>
+                    <span class="material-symbols-outlined icon-sm">logout</span>
                 </button>
             `;
         } else {
@@ -418,7 +418,7 @@ function injectUnlockModal() {
             <div class="global-unlock-modal-actions">
                 <button class="global-unlock-btn-cancel" id="globalUnlockCancel">Annuler</button>
                 <button class="global-unlock-btn-confirm" id="globalUnlockConfirm">
-                    <span class="material-symbols-outlined" style="font-size: 1.1rem;">lock_open</span>
+                    <span class="material-symbols-outlined text-lg">lock_open</span>
                     Débloquer
                 </button>
             </div>

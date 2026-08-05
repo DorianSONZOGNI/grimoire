@@ -324,7 +324,7 @@ window.deletePersonnage = function (id) {
 
     showModal({
         title: 'Supprimer ce personnage ?',
-        body: `Voulez-vous vraiment supprimer définitivement <strong style="color:#fff;">${p.name}</strong> ?<br><br>Cette action est irréversible.`,
+        body: `Voulez-vous vraiment supprimer définitivement <strong class="text-white">${p.name}</strong> ?<br><br>Cette action est irréversible.`,
         icon: 'warning',
         confirmText: 'Oui, supprimer',
         onConfirm: async () => {
@@ -699,12 +699,12 @@ function renderPersonnages() {
                 ${equipHtml}
                 <div class="char-card-stats">
                     <span class="char-stat-chip"><span class="material-symbols-outlined" style="color: #ec4899;">favorite</span>${p.totalHealthMax || p.healthMax} PV</span>
-                    <span class="char-stat-chip"><span class="material-symbols-outlined" style="color: #38bdf8;">water_drop</span>${p.totalManaMax || p.manaMax} Mana</span>
-                    <span class="char-stat-chip"><span class="material-symbols-outlined" style="color: #a855f7;">auto_awesome</span>${p.totalPower !== undefined ? p.totalPower : p.power} Pui</span>
+                    <span class="char-stat-chip"><span class="material-symbols-outlined text-info">water_drop</span>${p.totalManaMax || p.manaMax} Mana</span>
+                    <span class="char-stat-chip"><span class="material-symbols-outlined text-purple">auto_awesome</span>${p.totalPower !== undefined ? p.totalPower : p.power} Pui</span>
                     <span class="char-stat-chip"><span class="material-symbols-outlined" style="color: #f43f5e;">fitness_center</span>${p.totalStrength !== undefined ? p.totalStrength : p.strength} For</span>
                     <span class="char-stat-chip"><span class="material-symbols-outlined" style="color: #3b82f6;">shield</span>${p.totalArmor !== undefined ? p.totalArmor : p.armor} Arm</span>
                     <span class="char-stat-chip"><span class="material-symbols-outlined text-success">shield</span>${p.totalResistance !== undefined ? p.totalResistance : p.resistance} Rés</span>
-                    ${(p.totalSpeed !== undefined ? p.totalSpeed : p.speed) > 0 ? `<span class="char-stat-chip"><span class="material-symbols-outlined" style="color: #f59e0b;">bolt</span>${p.totalSpeed !== undefined ? p.totalSpeed : p.speed} Vit</span>` : ''}
+                    ${(p.totalSpeed !== undefined ? p.totalSpeed : p.speed) > 0 ? `<span class="char-stat-chip"><span class="material-symbols-outlined text-warning">bolt</span>${p.totalSpeed !== undefined ? p.totalSpeed : p.speed} Vit</span>` : ''}
                     ${(p.totalCrit !== undefined ? p.totalCrit : p.crit) > 0 ? `<span class="char-stat-chip"><span class="material-symbols-outlined text-error">gps_fixed</span>${p.totalCrit !== undefined ? p.totalCrit : p.crit}% Crit</span>` : ''}
                     ${(p.totalRegenHp !== undefined ? p.totalRegenHp : p.regenHp || 0) > 0 ? `<span class="char-stat-chip"><span class="material-symbols-outlined" style="color: #f472b6;">healing</span>${p.totalRegenHp !== undefined ? p.totalRegenHp : p.regenHp} Régen PV</span>` : ''}
                     ${(p.totalRegenMana !== undefined ? p.totalRegenMana : p.regenMana || 0) > 0 ? `<span class="char-stat-chip"><span class="material-symbols-outlined" style="color: #67e8f9;">dew_point</span>${p.totalRegenMana !== undefined ? p.totalRegenMana : p.regenMana} Régen Mana</span>` : ''}
@@ -869,7 +869,7 @@ function renderEquipModal() {
                 <div class="custom-select-wrapper" tabindex="0" style="margin-top: 0.5rem;">
                     <div class="custom-select-trigger text-xs" style="padding: 0.4rem 0.6rem; border-color: rgba(255,255,255,0.1); background: rgba(0,0,0,0.2);">
                         <span class="cs-label text-muted">Choisir un équipement...</span>
-                        <span class="material-symbols-outlined cs-arrow text-muted" style="font-size: 1.1rem;">expand_more</span>
+                        <span class="material-symbols-outlined cs-arrow text-muted text-lg">expand_more</span>
                     </div>
                     <div class="custom-select-options">
                         <div class="custom-option" data-value=""><span class="text-muted">Choisir...</span></div>
@@ -1006,7 +1006,7 @@ function editPersonnage(id) {
         <span class="material-symbols-outlined">edit</span>
         Modifier : ${p.name}`;
     document.getElementById('submitBtn').innerHTML = `
-        <span class="material-symbols-outlined" style="font-size: 1.1rem;">save</span>
+        <span class="material-symbols-outlined text-lg">save</span>
         Mettre à jour`;
     document.getElementById('cancelBtn').style.display = 'inline-flex';
 
@@ -1041,7 +1041,7 @@ function resetForm() {
         <span class="material-symbols-outlined">person_add</span>
         Recruter à la taverne`;
     document.getElementById('submitBtn').innerHTML = `
-        <span class="material-symbols-outlined" style="font-size: 1.1rem;">person_add</span>
+        <span class="material-symbols-outlined text-lg">person_add</span>
         Forger le Personnage`;
     document.getElementById('cancelBtn').style.display = 'none';
 }
@@ -1160,7 +1160,7 @@ window.addEventListener('DOMContentLoaded', async () => {
                 `;
             }
 
-            let diffHtml = '<span class="font-italic text-muted" style="font-size: 0.85rem;">Sélectionnez une voie pour voir les effets.</span>';
+            let diffHtml = '<span class="font-italic text-muted text-sm">Sélectionnez une voie pour voir les effets.</span>';
             // Statistiques par défaut
             let stats = {
                 charHp: 100, charMana: 100, charPower: 10, charStrength: 10,
