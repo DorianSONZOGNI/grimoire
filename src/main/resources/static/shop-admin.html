@@ -54,22 +54,18 @@
 
     <!-- Create/Edit Equipment Modal -->
     <div id="equipCreateModal" class="vault-modal-overlay">
-        <div class="equip-modal"
-            style="background: rgba(15, 23, 42, 0.95); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 16px; width: 90%; max-width: 630px; max-height: 90vh; display: flex; flex-direction: column; overflow: hidden; box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5); position: relative;">
-            <div class="equip-modal-header"
-                style="padding: 1.5rem; border-bottom: 1px solid rgba(255, 255, 255, 0.05); display: flex; justify-content: space-between; align-items: center; background: rgba(0,0,0,0.2);">
-                <div class="equip-modal-title"
-                    style="display: flex; align-items: center; gap: 0.8rem; font-size: 1.3rem; font-weight: 600; color: #fff; font-family: 'Outfit', sans-serif;">
+        <div class="equip-modal modal-md">
+            <div class="equip-modal-header">
+                <div class="equip-modal-title">
                     <span class="material-symbols-outlined text-success">build</span>
                     <span id="equipModalTitle">Forger un objet</span>
                 </div>
-                <button class="equip-modal-close" onclick="closeCreateEqModal()"
-                    style="background: none; border: none; color: #94a3b8; cursor: pointer; padding: 0.4rem; border-radius: 8px; display: flex; align-items: center; justify-content: center; transition: all 0.2s;">
+                <button class="equip-modal-close" onclick="closeCreateEqModal()">
                     <span class="material-symbols-outlined" style="font-size: 1.5rem;">close</span>
                 </button>
             </div>
 
-            <div class="equip-modal-body" style="padding: 1.5rem; overflow-y: auto;">
+            <div class="equip-modal-body">
                 <div class="equip-create-section">
                     <div class="eq-create-row" class="mb-4">
                         <div class="form-group"
