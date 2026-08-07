@@ -1169,6 +1169,7 @@ public class CombatService {
             } else if ("PIEGE".equals(type)) {
                 session.addLog("Vous avez ouvert la porte... et déclenché un piège mortel !");
                 room.setEventSubType(generation.grimoire.enumeration.EventSubType.PIEGE);
+                room.setEventText("Vous avez ouvert la porte... et déclenché un piège mortel !");
                 room.setTrapType(selectedOutcome.path("trapType").asText("PV"));
                 room.setTrapAmount(selectedOutcome.path("trapAmount").asInt(0));
                 room.setTrapHasRopeOption(selectedOutcome.path("trapHasRopeOption").asBoolean(false));
@@ -1179,6 +1180,7 @@ public class CombatService {
                 room.setTrapDamageManaFixed(selectedOutcome.path("trapDamageManaFixed").asInt(0));
             } else {
                 session.addLog("Vous avez ouvert la porte... Il n'y a absolument rien derrière.");
+                room.setEventText("Vous avez ouvert la porte... Il n'y a absolument rien derrière.");
                 session.setRoomEventCompleted(true);
             }
 
