@@ -1122,22 +1122,19 @@
 
         <!-- Sidebar Actions (Right) -->
         <div class="csp-sidebar csp-sidebar-right"  >
-            <button class="action-btn attack mb-2"   id="btnAttack" onclick="initiateCombatCast(null)" disabled=""
-                class="w-full justify-center whitespace-nowrap">
-                <span class="material-symbols-outlined"  >swords</span>
+            <button class="action-btn attack mb-2 w-full justify-center whitespace-nowrap" id="btnAttack" onclick="initiateCombatCast(null)" disabled="">
+                <span class="material-symbols-outlined">swords</span>
                 Attaque
             </button>
 
-            <div class="flex-1"  ></div> <!-- Spacer -->
+            <div class="flex-1"></div> <!-- Spacer -->
 
-            <button class="action-btn"   id="btnEndTurn" onclick="endTurn()"
-                class="bg-purple-500/20 text-purple-400 border-purple-500/40 w-full justify-center whitespace-nowrap">
-                <span class="material-symbols-outlined"  >hourglass_top</span>
+            <button class="action-btn bg-purple-500/20 text-purple-400 border-purple-500/40 w-full justify-center whitespace-nowrap" id="btnEndTurn" onclick="endTurn()">
+                <span class="material-symbols-outlined">hourglass_top</span>
                 Fin de Tour
             </button>
-            <button class="action-btn flee"  onclick="window.promptFlee()" 
-                class="w-full justify-center whitespace-nowrap">
-                <span class="material-symbols-outlined"  >directions_run</span>
+            <button class="action-btn flee w-full justify-center whitespace-nowrap" onclick="window.promptFlee()">
+                <span class="material-symbols-outlined">directions_run</span>
                 Fuir
             </button>
         </div>
