@@ -965,7 +965,7 @@
         <div class="event-overlay"   id="eventOverlay">
             <!-- Left: Inventory Panel Wrapper -->
             <div id="eventInventoryWrapper"
-                class="absolute inset-y-0 left-0 w-[320px] z-20 -translate-x-[320px] transition-transform duration-300">
+                class="absolute inset-y-0 left-0 w-[320px] z-20 -translate-x-full transition-transform duration-300">
                 <div class="custom-scrollbar w-full h-full bg-slate-900/95 border-r border-white/10 p-6 flex flex-col overflow-y-auto relative"  
                     >
                     <h3 class="text-emerald mb-4 text-xl text-center font-outfit flex items-center justify-center gap-2" 
@@ -979,7 +979,7 @@
                     </div>
                 </div>
                 <!-- Toggle Tab -->
-                <div class="text-emerald absolute -right-10 top-1/2 -translate-y-1/2 w-10 h-[100px] bg-slate-900/95 border border-l-0 border-white/10 rounded-r-lg flex items-center justify-center cursor-pointer shadow-[5px_0_10px_rgba(0,0,0,0.3)]"  onclick="const w = document.getElementById('eventInventoryWrapper'); w.style.transform = w.style.transform === 'translateX(0px)' ? 'translateX(-320px)' : 'translateX(0px)';"
+                <div class="text-emerald absolute -right-10 top-1/2 -translate-y-1/2 w-10 h-[100px] bg-slate-900/95 border border-l-0 border-white/10 rounded-r-lg flex items-center justify-center cursor-pointer shadow-[5px_0_10px_rgba(0,0,0,0.3)]"  onclick="document.getElementById('eventInventoryWrapper').classList.toggle('-translate-x-full');"
                     >
                     <span class="material-symbols-outlined"  >inventory_2</span>
                 </div>
@@ -1017,7 +1017,7 @@
         <div class="event-overlay"   id="combatVictoryOverlay">
             <!-- Left: Inventory Panel Wrapper -->
             <div id="combatVictoryInventoryWrapper"
-                class="absolute inset-y-0 left-0 w-[320px] z-20 -translate-x-[320px] transition-transform duration-300">
+                class="absolute inset-y-0 left-0 w-[320px] z-20 -translate-x-full transition-transform duration-300">
                 <div class="custom-scrollbar w-full h-full bg-slate-900/95 border-r border-white/10 p-6 flex flex-col overflow-y-auto relative"  
                     >
                     <h3 class="text-emerald mb-4 text-xl text-center font-outfit flex items-center justify-center gap-2" 
@@ -1031,7 +1031,7 @@
                     </div>
                 </div>
                 <!-- Toggle Tab -->
-                <div class="text-emerald absolute -right-10 top-1/2 -translate-y-1/2 w-10 h-[100px] bg-slate-900/95 border border-l-0 border-white/10 rounded-r-lg flex items-center justify-center cursor-pointer shadow-[5px_0_10px_rgba(0,0,0,0.3)]"  onclick="const w = document.getElementById('combatVictoryInventoryWrapper'); w.style.transform = w.style.transform === 'translateX(0px)' ? 'translateX(-320px)' : 'translateX(0px)';"
+                <div class="text-emerald absolute -right-10 top-1/2 -translate-y-1/2 w-10 h-[100px] bg-slate-900/95 border border-l-0 border-white/10 rounded-r-lg flex items-center justify-center cursor-pointer shadow-[5px_0_10px_rgba(0,0,0,0.3)]"  onclick="document.getElementById('combatVictoryInventoryWrapper').classList.toggle('-translate-x-full');"
                     >
                     <span class="material-symbols-outlined"  >inventory_2</span>
                 </div>
