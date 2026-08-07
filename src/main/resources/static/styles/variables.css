@@ -90,6 +90,7 @@ body{ overflow-y: scroll;
 .text-purple { color: #a855f7 !important; }
 .text-indigo { color: #6366f1 !important; }
 .text-orange { color: #f97316 !important; }
+.text-amber { color: #f59e0b !important; }
 .text-karma { color: var(--karma) !important; }
 /* Semantic stat colors */
 .text-pv { color: #ec4899 !important; }
