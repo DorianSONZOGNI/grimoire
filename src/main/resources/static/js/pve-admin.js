@@ -1720,7 +1720,7 @@ async function editMonster(id) {
             window.selectMonsterBehavior(mb, bData.l, bData.i, bData.c);
 
             document.getElementById('btnSubmitMonster').textContent = "Modifier le monstre";
-            document.getElementById('btnCancelMonster').style.display = 'block';
+            document.getElementById('btnCancelMonster').classList.remove('hidden');
             document.getElementById('monsterFormPanel').classList.add('editing-glow');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
@@ -1745,7 +1745,7 @@ window.cancelMonsterEdit = function () {
     pageState.selectedMutationIds = [];
     renderMutationsSelector();
     document.getElementById('btnSubmitMonster').textContent = "Créer le monstre";
-    document.getElementById('btnCancelMonster').style.display = 'none';
+    document.getElementById('btnCancelMonster').classList.add('hidden');
     document.getElementById('monsterFormPanel').classList.remove('editing-glow');
     window.selectMonsterType('NORMAL', 'Normal', 'check_box_outline_blank', '#94a3b8');
     window.selectMonsterBehavior('NORMAL', 'Normal', 'check_box_outline_blank', '#94a3b8');
@@ -2011,7 +2011,7 @@ async function editDungeon(id) {
             renderRooms();
 
             document.getElementById('btnSubmitDungeon').textContent = "Modifier le donjon";
-            document.getElementById('btnCancelDungeon').style.display = 'block';
+            document.getElementById('btnCancelDungeon').classList.remove('hidden');
             document.getElementById('dungeonFormPanel').classList.add('editing-glow');
             document.getElementById('dungeonFormPanel').scrollIntoView({ behavior: 'smooth' });
         }
@@ -2026,7 +2026,7 @@ window.cancelDungeonEdit = function () {
     pageState.selectedRooms = [];
     renderRooms();
     document.getElementById('btnSubmitDungeon').textContent = "Créer le donjon";
-    document.getElementById('btnCancelDungeon').style.display = 'none';
+    document.getElementById('btnCancelDungeon').classList.add('hidden');
     document.getElementById('dungeonFormPanel').classList.remove('editing-glow');
 };
 
@@ -2498,7 +2498,7 @@ window.editMutation = (id) => {
     document.getElementById('mutColor').value = mut.color || '#e879f9';
     document.getElementById('mutIcon').value = mut.icon || 'pets';
     document.getElementById('btnSubmitMutation').textContent = 'Modifier la mutation';
-    document.getElementById('btnCancelMutation').style.display = 'inline-block';
+    document.getElementById('btnCancelMutation').classList.remove('hidden');
     document.getElementById('mutationFormPanel').classList.add('editing-glow');
     document.getElementById('mutationFormPanel').scrollIntoView({ behavior: 'smooth', block: 'center' });
 };
@@ -2525,7 +2525,7 @@ window.cancelMutationEdit = () => {
     pageState.editingMutationId = null;
     document.getElementById('mutationForm').reset();
     document.getElementById('btnSubmitMutation').textContent = 'Créer la mutation';
-    document.getElementById('btnCancelMutation').style.display = 'none';
+    document.getElementById('btnCancelMutation').classList.add('hidden');
     document.getElementById('mutationFormPanel').classList.remove('editing-glow');
 };
 

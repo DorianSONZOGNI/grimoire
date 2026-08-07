@@ -539,7 +539,7 @@ document.getElementById('recipeForm').addEventListener('submit', async (e) => {
             document.getElementById('recipePanel').style.border = "1px solid var(--glass-border)";
             document.getElementById('reqAnomaliesList').innerHTML = '';
             document.getElementById('reqConsumablesList').innerHTML = '';
-            document.getElementById('cancelEditBtn').style.display = 'none';
+            document.getElementById('cancelEditBtn').classList.add('hidden');
             loadRecipes();
         } else {
             const err = await res.text();
@@ -636,7 +636,7 @@ window.editRecipe = function (id) {
     document.getElementById('recipePanel').style.boxShadow = "0 0 20px rgba(245, 158, 11, 0.4)";
     document.getElementById('recipePanel').style.border = "1px solid rgba(245, 158, 11, 0.8)";
 
-    document.getElementById('cancelEditBtn').style.display = 'block';
+    document.getElementById('cancelEditBtn').classList.remove('hidden');
 
     const msg = document.getElementById('formMsg');
     msg.innerText = "Mode édition actif. Modifiez et enregistrez.";
@@ -650,7 +650,7 @@ window.cancelEdit = function () {
     document.getElementById('recipePanel').style.border = "1px solid var(--glass-border)";
     document.getElementById('reqAnomaliesList').innerHTML = '';
     document.getElementById('reqConsumablesList').innerHTML = '';
-    document.getElementById('cancelEditBtn').style.display = 'none';
+    document.getElementById('cancelEditBtn').classList.add('hidden');
     document.getElementById('formMsg').innerText = "";
 
     document.getElementById('rewardType').value = "GIVE_ANOMALY";
