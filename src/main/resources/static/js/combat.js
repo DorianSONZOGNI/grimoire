@@ -1,4 +1,4 @@
-﻿
+
 import * as ui from './ui.js?v=3';
 import { getSpellEffectsSummaryHtml } from './grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from './filters.js';
@@ -345,7 +345,7 @@ window.promptFlee = function () {
                 if (!res.ok) {
                     pageState.isFleeing = false;
                     const err = await res.text();
-                    ui.window.showNotif("Erreur lors de la fuite : " + err, true);
+                    ui.showNotif("Erreur lors de la fuite : " + err, true);
                     return;
                 }
                 localStorage.removeItem('activeCombatId');
@@ -426,7 +426,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (!dungeonId || !characterIds) {
         if (typeof showNotif !== 'undefined') window.showNotif("Paramètres de combat manquants.", true);
-        else ui.window.showNotif("Paramètres de combat manquants.", true);
+        else ui.showNotif("Paramètres de combat manquants.", true);
         window.location.href = '/vault.html';
         return;
     }
@@ -449,7 +449,7 @@ async function resumeCombat(savedSessionId) {
         if (!res.ok) {
             localStorage.removeItem('activeCombatId');
             if (typeof showNotif !== 'undefined') window.showNotif("Combat introuvable ou expiré.", true);
-            else ui.window.showNotif("Combat introuvable ou expiré.", true);
+            else ui.showNotif("Combat introuvable ou expiré.", true);
             window.location.href = '/vault.html';
             return;
         }
@@ -482,7 +482,7 @@ async function startCombat(characterIds, dungeonId, consumableIds) {
 
         if (!res.ok) {
             if (typeof showNotif !== 'undefined') window.showNotif("Erreur lors de l'initialisation du donjon.", true);
-            else ui.window.showNotif("Erreur lors de l'initialisation du donjon.", true);
+            else ui.showNotif("Erreur lors de l'initialisation du donjon.", true);
             window.location.href = '/vault.html';
             return;
         }
@@ -501,7 +501,7 @@ async function startCombat(characterIds, dungeonId, consumableIds) {
     } catch (e) {
         console.error(e);
         if (typeof showNotif !== 'undefined') window.showNotif("Erreur de connexion.", true);
-        else ui.window.showNotif("Erreur de connexion.", true);
+        else ui.showNotif("Erreur de connexion.", true);
         window.location.href = '/dungeons.html';
     }
 }
@@ -1280,7 +1280,7 @@ async function openChest(useKey = false) {
         if (!res.ok) {
             const err = await res.text();
             if (typeof showNotif !== 'undefined') window.showNotif("Erreur : " + err, true);
-            else ui.window.showNotif("Erreur : " + err, true);
+            else ui.showNotif("Erreur : " + err, true);
             pageState.isProcessing = false;
             return;
         }
@@ -1303,7 +1303,7 @@ async function openChest(useKey = false) {
     } catch (e) {
         console.error(e);
         if (typeof showNotif !== 'undefined') window.showNotif("Erreur lors de l'ouverture du coffre.", true);
-        else ui.window.showNotif("Erreur lors de l'ouverture du coffre.", true);
+        else ui.showNotif("Erreur lors de l'ouverture du coffre.", true);
     } finally {
         pageState.isProcessing = false;
         setButtonsProcessing(false);
@@ -1437,7 +1437,7 @@ function updateUI(data) {
                 document.getElementById('btnAttack').disabled = true;
                 const vicOverlay = document.getElementById('combatVictoryOverlay');
                 if (vicOverlay) {
-                    if (typeof renderOverlayInventory === 'function') renderOverlayInventory('combatVictoryInventoryList');
+                    if (typeof window.renderOverlayInventory === 'function') window.renderOverlayInventory('combatVictoryInventoryList');
                     vicOverlay.classList.add('show');
                     const xpContainer = document.getElementById('combatVictoryXpContainer');
                     if (xpContainer) {
@@ -2289,7 +2289,7 @@ function updateUI(data) {
                 }
             }
 
-            if (typeof renderOverlayInventory === 'function') renderOverlayInventory('eventOverlayInventoryList');
+            if (typeof window.renderOverlayInventory === 'function') window.renderOverlayInventory('eventOverlayInventoryList');
             overlay.classList.add('show');
         }
     }
@@ -3621,15 +3621,19 @@ window.confirmConsumeItem = async function (consumableId, characterId) {
         });
         if (res.ok) {
             pageState.currentSessionData = await res.json();
-            ui.window.showNotif("Objet consommé avec succès !");
+            ui.showNotif("Objet consommé avec succès !");
             updateUI(pageState.currentSessionData);
+            if (typeof window.renderOverlayInventory === 'function') {
+                window.renderOverlayInventory('eventOverlayInventoryList');
+                window.renderOverlayInventory('combatVictoryInventoryList');
+            }
         } else {
             const err = await res.text();
-            ui.window.showNotif("Erreur: " + err, true);
+            ui.showNotif("Erreur: " + err, true);
         }
     } catch (e) {
         console.error(e);
-        ui.window.showNotif("Erreur lors de la consommation.", true);
+        ui.showNotif("Erreur lors de la consommation.", true);
     }
 };
 
