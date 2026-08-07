@@ -118,7 +118,7 @@ async function loadItems() {
             document.body.appendChild(debugDiv);
         }
     }
-    debugDiv.innerHTML = `Items chargés : ${pageState.allAnomalies.length} anomalies, ${pageState.allConsumables.length} consommables. (Veuillez faire un Ctrl+F5 si vous ne voyez pas vos objets)`;
+    debugDiv.innerHTML = `Items chargés : ${pageState.allAnomalies.length} anomalies, ${pageState.allConsumables.length} consommables.`;
 
     updateRewardNameInput();
 }
