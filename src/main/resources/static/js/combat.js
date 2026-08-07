@@ -2210,7 +2210,10 @@ function updateUI(data) {
                     title.textContent = 'Porte Étrange';
 
                     if (data.roomEventCompleted) {
-                        icon.style.color = '#94a3b8'; // Grisé
+                        title.textContent = 'Rien...';
+                        icon.className = 'material-symbols-outlined mb-4 text-[5rem]';
+                        icon.style.color = '#475569'; // Gris foncé pour bien marquer "Rien"
+                        icon.style.textShadow = 'none';
                         desc.innerHTML = data.currentRoom.eventText || 'Vous avez ouvert la porte... mais il n\'y a absolument rien derrière.';
                         btnOpen.classList.add('hidden');
                         btnCont.classList.remove('hidden');
