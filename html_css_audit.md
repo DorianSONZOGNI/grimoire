@@ -11,11 +11,19 @@ Une analyse complète des fichiers HTML a révélé une forte utilisation de sty
 
 | Fichier | Nombre d'attributs `style` inline (Avant) | Maintenant | Différence |
 |---------|-----------------------------------|------------|------------|
-| `vault.html` | 197 | **~50** | -147 |
-| `pve-admin.html` | 279 | **91** | -188 |
-| `index.html` | 135 | **~40** | -95 |
-| `armory.html` | 122 | **~30** | -92 |
-| `shop-admin.html` | 110 | **~25** | -85 |
+| `vault.html` | 197 | **94** | -103 |
+| `pve-admin.html` | 279 | **93** | -186 |
+| `index.html` | 135 | **69** | -66 |
+| `dungeons.html` | N/A | **46** | - |
+| `combat.html` | N/A | **45** | - |
+| `armory.html` | 122 | **32** | -90 |
+| `shop-admin.html` | 110 | **20** | -90 |
+| `alchemy.html` | N/A | **13** | - |
+| `secrets.html` | N/A | **8** | - |
+| `alchemy-admin.html` | N/A | **5** | - |
+| `shop.html` | N/A | **2** | - |
+| `register.html` | N/A | **1** | - |
+| `login.html` | N/A | **0** | - |
 
 ---
 
