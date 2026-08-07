@@ -11,13 +11,13 @@ Une analyse complète des fichiers HTML a révélé une forte utilisation de sty
 
 | Fichier | Nombre d'attributs `style` inline (Avant) | Maintenant | Différence |
 |---------|-----------------------------------|------------|------------|
-| `vault.html` | 197 | **17** | -180 |
-| `pve-admin.html` | 279 | **33** | -246 |
-| `index.html` | 135 | **13** | -122 |
-| `dungeons.html` | 46 | **4** | - |
-| `combat.html` | 45 | **6** | - |
-| `armory.html` | 122 | **5** | -117 |
-| `shop-admin.html` | 110 | **4** | -106 |
+| `vault.html` | 197 | **0** | -197 |
+| `pve-admin.html` | 279 | **0** | -279 |
+| `index.html` | 135 | **10** | -125 |
+| `dungeons.html` | 46 | **3** | -43 |
+| `combat.html` | 45 | **0** | -45 |
+| `armory.html` | 122 | **3** | -119 |
+| `shop-admin.html` | 110 | **0** | -110 |
 | `alchemy.html` | 13 | **0** | - |
 | `secrets.html` | 8 | **0** | - |
 | `alchemy-admin.html` | 5 | **0** | - |
@@ -26,6 +26,8 @@ Une analyse complète des fichiers HTML a révélé une forte utilisation de sty
 | `login.html` | 0 | **0** | - |
 
 ---
+
+**Note** : Quelques `style="display: none"` subsistent volontairement (ex: 3 dans `armory.html`, 3 dans `dungeons.html`, 10 dans `index.html`) sur les éléments dont la visibilité est contrôlée par JavaScript (`element.style.display = "inline-block"`). Remplacer par `.hidden` (qui contient `!important`) empêcherait le JS de les afficher.
 
 ## 🔍 Problèmes Principaux Identifiés
 

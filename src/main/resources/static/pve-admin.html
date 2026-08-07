@@ -29,12 +29,12 @@
     <main class="vault-container admin-container"  >
 
         <div class="text-danger bg-red-glass border-red-glass p-4 rounded-lg mb-8 text-center"  id="adminWarning"
-            style="display: none;" >
+            class="hidden" >
             <span class="material-symbols-outlined align-middle mr-2">error</span>
             Vous devez être administrateur pour accéder à cette page. Redirection en cours...
         </div>
 
-        <div id="adminContent" style="display: none">
+        <div id="adminContent" class="hidden">
 
             <div class="admin-split-layout"  >
                 <section class="admin-section m-0 transition-all"   id="monsterFormPanel">
@@ -337,7 +337,7 @@
                                 <button class="btn btn-primary"  type="submit"  id="btnSubmitMonster">Créer le
                                     monstre</button>
                                 <button class="btn btn btn-secondary"  type="button"  id="btnCancelMonster"
-                                    style="display: none;" 
+                                    class="hidden" 
                                     onclick="cancelMonsterEdit()">Annuler</button>
                             </div>
                         </form>
@@ -575,7 +575,7 @@
                                     >Créer
                                     la mutation</button>
                                 <button class="btn btn btn-secondary"  type="button"  id="btnCancelMutation"
-                                    style="display: none;" 
+                                    class="hidden" 
                                     onclick="cancelMutationEdit()">Annuler</button>
                             </div>
                         </form>
@@ -706,56 +706,48 @@
                                         <div class="flex-1"  >
                                             <input class="form-control"  type="number" id="dRequiredSecretLevel" 
                                                 value="1" min="1" placeholder="Niveau" title="Niveau du secret"
-                                                style="min-height: 42px">
+                                                class="min-h-[42px]">
                                         </div>
                                     </div>
                                 </div>
                                 <div class="form-group col-span-2"  >
                                     <label>Salles du Donjon (Ordre d'exploration)</label>
 
-                                    <div class="mb-4"
-                                        style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 0.8rem">
-                                        <button class="text-danger pve-room-btn"  type="button" 
-                                            style="background: rgba(239, 68, 68, 0.1);  border: 1px solid rgba(239, 68, 68, 0.3); font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.7rem 0.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease"
+                                    <div class="mb-4 grid grid-cols-3 gap-3">
+                                        <button class="pve-room-btn btn-room bg-red-glass border border-red-500/30 text-danger" type="button"
                                             onclick="addRoom('COMBAT')">
                                             <span class="material-symbols-outlined text-lg"  >swords</span> + Combat
                                         </button>
-                                        <button class="pve-room-btn"  type="button" 
-                                            style="background: rgba(225, 29, 72, 0.1); color: #e11d48; border: 1px solid rgba(225, 29, 72, 0.3); font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.7rem 0.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease"
+                                        <button class="pve-room-btn btn-room bg-crimson-500/10 border border-crimson-500/30 text-crimson" type="button"
                                             onclick="addRoom('BOSS')">
                                             <span class="material-symbols-outlined text-lg"  >skull</span> +
                                             Boss
                                         </button>
-                                        <button class="text-amber pve-room-btn"  type="button" 
-                                            style="background: rgba(245, 158, 11, 0.1);  border: 1px solid rgba(245, 158, 11, 0.3); font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.7rem 0.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease"
+                                        <button class="pve-room-btn btn-room bg-amber-500/10 border border-amber-500/30 text-amber" type="button"
                                             onclick="addRoom('TREASURE')">
                                             <span class="material-symbols-outlined text-lg"  >shopping_bag</span> + Trésor
                                         </button>
-                                        <button class="pve-room-btn"  type="button" 
-                                            style="background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.3); font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.7rem 0.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease"
+                                        <button class="pve-room-btn btn-room bg-purple-glass border border-purple-500/30 text-purple" type="button"
                                             onclick="addRoom('ALTERATION')">
                                             <span class="material-symbols-outlined text-lg"  >blur_on</span> + Altération
                                         </button>
-                                        <button class="text-emerald pve-room-btn"  type="button" 
-                                            style="background: rgba(16, 185, 129, 0.1);  border: 1px solid rgba(16, 185, 129, 0.3); font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.7rem 0.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease"
+                                        <button class="pve-room-btn btn-room bg-emerald-500/10 border border-emerald-500/30 text-emerald" type="button"
                                             onclick="addRoom('RENCONTRE')">
                                             <span class="material-symbols-outlined text-lg"  >storefront</span> + Rencontre
                                         </button>
-                                        <button class="pve-room-btn"  type="button" 
-                                            style="background: rgba(239, 68, 68, 0.08); color: #f87171; border: 1px solid rgba(248, 113, 113, 0.3); font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.7rem 0.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease"
+                                        <button class="pve-room-btn btn-room bg-red-600/5 border border-red-600/20 text-red-400" type="button"
                                             onclick="addRoom('PIEGE')">
                                             <span class="material-symbols-outlined text-lg"  >warning</span> + Piège
                                         </button>
-                                        <button class="text-gold pve-room-btn"  type="button" 
-                                            style="background: rgba(245, 158, 11, 0.08);  border: 1px solid rgba(251, 191, 36, 0.3); font-size: 0.85rem; display: flex; align-items: center; justify-content: center; gap: 0.4rem; padding: 0.7rem 0.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease"
+                                        <button class="pve-room-btn btn-room bg-amber-500/5 border border-amber-500/30 text-gold" type="button"
                                             onclick="addRoom('PORTE_ETRANGE')">
                                             <span class="material-symbols-outlined text-lg"  >door_front</span> + Porte Étrange
                                         </button>
                                     </div>
 
                                     <div id="selectedRoomsContainer"
-                                        style="display: flex; flex-direction: column; gap: 0.75rem; background: rgba(0,0,0,0.2); padding: 1rem; border-radius: 8px; min-height: 100px; border: 1px dashed rgba(255,255,255,0.1)">
-                                        <div style="color: var(--text-muted); text-align: center; font-size: 0.85rem; padding: 2rem 0"
+                                        class="flex flex-col gap-3 p-4 rounded-lg bg-black/20 border border-dashed border-white/10 min-h-[100px]">
+                                        <div class="text-muted text-center py-8 text-[0.85rem]"
                                             id="emptyRoomsMsg">Le donjon est vide. Ajoutez des salles.</div>
                                         <!-- Liste des salles -->
                                     </div>
@@ -765,7 +757,7 @@
                                 <button class="btn btn-primary"  type="submit"  id="btnSubmitDungeon">Créer le
                                     donjon</button>
                                 <button class="btn btn btn-secondary"  type="button"  id="btnCancelDungeon"
-                                    style="display: none;" 
+                                    class="hidden" 
                                     onclick="cancelDungeonEdit()">Annuler</button>
                             </div>
                         </form>
@@ -775,19 +767,19 @@
                 <div class="relative h-full min-h-400"  >
                     <section class="admin-section absolute-panel-wrapper"  >
                         <div class="admin-section-header"  
-                            style="flex-shrink: 0; display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 0.5rem">
+                            class="flex-shrink-0 flex-between flex-center flex-wrap gap-2">
                             <div class="admin-section-title"  >
                                 <span class="material-symbols-outlined text-danger"  >map</span>
                                 Donjons Existants
                             </div>
-                            <div style="display: flex; gap: 0.5rem">
-                                <div class="custom-select-wrapper"   style="width: 250px; z-index: 100">
+                            <div class="flex gap-2">
+                                <div class="custom-select-wrapper w-[250px] z-100">
                                     <div class="custom-select-trigger"  
-                                        style="min-height: 36px; padding: 0.4rem 0.8rem; font-size: 0.85rem">
+                                        class="min-h-[36px] py-[0.4rem] px-[0.8rem] text-[0.85rem]">
                                         <span class="cs-label"  ><span class="material-symbols-outlined cs-icon text-muted"  >filter_list</span> Tous les
                                             secrets</span>
                                         <span class="material-symbols-outlined"  
-                                            style="font-size: 1rem">expand_more</span>
+                                            class="icon-sm">expand_more</span>
                                     </div>
                                     <div class="custom-select-options custom-options"  >
                                         <div class="custom-option"   data-value="">
@@ -799,57 +791,57 @@
                                         </div>
                                         <div class="custom-option"   data-value="Secret du Chaos"><span class="material-symbols-outlined cs-icon" 
                                                 
-                                                style="color: #ff0000; font-size: 1rem">local_fire_department</span>
+                                                class="text-danger icon-sm">local_fire_department</span>
                                             Secret du Chaos</div>
                                         <div class="custom-option"   data-value="Secret de l'Abondance"><span class="material-symbols-outlined cs-icon text-success" 
                                                 >eco</span> Secret de
                                             l'Abondance</div>
                                         <div class="custom-option"   data-value="Secret de la Préservation"><span class="material-symbols-outlined cs-icon" 
                                                 
-                                                style="color: #99674c; font-size: 1rem">foundation</span> Secret de la
+                                                class="text-brown icon-sm">foundation</span> Secret de la
                                             Préservation</div>
                                         <div class="custom-option"   data-value="Secret de la Sérénité"><span class="material-symbols-outlined cs-icon" 
                                                 
-                                                style="color: #00e5cc; font-size: 1rem">water_drop</span> Secret de la
+                                                class="text-teal icon-sm">water_drop</span> Secret de la
                                             Sérénité</div>
                                         <div class="custom-option"   data-value="Secret de la Chasse"><span class="material-symbols-outlined cs-icon" 
                                                 
-                                                style="color: #ed5677; font-size: 1rem">visibility_off</span> Secret de
+                                                class="text-crimson icon-sm">visibility_off</span> Secret de
                                             la Chasse</div>
                                         <div class="custom-option"   data-value="Secret du Carnage"><span class="material-symbols-outlined cs-icon" 
                                                 
-                                                style="color: #a70740; font-size: 1rem">explosion</span> Secret du
+                                                class="text-brut icon-sm">explosion</span> Secret du
                                             Carnage</div>
                                         <div class="custom-option"   data-value="Secret de la Joie"><span class="material-symbols-outlined cs-icon" 
                                                 
-                                                style="color: #b74c0b; font-size: 1rem">volcano</span> Secret de la
+                                                class="text-orange icon-sm">volcano</span> Secret de la
                                             Joie</div>
                                         <div class="custom-option"   data-value="Secret du Savoir"><span class="material-symbols-outlined cs-icon text-info" 
                                                 >psychology</span> Secret du
                                             Savoir</div>
                                         <div class="custom-option"   data-value="Secret du Destin"><span class="material-symbols-outlined cs-icon" 
                                                 
-                                                style="color: #e7d198; font-size: 1rem">all_inclusive</span> Secret du
+                                                class="text-gold icon-sm">all_inclusive</span> Secret du
                                             Destin</div>
                                         <div class="custom-option"   data-value="Secret de l'Éther"><span class="material-symbols-outlined cs-icon" 
                                                 
-                                                style="color: #38bdf8; font-size: 1rem">blur_on</span> Secret de
+                                                class="text-info icon-sm">blur_on</span> Secret de
                                             l'Éther</div>
                                         <div class="custom-option"   data-value="Secret des Abysses"><span class="material-symbols-outlined cs-icon" 
                                                 
-                                                style="color: #c084fc; font-size: 1rem">dark_mode</span> Secret des
+                                                class="text-purple-300 icon-sm">dark_mode</span> Secret des
                                             Abysses</div>
                                     </div>
                                     <input type="hidden" id="dungeonSecretFilter" value=""
                                         onchange="renderDungeonsList()">
                                 </div>
-                                <div class="custom-select-wrapper"   style="width: 140px; z-index: 100">
+                                <div class="custom-select-wrapper w-[140px] z-100">
                                     <div class="custom-select-trigger"  
-                                        style="min-height: 36px; padding: 0.4rem 0.8rem; font-size: 0.85rem">
+                                        class="min-h-[36px] py-[0.4rem] px-[0.8rem] text-[0.85rem]">
                                         <span class="cs-label"  ><span class="material-symbols-outlined cs-icon text-muted"  >filter_alt</span> Lvl
                                             exact</span>
                                         <span class="material-symbols-outlined"  
-                                            style="font-size: 1rem">expand_more</span>
+                                            class="icon-sm">expand_more</span>
                                     </div>
                                     <div class="custom-select-options custom-options"  >
                                         <div class="custom-option"   data-value="">

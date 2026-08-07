@@ -1000,10 +1000,10 @@
                 </div>
 
                 <div id="eventActionContainer" class="flex gap-4">
-                    <button class="action-btn treasure" id="btnOpenChest" onclick="openChest(false)" style="display: none">
+                    <button class="action-btn treasure hidden" id="btnOpenChest" onclick="openChest(false)">
                         <span class="material-symbols-outlined">lock_open</span> Ouvrir le coffre
                     </button>
-                    <button class="action-btn epic" id="btnOpenChestKey" onclick="openChest(true)" style="display: none">
+                    <button class="action-btn epic hidden" id="btnOpenChestKey" onclick="openChest(true)">
                         <span class="material-symbols-outlined">vpn_key</span> Ouvrir (Clé : +10% de butin)
                     </button>
                     <button class="action-btn info" id="btnContinueEvent" onclick="nextRoom()">
@@ -1123,7 +1123,7 @@
         <!-- Sidebar Actions (Right) -->
         <div class="csp-sidebar csp-sidebar-right"  >
             <button class="action-btn attack mb-2"   id="btnAttack" onclick="initiateCombatCast(null)" disabled=""
-                style="width: 100%; justify-content: center;  white-space: nowrap">
+                class="w-full justify-center whitespace-nowrap">
                 <span class="material-symbols-outlined"  >swords</span>
                 Attaque
             </button>
@@ -1131,12 +1131,12 @@
             <div class="flex-1"  ></div> <!-- Spacer -->
 
             <button class="action-btn"   id="btnEndTurn" onclick="endTurn()"
-                style="background: rgba(139, 92, 246, 0.2); color: #c084fc; border-color: rgba(139, 92, 246, 0.4); width: 100%; justify-content: center; white-space: nowrap">
+                class="bg-purple-500/20 text-purple-400 border-purple-500/40 w-full justify-center whitespace-nowrap">
                 <span class="material-symbols-outlined"  >hourglass_top</span>
                 Fin de Tour
             </button>
             <button class="action-btn flee"  onclick="window.promptFlee()" 
-                style="width: 100%; justify-content: center; white-space: nowrap">
+                class="w-full justify-center whitespace-nowrap">
                 <span class="material-symbols-outlined"  >directions_run</span>
                 Fuir
             </button>
@@ -1151,7 +1151,7 @@
     </div>
 
     <!-- Target Selection Context Menu -->
-    <div class="context-menu"  id="targetContextMenu"  style="display: none"></div>
+    <div class="context-menu hidden" id="targetContextMenu"></div>
 
 
 

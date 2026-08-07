@@ -3,16 +3,16 @@
 function applyRbac() {
     if (window.currentUser !== undefined && !window.isAdmin) {
         const baseStats = document.getElementById('baseStatsSection');
-        if (baseStats) baseStats.classList.add('is-hidden');
+        if (baseStats) baseStats.classList.add('hidden');
 
         const xpField = document.getElementById('charExperience');
-        if (xpField && xpField.parentElement) xpField.parentElement.classList.add('is-hidden');
+        if (xpField && xpField.parentElement) xpField.parentElement.classList.add('hidden');
 
         const spiritExpField = document.getElementById('charSpiritExperience');
-        if (spiritExpField && spiritExpField.parentElement) spiritExpField.parentElement.classList.add('is-hidden');
+        if (spiritExpField && spiritExpField.parentElement) spiritExpField.parentElement.classList.add('hidden');
 
         const eqCreateSection = document.querySelector('.equip-create-section');
-        if (eqCreateSection) eqCreateSection.classList.add('is-hidden');
+        if (eqCreateSection) eqCreateSection.classList.add('hidden');
     }
 
     // Re-render characters to apply button visibility rules

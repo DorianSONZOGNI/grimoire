@@ -657,3 +657,52 @@ button {
     background: rgba(255, 255, 255, 0.15);
     box-shadow: 0 0 10px rgba(255, 255, 255, 0.1);
 }
+
+/* PVE Admin UI utilities */
+.min-h-\[42px\] { min-height: 42px; }
+.min-h-\[100px\] { min-height: 100px; }
+.btn-room {
+    font-size: 0.85rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.7rem 0.5rem;
+    border-radius: 8px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+.bg-crimson-500\/10 { background-color: rgba(225, 29, 72, 0.1); }
+.border-crimson-500\/30 { border-color: rgba(225, 29, 72, 0.3); }
+.bg-amber-500\/10 { background-color: rgba(245, 158, 11, 0.1); }
+.border-amber-500\/30 { border-color: rgba(245, 158, 11, 0.3); }
+.bg-emerald-500\/10 { background-color: rgba(16, 185, 129, 0.1); }
+.border-emerald-500\/30 { border-color: rgba(16, 185, 129, 0.3); }
+.text-red-400 { color: #f87171; }
+.bg-amber-500\/5 { background-color: rgba(245, 158, 11, 0.05); }
+.border-red-500\/30 { border-color: rgba(239, 68, 68, 0.3); }
+
+/* Padding & Margin utils */
+.py-8 { padding-top: 2rem; padding-bottom: 2rem; }
+.text-\[0\.85rem\] { font-size: 0.85rem; }
+.flex-shrink-0 { flex-shrink: 0; }
+.flex-wrap { flex-wrap: wrap; }
+.w-\[250px\] { width: 250px; }
+.w-\[140px\] { width: 140px; }
+.z-100 { z-index: 100; }
+.min-h-\[36px\] { min-height: 36px; }
+.py-\[0\.4rem\] { padding-top: 0.4rem; padding-bottom: 0.4rem; }
+.px-\[0\.8rem\] { padding-left: 0.8rem; padding-right: 0.8rem; }
+
+/* Final audit utilities */
+.grid-auto-fill-140 {
+    grid-column: 1 / -1;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    border-top: 1px dashed rgba(255,255,255,0.1);
+    padding-top: 0.5rem;
+}
+.border-l-3-amber { border-left: 3px solid #f59e0b; }
+.min-w-\[150px\] { min-width: 150px; }
+.flex-05 { flex: 0.5; }
+.whitespace-nowrap { white-space: nowrap; }

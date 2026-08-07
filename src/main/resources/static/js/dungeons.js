@@ -488,11 +488,9 @@ window.selectCharacter = async function (id) {
     const btn = document.getElementById('btnEnterDungeon');
     if (btn) {
         if (pageState.selectedCharIds.length > 0) {
-            btn.style.opacity = '1';
-            btn.style.pointerEvents = 'all';
+            btn.classList.remove('opacity-50', 'pointer-events-none');
         } else {
-            btn.style.opacity = '0.5';
-            btn.style.pointerEvents = 'none';
+            btn.classList.add('opacity-50', 'pointer-events-none');
         }
     }
 
@@ -649,8 +647,7 @@ window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost,
 
     const btn = document.getElementById('btnEnterDungeon');
     if (btn) {
-        btn.style.opacity = '0.5';
-        btn.style.pointerEvents = 'none';
+        btn.classList.add('opacity-50', 'pointer-events-none');
     }
 
     renderConsumablesList();

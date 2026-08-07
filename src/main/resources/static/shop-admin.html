@@ -129,7 +129,7 @@
                                 <input type="hidden" id="eqRarity" value="COMMUN">
                             </div>
                         </div>
-                        <div class="eq-create-field consumable-category-field"   style="display: none">
+                        <div class="eq-create-field consumable-category-field hidden">
                             <label>Catégorie (Consom.)</label>
                             <div class="custom-select-wrapper"   id="eqConsumableCategoryWrapper" tabindex="0">
                                 <div class="custom-select-trigger"   id="eqConsumableCategoryTrigger">
@@ -306,7 +306,7 @@
                         </div>
                     </div>
 
-                    <div class="eq-create-row quad consumable-stat"   style="display: none">
+                    <div class="eq-create-row quad consumable-stat hidden">
                         <div class="eq-create-field"  >
                             <label class="flex items-center gap-1"><span class="material-symbols-outlined text-pv text-base align-bottom" >percent</span> PV
                                 (Max)</label>
@@ -330,7 +330,7 @@
                         </div>
                     </div>
 
-                    <div class="eq-create-row mb-4"   id="eqBaseWeightRow" style="display: none">
+                    <div class="eq-create-row mb-4 hidden" id="eqBaseWeightRow">
                         <div class="eq-create-field"  >
                             <label class="flex items-center gap-1"><span class="material-symbols-outlined text-muted text-base align-bottom" >scale</span>
                                 Poids de base (Consommable)</label>
@@ -352,7 +352,7 @@
                         <div class="gauge-track h-[6px] bg-white/10 rounded-[3px] overflow-hidden"  
                             >
                             <div class="gauge-fill hp"  id="eqWeightFill" 
-                                style="height: 100%; width: 0%; background: #10b981; transition: width 0.3s ease, background 0.3s ease">
+                                class="h-full w-0 bg-success transition-all duration-300">
                             </div>
                         </div>
                     </div>
