@@ -100,5 +100,6 @@ Cela permettra de retirer massivement les `style="..."` sur chaque `<input>` et 
 2. **Nettoyage des Couleurs (`text-color`)** : Remplacer massivement tous les `style="color: #Hex"` par les classes de `utilities.css` (`text-success`, `text-error`, `text-purple`, `text-muted`).
 3. **Nettoyage des Flex & Marges** : Introduire `.flex-1` et des classes d'espacement simples (`mb-1`, `mb-2`) pour supprimer les inline correspondants.
 
-> [!TIP]
-> Veux-tu que j'applique la phase 1 du nettoyage sur `alchemy-admin.html` et `alchemy.html` (retrait des `style` sur les inputs, labels et custom-options) pour que tu vois le résultat en pratique ?
+> [!SUCCESS]
+> **Phase 1 Appliquée (07/08/2026)** : Le nettoyage des styles inline a été complété avec succès sur `alchemy-admin.html` et `alchemy.html` ! Les flex, espacements, et couleurs en dur ont été remplacés par les classes `utilities.css`. Les attributs de tailles des inputs et custom-options utilisent maintenant les styles par défaut existants dans `components.css`. 
+

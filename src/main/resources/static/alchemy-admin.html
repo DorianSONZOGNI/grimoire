@@ -18,7 +18,7 @@
     <link rel="stylesheet" href="/styles/ui/layout.css?v=4">
     <link rel="stylesheet" href="/styles/ui/forms.css?v=4">
     <link rel="stylesheet" href="/styles/ui/components.css?v=4">
-    <link rel="stylesheet" href="/styles/ui/utilities.css">
+    <link rel="stylesheet" href="/styles/ui/utilities.css?v=1786102144315">
     <link rel="stylesheet" href="/styles/pages/vault.css?v=4">
     <link rel="stylesheet" href="/styles/pages/alchemy-admin.css">
 </head>
@@ -27,25 +27,24 @@
 
     <app-navbar active-page="alchemy-admin"></app-navbar>
 
-    <main style="display: block">
-        <div class="form-container"  
-            style="max-width: 1200px; margin: 2rem auto; display: flex; gap: 2rem; align-items: stretch">
+    <main class="block">
+        <div class="flex flex-row justify-center items-stretch gap-8 mx-auto my-8 w-full" style="max-width: 1400px;">
 
-            <div class="panel flex-1"   id="recipePanel" style="transition: all 0.3s ease">
+            <div class="panel flex-1 flex flex-col" id="recipePanel">
                 <div class="panel-title"  >
                     <span class="material-symbols-outlined text-info"   >science</span>
                     Créer/Éditer une Recette Alchimique
                 </div>
 
-                <form id="recipeForm" style="display: flex; flex-direction: column; gap: 0.5rem">
+                <form id="recipeForm" class="flex flex-col gap-2">
                     <input type="hidden" id="recipeId" value="">
                     <div class="form-row"  >
-                        <div class="form-group"   class="flex-1">
+                        <div class="form-group flex-1">
                             <label>Nom de la recette</label>
                             <input type="text" id="recipeName" required="" placeholder="Ex: Transmutation Majeure"
                                >
                         </div>
-                        <div class="form-group"   style="flex: 2">
+                        <div class="form-group" style="flex: 2">
                             <label>Description</label>
                             <input type="text" id="recipeDesc" placeholder="Ex: Convertit des anomalies en golem."
                                >
@@ -54,56 +53,45 @@
 
                     <div class="form-row"  >
                         <div class="form-group"  >
-                            <label class="text-amber"  style="margin-bottom: 0.2rem; font-size: 0.85rem"><span class="material-symbols-outlined" 
-                                    
-                                    style="font-size: 0.9rem; vertical-align: middle">monetization_on</span> Coût
-                                Or</label>
+                            <label class="text-amber mb-1 text-sm"><span class="material-symbols-outlined icon-sm align-middle">monetization_on</span> Coût Or</label>
                             <input type="number" id="costGold" value="0" min="0" step="0.1"
                                >
                         </div>
                         <div class="form-group"  >
-                            <label class="text-emerald"  style="margin-bottom: 0.2rem; font-size: 0.85rem"><span class="material-symbols-outlined" 
-                                    
-                                    style="font-size: 0.9rem; vertical-align: middle">star</span> Coût XP
-                                Spirit</label>
+                            <label class="text-emerald mb-1 text-sm"><span class="material-symbols-outlined icon-sm align-middle">star</span> Coût XP Spirit</label>
                             <input type="number" id="costSpirit" value="0" min="0"
                                >
                         </div>
                     </div>
 
-                    <hr style="border-color: rgba(255,255,255,0.05); margin: 0.3rem 0">
+                    <hr class="my-1 border-divider">
 
-                    <div class="form-group"   style="margin: 0">
+                    <div class="form-group m-0">
                         <label>Ingrédients : Anomalies</label>
-                        <div class="req-list"  id="reqAnomaliesList"  style="margin-bottom: 0.3rem"></div>
-                        <button class="btn btn-secondary"  type="button"  onclick="addRequirement('anomalie')"
-                            style="padding: 0.3rem 0.5rem; font-size: 0.8rem; width: 100%">+ Ajouter Anomalie</button>
+                        <div class="req-list mb-1" id="reqAnomaliesList"></div>
+                        <button class="btn btn-secondary w-full text-sm p-1" type="button" onclick="addRequirement('anomalie')">+ Ajouter Anomalie</button>
                     </div>
-                    <div class="form-group"   style="margin: 0">
+                    <div class="form-group m-0">
                         <label>Ingrédients : Consommables</label>
-                        <div class="req-list"  id="reqConsumablesList"  style="margin-bottom: 0.3rem"></div>
-                        <button class="btn btn-secondary"  type="button"  onclick="addRequirement('consumable')"
-                            style="padding: 0.3rem 0.5rem; font-size: 0.8rem; width: 100%">+ Ajouter
-                            Consommable</button>
+                        <div class="req-list mb-1" id="reqConsumablesList"></div>
+                        <button class="btn btn-secondary w-full text-sm p-1" type="button" onclick="addRequirement('consumable')">+ Ajouter Consommable</button>
                     </div>
 
-                    <hr style="border-color: rgba(255,255,255,0.05); margin: 0.3rem 0">
+                    <hr class="my-1 border-divider">
 
-                    <div class="panel-title"  
-                        style="font-size: 0.95rem; margin-bottom: 0; padding-bottom: 0; border: none">
+                    <div class="panel-title text-base mb-0 pb-0 border-none">
                         <span class="material-symbols-outlined text-purple"  >auto_awesome</span> Résultat
                     </div>
 
-                    <div class="form-row"   style="margin-bottom: 0">
-                        <div class="form-group flex-1"   style=".5">
+                    <div class="form-row mb-0">
+                        <div class="form-group flex-1">
                             <label>Type de récompense</label>
-                            <div class="custom-select-wrapper"   style="z-index: 10">
+                            <div class="custom-select-wrapper z-10">
                                 <div class="custom-select-trigger"  >
-                                    <span class="cs-label"   style="font-size: 0.85rem">
+                                    <span class="cs-label text-sm">
                                         <span class="material-symbols-outlined cs-icon text-purple"  >star</span> Donner Anomalie
                                     </span>
-                                    <span class="material-symbols-outlined"  
-                                        style="color: #64748b; font-size: 1rem">expand_more</span>
+                                    <span class="material-symbols-outlined text-muted icon-sm">expand_more</span>
                                 </div>
                                 <div class="custom-select-options custom-options"  >
                                     <div class="custom-option"   data-value="GIVE_ANOMALY">
@@ -132,7 +120,7 @@
                                 <input type="hidden" id="rewardType" value="GIVE_ANOMALY">
                             </div>
                         </div>
-                        <div class="form-group"   id="rewardNameContainer" style="flex: 2">
+                        <div class="form-group" id="rewardNameContainer" style="flex: 2">
                             <label>Nom de l'objet (Résultat)</label>
                             <input type="text" id="rewardName" required="" placeholder="Ex: Potion"
                                >
@@ -153,40 +141,32 @@
                         </div>
                     </div>
 
-                    <div class="mt-2" style="display: flex; gap: 0.5rem">
-                        <button class="btn flex-1"  type="submit"  style="padding: 0.5rem">Enregistrer la
-                            recette</button>
-                        <button class="btn btn-secondary flex-1"  type="button" id="cancelEditBtn" 
-                            style="padding: 0.5rem; display: none; background: rgba(239, 68, 68, 0.2); border-color: rgba(239, 68, 68, 0.4); color: #fca5a5"
-                            onclick="cancelEdit()">Annuler l'édition</button>
+                    <div class="mt-2 flex gap-2">
+                        <button class="btn flex-1 p-2" type="submit">Enregistrer la recette</button>
+                        <button class="btn btn-danger flex-1 p-2" type="button" id="cancelEditBtn" style="display: none;" onclick="cancelEdit()">Annuler l'édition</button>
                     </div>
-                    <div class="mt-2" id="formMsg"
-                        style="font-weight: bold; text-align: center; font-size: 0.85rem"></div>
+                    <div class="mt-2 font-bold text-center text-sm" id="formMsg"></div>
                 </form>
             </div>
 
-            <div class="flex-1" style="position: relative">
-                <div class="panel"  
-                    style="position: absolute; top: 0; left: 0; right: 0; bottom: 0; display: flex; flex-direction: column; margin: 0">
-                    <div class="panel-title"  
-                        class="flex-between flex-center">
-                        <div>
-                            <span class="material-symbols-outlined text-purple"  >auto_awesome</span>
+            <div class="flex-1 relative">
+                <div class="panel absolute inset-0 flex flex-col m-0">
+                    <div class="panel-title flex justify-between items-center">
+                        <div class="flex items-center gap-2">
+                            <span class="material-symbols-outlined text-purple">auto_awesome</span>
                             Recettes Existantes
                         </div>
                     </div>
 
-                    <div class="filters-container mb-4"   style="display: flex; gap: 0.5rem">
-                        <div class="flex-1"  >
-                            <input class="form-control"  type="text" id="searchRecipeName" 
-                                placeholder="Rechercher par nom..."
-                                style="margin: 0; padding: 0.6rem; font-size: 0.85rem" oninput="renderRecipesList()">
+                    <div class="filters-container mb-4 flex gap-2">
+                        <div class="flex-1">
+                            <input class="form-control m-0 p-2 text-sm w-full" type="text" id="searchRecipeName" 
+                                placeholder="Rechercher par nom..." oninput="renderRecipesList()">
                         </div>
-                        <div class="custom-select-wrapper flex-1"   style="z-index: 20">
+                        <div class="custom-select-wrapper flex-1 z-20">
                             <div class="custom-select-trigger"  >
-                                <span class="cs-label"   style="font-size: 0.85rem">Toutes les recettes</span>
-                                <span class="material-symbols-outlined"  
-                                    style="color: #64748b; font-size: 1rem">expand_more</span>
+                                <span class="cs-label text-sm">Toutes les recettes</span>
+                                <span class="material-symbols-outlined text-muted icon-sm">expand_more</span>
                             </div>
                             <div class="custom-select-options custom-options"  >
                                 <div class="custom-option"   data-value="">
@@ -217,8 +197,7 @@
                         </div>
                     </div>
 
-                    <div class="flex-1" id="recipesList"
-                        style="display: flex; flex-direction: column; gap: 1rem; overflow-y: auto; padding-right: 0.5rem">
+                    <div class="flex-1 flex flex-col gap-4 overflow-y-auto pr-2" style="min-height: 0;" id="recipesList">
                         Chargement...
                     </div>
                 </div>
