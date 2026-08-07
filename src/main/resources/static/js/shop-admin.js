@@ -394,8 +394,22 @@ function renderGrid(equipments) {
 // Init
 window.addEventListener('DOMContentLoaded', async () => {
     if (window.initAppMeta) await window.initAppMeta();
-    await loadAnomalies();
-    loadEquipments();
+
+    const checkAdmin = async () => {
+        if (!window.currentUser) return;
+        if (!window.isAdmin) {
+            document.body.innerHTML = "<h2 style='color:red;text-align:center;margin-top:50px;'>Accès Refusé : Réservé aux Admins</h2>";
+            return;
+        }
+        await loadAnomalies();
+        loadEquipments();
+    };
+
+    if (window.currentUser !== undefined) {
+        checkAdmin();
+    } else {
+        window.addEventListener('authLoaded', checkAdmin, { once: true });
+    }
 
     if (document.getElementById('addAnomalyPriceBtn')) {
         document.getElementById('addAnomalyPriceBtn').addEventListener('click', () => {
@@ -430,12 +444,14 @@ window.addEventListener('DOMContentLoaded', async () => {
 window.addEventListener('authLoaded', () => {
     const btnCreate = document.getElementById('btnCreateVaultEq');
     if (btnCreate) {
-        btnCreate.style.display = window.isAdmin ? 'flex' : 'none';
+        if (window.isAdmin) btnCreate.classList.remove('hidden');
+        else btnCreate.classList.add('hidden');
     }
 
     const searchOwnerContainer = document.getElementById('searchOwnerContainer');
     if (searchOwnerContainer) {
-        searchOwnerContainer.style.display = window.isAdmin ? 'flex' : 'none';
+        if (window.isAdmin) searchOwnerContainer.classList.remove('hidden');
+        else searchOwnerContainer.classList.add('hidden');
     }
 
     // Re-render the grid in case equipments loaded before auth

@@ -28,7 +28,7 @@
     <app-navbar active-page="alchemy-admin"></app-navbar>
 
     <main class="block">
-        <div class="flex flex-row justify-center items-stretch gap-8 mx-auto my-8 w-full" style="max-width: 1400px;">
+        <div class="flex flex-row justify-center items-stretch gap-8 mx-auto my-8 w-full max-w-[1400px]" >
 
             <div class="panel flex-1 flex flex-col" id="recipePanel">
                 <div class="panel-title"  >
@@ -44,7 +44,7 @@
                             <input type="text" id="recipeName" required="" placeholder="Ex: Transmutation Majeure"
                                >
                         </div>
-                        <div class="form-group" style="flex: 2">
+                        <div class="form-group flex-2" >
                             <label>Description</label>
                             <input type="text" id="recipeDesc" placeholder="Ex: Convertit des anomalies en golem."
                                >
@@ -120,7 +120,7 @@
                                 <input type="hidden" id="rewardType" value="GIVE_ANOMALY">
                             </div>
                         </div>
-                        <div class="form-group" id="rewardNameContainer" style="flex: 2">
+                        <div class="form-group flex-2" id="rewardNameContainer" >
                             <label>Nom de l'objet (Résultat)</label>
                             <input type="text" id="rewardName" required="" placeholder="Ex: Potion"
                                >
@@ -143,7 +143,7 @@
 
                     <div class="mt-2 flex gap-2">
                         <button class="btn flex-1 p-2" type="submit">Enregistrer la recette</button>
-                        <button class="btn btn-danger flex-1 p-2" type="button" id="cancelEditBtn" style="display: none;" onclick="cancelEdit()">Annuler l'édition</button>
+                        <button class="btn btn-danger flex-1 p-2 hidden" type="button" id="cancelEditBtn"  onclick="cancelEdit()">Annuler l'édition</button>
                     </div>
                     <div class="mt-2 font-bold text-center text-sm" id="formMsg"></div>
                 </form>
@@ -197,7 +197,7 @@
                         </div>
                     </div>
 
-                    <div class="flex-1 flex flex-col gap-4 overflow-y-auto pr-2" style="min-height: 0;" id="recipesList">
+                    <div class="flex-1 flex flex-col gap-4 overflow-y-auto pr-2 min-h-0"  id="recipesList">
                         Chargement...
                     </div>
                 </div>

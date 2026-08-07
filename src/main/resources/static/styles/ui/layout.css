@@ -33,7 +33,7 @@ header{
             color: var(--primary);
         }
 
-main{
+.grimoire-main{
             padding: 2rem 5%;
             display: grid;
             grid-template-columns: 1fr 1.2fr;
@@ -44,7 +44,7 @@ main{
         }
 
 @media (max-width: 1024px){
-            main {
+            .grimoire-main {
                 grid-template-columns: 1fr;
             }
         }
@@ -61,7 +61,7 @@ main{
             gap: 1.5rem;
             position: relative;
             overflow: visible;
-            height: 100%;
+            /* height: 100%; removed to allow dynamic expansion */
             transition: all 0.3s ease;
         }
 

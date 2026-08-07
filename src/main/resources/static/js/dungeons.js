@@ -534,9 +534,10 @@ window.selectCharacter = async function (id) {
         totalStats.regenManaPerTurn += (eq.regenManaPerTurn || 0);
     });
 
-    document.getElementById('prepStatEmpty').style.display = 'none';
+    document.getElementById('prepStatEmpty').classList.add('hidden');
     const grid = document.getElementById('prepStatGrid');
-    grid.style.display = 'grid';
+    grid.classList.remove('hidden');
+    grid.style.display = '';
     grid.innerHTML = `
         <div class="stat-item" style="color: #ec4899;"><span class="material-symbols-outlined">favorite</span> ${totalStats.healthMax} PV</div>
         <div class="stat-item text-info"><span class="material-symbols-outlined">water_drop</span> ${totalStats.manaMax} Mana</div>
@@ -641,8 +642,9 @@ window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost,
         }
     });
 
-    document.getElementById('prepStatEmpty').style.display = 'flex';
-    document.getElementById('prepStatGrid').style.display = 'none';
+    document.getElementById('prepStatEmpty').classList.remove('hidden');
+    document.getElementById('prepStatEmpty').style.display = '';
+    document.getElementById('prepStatGrid').classList.add('hidden');
     document.getElementById('prepEquipList').innerHTML = '<div class="text-sm text-muted">Aucun équipement à afficher.</div>';
 
     const btn = document.getElementById('btnEnterDungeon');

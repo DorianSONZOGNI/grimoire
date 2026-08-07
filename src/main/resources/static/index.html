@@ -1,47 +1,27 @@
 <!DOCTYPE html><html lang="fr"><head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grimoire</title>
+    <title>Grimoire des Sorts</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
     <link rel="icon" type="image/png" href="/favicon.svg">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&amp;family=Inter:wght@300;400;500&amp;display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
     <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
     <link rel="stylesheet" href="/styles/variables.css?v=4">
-    <link rel="stylesheet" href="/styles/ui/layout.css?v=4">
+    <link rel="stylesheet" href="/styles/ui/layout.css?v=7">
     <link rel="stylesheet" href="/styles/ui/forms.css?v=4">
-    <link rel="stylesheet" href="/styles/ui/effects-panel.css?v=4">
-    <link rel="stylesheet" href="/styles/pages/spell-cards.css?v=4">
-    <link rel="stylesheet" href="/styles/sprites/spell-cards-animations.css?v=4">
-
-
-
-
-
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Grimoire</title>
-    <link rel="preconnect" href="https://fonts.googleapis.com">
-    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
-    <link rel="icon" type="image/png" href="/favicon.svg">
-    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&amp;family=Inter:wght@300;400;500&amp;display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200" rel="stylesheet">
-    <link rel="stylesheet" href="/styles/variables.css?v=4">
-    <link rel="stylesheet" href="/styles/ui/layout.css?v=4">
-    <link rel="stylesheet" href="/styles/ui/forms.css?v=4">
-    <link rel="stylesheet" href="/styles/ui/effects-panel.css?v=4">
-    <link rel="stylesheet" href="/styles/pages/spell-cards.css?v=4">
-    <link rel="stylesheet" href="/styles/sprites/spell-cards-animations.css?v=4">
-
     <link rel="stylesheet" href="/styles/ui/components.css?v=4">
-    <link rel="stylesheet" href="/styles/ui/utilities.css?v=4">
+    <link rel="stylesheet" href="/styles/ui/utilities.css?v=6">
+    <link rel="stylesheet" href="/styles/ui/effects-panel.css?v=4">
+    <link rel="stylesheet" href="/styles/pages/spell-cards.css?v=4">
+    <link rel="stylesheet" href="/styles/sprites/spell-cards-animations.css?v=4">
 </head>
 
 <body>
 
     <app-navbar active-page="grimoire"></app-navbar>
 
-    <main>
+    <main class="grimoire-main">
         <div class="magic-rock"  ></div>
         <!-- Colonne Gauche : Paramètres de Base du Sort -->
         <div class="panel"   id="spellForgePanel">
@@ -82,7 +62,7 @@
                     <label for="channelingDuration">Durée de canalisation (Tours)</label>
                     <input type="number" id="channelingDuration" min="1" value="1" oninput="renderEffects()">
                 </div>
-                <div class="form-group justify-center h-full"   style="align-items: flex-start">
+                <div class="form-group justify-center h-full items-start"   >
                     <label class="instant-toggle-container mt-4" title="Permet de lancer des sorts instantanés pendant la canalisation">
                         <input class="instant-checkbox"  type="checkbox" id="allowInstantDuringChanneling"  checked="">
                         <div class="instant-icon-wrap"  >
@@ -98,14 +78,14 @@
 
             <!-- SECTION DES COÛTS DU SORT -->
             <div class="cost-section"  >
-                <div class="cost-section-title"   class="flex-center flex-center-gap">
+                <div class="cost-section-title flex-center flex-center-gap"   >
                     <span class="material-symbols-outlined text-amber text-xl" >electric_bolt</span>
                     <span>Coûts du Sort</span>
                 </div>
 
                 <!-- Coûts en Mana -->
                 <div class="cost-card mana"  >
-                    <div class="cost-card-header"   class="flex-center flex-center-gap">
+                    <div class="cost-card-header flex-center flex-center-gap"   >
                         <span class="material-symbols-outlined text-lg text-info"  >water_drop</span>
                         <span>Mana</span>
                     </div>
@@ -116,8 +96,8 @@
                     <div class="cost-inputs-grid"  >
                         <label for="percentManaCost" >Ratio :</label>
                         <div class="flex-center gap-2"  >
-                            <input type="number" id="percentManaCost" min="0" value="0" style="width: 70px">
-                            <span style="color: var(--text-muted)">% de</span>
+                            <input type="number" id="percentManaCost" min="0" value="0" class="w-[70px]">
+                            <span class="text-muted">% de</span>
                             <select class="flex-1 text-sm" id="percentManaCostSource" >
                                 <!-- Rempli dynamiquement -->
                             </select>
@@ -127,7 +107,7 @@
 
                 <!-- Coûts en PV -->
                 <div class="cost-card health"  >
-                    <div class="cost-card-header"   class="flex-center flex-center-gap">
+                    <div class="cost-card-header flex-center flex-center-gap"   >
                         <span class="material-symbols-outlined text-lg text-danger"  >bloodtype</span>
                         <span>Sacrifice (Points de Vie)</span>
                     </div>
@@ -138,8 +118,8 @@
                     <div class="cost-inputs-grid"  >
                         <label for="percentHealCost" >Ratio :</label>
                         <div class="flex-center gap-2"  >
-                            <input type="number" id="percentHealCost" min="0" value="0" style="width: 70px">
-                            <span style="color: var(--text-muted)">% de</span>
+                            <input type="number" id="percentHealCost" min="0" value="0" class="w-[70px]">
+                            <span class="text-muted">% de</span>
                             <select class="flex-1 text-sm" id="percentHealCostSource" >
                                 <!-- Rempli dynamiquement -->
                             </select>
@@ -149,7 +129,7 @@
 
                 <!-- Coût en Chaleur (Voie de la Destruction) -->
                 <div class="cost-card health text-amber"   id="heatCostCard" style="display: none; border-left: 3px solid #f59e0b;">
-                    <div class="cost-card-header"   class="flex-center flex-center-gap">
+                    <div class="cost-card-header flex-center flex-center-gap"   >
                         <span class="material-symbols-outlined text-amber text-lg" >local_fire_department</span>
                         <span>Coût en Chaleur</span>
                     </div>
@@ -160,8 +140,8 @@
                     <div class="cost-inputs-grid"  >
                         <label for="percentHeatCost" >Ratio :</label>
                         <div class="flex-center gap-2"  >
-                            <input type="number" id="percentHeatCost" min="0" value="0" style="width: 70px">
-                            <span style="color: var(--text-muted)">% de la chaleur max (100)</span>
+                            <input type="number" id="percentHeatCost" min="0" value="0" class="w-[70px]">
+                            <span class="text-muted">% de la chaleur max (100)</span>
                         </div>
                     </div>
                 </div>
@@ -172,9 +152,9 @@
                 <textarea id="description" rows="2" placeholder="Effets narratifs ou secrets de ce sort..."></textarea>
             </div>
 
-            <div class="form-row"   class="mb-4">
-                <div class="form-group justify-center"   style="align-items: flex-start">
-                    <label class="target-toggle-container monster-mode"   style="width: max-content" title="Si activé, ce sort sera une Mutation pour monstre">
+            <div class="form-row mb-4"   >
+                <div class="form-group justify-center items-start"   >
+                    <label class="target-toggle-container monster-mode w-max"    title="Si activé, ce sort sera une Mutation pour monstre">
                         <input class="target-radio"  type="checkbox" id="isMonsterSpell"  onchange="toggleSpellTargetType()">
                         <div class="target-icon-wrap monster-icon"  >
                             <span class="material-symbols-outlined text-xl" >pets</span>
@@ -188,13 +168,13 @@
             </div>
 
             <div class="form-row flex gap-4" id="heroAffinityRow" >
-                <div class="form-group"   class="flex-1">
+                <div class="form-group flex-1"   >
                     <label class="flex items-center gap-1" for="voieSelect" ><span class="material-symbols-outlined text-base" >route</span>Voie Associée</label>
                     <select id="voieSelect" onchange="handleAffinityChange('voie');">
                         <option value="">-- Aucune (Neutre) --</option>
                     </select>
                 </div>
-                <div class="form-group"   class="flex-1">
+                <div class="form-group flex-1"   >
                     <label class="flex items-center gap-1" for="spiritSelect" ><span class="material-symbols-outlined text-base" >psychology</span>Spiritualité</label>
                     <select id="spiritSelect" onchange="handleAffinityChange('spirit');">
                         <option value="">-- Aucune (Neutre) --</option>
@@ -203,7 +183,7 @@
             </div>
 
             <div class="form-row gap-4"   id="monsterAffinityRow" style="display: none">
-                <div class="form-group"   class="flex-1">
+                <div class="form-group flex-1"   >
                     <label class="flex items-center gap-1" for="mutationSelect" ><span class="material-symbols-outlined text-base" >pets</span>Mutation</label>
                     <select id="mutationSelect" onchange="handleAffinityChange('mutation');">
                         <option value="">-- Aucune (Neutre) --</option>
@@ -214,16 +194,16 @@
             <!-- Options spécifiques pour la Voie de la Violence -->
             <div class="form-group mt-4"  id="violenceConfig"  style="display: none">
                 <input type="checkbox" id="isInspiration" checked="" style="display: none" onchange="updateViolenceLabel()">
-                <div class="violence-segmented-control gap-2"   style="display: grid; grid-template-columns: 1fr 1fr;  background: rgba(0, 0, 0, 0.4); border: 1px solid var(--glass-border);  border-radius: 12px">
-                    <button class="flex items-center gap-1" type="button" id="btnInspiration" onclick="setViolenceType(true)" style="background: transparent; border: 1px solid transparent; border-radius: 8px; padding: 0.8rem 0.5rem;  flex-direction: column;   cursor: pointer; transition: all 0.3s ease">
-                        <span class="material-symbols-outlined text-2xl"   style="transition: transform 0.3s">storm</span>
+                <div class="violence-segmented-control gap-2 grid grid-cols-2 bg-black/40 border border-glass rounded-xl"   >
+                    <button class="flex items-center gap-1 bg-transparent border border-transparent rounded-lg py-3 px-2 flex-col cursor-pointer transition-all" type="button" id="btnInspiration" onclick="setViolenceType(true)" >
+                        <span class="material-symbols-outlined text-2xl transition-transform"   >storm</span>
                         <span class="font-semibold text-md" >Inspiration</span>
-                        <span class="text-sm" style="opacity: 0.8">+Critique</span>
+                        <span class="text-sm opacity-80" >+Critique</span>
                     </button>
-                    <button class="flex items-center gap-1" type="button" id="btnExpiration" onclick="setViolenceType(false)" style="background: transparent; border: 1px solid transparent; border-radius: 8px; padding: 0.8rem 0.5rem;  flex-direction: column;   cursor: pointer; transition: all 0.3s ease">
-                        <span class="material-symbols-outlined text-2xl"   style="transition: transform 0.3s">air</span>
+                    <button class="flex items-center gap-1 bg-transparent border border-transparent rounded-lg py-3 px-2 flex-col cursor-pointer transition-all" type="button" id="btnExpiration" onclick="setViolenceType(false)" >
+                        <span class="material-symbols-outlined text-2xl transition-transform"   >air</span>
                         <span class="font-semibold text-md" >Expiration</span>
-                        <span class="text-sm" style="opacity: 0.8">+Puissance</span>
+                        <span class="text-sm opacity-80" >+Puissance</span>
                     </button>
                 </div>
             </div>
@@ -231,17 +211,17 @@
             <!-- Options spécifiques pour la Spiritualité Karma -->
             <div class="form-group mt-4"  id="karmaConfig"  style="display: none">
                 <input type="hidden" id="karmaAlignment" value="NONE">
-                <div class="karma-segmented-control gap-2"   style="display: grid; grid-template-columns: 1fr 1fr 1fr;  background: rgba(0, 0, 0, 0.4); border: 1px solid var(--glass-border);  border-radius: 12px">
-                    <button class="flex items-center gap-1" type="button" id="btnKarmaOffensive" onclick="setKarmaAlignment('OFFENSIVE')" style="background: transparent; border: 1px solid transparent; border-radius: 8px; padding: 0.8rem 0.5rem;  flex-direction: column;   cursor: pointer; transition: all 0.3s ease">
-                        <span class="material-symbols-outlined text-2xl"   style="transition: transform 0.3s">dark_mode</span>
+                <div class="karma-segmented-control gap-2 grid grid-cols-3 bg-black/40 border border-glass rounded-xl"   >
+                    <button class="flex items-center gap-1 bg-transparent border border-transparent rounded-lg py-3 px-2 flex-col cursor-pointer transition-all" type="button" id="btnKarmaOffensive" onclick="setKarmaAlignment('OFFENSIVE')" >
+                        <span class="material-symbols-outlined text-2xl transition-transform"   >dark_mode</span>
                         <span class="font-semibold text-sm" >Ténèbres</span>
                     </button>
-                    <button class="flex items-center gap-1" type="button" id="btnKarmaRestorative" onclick="setKarmaAlignment('RESTORATIVE')" style="background: transparent; border: 1px solid transparent; border-radius: 8px; padding: 0.8rem 0.5rem;  flex-direction: column;   cursor: pointer; transition: all 0.3s ease">
-                        <span class="material-symbols-outlined text-2xl"   style="transition: transform 0.3s">brightness_medium</span>
+                    <button class="flex items-center gap-1 bg-transparent border border-transparent rounded-lg py-3 px-2 flex-col cursor-pointer transition-all" type="button" id="btnKarmaRestorative" onclick="setKarmaAlignment('RESTORATIVE')" >
+                        <span class="material-symbols-outlined text-2xl transition-transform"   >brightness_medium</span>
                         <span class="font-semibold text-sm" >Harmonie</span>
                     </button>
-                    <button class="flex items-center gap-1" type="button" id="btnKarmaProtective" onclick="setKarmaAlignment('PROTECTIVE')" style="background: transparent; border: 1px solid transparent; border-radius: 8px; padding: 0.8rem 0.5rem;  flex-direction: column;   cursor: pointer; transition: all 0.3s ease">
-                        <span class="material-symbols-outlined text-2xl"   style="transition: transform 0.3s">light_mode</span>
+                    <button class="flex items-center gap-1 bg-transparent border border-transparent rounded-lg py-3 px-2 flex-col cursor-pointer transition-all" type="button" id="btnKarmaProtective" onclick="setKarmaAlignment('PROTECTIVE')" >
+                        <span class="material-symbols-outlined text-2xl transition-transform"   >light_mode</span>
                         <span class="font-semibold text-sm" >Lumière</span>
                     </button>
                 </div>
@@ -251,12 +231,12 @@
 
 
 
-            <hr class="my-2" style="border-color: var(--glass-border)">
+            <hr class="my-2 border-glass" >
 
             <div class="form-group"  >
                 <label class="mb-1 font-semibold" >Ajouter une ligne d'effet au sort
                     :</label>
-                <div class="gap-2" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr))">
+                <div class="gap-2 grid grid-cols-auto-140" >
                     <button class="btn-effect-add dmg"  type="button"  onclick="addEffectPanel('FIXED_DAMAGE')">
                         <span class="material-symbols-outlined text-lg"  >swords</span> Dégâts Fixes
                     </button>
@@ -308,15 +288,15 @@
 
                     <!-- Boutons de Chaleur (spécifique Voie de la Destruction) -->
                     <div class="mt-2 w-full gap-2" id="heatEffectButtons" style="display: none; grid-column: 1 / -1; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));   border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 0.5rem">
-                        <button class="btn-effect-add"  type="button"  style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.35)" onclick="addEffectPanel('HEAT_FIXED')">
+                        <button class="btn-effect-add bg-red-500/20 text-red-300 border border-red-500/35"  type="button"   onclick="addEffectPanel('HEAT_FIXED')">
                             <span class="material-symbols-outlined text-lg"  >whatshot</span> Chaleur
                             Fixe
                         </button>
-                        <button class="btn-effect-add"  type="button"  style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.35)" onclick="addEffectPanel('HEAT_PERCENTAGE')">
+                        <button class="btn-effect-add bg-red-500/20 text-red-300 border border-red-500/35"  type="button"   onclick="addEffectPanel('HEAT_PERCENTAGE')">
                             <span class="material-symbols-outlined text-lg"  >explosion</span> Chaleur
                             %
                         </button>
-                        <button class="btn-effect-add"  type="button"  style="background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.35)" onclick="addEffectPanel('HEAT_OVER_TIME')">
+                        <button class="btn-effect-add bg-red-500/20 text-red-300 border border-red-500/35"  type="button"   onclick="addEffectPanel('HEAT_OVER_TIME')">
                             <span class="material-symbols-outlined text-lg"  >cyclone</span> Tick
                             Chaleur
                         </button>
@@ -324,7 +304,7 @@
 
                     <!-- Bouton Âme Détachée (spécifique Spiritualité Ténèbres) -->
                     <div class="mt-2 w-full gap-2" id="ameDetacheeEffectButton" style="display: none; grid-column: 1 / -1; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));   border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 0.5rem">
-                        <button class="btn-effect-add"  type="button"  style="background: rgba(244, 63, 94, 0.2); color: #fda4af; border: 1px solid rgba(244, 63, 94, 0.35)" onclick="addEffectPanel('AME_DETACHEE')">
+                        <button class="btn-effect-add bg-rose-500/20 text-rose-300 border border-rose-500/35"  type="button"   onclick="addEffectPanel('AME_DETACHEE')">
                             <span class="material-symbols-outlined text-lg"  >dark_mode</span> Âme
                             Détachée
                         </button>
@@ -332,7 +312,7 @@
 
                     <!-- Bouton Bourgeon (spécifique Voie de la Création) -->
                     <div class="mt-2 w-full gap-2" id="budEffectButton" style="display: none; grid-column: 1 / -1; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));   border-top: 1px dashed rgba(255,255,255,0.1); padding-top: 0.5rem">
-                        <button class="btn-effect-add"  type="button"  style="background: rgba(16, 185, 129, 0.2); color: #6ee7b7; border: 1px solid rgba(16, 185, 129, 0.35)" onclick="addEffectPanel('BUD')">
+                        <button class="btn-effect-add bg-emerald-500/20 text-emerald-300 border border-emerald-500/35"  type="button"   onclick="addEffectPanel('BUD')">
                             <span class="material-symbols-outlined text-lg"  >yard</span> Bourgeon
                         </button>
                     </div>
@@ -353,61 +333,61 @@
             <div class="panel-title"  >
                 <span>Grimoire des Sorts</span>
                 <div class="flex-center gap-2"  >
-                    <button class="btn btn-secondary items-center gap-1 text-sm"  type="button" id="btnToggleDisplayMode"  style="padding: 0.8rem; display: inline-flex" onclick="toggleDisplayMode()" title="Basculer entre le mode défilement (hauteur de la Forge) et le mode étendu (tous les sorts)">
-                        <span class="material-symbols-outlined text-lg"   style="line-height: 1" id="toggleDisplayIcon">unfold_less</span>
+                    <button class="btn btn-secondary items-center gap-1 text-sm p-[0.8rem] inline-flex"  type="button" id="btnToggleDisplayMode"   onclick="toggleDisplayMode()" title="Basculer entre le mode défilement (hauteur de la Forge) et le mode étendu (tous les sorts)">
+                        <span class="material-symbols-outlined text-lg leading-none"    id="toggleDisplayIcon">unfold_less</span>
                         <span id="toggleDisplayText">Mode Scroll</span>
                     </button>
-                    <button class="btn btn-secondary text-sm"  type="button"  style="padding: 0.8rem" onclick="loadSpells()">Actualiser</button>
+                    <button class="btn btn-secondary text-sm p-[0.8rem]"  type="button"   onclick="loadSpells()">Actualiser</button>
                 </div>
             </div>
 
             <!-- Barre de Filtres et Tris Premium -->
-            <div class="flex gap-4" id="grimoireFiltersContainer" style="background: linear-gradient(145deg, rgba(30, 41, 59, 0.4), rgba(15, 23, 42, 0.6)); border: 1px solid rgba(255, 255, 255, 0.08); box-shadow: 0 8px 20px rgba(0,0,0,0.25); border-radius: 12px; padding: 1.2rem; margin-bottom: 1.2rem;  flex-direction: column;  backdrop-filter: blur(8px); position: relative; z-index: 9999999">
-                <div class="flex items-center" style="justify-content: space-between;  border-bottom: 1px solid rgba(255,255,255,0.05); padding-bottom: 0.6rem">
-                    <div class="flex items-center gap-2 font-bold text-sm" style="text-transform: uppercase; letter-spacing: 1.2px; color: var(--primary)">
+            <div class="flex gap-4 grimoire-filters-panel flex-col relative z-[9999999] mb-[1.2rem]" id="grimoireFiltersContainer" >
+                <div class="flex items-center justify-between border-b border-white/5 pb-[0.6rem]" >
+                    <div class="flex items-center gap-2 font-bold text-sm uppercase tracking-[1.2px] text-primary" >
                         <span class="material-symbols-outlined text-xl" >visibility</span>
                         <span>Perception Arcanique</span>
                     </div>
-                    <div class="flex items-center" style="gap: 0.6rem">
-                        <button class="btn-secondary px-2 py-1 items-center"  type="button"  style="font-size: 0.7rem; line-height: 1.2; border-radius: 4px; border: none; background: rgba(244,63,94,0.1); color: #f43f5e; display: inline-flex;  gap: 0.2rem" onclick="resetFilters()" title="Réinitialiser les sélecteurs"><span class="material-symbols-outlined text-md" >restart_alt</span>Réinitialiser</button>
-                        <span class="badge text-emerald font-semibold"  id="filterCountBadge"  style="background: rgba(16,185,129,0.15)">0 sort</span>
+                    <div class="flex items-center gap-[0.6rem]" >
+                        <button class="btn-secondary px-2 py-1 items-center text-[0.7rem] leading-tight rounded border-none bg-rose-500/10 text-rose-500 inline-flex gap-1"  type="button"   onclick="resetFilters()" title="Réinitialiser les sélecteurs"><span class="material-symbols-outlined text-md" >restart_alt</span>Réinitialiser</button>
+                        <span class="badge text-emerald font-semibold bg-emerald-500/15"  id="filterCountBadge"  >0 sort</span>
                     </div>
                 </div>
 
-                <div style="position: relative">
-                    <span class="material-symbols-outlined text-lg"   style="position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%);  opacity: 0.6; color: var(--text-muted)">search</span>
-                    <input class="w-full text-sm" type="text" id="filterSearch" placeholder="Rechercher par lettre dans le nom ou la description..." style="padding: 0.6rem 1rem 0.6rem 2.2rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px;  outline: none; transition: border-color 0.2s" onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'" oninput="renderFilteredSpells()">
+                <div class="relative">
+                    <span class="material-symbols-outlined text-lg absolute left-3 top-1/2 -translate-y-1/2 opacity-60 text-muted"   >search</span>
+                    <input class="w-full text-sm bg-black/30 border border-white/10 rounded-lg outline-none transition-colors py-[0.6rem] pr-4 pl-9" type="text" id="filterSearch" placeholder="Rechercher par lettre dans le nom ou la description..."  onfocus="this.style.borderColor='var(--primary)'" onblur="this.style.borderColor='rgba(255,255,255,0.1)'" oninput="renderFilteredSpells()">
                 </div>
 
                 <!-- Section Filtrage par Voie (Boutons uniques) -->
                 <div>
-                    <label class="mb-2 flex items-center gap-1 font-bold text-xs" style="color: var(--text-muted);      letter-spacing: 0.5px">
+                    <label class="mb-2 flex items-center gap-1 font-bold text-xs text-muted tracking-[0.5px]" >
                         <span class="material-symbols-outlined text-purple text-md" >auto_awesome</span>
                         FILTRER PAR VOIE
                     </label>
-                    <div class="flex" id="filterVoiesButtonsContainer" style="flex-wrap: wrap; gap: 0.4rem">
+                    <div class="flex flex-wrap gap-[0.4rem]" id="filterVoiesButtonsContainer" >
                         <!-- Injecté dynamiquement en JS -->
                     </div>
                 </div>
 
                 <!-- Section Filtrage par Spiritualité et Mutation -->
-                <div class="flex gap-4" style="flex-wrap: wrap; align-items: flex-start">
+                <div class="flex gap-4 flex-wrap items-start" >
                     <div class="flex-1"  >
-                        <label class="mb-2 flex items-center gap-1 font-bold text-xs" style="color: var(--text-muted);      letter-spacing: 0.5px">
-                            <span class="material-symbols-outlined text-md"   style="color: #fb923c">grade</span>
+                        <label class="mb-2 flex items-center gap-1 font-bold text-xs text-muted tracking-[0.5px]" >
+                            <span class="material-symbols-outlined text-md text-orange-400"   >grade</span>
                             FILTRER PAR SPIRITUALITÉ
                         </label>
-                        <div class="flex" id="filterSpiritsButtonsContainer" style="flex-wrap: wrap; gap: 0.4rem">
+                        <div class="flex flex-wrap gap-[0.4rem]" id="filterSpiritsButtonsContainer" >
                             <!-- Injecté dynamiquement en JS -->
                         </div>
                     </div>
 
                     <div class="flex-1" id="filterMutationAdminContainer" style="display: none">
-                        <label class="mb-2 flex items-center gap-1 font-bold text-xs" style="color: var(--text-muted);      letter-spacing: 0.5px">
+                        <label class="mb-2 flex items-center gap-1 font-bold text-xs text-muted tracking-[0.5px]" >
                             <span class="material-symbols-outlined text-purple text-md" >pets</span>
                             FILTRER PAR MUTATION
                         </label>
-                        <select class="w-full text-sm" id="filterMutation" onchange="renderFilteredSpells()" style="padding: 0.6rem; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; border-radius: 6px; cursor: pointer; outline: none">
+                        <select class="w-full text-sm p-[0.6rem] bg-slate-900/80 border border-white/10 text-slate-200 rounded-md cursor-pointer outline-none" id="filterMutation" onchange="renderFilteredSpells()" >
                             <option value="ALL">Toutes les mutations</option>
                             <option value="ONLY_MUTATIONS">Mutations uniquement</option>
                             <option value="NONE">Sans mutation</option>
@@ -417,11 +397,11 @@
 
                 <div class="grid-auto-fit gap-3" >
                     <div>
-                        <label class="mb-1 flex items-center gap-1 font-bold text-xs" style="color: var(--text-muted);      letter-spacing: 0.5px">
+                        <label class="mb-1 flex items-center gap-1 font-bold text-xs text-muted tracking-[0.5px]" >
                             <span class="material-symbols-outlined text-emerald text-md" >category</span>
                             NATURE D'EFFET
                         </label>
-                        <select class="w-full text-sm" id="filterEffect" style="padding: 0.6rem; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; border-radius: 6px; cursor: pointer; outline: none" onchange="renderFilteredSpells()">
+                        <select class="w-full text-sm p-[0.6rem] bg-slate-900/80 border border-white/10 text-slate-200 rounded-md cursor-pointer outline-none" id="filterEffect"  onchange="renderFilteredSpells()">
                             <option value="ALL">Tous effets</option>
                             <option value="GROUP_DAMAGE">Dégâts</option>
                             <option value="GROUP_HEAL">Soins</option>
@@ -446,11 +426,11 @@
                         </select>
                     </div>
                     <div>
-                        <label class="mb-1 flex items-center gap-1 font-bold text-xs" style="color: var(--text-muted);      letter-spacing: 0.5px">
+                        <label class="mb-1 flex items-center gap-1 font-bold text-xs text-muted tracking-[0.5px]" >
                             <span class="material-symbols-outlined text-amber text-md" >workspace_premium</span>
                             PALIER (NIVEAU)
                         </label>
-                        <select class="w-full text-sm" id="filterLevel" style="padding: 0.6rem; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; border-radius: 6px; cursor: pointer; outline: none" onchange="renderFilteredSpells()">
+                        <select class="w-full text-sm p-[0.6rem] bg-slate-900/80 border border-white/10 text-slate-200 rounded-md cursor-pointer outline-none" id="filterLevel"  onchange="renderFilteredSpells()">
                             <option value="ALL">Tous niveaux</option>
                             <option value="1">Niveau 1</option>
                             <option value="2">Niveau 2</option>
@@ -460,11 +440,11 @@
                         </select>
                     </div>
                     <div>
-                        <label class="mb-1 flex items-center gap-1 font-bold text-xs" style="color: var(--text-muted);      letter-spacing: 0.5px">
+                        <label class="mb-1 flex items-center gap-1 font-bold text-xs text-muted tracking-[0.5px]" >
                             <span class="material-symbols-outlined text-md"   style="color: #a78bfa">sort</span>
                             ORDONNANCEMENT
                         </label>
-                        <select class="w-full text-sm" id="sortBy" style="padding: 0.6rem; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); color: #e2e8f0; border-radius: 6px; cursor: pointer; outline: none" onchange="renderFilteredSpells()">
+                        <select class="w-full text-sm p-[0.6rem] bg-slate-900/80 border border-white/10 text-slate-200 rounded-md cursor-pointer outline-none" id="sortBy"  onchange="renderFilteredSpells()">
                             <option value="NEWEST">Plus récents</option>
                             <option value="NAME_ASC">Nom (A-Z)</option>
                             <option value="LEVEL_ASC">Niveau croissant</option>

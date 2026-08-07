@@ -13,17 +13,17 @@ Une analyse complète des fichiers HTML a révélé une forte utilisation de sty
 |---------|-----------------------------------|------------|------------|
 | `vault.html` | 197 | **17** | -180 |
 | `pve-admin.html` | 279 | **33** | -246 |
-| `index.html` | 135 | **69** | -66 |
-| `dungeons.html` | N/A | **46** | - |
-| `combat.html` | N/A | **45** | - |
-| `armory.html` | 122 | **32** | -90 |
-| `shop-admin.html` | 110 | **20** | -90 |
-| `alchemy.html` | N/A | **13** | - |
-| `secrets.html` | N/A | **8** | - |
-| `alchemy-admin.html` | N/A | **5** | - |
-| `shop.html` | N/A | **2** | - |
-| `register.html` | N/A | **1** | - |
-| `login.html` | N/A | **0** | - |
+| `index.html` | 135 | **13** | -122 |
+| `dungeons.html` | 46 | **4** | - |
+| `combat.html` | 45 | **6** | - |
+| `armory.html` | 122 | **5** | -117 |
+| `shop-admin.html` | 110 | **4** | -106 |
+| `alchemy.html` | 13 | **0** | - |
+| `secrets.html` | 8 | **0** | - |
+| `alchemy-admin.html` | 5 | **0** | - |
+| `shop.html` | 2 | **0** | - |
+| `register.html` | 1 | **0** | - |
+| `login.html` | 0 | **0** | - |
 
 ---
 
