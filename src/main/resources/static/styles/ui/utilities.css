@@ -334,3 +334,36 @@
 .gap-8 { gap: 2rem !important; }
 
 .border-divider { border-color: rgba(255, 255, 255, 0.05) !important; }
+
+.text-pink-100 { color: #fce7f3 !important; }
+.text-dark { color: #555555 !important; }
+.border-purple { border-color: rgba(192, 132, 252, 0.3) !important; }
+.bg-gradient-purple { background: linear-gradient(135deg, #d946ef, #c026d3) !important; }
+.bg-purple-glass { background: rgba(168, 85, 247, 0.05) !important; }
+.max-w-\[250px\] { max-width: 250px !important; }
+.w-max { width: max-content !important; }
+.divider-vertical { width: 1px; height: 30px; background: rgba(255,255,255,0.1); margin: 0 0.5rem; }
+
+.text-slate-300 { color: #cbd5e1 !important; }
+.text-slate-50 { color: #f8fafc !important; }
+.text-fuchsia-500 { color: #d946ef !important; }
+.text-stone-400 { color: #a8a29e !important; }
+.text-violet-500 { color: #8b5cf6 !important; }
+.text-amber-300 { color: #fcd34d !important; }
+.w-\[160px\] { width: 160px !important; }
+.w-\[150px\] { width: 150px !important; }
+.w-\[140px\] { width: 140px !important; }
+.z-100 { z-index: 100 !important; }
+.z-99 { z-index: 99 !important; }
+.z-98 { z-index: 98 !important; }
+.z-97 { z-index: 97 !important; }
+.flex-center-gap { display: flex; align-items: center; gap: 0.4rem; }
+
+.text-commun { color: #94a3b8 !important; }
+.text-inhabituel { color: #22c55e !important; }
+.text-rare { color: #3b82f6 !important; }
+.text-mythique { color: #f97316 !important; }
+.text-legendaire { color: #eab308 !important; }
+.text-epique { color: #ef4444 !important; }
+.text-relique { color: #a855f7 !important; }
+.text-maudit { color: #7f1d1d !important; }
