@@ -733,25 +733,27 @@ window.updateWeightUI = async function () {
     }
 
     if (fillEl) {
-        let pct = (w / maxW) * 100;
-        let color = '#10b981';
+        let pct = Math.round((w / maxW) * 100);
+        let colorClass = 'bg-success';
 
         if (slot === 'CONSOMMABLE') {
             pct = 0;
-            color = '#10b981';
+            colorClass = 'bg-success';
         } else if (pct < 0) {
             pct = Math.min(Math.abs(pct), 100);
-            color = '#3b82f6';
+            colorClass = 'bg-info';
         } else if (pct > 100) {
             pct = 100;
-            color = '#ef4444';
+            colorClass = 'bg-danger';
         } else if (pct > 80) {
-            color = '#f59e0b';
+            colorClass = 'bg-warning';
         }
 
-        fillEl.style.width = pct + '%';
-        fillEl.style.background = color;
-        if (textEl) textEl.style.color = color;
+        fillEl.className = 'gauge-fill hp h-full transition-all duration-300 w-pct-' + pct + ' ' + colorClass;
+        if (textEl) {
+            textEl.className = colorClass;
+            // Override background since it's a text element, but color is also set by the utility class
+        }
     }
 
     const priceEl = document.getElementById('eqPriceText');

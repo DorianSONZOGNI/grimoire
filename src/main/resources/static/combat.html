@@ -14,10 +14,10 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
         rel="stylesheet">
-    <link rel="stylesheet" href="/styles/variables.css">
-    <link rel="stylesheet" href="/styles/ui/components.css">
-    <link rel="stylesheet" href="/styles/ui/utilities.css">
-    <link rel="stylesheet" href="/styles/pages/sandbox.css">
+    <link rel="stylesheet" href="/styles/variables.css?v=1786180000000">
+    <link rel="stylesheet" href="/styles/ui/components.css?v=1786180000000">
+    <link rel="stylesheet" href="/styles/ui/utilities.css?v=1786180000000">
+    <link rel="stylesheet" href="/styles/pages/sandbox.css?v=1786180000000">
     <style>
         .combat-notif {
             position: fixed;
@@ -995,7 +995,7 @@
                     id="eventDesc">Vous avez trouvé un trésor.</p>
 
                 <div id="eventLootContainer"
-                    class="flex gap-4 flex-wrap justify-center mb-8 w-full">
+                    class="hidden gap-4 flex-wrap justify-center mb-8 w-full">
                     <!-- Rempli par JS (Items / XP animation) -->
                 </div>
 
@@ -1006,7 +1006,7 @@
                     <button class="action-btn epic hidden" id="btnOpenChestKey" onclick="openChest(true)">
                         <span class="material-symbols-outlined">vpn_key</span> Ouvrir (Clé : +10% de butin)
                     </button>
-                    <button class="action-btn info" id="btnContinueEvent" onclick="nextRoom()">
+                    <button class="action-btn info hidden" id="btnContinueEvent" onclick="nextRoom()">
                         Continuer
                     </button>
                 </div>

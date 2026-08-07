@@ -1,4 +1,4 @@
-
+﻿
 import * as ui from './ui.js?v=3';
 import { getSpellEffectsSummaryHtml } from './grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from './filters.js';
@@ -1566,10 +1566,10 @@ function updateUI(data) {
 
                 if (data.roomEventCompleted) {
                     desc.textContent = `Vous avez ouvert le coffre !`;
-                    btnOpen.style.display = 'none';
-                    if (document.getElementById('btnOpenChestKey')) document.getElementById('btnOpenChestKey').style.display = 'none';
-                    btnCont.style.display = 'block';
-                    lootContainer.style.display = 'flex';
+                    btnOpen.classList.add('hidden');
+                    if (document.getElementById('btnOpenChestKey')) document.getElementById('btnOpenChestKey').classList.add('hidden');
+                    btnCont.classList.remove('hidden');
+                    lootContainer.classList.remove('hidden'); lootContainer.classList.add('flex');
 
                     // Allow filling if it contains only comments or whitespace
                     if (!lootContainer.dataset.filled) {
@@ -1685,16 +1685,16 @@ function updateUI(data) {
                     }
                 } else {
                     desc.textContent = `Un coffre mystérieux se trouve au centre de la pièce...`;
-                    btnOpen.style.display = 'block';
-                    btnCont.style.display = 'none';
-                    lootContainer.style.display = 'none';
+                    btnOpen.classList.remove('hidden');
+                    btnCont.classList.add('hidden');
+                    lootContainer.classList.add('hidden'); lootContainer.classList.remove('flex');
                     lootContainer.innerHTML = ''; // reset
                     delete lootContainer.dataset.filled;
 
                     const btnKey = document.getElementById('btnOpenChestKey');
                     if (btnKey) {
                         const hasKey = data.activeConsumables && data.activeConsumables.some(eq => eq.name === 'Clé');
-                        btnKey.style.display = hasKey ? 'block' : 'none';
+                        btnKey.classList.toggle('hidden', !hasKey);
                     }
                 }
             } else if (data.currentRoom.type === 'EVENT') {
@@ -1712,7 +1712,7 @@ function updateUI(data) {
                     }
                     desc.innerHTML = data.currentRoom.eventText || 'Une force mystérieuse vous entoure...';
 
-                    btnOpen.style.display = 'none';
+                    btnOpen.classList.add('hidden');
 
                     if (!data.roomEventCompleted && data.currentRoom.alterationType !== 'RIEN') {
                         delete lootContainer.dataset.filled;
@@ -1917,8 +1917,8 @@ function updateUI(data) {
                             });
                         }
 
-                        btnCont.style.display = 'none';
-                        lootContainer.style.display = 'flex';
+                        btnCont.classList.add('hidden');
+                        lootContainer.classList.remove('hidden'); lootContainer.classList.add('flex');
 
                         let disabledState = '';
                         if (data.currentRoom.alterationType === 'ITEM' || data.currentRoom.alterationType === 'AUTEL') {
@@ -1936,7 +1936,7 @@ function updateUI(data) {
                             </div>
                         `;
                     } else {
-                        btnCont.style.display = 'block';
+                        btnCont.classList.remove('hidden');
                         btnCont.textContent = 'Continuer';
 
                         if (!lootContainer.dataset.filled) {
@@ -2003,7 +2003,7 @@ function updateUI(data) {
                             }
                         }
 
-                        lootContainer.style.display = 'flex';
+                        lootContainer.classList.remove('hidden'); lootContainer.classList.add('flex');
                     }
                 } else if (subType === 'RENCONTRE') {
                     icon.textContent = 'storefront';
@@ -2011,13 +2011,13 @@ function updateUI(data) {
                     title.textContent = 'Rencontre';
                     desc.innerHTML = data.currentRoom.eventText || 'Un marchand ambulant vous interpelle...';
 
-                    btnOpen.style.display = 'none';
-                    btnCont.style.display = 'block';
+                    btnOpen.classList.add('hidden');
+                    btnCont.classList.remove('hidden');
                     btnCont.textContent = 'Continuer';
                     btnCont.onclick = nextRoom;
 
                     if (data.currentRoom.lootTable && data.currentRoom.lootTable.length > 0) {
-                        lootContainer.style.display = 'flex';
+                        lootContainer.classList.remove('hidden'); lootContainer.classList.add('flex');
                         lootContainer.innerHTML = '';
 
                         data.currentRoom.lootTable.forEach((entry, idx) => {
@@ -2148,7 +2148,7 @@ function updateUI(data) {
                             `;
                         });
                     } else {
-                        lootContainer.style.display = 'none';
+                        lootContainer.classList.add('hidden'); lootContainer.classList.remove('flex');
                     }
                 } else if (subType === 'PIEGE') {
                     icon.textContent = 'warning';
@@ -2160,10 +2160,10 @@ function updateUI(data) {
                     if (data.roomEventCompleted) {
                         trapDesc += `<br><br><span style="color:#10b981;">🪢 Piège évité grâce à une Corde !</span>`;
                         desc.innerHTML = trapDesc;
-                        btnOpen.style.display = 'none';
-                        btnCont.style.display = 'block';
+                        btnOpen.classList.add('hidden');
+                        btnCont.classList.remove('hidden');
                         btnCont.textContent = 'Continuer';
-                        lootContainer.style.display = 'none';
+                        lootContainer.classList.add('hidden'); lootContainer.classList.remove('flex');
                     } else {
                         let trapDetails = [];
                         if (data.currentRoom.trapDamageHpPct > 0) trapDetails.push(`<span style="color:#ef4444;">${data.currentRoom.trapDamageHpPct}% PV Max</span>`);
@@ -2185,11 +2185,11 @@ function updateUI(data) {
                         }
 
                         desc.innerHTML = trapDesc;
-                        btnOpen.style.display = 'none';
+                        btnOpen.classList.add('hidden');
 
                         if (data.currentRoom.trapHasRopeOption) {
                             const hasRope = data.activeConsumables && data.activeConsumables.some(eq => eq.name === 'Corde');
-                            lootContainer.style.display = 'flex';
+                            lootContainer.classList.remove('hidden'); lootContainer.classList.add('flex');
                             lootContainer.innerHTML = `
                                 <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
                                     <div style="display: flex; gap: 1rem; margin-top: 1rem; justify-content: center; width: 100%;">
@@ -2198,11 +2198,11 @@ function updateUI(data) {
                                     </div>
                                 </div>
                             `;
-                            btnCont.style.display = 'none';
+                            btnCont.classList.add('hidden');
                         } else {
-                            btnCont.style.display = 'block';
+                            btnCont.classList.remove('hidden');
                             btnCont.textContent = 'Subir le piège et passer';
-                            lootContainer.style.display = 'none';
+                            lootContainer.classList.add('hidden'); lootContainer.classList.remove('flex');
                         }
                     }
                 } else if (subType === 'PORTE_ETRANGE') {
@@ -2212,8 +2212,8 @@ function updateUI(data) {
                     if (data.roomEventCompleted) {
                         icon.style.color = '#94a3b8'; // Grisé
                         desc.innerHTML = data.currentRoom.eventText || 'Vous avez ouvert la porte... mais il n\'y a absolument rien derrière.';
-                        btnOpen.style.display = 'none';
-                        btnCont.style.display = 'block';
+                        btnOpen.classList.add('hidden');
+                        btnCont.classList.remove('hidden');
                         btnCont.textContent = 'Continuer';
                         btnCont.onclick = nextRoom;
 
@@ -2250,23 +2250,23 @@ function updateUI(data) {
                         }
 
                         if (anomalyHtml) {
-                            lootContainer.style.display = 'flex';
+                            lootContainer.classList.remove('hidden'); lootContainer.classList.add('flex');
                             lootContainer.innerHTML = `
                                 <div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; width: 100%; margin-top: 1rem;">
                                     ${anomalyHtml}
                                 </div>
                             `;
                         } else {
-                            lootContainer.style.display = 'none';
+                            lootContainer.classList.add('hidden'); lootContainer.classList.remove('flex');
                         }
                     } else {
                         icon.style.color = '#fbbf24'; // Jaune
                         desc.innerHTML = data.currentRoom.eventText || 'Une porte mystérieuse se dresse devant vous...';
-                        btnOpen.style.display = 'none';
-                        btnCont.style.display = 'block';
+                        btnOpen.classList.add('hidden');
+                        btnCont.classList.remove('hidden');
                         btnCont.textContent = 'Passer la porte';
                         btnCont.onclick = openStrangeDoor;
-                        lootContainer.style.display = 'none';
+                        lootContainer.classList.add('hidden'); lootContainer.classList.remove('flex');
 
                         // Show door outcomes info
                         if (data.currentRoom.doorOutcomes) {
@@ -2276,7 +2276,7 @@ function updateUI(data) {
                             } catch (e) { outcomes = []; }
 
                             if (outcomes.length > 0) {
-                                lootContainer.style.display = 'flex';
+                                lootContainer.classList.remove('hidden'); lootContainer.classList.add('flex');
                                 lootContainer.innerHTML = `
                                     <div class="text-muted text-center" style="font-size: 0.85rem; width: 100%;">
                                         <span style="color: #fbbf24; font-weight: 600;">Que se cache-t-il derrière ?</span><br>
@@ -3743,3 +3743,4 @@ window.changeMusicVolume = function (value) {
     }
     localStorage.setItem('grimoire_music_volume', value);
 };
+
