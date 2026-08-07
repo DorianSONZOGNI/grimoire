@@ -12,7 +12,7 @@ Une analyse complète des fichiers HTML a révélé une forte utilisation de sty
 | Fichier | Nombre d'attributs `style` inline (Avant) | Maintenant | Différence |
 |---------|-----------------------------------|------------|------------|
 | `vault.html` | 197 | **17** | -180 |
-| `pve-admin.html` | 279 | **93** | -186 |
+| `pve-admin.html` | 279 | **33** | -246 |
 | `index.html` | 135 | **69** | -66 |
 | `dungeons.html` | N/A | **46** | - |
 | `combat.html` | N/A | **45** | - |

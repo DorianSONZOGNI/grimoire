@@ -16,7 +16,7 @@
         rel="stylesheet">
     <link rel="stylesheet" href="/styles/variables.css">
     <link rel="stylesheet" href="/styles/ui/components.css">
-    <link rel="stylesheet" href="/styles/ui/utilities.css?v=2">
+    <link rel="stylesheet" href="/styles/ui/utilities.css?v=6">
     <link rel="stylesheet" href="/styles/ui/forms.css?v=5">
     <link rel="stylesheet" href="/styles/pages/vault.css?v=3">
     <link rel="stylesheet" href="/styles/pages/pve-admin.css?v=2">
@@ -28,16 +28,16 @@
 
     <main class="vault-container admin-container"  >
 
-        <div class="text-danger"  id="adminWarning"
-            style="display: none; background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3);  padding: 1rem; border-radius: 8px; margin-bottom: 2rem; text-align: center">
-            <span class="material-symbols-outlined"   style="vertical-align: middle; margin-right: 0.5rem">error</span>
+        <div class="text-danger bg-red-glass border-red-glass p-4 rounded-lg mb-8 text-center"  id="adminWarning"
+            style="display: none;" >
+            <span class="material-symbols-outlined align-middle mr-2">error</span>
             Vous devez être administrateur pour accéder à cette page. Redirection en cours...
         </div>
 
         <div id="adminContent" style="display: none">
 
             <div class="admin-split-layout"  >
-                <section class="admin-section"   id="monsterFormPanel" style="margin: 0; transition: all 0.3s">
+                <section class="admin-section m-0 transition-all"   id="monsterFormPanel">
                     <div class="admin-section-header"  >
                         <div class="admin-section-title"  >
                             <span class="material-symbols-outlined text-danger"  >pest_control</span>
@@ -48,15 +48,13 @@
                         <form id="monsterForm">
                             <div class="form-grid"  >
                                 <div class="form-group col-span-2"  >
-                                    <div style="display: flex; gap: 1rem; align-items: flex-end">
+                                    <div class="flex items-end gap-4">
                                         <div class="flex-1"  >
-                                            <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined" 
-                                                    
-                                                    style="font-size: 1.1rem; color: #f8fafc">badge</span> Nom du
+                                            <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined text-lg text-slate-50">badge</span> Nom du
                                                 monstre</label>
                                             <input class="form-control"  type="text" id="mName"  required="">
                                         </div>
-                                        <div style="width: 100px; position: relative" id="mLevelContainer">
+                                        <div class="w-[100px] relative" id="mLevelContainer">
                                             <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined text-lg text-info" 
                                                     >star_rate</span>
                                                 Lvl</label>
@@ -101,22 +99,18 @@
                                     <input class="form-control"  type="text" id="mDesc" >
                                 </div>
                                 <div class="form-group"  >
-                                    <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined text-pink" 
-                                            
-                                            style="font-size: 1.1rem">favorite</span> PV Max</label>
+                                    <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined text-pink text-lg">favorite</span> PV Max</label>
                                     <div class="flex-center gap-2"  >
-                                        <input class="form-control"  type="number" id="mHp"  style="min-width: 80px" value="100" required="">
+                                        <input class="form-control min-w-[80px]"  type="number" id="mHp"   value="100" required="">
                                         <div class="compact-badge"  >
                                             <span class="text-xs text-muted"  ></span>
-                                            <input class="form-control p-1"  type="number" id="mStartHpPct"  style="width: 85px" value="100" title="% PV au début"
+                                            <input class="form-control p-1 w-[85px]"  type="number" id="mStartHpPct"   value="100" title="% PV au début"
                                                 required=""><span class="text-xs text-muted"  >%</span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="form-group"  >
-                                    <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined text-pink" 
-                                            
-                                            style="font-size: 1.1rem">healing</span> Régén. PV</label>
+                                    <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined text-pink text-lg">healing</span> Régén. PV</label>
                                     <input class="form-control"  type="number" id="mRegenHp"  value="0" required="">
                                 </div>
                                 <div class="form-group"  >
@@ -124,18 +118,16 @@
                                             >water_drop</span> Mana
                                         Max</label>
                                     <div class="flex-center gap-2"  >
-                                        <input class="form-control"  type="number" id="mMana"  style="min-width: 80px" value="0" required="">
+                                        <input class="form-control min-w-[80px]"  type="number" id="mMana"   value="0" required="">
                                         <div class="compact-badge"  >
                                             <span class="text-xs text-muted"  ></span>
-                                            <input class="form-control p-1"  type="number" id="mStartManaPct"  style="width: 85px" value="100"
+                                            <input class="form-control p-1 w-[85px]"  type="number" id="mStartManaPct"   value="100"
                                                 title="% Mana au début" required=""><span class="text-xs text-muted"  >%</span>
                                         </div>
                                     </div>
                                 </div>
                                 <div class="form-group"  >
-                                    <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined" 
-                                            
-                                            style="font-size: 1.1rem; color: #7dd3fc">opacity</span> Régén.
+                                    <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined text-lg text-sky-300">opacity</span> Régén.
                                         Mana</label>
                                     <input class="form-control"  type="number" id="mRegenMana"  value="0" required="">
                                 </div>
@@ -151,23 +143,17 @@
                                     <input class="form-control"  type="number" id="mCrit"  value="5" required="">
                                 </div>
                                 <div class="form-group"  >
-                                    <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined" 
-                                            
-                                            style="font-size: 1.1rem; color: #f43f5e">fitness_center</span>
+                                    <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined text-lg text-rose-500">fitness_center</span>
                                         Force</label>
                                     <input class="form-control"  type="number" id="mStrength"  value="10" required="">
                                 </div>
                                 <div class="form-group"  >
-                                    <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined text-purple" 
-                                            
-                                            style="font-size: 1.1rem">auto_awesome</span>
+                                    <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined text-purple text-lg">auto_awesome</span>
                                         Puissance</label>
                                     <input class="form-control"  type="number" id="mPower"  value="0" required="">
                                 </div>
                                 <div class="form-group"  >
-                                    <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined text-info" 
-                                            
-                                            style="font-size: 1.1rem">shield</span> Armure</label>
+                                    <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined text-info text-lg">shield</span> Armure</label>
                                     <input class="form-control"  type="number" id="mArmor"  value="5" required="">
                                 </div>
                                 <div class="form-group"  >
@@ -182,9 +168,7 @@
                                     <input class="form-control"  type="number" id="mGold"  value="10" required="">
                                 </div>
                                 <div class="form-group"  >
-                                    <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined" 
-                                            
-                                            style="font-size: 1.1rem; color: #fcd34d">stars</span> Récompense
+                                    <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined text-lg text-amber-300">stars</span> Récompense
                                         XP</label>
                                     <input class="form-control"  type="number" id="mXp"  value="20" required="">
                                 </div>
@@ -222,8 +206,7 @@
                                             </div>
                                             <div class="custom-option"  
                                                 onclick="selectMonsterType('VAMPIRE', 'Vampire', 'bloodtype', '#e11d48')">
-                                                <span class="material-symbols-outlined cs-icon"  
-                                                    style="color: #e11d48">bloodtype</span>Vampire
+                                                <span class="material-symbols-outlined cs-icon text-rose-600">bloodtype</span>Vampire
                                             </div>
                                             <div class="custom-option"  
                                                 onclick="selectMonsterType('ECTOPLASME', 'Ectoplasme', 'candle', '#a855f7')">
@@ -233,9 +216,7 @@
                                     </div>
                                 </div>
                                 <div class="form-group"  >
-                                    <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined" 
-                                            
-                                            style="font-size: 1.1rem; color: #8b5cf6">neurology</span> Comportement
+                                    <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined text-lg text-violet-500">neurology</span> Comportement
                                         IA</label>
                                     <input type="hidden" id="mBehavior" value="NORMAL">
                                     <div class="custom-select-wrapper"  id="mBehaviorWrapper" >
@@ -256,13 +237,11 @@
                                             </div>
                                             <div class="custom-option"  
                                                 onclick="selectMonsterBehavior('CORRUPTEUR', 'Corrupteur', 'allergy', '#8b5cf6')">
-                                                <span class="material-symbols-outlined cs-icon"  
-                                                    style="color: #8b5cf6">allergy</span>Corrupteur
+                                                <span class="material-symbols-outlined cs-icon text-violet-500">allergy</span>Corrupteur
                                             </div>
                                             <div class="custom-option"  
                                                 onclick="selectMonsterBehavior('LEADER', 'Leader', 'crown', '#fcd34d')">
-                                                <span class="material-symbols-outlined cs-icon"  
-                                                    style="color: #fcd34d">crown</span>Leader
+                                                <span class="material-symbols-outlined cs-icon text-amber-300">crown</span>Leader
                                             </div>
                                             <div class="custom-option"  
                                                 onclick="selectMonsterBehavior('ASSASSIN', 'Assassin', 'gps_fixed', '#ef4444')">
@@ -270,8 +249,7 @@
                                             </div>
                                             <div class="custom-option"  
                                                 onclick="selectMonsterBehavior('BRUTAL', 'Brutal', 'shield', '#9ca3af')">
-                                                <span class="material-symbols-outlined cs-icon"  
-                                                    style="color: #9ca3af">shield</span>Brutal
+                                                <span class="material-symbols-outlined cs-icon text-gray-400">shield</span>Brutal
                                             </div>
                                             <div class="custom-option"  
                                                 onclick="selectMonsterBehavior('TRANSCENDANT', 'Transcendant', 'grid_view', '#fbbf24')">
@@ -284,16 +262,13 @@
                                     <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined text-lg text-success" 
                                             >explore</span>
                                         Voie Native (Secret)</label>
-                                    <div class="custom-select-wrapper"   id="mNativeSecretWrapper" style="z-index: 95">
-                                        <div class="custom-select-trigger"   style="padding: 0.8rem">
-                                            <span class="cs-label"  
-                                                class="flex-center flex-center-gap">
-                                                <span class="material-symbols-outlined cs-icon"  
-                                                    style="color: #64748b; font-size: 1.1rem">close</span>
+                                    <div class="custom-select-wrapper z-95"   id="mNativeSecretWrapper">
+                                        <div class="custom-select-trigger p-3">
+                                            <span class="cs-label flex-center flex-center-gap">
+                                                <span class="material-symbols-outlined cs-icon text-slate-500 text-lg">close</span>
                                                 Aucun (Optionnel)
                                             </span>
-                                            <span class="material-symbols-outlined"  
-                                                style="color: #64748b; font-size: 1.2rem; pointer-events: none">expand_more</span>
+                                            <span class="material-symbols-outlined text-slate-500 text-xl pointer-events-none">expand_more</span>
                                         </div>
                                         <div class="custom-select-options custom-options"  >
                                             <div class="custom-option"   data-value="">
@@ -341,8 +316,7 @@
                                                 Secret de l'Éther
                                             </div>
                                             <div class="custom-option"   data-value="Secret des Abysses">
-                                                <span class="material-symbols-outlined cs-icon"  
-                                                    style="color: #c084fc">dark_mode</span>
+                                                <span class="material-symbols-outlined cs-icon text-purple-400">dark_mode</span>
                                                 Secret des Abysses
                                             </div>
                                         </div>
@@ -350,22 +324,20 @@
                                     </div>
                                 </div>
                                 <div class="form-group col-span-2"  >
-                                    <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined text-purple" 
-                                            
-                                            style="font-size: 1.1rem">pets</span>
+                                    <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined text-purple text-lg">pets</span>
                                         Mutations (Optionnel)</label>
                                     <div id="mMutationsContainer"
-                                        style="display: flex; flex-wrap: wrap; gap: 0.5rem; background: rgba(0,0,0,0.3); padding: 0.8rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05); min-height: 48px">
+                                        class="flex flex-wrap gap-2 bg-black/30 p-3 rounded-lg border-divider min-h-[48px]">
                                         <span
-                                            style="color: #64748b; font-size: 0.9rem; font-style: italic">Chargement...</span>
+                                            class="text-slate-500 text-sm italic">Chargement...</span>
                                     </div>
                                 </div>
                             </div>
                             <div class="mt-3 flex-center gap-4"  >
                                 <button class="btn btn-primary"  type="submit"  id="btnSubmitMonster">Créer le
                                     monstre</button>
-                                <button class="btn"  type="button"  id="btnCancelMonster"
-                                    style="display: none; background: rgba(255,255,255,0.05); color: #f8fafc; border: 1px solid rgba(255,255,255,0.1); padding: 0.8rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease"
+                                <button class="btn btn btn-secondary"  type="button"  id="btnCancelMonster"
+                                    style="display: none;" 
                                     onclick="cancelMonsterEdit()">Annuler</button>
                             </div>
                         </form>
@@ -374,7 +346,7 @@
 
                 <div class="relative h-full min-h-600"  >
                     <section class="admin-section absolute-panel-wrapper"  >
-                        <div class="admin-section-header"   style="flex-shrink: 0">
+                        <div class="admin-section-header flex-shrink-0"   >
                             <div class="admin-section-title"  >
                                 <span class="material-symbols-outlined text-danger"  >format_list_bulleted</span>
                                 Monstres Existants
@@ -382,15 +354,15 @@
                         </div>
                         <div class="admin-section-content panel-content-flex"  >
                             <div
-                                style="display: flex; gap: 1rem; margin-bottom: 1.5rem; align-items: center; flex-wrap: wrap; flex-shrink: 0">
-                                <div class="flex-1" style="min-width: 200px; position: relative">
-                                    <span class="material-symbols-outlined text-muted"  
-                                        style="position: absolute; left: 0.8rem; top: 50%; transform: translateY(-50%);  font-size: 1.1rem; pointer-events: none">search</span>
-                                    <input class="form-control"  type="text" id="monsterSearch" 
-                                        style="width: 100%; padding-left: 2.4rem; padding-right: 1rem"
+                                class="flex items-center gap-4 mb-6 flex-wrap flex-shrink-0">
+                                <div class="flex-1 min-w-[200px] relative" >
+                                    <span class="material-symbols-outlined text-muted absolute left-3 top-1/2 -translate-y-1/2 text-lg pointer-events-none"  
+                                        >search</span>
+                                    <input class="form-control w-full pl-10 pr-4"  type="text" id="monsterSearch" 
+                                        
                                         placeholder="Rechercher par nom..." oninput="renderMonstersList()">
                                 </div>
-                                <div style="width: 140px; position: relative">
+                                <div class="w-[140px] relative">
                                     <div class="custom-select-wrapper h-full"  id="mLevelFilterWrapper" >
                                         <div class="custom-select-trigger custom-select-larger"  
                                             onclick="toggleFilterLevelSelect()" id="mLevelFilterTrigger">
@@ -420,7 +392,7 @@
                                     </div>
                                     <input type="hidden" id="monsterLevelFilter" value="">
                                 </div>
-                                <div style="width: 260px; position: relative">
+                                <div class="w-[260px] relative">
                                     <div class="custom-select-wrapper h-full"  id="mListSecretFilterWrapper" >
                                         <div class="custom-select-trigger custom-select-larger"  
                                             onclick="toggleMonsterSecretSelect()" id="mListSecretFilterTrigger">
@@ -439,8 +411,8 @@
                                             </div>
                                             <div class="custom-option"  
                                                 onclick="selectMonsterSecretOption('Secret du Chaos', 'Secret du Chaos', 'local_fire_department', '#ff0000')">
-                                                <span class="material-symbols-outlined cs-icon"  
-                                                    style="color: #ff0000; font-size: 1.1rem">local_fire_department</span>
+                                                <span class="material-symbols-outlined cs-icon text-red-500 text-lg"  
+                                                    >local_fire_department</span>
                                                 Secret du Chaos
                                             </div>
                                             <div class="custom-option"  
@@ -450,32 +422,32 @@
                                             </div>
                                             <div class="custom-option"  
                                                 onclick="selectMonsterSecretOption('Secret de la Préservation', 'Secret de la Préservation', 'foundation', '#99674c')">
-                                                <span class="material-symbols-outlined cs-icon"  
-                                                    style="color: #99674c; font-size: 1.1rem">foundation</span> Secret
+                                                <span class="material-symbols-outlined cs-icon text-brown-600 text-lg"  
+                                                    >foundation</span> Secret
                                                 de la Préservation
                                             </div>
                                             <div class="custom-option"  
                                                 onclick="selectMonsterSecretOption('Secret de la Sérénité', 'Secret de la Sérénité', 'water_drop', '#00e5cc')">
-                                                <span class="material-symbols-outlined cs-icon"  
-                                                    style="color: #00e5cc; font-size: 1.1rem">water_drop</span> Secret
+                                                <span class="material-symbols-outlined cs-icon text-cyan-400 text-lg"  
+                                                    >water_drop</span> Secret
                                                 de la Sérénité
                                             </div>
                                             <div class="custom-option"  
                                                 onclick="selectMonsterSecretOption('Secret de la Chasse', 'Secret de la Chasse', 'visibility_off', '#ed5677')">
-                                                <span class="material-symbols-outlined cs-icon"  
-                                                    style="color: #ed5677; font-size: 1.1rem">visibility_off</span>
+                                                <span class="material-symbols-outlined cs-icon text-pink-500 text-lg"  
+                                                    >visibility_off</span>
                                                 Secret de la Chasse
                                             </div>
                                             <div class="custom-option"  
                                                 onclick="selectMonsterSecretOption('Secret du Carnage', 'Secret du Carnage', 'explosion', '#a70740')">
-                                                <span class="material-symbols-outlined cs-icon"  
-                                                    style="color: #a70740; font-size: 1.1rem">explosion</span> Secret
+                                                <span class="material-symbols-outlined cs-icon text-rose-700 text-lg"  
+                                                    >explosion</span> Secret
                                                 du Carnage
                                             </div>
                                             <div class="custom-option"  
                                                 onclick="selectMonsterSecretOption('Secret de la Joie', 'Secret de la Joie', 'volcano', '#b74c0b')">
-                                                <span class="material-symbols-outlined cs-icon"  
-                                                    style="color: #b74c0b; font-size: 1.1rem">volcano</span> Secret de
+                                                <span class="material-symbols-outlined cs-icon text-orange-700 text-lg"  
+                                                    >volcano</span> Secret de
                                                 la Joie
                                             </div>
                                             <div class="custom-option"  
@@ -485,27 +457,27 @@
                                             </div>
                                             <div class="custom-option"  
                                                 onclick="selectMonsterSecretOption('Secret du Destin', 'Secret du Destin', 'all_inclusive', '#e7d198')">
-                                                <span class="material-symbols-outlined cs-icon"  
-                                                    style="color: #e7d198; font-size: 1.1rem">all_inclusive</span>
+                                                <span class="material-symbols-outlined cs-icon text-yellow-200 text-lg"  
+                                                    >all_inclusive</span>
                                                 Secret du Destin
                                             </div>
                                             <div class="custom-option"  
                                                 onclick="selectMonsterSecretOption('Secret de l\'Éther', 'Secret de l\'Éther', 'blur_on', '#38bdf8')">
-                                                <span class="material-symbols-outlined cs-icon"  
-                                                    style="color: #38bdf8; font-size: 1.1rem">blur_on</span> Secret de
+                                                <span class="material-symbols-outlined cs-icon text-sky-400 text-lg"  
+                                                    >blur_on</span> Secret de
                                                 l'Éther
                                             </div>
                                             <div class="custom-option"  
                                                 onclick="selectMonsterSecretOption('Secret des Abysses', 'Secret des Abysses', 'dark_mode', '#c084fc')">
-                                                <span class="material-symbols-outlined cs-icon"  
-                                                    style="color: #c084fc; font-size: 1.1rem">dark_mode</span> Secret
+                                                <span class="material-symbols-outlined cs-icon text-purple-400 text-lg"  
+                                                    >dark_mode</span> Secret
                                                 des Abysses
                                             </div>
                                         </div>
                                     </div>
                                     <input type="hidden" id="monsterSecretFilter" value="">
                                 </div>
-                                <div style="width: 220px; position: relative">
+                                <div class="w-[220px] relative">
                                     <div class="custom-select-wrapper h-full"  id="mSortWrapper" >
                                         <div class="custom-select-trigger custom-select-larger"  
                                             onclick="toggleSortSelect()" id="mSortTrigger">
@@ -525,8 +497,8 @@
                                             </div>
                                             <div class="custom-option"  
                                                 onclick="selectSortOption('name_desc', 'Nom (Z-A)', 'sort_by_alpha', '#94a3b8')">
-                                                <span class="material-symbols-outlined cs-icon text-muted"  
-                                                    style="font-size: 1.1rem; transform: scaleY(-1)">sort_by_alpha</span>
+                                                <span class="material-symbols-outlined cs-icon text-muted text-lg -scale-y-100"  
+                                                    >sort_by_alpha</span>
                                                 Nom (Z-A)
                                             </div>
                                             <div class="custom-option"  
@@ -544,8 +516,8 @@
                                     <input type="hidden" id="monsterSort" value="secret">
                                 </div>
                             </div>
-                            <div class="pve-grid flex-1"   id="monstersList"
-                                style="overflow-y: auto; min-height: 0; padding-bottom: 1.5rem; padding-left: 1rem; padding-top: 1.2rem; overflow-x: hidden">
+                            <div class="pve-grid flex-1 overflow-y-auto overflow-x-hidden min-h-0 pb-6 px-4 pt-5"   id="monstersList"
+                                >
                                 <!-- Rempli par JS -->
                             </div>
                         </div>
@@ -555,7 +527,7 @@
 
             <!-- === MUTATIONS === -->
             <div class="admin-split-layout"  >
-                <section class="admin-section"   id="mutationFormPanel" style="margin: 0; transition: all 0.3s">
+                <section class="admin-section m-0 transition-all"   id="mutationFormPanel">
                     <div class="admin-section-header"  >
                         <div class="admin-section-title"  >
                             <span class="material-symbols-outlined text-purple"   >pets</span>
@@ -566,9 +538,7 @@
                         <form id="mutationForm">
                             <div class="form-grid"  >
                                 <div class="form-group col-span-2"  >
-                                    <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined text-purple" 
-                                            
-                                            style="font-size: 1.1rem">badge</span> Nom de la
+                                    <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined text-purple text-lg">badge</span> Nom de la
                                         mutation</label>
                                     <input class="form-control"  type="text" id="mutName" 
                                         placeholder="Ex: Griffes d'acier" required="">
@@ -587,9 +557,7 @@
                                         required="">
                                 </div>
                                 <div class="form-group"  >
-                                    <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined text-gold" 
-                                            
-                                            style="font-size: 1.1rem">palette</span> Couleur
+                                    <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined text-gold text-lg">palette</span> Couleur
                                         HEX</label>
                                     <input class="form-control"  type="text" id="mutColor"  value="#e879f9"
                                         placeholder="#RRGGBB">
@@ -603,11 +571,11 @@
                                 </div>
                             </div>
                             <div class="mt-3 flex-center gap-4"  >
-                                <button class="btn btn-primary"  type="submit"  id="btnSubmitMutation"
-                                    style="background: linear-gradient(135deg, #d946ef, #c026d3); box-shadow: 0 4px 12px rgba(217, 70, 239, 0.3)">Créer
+                                <button class="btn btn-primary bg-gradient-purple shadow-purple"  type="submit"  id="btnSubmitMutation"
+                                    >Créer
                                     la mutation</button>
-                                <button class="btn"  type="button"  id="btnCancelMutation"
-                                    style="display: none; background: rgba(255,255,255,0.05); color: #f8fafc; border: 1px solid rgba(255,255,255,0.1); padding: 0.8rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease"
+                                <button class="btn btn btn-secondary"  type="button"  id="btnCancelMutation"
+                                    style="display: none;" 
                                     onclick="cancelMutationEdit()">Annuler</button>
                             </div>
                         </form>
@@ -616,7 +584,7 @@
 
                 <div class="relative h-full min-h-400"  >
                     <section class="admin-section absolute-panel-wrapper"  >
-                        <div class="admin-section-header"   style="flex-shrink: 0">
+                        <div class="admin-section-header flex-shrink-0"   >
                             <div class="admin-section-title"  >
                                 <span class="material-symbols-outlined text-purple"  
                                     >format_list_bulleted</span>
@@ -624,8 +592,8 @@
                             </div>
                         </div>
                         <div class="admin-section-content panel-content-flex"  >
-                            <div class="pve-list custom-scrollbar flex-1"  id="mutationsList" 
-                                style="overflow-y: auto; min-height: 0; padding-right: 1rem; margin-right: -0.5rem; padding-bottom: 1rem">
+                            <div class="pve-list custom-scrollbar flex-1 overflow-y-auto min-h-0 pr-4 -mr-2 pb-4"  id="mutationsList" 
+                                >
                                 <!-- Mutations rendered here -->
                             </div>
                         </div>
@@ -635,7 +603,7 @@
 
             <!-- === DONJONS === -->
             <div class="admin-split-layout"  >
-                <section class="admin-section"   id="dungeonFormPanel" style="margin: 0; transition: all 0.3s">
+                <section class="admin-section m-0 transition-all"   id="dungeonFormPanel">
                     <div class="admin-section-header"  >
                         <div class="admin-section-title"  >
                             <span class="material-symbols-outlined text-danger"  >castle</span>
@@ -672,16 +640,16 @@
                                 </div>
                                 <div class="form-group col-span-2"  >
                                     <label>Condition Alchimie (Secret requis et niveau)</label>
-                                    <div style="display: flex; gap: 1rem; align-items: flex-start">
-                                        <div class="custom-select-wrapper"   id="dRequiredSecretWrapper"
-                                            style="z-index: 90; flex: 2">
+                                    <div class="flex items-start gap-4">
+                                        <div class="custom-select-wrapper z-90 flex-2"   id="dRequiredSecretWrapper"
+                                            >
                                             <div class="custom-select-trigger"  >
                                                 <span class="cs-label"  >
                                                     <span class="material-symbols-outlined cs-icon text-muted"  >close</span>
                                                     Aucun (Optionnel)
                                                 </span>
-                                                <span class="material-symbols-outlined"  
-                                                    style="color: #64748b; font-size: 1.2rem">expand_more</span>
+                                                <span class="material-symbols-outlined text-slate-500 text-xl"  
+                                                    >expand_more</span>
                                             </div>
                                             <div class="custom-select-options custom-options"  >
                                                 <div class="custom-option"   data-value="">
@@ -729,8 +697,7 @@
                                                     Secret de l'Éther
                                                 </div>
                                                 <div class="custom-option"   data-value="Secret des Abysses">
-                                                    <span class="material-symbols-outlined cs-icon"  
-                                                        style="color: #c084fc">dark_mode</span>
+                                                    <span class="material-symbols-outlined cs-icon text-purple-400">dark_mode</span>
                                                     Secret des Abysses
                                                 </div>
                                             </div>
@@ -797,8 +764,8 @@
                             <div class="mt-3 flex-center gap-4"  >
                                 <button class="btn btn-primary"  type="submit"  id="btnSubmitDungeon">Créer le
                                     donjon</button>
-                                <button class="btn"  type="button"  id="btnCancelDungeon"
-                                    style="display: none; background: rgba(255,255,255,0.05); color: #f8fafc; border: 1px solid rgba(255,255,255,0.1); padding: 0.8rem 1.5rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease"
+                                <button class="btn btn btn-secondary"  type="button"  id="btnCancelDungeon"
+                                    style="display: none;" 
                                     onclick="cancelDungeonEdit()">Annuler</button>
                             </div>
                         </form>
@@ -905,8 +872,8 @@
                             </div>
                         </div>
                         <div class="admin-section-content panel-content-flex"  >
-                            <div class="pve-grid flex-1"   id="dungeonsList"
-                                style="overflow-y: auto; min-height: 0; padding-bottom: 1.5rem; padding-left: 1rem; padding-top: 1.2rem; overflow-x: hidden">
+                            <div class="pve-grid flex-1 overflow-y-auto overflow-x-hidden min-h-0 pb-6 px-4 pt-5"   id="dungeonsList"
+                                >
                                 <!-- Rempli par JS -->
                             </div>
                         </div>

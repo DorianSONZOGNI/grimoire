@@ -367,3 +367,56 @@
 .text-epique { color: #ef4444 !important; }
 .text-relique { color: #a855f7 !important; }
 .text-maudit { color: #7f1d1d !important; }
+
+.bg-red-glass { background: rgba(239, 68, 68, 0.1) !important; }
+.border-red-glass { border: 1px solid rgba(239, 68, 68, 0.3) !important; }
+.transition-all { transition: all 0.3s !important; }
+.w-\[100px\] { width: 100px !important; }
+.w-\[85px\] { width: 85px !important; }
+.min-w-\[80px\] { min-width: 80px !important; }
+.text-sky-300 { color: #7dd3fc !important; }
+.text-rose-500 { color: #f43f5e !important; }
+.text-rose-600 { color: #e11d48 !important; }
+.text-gray-400 { color: #9ca3af !important; }
+.text-slate-500 { color: #64748b !important; }
+.text-purple-400 { color: #c084fc !important; }
+.z-95 { z-index: 95 !important; }
+.bg-black\/30 { background: rgba(0,0,0,0.3) !important; }
+.min-h-\[48px\] { min-height: 48px !important; }
+.pointer-events-none { pointer-events: none !important; }
+.items-end { align-items: flex-end !important; }
+
+.text-red-500 { color: #ff0000 !important; }
+.text-brown-600 { color: #99674c !important; }
+.text-cyan-400 { color: #00e5cc !important; }
+.text-pink-500 { color: #ed5677 !important; }
+.text-rose-700 { color: #a70740 !important; }
+.text-orange-700 { color: #b74c0b !important; }
+.text-yellow-200 { color: #e7d198 !important; }
+.flex-shrink-0 { flex-shrink: 0 !important; }
+.min-w-\[200px\] { min-width: 200px !important; }
+.w-\[260px\] { width: 260px !important; }
+.w-\[220px\] { width: 220px !important; }
+.overflow-y-auto { overflow-y: auto !important; }
+.overflow-x-hidden { overflow-x: hidden !important; }
+.min-h-0 { min-height: 0 !important; }
+.px-4 { padding-left: 1rem !important; padding-right: 1rem !important; }
+.pb-6 { padding-bottom: 1.5rem !important; }
+.pt-5 { padding-top: 1.2rem !important; }
+.flex-2 { flex: 2 !important; }
+
+.-scale-y-100 { transform: scaleY(-1) !important; }
+
+.flex-wrap { flex-wrap: wrap !important; }
+.gap-2 { gap: 0.5rem !important; }
+.gap-4 { gap: 1rem !important; }
+.p-3 { padding: 0.75rem !important; }
+.p-4 { padding: 1rem !important; }
+.pl-10 { padding-left: 2.5rem !important; }
+.pr-4 { padding-right: 1rem !important; }
+.rounded-lg { border-radius: 0.5rem !important; }
+.border-divider { border-color: rgba(255,255,255,0.05) !important; }
+.-mr-2 { margin-right: -0.5rem !important; }
+.pb-4 { padding-bottom: 1rem !important; }
+.items-start { align-items: flex-start !important; }
+.text-center { text-align: center !important; }
