@@ -92,10 +92,12 @@ async function loadDungeons() {
             if (dungeons.length === 0) {
                 document.getElementById('noDungeonsMsg').style.display = 'block';
                 tabsHeader.style.display = 'none';
+                document.getElementById('loadingDungeonsMsg').style.display = 'none';
                 return;
             } else {
                 document.getElementById('noDungeonsMsg').style.display = 'none';
                 tabsHeader.style.display = 'flex';
+                document.getElementById('loadingDungeonsMsg').style.display = 'none';
             }
 
             const categories = new Map();
@@ -263,9 +265,15 @@ async function loadDungeons() {
 
                 firstTab = false;
             });
+        } else {
+            console.error('Failed to load dungeons');
+            const msg = document.getElementById('loadingDungeonsMsg');
+            if(msg) msg.style.display = 'none';
         }
     } catch (e) {
-        console.error(e);
+        console.error('Error loading dungeons:', e);
+        const msg = document.getElementById('loadingDungeonsMsg');
+        if(msg) msg.style.display = 'none';
     }
 }
 
