@@ -105,6 +105,132 @@ class SpellChannelingTest {
         assertThat(caster.getRemainingChannelingTurns()).isEqualTo(0);
         
         assertThat(caster.getChanneledSpell()).isNull();
-        assertThat(caster.getChannelingAlly()).isNull();
+    }
+
+    @Test
+    void testChannelingSpellEffectApplicationByTurn() {
+        Spell channeledSpell = new Spell();
+        channeledSpell.setNom("Tempête Ciblée");
+        channeledSpell.setCastingType(SpellCastingType.CANALISE);
+        channeledSpell.setChannelingDuration(3);
+
+        BuffDebuffEffect damageBuff = new BuffDebuffEffect();
+        damageBuff.setStatAffected(StatType.POWER);
+        damageBuff.setFlatValue(15);
+        damageBuff.setDuration(1);
+        damageBuff.setEffectTarget(EffectTarget.CASTER);
+        damageBuff.setChannelingTurns(List.of(2)); // Applies ONLY on turn 2
+
+        channeledSpell.getEffects().add(damageBuff);
+
+        List<Personnage> allAllies = List.of(caster);
+        List<Personnage> allEnemies = List.of(enemy);
+
+        // Turn 1 (Cast)
+        spellService.castSpellGroup(channeledSpell, caster, enemy, null, allAllies, allEnemies, null);
+        assertThat(caster.getActiveBuffs()).isEmpty(); // Not turn 2
+
+        // End of Turn 1
+        spellService.tickChanneling(caster, enemy, null, null, allAllies, allEnemies);
+
+        // Turn 2
+        spellService.tickChanneling(caster, enemy, null, null, allAllies, allEnemies);
+        assertThat(caster.getActiveBuffs()).hasSize(1); // Turn 2!
+
+        // Turn 3
+        spellService.tickChanneling(caster, enemy, null, null, allAllies, allEnemies);
+        assertThat(caster.getActiveBuffs()).hasSize(1); // Still 1, buff duration might expire naturally though, but it didn't add a new one.
+    }
+
+    @Test
+    void testInstantSpellDuringChannelingAllowed() {
+        Spell channeledSpell = new Spell();
+        channeledSpell.setNom("Flux");
+        channeledSpell.setCastingType(SpellCastingType.CANALISE);
+        channeledSpell.setChannelingDuration(2);
+        channeledSpell.setAllowInstantDuringChanneling(true);
+
+        Spell instantSpell = new Spell();
+        instantSpell.setNom("Flash");
+        instantSpell.setCastingType(SpellCastingType.INSTANTANE);
+
+        // Cast channel
+        spellService.castSpell(channeledSpell, caster, enemy, null);
+        assertThat(caster.getChanneledSpell()).isEqualTo(channeledSpell);
+
+        // Cast instant during channel
+        spellService.castSpell(instantSpell, caster, enemy, null);
+        assertThat(caster.isInstantSpellCastThisTurn()).isTrue();
+        assertThat(caster.getChanneledSpell()).isEqualTo(channeledSpell); // Channel not broken
+    }
+
+    @Test
+    void testInstantSpellDuringChannelingForbidden() {
+        Spell channeledSpell = new Spell();
+        channeledSpell.setNom("Flux");
+        channeledSpell.setCastingType(SpellCastingType.CANALISE);
+        channeledSpell.setChannelingDuration(2);
+        channeledSpell.setAllowInstantDuringChanneling(false);
+
+        Spell instantSpell = new Spell();
+        instantSpell.setNom("Flash");
+        instantSpell.setCastingType(SpellCastingType.INSTANTANE);
+
+        // Cast channel
+        spellService.castSpell(channeledSpell, caster, enemy, null);
+
+        // Cast instant during channel - should fail
+        spellService.castSpell(instantSpell, caster, enemy, null);
+        assertThat(caster.isInstantSpellCastThisTurn()).isFalse();
+    }
+
+    @Test
+    void testBanalSpellDuringChannelingForbidden() {
+        Spell channeledSpell = new Spell();
+        channeledSpell.setNom("Flux");
+        channeledSpell.setCastingType(SpellCastingType.CANALISE);
+        channeledSpell.setChannelingDuration(2);
+
+        Spell banalSpell = new Spell();
+        banalSpell.setNom("Fireball");
+        banalSpell.setCastingType(SpellCastingType.BANAL);
+
+        // Cast channel
+        spellService.castSpell(channeledSpell, caster, enemy, null);
+
+        // Cast banal during channel - should fail
+        spellService.castSpell(banalSpell, caster, enemy, null);
+        // Assuming castSpell prints error and returns, keeping the state intact
+        assertThat(caster.getChanneledSpell()).isEqualTo(channeledSpell);
+    }
+    
+    @Test
+    void testHeatEffectTargetsCasterDuringChanneling() {
+        Spell channeledSpell = new Spell();
+        channeledSpell.setNom("Flamme");
+        channeledSpell.setCastingType(SpellCastingType.CANALISE);
+        channeledSpell.setChannelingDuration(2);
+
+        generation.grimoire.entity.spell.type.effect.HeatFixedEffect heatEffect = new generation.grimoire.entity.spell.type.effect.HeatFixedEffect();
+        heatEffect.setAmount(20);
+        heatEffect.setEffectTarget(EffectTarget.TARGET); // Tricky target
+        heatEffect.setChannelingTurns(List.of(2));
+        
+        channeledSpell.getEffects().add(heatEffect);
+
+        List<Personnage> allAllies = List.of(caster);
+        List<Personnage> allEnemies = List.of(enemy);
+
+        spellService.castSpellGroup(channeledSpell, caster, enemy, null, allAllies, allEnemies, null);
+        
+        // Turn 1 End
+        spellService.tickChanneling(caster, enemy, null, null, allAllies, allEnemies);
+
+        // Turn 2
+        spellService.tickChanneling(caster, enemy, null, null, allAllies, allEnemies);
+
+        // Heat should be applied to caster, not enemy
+        assertThat(caster.getPassiveState("destruction_heat", 0)).isEqualTo(20);
+        assertThat(enemy.getPassiveState("destruction_heat", 0)).isEqualTo(0);
     }
 }

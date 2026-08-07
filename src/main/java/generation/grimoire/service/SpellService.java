@@ -663,6 +663,12 @@ public class SpellService {
 
             java.util.List<Personnage> recipients = resolveRecipients(effect.getEffectTarget(), caster, target);
 
+            if (effect instanceof generation.grimoire.entity.spell.type.effect.HeatOverTimeEffect
+                    || effect instanceof generation.grimoire.entity.spell.type.effect.HeatFixedEffect
+                    || effect instanceof generation.grimoire.entity.spell.type.effect.HeatPercentageEffect) {
+                recipients = java.util.Collections.singletonList(caster);
+            }
+
             for (Personnage recipient : recipients) {
                 effect.apply(caster, recipient);
             }
@@ -719,6 +725,12 @@ public class SpellService {
             }
 
             java.util.List<Personnage> recipients = resolveRecipientsGroup(effect.getEffectTarget(), caster, target, ally, allAllies, allEnemies);
+
+            if (effect instanceof generation.grimoire.entity.spell.type.effect.HeatOverTimeEffect
+                    || effect instanceof generation.grimoire.entity.spell.type.effect.HeatFixedEffect
+                    || effect instanceof generation.grimoire.entity.spell.type.effect.HeatPercentageEffect) {
+                recipients = java.util.Collections.singletonList(caster);
+            }
 
             for (Personnage recipient : recipients) {
                 effect.apply(caster, recipient);
