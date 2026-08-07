@@ -259,19 +259,21 @@ async function unequipItem(equipmentId) {
 }
 
 async function deleteEquipment(id) {
-    try {
-        const res = await globalFetch(`/api/equipments/${id}`, { method: 'DELETE' });
-        if (res) {
-            showNotif('Équipement supprimé.');
+    const eq = pageState.allEquipments.find(e => e.id === id);
+    if (!eq) return;
+
+    api.deleteEquipmentAPI(id, {
+        confirm: true,
+        confirmTitle: "Déséquiper / Détruire ?",
+        confirmBody: `Voulez-vous vraiment supprimer l'équipement <strong class="text-white">${eq.name}</strong> ?`,
+        apiRoute: "/api/equipments/",
+        onSuccess: async () => {
             await loadAllEquipments();
             renderEquipModal();
             await loadPersonnages();
         }
-    } catch (e) {
-        showNotif('Erreur suppression.', true);
-    }
+    });
 }
-
 // ===== UI =====
 
 // Helpers for icons and colors

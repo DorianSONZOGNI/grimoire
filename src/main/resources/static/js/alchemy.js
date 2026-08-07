@@ -257,7 +257,7 @@ function renderCauldron(r) {
                 color: temp.spiritualite ? getSpiritualiteColor(temp.spiritualite) : '#a855f7'
             };
 
-            const tooltipData = buildAnomalyTooltipHTML(name);
+            const tooltipData = getAnomalyTooltipHTML(pageState.allAnomalyTemplates.find(a => a.name === name) || { name: name, level: 1, spiritualite: 'Inconnu', description: 'Aucune description' }, name).replace(/"/g, '&quot;');
             reqsHTML += `<div data-color="${style.color}" style="background:rgba(0,0,0,0.4); padding:0.6rem; border-radius:8px; border:1px solid ${style.color}40; margin-bottom: 0.4rem; cursor: help;" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData}">
                         <div style="display:flex; align-items:center; justify-content: space-between; gap:0.5rem; margin-bottom: ${(!isIdentical && hasEnough) ? '0.5rem' : '0'};">
                             <div style="display:flex; align-items:center; gap:0.5rem;">
@@ -423,7 +423,7 @@ function renderCauldron(r) {
 
     let resultTooltipAttr = '';
     if (resultType === 'ANOMALY') {
-        const tooltipData = buildAnomalyTooltipHTML(r.rewardName);
+        const tooltipData = getAnomalyTooltipHTML(pageState.allAnomalyTemplates.find(a => a.name === r.rewardName) || { name: r.rewardName, level: 1, spiritualite: 'Inconnu', description: 'Aucune description' }, r.rewardName).replace(/"/g, '&quot;');
         resultTooltipAttr = `data-color="${resultColor}" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData}"`;
     } else if (resultType === 'EQUIPMENT' || resultType === 'CONSUMABLE') {
         const temp = pageState.allEquipmentTemplates.find(e => e.name === r.rewardName);
@@ -818,12 +818,7 @@ function createMagicParticles() {
     }
 }
 
-function buildAnomalyTooltipHTML(name) {
-    let temp = pageState.allAnomalyTemplates.find(a => a.name === name);
-    if (!temp) temp = { name: name, level: 1, spiritualite: 'Inconnu', description: 'Aucune description' };
 
-    return getAnomalyTooltipHTML(temp, name).replace(/"/g, '&quot;');
-}
 
 // STAT_DEFS → constants.js (window.STAT_DEFS)
 

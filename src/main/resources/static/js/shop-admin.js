@@ -109,21 +109,7 @@ async function loadEquipments() {
 
 async function loadAnomalies() {
     try {
-        const res = await globalFetch('/api/anomalies/all-templates');
-        if (res.ok) {
-            let data = await res.json();
-            window.allAnomalies = data.sort((a, b) => {
-                const spiriA = a.spiritualite || 'ZZZ';
-                const spiriB = b.spiritualite || 'ZZZ';
-                if (spiriA !== spiriB) return spiriA.localeCompare(spiriB);
-
-                const lvlA = a.level || 1;
-                const lvlB = b.level || 1;
-                if (lvlA !== lvlB) return lvlA - lvlB;
-
-                return a.name.localeCompare(b.name);
-            });
-        }
+        window.allAnomalies = await api.loadAnomalies({ source: '/api/anomalies/all-templates', deduplicate: false });
     } catch (e) {
         console.error('Erreur chargement anomalies:', e);
     }
@@ -194,26 +180,13 @@ function deleteEquipment(id) {
     const eq = pageState.allEquipments.find(e => e.id === id);
     if (!eq) return;
 
-    const weightStr = eq._weight % 1 === 0 ? eq._weight : eq._weight.toFixed(1);
-
-    showModal({
-        title: "Détruire l'équipement ?",
-        body: `Voulez-vous vraiment détruire l'équipement <strong class="text-white">${eq.name}</strong> ?<br><br>Cette action est définitive (pour la template de la boutique).`,
-        icon: 'warning',
-        confirmText: `Oui, détruire`,
-        onConfirm: async () => {
-            try {
-                const res = await globalFetch(`/api/shop/templates/${id}`, { method: 'DELETE' });
-                if (res.ok) {
-                    showNotif('Équipement détruit.');
-                    await loadEquipments();
-                    if (window.checkAuthStatus) window.checkAuthStatus();
-                } else {
-                    showNotif('Erreur lors de la suppression.', true);
-                }
-            } catch (e) {
-                showNotif('Erreur réseau.', true);
-            }
+    api.deleteEquipmentAPI(id, {
+        confirmTitle: "Détruire l'équipement ?",
+        confirmBody: `Voulez-vous vraiment détruire l'équipement <strong class="text-white">${eq.name}</strong> ?<br><br>Cette action est définitive (pour la template de la boutique).`,
+        apiRoute: "/api/shop/templates/",
+        onSuccess: async () => {
+            await loadEquipments();
+            if (window.checkAuthStatus) window.checkAuthStatus();
         }
     });
 }

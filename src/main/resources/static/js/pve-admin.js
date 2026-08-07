@@ -71,12 +71,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     const checkAdmin = () => {
         if (!window.currentUser) return;
         if (!window.isAdmin) {
-            document.getElementById('adminWarning').style.display = 'block';
+            document.getElementById('adminWarning').classList.remove('hidden');
             setTimeout(() => { window.location.href = '/'; }, 2000);
             return;
         }
 
-        document.getElementById('adminContent').style.display = 'block';
+        document.getElementById('adminContent').classList.remove('hidden');
         document.getElementById('adminPvELink').style.display = 'inline-flex';
 
         loadMonsters();
@@ -1471,29 +1471,8 @@ async function loadMonsters() {
 }
 
 async function loadAnomalies() {
-    try {
-        const res = await globalFetch('/api/anomalies/all');
-        if (res.ok) {
-            let data = await res.json();
-            const uniqueNames = new Set();
-            pageState.allAnomalies = data.filter(a => {
-                if (uniqueNames.has(a.name)) return false;
-                uniqueNames.add(a.name);
-                return true;
-            }).sort((a, b) => {
-                const spiriA = a.spiritualite || 'ZZZ';
-                const spiriB = b.spiritualite || 'ZZZ';
-                if (spiriA !== spiriB) return spiriA.localeCompare(spiriB);
-                const lvlA = a.level || 1;
-                const lvlB = b.level || 1;
-                if (lvlA !== lvlB) return lvlA - lvlB;
-                return a.name.localeCompare(b.name);
-            });
-            renderRooms();
-        }
-    } catch (e) {
-        console.error(e);
-    }
+    pageState.allAnomalies = await api.loadAnomalies({ source: '/api/anomalies/all', deduplicate: true });
+    renderRooms();
 }
 
 async function loadEquipments() {

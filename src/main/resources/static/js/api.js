@@ -448,3 +448,75 @@ export function deleteSpell(id) {
 
 
 
+
+
+export async function loadAnomalies(options = {}) {
+    const {
+        source = '/api/anomalies/all',
+        deduplicate = false
+    } = options;
+
+    try {
+        const res = await globalFetch(source);
+        if (!res.ok) throw new Error('Network response was not ok');
+        let data = await res.json();
+        
+        if (deduplicate) {
+            const uniqueNames = new Set();
+            data = data.filter(a => {
+                if (uniqueNames.has(a.name)) return false;
+                uniqueNames.add(a.name);
+                return true;
+            });
+        }
+
+        return data.sort((a, b) => {
+            const spiriA = a.spiritualite || 'ZZZ';
+            const spiriB = b.spiritualite || 'ZZZ';
+            if (spiriA !== spiriB) return spiriA.localeCompare(spiriB);
+            const lvlA = a.level || 1;
+            const lvlB = b.level || 1;
+            if (lvlA !== lvlB) return lvlA - lvlB;
+            return a.name.localeCompare(b.name);
+        });
+    } catch (e) {
+        console.error('Erreur API loadAnomalies:', e);
+        return [];
+    }
+}
+
+export async function deleteEquipmentAPI(id, options = {}) {
+    const {
+        confirm = true,
+        confirmTitle = "Détruire l'équipement ?",
+        confirmBody = "Voulez-vous vraiment détruire l'équipement ?",
+        apiRoute = "/api/shop/templates/",
+        onSuccess = async () => {}
+    } = options;
+
+    const doDelete = async () => {
+        try {
+            const res = await globalFetch(`${apiRoute}${id}`, { method: 'DELETE' });
+            if (res.ok) {
+                ui.showNotif('Équipement supprimé.');
+                await onSuccess();
+            } else {
+                ui.showNotif('Erreur lors de la suppression.', true);
+            }
+        } catch (e) {
+            ui.showNotif('Erreur réseau.', true);
+        }
+    };
+
+    if (confirm) {
+        ui.showModal({
+            title: confirmTitle,
+            body: confirmBody,
+            icon: 'warning',
+            confirmText: 'Oui, détruire',
+            onConfirm: doDelete
+        });
+    } else {
+        await doDelete();
+    }
+}
