@@ -616,6 +616,37 @@ public class SpellService {
         Spell channeledSpell = caster.getChanneledSpell();
         if (channeledSpell == null) return;
 
+        if (target != null && target.getHealthCurrent() <= 0) {
+            boolean targetsSpecific = false;
+            for (generation.grimoire.entity.SpellEffect effect : channeledSpell.getEffects()) {
+                if (effect.getEffectTarget() == generation.grimoire.enumeration.EffectTarget.TARGET) {
+                    targetsSpecific = true;
+                    break;
+                }
+            }
+            if (targetsSpecific) {
+                System.out.println("🌀 " + caster.getName() + " interrompt sa canalisation : la cible est morte !");
+                caster.cancelChanneling();
+                return;
+            }
+        }
+
+        Personnage channelingAlly = caster.getChannelingAlly();
+        if (channelingAlly != null && channelingAlly.getHealthCurrent() <= 0) {
+            boolean targetsAlly = false;
+            for (generation.grimoire.entity.SpellEffect effect : channeledSpell.getEffects()) {
+                if (effect.getEffectTarget() == generation.grimoire.enumeration.EffectTarget.ALLY) {
+                    targetsAlly = true;
+                    break;
+                }
+            }
+            if (targetsAlly) {
+                System.out.println("🌀 " + caster.getName() + " interrompt sa canalisation : l'allié ciblé est mort !");
+                caster.cancelChanneling();
+                return;
+            }
+        }
+
         int duration = channeledSpell.getChannelingDuration();
         int remaining = caster.getRemainingChannelingTurns();
         int currentTurn = duration - remaining + 1;
@@ -678,6 +709,37 @@ public class SpellService {
     public void tickChanneling(Personnage caster, Personnage target, Integer choiceKey, Personnage ally, java.util.List<Personnage> allAllies, java.util.List<Personnage> allEnemies) {
         Spell channeledSpell = caster.getChanneledSpell();
         if (channeledSpell == null) return;
+
+        if (target != null && target.getHealthCurrent() <= 0) {
+            boolean targetsSpecific = false;
+            for (generation.grimoire.entity.SpellEffect effect : channeledSpell.getEffects()) {
+                if (effect.getEffectTarget() == generation.grimoire.enumeration.EffectTarget.TARGET) {
+                    targetsSpecific = true;
+                    break;
+                }
+            }
+            if (targetsSpecific) {
+                System.out.println("🌀 " + caster.getName() + " interrompt sa canalisation : la cible est morte !");
+                caster.cancelChanneling();
+                return;
+            }
+        }
+
+        Personnage channelingAlly = caster.getChannelingAlly();
+        if (channelingAlly != null && channelingAlly.getHealthCurrent() <= 0) {
+            boolean targetsAlly = false;
+            for (generation.grimoire.entity.SpellEffect effect : channeledSpell.getEffects()) {
+                if (effect.getEffectTarget() == generation.grimoire.enumeration.EffectTarget.ALLY) {
+                    targetsAlly = true;
+                    break;
+                }
+            }
+            if (targetsAlly) {
+                System.out.println("🌀 " + caster.getName() + " interrompt sa canalisation : l'allié ciblé est mort !");
+                caster.cancelChanneling();
+                return;
+            }
+        }
 
         int duration = channeledSpell.getChannelingDuration();
         int remaining = caster.getRemainingChannelingTurns();

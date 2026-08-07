@@ -43,9 +43,13 @@ class SpellChannelingTest {
         ally = new Personnage();
         ally.setName("Ally");
         ally.setArmor(0); // Testing armor buff
+        ally.setHealthMax(100);
+        ally.setHealthCurrent(100);
 
         enemy = new Personnage();
         enemy.setName("Enemy");
+        enemy.setHealthMax(100);
+        enemy.setHealthCurrent(100);
     }
 
     @Test

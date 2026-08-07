@@ -1406,6 +1406,9 @@ public class CombatService {
                 .allMatch(e -> e.getMaxHp() <= 0);
         if (!allAlreadyProcessed && allNowProcessed) {
             session.addLog("Combat terminé, vous avez vaincu tous les monstres !");
+            for (Personnage p : session.getPlayers()) {
+                p.resetCombatState();
+            }
 
             // Boss end-of-combat bonus rewards
             if (session.getCurrentRoom().getType() == generation.grimoire.enumeration.RoomType.BOSS) {
@@ -1808,6 +1811,7 @@ public class CombatService {
         boolean goldDeducted = false;
 
         for (Personnage p : session.getPlayers()) {
+            p.resetCombatState();
             Long playerId = p.getId();
 
             if (playerId == null) {
