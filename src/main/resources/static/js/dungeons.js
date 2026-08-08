@@ -380,9 +380,12 @@ function renderConsumablesList() {
         <span class="material-symbols-outlined text-sm align-middle">scale</span>
         Poids: ${curWeight % 1 === 0 ? curWeight : curWeight.toFixed(1)} / ${maxWeight}
     </div>`;
+    
+    const weightContainer = document.getElementById('prepWeightCounter');
+    if (weightContainer) weightContainer.innerHTML = counterHtml;
 
     if (pageState.availableConsumables.length === 0) {
-        list.innerHTML = counterHtml + `<div class="text-muted text-center" style="font-size: 0.85rem; padding: 1rem;">Vous n'avez aucun consommable dans votre coffre.</div>`;
+        list.innerHTML = `<div class="text-muted text-center" style="font-size: 0.85rem; padding: 1rem;">Vous n'avez aucun consommable dans votre coffre.</div>`;
         return;
     }
 
@@ -416,7 +419,7 @@ function renderConsumablesList() {
     }
 
     if (filteredConsumables.length === 0) {
-        list.innerHTML = counterHtml + `<div class="text-muted text-center" style="font-size: 0.85rem; padding: 1rem;">Aucun consommable ne correspond à ces filtres.</div>`;
+        list.innerHTML = `<div class="text-muted text-center" style="font-size: 0.85rem; padding: 1rem;">Aucun consommable ne correspond à ces filtres.</div>`;
         return;
     }
 
@@ -450,7 +453,7 @@ function renderConsumablesList() {
             </div>
         `;
     });
-    list.innerHTML = counterHtml + `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">${cardsHtml}</div>`;
+    list.innerHTML = `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">${cardsHtml}</div>`;
 }
 
 window.selectConsumable = function (id) {
