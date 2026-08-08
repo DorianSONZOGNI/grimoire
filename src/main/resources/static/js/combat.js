@@ -3630,7 +3630,7 @@ window.renderOverlayInventory = function (containerId) {
         const slotInfo = getSlotInfo(c);
 
         list.innerHTML += `
-            <div class="${hoverClass} flex-center" ${onClickAttr} style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 0.8rem; gap: 0.8rem; transition: all 0.2s; ${cursorStyle};">
+            <div class="${hoverClass} flex-center" ${onClickAttr} style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 0.8rem; gap: 0.8rem; margin-bottom: 0.5rem; transition: all 0.2s; ${cursorStyle};">
                 <span class="material-symbols-outlined" style="font-size: 1.5rem; color: ${slotInfo.color};">${slotInfo.icon}</span>
                 <div class="flex-1">
                     <div class="text-sm" style="color: #f8fafc; font-weight: 600;">${c.name}</div>
