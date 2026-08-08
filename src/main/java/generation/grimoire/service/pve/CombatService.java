@@ -276,7 +276,7 @@ public class CombatService {
     }
 
     public CombatSession openChest(String sessionId, boolean useKey) {
-        CombatSession session = activeSessions.get(sessionId);
+        CombatSession session = getSession(sessionId);
         if (session == null || session.isFinished())
             return session;
         if (session.getCurrentRoom().getType() != generation.grimoire.enumeration.RoomType.TREASURE) {
@@ -400,7 +400,7 @@ public class CombatService {
     }
 
     public CombatSession acceptAlteration(String sessionId, Long anomalyId) {
-        CombatSession session = activeSessions.get(sessionId);
+        CombatSession session = getSession(sessionId);
         if (session == null || session.isFinished())
             return session;
         if (session.getCurrentRoom().getType() != generation.grimoire.enumeration.RoomType.EVENT ||
@@ -650,7 +650,7 @@ public class CombatService {
     }
 
     public CombatSession useRope(String sessionId) {
-        CombatSession session = activeSessions.get(sessionId);
+        CombatSession session = getSession(sessionId);
         if (session == null || session.isFinished())
             return session;
 
@@ -752,7 +752,7 @@ public class CombatService {
     }
 
     public CombatSession buyMerchantItem(String sessionId, int lootIndex, Long characterId) {
-        CombatSession session = activeSessions.get(sessionId);
+        CombatSession session = getSession(sessionId);
         if (session == null || session.isFinished()) {
             throw new RuntimeException("Session introuvable ou terminée.");
         }
@@ -876,7 +876,7 @@ public class CombatService {
     }
 
     public CombatSession proceedToNextRoom(String sessionId) {
-        CombatSession session = activeSessions.get(sessionId);
+        CombatSession session = getSession(sessionId);
         if (session == null || session.isFinished())
             return session;
 
@@ -964,7 +964,7 @@ public class CombatService {
     }
 
     public CombatSession openStrangeDoor(String sessionId) {
-        CombatSession session = activeSessions.get(sessionId);
+        CombatSession session = getSession(sessionId);
         if (session == null || session.isFinished())
             return session;
         if (session.getCurrentRoom().getType() != generation.grimoire.enumeration.RoomType.EVENT ||
@@ -1196,7 +1196,7 @@ public class CombatService {
 
     public CombatSession executeAction(String sessionId, Long spellId, Integer targetIndex, Integer allyTargetIndex,
             Integer choiceKey) {
-        CombatSession session = activeSessions.get(sessionId);
+        CombatSession session = getSession(sessionId);
         if (session == null)
             throw new RuntimeException("Session introuvable");
         if (session.isFinished())
@@ -1447,7 +1447,7 @@ public class CombatService {
     }
 
     public CombatSession endTurn(String sessionId) {
-        CombatSession session = activeSessions.get(sessionId);
+        CombatSession session = getSession(sessionId);
         if (session == null)
             throw new RuntimeException("Session introuvable");
         if (session.isFinished())
@@ -1490,7 +1490,7 @@ public class CombatService {
     }
 
     public CombatSession processNextAutoTurn(String sessionId) {
-        CombatSession session = activeSessions.get(sessionId);
+        CombatSession session = getSession(sessionId);
         if (session == null || session.isFinished())
             return session;
 
@@ -1798,7 +1798,7 @@ public class CombatService {
 
     @org.springframework.transaction.annotation.Transactional
     public void fleeCombat(String sessionId) {
-        CombatSession session = activeSessions.get(sessionId);
+        CombatSession session = getSession(sessionId);
         if (session == null || session.isFinished())
             return;
 
@@ -1896,7 +1896,7 @@ public class CombatService {
 
     @org.springframework.transaction.annotation.Transactional
     public CombatSession addConsumableByName(String sessionId, String itemName, String username) {
-        CombatSession session = activeSessions.get(sessionId);
+        CombatSession session = getSession(sessionId);
         if (session == null || session.isFinished()) {
             throw new RuntimeException("Session introuvable ou terminée.");
         }
