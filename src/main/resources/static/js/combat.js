@@ -345,7 +345,7 @@ window.promptFlee = function () {
                 if (!res.ok) {
                     pageState.isFleeing = false;
                     const err = await res.text();
-                    ui.window.showNotif("Erreur lors de la fuite : " + err, true);
+                    ui.showNotif("Erreur lors de la fuite : " + err, true);
                     return;
                 }
                 localStorage.removeItem('activeCombatId');
@@ -426,7 +426,7 @@ document.addEventListener('DOMContentLoaded', async () => {
 
     if (!dungeonId || !characterIds) {
         if (typeof showNotif !== 'undefined') window.showNotif("Paramètres de combat manquants.", true);
-        else ui.window.showNotif("Paramètres de combat manquants.", true);
+        else ui.showNotif("Paramètres de combat manquants.", true);
         window.location.href = '/vault.html';
         return;
     }
@@ -449,7 +449,7 @@ async function resumeCombat(savedSessionId) {
         if (!res.ok) {
             localStorage.removeItem('activeCombatId');
             if (typeof showNotif !== 'undefined') window.showNotif("Combat introuvable ou expiré.", true);
-            else ui.window.showNotif("Combat introuvable ou expiré.", true);
+            else ui.showNotif("Combat introuvable ou expiré.", true);
             window.location.href = '/vault.html';
             return;
         }
@@ -482,7 +482,7 @@ async function startCombat(characterIds, dungeonId, consumableIds) {
 
         if (!res.ok) {
             if (typeof showNotif !== 'undefined') window.showNotif("Erreur lors de l'initialisation du donjon.", true);
-            else ui.window.showNotif("Erreur lors de l'initialisation du donjon.", true);
+            else ui.showNotif("Erreur lors de l'initialisation du donjon.", true);
             window.location.href = '/vault.html';
             return;
         }
@@ -501,7 +501,7 @@ async function startCombat(characterIds, dungeonId, consumableIds) {
     } catch (e) {
         console.error(e);
         if (typeof showNotif !== 'undefined') window.showNotif("Erreur de connexion.", true);
-        else ui.window.showNotif("Erreur de connexion.", true);
+        else ui.showNotif("Erreur de connexion.", true);
         window.location.href = '/dungeons.html';
     }
 }
@@ -1247,6 +1247,7 @@ async function addLootedConsumable(itemName, iconElement) {
         iconElement.title = "Dans l'inventaire du groupe";
 
         pageState.currentSessionData = updatedSession;
+        resetCombatTimeoutWarning(false);
         if (typeof window.renderOverlayInventory === 'function') {
             window.renderOverlayInventory('eventOverlayInventoryList');
             window.renderOverlayInventory('combatVictoryInventoryList');
@@ -1280,7 +1281,7 @@ async function openChest(useKey = false) {
         if (!res.ok) {
             const err = await res.text();
             if (typeof showNotif !== 'undefined') window.showNotif("Erreur : " + err, true);
-            else ui.window.showNotif("Erreur : " + err, true);
+            else ui.showNotif("Erreur : " + err, true);
             pageState.isProcessing = false;
             return;
         }
@@ -1303,14 +1304,69 @@ async function openChest(useKey = false) {
     } catch (e) {
         console.error(e);
         if (typeof showNotif !== 'undefined') window.showNotif("Erreur lors de l'ouverture du coffre.", true);
-        else ui.window.showNotif("Erreur lors de l'ouverture du coffre.", true);
+        else ui.showNotif("Erreur lors de l'ouverture du coffre.", true);
     } finally {
         pageState.isProcessing = false;
         setButtonsProcessing(false);
     }
 }
 
+let combatWarningTimer = null;
+
+let combatCountdownInterval = null;
+
+function resetCombatTimeoutWarning(finished) {
+    if (combatWarningTimer) {
+        clearTimeout(combatWarningTimer);
+        combatWarningTimer = null;
+    }
+    if (combatCountdownInterval) {
+        clearInterval(combatCountdownInterval);
+        combatCountdownInterval = null;
+    }
+    if (finished) return;
+
+    combatWarningTimer = setTimeout(() => {
+        if (typeof ui !== 'undefined' && ui.showModal) {
+            let seconds = 60;
+
+            ui.showModal({
+                title: 'Alerte Inactivité',
+                body: `Le combat expirera dans <strong id="combat-timeout-countdown" class="text-error" style="font-size:1.5rem;">${seconds}</strong> secondes.<br><br>Cliquez sur valider pour continuer à jouer.`,
+                icon: 'timer',
+                confirmText: 'Je suis là',
+                hideCancel: true,
+                onConfirm: async () => {
+                    clearInterval(combatCountdownInterval);
+                    try {
+                        await window.globalFetch('/api/pve/combat/' + pageState.sessionId, { method: 'GET' });
+                        resetCombatTimeoutWarning(false);
+                    } catch (e) {
+                        console.error(e);
+                    }
+                }
+            });
+
+            combatCountdownInterval = setInterval(() => {
+                seconds--;
+                const counterEl = document.getElementById('combat-timeout-countdown');
+                if (counterEl) {
+                    counterEl.innerText = seconds;
+                }
+                if (seconds <= 0) {
+                    clearInterval(combatCountdownInterval);
+                    window.location.reload();
+                }
+            }, 1000);
+
+        } else {
+            alert("⚠️ Attention : Le combat expirera dans 1 minute pour inactivité !");
+        }
+    }, 540000); // 9 minutes
+}
+
 function updateUI(data) {
+    resetCombatTimeoutWarning(data.finished);
     pageState.currentSessionData = data;
 
     if (data.finished) {
@@ -1437,7 +1493,7 @@ function updateUI(data) {
                 document.getElementById('btnAttack').disabled = true;
                 const vicOverlay = document.getElementById('combatVictoryOverlay');
                 if (vicOverlay) {
-                    if (typeof renderOverlayInventory === 'function') renderOverlayInventory('combatVictoryInventoryList');
+                    if (typeof window.renderOverlayInventory === 'function') window.renderOverlayInventory('combatVictoryInventoryList');
                     vicOverlay.classList.add('show');
                     const xpContainer = document.getElementById('combatVictoryXpContainer');
                     if (xpContainer) {
@@ -1566,10 +1622,10 @@ function updateUI(data) {
 
                 if (data.roomEventCompleted) {
                     desc.textContent = `Vous avez ouvert le coffre !`;
-                    btnOpen.style.display = 'none';
-                    if (document.getElementById('btnOpenChestKey')) document.getElementById('btnOpenChestKey').style.display = 'none';
-                    btnCont.style.display = 'block';
-                    lootContainer.style.display = 'flex';
+                    btnOpen.classList.add('hidden');
+                    if (document.getElementById('btnOpenChestKey')) document.getElementById('btnOpenChestKey').classList.add('hidden');
+                    btnCont.classList.remove('hidden');
+                    lootContainer.classList.remove('hidden'); lootContainer.classList.add('flex');
 
                     // Allow filling if it contains only comments or whitespace
                     if (!lootContainer.dataset.filled) {
@@ -1685,16 +1741,16 @@ function updateUI(data) {
                     }
                 } else {
                     desc.textContent = `Un coffre mystérieux se trouve au centre de la pièce...`;
-                    btnOpen.style.display = 'block';
-                    btnCont.style.display = 'none';
-                    lootContainer.style.display = 'none';
+                    btnOpen.classList.remove('hidden');
+                    btnCont.classList.add('hidden');
+                    lootContainer.classList.add('hidden'); lootContainer.classList.remove('flex');
                     lootContainer.innerHTML = ''; // reset
                     delete lootContainer.dataset.filled;
 
                     const btnKey = document.getElementById('btnOpenChestKey');
                     if (btnKey) {
                         const hasKey = data.activeConsumables && data.activeConsumables.some(eq => eq.name === 'Clé');
-                        btnKey.style.display = hasKey ? 'block' : 'none';
+                        btnKey.classList.toggle('hidden', !hasKey);
                     }
                 }
             } else if (data.currentRoom.type === 'EVENT') {
@@ -1712,7 +1768,7 @@ function updateUI(data) {
                     }
                     desc.innerHTML = data.currentRoom.eventText || 'Une force mystérieuse vous entoure...';
 
-                    btnOpen.style.display = 'none';
+                    btnOpen.classList.add('hidden');
 
                     if (!data.roomEventCompleted && data.currentRoom.alterationType !== 'RIEN') {
                         delete lootContainer.dataset.filled;
@@ -1917,8 +1973,8 @@ function updateUI(data) {
                             });
                         }
 
-                        btnCont.style.display = 'none';
-                        lootContainer.style.display = 'flex';
+                        btnCont.classList.add('hidden');
+                        lootContainer.classList.remove('hidden'); lootContainer.classList.add('flex');
 
                         let disabledState = '';
                         if (data.currentRoom.alterationType === 'ITEM' || data.currentRoom.alterationType === 'AUTEL') {
@@ -1936,7 +1992,7 @@ function updateUI(data) {
                             </div>
                         `;
                     } else {
-                        btnCont.style.display = 'block';
+                        btnCont.classList.remove('hidden');
                         btnCont.textContent = 'Continuer';
 
                         if (!lootContainer.dataset.filled) {
@@ -2003,7 +2059,7 @@ function updateUI(data) {
                             }
                         }
 
-                        lootContainer.style.display = 'flex';
+                        lootContainer.classList.remove('hidden'); lootContainer.classList.add('flex');
                     }
                 } else if (subType === 'RENCONTRE') {
                     icon.textContent = 'storefront';
@@ -2011,13 +2067,13 @@ function updateUI(data) {
                     title.textContent = 'Rencontre';
                     desc.innerHTML = data.currentRoom.eventText || 'Un marchand ambulant vous interpelle...';
 
-                    btnOpen.style.display = 'none';
-                    btnCont.style.display = 'block';
+                    btnOpen.classList.add('hidden');
+                    btnCont.classList.remove('hidden');
                     btnCont.textContent = 'Continuer';
                     btnCont.onclick = nextRoom;
 
                     if (data.currentRoom.lootTable && data.currentRoom.lootTable.length > 0) {
-                        lootContainer.style.display = 'flex';
+                        lootContainer.classList.remove('hidden'); lootContainer.classList.add('flex');
                         lootContainer.innerHTML = '';
 
                         data.currentRoom.lootTable.forEach((entry, idx) => {
@@ -2148,7 +2204,7 @@ function updateUI(data) {
                             `;
                         });
                     } else {
-                        lootContainer.style.display = 'none';
+                        lootContainer.classList.add('hidden'); lootContainer.classList.remove('flex');
                     }
                 } else if (subType === 'PIEGE') {
                     icon.textContent = 'warning';
@@ -2160,10 +2216,10 @@ function updateUI(data) {
                     if (data.roomEventCompleted) {
                         trapDesc += `<br><br><span style="color:#10b981;">🪢 Piège évité grâce à une Corde !</span>`;
                         desc.innerHTML = trapDesc;
-                        btnOpen.style.display = 'none';
-                        btnCont.style.display = 'block';
+                        btnOpen.classList.add('hidden');
+                        btnCont.classList.remove('hidden');
                         btnCont.textContent = 'Continuer';
-                        lootContainer.style.display = 'none';
+                        lootContainer.classList.add('hidden'); lootContainer.classList.remove('flex');
                     } else {
                         let trapDetails = [];
                         if (data.currentRoom.trapDamageHpPct > 0) trapDetails.push(`<span style="color:#ef4444;">${data.currentRoom.trapDamageHpPct}% PV Max</span>`);
@@ -2185,11 +2241,11 @@ function updateUI(data) {
                         }
 
                         desc.innerHTML = trapDesc;
-                        btnOpen.style.display = 'none';
+                        btnOpen.classList.add('hidden');
 
                         if (data.currentRoom.trapHasRopeOption) {
                             const hasRope = data.activeConsumables && data.activeConsumables.some(eq => eq.name === 'Corde');
-                            lootContainer.style.display = 'flex';
+                            lootContainer.classList.remove('hidden'); lootContainer.classList.add('flex');
                             lootContainer.innerHTML = `
                                 <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
                                     <div style="display: flex; gap: 1rem; margin-top: 1rem; justify-content: center; width: 100%;">
@@ -2198,11 +2254,11 @@ function updateUI(data) {
                                     </div>
                                 </div>
                             `;
-                            btnCont.style.display = 'none';
+                            btnCont.classList.add('hidden');
                         } else {
-                            btnCont.style.display = 'block';
+                            btnCont.classList.remove('hidden');
                             btnCont.textContent = 'Subir le piège et passer';
-                            lootContainer.style.display = 'none';
+                            lootContainer.classList.add('hidden'); lootContainer.classList.remove('flex');
                         }
                     }
                 } else if (subType === 'PORTE_ETRANGE') {
@@ -2210,10 +2266,13 @@ function updateUI(data) {
                     title.textContent = 'Porte Étrange';
 
                     if (data.roomEventCompleted) {
-                        icon.style.color = '#94a3b8'; // Grisé
+                        title.textContent = 'Rien...';
+                        icon.className = 'material-symbols-outlined mb-4 text-[5rem]';
+                        icon.style.color = '#475569'; // Gris foncé pour bien marquer "Rien"
+                        icon.style.textShadow = 'none';
                         desc.innerHTML = data.currentRoom.eventText || 'Vous avez ouvert la porte... mais il n\'y a absolument rien derrière.';
-                        btnOpen.style.display = 'none';
-                        btnCont.style.display = 'block';
+                        btnOpen.classList.add('hidden');
+                        btnCont.classList.remove('hidden');
                         btnCont.textContent = 'Continuer';
                         btnCont.onclick = nextRoom;
 
@@ -2250,23 +2309,23 @@ function updateUI(data) {
                         }
 
                         if (anomalyHtml) {
-                            lootContainer.style.display = 'flex';
+                            lootContainer.classList.remove('hidden'); lootContainer.classList.add('flex');
                             lootContainer.innerHTML = `
                                 <div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; width: 100%; margin-top: 1rem;">
                                     ${anomalyHtml}
                                 </div>
                             `;
                         } else {
-                            lootContainer.style.display = 'none';
+                            lootContainer.classList.add('hidden'); lootContainer.classList.remove('flex');
                         }
                     } else {
                         icon.style.color = '#fbbf24'; // Jaune
                         desc.innerHTML = data.currentRoom.eventText || 'Une porte mystérieuse se dresse devant vous...';
-                        btnOpen.style.display = 'none';
-                        btnCont.style.display = 'block';
+                        btnOpen.classList.add('hidden');
+                        btnCont.classList.remove('hidden');
                         btnCont.textContent = 'Passer la porte';
                         btnCont.onclick = openStrangeDoor;
-                        lootContainer.style.display = 'none';
+                        lootContainer.classList.add('hidden'); lootContainer.classList.remove('flex');
 
                         // Show door outcomes info
                         if (data.currentRoom.doorOutcomes) {
@@ -2276,7 +2335,7 @@ function updateUI(data) {
                             } catch (e) { outcomes = []; }
 
                             if (outcomes.length > 0) {
-                                lootContainer.style.display = 'flex';
+                                lootContainer.classList.remove('hidden'); lootContainer.classList.add('flex');
                                 lootContainer.innerHTML = `
                                     <div class="text-muted text-center" style="font-size: 0.85rem; width: 100%;">
                                         <span style="color: #fbbf24; font-weight: 600;">Que se cache-t-il derrière ?</span><br>
@@ -2289,7 +2348,7 @@ function updateUI(data) {
                 }
             }
 
-            if (typeof renderOverlayInventory === 'function') renderOverlayInventory('eventOverlayInventoryList');
+            if (typeof window.renderOverlayInventory === 'function') window.renderOverlayInventory('eventOverlayInventoryList');
             overlay.classList.add('show');
         }
     }
@@ -2776,8 +2835,12 @@ function generateFighterHtml(c, isHero, skipBadges = false) {
     return `
         ${mutationsHtml}
         ${channelingBadgeHtml}
-        <div class="fighter-name" style="color: ${isHero ? '#f8fafc' : '#ef4444'}; font-size: 1.3rem; display: flex; justify-content: center; align-items: center; gap: 0.2rem; margin-bottom: 0.8rem;">
-            ${avatarHtml} <div style="display: flex; align-items: center; gap: 0.3rem;">${titleIconsHtml} ${c.name}</div>
+        <div class="fighter-name" style="color: ${isHero ? '#f8fafc' : '#ef4444'}; font-size: 1.3rem; display: flex; justify-content: center; align-items: center; gap: 0.2rem; margin-bottom: 0.8rem; width: 100%;">
+            <span style="flex-shrink: 0; display: flex; align-items: center;">${avatarHtml}</span>
+            <div style="display: flex; align-items: center; gap: 0.3rem; min-width: 0;">
+                <span style="flex-shrink: 0; display: flex;">${titleIconsHtml}</span>
+                <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;" title="${c.name}">${c.name}</span>
+            </div>
         </div>
         ${monsterBadgesHtml}
         ${statsHtml}
@@ -3567,7 +3630,10 @@ window.renderOverlayInventory = function (containerId) {
         const slotInfo = getSlotInfo(c);
 
         list.innerHTML += `
-            <div class="${hoverClass} flex-center" ${onClickAttr} style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 0.8rem; gap: 0.8rem; transition: all 0.2s; ${cursorStyle};">
+            <div class="${hoverClass} flex-center" ${onClickAttr} style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 0.8rem; gap: 0.8rem; margin-bottom: 0.5rem; transition: all 0.2s; ${cursorStyle}; position: relative;">
+                <button class="destroy-item-btn" onclick="event.stopPropagation(); window.confirmDestroyItem(${c.id}, '${c.name.replace(/'/g, "\\'")}')" style="position: absolute; top: -5px; right: -5px; background: #ef4444; color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.3); transition: transform 0.2s;">
+                    <span class="material-symbols-outlined" style="font-size: 14px; font-weight: bold;">close</span>
+                </button>
                 <span class="material-symbols-outlined" style="font-size: 1.5rem; color: ${slotInfo.color};">${slotInfo.icon}</span>
                 <div class="flex-1">
                     <div class="text-sm" style="color: #f8fafc; font-weight: 600;">${c.name}</div>
@@ -3621,19 +3687,55 @@ window.confirmConsumeItem = async function (consumableId, characterId) {
         });
         if (res.ok) {
             pageState.currentSessionData = await res.json();
-            ui.window.showNotif("Objet consommé avec succès !");
+            ui.showNotif("Objet consommé avec succès !");
             updateUI(pageState.currentSessionData);
+            if (typeof window.renderOverlayInventory === 'function') {
+                window.renderOverlayInventory('eventOverlayInventoryList');
+                window.renderOverlayInventory('combatVictoryInventoryList');
+            }
         } else {
             const err = await res.text();
-            ui.window.showNotif("Erreur: " + err, true);
+            ui.showNotif("Erreur: " + err, true);
         }
     } catch (e) {
         console.error(e);
-        ui.window.showNotif("Erreur lors de la consommation.", true);
+        ui.showNotif("Erreur lors de la consommation.", true);
     }
 };
 
-
+window.confirmDestroyItem = function(consumableId, consumableName) {
+    ui.showModal({
+        title: 'Détruire un objet',
+        body: `Êtes-vous sûr de vouloir détruire <strong class="text-white">${consumableName}</strong> ?<br><br>Cet objet sera <strong class="text-red-400">perdu définitivement</strong>.`,
+        icon: 'delete',
+        confirmText: 'Détruire',
+        confirmStyle: 'danger',
+        cancelText: 'Annuler',
+        onConfirm: async () => {
+            if (!pageState.sessionId) return;
+            try {
+                const res = await globalFetch(`/api/pve/combat/${pageState.sessionId}/consumable/${consumableId}`, {
+                    method: 'DELETE'
+                });
+                if (res.ok) {
+                    pageState.currentSessionData = await res.json();
+                    ui.showNotif("Objet détruit.");
+                    updateUI(pageState.currentSessionData);
+                    if (typeof window.renderOverlayInventory === 'function') {
+                        window.renderOverlayInventory('eventOverlayInventoryList');
+                        window.renderOverlayInventory('combatVictoryInventoryList');
+                    }
+                } else {
+                    const err = await res.text();
+                    ui.showNotif("Erreur: " + err, true);
+                }
+            } catch (e) {
+                console.error(e);
+                ui.showNotif("Erreur lors de la destruction de l'objet.", true);
+            }
+        }
+    });
+};
 
 function playDungeonMusic(data) {
     if (!data) return;
@@ -3743,3 +3845,4 @@ window.changeMusicVolume = function (value) {
     }
     localStorage.setItem('grimoire_music_volume', value);
 };
+

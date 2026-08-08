@@ -156,6 +156,13 @@ class AppModal extends HTMLElement {
         this.iconEl.innerText = options.icon || 'warning';
         this.confirmBtn.innerText = options.confirmText || 'Confirmer';
         this.cancelBtn.innerText = options.cancelText || 'Annuler';
+        
+        if (options.hideCancel) {
+            this.cancelBtn.style.display = 'none';
+        } else {
+            this.cancelBtn.style.display = 'block';
+        }
+        
         this.onConfirmCallback = options.onConfirm || null;
 
         // Apply theme colors

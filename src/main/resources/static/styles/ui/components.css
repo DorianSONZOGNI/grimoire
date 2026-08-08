@@ -978,16 +978,16 @@
     border-radius: 16px;
     width: 90%;
     max-width: 1100px;
-    max-height: 90vh;
+    max-height: 98vh;
     box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.5);
     display: flex;
     flex-direction: column;
-    overflow: hidden;
+    overflow: visible;
     position: relative;
 }
 
 .equip-modal.modal-md {
-    max-width: 630px;
+    max-width: 660px;
 }
 
 .equip-modal.modal-sm {
@@ -995,6 +995,8 @@
 }
 
 .equip-modal-header {
+    border-top-left-radius: 16px;
+    border-top-right-radius: 16px;
     padding: 1.5rem;
     border-bottom: 1px solid rgba(255, 255, 255, 0.05);
     display: flex;
@@ -1015,7 +1017,7 @@
 
 .equip-modal-body {
     padding: 1.5rem;
-    overflow-y: auto;
+    overflow: visible;
     display: flex;
     flex-direction: column;
     gap: 1rem;

@@ -3,16 +3,16 @@
 function applyRbac() {
     if (window.currentUser !== undefined && !window.isAdmin) {
         const baseStats = document.getElementById('baseStatsSection');
-        if (baseStats) baseStats.classList.add('is-hidden');
+        if (baseStats) baseStats.classList.add('hidden');
 
         const xpField = document.getElementById('charExperience');
-        if (xpField && xpField.parentElement) xpField.parentElement.classList.add('is-hidden');
+        if (xpField && xpField.parentElement) xpField.parentElement.classList.add('hidden');
 
         const spiritExpField = document.getElementById('charSpiritExperience');
-        if (spiritExpField && spiritExpField.parentElement) spiritExpField.parentElement.classList.add('is-hidden');
+        if (spiritExpField && spiritExpField.parentElement) spiritExpField.parentElement.classList.add('hidden');
 
         const eqCreateSection = document.querySelector('.equip-create-section');
-        if (eqCreateSection) eqCreateSection.classList.add('is-hidden');
+        if (eqCreateSection) eqCreateSection.classList.add('hidden');
     }
 
     // Re-render characters to apply button visibility rules
@@ -259,19 +259,21 @@ async function unequipItem(equipmentId) {
 }
 
 async function deleteEquipment(id) {
-    try {
-        const res = await globalFetch(`/api/equipments/${id}`, { method: 'DELETE' });
-        if (res) {
-            showNotif('Équipement supprimé.');
+    const eq = pageState.allEquipments.find(e => e.id === id);
+    if (!eq) return;
+
+    api.deleteEquipmentAPI(id, {
+        confirm: true,
+        confirmTitle: "Déséquiper / Détruire ?",
+        confirmBody: `Voulez-vous vraiment supprimer l'équipement <strong class="text-white">${eq.name}</strong> ?`,
+        apiRoute: "/api/equipments/",
+        onSuccess: async () => {
             await loadAllEquipments();
             renderEquipModal();
             await loadPersonnages();
         }
-    } catch (e) {
-        showNotif('Erreur suppression.', true);
-    }
+    });
 }
-
 // ===== UI =====
 
 // Helpers for icons and colors
@@ -1085,7 +1087,8 @@ window.addEventListener('DOMContentLoaded', async () => {
 window.addEventListener('authLoaded', async () => {
     const searchOwnerContainer = document.getElementById('searchOwnerContainer');
     if (searchOwnerContainer) {
-        searchOwnerContainer.style.display = window.isAdmin ? 'flex' : 'none';
+        if (window.isAdmin) searchOwnerContainer.classList.remove('hidden');
+        else searchOwnerContainer.classList.add('hidden');
     }
     await loadAllEquipments();
     await loadPersonnages();

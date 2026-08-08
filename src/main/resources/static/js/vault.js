@@ -523,7 +523,8 @@ window.addEventListener('authLoaded', async () => {
     const btnCreate = document.getElementById('btnCreateVaultEq');
     const btnCreateAnomalie = document.getElementById('btnCreateAnomalie');
     if (btnCreate) {
-        btnCreate.style.display = window.isAdmin ? 'flex' : 'none';
+        if (window.isAdmin) btnCreate.classList.remove('hidden');
+        else btnCreate.classList.add('hidden');
     }
     if (btnCreateAnomalie) {
         btnCreateAnomalie.style.display = window.isAdmin ? 'flex' : 'none';
@@ -531,7 +532,8 @@ window.addEventListener('authLoaded', async () => {
 
     const searchOwnerContainer = document.getElementById('searchOwnerContainer');
     if (searchOwnerContainer) {
-        searchOwnerContainer.style.display = window.isAdmin ? 'flex' : 'none';
+        if (window.isAdmin) searchOwnerContainer.classList.remove('hidden');
+        else searchOwnerContainer.classList.add('hidden');
     }
 
     await loadEquipments();

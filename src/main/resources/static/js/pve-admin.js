@@ -71,12 +71,12 @@ document.addEventListener('DOMContentLoaded', async () => {
     const checkAdmin = () => {
         if (!window.currentUser) return;
         if (!window.isAdmin) {
-            document.getElementById('adminWarning').style.display = 'block';
+            document.getElementById('adminWarning').classList.remove('hidden');
             setTimeout(() => { window.location.href = '/'; }, 2000);
             return;
         }
 
-        document.getElementById('adminContent').style.display = 'block';
+        document.getElementById('adminContent').classList.remove('hidden');
         document.getElementById('adminPvELink').style.display = 'inline-flex';
 
         loadMonsters();
@@ -1471,29 +1471,8 @@ async function loadMonsters() {
 }
 
 async function loadAnomalies() {
-    try {
-        const res = await globalFetch('/api/anomalies/all');
-        if (res.ok) {
-            let data = await res.json();
-            const uniqueNames = new Set();
-            pageState.allAnomalies = data.filter(a => {
-                if (uniqueNames.has(a.name)) return false;
-                uniqueNames.add(a.name);
-                return true;
-            }).sort((a, b) => {
-                const spiriA = a.spiritualite || 'ZZZ';
-                const spiriB = b.spiritualite || 'ZZZ';
-                if (spiriA !== spiriB) return spiriA.localeCompare(spiriB);
-                const lvlA = a.level || 1;
-                const lvlB = b.level || 1;
-                if (lvlA !== lvlB) return lvlA - lvlB;
-                return a.name.localeCompare(b.name);
-            });
-            renderRooms();
-        }
-    } catch (e) {
-        console.error(e);
-    }
+    pageState.allAnomalies = await api.loadAnomalies({ source: '/api/anomalies/all', deduplicate: true });
+    renderRooms();
 }
 
 async function loadEquipments() {
@@ -1741,7 +1720,7 @@ async function editMonster(id) {
             window.selectMonsterBehavior(mb, bData.l, bData.i, bData.c);
 
             document.getElementById('btnSubmitMonster').textContent = "Modifier le monstre";
-            document.getElementById('btnCancelMonster').style.display = 'block';
+            document.getElementById('btnCancelMonster').classList.remove('hidden');
             document.getElementById('monsterFormPanel').classList.add('editing-glow');
             window.scrollTo({ top: 0, behavior: 'smooth' });
         }
@@ -1766,7 +1745,7 @@ window.cancelMonsterEdit = function () {
     pageState.selectedMutationIds = [];
     renderMutationsSelector();
     document.getElementById('btnSubmitMonster').textContent = "Créer le monstre";
-    document.getElementById('btnCancelMonster').style.display = 'none';
+    document.getElementById('btnCancelMonster').classList.add('hidden');
     document.getElementById('monsterFormPanel').classList.remove('editing-glow');
     window.selectMonsterType('NORMAL', 'Normal', 'check_box_outline_blank', '#94a3b8');
     window.selectMonsterBehavior('NORMAL', 'Normal', 'check_box_outline_blank', '#94a3b8');
@@ -2032,7 +2011,7 @@ async function editDungeon(id) {
             renderRooms();
 
             document.getElementById('btnSubmitDungeon').textContent = "Modifier le donjon";
-            document.getElementById('btnCancelDungeon').style.display = 'block';
+            document.getElementById('btnCancelDungeon').classList.remove('hidden');
             document.getElementById('dungeonFormPanel').classList.add('editing-glow');
             document.getElementById('dungeonFormPanel').scrollIntoView({ behavior: 'smooth' });
         }
@@ -2047,7 +2026,7 @@ window.cancelDungeonEdit = function () {
     pageState.selectedRooms = [];
     renderRooms();
     document.getElementById('btnSubmitDungeon').textContent = "Créer le donjon";
-    document.getElementById('btnCancelDungeon').style.display = 'none';
+    document.getElementById('btnCancelDungeon').classList.add('hidden');
     document.getElementById('dungeonFormPanel').classList.remove('editing-glow');
 };
 
@@ -2519,7 +2498,7 @@ window.editMutation = (id) => {
     document.getElementById('mutColor').value = mut.color || '#e879f9';
     document.getElementById('mutIcon').value = mut.icon || 'pets';
     document.getElementById('btnSubmitMutation').textContent = 'Modifier la mutation';
-    document.getElementById('btnCancelMutation').style.display = 'inline-block';
+    document.getElementById('btnCancelMutation').classList.remove('hidden');
     document.getElementById('mutationFormPanel').classList.add('editing-glow');
     document.getElementById('mutationFormPanel').scrollIntoView({ behavior: 'smooth', block: 'center' });
 };
@@ -2546,7 +2525,7 @@ window.cancelMutationEdit = () => {
     pageState.editingMutationId = null;
     document.getElementById('mutationForm').reset();
     document.getElementById('btnSubmitMutation').textContent = 'Créer la mutation';
-    document.getElementById('btnCancelMutation').style.display = 'none';
+    document.getElementById('btnCancelMutation').classList.add('hidden');
     document.getElementById('mutationFormPanel').classList.remove('editing-glow');
 };
 

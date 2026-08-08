@@ -14,11 +14,11 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
         rel="stylesheet">
-    <link rel="stylesheet" href="/styles/variables.css">
-    <link rel="stylesheet" href="/styles/ui/components.css">
-    <link rel="stylesheet" href="/styles/ui/utilities.css">
-    <link rel="stylesheet" href="/styles/pages/armory.css?v=2">
-    <link rel="stylesheet" href="/styles/sprites/blacksmith.css?v=1">
+    <link rel="stylesheet" href="/styles/variables.css?v=1786180000000">
+    <link rel="stylesheet" href="/styles/ui/components.css?v=1786180000000">
+    <link rel="stylesheet" href="/styles/ui/utilities.css?v=1786180000000">
+    <link rel="stylesheet" href="/styles/pages/armory.css?v=1786180000000">
+    <link rel="stylesheet" href="/styles/sprites/blacksmith.css?v=1786180000000">
 </head>
 
 <body>
@@ -28,13 +28,13 @@
     <div class="armory-main"  >
         <!-- Colonne Gauche : Formulaire de Création -->
         <div class="armory-form-panel"   id="charFormPanel">
-            <div class="armory-panel-title flex"   id="formTitle" style="justify-content: space-between">
+            <div class="armory-panel-title flex justify-between"   id="formTitle" >
                 <span class="flex items-center gap-2" id="formTitleText" >
                     <span class="material-symbols-outlined"  >person_add</span>
                     Recruter à la taverne
                 </span>
                 <div class="flex items-center" id="charLimitContainer" >
-                    <span class="text-muted text-md"  id="charLimitText" style="font-weight: 500">-/-</span>
+                    <span class="text-muted text-md font-medium"  id="charLimitText" >-/-</span>
                 </div>
             </div>
 
@@ -53,14 +53,13 @@
                 Voie &amp; Spiritualité
             </div>
 
-            <div class="armory-form-row"   style="align-items: start">
-                <div class="flex gap-4" style="flex-direction: column">
+            <div class="armory-form-row items-start"   >
+                <div class="flex gap-4 flex-col" >
                     <div class="armory-field"  >
                         <label class="flex items-center gap-1" for="charVoie" >
                             <span class="material-symbols-outlined text-purple"  >route</span>
                             Voie
-                            <span class="material-symbols-outlined text-purple text-lg"  id="charVoieInfoIcon" 
-                                style="cursor: help; display: none"
+                            <span class="material-symbols-outlined text-purple text-lg cursor-help" id="charVoieInfoIcon" style="display: none"
                                 onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()">
                                 info
                                 <template class="tooltip-data"  ></template>
@@ -92,10 +91,9 @@
 
                     <div class="armory-field"  >
                         <label class="flex items-center gap-1" for="charSpirit" >
-                            <span class="material-symbols-outlined"   style="color: #fb923c">psychology</span>
+                            <span class="material-symbols-outlined text-orange-400"   >psychology</span>
                             Spiritualité
-                            <span class="material-symbols-outlined text-lg"  id="charSpiritInfoIcon" 
-                                style="color: #fb923c; cursor: help; display: none"
+                            <span class="material-symbols-outlined text-lg text-orange cursor-help" id="charSpiritInfoIcon" style="display: none"
                                 onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()">
                                 info
                                 <template class="tooltip-data"  ></template>
@@ -119,7 +117,7 @@
 
                     <div class="armory-field"  >
                         <label for="charSpiritExperience">
-                            <span class="material-symbols-outlined"   style="color: #fb923c">star</span>
+                            <span class="material-symbols-outlined text-orange-400"   >star</span>
                             Expérience Spirituelle
                         </label>
                         <input type="number" id="charSpiritExperience" min="0" value="0">
@@ -131,16 +129,16 @@
                         <span class="material-symbols-outlined text-success"  >bar_chart</span>
                         Modificateurs de Base
                     </label>
-                    <div class="flex" id="voieStatsDiff"
-                        style="background: rgba(30,41,59,0.5); border: 1px solid #334155; border-radius: 0.4rem; padding: 0.8rem;  flex-direction: column; gap: 0.4rem; min-height: 100px">
-                        <span class="text-muted text-sm"  style="font-style: italic">Sélectionnez une
+                    <div class="flex bg-slate-800/50 border border-slate-700 rounded-md p-[0.8rem] flex-col gap-[0.4rem] min-h-[100px]" id="voieStatsDiff"
+                        >
+                        <span class="text-muted text-sm italic"  >Sélectionnez une
                             voie...</span>
                     </div>
                 </div>
             </div>
 
             <!-- Stats -->
-            <div class="flex" id="baseStatsSection" style="flex-direction: column; gap: 1.2rem">
+            <div class="flex flex-col gap-5" id="baseStatsSection" >
                 <div class="armory-section-title"  >
                     <span class="material-symbols-outlined text-success"  >monitoring</span>
                     Statistiques de Base
@@ -173,7 +171,7 @@
                     </div>
                     <div class="armory-field"  >
                         <label for="charStrength">
-                            <span class="material-symbols-outlined"   style="color: #f43f5e">fitness_center</span>
+                            <span class="material-symbols-outlined text-rose-500"   >fitness_center</span>
                             Force
                         </label>
                         <input type="number" id="charStrength" min="0" value="10">
@@ -231,12 +229,12 @@
             </div>
 
             <!-- Boutons -->
-            <div class="flex items-center" style="gap: 0.6rem">
+            <div class="flex items-center gap-[0.6rem]" >
                 <button class="armory-submit-btn"  type="button"  id="submitBtn" onclick="submitPersonnage()">
                     <span class="material-symbols-outlined text-lg"  >person_add</span>
                     Forger le Personnage
                 </button>
-                <button class="armory-nav-link"  type="button"  id="cancelBtn" style="display: none"
+                <button class="armory-nav-link" type="button" id="cancelBtn" style="display: none"
                     onclick="resetForm()">
                     Annuler
                 </button>
@@ -244,10 +242,10 @@
         </div>
 
         <!-- Colonne Droite : Liste des Personnages -->
-        <div class="flex" style="flex-direction: column">
-            <div class="armory-list-panel flex-1 flex"  
-                style="margin: 0;  flex-direction: column; max-height: calc(100vh - 140px)">
-                <div class="armory-panel-title"   style="justify-content: space-between">
+        <div class="flex flex-col" >
+            <div class="armory-list-panel flex-1 flex m-0 flex-col max-h-[calc(100vh-140px)]"  
+                >
+                <div class="armory-panel-title justify-between"   >
                     <span class="flex items-center gap-2" >
                         <span class="material-symbols-outlined text-info"  >groups</span>
                         Personnages
@@ -258,32 +256,31 @@
                     </button>
                 </div>
 
-                <div class="mb-4 flex gap-2"
-                    style="flex-wrap: wrap; background: rgba(0,0,0,0.2); padding: 0.8rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05)">
+                <div class="mb-4 flex gap-2 flex-wrap bg-black/20 p-[0.8rem] rounded-lg border border-white/5"
+                    >
 
                     <!-- Trier par removed as per user request -->
 
                     <!-- User Filter Input (hidden by default, for admins) -->
-                    <div class="armory-field flex-1"   id="searchOwnerContainer"
-                        style="min-width: 150px; display: none">
-                        <label style="font-size: 0.7rem; color: #64748b; margin-bottom: 0.2rem; display: block"><span class="material-symbols-outlined text-md" 
+                    <div class="armory-field flex-1 hidden min-w-[150px]" id="searchOwnerContainer">
+                        <label class="text-[0.7rem] text-slate-500 mb-1 block"><span class="material-symbols-outlined text-md align-bottom" 
                                 
-                                style="vertical-align: bottom">person_search</span> Nom de
+                                >person_search</span> Nom de
                             compte</label>
-                        <input class="w-full text-sm" type="text" id="searchOwner" placeholder="Ex: Admin..." oninput="filterPersonnages()"
-                            style="padding: 0.35rem 0.5rem;  background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px">
+                        <input class="w-full text-sm py-[0.35rem] px-2 bg-black/30 border border-white/10 rounded-md" type="text" id="searchOwner" placeholder="Ex: Admin..." oninput="filterPersonnages()"
+                            >
                     </div>
-                    <div class="armory-field flex-1"   style=".5; min-width: 150px">
-                        <label style="font-size: 0.7rem; color: #64748b; margin-bottom: 0.2rem; display: block"><span class="material-symbols-outlined text-md" 
+                    <div class="armory-field flex-05 min-w-[150px]">
+                        <label class="text-[0.7rem] text-slate-500 mb-1 block"><span class="material-symbols-outlined text-md align-bottom" 
                                 
-                                style="vertical-align: bottom">search</span> Prénom</label>
-                        <input class="w-full text-sm" type="text" id="searchName" placeholder="Ex: Lancelot..." oninput="filterPersonnages()"
-                            style="padding: 0.35rem 0.5rem;  background: rgba(0, 0, 0, 0.3); border: 1px solid rgba(255, 255, 255, 0.08); border-radius: 6px">
+                                >search</span> Prénom</label>
+                        <input class="w-full text-sm py-[0.35rem] px-2 bg-black/30 border border-white/10 rounded-md" type="text" id="searchName" placeholder="Ex: Lancelot..." oninput="filterPersonnages()"
+                            >
                     </div>
-                    <div class="armory-field flex-1"   style="min-width: 120px">
-                        <label style="font-size: 0.7rem; color: #64748b; margin-bottom: 0.2rem; display: block"><span class="material-symbols-outlined text-md" 
+                    <div class="armory-field flex-1 min-w-[120px]"   >
+                        <label class="text-[0.7rem] text-slate-500 mb-1 block"><span class="material-symbols-outlined text-md align-bottom" 
                                 
-                                style="vertical-align: bottom">route</span> Voie</label>
+                                >route</span> Voie</label>
                         <div class="custom-select-wrapper"   id="searchVoieWrapper" tabindex="0">
                             <div class="custom-select-trigger"   id="searchVoieTrigger">
                                 <span class="cs-label"   id="searchVoieLabel"><span class="material-symbols-outlined cs-icon text-muted" 
@@ -299,10 +296,10 @@
                             <input type="hidden" id="searchVoie" value="">
                         </div>
                     </div>
-                    <div class="armory-field flex-1"   style="min-width: 120px">
-                        <label style="font-size: 0.7rem; color: #64748b; margin-bottom: 0.2rem; display: block"><span class="material-symbols-outlined text-md" 
+                    <div class="armory-field flex-1 min-w-[120px]"   >
+                        <label class="text-[0.7rem] text-slate-500 mb-1 block"><span class="material-symbols-outlined text-md align-bottom" 
                                 
-                                style="vertical-align: bottom">psychology</span>
+                                >psychology</span>
                             Spiritualité</label>
                         <div class="custom-select-wrapper"   id="searchSpiritWrapper" tabindex="0">
                             <div class="custom-select-trigger"   id="searchSpiritTrigger">

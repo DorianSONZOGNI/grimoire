@@ -96,6 +96,19 @@ public class CombatController {
         }
     }
 
+    @DeleteMapping("/{sessionId}/consumable/{consumableId}")
+    public ResponseEntity<?> deleteConsumable(
+            @PathVariable("sessionId") String sessionId,
+            @PathVariable("consumableId") Long consumableId) {
+        try {
+            CombatSession session = combatService.deleteConsumable(sessionId, consumableId);
+            return ResponseEntity.ok(session);
+        } catch (Exception e) {
+            e.printStackTrace();
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     @PostMapping("/{sessionId}/auto-turn")
     public ResponseEntity<?> autoTurn(@PathVariable("sessionId") String sessionId) {
         try {

@@ -276,7 +276,7 @@ public class CombatService {
     }
 
     public CombatSession openChest(String sessionId, boolean useKey) {
-        CombatSession session = activeSessions.get(sessionId);
+        CombatSession session = getSession(sessionId);
         if (session == null || session.isFinished())
             return session;
         if (session.getCurrentRoom().getType() != generation.grimoire.enumeration.RoomType.TREASURE) {
@@ -400,7 +400,7 @@ public class CombatService {
     }
 
     public CombatSession acceptAlteration(String sessionId, Long anomalyId) {
-        CombatSession session = activeSessions.get(sessionId);
+        CombatSession session = getSession(sessionId);
         if (session == null || session.isFinished())
             return session;
         if (session.getCurrentRoom().getType() != generation.grimoire.enumeration.RoomType.EVENT ||
@@ -650,7 +650,7 @@ public class CombatService {
     }
 
     public CombatSession useRope(String sessionId) {
-        CombatSession session = activeSessions.get(sessionId);
+        CombatSession session = getSession(sessionId);
         if (session == null || session.isFinished())
             return session;
 
@@ -751,8 +751,29 @@ public class CombatService {
         return session;
     }
 
+    public CombatSession deleteConsumable(String sessionId, Long consumableId) {
+        CombatSession session = getSession(sessionId);
+        if (session == null)
+            throw new RuntimeException("Session introuvable");
+
+        generation.grimoire.entity.Equipment toDelete = null;
+        for (generation.grimoire.entity.Equipment eq : session.getActiveConsumables()) {
+            if (eq.getId().equals(consumableId)) {
+                toDelete = eq;
+                break;
+            }
+        }
+        if (toDelete == null)
+            throw new RuntimeException("Consommable non trouvé dans le combat");
+
+        session.getActiveConsumables().remove(toDelete);
+        equipmentRepository.delete(toDelete);
+        session.addLog("🗑️ Un objet a été détruit (" + toDelete.getName() + ").");
+        return session;
+    }
+
     public CombatSession buyMerchantItem(String sessionId, int lootIndex, Long characterId) {
-        CombatSession session = activeSessions.get(sessionId);
+        CombatSession session = getSession(sessionId);
         if (session == null || session.isFinished()) {
             throw new RuntimeException("Session introuvable ou terminée.");
         }
@@ -876,7 +897,7 @@ public class CombatService {
     }
 
     public CombatSession proceedToNextRoom(String sessionId) {
-        CombatSession session = activeSessions.get(sessionId);
+        CombatSession session = getSession(sessionId);
         if (session == null || session.isFinished())
             return session;
 
@@ -964,7 +985,7 @@ public class CombatService {
     }
 
     public CombatSession openStrangeDoor(String sessionId) {
-        CombatSession session = activeSessions.get(sessionId);
+        CombatSession session = getSession(sessionId);
         if (session == null || session.isFinished())
             return session;
         if (session.getCurrentRoom().getType() != generation.grimoire.enumeration.RoomType.EVENT ||
@@ -1169,6 +1190,7 @@ public class CombatService {
             } else if ("PIEGE".equals(type)) {
                 session.addLog("Vous avez ouvert la porte... et déclenché un piège mortel !");
                 room.setEventSubType(generation.grimoire.enumeration.EventSubType.PIEGE);
+                room.setEventText("Vous avez ouvert la porte... et déclenché un piège mortel !");
                 room.setTrapType(selectedOutcome.path("trapType").asText("PV"));
                 room.setTrapAmount(selectedOutcome.path("trapAmount").asInt(0));
                 room.setTrapHasRopeOption(selectedOutcome.path("trapHasRopeOption").asBoolean(false));
@@ -1179,6 +1201,7 @@ public class CombatService {
                 room.setTrapDamageManaFixed(selectedOutcome.path("trapDamageManaFixed").asInt(0));
             } else {
                 session.addLog("Vous avez ouvert la porte... Il n'y a absolument rien derrière.");
+                room.setEventText("Vous avez ouvert la porte... Il n'y a absolument rien derrière.");
                 session.setRoomEventCompleted(true);
             }
 
@@ -1194,7 +1217,7 @@ public class CombatService {
 
     public CombatSession executeAction(String sessionId, Long spellId, Integer targetIndex, Integer allyTargetIndex,
             Integer choiceKey) {
-        CombatSession session = activeSessions.get(sessionId);
+        CombatSession session = getSession(sessionId);
         if (session == null)
             throw new RuntimeException("Session introuvable");
         if (session.isFinished())
@@ -1406,6 +1429,9 @@ public class CombatService {
                 .allMatch(e -> e.getMaxHp() <= 0);
         if (!allAlreadyProcessed && allNowProcessed) {
             session.addLog("Combat terminé, vous avez vaincu tous les monstres !");
+            for (Personnage p : session.getPlayers()) {
+                p.resetCombatState();
+            }
 
             // Boss end-of-combat bonus rewards
             if (session.getCurrentRoom().getType() == generation.grimoire.enumeration.RoomType.BOSS) {
@@ -1442,7 +1468,7 @@ public class CombatService {
     }
 
     public CombatSession endTurn(String sessionId) {
-        CombatSession session = activeSessions.get(sessionId);
+        CombatSession session = getSession(sessionId);
         if (session == null)
             throw new RuntimeException("Session introuvable");
         if (session.isFinished())
@@ -1485,7 +1511,7 @@ public class CombatService {
     }
 
     public CombatSession processNextAutoTurn(String sessionId) {
-        CombatSession session = activeSessions.get(sessionId);
+        CombatSession session = getSession(sessionId);
         if (session == null || session.isFinished())
             return session;
 
@@ -1793,7 +1819,7 @@ public class CombatService {
 
     @org.springframework.transaction.annotation.Transactional
     public void fleeCombat(String sessionId) {
-        CombatSession session = activeSessions.get(sessionId);
+        CombatSession session = getSession(sessionId);
         if (session == null || session.isFinished())
             return;
 
@@ -1808,6 +1834,7 @@ public class CombatService {
         boolean goldDeducted = false;
 
         for (Personnage p : session.getPlayers()) {
+            p.resetCombatState();
             Long playerId = p.getId();
 
             if (playerId == null) {
@@ -1890,7 +1917,7 @@ public class CombatService {
 
     @org.springframework.transaction.annotation.Transactional
     public CombatSession addConsumableByName(String sessionId, String itemName, String username) {
-        CombatSession session = activeSessions.get(sessionId);
+        CombatSession session = getSession(sessionId);
         if (session == null || session.isFinished()) {
             throw new RuntimeException("Session introuvable ou terminée.");
         }

@@ -847,6 +847,22 @@ public class Personnage {
         System.out.println(name + " a été purifié de tous les buffs/débuffs.");
     }
 
+    public void cancelChanneling() {
+        this.remainingChannelingTurns = 0;
+        this.channeledSpell = null;
+        this.channelingTarget = null;
+        this.channelingAlly = null;
+        this.channelingChoiceKey = null;
+    }
+
+    public void resetCombatState() {
+        this.purgeAllBuffsAndDebuffs();
+        this.cancelChanneling();
+        this.banalSpellCastThisTurn = false;
+        this.instantSpellCastThisTurn = false;
+        System.out.println(name + " a réinitialisé son état de combat.");
+    }
+
     /**
      * Déclenche la logique d'un sort gratuit.
      * Ici, vous pouvez simplement afficher un message ou définir un flag pour qu'un

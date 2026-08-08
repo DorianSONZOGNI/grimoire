@@ -92,10 +92,12 @@ async function loadDungeons() {
             if (dungeons.length === 0) {
                 document.getElementById('noDungeonsMsg').style.display = 'block';
                 tabsHeader.style.display = 'none';
+                document.getElementById('loadingDungeonsMsg').style.display = 'none';
                 return;
             } else {
                 document.getElementById('noDungeonsMsg').style.display = 'none';
                 tabsHeader.style.display = 'flex';
+                document.getElementById('loadingDungeonsMsg').style.display = 'none';
             }
 
             const categories = new Map();
@@ -263,9 +265,15 @@ async function loadDungeons() {
 
                 firstTab = false;
             });
+        } else {
+            console.error('Failed to load dungeons');
+            const msg = document.getElementById('loadingDungeonsMsg');
+            if(msg) msg.style.display = 'none';
         }
     } catch (e) {
-        console.error(e);
+        console.error('Error loading dungeons:', e);
+        const msg = document.getElementById('loadingDungeonsMsg');
+        if(msg) msg.style.display = 'none';
     }
 }
 
@@ -372,9 +380,12 @@ function renderConsumablesList() {
         <span class="material-symbols-outlined text-sm align-middle">scale</span>
         Poids: ${curWeight % 1 === 0 ? curWeight : curWeight.toFixed(1)} / ${maxWeight}
     </div>`;
+    
+    const weightContainer = document.getElementById('prepWeightCounter');
+    if (weightContainer) weightContainer.innerHTML = counterHtml;
 
     if (pageState.availableConsumables.length === 0) {
-        list.innerHTML = counterHtml + `<div class="text-muted text-center" style="font-size: 0.85rem; padding: 1rem;">Vous n'avez aucun consommable dans votre coffre.</div>`;
+        list.innerHTML = `<div class="text-muted text-center" style="font-size: 0.85rem; padding: 1rem;">Vous n'avez aucun consommable dans votre coffre.</div>`;
         return;
     }
 
@@ -408,7 +419,7 @@ function renderConsumablesList() {
     }
 
     if (filteredConsumables.length === 0) {
-        list.innerHTML = counterHtml + `<div class="text-muted text-center" style="font-size: 0.85rem; padding: 1rem;">Aucun consommable ne correspond à ces filtres.</div>`;
+        list.innerHTML = `<div class="text-muted text-center" style="font-size: 0.85rem; padding: 1rem;">Aucun consommable ne correspond à ces filtres.</div>`;
         return;
     }
 
@@ -442,7 +453,7 @@ function renderConsumablesList() {
             </div>
         `;
     });
-    list.innerHTML = counterHtml + `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">${cardsHtml}</div>`;
+    list.innerHTML = `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">${cardsHtml}</div>`;
 }
 
 window.selectConsumable = function (id) {
@@ -488,11 +499,9 @@ window.selectCharacter = async function (id) {
     const btn = document.getElementById('btnEnterDungeon');
     if (btn) {
         if (pageState.selectedCharIds.length > 0) {
-            btn.style.opacity = '1';
-            btn.style.pointerEvents = 'all';
+            btn.classList.remove('opacity-50', 'pointer-events-none');
         } else {
-            btn.style.opacity = '0.5';
-            btn.style.pointerEvents = 'none';
+            btn.classList.add('opacity-50', 'pointer-events-none');
         }
     }
 
@@ -534,9 +543,10 @@ window.selectCharacter = async function (id) {
         totalStats.regenManaPerTurn += (eq.regenManaPerTurn || 0);
     });
 
-    document.getElementById('prepStatEmpty').style.display = 'none';
+    document.getElementById('prepStatEmpty').classList.add('hidden');
     const grid = document.getElementById('prepStatGrid');
-    grid.style.display = 'grid';
+    grid.classList.remove('hidden');
+    grid.style.display = '';
     grid.innerHTML = `
         <div class="stat-item" style="color: #ec4899;"><span class="material-symbols-outlined">favorite</span> ${totalStats.healthMax} PV</div>
         <div class="stat-item text-info"><span class="material-symbols-outlined">water_drop</span> ${totalStats.manaMax} Mana</div>
@@ -641,14 +651,14 @@ window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost,
         }
     });
 
-    document.getElementById('prepStatEmpty').style.display = 'flex';
-    document.getElementById('prepStatGrid').style.display = 'none';
+    document.getElementById('prepStatEmpty').classList.remove('hidden');
+    document.getElementById('prepStatEmpty').style.display = '';
+    document.getElementById('prepStatGrid').classList.add('hidden');
     document.getElementById('prepEquipList').innerHTML = '<div class="text-sm text-muted">Aucun équipement à afficher.</div>';
 
     const btn = document.getElementById('btnEnterDungeon');
     if (btn) {
-        btn.style.opacity = '0.5';
-        btn.style.pointerEvents = 'none';
+        btn.classList.add('opacity-50', 'pointer-events-none');
     }
 
     renderConsumablesList();

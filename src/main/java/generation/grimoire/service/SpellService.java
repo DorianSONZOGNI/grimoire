@@ -663,6 +663,12 @@ public class SpellService {
 
             java.util.List<Personnage> recipients = resolveRecipients(effect.getEffectTarget(), caster, target);
 
+            if (effect instanceof generation.grimoire.entity.spell.type.effect.HeatOverTimeEffect
+                    || effect instanceof generation.grimoire.entity.spell.type.effect.HeatFixedEffect
+                    || effect instanceof generation.grimoire.entity.spell.type.effect.HeatPercentageEffect) {
+                recipients = java.util.Collections.singletonList(caster);
+            }
+
             for (Personnage recipient : recipients) {
                 effect.apply(caster, recipient);
             }
@@ -719,6 +725,12 @@ public class SpellService {
             }
 
             java.util.List<Personnage> recipients = resolveRecipientsGroup(effect.getEffectTarget(), caster, target, ally, allAllies, allEnemies);
+
+            if (effect instanceof generation.grimoire.entity.spell.type.effect.HeatOverTimeEffect
+                    || effect instanceof generation.grimoire.entity.spell.type.effect.HeatFixedEffect
+                    || effect instanceof generation.grimoire.entity.spell.type.effect.HeatPercentageEffect) {
+                recipients = java.util.Collections.singletonList(caster);
+            }
 
             for (Personnage recipient : recipients) {
                 effect.apply(caster, recipient);
@@ -802,6 +814,53 @@ public class SpellService {
         personnage.updateHeatOverTimeEffects();
         personnage.updateBuffs();
         passiveDispatcher.dispatch(personnage, null, new TurnStartEvent(personnage));
+        
+        checkAndCancelDeadChanneling(personnage);
+    }
+
+    public void checkAndCancelDeadChanneling(Personnage caster) {
+        Spell channeledSpell = caster.getChanneledSpell();
+        if (channeledSpell == null || caster.getRemainingChannelingTurns() <= 0) return;
+
+        Personnage target = caster.getChannelingTarget();
+        Personnage ally = caster.getChannelingAlly();
+        int duration = channeledSpell.getChannelingDuration();
+        int remaining = caster.getRemainingChannelingTurns();
+        int currentTurn = duration - remaining + 1;
+
+        if (target != null && target.getHealthCurrent() <= 0) {
+            boolean targetsSpecificThisTurn = false;
+            for (generation.grimoire.entity.SpellEffect effect : channeledSpell.getEffects()) {
+                if (effect.getEffectTarget() == generation.grimoire.enumeration.EffectTarget.TARGET) {
+                    if (effect.getChannelingTurns() == null || effect.getChannelingTurns().isEmpty() || effect.getChannelingTurns().contains(currentTurn)) {
+                        targetsSpecificThisTurn = true;
+                        break;
+                    }
+                }
+            }
+            if (targetsSpecificThisTurn) {
+                System.out.println("🌀 " + caster.getName() + " interrompt sa canalisation au T" + currentTurn + " : la cible est morte !");
+                caster.cancelChanneling();
+                return;
+            }
+        }
+
+        if (ally != null && ally.getHealthCurrent() <= 0) {
+            boolean targetsAllyThisTurn = false;
+            for (generation.grimoire.entity.SpellEffect effect : channeledSpell.getEffects()) {
+                if (effect.getEffectTarget() == generation.grimoire.enumeration.EffectTarget.ALLY) {
+                    if (effect.getChannelingTurns() == null || effect.getChannelingTurns().isEmpty() || effect.getChannelingTurns().contains(currentTurn)) {
+                        targetsAllyThisTurn = true;
+                        break;
+                    }
+                }
+            }
+            if (targetsAllyThisTurn) {
+                System.out.println("🌀 " + caster.getName() + " interrompt sa canalisation au T" + currentTurn + " : l'allié ciblé est mort !");
+                caster.cancelChanneling();
+                return;
+            }
+        }
     }
 
 }

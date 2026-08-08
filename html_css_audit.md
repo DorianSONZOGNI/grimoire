@@ -11,13 +11,23 @@ Une analyse complète des fichiers HTML a révélé une forte utilisation de sty
 
 | Fichier | Nombre d'attributs `style` inline (Avant) | Maintenant | Différence |
 |---------|-----------------------------------|------------|------------|
-| `vault.html` | 197 | **~50** | -147 |
-| `pve-admin.html` | 279 | **91** | -188 |
-| `index.html` | 135 | **~40** | -95 |
-| `armory.html` | 122 | **~30** | -92 |
-| `shop-admin.html` | 110 | **~25** | -85 |
+| `vault.html` | 197 | **0** | -197 |
+| `pve-admin.html` | 279 | **0** | -279 |
+| `index.html` | 135 | **10** | -125 |
+| `dungeons.html` | 46 | **3** | -43 |
+| `combat.html` | 45 | **0** | -45 |
+| `armory.html` | 122 | **3** | -119 |
+| `shop-admin.html` | 110 | **0** | -110 |
+| `alchemy.html` | 13 | **0** | - |
+| `secrets.html` | 8 | **0** | - |
+| `alchemy-admin.html` | 5 | **0** | - |
+| `shop.html` | 2 | **0** | - |
+| `register.html` | 1 | **0** | - |
+| `login.html` | 0 | **0** | - |
 
 ---
+
+**Note** : Quelques `style="display: none"` subsistent volontairement (ex: 3 dans `armory.html`, 3 dans `dungeons.html`, 10 dans `index.html`) sur les éléments dont la visibilité est contrôlée par JavaScript (`element.style.display = "inline-block"`). Remplacer par `.hidden` (qui contient `!important`) empêcherait le JS de les afficher.
 
 ## 🔍 Problèmes Principaux Identifiés
 
@@ -100,5 +110,6 @@ Cela permettra de retirer massivement les `style="..."` sur chaque `<input>` et 
 2. **Nettoyage des Couleurs (`text-color`)** : Remplacer massivement tous les `style="color: #Hex"` par les classes de `utilities.css` (`text-success`, `text-error`, `text-purple`, `text-muted`).
 3. **Nettoyage des Flex & Marges** : Introduire `.flex-1` et des classes d'espacement simples (`mb-1`, `mb-2`) pour supprimer les inline correspondants.
 
-> [!TIP]
-> Veux-tu que j'applique la phase 1 du nettoyage sur `alchemy-admin.html` et `alchemy.html` (retrait des `style` sur les inputs, labels et custom-options) pour que tu vois le résultat en pratique ?
+> [!SUCCESS]
+> **Phase 1 Appliquée (07/08/2026)** : Le nettoyage des styles inline a été complété avec succès sur `alchemy-admin.html` et `alchemy.html` ! Les flex, espacements, et couleurs en dur ont été remplacés par les classes `utilities.css`. Les attributs de tailles des inputs et custom-options utilisent maintenant les styles par défaut existants dans `components.css`. 
+

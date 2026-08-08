@@ -109,21 +109,7 @@ async function loadEquipments() {
 
 async function loadAnomalies() {
     try {
-        const res = await globalFetch('/api/anomalies/all-templates');
-        if (res.ok) {
-            let data = await res.json();
-            window.allAnomalies = data.sort((a, b) => {
-                const spiriA = a.spiritualite || 'ZZZ';
-                const spiriB = b.spiritualite || 'ZZZ';
-                if (spiriA !== spiriB) return spiriA.localeCompare(spiriB);
-
-                const lvlA = a.level || 1;
-                const lvlB = b.level || 1;
-                if (lvlA !== lvlB) return lvlA - lvlB;
-
-                return a.name.localeCompare(b.name);
-            });
-        }
+        window.allAnomalies = await api.loadAnomalies({ source: '/api/anomalies/all-templates', deduplicate: false });
     } catch (e) {
         console.error('Erreur chargement anomalies:', e);
     }
@@ -194,26 +180,13 @@ function deleteEquipment(id) {
     const eq = pageState.allEquipments.find(e => e.id === id);
     if (!eq) return;
 
-    const weightStr = eq._weight % 1 === 0 ? eq._weight : eq._weight.toFixed(1);
-
-    showModal({
-        title: "Détruire l'équipement ?",
-        body: `Voulez-vous vraiment détruire l'équipement <strong class="text-white">${eq.name}</strong> ?<br><br>Cette action est définitive (pour la template de la boutique).`,
-        icon: 'warning',
-        confirmText: `Oui, détruire`,
-        onConfirm: async () => {
-            try {
-                const res = await globalFetch(`/api/shop/templates/${id}`, { method: 'DELETE' });
-                if (res.ok) {
-                    showNotif('Équipement détruit.');
-                    await loadEquipments();
-                    if (window.checkAuthStatus) window.checkAuthStatus();
-                } else {
-                    showNotif('Erreur lors de la suppression.', true);
-                }
-            } catch (e) {
-                showNotif('Erreur réseau.', true);
-            }
+    api.deleteEquipmentAPI(id, {
+        confirmTitle: "Détruire l'équipement ?",
+        confirmBody: `Voulez-vous vraiment détruire l'équipement <strong class="text-white">${eq.name}</strong> ?<br><br>Cette action est définitive (pour la template de la boutique).`,
+        apiRoute: "/api/shop/templates/",
+        onSuccess: async () => {
+            await loadEquipments();
+            if (window.checkAuthStatus) window.checkAuthStatus();
         }
     });
 }
@@ -394,8 +367,22 @@ function renderGrid(equipments) {
 // Init
 window.addEventListener('DOMContentLoaded', async () => {
     if (window.initAppMeta) await window.initAppMeta();
-    await loadAnomalies();
-    loadEquipments();
+
+    const checkAdmin = async () => {
+        if (!window.currentUser) return;
+        if (!window.isAdmin) {
+            document.body.innerHTML = "<h2 style='color:red;text-align:center;margin-top:50px;'>Accès Refusé : Réservé aux Admins</h2>";
+            return;
+        }
+        await loadAnomalies();
+        loadEquipments();
+    };
+
+    if (window.currentUser !== undefined) {
+        checkAdmin();
+    } else {
+        window.addEventListener('authLoaded', checkAdmin, { once: true });
+    }
 
     if (document.getElementById('addAnomalyPriceBtn')) {
         document.getElementById('addAnomalyPriceBtn').addEventListener('click', () => {
@@ -430,12 +417,14 @@ window.addEventListener('DOMContentLoaded', async () => {
 window.addEventListener('authLoaded', () => {
     const btnCreate = document.getElementById('btnCreateVaultEq');
     if (btnCreate) {
-        btnCreate.style.display = window.isAdmin ? 'flex' : 'none';
+        if (window.isAdmin) btnCreate.classList.remove('hidden');
+        else btnCreate.classList.add('hidden');
     }
 
     const searchOwnerContainer = document.getElementById('searchOwnerContainer');
     if (searchOwnerContainer) {
-        searchOwnerContainer.style.display = window.isAdmin ? 'flex' : 'none';
+        if (window.isAdmin) searchOwnerContainer.classList.remove('hidden');
+        else searchOwnerContainer.classList.add('hidden');
     }
 
     // Re-render the grid in case equipments loaded before auth
@@ -744,25 +733,27 @@ window.updateWeightUI = async function () {
     }
 
     if (fillEl) {
-        let pct = (w / maxW) * 100;
-        let color = '#10b981';
+        let pct = Math.round((w / maxW) * 100);
+        let colorClass = 'bg-success';
 
         if (slot === 'CONSOMMABLE') {
             pct = 0;
-            color = '#10b981';
+            colorClass = 'bg-success';
         } else if (pct < 0) {
             pct = Math.min(Math.abs(pct), 100);
-            color = '#3b82f6';
+            colorClass = 'bg-info';
         } else if (pct > 100) {
             pct = 100;
-            color = '#ef4444';
+            colorClass = 'bg-danger';
         } else if (pct > 80) {
-            color = '#f59e0b';
+            colorClass = 'bg-warning';
         }
 
-        fillEl.style.width = pct + '%';
-        fillEl.style.background = color;
-        if (textEl) textEl.style.color = color;
+        fillEl.className = 'gauge-fill hp h-full transition-all duration-300 w-pct-' + pct + ' ' + colorClass;
+        if (textEl) {
+            textEl.className = colorClass;
+            // Override background since it's a text element, but color is also set by the utility class
+        }
     }
 
     const priceEl = document.getElementById('eqPriceText');
