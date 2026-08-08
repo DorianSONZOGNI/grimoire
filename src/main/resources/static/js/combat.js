@@ -3630,7 +3630,10 @@ window.renderOverlayInventory = function (containerId) {
         const slotInfo = getSlotInfo(c);
 
         list.innerHTML += `
-            <div class="${hoverClass} flex-center" ${onClickAttr} style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 0.8rem; gap: 0.8rem; margin-bottom: 0.5rem; transition: all 0.2s; ${cursorStyle};">
+            <div class="${hoverClass} flex-center" ${onClickAttr} style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 0.8rem; gap: 0.8rem; margin-bottom: 0.5rem; transition: all 0.2s; ${cursorStyle}; position: relative;">
+                <button class="destroy-item-btn" onclick="event.stopPropagation(); window.confirmDestroyItem(${c.id}, '${c.name.replace(/'/g, "\\'")}')" style="position: absolute; top: -5px; right: -5px; background: #ef4444; color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.3); transition: transform 0.2s;">
+                    <span class="material-symbols-outlined" style="font-size: 14px; font-weight: bold;">close</span>
+                </button>
                 <span class="material-symbols-outlined" style="font-size: 1.5rem; color: ${slotInfo.color};">${slotInfo.icon}</span>
                 <div class="flex-1">
                     <div class="text-sm" style="color: #f8fafc; font-weight: 600;">${c.name}</div>
@@ -3700,7 +3703,39 @@ window.confirmConsumeItem = async function (consumableId, characterId) {
     }
 };
 
-
+window.confirmDestroyItem = function(consumableId, consumableName) {
+    ui.showModal({
+        title: 'Détruire un objet',
+        body: `Êtes-vous sûr de vouloir détruire <strong class="text-white">${consumableName}</strong> ?<br><br>Cet objet sera <strong class="text-red-400">perdu définitivement</strong>.`,
+        icon: 'delete',
+        confirmText: 'Détruire',
+        confirmStyle: 'danger',
+        cancelText: 'Annuler',
+        onConfirm: async () => {
+            if (!pageState.sessionId) return;
+            try {
+                const res = await globalFetch(`/api/pve/combat/${pageState.sessionId}/consumable/${consumableId}`, {
+                    method: 'DELETE'
+                });
+                if (res.ok) {
+                    pageState.currentSessionData = await res.json();
+                    ui.showNotif("Objet détruit.");
+                    updateUI(pageState.currentSessionData);
+                    if (typeof window.renderOverlayInventory === 'function') {
+                        window.renderOverlayInventory('eventOverlayInventoryList');
+                        window.renderOverlayInventory('combatVictoryInventoryList');
+                    }
+                } else {
+                    const err = await res.text();
+                    ui.showNotif("Erreur: " + err, true);
+                }
+            } catch (e) {
+                console.error(e);
+                ui.showNotif("Erreur lors de la destruction de l'objet.", true);
+            }
+        }
+    });
+};
 
 function playDungeonMusic(data) {
     if (!data) return;

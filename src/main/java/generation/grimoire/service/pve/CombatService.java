@@ -751,6 +751,27 @@ public class CombatService {
         return session;
     }
 
+    public CombatSession deleteConsumable(String sessionId, Long consumableId) {
+        CombatSession session = getSession(sessionId);
+        if (session == null)
+            throw new RuntimeException("Session introuvable");
+
+        generation.grimoire.entity.Equipment toDelete = null;
+        for (generation.grimoire.entity.Equipment eq : session.getActiveConsumables()) {
+            if (eq.getId().equals(consumableId)) {
+                toDelete = eq;
+                break;
+            }
+        }
+        if (toDelete == null)
+            throw new RuntimeException("Consommable non trouvé dans le combat");
+
+        session.getActiveConsumables().remove(toDelete);
+        equipmentRepository.delete(toDelete);
+        session.addLog("🗑️ Un objet a été détruit (" + toDelete.getName() + ").");
+        return session;
+    }
+
     public CombatSession buyMerchantItem(String sessionId, int lootIndex, Long characterId) {
         CombatSession session = getSession(sessionId);
         if (session == null || session.isFinished()) {
