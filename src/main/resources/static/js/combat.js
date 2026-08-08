@@ -1310,7 +1310,62 @@ async function openChest(useKey = false) {
     }
 }
 
+let combatWarningTimer = null;
+
+let combatCountdownInterval = null;
+
+function resetCombatTimeoutWarning(finished) {
+    if (combatWarningTimer) {
+        clearTimeout(combatWarningTimer);
+        combatWarningTimer = null;
+    }
+    if (combatCountdownInterval) {
+        clearInterval(combatCountdownInterval);
+        combatCountdownInterval = null;
+    }
+    if (finished) return;
+
+    combatWarningTimer = setTimeout(() => {
+        if (typeof ui !== 'undefined' && ui.showModal) {
+            let seconds = 60;
+
+            ui.showModal({
+                title: 'Alerte Inactivité',
+                body: `Le combat expirera dans <strong id="combat-timeout-countdown" class="text-error" style="font-size:1.5rem;">${seconds}</strong> secondes.<br><br>Cliquez sur valider pour continuer à jouer.`,
+                icon: 'timer',
+                confirmText: 'Je suis là',
+                hideCancel: true,
+                onConfirm: async () => {
+                    clearInterval(combatCountdownInterval);
+                    try {
+                        await window.globalFetch('/api/pve/combat/' + pageState.sessionId, { method: 'GET' });
+                        resetCombatTimeoutWarning(false);
+                    } catch (e) {
+                        console.error(e);
+                    }
+                }
+            });
+
+            combatCountdownInterval = setInterval(() => {
+                seconds--;
+                const counterEl = document.getElementById('combat-timeout-countdown');
+                if (counterEl) {
+                    counterEl.innerText = seconds;
+                }
+                if (seconds <= 0) {
+                    clearInterval(combatCountdownInterval);
+                    window.location.reload();
+                }
+            }, 1000);
+
+        } else {
+            alert("⚠️ Attention : Le combat expirera dans 1 minute pour inactivité !");
+        }
+    }, 540000); // 9 minutes
+}
+
 function updateUI(data) {
+    resetCombatTimeoutWarning(data.finished);
     pageState.currentSessionData = data;
 
     if (data.finished) {
