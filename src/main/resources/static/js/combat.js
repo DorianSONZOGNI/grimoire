@@ -1247,6 +1247,7 @@ async function addLootedConsumable(itemName, iconElement) {
         iconElement.title = "Dans l'inventaire du groupe";
 
         pageState.currentSessionData = updatedSession;
+        resetCombatTimeoutWarning(false);
         if (typeof window.renderOverlayInventory === 'function') {
             window.renderOverlayInventory('eventOverlayInventoryList');
             window.renderOverlayInventory('combatVictoryInventoryList');
