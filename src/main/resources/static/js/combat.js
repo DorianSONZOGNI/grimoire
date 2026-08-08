@@ -2779,8 +2779,12 @@ function generateFighterHtml(c, isHero, skipBadges = false) {
     return `
         ${mutationsHtml}
         ${channelingBadgeHtml}
-        <div class="fighter-name" style="color: ${isHero ? '#f8fafc' : '#ef4444'}; font-size: 1.3rem; display: flex; justify-content: center; align-items: center; gap: 0.2rem; margin-bottom: 0.8rem;">
-            ${avatarHtml} <div style="display: flex; align-items: center; gap: 0.3rem;">${titleIconsHtml} ${c.name}</div>
+        <div class="fighter-name" style="color: ${isHero ? '#f8fafc' : '#ef4444'}; font-size: 1.3rem; display: flex; justify-content: center; align-items: center; gap: 0.2rem; margin-bottom: 0.8rem; width: 100%;">
+            <span style="flex-shrink: 0; display: flex; align-items: center;">${avatarHtml}</span>
+            <div style="display: flex; align-items: center; gap: 0.3rem; min-width: 0;">
+                <span style="flex-shrink: 0; display: flex;">${titleIconsHtml}</span>
+                <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;" title="${c.name}">${c.name}</span>
+            </div>
         </div>
         ${monsterBadgesHtml}
         ${statsHtml}
