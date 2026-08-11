@@ -6,6 +6,38 @@ Analyse complète des fichiers JS concernant l'utilisation de styles CSS directe
 
 ---
 
+## 📋 Tableau de suivi — État de l'audit
+
+> [!NOTE]
+> Mis à jour en fonction de l'état réel du code. Dernière vérification : **2026-08-11**.
+
+| Étape | Tâche | Statut | Détail |
+|-------|-------|--------|--------|
+| 0 | Classes manquantes dans `utilities.css` | ⚠️ **Partiel** | 10/24 classes ajoutées |
+| 1 | `auth.js` — 12 statiques | ❌ À faire | 12 restants |
+| 2 | `shop.js` — 13 statiques | ❌ À faire | 13 restants |
+| 3 | `grimoire.js` — 75 statiques | ❌ À faire | 75 restants |
+| 4 | `dungeons.js` — 49 statiques | ❌ À faire | 49 restants |
+| 5 | `armory.js` — 42 statiques | ❌ À faire | 42 restants |
+| 6 | `forge.js` — 24 statiques | ❌ À faire | 24 restants |
+| 7 | `vault.js` — 4 statiques | ❌ À faire | 4 restants |
+| 8 | `shop-admin.js` — 13 statiques | ❌ À faire | 13 restants |
+| 9 | `alchemy-admin.js` — 41 statiques | ❌ À faire | 41 restants |
+| 10 | `alchemy.js` — 60 statiques | ❌ À faire | 60 restants |
+| 11 | `pve-admin.js` — 230 statiques | ❌ À faire | 230 restants |
+| 12 | `combat.js` — 280 statiques | ❌ À faire | 286 restants (+6 nouveaux) |
+
+**Avancement global : 0 / 12 fichiers traités** · ~0 styles migrés sur ~655 statiques cibles (~0%)
+
+> [!WARNING]
+> `utilities.css` classes manquantes : `.bg-success-glass`, `.bg-error-glass`, `.bg-amber-glass`, `.bg-info-glass`, `.bg-black-glass`, `.cursor-help`, `.whitespace-pre-wrap`, `.font-family-inherit`, `.min-w-0`, `.rounded-sm`, `.rounded-full`, `.text-lg-num`, `.text-md-num`
+
+```
+░░░░░░░░░░░░░░░░░░░░░░░░░░░░  0%
+```
+
+---
+
 ## 📊 État des lieux
 
 | Fichier | `style=` static | `style=` dynamic* | `.style.prop=` à corriger | **Total** |
@@ -152,9 +184,11 @@ L'approche sera **identique à l'audit HTML** :
 
 ## ✅ Avancement
 
-- [ ] Ajouter les classes manquantes dans `utilities.css`
+- [ ] Ajouter les classes manquantes dans `utilities.css` *(partiel : 10/24 présentes)*
+  - ✅ `.text-slate`, `.text-cyan`, `.text-violet`, `.text-rose`, `.bg-purple-glass`, `.cursor-pointer`, `.overflow-hidden`, `.p-2`, `.p-3`, `.px-2`, `.py-1`
+  - ❌ `.bg-success-glass`, `.bg-error-glass`, `.bg-amber-glass`, `.bg-info-glass`, `.bg-black-glass`, `.cursor-help`, `.whitespace-pre-wrap`, `.font-family-inherit`, `.min-w-0`, `.rounded-sm`, `.rounded-full`, `.text-lg-num`, `.text-md-num`
 - [ ] `auth.js` — 12 statiques
-- [ ] `shop.js` — 13 statiques  
+- [ ] `shop.js` — 13 statiques
 - [ ] `grimoire.js` — 75 statiques
 - [ ] `dungeons.js` — 49 statiques
 - [ ] `armory.js` — 42 statiques
@@ -164,4 +198,4 @@ L'approche sera **identique à l'audit HTML** :
 - [ ] `alchemy-admin.js` — 41 statiques (les `.style.prop` sont dynamiques)
 - [ ] `alchemy.js` — 60 statiques
 - [ ] `pve-admin.js` — 230 statiques (par sections)
-- [ ] `combat.js` — 280 statiques (par sections)
+- [ ] `combat.js` — 286 statiques (par sections, +6 ajoutés depuis l'audit initial)
