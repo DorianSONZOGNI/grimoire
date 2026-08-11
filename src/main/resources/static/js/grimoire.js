@@ -23,7 +23,7 @@ export function renderFilteredSpells() {
     const effectVal = document.getElementById('filterEffect')?.value || 'ALL';
     const levelVal = document.getElementById('filterLevel')?.value || 'ALL';
     const sortByVal = document.getElementById('sortBy')?.value || 'NEWEST';
-    const mutationVal = document.getElementById('filterMutation')?.value || 'ALL';
+    const mutationVal = document.getElementById('filterMutation')?.value || 'NONE';
 
     // Filtrage multi-critères
     let filtered = state.loadedSpells.filter(sp => {
