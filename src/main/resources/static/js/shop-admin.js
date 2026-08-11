@@ -676,18 +676,26 @@ window.updateWeightUI = async function () {
     if (!slot) return;
 
     document.querySelectorAll('.non-consumable-stat').forEach(el => {
-        el.style.display = slot === 'CONSOMMABLE' ? 'none' : '';
+        if (slot === 'CONSOMMABLE') el.classList.add('hidden');
+        else el.classList.remove('hidden');
+        el.style.display = '';
     });
     document.querySelectorAll('.consumable-stat').forEach(el => {
-        el.style.display = slot === 'CONSOMMABLE' ? 'flex' : 'none';
+        if (slot === 'CONSOMMABLE') el.classList.remove('hidden');
+        else el.classList.add('hidden');
+        el.style.display = '';
     });
     document.querySelectorAll('.consumable-category-field').forEach(el => {
-        el.style.display = slot === 'CONSOMMABLE' ? 'flex' : 'none';
+        if (slot === 'CONSOMMABLE') el.classList.remove('hidden');
+        else el.classList.add('hidden');
+        el.style.display = '';
     });
 
     const row = document.getElementById('eqBaseWeightRow');
     if (row) {
-        row.style.display = slot === 'CONSOMMABLE' ? 'flex' : 'none';
+        if (slot === 'CONSOMMABLE') row.classList.remove('hidden');
+        else row.classList.add('hidden');
+        row.style.display = '';
     }
 
     let w = 0;
@@ -735,24 +743,29 @@ window.updateWeightUI = async function () {
     if (fillEl) {
         let pct = Math.round((w / maxW) * 100);
         let colorClass = 'bg-success';
+        let textColorClass = 'text-success';
 
         if (slot === 'CONSOMMABLE') {
             pct = 0;
             colorClass = 'bg-success';
+            textColorClass = 'text-success';
         } else if (pct < 0) {
             pct = Math.min(Math.abs(pct), 100);
             colorClass = 'bg-info';
+            textColorClass = 'text-info';
         } else if (pct > 100) {
             pct = 100;
             colorClass = 'bg-danger';
+            textColorClass = 'text-danger';
         } else if (pct > 80) {
             colorClass = 'bg-warning';
+            textColorClass = 'text-warning';
         }
 
         fillEl.className = 'gauge-fill hp h-full transition-all duration-300 w-pct-' + pct + ' ' + colorClass;
         if (textEl) {
-            textEl.className = colorClass;
-            // Override background since it's a text element, but color is also set by the utility class
+            textEl.className = textColorClass + ' text-sm font-bold';
+            textEl.style.backgroundColor = 'transparent';
         }
     }
 
