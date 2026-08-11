@@ -4,6 +4,31 @@
 
 ---
 
+## 📋 Tableau de suivi — État de l'audit
+
+> [!NOTE]
+> Mis à jour automatiquement en fonction de l'état réel du code. Dernière vérification : **2026-08-11**.
+
+| # | Cluster | Sévérité | Statut | Lignes récupérées |
+|---|---------|----------|--------|-------------------|
+| 1 | Tooltip `globalFixedTooltip` — 6 fichiers | 🔴 Critique | ✅ **Fait** | ~250 lignes |
+| 2 | `showNotif()` — 4 implémentations | 🔴 Critique | ✅ **Fait** | ~50 lignes |
+| 3 | `loadEquipments()` — 3 versions | 🟠 Élevée | ⏳ En cours | 0 |
+| 4 | `renderGrid()` — 2 copies | 🟠 Élevée | ❌ À faire | 0 |
+| 5 | `loadAnomalies()` — 2 versions | 🟠 Élevée | ❌ À faire | 0 |
+| 6 | Tooltip HTML Builders — 4 fonctions | 🟠 Élevée | ❌ À faire | 0 |
+| 7 | Custom Select — 3 implémentations | 🟡 Moyenne | ❌ À faire | 0 |
+| 8 | `RARITY_COLORS` — double définition | 🟡 Moyenne | ✅ **Fait** | ~15 lignes |
+| 9 | `deleteEquipment()` — 2 versions | 🟡 Moyenne | ❌ À faire | 0 |
+
+**Avancement global : 3 / 9 clusters traités** · ~315 lignes récupérées sur ~1 050 estimées (~30%)
+
+```
+████████░░░░░░░░░░░░░░░░░░░░  30%
+```
+
+---
+
 ## Résumé Exécutif
 
 | Sévérité | Clusters de duplication | Lignes dupliquées (estimé) |
@@ -14,13 +39,13 @@
 | **Total** | **9 clusters** | **~1 050 lignes** |
 
 > [!IMPORTANT]
-> Les 2 fichiers les plus volumineux — [combat.js](file:///c:/Users/doson/IdeaProjects/grimoire/src/main/resources/static/js/combat.js) (3 884 lignes) et [pve-admin.js](file:///c:/Users/doson/IdeaProjects/grimoire/src/main/resources/static/js/pve-admin.js) (2 708 lignes) — concentrent la majorité de la dette technique.
+> Les 2 fichiers les plus volumineux — [combat.js](file:///c:/Users/doson/IdeaProjects/grimoire/src/main/resources/static/js/combat.js) (3 849 lignes) et [pve-admin.js](file:///c:/Users/doson/IdeaProjects/grimoire/src/main/resources/static/js/pve-admin.js) (2 710 lignes) — concentrent la majorité de la dette technique.
 
 ---
 
 ## 🔴 Critique — Duplication massive
 
-### 1. Système de Tooltip (`globalFixedTooltip`) — **~300 lignes dupliquées**
+### 1. Système de Tooltip (`globalFixedTooltip`) — **~300 lignes dupliquées** ✅ Fait
 
 **Le pire cas.** Un bloc de **~50 lignes identiques** copié-collé dans **6 fichiers** :
 
@@ -63,7 +88,7 @@ if (!tooltip) {
 
 ---
 
-### 2. `showNotif()` — 4 implémentations différentes
+### 2. `showNotif()` — 4 implémentations différentes ✅ Fait
 
 | Fichier | ID élément cible | Particularités |
 |---------|-----------------|----------------|
@@ -81,7 +106,7 @@ Le problème : `combat.js` et `dungeons.js` re-implémentent la même logique au
 
 ## 🟠 Élevée — Fonctions dupliquées avec variantes
 
-### 3. `loadEquipments()` — 3 versions
+### 3. `loadEquipments()` — 3 versions ⏳ En cours
 
 | Fichier | Endpoint API | Logique spécifique |
 |---------|-------------|-------------------|
@@ -94,7 +119,7 @@ Le problème : `combat.js` et `dungeons.js` re-implémentent la même logique au
 
 ---
 
-### 4. `renderGrid()` — 2 copies quasi-identiques
+### 4. `renderGrid()` — 2 copies quasi-identiques ❌ À faire
 
 [shop-admin.js](file:///c:/Users/doson/IdeaProjects/grimoire/src/main/resources/static/js/shop-admin.js) et [vault.js](file:///c:/Users/doson/IdeaProjects/grimoire/src/main/resources/static/js/vault.js) ont le **même squelette** :
 
@@ -114,7 +139,7 @@ function renderGrid(equipments) {
 
 ---
 
-### 5. `loadAnomalies()` — 2 versions
+### 5. `loadAnomalies()` — 2 versions ❌ À faire
 
 | Fichier | Endpoint | Stockage |
 |---------|----------|----------|
@@ -123,7 +148,7 @@ function renderGrid(equipments) {
 
 ---
 
-### 6. Tooltip HTML Builders — 4 fonctions similaires
+### 6. Tooltip HTML Builders — 4 fonctions similaires ❌ À faire
 
 | Fichier | Fonction |
 |---------|----------|
@@ -138,7 +163,7 @@ Chacune génère du HTML pour afficher les stats d'un item. Devrait être **un s
 
 ## 🟡 Moyenne — Patterns récurrents non centralisés
 
-### 7. Custom Select / Dropdown — 3 implémentations
+### 7. Custom Select / Dropdown — 3 implémentations ❌ À faire
 
 | Fichier | Fonction | Occurrences `custom-select` |
 |---------|----------|---------------------------|
@@ -148,7 +173,7 @@ Chacune génère du HTML pour afficher les stats d'un item. Devrait être **un s
 
 `pve-admin.js` ré-implémente massivement les custom selects alors que `ui.js` a déjà une version réutilisable.
 
-### 8. `RARITY_COLORS` — Défini 2 fois, chargé dynamiquement 1 fois
+### 8. `RARITY_COLORS` — Défini 2 fois, chargé dynamiquement 1 fois ✅ Fait
 
 | Emplacement | Mécanisme |
 |------------|-----------|
@@ -157,7 +182,7 @@ Chacune génère du HTML pour afficher les stats d'un item. Devrait être **un s
 
 Conflit potentiel : si les deux fichiers sont chargés, l'un écrase l'autre.
 
-### 9. `deleteEquipment()` — 2 versions
+### 9. `deleteEquipment()` — 2 versions ❌ À faire
 
 | Fichier | Comportement |
 |---------|-------------|

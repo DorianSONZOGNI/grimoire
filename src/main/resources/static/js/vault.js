@@ -891,19 +891,27 @@ window.updateWeightUI = async function () {
     if (!slot) return;
 
     document.querySelectorAll('.non-consumable-stat').forEach(el => {
-        el.style.display = slot === 'CONSOMMABLE' ? 'none' : '';
+        if (slot === 'CONSOMMABLE') el.classList.add('hidden');
+        else el.classList.remove('hidden');
+        el.style.display = '';
     });
     document.querySelectorAll('.consumable-stat').forEach(el => {
-        el.style.display = slot === 'CONSOMMABLE' ? 'flex' : 'none';
+        if (slot === 'CONSOMMABLE') el.classList.remove('hidden');
+        else el.classList.add('hidden');
+        el.style.display = '';
     });
 
     const row = document.getElementById('eqBaseWeightRow');
     if (row) {
-        row.style.display = slot === 'CONSOMMABLE' ? 'flex' : 'none';
+        if (slot === 'CONSOMMABLE') row.classList.remove('hidden');
+        else row.classList.add('hidden');
+        row.style.display = '';
     }
 
     document.querySelectorAll('.consumable-category-field').forEach(el => {
-        el.style.display = slot === 'CONSOMMABLE' ? 'block' : 'none';
+        if (slot === 'CONSOMMABLE') el.classList.remove('hidden');
+        else el.classList.add('hidden');
+        el.style.display = '';
     });
 
     const textEl = document.getElementById('eqWeightText');
@@ -964,7 +972,11 @@ window.updateWeightUI = async function () {
 
         fillEl.style.width = pct + '%';
         fillEl.style.background = color;
-        if (textEl) textEl.style.color = color;
+        if (textEl) {
+            textEl.style.color = color;
+            textEl.style.backgroundColor = 'transparent';
+            textEl.classList.remove('text-resist');
+        }
     }
 }
 
