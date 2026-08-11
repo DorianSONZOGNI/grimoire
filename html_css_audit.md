@@ -18,12 +18,12 @@ Une analyse complète des fichiers HTML a révélé une forte utilisation de sty
 | `combat.html` | 45 | **0** | -45 |
 | `armory.html` | 122 | **3** | -119 |
 | `shop-admin.html` | 110 | **0** | -110 |
-| `alchemy.html` | 13 | **0** | - |
-| `secrets.html` | 8 | **0** | - |
-| `alchemy-admin.html` | 5 | **0** | - |
-| `shop.html` | 2 | **0** | - |
-| `register.html` | 1 | **0** | - |
-| `login.html` | 0 | **0** | - |
+| `alchemy.html` | 13 | **0** | -13 |
+| `secrets.html` | 8 | **0** | -8 |
+| `alchemy-admin.html` | 0 | **0** | -5 |
+| `shop.html` | 2 | **0** | -2 |
+| `register.html` | 1 | **0** | -1 |
+| `login.html` | 0 | **0** | -0 |
 
 ---
 
