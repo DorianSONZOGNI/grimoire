@@ -414,7 +414,7 @@ export function makeCustomSelect(selectIdOrElement) {
                 createSparkles(rect.left + rect.width / 2, rect.top + rect.height / 2, optInfo.color);
 
                 select.selectedIndex = index;
-                select.dispatchEvent(new Event('change'));
+                select.dispatchEvent(new Event('change', { bubbles: true }));
                 optionsContainer.style.display = 'none';
             });
 
@@ -451,11 +451,8 @@ export function makeCustomSelect(selectIdOrElement) {
         optionsContainer.className = 'custom-select-options'; // tag for closing
     });
 
-    document.addEventListener('click', (e) => {
-        if (!wrapper.contains(e.target)) {
-            optionsContainer.style.display = 'none';
-        }
-    });
+    // Global listener handles closing
+
 
     select.addEventListener('change', updateSelect);
     const observer = new MutationObserver(updateSelect);
@@ -487,6 +484,84 @@ export function showNotif(text, isError = false) {
         notif.classList.remove('show');
     }, 4000);
 }
+
+window.initGlobalCustomSelect = function() {
+    if (window._globalCustomSelectInit) return;
+    window._globalCustomSelectInit = true;
+
+    document.addEventListener('click', (e) => {
+        if (!e.target.closest('.custom-select-wrapper')) {
+            document.querySelectorAll('.custom-select-wrapper.open').forEach(w => w.classList.remove('open'));
+            document.querySelectorAll('.custom-select-options').forEach(el => {
+                if(el.parentElement && el.parentElement.classList.contains('custom-select-wrapper')) {
+                } else if(!e.target.closest('.custom-select-options')) {
+                    el.style.display = 'none';
+                }
+            });
+        }
+
+        const trigger = e.target.closest('.custom-select-trigger');
+        if (trigger) {
+            const wrapper = trigger.closest('.custom-select-wrapper');
+            if (wrapper) {
+                document.querySelectorAll('.custom-select-wrapper.open').forEach(w => {
+                    if (w !== wrapper) {
+                        w.classList.remove('open');
+                        const opts = w.querySelector('.custom-select-options');
+                        if (opts) {
+                            opts.style.top = '';
+                            opts.style.bottom = '';
+                        }
+                    }
+                });
+                
+                if (!trigger.hasAttribute('onclick')) {
+                    const isOpen = wrapper.classList.toggle('open');
+                    const optionsContainer = wrapper.querySelector('.custom-select-options');
+                    
+                    if (optionsContainer && isOpen) {
+                        const rect = trigger.getBoundingClientRect();
+                        const modal = trigger.closest('.equip-modal');
+                        const modalBottom = modal ? modal.getBoundingClientRect().bottom : window.innerHeight;
+                        const spaceBelow = modalBottom - rect.bottom;
+                        const dropdownHeight = 220; 
+
+                        if (spaceBelow < dropdownHeight && rect.top > dropdownHeight) {
+                            optionsContainer.style.top = 'auto';
+                            optionsContainer.style.bottom = '100%';
+                            optionsContainer.style.marginTop = '0';
+                            optionsContainer.style.marginBottom = '4px';
+                        } else {
+                            optionsContainer.style.top = '100%';
+                            optionsContainer.style.bottom = 'auto';
+                            optionsContainer.style.marginTop = '4px';
+                            optionsContainer.style.marginBottom = '0';
+                        }
+                    }
+                }
+            }
+            return;
+        }
+
+        const option = e.target.closest('.custom-option');
+        if (option) {
+            if (!option.hasAttribute('onclick')) {
+                const wrapper = option.closest('.custom-select-wrapper');
+                if (wrapper) {
+                    const hiddenInput = wrapper.querySelector('input[type="hidden"]');
+                    const labelEl = wrapper.querySelector('.cs-label');
+                    if (hiddenInput && labelEl) {
+                        hiddenInput.value = option.getAttribute('data-value');
+                        labelEl.innerHTML = option.innerHTML;
+                        wrapper.classList.remove('open');
+                        hiddenInput.dispatchEvent(new Event('change', { bubbles: true }));
+                    }
+                }
+            }
+        }
+    });
+};
+window.initGlobalCustomSelect();
 
 window.showNotif = showNotif;
 

@@ -838,80 +838,15 @@ function resetForm() {
 // showNotif, showModal → utils.js
 
 // ===== Custom Select Logic (Event Delegation) =====
-document.addEventListener('click', (e) => {
-    // Fermer les dropdowns si on clique en dehors
-    if (!e.target.closest('.custom-select-wrapper')) {
-        document.querySelectorAll('.custom-select-wrapper.open').forEach(w => w.classList.remove('open'));
+// The global custom select event listener is handled by window.initGlobalCustomSelect() in ui.js
+
+document.addEventListener('change', (e) => {
+    if (e.target.id === 'searchVoie' || e.target.id === 'searchSpirit') {
+        filterPersonnages();
     }
-
-    // Clic sur le trigger (ouvrir/fermer)
-    const trigger = e.target.closest('.custom-select-trigger');
-    if (trigger) {
-        const wrapper = trigger.closest('.custom-select-wrapper');
-        // Fermer les autres
-        document.querySelectorAll('.custom-select-wrapper.open').forEach(w => {
-            if (w !== wrapper) {
-                w.classList.remove('open');
-                const opts = w.querySelector('.custom-select-options');
-                if (opts) {
-                    opts.style.top = '';
-                    opts.style.bottom = '';
-                }
-            }
-        });
-
-        const isOpen = wrapper.classList.toggle('open');
-        const optionsContainer = wrapper.querySelector('.custom-select-options');
-        if (optionsContainer && isOpen) {
-            // Position dropdown upwards if there is not enough space below
-            const rect = trigger.getBoundingClientRect();
-
-            // Check against both window and modal boundary
-            const modal = trigger.closest('.equip-modal');
-            const modalBottom = modal ? modal.getBoundingClientRect().bottom : window.innerHeight;
-            const spaceBelow = modalBottom - rect.bottom;
-
-            const dropdownHeight = 220; // matches max-height of optionsContainer
-
-            if (spaceBelow < dropdownHeight && rect.top > dropdownHeight) {
-                optionsContainer.style.top = 'auto';
-                optionsContainer.style.bottom = '100%';
-                optionsContainer.style.marginTop = '0';
-                optionsContainer.style.marginBottom = '4px';
-            } else {
-                optionsContainer.style.top = '100%';
-                optionsContainer.style.bottom = 'auto';
-                optionsContainer.style.marginTop = '4px';
-                optionsContainer.style.marginBottom = '0';
-            }
-        }
-        return;
-    }
-
-    // Clic sur une option
-    const option = e.target.closest('.custom-option');
-    if (option) {
-        const wrapper = option.closest('.custom-select-wrapper');
-        const hiddenInput = wrapper.querySelector('input[type="hidden"]');
-        const labelEl = wrapper.querySelector('.cs-label');
-
-        hiddenInput.value = option.getAttribute('data-value');
-        labelEl.innerHTML = option.innerHTML;
-        wrapper.classList.remove('open');
-
-        const event = new Event('change', { bubbles: true });
-        hiddenInput.dispatchEvent(event);
-
-        // Trigger specific logic for search
-        if (hiddenInput.id === 'searchVoie' || hiddenInput.id === 'searchSpirit') {
-            filterPersonnages();
-        }
-
-        // Trigger specific logic for equipment assign
-        if (hiddenInput.classList.contains('eq-assign-hidden')) {
-            if (hiddenInput.value) {
-                equipItem(hiddenInput.value, hiddenInput.dataset.persoId, hiddenInput.dataset.slot);
-            }
+    if (e.target.classList && e.target.classList.contains('eq-assign-hidden')) {
+        if (e.target.value) {
+            equipItem(e.target.value, e.target.dataset.persoId, e.target.dataset.slot);
         }
     }
 });
