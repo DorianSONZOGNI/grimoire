@@ -230,9 +230,9 @@ async function loadDungeons() {
                         if (userLevel < reqLevel) {
                             isLocked = true;
                             lockedHtml = `<div class="dungeon-lock-overlay">
-                                <span class="material-symbols-outlined opacity-80" style="font-size: 3.5rem; margin-bottom: 0.5rem;">lock</span>
-                                <div style="font-family: 'Outfit'; font-size: 1.2rem; font-weight: 700; color: #f8fafc; margin-bottom: 0.3rem;">Accès Verrouillé</div>
-                                <div style="font-size: 0.95rem; color: #fca5a5;">Secret requis : <strong style="color: #f8fafc;">${d.requiredSecret}</strong> (Niv. ${reqLevel})</div>
+                                <span class="material-symbols-outlined opacity-80 mb-2 text-[3.5rem]">lock</span>
+                                <div class="font-outfit text-[1.2rem] font-bold text-slate-50 mb-1">Accès Verrouillé</div>
+                                <div class="text-[0.95rem] text-red-300">Secret requis : <strong class="text-slate-50">${d.requiredSecret}</strong> (Niv. ${reqLevel})</div>
                             </div>`;
                         }
                     }
@@ -240,15 +240,15 @@ async function loadDungeons() {
                     if (!isLocked && d.unlockCostGold > 0) {
                         if (!userDungeons.includes(d.id)) {
                             isLocked = true;
-                            lockedHtml = `<div class="dungeon-lock-overlay" style="background: rgba(15, 23, 42, 0.75); color: #f59e0b;">
-                                <span class="material-symbols-outlined opacity-80" style="font-size: 3.5rem; margin-bottom: 0.5rem;">lock</span>
-                                <div style="font-family: 'Outfit'; font-size: 1.2rem; font-weight: 700; color: #f8fafc; margin-bottom: 1rem;">Donjon Verrouillé</div>
-                                <button class="btn btn-primary flex-center" onclick="event.stopPropagation(); unlockDungeon(${d.id}, ${d.unlockCostGold}, event)" style="width: 80%; justify-content: center; gap: 0.4rem; padding: 0.6rem; border-radius: 8px; border: none; background: linear-gradient(135deg, #f59e0b, #d97706); color: #0f172a; font-family: 'Outfit', sans-serif; font-weight: 700; cursor: pointer; transition: all 0.2s; box-shadow: 0 4px 15px rgba(245, 158, 11, 0.3);"><span class="material-symbols-outlined text-lg">lock_open</span> D\u00e9bloquer (${d.unlockCostGold} Or)</button>
+                            lockedHtml = `<div class="dungeon-lock-overlay bg-slate-900/75 text-amber-500">
+                                <span class="material-symbols-outlined opacity-80 mb-2 text-[3.5rem]">lock</span>
+                                <div class="font-outfit text-[1.2rem] font-bold text-slate-50 mb-4">Donjon Verrouillé</div>
+                                <button class="btn btn-primary flex-center btn-unlock-dungeon" onclick="event.stopPropagation(); unlockDungeon(${d.id}, ${d.unlockCostGold}, event)"><span class="material-symbols-outlined text-lg">lock_open</span> Débloquer (${d.unlockCostGold} Or)</button>
                             </div>`;
                         }
                     }
 
-                    const entryCostHtml = d.entryCostGold > 0 ? `<div class="text-sm" style="color: #f59e0b; font-weight: 600; margin-top: 0.5rem;"><span class="material-symbols-outlined align-middle icon-sm">monetization_on</span> Co\u00fbt d'entr\u00e9e : ${d.entryCostGold} Or</div>` : '';
+                    const entryCostHtml = d.entryCostGold > 0 ? `<div class="text-sm text-warning font-semibold mt-2"><span class="material-symbols-outlined align-middle icon-sm">monetization_on</span> Coût d'entrée : ${d.entryCostGold} Or</div>` : '';
 
                     const cardHtml = `
                         <div class="dungeon-card ${isLocked ? 'locked' : ''}" ${isLocked ? '' : `onclick="openPrepInterface(${d.id}, '${d.name.replace(/'/g, "\\'")}', '${sallesData}', ${d.maxHeroes || 1}, ${d.entryCostGold || 0}, ${d.recommendedLevel || 1})"`}>
@@ -260,22 +260,22 @@ async function loadDungeons() {
                             <div class="dungeon-level">Niveau ${d.recommendedLevel}</div>
                             <div class="dungeon-desc">${d.description || 'Affrontez les dangers qui r\u00f4dent.'}</div>
                             ${entryCostHtml}
-                            <div style="font-size: 0.85rem; color: #f8fafc; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.1); display: grid; gap: 0.4rem;">
-                                <div class="flex-center" style="color: #0ea5e9; font-weight: 600; gap: 0.3rem;">
-                                    <span class="material-symbols-outlined text-lg">group</span> H\u00e9ros max : ${d.maxHeroes || 1}
+                            <div class="text-sm text-slate-50 mt-2 pt-2 border-t border-white/10 grid gap-1.5">
+                                <div class="flex-center text-sky-500 font-semibold gap-1">
+                                    <span class="material-symbols-outlined text-lg">group</span> Héros max : ${d.maxHeroes || 1}
                                 </div>
-                                <div><span style="font-weight: 600;">Salles totales :</span> ${totalSalles}</div>
-                                ${combats > 0 ? `<div class="flex-center text-error" style="margin-left: 0.5rem; gap: 0.3rem;">
+                                <div><span class="font-semibold">Salles totales :</span> ${totalSalles}</div>
+                                ${combats > 0 ? `<div class="flex-center text-error ml-2 gap-[0.3rem]">
                                     <span class="material-symbols-outlined icon-sm">swords</span> Combats : ${combats} (avec ${totalMobs} mob${totalMobs > 1 ? 's' : ''})
                                 </div>` : ''}
-                                ${bosses > 0 ? `<div class="flex-center" style="color: #dc2626; margin-left: 0.5rem; gap: 0.3rem;">
+                                ${bosses > 0 ? `<div class="flex-center text-danger ml-2 gap-[0.3rem]">
                                     <span class="material-symbols-outlined icon-sm">skull</span> Boss : ${bosses} (avec ${totalBossMobs} mob${totalBossMobs > 1 ? 's' : ''})
                                 </div>` : ''}
-                                ${treasures > 0 ? `<div class="flex-center" style="color: #f59e0b; margin-left: 0.5rem; gap: 0.3rem;">
-                                    <span class="material-symbols-outlined icon-sm">shopping_bag</span> Tr\u00e9sors : ${treasures}
+                                ${treasures > 0 ? `<div class="flex-center text-warning ml-2 gap-[0.3rem]">
+                                    <span class="material-symbols-outlined icon-sm">shopping_bag</span> Trésors : ${treasures}
                                 </div>` : ''}
-                                <div class="flex-center" style="color: #8b5cf6; margin-left: 0.5rem; gap: 0.3rem;">
-                                    <span class="material-symbols-outlined icon-sm">auto_awesome</span> \u00c9v\u00e9nements : ${events}
+                                <div class="flex-center text-purple ml-2 gap-[0.3rem]">
+                                    <span class="material-symbols-outlined icon-sm">auto_awesome</span> Événements : ${events}
                                 </div>
                             </div>
                         </div>
@@ -289,12 +289,12 @@ async function loadDungeons() {
         } else {
             console.error('Failed to load dungeons');
             const msg = document.getElementById('loadingDungeonsMsg');
-            if(msg) msg.style.display = 'none';
+            if (msg) msg.style.display = 'none';
         }
     } catch (e) {
         console.error('Error loading dungeons:', e);
         const msg = document.getElementById('loadingDungeonsMsg');
-        if(msg) msg.style.display = 'none';
+        if (msg) msg.style.display = 'none';
     }
 }
 
@@ -335,17 +335,17 @@ async function loadCharacters() {
                 let iconsHtml = '';
                 if (c.voie && c.voie.nom) {
                     const vi = getVIcon(c.voie.nom);
-                    iconsHtml += `<span class="material-symbols-outlined" style="font-size: 1.1rem; color: ${vi.c}; margin-left: 0.5rem;" title="Voie : ${c.voie.nom}">${vi.i}</span>`;
+                    iconsHtml += `<span class="material-symbols-outlined text-[1.1rem] ml-2" style="color: ${vi.c};" title="Voie : ${c.voie.nom}">${vi.i}</span>`;
                 }
                 if (c.spiritualite && c.spiritualite.nom) {
                     const si = getSIcon(c.spiritualite.nom);
-                    iconsHtml += `<span class="material-symbols-outlined" style="font-size: 1.1rem; color: ${si.c}; margin-left: 0.3rem;" title="Spiritualit\u00e9 : ${c.spiritualite.nom}">${si.i}</span>`;
+                    iconsHtml += `<span class="material-symbols-outlined text-[1.1rem] ml-1" style="color: ${si.c};" title="Spiritualité : ${c.spiritualite.nom}">${si.i}</span>`;
                 }
                 list.innerHTML += `
                     <div class="char-card" id="charCard_${c.id}" onclick="selectCharacter(${c.id})">
                         <div class="char-avatar">${c.name.charAt(0).toUpperCase()}</div>
                         <div>
-                            <div class="flex-center" style="color: #f8fafc; font-weight: 600; font-family: 'Outfit'; font-size: 1.1rem;">
+                            <div class="flex-center text-slate-50 font-semibold font-outfit text-lg">
                                 ${c.name} ${iconsHtml}
                             </div>
                             <div class="text-muted text-sm">Niv. ${c.voieLevel || 1} &bull; ${c.totalHealthMax !== undefined ? c.totalHealthMax : c.healthMax} PV max</div>
@@ -404,16 +404,16 @@ function renderConsumablesList() {
     const maxWeight = getMaxWeight();
     const isOverweight = curWeight > maxWeight;
 
-    const counterHtml = `<div class="text-center" style="margin-bottom: 0.8rem; font-size: 0.85rem; color: ${isOverweight ? '#ef4444' : '#94a3b8'};">
+    const counterHtml = `<div class="text-center mb-3 text-sm ${isOverweight ? 'text-error' : 'text-muted'}">
         <span class="material-symbols-outlined text-sm align-middle">scale</span>
         Poids: ${curWeight % 1 === 0 ? curWeight : curWeight.toFixed(1)} / ${maxWeight}
     </div>`;
-    
+
     const weightContainer = document.getElementById('prepWeightCounter');
     if (weightContainer) weightContainer.innerHTML = counterHtml;
 
     if (pageState.availableConsumables.length === 0) {
-        list.innerHTML = `<div class="text-muted text-center" style="font-size: 0.85rem; padding: 1rem;">Vous n'avez aucun consommable dans votre coffre.</div>`;
+        list.innerHTML = `<div class="text-muted text-center text-sm p-4">Vous n'avez aucun consommable dans votre coffre.</div>`;
         return;
     }
 
@@ -447,7 +447,7 @@ function renderConsumablesList() {
     }
 
     if (filteredConsumables.length === 0) {
-        list.innerHTML = `<div class="text-muted text-center" style="font-size: 0.85rem; padding: 1rem;">Aucun consommable ne correspond à ces filtres.</div>`;
+        list.innerHTML = `<div class="text-muted text-center text-sm p-4">Aucun consommable ne correspond à ces filtres.</div>`;
         return;
     }
 
@@ -459,29 +459,29 @@ function renderConsumablesList() {
         const iconColor = c.consumableCategory ? (catColors[c.consumableCategory] || '#854c4c') : '#854c4c';
         const isSelected = pageState.selectedConsumableIds.includes(c.id);
         const selIndex = pageState.selectedConsumableIds.indexOf(c.id);
-        const badgeHtml = isSelected ? `<div class="flex-center text-xxs absolute" style="top: -6px; right: -6px; background: #10b981; color: white; width: 18px; height: 18px; border-radius: 50%; justify-content: center; font-weight: 700; z-index: 2; box-shadow: 0 2px 4px rgba(0,0,0,0.5);">${selIndex + 1}</div>` : '';
+        const badgeHtml = isSelected ? `<div class="flex-center text-xxs absolute sel-badge">${selIndex + 1}</div>` : '';
         cardsHtml += `
-            <div class="consumable-card ${isSelected ? 'selected' : ''} relative" onclick="selectConsumable(${c.id})" style="overflow: visible;">
+            <div class="consumable-card ${isSelected ? 'selected' : ''} relative overflow-visible" onclick="selectConsumable(${c.id})">
                 <span class="material-symbols-outlined flex-shrink-0" style="font-size: 1.1rem; color: ${isSelected ? '#10b981' : iconColor};">${iconName}</span>
-                <div style="flex: 1; min-width: 0;">
-                    <div class="flex-between" style="align-items: center;">
-                        <div class="whitespace-nowrap" title="${c.name}" style="color: #f8fafc; font-weight: 600; font-size: 0.7rem; overflow: hidden; text-overflow: ellipsis;">${c.name}</div>
-                        <div class="text-xxs font-bold text-muted" style="background: rgba(0,0,0,0.3); padding: 0.1rem 0.3rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 0.1rem;"><span class="material-symbols-outlined" style="font-size: 0.7rem;">scale</span>${c.weight % 1 === 0 ? c.weight : Number(c.weight).toFixed(1)}</div>
+                <div class="flex-1 min-w-0">
+                    <div class="flex-between items-center">
+                        <div class="whitespace-nowrap text-slate-50 font-semibold text-[0.7rem] truncate" title="${c.name}">${c.name}</div>
+                        <div class="text-xxs font-bold text-muted bg-black/30 px-1 py-0.5 rounded inline-flex items-center gap-1"><span class="material-symbols-outlined" style="font-size: 0.7rem;">scale</span>${c.weight % 1 === 0 ? c.weight : Number(c.weight).toFixed(1)}</div>
                     </div>
-                    <div class="text-muted" style="font-size: 0.75rem; display: flex; gap: 0.4rem; flex-wrap: wrap; overflow: visible; align-items: center; margin-top: 2px;">
-                        ${c.bonusHealthMax ? `<span style="display:inline-flex; align-items:center; color:#ec4899;" title="PV">+${c.bonusHealthMax}<span class="material-symbols-outlined" style="font-size:0.8rem; margin-left:1px;">favorite</span></span>` : ''}
-                        ${c.bonusManaMax ? `<span style="display:inline-flex; align-items:center; color:#38bdf8;" title="Mana">+${c.bonusManaMax}<span class="material-symbols-outlined" style="font-size:0.8rem; margin-left:1px;">water_drop</span></span>` : ''}
-                        ${c.consumableHpPercent ? `<span style="display:inline-flex; align-items:center; color:#ec4899;" title="PV Max">+${c.consumableHpPercent}%<span class="material-symbols-outlined" style="font-size:0.8rem; margin-left:1px;">favorite</span></span>` : ''}
-                        ${c.consumableManaPercent ? `<span style="display:inline-flex; align-items:center; color:#38bdf8;" title="Mana Max">+${c.consumableManaPercent}%<span class="material-symbols-outlined" style="font-size:0.8rem; margin-left:1px;">water_drop</span></span>` : ''}
-                        ${c.consumableMissingHpPercent ? `<span style="display:inline-flex; align-items:center; color:#f43f5e;" title="PV Manq">+${c.consumableMissingHpPercent}%<span class="material-symbols-outlined" style="font-size:0.8rem; margin-left:1px;">healing</span></span>` : ''}
-                        ${c.consumableMissingManaPercent ? `<span style="display:inline-flex; align-items:center; color:#a855f7;" title="Mana Manq">+${c.consumableMissingManaPercent}%<span class="material-symbols-outlined" style="font-size:0.8rem; margin-left:1px;">cyclone</span></span>` : ''}
+                    <div class="text-muted text-xs flex gap-1.5 flex-wrap overflow-visible items-center mt-[2px]">
+                        ${c.bonusHealthMax ? `<span class="inline-flex items-center text-pink-500" title="PV">+${c.bonusHealthMax}<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">favorite</span></span>` : ''}
+                        ${c.bonusManaMax ? `<span class="inline-flex items-center text-sky-500" title="Mana">+${c.bonusManaMax}<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">water_drop</span></span>` : ''}
+                        ${c.consumableHpPercent ? `<span class="inline-flex items-center text-pink-500" title="PV Max">+${c.consumableHpPercent}%<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">favorite</span></span>` : ''}
+                        ${c.consumableManaPercent ? `<span class="inline-flex items-center text-sky-500" title="Mana Max">+${c.consumableManaPercent}%<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">water_drop</span></span>` : ''}
+                        ${c.consumableMissingHpPercent ? `<span class="inline-flex items-center text-red-500" title="PV Manq">+${c.consumableMissingHpPercent}%<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">healing</span></span>` : ''}
+                        ${c.consumableMissingManaPercent ? `<span class="inline-flex items-center text-purple-500" title="Mana Manq">+${c.consumableMissingManaPercent}%<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">cyclone</span></span>` : ''}
                     </div>
                 </div>
                 ${badgeHtml}
             </div>
         `;
     });
-    list.innerHTML = `<div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem;">${cardsHtml}</div>`;
+    list.innerHTML = `<div class="grid grid-cols-2 gap-2">${cardsHtml}</div>`;
 }
 
 window.selectConsumable = function (id) {
@@ -576,13 +576,13 @@ window.selectCharacter = async function (id) {
     grid.classList.remove('hidden');
     grid.style.display = '';
     grid.innerHTML = `
-        <div class="stat-item" style="color: #ec4899;"><span class="material-symbols-outlined">favorite</span> ${totalStats.healthMax} PV</div>
+        <div class="stat-item text-pink-500"><span class="material-symbols-outlined">favorite</span> ${totalStats.healthMax} PV</div>
         <div class="stat-item text-info"><span class="material-symbols-outlined">water_drop</span> ${totalStats.manaMax} Mana</div>
-        <div class="stat-item" style="color: #ec4899;"><span class="material-symbols-outlined">healing</span> ${totalStats.regenHealthPerTurn > 0 ? '+' : ''}${totalStats.regenHealthPerTurn} Régen PV</div>
+        <div class="stat-item text-pink-500"><span class="material-symbols-outlined">healing</span> ${totalStats.regenHealthPerTurn > 0 ? '+' : ''}${totalStats.regenHealthPerTurn} Régen PV</div>
         <div class="stat-item text-info"><span class="material-symbols-outlined">cyclone</span> ${totalStats.regenManaPerTurn > 0 ? '+' : ''}${totalStats.regenManaPerTurn} Régen Mana</div>
         <div class="stat-item text-purple"><span class="material-symbols-outlined">auto_awesome</span> ${totalStats.power} Puissance</div>
-        <div class="stat-item" style="color: #f43f5e;"><span class="material-symbols-outlined">fitness_center</span> ${totalStats.strength} Force</div>
-        <div class="stat-item" style="color: #3b82f6;"><span class="material-symbols-outlined">shield</span> ${totalStats.armor} Armure</div>
+        <div class="stat-item text-rose-500"><span class="material-symbols-outlined">fitness_center</span> ${totalStats.strength} Force</div>
+        <div class="stat-item text-blue-500"><span class="material-symbols-outlined">shield</span> ${totalStats.armor} Armure</div>
         <div class="stat-item text-success"><span class="material-symbols-outlined">shield</span> ${totalStats.resistance} R\u00e9sist</div>
         <div class="stat-item text-warning"><span class="material-symbols-outlined">bolt</span> ${totalStats.speed} Vitesse</div>
         <div class="stat-item text-error"><span class="material-symbols-outlined">gps_fixed</span> ${totalStats.crit}% Crit</div>
@@ -642,17 +642,17 @@ window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost,
         let html = '';
         salles.forEach((s, index) => {
             if (s.type === 'COMBAT' || s.type === 'BOSS') {
-                html += `<div class="flex-center text-error" style="margin-bottom: 0.5rem; font-weight: 600; gap: 0.3rem;"><span class="material-symbols-outlined icon-sm">${s.type === 'BOSS' ? 'skull' : 'swords'}</span> \u00c9tape ${index + 1} : ${s.type === 'BOSS' ? 'Boss' : 'Combat'}</div>`;
+                html += `<div class="flex-center text-error mb-2 font-semibold gap-[0.3rem]"><span class="material-symbols-outlined icon-sm">${s.type === 'BOSS' ? 'skull' : 'swords'}</span> Étape ${index + 1} : ${s.type === 'BOSS' ? 'Boss' : 'Combat'}</div>`;
                 if (!s.monsters || s.monsters.length === 0) {
-                    html += `<div class="text-muted" style="margin-left: 1.5rem; margin-bottom: 0.5rem; font-size: 0.85rem;">Aucun ennemi d\u00e9tect\u00e9</div>`;
+                    html += `<div class="text-muted ml-6 mb-2 text-sm">Aucun ennemi détecté</div>`;
                 } else {
                     const count = s.monsters.length;
-                    html += `<div style="margin-left: 1.5rem; margin-bottom: 0.5rem; font-size: 0.85rem; color: #f8fafc;">${count} ennemi${count > 1 ? 's' : ''}</div>`;
+                    html += `<div class="ml-6 mb-2 text-sm text-slate-50">${count} ennemi${count > 1 ? 's' : ''}</div>`;
                 }
             } else if (s.type === 'TREASURE') {
-                html += `<div class="flex-center" style="margin-bottom: 0.5rem; color: #f59e0b; font-weight: 600; gap: 0.3rem;"><span class="material-symbols-outlined icon-sm">shopping_bag</span> \u00c9tape ${index + 1} : Tr\u00e9sor</div>`;
+                html += `<div class="flex-center text-warning mb-2 font-semibold gap-[0.3rem]"><span class="material-symbols-outlined icon-sm">shopping_bag</span> Étape ${index + 1} : Trésor</div>`;
             } else if (s.type === 'EVENT') {
-                html += `<div class="flex-center" style="margin-bottom: 0.5rem; color: #8b5cf6; font-weight: 600; gap: 0.3rem;"><span class="material-symbols-outlined icon-sm">auto_awesome</span> \u00c9tape ${index + 1} : \u00c9v\u00e9nement</div>`;
+                html += `<div class="flex-center text-purple mb-2 font-semibold gap-[0.3rem]"><span class="material-symbols-outlined icon-sm">auto_awesome</span> Étape ${index + 1} : Événement</div>`;
             }
         });
         list.innerHTML = html;
@@ -671,16 +671,16 @@ window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost,
                 const color = an && window.getSpiritualiteColor ? window.getSpiritualiteColor(an.spiritualite) : '#d946ef';
                 const icon = an && window.getCategoryIcon ? window.getCategoryIcon(an.category) : 'star';
                 const tooltipHtml = (an && window.getAnomalyTooltipHTML) ? window.getAnomalyTooltipHTML(an, name) : name;
-                return `<span class="anomaly-badge" style="border-color:${color}; background:${color}20; color:${color}; cursor:help; font-size:0.78rem; padding:0.15rem 0.4rem; gap:0.2rem;" onmouseenter="window.showGlobalTooltip && window.showGlobalTooltip(this)" onmouseleave="window.hideGlobalTooltip && window.hideGlobalTooltip()" data-tooltip-html="${tooltipHtml.replace(/"/g, '&quot;')}">
-                    <span class="material-symbols-outlined" style="font-size:0.9rem;">${icon}</span>${name}
+                return `<span class="anomaly-badge" style="border-color:${color}; background:${color}20; color:${color};" onmouseenter="window.showGlobalTooltip && window.showGlobalTooltip(this)" onmouseleave="window.hideGlobalTooltip && window.hideGlobalTooltip()" data-tooltip-html="${tooltipHtml.replace(/"/g, '&quot;')}">
+                    <span class="material-symbols-outlined text-[0.9rem]">${icon}</span>${name}
                 </span>`;
             }).join('');
             anomalySection.style.display = '';
             anomalySection.innerHTML = `
-                <div style="font-weight:600; font-size:0.8rem; color:#94a3b8; margin-bottom:0.3rem; display:flex; align-items:center; gap:0.3rem;">
-                    <span class="material-symbols-outlined" style="font-size:0.9rem;">auto_awesome</span> ANOMALIES DISPONIBLES
+                <div class="font-semibold text-[0.8rem] text-purple-400 mb-1 flex items-center gap-1">
+                    <span class="material-symbols-outlined text-[0.9rem]">auto_awesome</span> ANOMALIES TROUVABLE
                 </div>
-                <div style="display:flex; flex-wrap:wrap; gap:0.3rem;">${badges}</div>`;
+                <div class="flex flex-wrap gap-1">${badges}</div>`;
         }
     }
 
