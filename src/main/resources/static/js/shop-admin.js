@@ -94,7 +94,7 @@ document.addEventListener('click', (e) => {
 // ===== API =====
 async function loadEquipments() {
     try {
-        pageState.allEquipments = await api.loadEquipments({ sources: ['/api/shop/templates'] });
+        pageState.allEquipments = await window.api.loadEquipments({ sources: ['/api/shop/templates'] });
         pageState.allEquipments.forEach(eq => {
             eq._weight = calculateWeight(eq);
         });
@@ -282,32 +282,8 @@ function renderGrid(equipments) {
             items.forEach(eq => {
                 const slotInfo = getSlotInfo(eq);
 
-                const statsHtml = STAT_DEFS
-                    .filter(s => eq[s.key] && eq[s.key] !== 0)
-                    .map(s => {
-                        const val = eq[s.key];
-                        const isMalus = val < 0;
-                        const sign = val > 0 ? '+' : '';
-                        const suffix = s.isPercent ? '%' : '';
-                        return `<span class="stat-badge ${isMalus ? 'malus' : ''}" title="${s.label}">
-                        <span class="material-symbols-outlined text-xs" style="color:${isMalus ? '#ef4444' : s.color};">${s.icon}</span>
-                        ${sign}${val}${suffix}
-                    </span>`;
-                    }).join('');
-
-                let effectHtml = '';
-                if (eq.specialEffect && eq.specialEffect !== 'NONE') {
-                    const label = window.EFFECT_LABELS[eq.specialEffect] || eq.specialEffect;
-                    const isCursed = eq.specialEffect.startsWith('CURSED_');
-                    const icon = isCursed ? 'skull' : 'auto_awesome';
-                    const color = isCursed ? '#9b2d2d' : '#c084fc';
-                    const bg = isCursed ? 'rgba(156, 163, 175, 0.15)' : 'rgba(168, 85, 247, 0.1)';
-
-                    effectHtml = `<span class="stat-badge" style="background: ${bg}; color: ${color}; ${isCursed ? 'border: 1px solid rgba(156, 163, 175, 0.2);' : ''}">
-                    <span class="material-symbols-outlined text-xs">${icon}</span>
-                    ${label} : ${eq.specialEffectValue}
-                </span>`;
-                }
+                const statsHtml = window.generateEquipmentStatsHtml(eq, 'stat-badge');
+                const effectHtml = window.generateEquipmentEffectHtml(eq, 'stat-badge');
 
                 const displayPrice = eq.shopPrice !== undefined ? (eq.shopPrice % 1 === 0 ? eq.shopPrice : eq.shopPrice.toFixed(1)) : calculateShopPrice(eq._weight || 0, rarity || 'COMMUN', eq.slot);
 

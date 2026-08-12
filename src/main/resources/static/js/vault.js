@@ -95,7 +95,7 @@ document.addEventListener('click', (e) => {
 async function loadEquipments() {
     try {
         const url = window.isAdmin ? '/api/equipments/all' : '/api/equipments';
-        pageState.allEquipments = await api.loadEquipments({ sources: [url], includeAnomalies: true, isAdmin: window.isAdmin });
+        pageState.allEquipments = await window.api.loadEquipments({ sources: [url], includeAnomalies: true, isAdmin: window.isAdmin });
 
         // Pré-calculer le poids pour le tri
         pageState.allEquipments.forEach(eq => {
@@ -382,32 +382,8 @@ function renderGrid(equipments) {
 
         const slotInfo = getSlotInfo(eq);
 
-        const statsHtml = STAT_DEFS
-            .filter(s => eq[s.key] && eq[s.key] !== 0)
-            .map(s => {
-                const val = eq[s.key];
-                const isMalus = val < 0;
-                const sign = val > 0 ? '+' : '';
-                const suffix = s.isPercent ? '%' : '';
-                return `<span class="vault-stat-chip ${isMalus ? 'malus' : ''}" title="${s.label}">
-                    <span class="material-symbols-outlined text-xs" style="color:${isMalus ? '#ef4444' : s.color};">${s.icon}</span>
-                    ${sign}${val}${suffix}
-                </span>`;
-            }).join('');
-
-        let effectHtml = '';
-        if (eq.specialEffect && eq.specialEffect !== 'NONE') {
-            const label = window.EFFECT_LABELS[eq.specialEffect] || eq.specialEffect;
-            const isCursed = eq.specialEffect.startsWith('CURSED_');
-            const icon = isCursed ? 'skull' : 'auto_awesome';
-            const color = isCursed ? '#9b2d2d' : '#c084fc';
-            const bg = isCursed ? 'rgba(156, 163, 175, 0.15)' : 'rgba(168, 85, 247, 0.1)';
-
-            effectHtml = `<div class="vault-card-effect" style="color: ${color}; background: ${bg}; ${isCursed ? 'border: 1px solid rgba(156, 163, 175, 0.2);' : ''}">
-                <span class="material-symbols-outlined text-sm">${icon}</span>
-                ${label} : ${eq.specialEffectValue}
-            </div>`;
-        }
+        const statsHtml = window.generateEquipmentStatsHtml(eq, 'vault-stat-chip');
+        const effectHtml = window.generateEquipmentEffectHtml(eq, 'vault-card-effect');
         let statusHtml = '';
         if (eq.personnage) {
             statusHtml = `<span class="vault-card-status status-equipped">

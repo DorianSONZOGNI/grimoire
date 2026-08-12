@@ -1477,7 +1477,7 @@ async function loadAnomalies() {
 
 async function loadEquipments() {
     try {
-        let merged = await api.loadEquipments({ sources: ['/api/shop/templates', '/api/equipments/all'] });
+        let merged = await window.api.loadEquipments({ sources: ['/api/shop/templates', '/api/equipments/all'] });
 
         // Sort by rarity, then name
         const rarityOrder = { 'MAUDIT': 1, 'RELIQUE': 2, 'EPIQUE': 3, 'LEGENDAIRE': 4, 'MYTHIQUE': 5, 'RARE': 6, 'INHABITUEL': 7, 'COMMUN': 8 };
