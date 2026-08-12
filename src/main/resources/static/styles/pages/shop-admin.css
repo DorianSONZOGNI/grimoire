@@ -5,6 +5,15 @@
     margin-top: 1rem;
 }
 
+.vault-main {
+    padding: 2rem;
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
 .shop-admin-section {
     margin-top: 1rem;
     margin-bottom: 2rem;

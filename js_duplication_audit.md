@@ -13,18 +13,18 @@
 |---|---------|----------|--------|-------------------|
 | 1 | Tooltip `globalFixedTooltip` — 6 fichiers | 🔴 Critique | ✅ **Fait** | ~250 lignes |
 | 2 | `showNotif()` — 4 implémentations | 🔴 Critique | ✅ **Fait** | ~50 lignes |
-| 3 | `loadEquipments()` — 3 versions | 🟠 Élevée | ⏳ En cours | 0 |
-| 4 | `renderGrid()` — 2 copies | 🟠 Élevée | ❌ À faire | 0 |
-| 5 | `loadAnomalies()` — 2 versions | 🟠 Élevée | ❌ À faire | 0 |
-| 6 | Tooltip HTML Builders — 4 fonctions | 🟠 Élevée | ❌ À faire | 0 |
+| 3 | `loadEquipments()` — 3 versions | 🟠 Élevée | ✅ **Fait** | ~80 lignes |
+| 4 | `renderGrid()` — 2 copies | 🟠 Élevée | ✅ **Fait** | ~60 lignes |
+| 5 | `loadAnomalies()` — 2 versions | 🟠 Élevée | ✅ **Fait** | ~30 lignes |
+| 6 | Tooltip HTML Builders — 4 fonctions | 🟠 Élevée | ✅ **Fait** | ~120 lignes |
 | 7 | Custom Select — 3 implémentations | 🟡 Moyenne | ❌ À faire | 0 |
 | 8 | `RARITY_COLORS` — double définition | 🟡 Moyenne | ✅ **Fait** | ~15 lignes |
-| 9 | `deleteEquipment()` — 2 versions | 🟡 Moyenne | ❌ À faire | 0 |
+| 9 | `deleteEquipment()` — 2 versions | 🟡 Moyenne | ✅ **Fait** | ~20 lignes |
 
-**Avancement global : 3 / 9 clusters traités** · ~315 lignes récupérées sur ~1 050 estimées (~30%)
+**Avancement global : 7 / 9 clusters traités** · ~485 lignes récupérées sur ~1 050 estimées (~46%)
 
 ```
-████████░░░░░░░░░░░░░░░░░░░░  30%
+██████████████░░░░░░░░░░░░░░  46%
 ```
 
 ---
