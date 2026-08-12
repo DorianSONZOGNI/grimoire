@@ -106,7 +106,7 @@ Le problème : `combat.js` et `dungeons.js` re-implémentent la même logique au
 
 ## 🟠 Élevée — Fonctions dupliquées avec variantes
 
-### 3. `loadEquipments()` — 3 versions ⏳ En cours
+### 3. `loadEquipments()` — 3 versions ✅ Fait
 
 | Fichier | Endpoint API | Logique spécifique |
 |---------|-------------|-------------------|
@@ -119,23 +119,12 @@ Le problème : `combat.js` et `dungeons.js` re-implémentent la même logique au
 
 ---
 
-### 4. `renderGrid()` — 2 copies quasi-identiques ❌ À faire
+### 4. `renderGrid()` — 2 copies quasi-identiques ✅ Fait
 
-[shop-admin.js](file:///c:/Users/doson/IdeaProjects/grimoire/src/main/resources/static/js/shop-admin.js) et [vault.js](file:///c:/Users/doson/IdeaProjects/grimoire/src/main/resources/static/js/vault.js) ont le **même squelette** :
-
-```javascript
-function renderGrid(equipments) {
-    const container = document.getElementById('vaultGrid');
-    if (equipments.length === 0) {
-        container.innerHTML = `<div class="vault-empty-state">...Aucun objet...</div>`;
-        return;
-    }
-    // Groupement par rareté, rendu HTML...
-}
-```
+[shop-admin.js](file:///c:/Users/doson/IdeaProjects/grimoire/src/main/resources/static/js/shop-admin.js) et [vault.js](file:///c:/Users/doson/IdeaProjects/grimoire/src/main/resources/static/js/vault.js) partagent des blocs de rendu HTML identiques pour les statistiques et les effets.
 
 > [!TIP]
-> **Fix** : Extraire un composant `EquipmentGrid` réutilisable, avec callback de rendu de carte.
+> **Fix** : Extraction des fonctions `generateEquipmentStatsHtml` et `generateEquipmentEffectHtml` dans `utils.js` pour éliminer ~60 lignes de duplication dans les boucles de rendu de la grille.
 
 ---
 
@@ -148,16 +137,14 @@ function renderGrid(equipments) {
 
 ---
 
-### 6. Tooltip HTML Builders — 4 fonctions similaires ❌ À faire
+### 6. Tooltip HTML Builders — 4 fonctions similaires ✅ Fait
 
 | Fichier | Fonction |
 |---------|----------|
-| [alchemy.js](file:///c:/Users/doson/IdeaProjects/grimoire/src/main/resources/static/js/alchemy.js) | `buildEquipmentTooltipHTML()` |
-| [alchemy.js](file:///c:/Users/doson/IdeaProjects/grimoire/src/main/resources/static/js/alchemy.js) | `buildAnomalyTooltipHTML()` |
-| [combat.js](file:///c:/Users/doson/IdeaProjects/grimoire/src/main/resources/static/js/combat.js) | `generateEquipmentTooltipHTML()` |
 | [utils.js](file:///c:/Users/doson/IdeaProjects/grimoire/src/main/resources/static/js/utils.js) | `getAnomalyTooltipHTML()` |
+| [utils.js](file:///c:/Users/doson/IdeaProjects/grimoire/src/main/resources/static/js/utils.js) | `getEquipmentTooltipHTML()` |
 
-Chacune génère du HTML pour afficher les stats d'un item. Devrait être **un seul template paramétré**.
+Tout le monde utilise désormais ces fonctions centralisées pour générer le HTML de l'info-bulle.
 
 ---
 
