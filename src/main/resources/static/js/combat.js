@@ -427,7 +427,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!dungeonId || !characterIds) {
         if (typeof showNotif !== 'undefined') window.showNotif("Paramètres de combat manquants.", true);
         else ui.showNotif("Paramètres de combat manquants.", true);
-        window.location.href = '/vault.html';
+        window.location.href = '/dungeons.html';
         return;
     }
 
@@ -450,7 +450,7 @@ async function resumeCombat(savedSessionId) {
             localStorage.removeItem('activeCombatId');
             if (typeof showNotif !== 'undefined') window.showNotif("Combat introuvable ou expiré.", true);
             else ui.showNotif("Combat introuvable ou expiré.", true);
-            window.location.href = '/vault.html';
+            window.location.href = '/dungeons.html';
             return;
         }
         const data = await res.json();
@@ -465,7 +465,7 @@ async function resumeCombat(savedSessionId) {
     } catch (e) {
         console.error(e);
         localStorage.removeItem('activeCombatId');
-        window.location.href = '/vault.html';
+        window.location.href = '/dungeons.html';
     }
 }
 
@@ -483,13 +483,16 @@ async function startCombat(characterIds, dungeonId, consumableIds) {
         if (!res.ok) {
             if (typeof showNotif !== 'undefined') window.showNotif("Erreur lors de l'initialisation du donjon.", true);
             else ui.showNotif("Erreur lors de l'initialisation du donjon.", true);
-            window.location.href = '/vault.html';
+            window.location.href = '/dungeons.html';
             return;
         }
 
         const data = await res.json();
         pageState.sessionId = data.sessionId;
         localStorage.setItem('activeCombatId', pageState.sessionId);
+        
+        // Nettoyer l'URL pour éviter de relancer le donjon au F5
+        window.history.replaceState({}, document.title, window.location.pathname);
 
         // Initialize previous XP for the first room
         data.players.forEach(p => {
