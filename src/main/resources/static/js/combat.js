@@ -2073,6 +2073,21 @@ function updateUI(data) {
                                 }
                             }
 
+                            if (data.currentRoom && data.currentRoom.altarRewardEquipment) {
+                                const eq = data.currentRoom.altarRewardEquipment;
+                                const slotInfo = typeof getSlotInfo === 'function' ? getSlotInfo(eq) : { icon: 'help', color: '#94a3b8' };
+                                const rarityColor = typeof getRarityColor === 'function' ? getRarityColor(eq.rarity) : '#10b981';
+                                const tooltipDataHtml = typeof window.getEquipmentTooltipHTML === 'function' ? window.getEquipmentTooltipHTML(eq) : '';
+                                const tooltipAttrs = tooltipDataHtml ? 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"' : '';
+                                
+                                gainedItemsHtml += `
+                                    <div class="flex-center relative" ${tooltipAttrs} style="cursor: ${tooltipDataHtml ? 'help' : 'default'}; background: rgba(0, 0, 0, 0.4); border: 1px solid ${rarityColor}80; padding: 0.8rem 1rem; border-radius: 8px; color: ${rarityColor}; font-weight: 600; gap: 0.5rem; margin-top: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
+                                        ${tooltipDataHtml ? `<template class="tooltip-data">${tooltipDataHtml}</template>` : ''}
+                                        <span class="material-symbols-outlined" style="color: ${slotInfo.color};">${slotInfo.icon}</span> <span style="${tooltipDataHtml ? `border-bottom: 1px dashed ${rarityColor};` : ''}">${eq.name}</span>
+                                    </div>
+                                `;
+                            }
+
                             if (gainedItemsHtml) {
                                 lootContainer.innerHTML += `
                                     <div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; margin-top: 1rem; width: 100%;">
