@@ -759,8 +759,8 @@ function initiateCombatCast(spellId) {
         } else {
             overlay.innerHTML = `
                 <div style="display: flex; gap: 0.5rem;">
-                    <button class="text-sm font-bold text-success" type="button" onclick="event.stopPropagation(); confirmCombatCast(null, 'direct')" style="background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.4); padding: 0.4rem 1rem; border-radius: 4px; cursor: pointer; font-family: 'Outfit', sans-serif;">Lancer</button>
-                    <button class="text-sm font-bold text-error" type="button" onclick="event.stopPropagation(); cancelCombatCast()" style="background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); padding: 0.4rem 1rem; border-radius: 4px; cursor: pointer; font-family: 'Outfit', sans-serif;">Annuler</button>
+                    <button class="text-sm font-bold text-success" type="button" onclick="event.stopPropagation(); confirmCombatCast(null, 'direct')" style="background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.4); padding: 0.3rem 0.5rem; border-radius: 4px; cursor: pointer; font-family: 'Outfit', sans-serif;">Lancer</button>
+                    <button class="text-sm font-bold text-error" type="button" onclick="event.stopPropagation(); cancelCombatCast()" style="background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); padding: 0.3rem 0.5rem; border-radius: 4px; cursor: pointer; font-family: 'Outfit', sans-serif;">Annuler</button>
                 </div>
             `;
             if (needsEnemy) enemyCards.forEach(card => card.classList.add('target-highlight'));
@@ -3463,7 +3463,7 @@ function renderSpellCard(sp) {
 
     return `
         <div id="spell-card-${sp.id}" class="combat-spell-card spell-btn${disabledClass}" style="border-top: 2px solid ${titleColor}; position: relative;" ${onClickAttr} ${tooltipAttrs}>
-            <div class="absolute" style="top: -9px; left: -5px; background: #0f172a; border: 1px solid ${titleColor}; color: ${titleColor}; border-radius: 4px; padding: 0.1rem 0.4rem; font-size: 0.65rem; font-weight: bold; z-index: 5;">Lvl ${sp.niveau}</div>
+            <div class="absolute" style="top: -9px; left: -5px; background: #0f172a; border: 1px solid ${titleColor}; color: ${titleColor}; border-radius: 4px; padding: 0.1rem 0.4rem; font-size: 0.65rem; font-weight: bold; z-index: 25;">Lvl ${sp.niveau}</div>
             
             <div class="combat-spell-header" style="margin-top: 0.2rem;">
                 <div class="combat-spell-name" title="${sp.nom}" style="color: ${titleColor}; text-align: left; width: 100%;">${sp.nom}</div>
