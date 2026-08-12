@@ -107,7 +107,6 @@ export async function loadEquipments(options = {}) {
 
 
 
-
 // Au chargement, récupérer les métadonnées
 
 export async function fetchMeta() {
