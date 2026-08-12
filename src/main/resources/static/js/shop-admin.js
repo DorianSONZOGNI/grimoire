@@ -34,6 +34,7 @@ document.addEventListener('click', (e) => {
             const val = hiddenInput.value;
             const row = document.getElementById('eqSpecialEffectRow');
             if (val === 'EPIQUE' || val === 'RELIQUE' || val === 'MAUDIT') {
+                row.classList.remove('hidden');
                 row.style.display = 'grid';
                 const isEpic = val === 'EPIQUE';
                 const isMaudit = val === 'MAUDIT';
@@ -48,12 +49,12 @@ document.addEventListener('click', (e) => {
                     inputBorder = 'rgba(85, 85, 85, 0.3)';
                 }
 
-                row.style.background = bg;
-                row.style.border = border;
-                document.getElementById('eqSpecialEffectLabelTitle').style.color = color;
-                document.getElementById('eqSpecialEffectValueTitle').style.color = color;
-                document.getElementById('eqSpecialEffectTrigger').style.borderColor = inputBorder;
-                document.getElementById('eqSpecialEffectValue').style.borderColor = inputBorder;
+                row.style.setProperty('background', bg, 'important');
+                row.style.setProperty('border', border, 'important');
+                document.getElementById('eqSpecialEffectLabelTitle').style.setProperty('color', color, 'important');
+                document.getElementById('eqSpecialEffectValueTitle').style.setProperty('color', color, 'important');
+                document.getElementById('eqSpecialEffectTrigger').style.setProperty('border-color', inputBorder, 'important');
+                document.getElementById('eqSpecialEffectValue').style.setProperty('border-color', inputBorder, 'important');
 
                 const effectOptions = document.querySelectorAll('#eqSpecialEffectOptions .custom-option');
                 effectOptions.forEach(opt => {
@@ -75,6 +76,7 @@ document.addEventListener('click', (e) => {
                     document.getElementById('eqSpecialEffectValue').value = 0;
                 }
             } else {
+                row.classList.add('hidden');
                 row.style.display = 'none';
                 document.getElementById('eqSpecialEffect').value = 'NONE';
                 document.getElementById('eqSpecialEffectLabel').innerHTML = '<span class="material-symbols-outlined cs-icon text-muted">not_interested</span> Aucun';
@@ -158,7 +160,7 @@ function addAnomalyRow(selectedName = '', qty = 1) {
             </div>
             <input type="hidden" class="anomaly-select-hidden" value="${selectedName}">
         </div>
-        <div class="flex-center" style="gap: 0.3rem;">
+        <div class="flex-center-gap">
             <span class="text-xs text-muted">Qté:</span>
             <input type="number" class="anomaly-qty-input" value="${qty}" min="1" style="width: 60px; padding: 0.5rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-family: 'Outfit', sans-serif;">
         </div>
@@ -275,7 +277,7 @@ function renderGrid(equipments) {
         `;
 
         if (items.length === 0) {
-            html += `<div class="font-italic text-center" style="padding: 1rem; color: #64748b;">Aucun article dans cette rareté</div>`;
+            html += `<div class="font-italic text-center text-muted p-4">Aucun article dans cette rareté</div>`;
         } else {
             items.forEach(eq => {
                 const slotInfo = getSlotInfo(eq);
@@ -318,7 +320,7 @@ function renderGrid(equipments) {
                     </div>
                     
                     <div class="shop-admin-row-stats">
-                        ${statsHtml || '<span style="color:#64748b; font-style:italic;">Aucune stat</span>'}
+                        ${statsHtml || '<span class="text-muted font-italic">Aucune stat</span>'}
                         ${effectHtml}
                     </div>
 
@@ -336,7 +338,7 @@ function renderGrid(equipments) {
                                         <span class="material-symbols-outlined text-sm align-middle" style="color: ${spiriColor};">${catIcon}</span> ${q}
                                     </span>`);
                             }
-                            priceHtml += ` <br><div style="display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; margin-top: 4px;">${anos.join('')}</div>`;
+                            priceHtml += ` <br><div class="flex flex-wrap justify-center gap-1 mt-1">${anos.join('')}</div>`;
                         }
                         return priceHtml;
                     })()}
@@ -371,7 +373,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     const checkAdmin = async () => {
         if (!window.currentUser) return;
         if (!window.isAdmin) {
-            document.body.innerHTML = "<h2 style='color:red;text-align:center;margin-top:50px;'>Accès Refusé : Réservé aux Admins</h2>";
+            document.body.innerHTML = "<h2 class='text-error text-center mt-12'>Accès Refusé : Réservé aux Admins</h2>";
             return;
         }
         await loadAnomalies();
@@ -521,7 +523,7 @@ window.editEquipment = function (id) {
 
         const row = document.getElementById('eqSpecialEffectRow');
         if (eqRarityName === 'EPIQUE' || eqRarityName === 'RELIQUE' || eqRarityName === 'MAUDIT') {
-            if (row) row.style.display = 'grid';
+            if (row) { row.classList.remove('hidden'); row.style.display = 'grid'; }
 
             const isEpic = eqRarityName === 'EPIQUE';
             const isMaudit = eqRarityName === 'MAUDIT';
@@ -538,8 +540,8 @@ window.editEquipment = function (id) {
             }
 
             if (row) {
-                row.style.background = bg;
-                row.style.border = border;
+                row.style.setProperty('background', bg, 'important');
+                row.style.setProperty('border', border, 'important');
             }
 
             const effectOptions = document.querySelectorAll('#eqSpecialEffectOptions .custom-option');
@@ -555,16 +557,16 @@ window.editEquipment = function (id) {
             });
 
             const labelTitle = document.getElementById('eqSpecialEffectLabelTitle');
-            if (labelTitle) labelTitle.style.color = color;
+            if (labelTitle) labelTitle.style.setProperty('color', color, 'important');
 
             const valueTitle = document.getElementById('eqSpecialEffectValueTitle');
-            if (valueTitle) valueTitle.style.color = color;
+            if (valueTitle) valueTitle.style.setProperty('color', color, 'important');
 
             const trigger = document.getElementById('eqSpecialEffectTrigger');
-            if (trigger) trigger.style.borderColor = inputBorder;
+            if (trigger) trigger.style.setProperty('border-color', inputBorder, 'important');
 
             const valInput = document.getElementById('eqSpecialEffectValue');
-            if (valInput) valInput.style.borderColor = inputBorder;
+            if (valInput) valInput.style.setProperty('border-color', inputBorder, 'important');
 
         } else {
             if (row) row.style.display = 'none';

@@ -2221,3 +2221,40 @@ button {
 .overflow-hidden {
     overflow: hidden !important;
 }
+
+/* Glass Backgrounds */
+.bg-success-glass { background: rgba(16, 185, 129, 0.2) !important; }
+.bg-error-glass { background: rgba(239, 68, 68, 0.2) !important; }
+.bg-amber-glass { background: rgba(245, 158, 11, 0.2) !important; }
+.bg-info-glass { background: rgba(59, 130, 246, 0.2) !important; }
+.bg-black-glass { background: rgba(0, 0, 0, 0.3) !important; }
+
+/* Typography */
+.text-lg-num { font-size: 1.2rem !important; }
+.text-md-num { font-size: 1.1rem !important; }
+.font-family-inherit { font-family: inherit !important; }
+.whitespace-pre-wrap { white-space: pre-wrap !important; }
+
+/* Borders & Layout */
+.rounded-sm { border-radius: 4px !important; }
+.rounded-full { border-radius: 9999px !important; }
+.min-w-0 { min-width: 0 !important; }
+
+/* Interaction */
+.cursor-help { cursor: help !important; }
+
+/* Additional missing utilities for JS refactoring */
+.inline-flex { display: inline-flex !important; }
+.gap-1 { gap: 0.25rem !important; }
+.gap-2 { gap: 0.5rem !important; }
+.text-amber-400 { color: #fbbf24 !important; }
+.text-amber-300 { color: #fcd34d !important; }
+.text-white { color: #ffffff !important; }
+.mx-1 { margin-left: 0.25rem !important; margin-right: 0.25rem !important; }
+.mt-1 { margin-top: 0.25rem !important; }
+.mt-2 { margin-top: 0.5rem !important; }
+.mt-12 { margin-top: 3rem !important; }
+.p-4 { padding: 1rem !important; }
+.px-2 { padding-left: 0.5rem !important; padding-right: 0.5rem !important; }
+.py-1 { padding-top: 0.25rem !important; padding-bottom: 0.25rem !important; }
+
