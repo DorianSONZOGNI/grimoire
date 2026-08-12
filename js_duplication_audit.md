@@ -17,7 +17,7 @@
 | 4 | `renderGrid()` — 2 copies | 🟠 Élevée | ✅ **Fait** | ~60 lignes |
 | 5 | `loadAnomalies()` — 2 versions | 🟠 Élevée | ✅ **Fait** | ~30 lignes |
 | 6 | Tooltip HTML Builders — 4 fonctions | 🟠 Élevée | ✅ **Fait** | ~120 lignes |
-| 7 | Custom Select — 3 implémentations | 🟡 Moyenne | ❌ À faire | 0 |
+| 7 | Custom Select — 3 implémentations | 🟡 Moyenne | ✅ **Fait** | ~140 lignes |
 | 8 | `RARITY_COLORS` — double définition | 🟡 Moyenne | ✅ **Fait** | ~15 lignes |
 | 9 | `deleteEquipment()` — 2 versions | 🟡 Moyenne | ✅ **Fait** | ~20 lignes |
 
@@ -150,7 +150,7 @@ Tout le monde utilise désormais ces fonctions centralisées pour générer le H
 
 ## 🟡 Moyenne — Patterns récurrents non centralisés
 
-### 7. Custom Select / Dropdown — 3 implémentations ❌ À faire
+### 7. Custom Select / Dropdown — 3 implémentations ✅ Fait
 
 | Fichier | Fonction | Occurrences `custom-select` |
 |---------|----------|---------------------------|
@@ -158,7 +158,8 @@ Tout le monde utilise désormais ces fonctions centralisées pour générer le H
 | [armory.js](file:///c:/Users/doson/IdeaProjects/grimoire/src/main/resources/static/js/armory.js) | `populateSelects()` | 11 |
 | [ui.js](file:///c:/Users/doson/IdeaProjects/grimoire/src/main/resources/static/js/ui.js) | `makeCustomSelect()` | 3 |
 
-`pve-admin.js` ré-implémente massivement les custom selects alors que `ui.js` a déjà une version réutilisable.
+> [!TIP]
+> **Fix** : Centralisation du listener d'événements globaux dans `ui.js` via `window.initGlobalCustomSelect()`. Élimine la duplication du code de gestion d'ouverture/fermeture dans les multiples fichiers JS.
 
 ### 8. `RARITY_COLORS` — Défini 2 fois, chargé dynamiquement 1 fois ✅ Fait
 
@@ -169,12 +170,15 @@ Tout le monde utilise désormais ces fonctions centralisées pour générer le H
 
 Conflit potentiel : si les deux fichiers sont chargés, l'un écrase l'autre.
 
-### 9. `deleteEquipment()` — 2 versions ❌ À faire
+### 9. `deleteEquipment()` — 2 versions ✅ Fait
 
 | Fichier | Comportement |
 |---------|-------------|
 | [armory.js](file:///c:/Users/doson/IdeaProjects/grimoire/src/main/resources/static/js/armory.js) | DELETE direct + refresh |
 | [shop-admin.js](file:///c:/Users/doson/IdeaProjects/grimoire/src/main/resources/static/js/shop-admin.js) | Confirmation modale + DELETE |
+
+> [!TIP]
+> **Fix** : Les deux fichiers utilisent désormais `api.deleteEquipmentAPI` qui centralise la modale de confirmation.
 
 ---
 

@@ -4,32 +4,9 @@ const pageState = { allEquipments: [], equipmentToDelete: null, anomalieToDelete
 
 
 // ===== Custom Select Logic =====
-document.addEventListener('click', (e) => {
-    // Fermer les dropdowns
-    if (!e.target.closest('.custom-select-wrapper')) {
-        document.querySelectorAll('.custom-select-wrapper.open').forEach(w => w.classList.remove('open'));
-    }
-
-    const trigger = e.target.closest('.custom-select-trigger');
-    if (trigger) {
-        const wrapper = trigger.closest('.custom-select-wrapper');
-        document.querySelectorAll('.custom-select-wrapper.open').forEach(w => {
-            if (w !== wrapper) w.classList.remove('open');
-        });
-        wrapper.classList.toggle('open');
-        return;
-    }
-
-    const option = e.target.closest('.custom-option');
-    if (option) {
-        const wrapper = option.closest('.custom-select-wrapper');
-        const hiddenInput = wrapper.querySelector('input[type="hidden"]');
-        const labelEl = wrapper.querySelector('.cs-label');
-
-        hiddenInput.value = option.getAttribute('data-value');
-        labelEl.innerHTML = option.innerHTML;
-        wrapper.classList.remove('open');
-
+document.addEventListener('change', (e) => {
+    if (e.target.tagName.toLowerCase() === 'input' && e.target.type === 'hidden') {
+        const hiddenInput = e.target;
         if (hiddenInput.id === 'eqRarity') {
             const val = hiddenInput.value;
             const row = document.getElementById('eqSpecialEffectRow');
