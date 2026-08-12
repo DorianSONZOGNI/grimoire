@@ -670,7 +670,8 @@ window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost,
                 const an = pageState.allAnomalies.find(a => a.name === name);
                 const color = an && window.getSpiritualiteColor ? window.getSpiritualiteColor(an.spiritualite) : '#d946ef';
                 const icon = an && window.getCategoryIcon ? window.getCategoryIcon(an.category) : 'star';
-                return `<span class="anomaly-badge" style="border-color:${color}; background:${color}20; color:${color}; font-size:0.78rem; padding:0.15rem 0.4rem; gap:0.2rem;">
+                const tooltipHtml = (an && window.getAnomalyTooltipHTML) ? window.getAnomalyTooltipHTML(an, name) : name;
+                return `<span class="anomaly-badge" style="border-color:${color}; background:${color}20; color:${color}; cursor:help; font-size:0.78rem; padding:0.15rem 0.4rem; gap:0.2rem;" onmouseenter="window.showGlobalTooltip && window.showGlobalTooltip(this)" onmouseleave="window.hideGlobalTooltip && window.hideGlobalTooltip()" data-tooltip-html="${tooltipHtml.replace(/"/g, '&quot;')}">
                     <span class="material-symbols-outlined" style="font-size:0.9rem;">${icon}</span>${name}
                 </span>`;
             }).join('');
