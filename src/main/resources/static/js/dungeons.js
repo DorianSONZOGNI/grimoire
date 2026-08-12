@@ -22,6 +22,26 @@ pageState.selectedConsumableIds = [];
 pageState.userCharacters = [];
 pageState.availableConsumables = [];
 pageState.activeConsumableFilters = { hp: false, mana: false, util: false };
+pageState.allAnomalies = [];
+
+function collectDungeonAnomaliesLocal(salles) {
+    const names = new Set();
+    (salles || []).forEach(s => {
+        if (s.alterationSpecialItemReward) names.add(s.alterationSpecialItemReward);
+        if (s.lootTable) s.lootTable.forEach(e => { if (e.specialItemName) names.add(e.specialItemName); });
+        if (s.eventSubType === 'PORTE_ETRANGE' && s.doorOutcomes) {
+            let outcomes = s.doorOutcomes;
+            if (typeof outcomes === 'string') { try { outcomes = JSON.parse(outcomes); } catch (_) { outcomes = []; } }
+            outcomes.forEach(o => {
+                if (o.type === 'TRESOR' && o.treasureAnomalieId) {
+                    const an = pageState.allAnomalies.find(a => a.id == o.treasureAnomalieId);
+                    if (an) names.add(an.name);
+                }
+            });
+        }
+    });
+    return Array.from(names);
+}
 
 
 
@@ -60,6 +80,7 @@ document.addEventListener('DOMContentLoaded', () => {
         await loadCharacters();
         await loadDungeons();
         loadConsumables();
+        loadAnomalies();
     };
 
     if (window.currentUser !== undefined) {
@@ -352,6 +373,13 @@ async function loadConsumables() {
     }
 }
 
+async function loadAnomalies() {
+    try {
+        const res = await globalFetch('/api/anomalies');
+        if (res.ok) pageState.allAnomalies = await res.json();
+    } catch (e) { console.error(e); }
+}
+
 
 
 window.toggleConsumableFilter = function (btn, type) {
@@ -628,6 +656,31 @@ window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost,
             }
         });
         list.innerHTML = html;
+    }
+
+    // Anomaly recap
+    const anomalyNames = collectDungeonAnomaliesLocal(salles);
+    const anomalySection = document.getElementById('prepAnomaliesList');
+    if (anomalySection) {
+        if (anomalyNames.length === 0) {
+            anomalySection.style.display = 'none';
+            anomalySection.innerHTML = '';
+        } else {
+            const badges = anomalyNames.map(name => {
+                const an = pageState.allAnomalies.find(a => a.name === name);
+                const color = an && window.getSpiritualiteColor ? window.getSpiritualiteColor(an.spiritualite) : '#d946ef';
+                const icon = an && window.getCategoryIcon ? window.getCategoryIcon(an.category) : 'star';
+                return `<span class="anomaly-badge" style="border-color:${color}; background:${color}20; color:${color}; font-size:0.78rem; padding:0.15rem 0.4rem; gap:0.2rem;">
+                    <span class="material-symbols-outlined" style="font-size:0.9rem;">${icon}</span>${name}
+                </span>`;
+            }).join('');
+            anomalySection.style.display = '';
+            anomalySection.innerHTML = `
+                <div style="font-weight:600; font-size:0.8rem; color:#94a3b8; margin-bottom:0.3rem; display:flex; align-items:center; gap:0.3rem;">
+                    <span class="material-symbols-outlined" style="font-size:0.9rem;">auto_awesome</span> ANOMALIES DISPONIBLES
+                </div>
+                <div style="display:flex; flex-wrap:wrap; gap:0.3rem;">${badges}</div>`;
+        }
     }
 
     document.querySelectorAll('.char-card').forEach(c => {
