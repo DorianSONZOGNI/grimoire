@@ -2049,6 +2049,26 @@ function updateUI(data) {
                                         `;
                                     }
 
+                                    const altarGoldMatch = log.match(/r.compense de (\d+) Or/);
+                                    if (altarGoldMatch) {
+                                        const goldAmount = altarGoldMatch[1];
+                                        gainedItemsHtml += `
+                                            <div class="flex-center" style="background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(251, 191, 36, 0.5); padding: 0.8rem 1rem; border-radius: 8px; color: #fbbf24; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
+                                                <span class="material-symbols-outlined text-warning">monetization_on</span> +${goldAmount} Or
+                                            </div>
+                                        `;
+                                    }
+
+                                    const altarXpMatch = log.match(/accorde (\d+) XP de Spiritualit/);
+                                    if (altarXpMatch) {
+                                        const xpAmount = altarXpMatch[1];
+                                        gainedItemsHtml += `
+                                            <div class="flex-center" style="background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(245, 158, 11, 0.5); padding: 0.8rem 1rem; border-radius: 8px; color: #f59e0b; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
+                                                <span class="material-symbols-outlined" style="color: #f59e0b;">auto_awesome</span> +${xpAmount} XP Spirituel
+                                            </div>
+                                        `;
+                                    }
+
                                     if (log.includes("Vous entrez dans") || log.includes("Vous trouvez un trésor") || log.startsWith("Événement :")) break;
                                 }
                             }
