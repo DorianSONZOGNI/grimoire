@@ -401,7 +401,7 @@
     /* Dimensions et rendu (inchangés) */
     width: 224px;
     height: 240px;
-    background-image: url('images/Agis_Idle.png');
+    background-image: url('../../images/Agis_Idle.png');
     image-rendering: pixelated;
     transform: scale(1);
 

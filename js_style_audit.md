@@ -17,7 +17,7 @@ Analyse complète des fichiers JS concernant l'utilisation de styles CSS directe
 | 1 | `auth.js` — 12 statiques | ✅ **Terminé** | 12 statiques migrés |
 | 2 | `shop.js` — 13 statiques | ✅ **Terminé** | Statiques migrés |
 | 3 | `grimoire.js` — 75 statiques | ✅ **Terminé** | 75 statiques migrés |
-| 4 | `dungeons.js` — 49 statiques | ❌ À faire | 49 restants |
+| 4 | `dungeons.js` — 49 statiques | ✅ **Terminé** | 49 statiques migrés |
 | 5 | `armory.js` — 42 statiques | ❌ À faire | 42 restants |
 | 6 | `forge.js` — 24 statiques | ❌ À faire | 24 restants |
 | 7 | `vault.js` — 4 statiques | ❌ À faire | 4 restants |
@@ -143,7 +143,7 @@ L'approche sera **identique à l'audit HTML** :
 - [x] `auth.js` — 12 statiques
 - [x] `shop.js` — 13 statiques
 - [x] `grimoire.js` — 75 statiques
-- [ ] `dungeons.js` — 49 statiques
+- [x] `dungeons.js` — 49 statiques
 - [ ] `armory.js` — 42 statiques
 - [ ] `forge.js` — 24 statiques (laisser les 32 `.style.prop` dynamiques)
 - [ ] `vault.js` — 4 statiques (les `.style.prop` sont dynamiques)
