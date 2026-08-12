@@ -34,6 +34,7 @@ document.addEventListener('click', (e) => {
             const val = hiddenInput.value;
             const row = document.getElementById('eqSpecialEffectRow');
             if (val === 'EPIQUE' || val === 'RELIQUE' || val === 'MAUDIT') {
+                row.classList.remove('hidden');
                 row.style.display = 'grid';
                 const isEpic = val === 'EPIQUE';
                 const isMaudit = val === 'MAUDIT';
@@ -48,12 +49,12 @@ document.addEventListener('click', (e) => {
                     inputBorder = 'rgba(85, 85, 85, 0.3)';
                 }
 
-                row.style.background = bg;
-                row.style.border = border;
-                document.getElementById('eqSpecialEffectLabelTitle').style.color = color;
-                document.getElementById('eqSpecialEffectValueTitle').style.color = color;
-                document.getElementById('eqSpecialEffectTrigger').style.borderColor = inputBorder;
-                document.getElementById('eqSpecialEffectValue').style.borderColor = inputBorder;
+                row.style.setProperty('background', bg, 'important');
+                row.style.setProperty('border', border, 'important');
+                document.getElementById('eqSpecialEffectLabelTitle').style.setProperty('color', color, 'important');
+                document.getElementById('eqSpecialEffectValueTitle').style.setProperty('color', color, 'important');
+                document.getElementById('eqSpecialEffectTrigger').style.setProperty('border-color', inputBorder, 'important');
+                document.getElementById('eqSpecialEffectValue').style.setProperty('border-color', inputBorder, 'important');
 
                 const effectOptions = document.querySelectorAll('#eqSpecialEffectOptions .custom-option');
                 effectOptions.forEach(opt => {
@@ -75,6 +76,7 @@ document.addEventListener('click', (e) => {
                     document.getElementById('eqSpecialEffectValue').value = 0;
                 }
             } else {
+                row.classList.add('hidden');
                 row.style.display = 'none';
                 document.getElementById('eqSpecialEffect').value = 'NONE';
                 document.getElementById('eqSpecialEffectLabel').innerHTML = '<span class="material-symbols-outlined cs-icon text-muted">not_interested</span> Aucun';
@@ -336,7 +338,7 @@ function renderGrid(equipments) {
                 } else {
                     const displayOwner = eq._groupOwner || eq.ownerUsername;
                     if (displayOwner) {
-                        adminOwnerHtml = `<span class="admin-badge ${displayOwner === window.currentUser?.username ? 'admin-badge-self' : 'admin-badge-other'}"><span class="material-symbols-outlined align-middle" style="font-size: 0.7rem; margin-right: 2px;">account_circle</span>${displayOwner}</span>`;
+                        adminOwnerHtml = `<span class="admin-badge ${displayOwner === window.currentUser?.username ? 'admin-badge-self' : 'admin-badge-other'}"><span class="material-symbols-outlined align-middle text-xxs mr-1">account_circle</span>${displayOwner}</span>`;
                     }
                 }
             }
@@ -351,7 +353,7 @@ function renderGrid(equipments) {
                             ${typeStr} <span class="opacity-50 ml-1">${eq.spiritualite}</span> <span class="opacity-50 ml-1">(Niv. ${eq.level || 1})</span>
                         </div>
                         <div class="vault-card-name flex-start-gap" style="color: #fdf4ff;">
-                            <span class="material-symbols-outlined flex-shrink-0 opacity-80" style="font-size: 1.2rem; color: ${spColor}; margin-top: 2px;">${catIcon}</span>
+                            <span class="material-symbols-outlined flex-shrink-0 opacity-80 mt-1" style="font-size: 1.2rem; color: ${spColor};">${catIcon}</span>
                             <span class="word-break" title="${eq.name}">${eq.name}</span>
                         </div>
                         ${adminOwnerHtml ? `<div>${adminOwnerHtml}</div>` : ''}
@@ -447,7 +449,7 @@ function renderGrid(equipments) {
             } else {
                 const displayOwner = eq._groupOwner || eq.ownerUsername;
                 if (displayOwner) {
-                    adminOwnerHtml = `<span class="admin-badge ${displayOwner === window.currentUser?.username ? 'admin-badge-self' : 'admin-badge-other'}"><span class="material-symbols-outlined align-middle" style="font-size: 0.7rem; margin-right: 2px;">account_circle</span>${displayOwner}</span>`;
+                    adminOwnerHtml = `<span class="admin-badge ${displayOwner === window.currentUser?.username ? 'admin-badge-self' : 'admin-badge-other'}"><span class="material-symbols-outlined align-middle text-xxs mr-1">account_circle</span>${displayOwner}</span>`;
                 }
             }
         }
@@ -464,7 +466,7 @@ function renderGrid(equipments) {
                         <div class="vault-card-name word-break">
                             ${eq.name}
                         </div>
-                        ${adminOwnerHtml ? `<div style="margin-top: 0.2rem;">${adminOwnerHtml}</div>` : ''}
+                        ${adminOwnerHtml ? `<div class="mt-1">${adminOwnerHtml}</div>` : ''}
                     </div>
                     <div class="vault-card-actions">
                         ${window.isAdmin ? `<button class="vault-btn-edit" onclick="editEquipment(${eq.id})" title="Modifier l'objet">
@@ -483,8 +485,8 @@ function renderGrid(equipments) {
                 
                 <div class="vault-card-footer">
                     <div class="vault-card-weight" title="${(eq.slot?.name || eq.slot) === 'CONSOMMABLE' ? 'Poids total' : `Poids total / Poids Max (${maxWeight})`}">
-                        <span class="material-symbols-outlined" style="font-size: 1.1rem; color: ${(eq.slot?.name || eq.slot) === 'CONSOMMABLE' ? '#10b981' : weightColor};">scale</span>
-                        <span style="color: ${(eq.slot?.name || eq.slot) === 'CONSOMMABLE' ? '#10b981' : weightColor}; font-weight: 600;">${weightStr}</span>${(eq.slot?.name || eq.slot) === 'CONSOMMABLE' ? ' pts' : ` / ${maxWeight} pts`}
+                        <span class="material-symbols-outlined text-md-num" style="color: ${(eq.slot?.name || eq.slot) === 'CONSOMMABLE' ? '#10b981' : weightColor};">scale</span>
+                        <span class="font-bold" style="color: ${(eq.slot?.name || eq.slot) === 'CONSOMMABLE' ? '#10b981' : weightColor};">${weightStr}</span>${(eq.slot?.name || eq.slot) === 'CONSOMMABLE' ? ' pts' : ` / ${maxWeight} pts`}
                     </div>
                     ${statusHtml}
                 </div>
@@ -618,7 +620,7 @@ window.editEquipment = function (id) {
         // Si l'équipement est épique ou plus, afficher la valeur
         const row = document.getElementById('eqSpecialEffectRow');
         if (eqRarityName === 'EPIQUE' || eqRarityName === 'RELIQUE' || eqRarityName === 'MAUDIT') {
-            if (row) row.style.display = 'grid';
+            if (row) { row.classList.remove('hidden'); row.style.display = 'grid'; }
             if (document.getElementById('eqSpecialEffectBlock')) document.getElementById('eqSpecialEffectBlock').style.display = 'block';
             if (document.getElementById('eqSpecialEffectValueBlock')) document.getElementById('eqSpecialEffectValueBlock').style.display = 'block';
             const isEpic = eqRarityName === 'EPIQUE';
@@ -636,8 +638,8 @@ window.editEquipment = function (id) {
             }
 
             if (row) {
-                row.style.background = bg;
-                row.style.border = border;
+                row.style.setProperty('background', bg, 'important');
+                row.style.setProperty('border', border, 'important');
             }
 
             const effectOptions = document.querySelectorAll('#eqSpecialEffectOptions .custom-option');
@@ -653,16 +655,16 @@ window.editEquipment = function (id) {
             });
 
             const labelTitle = document.getElementById('eqSpecialEffectLabelTitle');
-            if (labelTitle) labelTitle.style.color = color;
+            if (labelTitle) labelTitle.style.setProperty('color', color, 'important');
 
             const valueTitle = document.getElementById('eqSpecialEffectValueTitle');
-            if (valueTitle) valueTitle.style.color = color;
+            if (valueTitle) valueTitle.style.setProperty('color', color, 'important');
 
             const trigger = document.getElementById('eqSpecialEffectTrigger');
-            if (trigger) trigger.style.borderColor = inputBorder;
+            if (trigger) trigger.style.setProperty('border-color', inputBorder, 'important');
 
             const valInput = document.getElementById('eqSpecialEffectValue');
-            if (valInput) valInput.style.borderColor = inputBorder;
+            if (valInput) valInput.style.setProperty('border-color', inputBorder, 'important');
 
         } else {
             if (row) row.style.display = 'none';
