@@ -322,4 +322,4 @@ window.addEventListener('authLoaded', () => {
         adminLink.style.display = window.isAdmin ? 'inline-flex' : 'none';
     }
 });
-
+
