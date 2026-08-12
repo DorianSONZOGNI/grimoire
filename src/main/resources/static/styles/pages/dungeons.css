@@ -397,36 +397,6 @@
     box-shadow: 0 6px 20px rgba(220, 38, 38, 0.6);
 }
 
-.character-agis {
-    /* Dimensions et rendu (inchangés) */
-    width: 224px;
-    height: 240px;
-    background-image: url('../../images/Agis_Idle.png');
-    image-rendering: pixelated;
-    transform: scale(1);
-
-    /* --- NOUVEAU POSITIONNEMENT --- */
-    position: fixed;
-    /* Fixe l'élément par rapport à l'écran */
-    top: 25%;
-    /* Laisse une petite marge en haut */
-    right: 20px;
-    /* Laisse une petite marge à droite */
-    z-index: 50;
-    /* S'assure qu'il passe au-dessus des autres éléments */
-
-    /* ASTUCE : Empêche l'image de bloquer les clics sur les éléments en dessous */
-    pointer-events: none;
-
-    /* Animation (inchangée) */
-    animation: agis_long_anim 1.5s steps(15) infinite;
-}
-
-@keyframes agis_long_anim {
-    to {
-        background-position: -3360px 0;
-    }
-}
 
 /* --- UNLOCK MODAL --- */
 .unlock-overlay {
