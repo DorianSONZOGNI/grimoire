@@ -60,7 +60,7 @@ function generateStandHtml(eq) {
         const color = isCursed ? '#9b2d2d' : '#c084fc';
         const bg = isCursed ? 'rgba(156, 163, 175, 0.15)' : 'rgba(168, 85, 247, 0.1)';
 
-        effectHtml = `<div class="shop-stand-stat" style="background: ${bg}; color: ${color}; ${isCursed ? 'border: 1px solid rgba(156, 163, 175, 0.2);' : ''}">
+        effectHtml = `<div class="shop-stand-stat ${isCursed ? 'border-cursed' : ''}" style="background: ${bg}; color: ${color};">
             <div class="flex-center-gap">
                 <span class="material-symbols-outlined text-sm">${icon}</span>
                 ${label}
@@ -125,7 +125,7 @@ function generateStandHtml(eq) {
                     const spiriColor = aTemp && aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
                     const tooltipData = getAnomalyTooltipHTML(aTemp, n);
                     anos.push(`<span class="anomaly-badge" style="border-color: ${spiriColor}; background: linear-gradient(${spiriColor}25, ${spiriColor}25), #1e293b; color: ${spiriColor};" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}">
-                                <span class="material-symbols-outlined align-middle" style="font-size: 1rem; color: ${spiriColor};">${catIcon}</span> ${q}
+                                <span class="material-symbols-outlined align-middle text-base" style="color: ${spiriColor};">${catIcon}</span> ${q}
                             </span>`);
                 }
                 return `<div class="flex flex-wrap justify-center gap-1 mt-1">${anos.join('')}</div>`;
@@ -234,8 +234,8 @@ function renderSpecials() {
 
     if (consumables.length > 0) {
         html += `
-            <div class="shop-rarity-group" style="border-top: 3px solid #c084fc; background: rgba(192, 132, 252, 0.05);">
-                <div class="shop-rarity-title" style="color: #c084fc; border-color: rgba(192, 132, 252, 0.3);">CONSOMABLE</div>
+            <div class="shop-rarity-group border-t-violet bg-violet-light">
+                <div class="shop-rarity-title text-violet border-violet-glass">CONSOMABLE</div>
         `;
         consumables.forEach(eq => {
             html += generateStandHtml(eq);
