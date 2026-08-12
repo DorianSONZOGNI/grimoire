@@ -174,6 +174,7 @@ public class EquipmentController {
                         return 35;
                 }
                 break;
+            case ANNEAU:
             case ANNEAU_GAUCHE:
             case ANNEAU_DROIT:
                 switch (rarity) {
@@ -554,6 +555,9 @@ public class EquipmentController {
 
         String charName = equipment.getPersonnage() != null ? equipment.getPersonnage().getName() : "Inconnu";
         equipment.setPersonnage(null);
+        if (equipment.getSlot() == EquipmentSlot.ANNEAU_GAUCHE || equipment.getSlot() == EquipmentSlot.ANNEAU_DROIT) {
+            equipment.setSlot(EquipmentSlot.ANNEAU);
+        }
         equipmentRepository.save(equipment);
 
         Map<String, Object> response = new HashMap<>();

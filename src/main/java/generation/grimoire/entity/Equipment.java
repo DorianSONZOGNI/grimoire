@@ -138,6 +138,7 @@ public class Equipment {
                     mSpd = 3.5;
                     mCrit = 2.0;
                     break;
+                case ANNEAU:
                 case ANNEAU_GAUCHE:
                 case ANNEAU_DROIT:
                     mMana = 0.1;
@@ -208,7 +209,7 @@ public class Equipment {
         double slotMultiplier = 1.0;
         if (this.slot == generation.grimoire.enumeration.EquipmentSlot.PLASTRON)
             slotMultiplier = 1.1;
-        else if (this.slot == generation.grimoire.enumeration.EquipmentSlot.ANNEAU_GAUCHE || this.slot == generation.grimoire.enumeration.EquipmentSlot.ANNEAU_DROIT)
+        else if (this.slot == generation.grimoire.enumeration.EquipmentSlot.ANNEAU || this.slot == generation.grimoire.enumeration.EquipmentSlot.ANNEAU_GAUCHE || this.slot == generation.grimoire.enumeration.EquipmentSlot.ANNEAU_DROIT)
             slotMultiplier = 1.5;
         else if (this.slot == generation.grimoire.enumeration.EquipmentSlot.BOTTES)
             slotMultiplier = 0.9;

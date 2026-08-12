@@ -236,7 +236,7 @@ function filterVault() {
         let matchSlot = true;
         if (filterSlot) {
             if (filterSlot === 'ANNEAU') {
-                matchSlot = ((eq.slot?.name || eq.slot) === 'ANNEAU_GAUCHE' || (eq.slot?.name || eq.slot) === 'ANNEAU_DROIT');
+                matchSlot = ((eq.slot?.name || eq.slot) === 'ANNEAU');
             } else if (filterSlot === 'ARME') {
                 matchSlot = ((eq.slot?.name || eq.slot) === 'ARME_GAUCHE' || (eq.slot?.name || eq.slot) === 'ARME_DROITE' || (eq.slot?.name || eq.slot) === 'ARME_DEUX_MAINS');
             } else {
@@ -508,7 +508,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     // Render create form slot select
     const slotOptionsContainer = document.getElementById('eqSlotOptions');
     if (slotOptionsContainer) {
-        const slots = ['CASQUE', 'PLASTRON', 'ARME_DEUX_MAINS', 'ARME_GAUCHE', 'ARME_DROITE', 'ANNEAU_GAUCHE', 'ANNEAU_DROIT', 'BOTTES', 'CAPE', 'CONSOMMABLE'];
+        const slots = ['CASQUE', 'PLASTRON', 'ARME_DEUX_MAINS', 'ARME_GAUCHE', 'ARME_DROITE', 'ANNEAU', 'BOTTES', 'CAPE', 'CONSOMMABLE'];
         slotOptionsContainer.innerHTML = slots.map(s => {
             const info = window.SLOT_LABELS[s];
             return `<div class="custom-option" data-value="${s}">

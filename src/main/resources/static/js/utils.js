@@ -100,7 +100,7 @@ function calculateWeight(eq) {
         mStr = 2.5; mPow = 2.5;
         mSpd = 3.5;
         mCrit = 2.0;
-    } else if (s === 'ANNEAU_GAUCHE' || s === 'ANNEAU_DROIT') {
+    } else if (s === 'ANNEAU' || s === 'ANNEAU_GAUCHE' || s === 'ANNEAU_DROIT') {
         mMana = 0.1;
         mArm = 2.0; mRes = 2.0;
         mRegMana = 0.8;
