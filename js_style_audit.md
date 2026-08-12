@@ -16,7 +16,7 @@ Analyse complète des fichiers JS concernant l'utilisation de styles CSS directe
 | 0 | Classes manquantes dans `utilities.css` | ✅ **Terminé** | Toutes les classes ajoutées |
 | 1 | `auth.js` — 12 statiques | ✅ **Terminé** | 12 statiques migrés |
 | 2 | `shop.js` — 13 statiques | ✅ **Terminé** | Statiques migrés |
-| 3 | `grimoire.js` — 75 statiques | ❌ À faire | 75 restants |
+| 3 | `grimoire.js` — 75 statiques | ✅ **Terminé** | 75 statiques migrés |
 | 4 | `dungeons.js` — 49 statiques | ❌ À faire | 49 restants |
 | 5 | `armory.js` — 42 statiques | ❌ À faire | 42 restants |
 | 6 | `forge.js` — 24 statiques | ❌ À faire | 24 restants |
@@ -142,7 +142,7 @@ L'approche sera **identique à l'audit HTML** :
 - [x] Ajouter les classes manquantes dans `utilities.css` *(Terminé)*
 - [x] `auth.js` — 12 statiques
 - [x] `shop.js` — 13 statiques
-- [ ] `grimoire.js` — 75 statiques
+- [x] `grimoire.js` — 75 statiques
 - [ ] `dungeons.js` — 49 statiques
 - [ ] `armory.js` — 42 statiques
 - [ ] `forge.js` — 24 statiques (laisser les 32 `.style.prop` dynamiques)
