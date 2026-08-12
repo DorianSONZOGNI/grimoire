@@ -13,9 +13,9 @@ Analyse complète des fichiers JS concernant l'utilisation de styles CSS directe
 
 | Étape | Tâche | Statut | Détail |
 |-------|-------|--------|--------|
-| 0 | Classes manquantes dans `utilities.css` | ⚠️ **Partiel** | 10/24 classes ajoutées |
-| 1 | `auth.js` — 12 statiques | ❌ À faire | 12 restants |
-| 2 | `shop.js` — 13 statiques | ❌ À faire | 13 restants |
+| 0 | Classes manquantes dans `utilities.css` | ✅ **Terminé** | Toutes les classes ajoutées |
+| 1 | `auth.js` — 12 statiques | ✅ **Terminé** | 12 statiques migrés |
+| 2 | `shop.js` — 13 statiques | ✅ **Terminé** | Statiques migrés |
 | 3 | `grimoire.js` — 75 statiques | ❌ À faire | 75 restants |
 | 4 | `dungeons.js` — 49 statiques | ❌ À faire | 49 restants |
 | 5 | `armory.js` — 42 statiques | ❌ À faire | 42 restants |
@@ -30,10 +30,10 @@ Analyse complète des fichiers JS concernant l'utilisation de styles CSS directe
 **Avancement global : 0 / 12 fichiers traités** · ~0 styles migrés sur ~655 statiques cibles (~0%)
 
 > [!WARNING]
-> `utilities.css` classes manquantes : `.bg-success-glass`, `.bg-error-glass`, `.bg-amber-glass`, `.bg-info-glass`, `.bg-black-glass`, `.cursor-help`, `.whitespace-pre-wrap`, `.font-family-inherit`, `.min-w-0`, `.rounded-sm`, `.rounded-full`, `.text-lg-num`, `.text-md-num`
+> `utilities.css` classes manquantes : (Toutes ajoutées)
 
 ```
-░░░░░░░░░░░░░░░░░░░░░░░░░░░░  0%
+░░░░░░░░░░░░░░░░░░░░░░░░░░░░  5%
 ```
 
 ---
@@ -116,52 +116,7 @@ Ces fichiers ont peu de styles et la majorité peuvent être extraits rapidement
 
 ## 🛠️ Classes à créer dans `utilities.css` (non existantes)
 
-Les classes suivantes sont fréquemment injectées en dur dans les templates JS et n'existent pas encore :
-
-```css
-/* À ajouter dans utilities.css */
-
-/* Font sizes manquantes */
-.text-lg-num { font-size: 1.2rem; }
-.text-md-num { font-size: 0.95rem; }
-
-/* Couleurs manquantes */
-.text-slate  { color: #cbd5e1; }
-.text-slate-dark { color: #64748b; }
-.text-white  { color: #f8fafc; }
-.text-light  { color: #e2e8f0; }
-.text-cyan   { color: #0ea5e9; }
-.text-violet { color: #c084fc; }
-.text-rose   { color: #fca5a5; }
-
-/* Backgrounds verre manquants */
-.bg-success-glass { background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.3); }
-.bg-error-glass   { background: rgba(239, 68, 68, 0.2);  border: 1px solid rgba(239, 68, 68, 0.3); }
-.bg-amber-glass   { background: rgba(245, 158, 11, 0.2); border: 1px solid rgba(245, 158, 11, 0.3); }
-.bg-purple-glass  { background: rgba(168, 85, 247, 0.2); border: 1px solid rgba(168, 85, 247, 0.3); }
-.bg-info-glass    { background: rgba(59, 130, 246, 0.2); border: 1px solid rgba(59, 130, 246, 0.3); }
-.bg-black-glass   { background: rgba(0, 0, 0, 0.4); }
-
-/* Padding utilitaires manquants */
-.p-2 { padding: 0.5rem; }
-.p-3 { padding: 0.75rem; }
-.px-2 { padding-left: 0.5rem; padding-right: 0.5rem; }
-.py-1 { padding-top: 0.25rem; padding-bottom: 0.25rem; }
-
-/* Border radius */
-.rounded-sm  { border-radius: 4px; }
-.rounded     { border-radius: 8px; }
-.rounded-lg  { border-radius: 12px; }
-.rounded-full { border-radius: 9999px; }
-
-/* Autres utilitaires */
-.cursor-help    { cursor: help; }
-.cursor-pointer { cursor: pointer; }
-.font-family-inherit { font-family: inherit; }
-.min-w-0 { min-width: 0; }
-.overflow-hidden { overflow: hidden; }
-.whitespace-pre-wrap { white-space: pre-wrap; }
-```
+*(Toutes les classes manquantes ont été ajoutées)*
 
 ---
 
@@ -184,11 +139,9 @@ L'approche sera **identique à l'audit HTML** :
 
 ## ✅ Avancement
 
-- [ ] Ajouter les classes manquantes dans `utilities.css` *(partiel : 10/24 présentes)*
-  - ✅ `.text-slate`, `.text-cyan`, `.text-violet`, `.text-rose`, `.bg-purple-glass`, `.cursor-pointer`, `.overflow-hidden`, `.p-2`, `.p-3`, `.px-2`, `.py-1`
-  - ❌ `.bg-success-glass`, `.bg-error-glass`, `.bg-amber-glass`, `.bg-info-glass`, `.bg-black-glass`, `.cursor-help`, `.whitespace-pre-wrap`, `.font-family-inherit`, `.min-w-0`, `.rounded-sm`, `.rounded-full`, `.text-lg-num`, `.text-md-num`
-- [ ] `auth.js` — 12 statiques
-- [ ] `shop.js` — 13 statiques
+- [x] Ajouter les classes manquantes dans `utilities.css` *(Terminé)*
+- [x] `auth.js` — 12 statiques
+- [x] `shop.js` — 13 statiques
 - [ ] `grimoire.js` — 75 statiques
 - [ ] `dungeons.js` — 49 statiques
 - [ ] `armory.js` — 42 statiques
