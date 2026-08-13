@@ -1,9 +1,4 @@
-import { state } from './state.js';
-import { GLOBAL_STAT_LABELS, GLOBAL_SRC_LABELS, javaClassToCode } from './constants.js';
-import * as ui from './ui.js';
-import * as api from './api.js';
-
-import { attachLvl5CardEffects, spellCardEnter, spellCardLeave, fx_vent_enter, fx_eau_enter, fx_poison_enter, fx_terre_enter, fx_lave_enter, fx_plante_enter, fx_feu_enter, fx_explosion_enter, fx_esprit_enter, fx_tenebres_enter, fx_karma_enter, fx_generic_enter, fx_vent_leave, fx_eau_leave, fx_poison_leave, fx_terre_leave, fx_lave_leave, fx_plante_leave, fx_feu_leave, fx_explosion_leave, fx_esprit_leave, fx_tenebres_leave, fx_karma_leave, fx_generic_leave, mkp, createSparkles } from './particles.js';
+import { createSparkles } from './particles.js';
 
 export function playForgeAnimation() {
     const btn = document.getElementById('submitSpellBtn');

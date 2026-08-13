@@ -1,10 +1,5 @@
 import { state } from './state.js';
-import { GLOBAL_STAT_LABELS, GLOBAL_SRC_LABELS, javaClassToCode } from './constants.js';
 import * as ui from './ui.js?v=2';
-import * as api from './api.js';
-
-import { renderFilteredSpells, getSpellEffectsSummaryHtml, getSpellCardHtml, cancelEditSpell, updateEditingPreview, getLvl5Origin, editSpell } from './grimoire.js';
-import { getVoieButtonColor, getSpiritButtonColor, resetFilters, renderOriginButtons, toggleFilterVoie, toggleFilterSpirit } from './filters.js';
 
 export function toggleChannelingFields() {
     const castingTypeSel = document.getElementById('castingTypeSelect');
@@ -23,7 +18,7 @@ export function toggleSpellTargetType() {
     const isMonster = document.getElementById('isMonsterSpell').checked;
     const heroRow = document.getElementById('heroAffinityRow');
     const monsterRow = document.getElementById('monsterAffinityRow');
-    
+
     if (!isMonster) {
         heroRow.style.display = 'flex';
         monsterRow.style.display = 'none';
@@ -54,9 +49,9 @@ export function handleAffinityChange(source) {
     const spiritSelect = document.getElementById('spiritSelect');
 
     if (source === 'voie' && voieSelect.value !== "") {
-        if(spiritSelect) spiritSelect.value = "";
+        if (spiritSelect) spiritSelect.value = "";
     } else if (source === 'spirit' && spiritSelect.value !== "") {
-        if(voieSelect) voieSelect.value = "";
+        if (voieSelect) voieSelect.value = "";
     }
 
     updateRankTitle();
@@ -412,7 +407,7 @@ export function renderEffects() {
     const isCanalise = castingTypeSelect && castingTypeSelect.value === 'CANALISE';
     const durationInput = document.getElementById('channelingDuration');
     const duration = durationInput ? (parseInt(durationInput.value) || 1) : 1;
-    
+
     const spiritId = document.getElementById('spiritSelect') ? document.getElementById('spiritSelect').value : null;
     let isTenebres = false;
     if (spiritId && state.metaData.spiritualites) {
@@ -837,8 +832,8 @@ export function renderEffects() {
                                     <span class="material-symbols-outlined text-lg">hand_bones</span> Condition "Âme Détachée"
                                 </label>
                                 ${(() => {
-                                    const r = eff.detachedSoulRequirement || 'NOT_AFFECTED';
-                                    return `
+                    const r = eff.detachedSoulRequirement || 'NOT_AFFECTED';
+                    return `
                                     <div style="display: flex; background: rgba(0,0,0,0.3); border-radius: 6px; padding: 2px; border: 1px solid rgba(255,255,255,0.1); width: 260px;">
                                         <div class="text-xs text-center" onclick="updateEffectProp('${eff.id}', 'detachedSoulRequirement', 'NOT_AFFECTED')" style="flex: 1; cursor: pointer; padding: 4px 8px; border-radius: 4px; font-weight: 600; color: ${r === 'NOT_AFFECTED' ? '#fff' : 'var(--text-muted)'}; background: ${r === 'NOT_AFFECTED' ? 'rgba(255,255,255,0.15)' : 'transparent'}; transition: all 0.2s;">
                                             Normal
@@ -851,7 +846,7 @@ export function renderEffects() {
                                         </div>
                                     </div>
                                     `;
-                                })()}
+                })()}
                     ` : ''}
 
                             <!-- Tour(s) d'activation de l'effet dans la canalisation (uniquement si le sort est canalisé) -->
@@ -860,17 +855,17 @@ export function renderEffects() {
                                 <label class="text-xs" style="color: #a78bfa; font-weight: 600; display:flex; align-items:center; gap:0.3rem;"><span class="material-symbols-outlined" style="font-size:1.1rem;">cyclone</span> Activation par Tour de Canalisation :</label>
                                 <div style="display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center;">
                                     ${Array.from({ length: duration }, (_, i) => i + 1).map(turn => {
-            const isActive = (eff.channelingTurns || []).includes(turn);
-            const btnBg = isActive ? 'var(--primary)' : 'rgba(255, 255, 255, 0.05)';
-            const btnColor = isActive ? '#fff' : 'var(--text-muted)';
-            const btnBorder = isActive ? '1px solid #fff' : '1px solid var(--glass-border)';
-            const btnShadow = isActive ? '0 0 8px var(--primary-glow)' : 'none';
-            return `
+                    const isActive = (eff.channelingTurns || []).includes(turn);
+                    const btnBg = isActive ? 'var(--primary)' : 'rgba(255, 255, 255, 0.05)';
+                    const btnColor = isActive ? '#fff' : 'var(--text-muted)';
+                    const btnBorder = isActive ? '1px solid #fff' : '1px solid var(--glass-border)';
+                    const btnShadow = isActive ? '0 0 8px var(--primary-glow)' : 'none';
+                    return `
                                             <button class="text-xs" type="button" onclick="toggleEffectChannelingTurn('${eff.id}', ${turn})" style="padding: 0.3rem 0.6rem; border-radius: 4px; background: ${btnBg}; color: ${btnColor}; border: ${btnBorder}; box-shadow: ${btnShadow}; cursor: pointer; transition: all 0.2s;">
                                                 Tour ${turn}
                                             </button>
                                         `;
-        }).join('')}
+                }).join('')}
                                     <span class="text-muted" style="font-size: 0.75rem; margin-left: 0.5rem;">Sélectionnez les tours où cet effet se déclenche.</span>
                                 </div>
                             </div>

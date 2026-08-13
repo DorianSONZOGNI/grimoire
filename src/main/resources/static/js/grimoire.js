@@ -1,10 +1,10 @@
 import { state } from './state.js';
-import { GLOBAL_STAT_LABELS, GLOBAL_SRC_LABELS, javaClassToCode } from './constants.js';
+import { javaClassToCode } from './constants.js';
 import * as ui from './ui.js?v=2';
 import * as api from './api.js';
 
-import { toggleChannelingFields, updateRankTitle, updateSpecialVoieConfig, updateSpecialSpiritConfig, setViolenceType, updateViolenceLabel, setKarmaAlignment, updateKarmaLabel, addEffectPanel, removeEffect, setEffectTarget, updateEffectProp, toggleEffectChannelingTurn, renderEffects, handleAffinityChange } from './forge.js';
-import { getVoieButtonColor, getSpiritButtonColor, resetFilters, renderOriginButtons, toggleFilterVoie, toggleFilterSpirit } from './filters.js';
+import { updateRankTitle, updateSpecialVoieConfig, setViolenceType, updateViolenceLabel, renderEffects, handleAffinityChange } from './forge.js';
+import { getVoieButtonColor, getSpiritButtonColor, } from './filters.js';
 
 window.handleAffinityChange = handleAffinityChange;
 window.setViolenceType = setViolenceType;
@@ -542,9 +542,9 @@ export function getSpellCardHtml(sp) {
 
     let rankTitleBadge = '';
     if (sp.voie && sp.voie.rankNames && sp.voie.rankNames[sp.niveau]) {
-          rankTitleBadge = `<div class="text-success font-bold text-sm inline-flex items-center gap-1 mt-[-0.4rem]"><span class="material-symbols-outlined text-success align-middle" style="font-size:1.1em;">workspace_premium</span>"${sp.voie.rankNames[sp.niveau]}"</div>`;
+        rankTitleBadge = `<div class="text-success font-bold text-sm inline-flex items-center gap-1 mt-[-0.4rem]"><span class="material-symbols-outlined text-success align-middle" style="font-size:1.1em;">workspace_premium</span>"${sp.voie.rankNames[sp.niveau]}"</div>`;
     } else if (sp.spiritualite && sp.spiritualite.rankNames && sp.spiritualite.rankNames[sp.niveau]) {
-          rankTitleBadge = `<div class="text-success font-bold text-sm inline-flex items-center gap-1 mt-[-0.4rem]"><span class="material-symbols-outlined text-success align-middle" style="font-size:1.1em;">workspace_premium</span>"${sp.spiritualite.rankNames[sp.niveau]}"</div>`;
+        rankTitleBadge = `<div class="text-success font-bold text-sm inline-flex items-center gap-1 mt-[-0.4rem]"><span class="material-symbols-outlined text-success align-middle" style="font-size:1.1em;">workspace_premium</span>"${sp.spiritualite.rankNames[sp.niveau]}"</div>`;
     }
 
     const titleColor = getSpellColor(sp);
