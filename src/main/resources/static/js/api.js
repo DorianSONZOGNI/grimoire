@@ -2,20 +2,28 @@ import { state } from './state.js';
 import * as ui from './ui.js?v=2';
 
 let currentUser = undefined;
+let currentUserPromise = null;
 
-export async function getCurrentUser() {
+export function getCurrentUser() {
     if (currentUser !== undefined) return currentUser;
-    try {
-        const res = await globalFetch('/api/auth/me', { credentials: 'same-origin' });
-        if (res.ok) {
-            currentUser = await res.json();
-            return currentUser;
+    if (currentUserPromise) return currentUserPromise;
+
+    currentUserPromise = (async () => {
+        try {
+            const res = await globalFetch('/api/auth/me', { credentials: 'same-origin' });
+            if (res.ok) {
+                currentUser = await res.json();
+                return currentUser;
+            }
+        } catch (e) {
+            console.warn("Failed to fetch current user", e);
         }
-    } catch (e) {
-        console.warn("Failed to fetch current user", e);
-    }
-    currentUser = null;
-    return null;
+
+        currentUser = null;
+        return null;
+    })();
+
+    return currentUserPromise;
 }
 
 export function isAdmin(user) {
