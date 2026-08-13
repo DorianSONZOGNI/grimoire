@@ -4,6 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Interface admin du PvE, cela comprend la création de monstres, de mutations et de donjons.">
     <title>Grimoire - Gestion PvE</title>
     <link rel="icon" type="image/png" href="/favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -26,63 +28,72 @@
 
     <app-navbar active-page="pve-admin"></app-navbar>
 
-    <main class="vault-container admin-container"  >
+    <main class="vault-container admin-container">
 
-        <div class="hidden text-danger bg-red-glass border-red-glass p-4 rounded-lg mb-8 text-center"  id="adminWarning">
+        <div class="hidden text-danger bg-red-glass border-red-glass p-4 rounded-lg mb-8 text-center" id="adminWarning">
             <span class="material-symbols-outlined align-middle mr-2">error</span>
             Vous devez être administrateur pour accéder à cette page. Redirection en cours...
         </div>
 
         <div id="adminContent" class="hidden">
 
-            <div class="admin-split-layout"  >
-                <section class="admin-section m-0 transition-all"   id="monsterFormPanel">
-                    <div class="admin-section-header"  >
-                        <div class="admin-section-title"  >
-                            <span class="material-symbols-outlined text-danger"  >pest_control</span>
+            <div class="admin-split-layout">
+                <section class="admin-section m-0 transition-all" id="monsterFormPanel">
+                    <div class="admin-section-header">
+                        <div class="admin-section-title">
+                            <span class="material-symbols-outlined text-danger">pest_control</span>
                             Créer un Monstre
                         </div>
                     </div>
-                    <div class="admin-section-content"  >
+                    <div class="admin-section-content">
                         <form id="monsterForm">
-                            <div class="form-grid"  >
-                                <div class="form-group col-span-2"  >
+                            <div class="form-grid">
+                                <div class="form-group col-span-2">
                                     <div class="flex items-end gap-4">
-                                        <div class="flex-1"  >
-                                            <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined text-lg text-slate-50">badge</span> Nom du
+                                        <div class="flex-1">
+                                            <label class="flex-center flex-center-gap"><span
+                                                    class="material-symbols-outlined text-lg text-slate-50">badge</span>
+                                                Nom du
                                                 monstre</label>
-                                            <input class="form-control"  type="text" id="mName"  required="">
+                                            <input class="form-control" type="text" id="mName" required="">
                                         </div>
                                         <div class="w-[100px] relative" id="mLevelContainer">
-                                            <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined text-lg text-info" 
-                                                    >star_rate</span>
+                                            <label class="flex-center flex-center-gap"><span
+                                                    class="material-symbols-outlined text-lg text-info">star_rate</span>
                                                 Lvl</label>
 
-                                            <div class="custom-select-wrapper"  id="mLevelWrapper" >
-                                                <div class="custom-select-trigger custom-select-larger"  
+                                            <div class="custom-select-wrapper" id="mLevelWrapper">
+                                                <div class="custom-select-trigger custom-select-larger"
                                                     onclick="toggleLevelSelect()" id="mLevelTrigger">
-                                                    <span class="material-symbols-outlined cs-icon text-muted"  >star</span> <span class="flex-1 text-center"  >1</span>
+                                                    <span
+                                                        class="material-symbols-outlined cs-icon text-muted">star</span>
+                                                    <span class="flex-1 text-center">1</span>
                                                 </div>
-                                                <div class="custom-select-options"  >
-                                                    <div class="custom-option"  
-                                                        onclick="selectLevelOption(1, '#94a3b8')"><span class="material-symbols-outlined cs-icon text-muted" 
-                                                            >star</span> 1
+                                                <div class="custom-select-options">
+                                                    <div class="custom-option"
+                                                        onclick="selectLevelOption(1, '#94a3b8')"><span
+                                                            class="material-symbols-outlined cs-icon text-muted">star</span>
+                                                        1
                                                     </div>
-                                                    <div class="custom-option"  
-                                                        onclick="selectLevelOption(2, '#10b981')"><span class="material-symbols-outlined cs-icon text-success" 
-                                                            >star</span> 2
+                                                    <div class="custom-option"
+                                                        onclick="selectLevelOption(2, '#10b981')"><span
+                                                            class="material-symbols-outlined cs-icon text-success">star</span>
+                                                        2
                                                     </div>
-                                                    <div class="custom-option"  
-                                                        onclick="selectLevelOption(3, '#3b82f6')"><span class="material-symbols-outlined cs-icon text-info" 
-                                                            >star</span> 3
+                                                    <div class="custom-option"
+                                                        onclick="selectLevelOption(3, '#3b82f6')"><span
+                                                            class="material-symbols-outlined cs-icon text-info">star</span>
+                                                        3
                                                     </div>
-                                                    <div class="custom-option"  
-                                                        onclick="selectLevelOption(4, '#a855f7')"><span class="material-symbols-outlined cs-icon text-purple" 
-                                                            >star</span> 4
+                                                    <div class="custom-option"
+                                                        onclick="selectLevelOption(4, '#a855f7')"><span
+                                                            class="material-symbols-outlined cs-icon text-purple">star</span>
+                                                        4
                                                     </div>
-                                                    <div class="custom-option"  
-                                                        onclick="selectLevelOption(5, '#f59e0b')"><span class="material-symbols-outlined cs-icon text-warning" 
-                                                            >star</span> 5
+                                                    <div class="custom-option"
+                                                        onclick="selectLevelOption(5, '#f59e0b')"><span
+                                                            class="material-symbols-outlined cs-icon text-warning">star</span>
+                                                        5
                                                     </div>
                                                 </div>
                                             </div>
@@ -91,374 +102,459 @@
                                         </div>
                                     </div>
                                 </div>
-                                <div class="form-group col-span-2"  >
-                                    <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined text-lg text-muted" 
-                                            >description</span>
+                                <div class="form-group col-span-2">
+                                    <label class="flex-center flex-center-gap"><span
+                                            class="material-symbols-outlined text-lg text-muted">description</span>
                                         Description</label>
-                                    <input class="form-control"  type="text" id="mDesc" >
+                                    <input class="form-control" type="text" id="mDesc">
                                 </div>
-                                <div class="form-group"  >
-                                    <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined text-pink text-lg">favorite</span> PV Max</label>
-                                    <div class="flex-center gap-2"  >
-                                        <input class="form-control min-w-[80px]"  type="number" id="mHp"   value="100" required="">
-                                        <div class="compact-badge"  >
-                                            <span class="text-xs text-muted"  ></span>
-                                            <input class="form-control p-1 w-[85px]"  type="number" id="mStartHpPct"   value="100" title="% PV au début"
-                                                required=""><span class="text-xs text-muted"  >%</span>
-                                        </div>
-                                    </div>
-                                </div>
-                                <div class="form-group"  >
-                                    <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined text-pink text-lg">healing</span> Régén. PV</label>
-                                    <input class="form-control"  type="number" id="mRegenHp"  value="0" required="">
-                                </div>
-                                <div class="form-group"  >
-                                    <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined text-lg text-info" 
-                                            >water_drop</span> Mana
+                                <div class="form-group">
+                                    <label class="flex-center flex-center-gap"><span
+                                            class="material-symbols-outlined text-pink text-lg">favorite</span> PV
                                         Max</label>
-                                    <div class="flex-center gap-2"  >
-                                        <input class="form-control min-w-[80px]"  type="number" id="mMana"   value="0" required="">
-                                        <div class="compact-badge"  >
-                                            <span class="text-xs text-muted"  ></span>
-                                            <input class="form-control p-1 w-[85px]"  type="number" id="mStartManaPct"   value="100"
-                                                title="% Mana au début" required=""><span class="text-xs text-muted"  >%</span>
+                                    <div class="flex-center gap-2">
+                                        <input class="form-control min-w-[80px]" type="number" id="mHp" value="100"
+                                            required="">
+                                        <div class="compact-badge">
+                                            <span class="text-xs text-muted"></span>
+                                            <input class="form-control p-1 w-[85px]" type="number" id="mStartHpPct"
+                                                value="100" title="% PV au début" required=""><span
+                                                class="text-xs text-muted">%</span>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="form-group"  >
-                                    <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined text-lg text-sky-300">opacity</span> Régén.
+                                <div class="form-group">
+                                    <label class="flex-center flex-center-gap"><span
+                                            class="material-symbols-outlined text-pink text-lg">healing</span> Régén.
+                                        PV</label>
+                                    <input class="form-control" type="number" id="mRegenHp" value="0" required="">
+                                </div>
+                                <div class="form-group">
+                                    <label class="flex-center flex-center-gap"><span
+                                            class="material-symbols-outlined text-lg text-info">water_drop</span> Mana
+                                        Max</label>
+                                    <div class="flex-center gap-2">
+                                        <input class="form-control min-w-[80px]" type="number" id="mMana" value="0"
+                                            required="">
+                                        <div class="compact-badge">
+                                            <span class="text-xs text-muted"></span>
+                                            <input class="form-control p-1 w-[85px]" type="number" id="mStartManaPct"
+                                                value="100" title="% Mana au début" required=""><span
+                                                class="text-xs text-muted">%</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="form-group">
+                                    <label class="flex-center flex-center-gap"><span
+                                            class="material-symbols-outlined text-lg text-sky-300">opacity</span> Régén.
                                         Mana</label>
-                                    <input class="form-control"  type="number" id="mRegenMana"  value="0" required="">
+                                    <input class="form-control" type="number" id="mRegenMana" value="0" required="">
                                 </div>
-                                <div class="form-group"  >
-                                    <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined text-lg text-orange" 
-                                            >bolt</span> Vitesse</label>
-                                    <input class="form-control"  type="number" id="mSpeed"  value="10" required="">
+                                <div class="form-group">
+                                    <label class="flex-center flex-center-gap"><span
+                                            class="material-symbols-outlined text-lg text-orange">bolt</span>
+                                        Vitesse</label>
+                                    <input class="form-control" type="number" id="mSpeed" value="10" required="">
                                 </div>
-                                <div class="form-group"  >
-                                    <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined text-lg text-danger" 
-                                            >gps_fixed</span> Critique
+                                <div class="form-group">
+                                    <label class="flex-center flex-center-gap"><span
+                                            class="material-symbols-outlined text-lg text-danger">gps_fixed</span>
+                                        Critique
                                         (%)</label>
-                                    <input class="form-control"  type="number" id="mCrit"  value="5" required="">
+                                    <input class="form-control" type="number" id="mCrit" value="5" required="">
                                 </div>
-                                <div class="form-group"  >
-                                    <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined text-lg text-rose-500">fitness_center</span>
+                                <div class="form-group">
+                                    <label class="flex-center flex-center-gap"><span
+                                            class="material-symbols-outlined text-lg text-rose-500">fitness_center</span>
                                         Force</label>
-                                    <input class="form-control"  type="number" id="mStrength"  value="10" required="">
+                                    <input class="form-control" type="number" id="mStrength" value="10" required="">
                                 </div>
-                                <div class="form-group"  >
-                                    <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined text-purple text-lg">auto_awesome</span>
+                                <div class="form-group">
+                                    <label class="flex-center flex-center-gap"><span
+                                            class="material-symbols-outlined text-purple text-lg">auto_awesome</span>
                                         Puissance</label>
-                                    <input class="form-control"  type="number" id="mPower"  value="0" required="">
+                                    <input class="form-control" type="number" id="mPower" value="0" required="">
                                 </div>
-                                <div class="form-group"  >
-                                    <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined text-info text-lg">shield</span> Armure</label>
-                                    <input class="form-control"  type="number" id="mArmor"  value="5" required="">
+                                <div class="form-group">
+                                    <label class="flex-center flex-center-gap"><span
+                                            class="material-symbols-outlined text-info text-lg">shield</span>
+                                        Armure</label>
+                                    <input class="form-control" type="number" id="mArmor" value="5" required="">
                                 </div>
-                                <div class="form-group"  >
-                                    <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined text-lg text-success" 
-                                            >shield</span> Résistance</label>
-                                    <input class="form-control"  type="number" id="mResist"  value="5" required="">
+                                <div class="form-group">
+                                    <label class="flex-center flex-center-gap"><span
+                                            class="material-symbols-outlined text-lg text-success">shield</span>
+                                        Résistance</label>
+                                    <input class="form-control" type="number" id="mResist" value="5" required="">
                                 </div>
-                                <div class="form-group"  >
-                                    <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined text-lg text-orange" 
-                                            >monetization_on</span> Récompense
+                                <div class="form-group">
+                                    <label class="flex-center flex-center-gap"><span
+                                            class="material-symbols-outlined text-lg text-orange">monetization_on</span>
+                                        Récompense
                                         Or</label>
-                                    <input class="form-control"  type="number" id="mGold"  value="10" required="">
+                                    <input class="form-control" type="number" id="mGold" value="10" required="">
                                 </div>
-                                <div class="form-group"  >
-                                    <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined text-lg text-amber-300">stars</span> Récompense
+                                <div class="form-group">
+                                    <label class="flex-center flex-center-gap"><span
+                                            class="material-symbols-outlined text-lg text-amber-300">stars</span>
+                                        Récompense
                                         XP</label>
-                                    <input class="form-control"  type="number" id="mXp"  value="20" required="">
+                                    <input class="form-control" type="number" id="mXp" value="20" required="">
                                 </div>
-                                <div class="form-group"  >
-                                    <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined text-lg text-danger" 
-                                            >genetics</span> Type</label>
+                                <div class="form-group">
+                                    <label class="flex-center flex-center-gap"><span
+                                            class="material-symbols-outlined text-lg text-danger">genetics</span>
+                                        Type</label>
                                     <input type="hidden" id="mType" value="NORMAL">
-                                    <div class="custom-select-wrapper"  id="mTypeWrapper" >
-                                        <div class="custom-select-trigger custom-select-larger"  
+                                    <div class="custom-select-wrapper" id="mTypeWrapper">
+                                        <div class="custom-select-trigger custom-select-larger"
                                             onclick="toggleMonsterTypeSelect()" id="mTypeTrigger">
-                                            <span class="material-symbols-outlined cs-icon text-muted"  >check_box_outline_blank</span>
-                                            <span class="flex-1 text-left"  >Normal</span>
-                                            <span class="material-symbols-outlined text-muted pointer-events-none"  >expand_more</span>
+                                            <span
+                                                class="material-symbols-outlined cs-icon text-muted">check_box_outline_blank</span>
+                                            <span class="flex-1 text-left">Normal</span>
+                                            <span
+                                                class="material-symbols-outlined text-muted pointer-events-none">expand_more</span>
                                         </div>
-                                        <div class="custom-select-options"  >
-                                            <div class="custom-option"  
+                                        <div class="custom-select-options">
+                                            <div class="custom-option"
                                                 onclick="selectMonsterType('NORMAL', 'Normal', 'check_box_outline_blank', '#94a3b8')">
-                                                <span class="material-symbols-outlined cs-icon text-muted"  >check_box_outline_blank</span>Normal
+                                                <span
+                                                    class="material-symbols-outlined cs-icon text-muted">check_box_outline_blank</span>Normal
                                             </div>
-                                            <div class="custom-option"  
+                                            <div class="custom-option"
                                                 onclick="selectMonsterType('DEMON', 'Démon', 'rib_cage', '#ef4444')">
-                                                <span class="material-symbols-outlined cs-icon text-danger"  >rib_cage</span>Démon
+                                                <span
+                                                    class="material-symbols-outlined cs-icon text-danger">rib_cage</span>Démon
                                             </div>
-                                            <div class="custom-option"  
+                                            <div class="custom-option"
                                                 onclick="selectMonsterType('REPTILE', 'Reptile', 'grass', '#10b981')">
-                                                <span class="material-symbols-outlined cs-icon text-success"  >grass</span>Reptile
+                                                <span
+                                                    class="material-symbols-outlined cs-icon text-success">grass</span>Reptile
                                             </div>
-                                            <div class="custom-option"  
+                                            <div class="custom-option"
                                                 onclick="selectMonsterType('MORT_VIVANT', 'Mort-vivant', 'skull', '#94a3b8')">
-                                                <span class="material-symbols-outlined cs-icon text-muted"  >skull</span>Mort-vivant
+                                                <span
+                                                    class="material-symbols-outlined cs-icon text-muted">skull</span>Mort-vivant
                                             </div>
-                                            <div class="custom-option"  
+                                            <div class="custom-option"
                                                 onclick="selectMonsterType('HYBRIDE', 'Hybride', 'network_node', '#3b82f6')">
-                                                <span class="material-symbols-outlined cs-icon text-info"  >network_node</span>Hybride
+                                                <span
+                                                    class="material-symbols-outlined cs-icon text-info">network_node</span>Hybride
                                             </div>
-                                            <div class="custom-option"  
+                                            <div class="custom-option"
                                                 onclick="selectMonsterType('VAMPIRE', 'Vampire', 'bloodtype', '#e11d48')">
-                                                <span class="material-symbols-outlined cs-icon text-rose-600">bloodtype</span>Vampire
+                                                <span
+                                                    class="material-symbols-outlined cs-icon text-rose-600">bloodtype</span>Vampire
                                             </div>
-                                            <div class="custom-option"  
+                                            <div class="custom-option"
                                                 onclick="selectMonsterType('ECTOPLASME', 'Ectoplasme', 'candle', '#a855f7')">
-                                                <span class="material-symbols-outlined cs-icon text-purple"  >candle</span>Ectoplasme
+                                                <span
+                                                    class="material-symbols-outlined cs-icon text-purple">candle</span>Ectoplasme
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="form-group"  >
-                                    <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined text-lg text-violet-500">neurology</span> Comportement
+                                <div class="form-group">
+                                    <label class="flex-center flex-center-gap"><span
+                                            class="material-symbols-outlined text-lg text-violet-500">neurology</span>
+                                        Comportement
                                         IA</label>
                                     <input type="hidden" id="mBehavior" value="NORMAL">
-                                    <div class="custom-select-wrapper"  id="mBehaviorWrapper" >
-                                        <div class="custom-select-trigger custom-select-larger"  
+                                    <div class="custom-select-wrapper" id="mBehaviorWrapper">
+                                        <div class="custom-select-trigger custom-select-larger"
                                             onclick="toggleMonsterBehaviorSelect()" id="mBehaviorTrigger">
-                                            <span class="material-symbols-outlined cs-icon text-muted"  >check_box_outline_blank</span>
-                                            <span class="flex-1 text-left"  >Normal</span>
-                                            <span class="material-symbols-outlined text-muted pointer-events-none"  >expand_more</span>
+                                            <span
+                                                class="material-symbols-outlined cs-icon text-muted">check_box_outline_blank</span>
+                                            <span class="flex-1 text-left">Normal</span>
+                                            <span
+                                                class="material-symbols-outlined text-muted pointer-events-none">expand_more</span>
                                         </div>
-                                        <div class="custom-select-options"  >
-                                            <div class="custom-option"  
+                                        <div class="custom-select-options">
+                                            <div class="custom-option"
                                                 onclick="selectMonsterBehavior('NORMAL', 'Normal', 'check_box_outline_blank', '#94a3b8')">
-                                                <span class="material-symbols-outlined cs-icon text-muted"  >check_box_outline_blank</span>Normal
+                                                <span
+                                                    class="material-symbols-outlined cs-icon text-muted">check_box_outline_blank</span>Normal
                                             </div>
-                                            <div class="custom-option"  
+                                            <div class="custom-option"
                                                 onclick="selectMonsterBehavior('PREDATEUR', 'Prédateur', 'track_changes', '#f59e0b')">
-                                                <span class="material-symbols-outlined cs-icon text-warning"  >track_changes</span>Prédateur
+                                                <span
+                                                    class="material-symbols-outlined cs-icon text-warning">track_changes</span>Prédateur
                                             </div>
-                                            <div class="custom-option"  
+                                            <div class="custom-option"
                                                 onclick="selectMonsterBehavior('CORRUPTEUR', 'Corrupteur', 'allergy', '#8b5cf6')">
-                                                <span class="material-symbols-outlined cs-icon text-violet-500">allergy</span>Corrupteur
+                                                <span
+                                                    class="material-symbols-outlined cs-icon text-violet-500">allergy</span>Corrupteur
                                             </div>
-                                            <div class="custom-option"  
+                                            <div class="custom-option"
                                                 onclick="selectMonsterBehavior('LEADER', 'Leader', 'crown', '#fcd34d')">
-                                                <span class="material-symbols-outlined cs-icon text-amber-300">crown</span>Leader
+                                                <span
+                                                    class="material-symbols-outlined cs-icon text-amber-300">crown</span>Leader
                                             </div>
-                                            <div class="custom-option"  
+                                            <div class="custom-option"
                                                 onclick="selectMonsterBehavior('ASSASSIN', 'Assassin', 'gps_fixed', '#ef4444')">
-                                                <span class="material-symbols-outlined cs-icon text-danger"  >gps_fixed</span>Assassin
+                                                <span
+                                                    class="material-symbols-outlined cs-icon text-danger">gps_fixed</span>Assassin
                                             </div>
-                                            <div class="custom-option"  
+                                            <div class="custom-option"
                                                 onclick="selectMonsterBehavior('BRUTAL', 'Brutal', 'shield', '#9ca3af')">
-                                                <span class="material-symbols-outlined cs-icon text-gray-400">shield</span>Brutal
+                                                <span
+                                                    class="material-symbols-outlined cs-icon text-gray-400">shield</span>Brutal
                                             </div>
-                                            <div class="custom-option"  
+                                            <div class="custom-option"
                                                 onclick="selectMonsterBehavior('TRANSCENDANT', 'Transcendant', 'grid_view', '#fbbf24')">
-                                                <span class="material-symbols-outlined cs-icon text-warning"  >grid_view</span>Transcendant
+                                                <span
+                                                    class="material-symbols-outlined cs-icon text-warning">grid_view</span>Transcendant
                                             </div>
                                         </div>
                                     </div>
                                 </div>
-                                <div class="form-group col-span-2"  >
-                                    <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined text-lg text-success" 
-                                            >explore</span>
+                                <div class="form-group col-span-2">
+                                    <label class="flex-center flex-center-gap"><span
+                                            class="material-symbols-outlined text-lg text-success">explore</span>
                                         Voie Native (Secret)</label>
-                                    <div class="custom-select-wrapper z-95"   id="mNativeSecretWrapper">
+                                    <div class="custom-select-wrapper z-95" id="mNativeSecretWrapper">
                                         <div class="custom-select-trigger p-3">
                                             <span class="cs-label flex-center flex-center-gap">
-                                                <span class="material-symbols-outlined cs-icon text-slate-500 text-lg">close</span>
+                                                <span
+                                                    class="material-symbols-outlined cs-icon text-slate-500 text-lg">close</span>
                                                 Aucun (Optionnel)
                                             </span>
-                                            <span class="material-symbols-outlined text-slate-500 text-xl pointer-events-none">expand_more</span>
+                                            <span
+                                                class="material-symbols-outlined text-slate-500 text-xl pointer-events-none">expand_more</span>
                                         </div>
-                                        <div class="custom-select-options custom-options"  >
-                                            <div class="custom-option"   data-value="">
-                                                <span class="material-symbols-outlined cs-icon text-muted"  >close</span>
+                                        <div class="custom-select-options custom-options">
+                                            <div class="custom-option" data-value="">
+                                                <span class="material-symbols-outlined cs-icon text-muted">close</span>
                                                 Aucun (Optionnel)
                                             </div>
-                                            <div class="custom-option"   data-value="Secret du Chaos">
-                                                <span class="material-symbols-outlined cs-icon text-danger"  >local_fire_department</span>
+                                            <div class="custom-option" data-value="Secret du Chaos">
+                                                <span
+                                                    class="material-symbols-outlined cs-icon text-danger">local_fire_department</span>
                                                 Secret du Chaos
                                             </div>
-                                            <div class="custom-option"   data-value="Secret de l'Abondance">
-                                                <span class="material-symbols-outlined cs-icon text-success"  >eco</span>
+                                            <div class="custom-option" data-value="Secret de l'Abondance">
+                                                <span class="material-symbols-outlined cs-icon text-success">eco</span>
                                                 Secret de l'Abondance
                                             </div>
-                                            <div class="custom-option"   data-value="Secret de la Préservation">
-                                                <span class="material-symbols-outlined cs-icon text-brown"  >foundation</span>
+                                            <div class="custom-option" data-value="Secret de la Préservation">
+                                                <span
+                                                    class="material-symbols-outlined cs-icon text-brown">foundation</span>
                                                 Secret de la Préservation
                                             </div>
-                                            <div class="custom-option"   data-value="Secret de la Sérénité">
-                                                <span class="material-symbols-outlined cs-icon text-teal"  >water_drop</span>
+                                            <div class="custom-option" data-value="Secret de la Sérénité">
+                                                <span
+                                                    class="material-symbols-outlined cs-icon text-teal">water_drop</span>
                                                 Secret de la Sérénité
                                             </div>
-                                            <div class="custom-option"   data-value="Secret de la Chasse">
-                                                <span class="material-symbols-outlined cs-icon text-pink"  >visibility_off</span>
+                                            <div class="custom-option" data-value="Secret de la Chasse">
+                                                <span
+                                                    class="material-symbols-outlined cs-icon text-pink">visibility_off</span>
                                                 Secret de la Chasse
                                             </div>
-                                            <div class="custom-option"   data-value="Secret du Carnage">
-                                                <span class="material-symbols-outlined cs-icon text-crimson"  >explosion</span>
+                                            <div class="custom-option" data-value="Secret du Carnage">
+                                                <span
+                                                    class="material-symbols-outlined cs-icon text-crimson">explosion</span>
                                                 Secret du Carnage
                                             </div>
-                                            <div class="custom-option"   data-value="Secret de la Joie">
-                                                <span class="material-symbols-outlined cs-icon text-amber"  >volcano</span>
+                                            <div class="custom-option" data-value="Secret de la Joie">
+                                                <span
+                                                    class="material-symbols-outlined cs-icon text-amber">volcano</span>
                                                 Secret de la Joie
                                             </div>
-                                            <div class="custom-option"   data-value="Secret du Savoir">
-                                                <span class="material-symbols-outlined cs-icon text-info"  >psychology</span>
+                                            <div class="custom-option" data-value="Secret du Savoir">
+                                                <span
+                                                    class="material-symbols-outlined cs-icon text-info">psychology</span>
                                                 Secret du Savoir
                                             </div>
-                                            <div class="custom-option"   data-value="Secret du Destin">
-                                                <span class="material-symbols-outlined cs-icon text-gold"  >all_inclusive</span>
+                                            <div class="custom-option" data-value="Secret du Destin">
+                                                <span
+                                                    class="material-symbols-outlined cs-icon text-gold">all_inclusive</span>
                                                 Secret du Destin
                                             </div>
-                                            <div class="custom-option"   data-value="Secret de l'Éther">
-                                                <span class="material-symbols-outlined cs-icon text-info"  >blur_on</span>
+                                            <div class="custom-option" data-value="Secret de l'Éther">
+                                                <span class="material-symbols-outlined cs-icon text-info">blur_on</span>
                                                 Secret de l'Éther
                                             </div>
-                                            <div class="custom-option"   data-value="Secret des Abysses">
-                                                <span class="material-symbols-outlined cs-icon text-purple-400">dark_mode</span>
+                                            <div class="custom-option" data-value="Secret des Abysses">
+                                                <span
+                                                    class="material-symbols-outlined cs-icon text-purple-400">dark_mode</span>
                                                 Secret des Abysses
                                             </div>
                                         </div>
                                         <input type="hidden" id="mNativeSecret" value="">
                                     </div>
                                 </div>
-                                <div class="form-group col-span-2"  >
-                                    <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined text-purple text-lg">pets</span>
+                                <div class="form-group col-span-2">
+                                    <label class="flex-center flex-center-gap"><span
+                                            class="material-symbols-outlined text-purple text-lg">pets</span>
                                         Mutations (Optionnel)</label>
                                     <div id="mMutationsContainer"
                                         class="flex flex-wrap gap-2 bg-black/30 p-3 rounded-lg border-divider min-h-[48px]">
-                                        <span
-                                            class="text-slate-500 text-sm italic">Chargement...</span>
+                                        <span class="text-slate-500 text-sm italic">Chargement...</span>
                                     </div>
                                 </div>
                             </div>
-                            <div class="mt-3 flex-center gap-4"  >
-                                <button class="btn btn-primary"  type="submit"  id="btnSubmitMonster">Créer le
+                            <div class="mt-3 flex-center gap-4">
+                                <button class="btn btn-primary" type="submit" id="btnSubmitMonster">Créer le
                                     monstre</button>
-                                <button class="btn btn-secondary hidden" type="button" id="btnCancelMonster" onclick="cancelMonsterEdit()">Annuler</button>
+                                <button class="btn btn-secondary hidden" type="button" id="btnCancelMonster"
+                                    onclick="cancelMonsterEdit()">Annuler</button>
                             </div>
                         </form>
                     </div>
                 </section>
 
-                <div class="relative h-full min-h-[600px]"  >
-                    <section class="admin-section absolute-panel-wrapper"  >
-                        <div class="admin-section-header flex-shrink-0"   >
-                            <div class="admin-section-title"  >
-                                <span class="material-symbols-outlined text-danger"  >format_list_bulleted</span>
+                <div class="relative h-full min-h-[600px]">
+                    <section class="admin-section absolute-panel-wrapper">
+                        <div class="admin-section-header flex-shrink-0">
+                            <div class="admin-section-title">
+                                <span class="material-symbols-outlined text-danger">format_list_bulleted</span>
                                 Monstres Existants
                             </div>
                         </div>
-                        <div class="admin-section-content panel-content-flex"  >
-                            <div
-                                class="flex items-center gap-4 mb-6 flex-wrap flex-shrink-0">
-                                <div class="flex-1 min-w-[200px] relative" >
-                                    <span class="material-symbols-outlined text-muted absolute left-3 top-1/2 -translate-y-1/2 text-lg pointer-events-none"  
-                                        >search</span>
-                                    <input class="bg-black/20 border border-white/10 rounded-lg py-2 pl-10 pr-4 text-sm w-full outline-none focus-border-primary"   type="text"  id="monsterSearch" 
-                                        
-                                        placeholder="Rechercher par nom..." oninput="renderMonstersList()">
+                        <div class="admin-section-content panel-content-flex">
+                            <div class="flex items-center gap-4 mb-6 flex-wrap flex-shrink-0">
+                                <div class="flex-1 min-w-[200px] relative">
+                                    <span
+                                        class="material-symbols-outlined text-muted absolute left-3 top-1/2 -translate-y-1/2 text-lg pointer-events-none">search</span>
+                                    <input
+                                        class="bg-black/20 border border-white/10 rounded-lg py-2 pl-10 pr-4 text-sm w-full outline-none focus-border-primary"
+                                        type="text" id="monsterSearch" placeholder="Rechercher par nom..."
+                                        oninput="renderMonstersList()">
                                 </div>
                                 <div class="w-[140px] relative">
-                                    <div class="custom-select-wrapper h-full"  id="mLevelFilterWrapper" >
-                                        <div class="custom-select-trigger custom-select-larger"  
+                                    <div class="custom-select-wrapper h-full" id="mLevelFilterWrapper">
+                                        <div class="custom-select-trigger custom-select-larger"
                                             onclick="toggleFilterLevelSelect()" id="mLevelFilterTrigger">
-                                            <span class="material-symbols-outlined cs-icon text-muted"  >filter_alt</span> <span class="flex-1 text-center"  >Lvl exact</span>
+                                            <span class="material-symbols-outlined cs-icon text-muted">filter_alt</span>
+                                            <span class="flex-1 text-center">Lvl exact</span>
                                         </div>
-                                        <div class="custom-select-options"  >
-                                            <div class="custom-option"  
+                                        <div class="custom-select-options">
+                                            <div class="custom-option"
                                                 onclick="selectFilterLevelOption('', 'Lvl exact', '#94a3b8', 'filter_alt')">
-                                                <span class="material-symbols-outlined cs-icon text-muted"  >filter_alt</span> Tous
+                                                <span
+                                                    class="material-symbols-outlined cs-icon text-muted">filter_alt</span>
+                                                Tous
                                             </div>
-                                            <div class="custom-option"  
-                                                onclick="selectFilterLevelOption(1, '1', '#94a3b8', 'star')"><span class="material-symbols-outlined cs-icon text-muted" 
-                                                    >star</span> 1</div>
-                                            <div class="custom-option"  
-                                                onclick="selectFilterLevelOption(2, '2', '#10b981', 'star')"><span class="material-symbols-outlined cs-icon text-success" 
-                                                    >star</span> 2</div>
-                                            <div class="custom-option"  
-                                                onclick="selectFilterLevelOption(3, '3', '#3b82f6', 'star')"><span class="material-symbols-outlined cs-icon text-info" 
-                                                    >star</span> 3</div>
-                                            <div class="custom-option"  
-                                                onclick="selectFilterLevelOption(4, '4', '#a855f7', 'star')"><span class="material-symbols-outlined cs-icon text-purple" 
-                                                    >star</span> 4</div>
-                                            <div class="custom-option"  
-                                                onclick="selectFilterLevelOption(5, '5', '#f59e0b', 'star')"><span class="material-symbols-outlined cs-icon text-warning" 
-                                                    >star</span> 5</div>
+                                            <div class="custom-option"
+                                                onclick="selectFilterLevelOption(1, '1', '#94a3b8', 'star')"><span
+                                                    class="material-symbols-outlined cs-icon text-muted">star</span> 1
+                                            </div>
+                                            <div class="custom-option"
+                                                onclick="selectFilterLevelOption(2, '2', '#10b981', 'star')"><span
+                                                    class="material-symbols-outlined cs-icon text-success">star</span> 2
+                                            </div>
+                                            <div class="custom-option"
+                                                onclick="selectFilterLevelOption(3, '3', '#3b82f6', 'star')"><span
+                                                    class="material-symbols-outlined cs-icon text-info">star</span> 3
+                                            </div>
+                                            <div class="custom-option"
+                                                onclick="selectFilterLevelOption(4, '4', '#a855f7', 'star')"><span
+                                                    class="material-symbols-outlined cs-icon text-purple">star</span> 4
+                                            </div>
+                                            <div class="custom-option"
+                                                onclick="selectFilterLevelOption(5, '5', '#f59e0b', 'star')"><span
+                                                    class="material-symbols-outlined cs-icon text-warning">star</span> 5
+                                            </div>
                                         </div>
                                     </div>
                                     <input type="hidden" id="monsterLevelFilter" value="">
                                 </div>
                                 <div class="w-[260px] relative">
-                                    <div class="custom-select-wrapper h-full"  id="mListSecretFilterWrapper" >
-                                        <div class="custom-select-trigger custom-select-larger"  
+                                    <div class="custom-select-wrapper h-full" id="mListSecretFilterWrapper">
+                                        <div class="custom-select-trigger custom-select-larger"
                                             onclick="toggleMonsterSecretSelect()" id="mListSecretFilterTrigger">
-                                            <span class="material-symbols-outlined cs-icon text-muted"  >filter_list</span> <span class="flex-1 text-left"  >Tous les secrets</span>
-                                            <span class="material-symbols-outlined text-muted pointer-events-none"  >expand_more</span>
+                                            <span
+                                                class="material-symbols-outlined cs-icon text-muted">filter_list</span>
+                                            <span class="flex-1 text-left">Tous les secrets</span>
+                                            <span
+                                                class="material-symbols-outlined text-muted pointer-events-none">expand_more</span>
                                         </div>
-                                        <div class="custom-select-options"  >
-                                            <div class="custom-option"  
+                                        <div class="custom-select-options">
+                                            <div class="custom-option"
                                                 onclick="selectMonsterSecretOption('', 'Tous les secrets', 'filter_list', '#94a3b8')">
-                                                <span class="material-symbols-outlined cs-icon text-muted"  >filter_list</span> Tous
+                                                <span
+                                                    class="material-symbols-outlined cs-icon text-muted">filter_list</span>
+                                                Tous
                                                 les secrets
                                             </div>
-                                            <div class="custom-option"  
+                                            <div class="custom-option"
                                                 onclick="selectMonsterSecretOption('Aucun', 'Sans secret', 'close', '#94a3b8')">
-                                                <span class="material-symbols-outlined cs-icon text-muted"  >close</span> Sans secret
+                                                <span class="material-symbols-outlined cs-icon text-muted">close</span>
+                                                Sans secret
                                             </div>
                                             <div class="custom-option"
                                                 onclick="selectMonsterSecretOption('Secret du Chaos', 'Secret du Chaos', 'local_fire_department', '#ff0000')">
-                                                <span class="material-symbols-outlined cs-icon text-red-500 text-lg">local_fire_department</span>
+                                                <span
+                                                    class="material-symbols-outlined cs-icon text-red-500 text-lg">local_fire_department</span>
                                                 Secret du Chaos
                                             </div>
                                             <div class="custom-option"
                                                 onclick="selectMonsterSecretOption('Secret de l\'Abondance', 'Secret de l\'Abondance', 'eco', '#10b981')">
-                                                <span class="material-symbols-outlined cs-icon text-success">eco</span> Secret de
+                                                <span class="material-symbols-outlined cs-icon text-success">eco</span>
+                                                Secret de
                                                 l'Abondance
                                             </div>
                                             <div class="custom-option"
                                                 onclick="selectMonsterSecretOption('Secret de la Préservation', 'Secret de la Préservation', 'foundation', '#99674c')">
-                                                <span class="material-symbols-outlined cs-icon text-brown-600 text-lg">foundation</span> Secret
+                                                <span
+                                                    class="material-symbols-outlined cs-icon text-brown-600 text-lg">foundation</span>
+                                                Secret
                                                 de la Préservation
                                             </div>
                                             <div class="custom-option"
                                                 onclick="selectMonsterSecretOption('Secret de la Sérénité', 'Secret de la Sérénité', 'water_drop', '#00e5cc')">
-                                                <span class="material-symbols-outlined cs-icon text-cyan-400 text-lg">water_drop</span> Secret
+                                                <span
+                                                    class="material-symbols-outlined cs-icon text-cyan-400 text-lg">water_drop</span>
+                                                Secret
                                                 de la Sérénité
                                             </div>
                                             <div class="custom-option"
                                                 onclick="selectMonsterSecretOption('Secret de la Chasse', 'Secret de la Chasse', 'visibility_off', '#ed5677')">
-                                                <span class="material-symbols-outlined cs-icon text-pink-500 text-lg">visibility_off</span>
+                                                <span
+                                                    class="material-symbols-outlined cs-icon text-pink-500 text-lg">visibility_off</span>
                                                 Secret de la Chasse
                                             </div>
                                             <div class="custom-option"
                                                 onclick="selectMonsterSecretOption('Secret du Carnage', 'Secret du Carnage', 'explosion', '#a70740')">
-                                                <span class="material-symbols-outlined cs-icon text-rose-700 text-lg">explosion</span> Secret
+                                                <span
+                                                    class="material-symbols-outlined cs-icon text-rose-700 text-lg">explosion</span>
+                                                Secret
                                                 du Carnage
                                             </div>
                                             <div class="custom-option"
                                                 onclick="selectMonsterSecretOption('Secret de la Joie', 'Secret de la Joie', 'volcano', '#b74c0b')">
-                                                <span class="material-symbols-outlined cs-icon text-orange-700 text-lg">volcano</span> Secret de
+                                                <span
+                                                    class="material-symbols-outlined cs-icon text-orange-700 text-lg">volcano</span>
+                                                Secret de
                                                 la Joie
                                             </div>
                                             <div class="custom-option"
                                                 onclick="selectMonsterSecretOption('Secret du Savoir', 'Secret du Savoir', 'psychology', '#3b82f6')">
-                                                <span class="material-symbols-outlined cs-icon text-info text-lg">psychology</span> Secret du
+                                                <span
+                                                    class="material-symbols-outlined cs-icon text-info text-lg">psychology</span>
+                                                Secret du
                                                 Savoir
                                             </div>
                                             <div class="custom-option"
                                                 onclick="selectMonsterSecretOption('Secret du Destin', 'Secret du Destin', 'all_inclusive', '#ffd700')">
-                                                <span class="material-symbols-outlined cs-icon text-yellow-400 text-lg">all_inclusive</span> Secret du
+                                                <span
+                                                    class="material-symbols-outlined cs-icon text-yellow-400 text-lg">all_inclusive</span>
+                                                Secret du
                                                 Destin
                                             </div>
                                             <div class="custom-option"
                                                 onclick="selectMonsterSecretOption('Secret de l\'Éther', 'Secret de l\'Éther', 'blur_on', '#3b82f6')">
-                                                <span class="material-symbols-outlined cs-icon text-blue-400 text-lg">blur_on</span> Secret de
+                                                <span
+                                                    class="material-symbols-outlined cs-icon text-blue-400 text-lg">blur_on</span>
+                                                Secret de
                                                 l'Éther
                                             </div>
                                             <div class="custom-option"
                                                 onclick="selectMonsterSecretOption('Secret des Abysses', 'Secret des Abysses', 'dark_mode', '#c084fc')">
-                                                <span class="material-symbols-outlined cs-icon text-purple-400 text-lg">dark_mode</span> Secret des
+                                                <span
+                                                    class="material-symbols-outlined cs-icon text-purple-400 text-lg">dark_mode</span>
+                                                Secret des
                                                 Abysses
                                             </div>
                                         </div>
@@ -466,37 +562,45 @@
                                     <input type="hidden" id="monsterSecretFilter" value="">
                                 </div>
                                 <div class="w-[220px] relative">
-                                    <div class="custom-select-wrapper h-full"  id="mSortWrapper" >
-                                        <div class="custom-select-trigger custom-select-larger"  
+                                    <div class="custom-select-wrapper h-full" id="mSortWrapper">
+                                        <div class="custom-select-trigger custom-select-larger"
                                             onclick="toggleSortSelect()" id="mSortTrigger">
-                                            <span class="material-symbols-outlined cs-icon text-purple"  >explore</span> <span class="flex-1 text-left"  >Secret (Défaut)</span>
-                                            <span class="material-symbols-outlined text-muted pointer-events-none"  >expand_more</span>
+                                            <span class="material-symbols-outlined cs-icon text-purple">explore</span>
+                                            <span class="flex-1 text-left">Secret (Défaut)</span>
+                                            <span
+                                                class="material-symbols-outlined text-muted pointer-events-none">expand_more</span>
                                         </div>
-                                        <div class="custom-select-options"  >
-                                            <div class="custom-option"  
+                                        <div class="custom-select-options">
+                                            <div class="custom-option"
                                                 onclick="selectSortOption('secret', 'Secret (Défaut)', 'explore', '#a855f7')">
-                                                <span class="material-symbols-outlined cs-icon text-purple"  >explore</span> Secret
+                                                <span
+                                                    class="material-symbols-outlined cs-icon text-purple">explore</span>
+                                                Secret
                                                 (Défaut)
                                             </div>
-                                            <div class="custom-option"  
+                                            <div class="custom-option"
                                                 onclick="selectSortOption('name_asc', 'Nom (A-Z)', 'sort_by_alpha', '#94a3b8')">
-                                                <span class="material-symbols-outlined cs-icon text-muted"  >sort_by_alpha</span> Nom
+                                                <span
+                                                    class="material-symbols-outlined cs-icon text-muted">sort_by_alpha</span>
+                                                Nom
                                                 (A-Z)
                                             </div>
-                                            <div class="custom-option"  
+                                            <div class="custom-option"
                                                 onclick="selectSortOption('name_desc', 'Nom (Z-A)', 'sort_by_alpha', '#94a3b8')">
-                                                <span class="material-symbols-outlined cs-icon text-muted text-lg -scale-y-100"  
-                                                    >sort_by_alpha</span>
+                                                <span
+                                                    class="material-symbols-outlined cs-icon text-muted text-lg -scale-y-100">sort_by_alpha</span>
                                                 Nom (Z-A)
                                             </div>
-                                            <div class="custom-option"  
+                                            <div class="custom-option"
                                                 onclick="selectSortOption('lvl_desc', 'Niveau (Décroissant)', 'star', '#f59e0b')">
-                                                <span class="material-symbols-outlined cs-icon text-warning"  >star</span> Niveau
+                                                <span class="material-symbols-outlined cs-icon text-warning">star</span>
+                                                Niveau
                                                 (Décroissant)
                                             </div>
-                                            <div class="custom-option"  
+                                            <div class="custom-option"
                                                 onclick="selectSortOption('lvl_asc', 'Niveau (Croissant)', 'star', '#3b82f6')">
-                                                <span class="material-symbols-outlined cs-icon text-info"  >star</span> Niveau
+                                                <span class="material-symbols-outlined cs-icon text-info">star</span>
+                                                Niveau
                                                 (Croissant)
                                             </div>
                                         </div>
@@ -504,8 +608,8 @@
                                     <input type="hidden" id="monsterSort" value="secret">
                                 </div>
                             </div>
-                            <div class="pve-grid flex-1 overflow-y-auto overflow-x-hidden min-h-0 pb-6 px-4 pt-5"   id="monstersList"
-                                >
+                            <div class="pve-grid flex-1 overflow-y-auto overflow-x-hidden min-h-0 pb-6 px-4 pt-5"
+                                id="monstersList">
                                 <!-- Rempli par JS -->
                             </div>
                         </div>
@@ -514,72 +618,76 @@
             </div>
 
             <!-- === MUTATIONS === -->
-            <div class="admin-split-layout"  >
-                <section class="admin-section m-0 transition-all"   id="mutationFormPanel">
-                    <div class="admin-section-header"  >
-                        <div class="admin-section-title"  >
-                            <span class="material-symbols-outlined text-purple"   >pets</span>
+            <div class="admin-split-layout">
+                <section class="admin-section m-0 transition-all" id="mutationFormPanel">
+                    <div class="admin-section-header">
+                        <div class="admin-section-title">
+                            <span class="material-symbols-outlined text-purple">pets</span>
                             Créer une Mutation
                         </div>
                     </div>
-                    <div class="admin-section-content"  >
+                    <div class="admin-section-content">
                         <form id="mutationForm">
-                            <div class="form-grid"  >
-                                <div class="form-group col-span-2"  >
-                                    <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined text-purple text-lg">badge</span> Nom de la
+                            <div class="form-grid">
+                                <div class="form-group col-span-2">
+                                    <label class="flex-center flex-center-gap"><span
+                                            class="material-symbols-outlined text-purple text-lg">badge</span> Nom de la
                                         mutation</label>
-                                    <input class="form-control"  type="text" id="mutName" 
+                                    <input class="form-control" type="text" id="mutName"
                                         placeholder="Ex: Griffes d'acier" required="">
                                 </div>
-                                <div class="form-group col-span-2"  >
-                                    <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined text-lg text-muted" 
-                                            >description</span>
+                                <div class="form-group col-span-2">
+                                    <label class="flex-center flex-center-gap"><span
+                                            class="material-symbols-outlined text-lg text-muted">description</span>
                                         Description</label>
-                                    <textarea class="form-control"  id="mutDesc"  rows="2"
+                                    <textarea class="form-control" id="mutDesc" rows="2"
                                         placeholder="Description courte..." required=""></textarea>
                                 </div>
-                                <div class="form-group"  >
-                                    <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined text-lg text-success" 
-                                            >star</span> Niveau</label>
-                                    <input class="form-control"  type="number" id="mutLevel"  value="1" min="1" max="5"
+                                <div class="form-group">
+                                    <label class="flex-center flex-center-gap"><span
+                                            class="material-symbols-outlined text-lg text-success">star</span>
+                                        Niveau</label>
+                                    <input class="form-control" type="number" id="mutLevel" value="1" min="1" max="5"
                                         required="">
                                 </div>
-                                <div class="form-group"  >
-                                    <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined text-gold text-lg">palette</span> Couleur
+                                <div class="form-group">
+                                    <label class="flex-center flex-center-gap"><span
+                                            class="material-symbols-outlined text-gold text-lg">palette</span> Couleur
                                         HEX</label>
-                                    <input class="form-control"  type="text" id="mutColor"  value="#e879f9"
+                                    <input class="form-control" type="text" id="mutColor" value="#e879f9"
                                         placeholder="#RRGGBB">
                                 </div>
-                                <div class="form-group col-span-2"  >
-                                    <label class="flex-center flex-center-gap"  ><span class="material-symbols-outlined text-lg text-info" 
-                                            >add_reaction</span> Icone
+                                <div class="form-group col-span-2">
+                                    <label class="flex-center flex-center-gap"><span
+                                            class="material-symbols-outlined text-lg text-info">add_reaction</span>
+                                        Icone
                                         (Material)</label>
-                                    <input class="form-control"  type="text" id="mutIcon"  value="pets"
+                                    <input class="form-control" type="text" id="mutIcon" value="pets"
                                         placeholder="pets">
                                 </div>
                             </div>
-                            <div class="mt-3 flex-center gap-4"  >
-                                <button class="btn btn-primary bg-gradient-purple shadow-purple"  type="submit"  id="btnSubmitMutation"
-                                    >Créer
+                            <div class="mt-3 flex-center gap-4">
+                                <button class="btn btn-primary bg-gradient-purple shadow-purple" type="submit"
+                                    id="btnSubmitMutation">Créer
                                     la mutation</button>
-                                <button class="btn btn-secondary hidden" type="button" id="btnCancelMutation" onclick="cancelMutationEdit()">Annuler</button>
+                                <button class="btn btn-secondary hidden" type="button" id="btnCancelMutation"
+                                    onclick="cancelMutationEdit()">Annuler</button>
                             </div>
                         </form>
                     </div>
                 </section>
 
-                <div class="relative h-full min-h-400"  >
-                    <section class="admin-section absolute-panel-wrapper"  >
-                        <div class="admin-section-header flex-shrink-0"   >
-                            <div class="admin-section-title"  >
-                                <span class="material-symbols-outlined text-purple"  
-                                    >format_list_bulleted</span>
+                <div class="relative h-full min-h-400">
+                    <section class="admin-section absolute-panel-wrapper">
+                        <div class="admin-section-header flex-shrink-0">
+                            <div class="admin-section-title">
+                                <span class="material-symbols-outlined text-purple">format_list_bulleted</span>
                                 Mutations Existantes
                             </div>
                         </div>
-                        <div class="admin-section-content panel-content-flex"  >
-                            <div class="pve-list custom-scrollbar flex-1 overflow-y-auto min-h-0 pr-4 -mr-2 pb-4"  id="mutationsList" 
-                                >
+                        <div class="admin-section-content panel-content-flex">
+                            <div class="pve-list custom-scrollbar flex-1 overflow-y-auto min-h-0 pr-4 -mr-2 pb-4"
+                                id="mutationsList">
                                 <!-- Mutations rendered here -->
                             </div>
                         </div>
@@ -588,259 +696,310 @@
             </div>
 
             <!-- === DONJONS === -->
-            <div class="admin-split-layout"  >
-                <section class="admin-section m-0 transition-all"   id="dungeonFormPanel">
-                    <div class="admin-section-header"  >
-                        <div class="admin-section-title"  >
-                            <span class="material-symbols-outlined text-danger"  >castle</span>
+            <div class="admin-split-layout">
+                <section class="admin-section m-0 transition-all" id="dungeonFormPanel">
+                    <div class="admin-section-header">
+                        <div class="admin-section-title">
+                            <span class="material-symbols-outlined text-danger">castle</span>
                             Créer un Donjon
                         </div>
                     </div>
-                    <div class="admin-section-content"  >
+                    <div class="admin-section-content">
                         <form id="dungeonForm">
-                            <div class="form-grid"  >
-                                <div class="form-group col-span-2"  >
+                            <div class="form-grid">
+                                <div class="form-group col-span-2">
                                     <label>Nom du donjon</label>
-                                    <input class="form-control"  type="text" id="dName"  required="">
+                                    <input class="form-control" type="text" id="dName" required="">
                                 </div>
-                                <div class="form-group col-span-2"  >
+                                <div class="form-group col-span-2">
                                     <label>Description</label>
-                                    <input class="form-control"  type="text" id="dDesc" >
+                                    <input class="form-control" type="text" id="dDesc">
                                 </div>
-                                <div class="form-group"  >
+                                <div class="form-group">
                                     <label>Niveau Recommandé</label>
-                                    <input class="form-control"  type="number" id="dLevel"  value="1" required="">
+                                    <input class="form-control" type="number" id="dLevel" value="1" required="">
                                 </div>
-                                <div class="form-group"  >
+                                <div class="form-group">
                                     <label>Héros Maximum</label>
-                                    <input class="form-control"  type="number" id="dMaxHeroes"  value="1" min="1" max="4"
+                                    <input class="form-control" type="number" id="dMaxHeroes" value="1" min="1" max="4"
                                         required="">
                                 </div>
-                                <div class="form-group"  >
+                                <div class="form-group">
                                     <label>Coût de dévérouillage (Or)</label>
-                                    <input class="form-control"  type="number" id="dUnlockCost"  value="0" min="0">
+                                    <input class="form-control" type="number" id="dUnlockCost" value="0" min="0">
                                 </div>
-                                <div class="form-group"  >
+                                <div class="form-group">
                                     <label>Coût d'Entrée (Or)</label>
-                                    <input class="form-control"  type="number" id="dEntryCost"  value="0" min="0">
+                                    <input class="form-control" type="number" id="dEntryCost" value="0" min="0">
                                 </div>
-                                <div class="form-group col-span-2"  >
+                                <div class="form-group col-span-2">
                                     <label>Condition Alchimie (Secret requis et niveau)</label>
                                     <div class="flex items-start gap-4">
-                                        <div class="custom-select-wrapper z-90 flex-2"   id="dRequiredSecretWrapper"
-                                            >
-                                            <div class="custom-select-trigger"  >
-                                                <span class="cs-label"  >
-                                                    <span class="material-symbols-outlined cs-icon text-muted"  >close</span>
+                                        <div class="custom-select-wrapper z-90 flex-2" id="dRequiredSecretWrapper">
+                                            <div class="custom-select-trigger">
+                                                <span class="cs-label">
+                                                    <span
+                                                        class="material-symbols-outlined cs-icon text-muted">close</span>
                                                     Aucun (Optionnel)
                                                 </span>
-                                                <span class="material-symbols-outlined text-slate-500 text-xl"  
-                                                    >expand_more</span>
+                                                <span
+                                                    class="material-symbols-outlined text-slate-500 text-xl">expand_more</span>
                                             </div>
-                                            <div class="custom-select-options custom-options"  >
-                                                <div class="custom-option"   data-value="">
-                                                    <span class="material-symbols-outlined cs-icon text-muted"  >close</span>
+                                            <div class="custom-select-options custom-options">
+                                                <div class="custom-option" data-value="">
+                                                    <span
+                                                        class="material-symbols-outlined cs-icon text-muted">close</span>
                                                     Aucun (Optionnel)
                                                 </div>
-                                                <div class="custom-option"   data-value="Secret du Chaos">
-                                                    <span class="material-symbols-outlined cs-icon text-danger"  >local_fire_department</span>
+                                                <div class="custom-option" data-value="Secret du Chaos">
+                                                    <span
+                                                        class="material-symbols-outlined cs-icon text-danger">local_fire_department</span>
                                                     Secret du Chaos
                                                 </div>
-                                                <div class="custom-option"   data-value="Secret de l'Abondance">
-                                                    <span class="material-symbols-outlined cs-icon text-success"  >eco</span>
+                                                <div class="custom-option" data-value="Secret de l'Abondance">
+                                                    <span
+                                                        class="material-symbols-outlined cs-icon text-success">eco</span>
                                                     Secret de l'Abondance
                                                 </div>
-                                                <div class="custom-option"   data-value="Secret de la Préservation">
-                                                    <span class="material-symbols-outlined cs-icon text-brown"  >foundation</span>
+                                                <div class="custom-option" data-value="Secret de la Préservation">
+                                                    <span
+                                                        class="material-symbols-outlined cs-icon text-brown">foundation</span>
                                                     Secret de la Préservation
                                                 </div>
-                                                <div class="custom-option"   data-value="Secret de la Sérénité">
-                                                    <span class="material-symbols-outlined cs-icon text-teal"  >water_drop</span>
+                                                <div class="custom-option" data-value="Secret de la Sérénité">
+                                                    <span
+                                                        class="material-symbols-outlined cs-icon text-teal">water_drop</span>
                                                     Secret de la Sérénité
                                                 </div>
-                                                <div class="custom-option"   data-value="Secret de la Chasse">
-                                                    <span class="material-symbols-outlined cs-icon text-pink"  >visibility_off</span>
+                                                <div class="custom-option" data-value="Secret de la Chasse">
+                                                    <span
+                                                        class="material-symbols-outlined cs-icon text-pink">visibility_off</span>
                                                     Secret de la Chasse
                                                 </div>
-                                                <div class="custom-option"   data-value="Secret du Carnage">
-                                                    <span class="material-symbols-outlined cs-icon text-crimson"  >explosion</span>
+                                                <div class="custom-option" data-value="Secret du Carnage">
+                                                    <span
+                                                        class="material-symbols-outlined cs-icon text-crimson">explosion</span>
                                                     Secret du Carnage
                                                 </div>
-                                                <div class="custom-option"   data-value="Secret de la Joie">
-                                                    <span class="material-symbols-outlined cs-icon text-amber"  >volcano</span>
+                                                <div class="custom-option" data-value="Secret de la Joie">
+                                                    <span
+                                                        class="material-symbols-outlined cs-icon text-amber">volcano</span>
                                                     Secret de la Joie
                                                 </div>
-                                                <div class="custom-option"   data-value="Secret du Savoir">
-                                                    <span class="material-symbols-outlined cs-icon text-info"  >psychology</span>
+                                                <div class="custom-option" data-value="Secret du Savoir">
+                                                    <span
+                                                        class="material-symbols-outlined cs-icon text-info">psychology</span>
                                                     Secret du Savoir
                                                 </div>
-                                                <div class="custom-option"   data-value="Secret du Destin">
-                                                    <span class="material-symbols-outlined cs-icon text-gold"  >all_inclusive</span>
+                                                <div class="custom-option" data-value="Secret du Destin">
+                                                    <span
+                                                        class="material-symbols-outlined cs-icon text-gold">all_inclusive</span>
                                                     Secret du Destin
                                                 </div>
-                                                <div class="custom-option"   data-value="Secret de l'Éther">
-                                                    <span class="material-symbols-outlined cs-icon text-info"  >blur_on</span>
+                                                <div class="custom-option" data-value="Secret de l'Éther">
+                                                    <span
+                                                        class="material-symbols-outlined cs-icon text-info">blur_on</span>
                                                     Secret de l'Éther
                                                 </div>
-                                                <div class="custom-option"   data-value="Secret des Abysses">
-                                                    <span class="material-symbols-outlined cs-icon text-purple-400">dark_mode</span>
+                                                <div class="custom-option" data-value="Secret des Abysses">
+                                                    <span
+                                                        class="material-symbols-outlined cs-icon text-purple-400">dark_mode</span>
                                                     Secret des Abysses
                                                 </div>
                                             </div>
                                             <input type="hidden" id="dRequiredSecret" value="">
                                         </div>
-                                        <div class="flex-1"  >
-                                            <input class="form-control"  type="number" id="dRequiredSecretLevel" 
+                                        <div class="flex-1">
+                                            <input class="form-control" type="number" id="dRequiredSecretLevel"
                                                 value="1" min="1" placeholder="Niveau" title="Niveau du secret"
                                                 class="min-h-[42px]">
                                         </div>
                                     </div>
                                 </div>
-                                <div class="form-group col-span-2"  >
+                                <div class="form-group col-span-2">
                                     <label>Salles du Donjon (Ordre d'exploration)</label>
 
                                     <div class="mb-4 grid grid-cols-3 gap-3">
-                                        <button class="pve-room-btn btn-room bg-red-glass border border-red-500/30 text-danger" type="button"
-                                            onclick="addRoom('COMBAT')">
-                                            <span class="material-symbols-outlined text-lg"  >swords</span> + Combat
+                                        <button
+                                            class="pve-room-btn btn-room bg-red-glass border border-red-500/30 text-danger"
+                                            type="button" onclick="addRoom('COMBAT')">
+                                            <span class="material-symbols-outlined text-lg">swords</span> + Combat
                                         </button>
-                                        <button class="pve-room-btn btn-room bg-crimson-500/10 border border-crimson-500/30 text-crimson" type="button"
-                                            onclick="addRoom('BOSS')">
-                                            <span class="material-symbols-outlined text-lg"  >skull</span> +
+                                        <button
+                                            class="pve-room-btn btn-room bg-crimson-500/10 border border-crimson-500/30 text-crimson"
+                                            type="button" onclick="addRoom('BOSS')">
+                                            <span class="material-symbols-outlined text-lg">skull</span> +
                                             Boss
                                         </button>
-                                        <button class="pve-room-btn btn-room bg-amber-500/10 border border-amber-500/30 text-amber" type="button"
-                                            onclick="addRoom('TREASURE')">
-                                            <span class="material-symbols-outlined text-lg"  >shopping_bag</span> + Trésor
+                                        <button
+                                            class="pve-room-btn btn-room bg-amber-500/10 border border-amber-500/30 text-amber"
+                                            type="button" onclick="addRoom('TREASURE')">
+                                            <span class="material-symbols-outlined text-lg">shopping_bag</span> + Trésor
                                         </button>
-                                        <button class="pve-room-btn btn-room bg-purple-glass border border-purple-500/30 text-purple" type="button"
-                                            onclick="addRoom('ALTERATION')">
-                                            <span class="material-symbols-outlined text-lg"  >blur_on</span> + Altération
+                                        <button
+                                            class="pve-room-btn btn-room bg-purple-glass border border-purple-500/30 text-purple"
+                                            type="button" onclick="addRoom('ALTERATION')">
+                                            <span class="material-symbols-outlined text-lg">blur_on</span> + Altération
                                         </button>
-                                        <button class="pve-room-btn btn-room bg-emerald-500/10 border border-emerald-500/30 text-emerald" type="button"
-                                            onclick="addRoom('RENCONTRE')">
-                                            <span class="material-symbols-outlined text-lg"  >storefront</span> + Rencontre
+                                        <button
+                                            class="pve-room-btn btn-room bg-emerald-500/10 border border-emerald-500/30 text-emerald"
+                                            type="button" onclick="addRoom('RENCONTRE')">
+                                            <span class="material-symbols-outlined text-lg">storefront</span> +
+                                            Rencontre
                                         </button>
-                                        <button class="pve-room-btn btn-room bg-red-600/5 border border-red-600/20 text-red-400" type="button"
-                                            onclick="addRoom('PIEGE')">
-                                            <span class="material-symbols-outlined text-lg"  >warning</span> + Piège
+                                        <button
+                                            class="pve-room-btn btn-room bg-red-600/5 border border-red-600/20 text-red-400"
+                                            type="button" onclick="addRoom('PIEGE')">
+                                            <span class="material-symbols-outlined text-lg">warning</span> + Piège
                                         </button>
-                                        <button class="pve-room-btn btn-room bg-amber-500/5 border border-amber-500/30 text-gold" type="button"
-                                            onclick="addRoom('PORTE_ETRANGE')">
-                                            <span class="material-symbols-outlined text-lg"  >door_front</span> + Porte Étrange
+                                        <button
+                                            class="pve-room-btn btn-room bg-amber-500/5 border border-amber-500/30 text-gold"
+                                            type="button" onclick="addRoom('PORTE_ETRANGE')">
+                                            <span class="material-symbols-outlined text-lg">door_front</span> + Porte
+                                            Étrange
                                         </button>
                                     </div>
 
                                     <div id="selectedRoomsContainer"
                                         class="flex flex-col gap-3 p-4 rounded-lg bg-black/20 border border-dashed border-white/10 min-h-[100px]">
-                                        <div class="text-muted text-center py-8 text-[0.85rem]"
-                                            id="emptyRoomsMsg">Le donjon est vide. Ajoutez des salles.</div>
+                                        <div class="text-muted text-center py-8 text-[0.85rem]" id="emptyRoomsMsg">Le
+                                            donjon est vide. Ajoutez des salles.</div>
                                         <!-- Liste des salles -->
                                     </div>
                                 </div>
                             </div>
-                            <div class="mt-3 flex-center gap-4"  >
-                                <button class="btn btn-primary"  type="submit"  id="btnSubmitDungeon">Créer le
+                            <div class="mt-3 flex-center gap-4">
+                                <button class="btn btn-primary" type="submit" id="btnSubmitDungeon">Créer le
                                     donjon</button>
-                                <button class="btn btn-secondary hidden" type="button" id="btnCancelDungeon" onclick="cancelDungeonEdit()">Annuler</button>
+                                <button class="btn btn-secondary hidden" type="button" id="btnCancelDungeon"
+                                    onclick="cancelDungeonEdit()">Annuler</button>
                             </div>
                         </form>
                     </div>
                 </section>
 
-                <div class="relative h-full min-h-400"  >
-                    <section class="admin-section absolute-panel-wrapper"  >
-                        <div class="admin-section-header"  
+                <div class="relative h-full min-h-400">
+                    <section class="admin-section absolute-panel-wrapper">
+                        <div class="admin-section-header"
                             class="flex-shrink-0 flex-between flex-center flex-wrap gap-2">
-                            <div class="admin-section-title"  >
-                                <span class="material-symbols-outlined text-danger"  >map</span>
+                            <div class="admin-section-title">
+                                <span class="material-symbols-outlined text-danger">map</span>
                                 Donjons Existants
                             </div>
                             <div class="flex gap-2">
                                 <div class="custom-select-wrapper w-[250px] z-100">
-                                    <div class="custom-select-trigger"  
+                                    <div class="custom-select-trigger"
                                         class="min-h-[36px] py-[0.4rem] px-[0.8rem] text-[0.85rem]">
-                                        <span class="cs-label"  ><span class="material-symbols-outlined cs-icon text-muted"  >filter_list</span> Tous les
+                                        <span class="cs-label"><span
+                                                class="material-symbols-outlined cs-icon text-muted">filter_list</span>
+                                            Tous les
                                             secrets</span>
-                                        <span class="material-symbols-outlined"  
-                                            class="icon-sm">expand_more</span>
+                                        <span class="material-symbols-outlined" class="icon-sm">expand_more</span>
                                     </div>
-                                    <div class="custom-select-options custom-options"  >
-                                        <div class="custom-option"   data-value="">
-                                            <span class="material-symbols-outlined cs-icon text-muted"  >filter_list</span> Tous les
+                                    <div class="custom-select-options custom-options">
+                                        <div class="custom-option" data-value="">
+                                            <span
+                                                class="material-symbols-outlined cs-icon text-muted">filter_list</span>
+                                            Tous les
                                             secrets
                                         </div>
-                                        <div class="custom-option"   data-value="Aucun">
-                                            <span class="material-symbols-outlined cs-icon text-muted"  >close</span> Sans secret
+                                        <div class="custom-option" data-value="Aucun">
+                                            <span class="material-symbols-outlined cs-icon text-muted">close</span> Sans
+                                            secret
                                         </div>
                                         <div class="custom-option" data-value="Secret du Chaos">
-                                            <span class="material-symbols-outlined cs-icon text-danger icon-sm">local_fire_department</span> Secret du Chaos
+                                            <span
+                                                class="material-symbols-outlined cs-icon text-danger icon-sm">local_fire_department</span>
+                                            Secret du Chaos
                                         </div>
                                         <div class="custom-option" data-value="Secret de l'Abondance">
-                                            <span class="material-symbols-outlined cs-icon text-success">eco</span> Secret de l'Abondance
+                                            <span class="material-symbols-outlined cs-icon text-success">eco</span>
+                                            Secret de l'Abondance
                                         </div>
                                         <div class="custom-option" data-value="Secret de la Préservation">
-                                            <span class="material-symbols-outlined cs-icon text-brown icon-sm">foundation</span> Secret de la Préservation
+                                            <span
+                                                class="material-symbols-outlined cs-icon text-brown icon-sm">foundation</span>
+                                            Secret de la Préservation
                                         </div>
                                         <div class="custom-option" data-value="Secret de la Sérénité">
-                                            <span class="material-symbols-outlined cs-icon text-teal icon-sm">water_drop</span> Secret de la Sérénité
+                                            <span
+                                                class="material-symbols-outlined cs-icon text-teal icon-sm">water_drop</span>
+                                            Secret de la Sérénité
                                         </div>
                                         <div class="custom-option" data-value="Secret de la Chasse">
-                                            <span class="material-symbols-outlined cs-icon text-crimson icon-sm">visibility_off</span> Secret de la Chasse
+                                            <span
+                                                class="material-symbols-outlined cs-icon text-crimson icon-sm">visibility_off</span>
+                                            Secret de la Chasse
                                         </div>
                                         <div class="custom-option" data-value="Secret du Carnage">
-                                            <span class="material-symbols-outlined cs-icon text-brut icon-sm">explosion</span> Secret du Carnage
+                                            <span
+                                                class="material-symbols-outlined cs-icon text-brut icon-sm">explosion</span>
+                                            Secret du Carnage
                                         </div>
                                         <div class="custom-option" data-value="Secret de la Joie">
-                                            <span class="material-symbols-outlined cs-icon text-orange icon-sm">volcano</span> Secret de la Joie
+                                            <span
+                                                class="material-symbols-outlined cs-icon text-orange icon-sm">volcano</span>
+                                            Secret de la Joie
                                         </div>
                                         <div class="custom-option" data-value="Secret du Savoir">
-                                            <span class="material-symbols-outlined cs-icon text-info">psychology</span> Secret du Savoir
+                                            <span class="material-symbols-outlined cs-icon text-info">psychology</span>
+                                            Secret du Savoir
                                         </div>
                                         <div class="custom-option" data-value="Secret du Destin">
-                                            <span class="material-symbols-outlined cs-icon text-gold icon-sm">all_inclusive</span> Secret du Destin
+                                            <span
+                                                class="material-symbols-outlined cs-icon text-gold icon-sm">all_inclusive</span>
+                                            Secret du Destin
                                         </div>
                                         <div class="custom-option" data-value="Secret de l'Éther">
-                                            <span class="material-symbols-outlined cs-icon text-info icon-sm">blur_on</span> Secret de l'Éther
+                                            <span
+                                                class="material-symbols-outlined cs-icon text-info icon-sm">blur_on</span>
+                                            Secret de l'Éther
                                         </div>
                                         <div class="custom-option" data-value="Secret des Abysses">
-                                            <span class="material-symbols-outlined cs-icon text-purple-300 icon-sm">dark_mode</span> Secret des Abysses
+                                            <span
+                                                class="material-symbols-outlined cs-icon text-purple-300 icon-sm">dark_mode</span>
+                                            Secret des Abysses
                                         </div>
                                     </div>
                                     <input type="hidden" id="dungeonSecretFilter" value=""
                                         onchange="renderDungeonsList()">
                                 </div>
                                 <div class="custom-select-wrapper w-[140px] z-100">
-                                    <div class="custom-select-trigger"  
+                                    <div class="custom-select-trigger"
                                         class="min-h-[36px] py-[0.4rem] px-[0.8rem] text-[0.85rem]">
-                                        <span class="cs-label"  ><span class="material-symbols-outlined cs-icon text-muted"  >filter_alt</span> Lvl
+                                        <span class="cs-label"><span
+                                                class="material-symbols-outlined cs-icon text-muted">filter_alt</span>
+                                            Lvl
                                             exact</span>
-                                        <span class="material-symbols-outlined"  
-                                            class="icon-sm">expand_more</span>
+                                        <span class="material-symbols-outlined" class="icon-sm">expand_more</span>
                                     </div>
-                                    <div class="custom-select-options custom-options"  >
-                                        <div class="custom-option"   data-value="">
-                                            <span class="material-symbols-outlined cs-icon text-muted"  >filter_alt</span> Tous
+                                    <div class="custom-select-options custom-options">
+                                        <div class="custom-option" data-value="">
+                                            <span class="material-symbols-outlined cs-icon text-muted">filter_alt</span>
+                                            Tous
                                         </div>
-                                        <div class="custom-option"   data-value="1"><span class="material-symbols-outlined cs-icon text-muted" 
-                                                >star</span> 1</div>
-                                        <div class="custom-option"   data-value="2"><span class="material-symbols-outlined cs-icon text-success" 
-                                                >star</span> 2</div>
-                                        <div class="custom-option"   data-value="3"><span class="material-symbols-outlined cs-icon text-info" 
-                                                >star</span> 3</div>
-                                        <div class="custom-option"   data-value="4"><span class="material-symbols-outlined cs-icon text-purple" 
-                                                >star</span> 4</div>
-                                        <div class="custom-option"   data-value="5"><span class="material-symbols-outlined cs-icon text-warning" 
-                                                >star</span> 5</div>
+                                        <div class="custom-option" data-value="1"><span
+                                                class="material-symbols-outlined cs-icon text-muted">star</span> 1</div>
+                                        <div class="custom-option" data-value="2"><span
+                                                class="material-symbols-outlined cs-icon text-success">star</span> 2
+                                        </div>
+                                        <div class="custom-option" data-value="3"><span
+                                                class="material-symbols-outlined cs-icon text-info">star</span> 3</div>
+                                        <div class="custom-option" data-value="4"><span
+                                                class="material-symbols-outlined cs-icon text-purple">star</span> 4
+                                        </div>
+                                        <div class="custom-option" data-value="5"><span
+                                                class="material-symbols-outlined cs-icon text-warning">star</span> 5
+                                        </div>
                                     </div>
                                     <input type="hidden" id="dungeonLevelFilter" value=""
                                         onchange="renderDungeonsList()">
                                 </div>
                             </div>
                         </div>
-                        <div class="admin-section-content panel-content-flex"  >
-                            <div class="pve-grid flex-1 overflow-y-auto overflow-x-hidden min-h-0 pb-6 px-4 pt-5"   id="dungeonsList"
-                                >
+                        <div class="admin-section-content panel-content-flex">
+                            <div class="pve-grid flex-1 overflow-y-auto overflow-x-hidden min-h-0 pb-6 px-4 pt-5"
+                                id="dungeonsList">
                                 <!-- Rempli par JS -->
                             </div>
                         </div>
@@ -852,7 +1011,7 @@
     </main>
 
     <!-- Notification -->
-    <div class="pve-notif"   id="pveNotif"></div>
+    <div class="pve-notif" id="pveNotif"></div>
 
     <script src="/js/auth.js"></script>
     <script type="module">

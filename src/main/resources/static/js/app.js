@@ -21,12 +21,15 @@ Object.assign(window, ui);
 window.addEventListener('DOMContentLoaded', async () => {
     ui.updateDisplayModeUI();
     ui.initResizeObserver();
-    await constants.initMeta();
-    await api.fetchMeta();
-    
-    // RBAC: Check user and update layout
-    const user = await api.getCurrentUser();
+
+    const [user] = await Promise.all([
+        api.getCurrentUser(),
+        constants.initMeta(),
+        api.fetchMeta()
+    ]);
+
     window.currentUser = user;
+
     if (!api.isAdmin(user)) {
         const forgePanel = document.getElementById('spellForgePanel');
         if (forgePanel) forgePanel.style.display = 'none';

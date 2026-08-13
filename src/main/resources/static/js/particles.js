@@ -1,10 +1,3 @@
-import { state } from './state.js';
-import { GLOBAL_STAT_LABELS, GLOBAL_SRC_LABELS, javaClassToCode } from './constants.js';
-import * as ui from './ui.js';
-import * as api from './api.js';
-
-import { playForgeAnimation, createBetrayalSlash } from './animations.js';
-
 export function attachLvl5CardEffects(container) {
     const cards = container.querySelectorAll('.spell-card-lvl-5');
     cards.forEach(card => {
