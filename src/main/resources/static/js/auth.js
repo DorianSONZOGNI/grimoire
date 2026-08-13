@@ -455,38 +455,28 @@ window.promptUnlockFeature = function (featureId, featureName, cost) {
 
     const cleanup = () => {
         overlay.classList.remove('active');
-        // Clean listeners by replacing
         confirmBtn.replaceWith(confirmBtn.cloneNode(true));
         cancelBtn.replaceWith(cancelBtn.cloneNode(true));
     };
 
     cancelBtn.addEventListener('click', cleanup);
 
-    document.getElementById('globalUnlockConfirm').addEventListener('click', function () {
+    document.getElementById('globalUnlockConfirm').addEventListener('click', async function () {
         const btn = this;
         const originalHtml = btn.innerHTML;
         btn.innerHTML = '<span class="material-symbols-outlined animate-spin">autorenew</span>';
         btn.disabled = true;
 
-        fetch('/api/auth/unlock/' + featureId, {
-            method: 'POST',
-            credentials: 'same-origin'
-        }).then(res => res.json().then(data => ({ status: res.status, data })))
-            .then(res => {
-                if (res.status === 200) {
-                    window.location.reload();
-                } else {
-                    if (typeof showNotif !== 'undefined') showNotif(res.data.message || "Erreur lors de l'achat.", true);
-                    else ui.showNotif(res.data.message || "Erreur lors de l'achat.", true);
-                    cleanup();
-                }
-            }).catch(err => {
-                if (typeof showNotif !== 'undefined') showNotif("Erreur serveur.", true);
-                else ui.showNotif("Erreur serveur.", true);
-                cleanup();
+        try {
+            await window.globalFetch('/api/auth/unlock/' + featureId, {
+                method: 'POST',
+                credentials: 'same-origin'
             });
+            window.location.reload();
+        } catch (error) {
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+            cleanup();
+        }
     });
 };
-
-
-
