@@ -6,7 +6,7 @@ window.initAppMeta = async function () {
 
 let accessToken = null;
 
-window.setAccessToken = function(token) {
+window.setAccessToken = function (token) {
     accessToken = token;
 };
 
@@ -187,15 +187,15 @@ window.checkAuthStatus = async function checkAuthStatus() {
             window.isAdmin = data.roles && data.roles.some(r => r.authority === 'ADMIN' || r.authority === 'ROLE_ADMIN');
             window.dispatchEvent(new Event('authLoaded'));
             container.innerHTML = `
-                <a class="flex-center font-medium text-success" href="/secrets.html" onmouseover="this.style.background='rgba(16, 185, 129, 0.1)'" onmouseout="this.style.background='transparent'" style="gap: 0.3rem; font-size: 0.85rem; text-decoration: none; padding: 0.2rem 0.5rem; border-radius: 6px; transition: background 0.2s;">
+                <a class="flex-center-gap font-medium text-success no-underline text-sm px-2 py-1 rounded transition-all" href="/secrets.html" onmouseover="this.style.background='rgba(16, 185, 129, 0.1)'" onmouseout="this.style.background='transparent'">
                     <span class="material-symbols-outlined text-lg">account_circle</span>
                     ${data.username}
                 </a>
-                <div class="flex-center" title="Monnaie" style="gap: 0.2rem; color: #f59e0b; font-weight: 600; font-size: 0.85rem; margin-left: 0.5rem;">
+                <div class="flex-center font-bold text-amber text-sm ml-2" title="Monnaie" style="gap: 0.2rem;">
                     <span class="material-symbols-outlined text-lg">monetization_on</span>
                     ${data.monnaie !== undefined ? (data.monnaie % 1 === 0 ? data.monnaie : data.monnaie.toFixed(1)) : '0'}
                 </div>
-                <button class="flex-center text-xs text-error" onclick="logout()" style="background: transparent; border: 1px solid rgba(239, 68, 68, 0.3); border-radius: 6px; padding: 0.25rem 0.5rem; cursor: pointer; font-family: 'Outfit'; margin-left: 0.5rem; transition: all 0.2s;">
+                <button class="flex-center text-xs text-error rounded px-2 py-1 cursor-pointer font-family-inherit ml-2 transition-all" onclick="logout()" style="background: transparent; border: 1px solid rgba(239, 68, 68, 0.3);">
                     <span class="material-symbols-outlined icon-sm">logout</span>
                 </button>
             `;
@@ -204,10 +204,10 @@ window.checkAuthStatus = async function checkAuthStatus() {
             window.isAdmin = false;
             window.dispatchEvent(new Event('authLoaded'));
             container.innerHTML = `
-                <a class="font-medium" href="/login.html" style="color: #3b82f6; text-decoration: none; font-size: 0.85rem; padding: 0.3rem 0.6rem; border-radius: 6px; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); transition: all 0.2s;">
+                <a class="font-medium text-info no-underline text-sm px-2 py-1 rounded bg-info-glass transition-all" href="/login.html">
                     Se connecter
                 </a>
-                <a class="font-medium text-success" href="/register.html" style="text-decoration: none; font-size: 0.85rem; padding: 0.3rem 0.6rem; border-radius: 6px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); transition: all 0.2s;">
+                <a class="font-medium text-success no-underline text-sm px-2 py-1 rounded bg-success-glass transition-all" href="/register.html">
                     S'inscrire
                 </a>
             `;
@@ -217,10 +217,10 @@ window.checkAuthStatus = async function checkAuthStatus() {
         window.isAdmin = false;
         window.dispatchEvent(new Event('authLoaded'));
         container.innerHTML = `
-            <a class="font-medium" href="/login.html" style="color: #3b82f6; text-decoration: none; font-size: 0.85rem; padding: 0.3rem 0.6rem; border-radius: 6px; background: rgba(59, 130, 246, 0.1); border: 1px solid rgba(59, 130, 246, 0.3); transition: all 0.2s;">
+            <a class="font-medium text-info no-underline text-sm px-2 py-1 rounded bg-info-glass transition-all" href="/login.html">
                 Se connecter
             </a>
-            <a class="font-medium text-success" href="/register.html" style="text-decoration: none; font-size: 0.85rem; padding: 0.3rem 0.6rem; border-radius: 6px; background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3); transition: all 0.2s;">
+            <a class="font-medium text-success no-underline text-sm px-2 py-1 rounded bg-success-glass transition-all" href="/register.html">
                 S'inscrire
             </a>
         `;
@@ -258,21 +258,21 @@ window.addEventListener('authLoaded', () => {
 });
 
 function applyFeatureLock(el, isUnlocked, featureName, cost, featureId, originalHref) {
+    el.href = originalHref;
+
     if (isUnlocked) {
-        el.href = originalHref;
         el.style.opacity = '1';
         el.style.cursor = 'pointer';
         el.removeAttribute('onclick');
         const lockIcon = el.querySelector('.feature-lock-icon');
         if (lockIcon) lockIcon.remove();
     } else {
-        el.href = 'javascript:void(0)';
         el.style.opacity = '0.7';
         el.style.cursor = 'not-allowed';
-        el.setAttribute('onclick', `promptUnlockFeature('${featureId}', '${featureName}', ${cost})`);
+        el.setAttribute('onclick', `event.preventDefault(); promptUnlockFeature('${featureId}', '${featureName}', ${cost})`);
 
         if (!el.querySelector('.feature-lock-icon')) {
-            el.insertAdjacentHTML('beforeend', '<span class="material-symbols-outlined feature-lock-icon text-sm text-error" style="margin-left: auto;">lock</span>');
+            el.insertAdjacentHTML('beforeend', '<span class="material-symbols-outlined feature-lock-icon text-sm text-error ml-auto">lock</span>');
         }
     }
 }
@@ -407,10 +407,10 @@ function injectUnlockModal() {
     overlay.innerHTML = `
         <div class="global-unlock-modal">
             <div class="global-unlock-modal-icon">
-                <span class="material-symbols-outlined" style="font-size: 2.2rem; color: #fbbf24;" id="globalUnlockIcon">lock_open</span>
+                <span class="material-symbols-outlined text-amber" style="font-size: 2.2rem;" id="globalUnlockIcon">lock_open</span>
             </div>
             <div class="global-unlock-modal-title" id="globalUnlockTitle">Débloquer ?</div>
-            <div class="global-unlock-modal-desc">Ce dévérouillage est <strong style="color: #f8fafc;">définitif</strong> pour votre compte. Vous n'aurez plus jamais à payer ce coût.</div>
+            <div class="global-unlock-modal-desc">Ce dévérouillage est <strong class="text-white">définitif</strong> pour votre compte. Vous n'aurez plus jamais à payer ce coût.</div>
             <div class="global-unlock-modal-cost">
                 <span class="material-symbols-outlined" style="font-size: 1.3rem;">monetization_on</span>
                 <span id="globalUnlockCost">0</span> Or
@@ -455,38 +455,28 @@ window.promptUnlockFeature = function (featureId, featureName, cost) {
 
     const cleanup = () => {
         overlay.classList.remove('active');
-        // Clean listeners by replacing
         confirmBtn.replaceWith(confirmBtn.cloneNode(true));
         cancelBtn.replaceWith(cancelBtn.cloneNode(true));
     };
 
     cancelBtn.addEventListener('click', cleanup);
 
-    document.getElementById('globalUnlockConfirm').addEventListener('click', function () {
+    document.getElementById('globalUnlockConfirm').addEventListener('click', async function () {
         const btn = this;
         const originalHtml = btn.innerHTML;
-        btn.innerHTML = '<span class="material-symbols-outlined" style="animation: spin 1s linear infinite;">autorenew</span>';
+        btn.innerHTML = '<span class="material-symbols-outlined animate-spin">autorenew</span>';
         btn.disabled = true;
 
-        fetch('/api/auth/unlock/' + featureId, {
-            method: 'POST',
-            credentials: 'same-origin'
-        }).then(res => res.json().then(data => ({ status: res.status, data })))
-            .then(res => {
-                if (res.status === 200) {
-                    window.location.reload();
-                } else {
-                    if (typeof showNotif !== 'undefined') showNotif(res.data.message || "Erreur lors de l'achat.", true);
-                    else ui.showNotif(res.data.message || "Erreur lors de l'achat.", true);
-                    cleanup();
-                }
-            }).catch(err => {
-                if (typeof showNotif !== 'undefined') showNotif("Erreur serveur.", true);
-                else ui.showNotif("Erreur serveur.", true);
-                cleanup();
+        try {
+            await window.globalFetch('/api/auth/unlock/' + featureId, {
+                method: 'POST',
+                credentials: 'same-origin'
             });
+            window.location.reload();
+        } catch (error) {
+            btn.innerHTML = originalHtml;
+            btn.disabled = false;
+            cleanup();
+        }
     });
 };
-
-
-

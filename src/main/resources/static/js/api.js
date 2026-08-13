@@ -1,10 +1,5 @@
 import { state } from './state.js';
-import { GLOBAL_STAT_LABELS, GLOBAL_SRC_LABELS, javaClassToCode } from './constants.js';
 import * as ui from './ui.js?v=2';
-import * as forge from './forge.js';
-import * as grimoire from './grimoire.js';
-import * as filters from './filters.js';
-import * as animations from './animations.js';
 
 let currentUser = undefined;
 
@@ -79,7 +74,7 @@ export async function loadEquipments(options = {}) {
                 });
                 results = results.concat(aData);
             }
-        } catch(e) {
+        } catch (e) {
             console.error('Erreur chargement anomalies:', e);
         }
     }
@@ -96,7 +91,6 @@ export async function loadEquipments(options = {}) {
 
     return results;
 }
-
 
 
 
@@ -415,7 +409,7 @@ export async function loadSpells() {
 export function deleteSpell(id) {
     const s = state.loadedSpells.find(sp => sp.id === id);
     const spellName = s ? s.nom : 'ce sort';
-    
+
     ui.showModal({
         title: 'Détruire le sort ?',
         body: `Êtes-vous sûr de vouloir détruire <strong class="text-white">${spellName}</strong> ? Cette action est définitive.`,
@@ -460,7 +454,7 @@ export async function loadAnomalies(options = {}) {
         const res = await globalFetch(source);
         if (!res.ok) throw new Error('Network response was not ok');
         let data = await res.json();
-        
+
         if (deduplicate) {
             const uniqueNames = new Set();
             data = data.filter(a => {
@@ -491,7 +485,7 @@ export async function deleteEquipmentAPI(id, options = {}) {
         confirmTitle = "Détruire l'équipement ?",
         confirmBody = "Voulez-vous vraiment détruire l'équipement ?",
         apiRoute = "/api/shop/templates/",
-        onSuccess = async () => {}
+        onSuccess = async () => { }
     } = options;
 
     const doDelete = async () => {

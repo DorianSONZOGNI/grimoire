@@ -4,6 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Login sert à la connexion à votre compte pour accéder à vos sauvegardes et personnages.">
     <title>Connexion — Grimoire</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -21,33 +23,33 @@
 </head>
 
 <body>
-    <div class="ambient-light"  ></div>
-    <div class="ambient-light-2"  ></div>
+    <div class="ambient-light"></div>
+    <div class="ambient-light-2"></div>
 
-    <div class="auth-container"  >
-        <div class="auth-header"  >
-            <div class="auth-logo"  >
-                <span class="material-symbols-outlined"  >auto_stories</span>
+    <div class="auth-container">
+        <div class="auth-header">
+            <div class="auth-logo">
+                <span class="material-symbols-outlined">auto_stories</span>
                 Grimoire
             </div>
-            <div class="auth-subtitle"  >Accéder à vos sauvegardes et personnages</div>
+            <div class="auth-subtitle">Accéder à votre sauvegarde et vos personnages</div>
         </div>
 
-        <div class="auth-error"  id="authError" ></div>
+        <div class="auth-error" id="authError"></div>
 
-        <form class="auth-form"  id="loginForm" >
-            <div class="auth-field"  >
+        <form class="auth-form" id="loginForm">
+            <div class="auth-field">
                 <label for="username">Nom d'utilisateur</label>
                 <input type="text" id="username" required autocomplete="username">
             </div>
-            <div class="auth-field"  >
+            <div class="auth-field">
                 <label for="password">Mot de passe</label>
                 <input type="password" id="password" required autocomplete="current-password">
             </div>
-            <button class="auth-btn"  type="submit" >Se connecter</button>
+            <button class="auth-btn" type="submit">Se connecter</button>
         </form>
 
-        <div class="auth-footer"  >
+        <div class="auth-footer">
             Nouveau ici ? <a href="/register.html">Créer un compte</a>
         </div>
     </div>

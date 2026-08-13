@@ -1,0 +1,387 @@
+/* ===== Vault Empty State ===== */
+.vault-empty-state {
+    grid-column: 1 / -1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 4rem;
+    background: rgba(30, 41, 59, 0.2);
+    border: 1px dashed rgba(255, 255, 255, 0.1);
+    border-radius: 16px;
+    color: var(--text-muted);
+    font-size: 1.1rem;
+    gap: 1rem;
+}
+
+/* ===== Vault Card ===== */
+.vault-card {
+    background: rgba(30, 41, 59, 0.4);
+    border: 1px solid var(--glass-border);
+    border-radius: 12px;
+    padding: 1.2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: visible;
+}
+
+.vault-card:hover {
+    border-color: rgba(255, 255, 255, 0.2);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 16px rgba(0, 0, 0, 0.3);
+}
+
+.vault-card-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: flex-start;
+    gap: 1rem;
+}
+
+.vault-card-name-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    flex: 1;
+    min-width: 0;
+}
+
+.vault-card-name {
+    font-size: 1.2rem;
+    font-weight: 600;
+    font-family: 'Outfit', sans-serif;
+    color: var(--text-color);
+}
+
+.vault-card-slot {
+    font-size: 0.8rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    padding: 0.2rem 0.5rem;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 4px;
+    color: #cbd5e1;
+    width: fit-content;
+}
+
+.vault-card-actions {
+    display: flex;
+    gap: 0.4rem;
+    flex-shrink: 0;
+}
+
+.vault-btn-delete {
+    background: transparent;
+    border: none;
+    color: #ef4444;
+    cursor: pointer;
+    padding: 0.4rem;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    opacity: 0.6;
+}
+
+.vault-btn-delete:hover {
+    background: rgba(239, 68, 68, 0.1);
+    opacity: 1;
+}
+
+.vault-btn-edit {
+    background: transparent;
+    border: none;
+    color: #10b981;
+    cursor: pointer;
+    padding: 0.4rem;
+    border-radius: 6px;
+    transition: all 0.2s ease;
+    opacity: 0.6;
+}
+
+.vault-btn-edit:hover {
+    background: rgba(16, 185, 129, 0.1);
+    opacity: 1;
+}
+
+.vault-card-stats {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.4rem;
+}
+
+.vault-stat-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+    background: rgba(0, 0, 0, 0.3);
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    color: #cbd5e1;
+}
+
+.vault-stat-chip.malus {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
+}
+
+.vault-card-effect {
+    font-size: 0.8rem;
+    color: #c084fc;
+    background: rgba(168, 85, 247, 0.1);
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+}
+
+.vault-card-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+    padding-top: 1rem;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.vault-card-weight {
+    font-size: 0.8rem;
+    color: #94a3b8;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.2rem;
+}
+
+.vault-card-status {
+    font-size: 0.8rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.3rem;
+    padding: 0.3rem 0.6rem;
+    border-radius: 6px;
+    font-weight: 500;
+}
+
+.status-equipped {
+    background: rgba(59, 130, 246, 0.15);
+    color: #3b82f6;
+    border: 1px solid rgba(59, 130, 246, 0.3);
+}
+
+.status-available {
+    background: rgba(16, 185, 129, 0.15);
+    color: #10b981;
+    border: 1px solid rgba(16, 185, 129, 0.3);
+}
+
+
+/* ===== Form Styles (Migrated from Armory) ===== */
+.eq-create-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 0.5rem;
+    margin-bottom: 0.5rem;
+}
+
+.eq-create-row.quad {
+    grid-template-columns: 1fr 1fr 1fr 1fr;
+}
+
+@media (max-width: 500px) {
+    .eq-create-row.quad {
+        grid-template-columns: 1fr 1fr;
+    }
+}
+
+.eq-create-field {
+    display: flex;
+    flex-direction: column;
+    gap: 0.2rem;
+}
+
+.eq-create-field label {
+    font-size: 0.7rem;
+    color: #64748b;
+    font-weight: 500;
+}
+
+.eq-create-field input,
+.eq-create-field select,
+.eq-create-field textarea {
+    padding: 0.35rem 0.5rem;
+    font-size: 0.8rem;
+    background: rgba(0, 0, 0, 0.3);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 6px;
+    color: #fff;
+    outline: none;
+    font-family: 'Inter', sans-serif;
+    width: 100%;
+    box-sizing: border-box;
+    min-width: 0;
+}
+
+.eq-create-field textarea {
+    resize: vertical;
+    min-height: 80px;
+}
+
+.eq-create-field input:focus,
+.eq-create-field select:focus,
+.eq-create-field textarea:focus {
+    border-color: #f59e0b;
+}
+
+.equip-create-section {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8rem;
+}
+
+/* Modals */
+.vault-modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(15, 23, 42, 0.8);
+    backdrop-filter: blur(8px);
+    z-index: 10000;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    overflow-y: auto;
+    padding: 2rem 0;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s ease;
+}
+
+.vault-modal-overlay.show {
+    opacity: 1;
+    pointer-events: all;
+}
+
+.vault-modal-content {
+    background: var(--bg-card, rgba(30, 41, 59, 0.95));
+    border: 1px solid var(--glass-border, rgba(255, 255, 255, 0.1));
+    border-radius: 16px;
+    padding: 2rem;
+    width: 100%;
+    max-width: 800px;
+    overflow-y: visible;
+    transform: translateY(20px) scale(0.95);
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5);
+    margin: auto;
+}
+
+.vault-modal-overlay.show .vault-modal-content {
+    transform: translateY(0) scale(1);
+}
+
+.vault-modal-content.small {
+    max-width: 400px;
+    text-align: center;
+    border-color: rgba(239, 68, 68, 0.4);
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05) inset;
+}
+
+.anomaly-badge {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(168, 85, 247, 0.15);
+    color: #d8b4fe;
+    padding: 2px 6px;
+    border-radius: 6px;
+    border: 1px solid rgba(168, 85, 247, 0.3);
+    cursor: help;
+    font-size: 0.85rem;
+    transition: all 0.2s ease;
+}
+
+.anomaly-badge:hover {
+    background: rgba(168, 85, 247, 0.25);
+    border-color: rgba(168, 85, 247, 0.5);
+}
+
+.anomaly-tooltip {
+    position: absolute;
+    bottom: calc(100% + 8px);
+    left: 50%;
+    transform: translateX(-50%) translateY(5px);
+    width: max-content;
+    max-width: 250px;
+    background: rgba(15, 23, 42, 0.95);
+    border: 1px solid rgba(168, 85, 247, 0.5);
+    border-radius: 8px;
+    padding: 10px;
+    color: #f8fafc;
+    font-size: 0.8rem;
+    line-height: 1.4;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    text-align: left;
+    white-space: normal;
+    word-wrap: break-word;
+    pointer-events: none;
+    transition: all 0.2s ease;
+}
+
+.anomaly-tooltip-title {
+    font-weight: 700;
+    color: #a855f7;
+    margin-bottom: 4px;
+    border-bottom: 1px solid rgba(168, 85, 247, 0.3);
+    padding-bottom: 4px;
+}
+
+.anomaly-tooltip-desc {
+    margin-top: 6px;
+    font-style: italic;
+    color: #cbd5e1;
+    max-width: 350px;
+    line-height: 1.4;
+    white-space: normal !important;
+    word-wrap: break-word;
+}
+
+/* Toggles */
+.type-toggle input {
+    display: none;
+}
+.type-toggle input:checked+.toggle-btn.cons {
+    background: rgba(252, 165, 165, 0.2) !important;
+    border-color: #fca5a5 !important;
+    color: #f8fafc !important;
+}
+.type-toggle input:checked+.toggle-btn.ano {
+    background: rgba(240, 171, 252, 0.2) !important;
+    border-color: #f0abfc !important;
+    color: #f8fafc !important;
+}
+.type-toggle .toggle-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    padding: 0.4rem 0.8rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    cursor: pointer;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    color: #94a3b8;
+    font-weight: 500;
+    font-size: 0.85rem;
+    font-family: 'Outfit', sans-serif;
+    transition: all 0.2s;
+}
+.type-toggle .toggle-btn:hover {
+    background: rgba(255, 255, 255, 0.1);
+}

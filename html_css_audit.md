@@ -18,12 +18,12 @@ Une analyse complète des fichiers HTML a révélé une forte utilisation de sty
 | `combat.html` | 45 | **0** | -45 |
 | `armory.html` | 122 | **3** | -119 |
 | `shop-admin.html` | 110 | **0** | -110 |
-| `alchemy.html` | 13 | **0** | - |
-| `secrets.html` | 8 | **0** | - |
-| `alchemy-admin.html` | 5 | **0** | - |
-| `shop.html` | 2 | **0** | - |
-| `register.html` | 1 | **0** | - |
-| `login.html` | 0 | **0** | - |
+| `alchemy.html` | 13 | **0** | -13 |
+| `secrets.html` | 8 | **0** | -8 |
+| `alchemy-admin.html` | 0 | **0** | -5 |
+| `shop.html` | 2 | **0** | -2 |
+| `register.html` | 1 | **0** | -1 |
+| `login.html` | 0 | **0** | -0 |
 
 ---
 
@@ -101,6 +101,100 @@ Pour l'exemple de `alchemy-admin.html` :
 }
 ```
 Cela permettra de retirer massivement les `style="..."` sur chaque `<input>` et chaque option.
+
+---
+
+## 🔴 Problème 4 — `vault.css` chargé dans 5 pages qui ne sont pas `vault.html`
+
+### Constat
+
+`vault.css` est actuellement inclus dans **6 fichiers HTML** alors qu'il ne devrait l'être que dans `vault.html` :
+
+| Fichier HTML | Devrait charger `vault.css` ? |
+|---|---|
+| `vault.html` | ✅ Oui — page légitime |
+| `alchemy-admin.html` | ❌ Non |
+| `dungeons.html` | ❌ Non |
+| `pve-admin.html` | ❌ Non |
+| `shop-admin.html` | ❌ Non |
+| `shop.html` | ❌ Non |
+
+### Pourquoi c'est chargé partout ?
+
+Parce que plusieurs classes définies dans `vault.css` sont utilisées **dans des JS qui génèrent du HTML pour d'autres pages** ou dans d'autres templates HTML. Ces classes ont "fuité" hors du contexte vault.
+
+### Audit des classes — Ce qui part où
+
+**Groupe A — Composant équipement partagé** (utilisé dans `shop-admin.html`, `armory.js`) :
+- `.eq-create-row`, `.eq-create-field`, `.equip-create-section` → forme de création d'équipement réutilisée
+
+**Groupe B — Cards d'équipement** (générées par `vault.js` et `shop-admin.js`) :
+- `.vault-card`, `.vault-card-header`, `.vault-card-name`, `.vault-card-slot`, `.vault-card-actions`, `.vault-card-stats`, `.vault-card-footer`, `.vault-card-weight`, `.vault-card-status`, `.vault-card-effect`
+- `.vault-btn-delete`, `.vault-btn-edit`, `.vault-empty-state`, `.vault-stat-chip`
+- `.status-equipped`, `.status-available`
+
+**Groupe C — Anomaly badge/tooltip** (utilisé dans `alchemy-admin.js`, `combat.js`, `pve-admin.js`, `shop-admin.js`, `shop.js`, `ui.js`, `utils.js`) :
+- `.anomaly-badge`, `.anomaly-tooltip`, `.anomaly-tooltip-title`, `.anomaly-tooltip-desc`
+
+**Groupe D — Type toggle cons/ano** (utilisé dans `alchemy-admin.html`, `dungeons.html`, `shop-admin.html` + de nombreux JS) :
+- `.type-toggle`, `.toggle-btn`, `.cons`, `.ano`
+
+**Groupe E — Malus chip** (utilisé dans `armory.js`, `forge.js`, `shop-admin.js`, `shop.js`) :
+- `.malus`
+
+**Groupe F — Modal overlay** (utilisé dans `shop-admin.html`) :
+- `.vault-modal-overlay`, `.vault-modal-content`
+
+**Groupe G — Vault-only** (jamais utilisé hors de `vault.html` / `vault.js`) :
+- `.vault-main`, `.vault-toolbar`, `.vault-grid`, `.vault-toolbar .search-bar`, `.vault-toolbar .filter-group`
+- `.anomaly-info-box`, `.weight-gauge-*`, `.btn-forge-submit`, `.btn-anomaly-submit`
+- `.magic-toggle-*`, `.locked-state-banner`, `.anomalie-slider-*`
+
+### Solution recommandée
+
+#### Étape 1 — Extraire les classes globales
+
+Créer un nouveau fichier **`styles/ui/equipment.css`** pour y déplacer les composants réellement partagés :
+
+```
+styles/ui/equipment.css  🆕
+├── Groupe A : .eq-create-row / .eq-create-field / .equip-create-section
+├── Groupe B : .vault-card* / .vault-btn-* / .vault-stat-chip / .status-*
+├── Groupe C : .anomaly-badge / .anomaly-tooltip*
+├── Groupe D : .type-toggle / .toggle-btn / .cons / .ano
+├── Groupe E : .malus
+└── Groupe F : .vault-modal-overlay / .vault-modal-content
+```
+
+Ce fichier sera chargé dans le layout global (ou dans chaque page qui en a besoin).
+
+> [!TIP]
+> **Alternative** : Si la plupart de ces classes ne sont utilisées que par les pages admin (`shop-admin`, `pve-admin`, `alchemy-admin`), envisager de les grouper dans `styles/ui/admin-shared.css` plutôt que dans `equipment.css`.
+
+#### Étape 2 — Épurer `vault.css`
+
+Après extraction, `vault.css` ne garde que le **Groupe G** (vault-only) — ~250 lignes au lieu de 577.
+
+#### Étape 3 — Retirer le `<link>` vault.css des 5 pages
+
+```html
+<!-- À retirer de : alchemy-admin.html, dungeons.html, pve-admin.html, shop-admin.html, shop.html -->
+<link rel="stylesheet" href="/styles/pages/vault.css?v=...">
+```
+
+Et ajouter à la place le lien vers `equipment.css` (si ce fichier est créé).
+
+### Checklist d'avancement
+
+- [x] Créer `styles/ui/equipment.css` avec les groupes A, B, C, D, E, F
+- [x] Supprimer ces classes de `vault.css`
+- [x] Vérifier que `vault.html` + `vault.js` fonctionnent toujours (les classes vault-card restent valides via `equipment.css`)
+- [x] Retirer `<link vault.css>` de `alchemy-admin.html`
+- [x] Retirer `<link vault.css>` de `dungeons.html`
+- [x] Retirer `<link vault.css>` de `pve-admin.html`
+- [x] Retirer `<link vault.css>` de `shop-admin.html`
+- [x] Retirer `<link vault.css>` de `shop.html`
+- [x] Ajouter `<link equipment.css>` dans les pages qui utilisent ces composants
 
 ---
 

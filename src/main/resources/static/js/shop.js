@@ -44,11 +44,11 @@ function generateStandHtml(eq) {
             const sign = val > 0 ? '+' : '';
             const suffix = s.isPercent ? '%' : '';
             return `<div class="shop-stand-stat ${isMalus ? 'malus' : ''}" title="${s.label}">
-                <div class="flex-center" style="gap: 0.3rem;">
+                <div class="flex-center-gap">
                     <span class="material-symbols-outlined text-sm" style="color:${isMalus ? '#ef4444' : s.color};">${s.icon}</span>
                     ${s.label}
                 </div>
-                <span style="font-weight: 600;">${sign}${val}${suffix}</span>
+                <span class="font-bold">${sign}${val}${suffix}</span>
             </div>`;
         }).join('');
 
@@ -60,12 +60,12 @@ function generateStandHtml(eq) {
         const color = isCursed ? '#9b2d2d' : '#c084fc';
         const bg = isCursed ? 'rgba(156, 163, 175, 0.15)' : 'rgba(168, 85, 247, 0.1)';
 
-        effectHtml = `<div class="shop-stand-stat" style="background: ${bg}; color: ${color}; ${isCursed ? 'border: 1px solid rgba(156, 163, 175, 0.2);' : ''}">
-            <div class="flex-center" style="gap: 0.3rem;">
+        effectHtml = `<div class="shop-stand-stat ${isCursed ? 'border-cursed' : ''}" style="background: ${bg}; color: ${color};">
+            <div class="flex-center-gap">
                 <span class="material-symbols-outlined text-sm">${icon}</span>
                 ${label}
             </div>
-            <span style="font-weight: 600;">${eq.specialEffectValue}</span>
+            <span class="font-bold">${eq.specialEffectValue}</span>
         </div>`;
     }
 
@@ -125,10 +125,10 @@ function generateStandHtml(eq) {
                     const spiriColor = aTemp && aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
                     const tooltipData = getAnomalyTooltipHTML(aTemp, n);
                     anos.push(`<span class="anomaly-badge" style="border-color: ${spiriColor}; background: linear-gradient(${spiriColor}25, ${spiriColor}25), #1e293b; color: ${spiriColor};" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}">
-                                <span class="material-symbols-outlined align-middle" style="font-size: 1rem; color: ${spiriColor};">${catIcon}</span> ${q}
+                                <span class="material-symbols-outlined align-middle text-base" style="color: ${spiriColor};">${catIcon}</span> ${q}
                             </span>`);
                 }
-                return `<div style="display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; margin-top: 2px;">${anos.join('')}</div>`;
+                return `<div class="flex flex-wrap justify-center gap-1 mt-1">${anos.join('')}</div>`;
             }
             return '';
         })()}
@@ -234,8 +234,8 @@ function renderSpecials() {
 
     if (consumables.length > 0) {
         html += `
-            <div class="shop-rarity-group" style="border-top: 3px solid #c084fc; background: rgba(192, 132, 252, 0.05);">
-                <div class="shop-rarity-title" style="color: #c084fc; border-color: rgba(192, 132, 252, 0.3);">CONSOMABLE</div>
+            <div class="shop-rarity-group border-t-violet bg-violet-light">
+                <div class="shop-rarity-title text-violet border-violet-glass">CONSOMABLE</div>
         `;
         consumables.forEach(eq => {
             html += generateStandHtml(eq);
@@ -264,7 +264,7 @@ window.openBuyModal = function (id, isConsumable = false) {
 
     let priceHtml = ``;
     if (eq.shopPrice !== undefined && eq.shopPrice > 0) {
-        priceHtml += `<strong style="color:#fbbf24; display: inline-flex; align-items: center; gap: 0.2rem;">${eq.shopPrice} <span class="material-symbols-outlined align-middle" style="font-size: 1.1rem; color:#fcd34d;">monetization_on</span></strong>`;
+        priceHtml += `<strong class="text-amber-400 inline-flex items-center gap-1">${eq.shopPrice} <span class="material-symbols-outlined align-middle text-md-num text-amber-300">monetization_on</span></strong>`;
     }
     if (eq.priceAnomalies && Object.keys(eq.priceAnomalies).length > 0) {
         let anos = [];
@@ -275,15 +275,15 @@ window.openBuyModal = function (id, isConsumable = false) {
 
             const tooltipData = getAnomalyTooltipHTML(aTemp, n);
 
-            anos.push(`<span class="anomaly-badge tooltip-trigger" style="border: 1px solid ${spiriColor}; background: linear-gradient(${spiriColor}25, ${spiriColor}25), #1e293b; color: ${spiriColor}; padding: 0.2rem 0.4rem; border-radius: 6px; display: inline-flex; align-items: center; gap: 0.3rem; font-weight: 600; cursor: help;" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}"><span class="material-symbols-outlined align-middle" style="font-size: 1rem; color: ${spiriColor};">${catIcon}</span> ${q}x ${n}</span>`);
+            anos.push(`<span class="anomaly-badge tooltip-trigger inline-flex items-center gap-1 font-bold cursor-help rounded-md px-2 py-1" style="border: 1px solid ${spiriColor}; background: linear-gradient(${spiriColor}25, ${spiriColor}25), #1e293b; color: ${spiriColor};" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}"><span class="material-symbols-outlined align-middle text-base" style="color: ${spiriColor};">${catIcon}</span> ${q}x ${n}</span>`);
         }
-        if (priceHtml !== '') priceHtml += ` <span class="text-muted" style="margin: 0 0.4rem;">et</span> `;
-        priceHtml += anos.join(' <span class="text-muted" style="margin: 0 0.4rem;">+</span> ');
+        if (priceHtml !== '') priceHtml += ` <span class="text-muted mx-1">et</span> `;
+        priceHtml += anos.join(' <span class="text-muted mx-1">+</span> ');
     }
 
     showModal({
         title: 'Acheter cet objet ?',
-        body: `Êtes-vous sûr de vouloir acheter <strong style="color:#fff;">${eq.name}</strong> pour <div style="display:inline-flex; align-items:center; justify-content:center; flex-wrap:wrap; margin-top:0.3rem;">${priceHtml}</div> ?`,
+        body: `Êtes-vous sûr de vouloir acheter <strong class="text-white">${eq.name}</strong> pour <div class="inline-flex items-center justify-center flex-wrap mt-1">${priceHtml}</div> ?`,
         icon: 'shopping_cart',
         confirmText: 'Oui, acheter',
         onConfirm: async () => {

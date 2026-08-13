@@ -7,6 +7,7 @@ public enum EquipmentSlot {
     ARME_DEUX_MAINS("Arme 2M", "swords", "#ef4444", ""),
     ARME_GAUCHE("Arme 1M", "colorize", "#ef4444", ""),
     ARME_DROITE("Arme Sec.", "security", "#ef4444", ""),
+    ANNEAU("Anneau", "diamond", "#f59e0b", ""),
     ANNEAU_GAUCHE("Anneau G.", "diamond", "#f59e0b", ""),
     ANNEAU_DROIT("Anneau D.", "diamond", "#f59e0b", ""),
     BOTTES("Bottes", "footprint", "#10b981", ""),

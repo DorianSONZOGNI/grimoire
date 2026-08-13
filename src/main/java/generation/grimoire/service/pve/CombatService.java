@@ -638,6 +638,7 @@ public class CombatService {
                         } else {
                             session.addLog("L'autel vous a offert un équipement : " + template.getName() + " !");
                         }
+                        room.setAltarRewardEquipment(clone);
                     }
                 } else {
                     session.addLog("L'autel a consumé votre offrande sans vous accorder d'équipement...");

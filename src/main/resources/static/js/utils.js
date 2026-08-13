@@ -100,7 +100,7 @@ function calculateWeight(eq) {
         mStr = 2.5; mPow = 2.5;
         mSpd = 3.5;
         mCrit = 2.0;
-    } else if (s === 'ANNEAU_GAUCHE' || s === 'ANNEAU_DROIT') {
+    } else if (s === 'ANNEAU' || s === 'ANNEAU_GAUCHE' || s === 'ANNEAU_DROIT') {
         mMana = 0.1;
         mArm = 2.0; mRes = 2.0;
         mRegMana = 0.8;
@@ -302,3 +302,50 @@ function getEquipmentTooltipHTML(eq) {
 }
 
 window.getEquipmentTooltipHTML = getEquipmentTooltipHTML;
+
+window.generateEquipmentStatsHtml = function(eq, cssClass = 'vault-stat-chip') {
+    if (!eq) return '';
+    const statsDef = [
+        { key: 'bonusHealthMax', label: 'PV', icon: 'favorite', color: '#ec4899' },
+        { key: 'bonusManaMax', label: 'Mana', icon: 'water_drop', color: '#38bdf8' },
+        { key: 'bonusPower', label: 'Puiss', icon: 'auto_awesome', color: '#a855f7' },
+        { key: 'bonusStrength', label: 'Force', icon: 'fitness_center', color: '#f43f5e' },
+        { key: 'bonusArmor', label: 'Armure', icon: 'shield', color: '#3b82f6' },
+        { key: 'bonusResistance', label: 'Résist', icon: 'shield', color: '#10b981' },
+        { key: 'bonusSpeed', label: 'Vitesse', icon: 'bolt', color: '#f59e0b' },
+        { key: 'bonusCrit', label: 'Crit', icon: 'gps_fixed', color: '#ef4444' },
+        { key: 'regenHealthPerTurn', label: 'PV/t', icon: 'healing', color: '#10b981' },
+        { key: 'regenManaPerTurn', label: 'Mana/t', icon: 'cyclone', color: '#38bdf8' },
+        { key: 'consumableHpPercent', label: 'PV Max', icon: 'favorite', color: '#ec4899', isPercent: true },
+        { key: 'consumableManaPercent', label: 'Mana Max', icon: 'water_drop', color: '#38bdf8', isPercent: true },
+        { key: 'consumableMissingHpPercent', label: 'PV Manq', icon: 'healing', color: '#f43f5e', isPercent: true },
+        { key: 'consumableMissingManaPercent', label: 'Mana Manq', icon: 'cyclone', color: '#a855f7', isPercent: true }
+    ];
+    return statsDef
+        .filter(s => eq[s.key] && eq[s.key] !== 0)
+        .map(s => {
+            const val = eq[s.key];
+            const isMalus = val < 0;
+            const sign = val > 0 ? '+' : '';
+            const suffix = s.isPercent ? '%' : '';
+            return `<span class="${cssClass} ${isMalus ? 'malus' : ''}" title="${s.label}">
+                <span class="material-symbols-outlined text-xs" style="color:${isMalus ? '#ef4444' : s.color};">${s.icon}</span>
+                ${sign}${val}${suffix}
+            </span>`;
+        }).join('');
+};
+
+window.generateEquipmentEffectHtml = function(eq, baseClass = 'vault-card-effect') {
+    if (!eq || !eq.specialEffect || eq.specialEffect === 'NONE') return '';
+    
+    const label = (window.EFFECT_LABELS && window.EFFECT_LABELS[eq.specialEffect]) || eq.specialEffect;
+    const isCursed = eq.specialEffect.startsWith('CURSED_');
+    const icon = isCursed ? 'skull' : 'auto_awesome';
+    const color = isCursed ? '#9b2d2d' : '#c084fc';
+    const bg = isCursed ? 'rgba(156, 163, 175, 0.15)' : 'rgba(168, 85, 247, 0.1)';
+
+    return `<div class="${baseClass}" style="color: ${color}; background: ${bg}; ${isCursed ? 'border: 1px solid rgba(156, 163, 175, 0.2);' : ''}">
+        <span class="material-symbols-outlined text-sm">${icon}</span>
+        ${label} : ${eq.specialEffectValue || ''}
+    </div>`;
+};

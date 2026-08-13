@@ -4,6 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Boutique du Grimoire, ici, vous pourrez retrouver chaque jour des objets différents disponibles à l'achat.">
     <title>Grimoire - Boutique</title>
     <link rel="icon" type="image/png" href="/favicon.svg">
     <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -17,45 +19,45 @@
     <link rel="stylesheet" href="/styles/variables.css?v=1786180000000">
     <link rel="stylesheet" href="/styles/ui/components.css?v=1786180000000">
     <link rel="stylesheet" href="/styles/ui/utilities.css?v=1786180000000">
-    <link rel="stylesheet" href="/styles/pages/vault.css?v=1786180000000">
+    <link rel="stylesheet" href="/styles/ui/equipment.css?v=1786180000000">
     <link rel="stylesheet" href="/styles/pages/shop.css?v=1786180000000">
 </head>
 
 <body>
     <app-navbar active-page="shop"></app-navbar>
 
-    <div class="vault-main"  >
-        <div class="panel"  >
-            <div class="page-header"  >
-                <div class="page-header-content"  >
-                    <div class="page-header-icon success"  >
-                        <span class="material-symbols-outlined text-[1.8rem]"   >storefront</span>
+    <div class="vault-main">
+        <div class="panel">
+            <div class="page-header">
+                <div class="page-header-content">
+                    <div class="page-header-icon success">
+                        <span class="material-symbols-outlined text-[1.8rem]">storefront</span>
                     </div>
                     <div>
-                        <h2 class="page-header-title"  >Boutique du Jour</h2>
-                        <div class="page-header-subtitle"  >Ces objets changent tous les jours à minuit.</div>
+                        <h2 class="page-header-title">Boutique du Jour</h2>
+                        <div class="page-header-subtitle">Ces objets changent tous les jours à minuit.</div>
                     </div>
                 </div>
             </div>
 
-            <div class="shop-showcase"  id="shopGrid" >
-                <div class="text-muted font-italic"  >Chargement de la boutique...</div>
+            <div class="shop-showcase" id="shopGrid">
+                <div class="text-muted font-italic">Chargement de la boutique...</div>
             </div>
 
-            <div class="page-header mt-3"  >
-                <div class="page-header-content"  >
-                    <div class="page-header-icon warning"  >
-                        <span class="material-symbols-outlined text-[1.8rem]"   >local_offer</span>
+            <div class="page-header mt-3">
+                <div class="page-header-content">
+                    <div class="page-header-icon warning">
+                        <span class="material-symbols-outlined text-[1.8rem]">local_offer</span>
                     </div>
                     <div>
-                        <h2 class="page-header-title"  >Offres Spéciales &amp; Consomables</h2>
-                        <div class="page-header-subtitle"  >Promotions et objets utiles pour les expéditions.</div>
+                        <h2 class="page-header-title">Offres Spéciales &amp; Consomables</h2>
+                        <div class="page-header-subtitle">Promotions et objets utiles pour les expéditions.</div>
                     </div>
                 </div>
             </div>
 
-            <div class="shop-showcase"  id="specialsGrid" >
-                <div class="text-muted font-italic"  >Chargement des offres...</div>
+            <div class="shop-showcase" id="specialsGrid">
+                <div class="text-muted font-italic">Chargement des offres...</div>
             </div>
         </div>
     </div>
@@ -63,6 +65,7 @@
     <!-- Buy Confirmation Modal -->
 
     <script src="/js/utils.js"></script>
+    <script type="module" src="/js/ui.js"></script>
     <script src="/js/shop.js?v=99"></script>
     <script type="module" src="/js/auth.js?v=10"></script>
     <script src="/js/components/navbar.js"></script>

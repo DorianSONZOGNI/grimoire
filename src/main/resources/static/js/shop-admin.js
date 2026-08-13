@@ -4,36 +4,14 @@ const pageState = { allEquipments: [], equipmentToDelete: null, editingEquipment
 
 
 // ===== Custom Select Logic =====
-document.addEventListener('click', (e) => {
-    // Fermer les dropdowns
-    if (!e.target.closest('.custom-select-wrapper')) {
-        document.querySelectorAll('.custom-select-wrapper.open').forEach(w => w.classList.remove('open'));
-    }
-
-    const trigger = e.target.closest('.custom-select-trigger');
-    if (trigger) {
-        const wrapper = trigger.closest('.custom-select-wrapper');
-        document.querySelectorAll('.custom-select-wrapper.open').forEach(w => {
-            if (w !== wrapper) w.classList.remove('open');
-        });
-        wrapper.classList.toggle('open');
-        return;
-    }
-
-    const option = e.target.closest('.custom-option');
-    if (option) {
-        const wrapper = option.closest('.custom-select-wrapper');
-        const hiddenInput = wrapper.querySelector('input[type="hidden"]');
-        const labelEl = wrapper.querySelector('.cs-label');
-
-        hiddenInput.value = option.getAttribute('data-value');
-        labelEl.innerHTML = option.innerHTML;
-        wrapper.classList.remove('open');
-
+document.addEventListener('change', (e) => {
+    if (e.target.tagName.toLowerCase() === 'input' && e.target.type === 'hidden') {
+        const hiddenInput = e.target;
         if (hiddenInput.id === 'eqRarity') {
             const val = hiddenInput.value;
             const row = document.getElementById('eqSpecialEffectRow');
             if (val === 'EPIQUE' || val === 'RELIQUE' || val === 'MAUDIT') {
+                row.classList.remove('hidden');
                 row.style.display = 'grid';
                 const isEpic = val === 'EPIQUE';
                 const isMaudit = val === 'MAUDIT';
@@ -48,12 +26,12 @@ document.addEventListener('click', (e) => {
                     inputBorder = 'rgba(85, 85, 85, 0.3)';
                 }
 
-                row.style.background = bg;
-                row.style.border = border;
-                document.getElementById('eqSpecialEffectLabelTitle').style.color = color;
-                document.getElementById('eqSpecialEffectValueTitle').style.color = color;
-                document.getElementById('eqSpecialEffectTrigger').style.borderColor = inputBorder;
-                document.getElementById('eqSpecialEffectValue').style.borderColor = inputBorder;
+                row.style.setProperty('background', bg, 'important');
+                row.style.setProperty('border', border, 'important');
+                document.getElementById('eqSpecialEffectLabelTitle').style.setProperty('color', color, 'important');
+                document.getElementById('eqSpecialEffectValueTitle').style.setProperty('color', color, 'important');
+                document.getElementById('eqSpecialEffectTrigger').style.setProperty('border-color', inputBorder, 'important');
+                document.getElementById('eqSpecialEffectValue').style.setProperty('border-color', inputBorder, 'important');
 
                 const effectOptions = document.querySelectorAll('#eqSpecialEffectOptions .custom-option');
                 effectOptions.forEach(opt => {
@@ -75,6 +53,7 @@ document.addEventListener('click', (e) => {
                     document.getElementById('eqSpecialEffectValue').value = 0;
                 }
             } else {
+                row.classList.add('hidden');
                 row.style.display = 'none';
                 document.getElementById('eqSpecialEffect').value = 'NONE';
                 document.getElementById('eqSpecialEffectLabel').innerHTML = '<span class="material-symbols-outlined cs-icon text-muted">not_interested</span> Aucun';
@@ -92,7 +71,7 @@ document.addEventListener('click', (e) => {
 // ===== API =====
 async function loadEquipments() {
     try {
-        pageState.allEquipments = await api.loadEquipments({ sources: ['/api/shop/templates'] });
+        pageState.allEquipments = await window.api.loadEquipments({ sources: ['/api/shop/templates'] });
         pageState.allEquipments.forEach(eq => {
             eq._weight = calculateWeight(eq);
         });
@@ -158,7 +137,7 @@ function addAnomalyRow(selectedName = '', qty = 1) {
             </div>
             <input type="hidden" class="anomaly-select-hidden" value="${selectedName}">
         </div>
-        <div class="flex-center" style="gap: 0.3rem;">
+        <div class="flex-center-gap">
             <span class="text-xs text-muted">Qté:</span>
             <input type="number" class="anomaly-qty-input" value="${qty}" min="1" style="width: 60px; padding: 0.5rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-family: 'Outfit', sans-serif;">
         </div>
@@ -195,7 +174,7 @@ function deleteEquipment(id) {
 function renderVault() {
     // Sort allEquipments: rarity order, then slot, then name
     const rarityOrder = { 'MAUDIT': -1, 'RELIQUE': 0, 'EPIQUE': 1, 'LEGENDAIRE': 2, 'MYTHIQUE': 3, 'RARE': 4, 'INHABITUEL': 5, 'COMMUN': 6 };
-    const slotOrder = { 'CASQUE': 1, 'PLASTRON': 2, 'ARME_DEUX_MAINS': 3, 'ARME_GAUCHE': 4, 'ARME_DROITE': 5, 'ANNEAU_GAUCHE': 6, 'ANNEAU_DROIT': 7, 'BOTTES': 8, 'CAPE': 9, 'CONSOMMABLE': 10 };
+    const slotOrder = { 'CASQUE': 1, 'PLASTRON': 2, 'ARME_DEUX_MAINS': 3, 'ARME_GAUCHE': 4, 'ARME_DROITE': 5, 'ANNEAU': 6, 'BOTTES': 8, 'CAPE': 9, 'CONSOMMABLE': 10 };
 
     let sorted = [...pageState.allEquipments].sort((a, b) => {
         const rNameA = getRarityName(a.rarity);
@@ -275,37 +254,13 @@ function renderGrid(equipments) {
         `;
 
         if (items.length === 0) {
-            html += `<div class="font-italic text-center" style="padding: 1rem; color: #64748b;">Aucun article dans cette rareté</div>`;
+            html += `<div class="font-italic text-center text-muted p-4">Aucun article dans cette rareté</div>`;
         } else {
             items.forEach(eq => {
                 const slotInfo = getSlotInfo(eq);
 
-                const statsHtml = STAT_DEFS
-                    .filter(s => eq[s.key] && eq[s.key] !== 0)
-                    .map(s => {
-                        const val = eq[s.key];
-                        const isMalus = val < 0;
-                        const sign = val > 0 ? '+' : '';
-                        const suffix = s.isPercent ? '%' : '';
-                        return `<span class="stat-badge ${isMalus ? 'malus' : ''}" title="${s.label}">
-                        <span class="material-symbols-outlined text-xs" style="color:${isMalus ? '#ef4444' : s.color};">${s.icon}</span>
-                        ${sign}${val}${suffix}
-                    </span>`;
-                    }).join('');
-
-                let effectHtml = '';
-                if (eq.specialEffect && eq.specialEffect !== 'NONE') {
-                    const label = window.EFFECT_LABELS[eq.specialEffect] || eq.specialEffect;
-                    const isCursed = eq.specialEffect.startsWith('CURSED_');
-                    const icon = isCursed ? 'skull' : 'auto_awesome';
-                    const color = isCursed ? '#9b2d2d' : '#c084fc';
-                    const bg = isCursed ? 'rgba(156, 163, 175, 0.15)' : 'rgba(168, 85, 247, 0.1)';
-
-                    effectHtml = `<span class="stat-badge" style="background: ${bg}; color: ${color}; ${isCursed ? 'border: 1px solid rgba(156, 163, 175, 0.2);' : ''}">
-                    <span class="material-symbols-outlined text-xs">${icon}</span>
-                    ${label} : ${eq.specialEffectValue}
-                </span>`;
-                }
+                const statsHtml = window.generateEquipmentStatsHtml(eq, 'stat-badge');
+                const effectHtml = window.generateEquipmentEffectHtml(eq, 'stat-badge');
 
                 const displayPrice = eq.shopPrice !== undefined ? (eq.shopPrice % 1 === 0 ? eq.shopPrice : eq.shopPrice.toFixed(1)) : calculateShopPrice(eq._weight || 0, rarity || 'COMMUN', eq.slot);
 
@@ -318,7 +273,7 @@ function renderGrid(equipments) {
                     </div>
                     
                     <div class="shop-admin-row-stats">
-                        ${statsHtml || '<span style="color:#64748b; font-style:italic;">Aucune stat</span>'}
+                        ${statsHtml || '<span class="text-muted font-italic">Aucune stat</span>'}
                         ${effectHtml}
                     </div>
 
@@ -336,7 +291,7 @@ function renderGrid(equipments) {
                                         <span class="material-symbols-outlined text-sm align-middle" style="color: ${spiriColor};">${catIcon}</span> ${q}
                                     </span>`);
                             }
-                            priceHtml += ` <br><div style="display: flex; flex-wrap: wrap; gap: 4px; justify-content: center; margin-top: 4px;">${anos.join('')}</div>`;
+                            priceHtml += ` <br><div class="flex flex-wrap justify-center gap-1 mt-1">${anos.join('')}</div>`;
                         }
                         return priceHtml;
                     })()}
@@ -371,7 +326,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     const checkAdmin = async () => {
         if (!window.currentUser) return;
         if (!window.isAdmin) {
-            document.body.innerHTML = "<h2 style='color:red;text-align:center;margin-top:50px;'>Accès Refusé : Réservé aux Admins</h2>";
+            document.body.innerHTML = "<h2 class='text-error text-center mt-12'>Accès Refusé : Réservé aux Admins</h2>";
             return;
         }
         await loadAnomalies();
@@ -403,7 +358,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     // Render create form slot select
     const slotOptionsContainer = document.getElementById('eqSlotOptions');
     if (slotOptionsContainer) {
-        const slots = ['CASQUE', 'PLASTRON', 'ARME_DEUX_MAINS', 'ARME_GAUCHE', 'ARME_DROITE', 'ANNEAU_GAUCHE', 'ANNEAU_DROIT', 'BOTTES', 'CAPE', 'CONSOMMABLE'];
+        const slots = ['CASQUE', 'PLASTRON', 'ARME_DEUX_MAINS', 'ARME_GAUCHE', 'ARME_DROITE', 'ANNEAU', 'BOTTES', 'CAPE', 'CONSOMMABLE'];
         slotOptionsContainer.innerHTML = slots.map(s => {
             const info = window.SLOT_LABELS[s];
             return `<div class="custom-option" data-value="${s}">
@@ -521,7 +476,7 @@ window.editEquipment = function (id) {
 
         const row = document.getElementById('eqSpecialEffectRow');
         if (eqRarityName === 'EPIQUE' || eqRarityName === 'RELIQUE' || eqRarityName === 'MAUDIT') {
-            if (row) row.style.display = 'grid';
+            if (row) { row.classList.remove('hidden'); row.style.display = 'grid'; }
 
             const isEpic = eqRarityName === 'EPIQUE';
             const isMaudit = eqRarityName === 'MAUDIT';
@@ -538,8 +493,8 @@ window.editEquipment = function (id) {
             }
 
             if (row) {
-                row.style.background = bg;
-                row.style.border = border;
+                row.style.setProperty('background', bg, 'important');
+                row.style.setProperty('border', border, 'important');
             }
 
             const effectOptions = document.querySelectorAll('#eqSpecialEffectOptions .custom-option');
@@ -555,16 +510,16 @@ window.editEquipment = function (id) {
             });
 
             const labelTitle = document.getElementById('eqSpecialEffectLabelTitle');
-            if (labelTitle) labelTitle.style.color = color;
+            if (labelTitle) labelTitle.style.setProperty('color', color, 'important');
 
             const valueTitle = document.getElementById('eqSpecialEffectValueTitle');
-            if (valueTitle) valueTitle.style.color = color;
+            if (valueTitle) valueTitle.style.setProperty('color', color, 'important');
 
             const trigger = document.getElementById('eqSpecialEffectTrigger');
-            if (trigger) trigger.style.borderColor = inputBorder;
+            if (trigger) trigger.style.setProperty('border-color', inputBorder, 'important');
 
             const valInput = document.getElementById('eqSpecialEffectValue');
-            if (valInput) valInput.style.borderColor = inputBorder;
+            if (valInput) valInput.style.setProperty('border-color', inputBorder, 'important');
 
         } else {
             if (row) row.style.display = 'none';
@@ -676,18 +631,26 @@ window.updateWeightUI = async function () {
     if (!slot) return;
 
     document.querySelectorAll('.non-consumable-stat').forEach(el => {
-        el.style.display = slot === 'CONSOMMABLE' ? 'none' : '';
+        if (slot === 'CONSOMMABLE') el.classList.add('hidden');
+        else el.classList.remove('hidden');
+        el.style.display = '';
     });
     document.querySelectorAll('.consumable-stat').forEach(el => {
-        el.style.display = slot === 'CONSOMMABLE' ? 'flex' : 'none';
+        if (slot === 'CONSOMMABLE') el.classList.remove('hidden');
+        else el.classList.add('hidden');
+        el.style.display = '';
     });
     document.querySelectorAll('.consumable-category-field').forEach(el => {
-        el.style.display = slot === 'CONSOMMABLE' ? 'flex' : 'none';
+        if (slot === 'CONSOMMABLE') el.classList.remove('hidden');
+        else el.classList.add('hidden');
+        el.style.display = '';
     });
 
     const row = document.getElementById('eqBaseWeightRow');
     if (row) {
-        row.style.display = slot === 'CONSOMMABLE' ? 'flex' : 'none';
+        if (slot === 'CONSOMMABLE') row.classList.remove('hidden');
+        else row.classList.add('hidden');
+        row.style.display = '';
     }
 
     let w = 0;
@@ -735,24 +698,29 @@ window.updateWeightUI = async function () {
     if (fillEl) {
         let pct = Math.round((w / maxW) * 100);
         let colorClass = 'bg-success';
+        let textColorClass = 'text-success';
 
         if (slot === 'CONSOMMABLE') {
             pct = 0;
             colorClass = 'bg-success';
+            textColorClass = 'text-success';
         } else if (pct < 0) {
             pct = Math.min(Math.abs(pct), 100);
             colorClass = 'bg-info';
+            textColorClass = 'text-info';
         } else if (pct > 100) {
             pct = 100;
             colorClass = 'bg-danger';
+            textColorClass = 'text-danger';
         } else if (pct > 80) {
             colorClass = 'bg-warning';
+            textColorClass = 'text-warning';
         }
 
         fillEl.className = 'gauge-fill hp h-full transition-all duration-300 w-pct-' + pct + ' ' + colorClass;
         if (textEl) {
-            textEl.className = colorClass;
-            // Override background since it's a text element, but color is also set by the utility class
+            textEl.className = textColorClass + ' text-sm font-bold';
+            textEl.style.backgroundColor = 'transparent';
         }
     }
 

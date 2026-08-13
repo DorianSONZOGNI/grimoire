@@ -427,7 +427,7 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (!dungeonId || !characterIds) {
         if (typeof showNotif !== 'undefined') window.showNotif("Paramètres de combat manquants.", true);
         else ui.showNotif("Paramètres de combat manquants.", true);
-        window.location.href = '/vault.html';
+        window.location.href = '/dungeons.html';
         return;
     }
 
@@ -450,7 +450,7 @@ async function resumeCombat(savedSessionId) {
             localStorage.removeItem('activeCombatId');
             if (typeof showNotif !== 'undefined') window.showNotif("Combat introuvable ou expiré.", true);
             else ui.showNotif("Combat introuvable ou expiré.", true);
-            window.location.href = '/vault.html';
+            window.location.href = '/dungeons.html';
             return;
         }
         const data = await res.json();
@@ -465,7 +465,7 @@ async function resumeCombat(savedSessionId) {
     } catch (e) {
         console.error(e);
         localStorage.removeItem('activeCombatId');
-        window.location.href = '/vault.html';
+        window.location.href = '/dungeons.html';
     }
 }
 
@@ -483,13 +483,16 @@ async function startCombat(characterIds, dungeonId, consumableIds) {
         if (!res.ok) {
             if (typeof showNotif !== 'undefined') window.showNotif("Erreur lors de l'initialisation du donjon.", true);
             else ui.showNotif("Erreur lors de l'initialisation du donjon.", true);
-            window.location.href = '/vault.html';
+            window.location.href = '/dungeons.html';
             return;
         }
 
         const data = await res.json();
         pageState.sessionId = data.sessionId;
         localStorage.setItem('activeCombatId', pageState.sessionId);
+        
+        // Nettoyer l'URL pour éviter de relancer le donjon au F5
+        window.history.replaceState({}, document.title, window.location.pathname);
 
         // Initialize previous XP for the first room
         data.players.forEach(p => {
@@ -756,8 +759,8 @@ function initiateCombatCast(spellId) {
         } else {
             overlay.innerHTML = `
                 <div style="display: flex; gap: 0.5rem;">
-                    <button class="text-sm font-bold text-success" type="button" onclick="event.stopPropagation(); confirmCombatCast(null, 'direct')" style="background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.4); padding: 0.4rem 1rem; border-radius: 4px; cursor: pointer; font-family: 'Outfit', sans-serif;">Lancer</button>
-                    <button class="text-sm font-bold text-error" type="button" onclick="event.stopPropagation(); cancelCombatCast()" style="background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); padding: 0.4rem 1rem; border-radius: 4px; cursor: pointer; font-family: 'Outfit', sans-serif;">Annuler</button>
+                    <button class="text-sm font-bold text-success" type="button" onclick="event.stopPropagation(); confirmCombatCast(null, 'direct')" style="background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.4); padding: 0.3rem 0.5rem; border-radius: 4px; cursor: pointer; font-family: 'Outfit', sans-serif;">Lancer</button>
+                    <button class="text-sm font-bold text-error" type="button" onclick="event.stopPropagation(); cancelCombatCast()" style="background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); padding: 0.3rem 0.5rem; border-radius: 4px; cursor: pointer; font-family: 'Outfit', sans-serif;">Annuler</button>
                 </div>
             `;
             if (needsEnemy) enemyCards.forEach(card => card.classList.add('target-highlight'));
@@ -2046,8 +2049,43 @@ function updateUI(data) {
                                         `;
                                     }
 
+                                    const altarGoldMatch = log.match(/r.compense de (\d+) Or/);
+                                    if (altarGoldMatch) {
+                                        const goldAmount = altarGoldMatch[1];
+                                        gainedItemsHtml += `
+                                            <div class="flex-center" style="background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(251, 191, 36, 0.5); padding: 0.8rem 1rem; border-radius: 8px; color: #fbbf24; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
+                                                <span class="material-symbols-outlined text-warning">monetization_on</span> +${goldAmount} Or
+                                            </div>
+                                        `;
+                                    }
+
+                                    const altarXpMatch = log.match(/accorde (\d+) XP de Spiritualit/);
+                                    if (altarXpMatch) {
+                                        const xpAmount = altarXpMatch[1];
+                                        gainedItemsHtml += `
+                                            <div class="flex-center" style="background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(245, 158, 11, 0.5); padding: 0.8rem 1rem; border-radius: 8px; color: #f59e0b; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
+                                                <span class="material-symbols-outlined" style="color: #f59e0b;">auto_awesome</span> +${xpAmount} XP Spirituel
+                                            </div>
+                                        `;
+                                    }
+
                                     if (log.includes("Vous entrez dans") || log.includes("Vous trouvez un trésor") || log.startsWith("Événement :")) break;
                                 }
+                            }
+
+                            if (data.currentRoom && data.currentRoom.altarRewardEquipment) {
+                                const eq = data.currentRoom.altarRewardEquipment;
+                                const slotInfo = typeof getSlotInfo === 'function' ? getSlotInfo(eq) : { icon: 'help', color: '#94a3b8' };
+                                const rarityColor = typeof getRarityColor === 'function' ? getRarityColor(eq.rarity) : '#10b981';
+                                const tooltipDataHtml = typeof window.getEquipmentTooltipHTML === 'function' ? window.getEquipmentTooltipHTML(eq) : '';
+                                const tooltipAttrs = tooltipDataHtml ? 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"' : '';
+                                
+                                gainedItemsHtml += `
+                                    <div class="flex-center relative" ${tooltipAttrs} style="cursor: ${tooltipDataHtml ? 'help' : 'default'}; background: rgba(0, 0, 0, 0.4); border: 1px solid ${rarityColor}80; padding: 0.8rem 1rem; border-radius: 8px; color: ${rarityColor}; font-weight: 600; gap: 0.5rem; margin-top: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
+                                        ${tooltipDataHtml ? `<template class="tooltip-data">${tooltipDataHtml}</template>` : ''}
+                                        <span class="material-symbols-outlined" style="color: ${slotInfo.color};">${slotInfo.icon}</span> <span style="${tooltipDataHtml ? `border-bottom: 1px dashed ${rarityColor};` : ''}">${eq.name}</span>
+                                    </div>
+                                `;
                             }
 
                             if (gainedItemsHtml) {
@@ -3460,7 +3498,7 @@ function renderSpellCard(sp) {
 
     return `
         <div id="spell-card-${sp.id}" class="combat-spell-card spell-btn${disabledClass}" style="border-top: 2px solid ${titleColor}; position: relative;" ${onClickAttr} ${tooltipAttrs}>
-            <div class="absolute" style="top: -9px; left: -5px; background: #0f172a; border: 1px solid ${titleColor}; color: ${titleColor}; border-radius: 4px; padding: 0.1rem 0.4rem; font-size: 0.65rem; font-weight: bold; z-index: 5;">Lvl ${sp.niveau}</div>
+            <div class="absolute" style="top: -9px; left: -5px; background: #0f172a; border: 1px solid ${titleColor}; color: ${titleColor}; border-radius: 4px; padding: 0.1rem 0.4rem; font-size: 0.65rem; font-weight: bold; z-index: 25;">Lvl ${sp.niveau}</div>
             
             <div class="combat-spell-header" style="margin-top: 0.2rem;">
                 <div class="combat-spell-name" title="${sp.nom}" style="color: ${titleColor}; text-align: left; width: 100%;">${sp.nom}</div>

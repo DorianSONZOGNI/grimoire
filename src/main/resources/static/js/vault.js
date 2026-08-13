@@ -4,36 +4,14 @@ const pageState = { allEquipments: [], equipmentToDelete: null, anomalieToDelete
 
 
 // ===== Custom Select Logic =====
-document.addEventListener('click', (e) => {
-    // Fermer les dropdowns
-    if (!e.target.closest('.custom-select-wrapper')) {
-        document.querySelectorAll('.custom-select-wrapper.open').forEach(w => w.classList.remove('open'));
-    }
-
-    const trigger = e.target.closest('.custom-select-trigger');
-    if (trigger) {
-        const wrapper = trigger.closest('.custom-select-wrapper');
-        document.querySelectorAll('.custom-select-wrapper.open').forEach(w => {
-            if (w !== wrapper) w.classList.remove('open');
-        });
-        wrapper.classList.toggle('open');
-        return;
-    }
-
-    const option = e.target.closest('.custom-option');
-    if (option) {
-        const wrapper = option.closest('.custom-select-wrapper');
-        const hiddenInput = wrapper.querySelector('input[type="hidden"]');
-        const labelEl = wrapper.querySelector('.cs-label');
-
-        hiddenInput.value = option.getAttribute('data-value');
-        labelEl.innerHTML = option.innerHTML;
-        wrapper.classList.remove('open');
-
+document.addEventListener('change', (e) => {
+    if (e.target.tagName.toLowerCase() === 'input' && e.target.type === 'hidden') {
+        const hiddenInput = e.target;
         if (hiddenInput.id === 'eqRarity') {
             const val = hiddenInput.value;
             const row = document.getElementById('eqSpecialEffectRow');
             if (val === 'EPIQUE' || val === 'RELIQUE' || val === 'MAUDIT') {
+                row.classList.remove('hidden');
                 row.style.display = 'grid';
                 const isEpic = val === 'EPIQUE';
                 const isMaudit = val === 'MAUDIT';
@@ -48,12 +26,12 @@ document.addEventListener('click', (e) => {
                     inputBorder = 'rgba(85, 85, 85, 0.3)';
                 }
 
-                row.style.background = bg;
-                row.style.border = border;
-                document.getElementById('eqSpecialEffectLabelTitle').style.color = color;
-                document.getElementById('eqSpecialEffectValueTitle').style.color = color;
-                document.getElementById('eqSpecialEffectTrigger').style.borderColor = inputBorder;
-                document.getElementById('eqSpecialEffectValue').style.borderColor = inputBorder;
+                row.style.setProperty('background', bg, 'important');
+                row.style.setProperty('border', border, 'important');
+                document.getElementById('eqSpecialEffectLabelTitle').style.setProperty('color', color, 'important');
+                document.getElementById('eqSpecialEffectValueTitle').style.setProperty('color', color, 'important');
+                document.getElementById('eqSpecialEffectTrigger').style.setProperty('border-color', inputBorder, 'important');
+                document.getElementById('eqSpecialEffectValue').style.setProperty('border-color', inputBorder, 'important');
 
                 const effectOptions = document.querySelectorAll('#eqSpecialEffectOptions .custom-option');
                 effectOptions.forEach(opt => {
@@ -75,6 +53,7 @@ document.addEventListener('click', (e) => {
                     document.getElementById('eqSpecialEffectValue').value = 0;
                 }
             } else {
+                row.classList.add('hidden');
                 row.style.display = 'none';
                 document.getElementById('eqSpecialEffect').value = 'NONE';
                 document.getElementById('eqSpecialEffectLabel').innerHTML = '<span class="material-symbols-outlined cs-icon text-muted">not_interested</span> Aucun';
@@ -93,7 +72,7 @@ document.addEventListener('click', (e) => {
 async function loadEquipments() {
     try {
         const url = window.isAdmin ? '/api/equipments/all' : '/api/equipments';
-        pageState.allEquipments = await api.loadEquipments({ sources: [url], includeAnomalies: true, isAdmin: window.isAdmin });
+        pageState.allEquipments = await window.api.loadEquipments({ sources: [url], includeAnomalies: true, isAdmin: window.isAdmin });
 
         // Pré-calculer le poids pour le tri
         pageState.allEquipments.forEach(eq => {
@@ -236,7 +215,7 @@ function filterVault() {
         let matchSlot = true;
         if (filterSlot) {
             if (filterSlot === 'ANNEAU') {
-                matchSlot = ((eq.slot?.name || eq.slot) === 'ANNEAU_GAUCHE' || (eq.slot?.name || eq.slot) === 'ANNEAU_DROIT');
+                matchSlot = ((eq.slot?.name || eq.slot) === 'ANNEAU');
             } else if (filterSlot === 'ARME') {
                 matchSlot = ((eq.slot?.name || eq.slot) === 'ARME_GAUCHE' || (eq.slot?.name || eq.slot) === 'ARME_DROITE' || (eq.slot?.name || eq.slot) === 'ARME_DEUX_MAINS');
             } else {
@@ -336,7 +315,7 @@ function renderGrid(equipments) {
                 } else {
                     const displayOwner = eq._groupOwner || eq.ownerUsername;
                     if (displayOwner) {
-                        adminOwnerHtml = `<span class="admin-badge ${displayOwner === window.currentUser?.username ? 'admin-badge-self' : 'admin-badge-other'}"><span class="material-symbols-outlined align-middle" style="font-size: 0.7rem; margin-right: 2px;">account_circle</span>${displayOwner}</span>`;
+                        adminOwnerHtml = `<span class="admin-badge ${displayOwner === window.currentUser?.username ? 'admin-badge-self' : 'admin-badge-other'}"><span class="material-symbols-outlined align-middle text-xxs mr-1">account_circle</span>${displayOwner}</span>`;
                     }
                 }
             }
@@ -351,7 +330,7 @@ function renderGrid(equipments) {
                             ${typeStr} <span class="opacity-50 ml-1">${eq.spiritualite}</span> <span class="opacity-50 ml-1">(Niv. ${eq.level || 1})</span>
                         </div>
                         <div class="vault-card-name flex-start-gap" style="color: #fdf4ff;">
-                            <span class="material-symbols-outlined flex-shrink-0 opacity-80" style="font-size: 1.2rem; color: ${spColor}; margin-top: 2px;">${catIcon}</span>
+                            <span class="material-symbols-outlined flex-shrink-0 opacity-80 mt-1" style="font-size: 1.2rem; color: ${spColor};">${catIcon}</span>
                             <span class="word-break" title="${eq.name}">${eq.name}</span>
                         </div>
                         ${adminOwnerHtml ? `<div>${adminOwnerHtml}</div>` : ''}
@@ -380,32 +359,8 @@ function renderGrid(equipments) {
 
         const slotInfo = getSlotInfo(eq);
 
-        const statsHtml = STAT_DEFS
-            .filter(s => eq[s.key] && eq[s.key] !== 0)
-            .map(s => {
-                const val = eq[s.key];
-                const isMalus = val < 0;
-                const sign = val > 0 ? '+' : '';
-                const suffix = s.isPercent ? '%' : '';
-                return `<span class="vault-stat-chip ${isMalus ? 'malus' : ''}" title="${s.label}">
-                    <span class="material-symbols-outlined text-xs" style="color:${isMalus ? '#ef4444' : s.color};">${s.icon}</span>
-                    ${sign}${val}${suffix}
-                </span>`;
-            }).join('');
-
-        let effectHtml = '';
-        if (eq.specialEffect && eq.specialEffect !== 'NONE') {
-            const label = window.EFFECT_LABELS[eq.specialEffect] || eq.specialEffect;
-            const isCursed = eq.specialEffect.startsWith('CURSED_');
-            const icon = isCursed ? 'skull' : 'auto_awesome';
-            const color = isCursed ? '#9b2d2d' : '#c084fc';
-            const bg = isCursed ? 'rgba(156, 163, 175, 0.15)' : 'rgba(168, 85, 247, 0.1)';
-
-            effectHtml = `<div class="vault-card-effect" style="color: ${color}; background: ${bg}; ${isCursed ? 'border: 1px solid rgba(156, 163, 175, 0.2);' : ''}">
-                <span class="material-symbols-outlined text-sm">${icon}</span>
-                ${label} : ${eq.specialEffectValue}
-            </div>`;
-        }
+        const statsHtml = window.generateEquipmentStatsHtml(eq, 'vault-stat-chip');
+        const effectHtml = window.generateEquipmentEffectHtml(eq, 'vault-card-effect');
         let statusHtml = '';
         if (eq.personnage) {
             statusHtml = `<span class="vault-card-status status-equipped">
@@ -447,7 +402,7 @@ function renderGrid(equipments) {
             } else {
                 const displayOwner = eq._groupOwner || eq.ownerUsername;
                 if (displayOwner) {
-                    adminOwnerHtml = `<span class="admin-badge ${displayOwner === window.currentUser?.username ? 'admin-badge-self' : 'admin-badge-other'}"><span class="material-symbols-outlined align-middle" style="font-size: 0.7rem; margin-right: 2px;">account_circle</span>${displayOwner}</span>`;
+                    adminOwnerHtml = `<span class="admin-badge ${displayOwner === window.currentUser?.username ? 'admin-badge-self' : 'admin-badge-other'}"><span class="material-symbols-outlined align-middle text-xxs mr-1">account_circle</span>${displayOwner}</span>`;
                 }
             }
         }
@@ -464,7 +419,7 @@ function renderGrid(equipments) {
                         <div class="vault-card-name word-break">
                             ${eq.name}
                         </div>
-                        ${adminOwnerHtml ? `<div style="margin-top: 0.2rem;">${adminOwnerHtml}</div>` : ''}
+                        ${adminOwnerHtml ? `<div class="mt-1">${adminOwnerHtml}</div>` : ''}
                     </div>
                     <div class="vault-card-actions">
                         ${window.isAdmin ? `<button class="vault-btn-edit" onclick="editEquipment(${eq.id})" title="Modifier l'objet">
@@ -483,8 +438,8 @@ function renderGrid(equipments) {
                 
                 <div class="vault-card-footer">
                     <div class="vault-card-weight" title="${(eq.slot?.name || eq.slot) === 'CONSOMMABLE' ? 'Poids total' : `Poids total / Poids Max (${maxWeight})`}">
-                        <span class="material-symbols-outlined" style="font-size: 1.1rem; color: ${(eq.slot?.name || eq.slot) === 'CONSOMMABLE' ? '#10b981' : weightColor};">scale</span>
-                        <span style="color: ${(eq.slot?.name || eq.slot) === 'CONSOMMABLE' ? '#10b981' : weightColor}; font-weight: 600;">${weightStr}</span>${(eq.slot?.name || eq.slot) === 'CONSOMMABLE' ? ' pts' : ` / ${maxWeight} pts`}
+                        <span class="material-symbols-outlined text-md-num" style="color: ${(eq.slot?.name || eq.slot) === 'CONSOMMABLE' ? '#10b981' : weightColor};">scale</span>
+                        <span class="font-bold" style="color: ${(eq.slot?.name || eq.slot) === 'CONSOMMABLE' ? '#10b981' : weightColor};">${weightStr}</span>${(eq.slot?.name || eq.slot) === 'CONSOMMABLE' ? ' pts' : ` / ${maxWeight} pts`}
                     </div>
                     ${statusHtml}
                 </div>
@@ -508,7 +463,7 @@ window.addEventListener('DOMContentLoaded', async () => {
     // Render create form slot select
     const slotOptionsContainer = document.getElementById('eqSlotOptions');
     if (slotOptionsContainer) {
-        const slots = ['CASQUE', 'PLASTRON', 'ARME_DEUX_MAINS', 'ARME_GAUCHE', 'ARME_DROITE', 'ANNEAU_GAUCHE', 'ANNEAU_DROIT', 'BOTTES', 'CAPE', 'CONSOMMABLE'];
+        const slots = ['CASQUE', 'PLASTRON', 'ARME_DEUX_MAINS', 'ARME_GAUCHE', 'ARME_DROITE', 'ANNEAU', 'BOTTES', 'CAPE', 'CONSOMMABLE'];
         slotOptionsContainer.innerHTML = slots.map(s => {
             const info = window.SLOT_LABELS[s];
             return `<div class="custom-option" data-value="${s}">
@@ -618,7 +573,7 @@ window.editEquipment = function (id) {
         // Si l'équipement est épique ou plus, afficher la valeur
         const row = document.getElementById('eqSpecialEffectRow');
         if (eqRarityName === 'EPIQUE' || eqRarityName === 'RELIQUE' || eqRarityName === 'MAUDIT') {
-            if (row) row.style.display = 'grid';
+            if (row) { row.classList.remove('hidden'); row.style.display = 'grid'; }
             if (document.getElementById('eqSpecialEffectBlock')) document.getElementById('eqSpecialEffectBlock').style.display = 'block';
             if (document.getElementById('eqSpecialEffectValueBlock')) document.getElementById('eqSpecialEffectValueBlock').style.display = 'block';
             const isEpic = eqRarityName === 'EPIQUE';
@@ -636,8 +591,8 @@ window.editEquipment = function (id) {
             }
 
             if (row) {
-                row.style.background = bg;
-                row.style.border = border;
+                row.style.setProperty('background', bg, 'important');
+                row.style.setProperty('border', border, 'important');
             }
 
             const effectOptions = document.querySelectorAll('#eqSpecialEffectOptions .custom-option');
@@ -653,16 +608,16 @@ window.editEquipment = function (id) {
             });
 
             const labelTitle = document.getElementById('eqSpecialEffectLabelTitle');
-            if (labelTitle) labelTitle.style.color = color;
+            if (labelTitle) labelTitle.style.setProperty('color', color, 'important');
 
             const valueTitle = document.getElementById('eqSpecialEffectValueTitle');
-            if (valueTitle) valueTitle.style.color = color;
+            if (valueTitle) valueTitle.style.setProperty('color', color, 'important');
 
             const trigger = document.getElementById('eqSpecialEffectTrigger');
-            if (trigger) trigger.style.borderColor = inputBorder;
+            if (trigger) trigger.style.setProperty('border-color', inputBorder, 'important');
 
             const valInput = document.getElementById('eqSpecialEffectValue');
-            if (valInput) valInput.style.borderColor = inputBorder;
+            if (valInput) valInput.style.setProperty('border-color', inputBorder, 'important');
 
         } else {
             if (row) row.style.display = 'none';
@@ -891,19 +846,27 @@ window.updateWeightUI = async function () {
     if (!slot) return;
 
     document.querySelectorAll('.non-consumable-stat').forEach(el => {
-        el.style.display = slot === 'CONSOMMABLE' ? 'none' : '';
+        if (slot === 'CONSOMMABLE') el.classList.add('hidden');
+        else el.classList.remove('hidden');
+        el.style.display = '';
     });
     document.querySelectorAll('.consumable-stat').forEach(el => {
-        el.style.display = slot === 'CONSOMMABLE' ? 'flex' : 'none';
+        if (slot === 'CONSOMMABLE') el.classList.remove('hidden');
+        else el.classList.add('hidden');
+        el.style.display = '';
     });
 
     const row = document.getElementById('eqBaseWeightRow');
     if (row) {
-        row.style.display = slot === 'CONSOMMABLE' ? 'flex' : 'none';
+        if (slot === 'CONSOMMABLE') row.classList.remove('hidden');
+        else row.classList.add('hidden');
+        row.style.display = '';
     }
 
     document.querySelectorAll('.consumable-category-field').forEach(el => {
-        el.style.display = slot === 'CONSOMMABLE' ? 'block' : 'none';
+        if (slot === 'CONSOMMABLE') el.classList.remove('hidden');
+        else el.classList.add('hidden');
+        el.style.display = '';
     });
 
     const textEl = document.getElementById('eqWeightText');
@@ -964,7 +927,11 @@ window.updateWeightUI = async function () {
 
         fillEl.style.width = pct + '%';
         fillEl.style.background = color;
-        if (textEl) textEl.style.color = color;
+        if (textEl) {
+            textEl.style.color = color;
+            textEl.style.backgroundColor = 'transparent';
+            textEl.classList.remove('text-resist');
+        }
     }
 }
 

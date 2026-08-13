@@ -1477,7 +1477,7 @@ async function loadAnomalies() {
 
 async function loadEquipments() {
     try {
-        let merged = await api.loadEquipments({ sources: ['/api/shop/templates', '/api/equipments/all'] });
+        let merged = await window.api.loadEquipments({ sources: ['/api/shop/templates', '/api/equipments/all'] });
 
         // Sort by rarity, then name
         const rarityOrder = { 'MAUDIT': 1, 'RELIQUE': 2, 'EPIQUE': 3, 'LEGENDAIRE': 4, 'MYTHIQUE': 5, 'RARE': 6, 'INHABITUEL': 7, 'COMMUN': 8 };
@@ -1782,6 +1782,45 @@ async function loadDungeons() {
     }
 }
 
+/**
+ * Scan all rooms of a dungeon and collect the names of anomalies that
+ * can be obtained (rewards from alterations, merchant stock, door outcomes).
+ * Items *required* from the player (alterationRequiredItem) are excluded.
+ * Returns a deduplicated array of anomaly names.
+ */
+function collectDungeonAnomalies(dungeon) {
+    const names = new Set();
+    if (!dungeon.salles) return [];
+    dungeon.salles.forEach(s => {
+        // Alteration reward (SPECIAL_ITEM)
+        if (s.alterationSpecialItemReward) {
+            names.add(s.alterationSpecialItemReward);
+        }
+        // Merchant and Strange Door ITEM loot tables
+        if (s.lootTable) {
+            s.lootTable.forEach(entry => {
+                if (entry.specialItemName) {
+                    names.add(entry.specialItemName);
+                }
+            });
+        }
+        // Strange Door -> TRESOR outcome: anomalie stored by ID
+        if (s.eventSubType === 'PORTE_ETRANGE' && s.doorOutcomes) {
+            let outcomes = s.doorOutcomes;
+            if (typeof outcomes === 'string') {
+                try { outcomes = JSON.parse(outcomes); } catch (e) { outcomes = []; }
+            }
+            outcomes.forEach(outcome => {
+                if (outcome.type === 'TRESOR' && outcome.treasureAnomalieId) {
+                    const an = pageState.allAnomalies.find(a => a.id == outcome.treasureAnomalieId);
+                    if (an) names.add(an.name);
+                }
+            });
+        }
+    });
+    return Array.from(names);
+}
+
 window.renderDungeonsList = function () {
     const list = document.getElementById('dungeonsList');
     if (!list) return;
@@ -1878,6 +1917,23 @@ window.renderDungeonsList = function () {
                         <span class="material-symbols-outlined icon-sm">shopping_bag</span> Trésors : ${treasures}
                     </div>` : ''}
                     ${eventDetails ? `<div class="flex-center" style="margin-left: 0.5rem; gap: 0.3rem; flex-wrap: wrap;">Événements : ${eventDetails}</div>` : ''}
+                    ${(() => {
+                        const anomalyNames = collectDungeonAnomalies(d);
+                        if (anomalyNames.length === 0) return '';
+                        const badges = anomalyNames.map(name => {
+                            const an = pageState.allAnomalies.find(a => a.name === name);
+                            const color = an ? getSpiritualiteColor(an.spiritualite) : '#d946ef';
+                            const icon = an ? getCategoryIcon(an.category) : 'star';
+                            const tooltipHtml = getAnomalyTooltipHTML(an, name);
+                            return `<span class="anomaly-badge" style="border-color:${color}; background:${color}20; color:${color}; cursor:help; font-size:0.75rem; padding:0.15rem 0.4rem; gap:0.2rem;" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipHtml.replace(/"/g, '&quot;')}">
+                                <span class="material-symbols-outlined" style="font-size:0.9rem;">${icon}</span>${name}
+                            </span>`;
+                        }).join('');
+                        return `<div style="margin-top:0.4rem; padding-top:0.4rem; border-top:1px solid rgba(255,255,255,0.07); display:flex; flex-wrap:wrap; gap:0.3rem; align-items:center;">
+                            <span class="text-muted" style="font-size:0.78rem; flex-shrink:0;"><span class="material-symbols-outlined" style="font-size:0.85rem; vertical-align:middle;">auto_awesome</span> Anomalies :</span>
+                            ${badges}
+                        </div>`;
+                    })()}
                 </div>
             </div>
         `;
@@ -2615,37 +2671,7 @@ document.addEventListener('click', function (e) {
     }
 });
 
-document.addEventListener('click', (e) => {
-    if (!e.target.closest('.custom-select-wrapper')) {
-        document.querySelectorAll('.custom-select-wrapper.open').forEach(w => w.classList.remove('open'));
-    }
-
-    const trigger = e.target.closest('.custom-select-trigger');
-    if (trigger) {
-        const wrapper = trigger.closest('.custom-select-wrapper');
-        document.querySelectorAll('.custom-select-wrapper.open').forEach(w => {
-            if (w !== wrapper) w.classList.remove('open');
-        });
-        if (!trigger.hasAttribute('onclick')) {
-            wrapper.classList.toggle('open');
-        }
-        return;
-    }
-
-    const option = e.target.closest('.custom-option');
-    if (option) {
-        if (!option.hasAttribute('onclick')) {
-            const wrapper = option.closest('.custom-select-wrapper');
-            const hiddenInput = wrapper.querySelector('input[type="hidden"]');
-            const labelEl = wrapper.querySelector('.cs-label');
-
-            hiddenInput.value = option.getAttribute('data-value');
-            labelEl.innerHTML = option.innerHTML;
-            wrapper.classList.remove('open');
-            hiddenInput.dispatchEvent(new Event('change'));
-        }
-    }
-});
+// Global click listener for custom-select handled by ui.js
 
 // Intercept assignments to dRequiredSecret to update the UI
 const inputEl = document.getElementById('dRequiredSecret');

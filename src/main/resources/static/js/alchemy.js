@@ -502,84 +502,9 @@ function buildCustomSelect(containerDiv, options, hiddenInputClass, hiddenInputI
                     <input type="hidden" class="${hiddenInputClass}" id="${hiddenInputId}" value="${selectedOption.value}">
                 </div>
             `;
-
-    const trigger = containerDiv.querySelector('.custom-select-trigger');
-    const optionsMenu = containerDiv.querySelector('.custom-select-options');
-    const hiddenInput = containerDiv.querySelector('input');
-
-    trigger.onclick = (e) => {
-        e.stopPropagation();
-        // Close all other dropdowns
-        document.querySelectorAll('.custom-select-options').forEach(m => {
-            if (m !== optionsMenu) m.style.display = 'none';
-        });
-        optionsMenu.style.display = optionsMenu.style.display === 'none' ? 'block' : 'none';
-        trigger.style.borderColor = optionsMenu.style.display === 'block' ? '#10b981' : 'var(--glass-border)';
-    };
-
-    containerDiv.querySelectorAll('.custom-option').forEach(opt => {
-        opt.style.padding = '0.5rem 0.8rem';
-        opt.style.cursor = 'pointer';
-        opt.style.transition = 'background 0.2s';
-        opt.onmouseover = () => opt.style.background = 'rgba(255,255,255,0.1)';
-        opt.onmouseout = () => opt.style.background = 'transparent';
-
-        opt.onclick = (e) => {
-            e.stopPropagation();
-            const val = opt.getAttribute('data-value');
-            hiddenInput.value = val;
-            trigger.querySelector('.cs-label').innerHTML = opt.innerHTML;
-            optionsMenu.style.display = 'none';
-            trigger.style.borderColor = 'var(--glass-border)';
-        };
-    });
 }
 
-document.addEventListener('click', (e) => {
-    if (!e.target.closest('.custom-select-wrapper')) {
-        document.querySelectorAll('.custom-select-wrapper.open').forEach(w => w.classList.remove('open'));
-        document.querySelectorAll('.custom-select-options').forEach(m => m.style.display = 'none');
-    }
-
-    const trigger = e.target.closest('.custom-select-trigger');
-    if (trigger) {
-        const wrapper = trigger.closest('.custom-select-wrapper');
-        document.querySelectorAll('.custom-select-wrapper.open').forEach(w => {
-            if (w !== wrapper) {
-                w.classList.remove('open');
-                const m = w.querySelector('.custom-select-options');
-                if (m) m.style.display = 'none';
-            }
-        });
-
-        const optionsMenu = wrapper.querySelector('.custom-select-options');
-        if (optionsMenu && (!optionsMenu.style.display || optionsMenu.style.display === 'none')) {
-            optionsMenu.style.display = 'block';
-            wrapper.classList.add('open');
-        } else if (optionsMenu) {
-            optionsMenu.style.display = 'none';
-            wrapper.classList.remove('open');
-        }
-        return;
-    }
-
-    const option = e.target.closest('.custom-option');
-    if (option) {
-        const wrapper = option.closest('.custom-select-wrapper');
-        const hiddenInput = wrapper.querySelector('input[type="hidden"]');
-        const labelEl = wrapper.querySelector('.cs-label');
-
-        if (hiddenInput && labelEl) {
-            hiddenInput.value = option.getAttribute('data-value');
-            labelEl.innerHTML = option.innerHTML;
-            wrapper.classList.remove('open');
-            const optionsMenu = wrapper.querySelector('.custom-select-options');
-            if (optionsMenu) optionsMenu.style.display = 'none';
-
-            hiddenInput.dispatchEvent(new Event('change'));
-        }
-    }
-});
+// Global custom-select logic is handled by window.initGlobalCustomSelect() in ui.js
 
 async function fetchUserCharacters() {
     try {
