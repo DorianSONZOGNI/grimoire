@@ -1,10 +1,6 @@
 import { state } from './state.js';
-import { GLOBAL_STAT_LABELS, GLOBAL_SRC_LABELS, javaClassToCode } from './constants.js';
-import * as ui from './ui.js';
-import * as api from './api.js';
 
-import { toggleChannelingFields, updateRankTitle, updateSpecialVoieConfig, updateSpecialSpiritConfig, setViolenceType, updateViolenceLabel, setKarmaAlignment, updateKarmaLabel, addEffectPanel, removeEffect, setEffectTarget, updateEffectProp, toggleEffectChannelingTurn, renderEffects } from './forge.js';
-import { renderFilteredSpells, getSpellEffectsSummaryHtml, getSpellCardHtml, cancelEditSpell, updateEditingPreview, getLvl5Origin, editSpell } from './grimoire.js';
+import { renderFilteredSpells } from './grimoire.js';
 
 export function getVoieButtonColor(v) {
     const vNom = v.nom.toLowerCase();
