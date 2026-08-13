@@ -8,7 +8,6 @@ import * as grimoire from './grimoire.js';
 import * as forge from './forge.js';
 import * as ui from './ui.js';
 
-// Expose for HTML inline handlers
 window.state = state;
 Object.assign(window, api);
 Object.assign(window, particles);
@@ -18,17 +17,18 @@ Object.assign(window, grimoire);
 Object.assign(window, forge);
 Object.assign(window, ui);
 
-window.addEventListener('DOMContentLoaded', async () => {
+window.addEventListener('DOMContentLoaded', () => {
     ui.updateDisplayModeUI();
     ui.initResizeObserver();
+});
 
-    const [user] = await Promise.all([
-        api.getCurrentUser(),
+window.addEventListener('authLoaded', async () => {
+    await Promise.all([
         constants.initMeta(),
         api.fetchMeta()
     ]);
 
-    window.currentUser = user;
+    const user = window.currentUser;
 
     if (!api.isAdmin(user)) {
         const forgePanel = document.getElementById('spellForgePanel');
@@ -39,6 +39,3 @@ window.addEventListener('DOMContentLoaded', async () => {
 
     await api.loadSpells();
 });
-
-
-
