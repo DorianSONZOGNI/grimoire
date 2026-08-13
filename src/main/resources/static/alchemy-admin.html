@@ -4,6 +4,8 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description"
+        content="Interface admin de l'alchimie, servant à éditer les recettes alchimiques. Accessible aux profils admin uniquement.">
     <title>Admin Alchimie - Grimoire</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
@@ -28,39 +30,39 @@
     <app-navbar active-page="alchemy-admin"></app-navbar>
 
     <main class="block">
-        <div class="flex flex-row justify-center items-stretch gap-8 mx-auto my-8 w-full max-w-[1400px]" >
+        <div class="flex flex-row justify-center items-stretch gap-8 mx-auto my-8 w-full max-w-[1400px]">
 
             <div class="panel flex-1 flex flex-col" id="recipePanel">
-                <div class="panel-title"  >
-                    <span class="material-symbols-outlined text-info"   >science</span>
+                <div class="panel-title">
+                    <span class="material-symbols-outlined text-info">science</span>
                     Créer/Éditer une Recette Alchimique
                 </div>
 
                 <form id="recipeForm" class="flex flex-col gap-2">
                     <input type="hidden" id="recipeId" value="">
-                    <div class="form-row"  >
+                    <div class="form-row">
                         <div class="form-group flex-1">
                             <label>Nom de la recette</label>
-                            <input type="text" id="recipeName" required="" placeholder="Ex: Transmutation Majeure"
-                               >
+                            <input type="text" id="recipeName" required="" placeholder="Ex: Transmutation Majeure">
                         </div>
-                        <div class="form-group flex-2" >
+                        <div class="form-group flex-2">
                             <label>Description</label>
-                            <input type="text" id="recipeDesc" placeholder="Ex: Convertit des anomalies en golem."
-                               >
+                            <input type="text" id="recipeDesc" placeholder="Ex: Convertit des anomalies en golem.">
                         </div>
                     </div>
 
-                    <div class="form-row"  >
-                        <div class="form-group"  >
-                            <label class="text-amber mb-1 text-sm"><span class="material-symbols-outlined icon-sm align-middle">monetization_on</span> Coût Or</label>
-                            <input type="number" id="costGold" value="0" min="0" step="0.1"
-                               >
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label class="text-amber mb-1 text-sm"><span
+                                    class="material-symbols-outlined icon-sm align-middle">monetization_on</span> Coût
+                                Or</label>
+                            <input type="number" id="costGold" value="0" min="0" step="0.1">
                         </div>
-                        <div class="form-group"  >
-                            <label class="text-emerald mb-1 text-sm"><span class="material-symbols-outlined icon-sm align-middle">star</span> Coût XP Spirit</label>
-                            <input type="number" id="costSpirit" value="0" min="0"
-                               >
+                        <div class="form-group">
+                            <label class="text-emerald mb-1 text-sm"><span
+                                    class="material-symbols-outlined icon-sm align-middle">star</span> Coût XP
+                                Spirit</label>
+                            <input type="number" id="costSpirit" value="0" min="0">
                         </div>
                     </div>
 
@@ -69,50 +71,53 @@
                     <div class="form-group m-0">
                         <label>Ingrédients : Anomalies</label>
                         <div class="req-list mb-1" id="reqAnomaliesList"></div>
-                        <button class="btn btn-secondary w-full text-sm p-1" type="button" onclick="addRequirement('anomalie')">+ Ajouter Anomalie</button>
+                        <button class="btn btn-secondary w-full text-sm p-1" type="button"
+                            onclick="addRequirement('anomalie')">+ Ajouter Anomalie</button>
                     </div>
                     <div class="form-group m-0">
                         <label>Ingrédients : Consommables</label>
                         <div class="req-list mb-1" id="reqConsumablesList"></div>
-                        <button class="btn btn-secondary w-full text-sm p-1" type="button" onclick="addRequirement('consumable')">+ Ajouter Consommable</button>
+                        <button class="btn btn-secondary w-full text-sm p-1" type="button"
+                            onclick="addRequirement('consumable')">+ Ajouter Consommable</button>
                     </div>
 
                     <hr class="my-1 border-divider">
 
                     <div class="panel-title text-base mb-0 pb-0 border-none">
-                        <span class="material-symbols-outlined text-purple"  >auto_awesome</span> Résultat
+                        <span class="material-symbols-outlined text-purple">auto_awesome</span> Résultat
                     </div>
 
                     <div class="form-row mb-0">
                         <div class="form-group flex-1">
                             <label>Type de récompense</label>
                             <div class="custom-select-wrapper z-10">
-                                <div class="custom-select-trigger"  >
+                                <div class="custom-select-trigger">
                                     <span class="cs-label text-sm">
-                                        <span class="material-symbols-outlined cs-icon text-purple"  >star</span> Donner Anomalie
+                                        <span class="material-symbols-outlined cs-icon text-purple">star</span> Donner
+                                        Anomalie
                                     </span>
                                     <span class="material-symbols-outlined text-muted icon-sm">expand_more</span>
                                 </div>
-                                <div class="custom-select-options custom-options"  >
-                                    <div class="custom-option"   data-value="GIVE_ANOMALY">
-                                        <span class="material-symbols-outlined cs-icon text-purple"  >star</span> Donner
+                                <div class="custom-select-options custom-options">
+                                    <div class="custom-option" data-value="GIVE_ANOMALY">
+                                        <span class="material-symbols-outlined cs-icon text-purple">star</span> Donner
                                         Anomalie
                                     </div>
-                                    <div class="custom-option"   data-value="GIVE_CONSUMABLE">
-                                        <span class="material-symbols-outlined cs-icon text-success"  >inventory_2</span>
+                                    <div class="custom-option" data-value="GIVE_CONSUMABLE">
+                                        <span class="material-symbols-outlined cs-icon text-success">inventory_2</span>
                                         Donner
                                         Consommable
                                     </div>
-                                    <div class="custom-option"   data-value="GIVE_EQUIPMENT">
-                                        <span class="material-symbols-outlined cs-icon text-warning"  >shield</span>
+                                    <div class="custom-option" data-value="GIVE_EQUIPMENT">
+                                        <span class="material-symbols-outlined cs-icon text-warning">shield</span>
                                         Donner Equipement
                                     </div>
-                                    <div class="custom-option"   data-value="UNLOCK_FEATURE">
-                                        <span class="material-symbols-outlined cs-icon text-warning"  >key</span> Secret
+                                    <div class="custom-option" data-value="UNLOCK_FEATURE">
+                                        <span class="material-symbols-outlined cs-icon text-warning">key</span> Secret
                                     </div>
-                                    <div class="custom-option"   data-value="GIVE_SPIRIT_XP">
-                                        <span class="material-symbols-outlined cs-icon text-mana" 
-                                            >self_improvement</span>
+                                    <div class="custom-option" data-value="GIVE_SPIRIT_XP">
+                                        <span
+                                            class="material-symbols-outlined cs-icon text-mana">self_improvement</span>
                                         Gagner XP
                                         Spiritualité
                                     </div>
@@ -120,30 +125,28 @@
                                 <input type="hidden" id="rewardType" value="GIVE_ANOMALY">
                             </div>
                         </div>
-                        <div class="form-group flex-2" id="rewardNameContainer" >
+                        <div class="form-group flex-2" id="rewardNameContainer">
                             <label>Nom de l'objet (Résultat)</label>
-                            <input type="text" id="rewardName" required="" placeholder="Ex: Potion"
-                               >
+                            <input type="text" id="rewardName" required="" placeholder="Ex: Potion">
                         </div>
                     </div>
 
-                    <div class="form-row"  >
-                        <div class="form-group"  >
+                    <div class="form-row">
+                        <div class="form-group">
                             <label>Quantité</label>
-                            <input type="number" id="rewardQty" value="1" min="1"
-                               >
+                            <input type="number" id="rewardQty" value="1" min="1">
                         </div>
-                        <div class="form-group"  >
+                        <div class="form-group">
                             <label id="rewardLevelLabel">Niveau
                                 du Secret</label>
-                            <input type="number" id="rewardLevel" value="1" min="1"
-                               >
+                            <input type="number" id="rewardLevel" value="1" min="1">
                         </div>
                     </div>
 
                     <div class="mt-2 flex gap-2">
                         <button class="btn flex-1 p-2" type="submit">Enregistrer la recette</button>
-                        <button class="btn btn-danger flex-1 p-2 hidden" type="button" id="cancelEditBtn"  onclick="cancelEdit()">Annuler l'édition</button>
+                        <button class="btn btn-danger flex-1 p-2 hidden" type="button" id="cancelEditBtn"
+                            onclick="cancelEdit()">Annuler l'édition</button>
                     </div>
                     <div class="mt-2 font-bold text-center text-sm" id="formMsg"></div>
                 </form>
@@ -160,36 +163,36 @@
 
                     <div class="filters-container mb-4 flex gap-2">
                         <div class="flex-1">
-                            <input class="form-control m-0 p-2 text-sm w-full" type="text" id="searchRecipeName" 
+                            <input class="form-control m-0 p-2 text-sm w-full" type="text" id="searchRecipeName"
                                 placeholder="Rechercher par nom..." oninput="renderRecipesList()">
                         </div>
                         <div class="custom-select-wrapper flex-1 z-20">
-                            <div class="custom-select-trigger"  >
+                            <div class="custom-select-trigger">
                                 <span class="cs-label text-sm">Toutes les recettes</span>
                                 <span class="material-symbols-outlined text-muted icon-sm">expand_more</span>
                             </div>
-                            <div class="custom-select-options custom-options"  >
-                                <div class="custom-option"   data-value="">
-                                    <span class="material-symbols-outlined cs-icon text-muted"  >filter_list_off</span>
+                            <div class="custom-select-options custom-options">
+                                <div class="custom-option" data-value="">
+                                    <span class="material-symbols-outlined cs-icon text-muted">filter_list_off</span>
                                     Toutes les
                                     recettes
                                 </div>
-                                <div class="custom-option"   data-value="GIVE_ANOMALY">
-                                    <span class="material-symbols-outlined cs-icon text-purple"  >star</span> Anomalie
+                                <div class="custom-option" data-value="GIVE_ANOMALY">
+                                    <span class="material-symbols-outlined cs-icon text-purple">star</span> Anomalie
                                 </div>
-                                <div class="custom-option"   data-value="GIVE_CONSUMABLE">
-                                    <span class="material-symbols-outlined cs-icon text-success"  >inventory_2</span>
+                                <div class="custom-option" data-value="GIVE_CONSUMABLE">
+                                    <span class="material-symbols-outlined cs-icon text-success">inventory_2</span>
                                     Consommable
                                 </div>
-                                <div class="custom-option"   data-value="GIVE_EQUIPMENT">
-                                    <span class="material-symbols-outlined cs-icon text-warning"  >shield</span>
+                                <div class="custom-option" data-value="GIVE_EQUIPMENT">
+                                    <span class="material-symbols-outlined cs-icon text-warning">shield</span>
                                     Equipement
                                 </div>
-                                <div class="custom-option"   data-value="UNLOCK_FEATURE">
-                                    <span class="material-symbols-outlined cs-icon text-warning"  >key</span> Secret
+                                <div class="custom-option" data-value="UNLOCK_FEATURE">
+                                    <span class="material-symbols-outlined cs-icon text-warning">key</span> Secret
                                 </div>
-                                <div class="custom-option"   data-value="GIVE_SPIRIT_XP">
-                                    <span class="material-symbols-outlined cs-icon text-mana"  >self_improvement</span> XP
+                                <div class="custom-option" data-value="GIVE_SPIRIT_XP">
+                                    <span class="material-symbols-outlined cs-icon text-mana">self_improvement</span> XP
                                     Spiritualité
                                 </div>
                             </div>
@@ -197,7 +200,7 @@
                         </div>
                     </div>
 
-                    <div class="flex-1 flex flex-col gap-4 overflow-y-auto pr-2 min-h-0"  id="recipesList">
+                    <div class="flex-1 flex flex-col gap-4 overflow-y-auto pr-2 min-h-0" id="recipesList">
                         Chargement...
                     </div>
                 </div>
