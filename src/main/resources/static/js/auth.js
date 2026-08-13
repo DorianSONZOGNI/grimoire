@@ -6,7 +6,7 @@ window.initAppMeta = async function () {
 
 let accessToken = null;
 
-window.setAccessToken = function(token) {
+window.setAccessToken = function (token) {
     accessToken = token;
 };
 
@@ -258,18 +258,18 @@ window.addEventListener('authLoaded', () => {
 });
 
 function applyFeatureLock(el, isUnlocked, featureName, cost, featureId, originalHref) {
+    el.href = originalHref;
+
     if (isUnlocked) {
-        el.href = originalHref;
         el.style.opacity = '1';
         el.style.cursor = 'pointer';
         el.removeAttribute('onclick');
         const lockIcon = el.querySelector('.feature-lock-icon');
         if (lockIcon) lockIcon.remove();
     } else {
-        el.href = 'javascript:void(0)';
         el.style.opacity = '0.7';
         el.style.cursor = 'not-allowed';
-        el.setAttribute('onclick', `promptUnlockFeature('${featureId}', '${featureName}', ${cost})`);
+        el.setAttribute('onclick', `event.preventDefault(); promptUnlockFeature('${featureId}', '${featureName}', ${cost})`);
 
         if (!el.querySelector('.feature-lock-icon')) {
             el.insertAdjacentHTML('beforeend', '<span class="material-symbols-outlined feature-lock-icon text-sm text-error ml-auto">lock</span>');
