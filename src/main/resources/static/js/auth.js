@@ -113,6 +113,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (data.token) {
                         window.setAccessToken(data.token);
                     }
+                    localStorage.setItem('isLikelyLoggedIn', 'true');
                     window.location.href = '/';
                 }
             } catch (err) {
@@ -157,6 +158,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (data.token) {
                         window.setAccessToken(data.token);
                     }
+                    localStorage.setItem('isLikelyLoggedIn', 'true');
                     successDiv.innerText = data.message || "Inscription réussie ! Redirection...";
                     successDiv.style.display = 'block';
                     setTimeout(() => {
@@ -170,7 +172,6 @@ document.addEventListener('DOMContentLoaded', () => {
         });
     }
 
-    // Check auth status for navbar
     const authNavContainer = document.getElementById('authNavContainer');
     if (authNavContainer) {
         checkAuthStatus();
@@ -179,6 +180,22 @@ document.addEventListener('DOMContentLoaded', () => {
 
 window.checkAuthStatus = async function checkAuthStatus() {
     const container = document.getElementById('authNavContainer');
+
+    if (localStorage.getItem('isLikelyLoggedIn') !== 'true') {
+        window.currentUser = null;
+        window.isAdmin = false;
+        window.dispatchEvent(new Event('authLoaded'));
+        container.innerHTML = `
+            <a class="font-medium text-info no-underline text-sm px-2 py-1 rounded bg-info-glass transition-all" href="/login.html">
+                Se connecter
+            </a>
+            <a class="font-medium text-success no-underline text-sm px-2 py-1 rounded bg-success-glass transition-all" href="/register.html">
+                S'inscrire
+            </a>
+        `;
+        return;
+    }
+
     try {
         const res = await globalFetch('/api/auth/me', { credentials: 'same-origin' });
         if (res.ok) {
@@ -200,6 +217,7 @@ window.checkAuthStatus = async function checkAuthStatus() {
                 </button>
             `;
         } else {
+            localStorage.removeItem('isLikelyLoggedIn');
             window.currentUser = null;
             window.isAdmin = false;
             window.dispatchEvent(new Event('authLoaded'));
@@ -213,6 +231,7 @@ window.checkAuthStatus = async function checkAuthStatus() {
             `;
         }
     } catch (e) {
+        localStorage.removeItem('isLikelyLoggedIn');
         window.currentUser = null;
         window.isAdmin = false;
         window.dispatchEvent(new Event('authLoaded'));
@@ -229,6 +248,7 @@ window.checkAuthStatus = async function checkAuthStatus() {
 
 window.logout = async function () {
     try {
+        localStorage.removeItem('isLikelyLoggedIn');
         await fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' });
         window.location.reload();
     } catch (e) {
