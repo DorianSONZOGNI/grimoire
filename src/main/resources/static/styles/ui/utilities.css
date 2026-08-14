@@ -92,6 +92,30 @@
     color: #c084fc;
 }
 
+.text-green-400 {
+    color: #4ade80;
+}
+
+.text-green-500 {
+    color: #22c55e;
+}
+
+.text-blue-400 {
+    color: #60a5fa;
+}
+
+.text-gray-300 {
+    color: #d1d5db;
+}
+
+.text-orange-500 {
+    color: #f97316;
+}
+
+.text-yellow-500 {
+    color: #eab308;
+}
+
 .text-center {
     text-align: center;
 }
@@ -950,6 +974,10 @@
 
 .text-cyan-400 {
     color: #00e5cc !important;
+}
+
+.text-pink-400 {
+    color: #f472b6 !important;
 }
 
 .text-pink-500 {

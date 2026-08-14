@@ -1053,3 +1053,21 @@
     background: rgba(244, 63, 94, 0.15);
     color: #f43f5e;
 }
+
+.badge-danger { background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 600; font-size: 0.75rem; }
+.badge-violet { background: rgba(139, 92, 246, 0.15); color: #8b5cf6; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(139, 92, 246, 0.3); font-weight: 600; font-size: 0.75rem; }
+
+.btn-icon {
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    border-radius: 6px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.2s;
+}
+
+.btn-icon:hover {
+    background: color-mix(in srgb, currentColor 15%, transparent);
+}
