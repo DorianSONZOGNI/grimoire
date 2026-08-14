@@ -86,10 +86,10 @@ export function updateRankTitle() {
     }
 
     if (rankName) {
-        display.style.display = 'block';
-        display.innerHTML = `<span class="material-symbols-outlined text-success align-middle" style="font-size: 1.1rem; margin-right: 0.2rem;">workspace_premium</span>Titre : <span class="text-white">"${rankName}"</span> <span style="font-size:0.75rem; color:var(--text-muted);">(${sourceNom})</span>`;
+        display.classList.remove('hidden');
+        display.innerHTML = `<span class="material-symbols-outlined text-success align-middle text-lg mr-1">workspace_premium</span>Titre : <span class="text-white">"${rankName}"</span> <span class="text-xs text-muted">(${sourceNom})</span>`;
     } else {
-        display.style.display = 'none';
+        display.classList.add('hidden');
         display.innerHTML = '';
     }
 }
@@ -683,7 +683,7 @@ export function renderEffects() {
                     `;
         } else if (eff.effectType === 'PURGE') {
             fieldsHtml = `
-                        <div class="text-success" style="padding: 0.5rem; background: rgba(16, 185, 129, 0.1); border-left: 3px solid #10b981; border-radius: 4px; font-size: 0.85rem;">
+                        <div class="text-success p-2 bg-success/10 border-l-[3px] border-success rounded text-sm">
                             ✨ Dissipe instantanément tous les bonus, malus et altérations d'état (DoT/HoT) actifs sur la cible.
                         </div>
                     `;
@@ -743,7 +743,7 @@ export function renderEffects() {
                     `;
         } else if (eff.effectType === 'AME_DETACHEE') {
             fieldsHtml = `
-                        <div style="padding: 0.5rem; background: rgba(244, 63, 94, 0.1); border-left: 3px solid #f43f5e; border-radius: 4px; font-size: 0.85rem; color: #fda4af;">
+                        <div class="p-2 bg-rose-500/10 border-l-[3px] border-rose-500 rounded text-sm text-rose-300">
                             ✨ Confère au lanceur +5 Dégâts Physiques et +40% de Dégâts Physiques supplémentaires pendant 2 tours.
                         </div>
                     `;
@@ -777,15 +777,15 @@ export function renderEffects() {
         const deleteOrLinkedButton = `<button type="button" class="btn-danger" onclick="removeEffect('${eff.id}')">✖ Supprimer</button>`;
 
         const targetSelectorHtml = (isHeatEffect || eff.effectType === 'AME_DETACHEE') ? `
-                        <div class="flex-center" style="gap: 0.5rem; background: rgba(239, 68, 68, 0.08); padding: 0.6rem 0.8rem; border-radius: 8px; border: 1px solid rgba(239, 68, 68, 0.25); margin-bottom: 0.5rem;">
-                            <span class="material-symbols-outlined" style="color: #fca5a5; font-size: 1.25rem;">person</span>
-                            <span style="font-size: 0.85rem; color: #fca5a5; font-weight: 600;">Cible : Lanceur (${eff.effectType === 'AME_DETACHEE' ? 'Âme Détachée' : 'Chaleur générée'})</span>
+                        <div class="flex-center gap-2 p-3 bg-red-500/10 rounded-lg border border-red-500/25 mb-2">
+                            <span class="material-symbols-outlined text-red-300 text-xl">person</span>
+                            <span class="text-sm text-red-300 font-semibold">Cible : Lanceur (${eff.effectType === 'AME_DETACHEE' ? 'Âme Détachée' : 'Chaleur générée'})</span>
                         </div>
                 ` : `
                         <!-- Sélection de la cible de l'Effet -->
-                        <div style="display: flex; flex-direction: column; gap: 0.8rem; background: rgba(0,0,0,0.25); padding: 0.8rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.05);">
-                            <label class="text-sm" style="color: #fff; font-weight: 600;">Cible de l'Effet :</label>
-                            <div class="target-selector" style="flex-wrap: wrap; gap: 0.5rem;">
+                        <div class="flex-col gap-3 p-3 bg-black/25 rounded-lg border border-white/5">
+                            <label class="text-sm text-white font-semibold">Cible de l'Effet :</label>
+                            <div class="target-selector flex-wrap gap-2">
                                 <button type="button" class="target-btn target-caster-btn ${eff.effectTarget === 'CASTER' ? 'active' : ''}" onclick="setEffectTarget('${eff.id}', 'CASTER')" title="Affecte uniquement le lanceur du sort">
                                     <span class="material-symbols-outlined">person</span> Lanceur
                                 </button>
@@ -818,17 +818,17 @@ export function renderEffects() {
                         ${targetSelectorHtml}
 
                             <!-- Option / Clé d'activation de la ligne d'effet -->
-                            <div style="display: flex; gap: 0.5rem; align-items: center; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px dashed rgba(255,255,255,0.05);">
-                                <label class="text-xs" style="color: #f59e0b; font-weight:600; display:flex; align-items:center; gap:0.3rem;"><span class="material-symbols-outlined" style="font-size:1.1rem;">key</span> S'active uniquement si l'Option de sort choisie est :</label>
-                                <input type="number" value="${eff.requiredChoiceKey !== undefined && eff.requiredChoiceKey !== null ? eff.requiredChoiceKey : ''}" placeholder="Toutes (Par défaut)" style="width: 140px; font-size: 0.85rem; padding: 0.2rem 0.4rem; background: var(--glass-bg); color: #fff; border: 1px solid var(--glass-border); border-radius: 4px;" onchange="updateEffectProp('${eff.id}', 'requiredChoiceKey', this.value ? parseInt(this.value) : null)">
+                            <div class="flex items-center gap-2 mt-2 pt-2 border-t border-white/5 border-dashed">
+                                <label class="text-xs text-amber-500 font-semibold flex items-center gap-1"><span class="material-symbols-outlined text-lg">key</span> S'active uniquement si l'Option de sort choisie est :</label>
+                                <input type="number" value="${eff.requiredChoiceKey !== undefined && eff.requiredChoiceKey !== null ? eff.requiredChoiceKey : ''}" placeholder="Toutes (Par défaut)" class="w-32 text-sm px-2 py-1 bg-glass text-white border-glass rounded" onchange="updateEffectProp('${eff.id}', 'requiredChoiceKey', this.value ? parseInt(this.value) : null)">
                                 <span class="text-muted text-xs">Ex: 1 pour la ligne Soin, 2 pour la ligne Mana. Laissez vide pour s'activer toujours.</span>
                             </div>
 
                             <!-- Condition Âme Détachée -->
                             ${(isTenebres && eff.effectType !== 'AME_DETACHEE') ? `
-                        <div style="margin-top: 0.8rem; display: flex; flex-direction: column; gap: 0.4rem; padding-top: 0.5rem; border-top: 1px dashed rgba(255,255,255,0.05);">
-                            <div class="flex-center" style="justify-content: space-between;">
-                                <label class="flex-center" style="color: #fda4af; font-weight: 600; font-size: 0.85rem; gap: 0.3rem;">
+                        <div class="mt-3 flex-col gap-1 pt-2 border-t border-white/5 border-dashed">
+                            <div class="flex-center justify-between">
+                                <label class="flex-center text-rose-300 font-semibold text-sm gap-1">
                                     <span class="material-symbols-outlined text-lg">hand_bones</span> Condition "Âme Détachée"
                                 </label>
                                 ${(() => {
@@ -851,9 +851,9 @@ export function renderEffects() {
 
                             <!-- Tour(s) d'activation de l'effet dans la canalisation (uniquement si le sort est canalisé) -->
                             ${isCanalise ? `
-                            <div style="display: flex; flex-direction: column; gap: 0.4rem; margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px dashed rgba(255,255,255,0.05);">
-                                <label class="text-xs" style="color: #a78bfa; font-weight: 600; display:flex; align-items:center; gap:0.3rem;"><span class="material-symbols-outlined" style="font-size:1.1rem;">cyclone</span> Activation par Tour de Canalisation :</label>
-                                <div style="display: flex; gap: 0.4rem; flex-wrap: wrap; align-items: center;">
+                            <div class="flex-col gap-1 mt-2 pt-2 border-t border-white/5 border-dashed">
+                                <label class="text-xs text-purple-400 font-semibold flex items-center gap-1"><span class="material-symbols-outlined text-lg">cyclone</span> Activation par Tour de Canalisation :</label>
+                                <div class="flex flex-wrap items-center gap-1">
                                     ${Array.from({ length: duration }, (_, i) => i + 1).map(turn => {
                     const isActive = (eff.channelingTurns || []).includes(turn);
                     const btnBg = isActive ? 'var(--primary)' : 'rgba(255, 255, 255, 0.05)';
@@ -866,13 +866,13 @@ export function renderEffects() {
                                             </button>
                                         `;
                 }).join('')}
-                                    <span class="text-muted" style="font-size: 0.75rem; margin-left: 0.5rem;">Sélectionnez les tours où cet effet se déclenche.</span>
+                                    <span class="text-muted text-xs ml-2">Sélectionnez les tours où cet effet se déclenche.</span>
                                 </div>
                             </div>
                             ` : ''}
                         </div>
 
-                        <hr style="border-color: var(--glass-border); margin: 0;">
+                        <hr class="border-glass m-0">
 
                         ${fieldsHtml}
                     </div>

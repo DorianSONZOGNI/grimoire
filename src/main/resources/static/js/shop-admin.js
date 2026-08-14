@@ -127,22 +127,20 @@ function addAnomalyRow(selectedName = '', qty = 1) {
     }
 
     row.innerHTML = `
-        <div class="custom-select-wrapper flex-1">
-            <div class="custom-select-trigger flex-between" style="background: rgba(255,255,255,0.05); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; padding: 0.6rem; cursor: pointer; align-items: center; width: 100%;">
-                <span class="cs-label flex-center" style="color: #cbd5e1; font-size: 0.85rem; gap: 0.3rem;">${displayLabel}</span>
-                <span class="material-symbols-outlined" style="color: #64748b; font-size: 1.1rem;">expand_more</span>
+        <div class="custom-select-wrapper flex-1 min-w-0">
+            <div class="custom-select-trigger flex-between bg-white/10 border border-white/10 rounded-lg p-2 cursor-pointer items-center w-full">
+                <span class="cs-label flex-center text-slate-300 text-sm gap-1 truncate">${displayLabel}</span>
+                <span class="material-symbols-outlined text-slate-500 text-lg flex-shrink-0">expand_more</span>
             </div>
             <div class="custom-select-options custom-options">
                 ${optionsHtml}
             </div>
             <input type="hidden" class="anomaly-select-hidden" value="${selectedName}">
         </div>
-        <div class="flex-center-gap">
-            <span class="text-xs text-muted">Qté:</span>
-            <input type="number" class="anomaly-qty-input" value="${qty}" min="1" style="width: 60px; padding: 0.5rem; background: rgba(0,0,0,0.3); border: 1px solid rgba(255,255,255,0.1); border-radius: 8px; color: #fff; font-family: 'Outfit', sans-serif;">
-        </div>
-        <button type="button" class="btn-remove-row" style="background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5; border-radius: 6px; cursor: pointer; padding: 0.4rem; display: flex; justify-content: center; align-items: center;">
-            <span class="material-symbols-outlined icon-sm">delete</span>
+        <span class="text-slate-300 text-sm whitespace-nowrap">Qté:</span>
+        <input type="number" class="anomaly-qty-input p-2 bg-black/30 border border-white/10 rounded-lg text-white font-outfit text-center" style="width: 60px;" value="${qty}" min="1">
+        <button type="button" class="btn-remove-row bg-red-500/20 border border-red-500/40 text-red-300 rounded-md cursor-pointer p-2 flex justify-center items-center" onclick="removeAnomalyRow(this)">
+            <span class="material-symbols-outlined text-md">delete</span>
         </button>
     `;
 
@@ -247,7 +245,7 @@ function renderGrid(equipments) {
         html += `
             <div class="shop-admin-section">
                 <div class="shop-admin-header rarity-${rarity}">
-                    <span class="material-symbols-outlined" style="font-size: 1.3rem;">${rarityInfo.icon}</span>
+                    <span class="material-symbols-outlined text-xl">${rarityInfo.icon}</span>
                     ${rarityInfo.label}
                 </div>
                 <div class="shop-admin-list">
@@ -267,9 +265,9 @@ function renderGrid(equipments) {
                 html += `
                 <div class="shop-admin-row">
                     <div class="shop-admin-row-name">
-                        <span class="material-symbols-outlined ${slotInfo.extraClass || ''}" style="font-size: 1.4rem; color: ${slotInfo.color};" title="${slotInfo.label}">${slotInfo.icon}</span>
-                        ${eq.name}
-                        ${window.isAdmin && eq.ownerUsername ? `<span class="text-xxs" style="padding: 0.15rem 0.4rem; background: ${eq.ownerUsername === window.currentUser?.username ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.1)'}; color: ${eq.ownerUsername === window.currentUser?.username ? '#34d399' : '#cbd5e1'}; border-radius: 4px; border: 1px solid ${eq.ownerUsername === window.currentUser?.username ? 'rgba(16, 185, 129, 0.3)' : 'rgba(255, 255, 255, 0.1)'};"><span class="material-symbols-outlined align-middle" style="font-size: 0.7rem; margin-right: 2px;">account_circle</span>${eq.ownerUsername}</span>` : ''}
+                        <span class="material-symbols-outlined ${slotInfo.extraClass || ''} text-2xl" style="color: ${slotInfo.color};" title="${slotInfo.label}">${slotInfo.icon}</span>
+                        <span class="font-bold text-lg">${eq.name}</span>
+                        ${window.isAdmin && eq.ownerUsername ? `<span class="text-xxs whitespace-nowrap" style="padding: 0.15rem 0.4rem; background: ${eq.ownerUsername === window.currentUser?.username ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.1)'}; color: ${eq.ownerUsername === window.currentUser?.username ? '#34d399' : '#cbd5e1'}; border-radius: 4px; border: 1px solid ${eq.ownerUsername === window.currentUser?.username ? 'rgba(16, 185, 129, 0.3)' : 'rgba(255, 255, 255, 0.1)'};"><span class="material-symbols-outlined align-middle text-xxs mr-1">account_circle</span>${eq.ownerUsername}</span>` : ''}
                     </div>
                     
                     <div class="shop-admin-row-stats">
@@ -297,12 +295,12 @@ function renderGrid(equipments) {
                     })()}
                     </div>
 
-                    <div class="shop-admin-row-actions">
-                        ${window.isAdmin ? `<button class="vault-btn-edit" onclick="editEquipment(${eq.id})" title="Modifier l'objet" style="padding: 0.4rem; border-radius: 6px;">
-                            <span class="material-symbols-outlined text-lg">edit</span>
+                    <div class="vault-card-actions">
+                        ${window.isAdmin ? `<button class="vault-btn-edit p-1 rounded-md" onclick="editEquipment(${eq.id})" title="Modifier l'objet">
+                            <span class="material-symbols-outlined text-md">edit</span>
                         </button>` : ''}
-                        ${(window.isAdmin || eq.ownerUsername === window.currentUser?.username) ? `<button class="vault-btn-delete" onclick="deleteEquipment(${eq.id})" title="Détruire l'objet" style="padding: 0.4rem; border-radius: 6px;">
-                            <span class="material-symbols-outlined text-lg">delete</span>
+                        ${(window.isAdmin || eq.ownerUsername === window.currentUser?.username) ? `<button class="vault-btn-delete p-1 rounded-md" onclick="deleteEquipment(${eq.id})" title="Détruire l'objet">
+                            <span class="material-symbols-outlined text-md">delete</span>
                         </button>` : ''}
                     </div>
                 </div>

@@ -327,11 +327,11 @@ function renderGrid(equipments) {
                     <div class="vault-card-name-group">
                         <div class="vault-card-slot">
                             <span class="material-symbols-outlined text-sm" style="color: ${spColor};">${typeIcon}</span>
-                            ${typeStr} <span class="opacity-50 ml-1">${eq.spiritualite}</span> <span class="opacity-50 ml-1">(Niv. ${eq.level || 1})</span>
+                            ${typeStr} <span class="opacity-50 ml-1">${eq.spiritualite}</span>
                         </div>
-                        <div class="vault-card-name flex-start-gap" style="color: #fdf4ff;">
-                            <span class="material-symbols-outlined flex-shrink-0 opacity-80 mt-1" style="font-size: 1.2rem; color: ${spColor};">${catIcon}</span>
-                            <span class="word-break" title="${eq.name}">${eq.name}</span>
+                        <div class="vault-card-name flex items-center gap-1" style="color: ${spColor};">
+                            <span class="material-symbols-outlined flex-shrink-0 opacity-80 text-xl">${catIcon}</span>
+                            <span class="word-break leading-tight">${eq.name}</span>
                         </div>
                         ${adminOwnerHtml ? `<div>${adminOwnerHtml}</div>` : ''}
                     </div>
@@ -344,11 +344,13 @@ function renderGrid(equipments) {
                         </button>` : ''}
                     </div>
                 </div>
-                <div class="vault-card-stats text-sm font-italic text-center" style="color: ${spColor}; background: ${spColor}10; border-radius: 8px; padding: 1rem; border: 1px dashed ${spColor}30;">
+                <div class="vault-card-stats text-sm font-italic text-center rounded-lg p-4" style="color: ${spColor}; background: ${spColor}10; border: 1px dashed ${spColor}30;">
                     ${eq.description || "Une relique impie imprégnée d'une aura mystique."}
                 </div>
                 <div class="vault-card-footer">
-                    <div class="vault-card-weight"></div>
+                    <div class="vault-card-weight flex items-center" style="color: ${spColor}; opacity: 0.8; font-size: 0.9rem;">
+                        ${eq.level ? `Niv. ${eq.level}` : ''}
+                    </div>
                     <span class="vault-card-status status-equipped" style="background: ${spColor}20; color: ${spColor};">
                         <span class="material-symbols-outlined text-sm">person</span>
                         Possédé
