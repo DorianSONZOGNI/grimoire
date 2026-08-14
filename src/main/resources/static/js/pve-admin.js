@@ -1633,7 +1633,7 @@ window.renderMonstersList = function () {
                             <span class="flex-center gap-1" ><span class="material-symbols-outlined text-base text-pink-400" >healing</span> R. PV: ${m.regenHp || 0}</span>
                             <span class="flex-center gap-1" ><span class="material-symbols-outlined text-base text-sky-300" >opacity</span> R. MP: ${m.regenMana || 0}</span>
                             <span class="flex-center gap-1" ><span class="material-symbols-outlined text-base text-amber-500" >bolt</span> Vit: ${m.speed}</span>
-                            <span class="flex-center gap-1" ><span class="material-symbols-outlined text-error icon-sm" >gps_fixed</span> Crit: ${m.crit || 0}%</span>
+                            <span class="flex-center gap-1" ><span class="material-symbols-outlined text-red-500 icon-sm" >gps_fixed</span> Crit: ${m.crit || 0}%</span>
                             <span class="flex-center gap-1" ><span class="material-symbols-outlined text-base text-rose-500" >fitness_center</span> For: ${m.strength}</span>
                             <span class="flex-center gap-1" ><span class="material-symbols-outlined text-base text-purple-500" >auto_awesome</span> Pui: ${m.power}</span>
                             <span class="flex-center gap-1" ><span class="material-symbols-outlined text-base text-blue-500" >shield</span> Arm: ${m.armor}</span>
@@ -2292,7 +2292,7 @@ window.updateAltarField = function (rIndex, oIndex, field, value) {
         }
         outcome[field] = value;
     }
-    
+
     if (field !== 'trapHasRopeOption') {
         renderRooms();
     }
