@@ -187,10 +187,10 @@ async function updateRewardNameInput() {
         });
         container.innerHTML = `
                     <label>Nom de l'objet (Résultat)</label>
-                    <div class="custom-select-wrapper" style="z-index: 9;">
-                        <div class="custom-select-trigger" style="background: rgba(15,23,42,0.6); padding: 0.6rem; border-radius: 8px;">
-                            <span class="cs-label" style="font-size: 0.9rem;">${displayLabel}</span>
-                            <span class="material-symbols-outlined" style="color: #64748b; font-size: 1.1rem;">expand_more</span>
+                    <div class="custom-select-wrapper z-10">
+                        <div class="custom-select-trigger bg-slate-900/60 p-2 rounded-lg">
+                            <span class="cs-label text-sm">${displayLabel}</span>
+                            <span class="material-symbols-outlined text-slate-500 text-lg">expand_more</span>
                         </div>
                         <div class="custom-select-options custom-options">
                             ${optionsHtml}
@@ -201,9 +201,9 @@ async function updateRewardNameInput() {
     } else if (type === 'GIVE_SPIRIT_XP') {
         container.innerHTML = `
                     <label>Nom de l'objet (Résultat)</label>
-                    <div class="custom-select-wrapper disabled" style="opacity: 0.5; pointer-events: none;">
-                        <div class="custom-select-trigger" style="background: rgba(15,23,42,0.6); padding: 0.6rem; border-radius: 8px;">
-                            <span class="cs-label" style="font-size: 0.9rem;">- XP Spiritualité -</span>
+                    <div class="custom-select-wrapper disabled opacity-50 pointer-events-none">
+                        <div class="custom-select-trigger bg-slate-900/60 p-2 rounded-lg">
+                            <span class="cs-label text-sm">- XP Spiritualité -</span>
                         </div>
                         <input type="hidden" id="rewardName" value="XP Spiritualité">
                     </div>
@@ -230,7 +230,7 @@ async function updateRewardNameInput() {
                     if (!defaultSecrets.some(ds => ds.name === d.requiredSecret)) {
                         secretOptions += `<div class="custom-option" data-value="${d.requiredSecret}">
                                     <span class="material-symbols-outlined cs-icon text-warning">key</span>
-                                    ${d.requiredSecret} <span style="color: #64748b; font-size: 0.8rem;">(Donjon: ${d.name})</span>
+                                    ${d.requiredSecret} <span class="text-slate-500 text-xs">(Donjon: ${d.name})</span>
                                 </div>`;
                     }
                 });
@@ -240,7 +240,7 @@ async function updateRewardNameInput() {
         }
 
         if (!secretOptions) {
-            secretOptions = `<div class="custom-option" data-value="" style="pointer-events: none; opacity: 0.5;">
+            secretOptions = `<div class="custom-option pointer-events-none opacity-50" data-value="">
                         <span class="material-symbols-outlined cs-icon text-muted">warning</span>
                         Aucun secret configur\u00e9 dans les donjons
                     </div>`;
@@ -248,13 +248,13 @@ async function updateRewardNameInput() {
 
         container.innerHTML = `
                     <label>Secret / D\u00e9blocage (R\u00e9sultat)</label>
-                    <div class="custom-select-wrapper" style="z-index: 9;">
-                        <div class="custom-select-trigger" style="background: rgba(15,23,42,0.6); padding: 0.6rem; border-radius: 8px;">
-                            <span class="cs-label" style="font-size: 0.9rem;">
+                    <div class="custom-select-wrapper z-10">
+                        <div class="custom-select-trigger bg-slate-900/60 p-2 rounded-lg">
+                            <span class="cs-label text-sm">
                                 <span class="material-symbols-outlined cs-icon text-warning">key</span>
                                 Choisir un secret...
                             </span>
-                            <span class="material-symbols-outlined" style="color: #64748b; font-size: 1.1rem;">expand_more</span>
+                            <span class="material-symbols-outlined text-slate-500 text-lg">expand_more</span>
                         </div>
                         <div class="custom-select-options custom-options">
                             ${secretOptions}
@@ -265,7 +265,7 @@ async function updateRewardNameInput() {
     } else {
         container.innerHTML = `
                     <label>Nom de l'objet / Secret (R\u00e9sultat)</label>
-                    <input type="text" id="rewardName" required placeholder="Ex: Secret du feu" class="form-control" style="width: 100%; padding: 0.6rem; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); color: white; border-radius: 8px;">
+                    <input type="text" id="rewardName" required placeholder="Ex: Secret du feu" class="form-control w-full p-2 bg-slate-900/60 border border-white/10 text-white rounded-lg">
                 `;
     }
 }
@@ -321,18 +321,18 @@ function addRequirement(type, selectedName = '', qty = 1) {
     }
 
     div.innerHTML = `
-                <div class="custom-select-wrapper" style="flex: 2;">
-                    <div class="custom-select-trigger" style="background: rgba(15,23,42,0.6); padding: 0.6rem; border-radius: 8px;">
-                        <span class="cs-label" style="font-size: 0.9rem;">${displayLabel}</span>
-                        <span class="material-symbols-outlined" style="color: #64748b; font-size: 1.1rem;">expand_more</span>
+                <div class="custom-select-wrapper flex-[2]">
+                    <div class="custom-select-trigger bg-slate-900/60 p-2 rounded-lg">
+                        <span class="cs-label text-sm">${displayLabel}</span>
+                        <span class="material-symbols-outlined text-slate-500 text-lg">expand_more</span>
                     </div>
                     <div class="custom-select-options custom-options">
                         ${optionsHtml}
                     </div>
                     <input type="hidden" class="req-name" value="${selectedName}">
                 </div>
-                <input type="number" value="${qty}" min="1" class="req-qty form-control" style="flex: 1; padding: 0.6rem; background: rgba(15, 23, 42, 0.6); border: 1px solid rgba(255, 255, 255, 0.1); color: white; border-radius: 8px;">
-                <button type="button" class="btn-remove-row" style="background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); color: #fca5a5; border-radius: 6px; cursor: pointer; padding: 0.6rem; display: flex; justify-content: center; align-items: center;">
+                <input type="number" value="${qty}" min="1" class="req-qty form-control flex-1 p-2 bg-slate-900/60 border border-white/10 text-white rounded-lg">
+                <button type="button" class="btn-remove-row bg-red-500/20 border border-red-500/40 text-red-300 rounded-md cursor-pointer p-2 flex justify-center items-center">
                     <span class="material-symbols-outlined text-lg">delete</span>
                 </button>
             `;
@@ -371,20 +371,17 @@ window.renderRecipesList = function () {
     });
 
     if (filteredRecipes.length === 0) {
-        container.innerHTML = "<p style='color: var(--text-muted);'>Aucune recette trouvée.</p>";
+        container.innerHTML = "<p class='text-muted'>Aucune recette trouvée.</p>";
         return;
     }
 
     filteredRecipes.forEach(r => {
-        const div = document.createElement('div');
-        div.style.background = 'rgba(0,0,0,0.3)';
-        div.style.border = '1px solid var(--glass-border)';
-        div.style.borderRadius = '8px';
-        div.style.padding = '1rem';
+        const card = document.createElement('div');
+        card.className = 'recipe-card bg-black/30 border border-white/10 rounded-lg p-4';
 
         let reqs = [];
-        if (r.costGold > 0) reqs.push(`<span class="anomaly-badge" style="border: 1px solid #f59e0b; background: linear-gradient(#f59e0b25, #f59e0b25), #1e293b; color: #fbbf24; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block;">${r.costGold} Or</span>`);
-        if (r.costSpiritXp > 0) reqs.push(`<span class="anomaly-badge" style="border: 1px solid #38bdf8; background: linear-gradient(#38bdf825, #38bdf825), #1e293b; color: #38bdf8; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block;">${r.costSpiritXp} XP Spirit</span>`);
+        if (r.costGold > 0) reqs.push(`<span class="anomaly-badge" style="border-color: #f59e0b; background: linear-gradient(#f59e0b25, #f59e0b25), #1e293b; color: #f59e0b;">${r.costGold} Or</span>`);
+        if (r.costSpiritXp > 0) reqs.push(`<span class="anomaly-badge" style="border-color: #38bdf8; background: linear-gradient(#38bdf825, #38bdf825), #1e293b; color: #38bdf8;">${r.costSpiritXp} XP Spirit</span>`);
 
         if (r.requiredAnomalies) {
             for (const [k, v] of Object.entries(r.requiredAnomalies)) {
@@ -393,7 +390,7 @@ window.renderRecipesList = function () {
                     const catIcon = aTemp.category ? (getCategoryIcon(aTemp.category)) : 'star';
                     const spiriColor = aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
                     const tooltipData = getAnomalyTooltipHTML(aTemp, k);
-                    reqs.push(`<span class="anomaly-badge" style="border: 1px solid ${spiriColor}; background: linear-gradient(${spiriColor}25, ${spiriColor}25), #1e293b; color: ${spiriColor}; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block; cursor: help;" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}"><span class="material-symbols-outlined" style="font-size: 0.9rem; vertical-align: middle; color: ${spiriColor};">${catIcon}</span> ${v}x ${k}</span>`);
+                    reqs.push(`<span class="anomaly-badge cursor-help" style="border-color: ${spiriColor}; background: linear-gradient(${spiriColor}25, ${spiriColor}25), #1e293b; color: ${spiriColor};" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}"><span class="material-symbols-outlined" style="font-size: 1rem; color: ${spiriColor};">${catIcon}</span> ${v}x ${k}</span>`);
                 } else {
                     reqs.push(`${v}x [A] ${k}`);
                 }
@@ -403,7 +400,7 @@ window.renderRecipesList = function () {
             for (const [k, v] of Object.entries(r.requiredConsumables)) {
                 const consTemp = pageState.allConsumables.find(c => c.name === k);
                 const slotInfo = getSlotInfo(consTemp);
-                reqs.push(`<span class="anomaly-badge" style="border: 1px solid ${slotInfo.color}; background: linear-gradient(${slotInfo.color}25, ${slotInfo.color}25), #1e293b; color: ${slotInfo.color}; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block;"><span class="material-symbols-outlined ${slotInfo.extraClass || ''}" style="font-size: 0.9rem; vertical-align: middle; color: ${slotInfo.color};">${slotInfo.icon}</span> ${v}x ${k}</span>`);
+                reqs.push(`<span class="anomaly-badge" style="border-color: ${slotInfo.color}; background: linear-gradient(${slotInfo.color}25, ${slotInfo.color}25), #1e293b; color: ${slotInfo.color};"><span class="material-symbols-outlined ${slotInfo.extraClass || ''}" style="font-size: 1rem; color: ${slotInfo.color};">${slotInfo.icon}</span> ${v}x ${k}</span>`);
             }
         }
 
@@ -414,48 +411,48 @@ window.renderRecipesList = function () {
                 const catIcon = aTemp.category ? (getCategoryIcon(aTemp.category)) : 'star';
                 const spiriColor = aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
                 const tooltipData = getAnomalyTooltipHTML(aTemp, r.rewardName);
-                rewardHtml = `<span class="anomaly-badge" style="border: 1px solid ${spiriColor}; background: linear-gradient(${spiriColor}25, ${spiriColor}25), #1e293b; color: ${spiriColor}; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block; cursor: help;" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; color: ${spiriColor};">${catIcon}</span> ${r.rewardQuantity}x ${r.rewardName}</span>`;
+                rewardHtml = `<span class="anomaly-badge cursor-help" style="border-color: ${spiriColor}; background: linear-gradient(${spiriColor}25, ${spiriColor}25), #1e293b; color: ${spiriColor};" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}"><span class="material-symbols-outlined" style="font-size: 1rem; color: ${spiriColor};">${catIcon}</span> ${r.rewardQuantity}x ${r.rewardName}</span>`;
             } else {
-                rewardHtml = `<span class="text-success">${r.rewardType} - ${r.rewardQuantity}x ${r.rewardName} (Niv. ${r.rewardLevel})</span>`;
+                rewardHtml = `<span class="text-green-500">${r.rewardType} - ${r.rewardQuantity}x ${r.rewardName} (Niv. ${r.rewardLevel})</span>`;
             }
         } else if (r.rewardType === 'GIVE_CONSUMABLE') {
             const consTemp = pageState.allConsumables.find(c => c.name === r.rewardName);
             const slotInfo = getSlotInfo(consTemp);
-            rewardHtml = `<span class="anomaly-badge" style="border: 1px solid ${slotInfo.color}; background: linear-gradient(${slotInfo.color}25, ${slotInfo.color}25), #1e293b; color: ${slotInfo.color}; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block;"><span class="material-symbols-outlined ${slotInfo.extraClass || ''}" style="font-size: 1rem; vertical-align: middle; color: ${slotInfo.color};">${slotInfo.icon}</span> ${r.rewardQuantity}x ${r.rewardName}</span>`;
+            rewardHtml = `<span class="anomaly-badge" style="border-color: ${slotInfo.color}; background: linear-gradient(${slotInfo.color}25, ${slotInfo.color}25), #1e293b; color: ${slotInfo.color};"><span class="material-symbols-outlined ${slotInfo.extraClass || ''}" style="font-size: 1rem; color: ${slotInfo.color};">${slotInfo.icon}</span> ${r.rewardQuantity}x ${r.rewardName}</span>`;
         } else if (r.rewardType === 'GIVE_EQUIPMENT') {
             const eqTemp = pageState.allEquipments.find(e => e.name === r.rewardName);
             const slotInfo = getSlotInfo(eqTemp);
             const rNameTemp = typeof eqTemp?.rarity === 'object' ? eqTemp.rarity?.name : eqTemp?.rarity;
             const rColor = eqTemp ? (getRarityColor(rNameTemp)) : '#fbbf24';
-            rewardHtml = `<span class="anomaly-badge" style="border: 1px solid ${rColor}; background: linear-gradient(${rColor}25, ${rColor}25), #1e293b; color: ${rColor}; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block;"><span class="material-symbols-outlined ${slotInfo.extraClass || ''}" style="font-size: 1rem; vertical-align: middle; color: ${slotInfo.color};">${slotInfo.icon}</span> ${r.rewardQuantity}x ${r.rewardName}</span>`;
+            rewardHtml = `<span class="anomaly-badge" style="border-color: ${rColor}; background: linear-gradient(${rColor}25, ${rColor}25), #1e293b; color: ${rColor};"><span class="material-symbols-outlined ${slotInfo.extraClass || ''}" style="font-size: 1rem; color: ${slotInfo.color};">${slotInfo.icon}</span> ${r.rewardQuantity}x ${r.rewardName}</span>`;
         } else if (r.rewardType === 'GIVE_SPIRIT_XP') {
-            rewardHtml = `<span class="anomaly-badge" style="border: 1px solid #38bdf8; background: linear-gradient(#38bdf825, #38bdf825), #1e293b; color: #38bdf8; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block;"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; color: #38bdf8;">self_improvement</span> ${r.rewardQuantity} XP Spiritualité</span>`;
+            rewardHtml = `<span class="anomaly-badge" style="border-color: #38bdf8; background: linear-gradient(#38bdf825, #38bdf825), #1e293b; color: #38bdf8;"><span class="material-symbols-outlined" style="font-size: 1rem; color: #38bdf8;">self_improvement</span> ${r.rewardQuantity} XP Spiritualité</span>`;
         } else if (r.rewardType === 'UNLOCK_FEATURE') {
             const meta = window.DEFAULT_SECRETS_META.find(s => s.name === r.rewardName) || { icon: "key", color: "#f59e0b" };
-            rewardHtml = `<span class="anomaly-badge" style="border: 1px solid ${meta.color}; background: linear-gradient(${meta.color}25, ${meta.color}25), #1e293b; color: ${meta.color}; padding: 0.2rem 0.5rem; border-radius: 4px; display: inline-block;"><span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; color: ${meta.color};">${meta.icon}</span> Secret - ${r.rewardName} <span style="opacity: 0.8; font-size: 0.85em;">(Niv. ${r.rewardLevel || 1})</span></span>`;
+            rewardHtml = `<span class="anomaly-badge" style="border-color: ${meta.color}; background: linear-gradient(${meta.color}25, ${meta.color}25), #1e293b; color: ${meta.color};"><span class="material-symbols-outlined" style="font-size: 1rem; color: ${meta.color};">${meta.icon}</span> Secret - ${r.rewardName} <span class="opacity-80" style="font-size: 0.85em;">(Niv. ${r.rewardLevel || 1})</span></span>`;
         } else {
             rewardHtml = `<span class="text-warning">${r.rewardType} - ${r.rewardQuantity}x ${r.rewardName}</span>`;
         }
+        card.innerHTML = `
+            <div class="flex justify-between items-start">
+                <div>
+                    <h4 class="m-0 ${r.rewardType === 'UNLOCK_FEATURE' ? 'text-blue-500' : 'text-cyan-400'}">${r.name}</h4>
+                    <p class="text-sm text-muted my-1">${r.description || ''}</p>
+                </div>
+                <div class="flex gap-2">
+                    <button class="btn-edit" onclick="editRecipe(${r.id})">Éditer</button>
+                    <button class="btn-delete-small" onclick="deleteRecipe(${r.id})">Supprimer</button>
+                </div>
+            </div>
+            <div class="text-[0.85rem] mt-2 flex gap-1.5 flex-wrap items-center">
+                <strong>Coût :</strong> ${reqs.length > 0 ? reqs.join(' ') : '<span class="text-warning">Gratuit</span>'}
+            </div>
+            <div class="text-[0.85rem] mt-2 flex gap-1.5 flex-wrap items-center">
+                <strong>Résultat :</strong> ${rewardHtml}
+            </div>
+        `;
 
-        div.innerHTML = `
-                    <div style="display:flex; justify-content:space-between; align-items:start;">
-                        <div>
-                            <h4 style="margin: 0; color: #06b6d4;">${r.name}</h4>
-                            <p style="font-size: 0.85rem; color: var(--text-muted); margin: 0.3rem 0;">${r.description || ''}</p>
-                        </div>
-                        <div style="display: flex; gap: 0.5rem;">
-                            <button style="background: rgba(245, 158, 11, 0.2); border: 1px solid rgba(245, 158, 11, 0.5); color: #fcd34d; border-radius: 6px; cursor: pointer; padding: 0.3rem 0.6rem; font-size: 0.8rem; transition: all 0.2s;" onmouseover="this.style.background='rgba(245, 158, 11, 0.4)'" onmouseout="this.style.background='rgba(245, 158, 11, 0.2)'" onclick="editRecipe(${r.id})">Éditer</button>
-                            <button class="btn-danger" style="padding:0.3rem 0.6rem; font-size:0.8rem;" onclick="deleteRecipe(${r.id})">Supprimer</button>
-                        </div>
-                    </div>
-                    <div style="font-size: 0.85rem; margin-top: 0.5rem; display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
-                        <strong>Coût :</strong> ${reqs.length > 0 ? reqs.join(' ') : '<span class="text-warning">Gratuit</span>'}
-                    </div>
-                    <div style="font-size: 0.85rem; margin-top: 0.5rem; display: flex; gap: 6px; flex-wrap: wrap; align-items: center;">
-                        <strong>Résultat :</strong> ${rewardHtml}
-                    </div>
-                `;
-        container.appendChild(div);
+        container.appendChild(card);
     });
 }
 

@@ -79,7 +79,7 @@ async function updateCharLimitUI() {
             if (isMaxedOut && data.maxCharacters < 8 && !window.isAdmin) {
                 const costs = { 2: 20, 3: 50, 4: 75, 5: 150, 6: 200, 7: 300 };
                 const cost = costs[data.maxCharacters];
-                html += `<button class="text-success" onclick="buyRosterSlot(${cost})" title="Acheter un emplacement pour ${cost} or" style="margin-left: 0.5rem; background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.4); border-radius: 4px; cursor: pointer; padding: 0.1rem 0.3rem; display: inline-flex; align-items: center;"><span class="material-symbols-outlined text-sm">add</span></button>`;
+                html += `<button class="text-success ml-2 bg-success/20 border-success/40 rounded cursor-pointer px-1 py-0 flex-center" onclick="buyRosterSlot(${cost})" title="Acheter un emplacement pour ${cost} or"><span class="material-symbols-outlined text-sm">add</span></button>`;
             }
 
             limitContainer.innerHTML = html;
@@ -92,7 +92,7 @@ async function updateCharLimitUI() {
 window.buyRosterSlot = function (cost) {
     showModal({
         title: 'Agrandir le Roster ?',
-        body: `Voulez-vous acheter un nouvel emplacement de personnage pour <strong style="color:#fbbf24;">${cost}</strong> Or ?`,
+        body: `Voulez-vous acheter un nouvel emplacement de personnage pour <strong class="text-gold">${cost}</strong> Or ?`,
         icon: 'shopping_cart',
         confirmText: 'Oui, acheter',
         onConfirm: async () => {
@@ -109,7 +109,7 @@ window.buyRosterSlot = function (cost) {
                     await updateCharLimitUI();
 
                     const eqCreateSection = document.querySelector('.equip-create-section');
-                    if (eqCreateSection && window.currentUser) eqCreateSection.style.display = 'block';
+                    if (eqCreateSection && window.currentUser) eqCreateSection.classList.remove('hidden');
                 } else {
                     const err = await res.json();
                     showNotif(err.message || "Erreur lors de l'achat", true);
@@ -418,14 +418,14 @@ function renderPersonnages() {
                 <span class="material-symbols-outlined text-xs">route</span>
                 ${p.voie.nom} Lvl ${p.voieLevel}
                 <template class="tooltip-data">
-                    <div class="text-sm font-medium" style="margin-bottom: 0.5rem; display:flex; align-items:center; gap:0.3rem; color: ${info.color};">
-                        <span class="material-symbols-outlined" style="font-size:1.1rem;">${info.icon}</span>
+                    <div class="text-sm font-medium mb-2 flex-center gap-1" style="color: ${info.color};">
+                        <span class="material-symbols-outlined text-lg">${info.icon}</span>
                         ${vFull.nom}
                     </div>
-                    <div class="text-xs" style="color: #cbd5e1; margin-bottom: 0.5rem;">${vFull.description || 'Description générique.'}</div>
-                    <div class="flex-start-gap text-xs" style="color: #e2e8f0;">
-                        <span class="material-symbols-outlined" style="font-size: 0.95rem; color: ${info.color};">bolt</span>
-                        <span class="font-italic" style="white-space: pre-wrap;">${formatRichText(vFull.passiveDescription) || 'Passif spécifique.'}</span>
+                    <div class="text-xs text-slate-300 mb-2">${vFull.description || 'Description générique.'}</div>
+                    <div class="flex-start-gap text-xs text-slate-200">
+                        <span class="material-symbols-outlined text-md" style="color: ${info.color};">bolt</span>
+                        <span class="font-italic whitespace-pre-wrap">${formatRichText(vFull.passiveDescription) || 'Passif spécifique.'}</span>
                     </div>
                 </template>
             </span>`;
@@ -438,20 +438,20 @@ function renderPersonnages() {
                 <span class="material-symbols-outlined text-xs">psychology</span>
                 ${p.spiritualite.nom} Lvl ${p.spiritualiteLevel}
                 <template class="tooltip-data">
-                    <div class="text-sm font-medium" style="margin-bottom: 0.5rem; display:flex; align-items:center; gap:0.3rem; color: ${info.color};">
-                        <span class="material-symbols-outlined" style="font-size:1.1rem;">${info.icon}</span>
+                    <div class="text-sm font-medium mb-2 flex-center gap-1" style="color: ${info.color};">
+                        <span class="material-symbols-outlined text-lg">${info.icon}</span>
                         ${sFull.nom}
                     </div>
-                    <div class="text-xs" style="color: #cbd5e1; margin-bottom: 0.5rem;">${sFull.description || 'Description générique.'}</div>
-                    <div class="flex-start-gap text-xs" style="color: #e2e8f0;">
-                        <span class="material-symbols-outlined" style="font-size: 0.95rem; color: ${info.color};">bolt</span>
-                        <span class="font-italic" style="white-space: pre-wrap;">${formatRichText(sFull.passiveDescription) || 'Passif spécifique.'}</span>
+                    <div class="text-xs text-slate-300 mb-2">${sFull.description || 'Description générique.'}</div>
+                    <div class="flex-start-gap text-xs text-slate-200">
+                        <span class="material-symbols-outlined text-md" style="color: ${info.color};">bolt</span>
+                        <span class="font-italic whitespace-pre-wrap">${formatRichText(sFull.passiveDescription) || 'Passif spécifique.'}</span>
                     </div>
                 </template>
             </span>`;
         }
         if (!p.voie && !p.spiritualite) {
-            badges = `<span class="font-italic text-muted" style="font-size: 0.72rem;">Aucune affiliation</span>`;
+            badges = `<span class="font-italic text-muted text-xs">Aucune affiliation</span>`;
         }
 
         // Equipment summary
@@ -474,10 +474,10 @@ function renderPersonnages() {
                     const rarityClass = rarityName ? `rarity-${rarityName}` : '';
                     let effectStar = '';
                     if (eq.specialEffect && eq.specialEffect !== 'NONE') {
-                        effectStar = `<span class="material-symbols-outlined text-xs" style="color: #c084fc; margin-left: 0.2rem;">auto_awesome</span>`;
+                        effectStar = `<span class="material-symbols-outlined text-xs text-purple ml-1">auto_awesome</span>`;
                     }
                     return `<span class="char-equip-chip ${rarityClass}" title="${statsStr || 'Aucun bonus'}">
-                        <span class="material-symbols-outlined ${slotInfo.extraClass || ''}" style="font-size: 0.85rem; color: ${slotInfo.color};">${slotInfo.icon}</span>
+                        <span class="material-symbols-outlined ${slotInfo.extraClass || ''} text-sm" style="color: ${slotInfo.color};">${slotInfo.icon}</span>
                         ${eq.name}${effectStar}
                     </span>`;
                 }).join('') +
@@ -490,35 +490,35 @@ function renderPersonnages() {
                     <div class="char-card-name">
                         <span class="material-symbols-outlined">person</span>
                         ${p.name}
-                        ${window.isAdmin ? `<span class="text-xxs whitespace-nowrap" style="margin-left: 0.5rem; padding: 0.15rem 0.4rem; background: ${p.ownerUsername === window.currentUser?.username ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.1)'}; color: ${p.ownerUsername === window.currentUser?.username ? '#34d399' : '#cbd5e1'}; border-radius: 4px; border: 1px solid ${p.ownerUsername === window.currentUser?.username ? 'rgba(16, 185, 129, 0.3)' : 'rgba(255, 255, 255, 0.1)'};"><span class="material-symbols-outlined align-middle" style="font-size: 0.7rem; margin-right: 2px;">account_circle</span>${p.ownerUsername}</span>` : ''}
+                        ${window.isAdmin ? `<span class="text-xxs whitespace-nowrap" style="margin-left: 0.5rem; padding: 0.15rem 0.4rem; background: ${p.ownerUsername === window.currentUser?.username ? 'rgba(16, 185, 129, 0.2)' : 'rgba(255, 255, 255, 0.1)'}; color: ${p.ownerUsername === window.currentUser?.username ? '#34d399' : '#cbd5e1'}; border-radius: 4px; border: 1px solid ${p.ownerUsername === window.currentUser?.username ? 'rgba(16, 185, 129, 0.3)' : 'rgba(255, 255, 255, 0.1)'};"><span class="material-symbols-outlined align-middle text-xxs mr-1">account_circle</span>${p.ownerUsername}</span>` : ''}
                     </div>
                     <div class="char-card-actions">
                         <button class="char-btn-equip" onclick="openEquipModal(${p.id})" title="Gérer l'équipement">
-                            <span class="material-symbols-outlined" style="font-size: 0.95rem;">shield</span> Équiper
+                            <span class="material-symbols-outlined text-md">shield</span> Équiper
                         </button>
                         ${window.isAdmin ? `
                         <button class="char-btn-edit" onclick="editPersonnage(${p.id})" title="Éditer">
-                            <span class="material-symbols-outlined" style="font-size: 0.95rem;">edit</span> Éditer
+                            <span class="material-symbols-outlined text-md">edit</span> Éditer
                         </button>
                         ` : ''}
                         <button class="char-btn-delete" onclick="deletePersonnage(${p.id})" title="Supprimer">
-                            <span class="material-symbols-outlined" style="font-size: 0.95rem;">delete</span>
+                            <span class="material-symbols-outlined text-md">delete</span>
                         </button>
                     </div>
                 </div>
                 <div class="char-card-badges">${badges}</div>
                 ${equipHtml}
                 <div class="char-card-stats">
-                    <span class="char-stat-chip"><span class="material-symbols-outlined" style="color: #ec4899;">favorite</span>${p.totalHealthMax || p.healthMax} PV</span>
+                    <span class="char-stat-chip"><span class="material-symbols-outlined text-pink">favorite</span>${p.totalHealthMax || p.healthMax} PV</span>
                     <span class="char-stat-chip"><span class="material-symbols-outlined text-info">water_drop</span>${p.totalManaMax || p.manaMax} Mana</span>
                     <span class="char-stat-chip"><span class="material-symbols-outlined text-purple">auto_awesome</span>${p.totalPower !== undefined ? p.totalPower : p.power} Pui</span>
-                    <span class="char-stat-chip"><span class="material-symbols-outlined" style="color: #f43f5e;">fitness_center</span>${p.totalStrength !== undefined ? p.totalStrength : p.strength} For</span>
-                    <span class="char-stat-chip"><span class="material-symbols-outlined" style="color: #3b82f6;">shield</span>${p.totalArmor !== undefined ? p.totalArmor : p.armor} Arm</span>
+                    <span class="char-stat-chip"><span class="material-symbols-outlined text-rose-500">fitness_center</span>${p.totalStrength !== undefined ? p.totalStrength : p.strength} For</span>
+                    <span class="char-stat-chip"><span class="material-symbols-outlined text-blue">shield</span>${p.totalArmor !== undefined ? p.totalArmor : p.armor} Arm</span>
                     <span class="char-stat-chip"><span class="material-symbols-outlined text-success">shield</span>${p.totalResistance !== undefined ? p.totalResistance : p.resistance} Rés</span>
                     ${(p.totalSpeed !== undefined ? p.totalSpeed : p.speed) > 0 ? `<span class="char-stat-chip"><span class="material-symbols-outlined text-warning">bolt</span>${p.totalSpeed !== undefined ? p.totalSpeed : p.speed} Vit</span>` : ''}
-                    ${(p.totalCrit !== undefined ? p.totalCrit : p.crit) > 0 ? `<span class="char-stat-chip"><span class="material-symbols-outlined text-error">gps_fixed</span>${p.totalCrit !== undefined ? p.totalCrit : p.crit}% Crit</span>` : ''}
-                    ${(p.totalRegenHp !== undefined ? p.totalRegenHp : p.regenHp || 0) > 0 ? `<span class="char-stat-chip"><span class="material-symbols-outlined" style="color: #f472b6;">healing</span>${p.totalRegenHp !== undefined ? p.totalRegenHp : p.regenHp} Régen PV</span>` : ''}
-                    ${(p.totalRegenMana !== undefined ? p.totalRegenMana : p.regenMana || 0) > 0 ? `<span class="char-stat-chip"><span class="material-symbols-outlined" style="color: #67e8f9;">dew_point</span>${p.totalRegenMana !== undefined ? p.totalRegenMana : p.regenMana} Régen Mana</span>` : ''}
+                    ${(p.totalCrit !== undefined ? p.totalCrit : p.crit) > 0 ? `<span class="char-stat-chip"><span class="material-symbols-outlined text-red-500">gps_fixed</span>${p.totalCrit !== undefined ? p.totalCrit : p.crit}% Crit</span>` : ''}
+                    ${(p.totalRegenHp !== undefined ? p.totalRegenHp : p.regenHp || 0) > 0 ? `<span class="char-stat-chip"><span class="material-symbols-outlined text-pink">healing</span>${p.totalRegenHp !== undefined ? p.totalRegenHp : p.regenHp} Régen PV</span>` : ''}
+                    ${(p.totalRegenMana !== undefined ? p.totalRegenMana : p.regenMana || 0) > 0 ? `<span class="char-stat-chip"><span class="material-symbols-outlined text-cyan-400">dew_point</span>${p.totalRegenMana !== undefined ? p.totalRegenMana : p.regenMana} Régen Mana</span>` : ''}
                 </div>
                 <div class="char-xp-container">
                     <div class="char-xp-header">
@@ -529,7 +529,7 @@ function renderPersonnages() {
                         <div class="char-xp-bar-fill-voie" style="width: ${p.nextLevelXp > p.currentLevelXp ? Math.min(100, Math.max(0, ((p.experience - p.currentLevelXp) / (p.nextLevelXp - p.currentLevelXp)) * 100)) : 100}%;"></div>
                     </div>
                     
-                    <div class="char-xp-header" style="margin-top: 0.3rem;">
+                    <div class="char-xp-header mt-1">
                         <span>Expérience Spirituelle</span>
                         <span>${p.spiritualiteExperience} / ${p.nextLevelSpiritXp} XP</span>
                     </div>
@@ -588,7 +588,7 @@ function renderEquipModal() {
                     const sign = val > 0 ? '+' : '';
                     const isMalus = val < 0;
                     const suffix = s.isPercent ? '%' : '';
-                    return `<span class="eq-stat-mini ${isMalus ? 'malus' : ''}" title="${s.label}"><span class="material-symbols-outlined" style="color:${isMalus ? '#ef4444' : s.color}; font-size:0.75rem;">${s.icon}</span>${sign}${val}${suffix}</span>`;
+                    return `<span class="eq-stat-mini ${isMalus ? 'malus' : ''}" title="${s.label}"><span class="material-symbols-outlined text-xs" style="color:${isMalus ? '#ef4444' : s.color};">${s.icon}</span>${sign}${val}${suffix}</span>`;
                 })
                 .join('');
             const rarityName = getRarityName(equipped.rarity);
@@ -612,7 +612,7 @@ function renderEquipModal() {
                 <div class="equip-slot-card equipped" data-slot="${slotKey}">
                     <div class="equip-slot-header">
                         <span class="equip-slot-label">
-                            <span class="material-symbols-outlined ${slotInfo.extraClass || ''}" style="font-size: 1.1rem; color: ${slotInfo.color};">${slotInfo.icon}</span>
+                            <span class="material-symbols-outlined text-lg ${slotInfo.extraClass || ''}" style="color: ${slotInfo.color};">${slotInfo.icon}</span>
                             ${slotInfo.label}
                         </span>
                         <button class="eq-unequip-btn" onclick="unequipItem(${equipped.id})" title="Retirer">
@@ -621,7 +621,7 @@ function renderEquipModal() {
                     </div>
                     <div class="equip-slot-item-name ${rarityClass}">${equipped.name}</div>
                     <div class="equip-slot-stats">
-                        ${statsChips || '<span style="opacity:0.4;">Aucun bonus</span>'}
+                        ${statsChips || '<span class="opacity-40">Aucun bonus</span>'}
                         ${specialEffectHtml}
                     </div>
                 </div>`;
@@ -677,8 +677,8 @@ function renderEquipModal() {
             let availableHtml = '';
             if (available.length > 0) {
                 availableHtml = `
-                <div class="custom-select-wrapper" tabindex="0" style="margin-top: 0.5rem;">
-                    <div class="custom-select-trigger text-xs" style="padding: 0.4rem 0.6rem; border-color: rgba(255,255,255,0.1); background: rgba(0,0,0,0.2);">
+                <div class="custom-select-wrapper mt-2" tabindex="0">
+                    <div class="custom-select-trigger text-xs px-3 py-2 border border-white/10 bg-black/20">
                         <span class="cs-label text-muted">Choisir un équipement...</span>
                         <span class="material-symbols-outlined cs-arrow text-muted text-lg">expand_more</span>
                     </div>
@@ -692,7 +692,7 @@ function renderEquipModal() {
                             const sign = val > 0 ? '+' : '';
                             const isMalus = val < 0;
                             const suffix = s.isPercent ? '%' : '';
-                            return `<span class="eq-stat-mini ${isMalus ? 'malus' : ''}" title="${s.label}"><span class="material-symbols-outlined" style="color:${isMalus ? '#ef4444' : s.color}; font-size:0.75rem;">${s.icon}</span>${sign}${val}${suffix}</span>`;
+                            return `<span class="eq-stat-mini ${isMalus ? 'malus' : ''}" title="${s.label}"><span class="material-symbols-outlined text-xs" style="color:${isMalus ? '#ef4444' : s.color};">${s.icon}</span>${sign}${val}${suffix}</span>`;
                         }).join('');
 
                     let aSpecialEffectHtml = '';
@@ -713,10 +713,10 @@ function renderEquipModal() {
                     const aRarityLabel = typeof a.rarity === 'object' ? a.rarity?.label : a.rarity;
 
                     const tooltipHtml = `
-                                <div class="tooltip-data" style="display:none;">
-                                    <div class="${aRarityName ? 'rarity-' + aRarityName : ''} font-bold" style="margin-bottom: 0.3rem; font-size: 1rem;">${a.name} ${aRarityLabel ? '(' + aRarityLabel + ')' : ''}</div>
-                                    <div class="equip-slot-stats" style="flex-wrap: wrap;">
-                                        ${aStatsChips || '<span style="opacity:0.4;">Aucun bonus</span>'}
+                                <div class="tooltip-data hidden">
+                                    <div class="${aRarityName ? 'rarity-' + aRarityName : ''} font-bold mb-1 text-base">${a.name} ${aRarityLabel ? '(' + aRarityLabel + ')' : ''}</div>
+                                    <div class="equip-slot-stats flex-wrap">
+                                        ${aStatsChips || '<span class="opacity-40">Aucun bonus</span>'}
                                         ${aSpecialEffectHtml}
                                     </div>
                                 </div>
@@ -725,8 +725,8 @@ function renderEquipModal() {
                     return `
                                 <div class="custom-option" data-value="${a.id}" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()">
                                     <span class="${aRarityName ? 'rarity-' + aRarityName : ''}">${a.name}</span>
-                                    ${aRarityLabel ? '<span class="opacity-50" style="font-size: 0.7rem; margin-left: 0.3rem;">(' + aRarityLabel + ')</span>' : ''}
-                                    ${(a.slot?.name || a.slot) === 'ARME_DEUX_MAINS' ? '<span class="font-bold text-error" style="font-size: 0.7rem; margin-left: 0.3rem;">[2 Mains]</span>' : ''}
+                                    ${aRarityLabel ? '<span class="opacity-50 text-xxs ml-1">(' + aRarityLabel + ')</span>' : ''}
+                                    ${(a.slot?.name || a.slot) === 'ARME_DEUX_MAINS' ? '<span class="font-bold text-error text-xxs ml-1">[2 Mains]</span>' : ''}
                                     ${tooltipHtml}
                                 </div>
                             `;
@@ -735,14 +735,14 @@ function renderEquipModal() {
                     <input type="hidden" class="eq-assign-hidden" data-perso-id="${perso.id}" data-slot="${slotKey}" value="">
                 </div>`;
             } else {
-                availableHtml = `<span class="font-italic" style="font-size: 0.72rem; color: #475569;">Aucun disponible</span>`;
+                availableHtml = `<span class="font-italic text-xs text-slate-600">Aucun disponible</span>`;
             }
 
             return `
                 <div class="equip-slot-card empty" data-slot="${slotKey}">
                     <div class="equip-slot-header">
                         <span class="equip-slot-label">
-                            <span class="material-symbols-outlined ${slotInfo.extraClass || ''} opacity-50" style="font-size: 1.1rem; color: ${slotInfo.color};">${slotInfo.icon}</span>
+                            <span class="material-symbols-outlined ${slotInfo.extraClass || ''} opacity-50 text-lg" style="color: ${slotInfo.color};">${slotInfo.icon}</span>
                             ${slotInfo.label}
                         </span>
                     </div>
@@ -797,7 +797,8 @@ function editPersonnage(id) {
     document.getElementById('submitBtn').innerHTML = `
         <span class="material-symbols-outlined text-lg">save</span>
         Mettre à jour`;
-    document.getElementById('cancelBtn').style.display = 'inline-flex';
+    document.getElementById('cancelBtn').classList.remove('hidden');
+    document.getElementById('cancelBtn').classList.add('inline-flex');
 
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
@@ -832,7 +833,8 @@ function resetForm() {
     document.getElementById('submitBtn').innerHTML = `
         <span class="material-symbols-outlined text-lg">person_add</span>
         Forger le Personnage`;
-    document.getElementById('cancelBtn').style.display = 'none';
+    document.getElementById('cancelBtn').classList.add('hidden');
+    document.getElementById('cancelBtn').classList.remove('inline-flex');
 }
 
 // showNotif, showModal → utils.js
@@ -866,12 +868,12 @@ window.addEventListener('DOMContentLoaded', async () => {
                 const isPos = val > 0;
                 const valColor = isPos ? '#10b981' : '#ef4444';
                 return `
-                    <div class="flex-center" style="justify-content: space-between; padding: 0.4rem 0.6rem; background: #0f172a; border-radius: 0.3rem;">
-                        <div class="flex-center" style="gap: 0.5rem; color: #cbd5e1;">
-                            <span class="material-symbols-outlined" style="font-size: 1.1rem; color: ${baseColor};">${icon}</span>
+                    <div class="flex-center justify-between px-3 py-2 bg-slate-900 rounded-md">
+                        <div class="flex-center gap-2 text-slate-300">
+                            <span class="material-symbols-outlined text-lg" style="color: ${baseColor};">${icon}</span>
                             ${label}
                         </div>
-                        <div style="font-weight: 600; color: ${valColor};">${valStr}</div>
+                        <div class="font-semibold" style="color: ${valColor};">${valStr}</div>
                     </div>
                 `;
             }
@@ -949,7 +951,7 @@ window.addEventListener('DOMContentLoaded', async () => {
             const iconEl = document.getElementById('charVoieInfoIcon');
 
             if (!vId) {
-                if (iconEl) iconEl.style.display = 'none';
+                if (iconEl) iconEl.classList.add('hidden');
                 applyVoieBaseStats(null);
                 return;
             }
@@ -959,21 +961,21 @@ window.addEventListener('DOMContentLoaded', async () => {
                 const template = iconEl.querySelector('.tooltip-data');
                 if (template) {
                     template.innerHTML = `
-                        <div class="text-sm font-medium" style="margin-bottom: 0.5rem; display:flex; align-items:center; gap:0.3rem; color: ${info.color};">
-                            <span class="material-symbols-outlined" style="font-size:1.1rem;">${info.icon}</span>
+                        <div class="text-sm font-medium mb-2 flex-center gap-1" style="color: ${info.color};">
+                            <span class="material-symbols-outlined text-lg">${info.icon}</span>
                             ${v.nom}
                         </div>
-                        <div class="text-xs" style="color: #cbd5e1; margin-bottom: 0.5rem;">${v.description || 'Description générique.'}</div>
-                        <div class="flex-start-gap text-xs" style="color: #e2e8f0;">
-                            <span class="material-symbols-outlined" style="font-size: 0.95rem; color: ${info.color};">bolt</span>
-                            <span class="font-italic" style="white-space: pre-wrap;">${formatRichText(v.passiveDescription) || 'Passif spécifique.'}</span>
+                        <div class="text-xs text-slate-300 mb-2">${v.description || 'Description générique.'}</div>
+                        <div class="flex-start-gap text-xs text-slate-200">
+                            <span class="material-symbols-outlined text-md" style="color: ${info.color};">bolt</span>
+                            <span class="font-italic whitespace-pre-wrap">${formatRichText(v.passiveDescription) || 'Passif spécifique.'}</span>
                         </div>
                     `;
                 }
-                iconEl.style.display = 'inline-block';
+                iconEl.classList.remove('hidden');
                 applyVoieBaseStats(v.nom);
             } else if (iconEl) {
-                iconEl.style.display = 'none';
+                iconEl.classList.add('hidden');
                 applyVoieBaseStats(null);
             } else {
                 applyVoieBaseStats(null);
@@ -988,7 +990,7 @@ window.addEventListener('DOMContentLoaded', async () => {
             const iconEl = document.getElementById('charSpiritInfoIcon');
 
             if (!sId) {
-                if (iconEl) iconEl.style.display = 'none';
+                if (iconEl) iconEl.classList.add('hidden');
                 return;
             }
             const s = pageState.spiritualites.find(x => x.id == sId);
@@ -997,20 +999,20 @@ window.addEventListener('DOMContentLoaded', async () => {
                 const template = iconEl.querySelector('.tooltip-data');
                 if (template) {
                     template.innerHTML = `
-                        <div class="text-sm font-medium" style="margin-bottom: 0.5rem; display:flex; align-items:center; gap:0.3rem; color: ${info.color};">
-                            <span class="material-symbols-outlined" style="font-size:1.1rem;">${info.icon}</span>
+                        <div class="text-sm font-medium mb-2 flex-center gap-1" style="color: ${info.color};">
+                            <span class="material-symbols-outlined text-lg">${info.icon}</span>
                             ${s.nom}
                         </div>
-                        <div class="text-xs" style="color: #cbd5e1; margin-bottom: 0.5rem;">${s.description || 'Description générique.'}</div>
-                        <div class="flex-start-gap text-xs" style="color: #e2e8f0;">
-                            <span class="material-symbols-outlined" style="font-size: 0.95rem; color: ${info.color};">bolt</span>
-                            <span class="font-italic" style="white-space: pre-wrap;">${formatRichText(s.passiveDescription) || 'Passif spécifique.'}</span>
+                        <div class="text-xs text-slate-300 mb-2">${s.description || 'Description générique.'}</div>
+                        <div class="flex-start-gap text-xs text-slate-200">
+                            <span class="material-symbols-outlined text-md" style="color: ${info.color};">bolt</span>
+                            <span class="font-italic whitespace-pre-wrap">${formatRichText(s.passiveDescription) || 'Passif spécifique.'}</span>
                         </div>
                     `;
                 }
-                iconEl.style.display = 'inline-block';
+                iconEl.classList.remove('hidden');
             } else if (iconEl) {
-                iconEl.style.display = 'none';
+                iconEl.classList.add('hidden');
             }
         });
     }
@@ -1033,7 +1035,7 @@ window.addEventListener('authLoaded', async () => {
 
 window.hideEqTooltip = function () {
     const tooltip = document.getElementById('globalSpellTooltip');
-    if (tooltip) tooltip.style.display = 'none';
+    if (tooltip) tooltip.classList.add('hidden');
 };
 
 

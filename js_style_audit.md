@@ -18,22 +18,22 @@ Analyse complète des fichiers JS concernant l'utilisation de styles CSS directe
 | 2 | `shop.js` — 13 statiques | ✅ **Terminé** | Statiques migrés |
 | 3 | `grimoire.js` — 75 statiques | ✅ **Terminé** | 75 statiques migrés |
 | 4 | `dungeons.js` — 49 statiques | ✅ **Terminé** | 49 statiques migrés |
-| 5 | `armory.js` — 42 statiques | ❌ À faire | 42 restants |
-| 6 | `forge.js` — 24 statiques | ❌ À faire | 24 restants |
-| 7 | `vault.js` — 4 statiques | ❌ À faire | 4 restants |
-| 8 | `shop-admin.js` — 13 statiques | ❌ À faire | 13 restants |
-| 9 | `alchemy-admin.js` — 41 statiques | ❌ À faire | 41 restants |
-| 10 | `alchemy.js` — 60 statiques | ❌ À faire | 60 restants |
+| 5 | `armory.js` — 42 statiques | ✅ **Terminé** | 42 statiques migrés |
+| 6 | `forge.js` — 24 statiques | ✅ **Terminé** | 24 statiques migrés |
+| 7 | `vault.js` — 4 statiques | ✅ **Terminé** | 4 statiques migrés |
+| 8 | `shop-admin.js` — 13 statiques | ✅ **Terminé** | 13 statiques migrés |
+| 9 | `alchemy-admin.js` — 41 statiques | ✅ **Terminé** | 41 statiques migrés |
+| 10 | `alchemy.js` — 60 statiques | ✅ **Terminé** | 60 statiques migrés |
 | 11 | `pve-admin.js` — 230 statiques | ❌ À faire | 230 restants |
 | 12 | `combat.js` — 280 statiques | ❌ À faire | 286 restants (+6 nouveaux) |
 
-**Avancement global : 4 / 12 fichiers traités** · ~179 styles migrés sur ~655 statiques cibles (~27%)
+**Avancement global : 10 / 12 fichiers traités** · ~363 styles migrés sur ~655 statiques cibles (~55%)
 
 > [!WARNING]
 > `utilities.css` classes manquantes : (Toutes ajoutées)
 
 ```
-████████░░░░░░░░░░░░░░░░░░░░  27%
+████████████████░░░░░░░░░░░░  55%
 ```
 
 ---
@@ -135,6 +135,12 @@ L'approche sera **identique à l'audit HTML** :
 > [!IMPORTANT]
 > Pour `combat.js` et `pve-admin.js`, procéder **section par section** — ces fichiers font plus de 2000 lignes et contiennent un mix dense de statique/dynamique.
 
+> [!CAUTION]
+> **Piège JIT Tailwind** : Le compilateur Tailwind ne détecte pas les classes arbitraires (ex: `px-[0.6rem]`, `bg-amber-500/20`) injectées dynamiquement via `innerHTML`. 
+> - N'utilisez **QUE** les classes déjà compilées et définies dans `utilities.css` (ex: `.btn-edit`, `.btn-delete-small`, `.text-cyan-400`).
+> - Utilisez les classes de composants globales (ex: `.anomaly-badge`) pour le layout complexe.
+> - Si une couleur dépend d'une variable JavaScript (ex: `rarityColor`), elle **DOIT** rester en inline `style="color: ${rarityColor};"`.
+
 ---
 
 ## ✅ Avancement
@@ -144,11 +150,11 @@ L'approche sera **identique à l'audit HTML** :
 - [x] `shop.js` — 13 statiques
 - [x] `grimoire.js` — 75 statiques
 - [x] `dungeons.js` — 49 statiques
-- [ ] `armory.js` — 42 statiques
-- [ ] `forge.js` — 24 statiques (laisser les 32 `.style.prop` dynamiques)
-- [ ] `vault.js` — 4 statiques (les `.style.prop` sont dynamiques)
-- [ ] `shop-admin.js` — 13 statiques (les `.style.prop` sont dynamiques)
-- [ ] `alchemy-admin.js` — 41 statiques (les `.style.prop` sont dynamiques)
-- [ ] `alchemy.js` — 60 statiques
+- [x] `armory.js` — 42 statiques
+- [x] `forge.js` — 24 statiques (laisser les 32 `.style.prop` dynamiques)
+- [x] `vault.js` — 4 statiques (les `.style.prop` sont dynamiques)
+- [x] `shop-admin.js` — 13 statiques (les `.style.prop` sont dynamiques)
+- [x] `alchemy-admin.js` — 41 statiques (les `.style.prop` sont dynamiques)
+- [x] `alchemy.js` — 60 statiques
 - [ ] `pve-admin.js` — 230 statiques (par sections)
 - [ ] `combat.js` — 286 statiques (par sections, +6 ajoutés depuis l'audit initial)
