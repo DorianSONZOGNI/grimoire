@@ -7,7 +7,7 @@
 ## 📋 Tableau de suivi — État de l'audit
 
 > [!NOTE]
-> Mis à jour automatiquement en fonction de l'état réel du code. Dernière vérification : **2026-08-11**.
+> Mis à jour automatiquement en fonction de l'état réel du code. Dernière vérification : **2026-08-14**.
 
 | # | Cluster | Sévérité | Statut | Lignes récupérées |
 |---|---------|----------|--------|-------------------|
@@ -21,10 +21,10 @@
 | 8 | `RARITY_COLORS` — double définition | 🟡 Moyenne | ✅ **Fait** | ~15 lignes |
 | 9 | `deleteEquipment()` — 2 versions | 🟡 Moyenne | ✅ **Fait** | ~20 lignes |
 
-**Avancement global : 7 / 9 clusters traités** · ~485 lignes récupérées sur ~1 050 estimées (~46%)
+**Avancement global : 9 / 9 clusters traités** · ~765 lignes récupérées sur ~1 050 estimées (~73%)
 
 ```
-██████████████░░░░░░░░░░░░░░  46%
+████████████████████████████  100%
 ```
 
 ---
@@ -128,12 +128,9 @@ Le problème : `combat.js` et `dungeons.js` re-implémentent la même logique au
 
 ---
 
-### 5. `loadAnomalies()` — 2 versions ❌ À faire
+### 5. `loadAnomalies()` — 2 versions ✅ Fait
 
-| Fichier | Endpoint | Stockage |
-|---------|----------|----------|
-| [pve-admin.js](file:///c:/Users/doson/IdeaProjects/grimoire/src/main/resources/static/js/pve-admin.js) | `/api/anomalies/all` | `pageState.allAnomalies` |
-| [shop-admin.js](file:///c:/Users/doson/IdeaProjects/grimoire/src/main/resources/static/js/shop-admin.js) | `/api/anomalies/all-templates` | `window.allAnomalies` |
+`pve-admin.js` et `shop-admin.js` délèguent désormais à `api.loadAnomalies()`. Plus de copie locale dans ces fichiers.
 
 ---
 

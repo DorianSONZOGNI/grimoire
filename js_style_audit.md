@@ -9,7 +9,7 @@ Analyse complète des fichiers JS concernant l'utilisation de styles CSS directe
 ## 📋 Tableau de suivi — État de l'audit
 
 > [!NOTE]
-> Mis à jour en fonction de l'état réel du code. Dernière vérification : **2026-08-11**.
+> Mis à jour en fonction de l'état réel du code. Dernière vérification : **2026-08-14**.
 
 | Étape | Tâche | Statut | Détail |
 |-------|-------|--------|--------|
@@ -27,13 +27,13 @@ Analyse complète des fichiers JS concernant l'utilisation de styles CSS directe
 | 11 | `pve-admin.js` — 230 statiques | ❌ À faire | 230 restants |
 | 12 | `combat.js` — 280 statiques | ❌ À faire | 286 restants (+6 nouveaux) |
 
-**Avancement global : 0 / 12 fichiers traités** · ~0 styles migrés sur ~655 statiques cibles (~0%)
+**Avancement global : 4 / 12 fichiers traités** · ~179 styles migrés sur ~655 statiques cibles (~27%)
 
 > [!WARNING]
 > `utilities.css` classes manquantes : (Toutes ajoutées)
 
 ```
-░░░░░░░░░░░░░░░░░░░░░░░░░░░░  5%
+████████░░░░░░░░░░░░░░░░░░░░  27%
 ```
 
 ---
