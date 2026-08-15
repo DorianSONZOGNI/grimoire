@@ -100,8 +100,19 @@ function generateStandHtml(eq) {
         standStyle = `border: 1px solid ${rarityColor}; box-shadow: 0 0 5px ${rarityColor}20; background: linear-gradient(135deg, rgba(${r},${g},${b},0.15) 0%, rgba(${r},${g},${b},0.05) 100%);`;
     }
 
+    let promoTimerHtml = '';
+    if (isPromo) {
+        const expiresAt = pageState.shopItems && pageState.shopItems.promoExpiresAt ? pageState.shopItems.promoExpiresAt : 0;
+        promoTimerHtml = `
+            <div class="shop-stand-timer promo-countdown" style="color: ${rarityColor};" data-expires="${expiresAt}">
+                <span class="material-symbols-outlined">timer</span> <span class="countdown-text">--:--:--</span>
+            </div>
+        `;
+    }
+
     return `
         <div class="shop-stand" style="${standStyle}">
+            ${promoTimerHtml}
             ${promoBadge}
             <span class="material-symbols-outlined shop-stand-icon ${slotInfo.extraClass || ''}" style="color: ${slotInfo.color};">${slotInfo.icon}</span>
             <div class="shop-stand-name">${eq.name}</div>
@@ -112,7 +123,7 @@ function generateStandHtml(eq) {
                 ${eq.description ? `<div class="font-italic text-muted text-center text-sm mt-2">${eq.description}</div>` : ''}
             </div>
             
-            <button class="shop-stand-price flex-col-center gap-1" onclick="window.openBuyModal('${eq.id}', ${isConsumable})">
+            <button class="shop-stand-price flex-wrap gap-2" onclick="window.openBuyModal('${eq.id}', ${isConsumable})">
                 <div>${oldPriceHtml} ${priceStr} <span class="material-symbols-outlined align-middle icon-md">monetization_on</span></div>
                 ${(() => {
             if (eq.priceAnomalies && Object.keys(eq.priceAnomalies).length > 0) {
@@ -128,7 +139,7 @@ function generateStandHtml(eq) {
                                 <span class="material-symbols-outlined align-middle text-base" style="color: ${spiriColor};">${catIcon}</span> ${q}
                             </span>`);
                 }
-                return `<div class="flex flex-wrap justify-center gap-1 mt-1">${anos.join('')}</div>`;
+                return `<div class="flex flex-wrap justify-center gap-1">${anos.join('')}</div>`;
             }
             return '';
         })()}
@@ -226,7 +237,7 @@ function renderSpecials() {
 
         html += `
             <div class="shop-rarity-group" style="border-top: 3px solid ${color}; background: rgba(${r}, ${g}, ${b}, 0.05);">
-                <div class="shop-rarity-title" style="color: ${color}; border-color: rgba(${r}, ${g}, ${b}, 0.3);">PROMO DU JOUR</div>
+                <div class="shop-rarity-title" style="color: ${color}; border-color: rgba(${r}, ${g}, ${b}, 0.3);">EN PROMO</div>
                 ${generateStandHtml(discountItem)}
             </div>
         `;
@@ -244,6 +255,10 @@ function renderSpecials() {
     }
 
     container.innerHTML = html;
+
+    if (discountItem) {
+        startPromoCountdown();
+    }
 }
 
 window.openBuyModal = function (id, isConsumable = false) {
@@ -311,6 +326,44 @@ window.openBuyModal = function (id, isConsumable = false) {
     });
 }
 
+let promoCountdownInterval = null;
+
+function startPromoCountdown() {
+    const countdownEl = document.querySelector('.promo-countdown');
+    if (!countdownEl) return;
+
+    const textEl = countdownEl.querySelector('.countdown-text');
+    const expiresAtStr = countdownEl.getAttribute('data-expires');
+    if (!expiresAtStr || expiresAtStr === '0') {
+        textEl.textContent = '--:--:--';
+        return;
+    }
+    const expiresAt = parseInt(expiresAtStr, 10);
+
+    if (promoCountdownInterval) clearInterval(promoCountdownInterval);
+
+    const updateTimer = () => {
+        const now = Date.now();
+        const diff = expiresAt - now;
+
+        if (diff <= 0) {
+            textEl.textContent = '00:00:00';
+            clearInterval(promoCountdownInterval);
+            loadShop();
+            return;
+        }
+
+        const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
+        const m = Math.floor((diff / 1000 / 60) % 60);
+        const s = Math.floor((diff / 1000) % 60);
+
+        textEl.textContent = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+    };
+
+    updateTimer();
+    promoCountdownInterval = setInterval(updateTimer, 1000);
+}
+
 window.addEventListener('DOMContentLoaded', async () => {
     if (window.initAppMeta) await window.initAppMeta();
     loadShop();
@@ -322,4 +375,4 @@ window.addEventListener('authLoaded', () => {
         adminLink.style.display = window.isAdmin ? 'inline-flex' : 'none';
     }
 });
-
+

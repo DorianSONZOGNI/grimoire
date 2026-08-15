@@ -15,6 +15,7 @@
     padding-right: 0.5rem;
     flex-wrap: nowrap !important;
     -webkit-overflow-scrolling: touch;
+    min-height: 380px;
 }
 .vault-main {
     padding: 2rem;
@@ -74,6 +75,23 @@
     transition: transform 0.2s, box-shadow 0.2s;
     text-align: center;
     position: relative;
+}
+
+.shop-stand-timer {
+    position: absolute;
+    top: 2px;
+    left: 2px;
+    display: flex;
+    align-items: center;
+    font-size: 11px;
+    font-weight: bold;
+    opacity: 0.9;
+    z-index: 10;
+}
+
+.shop-stand-timer .material-symbols-outlined {
+    font-size: 14px;
+    margin-right: 0.25rem;
 }
 
 .shop-stand:hover {

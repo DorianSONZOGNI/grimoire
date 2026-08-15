@@ -1570,7 +1570,7 @@ window.renderMonstersList = function () {
         }
     }
 
-    list.innerHTML = '';
+    let html = '';
     filtered.forEach(m => {
         let secretBadgeHtml = getSecretBadgeHtml(m);
 
@@ -1601,7 +1601,7 @@ window.renderMonstersList = function () {
         let mBehaviorDesc = mBehaviorObj && mBehaviorObj.description ? mBehaviorObj.description : '';
         let mBehaviorIcon = mBehaviorObj && mBehaviorObj.icon ? mBehaviorObj.icon : 'check_box_outline_blank';
 
-        list.innerHTML += `
+        html += `
             <div class="monster-card" >
                 <div class="absolute" style="top: -0.8rem; left: -0.8rem; display: flex; gap: 0.4rem; z-index: 10;">
                     ${secretBadgeHtml}
@@ -1647,6 +1647,7 @@ window.renderMonstersList = function () {
             </div>
         `;
     });
+    list.innerHTML = html;
 };
 
 async function editMonster(id) {
@@ -1845,6 +1846,7 @@ window.renderDungeonsList = function () {
         filtered = filtered.filter(d => (d.recommendedLevel || 1) === lvl);
     }
 
+    let html = '';
     filtered.forEach((d, index) => {
         let totalSalles = d.salles ? d.salles.length : 0;
         let combats = 0, bosses = 0, treasures = 0, alterations = 0, rencontres = 0, pieges = 0, portes = 0, totalMobs = 0, totalBossMobs = 0;
@@ -1879,7 +1881,7 @@ window.renderDungeonsList = function () {
             secretMeta = window.DEFAULT_SECRETS_META.find(s => s.name === d.requiredSecret) || secretMeta;
         }
 
-        list.innerHTML += `
+        html += `
             <div class="monster-card" >
                 <div class="absolute" style="top: -0.8rem; left: -0.8rem; display: flex; gap: 0.4rem; z-index: 10;">
                     ${d.requiredSecret ? `<div class="flex-center" title="${d.requiredSecret}" style="background: rgba(15, 23, 42, 0.9); color: ${secretMeta.color}; padding: 0.2rem 0.4rem; border-radius: 8px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.3); border: 1px solid ${secretMeta.color}60; justify-content: center;"><span class="material-symbols-outlined text-lg" >${secretMeta.icon}</span></div>` : ''}
@@ -1937,6 +1939,7 @@ window.renderDungeonsList = function () {
             </div>
         `;
     });
+    list.innerHTML = html;
 }
 
 async function moveDungeonOrder(id, direction) {
