@@ -349,8 +349,7 @@ function startPromoCountdown() {
         if (diff <= 0) {
             textEl.textContent = '00:00:00';
             clearInterval(promoCountdownInterval);
-            // Optionally reload shop
-            // loadShop(); 
+            loadShop();
             return;
         }
 
