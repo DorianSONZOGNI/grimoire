@@ -15,6 +15,7 @@
     padding-right: 0.5rem;
     flex-wrap: nowrap !important;
     -webkit-overflow-scrolling: touch;
+    min-height: 380px;
 }
 .vault-main {
     padding: 2rem;
