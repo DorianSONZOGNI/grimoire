@@ -123,7 +123,7 @@ function generateStandHtml(eq) {
                 ${eq.description ? `<div class="font-italic text-muted text-center text-sm mt-2">${eq.description}</div>` : ''}
             </div>
             
-            <button class="shop-stand-price flex-col-center gap-1" onclick="window.openBuyModal('${eq.id}', ${isConsumable})">
+            <button class="shop-stand-price flex-wrap gap-2" onclick="window.openBuyModal('${eq.id}', ${isConsumable})">
                 <div>${oldPriceHtml} ${priceStr} <span class="material-symbols-outlined align-middle icon-md">monetization_on</span></div>
                 ${(() => {
             if (eq.priceAnomalies && Object.keys(eq.priceAnomalies).length > 0) {
@@ -139,7 +139,7 @@ function generateStandHtml(eq) {
                                 <span class="material-symbols-outlined align-middle text-base" style="color: ${spiriColor};">${catIcon}</span> ${q}
                             </span>`);
                 }
-                return `<div class="flex flex-wrap justify-center gap-1 mt-1">${anos.join('')}</div>`;
+                return `<div class="flex flex-wrap justify-center gap-1">${anos.join('')}</div>`;
             }
             return '';
         })()}
