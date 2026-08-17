@@ -1917,7 +1917,7 @@ window.renderDungeonsList = function () {
                     ${treasures > 0 ? `<div class="flex-center text-amber-500 ml-2 gap-1" >
                         <span class="material-symbols-outlined icon-sm" >shopping_bag</span> Trésors : ${treasures}
                     </div>` : ''}
-                    ${eventDetails ? `<div class="flex-center ml-2 gap-1 flex-wrap" >Événements : ${eventDetails}</div>` : ''}
+                    ${eventDetails ? `<div class="flex-center text-purple ml-2 gap-1 flex-wrap" >Événements : ${eventDetails}</div>` : ''}
                     ${(() => {
                 const anomalyNames = collectDungeonAnomalies(d);
                 if (anomalyNames.length === 0) return '';
