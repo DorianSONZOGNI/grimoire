@@ -375,7 +375,7 @@ async function loadConsumables() {
 
 async function loadAnomalies() {
     try {
-        const res = await globalFetch('/api/anomalies');
+        const res = await globalFetch('/api/anomalies/all-templates');
         if (res.ok) pageState.allAnomalies = await res.json();
     } catch (e) { console.error(e); }
 }
