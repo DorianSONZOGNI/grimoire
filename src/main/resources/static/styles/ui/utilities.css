@@ -2922,37 +2922,21 @@ button {
 
 
 /* MISSING TAILWIND CLASSES USED IN DUNGEONS.JS */
-.text-amber-500 {
-    color: #f59e0b;
-}
 
-.text-violet-500 {
-    color: #8b5cf6;
-}
 
-.text-red-600 {
-    color: #dc2626;
-}
 
-.text-blue-500 {
-    color: #3b82f6;
-}
 
-.text-sky-500 {
-    color: #0ea5e9;
-}
 
-.text-pink-500 {
-    color: #ec4899;
-}
 
-.text-rose-500 {
-    color: #f43f5e;
-}
 
-.text-purple-500 {
-    color: #a855f7;
-}
+
+
+
+
+
+
+
+
 
 .text-\[1\.2rem\] {
     font-size: 1.2rem;
@@ -3120,3 +3104,12 @@ button {
 
 .text-sky-medium { color: #38bdf8 !important; }
 
+
+.text-amber-500 { color: #f59e0b !important; }
+.text-violet-500 { color: #8b5cf6 !important; }
+.text-red-600 { color: #dc2626 !important; }
+.text-blue-500 { color: #3b82f6 !important; }
+.text-sky-500 { color: #0ea5e9 !important; }
+.text-pink-500 { color: #ec4899 !important; }
+.text-rose-500 { color: #f43f5e !important; }
+.text-purple-500 { color: #a855f7 !important; }
