@@ -646,10 +646,13 @@ window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost,
     document.getElementById('prepDungeonTitle').textContent = `${name} (Max: ${pageState.currentMaxHeroes} h\u00e9ros)`;
 
     const btnEnter = document.getElementById('btnEnterDungeon');
+    const btnCreateLobby = document.getElementById('btnCreateLobby');
     if (window.currentDungeonEntryCost > 0) {
         btnEnter.innerHTML = `<span class="material-symbols-outlined">swords</span> Payer ${window.currentDungeonEntryCost} Or & Entrer`;
+        if (btnCreateLobby) btnCreateLobby.innerHTML = `<span class="material-symbols-outlined">group</span> Créer le lobby (${window.currentDungeonEntryCost} Or)`;
     } else {
         btnEnter.innerHTML = `<span class="material-symbols-outlined">swords</span> ENTRER DANS LE DONJON`;
+        if (btnCreateLobby) btnCreateLobby.innerHTML = `<span class="material-symbols-outlined">group</span> CRÉER LE LOBBY CO-OP`;
     }
 
     const salles = JSON.parse(decodeURIComponent(sallesData) || '[]');
@@ -942,6 +945,13 @@ window.createCoopLobby = async function () {
         return;
     }
 
+    if (window.currentDungeonEntryCost > 0) {
+        if (window.currentUser && window.currentUser.monnaie < window.currentDungeonEntryCost) {
+            window.showNotif(`Fonds insuffisants. Il vous faut ${window.currentDungeonEntryCost} Or pour entrer dans ce donjon.`, true);
+            return;
+        }
+    }
+
     const charIdsParam = pageState.selectedCharIds.join(',');
     let url = `/api/pve/multi/create?characterIds=${charIdsParam}&dungeonId=${pageState.currentDungeonId}`;
     if (pageState.selectedConsumableIds.length > 0) {
@@ -960,6 +970,18 @@ window.createCoopLobby = async function () {
 
         // Afficher l'overlay d'attente
         document.getElementById('lobbyShortCode').textContent = lobby.shortCode;
+        
+        const costWarning = document.getElementById('lobbyCostWarning');
+        const costAmount = document.getElementById('lobbyCostAmount');
+        if (costWarning && costAmount) {
+            if (window.currentDungeonEntryCost > 0) {
+                costAmount.textContent = window.currentDungeonEntryCost;
+                costWarning.style.display = 'block';
+            } else {
+                costWarning.style.display = 'none';
+            }
+        }
+
         document.getElementById('lobbyWaitingStatus').innerHTML =
             '<span class="material-symbols-outlined" style="font-size:1rem; vertical-align:middle; animation: spin 1s linear infinite;">autorenew</span> En attente du joueur 2...';
         const overlay = document.getElementById('lobbyWaitingOverlay');
