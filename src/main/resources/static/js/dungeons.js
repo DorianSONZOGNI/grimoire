@@ -47,7 +47,10 @@ function collectDungeonAnomaliesLocal(salles) {
 
 
 function getMaxWeight() {
-    return 10 + 5 * pageState.selectedCharIds.length;
+    const toggle = document.getElementById('coopModeToggle');
+    const isCoop = toggle && toggle.checked;
+    const heroCount = isCoop ? (pageState.currentMaxHeroes || 1) : pageState.selectedCharIds.length;
+    return 10 + 5 * heroCount;
 }
 
 function getCurrentWeight() {
@@ -897,6 +900,11 @@ window.onCoopToggleChange = function () {
     } else {
         btnSolo.classList.remove('hidden');
         btnCoop.classList.add('hidden');
+    }
+    
+    // Mettre à jour le poids (qui dépend du mode Co-op)
+    if (typeof renderConsumablesList === 'function') {
+        renderConsumablesList();
     }
 };
 
