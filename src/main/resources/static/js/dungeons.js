@@ -622,6 +622,22 @@ window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost,
     window.currentDungeonEntryCost = entryCost || 0;
     window.currentDungeonReqLevel = reqLevel || 1;
 
+    const coopSection = document.getElementById('coopToggleSection');
+    if (coopSection) {
+        if (pageState.currentMaxHeroes <= 1) {
+            coopSection.style.display = 'none';
+            const toggle = document.getElementById('coopModeToggle');
+            if (toggle && toggle.checked) {
+                toggle.checked = false;
+                if (typeof window.onCoopToggleChange === 'function') {
+                    window.onCoopToggleChange();
+                }
+            }
+        } else {
+            coopSection.style.display = 'block'; // Or flex, if changed
+        }
+    }
+
     updateHeroCountDisplay();
 
     document.getElementById('prepDungeonTitle').textContent = `${name} (Max: ${pageState.currentMaxHeroes} h\u00e9ros)`;
@@ -891,10 +907,16 @@ window.updateHeroCountDisplay = function () {
     const btnCoop = document.getElementById('btnCreateLobby');
     if (!btnCoop) return;
     const hasChars = pageState.selectedCharIds.length > 0;
-    if (hasChars) {
+    const isFull = pageState.selectedCharIds.length >= pageState.currentMaxHeroes;
+    
+    if (hasChars && !isFull) {
         btnCoop.classList.remove('opacity-50', 'pointer-events-none');
+        btnCoop.title = "";
     } else {
         btnCoop.classList.add('opacity-50', 'pointer-events-none');
+        if (isFull) {
+            btnCoop.title = "Vous ne pouvez pas créer de lobby si le nombre maximum de héros est déjà atteint.";
+        }
     }
 };
 
