@@ -1073,6 +1073,56 @@ document.addEventListener('DOMContentLoaded', () => {
                         const info = await res.json();
                         window.maxSelectableJoinChars = info.availableSlots;
                         
+                        let hostHeroesHtml = '';
+                        if (info.hostHeroes && info.hostHeroes.length > 0) {
+                            const getVIcon = (nom) => {
+                                const n = nom.toLowerCase();
+                                if (n.includes('raison')) return { c: '#3b82f6', i: 'psychology' };
+                                if (n.includes('sûreté') || n.includes('surete')) return { c: '#00e5cc', i: 'water_drop' };
+                                if (n.includes('trahison')) return { c: '#ed5677', i: 'visibility_off' };
+                                if (n.includes('consolidation')) return { c: '#99674c', i: 'foundation' };
+                                if (n.includes('conviction')) return { c: '#b74c0b', i: 'volcano' };
+                                if (n.includes('création') || n.includes('creation')) return { c: '#10b981', i: 'eco' };
+                                if (n.includes('destruction')) return { c: '#ff0000', i: 'local_fire_department' };
+                                if (n.includes('violence')) return { c: '#a70740', i: 'explosion' };
+                                return { c: '#94a3b8', i: 'route' };
+                            };
+                            const getSIcon = (nom) => {
+                                const n = nom.toLowerCase();
+                                if (n.includes('esprit')) return { c: '#38bdf8', i: 'blur_on' };
+                                if (n.includes('ténèbres') || n.includes('tenebres')) return { c: '#c084fc', i: 'dark_mode' };
+                                if (n.includes('karma')) return { c: '#e7d198', i: 'all_inclusive' };
+                                return { c: '#94a3b8', i: 'star' };
+                            };
+
+                            hostHeroesHtml = '<div style="margin-top: 0.75rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 0.75rem;">' +
+                                '<div style="font-size:0.75rem; color:#64748b; margin-bottom:0.5rem; text-transform:uppercase; letter-spacing:0.05em;">Héros de l\'hôte</div>' +
+                                '<div style="display:flex; flex-wrap:wrap; gap:0.4rem;">' +
+                                info.hostHeroes.map(h => {
+                                    let vHtml = '';
+                                    if (h.voieName) {
+                                        const v = getVIcon(h.voieName);
+                                        vHtml = `<span class="material-symbols-outlined" style="font-size:0.9rem; color:${v.c};" title="${h.voieName}">${v.i}</span>`;
+                                    }
+                                    let sHtml = '';
+                                    if (h.spiritualiteName) {
+                                        const s = getSIcon(h.spiritualiteName);
+                                        sHtml = `<span class="material-symbols-outlined" style="font-size:0.9rem; color:${s.c};" title="${h.spiritualiteName}">${s.i}</span>`;
+                                    }
+                                    return `
+                                    <div style="flex:1 1 calc(50% - 0.2rem); background:rgba(0,0,0,0.2); padding:0.4rem 0.6rem; border-radius:0.4rem; border:1px solid rgba(255,255,255,0.05);">
+                                        <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.15rem;">
+                                            <div style="font-weight:600; color:#f8fafc; font-size:0.85rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${h.name}</div>
+                                            <div style="display:flex; align-items:center; gap:0.25rem;">${vHtml}${sHtml}</div>
+                                        </div>
+                                        <div style="color:#94a3b8; font-size:0.75rem; white-space:nowrap;">
+                                            Niv. ${h.level} &bull; ${h.healthMax} PV max
+                                        </div>
+                                    </div>`;
+                                }).join('') +
+                                '</div></div>';
+                        }
+
                         infoContainer.style.display = 'block';
                         infoContainer.innerHTML = `
                             <div style="font-weight:600; color:#e2e8f0; margin-bottom:0.25rem;">Hôte : <span style="color:#38bdf8;">${info.hostUsername}</span></div>
@@ -1081,6 +1131,7 @@ document.addEventListener('DOMContentLoaded', () => {
                                 <span style="color:#cbd5e1;">Héros maximum : ${info.maxHeroesTotal}</span>
                                 <span style="color:${info.availableSlots > 0 ? '#10b981' : '#f43f5e'}; font-weight:600;">Places restantes : ${info.availableSlots}</span>
                             </div>
+                            ${hostHeroesHtml}
                         `;
 
                         window.updateJoinCharAvailability(info.dungeonLevel);

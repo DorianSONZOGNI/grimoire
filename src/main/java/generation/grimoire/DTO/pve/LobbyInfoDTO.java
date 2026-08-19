@@ -15,4 +15,5 @@ public class LobbyInfoDTO {
     private int maxHeroesTotal;
     private int hostHeroesCount;
     private int availableSlots;
+    private java.util.List<HostHeroInfoDTO> hostHeroes;
 }
