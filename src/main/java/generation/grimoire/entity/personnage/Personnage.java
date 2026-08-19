@@ -1000,6 +1000,33 @@ public class Personnage {
         return getEffectiveStat(StatType.SPEED);
     }
 
+    @com.fasterxml.jackson.annotation.JsonProperty("totalRegenHp")
+    public int getTotalRegenHp() {
+        int totalHpRegen = this.regenHp;
+        if (this.equipments != null) {
+            for (generation.grimoire.entity.Equipment eq : this.equipments) {
+                totalHpRegen += eq.getRegenHealthPerTurn();
+            }
+        }
+        return totalHpRegen;
+    }
+
+    @com.fasterxml.jackson.annotation.JsonProperty("totalRegenMana")
+    public int getTotalRegenMana() {
+        int totalManaRegen = this.regenMana;
+        if (this.equipments != null) {
+            for (generation.grimoire.entity.Equipment eq : this.equipments) {
+                totalManaRegen += eq.getRegenManaPerTurn();
+            }
+        }
+        int cursedManaDrain = getSpecialEffectValue(
+                generation.grimoire.enumeration.EquipmentEffectType.CURSED_MANA_DRAIN);
+        if (cursedManaDrain != 0) {
+            totalManaRegen -= Math.abs(cursedManaDrain);
+        }
+        return totalManaRegen;
+    }
+
     public boolean isAlly(Personnage other) {
         if (other == null)
             return false;
