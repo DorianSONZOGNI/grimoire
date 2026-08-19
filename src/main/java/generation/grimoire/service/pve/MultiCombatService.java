@@ -186,6 +186,7 @@ public class MultiCombatService {
         List<HostHeroInfoDTO> hostHeroInfos = new ArrayList<>();
         if (lobby.getHostCharacterIds() != null) {
             for (Long cid : lobby.getHostCharacterIds()) {
+                if (cid == null) continue;
                 Personnage p = personnageRepository.findById(cid).orElse(null);
                 if (p != null) {
                     HostHeroInfoDTO hdto = new HostHeroInfoDTO();

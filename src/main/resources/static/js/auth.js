@@ -217,7 +217,7 @@ window.checkAuthStatus = async function checkAuthStatus() {
                 </a>
                 <div class="flex-center font-bold text-amber text-sm ml-2" title="Monnaie" style="gap: 0.2rem;">
                     <span class="material-symbols-outlined text-lg">monetization_on</span>
-                    ${data.monnaie !== undefined ? (data.monnaie % 1 === 0 ? data.monnaie : data.monnaie.toFixed(1)) : '0'}
+                    ${data.monnaie !== undefined ? +Number(data.monnaie).toFixed(1) : '0'}
                 </div>
                 <button class="flex-center text-xs text-error rounded px-2 py-1 cursor-pointer font-family-inherit ml-2 transition-all" onclick="logout()" style="background: transparent; border: 1px solid rgba(239, 68, 68, 0.3);">
                     <span class="material-symbols-outlined icon-sm">logout</span>

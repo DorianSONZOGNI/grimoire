@@ -3798,7 +3798,7 @@ window.renderOverlayInventory = function (containerId) {
     if (list.parentElement) {
         const weightSpan = list.parentElement.querySelector('.inventory-weight-display');
         if (weightSpan) {
-            weightSpan.textContent = `(${totalWeight.toFixed(1)} / ${maxWeight} kg)`;
+            weightSpan.textContent = `(${+Number(totalWeight).toFixed(1)} / ${maxWeight} kg)`;
             weightSpan.style.color = totalWeight > maxWeight ? '#ef4444' : '#94a3b8';
         }
     }
