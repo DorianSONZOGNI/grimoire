@@ -33,7 +33,7 @@ import java.util.HashMap;
         "channelingTarget", "channelingAlly", "channeledSpell" })
 @Entity
 @Table(name = "Personnage")
-@com.fasterxml.jackson.annotation.JsonIgnoreProperties({"channelingTarget", "channelingAlly", "channeledSpell"})
+@com.fasterxml.jackson.annotation.JsonIgnoreProperties({ "channelingTarget", "channelingAlly", "channeledSpell" })
 public class Personnage {
 
     @Id
@@ -102,6 +102,9 @@ public class Personnage {
                 this.resistance += 2;
                 this.healthMax += 7;
                 this.healthCurrent += 7;
+                this.manaMax += 20;
+                this.manaCurrent += 20;
+                this.regenMana += 4;
             } else if (nomVoie.contains("raison")) {
                 this.healthMax += 6;
                 this.healthCurrent += 6;
@@ -180,6 +183,14 @@ public class Personnage {
         return specialItems.getOrDefault(itemName, 0);
     }
 
+    public Map<String, Integer> getSpecialItems() {
+        return specialItems;
+    }
+
+    public void setSpecialItems(Map<String, Integer> specialItems) {
+        this.specialItems = specialItems;
+    }
+
     public void addSpecialItem(String itemName, int quantity) {
         specialItems.put(itemName, getSpecialItemQuantity(itemName) + quantity);
     }
@@ -218,6 +229,12 @@ public class Personnage {
     @JoinColumn(name = "user_id", nullable = true)
     @com.fasterxml.jackson.annotation.JsonIgnore
     private generation.grimoire.entity.auth.AppUser user;
+
+    @com.fasterxml.jackson.annotation.JsonProperty("ownerUsername")
+    @Transient
+    public String getOwnerUsername() {
+        return user != null ? user.getUsername() : null;
+    }
 
     @com.fasterxml.jackson.annotation.JsonProperty("gold")
     @Transient
@@ -984,6 +1001,33 @@ public class Personnage {
     @com.fasterxml.jackson.annotation.JsonProperty("totalSpeed")
     public int getTotalSpeed() {
         return getEffectiveStat(StatType.SPEED);
+    }
+
+    @com.fasterxml.jackson.annotation.JsonProperty("totalRegenHp")
+    public int getTotalRegenHp() {
+        int totalHpRegen = this.regenHp;
+        if (this.equipments != null) {
+            for (generation.grimoire.entity.Equipment eq : this.equipments) {
+                totalHpRegen += eq.getRegenHealthPerTurn();
+            }
+        }
+        return totalHpRegen;
+    }
+
+    @com.fasterxml.jackson.annotation.JsonProperty("totalRegenMana")
+    public int getTotalRegenMana() {
+        int totalManaRegen = this.regenMana;
+        if (this.equipments != null) {
+            for (generation.grimoire.entity.Equipment eq : this.equipments) {
+                totalManaRegen += eq.getRegenManaPerTurn();
+            }
+        }
+        int cursedManaDrain = getSpecialEffectValue(
+                generation.grimoire.enumeration.EquipmentEffectType.CURSED_MANA_DRAIN);
+        if (cursedManaDrain != 0) {
+            totalManaRegen -= Math.abs(cursedManaDrain);
+        }
+        return totalManaRegen;
     }
 
     public boolean isAlly(Personnage other) {

@@ -128,7 +128,7 @@ window.deleteEquipment = function (idsStr) {
     const eq = pageState.allEquipments.find(e => e.id === firstId && !e.isAnomalie);
     if (!eq) return;
 
-    const weightStr = eq._weight % 1 === 0 ? eq._weight : eq._weight.toFixed(1);
+    const weightStr = +Number(eq._weight).toFixed(1);
 
     showModal({
         title: "Détruire l'équipement ?",
@@ -376,7 +376,7 @@ function renderGrid(equipments) {
             </span>`;
         }
 
-        const weightStr = eq._weight % 1 === 0 ? eq._weight : eq._weight.toFixed(1);
+        const weightStr = +Number(eq._weight).toFixed(1);
 
         // Optimization Color Logic
         let weightColor = '#94a3b8';
@@ -902,7 +902,7 @@ window.updateWeightUI = async function () {
     }
 
     if (textEl) {
-        const displayW = w % 1 === 0 ? w : w.toFixed(1);
+        const displayW = +Number(w).toFixed(1);
         if (slot === 'CONSOMMABLE') {
             textEl.innerText = `${displayW}`;
         } else {

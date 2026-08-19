@@ -32,23 +32,30 @@ window.globalFetch = async function (url, options = {}) {
                 } else {
                     if (!url.includes('/api/auth/me')) {
                         window.location.href = '/login.html';
+                        await new Promise(() => {}); // Halt execution
                     }
                     throw new Error('Session expirée');
                 }
             } catch (e) {
                 if (!url.includes('/api/auth/me')) {
                     window.location.href = '/login.html';
+                    await new Promise(() => {}); // Halt execution
                 }
                 throw new Error('Session expirée');
             }
         } else if (res.status === 403) {
             if (!url.includes('/api/auth/me')) {
                 window.location.href = '/login.html';
+                await new Promise(() => {}); // Halt execution
             }
             throw new Error('Accès refusé');
         }
 
         if (!res.ok) {
+            if (res.status === 401 && !url.includes('/api/auth/me')) {
+                window.location.href = '/login.html';
+                await new Promise(() => {});
+            }
             let errorMsg = "Erreur serveur";
             try {
                 const text = await res.text();
@@ -210,7 +217,7 @@ window.checkAuthStatus = async function checkAuthStatus() {
                 </a>
                 <div class="flex-center font-bold text-amber text-sm ml-2" title="Monnaie" style="gap: 0.2rem;">
                     <span class="material-symbols-outlined text-lg">monetization_on</span>
-                    ${data.monnaie !== undefined ? (data.monnaie % 1 === 0 ? data.monnaie : data.monnaie.toFixed(1)) : '0'}
+                    ${data.monnaie !== undefined ? +Number(data.monnaie).toFixed(1) : '0'}
                 </div>
                 <button class="flex-center text-xs text-error rounded px-2 py-1 cursor-pointer font-family-inherit ml-2 transition-all" onclick="logout()" style="background: transparent; border: 1px solid rgba(239, 68, 68, 0.3);">
                     <span class="material-symbols-outlined icon-sm">logout</span>

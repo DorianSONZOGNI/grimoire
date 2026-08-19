@@ -57,6 +57,19 @@ export function createAnomalyBadgeHtml(anomalyName, showName = false) {
 
 // getSlotInfo and RARITY_COLORS → utils.js
 
+const shakeStyle = document.createElement('style');
+shakeStyle.innerHTML = `
+@keyframes shake-error {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-10px); color: #f87171; }
+    40%, 80% { transform: translateX(10px); color: #f87171; }
+}
+.shake-animation {
+    animation: shake-error 0.5s ease-in-out;
+}
+`;
+document.head.appendChild(shakeStyle);
+
 export const pageState = {
     lastCombatLogCount: null,
     sessionId: null,
@@ -72,6 +85,11 @@ export const pageState = {
     pendingCastSpellId: null,
     pendingNeedsEnemy: null,
     pendingNeedsAlly: null,
+    // Co-op multi
+    isMulti: false,
+    multiRole: null,   // 'host' | 'guest'
+    multiId: null,
+    currentUsername: null,  // rempli au chargement
 };
 pageState.lastCombatLogCount = 0;
 pageState.previousPlayerXP = {};
@@ -379,12 +397,10 @@ window.cancelCombatCast = cancelCombatCast;
 
 
 
-
-
 async function loadAnomaliesCombat() {
     if (!window.allAnomaliesCombat || !Array.isArray(window.allAnomaliesCombat) || window.allAnomaliesCombat.length === 0) {
         try {
-            const res = await window.globalFetch('/api/anomalies/all-templates');
+            const res = await globalFetch('/api/anomalies/all-templates');
             if (res.ok) {
                 const data = await res.json();
                 if (Array.isArray(data)) window.allAnomaliesCombat = data;
@@ -394,10 +410,19 @@ async function loadAnomaliesCombat() {
             window.allAnomaliesCombat = [];
         }
     }
+    try {
+        const resUser = await globalFetch('/api/anomalies');
+        if (resUser.ok) {
+            const dataUser = await resUser.json();
+            if (Array.isArray(dataUser)) window.myGlobalAnomalies = dataUser;
+        }
+    } catch (e) {
+        console.error("Failed to load user anomalies:", e);
+        window.myGlobalAnomalies = [];
+    }
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-    await loadAnomaliesCombat();
     window.dungeonMusic = null;
 
     const tryPlayMusic = () => {
@@ -410,14 +435,58 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.addEventListener('click', tryPlayMusic);
 
     try { if (window.initAppMeta) await window.initAppMeta(); } catch (e) { console.warn('Meta loading skipped:', e); }
-    // Check for active combat in localStorage
+
+    // Charger le username actuel
+    try {
+        const meRes = await globalFetch('/api/auth/me', { credentials: 'same-origin' });
+        if (meRes.ok) {
+            const meData = await meRes.json();
+            pageState.currentUsername = meData.username || null;
+        }
+    } catch (_) { }
+
+    await loadAnomaliesCombat();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const multiId = urlParams.get('multiId');
+    const role = urlParams.get('role');
+    const directSessionId = urlParams.get('sessionId');
+
+    // ─── Mode multi : sessionId fourni directement (join ou host après lobby-ready)
+    if (directSessionId) {
+        pageState.isMulti = true;
+        pageState.multiRole = role || 'guest';
+        pageState.multiId = multiId;
+        pageState.sessionId = directSessionId;
+        localStorage.setItem('activeCombatId', directSessionId);
+        window.history.replaceState({}, document.title, window.location.pathname);
+
+        // Ouvrir SSE pour les mises à jour en temps réel
+        initMultiSSE(directSessionId);
+
+        // Charger l'état initial
+        const res = await globalFetch(`/api/pve/combat/${directSessionId}/resume`, { method: 'POST' });
+        if (!res.ok) {
+            window.showNotif('Session introuvable ou expirée.', true);
+            window.location.href = '/dungeons.html';
+            return;
+        }
+        const data = await res.json();
+        data.players.forEach(p => {
+            pageState.previousPlayerXP[p.id] = p.experience;
+            pageState.previousPlayerSpiritXP[p.id] = p.spiritualiteExperience || 0;
+        });
+        updateUI(data);
+        return;
+    }
+
+    // ─── Mode solo classique
     const savedCombatId = localStorage.getItem('activeCombatId');
     if (savedCombatId) {
         resumeCombat(savedCombatId);
         return;
     }
 
-    const urlParams = new URLSearchParams(window.location.search);
     const dungeonId = urlParams.get('dungeonId');
     const characterIds = urlParams.get('characterIds');
     const consumableIds = urlParams.get('consumableIds');
@@ -1098,16 +1167,37 @@ async function acceptAlteration() {
     pageState.isProcessing = true;
     setButtonsProcessing(true);
     try {
-        let url = `/api/pve/combat/${pageState.sessionId}/alteration-accept`;
+        let myPlayer = pageState.currentSessionData.players.find(p => p.ownerUsername === pageState.currentUsername);
+        if (!myPlayer && pageState.currentSessionData.players.length > 0) {
+            myPlayer = pageState.currentSessionData.players[0];
+        }
+        const charId = myPlayer ? myPlayer.id : '';
+        let url = `/api/pve/combat/${pageState.sessionId}/alteration-accept?characterId=${charId}`;
         const select = document.getElementById('altarAnomalySelect');
         if (select) {
-            url += `?anomalyId=${select.value}`;
+            url += `&anomalyId=${select.value}`;
         }
         const res = await globalFetch(url, {
             method: 'POST'
         });
         if (!res.ok) {
             const err = await res.text();
+
+            // Animation de vibration sur les textes d'erreur si présents
+            const missingItem = document.getElementById('itemAlterationMissingText');
+            if (missingItem) {
+                missingItem.classList.remove('shake-animation');
+                void missingItem.offsetWidth; // force reflow
+                missingItem.classList.add('shake-animation');
+            }
+
+            const missingAltar = document.getElementById('altarAlterationMissingText');
+            if (missingAltar) {
+                missingAltar.classList.remove('shake-animation');
+                void missingAltar.offsetWidth; // force reflow
+                missingAltar.classList.add('shake-animation');
+            }
+
             window.showNotif(err || "Action impossible", true);
             pageState.isProcessing = false;
             setButtonsProcessing(false);
@@ -1153,7 +1243,8 @@ async function buyMerchantItem(lootIndex) {
     if (!pageState.sessionId || !pageState.currentSessionData || !pageState.currentSessionData.players || pageState.currentSessionData.players.length === 0 || pageState.isProcessing) return;
     pageState.isProcessing = true;
     setButtonsProcessing(true);
-    const charId = pageState.currentSessionData.players[0].id;
+    const myPlayer = pageState.currentSessionData.players.find(p => p.ownerUsername === pageState.currentUsername) || pageState.currentSessionData.players[0];
+    const charId = myPlayer.id;
 
     try {
         const btn = document.getElementById(`btn_buy_${lootIndex}`);
@@ -1362,6 +1453,97 @@ function resetCombatTimeoutWarning(finished) {
     }, 540000); // 9 minutes
 }
 
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CO-OP MULTI — SSE + Turn Banner
+// ═══════════════════════════════════════════════════════════════════════════
+
+let _multiSSE = null;
+
+function initMultiSSE(sessionId) {
+    if (_multiSSE) { _multiSSE.close(); _multiSSE = null; }
+    _multiSSE = new EventSource(`/api/pve/combat/${sessionId}/events`);
+
+    _multiSSE.addEventListener('combat-update', (e) => {
+        try {
+            const data = JSON.parse(e.data);
+            // Ne pas re-renderer si on est en train de traiter une action locale
+            if (!pageState.isProcessing) {
+                updateUI(data);
+            }
+        } catch (err) {
+            console.error('[SSE] parse error', err);
+        }
+    });
+
+    _multiSSE.onerror = () => {
+        // La connexion SSE se reconnecte automatiquement — pas d'alerte
+    };
+}
+
+/**
+ * Met à jour le bandeau "C'est votre tour / Tour de X" en mode multi.
+ * Active/désactive aussi les boutons d'action selon l'ownership du personnage actif.
+ */
+function updateMultiTurnBanner(data) {
+    const banner = document.getElementById('multiTurnBanner');
+    if (!banner) return;
+
+    if (!data || !data.multi || data.finished) {
+        banner.style.display = 'none';
+        return;
+    }
+
+    banner.style.display = 'flex';
+
+    const isCombatRoom = data.currentRoom && (data.currentRoom.type === 'COMBAT' || data.currentRoom.type === 'BOSS');
+    const allEnemiesDead = !data.enemies || data.enemies.length === 0 || data.enemies.every(e => e.dead || e.currentHp <= 0);
+
+    if (!isCombatRoom || allEnemiesDead) {
+        banner.innerHTML = `<span class="material-symbols-outlined" style="color:#a855f7;">explore</span>
+            <span style="color:#a855f7; font-weight:600;">Exploration en cours</span>`;
+        setMultiActionsEnabled(true);
+        return;
+    }
+
+    const activePlayer = data.activePlayer;
+    const ownerUsername = activePlayer?.ownerUsername || null;
+    const isMyTurn = ownerUsername === pageState.currentUsername;
+    const isEnemyTurn = !data.turnOrder?.[data.currentTurnIndex]?.player;
+
+    if (isEnemyTurn) {
+        banner.innerHTML = `<span class="material-symbols-outlined" style="color:#f87171;">swords</span>
+            <span style="color:#f87171; font-weight:600;">Tour ennemi</span>`;
+        setMultiActionsEnabled(false);
+    } else if (isMyTurn) {
+        banner.innerHTML = `<span class="material-symbols-outlined" style="color:#4ade80;">person</span>
+            <span style="color:#4ade80; font-weight:600;">👤 Votre tour — ${activePlayer?.name || ''}</span>`;
+        setMultiActionsEnabled(true);
+    } else {
+        const otherName = ownerUsername || 'Allié';
+        banner.innerHTML = `<span class="material-symbols-outlined" style="color:#38bdf8;">hourglass_top</span>
+            <span style="color:#94a3b8;">⏳ Tour de <strong style="color:#38bdf8;">${activePlayer?.name || otherName}</strong> (${otherName})...</span>`;
+        setMultiActionsEnabled(false);
+    }
+}
+
+function setMultiActionsEnabled(enabled) {
+    const selectors = ['#btnAttack', '#btnEndTurn', '.combat-spell-card', '.action-btn'];
+    selectors.forEach(sel => {
+        document.querySelectorAll(sel).forEach(el => {
+            if (enabled) {
+                el.classList.remove('multi-disabled');
+                el.style.pointerEvents = '';
+                el.style.opacity = '';
+            } else {
+                el.classList.add('multi-disabled');
+                el.style.pointerEvents = 'none';
+                el.style.opacity = '0.35';
+            }
+        });
+    });
+}
+
 function updateUI(data) {
     resetCombatTimeoutWarning(data.finished);
     pageState.currentSessionData = data;
@@ -1372,7 +1554,6 @@ function updateUI(data) {
             window.dungeonMusic.pause();
         }
     }
-
     let isActiveEnemy = false;
     let activeEnemyIndex = -1;
 
@@ -1469,6 +1650,11 @@ function updateUI(data) {
     // Render Spells
     if (data.availableSpells) {
         renderSpells(data.availableSpells);
+    }
+
+    // Mettre à jour le bandeau co-op APRÈS le rendu des sorts pour qu'ils soient bien grisés
+    if (pageState.isMulti) {
+        updateMultiTurnBanner(data);
     }
 
     // Auto-select first alive target if current is dead
@@ -1595,6 +1781,9 @@ function updateUI(data) {
             }
         } else {
             // TREASURE OR EVENT
+            const vicOverlay = document.getElementById('combatVictoryOverlay');
+            if (vicOverlay) vicOverlay.classList.remove('show');
+
             document.getElementById('btnAttack').disabled = true;
             document.getElementById('enemiesContainer').innerHTML = ''; // Clear enemies
 
@@ -1802,9 +1991,14 @@ function updateUI(data) {
                             let reqBadge = data.currentRoom.alterationRequiredItem ? createAnomalyBadgeHtml(data.currentRoom.alterationRequiredItem) : '"spécial"';
                             warningHtml = `<div class="text-error text-center reward-notice" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3);"><span class="material-symbols-outlined align-middle icon-sm">warning</span> <strong>Attention :</strong> L'item ${reqBadge} sera définitivement détruit de l'inventaire.</div>`;
 
-                            if (data.currentRoom.alterationRewardType === 'SPIRITUAL_XP') {
+                            let rewType = data.currentRoom.alterationRewardType;
+                            if (rewType === 'SPECIAL_ITEM' && !data.currentRoom.alterationSpecialItemReward) {
+                                rewType = 'SPIRITUAL_XP';
+                            }
+
+                            if (rewType === 'SPIRITUAL_XP') {
                                 specialItemHtml = `<div class="text-center text-sky-medium reward-notice" style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3);"><span class="material-symbols-outlined align-middle icon-sm">star</span> <strong>Récompense :</strong> Vous obtiendrez +${data.currentRoom.alterationSpiritualXpReward || 0} XP Spirituel !</div>`;
-                            } else if (data.currentRoom.alterationRewardType === 'SPECIAL_ITEM') {
+                            } else if (rewType === 'SPECIAL_ITEM') {
                                 let badge = data.currentRoom.alterationSpecialItemReward ? createAnomalyBadgeHtml(data.currentRoom.alterationSpecialItemReward) : '"Item"';
                                 specialItemHtml = `<div class="text-center reward-notice" style="color: #d946ef; background: rgba(217, 70, 239, 0.1); border: 1px solid rgba(217, 70, 239, 0.3);"><span class="material-symbols-outlined align-middle icon-sm">star</span> <strong>Récompense :</strong> Vous obtiendrez l'item spécial ${badge}</div>`;
                             }
@@ -1822,19 +2016,9 @@ function updateUI(data) {
                                 const reqItem = data.currentRoom.alterationRequiredItem;
                                 const ownsItem = anomalies.some(a => a.name === reqItem);
                                 if (!ownsItem) {
-                                    container.innerHTML = `<div class="font-bold text-error bg-error-soft">Vous ne possédez pas cet item.</div>`;
-                                    const btn = document.getElementById('btnAcceptAlteration');
-                                    if (btn) {
-                                        btn.disabled = true;
-                                        btn.classList.add('disabled');
-                                    }
+                                    container.innerHTML = `<div id="itemAlterationMissingText" class="font-bold text-error bg-error-soft text-center" style="padding: 0.5rem; border-radius: 8px;">Vous ne possédez pas cet item.</div>`;
                                 } else {
                                     container.innerHTML = '';
-                                    const btn = document.getElementById('btnAcceptAlteration');
-                                    if (btn) {
-                                        btn.removeAttribute('disabled');
-                                        btn.classList.remove('disabled');
-                                    }
                                 }
                             }).catch(err => {
                                 console.error(err);
@@ -1854,7 +2038,7 @@ function updateUI(data) {
                             } else if (data.currentRoom.altarRewardType === 'ITEM') {
                                 const eq = data.currentRoom.altarRewardEquipment;
                                 if (eq) {
-                                    const rarityColors = { 'COMMUN': '#94a3b8', 'INHABITUEL': '#22c55e', 'RARE': '#3b82f6', 'MYTHIQUE': '#f97316', 'LEGENDAIRE': '#eab308', 'EPIQUE': '#ef4444', 'RELIQUE': '#a855f7', 'MAUDIT': '#6b5252' };
+                                    const rarityColors = { 'COMMUN': '#94a3b8', 'INHABITUEL': '#22c55e', 'RARE': '#3b82f6', 'MYTHIQUE': '#f97316', 'LEGENDAIRE': '#eab308', 'EPIQUE': '#ef4444', 'RELIQUE': '#a855f7', 'MAUDIT': '#7f1d1d' };
                                     const rarityColor = getRarityColor(eq.rarity);
                                     const tooltipDataHtml = typeof window.getEquipmentTooltipHTML === 'function' ? window.getEquipmentTooltipHTML(eq) : '';
                                     const tooltipAttrs = tooltipDataHtml ? 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"' : '';
@@ -1888,12 +2072,7 @@ function updateUI(data) {
                                 if (!container) return;
 
                                 if (eligible.length === 0) {
-                                    container.innerHTML = `<div class="font-bold text-error bg-error-soft">Vous ne possédez aucun objet magique de cette spiritualité.</div>`;
-                                    const btn = document.getElementById('btnAcceptAlteration');
-                                    if (btn) {
-                                        btn.disabled = true;
-                                        btn.classList.add('disabled');
-                                    }
+                                    container.innerHTML = `<div id="altarAlterationMissingText" class="font-bold text-error bg-error-soft text-center" style="padding: 0.5rem; border-radius: 8px;">Vous ne possédez aucun objet magique de cette spiritualité.</div>`;
                                     return;
                                 }
 
@@ -1969,9 +2148,6 @@ function updateUI(data) {
                         lootContainer.classList.remove('hidden'); lootContainer.classList.add('flex');
 
                         let disabledState = '';
-                        if (data.currentRoom.alterationType === 'ITEM' || data.currentRoom.alterationType === 'AUTEL') {
-                            disabledState = 'disabled class="disabled flex-col items-center w-full"';
-                        }
 
                         lootContainer.innerHTML = `
                             <div class="flex-col items-center w-full" style="max-width: 600px;">
@@ -2158,13 +2334,16 @@ function updateUI(data) {
                             }
 
                             let canAfford = true;
-                            let playerGold = (data.players && data.players[0]) ? (data.players[0].gold || 0) : 0;
+                            const myPlayer = (data.players && data.players.length > 0) ? (data.players.find(p => p.ownerUsername === pageState.currentUsername) || data.players[0]) : null;
+                            let playerGold = myPlayer ? (myPlayer.gold || 0) : 0;
                             if (goldPrice > 0 && playerGold < goldPrice) {
                                 canAfford = false;
                             }
                             if (entry.priceSpecialItemName) {
-                                let playerSpecialItems = (data.players && data.players[0] && data.players[0].specialItems) ? data.players[0].specialItems : {};
-                                let qte = playerSpecialItems[entry.priceSpecialItemName] || 0;
+                                let qte = 0;
+                                if (window.myGlobalAnomalies && Array.isArray(window.myGlobalAnomalies)) {
+                                    qte = window.myGlobalAnomalies.filter(a => a.name === entry.priceSpecialItemName).length;
+                                }
                                 if (qte < 1) {
                                     canAfford = false;
                                 }
@@ -2833,9 +3012,22 @@ function generateFighterHtml(c, isHero, skipBadges = false) {
         mutationsHtml += `</div>`;
     }
 
-    let hpRegenBadge = (!isHero && c.regenHp && c.regenHp > 0) ? `<span title="Régénère ${c.regenHp} PV au début du tour" style="cursor: help; margin-left: 0.5rem; font-size: 0.7rem; background: rgba(244, 114, 182, 0.15); color: #f472b6; padding: 0.1rem 0.35rem; border-radius: 4px; border: 1px solid rgba(244, 114, 182, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.15rem; vertical-align: text-bottom;"><span class="material-symbols-outlined text-sm">healing</span>${c.regenHp} PV/t</span>` : '';
-    let manaRegenBadge = (!isHero && c.regenMana && c.regenMana > 0) ? `<span title="Régénère ${c.regenMana} Mana au début du tour" style="cursor: help; margin-left: 0.5rem; font-size: 0.7rem; background: rgba(125, 211, 252, 0.15); color: #7dd3fc; padding: 0.1rem 0.35rem; border-radius: 4px; border: 1px solid rgba(125, 211, 252, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.15rem; vertical-align: text-bottom;"><span class="material-symbols-outlined text-sm">opacity</span>${c.regenMana} MP/t</span>` : '';
+    const rHp = c.totalRegenHp !== undefined ? c.totalRegenHp : (c.regenHp || 0);
+    const rMana = c.totalRegenMana !== undefined ? c.totalRegenMana : (c.regenMana || 0);
+    
+    let hpRegenBadge = '';
+    if (rHp > 0) {
+        hpRegenBadge = `<span title="Régénère ${rHp} PV au début du tour" style="cursor: help; margin-left: 0.5rem; font-size: 0.7rem; background: rgba(244, 114, 182, 0.15); color: #f472b6; padding: 0.1rem 0.35rem; border-radius: 4px; border: 1px solid rgba(244, 114, 182, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.15rem; vertical-align: text-bottom;"><span class="material-symbols-outlined text-sm">healing</span>${rHp} PV/t</span>`;
+    } else if (rHp < 0) {
+        hpRegenBadge = `<span title="Perd ${-rHp} PV au début du tour" style="cursor: help; margin-left: 0.5rem; font-size: 0.7rem; background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 0.1rem 0.35rem; border-radius: 4px; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.15rem; vertical-align: text-bottom;"><span class="material-symbols-outlined text-sm">bloodtype</span>${rHp} PV/t</span>`;
+    }
 
+    let manaRegenBadge = '';
+    if (rMana > 0) {
+        manaRegenBadge = `<span title="Régénère ${rMana} Mana au début du tour" style="cursor: help; margin-left: 0.5rem; font-size: 0.7rem; background: rgba(125, 211, 252, 0.15); color: #7dd3fc; padding: 0.1rem 0.35rem; border-radius: 4px; border: 1px solid rgba(125, 211, 252, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.15rem; vertical-align: text-bottom;"><span class="material-symbols-outlined text-sm">opacity</span>${rMana} MP/t</span>`;
+    } else if (rMana < 0) {
+        manaRegenBadge = `<span title="Perd ${-rMana} Mana au début du tour (Famine)" style="cursor: help; margin-left: 0.5rem; font-size: 0.7rem; background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 0.1rem 0.35rem; border-radius: 4px; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.15rem; vertical-align: text-bottom;"><span class="material-symbols-outlined text-sm">water_drop</span>${rMana} MP/t</span>`;
+    }
     let avatarHtml = isHero ? '🧙‍♂️' : '👹';
     if (isHero && c.voie && c.voie.nom) {
         const vNom = c.voie.nom.toLowerCase();
@@ -3619,7 +3811,7 @@ window.renderOverlayInventory = function (containerId) {
     if (list.parentElement) {
         const weightSpan = list.parentElement.querySelector('.inventory-weight-display');
         if (weightSpan) {
-            weightSpan.textContent = `(${totalWeight.toFixed(1)} / ${maxWeight} kg)`;
+            weightSpan.textContent = `(${+Number(totalWeight).toFixed(1)} / ${maxWeight} kg)`;
             weightSpan.style.color = totalWeight > maxWeight ? '#ef4444' : '#94a3b8';
         }
     }
@@ -3627,7 +3819,8 @@ window.renderOverlayInventory = function (containerId) {
     // Add Gold reminder
     let goldAmount = 0;
     if (pageState.currentSessionData && pageState.currentSessionData.players && pageState.currentSessionData.players.length > 0) {
-        goldAmount = pageState.currentSessionData.players[0].gold || 0;
+        const myPlayer = pageState.currentSessionData.players.find(p => p.ownerUsername === pageState.currentUsername) || pageState.currentSessionData.players[0];
+        goldAmount = myPlayer.gold || 0;
     }
     list.innerHTML += `
         <div class="flex-center" style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px; padding: 0.8rem; gap: 0.8rem; margin-bottom: 0.5rem;">

@@ -69,8 +69,8 @@ function generateStandHtml(eq) {
         </div>`;
     }
 
-    const priceStr = eq.shopPrice !== undefined ? (eq.shopPrice % 1 === 0 ? eq.shopPrice : eq.shopPrice.toFixed(1)) : '?';
-    const oldPriceStr = eq.originalPrice !== undefined ? (eq.originalPrice % 1 === 0 ? eq.originalPrice : eq.originalPrice.toFixed(1)) : '';
+    const priceStr = eq.shopPrice !== undefined ? +Number(eq.shopPrice).toFixed(1) : '?';
+    const oldPriceStr = eq.originalPrice !== undefined ? +Number(eq.originalPrice).toFixed(1) : '';
 
     const rName = getRarityName(eq.rarity);
     let rarityColor = getRarityColor(rName);
