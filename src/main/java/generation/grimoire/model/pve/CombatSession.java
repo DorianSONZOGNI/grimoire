@@ -23,7 +23,7 @@ public class CombatSession {
     private int donjonSecretLevel;
     private int donjonLevel;
     private int totalRooms;
-    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"equipments", "anomalies", "user"})
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({ "equipments", "anomalies", "user" })
     private List<Personnage> players = new ArrayList<>();
     private List<generation.grimoire.entity.Equipment> activeConsumables = new ArrayList<>();
 
@@ -61,6 +61,10 @@ public class CombatSession {
 
     private int reloadCount = 0;
     private Instant lastActivity = Instant.now();
+
+    // Multi-player co-op
+    private boolean isMulti = false;
+    private String multiSessionId = null;
 
     public CombatSession(String sessionId, Donjon donjon, List<Personnage> players) {
         this.sessionId = sessionId;

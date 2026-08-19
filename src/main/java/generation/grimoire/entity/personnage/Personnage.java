@@ -180,6 +180,14 @@ public class Personnage {
         return specialItems.getOrDefault(itemName, 0);
     }
 
+    public Map<String, Integer> getSpecialItems() {
+        return specialItems;
+    }
+
+    public void setSpecialItems(Map<String, Integer> specialItems) {
+        this.specialItems = specialItems;
+    }
+
     public void addSpecialItem(String itemName, int quantity) {
         specialItems.put(itemName, getSpecialItemQuantity(itemName) + quantity);
     }
@@ -218,6 +226,12 @@ public class Personnage {
     @JoinColumn(name = "user_id", nullable = true)
     @com.fasterxml.jackson.annotation.JsonIgnore
     private generation.grimoire.entity.auth.AppUser user;
+
+    @com.fasterxml.jackson.annotation.JsonProperty("ownerUsername")
+    @Transient
+    public String getOwnerUsername() {
+        return user != null ? user.getUsername() : null;
+    }
 
     @com.fasterxml.jackson.annotation.JsonProperty("gold")
     @Transient

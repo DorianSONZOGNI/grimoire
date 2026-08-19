@@ -32,23 +32,30 @@ window.globalFetch = async function (url, options = {}) {
                 } else {
                     if (!url.includes('/api/auth/me')) {
                         window.location.href = '/login.html';
+                        await new Promise(() => {}); // Halt execution
                     }
                     throw new Error('Session expirée');
                 }
             } catch (e) {
                 if (!url.includes('/api/auth/me')) {
                     window.location.href = '/login.html';
+                    await new Promise(() => {}); // Halt execution
                 }
                 throw new Error('Session expirée');
             }
         } else if (res.status === 403) {
             if (!url.includes('/api/auth/me')) {
                 window.location.href = '/login.html';
+                await new Promise(() => {}); // Halt execution
             }
             throw new Error('Accès refusé');
         }
 
         if (!res.ok) {
+            if (res.status === 401 && !url.includes('/api/auth/me')) {
+                window.location.href = '/login.html';
+                await new Promise(() => {});
+            }
             let errorMsg = "Erreur serveur";
             try {
                 const text = await res.text();
