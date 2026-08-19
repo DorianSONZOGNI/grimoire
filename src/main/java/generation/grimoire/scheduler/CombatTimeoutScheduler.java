@@ -27,17 +27,19 @@ public class CombatTimeoutScheduler {
                 try {
                     combatService.fleeCombat(session.getSessionId());
                 } catch (Exception e) {
-                    System.err.println("Error applying flee penalties for timed out session " + session.getSessionId() + ": " + e.getMessage());
+                    System.err.println("Error applying flee penalties for timed out session " + session.getSessionId()
+                            + ": " + e.getMessage());
                 }
-                
+
                 // Ensure it is marked as finished
                 session.setFinished(true);
                 session.setPlayerWon(false);
-                
+
                 // Remove from memory
                 combatService.getActiveSessions().remove(session.getSessionId());
-                
-                System.out.println("CombatSession " + session.getSessionId() + " timed out due to inactivity and was fled.");
+
+                System.out.println(
+                        "CombatSession " + session.getSessionId() + " timed out due to inactivity and was fled.");
             }
         }
     }

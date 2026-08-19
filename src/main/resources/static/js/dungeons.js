@@ -860,9 +860,219 @@ window.closeEntryModal = function () {
     document.getElementById('entryModal').classList.remove('active');
 };
 
+// ═══════════════════════════════════════════════════════════════════════════
+// CO-OP LOBBY
+// ═══════════════════════════════════════════════════════════════════════════
 
+let coopLobbyId = null;       // multiSessionId du lobby actif (hôte)
+let coopLobbySSE = null;      // SSE EventSource pour les events du lobby
 
+// ─── Toggle co-op / solo ────────────────────────────────────────────────────
 
+window.onCoopToggleChange = function () {
+    const isCoopMode = document.getElementById('coopModeToggle').checked;
+    const btnSolo = document.getElementById('btnEnterDungeon');
+    const btnCoop = document.getElementById('btnCreateLobby');
+
+    if (isCoopMode) {
+        btnSolo.classList.add('hidden');
+        btnCoop.classList.remove('hidden');
+    } else {
+        btnSolo.classList.remove('hidden');
+        btnCoop.classList.add('hidden');
+    }
+};
+
+// ─── Synchroniser l'état du bouton co-op avec la sélection ─────────────────
+// (appelé par updateHeroCountDisplay ou directement)
+const _origUpdateHeroCount = window.updateHeroCountDisplay;
+window.updateHeroCountDisplay = function () {
+    if (_origUpdateHeroCount) _origUpdateHeroCount();
+    const btnCoop = document.getElementById('btnCreateLobby');
+    if (!btnCoop) return;
+    const hasChars = pageState.selectedCharIds.length > 0;
+    if (hasChars) {
+        btnCoop.classList.remove('opacity-50', 'pointer-events-none');
+    } else {
+        btnCoop.classList.add('opacity-50', 'pointer-events-none');
+    }
+};
+
+// ─── Création du lobby (hôte) ────────────────────────────────────────────────
+
+window.createCoopLobby = async function () {
+    if (pageState.selectedCharIds.length === 0) {
+        window.showNotif('Sélectionnez au moins un personnage.', true);
+        return;
+    }
+
+    const charIdsParam = pageState.selectedCharIds.join(',');
+    let url = `/api/pve/multi/create?characterIds=${charIdsParam}&dungeonId=${pageState.currentDungeonId}`;
+    if (pageState.selectedConsumableIds.length > 0) {
+        url += `&consumableIds=${pageState.selectedConsumableIds.join(',')}`;
+    }
+
+    try {
+        const res = await globalFetch(url, { method: 'POST' });
+        if (!res.ok) {
+            const err = await res.text();
+            window.showNotif(err || 'Erreur lors de la création du lobby.', true);
+            return;
+        }
+        const lobby = await res.json();
+        coopLobbyId = lobby.multiSessionId;
+
+        // Afficher l'overlay d'attente
+        document.getElementById('lobbyShortCode').textContent = lobby.shortCode;
+        document.getElementById('lobbyWaitingStatus').innerHTML =
+            '<span class="material-symbols-outlined" style="font-size:1rem; vertical-align:middle; animation: spin 1s linear infinite;">autorenew</span> En attente du joueur 2...';
+        const overlay = document.getElementById('lobbyWaitingOverlay');
+        overlay.style.display = 'flex';
+
+        // Ouvrir SSE sur ce multiSessionId pour recevoir "lobby-ready"
+        coopLobbySSE = new EventSource(`/api/pve/multi/${coopLobbyId}/events`);
+        coopLobbySSE.addEventListener('lobby-ready', (e) => {
+            const data = JSON.parse(e.data);
+            onLobbyReady(data);
+        });
+        coopLobbySSE.addEventListener('lobby-cancelled', () => {
+            window.showNotif('Lobby annulé.', true);
+            closeLobbyOverlay();
+        });
+        coopLobbySSE.onerror = () => {
+            // SSE silently reconnects; only show error if lobby is gone
+        };
+    } catch (err) {
+        console.error(err);
+        window.showNotif('Erreur serveur.', true);
+    }
+};
+
+function onLobbyReady(lobby) {
+    if (coopLobbySSE) { coopLobbySSE.close(); coopLobbySSE = null; }
+    document.getElementById('lobbyWaitingStatus').innerHTML =
+        '<span style="color:#4ade80; font-size:1rem;">✔ Joueur 2 connecté ! Lancement...</span>';
+
+    // Courte pause puis redirect vers combat.html en tant qu'hôte
+    setTimeout(() => {
+        closeLobbyOverlay();
+        window.location.href = `/combat.html?sessionId=${lobby.combatSessionId}&multiId=${lobby.multiSessionId}&role=host`;
+    }, 1200);
+}
+
+// ─── Annulation du lobby ─────────────────────────────────────────────────────
+
+window.cancelCoopLobby = async function () {
+    if (!coopLobbyId) { closeLobbyOverlay(); return; }
+    try {
+        await globalFetch(`/api/pve/multi/${coopLobbyId}/cancel`, { method: 'DELETE' });
+    } catch (_) {}
+    if (coopLobbySSE) { coopLobbySSE.close(); coopLobbySSE = null; }
+    coopLobbyId = null;
+    closeLobbyOverlay();
+};
+
+function closeLobbyOverlay() {
+    document.getElementById('lobbyWaitingOverlay').style.display = 'none';
+}
+
+// ─── Modal Rejoindre un lobby ─────────────────────────────────────────────────
+
+let joinSelectedCharIds = [];
+
+window.openJoinLobbyModal = function () {
+    joinSelectedCharIds = [];
+    const modal = document.getElementById('joinLobbyModal');
+    modal.style.display = 'flex';
+
+    // Remplir la liste de persos du joueur
+    const container = document.getElementById('joinLobbyCharSelect');
+    if (!pageState.userCharacters || pageState.userCharacters.length === 0) {
+        container.innerHTML = '<div style="color:#94a3b8; font-size:0.85rem;">Aucun personnage disponible.</div>';
+        return;
+    }
+    container.innerHTML = pageState.userCharacters.map(c => `
+        <div id="joinChar_${c.id}"
+            onclick="toggleJoinChar(${c.id})"
+            style="display:flex; align-items:center; gap:0.75rem; padding:0.6rem 0.75rem; border-radius:0.6rem; border:1px solid rgba(255,255,255,0.1); margin-bottom:0.5rem; cursor:pointer; transition:all 0.2s;">
+            <div style="width:2rem; height:2rem; border-radius:50%; background:rgba(99,102,241,0.2); display:flex; align-items:center; justify-content:center;">
+                <span class="material-symbols-outlined" style="font-size:1.1rem; color:#818cf8;">person</span>
+            </div>
+            <div>
+                <div style="font-weight:600; color:#e2e8f0; font-size:0.9rem;">${c.name}</div>
+                <div style="color:#64748b; font-size:0.75rem;">Niv. ${c.voieLevel || 1}</div>
+            </div>
+        </div>
+    `).join('');
+};
+
+window.toggleJoinChar = function (charId) {
+    const el = document.getElementById(`joinChar_${charId}`);
+    const idx = joinSelectedCharIds.indexOf(charId);
+    if (idx === -1) {
+        joinSelectedCharIds.push(charId);
+        el.style.borderColor = 'rgba(14,165,233,0.6)';
+        el.style.background = 'rgba(14,165,233,0.1)';
+    } else {
+        joinSelectedCharIds.splice(idx, 1);
+        el.style.borderColor = 'rgba(255,255,255,0.1)';
+        el.style.background = '';
+    }
+};
+
+window.closeJoinLobbyModal = function () {
+    document.getElementById('joinLobbyModal').style.display = 'none';
+};
+
+window.submitJoinLobby = async function () {
+    const code = document.getElementById('joinLobbyCodeInput').value.trim().toUpperCase();
+    if (code.length < 4) {
+        window.showNotif('Entrez un code valide (6 caractères).', true);
+        return;
+    }
+    if (joinSelectedCharIds.length === 0) {
+        window.showNotif('Sélectionnez au moins un personnage.', true);
+        return;
+    }
+
+    const btn = document.getElementById('btnSubmitJoin');
+    btn.disabled = true;
+    btn.textContent = 'Connexion...';
+
+    try {
+        // 1. Trouver le lobby par code court
+        const findRes = await globalFetch(`/api/pve/multi/find/${code}`);
+        if (!findRes.ok) {
+            window.showNotif('Lobby introuvable ou déjà démarré.', true);
+            btn.disabled = false;
+            btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:1.1rem;">login</span> Rejoindre';
+            return;
+        }
+        const lobby = await findRes.json();
+
+        // 2. Rejoindre
+        const joinRes = await globalFetch(
+            `/api/pve/multi/${lobby.multiSessionId}/join?characterIds=${joinSelectedCharIds.join(',')}`,
+            { method: 'POST' }
+        );
+        if (!joinRes.ok) {
+            const err = await joinRes.text();
+            window.showNotif(err || 'Erreur lors du join.', true);
+            btn.disabled = false;
+            btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:1.1rem;">login</span> Rejoindre';
+            return;
+        }
+        const result = await joinRes.json();
+
+        // 3. Redirect vers combat.html en tant que guest
+        window.location.href = `/combat.html?sessionId=${result.sessionId}&multiId=${result.multiSessionId}&role=guest`;
+    } catch (err) {
+        console.error(err);
+        window.showNotif('Erreur serveur.', true);
+        btn.disabled = false;
+        btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:1.1rem;">login</span> Rejoindre';
+    }
+};
 window.closeEntryModal = function () {
     document.getElementById('entryModal').classList.remove('active');
 };

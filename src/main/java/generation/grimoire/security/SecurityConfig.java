@@ -29,6 +29,9 @@ public class SecurityConfig {
             .csrf(csrf -> csrf.disable())
             .sessionManagement(session -> session.sessionCreationPolicy(org.springframework.security.config.http.SessionCreationPolicy.STATELESS))
             .authorizeHttpRequests(auth -> auth
+                // --- Allow CORS preflight requests ---
+                .requestMatchers(HttpMethod.OPTIONS, "/**").permitAll()
+
                 // --- Public : statiques + auth ---
                 .requestMatchers("/api/auth/**").permitAll()
                 .requestMatchers("/api/meta/**").permitAll()
@@ -43,7 +46,6 @@ public class SecurityConfig {
                 .requestMatchers(HttpMethod.PUT, "/api/shop/templates/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/shop/templates/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/anomalies").hasRole("ADMIN")
-                .requestMatchers(HttpMethod.DELETE, "/api/anomalies/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.POST, "/api/alchemy/admin/**").hasRole("ADMIN")
                 .requestMatchers(HttpMethod.DELETE, "/api/alchemy/admin/**").hasRole("ADMIN")
 

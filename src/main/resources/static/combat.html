@@ -47,6 +47,14 @@
                 Tour <span id="turnCounter" class="text-slate-50 font-semibold">1</span>
             </div>
         </div>
+
+        <!-- Bandeau co-op : indicateur de tour (maintenant intégré centré dans le header) -->
+        <div id="multiTurnBanner"
+            style="display:none; align-items:center; justify-content:center; gap:0.6rem;
+                   position:absolute; left:50%; top:50%; transform:translate(-50%, -50%);
+                   font-size:0.9rem; z-index:100; white-space:nowrap;">
+            <!-- rempli par updateMultiTurnBanner() -->
+        </div>
     </div>
 
     <div class="combat-arena" id="arena">
