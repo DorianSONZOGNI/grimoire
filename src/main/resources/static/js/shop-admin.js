@@ -260,7 +260,7 @@ function renderGrid(equipments) {
                 const statsHtml = window.generateEquipmentStatsHtml(eq, 'stat-badge');
                 const effectHtml = window.generateEquipmentEffectHtml(eq, 'stat-badge');
 
-                const displayPrice = eq.shopPrice !== undefined ? (eq.shopPrice % 1 === 0 ? eq.shopPrice : eq.shopPrice.toFixed(1)) : calculateShopPrice(eq._weight || 0, rarity || 'COMMUN', eq.slot);
+                const displayPrice = eq.shopPrice !== undefined ? +Number(eq.shopPrice).toFixed(1) : calculateShopPrice(eq._weight || 0, rarity || 'COMMUN', eq.slot);
 
                 html += `
                 <div class="shop-admin-row">
@@ -685,7 +685,7 @@ window.updateWeightUI = async function () {
     const textEl = document.getElementById('eqWeightText');
 
     if (textEl) {
-        const displayW = w % 1 === 0 ? w : w.toFixed(1);
+        const displayW = +Number(w).toFixed(1);
         if (slot === 'CONSOMMABLE') {
             textEl.innerText = `${displayW}`;
         } else {
@@ -724,7 +724,7 @@ window.updateWeightUI = async function () {
 
     const priceEl = document.getElementById('eqPriceText');
     if (priceEl) {
-        const displayPrice = price % 1 === 0 ? price : price.toFixed(1);
+        const displayPrice = +Number(price).toFixed(1);
         priceEl.innerHTML = `${displayPrice} <span class="material-symbols-outlined icon-md">monetization_on</span>`;
     }
 }

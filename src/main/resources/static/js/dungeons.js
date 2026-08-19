@@ -406,7 +406,7 @@ function renderConsumablesList() {
 
     const counterHtml = `<div class="text-center mb-3 text-sm ${isOverweight ? 'text-error' : 'text-muted'}">
         <span class="material-symbols-outlined text-sm align-middle">scale</span>
-        Poids: ${curWeight % 1 === 0 ? curWeight : curWeight.toFixed(1)} / ${maxWeight}
+        Poids: ${+Number(curWeight).toFixed(1)} / ${maxWeight}
     </div>`;
 
     const weightContainer = document.getElementById('prepWeightCounter');
@@ -466,7 +466,7 @@ function renderConsumablesList() {
                 <div class="flex-1 min-w-0">
                     <div class="flex-between items-center">
                         <div class="whitespace-nowrap text-slate-50 font-semibold text-[0.7rem] truncate" title="${c.name}">${c.name}</div>
-                        <div class="text-xxs font-bold text-muted bg-black/30 px-1 py-0.5 rounded inline-flex items-center gap-1"><span class="material-symbols-outlined" style="font-size: 0.7rem;">scale</span>${c.weight % 1 === 0 ? c.weight : Number(c.weight).toFixed(1)}</div>
+                        <div class="text-xxs font-bold text-muted bg-black/30 px-1 py-0.5 rounded inline-flex items-center gap-1"><span class="material-symbols-outlined" style="font-size: 0.7rem;">scale</span>${+Number(c.weight).toFixed(1)}</div>
                     </div>
                     <div class="text-muted text-xs flex gap-1.5 flex-wrap overflow-visible items-center mt-[2px]">
                         ${c.bonusHealthMax ? `<span class="inline-flex items-center text-pink-500" title="PV">+${c.bonusHealthMax}<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">favorite</span></span>` : ''}
