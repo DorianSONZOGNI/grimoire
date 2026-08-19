@@ -25,7 +25,7 @@ public class CombatTimeoutScheduler {
             if (session.getLastActivity().isBefore(threshold)) {
                 // Apply actual flee penalties
                 try {
-                    combatService.fleeCombat(session.getSessionId());
+                    combatService.fleeCombat(session.getSessionId(), null);
                 } catch (Exception e) {
                     System.err.println("Error applying flee penalties for timed out session " + session.getSessionId()
                             + ": " + e.getMessage());
