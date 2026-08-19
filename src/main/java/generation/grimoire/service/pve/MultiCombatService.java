@@ -7,7 +7,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
 import generation.grimoire.repository.pve.DonjonRepository;
+import generation.grimoire.repository.PersonnageRepository;
+import generation.grimoire.entity.personnage.Personnage;
 import generation.grimoire.DTO.pve.LobbyInfoDTO;
+import generation.grimoire.DTO.pve.HostHeroInfoDTO;
 import generation.grimoire.entity.pve.Donjon;
 
 import java.time.Instant;
@@ -25,6 +28,7 @@ public class MultiCombatService {
     private final CombatService combatService;
     private final CombatEventEmitter eventEmitter;
     private final DonjonRepository donjonRepository;
+    private final PersonnageRepository personnageRepository;
 
     /** multiSessionId → MultiCombatSession */
     private final Map<String, MultiCombatSession> lobbies = new ConcurrentHashMap<>();
@@ -179,6 +183,22 @@ public class MultiCombatService {
         int hostCount = lobby.getHostCharacterIds() != null ? lobby.getHostCharacterIds().size() : 0;
         int availableSlots = Math.max(0, maxHeroes - hostCount);
 
+        List<HostHeroInfoDTO> hostHeroInfos = new ArrayList<>();
+        if (lobby.getHostCharacterIds() != null) {
+            for (Long cid : lobby.getHostCharacterIds()) {
+                Personnage p = personnageRepository.findById(cid).orElse(null);
+                if (p != null) {
+                    HostHeroInfoDTO hdto = new HostHeroInfoDTO();
+                    hdto.setName(p.getName());
+                    hdto.setLevel(p.getVoieLevel());
+                    hdto.setVoieName(p.getVoie() != null ? p.getVoie().getNom() : null);
+                    hdto.setSpiritualiteName(p.getSpiritualite() != null ? p.getSpiritualite().getNom() : null);
+                    hdto.setHealthMax(p.getHealthMax());
+                    hostHeroInfos.add(hdto);
+                }
+            }
+        }
+
         return new LobbyInfoDTO(
                 lobby.getShortCode(),
                 lobby.getHostUsername(),
@@ -186,7 +206,8 @@ public class MultiCombatService {
                 donjon.getRecommendedLevel(),
                 maxHeroes,
                 hostCount,
-                availableSlots
+                availableSlots,
+                hostHeroInfos
         );
     }
 }
