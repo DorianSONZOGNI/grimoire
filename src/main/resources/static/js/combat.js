@@ -3012,9 +3012,10 @@ function generateFighterHtml(c, isHero, skipBadges = false) {
         mutationsHtml += `</div>`;
     }
 
-    let hpRegenBadge = (!isHero && c.regenHp && c.regenHp > 0) ? `<span title="Régénère ${c.regenHp} PV au début du tour" style="cursor: help; margin-left: 0.5rem; font-size: 0.7rem; background: rgba(244, 114, 182, 0.15); color: #f472b6; padding: 0.1rem 0.35rem; border-radius: 4px; border: 1px solid rgba(244, 114, 182, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.15rem; vertical-align: text-bottom;"><span class="material-symbols-outlined text-sm">healing</span>${c.regenHp} PV/t</span>` : '';
-    let manaRegenBadge = (!isHero && c.regenMana && c.regenMana > 0) ? `<span title="Régénère ${c.regenMana} Mana au début du tour" style="cursor: help; margin-left: 0.5rem; font-size: 0.7rem; background: rgba(125, 211, 252, 0.15); color: #7dd3fc; padding: 0.1rem 0.35rem; border-radius: 4px; border: 1px solid rgba(125, 211, 252, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.15rem; vertical-align: text-bottom;"><span class="material-symbols-outlined text-sm">opacity</span>${c.regenMana} MP/t</span>` : '';
-
+    const rHp = (c.totalRegenHp !== undefined ? c.totalRegenHp : (c.regenHp || 0)) + (c.equipments ? c.equipments.reduce((sum, eq) => sum + (eq.regenHealthPerTurn || 0), 0) : 0);
+    const rMana = (c.totalRegenMana !== undefined ? c.totalRegenMana : (c.regenMana || 0)) + (c.equipments ? c.equipments.reduce((sum, eq) => sum + (eq.regenManaPerTurn || 0), 0) : 0);
+    let hpRegenBadge = (rHp && rHp > 0) ? `<span title="Régénère ${rHp} PV au début du tour" style="cursor: help; margin-left: 0.5rem; font-size: 0.7rem; background: rgba(244, 114, 182, 0.15); color: #f472b6; padding: 0.1rem 0.35rem; border-radius: 4px; border: 1px solid rgba(244, 114, 182, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.15rem; vertical-align: text-bottom;"><span class="material-symbols-outlined text-sm">healing</span>${rHp} PV/t</span>` : '';
+    let manaRegenBadge = (rMana && rMana > 0) ? `<span title="Régénère ${rMana} Mana au début du tour" style="cursor: help; margin-left: 0.5rem; font-size: 0.7rem; background: rgba(125, 211, 252, 0.15); color: #7dd3fc; padding: 0.1rem 0.35rem; border-radius: 4px; border: 1px solid rgba(125, 211, 252, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.15rem; vertical-align: text-bottom;"><span class="material-symbols-outlined text-sm">opacity</span>${rMana} MP/t</span>` : '';
     let avatarHtml = isHero ? '🧙‍♂️' : '👹';
     if (isHero && c.voie && c.voie.nom) {
         const vNom = c.voie.nom.toLowerCase();
