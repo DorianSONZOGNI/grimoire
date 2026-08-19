@@ -5,7 +5,7 @@
     /* Ensures scroll works left-to-right */
     align-items: stretch !important;
     gap: 0.5rem;
-    margin-top: 1rem;
+    margin-top: 0.25rem;
     width: 100%;
     overflow-x: auto;
     padding-top: 1.5rem;
@@ -17,6 +17,7 @@
     -webkit-overflow-scrolling: touch;
     min-height: 380px;
 }
+
 .vault-main {
     padding: 2rem;
     max-width: 1400px;

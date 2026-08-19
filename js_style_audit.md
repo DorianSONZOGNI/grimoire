@@ -25,15 +25,15 @@ Analyse complète des fichiers JS concernant l'utilisation de styles CSS directe
 | 9 | `alchemy-admin.js` — 41 statiques | ✅ **Terminé** | Reste 35 `style=` (dynamiques badge colors, OK) |
 | 10 | `alchemy.js` — 60 statiques | ✅ **Terminé** | Reste 39 `style=` (dynamiques rareté/anomalie, OK) |
 | 11 | `pve-admin.js` — 230 statiques | ✅ **Terminé** | Reste ~85 `style=` (dynamiques, OK) |
-| 12 | `combat.js` — 280 statiques | ❌ À faire | 355 `style=` totaux restants |
+| 12 | `combat.js` — 261 statiques | ✅ **Terminé** | Reste 224 `style=` + 62 `.style.` (dynamiques + animations, OK) |
 
-**Avancement global : 11 / 12 fichiers traités**
+**Avancement global : 12 / 12 fichiers traités** 🎉
 
 > [!WARNING]
 > `utilities.css` classes manquantes : (Toutes ajoutées)
 
 ```
-████████████████████░░░░░░░░  91%
+████████████████████████████  100%
 ```
 
 ---
@@ -42,7 +42,7 @@ Analyse complète des fichiers JS concernant l'utilisation de styles CSS directe
 
 | Fichier | `style=` restants (réel) | Dont dynamiques | Statiques migrés | Statut |
 |---------|:---:|:---:|:---:|:---:|
-| `combat.js` | **355** | ~63 | 0 | ❌ À faire |
+| `combat.js` | **224** `style=` + **62** `.style.` | ~224+62 | 261 ✅ | ✅ Terminé |
 | `pve-admin.js` | **85** | ~85 | 230 ✅ | ✅ Terminé |
 | `grimoire.js` | **55** | ~55 | 75 ✅ | ✅ Terminé |
 | `alchemy.js` | **39** | ~39 | 60 ✅ | ✅ Terminé |
@@ -153,4 +153,4 @@ L'approche sera **identique à l'audit HTML** :
 - [x] `alchemy-admin.js` — 41 statiques (les `.style.prop` sont dynamiques)
 - [x] `alchemy.js` — 60 statiques
 - [x] `pve-admin.js` — 230 statiques (Terminé)
-- [ ] `combat.js` — 286 statiques (par sections, +6 ajoutés depuis l'audit initial)
+- [x] `combat.js` — 261 statiques (Terminé — 2026-08-17)
