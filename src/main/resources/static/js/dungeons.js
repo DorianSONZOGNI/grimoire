@@ -728,7 +728,8 @@ window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost,
 
     const btn = document.getElementById('btnEnterDungeon');
     if (btn) {
-        btn.classList.add('opacity-50', 'pointer-events-none');
+        btn.classList.remove('pointer-events-none');
+        btn.classList.add('opacity-50', 'cursor-not-allowed');
     }
 
     renderConsumablesList();
