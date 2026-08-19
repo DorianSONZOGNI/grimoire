@@ -314,35 +314,17 @@ async function loadCharacters() {
                 return;
             }
 
-            const getVIcon = (nom) => {
-                const n = nom.toLowerCase();
-                if (n.includes('raison')) return { c: '#3b82f6', i: 'psychology' };
-                if (n.includes('s\u00fbret\u00e9') || n.includes('surete')) return { c: '#00e5cc', i: 'water_drop' };
-                if (n.includes('trahison')) return { c: '#ed5677', i: 'visibility_off' };
-                if (n.includes('consolidation')) return { c: '#99674c', i: 'foundation' };
-                if (n.includes('conviction')) return { c: '#b74c0b', i: 'volcano' };
-                if (n.includes('cr\u00e9ation') || n.includes('creation')) return { c: '#10b981', i: 'eco' };
-                if (n.includes('destruction')) return { c: '#ff0000', i: 'local_fire_department' };
-                if (n.includes('violence')) return { c: '#a70740', i: 'explosion' };
-                return { c: '#94a3b8', i: 'route' };
-            };
-            const getSIcon = (nom) => {
-                const n = nom.toLowerCase();
-                if (n.includes('esprit')) return { c: '#38bdf8', i: 'blur_on' };
-                if (n.includes('t\u00e9n\u00e8bres') || n.includes('tenebres')) return { c: '#c084fc', i: 'dark_mode' };
-                if (n.includes('karma')) return { c: '#e7d198', i: 'all_inclusive' };
-                return { c: '#a78bfa', i: 'psychology' };
-            };
-
             pageState.userCharacters.forEach(c => {
                 let iconsHtml = '';
                 if (c.voie && c.voie.nom) {
-                    const vi = getVIcon(c.voie.nom);
-                    iconsHtml += `<span class="material-symbols-outlined text-[1.1rem] ml-2" style="color: ${vi.c};" title="Voie : ${c.voie.nom}">${vi.i}</span>`;
+                    const cColor = window.getSpiritualiteColor ? window.getSpiritualiteColor(c.voie.nom) : '#94a3b8';
+                    const cIcon = window.getSpiritualiteIcon ? window.getSpiritualiteIcon(c.voie.nom) : 'route';
+                    iconsHtml += `<span class="material-symbols-outlined text-[1.1rem] ml-2" style="color: ${cColor};" title="Voie : ${c.voie.nom}">${cIcon}</span>`;
                 }
                 if (c.spiritualite && c.spiritualite.nom) {
-                    const si = getSIcon(c.spiritualite.nom);
-                    iconsHtml += `<span class="material-symbols-outlined text-[1.1rem] ml-1" style="color: ${si.c};" title="Spiritualité : ${c.spiritualite.nom}">${si.i}</span>`;
+                    const sColor = window.getSpiritualiteColor ? window.getSpiritualiteColor(c.spiritualite.nom) : '#a78bfa';
+                    const sIcon = window.getSpiritualiteIcon ? window.getSpiritualiteIcon(c.spiritualite.nom) : 'psychology';
+                    iconsHtml += `<span class="material-symbols-outlined text-[1.1rem] ml-1" style="color: ${sColor};" title="Spiritualité : ${c.spiritualite.nom}">${sIcon}</span>`;
                 }
                 list.innerHTML += `
                     <div class="char-card" id="charCard_${c.id}" onclick="selectCharacter(${c.id})">
@@ -1056,19 +1038,35 @@ window.openJoinLobbyModal = function () {
         container.innerHTML = '<div style="color:#94a3b8; font-size:0.85rem;">Aucun personnage disponible.</div>';
         return;
     }
-    container.innerHTML = pageState.userCharacters.map(c => `
-        <div id="joinChar_${c.id}"
-            onclick="toggleJoinChar(${c.id})"
-            style="display:flex; align-items:center; gap:0.75rem; padding:0.6rem 0.75rem; border-radius:0.6rem; border:1px solid rgba(255,255,255,0.1); margin-bottom:0.5rem; cursor:pointer; transition:all 0.2s;">
-            <div style="width:2rem; height:2rem; border-radius:50%; background:rgba(99,102,241,0.2); display:flex; align-items:center; justify-content:center;">
-                <span class="material-symbols-outlined" style="font-size:1.1rem; color:#818cf8;">person</span>
+    container.innerHTML = pageState.userCharacters.map(c => {
+        let iconsHtml = '';
+        if (c.voie && c.voie.nom) {
+            const cColor = window.getSpiritualiteColor ? window.getSpiritualiteColor(c.voie.nom) : '#94a3b8';
+            const cIcon = window.getSpiritualiteIcon ? window.getSpiritualiteIcon(c.voie.nom) : 'route';
+            iconsHtml += `<span class="material-symbols-outlined text-[0.95rem] ml-1.5 align-middle" style="color: ${cColor};" title="Voie : ${c.voie.nom}">${cIcon}</span>`;
+        }
+        if (c.spiritualite && c.spiritualite.nom) {
+            const sColor = window.getSpiritualiteColor ? window.getSpiritualiteColor(c.spiritualite.nom) : '#a78bfa';
+            const sIcon = window.getSpiritualiteIcon ? window.getSpiritualiteIcon(c.spiritualite.nom) : 'psychology';
+            iconsHtml += `<span class="material-symbols-outlined text-[0.95rem] ml-0.5 align-middle" style="color: ${sColor};" title="Spiritualité : ${c.spiritualite.nom}">${sIcon}</span>`;
+        }
+        
+        return `
+            <div id="joinChar_${c.id}"
+                onclick="toggleJoinChar(${c.id})"
+                style="display:flex; align-items:center; gap:0.75rem; padding:0.6rem 0.75rem; border-radius:0.6rem; border:1px solid rgba(255,255,255,0.1); margin-bottom:0.5rem; cursor:pointer; transition:all 0.2s;">
+                <div style="width:2rem; height:2rem; border-radius:50%; background:rgba(99,102,241,0.2); display:flex; flex-shrink:0; align-items:center; justify-content:center;">
+                    <span class="material-symbols-outlined" style="font-size:1.1rem; color:#818cf8;">person</span>
+                </div>
+                <div style="min-width:0; flex:1;">
+                    <div style="font-weight:600; color:#e2e8f0; font-size:0.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                        ${c.name} ${iconsHtml}
+                    </div>
+                    <div style="color:#64748b; font-size:0.75rem;">Niv. ${c.voieLevel || 1} &bull; ${c.totalHealthMax !== undefined ? c.totalHealthMax : c.healthMax} PV max</div>
+                </div>
             </div>
-            <div>
-                <div style="font-weight:600; color:#e2e8f0; font-size:0.9rem;">${c.name}</div>
-                <div style="color:#64748b; font-size:0.75rem;">Niv. ${c.voieLevel || 1}</div>
-            </div>
-        </div>
-    `).join('');
+        `;
+    }).join('');
 };
 
 window.maxSelectableJoinChars = 4; // Default safe limit, will be updated by API

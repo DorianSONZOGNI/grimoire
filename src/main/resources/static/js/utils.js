@@ -14,38 +14,48 @@ window.ALL_SPIRITUALITIES = [
 
 function getSpiritualiteColor(sp) {
     if (!sp) return '#cbd5e1';
-    switch (sp.toUpperCase ? sp.toUpperCase() : sp) {
-        case 'TENEBRES': return '#a855f7';
-        case 'ESPRIT': return '#38bdf8';
-        case 'KARMA': return '#e7d198';
-        case 'VIOLENCE': return '#a70740';
-        case 'TRAHISON': return '#ed5677';
-        case 'SURETE': return '#00e5cc';
-        case 'RAISON': return '#3b82f6';
-        case 'DESTRUCTION': return '#ff0000';
-        case 'CREATION': return '#10b981';
-        case 'CONVICTION': return '#b74c0b';
-        case 'CONSOLIDATION': return '#99674c';
-        default: return '#cbd5e1';
-    }
+    const normalized = (typeof sp === 'string') 
+        ? sp.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() 
+        : sp;
+    
+    if (typeof normalized !== 'string') return '#cbd5e1';
+
+    if (normalized.includes('TENEBRES')) return '#a855f7';
+    if (normalized.includes('ESPRIT')) return '#38bdf8';
+    if (normalized.includes('KARMA')) return '#e7d198';
+    if (normalized.includes('VIOLENCE')) return '#a70740';
+    if (normalized.includes('TRAHISON')) return '#ed5677';
+    if (normalized.includes('SURETE')) return '#00e5cc';
+    if (normalized.includes('RAISON')) return '#3b82f6';
+    if (normalized.includes('DESTRUCTION')) return '#ff0000';
+    if (normalized.includes('CREATION')) return '#10b981';
+    if (normalized.includes('CONVICTION')) return '#b74c0b';
+    if (normalized.includes('CONSOLIDATION')) return '#99674c';
+    
+    return '#cbd5e1';
 }
 
 function getSpiritualiteIcon(sp) {
     if (!sp) return 'radio_button_unchecked';
-    switch (sp.toUpperCase ? sp.toUpperCase() : sp) {
-        case 'TENEBRES': return 'dark_mode';
-        case 'ESPRIT': return 'blur_on';
-        case 'KARMA': return 'all_inclusive';
-        case 'VIOLENCE': return 'explosion';
-        case 'TRAHISON': return 'visibility_off';
-        case 'SURETE': return 'water_drop';
-        case 'RAISON': return 'psychology';
-        case 'DESTRUCTION': return 'local_fire_department';
-        case 'CREATION': return 'eco';
-        case 'CONVICTION': return 'volcano';
-        case 'CONSOLIDATION': return 'foundation';
-        default: return 'radio_button_unchecked';
-    }
+    const normalized = (typeof sp === 'string') 
+        ? sp.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() 
+        : sp;
+        
+    if (typeof normalized !== 'string') return 'radio_button_unchecked';
+
+    if (normalized.includes('TENEBRES')) return 'dark_mode';
+    if (normalized.includes('ESPRIT')) return 'blur_on';
+    if (normalized.includes('KARMA')) return 'all_inclusive';
+    if (normalized.includes('VIOLENCE')) return 'explosion';
+    if (normalized.includes('TRAHISON')) return 'visibility_off';
+    if (normalized.includes('SURETE')) return 'water_drop';
+    if (normalized.includes('RAISON')) return 'psychology';
+    if (normalized.includes('DESTRUCTION')) return 'local_fire_department';
+    if (normalized.includes('CREATION')) return 'eco';
+    if (normalized.includes('CONVICTION')) return 'volcano';
+    if (normalized.includes('CONSOLIDATION')) return 'foundation';
+    
+    return 'radio_button_unchecked';
 }
 
 function getLevelColor(lvl) {
