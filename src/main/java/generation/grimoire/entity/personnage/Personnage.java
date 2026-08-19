@@ -33,7 +33,7 @@ import java.util.HashMap;
         "channelingTarget", "channelingAlly", "channeledSpell" })
 @Entity
 @Table(name = "Personnage")
-@com.fasterxml.jackson.annotation.JsonIgnoreProperties({"channelingTarget", "channelingAlly", "channeledSpell"})
+@com.fasterxml.jackson.annotation.JsonIgnoreProperties({ "channelingTarget", "channelingAlly", "channeledSpell" })
 public class Personnage {
 
     @Id
@@ -102,6 +102,9 @@ public class Personnage {
                 this.resistance += 2;
                 this.healthMax += 7;
                 this.healthCurrent += 7;
+                this.manaMax += 20;
+                this.manaCurrent += 20;
+                this.regenMana += 4;
             } else if (nomVoie.contains("raison")) {
                 this.healthMax += 6;
                 this.healthCurrent += 6;
