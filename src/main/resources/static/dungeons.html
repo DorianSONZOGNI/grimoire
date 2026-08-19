@@ -38,19 +38,18 @@
         </div>
 
         <div id="dungeonsContent" style="display: none">
-            <h2 class="mb-2 font-outfit text-[2rem]">
-                <span class="logo-text-gradient logo-dungeon">Exploration</span>
-            </h2>
-            <p class="text-muted mb-6">Choisissez un donjon à affronter. La mort n'est
-                qu'un léger contretemps.</p>
-
-            <div class="mb-8">
+            <div class="flex items-center gap-6 mb-2">
+                <h2 class="font-outfit text-[2rem] m-0 leading-none">
+                    <span class="logo-text-gradient logo-dungeon">Exploration</span>
+                </h2>
                 <button onclick="openJoinLobbyModal()"
-                    style="background:rgba(14,165,233,0.1); border:1px solid rgba(14,165,233,0.25); color:#38bdf8; padding:0.6rem 1.2rem; border-radius:0.75rem; cursor:pointer; font-size:0.85rem; display:inline-flex; align-items:center; gap:0.4rem;">
+                    style="background:rgba(14,165,233,0.1); border:1px solid rgba(14,165,233,0.25); color:#38bdf8; padding:0.6rem 1.2rem; border-radius:0.75rem; cursor:pointer; font-size:0.85rem; display:inline-flex; align-items:center; gap:0.4rem; height:fit-content;">
                     <span class="material-symbols-outlined" style="font-size:1rem;">group_add</span>
                     Rejoindre un lobby Co-op
                 </button>
             </div>
+            <p class="text-muted mb-6">Choisissez un donjon à affronter. La mort n'est
+                qu'un léger contretemps.</p>
 
             <div class="tabs-header" id="dungeonsTabs" style="display: none">
                 <!-- Rempli par JS -->
