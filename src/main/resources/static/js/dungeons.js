@@ -527,9 +527,9 @@ window.selectCharacter = async function (id) {
     const btn = document.getElementById('btnEnterDungeon');
     if (btn) {
         if (pageState.selectedCharIds.length > 0) {
-            btn.classList.remove('opacity-50', 'pointer-events-none');
+          if (btn) btn.classList.remove('opacity-50', 'cursor-not-allowed');
         } else {
-            btn.classList.add('opacity-50', 'pointer-events-none');
+          if (btn) btn.classList.add('opacity-50', 'cursor-not-allowed');
         }
     }
 
@@ -910,12 +910,12 @@ window.updateHeroCountDisplay = function () {
     const isFull = pageState.selectedCharIds.length >= pageState.currentMaxHeroes;
     
     if (hasChars && !isFull) {
-        btnCoop.classList.remove('opacity-50', 'pointer-events-none');
+        btnCoop.classList.remove('opacity-50', 'cursor-not-allowed');
         btnCoop.title = "";
     } else {
-        btnCoop.classList.add('opacity-50', 'pointer-events-none');
+        btnCoop.classList.add('opacity-50', 'cursor-not-allowed');
         if (isFull) {
-            btnCoop.title = "Vous ne pouvez pas créer de lobby si le nombre maximum de héros est déjà atteint.";
+            btnCoop.title = "Laissez une place libre au minimum pour créer le lobby";
         }
     }
 };
@@ -925,6 +925,11 @@ window.updateHeroCountDisplay = function () {
 window.createCoopLobby = async function () {
     if (pageState.selectedCharIds.length === 0) {
         window.showNotif('Sélectionnez au moins un personnage.', true);
+        return;
+    }
+    const isFull = pageState.selectedCharIds.length >= pageState.currentMaxHeroes;
+    if (isFull) {
+        window.showNotif('Laissez une place libre au minimum pour créer le lobby.', true);
         return;
     }
 
