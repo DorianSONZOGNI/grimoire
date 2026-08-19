@@ -166,17 +166,16 @@
                     </div>
 
                     <!-- Co-op Toggle -->
-                    <div class="mb-4 p-4 rounded-xl border border-sky-500/20 bg-sky-500/5 flex items-center justify-between gap-4" id="coopToggleSection">
-                        <div>
-                            <div class="text-sm font-semibold text-sky-300 flex items-center gap-1">
-                                <span class="material-symbols-outlined text-sm">group</span>
-                                Mode Co-op
+                    <div class="mb-4" id="coopToggleSection">
+                        <label class="target-toggle-container coop-mode" for="coopModeToggle" style="width: 100%;">
+                            <input class="target-radio" type="checkbox" id="coopModeToggle" onchange="onCoopToggleChange()">
+                            <div class="target-icon-wrap coop-icon">
+                                <span class="material-symbols-outlined text-xl">group</span>
                             </div>
-                            <div class="text-xs text-muted mt-0.5">Jouez à deux dans le même donjon, tour par tour.</div>
-                        </div>
-                        <label class="relative inline-flex items-center cursor-pointer">
-                            <input type="checkbox" id="coopModeToggle" class="sr-only peer" onchange="onCoopToggleChange()">
-                            <div class="w-11 h-6 bg-white/10 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white/50 after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-sky-600 peer-checked:after:bg-white"></div>
+                            <div class="target-text coop-text" style="flex: 1;">
+                                Mode Co-op
+                                <span class="target-text-sub">Jouez à deux dans le même donjon, tour par tour.</span>
+                            </div>
                         </label>
                     </div>
 
