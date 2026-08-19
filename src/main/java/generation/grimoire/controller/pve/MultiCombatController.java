@@ -85,6 +85,13 @@ public class MultiCombatController {
         return ResponseEntity.ok(lobby);
     }
 
+    @GetMapping("/lobby/{shortCode}/info")
+    public ResponseEntity<?> getLobbyInfo(@PathVariable String shortCode) {
+        generation.grimoire.DTO.pve.LobbyInfoDTO info = multiCombatService.getLobbyInfo(shortCode);
+        if (info == null) return ResponseEntity.notFound().build();
+        return ResponseEntity.ok(info);
+    }
+
     // ─────────────────────────────────────────────────────────────────────────
     // Statut du lobby (polling hôte pendant l'attente)
     // ─────────────────────────────────────────────────────────────────────────

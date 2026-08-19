@@ -6,6 +6,10 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import generation.grimoire.repository.pve.DonjonRepository;
+import generation.grimoire.DTO.pve.LobbyInfoDTO;
+import generation.grimoire.entity.pve.Donjon;
+
 import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
@@ -20,6 +24,7 @@ public class MultiCombatService {
 
     private final CombatService combatService;
     private final CombatEventEmitter eventEmitter;
+    private final DonjonRepository donjonRepository;
 
     /** multiSessionId → MultiCombatSession */
     private final Map<String, MultiCombatSession> lobbies = new ConcurrentHashMap<>();
@@ -149,5 +154,39 @@ public class MultiCombatService {
         MultiCombatSession lobby = lobbies.get(multiSessionId);
         if (lobby == null) throw new IllegalArgumentException("Lobby introuvable : " + multiSessionId);
         return lobby;
+    }
+
+    // ─────────────────────────────────────────────────────────────────────────
+    // Récupération des informations du lobby
+    // ─────────────────────────────────────────────────────────────────────────
+
+    public LobbyInfoDTO getLobbyInfo(String shortCode) {
+        MultiCombatSession lobby = getByShortCode(shortCode);
+        if (lobby == null || lobby.getStatus() != MultiCombatSession.Status.WAITING) {
+            return null;
+        }
+
+        Long dungeonId = lobby.getDungeonId();
+        if (dungeonId == null) {
+            return null;
+        }
+        Donjon donjon = donjonRepository.findById(dungeonId).orElse(null);
+        if (donjon == null) {
+            return null;
+        }
+
+        int maxHeroes = donjon.getMaxHeroes();
+        int hostCount = lobby.getHostCharacterIds() != null ? lobby.getHostCharacterIds().size() : 0;
+        int availableSlots = Math.max(0, maxHeroes - hostCount);
+
+        return new LobbyInfoDTO(
+                lobby.getShortCode(),
+                lobby.getHostUsername(),
+                donjon.getName(),
+                donjon.getRecommendedLevel(),
+                maxHeroes,
+                hostCount,
+                availableSlots
+        );
     }
 }

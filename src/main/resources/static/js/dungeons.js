@@ -985,6 +985,13 @@ window.openJoinLobbyModal = function () {
     const modal = document.getElementById('joinLobbyModal');
     modal.style.display = 'flex';
 
+    // Reset input and info
+    const input = document.getElementById('joinLobbyCodeInput');
+    if (input) input.value = '';
+    const infoContainer = document.getElementById('joinLobbyInfoContainer');
+    if (infoContainer) infoContainer.style.display = 'none';
+    window.maxSelectableJoinChars = 4;
+
     // Remplir la liste de persos du joueur
     const container = document.getElementById('joinLobbyCharSelect');
     if (!pageState.userCharacters || pageState.userCharacters.length === 0) {
@@ -1006,10 +1013,16 @@ window.openJoinLobbyModal = function () {
     `).join('');
 };
 
+window.maxSelectableJoinChars = 4; // Default safe limit, will be updated by API
+
 window.toggleJoinChar = function (charId) {
     const el = document.getElementById(`joinChar_${charId}`);
     const idx = joinSelectedCharIds.indexOf(charId);
     if (idx === -1) {
+        if (joinSelectedCharIds.length >= window.maxSelectableJoinChars) {
+            window.showNotif(`Vous ne pouvez sélectionner que ${window.maxSelectableJoinChars} héros pour ce lobby.`, true);
+            return;
+        }
         joinSelectedCharIds.push(charId);
         el.style.borderColor = 'rgba(14,165,233,0.6)';
         el.style.background = 'rgba(14,165,233,0.1)';
@@ -1023,6 +1036,80 @@ window.toggleJoinChar = function (charId) {
 window.closeJoinLobbyModal = function () {
     document.getElementById('joinLobbyModal').style.display = 'none';
 };
+
+window.updateJoinCharAvailability = function (minLevel) {
+    if (!pageState.userCharacters) return;
+    pageState.userCharacters.forEach(c => {
+        const el = document.getElementById(`joinChar_${c.id}`);
+        if (!el) return;
+        
+        const lvl = c.voieLevel || 1;
+        if (lvl < minLevel) {
+            el.style.opacity = '0.3';
+            el.style.pointerEvents = 'none';
+            // Unselect if currently selected
+            const idx = joinSelectedCharIds.indexOf(c.id);
+            if (idx !== -1) {
+                window.toggleJoinChar(c.id);
+            }
+        } else {
+            el.style.opacity = '1';
+            el.style.pointerEvents = 'auto';
+        }
+    });
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    const input = document.getElementById('joinLobbyCodeInput');
+    const infoContainer = document.getElementById('joinLobbyInfoContainer');
+
+    if (input) {
+        input.addEventListener('input', async (e) => {
+            const code = e.target.value.trim().toUpperCase();
+            if (code.length === 6) {
+                try {
+                    const res = await window.globalFetch(`/api/pve/multi/lobby/${code}/info`);
+                    if (res.ok) {
+                        const info = await res.json();
+                        window.maxSelectableJoinChars = info.availableSlots;
+                        
+                        infoContainer.style.display = 'block';
+                        infoContainer.innerHTML = `
+                            <div style="font-weight:600; color:#e2e8f0; margin-bottom:0.25rem;">Hôte : <span style="color:#38bdf8;">${info.hostUsername}</span></div>
+                            <div style="color:#94a3b8; font-size:0.85rem; margin-bottom:0.5rem;">Donjon : ${info.dungeonName} (Niv. ${info.dungeonLevel})</div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.85rem;">
+                                <span style="color:#cbd5e1;">Héros maximum : ${info.maxHeroesTotal}</span>
+                                <span style="color:${info.availableSlots > 0 ? '#10b981' : '#f43f5e'}; font-weight:600;">Places restantes : ${info.availableSlots}</span>
+                            </div>
+                        `;
+
+                        window.updateJoinCharAvailability(info.dungeonLevel);
+
+                        // Auto-unselect characters if we are over the new limit
+                        while (joinSelectedCharIds.length > window.maxSelectableJoinChars) {
+                            const removedId = joinSelectedCharIds[joinSelectedCharIds.length - 1];
+                            window.toggleJoinChar(removedId);
+                        }
+
+                    } else {
+                        infoContainer.style.display = 'none';
+                        window.maxSelectableJoinChars = 4;
+                        window.updateJoinCharAvailability(1);
+                    }
+                } catch (err) {
+                    console.error("Erreur lors de la récupération des infos du lobby", err);
+                    infoContainer.style.display = 'none';
+                    window.maxSelectableJoinChars = 4;
+                    window.updateJoinCharAvailability(1);
+                }
+            } else {
+                infoContainer.style.display = 'none';
+                window.maxSelectableJoinChars = 4;
+                window.updateJoinCharAvailability(1);
+            }
+        });
+    }
+});
 
 window.submitJoinLobby = async function () {
     const code = document.getElementById('joinLobbyCodeInput').value.trim().toUpperCase();
