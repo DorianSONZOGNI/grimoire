@@ -595,7 +595,7 @@ window.selectCharacter = async function (id) {
     } else {
         const colorMap = {
             'COMMUN': '#94a3b8', 'INHABITUEL': '#22c55e', 'RARE': '#3b82f6', 'MYTHIQUE': '#f97316', 'LEGENDAIRE': '#eab308',
-            'EPIQUE': '#ef4444', 'RELIQUE': '#a855f7', 'MAUDIT': '#6b5252'
+            'EPIQUE': '#ef4444', 'RELIQUE': '#a855f7', 'MAUDIT': '#7f1d1d'
         };
         equipments.forEach(eq => {
             const slotName = eq.slot?.name || eq.slot;
