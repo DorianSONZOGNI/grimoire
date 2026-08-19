@@ -909,10 +909,10 @@ window.addEventListener('DOMContentLoaded', async () => {
                     diffHtml += buildStatHtml('Résistance', '+3', 'shield', '#10b981');
                     diffHtml += buildStatHtml('Régen PV', '+1', 'healing', '#10b981');
                 } else if (voieNom.includes('Conviction')) {
-                    stats.charRegenMana = 0; stats.charHp = 90; stats.charPower = 11;
+                    stats.charRegenMana = 25; stats.charHp = 90; stats.charPower = 11;
                     diffHtml += buildStatHtml('PV', '-10', 'favorite', '#ec4899');
                     diffHtml += buildStatHtml('Puissance', '+1', 'auto_awesome', '#a855f7');
-                    diffHtml += buildStatHtml('Régen Mana', '-4', 'cyclone', '#38bdf8');
+                    diffHtml += buildStatHtml('Régen Mana', '+21', 'cyclone', '#38bdf8');
                 } else if (voieNom.includes('Création') || voieNom.includes('Creation')) {
                     stats.charHp = 120; stats.charArmor = 8;
                     diffHtml += buildStatHtml('PV', '+20', 'favorite', '#ec4899');
