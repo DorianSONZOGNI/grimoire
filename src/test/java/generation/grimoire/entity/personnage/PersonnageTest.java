@@ -4,6 +4,13 @@ import generation.grimoire.entity.spell.type.effect.BuffDebuffEffect;
 import generation.grimoire.entity.spell.type.effect.ShieldEffect;
 import generation.grimoire.enumeration.DamageType;
 import generation.grimoire.enumeration.StatType;
+import generation.grimoire.entity.Equipment;
+import generation.grimoire.entity.Spell;
+import generation.grimoire.entity.Spiritualite;
+import generation.grimoire.entity.Voie;
+import generation.grimoire.entity.spell.type.effect.DamageOverTimeEffect;
+import generation.grimoire.entity.spell.type.effect.HealOverTimeEffect;
+import generation.grimoire.enumeration.EquipmentEffectType;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
@@ -410,5 +417,265 @@ class PersonnageTest {
         // Takes 30 PHYSIC + 30 MAGIC = 60 damage.
         hero.dealDamage(enemy, 100, DamageType.PHYSIC);
         assertThat(enemy.getHealthCurrent()).isEqualTo(100 - 60);
+    }
+
+    @Test
+    void shouldNotReduceHealthBelowZero() {
+        hero.setHealthCurrent(10);
+        hero.takeDamage(100, DamageType.BRUT);
+        assertThat(hero.getHealthCurrent()).isEqualTo(0);
+    }
+
+    @Test
+    void shouldApplyPartialShieldAbsorption() {
+        enemy.addShield(20, 2, "SmallShield");
+        // Enemy has 100 armor -> 0.5 reduction.
+        // 100 damage -> 50 effective damage.
+        // Shield absorbs 20. Remaining 30 goes to health.
+        // Health = 100 - 30 = 70.
+        enemy.takeDamage(100, DamageType.PHYSIC, hero);
+        assertThat(enemy.getTotalShield()).isEqualTo(0);
+        assertThat(enemy.getHealthCurrent()).isEqualTo(70);
+    }
+
+    @Test
+    void shouldRegenHealthAndManaOnStartTurn() {
+        hero.setHealthMax(200);
+        hero.setHealthCurrent(100);
+        hero.setManaMax(100);
+        hero.setManaCurrent(50);
+        hero.setRegenHp(10);
+        hero.setRegenMana(5);
+        
+        Equipment regenItem = new Equipment();
+        regenItem.setRegenHealthPerTurn(5);
+        regenItem.setRegenManaPerTurn(2);
+        hero.getEquipments().add(regenItem);
+
+        hero.startTurn();
+
+        assertThat(hero.getHealthCurrent()).isEqualTo(115);
+        assertThat(hero.getManaCurrent()).isEqualTo(57);
+    }
+
+    @Test
+    void shouldApplyCursedManaDrainOnStartTurn() {
+        hero.setManaMax(100);
+        hero.setManaCurrent(50);
+        hero.setRegenMana(10);
+
+        Equipment cursedItem = new Equipment();
+        cursedItem.setSpecialEffect(EquipmentEffectType.CURSED_MANA_DRAIN);
+        cursedItem.setSpecialEffectValue(20);
+        hero.getEquipments().add(cursedItem);
+
+        hero.startTurn();
+
+        // regen is 10, drain is 20 -> net -10.
+        // 50 - 10 = 40
+        assertThat(hero.getManaCurrent()).isEqualTo(40);
+    }
+
+    @Test
+    void shouldAllowCastIfRequirementsMet() {
+        Voie voie = new Voie();
+        voie.setId(1L);
+        voie.setNom("Feu");
+        hero.setVoie(voie);
+        hero.setExperience(1000); // level 5
+
+        Spell spell = new Spell();
+        spell.setVoie(voie);
+        spell.setNiveau(3);
+        spell.setNom("Boule de feu");
+
+        String error = hero.canCast(spell);
+        assertThat(error).isNull();
+    }
+
+    @Test
+    void shouldRejectCastIfVoieRequirementNotMet() {
+        Voie voie = new Voie();
+        voie.setId(1L);
+        voie.setNom("Feu");
+        hero.setVoie(voie);
+        hero.setExperience(100); // level 2
+
+        Spell spell = new Spell();
+        spell.setVoie(voie);
+        spell.setNiveau(5);
+        spell.setNom("Météore");
+
+        String error = hero.canCast(spell);
+        assertThat(error).contains("a besoin de Feu niveau 5");
+
+        Voie voie2 = new Voie();
+        voie2.setId(2L);
+        voie2.setNom("Eau");
+        spell.setVoie(voie2);
+        
+        error = hero.canCast(spell);
+        assertThat(error).contains("n'a pas la Eau requise");
+    }
+
+    @Test
+    void shouldRejectCastIfSpiritualiteRequirementNotMet() {
+        Spiritualite spi = new Spiritualite();
+        spi.setId(1L);
+        spi.setNom("Lumière");
+        hero.setSpiritualite(spi);
+        hero.setSpiritualiteExperience(0); // level 1
+
+        Spell spell = new Spell();
+        spell.setSpiritualite(spi);
+        spell.setNiveau(2);
+        spell.setNom("Soin lumineux");
+
+        String error = hero.canCast(spell);
+        assertThat(error).contains("a besoin de Lumière niveau 2");
+    }
+
+    @Test
+    void shouldRejectGenericSpellIfHasAffinity() {
+        Voie voie = new Voie();
+        voie.setId(1L);
+        voie.setNom("Feu");
+        hero.setVoie(voie);
+
+        Spell spell = new Spell();
+        spell.setNom("Sort générique");
+
+        String error = hero.canCast(spell);
+        assertThat(error).contains("ne peut pas lancer de sorts génériques sans affinité");
+    }
+    
+    @Test
+    void shouldIncreaseVoieLevelBasedOnExperience() {
+        Voie voie = new Voie();
+        voie.setNom("destruction");
+        hero.setVoie(voie);
+        
+        assertThat(hero.getVoieLevel()).isEqualTo(1);
+        
+        hero.setExperience(100);
+        assertThat(hero.getVoieLevel()).isEqualTo(2);
+        
+        hero.setExperience(350);
+        assertThat(hero.getVoieLevel()).isEqualTo(3);
+        
+        hero.setExperience(650);
+        assertThat(hero.getVoieLevel()).isEqualTo(4);
+        
+        hero.setExperience(1200);
+        assertThat(hero.getVoieLevel()).isEqualTo(5);
+    }
+
+    @Test
+    void shouldCumulateMultipleBuffModifiersOnSameStat() {
+        BuffDebuffEffect buff1 = new BuffDebuffEffect();
+        buff1.setStatAffected(StatType.POWER);
+        buff1.setModifier(0.2);
+        buff1.setDuration(2);
+        
+        BuffDebuffEffect buff2 = new BuffDebuffEffect();
+        buff2.setStatAffected(StatType.POWER);
+        buff2.setModifier(0.3);
+        buff2.setDuration(2);
+        
+        hero.applyBuff(buff1, 0.2);
+        hero.applyBuff(buff2, 0.3);
+        
+        // base modifier is 1.0. 1.0 + 0.2 + 0.3 = 1.5
+        assertThat(hero.getStatBuffMultiplier(StatType.POWER)).isEqualTo(1.5);
+    }
+
+    @Test
+    void shouldPurgeAllBuffsDebuffsAndEffects() {
+        hero.applyBuff(new BuffDebuffEffect(), 0.1);
+        hero.addHealOverTimeEffect(new HealOverTimeEffect());
+        hero.addDamageOverTimeEffect(new DamageOverTimeEffect());
+        
+        hero.purgeAllBuffsAndDebuffs();
+        
+        assertThat(hero.getActiveBuffs()).isEmpty();
+        
+        BuffDebuffEffect debuff = new BuffDebuffEffect();
+        debuff.setStatAffected(StatType.POWER);
+        debuff.setModifier(-0.5);
+        debuff.setDuration(2);
+        hero.applyBuff(debuff, -0.5);
+        
+        assertThat(hero.hasDebuff()).isTrue();
+        hero.purgeAllBuffsAndDebuffs();
+        assertThat(hero.hasDebuff()).isFalse();
+    }
+
+    @Test
+    void shouldIdentifyAllyBasedOnTeamId() {
+        Personnage ally = new Personnage();
+        ally.setTeamId("ALLIES");
+        Personnage enemyTeam = new Personnage();
+        enemyTeam.setTeamId("ENEMIES");
+        
+        assertThat(hero.isAlly(ally)).isTrue();
+        assertThat(hero.isAlly(enemyTeam)).isFalse();
+        assertThat(hero.isAlly(null)).isFalse();
+    }
+
+    @Test
+    void shouldAdjustBaseStatsCorrectly() {
+        hero.setPower(10);
+        hero.adjustStat(StatType.POWER, 5);
+        assertThat(hero.getPower()).isEqualTo(15);
+        
+        hero.adjustStat(StatType.ARMURE, -10);
+        // Base armor is 50. 50 - 10 = 40.
+        assertThat(hero.getArmor()).isEqualTo(40);
+    }
+
+    @Test
+    void shouldApplyFlatBuffCorrectly() {
+        hero.setHealthMax(200);
+        hero.setHealthCurrent(100);
+        
+        hero.applyFlatBuff(StatType.HEALTH, 50);
+        assertThat(hero.getHealthCurrent()).isEqualTo(150);
+        
+        hero.applyFlatBuff(StatType.HEALTH, -20);
+        assertThat(hero.getHealthCurrent()).isEqualTo(130);
+        
+        hero.setManaMax(100);
+        hero.setManaCurrent(50);
+        hero.applyFlatBuff(StatType.MANA, 20);
+        assertThat(hero.getManaCurrent()).isEqualTo(70);
+        hero.applyFlatBuff(StatType.MANA, -30);
+        assertThat(hero.getManaCurrent()).isEqualTo(40);
+        
+        hero.applyFlatBuff(StatType.POWER, 10);
+        // Base power was 20. + 10 = 30.
+        assertThat(hero.getPower()).isEqualTo(30); 
+    }
+
+    @Test
+    void shouldReturnTrueIfHasDebuffAndFalseOtherwise() {
+        assertThat(hero.hasDebuff()).isFalse();
+        
+        BuffDebuffEffect debuff = new BuffDebuffEffect();
+        debuff.setStatAffected(StatType.POWER);
+        debuff.setModifier(-0.2); // Debuff (negative modifier, equivalent to < 1 multiplier)
+        debuff.setDuration(2);
+        hero.applyBuff(debuff, -0.2);
+        
+        assertThat(hero.hasDebuff()).isTrue();
+        
+        hero.purgeAllBuffsAndDebuffs();
+        
+        BuffDebuffEffect buff = new BuffDebuffEffect();
+        buff.setStatAffected(StatType.POWER);
+        buff.setModifier(0.2); // Buff
+        buff.setDuration(2);
+        hero.applyBuff(buff, 0.2);
+        
+        assertThat(hero.hasDebuff()).isFalse();
     }
 }

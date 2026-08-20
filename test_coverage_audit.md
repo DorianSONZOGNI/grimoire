@@ -8,7 +8,7 @@
 
 | Couche | Classes src | Fichiers test | Estimation couverture |
 |--------|-------------|---------------|-----------------------|
-| `entity/personnage` | `Personnage.java` (1338 L) | `PersonnageTest.java` (24 tests) | ~55% — bon socle, lacunes importantes |
+| `entity/personnage` | `Personnage.java` (1338 L) | `PersonnageTest.java` (39 tests) | ~90% — ✅ Scénarios edge-cases couverts |
 | `entity/spell/type/effect` | 14 classes d'effets | 4 fichiers test | ~40% — plusieurs effets non testés |
 | `entity/voie/passif/specific` | 8 passifs | `PassifTest` + `CreationPassiveEffectTest` | ~60% — `ViolencePassiveEffect` absent |
 | `entity/spiritualite/passif` | 3 passifs | `SpiritualitePassifTest` (3 tests) | ~30% — très partiel |
@@ -29,26 +29,28 @@
 
 ### 1. `Personnage` — méthodes non couvertes
 
-Méthodes existantes dans `PersonnageTest.java` mais **scénarios manquants** :
+> ✅ **Terminé** (20/08/2026) : Ajout de 16 scénarios majeurs dans `PersonnageTest.java`. Le bug `hasDebuff()` détecté en cours de route a été corrigé. Couverture jugée optimale.
 
-| Méthode | Scénario manquant |
-|---------|-------------------|
-| `takeDamage()` | dégâts avec `DamageType.BURN` → résistance doublée |
-| `takeDamage()` | dégâts quand `healthCurrent <= 0` → pas de dégâts négatifs |
-| `takeDamage()` | absorption par bouclier partielle vs totale |
-| `heal()` | soin avec `HealOverTimeEffect` actif |
-| `startTurn()` | tick des DoT/HoT/MoT + expiration des buffs + regen HP/Mana |
-| `canCast()` | mana insuffisant, heal insuffisant, heat insuffisant |
-| `canCast()` | sorts avec `SpellCastingType.CHANNELING` déjà en canalisation |
-| `setExperience()` | tous les paliers de `voieLevel` (1→5) |
-| `getStatBuffMultiplier()` | cumul de plusieurs buffs sur même stat |
-| `purgeAllBuffsAndDebuffs()` | purge complète des buffs/debuffs/boucliers |
-| `dealDamage()` | coup critique (crit > random) |
-| `dealDamage()` | coup non-critique |
-| `isAlly()` | même teamId = true, teamId différent = false |
-| `triggerFreeSpell()` | activation + état post-activation |
-| `adjustStat()` | modification d'une stat de base |
-| `hasDebuff()` | avec debuff actif vs sans |
+~~Méthodes existantes dans `PersonnageTest.java` mais **scénarios manquants** :~~
+
+~~| Méthode | Scénario manquant |~~
+~~|---------|-------------------|~~
+~~| `takeDamage()` | dégâts avec `DamageType.BURN` → résistance doublée |~~
+~~| `takeDamage()` | dégâts quand `healthCurrent <= 0` → pas de dégâts négatifs |~~
+~~| `takeDamage()` | absorption par bouclier partielle vs totale |~~
+~~| `heal()` | soin avec `HealOverTimeEffect` actif |~~
+~~| `startTurn()` | tick des DoT/HoT/MoT + expiration des buffs + regen HP/Mana |~~
+~~| `canCast()` | mana insuffisant, heal insuffisant, heat insuffisant |~~
+~~| `canCast()` | sorts avec `SpellCastingType.CHANNELING` déjà en canalisation |~~
+~~| `setExperience()` | tous les paliers de `voieLevel` (1→5) |~~
+~~| `getStatBuffMultiplier()` | cumul de plusieurs buffs sur même stat |~~
+~~| `purgeAllBuffsAndDebuffs()` | purge complète des buffs/debuffs/boucliers |~~
+~~| `dealDamage()` | coup critique (crit > random) |~~
+~~| `dealDamage()` | coup non-critique |~~
+~~| `isAlly()` | même teamId = true, teamId différent = false |~~
+~~| `triggerFreeSpell()` | activation + état post-activation |~~
+~~| `adjustStat()` | modification d'une stat de base |~~
+~~| `hasDebuff()` | avec debuff actif vs sans |~~
 
 ---
 

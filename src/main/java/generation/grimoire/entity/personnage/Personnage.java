@@ -1160,11 +1160,11 @@ public class Personnage {
                             stat == StatType.DAMAGE_TAKEN_PHYSIC ||
                             stat == StatType.DAMAGE_TAKEN_BRUT ||
                             stat == StatType.SHIELD_PIERCED) {
-                        if (b.getFlatValue() > 0 || (b.getFlatValue() == 0 && b.getModifier() > 1.0)) {
+                        if (b.getFlatValue() > 0 || (b.getFlatValue() == 0 && b.getModifier() > 0.0)) {
                             return true;
                         }
                     } else {
-                        if (b.getFlatValue() < 0 || (b.getFlatValue() == 0 && b.getModifier() < 1.0)) {
+                        if (b.getFlatValue() < 0 || (b.getFlatValue() == 0 && b.getModifier() < 0.0)) {
                             return true;
                         }
                     }
