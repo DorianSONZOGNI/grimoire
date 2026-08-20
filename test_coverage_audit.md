@@ -16,7 +16,7 @@
 | `service/pve/CombatService` | — | `CombatServiceTest` + `CombatSimulation*` | ~50% — logique PvE largement sous-testée |
 | `service/AlchemyService` | — | `AlchemyServiceTest` (9 tests) | ~60% |
 | `utils/StatCalculator` | `StatCalculator.java` (48 L) | `StatCalculatorTest.java` (10 tests) | 100% — ✅ Couvert |
-| `service/PersonnageService` | — | ❌ aucun test | 0% |
+| `service/PersonnageService` | `PersonnageService.java` (40 L) | `PersonnageServiceTest` (7 tests) | 100% — ✅ Couvert |
 | `service/VoieService` | — | ❌ aucun test | 0% |
 | `service/PassiveDispatcher` | — | ❌ aucun test | 0% |
 | `security/*` | 4 classes | ❌ aucun test | 0% |
