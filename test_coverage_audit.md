@@ -11,7 +11,7 @@
 | `entity/personnage` | `Personnage.java` (1338 L) | `PersonnageTest.java` (39 tests) | ~90% — ✅ Scénarios edge-cases couverts |
 | `entity/spell/type/effect` | 14 classes d'effets | 11 fichiers test | ~95% — ✅ Effets couverts exhaustivement |
 | `entity/voie/passif/specific` | 8 passifs | 7 fichiers de test | 100% — ✅ Couverture modulaire propre |
-| `entity/spiritualite/passif` | 3 passifs | `SpiritualitePassifTest` (3 tests) | ~30% — très partiel |
+| `entity/spiritualite/passif` | 3 passifs | 3 fichiers de test | 100% — ✅ Couverture modulaire propre |
 | `service/SpellService` | 641 L | `SpellIntegrationTest` (19 tests) + 3 fichiers dédiés | ~70% — bon mais edges cases manquants |
 | `service/pve/CombatService` | — | `CombatServiceTest` + `CombatSimulation*` | ~50% — logique PvE largement sous-testée |
 | `service/AlchemyService` | — | `AlchemyServiceTest` (9 tests) | ~60% |
@@ -114,13 +114,15 @@
 
 ---
 
-### 5. Passifs de Spiritualité — très sous-testés
+### 6. Passifs de Spiritualité — lacunes
 
-| Classe | Tests existants | Manque |
-|--------|-----------------|--------|
-| `EspritPassiveEffect` | 1 test | préconditions HP/Mana, sorts autorisés vs bloqués |
-| `KarmaPassiveEffect` | 1 test | alignements LIGHT, DARK, NONE ; interactions Karma |
-| `TenebrePassiveEffect` | 1 test | seuil HP/Mana pour activer, blocage si > seuil |
+> ✅ **Terminé** (20/08/2026) : Suppression de l'ancien fichier monolithique `SpiritualitePassifTest.java` et création de 3 classes de tests dédiées (`Esprit`, `Tenebre`, `Karma`). Le passif Karma, particulièrement complexe, dispose maintenant de 17 tests couvrant toutes ses mécaniques (Jauge, Harmonie, Corruption, Illumination, Verrouillage). La couverture est désormais de 100%.
+
+| Classe | État |
+|--------|------|
+| `EspritPassiveEffect` | ✅ 100% (EspritPassiveEffectTest) |
+| `KarmaPassiveEffect` | ✅ 100% (KarmaPassiveEffectTest) |
+| `TenebrePassiveEffect` | ✅ 100% (TenebrePassiveEffectTest) |
 
 ---
 
