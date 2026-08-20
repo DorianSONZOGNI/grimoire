@@ -15,7 +15,7 @@
 | `service/SpellService` | 641 L | `SpellIntegrationTest` (19 tests) + 3 fichiers dédiés | ~70% — bon mais edges cases manquants |
 | `service/pve/CombatService` | — | `CombatServiceTest` + `CombatSimulation*` | ~50% — logique PvE largement sous-testée |
 | `service/AlchemyService` | — | `AlchemyServiceTest` (9 tests) | ~60% |
-| `utils/StatCalculator` | — | ❌ aucun test | 0% |
+| `utils/StatCalculator` | `StatCalculator.java` (48 L) | `StatCalculatorTest.java` (10 tests) | 100% — ✅ Couvert |
 | `service/PersonnageService` | — | ❌ aucun test | 0% |
 | `service/VoieService` | — | ❌ aucun test | 0% |
 | `service/PassiveDispatcher` | — | ❌ aucun test | 0% |
@@ -54,15 +54,16 @@
 
 ---
 
-### 2. `StatCalculator` (0% couverture)
-Le cœur algorithmique des combats n'a aucun test. Priorité absolue.
+### 2. `StatCalculator` (100% couverture)
 
-| Méthode | Scénario à créer |
-|---------|-------------------|
-| `computeDamage()` | calcul basique avec stats de base |
-| `computeDamage()` | calcul avec modificateurs, affinités, et critiques |
-| `calculateHealing()` | calcul basique et impact des buffs de soin |
-| `calculateResistances()` | réduction d'armure / résistance magique |
+> ✅ **Terminé** (20/08/2026) : Ajout de `StatCalculatorTest.java` (10 tests).
+> *Note : L'audit précédent listait des méthodes comme `computeDamage` qui n'existent pas dans cette classe (elles sont gérées dans `Personnage` et `DamageEffect`). `StatCalculator` est un utilitaire de 48 lignes ne contenant que `getSourceValue`. La couverture est désormais de 100% sur cette classe.*
+
+~~| Méthode | Scénario à créer |~~
+~~|---------|-------------------|~~
+~~| `getSourceValue()` | calcul basique avec stats de base et toutes les `Source` |~~
+~~| `getSourceValue()` | intégration correcte des modificateurs plats (flat bonus) |~~
+~~| `getSourceValue()` | gestion des arguments null (target ou source null) |~~
 
 ---
 
