@@ -29,6 +29,7 @@ import lombok.Setter;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -37,6 +38,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class CombatService {
 
@@ -2444,7 +2446,7 @@ public class CombatService {
         passiveDispatcher.dispatch(p, spell, costEvent);
         actualManaCost = costs[0];
         actualHealCost = costs[1];
-        actualHeatCost = costs.length > 2 ? costs[2] : actualHeatCost;
+        actualHeatCost = costs[2];
 
         // 5) Vérification des ressources
         if (p.getManaCurrent() < actualManaCost) {

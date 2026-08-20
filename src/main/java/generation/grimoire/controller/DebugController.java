@@ -1,11 +1,13 @@
 package generation.grimoire.controller;
 
 import generation.grimoire.repository.SpellRepository;
+import org.springframework.context.annotation.Profile;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestController
+@Profile("dev")
 public class DebugController {
     private final SpellRepository repo;
     private final ObjectMapper mapper;

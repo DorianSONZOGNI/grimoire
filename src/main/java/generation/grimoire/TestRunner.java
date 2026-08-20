@@ -5,9 +5,11 @@ import generation.grimoire.entity.Spell;
 import generation.grimoire.repository.PersonnageRepository;
 import generation.grimoire.repository.SpellRepository;
 import org.springframework.boot.CommandLineRunner;
+import org.springframework.context.annotation.Profile;
 import org.springframework.stereotype.Component;
 
 @Component
+@Profile("dev")
 public class TestRunner implements CommandLineRunner {
 
     private final PersonnageRepository pr;

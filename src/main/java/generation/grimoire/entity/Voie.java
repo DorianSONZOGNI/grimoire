@@ -29,12 +29,12 @@ public class Voie {
     @Column(length = 1000)
     private String passiveDescription;
 
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection
     @CollectionTable(name = "voie_rank_names", joinColumns = @JoinColumn(name = "voie_id"))
     @MapKeyColumn(name = "rang")
     @Column(name = "nom_rang")
     private Map<Integer, String> rankNames = new java.util.HashMap<>();
 
-    @OneToMany(mappedBy = "voie", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "voie", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<VoiePassiveEffect> passiveEffects;
 }

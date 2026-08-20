@@ -4,11 +4,14 @@ import generation.grimoire.entity.personnage.Personnage;
 import generation.grimoire.repository.PersonnageRepository;
 import jakarta.persistence.EntityNotFoundException;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 @Service
+@Transactional
 public class PersonnageService {
 
     private final PersonnageRepository persoRepo;
+
     public PersonnageService(PersonnageRepository persoRepo) {
         this.persoRepo = persoRepo;
     }

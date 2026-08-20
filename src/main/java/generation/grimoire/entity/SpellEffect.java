@@ -37,7 +37,7 @@ public abstract class SpellEffect {
     @Column(name = "detached_soul_req")
     private generation.grimoire.enumeration.DetachedSoulRequirement detachedSoulRequirement = generation.grimoire.enumeration.DetachedSoulRequirement.NOT_AFFECTED;
 
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection
     @CollectionTable(name = "spell_effect_channeling_turns", joinColumns = @JoinColumn(name = "spell_effect_id"))
     @Column(name = "turn")
     private java.util.List<Integer> channelingTurns = new java.util.ArrayList<>();

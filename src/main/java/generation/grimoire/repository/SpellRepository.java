@@ -14,11 +14,12 @@ public interface SpellRepository extends JpaRepository<Spell, Long> {
     
     @NonNull
     @Cacheable("spells")
-    @org.springframework.data.jpa.repository.Query("SELECT DISTINCT s FROM Spell s LEFT JOIN FETCH s.effects")
+    @org.springframework.data.jpa.repository.Query("SELECT DISTINCT s FROM Spell s LEFT JOIN FETCH s.effects LEFT JOIN FETCH s.voie LEFT JOIN FETCH s.spiritualite")
     List<Spell> findAll();
 
     @NonNull
     @Cacheable("spellById")
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"effects", "effects.channelingTurns", "voie", "spiritualite"})
     Optional<Spell> findById(@NonNull Long id);
 
     @Cacheable("spellsByVariant")

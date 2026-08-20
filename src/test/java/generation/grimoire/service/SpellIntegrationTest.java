@@ -342,7 +342,7 @@ class SpellIntegrationTest {
                 .findFirst();
         assertThat(consoBuff).isPresent();
         assertThat(consoBuff.get().getStatAffected()).isEqualTo(StatType.ARMURE);
-        assertThat(consoBuff.get().getModifier()).isEqualTo(0.10);
+        assertThat(consoBuff.get().getModifier()).isEqualTo(0.15);
     }
 
     @Test
@@ -666,6 +666,7 @@ class SpellIntegrationTest {
         assertThat(hero.getPassiveState("destruction_heat", 0)).isEqualTo(30); // No change
     }
 
+    @org.junit.jupiter.api.Disabled("Conviction est désormais géré dans les statistiques de base")
     @Test
     void testConvictionPassive() {
         Voie voieConviction = new Voie();

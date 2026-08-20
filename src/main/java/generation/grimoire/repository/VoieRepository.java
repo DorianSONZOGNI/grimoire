@@ -12,13 +12,16 @@ import java.util.List;
 @Repository
 public interface VoieRepository extends JpaRepository<Voie, Long> {
     @Cacheable("voiesByNom")
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"rankNames", "passiveEffects"})
     Optional<Voie> findByNom(String nom);
 
     @NonNull
     @Cacheable("voies")
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"rankNames", "passiveEffects"})
     List<Voie> findAll();
 
     @NonNull
     @Cacheable("voieById")
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"rankNames", "passiveEffects"})
     Optional<Voie> findById(@NonNull Long id);
 }

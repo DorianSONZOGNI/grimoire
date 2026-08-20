@@ -12,13 +12,16 @@ import java.util.List;
 @Repository
 public interface SpiritualiteRepository extends JpaRepository<Spiritualite, Long> {
     @Cacheable("spiritualitesByNom")
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"rankNames", "passiveEffects"})
     Optional<Spiritualite> findByNom(String nom);
 
     @NonNull
     @Cacheable("spiritualites")
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"rankNames", "passiveEffects"})
     List<Spiritualite> findAll();
 
     @NonNull
     @Cacheable("spiritualiteById")
+    @org.springframework.data.jpa.repository.EntityGraph(attributePaths = {"rankNames", "passiveEffects"})
     Optional<Spiritualite> findById(@NonNull Long id);
 }

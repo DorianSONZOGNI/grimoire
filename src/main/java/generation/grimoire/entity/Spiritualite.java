@@ -28,12 +28,12 @@ public class Spiritualite {
     @Column(length = 1000)
     private String passiveDescription;
 
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection
     @CollectionTable(name = "spiritualite_rank_names", joinColumns = @JoinColumn(name = "spiritualite_id"))
     @MapKeyColumn(name = "rang")
     @Column(name = "nom_rang")
     private Map<Integer, String> rankNames = new java.util.HashMap<>();
 
-    @OneToMany(mappedBy = "spiritualite", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
+    @OneToMany(mappedBy = "spiritualite", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<SpiritualitePassiveEffect> passiveEffects;
 }
