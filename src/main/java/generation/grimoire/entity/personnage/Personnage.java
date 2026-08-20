@@ -173,7 +173,7 @@ public class Personnage {
 
     private int spiritualiteExperience = 0;
 
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection
     @CollectionTable(name = "personnage_special_items", joinColumns = @JoinColumn(name = "personnage_id"))
     @MapKeyColumn(name = "item_name")
     @Column(name = "quantity")
