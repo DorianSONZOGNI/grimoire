@@ -2446,7 +2446,7 @@ public class CombatService {
         passiveDispatcher.dispatch(p, spell, costEvent);
         actualManaCost = costs[0];
         actualHealCost = costs[1];
-        actualHeatCost = costs.length > 2 ? costs[2] : actualHeatCost;
+        actualHeatCost = costs[2];
 
         // 5) Vérification des ressources
         if (p.getManaCurrent() < actualManaCost) {

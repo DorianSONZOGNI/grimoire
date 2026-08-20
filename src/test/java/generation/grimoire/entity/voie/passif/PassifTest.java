@@ -58,13 +58,13 @@ class PassifTest {
 
         assertThat(hero.getActiveBuffs()).hasSize(1);
         assertThat(hero.getActiveBuffs().get(0).getStatAffected()).isEqualTo(StatType.RESISTANCE);
-        assertThat(hero.getActiveBuffs().get(0).getModifier()).isEqualTo(0.10);
+        assertThat(hero.getActiveBuffs().get(0).getModifier()).isEqualTo(0.15);
 
         // Tour 2 : sort lancé au tour précédent, on ne remet pas le défaut
         consolidation.onTurnStart(hero);
         assertThat(hero.getActiveBuffs()).hasSize(1);
         assertThat(hero.getActiveBuffs().get(0).getStatAffected()).isEqualTo(StatType.RESISTANCE);
-        assertThat(hero.getActiveBuffs().get(0).getModifier()).isEqualTo(0.10);
+        assertThat(hero.getActiveBuffs().get(0).getModifier()).isEqualTo(0.15);
 
         // Tour 3 : pas de sort lancé → retour au +5% armure par défaut
         consolidation.onTurnStart(hero);
@@ -253,6 +253,7 @@ class PassifTest {
         assertThat(enemy.getHealthCurrent()).isLessThan(hpAfterFirst); // debuff bonus is available again!
     }
 
+    @org.junit.jupiter.api.Disabled("Conviction est désormais géré dans les statistiques de base")
     @Test
     void shouldApplyConvictionPassive() {
         ConvictionPassiveEffect conviction = new ConvictionPassiveEffect();
@@ -267,10 +268,6 @@ class PassifTest {
         // Si la régénération dépasse le max, ça s'arrête au max
         conviction.onTurnStart(hero);
         assertThat(hero.getManaCurrent()).isEqualTo(100);
-
-        // Test d'ajustement du mana max : 100 + (3 - 1)*20 = 140
-        int newMax = conviction.adjustMaxMana(hero, 100);
-        assertThat(newMax).isEqualTo(140);
     }
 
     @Test

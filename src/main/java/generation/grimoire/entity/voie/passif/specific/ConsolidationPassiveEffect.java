@@ -81,9 +81,7 @@ public class ConsolidationPassiveEffect extends VoiePassiveEffect {
             // -25% sur le coût des sorts
             costs[0] = (int) Math.round(costs[0] * 0.75);
             costs[1] = (int) Math.round(costs[1] * 0.75);
-            if (costs.length > 2) {
-                costs[2] = (int) Math.round(costs[2] * 0.75);
-            }
+            costs[2] = (int) Math.round(costs[2] * 0.75);
         }
     }
 

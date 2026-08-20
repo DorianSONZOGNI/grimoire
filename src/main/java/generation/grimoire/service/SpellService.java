@@ -63,23 +63,10 @@ public class SpellService {
      * 
      */
     public void castSpell(Spell spell, Personnage caster, Personnage target, Integer choiceKey) {
-        Spell toCast = selectVariant(spell, caster, target, choiceKey);
-
-        String castError = caster.canCast(toCast);
-        if (castError != null) {
-            log.warn("🚫 {}", castError);
-            return;
-        }
-
-        SpellCastingType cType = toCast.getCastingType();
-        if (cType == null) cType = SpellCastingType.BANAL;
-
-        CastingTypeAdjustEvent castingEvent = new CastingTypeAdjustEvent(caster, target, toCast, cType);
-        passiveDispatcher.dispatch(caster, toCast, castingEvent);
-        cType = castingEvent.getCurrentType();
-
-        if (!canCastInternal(caster, target, toCast, cType)) return;
-        if (!payCosts(caster, target, toCast, choiceKey)) return;
+        SpellCastingType[] cTypeOut = new SpellCastingType[1];
+        Spell toCast = prepareAndPayCosts(spell, caster, target, choiceKey, cTypeOut);
+        if (toCast == null) return;
+        SpellCastingType cType = cTypeOut[0];
 
         updateCastingState(caster, target, null, toCast, cType, choiceKey);
         applyConsumableBuffs(toCast, caster, target);
@@ -100,23 +87,10 @@ public class SpellService {
     public void castSpellGroup(Spell spell, Personnage caster, Personnage target,
                                Personnage ally, List<Personnage> allAllies,
                                List<Personnage> allEnemies, Integer choiceKey) {
-        Spell toCast = selectVariant(spell, caster, target, choiceKey);
-
-        String castError = caster.canCast(toCast);
-        if (castError != null) {
-            log.warn("🚫 {}", castError);
-            return;
-        }
-
-        SpellCastingType cType = toCast.getCastingType();
-        if (cType == null) cType = SpellCastingType.BANAL;
-
-        CastingTypeAdjustEvent castingEvent = new CastingTypeAdjustEvent(caster, target, toCast, cType);
-        passiveDispatcher.dispatch(caster, toCast, castingEvent);
-        cType = castingEvent.getCurrentType();
-
-        if (!canCastInternal(caster, target, toCast, cType)) return;
-        if (!payCosts(caster, target, toCast, choiceKey)) return;
+        SpellCastingType[] cTypeOut = new SpellCastingType[1];
+        Spell toCast = prepareAndPayCosts(spell, caster, target, choiceKey, cTypeOut);
+        if (toCast == null) return;
+        SpellCastingType cType = cTypeOut[0];
 
         updateCastingState(caster, target, ally, toCast, cType, choiceKey);
         applyConsumableBuffs(toCast, caster, target);
@@ -128,6 +102,29 @@ public class SpellService {
 
         SpellCastEvent spellCastEvent = new SpellCastEvent(caster, target, toCast);
         passiveDispatcher.dispatch(caster, toCast, spellCastEvent);
+    }
+
+    private Spell prepareAndPayCosts(Spell spell, Personnage caster, Personnage target, Integer choiceKey, SpellCastingType[] cTypeOut) {
+        Spell toCast = selectVariant(spell, caster, target, choiceKey);
+
+        String castError = caster.canCast(toCast);
+        if (castError != null) {
+            log.warn("🚫 {}", castError);
+            return null;
+        }
+
+        SpellCastingType cType = toCast.getCastingType();
+        if (cType == null) cType = SpellCastingType.BANAL;
+
+        CastingTypeAdjustEvent castingEvent = new CastingTypeAdjustEvent(caster, target, toCast, cType);
+        passiveDispatcher.dispatch(caster, toCast, castingEvent);
+        cType = castingEvent.getCurrentType();
+
+        if (!canCastInternal(caster, target, toCast, cType)) return null;
+        if (!payCosts(caster, target, toCast, choiceKey)) return null;
+
+        cTypeOut[0] = cType;
+        return toCast;
     }
 
     /**
@@ -283,27 +280,10 @@ public class SpellService {
     }
 
     public void tickChanneling(Personnage caster, Personnage target, Integer choiceKey) {
-        Spell channeledSpell = caster.getChanneledSpell();
+        Spell channeledSpell = processChannelingTurn(caster);
         if (channeledSpell == null) return;
-
-        int duration = channeledSpell.getChannelingDuration();
-        int remaining = caster.getRemainingChannelingTurns();
-        int currentTurn = duration - remaining + 1;
-
-        int newRemaining = remaining - 1;
-        caster.setRemainingChannelingTurns(Math.max(0, newRemaining));
-        if (newRemaining <= 0) {
-            caster.setChanneledSpell(null);
-            caster.setChannelingTarget(null);
-            caster.setChannelingAlly(null);
-            caster.setChannelingChoiceKey(null);
-        }
-
-        if (currentTurn == 1) {
-            return;
-        }
-
-        log.debug("🌀 [Canalisation] Résolution des effets pour le Tour {} de {}", currentTurn, channeledSpell.getNom());
+        
+        int currentTurn = channeledSpell.getChannelingDuration() - caster.getRemainingChannelingTurns();
 
         for (SpellEffect effect : channeledSpell.getEffects()) {
             List<Personnage> recipients = resolveRecipients(effect.getEffectTarget(), caster, target);
@@ -312,8 +292,20 @@ public class SpellService {
     }
 
     public void tickChanneling(Personnage caster, Personnage target, Integer choiceKey, Personnage ally, List<Personnage> allAllies, List<Personnage> allEnemies) {
-        Spell channeledSpell = caster.getChanneledSpell();
+        Spell channeledSpell = processChannelingTurn(caster);
         if (channeledSpell == null) return;
+        
+        int currentTurn = channeledSpell.getChannelingDuration() - caster.getRemainingChannelingTurns();
+
+        for (SpellEffect effect : channeledSpell.getEffects()) {
+            List<Personnage> recipients = resolveRecipientsGroup(effect.getEffectTarget(), caster, target, ally, allAllies, allEnemies);
+            processAndApplyEffect(channeledSpell, effect, choiceKey, currentTurn, caster, recipients);
+        }
+    }
+
+    private Spell processChannelingTurn(Personnage caster) {
+        Spell channeledSpell = caster.getChanneledSpell();
+        if (channeledSpell == null) return null;
 
         int duration = channeledSpell.getChannelingDuration();
         int remaining = caster.getRemainingChannelingTurns();
@@ -329,15 +321,11 @@ public class SpellService {
         }
 
         if (currentTurn == 1) {
-            return;
+            return null;
         }
 
         log.debug("🌀 [Canalisation] Résolution des effets pour le Tour {} de {}", currentTurn, channeledSpell.getNom());
-
-        for (SpellEffect effect : channeledSpell.getEffects()) {
-            List<Personnage> recipients = resolveRecipientsGroup(effect.getEffectTarget(), caster, target, ally, allAllies, allEnemies);
-            processAndApplyEffect(channeledSpell, effect, choiceKey, currentTurn, caster, recipients);
-        }
+        return channeledSpell;
     }
 
     /**
