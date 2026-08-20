@@ -5,7 +5,6 @@ import generation.grimoire.entity.auth.AppUser;
 import generation.grimoire.entity.personnage.Personnage;
 import generation.grimoire.entity.pve.Donjon;
 import generation.grimoire.entity.pve.Salle;
-import generation.grimoire.enumeration.DamageType;
 import generation.grimoire.enumeration.EventSubType;
 import generation.grimoire.enumeration.RoomType;
 import generation.grimoire.model.pve.CombatSession;
@@ -32,6 +31,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
+@SuppressWarnings("null")
 class CombatServiceProgressionTest {
 
     @Mock
@@ -102,7 +102,7 @@ class CombatServiceProgressionTest {
     void testProceedToNextRoom_Normal() {
         // Room 1 has no trap damage set, so it shouldn't damage.
         // It should just load room 2.
-        
+
         // When handleRoomStart runs for room2, it might need the salleRepository
         when(salleRepository.findById(2L)).thenReturn(java.util.Optional.of(room2));
 
@@ -120,7 +120,7 @@ class CombatServiceProgressionTest {
         session = new CombatSession("test-session", mockDonjon, List.of(player));
         session.setCurrentRoom(room1);
         combatService.getActiveSessions().put("test-session", session);
-        
+
         // Mock user/personnage saving at the end of dungeon
         when(userRepository.save(any(AppUser.class))).thenReturn(appUser);
         when(personnageRepository.save(any(Personnage.class))).thenReturn(player);
@@ -128,13 +128,14 @@ class CombatServiceProgressionTest {
         combatService.proceedToNextRoom("test-session");
 
         assertThat(session.isFinished()).isTrue();
-        assertThat(session.getCombatLog()).anyMatch(log -> log.contains("terminÃ© le donjon") || log.contains("termin"));
+        assertThat(session.getCombatLog())
+                .anyMatch(log -> log.contains("terminÃ© le donjon") || log.contains("termin"));
     }
 
     @Test
     void testProceedToNextRoom_TrapNotCompleted_TakesDamage() {
         room1.setTrapDamageHpFixed(50);
-        
+
         when(salleRepository.findById(2L)).thenReturn(java.util.Optional.of(room2));
 
         combatService.proceedToNextRoom("test-session");

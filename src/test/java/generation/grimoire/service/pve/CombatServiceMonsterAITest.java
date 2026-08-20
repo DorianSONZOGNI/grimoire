@@ -32,8 +32,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import static org.assertj.core.api.Assertions.assertThat;
-import static org.mockito.ArgumentMatchers.any;
-import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 class CombatServiceMonsterAITest {
@@ -136,14 +134,16 @@ class CombatServiceMonsterAITest {
         combatService.processNextAutoTurn("test-session");
         session.getCombatLog().forEach(System.err::println);
 
-        // Corrupteur drains 5% of max mana/current mana (actually logic says "targetPlayer.getManaCurrent() * 0.05")
+        // Corrupteur drains 5% of max mana/current mana (actually logic says
+        // "targetPlayer.getManaCurrent() * 0.05")
         // 100 * 0.05 = 5. Mana should be 95.
         assertThat(player.getManaCurrent()).isEqualTo(95);
     }
 
     @Test
     void testMonsterOnHitEffects_BurnAndPoison() {
-        // We set passive state on the monster's Personnage representation to simulate Boss Buffs
+        // We set passive state on the monster's Personnage representation to simulate
+        // Boss Buffs
         activeMonster.getAsPersonnage().setPassiveState("BURN_ON_HIT", 10);
         activeMonster.getAsPersonnage().setPassiveState("POISON_ON_HIT", 5);
 
@@ -153,8 +153,10 @@ class CombatServiceMonsterAITest {
         List<DamageOverTimeEffect> dots = player.getActiveDamageOverTimeEffects();
         assertThat(dots).hasSize(2);
 
-        boolean hasBurn = dots.stream().anyMatch(dot -> dot.getBurn() != null && dot.getBurn() && dot.getFixedDamagePerTick() == 10);
-        boolean hasPoison = dots.stream().anyMatch(dot -> dot.getPoison() != null && dot.getPoison() && dot.getFixedDamagePerTick() == 5);
+        boolean hasBurn = dots.stream()
+                .anyMatch(dot -> dot.getBurn() != null && dot.getBurn() && dot.getFixedDamagePerTick() == 10);
+        boolean hasPoison = dots.stream()
+                .anyMatch(dot -> dot.getPoison() != null && dot.getPoison() && dot.getFixedDamagePerTick() == 5);
 
         assertThat(hasBurn).isTrue();
         assertThat(hasPoison).isTrue();
