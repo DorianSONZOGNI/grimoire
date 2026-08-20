@@ -1,6 +1,11 @@
-package generation.grimoire.entity;
+﻿package generation.grimoire.entity;
 
 import generation.grimoire.enumeration.EquipmentSlot;
+import generation.grimoire.enumeration.EquipmentRarity;
+import generation.grimoire.enumeration.EquipmentEffectType;
+import generation.grimoire.enumeration.ConsumableCategory;
+import generation.grimoire.entity.personnage.Personnage;
+import generation.grimoire.entity.auth.AppUser;
 import jakarta.persistence.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
@@ -31,11 +36,11 @@ public class Equipment {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private generation.grimoire.enumeration.EquipmentRarity rarity = generation.grimoire.enumeration.EquipmentRarity.COMMUN;
+    private generation.grimoire.enumeration.EquipmentRarity rarity = EquipmentRarity.COMMUN;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private generation.grimoire.enumeration.EquipmentEffectType specialEffect = generation.grimoire.enumeration.EquipmentEffectType.NONE;
+    private generation.grimoire.enumeration.EquipmentEffectType specialEffect = EquipmentEffectType.NONE;
 
     private int specialEffectValue = 0;
 
@@ -61,17 +66,17 @@ public class Equipment {
     private int consumableManaPercent = 0;
     private int consumableMissingHpPercent = 0;
     private int consumableMissingManaPercent = 0;
-    private generation.grimoire.enumeration.ConsumableCategory consumableCategory = generation.grimoire.enumeration.ConsumableCategory.AUTRE;
+    private generation.grimoire.enumeration.ConsumableCategory consumableCategory = ConsumableCategory.AUTRE;
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "personnage_id", nullable = true)
-    private generation.grimoire.entity.personnage.Personnage personnage;
+    private Personnage personnage;
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = true)
-    private generation.grimoire.entity.auth.AppUser user;
+    private AppUser user;
 
     @Column(name = "owner_username")
     private String ownerUsername;
@@ -167,13 +172,13 @@ public class Equipment {
         w += this.regenHealthPerTurn * mRegHp;
         w += this.regenManaPerTurn * mRegMana;
 
-        if ((this.rarity == generation.grimoire.enumeration.EquipmentRarity.EPIQUE ||
-                this.rarity == generation.grimoire.enumeration.EquipmentRarity.RELIQUE ||
-                this.rarity == generation.grimoire.enumeration.EquipmentRarity.MAUDIT) &&
-                this.specialEffect != generation.grimoire.enumeration.EquipmentEffectType.NONE &&
+        if ((this.rarity == EquipmentRarity.EPIQUE ||
+                this.rarity == EquipmentRarity.RELIQUE ||
+                this.rarity == EquipmentRarity.MAUDIT) &&
+                this.specialEffect != EquipmentEffectType.NONE &&
                 this.specialEffectValue != 0) {
 
-            if (this.rarity == generation.grimoire.enumeration.EquipmentRarity.MAUDIT) {
+            if (this.rarity == EquipmentRarity.MAUDIT) {
                 w += this.specialEffectValue * 0.2;
             } else {
                 w += this.specialEffectValue * 1.5;

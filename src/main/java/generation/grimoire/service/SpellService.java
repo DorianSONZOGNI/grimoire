@@ -54,12 +54,14 @@ public class SpellService {
     }
 
     /**
-     * Lance un sort en déduisant les coûts en mana et en heal,
-     * en appliquant ses effets, puis en déclenchant les passifs via le dispatcher unifié.
+     * Lance un sort sur une cible simple.
      *
      * @param spell  le sort à lancer
      * @param caster le personnage qui lance le sort
      * @param target la cible du sort
+     * 
+     * TODO(#13): Ajouter @Transactional une fois que les lazy loading seront maîtrisés
+     * pour éviter les commit partiels en cas d'exception pendant la résolution des effets.
      */
     public void castSpell(Spell spell, Personnage caster, Personnage target, Integer choiceKey) {
 
