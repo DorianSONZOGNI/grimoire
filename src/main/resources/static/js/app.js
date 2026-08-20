@@ -23,10 +23,8 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 window.addEventListener('authLoaded', async () => {
-    await Promise.all([
-        constants.initMeta(),
-        api.fetchMeta()
-    ]);
+    await constants.initMeta();
+    await api.fetchMeta();
 
     const user = window.currentUser;
 
