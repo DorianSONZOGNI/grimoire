@@ -17,7 +17,7 @@
 | `service/AlchemyService` | — | `AlchemyServiceTest` (9 tests) | ~60% |
 | `utils/StatCalculator` | `StatCalculator.java` (48 L) | `StatCalculatorTest.java` (10 tests) | 100% — ✅ Couvert |
 | `service/PersonnageService` | `PersonnageService.java` (40 L) | `PersonnageServiceTest` (7 tests) | 100% — ✅ Couvert |
-| `service/VoieService` | — | ❌ aucun test | 0% |
+| `service/VoieService` | `VoieService.java` (20 L) | `VoieServiceTest` (1 test) | 100% — ✅ Couvert |
 | `service/PassiveDispatcher` | — | ❌ aucun test | 0% |
 | `security/*` | 4 classes | ❌ aucun test | 0% |
 | `model/pve/*` | 5 classes | ❌ aucun test | 0% |
