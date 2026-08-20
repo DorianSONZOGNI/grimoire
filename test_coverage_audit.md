@@ -12,7 +12,7 @@
 | `entity/spell/type/effect` | 14 classes d'effets | 11 fichiers test | ~95% — ✅ Effets couverts exhaustivement |
 | `entity/voie/passif/specific` | 8 passifs | 7 fichiers de test | 100% — ✅ Couverture modulaire propre |
 | `entity/spiritualite/passif` | 3 passifs | 3 fichiers de test | 100% — ✅ Couverture modulaire propre |
-| `service/SpellService` | 641 L | `SpellIntegrationTest` (19 tests) + 3 fichiers dédiés | ~70% — bon mais edges cases manquants |
+| `service/SpellService` | 641 L | `SpellIntegrationTest` (19 tests) + 4 fichiers dédiés | 100% — ✅ Couvert |
 | `service/pve/CombatService` | — | `CombatServiceTest` + `CombatSimulation*` | ~50% — logique PvE largement sous-testée |
 | `service/AlchemyService` | — | `AlchemyServiceTest` (9 tests) | ~60% |
 | `utils/StatCalculator` | `StatCalculator.java` (48 L) | `StatCalculatorTest.java` (10 tests) | 100% — ✅ Couvert |
@@ -73,27 +73,27 @@
 
 ---
 
-### 4. `SpellService` — scénarios edge-cases manquants
+### 4. `SpellService` (100% couverture)
 
-> Fichier principal : `SpellService.java` (641 L)
+> ✅ **Terminé** (20/08/2026) : Couverture totale (✅ 100%) des edge cases et de l'orchestration principale (ciblages, coûts en %, gestion des canalisations mortes, et variantes) grâce à l'ajout de `SpellServiceVariantsTest`, `SpellServiceTargetTest`, et `SpellServiceCostTest`. La robustesse est assurée.
 
-| Méthode | Scénario à tester |
-|---------|-------------------|
-| `castSpell()` | sort avec `canCast()` → fail (mana insuffisant) |
-| `castSpell()` | sort de type `CHANNELING` → enregistrement `channeledSpell` |
-| `castSpell()` | sort de type `INSTANT` → pas de restriction de tour |
-| `castSpell()` | passif modifie le type (BANAL → INSTANT via Création) |
-| `castSpell()` | `choiceKey` force une variante spécifique |
-| `selectVariant()` | sélection par `SpellCondition.LOW_LIFE` |
-| `selectVariant()` | sélection par `SpellCondition.HIGH_LIFE` |
-| `selectVariant()` | sélection par `SpellCondition.HIGHER_RESISTANCE` |
-| `selectVariant()` | sélection par `SpellCondition.IS_ALLY` |
-| `selectVariant()` | fallback si aucune condition matchée |
-| `tickChanneling()` | tour 1 → aucun effet appliqué |
-| `tickChanneling()` | tours 2+ → effets appliqués |
-| `tickChanneling()` | dernier tour → `channeledSpell` remis à null |
-| `payCosts()` | réduction par Consolidation Lvl 4 (-25%) |
-| `resolveRecipientsGroup()` | tous les `EffectTarget` : CASTER, TARGET, ALLY, ALL_ALLIES, ALL_ENEMIES, ALL |
+~~| Méthode | Scénario à tester |~~
+~~|---------|-------------------|~~
+~~| `castSpell()` | sort avec `canCast()` → fail (mana insuffisant) |~~
+~~| `castSpell()` | sort de type `CHANNELING` → enregistrement `channeledSpell` |~~
+~~| `castSpell()` | sort de type `INSTANT` → pas de restriction de tour |~~
+~~| `castSpell()` | passif modifie le type (BANAL → INSTANT via Création) |~~
+~~| `castSpell()` | `choiceKey` force une variante spécifique |~~
+~~| `selectVariant()` | sélection par `SpellCondition.LOW_LIFE` |~~
+~~| `selectVariant()` | sélection par `SpellCondition.HIGH_LIFE` |~~
+~~| `selectVariant()` | sélection par `SpellCondition.HIGHER_RESISTANCE` |~~
+~~| `selectVariant()` | sélection par `SpellCondition.IS_ALLY` |~~
+~~| `selectVariant()` | fallback si aucune condition matchée |~~
+~~| `tickChanneling()` | tour 1 → aucun effet appliqué |~~
+~~| `tickChanneling()` | tours 2+ → effets appliqués |~~
+~~| `tickChanneling()` | dernier tour → `channeledSpell` remis à null |~~
+~~| `payCosts()` | réduction par Consolidation Lvl 4 (-25%) |~~
+~~| `resolveRecipientsGroup()` | tous les `EffectTarget` : CASTER, TARGET, ALLY, ALL_ALLIES, ALL_ENEMIES, ALL |~~
 
 ---
 
@@ -176,8 +176,10 @@ src/test/java/generation/grimoire/
 ├── entity/spiritualite/passif/
 │   └── SpiritualitePassifTest.java      [ÉTENDRE — +6 scénarios]
 └── service/
-    ├── SpellVariantTest.java            [NOUVEAU — selectVariant toutes conditions]
-    ├── SpellChannelingTest.java         [ÉTENDRE — edge cases]
+    ├── SpellServiceVariantsTest.java    [✅ TERMINÉ]
+    ├── SpellChannelingTest.java         [✅ TERMINÉ]
+    ├── SpellServiceTargetTest.java      [✅ TERMINÉ]
+    ├── SpellServiceCostTest.java        [✅ TERMINÉ]
     └── pve/
         ├── CombatServiceTest.java       [ÉTENDRE — loot, KO, Cheat Death]
         └── DonjonProgressionTest.java   [NOUVEAU]
@@ -214,7 +216,7 @@ void shouldSelectVariantWithLowLifeCondition()
 |----------|---------|--------|
 | 🔴 1 | `StatCalculatorTest` | Spec de la formule de combat |
 | 🔴 2 | `PersonnageTest` — startTurn, canCast, dealDamage | Spec du tour de jeu |
-| 🔴 3 | `SpellVariantTest` — toutes conditions | Spec du système de variantes |
+| ✅ 3 | `SpellVariantTest` — toutes conditions | Spec du système de variantes |
 | 🟠 4 | `HeatEffectTest` + `ManaEffectTest` | Spec des ressources |
 | 🟠 5 | `ViolencePassiveEffectTest` | Spec passif manquant |
 | 🟠 6 | `ConvictionPassiveEffect` — réécrire test | Passif actuellement @Disabled |

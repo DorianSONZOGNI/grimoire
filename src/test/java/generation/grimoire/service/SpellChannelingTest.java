@@ -6,6 +6,7 @@ import generation.grimoire.entity.spell.type.effect.BuffDebuffEffect;
 import generation.grimoire.enumeration.SpellCastingType;
 import generation.grimoire.enumeration.StatType;
 import generation.grimoire.enumeration.EffectTarget;
+import generation.grimoire.enumeration.DamageType;
 import generation.grimoire.repository.SpellRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -236,5 +237,62 @@ class SpellChannelingTest {
         // Heat should be applied to caster, not enemy
         assertThat(caster.getPassiveState("destruction_heat", 0)).isEqualTo(20);
         assertThat(enemy.getPassiveState("destruction_heat", 0)).isEqualTo(0);
+    }
+
+    @Test
+    void testCheckAndCancelDeadChanneling_WhenTargetDies() {
+        Spell channeledSpell = new Spell();
+        channeledSpell.setNom("Rayon Mortel");
+        channeledSpell.setCastingType(SpellCastingType.CANALISE);
+        channeledSpell.setChannelingDuration(3);
+        
+        generation.grimoire.entity.spell.type.effect.DamageFixedEffect dmgEffect = new generation.grimoire.entity.spell.type.effect.DamageFixedEffect();
+        dmgEffect.setDamageType(DamageType.BRUT);
+        dmgEffect.setEffectTarget(EffectTarget.TARGET);
+        channeledSpell.getEffects().add(dmgEffect);
+        
+        spellService.castSpell(channeledSpell, caster, enemy, null);
+        
+        // Enemy is alive
+        spellService.startTurn(caster);
+        assertThat(caster.getChanneledSpell()).isNotNull();
+        
+        // Enemy dies
+        enemy.setHealthCurrent(0);
+        spellService.startTurn(caster);
+        
+        // Should cancel
+        assertThat(caster.getChanneledSpell()).isNull();
+        assertThat(caster.getRemainingChannelingTurns()).isEqualTo(0);
+    }
+
+    @Test
+    void testCheckAndCancelDeadChanneling_WhenAllyDies() {
+        Spell channeledSpell = new Spell();
+        channeledSpell.setNom("Soin Continu");
+        channeledSpell.setCastingType(SpellCastingType.CANALISE);
+        channeledSpell.setChannelingDuration(3);
+        
+        generation.grimoire.entity.spell.type.effect.DamageFixedEffect healEffect = new generation.grimoire.entity.spell.type.effect.DamageFixedEffect();
+        healEffect.setDamageType(DamageType.BRUT);
+        healEffect.setEffectTarget(EffectTarget.ALLY);
+        channeledSpell.getEffects().add(healEffect);
+        
+        List<Personnage> allAllies = List.of(caster, ally);
+        List<Personnage> allEnemies = List.of(enemy);
+        
+        spellService.castSpellGroup(channeledSpell, caster, enemy, ally, allAllies, allEnemies, null);
+        
+        // Ally is alive
+        spellService.startTurn(caster);
+        assertThat(caster.getChanneledSpell()).isNotNull();
+        
+        // Ally dies
+        ally.setHealthCurrent(0);
+        spellService.startTurn(caster);
+        
+        // Should cancel
+        assertThat(caster.getChanneledSpell()).isNull();
+        assertThat(caster.getRemainingChannelingTurns()).isEqualTo(0);
     }
 }
