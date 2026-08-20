@@ -57,15 +57,15 @@ public class Spell {
     private boolean allowInstantDuringChanneling = true;
 
     @ManyToOne
-    @JoinColumn(name = "voie_id", nullable = true)
+    @JoinColumn(name = "voie_id")
     private Voie voie;
 
     @ManyToOne
-    @JoinColumn(name = "spiritualite_id", nullable = true)
+    @JoinColumn(name = "spiritualite_id")
     private Spiritualite spiritualite;
 
     @ManyToOne
-    @JoinColumn(name = "mutation_id", nullable = true)
+    @JoinColumn(name = "mutation_id")
     private Mutation mutation;
 
     @OneToMany(mappedBy = "spell", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)

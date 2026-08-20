@@ -4,16 +4,30 @@ import generation.grimoire.entity.Spell;
 import generation.grimoire.entity.SpellEffect;
 import generation.grimoire.entity.personnage.Personnage;
 import generation.grimoire.entity.spell.type.effect.ConsumableSpellBuffDebuffEffect;
+import generation.grimoire.entity.spell.type.effect.HeatFixedEffect;
+import generation.grimoire.entity.spell.type.effect.HeatOverTimeEffect;
+import generation.grimoire.entity.spell.type.effect.HeatPercentageEffect;
+import generation.grimoire.enumeration.DamageType;
+import generation.grimoire.enumeration.DetachedSoulRequirement;
+import generation.grimoire.enumeration.EffectTarget;
+import generation.grimoire.enumeration.EquipmentEffectType;
+import generation.grimoire.enumeration.Source;
 import generation.grimoire.enumeration.SpellCastingType;
 import generation.grimoire.enumeration.SpellCondition;
+import generation.grimoire.enumeration.StatType;
 import generation.grimoire.event.*;
 import generation.grimoire.repository.SpellRepository;
+import generation.grimoire.utils.StatCalculator;
 import jakarta.persistence.EntityNotFoundException;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
-import java.util.List;
+import java.util.List;
 
+@Slf4j
 @Service
 public class SpellService {
 
@@ -55,7 +69,7 @@ public class SpellService {
         // 0) Vérifier les prérequis de voie/spiritualité et niveaux du personnage
         String castError = caster.canCast(toCast);
         if (castError != null) {
-            System.out.println("🚫 " + castError);
+            log.warn("🚫 {}", castError);
             return;
         }
 
@@ -73,24 +87,24 @@ public class SpellService {
         // Rule A: If currently channeling
         if (caster.getRemainingChannelingTurns() > 0) {
             if (cType != SpellCastingType.INSTANTANE) {
-                System.out.println(caster.getName() + " ne peut pas lancer de sort banal ou canalisé pendant sa canalisation.");
+                log.debug("{} ne peut pas lancer de sort banal ou canalisé pendant sa canalisation.", caster.getName());
                 return;
             }
             if (!caster.isAllowInstantDuringCurrentChanneling()) {
-                System.out.println(caster.getName() + " ne peut pas lancer de sort instantané pendant cette canalisation.");
+                log.debug("{} ne peut pas lancer de sort instantané pendant cette canalisation.", caster.getName());
                 return;
             }
         }
 
         // Rule B: If already cast a Banal or Channeled spell this turn
         if (caster.isBanalSpellCastThisTurn() && caster.getRemainingChannelingTurns() == 0) {
-            System.out.println(caster.getName() + " a déjà lancé un sort banal ce tour-ci (sa dernière action magique est consommée).");
+            log.debug("{} a déjà lancé un sort banal ce tour-ci (sa dernière action magique est consommée).", caster.getName());
             return;
         }
 
         // Rule C: If already cast an Instant spell this turn
         if (cType == SpellCastingType.INSTANTANE && caster.isInstantSpellCastThisTurn()) {
-            System.out.println(caster.getName() + " a déjà lancé un sort instantané ce tour-ci.");
+            log.debug("{} a déjà lancé un sort instantané ce tour-ci.", caster.getName());
             return;
         }
 
@@ -104,14 +118,14 @@ public class SpellService {
         // Calcul du coût en mana fixe + pourcentage dynamique
         int actualManaCost = toCast.getManaCost();
         if (toCast.getPercentManaCost() > 0) {
-            double manaBase = generation.grimoire.utils.StatCalculator.getSourceValue(toCast.getPercentManaCostSource() != null ? toCast.getPercentManaCostSource() : generation.grimoire.enumeration.Source.CASTER_MANA_MAX, caster, target);
+            double manaBase = StatCalculator.getSourceValue(toCast.getPercentManaCostSource() != null ? toCast.getPercentManaCostSource() : Source.CASTER_MANA_MAX, caster, target);
             actualManaCost += (int) (manaBase * toCast.getPercentManaCost() / 100);
         }
 
         // Calcul du coût en heal fixe + pourcentage dynamique
         int actualHealCost = toCast.getHealCost();
         if (toCast.getPercentHealCost() > 0) {
-            double healBase = generation.grimoire.utils.StatCalculator.getSourceValue(toCast.getPercentHealCostSource() != null ? toCast.getPercentHealCostSource() : generation.grimoire.enumeration.Source.CASTER_HEALTH_MAX, caster, target);
+            double healBase = StatCalculator.getSourceValue(toCast.getPercentHealCostSource() != null ? toCast.getPercentHealCostSource() : Source.CASTER_HEALTH_MAX, caster, target);
             actualHealCost += (int) (healBase * toCast.getPercentHealCost() / 100);
         }
 
@@ -127,20 +141,20 @@ public class SpellService {
         passiveDispatcher.dispatch(caster, toCast, costEvent);
         actualManaCost = costs[0];
         actualHealCost = costs[1];
-        actualHeatCost = costs.length > 2 ? costs[2] : actualHeatCost;
+        actualHeatCost = costs[2];
 
         // Vérifier que le caster dispose des ressources nécessaires
         if (caster.getManaCurrent() < actualManaCost) {
-            System.out.println("Mana insuffisant pour lancer le sort " + toCast.getNom());
+            log.debug("Mana insuffisant pour lancer le sort {}", toCast.getNom());
             return;
         }
         if (caster.getHealthCurrent() < actualHealCost) {
-            System.out.println("PV insuffisants pour lancer le sort " + toCast.getNom());
+            log.debug("PV insuffisants pour lancer le sort {}", toCast.getNom());
             return;
         }
         int currentHeat = caster.getPassiveState("destruction_heat", 0);
         if (currentHeat < actualHeatCost) {
-            System.out.println("Chaleur insuffisante pour lancer le sort " + toCast.getNom());
+            log.debug("Chaleur insuffisante pour lancer le sort {}", toCast.getNom());
             return;
         }
 
@@ -150,24 +164,24 @@ public class SpellService {
         
         // Malédiction: Hémorragie magique (Perte d'HP en % du mana consommé)
         if (actualManaCost > 0) {
-            int hpLossPct = caster.getSpecialEffectValue(generation.grimoire.enumeration.EquipmentEffectType.CURSED_HP_LOSS_ON_MANA);
+            int hpLossPct = caster.getSpecialEffectValue(EquipmentEffectType.CURSED_HP_LOSS_ON_MANA);
             if (hpLossPct != 0) {
                 int hpLoss = (int) (actualManaCost * Math.abs(hpLossPct) / 100.0);
                 if (hpLoss > 0) {
-                    caster.takeDamage(hpLoss, generation.grimoire.enumeration.DamageType.BRUT, caster);
-                    System.out.println(caster.getName() + " subit " + hpLoss + " dégâts de malédiction (Hémorragie magique) !");
+                    caster.takeDamage(hpLoss, DamageType.BRUT, caster);
+                    log.debug("{} subit {} dégâts de malédiction (Hémorragie magique) !", caster.getName(), hpLoss);
                 }
             }
         }
 
         // Relique: Arcane Vitale (Régénération HP en % du mana consommé)
         if (actualManaCost > 0) {
-            int vitalArcanePct = caster.getSpecialEffectValue(generation.grimoire.enumeration.EquipmentEffectType.VITAL_ARCANE);
+            int vitalArcanePct = caster.getSpecialEffectValue(EquipmentEffectType.VITAL_ARCANE);
             if (vitalArcanePct > 0) {
                 int heal = (int) (actualManaCost * vitalArcanePct / 100.0);
                 if (heal > 0) {
                     caster.heal(heal);
-                    System.out.println("✨ Arcane Vitale soigne " + caster.getName() + " de " + heal + " PV.");
+                    log.debug("✨ Arcane Vitale soigne {} de {} PV.", caster.getName(), heal);
                 }
             }
         }
@@ -182,7 +196,7 @@ public class SpellService {
             costMsg = costMsg.substring(0, costMsg.length() - 2);
             int lastComma = costMsg.lastIndexOf(", ");
             if (lastComma != -1) costMsg = costMsg.substring(0, lastComma) + " et " + costMsg.substring(lastComma + 2);
-            System.out.println(caster.getName() + " dépense " + costMsg + " pour lancer " + toCast.getNom());
+            log.debug("{} dépense {} pour lancer {}", caster.getName(), costMsg, toCast.getNom());
         }
 
         // Dispatch : hook post-paiement de coût
@@ -202,7 +216,7 @@ public class SpellService {
             caster.setChannelingTarget(target);
             caster.setChannelingAlly(null); // Simple castSpell doesn't have ally parameter
             caster.setChannelingChoiceKey(choiceKey);
-            System.out.println(caster.getName() + " commence à canaliser " + toCast.getNom() + " pour " + toCast.getChannelingDuration() + " tours.");
+            log.debug("{} commence à canaliser {} pour {} tours.", caster.getName(), toCast.getNom(), toCast.getChannelingDuration());
         }
 
         // Appliquer les buffs consommables de manière générique
@@ -222,24 +236,24 @@ public class SpellService {
             }
 
             // Vérification de la condition d'Âme Détachée
-            if (effect.getDetachedSoulRequirement() != null && effect.getDetachedSoulRequirement() != generation.grimoire.enumeration.DetachedSoulRequirement.NOT_AFFECTED) {
+            if (effect.getDetachedSoulRequirement() != null && effect.getDetachedSoulRequirement() != DetachedSoulRequirement.NOT_AFFECTED) {
                 boolean hasAmeDetachee = caster.getActiveBuffs().stream()
-                        .anyMatch(b -> b.getStatAffected() == generation.grimoire.enumeration.StatType.AME_DETACHEE);
+                        .anyMatch(b -> b.getStatAffected() == StatType.AME_DETACHEE);
                 
-                if (effect.getDetachedSoulRequirement() == generation.grimoire.enumeration.DetachedSoulRequirement.REQUIRED && !hasAmeDetachee) {
+                if (effect.getDetachedSoulRequirement() == DetachedSoulRequirement.REQUIRED && !hasAmeDetachee) {
                     continue; // Skip because Âme Détachée is required but not present
                 }
-                if (effect.getDetachedSoulRequirement() == generation.grimoire.enumeration.DetachedSoulRequirement.FORBIDDEN && hasAmeDetachee) {
+                if (effect.getDetachedSoulRequirement() == DetachedSoulRequirement.FORBIDDEN && hasAmeDetachee) {
                     continue; // Skip because Âme Détachée is forbidden but present
                 }
             }
 
-            java.util.List<Personnage> recipients = resolveRecipients(effect.getEffectTarget(), caster, target);
+            List<Personnage> recipients = resolveRecipients(effect.getEffectTarget(), caster, target);
 
             // Application concrète de l'effet sur chaque destinataire résolu
             for (Personnage recipient : recipients) {
                 if (recipients.size() > 1) {
-                    System.out.println("  ↳ Application sur : " + recipient.getName());
+                    log.debug("  ↳ Application sur : {}", recipient.getName());
                 }
                 effect.apply(caster, recipient);
             }
@@ -258,14 +272,14 @@ public class SpellService {
      * d'alliés et d'ennemis (pour le bac à sable).
      */
     public void castSpellGroup(Spell spell, Personnage caster, Personnage target,
-                               Personnage ally, java.util.List<Personnage> allAllies,
-                               java.util.List<Personnage> allEnemies, Integer choiceKey) {
+                               Personnage ally, List<Personnage> allAllies,
+                               List<Personnage> allEnemies, Integer choiceKey) {
 
         Spell toCast = selectVariant(spell, caster, target, choiceKey);
 
         String castError = caster.canCast(toCast);
         if (castError != null) {
-            System.out.println("🚫 " + castError);
+            log.warn("🚫 {}", castError);
             return;
         }
 
@@ -278,22 +292,22 @@ public class SpellService {
 
         if (caster.getRemainingChannelingTurns() > 0) {
             if (cType != SpellCastingType.INSTANTANE) {
-                System.out.println(caster.getName() + " ne peut pas lancer de sort banal ou canalisé pendant sa canalisation.");
+                log.debug("{} ne peut pas lancer de sort banal ou canalisé pendant sa canalisation.", caster.getName());
                 return;
             }
             if (!caster.isAllowInstantDuringCurrentChanneling()) {
-                System.out.println(caster.getName() + " ne peut pas lancer de sort instantané pendant cette canalisation.");
+                log.debug("{} ne peut pas lancer de sort instantané pendant cette canalisation.", caster.getName());
                 return;
             }
         }
 
         if (caster.isBanalSpellCastThisTurn() && caster.getRemainingChannelingTurns() == 0) {
-            System.out.println(caster.getName() + " a déjà lancé un sort banal ce tour-ci.");
+            log.debug("{} a déjà lancé un sort banal ce tour-ci.", caster.getName());
             return;
         }
 
         if (cType == SpellCastingType.INSTANTANE && caster.isInstantSpellCastThisTurn()) {
-            System.out.println(caster.getName() + " a déjà lancé un sort instantané ce tour-ci.");
+            log.debug("{} a déjà lancé un sort instantané ce tour-ci.", caster.getName());
             return;
         }
 
@@ -304,14 +318,14 @@ public class SpellService {
         // Calcul des coûts
         int actualManaCost = toCast.getManaCost();
         if (toCast.getPercentManaCost() > 0) {
-            double manaBase = generation.grimoire.utils.StatCalculator.getSourceValue(
-                    toCast.getPercentManaCostSource() != null ? toCast.getPercentManaCostSource() : generation.grimoire.enumeration.Source.CASTER_MANA_MAX, caster, target);
+            double manaBase = StatCalculator.getSourceValue(
+                    toCast.getPercentManaCostSource() != null ? toCast.getPercentManaCostSource() : Source.CASTER_MANA_MAX, caster, target);
             actualManaCost += (int) (manaBase * toCast.getPercentManaCost() / 100);
         }
         int actualHealCost = toCast.getHealCost();
         if (toCast.getPercentHealCost() > 0) {
-            double healBase = generation.grimoire.utils.StatCalculator.getSourceValue(
-                    toCast.getPercentHealCostSource() != null ? toCast.getPercentHealCostSource() : generation.grimoire.enumeration.Source.CASTER_HEALTH_MAX, caster, target);
+            double healBase = StatCalculator.getSourceValue(
+                    toCast.getPercentHealCostSource() != null ? toCast.getPercentHealCostSource() : Source.CASTER_HEALTH_MAX, caster, target);
             actualHealCost += (int) (healBase * toCast.getPercentHealCost() / 100);
         }
         int actualHeatCost = toCast.getHeatCost();
@@ -324,15 +338,15 @@ public class SpellService {
         passiveDispatcher.dispatch(caster, toCast, costEvent);
         actualManaCost = costs[0];
         actualHealCost = costs[1];
-        actualHeatCost = costs.length > 2 ? costs[2] : actualHeatCost;
+        actualHeatCost = costs[2];
 
         int requiredHeatFromEffects = 0;
         if (toCast.getEffects() != null) {
-            for (generation.grimoire.entity.SpellEffect effect : toCast.getEffects()) {
+            for (SpellEffect effect : toCast.getEffects()) {
                 if (effect.getRequiredChoiceKey() != null && choiceKey != null && !effect.getRequiredChoiceKey().equals(choiceKey)) {
                     continue;
                 }
-                if (effect instanceof generation.grimoire.entity.spell.type.effect.HeatFixedEffect hfe) {
+                if (effect instanceof HeatFixedEffect hfe) {
                     if (hfe.getAmount() < 0) {
                         requiredHeatFromEffects += -hfe.getAmount();
                     }
@@ -341,16 +355,16 @@ public class SpellService {
         }
 
         if (caster.getManaCurrent() < actualManaCost) {
-            System.out.println("Mana insuffisant pour lancer le sort " + toCast.getNom());
+            log.debug("Mana insuffisant pour lancer le sort {}", toCast.getNom());
             return;
         }
         if (caster.getHealthCurrent() < actualHealCost) {
-            System.out.println("PV insuffisants pour lancer le sort " + toCast.getNom());
+            log.debug("PV insuffisants pour lancer le sort {}", toCast.getNom());
             return;
         }
         int currentHeat = caster.getPassiveState("destruction_heat", 0);
         if (currentHeat < actualHeatCost + requiredHeatFromEffects) {
-            System.out.println("Chaleur insuffisante pour lancer le sort " + toCast.getNom());
+            log.debug("Chaleur insuffisante pour lancer le sort {}", toCast.getNom());
             return;
         }
 
@@ -359,24 +373,24 @@ public class SpellService {
         
         // Malédiction: Hémorragie magique (Perte d'HP en % du mana consommé)
         if (actualManaCost > 0) {
-            int hpLossPct = caster.getSpecialEffectValue(generation.grimoire.enumeration.EquipmentEffectType.CURSED_HP_LOSS_ON_MANA);
+            int hpLossPct = caster.getSpecialEffectValue(EquipmentEffectType.CURSED_HP_LOSS_ON_MANA);
             if (hpLossPct != 0) {
                 int hpLoss = (int) (actualManaCost * Math.abs(hpLossPct) / 100.0);
                 if (hpLoss > 0) {
-                    caster.takeDamage(hpLoss, generation.grimoire.enumeration.DamageType.BRUT, caster);
-                    System.out.println(caster.getName() + " subit " + hpLoss + " dégâts de malédiction (Hémorragie magique) !");
+                    caster.takeDamage(hpLoss, DamageType.BRUT, caster);
+                    log.debug("{} subit {} dégâts de malédiction (Hémorragie magique) !", caster.getName(), hpLoss);
                 }
             }
         }
 
         // Relique: Arcane Vitale (Régénération HP en % du mana consommé)
         if (actualManaCost > 0) {
-            int vitalArcanePct = caster.getSpecialEffectValue(generation.grimoire.enumeration.EquipmentEffectType.VITAL_ARCANE);
+            int vitalArcanePct = caster.getSpecialEffectValue(EquipmentEffectType.VITAL_ARCANE);
             if (vitalArcanePct > 0) {
                 int heal = (int) (actualManaCost * vitalArcanePct / 100.0);
                 if (heal > 0) {
                     caster.heal(heal);
-                    System.out.println("✨ Arcane Vitale soigne " + caster.getName() + " de " + heal + " PV.");
+                    log.debug("✨ Arcane Vitale soigne {} de {} PV.", caster.getName(), heal);
                 }
             }
         }
@@ -391,7 +405,7 @@ public class SpellService {
             costMsg2 = costMsg2.substring(0, costMsg2.length() - 2);
             int lastComma = costMsg2.lastIndexOf(", ");
             if (lastComma != -1) costMsg2 = costMsg2.substring(0, lastComma) + " et " + costMsg2.substring(lastComma + 2);
-            System.out.println(caster.getName() + " dépense " + costMsg2 + " pour lancer " + toCast.getNom());
+            log.debug("{} dépense {} pour lancer {}", caster.getName(), costMsg2, toCast.getNom());
         }
 
         SpellCostPaidEvent costPaidEvent = new SpellCostPaidEvent(caster, target, toCast, actualManaCost, actualHealCost, actualHeatCost);
@@ -409,7 +423,7 @@ public class SpellService {
             caster.setChannelingTarget(target);
             caster.setChannelingAlly(ally);
             caster.setChannelingChoiceKey(choiceKey);
-            System.out.println(caster.getName() + " commence à canaliser " + toCast.getNom() + " pour " + toCast.getChannelingDuration() + " tours.");
+            log.debug("{} commence à canaliser {} pour {} tours.", caster.getName(), toCast.getNom(), toCast.getChannelingDuration());
         }
 
         applyConsumableBuffs(toCast, caster, target);
@@ -428,32 +442,32 @@ public class SpellService {
             }
 
             // Vérification de la condition d'Âme Détachée
-            if (effect.getDetachedSoulRequirement() != null && effect.getDetachedSoulRequirement() != generation.grimoire.enumeration.DetachedSoulRequirement.NOT_AFFECTED) {
+            if (effect.getDetachedSoulRequirement() != null && effect.getDetachedSoulRequirement() != DetachedSoulRequirement.NOT_AFFECTED) {
                 boolean hasAmeDetachee = caster.getActiveBuffs().stream()
-                        .anyMatch(b -> b.getStatAffected() == generation.grimoire.enumeration.StatType.AME_DETACHEE);
+                        .anyMatch(b -> b.getStatAffected() == StatType.AME_DETACHEE);
                 
-                if (effect.getDetachedSoulRequirement() == generation.grimoire.enumeration.DetachedSoulRequirement.REQUIRED && !hasAmeDetachee) {
+                if (effect.getDetachedSoulRequirement() == DetachedSoulRequirement.REQUIRED && !hasAmeDetachee) {
                     continue;
                 }
-                if (effect.getDetachedSoulRequirement() == generation.grimoire.enumeration.DetachedSoulRequirement.FORBIDDEN && hasAmeDetachee) {
+                if (effect.getDetachedSoulRequirement() == DetachedSoulRequirement.FORBIDDEN && hasAmeDetachee) {
                     continue;
                 }
             }
 
-            java.util.List<Personnage> recipients = resolveRecipientsGroup(
+            List<Personnage> recipients = resolveRecipientsGroup(
                     effect.getEffectTarget(), caster, target, ally, allAllies, allEnemies);
 
             // Correctif: Les effets de chaleur doivent TOUJOURS s'appliquer au lanceur,
             // même si le sort cible un allié (pour éviter que l'allié reçoive la chaleur en multi).
-            if (effect instanceof generation.grimoire.entity.spell.type.effect.HeatOverTimeEffect
-                    || effect instanceof generation.grimoire.entity.spell.type.effect.HeatFixedEffect
-                    || effect instanceof generation.grimoire.entity.spell.type.effect.HeatPercentageEffect) {
-                recipients = java.util.Collections.singletonList(caster);
+            if (effect instanceof HeatOverTimeEffect
+                    || effect instanceof HeatFixedEffect
+                    || effect instanceof HeatPercentageEffect) {
+                recipients = Collections.singletonList(caster);
             }
 
             for (Personnage recipient : recipients) {
                 if (recipients.size() > 1) {
-                    System.out.println("  ↳ Application sur : " + recipient.getName());
+                    log.debug("  ↳ Application sur : {}", recipient.getName());
                 }
                 effect.apply(caster, recipient);
             }
@@ -467,12 +481,12 @@ public class SpellService {
      * Résout les destinataires d'un effet en utilisant de vraies listes de personnages
      * au lieu de créer des simulés.
      */
-    public static java.util.List<Personnage> resolveRecipientsGroup(
-            generation.grimoire.enumeration.EffectTarget targetType,
+    public static List<Personnage> resolveRecipientsGroup(
+            EffectTarget targetType,
             Personnage caster, Personnage target, Personnage ally,
-            java.util.List<Personnage> allAllies, java.util.List<Personnage> allEnemies) {
+            List<Personnage> allAllies, List<Personnage> allEnemies) {
 
-        java.util.List<Personnage> recipients = new java.util.ArrayList<>();
+        List<Personnage> recipients = new ArrayList<>();
         if (targetType == null) {
             if (target != null) recipients.add(target);
             return recipients;
@@ -496,7 +510,7 @@ public class SpellService {
                 if (allEnemies != null) {
                     recipients.addAll(allEnemies);
                     if (allEnemies.size() > 1) {
-                        System.out.println("💥 [Zone d'Effet] Le sort se propage à l'ensemble des ennemis !");
+                        log.debug("💥 [Zone d'Effet] Le sort se propage à l'ensemble des ennemis !");
                     }
                 }
             }
@@ -530,9 +544,14 @@ public class SpellService {
             Personnage target,
             Integer choiceKey) {
 
+        // Charger les variantes une seule fois pour éviter des requêtes DB multiples
+        List<Spell> variants = baseSpell.getVariantId() != null
+                ? spellRepository.findByVariantId(baseSpell.getVariantId())
+                : List.of();
+
         // 1) Variante forcée par choiceKey si présent
         if (choiceKey != null && baseSpell.getVariantId() != null) {
-            for (Spell v : spellRepository.findByVariantId(baseSpell.getVariantId())) {
+            for (Spell v : variants) {
                 if (choiceKey.equals(v.getChoiceKey())) {
                     return v;
                 }
@@ -540,12 +559,11 @@ public class SpellService {
         }
 
         // 2) Sélection automatique par conditionType
-        Integer vid = baseSpell.getVariantId();
-        if (vid == null) {
+        if (baseSpell.getVariantId() == null) {
             return baseSpell;
         }
 
-        for (Spell variant : spellRepository.findByVariantId(vid)) {
+        for (Spell variant : variants) {
             SpellCondition cond = variant.getConditionType();
             if (cond == null)
                 continue;
@@ -587,8 +605,7 @@ public class SpellService {
         }
 
         // fallback sur la première
-        List<Spell> all = spellRepository.findByVariantId(vid);
-        return all.isEmpty() ? baseSpell : all.getFirst();
+        return variants.isEmpty() ? baseSpell : variants.getFirst();
     }
 
     /**
@@ -605,7 +622,7 @@ public class SpellService {
                     buff.applyToSpell(spell, caster, target);
                     if (!buff.isActive()) { // Consommé
                         iterator.remove();
-                        System.out.println(caster.getName() + " a consommé un buff consumable.");
+                        log.debug("{} a consommé un buff consumable.", caster.getName());
                     }
                 }
             }
@@ -636,7 +653,7 @@ public class SpellService {
             return;
         }
 
-        System.out.println("🌀 [Canalisation] Résolution des effets pour le Tour " + currentTurn + " de " + channeledSpell.getNom());
+        log.debug("🌀 [Canalisation] Résolution des effets pour le Tour {} de {}", currentTurn, channeledSpell.getNom());
 
         for (SpellEffect effect : channeledSpell.getEffects()) {
             if (effect.getRequiredChoiceKey() != null && !effect.getRequiredChoiceKey().equals(choiceKey)) {
@@ -649,24 +666,24 @@ public class SpellService {
             }
 
             // Vérification de la condition d'Âme Détachée
-            if (effect.getDetachedSoulRequirement() != null && effect.getDetachedSoulRequirement() != generation.grimoire.enumeration.DetachedSoulRequirement.NOT_AFFECTED) {
+            if (effect.getDetachedSoulRequirement() != null && effect.getDetachedSoulRequirement() != DetachedSoulRequirement.NOT_AFFECTED) {
                 boolean hasAmeDetachee = caster.getActiveBuffs().stream()
-                        .anyMatch(b -> b.getStatAffected() == generation.grimoire.enumeration.StatType.AME_DETACHEE);
+                        .anyMatch(b -> b.getStatAffected() == StatType.AME_DETACHEE);
                 
-                if (effect.getDetachedSoulRequirement() == generation.grimoire.enumeration.DetachedSoulRequirement.REQUIRED && !hasAmeDetachee) {
+                if (effect.getDetachedSoulRequirement() == DetachedSoulRequirement.REQUIRED && !hasAmeDetachee) {
                     continue;
                 }
-                if (effect.getDetachedSoulRequirement() == generation.grimoire.enumeration.DetachedSoulRequirement.FORBIDDEN && hasAmeDetachee) {
+                if (effect.getDetachedSoulRequirement() == DetachedSoulRequirement.FORBIDDEN && hasAmeDetachee) {
                     continue;
                 }
             }
 
-            java.util.List<Personnage> recipients = resolveRecipients(effect.getEffectTarget(), caster, target);
+            List<Personnage> recipients = resolveRecipients(effect.getEffectTarget(), caster, target);
 
-            if (effect instanceof generation.grimoire.entity.spell.type.effect.HeatOverTimeEffect
-                    || effect instanceof generation.grimoire.entity.spell.type.effect.HeatFixedEffect
-                    || effect instanceof generation.grimoire.entity.spell.type.effect.HeatPercentageEffect) {
-                recipients = java.util.Collections.singletonList(caster);
+            if (effect instanceof HeatOverTimeEffect
+                    || effect instanceof HeatFixedEffect
+                    || effect instanceof HeatPercentageEffect) {
+                recipients = Collections.singletonList(caster);
             }
 
             for (Personnage recipient : recipients) {
@@ -675,7 +692,7 @@ public class SpellService {
         }
     }
 
-    public void tickChanneling(Personnage caster, Personnage target, Integer choiceKey, Personnage ally, java.util.List<Personnage> allAllies, java.util.List<Personnage> allEnemies) {
+    public void tickChanneling(Personnage caster, Personnage target, Integer choiceKey, Personnage ally, List<Personnage> allAllies, List<Personnage> allEnemies) {
         Spell channeledSpell = caster.getChanneledSpell();
         if (channeledSpell == null) return;
 
@@ -699,7 +716,7 @@ public class SpellService {
             return;
         }
 
-        System.out.println("🌀 [Canalisation] Résolution des effets pour le Tour " + currentTurn + " de " + channeledSpell.getNom());
+        log.debug("🌀 [Canalisation] Résolution des effets pour le Tour {} de {}", currentTurn, channeledSpell.getNom());
 
         for (SpellEffect effect : channeledSpell.getEffects()) {
             if (effect.getRequiredChoiceKey() != null && !effect.getRequiredChoiceKey().equals(choiceKey)) {
@@ -712,24 +729,24 @@ public class SpellService {
             }
 
             // Vérification de la condition d'Âme Détachée
-            if (effect.getDetachedSoulRequirement() != null && effect.getDetachedSoulRequirement() != generation.grimoire.enumeration.DetachedSoulRequirement.NOT_AFFECTED) {
+            if (effect.getDetachedSoulRequirement() != null && effect.getDetachedSoulRequirement() != DetachedSoulRequirement.NOT_AFFECTED) {
                 boolean hasAmeDetachee = caster.getActiveBuffs().stream()
-                        .anyMatch(b -> b.getStatAffected() == generation.grimoire.enumeration.StatType.AME_DETACHEE);
+                        .anyMatch(b -> b.getStatAffected() == StatType.AME_DETACHEE);
                 
-                if (effect.getDetachedSoulRequirement() == generation.grimoire.enumeration.DetachedSoulRequirement.REQUIRED && !hasAmeDetachee) {
+                if (effect.getDetachedSoulRequirement() == DetachedSoulRequirement.REQUIRED && !hasAmeDetachee) {
                     continue;
                 }
-                if (effect.getDetachedSoulRequirement() == generation.grimoire.enumeration.DetachedSoulRequirement.FORBIDDEN && hasAmeDetachee) {
+                if (effect.getDetachedSoulRequirement() == DetachedSoulRequirement.FORBIDDEN && hasAmeDetachee) {
                     continue;
                 }
             }
 
-            java.util.List<Personnage> recipients = resolveRecipientsGroup(effect.getEffectTarget(), caster, target, ally, allAllies, allEnemies);
+            List<Personnage> recipients = resolveRecipientsGroup(effect.getEffectTarget(), caster, target, ally, allAllies, allEnemies);
 
-            if (effect instanceof generation.grimoire.entity.spell.type.effect.HeatOverTimeEffect
-                    || effect instanceof generation.grimoire.entity.spell.type.effect.HeatFixedEffect
-                    || effect instanceof generation.grimoire.entity.spell.type.effect.HeatPercentageEffect) {
-                recipients = java.util.Collections.singletonList(caster);
+            if (effect instanceof HeatOverTimeEffect
+                    || effect instanceof HeatFixedEffect
+                    || effect instanceof HeatPercentageEffect) {
+                recipients = Collections.singletonList(caster);
             }
 
             for (Personnage recipient : recipients) {
@@ -747,8 +764,8 @@ public class SpellService {
         spellRepository.save(spell);
     }
 
-    public static java.util.List<Personnage> resolveRecipients(generation.grimoire.enumeration.EffectTarget targetType, Personnage caster, Personnage target) {
-        java.util.List<Personnage> recipients = new java.util.ArrayList<>();
+    public static List<Personnage> resolveRecipients(EffectTarget targetType, Personnage caster, Personnage target) {
+        List<Personnage> recipients = new ArrayList<>();
         if (targetType == null) {
             if (target != null) recipients.add(target);
             return recipients;
@@ -761,6 +778,7 @@ public class SpellService {
                 if (target != null) recipients.add(target);
             }
             case ALLY -> {
+                // Fantôme 1v1 : effets perdus, normal en mode test
                 if (caster != null) {
                     Personnage simulatedAlly = new Personnage();
                     simulatedAlly.setName("Compagnon Allié");
@@ -771,6 +789,7 @@ public class SpellService {
                 }
             }
             case ALL_ALLIES -> {
+                // Fantôme 1v1 : effets perdus, normal en mode test
                 if (caster != null) {
                     recipients.add(caster);
                     Personnage simulatedAlly = new Personnage();
@@ -784,10 +803,11 @@ public class SpellService {
             case ALL_ENEMIES -> {
                 if (target != null) {
                     recipients.add(target);
-                    System.out.println("💥 [Zone d'Effet] Le sort se propage à l'ensemble des ennemis proches !");
+                    log.debug("💥 [Zone d'Effet] Le sort se propage à l'ensemble des ennemis !");
                 }
             }
             case ALL_COMBATANTS -> {
+                // Fantôme 1v1 : effets perdus, normal en mode test
                 if (caster != null) {
                     recipients.add(caster);
                     Personnage simulatedAlly = new Personnage();
@@ -830,8 +850,8 @@ public class SpellService {
 
         if (target != null && target.getHealthCurrent() <= 0) {
             boolean targetsSpecificThisTurn = false;
-            for (generation.grimoire.entity.SpellEffect effect : channeledSpell.getEffects()) {
-                if (effect.getEffectTarget() == generation.grimoire.enumeration.EffectTarget.TARGET) {
+            for (SpellEffect effect : channeledSpell.getEffects()) {
+                if (effect.getEffectTarget() == EffectTarget.TARGET) {
                     if (effect.getChannelingTurns() == null || effect.getChannelingTurns().isEmpty() || effect.getChannelingTurns().contains(currentTurn)) {
                         targetsSpecificThisTurn = true;
                         break;
@@ -839,7 +859,7 @@ public class SpellService {
                 }
             }
             if (targetsSpecificThisTurn) {
-                System.out.println("🌀 " + caster.getName() + " interrompt sa canalisation au T" + currentTurn + " : la cible est morte !");
+                log.debug("🌀 {} interrompt sa canalisation au T{} : la cible est morte !", caster.getName(), currentTurn);
                 caster.cancelChanneling();
                 return;
             }
@@ -847,8 +867,8 @@ public class SpellService {
 
         if (ally != null && ally.getHealthCurrent() <= 0) {
             boolean targetsAllyThisTurn = false;
-            for (generation.grimoire.entity.SpellEffect effect : channeledSpell.getEffects()) {
-                if (effect.getEffectTarget() == generation.grimoire.enumeration.EffectTarget.ALLY) {
+            for (SpellEffect effect : channeledSpell.getEffects()) {
+                if (effect.getEffectTarget() == EffectTarget.ALLY) {
                     if (effect.getChannelingTurns() == null || effect.getChannelingTurns().isEmpty() || effect.getChannelingTurns().contains(currentTurn)) {
                         targetsAllyThisTurn = true;
                         break;
@@ -856,7 +876,7 @@ public class SpellService {
                 }
             }
             if (targetsAllyThisTurn) {
-                System.out.println("🌀 " + caster.getName() + " interrompt sa canalisation au T" + currentTurn + " : l'allié ciblé est mort !");
+                log.debug("🌀 {} interrompt sa canalisation au T{} : l'allié ciblé est mort !", caster.getName(), currentTurn);
                 caster.cancelChanneling();
                 return;
             }

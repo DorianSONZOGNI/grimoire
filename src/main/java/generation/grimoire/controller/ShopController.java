@@ -145,9 +145,15 @@ public class ShopController {
 
         List<Equipment> remainingTemplates = new ArrayList<>(equipmentTemplates);
         remainingTemplates.removeAll(dailySelection);
+        
+        long currentEpochMillis = System.currentTimeMillis();
+        long twoHoursInMillis = 2 * 60 * 60 * 1000L;
+        long promoSeed = currentEpochMillis / twoHoursInMillis;
+        Random promoRandom = new Random(promoSeed);
+        
         Equipment promoItem = null;
         if (!remainingTemplates.isEmpty()) {
-            promoItem = remainingTemplates.get(random.nextInt(remainingTemplates.size()));
+            promoItem = remainingTemplates.get(promoRandom.nextInt(remainingTemplates.size()));
         }
 
         boolean isDaily = dailySelection.stream().anyMatch(e -> e.getId().equals(templateId));

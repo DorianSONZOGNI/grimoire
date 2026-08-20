@@ -188,40 +188,9 @@ public class Equipment {
 
     public double calculateShopPrice() {
         double weight = this.calculateWeight();
-        double multiplier = 1.0;
-        if (this.rarity == generation.grimoire.enumeration.EquipmentRarity.COMMUN)
-            multiplier = 1.0;
-        else if (this.rarity == generation.grimoire.enumeration.EquipmentRarity.INHABITUEL)
-            multiplier = 1.5;
-        else if (this.rarity == generation.grimoire.enumeration.EquipmentRarity.RARE)
-            multiplier = 2.0;
-        else if (this.rarity == generation.grimoire.enumeration.EquipmentRarity.MYTHIQUE)
-            multiplier = 2.5;
-        else if (this.rarity == generation.grimoire.enumeration.EquipmentRarity.LEGENDAIRE)
-            multiplier = 3.0;
-        else if (this.rarity == generation.grimoire.enumeration.EquipmentRarity.EPIQUE)
-            multiplier = 5.0;
-        else if (this.rarity == generation.grimoire.enumeration.EquipmentRarity.RELIQUE)
-            multiplier = 6.0;
-        else if (this.rarity == generation.grimoire.enumeration.EquipmentRarity.MAUDIT)
-            multiplier = 4.0;
-
-        double slotMultiplier = 1.0;
-        if (this.slot == generation.grimoire.enumeration.EquipmentSlot.PLASTRON)
-            slotMultiplier = 1.1;
-        else if (this.slot == generation.grimoire.enumeration.EquipmentSlot.ANNEAU || this.slot == generation.grimoire.enumeration.EquipmentSlot.ANNEAU_GAUCHE || this.slot == generation.grimoire.enumeration.EquipmentSlot.ANNEAU_DROIT)
-            slotMultiplier = 1.5;
-        else if (this.slot == generation.grimoire.enumeration.EquipmentSlot.BOTTES)
-            slotMultiplier = 0.9;
-        else if (this.slot == generation.grimoire.enumeration.EquipmentSlot.CAPE)
-            slotMultiplier = 1.2;
-        else if (this.slot == generation.grimoire.enumeration.EquipmentSlot.ARME_DROITE)
-            slotMultiplier = 1.5;
-        else if (this.slot == generation.grimoire.enumeration.EquipmentSlot.ARME_GAUCHE)
-            slotMultiplier = 1.4;
-        else if (this.slot == generation.grimoire.enumeration.EquipmentSlot.ARME_DEUX_MAINS)
-            slotMultiplier = 1.1;
-
+        double multiplier     = this.rarity != null ? this.rarity.getShopMultiplier() : 1.0;
+        double slotMultiplier = this.slot   != null ? this.slot.getShopMultiplier()   : 1.0;
         return Math.ceil(weight * 2 * multiplier * slotMultiplier);
     }
+
 }
