@@ -21,7 +21,7 @@
 | `service/PassiveDispatcher` | `PassiveDispatcher.java` (113 L) | `PassiveDispatcherTest.java` (4 tests) | 100% — ✅ Couvert |
 | `security/*` | 4 classes | 4 fichiers de test (12 tests) | 100% — ✅ Couvert |
 | `model/pve/*` | 5 classes | 5 fichiers de test (15 tests) | 100% — ✅ Couvert |
-| `scheduler/CombatTimeoutScheduler` | — | ❌ aucun test | 0% |
+| `scheduler/CombatTimeoutScheduler` | `CombatTimeoutScheduler.java` (47 L) | `CombatTimeoutSchedulerTest.java` (2 tests) | 100% — ✅ Couvert |
 
 ---
 
