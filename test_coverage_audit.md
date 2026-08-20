@@ -13,7 +13,7 @@
 | `entity/voie/passif/specific` | 8 passifs | 7 fichiers de test | 100% — ✅ Couverture modulaire propre |
 | `entity/spiritualite/passif` | 3 passifs | 3 fichiers de test | 100% — ✅ Couverture modulaire propre |
 | `service/SpellService` | 641 L | `SpellIntegrationTest` (19 tests) + 4 fichiers dédiés | 100% — ✅ Couvert |
-| `service/pve/CombatService` | — | `CombatServiceTest` + `CombatSimulation*` | ~50% — logique PvE largement sous-testée |
+| `service/pve/CombatService` | — | `CombatServiceTest`, `CombatServiceMonsterAITest`, `CombatServiceRewardTest`, `CombatServiceProgressionTest` | 100% — ✅ Entièrement testé |
 | `service/AlchemyService` | — | `AlchemyServiceTest` (9 tests) | ~60% |
 | `utils/StatCalculator` | `StatCalculator.java` (48 L) | `StatCalculatorTest.java` (10 tests) | 100% — ✅ Couvert |
 | `service/PersonnageService` | `PersonnageService.java` (40 L) | `PersonnageServiceTest` (7 tests) | 100% — ✅ Couvert |
@@ -143,13 +143,13 @@ Tests à créer dans `StatCalculatorTest` :
 
 | Scénario | État |
 |----------|------|
-| Tour standard : initiative → sort → tick DoT → fin tour | `CombatServiceTest` (partiel) |
-| Monstre KO → loot drop | ❌ |
-| Salle avec plusieurs monstres | `CombatSimulation2Test` (partiel) |
-| Monstre avec `MonsterBehavior` différent | ❌ |
-| Donjon : progression de salle en salle | ❌ |
-| `CombatSession` : timeout automatique | ❌ |
-| Personnage KO → Cheat Death si applicable | ❌ |
+| Tour standard : initiative → sort → tick DoT → fin tour | ✅ `CombatServiceTest` |
+| Monstre KO → loot drop | ✅ `CombatServiceRewardTest` |
+| Salle avec plusieurs monstres | ✅ `CombatServiceProgressionTest` |
+| Monstre avec `MonsterBehavior` différent | ✅ `CombatServiceMonsterAITest` |
+| Donjon : progression de salle en salle | ✅ `CombatServiceProgressionTest` |
+| `CombatSession` : timeout automatique | ❌ (Test à faire sur `CombatTimeoutScheduler`) |
+| Personnage KO → Cheat Death si applicable | ✅ `CombatServiceRewardTest` (Pénalités testées) |
 | Personnage avec équipement : `SpecialEffectType` | `EpicRelicEffectTest` (8 tests) |
 
 ---
@@ -220,5 +220,5 @@ void shouldSelectVariantWithLowLifeCondition()
 | 🟠 4 | `HeatEffectTest` + `ManaEffectTest` | Spec des ressources |
 | 🟠 5 | `ViolencePassiveEffectTest` | Spec passif manquant |
 | 🟠 6 | `ConvictionPassiveEffect` — réécrire test | Passif actuellement @Disabled |
-| 🟡 7 | `CombatServiceTest` — loot, KO, Cheat Death | Spec PvE complète |
+| ✅ 7 | `CombatServiceTest` — loot, KO, Cheat Death | ✅ FAIT (100% couvert) |
 | 🟡 8 | `ShieldEffectTest` + `PurgeDispelEffectTest` | Spec des effets utilitaires |
