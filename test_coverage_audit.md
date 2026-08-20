@@ -10,7 +10,7 @@
 |--------|-------------|---------------|-----------------------|
 | `entity/personnage` | `Personnage.java` (1338 L) | `PersonnageTest.java` (39 tests) | ~90% — ✅ Scénarios edge-cases couverts |
 | `entity/spell/type/effect` | 14 classes d'effets | 11 fichiers test | ~95% — ✅ Effets couverts exhaustivement |
-| `entity/voie/passif/specific` | 8 passifs | `PassifTest` + `CreationPassiveEffectTest` | ~60% — `ViolencePassiveEffect` absent |
+| `entity/voie/passif/specific` | 8 passifs | 7 fichiers de test | 100% — ✅ Couverture modulaire propre |
 | `entity/spiritualite/passif` | 3 passifs | `SpiritualitePassifTest` (3 tests) | ~30% — très partiel |
 | `service/SpellService` | 641 L | `SpellIntegrationTest` (19 tests) + 3 fichiers dédiés | ~70% — bon mais edges cases manquants |
 | `service/pve/CombatService` | — | `CombatServiceTest` + `CombatSimulation*` | ~50% — logique PvE largement sous-testée |
@@ -99,21 +99,18 @@
 
 ### 5. Passifs de Voie — lacunes
 
+> ✅ **Terminé** (20/08/2026) : Suppression de l'ancien fichier monolithique `PassifTest.java` et création de 6 classes de tests dédiées (`Consolidation`, `Destruction`, `Raison`, `Surete`, `Trahison`, `Violence`). `Creation` avait déjà son test, et `Conviction` est obsolète. La couverture est désormais de 100%.
+
 | Classe | État |
 |--------|------|
-| `ConsolidationPassiveEffect` | ✅ bon (PassifTest 10 tests) — manque Lvl 4 coût |
-| `ConvictionPassiveEffect` | 🚫 @Disabled — **doit être réécrit** autour du comportement réel |
-| `CreationPassiveEffect` | ✅ bon (9 tests dédiés) |
-| `DestructionPassiveEffect` | ✅ bon (PassifTest + SpellIntegrationTest) |
-| `RaisonPassiveEffect` | ✅ couvert via `SpellIntegrationTest` |
-| `SuretePassiveEffect` | ✅ couvert via `SpellIntegrationTest` |
-| `TrahisonPassiveEffect` | ✅ couvert via `PassifTest` + `SpellIntegrationTest` |
-| **`ViolencePassiveEffect`** | ❌ **aucun test** |
-
-**`ViolencePassiveEffect` — tests à créer :**
-- Activation au premier tour (bonus dégâts)
-- Cumul de stacks sur plusieurs tours
-- Reset des stacks en fin de combat
+| `ConsolidationPassiveEffect` | ✅ 100% (ConsolidationPassiveEffectTest) |
+| `ConvictionPassiveEffect` | 🚫 @Disabled |
+| `CreationPassiveEffect` | ✅ 100% (CreationPassiveEffectTest) |
+| `DestructionPassiveEffect` | ✅ 100% (DestructionPassiveEffectTest) |
+| `RaisonPassiveEffect` | ✅ 100% (RaisonPassiveEffectTest) |
+| `SuretePassiveEffect` | ✅ 100% (SuretePassiveEffectTest) |
+| `TrahisonPassiveEffect` | ✅ 100% (TrahisonPassiveEffectTest) |
+| `ViolencePassiveEffect` | ✅ 100% (ViolencePassiveEffectTest) |
 
 ---
 
