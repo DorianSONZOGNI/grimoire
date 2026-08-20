@@ -14,7 +14,7 @@
 | `entity/spiritualite/passif` | 3 passifs | 3 fichiers de test | 100% — ✅ Couverture modulaire propre |
 | `service/SpellService` | 641 L | `SpellIntegrationTest` (19 tests) + 4 fichiers dédiés | 100% — ✅ Couvert |
 | `service/pve/CombatService` | — | `CombatServiceTest`, `CombatServiceMonsterAITest`, `CombatServiceRewardTest`, `CombatServiceProgressionTest` | 100% — ✅ Entièrement testé |
-| `service/AlchemyService` | — | `AlchemyServiceTest` (9 tests) | ~60% |
+| `service/AlchemyService` | `AlchemyService.java` (306 L) | `AlchemyServiceTest` (17 tests) | 100% — ✅ Couvert |
 | `utils/StatCalculator` | `StatCalculator.java` (48 L) | `StatCalculatorTest.java` (10 tests) | 100% — ✅ Couvert |
 | `service/PersonnageService` | `PersonnageService.java` (40 L) | `PersonnageServiceTest` (7 tests) | 100% — ✅ Couvert |
 | `service/VoieService` | `VoieService.java` (20 L) | `VoieServiceTest` (1 test) | 100% — ✅ Couvert |
