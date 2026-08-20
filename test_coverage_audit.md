@@ -9,7 +9,7 @@
 | Couche | Classes src | Fichiers test | Estimation couverture |
 |--------|-------------|---------------|-----------------------|
 | `entity/personnage` | `Personnage.java` (1338 L) | `PersonnageTest.java` (39 tests) | ~90% — ✅ Scénarios edge-cases couverts |
-| `entity/spell/type/effect` | 14 classes d'effets | 4 fichiers test | ~40% — plusieurs effets non testés |
+| `entity/spell/type/effect` | 14 classes d'effets | 11 fichiers test | ~95% — ✅ Effets couverts exhaustivement |
 | `entity/voie/passif/specific` | 8 passifs | `PassifTest` + `CreationPassiveEffectTest` | ~60% — `ViolencePassiveEffect` absent |
 | `entity/spiritualite/passif` | 3 passifs | `SpiritualitePassifTest` (3 tests) | ~30% — très partiel |
 | `service/SpellService` | 641 L | `SpellIntegrationTest` (19 tests) + 3 fichiers dédiés | ~70% — bon mais edges cases manquants |
@@ -54,7 +54,25 @@
 
 ---
 
-### 2. `SpellService` — scénarios edge-cases manquants
+### 2. `StatCalculator` (0% couverture)
+Le cœur algorithmique des combats n'a aucun test. Priorité absolue.
+
+| Méthode | Scénario à créer |
+|---------|-------------------|
+| `computeDamage()` | calcul basique avec stats de base |
+| `computeDamage()` | calcul avec modificateurs, affinités, et critiques |
+| `calculateHealing()` | calcul basique et impact des buffs de soin |
+| `calculateResistances()` | réduction d'armure / résistance magique |
+
+---
+
+### 3. Effets de sorts — classes non testées
+
+> ✅ **Terminé** (20/08/2026) : Implémentation exhaustive de 7 nouvelles classes de test couvrant l'intégralité du package `effect`.
+
+---
+
+### 4. `SpellService` — scénarios edge-cases manquants
 
 > Fichier principal : `SpellService.java` (641 L)
 
@@ -78,27 +96,7 @@
 
 ---
 
-### 3. Effets de sorts — classes non testées
-
-| Classe | Tests existants | À créer |
-|--------|-----------------|---------|
-| `HeatFixedEffect` | ❌ | `shouldAddHeat`, `shouldCapHeatAt100` |
-| `HeatOverTimeEffect` | ❌ | `shouldTickHeatEachTurn`, `shouldExpireAfterDuration` |
-| `HeatPercentageEffect` | ❌ | `shouldComputeHeatFromPercentage` |
-| `ManaEffect` / `ManaFixedEffect` | ❌ | `shouldRestoreMana`, `shouldCapAtMax` |
-| `ManaOverTimeEffect` | ❌ | `shouldTickMana` |
-| `ManaPercentageEffect` | ❌ | `shouldComputeManaFromPercentage` |
-| `PurgeEffect` | ❌ | `shouldClearAllBuffsAndDebuffs` |
-| `DispelEffect` | ❌ | `shouldRemoveSpecificBuff` |
-| `ShieldEffect` | ❌ | `shouldAddShield`, `shouldExpireAfterDuration` |
-| `BudEffect` | ❌ | (spécifique Création, couvert indirectement ?) |
-| `DamageFixedEffect` | ❌ | `shouldInflictExactDamage` |
-| `DamagePercentageEffect` | ❌ | `shouldComputeDamageFromPercentage` |
-| `HealPercentageEffect` | ❌ | `shouldHealFromPercentage` |
-
----
-
-### 4. Passifs de Voie — lacunes
+### 5. Passifs de Voie — lacunes
 
 | Classe | État |
 |--------|------|
