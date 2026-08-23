@@ -636,8 +636,7 @@ public class Personnage {
         }
 
         // Affichage pour le débogage
-        System.out.println("reductionFactor : " + reductionFactor);
-        System.out.println("damageTakenMultiplier : " + damageTakenMultiplier);
+
     }
 
     public int getTotalHealthMax() {

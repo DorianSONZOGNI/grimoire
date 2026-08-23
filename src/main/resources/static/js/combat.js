@@ -2603,16 +2603,62 @@ function updateUI(data) {
     logContainer.innerHTML = '';
     data.combatLog.forEach(log => {
         const div = document.createElement('div');
-        div.className = 'log-entry';
-
         let text = log;
-        data.players.forEach(p => {
-            text = text.replace(new RegExp(p.name, 'g'), `<span style="color:#10b981;font-weight:600;">${p.name}</span>`);
-        });
-        text = text.replace(/inflige (\d+) dégâts/g, 'inflige <span class="text-gold font-bold">$1</span> dégâts');
+        let isUseless = false;
 
-        div.innerHTML = text;
-        logContainer.appendChild(div);
+        data.players.forEach(p => {
+            // Un peu de regex pour ne pas remplacer dans les attributs HTML si p.name correspond
+            text = text.replace(new RegExp(`\\b${p.name}\\b`, 'g'), `<span class="log-player-name">${p.name}</span>`);
+        });
+
+        // 1. Turn Separator
+        if (text.startsWith("--- Tour de ")) {
+            div.className = 'log-entry log-turn-separator';
+            text = text.replace(/--- Tour de (.*?) ---/, '🏁 <strong>Tour de $1</strong>');
+        }
+        // 2. Damage (Crit or Normal)
+        else if (text.includes("inflige") && text.includes("dégâts")) {
+            if (text.includes("Coup Critique")) {
+                div.className = 'log-entry log-damage-crit';
+                text = text.replace(/inflige (\d+) dégâts/g, 'inflige <span class="log-val-crit">$1</span> dégâts');
+                text = text.replace("Coup Critique", '<span class="log-crit-text">Coup Critique</span>');
+            } else {
+                div.className = 'log-entry log-damage-normal';
+                text = text.replace(/inflige (\d+) dégâts/g, 'inflige <span class="log-val-dmg">$1</span> dégâts');
+            }
+        }
+        // 3. Subit des dégâts (Dot, pièges...)
+        else if (text.includes("subit") && text.includes("dégâts")) {
+             div.className = 'log-entry log-damage-normal';
+             text = text.replace(/subit (\d+) dégâts/g, 'subit <span class="log-val-dmg">$1</span> dégâts');
+        }
+        // 4. Healing (HP)
+        else if (text.includes("soigné") || (text.includes("récupère") && text.includes("PV"))) {
+            div.className = 'log-entry log-heal-hp';
+            text = text.replace(/(\d+) PV/g, '<span class="log-val-hp">$1 PV</span>');
+        }
+        // 5. Healing (Mana)
+        else if (text.includes("récupère") && text.includes("Mana")) {
+            div.className = 'log-entry log-heal-mana';
+            text = text.replace(/(\d+) Mana/g, '<span class="log-val-mana">$1 Mana</span>');
+        }
+        // 6. Deaths
+        else if (text.includes("succombe") || text.includes("terrassé") || text.includes("mort") || text.includes("est vaincu")) {
+            div.className = 'log-entry log-death';
+        }
+        // 7. Dodge / Miss
+        else if (text.includes("esquive") || text.includes("rate") || text.includes("bloque")) {
+            div.className = 'log-entry log-miss';
+        }
+        // 8. Default
+        else {
+            div.className = 'log-entry log-generic';
+        }
+
+        if (!isUseless) {
+            div.innerHTML = text;
+            logContainer.appendChild(div);
+        }
     });
 
     logContainer.scrollTop = logContainer.scrollHeight;
