@@ -47,6 +47,8 @@ public class CombatSession {
     private boolean playerWon = false;
     private boolean roomEventCompleted = false;
 
+    private Long turnStartTime;
+
     // Track players who died and already lost XP
     private java.util.Set<Long> penalizedDeadPlayers = new java.util.HashSet<>();
     private Set<Integer> purchasedMerchantItems = new HashSet<>();
@@ -115,6 +117,7 @@ public class CombatSession {
 
     public void advanceTurnIndex() {
         currentTurnIndex++;
+        turnStartTime = null;
     }
 
     public boolean isRoundFinished() {

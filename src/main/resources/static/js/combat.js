@@ -1626,7 +1626,11 @@ function updateUI(data) {
                 div.style.borderColor = 'rgba(255, 255, 255, 0.1)';
                 div.style.transform = 'scale(0.95)';
             }
-            div.innerHTML = generateFighterHtml(p, true);
+            let timerHtml = '';
+            if (pageState.isMulti && isActive && data.turnStartTime) {
+                timerHtml = `<div class="turn-timer-badge" id="timerBadge_${index}" style="position: absolute; top: -30px; left: 50%; transform: translateX(-50%); background: #f97316; color: white; padding: 4px 12px; border-radius: 6px; font-weight: bold; box-shadow: 0 0 10px rgba(249, 115, 22, 0.6); z-index: 10;">⏳ Calcul...</div>`;
+            }
+            div.innerHTML = timerHtml + generateFighterHtml(p, true);
             playersContainer.appendChild(div);
 
             if (needsDelay) {
@@ -1645,6 +1649,33 @@ function updateUI(data) {
                 }, 800);
             }
         });
+    }
+
+    if (window.multiplayerTurnInterval) {
+        clearInterval(window.multiplayerTurnInterval);
+        window.multiplayerTurnInterval = null;
+    }
+
+    if (pageState.isMulti && !data.finished && data.turnStartTime) {
+        window.multiplayerTurnInterval = setInterval(() => {
+            const elapsed = Math.floor((Date.now() - data.turnStartTime) / 1000);
+            let remaining = Math.max(0, 90 - elapsed);
+            
+            document.querySelectorAll('.turn-timer-badge').forEach(badge => {
+                badge.textContent = `⏳ ${remaining}s`;
+                if (remaining <= 10) {
+                    badge.style.background = '#ef4444';
+                    badge.style.boxShadow = '0 0 15px rgba(239, 68, 68, 0.8)';
+                } else {
+                    badge.style.background = '#f97316';
+                    badge.style.boxShadow = '0 0 10px rgba(249, 115, 22, 0.6)';
+                }
+            });
+
+            if (remaining <= 0 && window.multiplayerTurnInterval) {
+                clearInterval(window.multiplayerTurnInterval);
+            }
+        }, 1000);
     }
 
     // Render Spells

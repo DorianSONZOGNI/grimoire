@@ -1741,6 +1741,9 @@ public class CombatService {
         // Safety: if the current turn is a player, we shouldn't auto-process! We just
         // return.
         if (current.isPlayer()) {
+            if (session.getTurnStartTime() == null) {
+                session.setTurnStartTime(System.currentTimeMillis());
+            }
             computeSpellAvailability(session);
             return session;
         }
@@ -2315,6 +2318,9 @@ public class CombatService {
                 session.advanceTurnIndex();
             } else if (current.isPlayer()) {
                 // It's a live player! Let's start their turn.
+                if (session.getTurnStartTime() == null) {
+                    session.setTurnStartTime(System.currentTimeMillis());
+                }
                 Personnage p = session.getPlayers().get(current.getIndex());
                 session.addLog("--- Tour de " + p.getName() + " ---");
                 captureLogs(session, () -> {
@@ -2569,5 +2575,22 @@ public class CombatService {
             }
         }
         anomalieRepository.delete(toDestroy);
+    }
+    @org.springframework.scheduling.annotation.Scheduled(fixedRate = 1000)
+    public void checkMultiplayerTimeouts() {
+        long now = System.currentTimeMillis();
+        for (CombatSession session : activeSessions.values()) {
+            if (session.isMulti() && !session.isFinished()) {
+                Long start = session.getTurnStartTime();
+                if (start != null && (now - start) > 90000) {
+                    Personnage p = session.getActivePlayer();
+                    if (p != null) {
+                        session.addLog("⏳ Le temps imparti pour " + p.getName() + " s'est écoulé ! Son tour passe automatiquement.");
+                        endTurn(session.getSessionId());
+                        broadcastIfMulti(session);
+                    }
+                }
+            }
+        }
     }
 }
