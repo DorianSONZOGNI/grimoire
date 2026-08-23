@@ -1484,13 +1484,13 @@ public class CombatService {
                     boolean isMixed = false;
 
                     if (pAtk > mAtk) {
-                        baseDmg = pAtk;
+                        baseDmg = (int) (pAtk * 0.8);
                         dmgType = generation.grimoire.enumeration.DamageType.PHYSIC;
                     } else if (mAtk > pAtk) {
-                        baseDmg = mAtk;
+                        baseDmg = (int) (mAtk * 0.8);
                         dmgType = generation.grimoire.enumeration.DamageType.MAGIC;
                     } else {
-                        baseDmg = pAtk; // Since they are equal
+                        baseDmg = (int) (pAtk * 0.8); // Since they are equal
                         dmgType = null;
                         isMixed = true;
                     }
