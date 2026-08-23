@@ -992,3 +992,32 @@ body {
     font-weight: bold;
 }
 
+/* Nouvelles couleurs pour les types de dégâts spécifiques */
+.log-damage-magic { border-left-color: #a855f7; }
+.log-damage-physic { border-left-color: #f97316; }
+.log-damage-brut { border-left-color: #eab308; }
+.log-damage-burn { border-left-color: #f97316; background: rgba(249, 115, 22, 0.05); }
+.log-damage-poison { border-left-color: #84cc16; background: rgba(132, 204, 22, 0.05); }
+
+.log-val-magic {
+    color: #c084fc;
+    font-weight: bold;
+    text-shadow: 0 0 4px rgba(192, 132, 252, 0.3);
+}
+.log-val-physic {
+    color: #fb923c;
+    font-weight: bold;
+}
+.log-val-brut {
+    color: #fde047;
+    font-weight: 900;
+}
+.log-val-burn {
+    color: #fb923c;
+    font-weight: bold;
+}
+.log-val-poison {
+    color: #a3e635;
+    font-weight: bold;
+}
+

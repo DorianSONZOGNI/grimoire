@@ -2620,8 +2620,18 @@ function updateUI(data) {
         else if (text.includes("inflige") && text.includes("dégâts")) {
             if (text.includes("Coup Critique")) {
                 div.className = 'log-entry log-damage-crit';
-                text = text.replace(/inflige (\d+) dégâts/g, 'inflige <span class="log-val-crit">$1</span> dégâts');
+                // Couvre 'dégâts', 'dégâts magiques', etc. derrière le chiffre
+                text = text.replace(/inflige (\d+) dégâts(.*?)(?=\s|\(|<|$)/g, 'inflige <span class="log-val-crit">$1</span> dégâts$2');
                 text = text.replace("Coup Critique", '<span class="log-crit-text">Coup Critique</span>');
+            } else if (text.includes("magiques")) {
+                div.className = 'log-entry log-damage-magic';
+                text = text.replace(/inflige (\d+) dégâts magiques/g, 'inflige <span class="log-val-magic">$1</span> dégâts magiques');
+            } else if (text.includes("physiques")) {
+                div.className = 'log-entry log-damage-physic';
+                text = text.replace(/inflige (\d+) dégâts physiques/g, 'inflige <span class="log-val-physic">$1</span> dégâts physiques');
+            } else if (text.includes("bruts")) {
+                div.className = 'log-entry log-damage-brut';
+                text = text.replace(/inflige (\d+) dégâts bruts/g, 'inflige <span class="log-val-brut">$1</span> dégâts bruts');
             } else {
                 div.className = 'log-entry log-damage-normal';
                 text = text.replace(/inflige (\d+) dégâts/g, 'inflige <span class="log-val-dmg">$1</span> dégâts');
@@ -2629,8 +2639,25 @@ function updateUI(data) {
         }
         // 3. Subit des dégâts (Dot, pièges...)
         else if (text.includes("subit") && text.includes("dégâts")) {
-             div.className = 'log-entry log-damage-normal';
-             text = text.replace(/subit (\d+) dégâts/g, 'subit <span class="log-val-dmg">$1</span> dégâts');
+             if (text.includes("magiques")) {
+                 div.className = 'log-entry log-damage-magic';
+                 text = text.replace(/subit (\d+) dégâts magiques/g, 'subit <span class="log-val-magic">$1</span> dégâts magiques');
+             } else if (text.includes("physiques")) {
+                 div.className = 'log-entry log-damage-physic';
+                 text = text.replace(/subit (\d+) dégâts physiques/g, 'subit <span class="log-val-physic">$1</span> dégâts physiques');
+             } else if (text.includes("bruts")) {
+                 div.className = 'log-entry log-damage-brut';
+                 text = text.replace(/subit (\d+) dégâts bruts/g, 'subit <span class="log-val-brut">$1</span> dégâts bruts');
+             } else if (text.includes("Brûlure")) {
+                 div.className = 'log-entry log-damage-burn';
+                 text = text.replace(/subit (\d+) dégâts de Brûlure/g, 'subit <span class="log-val-burn">$1</span> dégâts de Brûlure');
+             } else if (text.includes("Poison")) {
+                 div.className = 'log-entry log-damage-poison';
+                 text = text.replace(/subit (\d+) dégâts de Poison/g, 'subit <span class="log-val-poison">$1</span> dégâts de Poison');
+             } else {
+                 div.className = 'log-entry log-damage-normal';
+                 text = text.replace(/subit (\d+) dégâts/g, 'subit <span class="log-val-dmg">$1</span> dégâts');
+             }
         }
         // 4. Healing (HP)
         else if (text.includes("soigné") || (text.includes("récupère") && text.includes("PV"))) {

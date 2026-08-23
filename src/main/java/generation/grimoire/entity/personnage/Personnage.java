@@ -609,7 +609,15 @@ public class Personnage {
         // Affichage des informations
         double finalReductionFactor = Math.min(reductionFactor, 0.90); // Limite la réduction à 90%
         String shieldText = absorbedByShields > 0 ? "absorbés par les boucliers : " + absorbedByShields + ", " : "";
-        System.out.println(this.name + " subit " + effectiveDamage + " dégâts (" +
+        String typeStr = "";
+        if (damageType != null) {
+            switch(damageType) {
+                case MAGIC: typeStr = " magiques"; break;
+                case PHYSIC: typeStr = " physiques"; break;
+                case BRUT: typeStr = " bruts"; break;
+            }
+        }
+        System.out.println(this.name + " subit " + effectiveDamage + " dégâts" + typeStr + " (" +
                 shieldText +
                 "réduction de " + (int) (finalReductionFactor * 100) + "%), " +
                 "PV restants : " + this.healthCurrent);
