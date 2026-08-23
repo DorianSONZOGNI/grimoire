@@ -66,7 +66,7 @@ class SpellChannelingTest {
         armorBuff.setFlatValue(20);
         armorBuff.setDuration(3);
         armorBuff.setEffectTarget(EffectTarget.ALLY); // targets the chosen ally
-        armorBuff.setChannelingTurns(List.of(1, 2, 3));
+        armorBuff.setChannelingTurns(new java.util.LinkedHashSet<>(java.util.List.of(1, 2, 3)));
         
         channeledSpell.getEffects().add(armorBuff);
 
@@ -124,7 +124,7 @@ class SpellChannelingTest {
         damageBuff.setFlatValue(15);
         damageBuff.setDuration(1);
         damageBuff.setEffectTarget(EffectTarget.CASTER);
-        damageBuff.setChannelingTurns(List.of(2)); // Applies ONLY on turn 2
+        damageBuff.setChannelingTurns(new java.util.LinkedHashSet<>(java.util.List.of(2))); // Applies ONLY on turn 2
 
         channeledSpell.getEffects().add(damageBuff);
 
@@ -219,7 +219,7 @@ class SpellChannelingTest {
         generation.grimoire.entity.spell.type.effect.HeatFixedEffect heatEffect = new generation.grimoire.entity.spell.type.effect.HeatFixedEffect();
         heatEffect.setAmount(20);
         heatEffect.setEffectTarget(EffectTarget.TARGET); // Tricky target
-        heatEffect.setChannelingTurns(List.of(2));
+        heatEffect.setChannelingTurns(new java.util.LinkedHashSet<>(java.util.List.of(2)));
         
         channeledSpell.getEffects().add(heatEffect);
 

@@ -74,7 +74,7 @@ public class HealOverTimeEffect extends HealEffect {
         clone.setEffectTarget(this.getEffectTarget());
         clone.setRequiredChoiceKey(this.getRequiredChoiceKey());
         clone.setChannelingTurns(
-                this.getChannelingTurns() != null ? new java.util.ArrayList<>(this.getChannelingTurns()) : null);
+                this.getChannelingTurns() != null ? new java.util.LinkedHashSet<>(this.getChannelingTurns()) : null);
 
         clone.setFixedHealPerTick(this.fixedHealPerTick);
         clone.setPercentageHealPerTick(this.percentageHealPerTick);
@@ -92,6 +92,6 @@ public class HealOverTimeEffect extends HealEffect {
         HealOverTimeEffect clone = this.cloneEffect();
         clone.caster = caster;
         target.addHealOverTimeEffect(clone);
-        System.out.println("Heal over time appliqué sur " + target.getName() + " pour " + duration + " tours.");
+        System.out.println("Soins sur la durée appliqués sur " + target.getName() + " pour " + duration + " tours.");
     }
 }

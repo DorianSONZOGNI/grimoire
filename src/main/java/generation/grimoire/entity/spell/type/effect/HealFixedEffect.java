@@ -23,6 +23,5 @@ public class HealFixedEffect extends HealEffect {
             finalHeal = (int) (finalHeal * getCriticalMultiplier(caster));
         }
         target.heal(finalHeal);
-        System.out.println(target.getName() + " est soigné de " + finalHeal + " PV (x" + getAmplificationMultiplier() + ", multiplier donné: " + healGivenMultiplier + ")");
     }
 }

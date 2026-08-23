@@ -61,7 +61,7 @@ public class ManaOverTimeEffect extends ManaEffect {
         clone.setEffectTarget(this.getEffectTarget());
         clone.setRequiredChoiceKey(this.getRequiredChoiceKey());
         clone.setChannelingTurns(
-                this.getChannelingTurns() != null ? new java.util.ArrayList<>(this.getChannelingTurns()) : null);
+                this.getChannelingTurns() != null ? new java.util.LinkedHashSet<>(this.getChannelingTurns()) : null);
 
         clone.setFixedManaPerTick(this.fixedManaPerTick);
         clone.setPercentageManaPerTick(this.percentageManaPerTick);
@@ -75,6 +75,6 @@ public class ManaOverTimeEffect extends ManaEffect {
         ManaOverTimeEffect clone = this.cloneEffect();
         clone.caster = caster;
         target.addManaOverTimeEffect(clone);
-        System.out.println("Mana over time appliqué sur " + target.getName() + " pour " + duration + " tours.");
+        System.out.println("Régénération de mana sur la durée appliquée sur " + target.getName() + " pour " + duration + " tours.");
     }
 }

@@ -87,7 +87,7 @@ public class Equipment {
     @Column(name = "available_in_shop", nullable = false)
     private boolean availableInShop = false;
 
-    @ElementCollection
+    @ElementCollection(fetch = jakarta.persistence.FetchType.EAGER)
     @org.hibernate.annotations.Fetch(org.hibernate.annotations.FetchMode.SUBSELECT)
     @CollectionTable(name = "equipment_anomaly_prices", joinColumns = @JoinColumn(name = "equipment_id"))
     @MapKeyColumn(name = "anomaly_name")

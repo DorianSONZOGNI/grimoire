@@ -522,6 +522,11 @@ async function resumeCombat(savedSessionId) {
         }
         const data = await res.json();
         pageState.sessionId = data.sessionId;
+        pageState.isMulti = (data.multi === true);
+
+        if (pageState.isMulti) {
+            initMultiSSE(savedSessionId);
+        }
 
         data.players.forEach(p => {
             pageState.previousPlayerXP[p.id] = p.experience;
@@ -1626,7 +1631,11 @@ function updateUI(data) {
                 div.style.borderColor = 'rgba(255, 255, 255, 0.1)';
                 div.style.transform = 'scale(0.95)';
             }
-            div.innerHTML = generateFighterHtml(p, true);
+            let timerHtml = '';
+            if (pageState.isMulti && isActive && data.turnStartTime) {
+                timerHtml = `<div class="turn-timer-badge" id="timerBadge_${index}" style="position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(4px); border: 1px solid #38bdf8; color: #38bdf8; padding: 4px 14px; border-radius: 8px; font-weight: bold; box-shadow: 0 0 12px rgba(56, 189, 248, 0.5); z-index: 10; display: flex; align-items: center; gap: 6px; letter-spacing: 0.5px;">⏳ Calcul...</div>`;
+            }
+            div.innerHTML = timerHtml + generateFighterHtml(p, true);
             playersContainer.appendChild(div);
 
             if (needsDelay) {
@@ -1645,6 +1654,37 @@ function updateUI(data) {
                 }, 800);
             }
         });
+    }
+
+    if (window.multiplayerTurnInterval) {
+        clearInterval(window.multiplayerTurnInterval);
+        window.multiplayerTurnInterval = null;
+    }
+
+    if (pageState.isMulti && !data.finished && data.turnStartTime) {
+        window.multiplayerTurnInterval = setInterval(() => {
+            const elapsed = Math.floor((Date.now() - data.turnStartTime) / 1000);
+            let remaining = Math.max(0, 90 - elapsed);
+
+            document.querySelectorAll('.turn-timer-badge').forEach(badge => {
+                badge.textContent = `⏳ ${remaining}s`;
+                if (remaining <= 10) {
+                    badge.style.background = 'rgba(69, 10, 10, 0.9)';
+                    badge.style.borderColor = '#ef4444';
+                    badge.style.color = '#ef4444';
+                    badge.style.boxShadow = '0 0 15px rgba(239, 68, 68, 0.8)';
+                } else {
+                    badge.style.background = 'rgba(15, 23, 42, 0.9)';
+                    badge.style.borderColor = '#38bdf8';
+                    badge.style.color = '#38bdf8';
+                    badge.style.boxShadow = '0 0 12px rgba(56, 189, 248, 0.5)';
+                }
+            });
+
+            if (remaining <= 0 && window.multiplayerTurnInterval) {
+                clearInterval(window.multiplayerTurnInterval);
+            }
+        }, 1000);
     }
 
     // Render Spells
@@ -2563,16 +2603,184 @@ function updateUI(data) {
     logContainer.innerHTML = '';
     data.combatLog.forEach(log => {
         const div = document.createElement('div');
-        div.className = 'log-entry';
-
         let text = log;
-        data.players.forEach(p => {
-            text = text.replace(new RegExp(p.name, 'g'), `<span style="color:#10b981;font-weight:600;">${p.name}</span>`);
-        });
-        text = text.replace(/inflige (\d+) dégâts/g, 'inflige <span class="text-gold font-bold">$1</span> dégâts');
+        let isUseless = false;
 
-        div.innerHTML = text;
-        logContainer.appendChild(div);
+        data.players.forEach(p => {
+            // Un peu de regex pour ne pas remplacer dans les attributs HTML si p.name correspond
+            text = text.replace(new RegExp(`\\b${p.name}\\b`, 'g'), `<span class="log-player-name">${p.name}</span>`);
+        });
+
+        // 1. Turn Separator
+        if (text.startsWith("--- Tour de ")) {
+            div.className = 'log-entry log-turn-separator';
+            text = text.replace(/--- Tour de (.*?) ---/, '🏁 <strong>Tour de $1</strong>');
+        }
+        // 2. Damage (Crit or Normal)
+        else if (text.includes("inflige") && text.includes("dégâts")) {
+            if (text.includes("Coup Critique")) {
+                div.className = 'log-entry log-damage-crit';
+                // Couvre 'dégâts', 'dégâts magiques', etc. derrière le chiffre
+                text = text.replace(/inflige (\d+) dégâts(.*?)(?=\s|\(|<|$)/g, 'inflige <span class="log-val-crit">$1</span> dégâts$2');
+                text = text.replace("Coup Critique", '<span class="log-crit-text">Coup Critique</span>');
+            } else if (text.includes("magiques")) {
+                div.className = 'log-entry log-damage-magic';
+                text = text.replace(/inflige (\d+) dégâts magiques/g, 'inflige <span class="log-val-magic">$1</span> dégâts <span class="log-val-magic">magiques</span>');
+            } else if (text.includes("physiques")) {
+                div.className = 'log-entry log-damage-physic';
+                text = text.replace(/inflige (\d+) dégâts physiques/g, 'inflige <span class="log-val-physic">$1</span> dégâts <span class="log-val-physic">physiques</span>');
+            } else if (text.includes("bruts")) {
+                div.className = 'log-entry log-damage-brut';
+                text = text.replace(/inflige (\d+) dégâts bruts/g, 'inflige <span class="log-val-brut">$1</span> dégâts <span class="log-val-brut">bruts</span>');
+            } else {
+                div.className = 'log-entry log-damage-normal';
+                text = text.replace(/inflige (\d+) dégâts/g, 'inflige <span class="log-val-dmg">$1</span> dégâts');
+            }
+        }
+        // 3. Subit des dégâts (Dot, pièges...)
+        else if (text.includes("subit") && text.includes("dégâts")) {
+             if (text.includes("magiques")) {
+                 div.className = 'log-entry log-damage-magic';
+                 text = text.replace(/subit (\d+) dégâts magiques/g, 'subit <span class="log-val-magic">$1</span> dégâts <span class="log-val-magic">magiques</span>');
+             } else if (text.includes("physiques")) {
+                 div.className = 'log-entry log-damage-physic';
+                 text = text.replace(/subit (\d+) dégâts physiques/g, 'subit <span class="log-val-physic">$1</span> dégâts <span class="log-val-physic">physiques</span>');
+             } else if (text.includes("bruts")) {
+                 div.className = 'log-entry log-damage-brut';
+                 text = text.replace(/subit (\d+) dégâts bruts/g, 'subit <span class="log-val-brut">$1</span> dégâts <span class="log-val-brut">bruts</span>');
+             } else if (text.includes("Brûlure")) {
+                 div.className = 'log-entry log-damage-burn';
+                 text = text.replace(/subit (\d+) dégâts de Brûlure/g, 'subit <span class="log-val-burn">$1</span> dégâts de <span class="log-val-burn">Brûlure</span>');
+             } else if (text.includes("Poison")) {
+                 div.className = 'log-entry log-damage-poison';
+                 text = text.replace(/subit (\d+) dégâts de Poison/g, 'subit <span class="log-val-poison">$1</span> dégâts de <span class="log-val-poison">Poison</span>');
+             } else {
+                 div.className = 'log-entry log-damage-normal';
+                 text = text.replace(/subit (\d+) dégâts/g, 'subit <span class="log-val-dmg">$1</span> dégâts');
+             }
+        }
+        // 4. Healing (HP)
+        else if (text.includes("soigné") || (text.includes("récupère") && text.includes("PV"))) {
+            div.className = 'log-entry log-heal-hp';
+            text = text.replace(/(\d+) PV/g, '<span class="log-val-hp">$1 PV</span>');
+        }
+        // 5. Healing (Mana)
+        else if (text.toLowerCase().includes("mana") && (text.includes("récupère") || text.includes("régénère"))) {
+            div.className = 'log-entry log-heal-mana';
+            text = text.replace(/(\d+) (?:points de )?[mM]ana/g, '<span class="log-val-mana">$1 Mana</span>');
+            // Gérer aussi "Mana actuelle : X" pour cette ligne
+            text = text.replace(/Mana actuelle : (\d+)/g, 'Mana actuelle : <span class="log-val-mana">$1</span>');
+        }
+        // 6. Deaths
+        else if (text.includes("succombe") || text.includes("terrassé") || text.includes("mort") || text.includes("est vaincu")) {
+            div.className = 'log-entry log-death';
+        }
+        // 7. Dodge / Miss
+        else if (text.includes("esquive") || text.includes("rate") || text.includes("bloque")) {
+            div.className = 'log-entry log-miss';
+        }
+        // 8. Default
+        else {
+            div.className = 'log-entry log-generic';
+        }
+
+        // Global value replacements
+        text = text.replace(/Init: (\d+)/g, 'Init: <span class="log-val-init">$1</span>');
+        text = text.replace(/Vitesse: (\d+)/g, 'Vitesse: <span class="log-val-speed">$1</span>');
+        text = text.replace(/PV restants : (\d+)/g, 'PV restants : <span class="log-val-hp">$1</span>');
+        text = text.replace(/Vie actuelle : (\d+)/g, 'Vie actuelle : <span class="log-val-hp">$1</span>');
+        text = text.replace(/soigné de (\d+) points/g, 'soigné de <span class="log-val-hp">$1</span> points');
+        text = text.replace(/reçoit un bouclier de (\d+)/g, 'reçoit un <span class="log-val-shield">bouclier</span> de <span class="log-val-shield">$1</span>');
+        
+        const getStatClass = (statName) => {
+            let cssClass = 'log-val-stat'; // Default generic stat color
+            const lower = statName.toLowerCase();
+            if (lower.includes("brûlure")) cssClass = 'log-val-burn';
+            else if (lower.includes("poison")) cssClass = 'log-val-poison';
+            else if (lower.includes("vitesse")) cssClass = 'log-val-speed';
+            else if (lower.includes("critique")) cssClass = 'log-val-crit';
+            else if (lower.includes("mana")) cssClass = 'log-val-mana';
+            else if (lower.includes("vie") || lower.includes("soins")) cssClass = 'log-val-hp';
+            else if (lower.includes("armure")) cssClass = 'log-val-armor';
+            else if (lower.includes("résistance")) cssClass = 'log-val-resist';
+            else if (lower.includes("bouclier")) cssClass = 'log-val-shield';
+            else if (lower.includes("magique") || lower.includes("puissance")) cssClass = 'log-val-magic';
+            else if (lower.includes("physique") || lower.includes("force")) cssClass = 'log-val-physic';
+            else if (lower.includes("brut")) cssClass = 'log-val-brut';
+            return cssClass;
+        };
+
+        // Buffs & Gains
+        text = text.replace(/\+(\d+) de ([a-zA-Zéèàçûîôâê]+)/gi, function(match, amount, statName) {
+            const cssClass = getStatClass(statName);
+            return `+<span class="${cssClass}">${amount}</span> de <span class="${cssClass}">${statName}</span>`;
+        });
+        
+        // Passifs spécifiques
+        text = text.replace(/\+(\d+)% d'armure/gi, '+<span class="log-val-armor">$1%</span> d\'<span class="log-val-armor">armure</span>');
+        text = text.replace(/\+(\d+)% de résistance magique/gi, '+<span class="log-val-resist">$1%</span> de <span class="log-val-resist">résistance magique</span>');
+        text = text.replace(/\-(\d+)% sur le coût des sorts/gi, '-<span class="log-val-mana">$1%</span> sur le <span class="log-val-mana">coût des sorts</span>');
+        text = text.replace(/\+(\d+) Vitesse/gi, '+<span class="log-val-speed">$1</span> <span class="log-val-speed">Vitesse</span>');
+        
+        // Passifs Voies & Spiritualités (Mots clés et Phrases)
+        // Destruction
+        text = text.replace(/🔥 \[Destruction\]/g, '<span style="color:#ef4444;font-weight:bold;">🔥 [Destruction]</span>');
+        text = text.replace(/chaleur/gi, '<span style="color:#f97316;font-weight:bold;">chaleur</span>');
+        
+        // Création
+        text = text.replace(/🌱 \[Création\]/g, '<span style="color:#10b981;font-weight:bold;">🌱 [Création]</span>');
+        text = text.replace(/✨ \[Création\]/g, '<span style="color:#10b981;font-weight:bold;">✨ [Création]</span>');
+        text = text.replace(/bourgeon/gi, '<span style="color:#10b981;font-weight:bold;">bourgeon</span>');
+        text = text.replace(/instantané/gi, '<span style="color:#a855f7;font-weight:bold;">instantané</span>');
+        
+        // Sûreté
+        text = text.replace(/stocke (\d+) points de sûreté/gi, 'stocke <span class="log-val-shield">$1</span> <span class="log-val-shield">points de sûreté</span>');
+        text = text.replace(/\(Sûreté\)/g, '(<span class="log-val-shield">Sûreté</span>)');
+        text = text.replace(/\(Sûreté passive\)/g, '(<span class="log-val-shield">Sûreté passive</span>)');
+        text = text.replace(/\+(\d+)% de critique/gi, '+<span class="log-val-crit">$1%</span> de <span class="log-val-crit">critique</span>');
+        
+        // Raison
+        text = text.replace(/de la Raison/g, 'de la <span class="log-val-magic">Raison</span>');
+        text = text.replace(/\(Raison\)/g, '(<span class="log-val-magic">Raison</span>)');
+        text = text.replace(/cumuls de Vitesse/g, 'cumuls de <span class="log-val-speed">Vitesse</span>');
+        
+        // Violence
+        text = text.replace(/stacks de Violence/g, 'stacks de <span class="log-val-brut">Violence</span>');
+        
+        // Karma (Spiritualité)
+        text = text.replace(/✨ Harmonie Karmique/gi, '<span style="color:#d946ef;font-weight:bold;">✨ Harmonie Karmique</span>');
+        text = text.replace(/✨ Le Karma/gi, '<span style="color:#d946ef;font-weight:bold;">✨ Le Karma</span>');
+        text = text.replace(/✨ Équilibre Karmique Parfait atteint !/gi, '<span style="color:#d946ef;font-weight:bold;">✨ Équilibre Karmique Parfait atteint !</span>');
+        text = text.replace(/🌑 Le Karma/gi, '<span style="color:#64748b;font-weight:bold;">🌑 Le Karma</span>');
+        text = text.replace(/🌕 Le Karma/gi, '<span style="color:#fcd34d;font-weight:bold;">🌕 Le Karma</span>');
+        text = text.replace(/🌗 Le Karma/gi, '<span style="color:#a1a1aa;font-weight:bold;">🌗 Le Karma</span>');
+        text = text.replace(/🌗 Acte de rééquilibrage/gi, '<span style="color:#a1a1aa;font-weight:bold;">🌗 Acte de rééquilibrage</span>');
+        text = text.replace(/💥 Le Karma/gi, '<span style="color:#ef4444;font-weight:bold;">💥 Le Karma</span>');
+        text = text.replace(/⏳ Le Karma/gi, '<span style="color:#f59e0b;font-weight:bold;">⏳ Le Karma</span>');
+        text = text.replace(/⚖️/gi, '<span style="color:#d946ef;font-weight:bold;">⚖️</span>');
+        
+        // Jauge et Fractions
+        text = text.replace(/(\d+)\/100/g, '<span style="color:#ef4444;font-weight:bold;">$1/100</span>');
+        text = text.replace(/Jauge: ([\-\d]+)/gi, 'Jauge: <span style="color:#d946ef;font-weight:bold;">$1</span>');
+        
+        // Effets sur la durée (traductions)
+        text = text.replace(/Soins sur la durée/g, '<span class="log-val-hp">Soins sur la durée</span>');
+        text = text.replace(/Régénération de mana sur la durée/g, '<span class="log-val-mana">Régénération de mana sur la durée</span>');
+        text = text.replace(/Dégâts sur la durée/g, '<span class="log-val-dmg">Dégâts sur la durée</span>');
+        
+        text = text.replace(/\(Critique\)/g, '<span class="log-crit-text">(Critique)</span>');
+        text = text.replace(/fixe: ([\-\+\d\.]+)/g, 'fixe: <span style="color:#fbbf24;font-weight:bold;">$1</span>');
+        text = text.replace(/mult: ([\-\+\d\.]+)/g, 'mult: <span style="color:#fbbf24;font-weight:bold;">$1</span>');
+        
+        // Tous les effets de buffs/debuffs
+        text = text.replace(/effet sur (.*?) \(/g, function(match, statName) {
+            return `effet sur <span class="${getStatClass(statName)}">${statName}</span> (`;
+        });
+
+        if (!isUseless) {
+            div.innerHTML = text;
+            logContainer.appendChild(div);
+        }
     });
 
     logContainer.scrollTop = logContainer.scrollHeight;
@@ -2805,8 +3013,8 @@ function generateFighterHtml(c, isHero, skipBadges = false) {
         let styleDebuff = debuffAvail ? 'border-color: rgba(168, 85, 247, 0.6); color: #c084fc;' : 'border-color: #4b5563; color: #6b7280; opacity: 0.5;';
 
         statsHtml += `<span class="hero-stat-chip" title="1er attaque physique du tour (+10% dégâts physiques)" style="${styleBase}"><span class="material-symbols-outlined" style="color: inherit;">bolt</span>+10%</span>`;
-        statsHtml += `<span class="hero-stat-chip" title="Cible < 50% PV (+15% dégâts physiques)" style="${styleLowHp}"><span class="material-symbols-outlined" style="color: inherit;">heart_broken</span>+15%</span>`;
-        statsHtml += `<span class="hero-stat-chip" title="Cible avec Débuff (+10% dégâts physiques)" style="${styleDebuff}"><span class="material-symbols-outlined" style="color: inherit;">trending_down</span>+10%</span>`;
+        statsHtml += `<span class="hero-stat-chip" title="Cible < 50% PV (+20% dégâts physiques)" style="${styleLowHp}"><span class="material-symbols-outlined" style="color: inherit;">heart_broken</span>+20%</span>`;
+        statsHtml += `<span class="hero-stat-chip" title="Cible avec Débuff (+15% dégâts physiques)" style="${styleDebuff}"><span class="material-symbols-outlined" style="color: inherit;">trending_down</span>+15%</span>`;
     }
 
     if (c.voie && c.voie.nom && (c.voie.nom.toLowerCase().includes('création') || c.voie.nom.toLowerCase().includes('creation'))) {
@@ -2824,15 +3032,15 @@ function generateFighterHtml(c, isHero, skipBadges = false) {
 
         let icon = 'shield', color = '#9ca3af', borderColor = 'rgba(156, 163, 175, 0.4)', text = '+5% Armure', title = "Consolidation (Défaut)";
         if (level === 1) {
-            icon = 'speed'; color = '#f59e0b'; borderColor = 'rgba(245, 158, 11, 0.4)'; text = '+1 Vit'; title = "Consolidation (Niveau 1)";
+            icon = 'speed'; color = '#f59e0b'; borderColor = 'rgba(245, 158, 11, 0.4)'; text = '+2 Vit'; title = "Consolidation (Niveau 1)";
         } else if (level === 2) {
-            icon = 'shield'; color = '#10b981'; borderColor = 'rgba(16, 185, 129, 0.4)'; text = '+10% Armure'; title = "Consolidation (Niveau 2)";
+            icon = 'shield'; color = '#10b981'; borderColor = 'rgba(16, 185, 129, 0.4)'; text = '+15% Armure'; title = "Consolidation (Niveau 2)";
         } else if (level === 3) {
-            icon = 'security'; color = '#a855f7'; borderColor = 'rgba(168, 85, 247, 0.4)'; text = '+10% Résist'; title = "Consolidation (Niveau 3)";
+            icon = 'security'; color = '#a855f7'; borderColor = 'rgba(168, 85, 247, 0.4)'; text = '+15% Résist'; title = "Consolidation (Niveau 3)";
         } else if (level === 4) {
-            icon = 'water_drop'; color = '#3b82f6'; borderColor = 'rgba(59, 130, 246, 0.4)'; text = '-20% Coût'; title = "Consolidation (Niveau 4)";
+            icon = 'water_drop'; color = '#3b82f6'; borderColor = 'rgba(59, 130, 246, 0.4)'; text = '-25% Coût'; title = "Consolidation (Niveau 4)";
         } else if (level === 5) {
-            icon = 'gpp_good'; color = '#eab308'; borderColor = 'rgba(234, 179, 8, 0.4)'; text = '+8% Arm/Rés'; title = "Consolidation (Niveau 5)";
+            icon = 'gpp_good'; color = '#eab308'; borderColor = 'rgba(234, 179, 8, 0.4)'; text = '+10% Arm/Rés'; title = "Consolidation (Niveau 5)";
         }
 
         statsHtml += `<span class="hero-stat-chip" title="${title}" style="border-color: ${borderColor}; color: ${color};"><span class="material-symbols-outlined" style="color: inherit;">${icon}</span>${text}</span>`;
@@ -3014,7 +3222,7 @@ function generateFighterHtml(c, isHero, skipBadges = false) {
 
     const rHp = c.totalRegenHp !== undefined ? c.totalRegenHp : (c.regenHp || 0);
     const rMana = c.totalRegenMana !== undefined ? c.totalRegenMana : (c.regenMana || 0);
-    
+
     let hpRegenBadge = '';
     if (rHp > 0) {
         hpRegenBadge = `<span title="Régénère ${rHp} PV au début du tour" style="cursor: help; margin-left: 0.5rem; font-size: 0.7rem; background: rgba(244, 114, 182, 0.15); color: #f472b6; padding: 0.1rem 0.35rem; border-radius: 4px; border: 1px solid rgba(244, 114, 182, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.15rem; vertical-align: text-bottom;"><span class="material-symbols-outlined text-sm">healing</span>${rHp} PV/t</span>`;

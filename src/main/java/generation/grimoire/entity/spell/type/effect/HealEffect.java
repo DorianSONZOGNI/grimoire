@@ -21,7 +21,6 @@ public abstract class HealEffect extends SpellEffect {
     @Override
     public void applyModifierFromBuff(BuffDebuffEffect buff, Personnage caster, Personnage target) {
         this.amplificationMultiplier *= buff.getModifier();
-        System.out.println("Amplification appliquée au HealEffect avec x" + buff.getModifier());
     }
 
     @Override

@@ -897,3 +897,157 @@ body {
 .btn-combat-danger { background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); padding: 0.3rem 0.6rem; border-radius: 4px; cursor: pointer; font-weight: bold; font-family: 'Outfit', sans-serif; color: #ef4444; transition: all 0.2s; }
 .btn-combat-danger:hover { background: rgba(239, 68, 68, 0.3); }
 
+/* --- Combat Log Rework Styles --- */
+.log-entry {
+    padding: 8px 12px;
+    margin-bottom: 6px;
+    border-radius: 6px;
+    background: rgba(15, 23, 42, 0.4);
+    border-left: 3px solid rgba(255, 255, 255, 0.1);
+    font-size: 0.95rem;
+    line-height: 1.4;
+    color: #e2e8f0;
+    transition: all 0.2s;
+}
+
+.log-entry:hover {
+    background: rgba(15, 23, 42, 0.6);
+}
+
+.log-turn-separator {
+    background: rgba(56, 189, 248, 0.1);
+    border-left: none;
+    border-top: 1px solid rgba(56, 189, 248, 0.3);
+    border-bottom: 1px solid rgba(56, 189, 248, 0.3);
+    text-align: center;
+    color: #38bdf8;
+    margin: 12px 0;
+    padding: 6px;
+}
+
+.log-damage-normal {
+    border-left-color: #f59e0b;
+}
+
+.log-damage-crit {
+    border-left-color: #ef4444;
+    background: rgba(239, 68, 68, 0.05);
+}
+
+.log-heal-hp {
+    border-left-color: #10b981;
+}
+
+.log-heal-mana {
+    border-left-color: #06b6d4;
+}
+
+.log-death {
+    border-left-color: #991b1b;
+    background: rgba(153, 27, 27, 0.15);
+    font-weight: bold;
+    color: #fca5a5;
+}
+
+.log-miss {
+    border-left-color: #64748b;
+    color: #94a3b8;
+    font-style: italic;
+}
+
+.log-player-name {
+    color: #34d399;
+    font-weight: 600;
+}
+
+.log-val-dmg {
+    color: #fbbf24;
+    font-weight: bold;
+}
+
+.log-val-crit {
+    color: #ef4444;
+    font-weight: 900;
+    text-shadow: 0 0 5px rgba(239, 68, 68, 0.5);
+}
+
+.log-crit-text {
+    color: #ef4444;
+    font-weight: bold;
+    text-transform: uppercase;
+    font-size: 0.85rem;
+    letter-spacing: 0.05em;
+    padding: 2px 4px;
+    background: rgba(239, 68, 68, 0.1);
+    border-radius: 4px;
+}
+
+.log-val-hp {
+    color: #34d399;
+    font-weight: bold;
+}
+
+.log-val-mana {
+    color: #22d3ee;
+    font-weight: bold;
+}
+
+.log-val-init {
+    color: #a78bfa;
+    font-weight: bold;
+}
+
+.log-val-speed {
+    color: #fde047; /* Jaune pour la vitesse */
+    font-weight: bold;
+}
+
+.log-val-stat {
+    color: #cbd5e1;
+    font-weight: bold;
+}
+
+.log-val-shield {
+    color: #93c5fd;
+    font-weight: bold;
+}
+
+.log-val-armor {
+    color: #3b82f6; /* Bleu plus vif pour l'armure */
+    font-weight: bold;
+}
+
+.log-val-resist {
+    color: #4ade80; /* Vert pour la résistance */
+    font-weight: bold;
+}
+
+/* Nouvelles couleurs pour les types de dégâts spécifiques */
+.log-damage-magic { border-left-color: #a855f7; }
+.log-damage-physic { border-left-color: #f43f5e; }
+.log-damage-brut { border-left-color: #790000; }
+.log-damage-burn { border-left-color: #f97316; background: rgba(249, 115, 22, 0.05); }
+.log-damage-poison { border-left-color: #84cc16; background: rgba(132, 204, 22, 0.05); }
+
+.log-val-magic {
+    color: #c084fc;
+    font-weight: bold;
+    text-shadow: 0 0 4px rgba(192, 132, 252, 0.3);
+}
+.log-val-physic {
+    color: #f43f5e;
+    font-weight: bold;
+}
+.log-val-brut {
+    color: #790000;
+    font-weight: 900;
+}
+.log-val-burn {
+    color: #fb923c;
+    font-weight: bold;
+}
+.log-val-poison {
+    color: #a3e635;
+    font-weight: bold;
+}
+

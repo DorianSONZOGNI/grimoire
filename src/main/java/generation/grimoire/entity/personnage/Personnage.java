@@ -609,7 +609,15 @@ public class Personnage {
         // Affichage des informations
         double finalReductionFactor = Math.min(reductionFactor, 0.90); // Limite la réduction à 90%
         String shieldText = absorbedByShields > 0 ? "absorbés par les boucliers : " + absorbedByShields + ", " : "";
-        System.out.println(this.name + " subit " + effectiveDamage + " dégâts (" +
+        String typeStr = "";
+        if (damageType != null) {
+            switch(damageType) {
+                case MAGIC: typeStr = " magiques"; break;
+                case PHYSIC: typeStr = " physiques"; break;
+                case BRUT: typeStr = " bruts"; break;
+            }
+        }
+        System.out.println(this.name + " subit " + effectiveDamage + " dégâts" + typeStr + " (" +
                 shieldText +
                 "réduction de " + (int) (finalReductionFactor * 100) + "%), " +
                 "PV restants : " + this.healthCurrent);
@@ -636,8 +644,7 @@ public class Personnage {
         }
 
         // Affichage pour le débogage
-        System.out.println("reductionFactor : " + reductionFactor);
-        System.out.println("damageTakenMultiplier : " + damageTakenMultiplier);
+
     }
 
     public int getTotalHealthMax() {
@@ -669,8 +676,7 @@ public class Personnage {
         } else if (this.healthCurrent < 0) {
             this.healthCurrent = 0;
         }
-        System.out.println(name + " est soigné de " + finalHeal + " points (multiplier soin reçu: " + multiplier
-                + "). Vie actuelle : " + healthCurrent);
+        System.out.println(name + " est soigné de " + finalHeal + " points. Vie actuelle : " + healthCurrent);
 
         boolean removedPoison = activeBuffs
                 .removeIf(b -> b.getStatAffected() == StatType.POISON && (b.getFlatValue() > 0 || b.getModifier() > 0));
@@ -823,8 +829,7 @@ public class Personnage {
         double multiplier = getStatBuffMultiplier(StatType.SHIELD_RECEIVED);
         int finalAmount = (int) (amount * Math.max(0, multiplier));
         activeShields.add(new ActiveShield(finalAmount, duration, sourceName));
-        System.out.println(name + " reçoit un bouclier de " + finalAmount + " (multiplier bouclier reçu: " + multiplier
-                + ") pour " + duration + " tours (" + sourceName + ").");
+        System.out.println(name + " reçoit un bouclier de " + finalAmount + " pour " + duration + " tours (" + sourceName + ").");
     }
 
     public void updateShields() {
