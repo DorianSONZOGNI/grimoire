@@ -92,6 +92,6 @@ public class HealOverTimeEffect extends HealEffect {
         HealOverTimeEffect clone = this.cloneEffect();
         clone.caster = caster;
         target.addHealOverTimeEffect(clone);
-        System.out.println("Heal over time appliqué sur " + target.getName() + " pour " + duration + " tours.");
+        System.out.println("Soins sur la durée appliqués sur " + target.getName() + " pour " + duration + " tours.");
     }
 }

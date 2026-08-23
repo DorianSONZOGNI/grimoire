@@ -829,8 +829,7 @@ public class Personnage {
         double multiplier = getStatBuffMultiplier(StatType.SHIELD_RECEIVED);
         int finalAmount = (int) (amount * Math.max(0, multiplier));
         activeShields.add(new ActiveShield(finalAmount, duration, sourceName));
-        System.out.println(name + " reçoit un bouclier de " + finalAmount + " (multiplier bouclier reçu: " + multiplier
-                + ") pour " + duration + " tours (" + sourceName + ").");
+        System.out.println(name + " reçoit un bouclier de " + finalAmount + " pour " + duration + " tours (" + sourceName + ").");
     }
 
     public void updateShields() {

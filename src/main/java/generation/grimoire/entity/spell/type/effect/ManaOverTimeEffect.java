@@ -75,6 +75,6 @@ public class ManaOverTimeEffect extends ManaEffect {
         ManaOverTimeEffect clone = this.cloneEffect();
         clone.caster = caster;
         target.addManaOverTimeEffect(clone);
-        System.out.println("Mana over time appliqué sur " + target.getName() + " pour " + duration + " tours.");
+        System.out.println("Régénération de mana sur la durée appliquée sur " + target.getName() + " pour " + duration + " tours.");
     }
 }

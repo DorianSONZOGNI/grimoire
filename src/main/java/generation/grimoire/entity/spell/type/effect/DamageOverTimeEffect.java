@@ -122,7 +122,7 @@ public class DamageOverTimeEffect extends DamageEffect {
         // pour permettre un calcul dynamique à chaque tick et conserver l'affichage UI.
 
         target.addDamageOverTimeEffect(clone);
-        System.out.println("Damage over time appliqué sur " + target.getName()
+        System.out.println("Dégâts sur la durée appliqués sur " + target.getName()
                 + " pour " + duration + " tours.");
     }
 }

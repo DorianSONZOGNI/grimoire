@@ -2690,6 +2690,7 @@ function updateUI(data) {
         text = text.replace(/PV restants : (\d+)/g, 'PV restants : <span class="log-val-hp">$1</span>');
         text = text.replace(/Vie actuelle : (\d+)/g, 'Vie actuelle : <span class="log-val-hp">$1</span>');
         text = text.replace(/soigné de (\d+) points/g, 'soigné de <span class="log-val-hp">$1</span> points');
+        text = text.replace(/reçoit un bouclier de (\d+)/g, 'reçoit un <span class="log-val-shield">bouclier</span> de <span class="log-val-shield">$1</span>');
         
         const getStatClass = (statName) => {
             let cssClass = 'log-val-stat'; // Default generic stat color
@@ -2714,6 +2715,17 @@ function updateUI(data) {
             const cssClass = getStatClass(statName);
             return `+<span class="${cssClass}">${amount}</span> de <span class="${cssClass}">${statName}</span>`;
         });
+        
+        // Passifs spécifiques
+        text = text.replace(/\+(\d+)% d'armure/gi, '+<span class="log-val-armor">$1%</span> d\'<span class="log-val-armor">armure</span>');
+        text = text.replace(/\+(\d+)% de résistance magique/gi, '+<span class="log-val-resist">$1%</span> de <span class="log-val-resist">résistance magique</span>');
+        text = text.replace(/\-(\d+)% sur le coût des sorts/gi, '-<span class="log-val-mana">$1%</span> sur le <span class="log-val-mana">coût des sorts</span>');
+        text = text.replace(/\+(\d+) Vitesse/gi, '+<span class="log-val-speed">$1</span> <span class="log-val-speed">Vitesse</span>');
+        
+        // Effets sur la durée (traductions)
+        text = text.replace(/Soins sur la durée/g, '<span class="log-val-hp">Soins sur la durée</span>');
+        text = text.replace(/Régénération de mana sur la durée/g, '<span class="log-val-mana">Régénération de mana sur la durée</span>');
+        text = text.replace(/Dégâts sur la durée/g, '<span class="log-val-dmg">Dégâts sur la durée</span>');
         
         text = text.replace(/\(Critique\)/g, '<span class="log-crit-text">(Critique)</span>');
         text = text.replace(/fixe: ([\-\+\d\.]+)/g, 'fixe: <span style="color:#fbbf24;font-weight:bold;">$1</span>');
@@ -2979,15 +2991,15 @@ function generateFighterHtml(c, isHero, skipBadges = false) {
 
         let icon = 'shield', color = '#9ca3af', borderColor = 'rgba(156, 163, 175, 0.4)', text = '+5% Armure', title = "Consolidation (Défaut)";
         if (level === 1) {
-            icon = 'speed'; color = '#f59e0b'; borderColor = 'rgba(245, 158, 11, 0.4)'; text = '+1 Vit'; title = "Consolidation (Niveau 1)";
+            icon = 'speed'; color = '#f59e0b'; borderColor = 'rgba(245, 158, 11, 0.4)'; text = '+2 Vit'; title = "Consolidation (Niveau 1)";
         } else if (level === 2) {
-            icon = 'shield'; color = '#10b981'; borderColor = 'rgba(16, 185, 129, 0.4)'; text = '+10% Armure'; title = "Consolidation (Niveau 2)";
+            icon = 'shield'; color = '#10b981'; borderColor = 'rgba(16, 185, 129, 0.4)'; text = '+15% Armure'; title = "Consolidation (Niveau 2)";
         } else if (level === 3) {
-            icon = 'security'; color = '#a855f7'; borderColor = 'rgba(168, 85, 247, 0.4)'; text = '+10% Résist'; title = "Consolidation (Niveau 3)";
+            icon = 'security'; color = '#a855f7'; borderColor = 'rgba(168, 85, 247, 0.4)'; text = '+15% Résist'; title = "Consolidation (Niveau 3)";
         } else if (level === 4) {
-            icon = 'water_drop'; color = '#3b82f6'; borderColor = 'rgba(59, 130, 246, 0.4)'; text = '-20% Coût'; title = "Consolidation (Niveau 4)";
+            icon = 'water_drop'; color = '#3b82f6'; borderColor = 'rgba(59, 130, 246, 0.4)'; text = '-25% Coût'; title = "Consolidation (Niveau 4)";
         } else if (level === 5) {
-            icon = 'gpp_good'; color = '#eab308'; borderColor = 'rgba(234, 179, 8, 0.4)'; text = '+8% Arm/Rés'; title = "Consolidation (Niveau 5)";
+            icon = 'gpp_good'; color = '#eab308'; borderColor = 'rgba(234, 179, 8, 0.4)'; text = '+10% Arm/Rés'; title = "Consolidation (Niveau 5)";
         }
 
         statsHtml += `<span class="hero-stat-chip" title="${title}" style="border-color: ${borderColor}; color: ${color};"><span class="material-symbols-outlined" style="color: inherit;">${icon}</span>${text}</span>`;

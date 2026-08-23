@@ -998,7 +998,7 @@ body {
 }
 
 .log-val-speed {
-    color: #60a5fa;
+    color: #fde047; /* Jaune pour la vitesse */
     font-weight: bold;
 }
 
