@@ -2700,7 +2700,9 @@ function updateUI(data) {
             else if (lower.includes("critique")) cssClass = 'log-val-crit';
             else if (lower.includes("mana")) cssClass = 'log-val-mana';
             else if (lower.includes("vie") || lower.includes("soins")) cssClass = 'log-val-hp';
-            else if (lower.includes("armure") || lower.includes("résistance") || lower.includes("bouclier")) cssClass = 'log-val-shield';
+            else if (lower.includes("armure")) cssClass = 'log-val-armor';
+            else if (lower.includes("résistance")) cssClass = 'log-val-resist';
+            else if (lower.includes("bouclier")) cssClass = 'log-val-shield';
             else if (lower.includes("magique") || lower.includes("puissance")) cssClass = 'log-val-magic';
             else if (lower.includes("physique") || lower.includes("force")) cssClass = 'log-val-physic';
             else if (lower.includes("brut")) cssClass = 'log-val-brut';

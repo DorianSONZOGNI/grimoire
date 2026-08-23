@@ -1012,6 +1012,16 @@ body {
     font-weight: bold;
 }
 
+.log-val-armor {
+    color: #3b82f6; /* Bleu plus vif pour l'armure */
+    font-weight: bold;
+}
+
+.log-val-resist {
+    color: #4ade80; /* Vert pour la résistance */
+    font-weight: bold;
+}
+
 /* Nouvelles couleurs pour les types de dégâts spécifiques */
 .log-damage-magic { border-left-color: #a855f7; }
 .log-damage-physic { border-left-color: #f43f5e; }
