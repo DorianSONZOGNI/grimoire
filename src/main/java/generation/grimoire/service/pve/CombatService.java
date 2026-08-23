@@ -1476,7 +1476,24 @@ public class CombatService {
             if (!targetMonster.isDead()) {
                 p.setBanalSpellCastThisTurn(true);
                 captureLogs(session, () -> {
-                    int playerDmg = p.getEffectiveStat(generation.grimoire.enumeration.StatType.STRENGTH);
+                    int pAtk = p.getEffectiveStat(generation.grimoire.enumeration.StatType.STRENGTH);
+                    int mAtk = p.getEffectiveStat(generation.grimoire.enumeration.StatType.POWER);
+
+                    int baseDmg;
+                    generation.grimoire.enumeration.DamageType dmgType;
+                    boolean isMixed = false;
+
+                    if (pAtk > mAtk) {
+                        baseDmg = pAtk;
+                        dmgType = generation.grimoire.enumeration.DamageType.PHYSIC;
+                    } else if (mAtk > pAtk) {
+                        baseDmg = mAtk;
+                        dmgType = generation.grimoire.enumeration.DamageType.MAGIC;
+                    } else {
+                        baseDmg = pAtk; // Since they are equal
+                        dmgType = null;
+                        isMixed = true;
+                    }
 
                     int totalCrit = p.getCrit() + p.getStatFlatBonus(generation.grimoire.enumeration.StatType.CRIT);
                     totalCrit = Math.max(0, Math.min(100, totalCrit));
@@ -1485,18 +1502,26 @@ public class CombatService {
                     if (isCrit) {
                         System.out.println("💥 Coup Critique déclenché par " + p.getName() + " !");
                         double critMult = 1.5;
-                        int bonus = p
-                                .getSpecialEffectValue(generation.grimoire.enumeration.EquipmentEffectType.CRIT_DAMAGE);
+                        int bonus = p.getSpecialEffectValue(generation.grimoire.enumeration.EquipmentEffectType.CRIT_DAMAGE);
                         if (bonus > 0) {
                             critMult += (bonus / 100.0);
                         }
-                        playerDmg = (int) (playerDmg * critMult);
+                        baseDmg = (int) (baseDmg * critMult);
                     }
 
-                    System.out.println(p.getName() + " attaque " + targetMonster.getBase().getName() + " ("
-                            + (isCrit ? "Critique : " : "Force : ") + playerDmg + ") !");
-                    p.dealDamage(targetMonster.getAsPersonnage(), playerDmg,
-                            generation.grimoire.enumeration.DamageType.PHYSIC);
+                    if (isMixed) {
+                        int half = baseDmg / 2;
+                        int remainder = baseDmg - half;
+                        System.out.println(p.getName() + " attaque " + targetMonster.getBase().getName() + " ("
+                                + (isCrit ? "Critique mixte : " : "Force/Puissance : ") + baseDmg + ") !");
+                        if (half > 0) p.dealDamage(targetMonster.getAsPersonnage(), half, generation.grimoire.enumeration.DamageType.PHYSIC);
+                        if (remainder > 0) p.dealDamage(targetMonster.getAsPersonnage(), remainder, generation.grimoire.enumeration.DamageType.MAGIC);
+                    } else {
+                        String statLabel = (dmgType == generation.grimoire.enumeration.DamageType.PHYSIC) ? "Force" : "Puissance";
+                        System.out.println(p.getName() + " attaque " + targetMonster.getBase().getName() + " ("
+                                + (isCrit ? "Critique : " : statLabel + " : ") + baseDmg + ") !");
+                        p.dealDamage(targetMonster.getAsPersonnage(), baseDmg, dmgType);
+                    }
                 });
             }
         }
