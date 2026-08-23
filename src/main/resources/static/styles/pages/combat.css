@@ -992,10 +992,30 @@ body {
     font-weight: bold;
 }
 
+.log-val-init {
+    color: #a78bfa;
+    font-weight: bold;
+}
+
+.log-val-speed {
+    color: #60a5fa;
+    font-weight: bold;
+}
+
+.log-val-stat {
+    color: #cbd5e1;
+    font-weight: bold;
+}
+
+.log-val-shield {
+    color: #93c5fd;
+    font-weight: bold;
+}
+
 /* Nouvelles couleurs pour les types de dégâts spécifiques */
 .log-damage-magic { border-left-color: #a855f7; }
-.log-damage-physic { border-left-color: #f97316; }
-.log-damage-brut { border-left-color: #eab308; }
+.log-damage-physic { border-left-color: #f43f5e; }
+.log-damage-brut { border-left-color: #790000; }
 .log-damage-burn { border-left-color: #f97316; background: rgba(249, 115, 22, 0.05); }
 .log-damage-poison { border-left-color: #84cc16; background: rgba(132, 204, 22, 0.05); }
 
@@ -1005,11 +1025,11 @@ body {
     text-shadow: 0 0 4px rgba(192, 132, 252, 0.3);
 }
 .log-val-physic {
-    color: #fb923c;
+    color: #f43f5e;
     font-weight: bold;
 }
 .log-val-brut {
-    color: #fde047;
+    color: #790000;
     font-weight: 900;
 }
 .log-val-burn {

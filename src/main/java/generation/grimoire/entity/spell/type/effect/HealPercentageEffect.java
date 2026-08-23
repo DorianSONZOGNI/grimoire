@@ -41,8 +41,6 @@ public class HealPercentageEffect extends HealEffect {
             healAmount *= getCriticalMultiplier(caster);
         }
         target.heal((int) healAmount);
-        System.out.println(target.getName() + " est soigné de " + (int) healAmount +
-                " PV via HealPercentageEffect (source : " + healSource + ", x" + getAmplificationMultiplier() + ", multiplier donné: " + healGivenMultiplier + ")");
     }
 
 }

@@ -2625,13 +2625,13 @@ function updateUI(data) {
                 text = text.replace("Coup Critique", '<span class="log-crit-text">Coup Critique</span>');
             } else if (text.includes("magiques")) {
                 div.className = 'log-entry log-damage-magic';
-                text = text.replace(/inflige (\d+) dégâts magiques/g, 'inflige <span class="log-val-magic">$1</span> dégâts magiques');
+                text = text.replace(/inflige (\d+) dégâts magiques/g, 'inflige <span class="log-val-magic">$1</span> dégâts <span class="log-val-magic">magiques</span>');
             } else if (text.includes("physiques")) {
                 div.className = 'log-entry log-damage-physic';
-                text = text.replace(/inflige (\d+) dégâts physiques/g, 'inflige <span class="log-val-physic">$1</span> dégâts physiques');
+                text = text.replace(/inflige (\d+) dégâts physiques/g, 'inflige <span class="log-val-physic">$1</span> dégâts <span class="log-val-physic">physiques</span>');
             } else if (text.includes("bruts")) {
                 div.className = 'log-entry log-damage-brut';
-                text = text.replace(/inflige (\d+) dégâts bruts/g, 'inflige <span class="log-val-brut">$1</span> dégâts bruts');
+                text = text.replace(/inflige (\d+) dégâts bruts/g, 'inflige <span class="log-val-brut">$1</span> dégâts <span class="log-val-brut">bruts</span>');
             } else {
                 div.className = 'log-entry log-damage-normal';
                 text = text.replace(/inflige (\d+) dégâts/g, 'inflige <span class="log-val-dmg">$1</span> dégâts');
@@ -2641,19 +2641,19 @@ function updateUI(data) {
         else if (text.includes("subit") && text.includes("dégâts")) {
              if (text.includes("magiques")) {
                  div.className = 'log-entry log-damage-magic';
-                 text = text.replace(/subit (\d+) dégâts magiques/g, 'subit <span class="log-val-magic">$1</span> dégâts magiques');
+                 text = text.replace(/subit (\d+) dégâts magiques/g, 'subit <span class="log-val-magic">$1</span> dégâts <span class="log-val-magic">magiques</span>');
              } else if (text.includes("physiques")) {
                  div.className = 'log-entry log-damage-physic';
-                 text = text.replace(/subit (\d+) dégâts physiques/g, 'subit <span class="log-val-physic">$1</span> dégâts physiques');
+                 text = text.replace(/subit (\d+) dégâts physiques/g, 'subit <span class="log-val-physic">$1</span> dégâts <span class="log-val-physic">physiques</span>');
              } else if (text.includes("bruts")) {
                  div.className = 'log-entry log-damage-brut';
-                 text = text.replace(/subit (\d+) dégâts bruts/g, 'subit <span class="log-val-brut">$1</span> dégâts bruts');
+                 text = text.replace(/subit (\d+) dégâts bruts/g, 'subit <span class="log-val-brut">$1</span> dégâts <span class="log-val-brut">bruts</span>');
              } else if (text.includes("Brûlure")) {
                  div.className = 'log-entry log-damage-burn';
-                 text = text.replace(/subit (\d+) dégâts de Brûlure/g, 'subit <span class="log-val-burn">$1</span> dégâts de Brûlure');
+                 text = text.replace(/subit (\d+) dégâts de Brûlure/g, 'subit <span class="log-val-burn">$1</span> dégâts de <span class="log-val-burn">Brûlure</span>');
              } else if (text.includes("Poison")) {
                  div.className = 'log-entry log-damage-poison';
-                 text = text.replace(/subit (\d+) dégâts de Poison/g, 'subit <span class="log-val-poison">$1</span> dégâts de Poison');
+                 text = text.replace(/subit (\d+) dégâts de Poison/g, 'subit <span class="log-val-poison">$1</span> dégâts de <span class="log-val-poison">Poison</span>');
              } else {
                  div.className = 'log-entry log-damage-normal';
                  text = text.replace(/subit (\d+) dégâts/g, 'subit <span class="log-val-dmg">$1</span> dégâts');
@@ -2665,9 +2665,11 @@ function updateUI(data) {
             text = text.replace(/(\d+) PV/g, '<span class="log-val-hp">$1 PV</span>');
         }
         // 5. Healing (Mana)
-        else if (text.includes("récupère") && text.includes("Mana")) {
+        else if (text.toLowerCase().includes("mana") && (text.includes("récupère") || text.includes("régénère"))) {
             div.className = 'log-entry log-heal-mana';
-            text = text.replace(/(\d+) Mana/g, '<span class="log-val-mana">$1 Mana</span>');
+            text = text.replace(/(\d+) (?:points de )?[mM]ana/g, '<span class="log-val-mana">$1 Mana</span>');
+            // Gérer aussi "Mana actuelle : X" pour cette ligne
+            text = text.replace(/Mana actuelle : (\d+)/g, 'Mana actuelle : <span class="log-val-mana">$1</span>');
         }
         // 6. Deaths
         else if (text.includes("succombe") || text.includes("terrassé") || text.includes("mort") || text.includes("est vaincu")) {
@@ -2681,6 +2683,44 @@ function updateUI(data) {
         else {
             div.className = 'log-entry log-generic';
         }
+
+        // Global value replacements
+        text = text.replace(/Init: (\d+)/g, 'Init: <span class="log-val-init">$1</span>');
+        text = text.replace(/Vitesse: (\d+)/g, 'Vitesse: <span class="log-val-speed">$1</span>');
+        text = text.replace(/PV restants : (\d+)/g, 'PV restants : <span class="log-val-hp">$1</span>');
+        text = text.replace(/Vie actuelle : (\d+)/g, 'Vie actuelle : <span class="log-val-hp">$1</span>');
+        text = text.replace(/soigné de (\d+) points/g, 'soigné de <span class="log-val-hp">$1</span> points');
+        
+        const getStatClass = (statName) => {
+            let cssClass = 'log-val-stat'; // Default generic stat color
+            const lower = statName.toLowerCase();
+            if (lower.includes("brûlure")) cssClass = 'log-val-burn';
+            else if (lower.includes("poison")) cssClass = 'log-val-poison';
+            else if (lower.includes("vitesse")) cssClass = 'log-val-speed';
+            else if (lower.includes("critique")) cssClass = 'log-val-crit';
+            else if (lower.includes("mana")) cssClass = 'log-val-mana';
+            else if (lower.includes("vie") || lower.includes("soins")) cssClass = 'log-val-hp';
+            else if (lower.includes("armure") || lower.includes("résistance") || lower.includes("bouclier")) cssClass = 'log-val-shield';
+            else if (lower.includes("magique") || lower.includes("puissance")) cssClass = 'log-val-magic';
+            else if (lower.includes("physique") || lower.includes("force")) cssClass = 'log-val-physic';
+            else if (lower.includes("brut")) cssClass = 'log-val-brut';
+            return cssClass;
+        };
+
+        // Buffs & Gains
+        text = text.replace(/\+(\d+) de ([a-zA-Zéèàçûîôâê]+)/gi, function(match, amount, statName) {
+            const cssClass = getStatClass(statName);
+            return `+<span class="${cssClass}">${amount}</span> de <span class="${cssClass}">${statName}</span>`;
+        });
+        
+        text = text.replace(/\(Critique\)/g, '<span class="log-crit-text">(Critique)</span>');
+        text = text.replace(/fixe: ([\-\+\d\.]+)/g, 'fixe: <span style="color:#fbbf24;font-weight:bold;">$1</span>');
+        text = text.replace(/mult: ([\-\+\d\.]+)/g, 'mult: <span style="color:#fbbf24;font-weight:bold;">$1</span>');
+        
+        // Tous les effets de buffs/debuffs
+        text = text.replace(/effet sur (.*?) \(/g, function(match, statName) {
+            return `effet sur <span class="${getStatClass(statName)}">${statName}</span> (`;
+        });
 
         if (!isUseless) {
             div.innerHTML = text;

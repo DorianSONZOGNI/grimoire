@@ -676,8 +676,7 @@ public class Personnage {
         } else if (this.healthCurrent < 0) {
             this.healthCurrent = 0;
         }
-        System.out.println(name + " est soigné de " + finalHeal + " points (multiplier soin reçu: " + multiplier
-                + "). Vie actuelle : " + healthCurrent);
+        System.out.println(name + " est soigné de " + finalHeal + " points. Vie actuelle : " + healthCurrent);
 
         boolean removedPoison = activeBuffs
                 .removeIf(b -> b.getStatAffected() == StatType.POISON && (b.getFlatValue() > 0 || b.getModifier() > 0));
