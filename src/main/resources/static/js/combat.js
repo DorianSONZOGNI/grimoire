@@ -1632,8 +1632,7 @@ function updateUI(data) {
                 div.style.transform = 'scale(0.95)';
             }
             let timerHtml = '';
-            let isCurrentPlayer = (pageState.currentUsername === p.ownerUsername);
-            if (pageState.isMulti && isActive && data.turnStartTime && isCurrentPlayer) {
+            if (pageState.isMulti && isActive && data.turnStartTime) {
                 timerHtml = `<div class="turn-timer-badge" id="timerBadge_${index}" style="position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(4px); border: 1px solid #38bdf8; color: #38bdf8; padding: 4px 14px; border-radius: 8px; font-weight: bold; box-shadow: 0 0 12px rgba(56, 189, 248, 0.5); z-index: 10; display: flex; align-items: center; gap: 6px; letter-spacing: 0.5px;">⏳ Calcul...</div>`;
             }
             div.innerHTML = timerHtml + generateFighterHtml(p, true);
