@@ -522,6 +522,11 @@ async function resumeCombat(savedSessionId) {
         }
         const data = await res.json();
         pageState.sessionId = data.sessionId;
+        pageState.isMulti = (data.multi === true);
+
+        if (pageState.isMulti) {
+            initMultiSSE(savedSessionId);
+        }
 
         data.players.forEach(p => {
             pageState.previousPlayerXP[p.id] = p.experience;
@@ -1627,8 +1632,9 @@ function updateUI(data) {
                 div.style.transform = 'scale(0.95)';
             }
             let timerHtml = '';
-            if (pageState.isMulti && isActive && data.turnStartTime) {
-                timerHtml = `<div class="turn-timer-badge" id="timerBadge_${index}" style="position: absolute; top: -30px; left: 50%; transform: translateX(-50%); background: #f97316; color: white; padding: 4px 12px; border-radius: 6px; font-weight: bold; box-shadow: 0 0 10px rgba(249, 115, 22, 0.6); z-index: 10;">⏳ Calcul...</div>`;
+            let isCurrentPlayer = (pageState.currentUsername === p.ownerUsername);
+            if (pageState.isMulti && isActive && data.turnStartTime && isCurrentPlayer) {
+                timerHtml = `<div class="turn-timer-badge" id="timerBadge_${index}" style="position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(4px); border: 1px solid #38bdf8; color: #38bdf8; padding: 4px 14px; border-radius: 8px; font-weight: bold; box-shadow: 0 0 12px rgba(56, 189, 248, 0.5); z-index: 10; display: flex; align-items: center; gap: 6px; letter-spacing: 0.5px;">⏳ Calcul...</div>`;
             }
             div.innerHTML = timerHtml + generateFighterHtml(p, true);
             playersContainer.appendChild(div);
@@ -1660,15 +1666,19 @@ function updateUI(data) {
         window.multiplayerTurnInterval = setInterval(() => {
             const elapsed = Math.floor((Date.now() - data.turnStartTime) / 1000);
             let remaining = Math.max(0, 90 - elapsed);
-            
+
             document.querySelectorAll('.turn-timer-badge').forEach(badge => {
                 badge.textContent = `⏳ ${remaining}s`;
                 if (remaining <= 10) {
-                    badge.style.background = '#ef4444';
+                    badge.style.background = 'rgba(69, 10, 10, 0.9)';
+                    badge.style.borderColor = '#ef4444';
+                    badge.style.color = '#ef4444';
                     badge.style.boxShadow = '0 0 15px rgba(239, 68, 68, 0.8)';
                 } else {
-                    badge.style.background = '#f97316';
-                    badge.style.boxShadow = '0 0 10px rgba(249, 115, 22, 0.6)';
+                    badge.style.background = 'rgba(15, 23, 42, 0.9)';
+                    badge.style.borderColor = '#38bdf8';
+                    badge.style.color = '#38bdf8';
+                    badge.style.boxShadow = '0 0 12px rgba(56, 189, 248, 0.5)';
                 }
             });
 
@@ -3045,7 +3055,7 @@ function generateFighterHtml(c, isHero, skipBadges = false) {
 
     const rHp = c.totalRegenHp !== undefined ? c.totalRegenHp : (c.regenHp || 0);
     const rMana = c.totalRegenMana !== undefined ? c.totalRegenMana : (c.regenMana || 0);
-    
+
     let hpRegenBadge = '';
     if (rHp > 0) {
         hpRegenBadge = `<span title="Régénère ${rHp} PV au début du tour" style="cursor: help; margin-left: 0.5rem; font-size: 0.7rem; background: rgba(244, 114, 182, 0.15); color: #f472b6; padding: 0.1rem 0.35rem; border-radius: 4px; border: 1px solid rgba(244, 114, 182, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.15rem; vertical-align: text-bottom;"><span class="material-symbols-outlined text-sm">healing</span>${rHp} PV/t</span>`;
