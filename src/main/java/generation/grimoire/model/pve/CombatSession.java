@@ -51,6 +51,19 @@ public class CombatSession {
     private java.util.Set<Long> penalizedDeadPlayers = new java.util.HashSet<>();
     private Set<Integer> purchasedMerchantItems = new HashSet<>();
 
+    // Track players who fled the dungeon in multi — they get no further rewards
+    private Set<String> fledUsernames = new HashSet<>();
+
+    public boolean hasFled(Personnage p) {
+        String owner = p.getOwnerUsername();
+        return owner != null && fledUsernames.contains(owner);
+    }
+
+    /** Returns true if the player is eligible for rewards (alive OR dead, but NOT fled). */
+    public boolean isEligibleForRewards(Personnage p) {
+        return !hasFled(p);
+    }
+
     private int totalGoldAccumulated = 0;
     private int totalGoldLostOnDefeat = 0;
     private int totalExpAccumulated = 0;

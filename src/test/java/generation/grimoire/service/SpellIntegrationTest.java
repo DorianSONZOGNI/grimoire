@@ -776,7 +776,7 @@ class SpellIntegrationTest {
         dmgChanneled.setDamageType(DamageType.PHYSIC);
         dmgChanneled.setDamage(100);
         // Set effect to tick on turn 2
-        dmgChanneled.setChannelingTurns(List.of(2));
+        dmgChanneled.setChannelingTurns(new java.util.LinkedHashSet<>(List.of(2)));
         channeledSpell.getEffects().add(dmgChanneled);
 
         // Initial cast on Turn 1 (no damage since dmgChanneled ticks on turn 2)

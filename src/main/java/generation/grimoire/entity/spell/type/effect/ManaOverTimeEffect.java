@@ -61,7 +61,7 @@ public class ManaOverTimeEffect extends ManaEffect {
         clone.setEffectTarget(this.getEffectTarget());
         clone.setRequiredChoiceKey(this.getRequiredChoiceKey());
         clone.setChannelingTurns(
-                this.getChannelingTurns() != null ? new java.util.ArrayList<>(this.getChannelingTurns()) : null);
+                this.getChannelingTurns() != null ? new java.util.LinkedHashSet<>(this.getChannelingTurns()) : null);
 
         clone.setFixedManaPerTick(this.fixedManaPerTick);
         clone.setPercentageManaPerTick(this.percentageManaPerTick);

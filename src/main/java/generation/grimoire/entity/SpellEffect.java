@@ -40,7 +40,7 @@ public abstract class SpellEffect {
     @ElementCollection
     @CollectionTable(name = "spell_effect_channeling_turns", joinColumns = @JoinColumn(name = "spell_effect_id"))
     @Column(name = "turn")
-    private java.util.List<Integer> channelingTurns = new java.util.ArrayList<>();
+    private java.util.Set<Integer> channelingTurns = new java.util.LinkedHashSet<>();
 
     /**
      * Applique cet effet du sort sur la cible.

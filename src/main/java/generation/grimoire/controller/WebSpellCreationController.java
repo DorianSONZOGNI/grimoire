@@ -286,7 +286,7 @@ public class WebSpellCreationController {
                             eDto.getDetachedSoulRequirement() != null ? eDto.getDetachedSoulRequirement()
                                     : generation.grimoire.enumeration.DetachedSoulRequirement.NOT_AFFECTED);
                     if (eDto.getChannelingTurns() != null) {
-                        effect.setChannelingTurns(new java.util.ArrayList<>(eDto.getChannelingTurns()));
+                        effect.setChannelingTurns(new java.util.LinkedHashSet<>(eDto.getChannelingTurns()));
                     }
                     spell.addEffect(effect);
                 }
