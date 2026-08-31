@@ -238,6 +238,7 @@ export async function submitSpell() {
         percentHealCostSource: document.getElementById('percentHealCostSource').value || 'CASTER_HEALTH_MAX',
         heatCost: parseInt(document.getElementById('heatCost').value) || 0,
         percentHeatCost: parseInt(document.getElementById('percentHeatCost').value) || 0,
+        seedCost: parseInt(document.getElementById('seedCost').value) || 0,
         heatGenerated: heatValue,
         voieId: document.getElementById('voieSelect').value ? parseInt(document.getElementById('voieSelect').value) : null,
         spiritualiteId: document.getElementById('spiritSelect').value ? parseInt(document.getElementById('spiritSelect').value) : null,

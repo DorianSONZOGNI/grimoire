@@ -538,6 +538,15 @@ public class SpellService {
             return false;
         }
 
+        int actualSeedCost = toCast.getSeedCost();
+        int currentBuds = caster.getPassiveState("creation_buds", 0);
+        boolean willPassiveTrigger = currentBuds > 0 && caster.getPassiveState("creation_used_this_turn", 0) == 0;
+        int requiredBuds = actualSeedCost + (willPassiveTrigger ? 1 : 0);
+        if (currentBuds < requiredBuds) {
+            log.debug("Graines insuffisantes pour lancer le sort {}", toCast.getNom());
+            return false;
+        }
+
         caster.setManaCurrent(caster.getManaCurrent() - actualManaCost);
         caster.setHealthCurrent(caster.getHealthCurrent() - actualHealCost);
         
@@ -561,11 +570,13 @@ public class SpellService {
             }
         }
         caster.setPassiveState("destruction_heat", currentHeat - actualHeatCost);
+        caster.setPassiveState("creation_buds", currentBuds - actualSeedCost);
         
         String costMsg = "";
         if (actualManaCost > 0) costMsg += actualManaCost + " mana, ";
         if (actualHealCost > 0) costMsg += actualHealCost + " PV, ";
         if (actualHeatCost > 0) costMsg += actualHeatCost + " chaleur, ";
+        if (actualSeedCost > 0) costMsg += actualSeedCost + " graines, ";
         
         if (!costMsg.isEmpty()) {
             costMsg = costMsg.substring(0, costMsg.length() - 2);
