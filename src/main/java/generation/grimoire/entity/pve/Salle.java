@@ -27,7 +27,7 @@ public class Salle {
     private EventSubType eventSubType;
 
     // IF COMBAT
-    @ManyToMany(fetch = FetchType.LAZY)
+    @ManyToMany(fetch = FetchType.EAGER)
     @org.hibernate.annotations.Fetch(org.hibernate.annotations.FetchMode.SUBSELECT)
     @JoinTable(
         name = "salle_monstre",
@@ -82,7 +82,7 @@ public class Salle {
     @Column(columnDefinition = "TEXT")
     private String doorOutcomes; // JSON: [{"type":"BOSS","probability":20},{"type":"ITEM","probability":50}]
 
-    @OneToMany(mappedBy = "salle", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "salle", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @org.hibernate.annotations.Fetch(org.hibernate.annotations.FetchMode.SUBSELECT)
     private List<LootEntry> lootTable = new ArrayList<>();
 }
