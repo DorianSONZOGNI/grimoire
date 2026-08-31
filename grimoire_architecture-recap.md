@@ -160,32 +160,110 @@ generation.grimoire/
 
 ## Modèle de données (relations clés)
 
+### 1. Cartographie globale par domaines
+
+```mermaid
+flowchart TB
+    subgraph Auth["🔐 Compte & Sécurité"]
+        AppUser["AppUser"]
+        RefreshToken["RefreshToken"]
+        AppUser -->|auth tokens| RefreshToken
+    end
+
+    subgraph Hero["🧙‍♂️ Personnage & Progression"]
+        Personnage["Personnage"]
+        Voie["Voie"]
+        VoiePassive["VoiePassiveEffect"]
+        Spirit["Spiritualite"]
+        SpiritPassive["SpiritualitePassiveEffect"]
+
+        Personnage -->|suit| Voie
+        Personnage -->|pratique| Spirit
+        Voie -->|passifs| VoiePassive
+        Spirit -->|passifs| SpiritPassive
+    end
+
+    subgraph Spells["✨ Magie & Sorts"]
+        Spell["Spell"]
+        SpellEffect["SpellEffect\n(SINGLE_TABLE)"]
+        Spell -->|effets polymorphes| SpellEffect
+        Spell -.->|lié à| Voie
+        Spell -.->|lié à| Spirit
+    end
+
+    subgraph PvE["🏰 PvE & Donjons"]
+        Donjon["Donjon"]
+        Salle["Salle"]
+        Monstre["Monstre"]
+        LootEntry["LootEntry"]
+        Mutation["Mutation"]
+
+        Donjon -->|salles ordonnées| Salle
+        Salle -->|contient| Monstre
+        Salle -->|table de loot| LootEntry
+        Monstre -->|mutations| Mutation
+        Spell -.->|mutation| Mutation
+    end
+
+    subgraph Eco["💰 Économie & Alchimie"]
+        Equipment["Equipment\n(Template / Instance)"]
+        Anomalie["Anomalie\n(Objet Magique)"]
+        Recipe["AlchemyRecipe"]
+
+        Recipe -->|ingrédients| Anomalie
+        Equipment -.->|prix d'achat| Anomalie
+    end
+
+    %% Relations inter-domaines claires
+    AppUser -->|possède| Personnage
+    AppUser -->|inventaire| Equipment
+    AppUser -->|possède| Anomalie
+    Personnage -->|équipé| Equipment
+```
+
+---
+
+### 2. Schémas relationnels ciblés (par sous-système)
+
+#### A. Joueur, Personnage & Équipement
 ```mermaid
 erDiagram
-    AppUser ||--o{ Personnage : possède
+    AppUser ||--o{ RefreshToken : "génère"
+    AppUser ||--o{ Personnage : "possède (max 2)"
     AppUser ||--o{ Equipment : "inventaire"
-    AppUser ||--o{ Anomalie : possède
-    AppUser ||--o{ RefreshToken : "auth tokens"
-
+    AppUser ||--o{ Anomalie : "coffre"
+    Personnage ||--o{ Equipment : "porte (slots)"
     Personnage }o--|| Voie : "suit"
     Personnage }o--|| Spiritualite : "pratique"
-    Personnage ||--o{ Equipment : "équipé"
+```
 
-    Spell }o--|| Voie : "appartient"
-    Spell }o--|| Spiritualite : "liée"
-    Spell }o--|| Mutation : "mutation"
-    Spell ||--o{ SpellEffect : "effets"
+#### B. Sorts, Voies & Passifs
+```mermaid
+erDiagram
+    Voie ||--o{ VoiePassiveEffect : "déclenche"
+    Spiritualite ||--o{ SpiritualitePassiveEffect : "déclenche"
+    Spell }o--|| Voie : "affinité"
+    Spell }o--|| Spiritualite : "affinité"
+    Spell }o--o| Mutation : "associé à"
+    Spell ||--o{ SpellEffect : "applique (SingleTable)"
+```
 
-    Voie ||--o{ VoiePassiveEffect : "passifs"
-    Spiritualite ||--o{ SpiritualitePassiveEffect : "passifs"
+#### C. Donjons, Monstres & Loots
+```mermaid
+erDiagram
+    Donjon ||--o{ Salle : "composé de (ordre)"
+    Salle }o--o{ Monstre : "rencontre"
+    Salle ||--o{ LootEntry : "récompenses"
+    Monstre }o--o{ Mutation : "subit"
+    LootEntry }o--o| Equipment : "drop équipement"
+```
 
-    Donjon ||--o{ Salle : "salles ordonnées"
-    Salle }o--o{ Monstre : "contient"
-    Salle ||--o{ LootEntry : "table de loot"
-    Monstre }o--o{ Mutation : "mutations"
-
-    Equipment }o--o{ Anomalie : "prix en anomalies"
-    AlchemyRecipe }o--o{ Anomalie : "ingrédients"
+#### D. Alchimie & Commerce
+```mermaid
+erDiagram
+    AlchemyRecipe }o--o{ Anomalie : "consomme (ingrédients)"
+    Equipment }o--o{ Anomalie : "coût boutique"
+    AppUser ||--o{ Anomalie : "stocke"
 ```
 
 ---
