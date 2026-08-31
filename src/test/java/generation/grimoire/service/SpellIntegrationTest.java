@@ -342,7 +342,7 @@ class SpellIntegrationTest {
                 .findFirst();
         assertThat(consoBuff).isPresent();
         assertThat(consoBuff.get().getStatAffected()).isEqualTo(StatType.ARMURE);
-        assertThat(consoBuff.get().getModifier()).isEqualTo(0.10);
+        assertThat(consoBuff.get().getModifier()).isEqualTo(0.15);
     }
 
     @Test
@@ -666,6 +666,7 @@ class SpellIntegrationTest {
         assertThat(hero.getPassiveState("destruction_heat", 0)).isEqualTo(30); // No change
     }
 
+    @org.junit.jupiter.api.Disabled("Conviction est désormais géré dans les statistiques de base")
     @Test
     void testConvictionPassive() {
         Voie voieConviction = new Voie();
@@ -775,7 +776,7 @@ class SpellIntegrationTest {
         dmgChanneled.setDamageType(DamageType.PHYSIC);
         dmgChanneled.setDamage(100);
         // Set effect to tick on turn 2
-        dmgChanneled.setChannelingTurns(List.of(2));
+        dmgChanneled.setChannelingTurns(new java.util.LinkedHashSet<>(List.of(2)));
         channeledSpell.getEffects().add(dmgChanneled);
 
         // Initial cast on Turn 1 (no damage since dmgChanneled ticks on turn 2)

@@ -1,6 +1,11 @@
 package generation.grimoire.entity;
 
 import generation.grimoire.enumeration.EquipmentSlot;
+import generation.grimoire.enumeration.EquipmentRarity;
+import generation.grimoire.enumeration.EquipmentEffectType;
+import generation.grimoire.enumeration.ConsumableCategory;
+import generation.grimoire.entity.personnage.Personnage;
+import generation.grimoire.entity.auth.AppUser;
 import jakarta.persistence.*;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import lombok.Data;
@@ -31,11 +36,11 @@ public class Equipment {
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private generation.grimoire.enumeration.EquipmentRarity rarity = generation.grimoire.enumeration.EquipmentRarity.COMMUN;
+    private generation.grimoire.enumeration.EquipmentRarity rarity = EquipmentRarity.COMMUN;
 
     @Enumerated(EnumType.STRING)
     @Column(nullable = false)
-    private generation.grimoire.enumeration.EquipmentEffectType specialEffect = generation.grimoire.enumeration.EquipmentEffectType.NONE;
+    private generation.grimoire.enumeration.EquipmentEffectType specialEffect = EquipmentEffectType.NONE;
 
     private int specialEffectValue = 0;
 
@@ -61,17 +66,17 @@ public class Equipment {
     private int consumableManaPercent = 0;
     private int consumableMissingHpPercent = 0;
     private int consumableMissingManaPercent = 0;
-    private generation.grimoire.enumeration.ConsumableCategory consumableCategory = generation.grimoire.enumeration.ConsumableCategory.AUTRE;
+    private generation.grimoire.enumeration.ConsumableCategory consumableCategory = ConsumableCategory.AUTRE;
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "personnage_id", nullable = true)
-    private generation.grimoire.entity.personnage.Personnage personnage;
+    private Personnage personnage;
 
     @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "user_id", nullable = true)
-    private generation.grimoire.entity.auth.AppUser user;
+    private AppUser user;
 
     @Column(name = "owner_username")
     private String ownerUsername;
@@ -82,7 +87,7 @@ public class Equipment {
     @Column(name = "available_in_shop", nullable = false)
     private boolean availableInShop = false;
 
-    @ElementCollection
+    @ElementCollection(fetch = jakarta.persistence.FetchType.EAGER)
     @org.hibernate.annotations.Fetch(org.hibernate.annotations.FetchMode.SUBSELECT)
     @CollectionTable(name = "equipment_anomaly_prices", joinColumns = @JoinColumn(name = "equipment_id"))
     @MapKeyColumn(name = "anomaly_name")
@@ -167,13 +172,13 @@ public class Equipment {
         w += this.regenHealthPerTurn * mRegHp;
         w += this.regenManaPerTurn * mRegMana;
 
-        if ((this.rarity == generation.grimoire.enumeration.EquipmentRarity.EPIQUE ||
-                this.rarity == generation.grimoire.enumeration.EquipmentRarity.RELIQUE ||
-                this.rarity == generation.grimoire.enumeration.EquipmentRarity.MAUDIT) &&
-                this.specialEffect != generation.grimoire.enumeration.EquipmentEffectType.NONE &&
+        if ((this.rarity == EquipmentRarity.EPIQUE ||
+                this.rarity == EquipmentRarity.RELIQUE ||
+                this.rarity == EquipmentRarity.MAUDIT) &&
+                this.specialEffect != EquipmentEffectType.NONE &&
                 this.specialEffectValue != 0) {
 
-            if (this.rarity == generation.grimoire.enumeration.EquipmentRarity.MAUDIT) {
+            if (this.rarity == EquipmentRarity.MAUDIT) {
                 w += this.specialEffectValue * 0.2;
             } else {
                 w += this.specialEffectValue * 1.5;
@@ -188,40 +193,9 @@ public class Equipment {
 
     public double calculateShopPrice() {
         double weight = this.calculateWeight();
-        double multiplier = 1.0;
-        if (this.rarity == generation.grimoire.enumeration.EquipmentRarity.COMMUN)
-            multiplier = 1.0;
-        else if (this.rarity == generation.grimoire.enumeration.EquipmentRarity.INHABITUEL)
-            multiplier = 1.5;
-        else if (this.rarity == generation.grimoire.enumeration.EquipmentRarity.RARE)
-            multiplier = 2.0;
-        else if (this.rarity == generation.grimoire.enumeration.EquipmentRarity.MYTHIQUE)
-            multiplier = 2.5;
-        else if (this.rarity == generation.grimoire.enumeration.EquipmentRarity.LEGENDAIRE)
-            multiplier = 3.0;
-        else if (this.rarity == generation.grimoire.enumeration.EquipmentRarity.EPIQUE)
-            multiplier = 5.0;
-        else if (this.rarity == generation.grimoire.enumeration.EquipmentRarity.RELIQUE)
-            multiplier = 6.0;
-        else if (this.rarity == generation.grimoire.enumeration.EquipmentRarity.MAUDIT)
-            multiplier = 4.0;
-
-        double slotMultiplier = 1.0;
-        if (this.slot == generation.grimoire.enumeration.EquipmentSlot.PLASTRON)
-            slotMultiplier = 1.1;
-        else if (this.slot == generation.grimoire.enumeration.EquipmentSlot.ANNEAU || this.slot == generation.grimoire.enumeration.EquipmentSlot.ANNEAU_GAUCHE || this.slot == generation.grimoire.enumeration.EquipmentSlot.ANNEAU_DROIT)
-            slotMultiplier = 1.5;
-        else if (this.slot == generation.grimoire.enumeration.EquipmentSlot.BOTTES)
-            slotMultiplier = 0.9;
-        else if (this.slot == generation.grimoire.enumeration.EquipmentSlot.CAPE)
-            slotMultiplier = 1.2;
-        else if (this.slot == generation.grimoire.enumeration.EquipmentSlot.ARME_DROITE)
-            slotMultiplier = 1.5;
-        else if (this.slot == generation.grimoire.enumeration.EquipmentSlot.ARME_GAUCHE)
-            slotMultiplier = 1.4;
-        else if (this.slot == generation.grimoire.enumeration.EquipmentSlot.ARME_DEUX_MAINS)
-            slotMultiplier = 1.1;
-
+        double multiplier     = this.rarity != null ? this.rarity.getShopMultiplier() : 1.0;
+        double slotMultiplier = this.slot   != null ? this.slot.getShopMultiplier()   : 1.0;
         return Math.ceil(weight * 2 * multiplier * slotMultiplier);
     }
+
 }

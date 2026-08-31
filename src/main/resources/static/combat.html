@@ -16,11 +16,11 @@
     <link
         href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
         rel="stylesheet">
-    <link rel="stylesheet" href="/styles/variables.css?v=1786180000000">
-    <link rel="stylesheet" href="/styles/ui/components.css?v=1786180000000">
-    <link rel="stylesheet" href="/styles/ui/utilities.css?v=1786180000000">
-    <link rel="stylesheet" href="/styles/pages/sandbox.css?v=1786180000000">
-    <link rel="stylesheet" href="/styles/pages/combat.css?v=1786180000000">
+    <link rel="stylesheet" href="/styles/variables.css?v=1786180000001">
+    <link rel="stylesheet" href="/styles/ui/components.css?v=1786180000001">
+    <link rel="stylesheet" href="/styles/ui/utilities.css?v=1786180000001">
+    <link rel="stylesheet" href="/styles/pages/sandbox.css?v=1786180000001">
+    <link rel="stylesheet" href="/styles/pages/combat.css?v=1786180000001">
     <script src="/js/utils.js"></script>
 </head>
 
@@ -46,6 +46,14 @@
             <div class="font-outfit text-muted">
                 Tour <span id="turnCounter" class="text-slate-50 font-semibold">1</span>
             </div>
+        </div>
+
+        <!-- Bandeau co-op : indicateur de tour (maintenant intégré centré dans le header) -->
+        <div id="multiTurnBanner"
+            style="display:none; align-items:center; justify-content:center; gap:0.6rem;
+                   position:absolute; left:50%; top:50%; transform:translate(-50%, -50%);
+                   font-size:0.9rem; z-index:100; white-space:nowrap;">
+            <!-- rempli par updateMultiTurnBanner() -->
         </div>
     </div>
 

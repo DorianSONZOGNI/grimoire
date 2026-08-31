@@ -21,6 +21,6 @@ public class ManaFixedEffect extends ManaEffect {
             finalMana = (int) (finalMana * getCriticalMultiplier(caster));
         }
         target.restoreMana(finalMana);
-        System.out.println(target.getName() + " régénère " + finalMana + " points de mana (x" + getAmplificationMultiplier() + ")");
+        System.out.println(target.getName() + " régénère " + finalMana + " points de mana");
     }
 }

@@ -57,6 +57,19 @@ export function createAnomalyBadgeHtml(anomalyName, showName = false) {
 
 // getSlotInfo and RARITY_COLORS → utils.js
 
+const shakeStyle = document.createElement('style');
+shakeStyle.innerHTML = `
+@keyframes shake-error {
+    0%, 100% { transform: translateX(0); }
+    20%, 60% { transform: translateX(-10px); color: #f87171; }
+    40%, 80% { transform: translateX(10px); color: #f87171; }
+}
+.shake-animation {
+    animation: shake-error 0.5s ease-in-out;
+}
+`;
+document.head.appendChild(shakeStyle);
+
 export const pageState = {
     lastCombatLogCount: null,
     sessionId: null,
@@ -72,6 +85,11 @@ export const pageState = {
     pendingCastSpellId: null,
     pendingNeedsEnemy: null,
     pendingNeedsAlly: null,
+    // Co-op multi
+    isMulti: false,
+    multiRole: null,   // 'host' | 'guest'
+    multiId: null,
+    currentUsername: null,  // rempli au chargement
 };
 pageState.lastCombatLogCount = 0;
 pageState.previousPlayerXP = {};
@@ -134,11 +152,9 @@ function setButtonsProcessing(isProc) {
     buttons.forEach(btn => {
         btn.disabled = isProc;
         if (isProc) {
-            btn.style.opacity = '0.5';
-            btn.style.pointerEvents = 'none';
+            btn.classList.add('disabled');
         } else {
-            btn.style.opacity = '';
-            btn.style.pointerEvents = '';
+            btn.classList.remove('disabled');
         }
     });
 }
@@ -189,7 +205,7 @@ function getSpiritExpStats(exp) {
 function renderAndAnimateXPCards(containerId, players, prefix) {
     const container = document.getElementById(containerId);
     if (!container) return;
-    container.style.display = 'flex';
+    container.classList.remove('hidden'); container.classList.add('flex');
 
     let cardsHtml = '';
     players.forEach(p => {
@@ -200,10 +216,10 @@ function renderAndAnimateXPCards(containerId, players, prefix) {
 
         let cardsHtmlPart = `
             <div class="text-center relative" id="${prefix}-xp-card-${p.id}" style="background: rgba(0,0,0,0.4); padding: 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); width: 180px; overflow: hidden; transition: all 0.5s; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8); display: flex; flex-direction: column; gap: 0.3rem;">
-                <div class="font-bold whitespace-nowrap" style="color: #e2e8f0; margin-bottom: 0.3rem; text-overflow: ellipsis; overflow: hidden;">${p.name}</div>
+                <div class="font-bold whitespace-nowrap text-subtle"  style="margin-bottom: 0.3rem; text-overflow: ellipsis; overflow: hidden;">${p.name}</div>
                 
                 <div class="text-xs" id="${prefix}-xp-lvl-${p.id}" style="color: #38bdf8; font-weight: 600; transition: color 0.3s, transform 0.3s;">Voie Niv. ${oldStats.level}</div>
-                <div style="width: 100%; background: #334155; border-radius: 4px; height: 6px;">
+                <div class="progress-track">
                     <div id="${prefix}-xp-fill-${p.id}" style="height: 100%; width: ${Math.min(100, oldStats.progress)}%; background: #10b981; transition: box-shadow 0.3s;"></div>
                 </div>
                 <div class="text-muted" id="${prefix}-xp-text-${p.id}" style="font-size: 0.7rem; font-family: monospace;">${oldExp} / ${oldStats.level === 5 ? 'MAX' : oldStats.nextLvlXp} XP</div>
@@ -211,9 +227,9 @@ function renderAndAnimateXPCards(containerId, players, prefix) {
 
         if (oldSpiritExp > 0 || (p.spiritualiteExperience || 0) > 0 || prefix === 'treasure') {
             cardsHtmlPart += `
-                <div style="margin-top: 0.2rem;"></div>
+                <div class="mt-xs"></div>
                 <div class="text-xs" id="${prefix}-spirit-lvl-${p.id}" style="color: #fb923c; font-weight: 600; transition: color 0.3s, transform 0.3s;">Spirit Niv. ${oldSpiritStats.level}</div>
-                <div style="width: 100%; background: #334155; border-radius: 4px; height: 6px;">
+                <div class="progress-track">
                     <div id="${prefix}-spirit-fill-${p.id}" style="height: 100%; width: ${Math.min(100, oldSpiritStats.progress)}%; background: #f59e0b; transition: box-shadow 0.3s;"></div>
                 </div>
                 <div class="text-muted" id="${prefix}-spirit-text-${p.id}" style="font-size: 0.7rem; font-family: monospace;">${oldSpiritExp} / ${oldSpiritStats.level === 3 ? 'MAX' : oldSpiritStats.nextLvlXp} XP</div>
@@ -335,7 +351,7 @@ window.hideGlobalTooltip = ui.hideGlobalTooltip;
 window.promptFlee = function () {
     ui.showModal({
         title: 'Fuir le combat ?',
-        body: `Êtes-vous sûr de vouloir fuir ?<br><br><span id="fleePenaltyText" style="font-size:0.9rem; color:#f87171;">Calcul de la pénalité...</span>`,
+        body: `Êtes-vous sûr de vouloir fuir ?<br><br><span id="fleePenaltyText" class="text-sm text-error">Calcul de la pénalité...</span>`,
         icon: 'directions_run',
         confirmText: 'Oui, fuir',
         onConfirm: async () => {
@@ -381,12 +397,10 @@ window.cancelCombatCast = cancelCombatCast;
 
 
 
-
-
 async function loadAnomaliesCombat() {
     if (!window.allAnomaliesCombat || !Array.isArray(window.allAnomaliesCombat) || window.allAnomaliesCombat.length === 0) {
         try {
-            const res = await window.globalFetch('/api/anomalies/all-templates');
+            const res = await globalFetch('/api/anomalies/all-templates');
             if (res.ok) {
                 const data = await res.json();
                 if (Array.isArray(data)) window.allAnomaliesCombat = data;
@@ -396,10 +410,19 @@ async function loadAnomaliesCombat() {
             window.allAnomaliesCombat = [];
         }
     }
+    try {
+        const resUser = await globalFetch('/api/anomalies');
+        if (resUser.ok) {
+            const dataUser = await resUser.json();
+            if (Array.isArray(dataUser)) window.myGlobalAnomalies = dataUser;
+        }
+    } catch (e) {
+        console.error("Failed to load user anomalies:", e);
+        window.myGlobalAnomalies = [];
+    }
 }
 
 document.addEventListener('DOMContentLoaded', async () => {
-    await loadAnomaliesCombat();
     window.dungeonMusic = null;
 
     const tryPlayMusic = () => {
@@ -412,14 +435,58 @@ document.addEventListener('DOMContentLoaded', async () => {
     document.addEventListener('click', tryPlayMusic);
 
     try { if (window.initAppMeta) await window.initAppMeta(); } catch (e) { console.warn('Meta loading skipped:', e); }
-    // Check for active combat in localStorage
+
+    // Charger le username actuel
+    try {
+        const meRes = await globalFetch('/api/auth/me', { credentials: 'same-origin' });
+        if (meRes.ok) {
+            const meData = await meRes.json();
+            pageState.currentUsername = meData.username || null;
+        }
+    } catch (_) { }
+
+    await loadAnomaliesCombat();
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const multiId = urlParams.get('multiId');
+    const role = urlParams.get('role');
+    const directSessionId = urlParams.get('sessionId');
+
+    // ─── Mode multi : sessionId fourni directement (join ou host après lobby-ready)
+    if (directSessionId) {
+        pageState.isMulti = true;
+        pageState.multiRole = role || 'guest';
+        pageState.multiId = multiId;
+        pageState.sessionId = directSessionId;
+        localStorage.setItem('activeCombatId', directSessionId);
+        window.history.replaceState({}, document.title, window.location.pathname);
+
+        // Ouvrir SSE pour les mises à jour en temps réel
+        initMultiSSE(directSessionId);
+
+        // Charger l'état initial
+        const res = await globalFetch(`/api/pve/combat/${directSessionId}/resume`, { method: 'POST' });
+        if (!res.ok) {
+            window.showNotif('Session introuvable ou expirée.', true);
+            window.location.href = '/dungeons.html';
+            return;
+        }
+        const data = await res.json();
+        data.players.forEach(p => {
+            pageState.previousPlayerXP[p.id] = p.experience;
+            pageState.previousPlayerSpiritXP[p.id] = p.spiritualiteExperience || 0;
+        });
+        updateUI(data);
+        return;
+    }
+
+    // ─── Mode solo classique
     const savedCombatId = localStorage.getItem('activeCombatId');
     if (savedCombatId) {
         resumeCombat(savedCombatId);
         return;
     }
 
-    const urlParams = new URLSearchParams(window.location.search);
     const dungeonId = urlParams.get('dungeonId');
     const characterIds = urlParams.get('characterIds');
     const consumableIds = urlParams.get('consumableIds');
@@ -455,6 +522,11 @@ async function resumeCombat(savedSessionId) {
         }
         const data = await res.json();
         pageState.sessionId = data.sessionId;
+        pageState.isMulti = (data.multi === true);
+
+        if (pageState.isMulti) {
+            initMultiSSE(savedSessionId);
+        }
 
         data.players.forEach(p => {
             pageState.previousPlayerXP[p.id] = p.experience;
@@ -490,7 +562,7 @@ async function startCombat(characterIds, dungeonId, consumableIds) {
         const data = await res.json();
         pageState.sessionId = data.sessionId;
         localStorage.setItem('activeCombatId', pageState.sessionId);
-        
+
         // Nettoyer l'URL pour éviter de relancer le donjon au F5
         window.history.replaceState({}, document.title, window.location.pathname);
 
@@ -729,7 +801,7 @@ function initiateCombatCast(spellId) {
     document.querySelectorAll('.combat-spell-card, .action-btn, .filter-radio, .filter-chip').forEach(btn => {
         if (btn !== cardEl) {
             btn.classList.add('disabled');
-            btn.style.pointerEvents = 'none';
+            btn.classList.add('disabled');
         }
     });
 
@@ -752,15 +824,15 @@ function initiateCombatCast(spellId) {
                 ? 'Sélectionnez un ennemi et un allié'
                 : (requiresEnemySelection ? 'Sélectionnez un ennemi' : 'Sélectionnez un allié');
             overlay.innerHTML = `
-                <span class="text-sm" id="castPromptText" style="font-weight: 600; color: #e2e8f0;">${promptText}</span>
+                <span class="text-sm font-semibold text-subtle" id="castPromptText" >${promptText}</span>
                 <div class="text-muted" id="castTargetStatus" style="font-size: 0.75rem; display: ${dualTarget ? 'block' : 'none'};"></div>
-                <button class="text-xs text-error" type="button" onclick="event.stopPropagation(); cancelCombatCast()" style="background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); padding: 0.3rem 0.8rem; border-radius: 4px; cursor: pointer; font-family: 'Outfit', sans-serif;">Annuler</button>
+                <button class="btn-combat-danger" type="button" onclick="event.stopPropagation(); cancelCombatCast()" >Annuler</button>
             `;
         } else {
             overlay.innerHTML = `
-                <div style="display: flex; gap: 0.5rem;">
-                    <button class="text-sm font-bold text-success" type="button" onclick="event.stopPropagation(); confirmCombatCast(null, 'direct')" style="background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.4); padding: 0.3rem 0.5rem; border-radius: 4px; cursor: pointer; font-family: 'Outfit', sans-serif;">Lancer</button>
-                    <button class="text-sm font-bold text-error" type="button" onclick="event.stopPropagation(); cancelCombatCast()" style="background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); padding: 0.3rem 0.5rem; border-radius: 4px; cursor: pointer; font-family: 'Outfit', sans-serif;">Annuler</button>
+                <div class="flex-center gap-sm">
+                    <button class="btn-combat-success" type="button" onclick="event.stopPropagation(); confirmCombatCast(null, 'direct')" >Lancer</button>
+                    <button class="btn-combat-danger" type="button" onclick="event.stopPropagation(); cancelCombatCast()" >Annuler</button>
                 </div>
             `;
             if (needsEnemy) enemyCards.forEach(card => card.classList.add('target-highlight'));
@@ -775,12 +847,12 @@ function initiateCombatCast(spellId) {
         // Attack button
         cardEl.dataset.originalHtml = cardEl.innerHTML;
         if (multiEnemy) {
-            cardEl.innerHTML = `<div style="display:flex;flex-direction:column;align-items:center;gap:0.3rem;"><span style="font-size:0.8rem; color:#e2e8f0;">Ciblez un ennemi</span> <button class="text-error" onclick="event.stopPropagation(); cancelCombatCast()" style="background: rgba(239,68,68,0.2); border: 1px solid rgba(239,68,68,0.4); padding: 0.2rem 0.6rem; border-radius:4px; cursor:pointer;">Annuler</button></div>`;
+            cardEl.innerHTML = `<div class="flex-col items-center gap-xs"><span class="text-xs text-subtle">Ciblez un ennemi</span> <button class="btn-combat-danger" onclick="event.stopPropagation(); cancelCombatCast()" >Annuler</button></div>`;
         } else {
             cardEl.innerHTML = `
-                <div style="display:flex;gap:0.5rem;">
-                    <button class="text-success" onclick="event.stopPropagation(); confirmCombatCast(null, 'direct')" style="background: rgba(16,185,129,0.2); border: 1px solid rgba(16,185,129,0.4); padding: 0.2rem 0.6rem; border-radius:4px; cursor:pointer; font-weight:bold;">Lancer</button>
-                    <button class="text-error" onclick="event.stopPropagation(); cancelCombatCast()" style="background: rgba(239,68,68,0.2); border: 1px solid rgba(239,68,68,0.4); padding: 0.2rem 0.6rem; border-radius:4px; cursor:pointer; font-weight:bold;">Annuler</button>
+                <div class="flex-center gap-sm">
+                    <button class="btn-combat-success" onclick="event.stopPropagation(); confirmCombatCast(null, 'direct')" >Lancer</button>
+                    <button class="btn-combat-danger" onclick="event.stopPropagation(); cancelCombatCast()" >Annuler</button>
                 </div>
             `;
             enemyCards.forEach(card => card.classList.add('target-highlight'));
@@ -910,8 +982,7 @@ function cancelCombatCast() {
     // Enable all buttons
     document.querySelectorAll('.combat-spell-card, .action-btn, .filter-radio').forEach(btn => {
         btn.classList.remove('disabled');
-        btn.style.pointerEvents = 'auto';
-        btn.style.opacity = '1';
+        btn.classList.remove('disabled');
     });
 
     // Attack button specific disable check
@@ -919,8 +990,7 @@ function cancelCombatCast() {
     const isPlayerChanneling = pageState.currentSessionData && pageState.currentSessionData.activePlayer && pageState.currentSessionData.activePlayer.remainingChannelingTurns > 0;
     if (btnAttack && pageState.currentSessionData && pageState.currentSessionData.activePlayer && (pageState.currentSessionData.activePlayer.banalSpellCastThisTurn || isPlayerChanneling)) {
         btnAttack.classList.add('disabled');
-        btnAttack.style.pointerEvents = 'none';
-        btnAttack.style.opacity = '0.5';
+        btnAttack.classList.add('disabled');
     }
 
     pageState.pendingCastSpellId = null;
@@ -979,9 +1049,9 @@ async function doAction(spellId = null) {
         // Let user read log by adding a small delay before full UI update
         setTimeout(() => {
             pageState.selectedAllyIndex = -1; // Reset after action completes
-            updateUI(data);
             pageState.isProcessing = false;
             setButtonsProcessing(false);
+            updateUI(data);
         }, 600);
 
     } catch (e) {
@@ -1003,9 +1073,9 @@ async function endTurn() {
         const data = await res.json();
 
         setTimeout(() => {
-            updateUI(data);
             pageState.isProcessing = false;
             setButtonsProcessing(false);
+            updateUI(data);
         }, 600);
 
     } catch (e) {
@@ -1102,16 +1172,37 @@ async function acceptAlteration() {
     pageState.isProcessing = true;
     setButtonsProcessing(true);
     try {
-        let url = `/api/pve/combat/${pageState.sessionId}/alteration-accept`;
+        let myPlayer = pageState.currentSessionData.players.find(p => p.ownerUsername === pageState.currentUsername);
+        if (!myPlayer && pageState.currentSessionData.players.length > 0) {
+            myPlayer = pageState.currentSessionData.players[0];
+        }
+        const charId = myPlayer ? myPlayer.id : '';
+        let url = `/api/pve/combat/${pageState.sessionId}/alteration-accept?characterId=${charId}`;
         const select = document.getElementById('altarAnomalySelect');
         if (select) {
-            url += `?anomalyId=${select.value}`;
+            url += `&anomalyId=${select.value}`;
         }
         const res = await globalFetch(url, {
             method: 'POST'
         });
         if (!res.ok) {
             const err = await res.text();
+
+            // Animation de vibration sur les textes d'erreur si présents
+            const missingItem = document.getElementById('itemAlterationMissingText');
+            if (missingItem) {
+                missingItem.classList.remove('shake-animation');
+                void missingItem.offsetWidth; // force reflow
+                missingItem.classList.add('shake-animation');
+            }
+
+            const missingAltar = document.getElementById('altarAlterationMissingText');
+            if (missingAltar) {
+                missingAltar.classList.remove('shake-animation');
+                void missingAltar.offsetWidth; // force reflow
+                missingAltar.classList.add('shake-animation');
+            }
+
             window.showNotif(err || "Action impossible", true);
             pageState.isProcessing = false;
             setButtonsProcessing(false);
@@ -1157,7 +1248,8 @@ async function buyMerchantItem(lootIndex) {
     if (!pageState.sessionId || !pageState.currentSessionData || !pageState.currentSessionData.players || pageState.currentSessionData.players.length === 0 || pageState.isProcessing) return;
     pageState.isProcessing = true;
     setButtonsProcessing(true);
-    const charId = pageState.currentSessionData.players[0].id;
+    const myPlayer = pageState.currentSessionData.players.find(p => p.ownerUsername === pageState.currentUsername) || pageState.currentSessionData.players[0];
+    const charId = myPlayer.id;
 
     try {
         const btn = document.getElementById(`btn_buy_${lootIndex}`);
@@ -1228,14 +1320,12 @@ window.closeBuyModal = closeBuyModal;
 async function addLootedConsumable(itemName, iconElement) {
     if (!pageState.sessionId) return;
     try {
-        iconElement.style.pointerEvents = 'none';
-        iconElement.style.opacity = '0.5';
+        iconElement.classList.add('disabled');
         const res = await globalFetch(`/api/pve/combat/${pageState.sessionId}/add-consumable-by-name?itemName=${encodeURIComponent(itemName)}`, { method: 'POST' });
         if (!res.ok) {
             const err = await res.text();
             window.showNotif(err || "Erreur serveur", true);
-            iconElement.style.pointerEvents = 'auto';
-            iconElement.style.opacity = '1';
+            iconElement.classList.remove('disabled');
             return;
         }
         const updatedSession = await res.json();
@@ -1368,6 +1458,97 @@ function resetCombatTimeoutWarning(finished) {
     }, 540000); // 9 minutes
 }
 
+
+// ═══════════════════════════════════════════════════════════════════════════
+// CO-OP MULTI — SSE + Turn Banner
+// ═══════════════════════════════════════════════════════════════════════════
+
+let _multiSSE = null;
+
+function initMultiSSE(sessionId) {
+    if (_multiSSE) { _multiSSE.close(); _multiSSE = null; }
+    _multiSSE = new EventSource(`/api/pve/combat/${sessionId}/events`);
+
+    _multiSSE.addEventListener('combat-update', (e) => {
+        try {
+            const data = JSON.parse(e.data);
+            // Ne pas re-renderer si on est en train de traiter une action locale
+            if (!pageState.isProcessing) {
+                updateUI(data);
+            }
+        } catch (err) {
+            console.error('[SSE] parse error', err);
+        }
+    });
+
+    _multiSSE.onerror = () => {
+        // La connexion SSE se reconnecte automatiquement — pas d'alerte
+    };
+}
+
+/**
+ * Met à jour le bandeau "C'est votre tour / Tour de X" en mode multi.
+ * Active/désactive aussi les boutons d'action selon l'ownership du personnage actif.
+ */
+function updateMultiTurnBanner(data) {
+    const banner = document.getElementById('multiTurnBanner');
+    if (!banner) return;
+
+    if (!data || !data.multi || data.finished) {
+        banner.style.display = 'none';
+        return;
+    }
+
+    banner.style.display = 'flex';
+
+    const isCombatRoom = data.currentRoom && (data.currentRoom.type === 'COMBAT' || data.currentRoom.type === 'BOSS');
+    const allEnemiesDead = !data.enemies || data.enemies.length === 0 || data.enemies.every(e => e.dead || e.currentHp <= 0);
+
+    if (!isCombatRoom || allEnemiesDead) {
+        banner.innerHTML = `<span class="material-symbols-outlined" style="color:#a855f7;">explore</span>
+            <span style="color:#a855f7; font-weight:600;">Exploration en cours</span>`;
+        setMultiActionsEnabled(true);
+        return;
+    }
+
+    const activePlayer = data.activePlayer;
+    const ownerUsername = activePlayer?.ownerUsername || null;
+    const isMyTurn = ownerUsername === pageState.currentUsername;
+    const isEnemyTurn = !data.turnOrder?.[data.currentTurnIndex]?.player;
+
+    if (isEnemyTurn) {
+        banner.innerHTML = `<span class="material-symbols-outlined" style="color:#f87171;">swords</span>
+            <span style="color:#f87171; font-weight:600;">Tour ennemi</span>`;
+        setMultiActionsEnabled(false);
+    } else if (isMyTurn) {
+        banner.innerHTML = `<span class="material-symbols-outlined" style="color:#4ade80;">person</span>
+            <span style="color:#4ade80; font-weight:600;">👤 Votre tour — ${activePlayer?.name || ''}</span>`;
+        setMultiActionsEnabled(true);
+    } else {
+        const otherName = ownerUsername || 'Allié';
+        banner.innerHTML = `<span class="material-symbols-outlined" style="color:#38bdf8;">hourglass_top</span>
+            <span style="color:#94a3b8;">⏳ Tour de <strong style="color:#38bdf8;">${activePlayer?.name || otherName}</strong> (${otherName})...</span>`;
+        setMultiActionsEnabled(false);
+    }
+}
+
+function setMultiActionsEnabled(enabled) {
+    const selectors = ['#btnAttack', '#btnEndTurn', '.combat-spell-card', '.action-btn'];
+    selectors.forEach(sel => {
+        document.querySelectorAll(sel).forEach(el => {
+            if (enabled) {
+                el.classList.remove('multi-disabled');
+                el.style.pointerEvents = '';
+                el.style.opacity = '';
+            } else {
+                el.classList.add('multi-disabled');
+                el.style.pointerEvents = 'none';
+                el.style.opacity = '0.35';
+            }
+        });
+    });
+}
+
 function updateUI(data) {
     resetCombatTimeoutWarning(data.finished);
     pageState.currentSessionData = data;
@@ -1378,7 +1559,6 @@ function updateUI(data) {
             window.dungeonMusic.pause();
         }
     }
-
     let isActiveEnemy = false;
     let activeEnemyIndex = -1;
 
@@ -1451,7 +1631,11 @@ function updateUI(data) {
                 div.style.borderColor = 'rgba(255, 255, 255, 0.1)';
                 div.style.transform = 'scale(0.95)';
             }
-            div.innerHTML = generateFighterHtml(p, true);
+            let timerHtml = '';
+            if (pageState.isMulti && isActive && data.turnStartTime) {
+                timerHtml = `<div class="turn-timer-badge" id="timerBadge_${index}" style="position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(4px); border: 1px solid #38bdf8; color: #38bdf8; padding: 4px 14px; border-radius: 8px; font-weight: bold; box-shadow: 0 0 12px rgba(56, 189, 248, 0.5); z-index: 10; display: flex; align-items: center; gap: 6px; letter-spacing: 0.5px;">⏳ Calcul...</div>`;
+            }
+            div.innerHTML = timerHtml + generateFighterHtml(p, true);
             playersContainer.appendChild(div);
 
             if (needsDelay) {
@@ -1472,9 +1656,45 @@ function updateUI(data) {
         });
     }
 
+    if (window.multiplayerTurnInterval) {
+        clearInterval(window.multiplayerTurnInterval);
+        window.multiplayerTurnInterval = null;
+    }
+
+    if (pageState.isMulti && !data.finished && data.turnStartTime) {
+        window.multiplayerTurnInterval = setInterval(() => {
+            const elapsed = Math.floor((Date.now() - data.turnStartTime) / 1000);
+            let remaining = Math.max(0, 90 - elapsed);
+
+            document.querySelectorAll('.turn-timer-badge').forEach(badge => {
+                badge.textContent = `⏳ ${remaining}s`;
+                if (remaining <= 10) {
+                    badge.style.background = 'rgba(69, 10, 10, 0.9)';
+                    badge.style.borderColor = '#ef4444';
+                    badge.style.color = '#ef4444';
+                    badge.style.boxShadow = '0 0 15px rgba(239, 68, 68, 0.8)';
+                } else {
+                    badge.style.background = 'rgba(15, 23, 42, 0.9)';
+                    badge.style.borderColor = '#38bdf8';
+                    badge.style.color = '#38bdf8';
+                    badge.style.boxShadow = '0 0 12px rgba(56, 189, 248, 0.5)';
+                }
+            });
+
+            if (remaining <= 0 && window.multiplayerTurnInterval) {
+                clearInterval(window.multiplayerTurnInterval);
+            }
+        }, 1000);
+    }
+
     // Render Spells
     if (data.availableSpells) {
         renderSpells(data.availableSpells);
+    }
+
+    // Mettre à jour le bandeau co-op APRÈS le rendu des sorts pour qu'ils soient bien grisés
+    if (pageState.isMulti) {
+        updateMultiTurnBanner(data);
     }
 
     // Auto-select first alive target if current is dead
@@ -1525,7 +1745,7 @@ function updateUI(data) {
                                 `;
                             }
                             if (goldAmount > 0 && xpAmount > 0) {
-                                baseContent += `<span style="color: #6b7280; margin: 0 0.5rem;">|</span>`;
+                                baseContent += `<span class="text-muted" style="margin: 0 0.5rem;">|</span>`;
                             }
                             if (xpAmount > 0) {
                                 baseContent += `
@@ -1535,7 +1755,7 @@ function updateUI(data) {
                             }
 
                             xpContainer.innerHTML += `
-                                <div class="text-center" style="width: 100%; margin-bottom: 0.5rem; animation: popIn 0.5s ease-out forwards;">
+                                <div class="text-center w-full"  style="margin-bottom: 0.5rem; animation: popIn 0.5s ease-out forwards;">
                                     <div class="font-bold" style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(0,0,0,0.4); border: 1px solid #f59e0b80; padding: 0.5rem 1rem; border-radius: 8px; font-size: 1.2rem;">
                                         ${baseContent}
                                     </div>
@@ -1548,8 +1768,8 @@ function updateUI(data) {
 
                             // Base du contenu avec le tag BOSS
                             let innerContent = `
-                                <span class="material-symbols-outlined" style="color: #e11d48;">local_fire_department</span>
-                                <span style="color: #e11d48; margin-right: 0.5rem;">BOSS</span>
+                                <span class="material-symbols-outlined text-error" >local_fire_department</span>
+                                <span class="text-error" style="margin-right: 0.5rem;">BOSS</span>
                             `;
 
                             // Ajout de l'Or si présent
@@ -1562,21 +1782,21 @@ function updateUI(data) {
 
                             // Séparateur visuel si on a les DEUX bonus en même temps
                             if (bossBonusGold > 0 && bossBonusSpiritXp > 0) {
-                                innerContent += `<span style="color: #6b7280; margin: 0 0.2rem;">|</span>`;
+                                innerContent += `<span class="text-muted" style="margin: 0 0.2rem;">|</span>`;
                             }
 
                             // Ajout de l'XP Spirituelle si présente
                             if (bossBonusSpiritXp > 0) {
                                 const perHero = Math.floor(bossBonusSpiritXp / Math.max(1, (data.players || []).length));
                                 innerContent += `
-                                    <span class="material-symbols-outlined" style="color: #F59E0B;">stars</span>
-                                    <span style="color: #F59E0B;">+${perHero} XP Spiritualité</span>
+                                    <span class="material-symbols-outlined text-gold" >stars</span>
+                                    <span class="text-gold">+${perHero} XP Spiritualité</span>
                                 `;
                             }
 
                             // Injection dans le container (une seule fois)
                             xpContainer.innerHTML += `
-                                <div class="text-center" style="width: 100%; margin-bottom: 0.5rem; animation: popIn 0.6s ease-out forwards;">
+                                <div class="text-center w-full"  style="margin-bottom: 0.5rem; animation: popIn 0.6s ease-out forwards;">
                                     <div class="font-bold" style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(0,0,0,0.4); border: 1px solid #e11d4880; padding: 0.5rem 1rem; border-radius: 8px; font-size: 1.1rem;">
                                         ${innerContent}
                                     </div>
@@ -1601,6 +1821,9 @@ function updateUI(data) {
             }
         } else {
             // TREASURE OR EVENT
+            const vicOverlay = document.getElementById('combatVictoryOverlay');
+            if (vicOverlay) vicOverlay.classList.remove('show');
+
             document.getElementById('btnAttack').disabled = true;
             document.getElementById('enemiesContainer').innerHTML = ''; // Clear enemies
 
@@ -1620,7 +1843,7 @@ function updateUI(data) {
 
             if (data.currentRoom.type === 'TREASURE') {
                 icon.textContent = data.roomEventCompleted ? 'lock_open' : 'lock';
-                icon.style.color = '#f59e0b';
+                icon.className = 'material-symbols-outlined mb-4 text-[5rem] text-gold';
                 title.textContent = 'Salle des Trésors';
 
                 if (data.roomEventCompleted) {
@@ -1762,11 +1985,11 @@ function updateUI(data) {
                 if (subType === 'ALTERATION') {
                     if (data.currentRoom.alterationType === 'AUTEL') {
                         icon.textContent = 'hand_bones';
-                        icon.style.color = '#f97316';
+                        icon.className = 'material-symbols-outlined mb-4 text-[5rem] text-orange';
                         title.textContent = 'Autel Sacrificiel';
                     } else {
                         icon.textContent = 'blur_on';
-                        icon.style.color = '#8b5cf6';
+                        icon.className = 'material-symbols-outlined mb-4 text-[5rem] text-violet';
                         title.textContent = 'Altération';
                     }
                     desc.innerHTML = data.currentRoom.eventText || 'Une force mystérieuse vous entoure...';
@@ -1784,38 +2007,43 @@ function updateUI(data) {
 
                             warningHtml = '';
                             if (hp < 0) {
-                                warningHtml += `<div class="text-error text-center" style="font-size: 0.85rem; margin-top: 0.5rem; background: rgba(239, 68, 68, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3);"><span class="material-symbols-outlined align-middle icon-sm">favorite</span> <strong>Coût :</strong> ${hp} PV (par héros)</div>`;
+                                warningHtml += `<div class="text-error text-center reward-notice" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3);"><span class="material-symbols-outlined align-middle icon-sm">favorite</span> <strong>Coût :</strong> ${hp} PV (par héros)</div>`;
                             } else if (hp > 0) {
-                                warningHtml += `<div class="text-success text-center" style="font-size: 0.85rem; margin-top: 0.5rem; background: rgba(16, 185, 129, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.3);"><span class="material-symbols-outlined align-middle icon-sm">favorite</span> <strong>Gain :</strong> +${hp} PV (par héros)</div>`;
+                                warningHtml += `<div class="text-success text-center reward-notice" style="background: rgba(16, 185, 129, 0.1); border: 1px solid rgba(16, 185, 129, 0.3);"><span class="material-symbols-outlined align-middle icon-sm">favorite</span> <strong>Gain :</strong> +${hp} PV (par héros)</div>`;
                             }
 
                             if (xp > 0) {
-                                warningHtml += `<div class="text-center" style="color: #38bdf8; font-size: 0.85rem; margin-top: 0.5rem; background: rgba(56, 189, 248, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.3);"><span class="material-symbols-outlined align-middle icon-sm">star</span> <strong>Récompense :</strong> +${xp} XP de Voie (par héros)</div>`;
+                                warningHtml += `<div class="text-center text-sky-medium reward-notice" style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3);"><span class="material-symbols-outlined align-middle icon-sm">star</span> <strong>Récompense :</strong> +${xp} XP de Voie (par héros)</div>`;
                             } else if (xp < 0) {
-                                warningHtml += `<div class="text-error text-center" style="font-size: 0.85rem; margin-top: 0.5rem; background: rgba(239, 68, 68, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3);"><span class="material-symbols-outlined align-middle icon-sm">star</span> <strong>Perte :</strong> ${xp} XP de Voie (par héros)</div>`;
+                                warningHtml += `<div class="text-error text-center reward-notice" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3);"><span class="material-symbols-outlined align-middle icon-sm">star</span> <strong>Perte :</strong> ${xp} XP de Voie (par héros)</div>`;
                             }
 
                             if (data.currentRoom.alterationRewardType === 'SPIRITUAL_XP') {
-                                specialItemHtml = `<div class="text-center" style="color: #c084fc; font-size: 0.85rem; margin-top: 0.5rem; background: rgba(192, 132, 252, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(192, 132, 252, 0.3);"><span class="material-symbols-outlined align-middle icon-sm">star</span> <strong>Récompense :</strong> Vous obtiendrez +${data.currentRoom.alterationSpiritualXpReward || 0} XP Spirituel !</div>`;
+                                specialItemHtml = `<div class="text-center text-purple reward-notice" style="background: rgba(192, 132, 252, 0.1); border: 1px solid rgba(192, 132, 252, 0.3);"><span class="material-symbols-outlined align-middle icon-sm">star</span> <strong>Récompense :</strong> Vous obtiendrez +${data.currentRoom.alterationSpiritualXpReward || 0} XP Spirituel !</div>`;
                             } else if (data.currentRoom.alterationRewardType === 'SPECIAL_ITEM') {
                                 let badge = data.currentRoom.alterationSpecialItemReward ? createAnomalyBadgeHtml(data.currentRoom.alterationSpecialItemReward) : '"Item"';
-                                specialItemHtml = `<div class="text-center" style="color: #d946ef; font-size: 0.85rem; margin-top: 0.5rem; background: rgba(217, 70, 239, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(217, 70, 239, 0.3);"><span class="material-symbols-outlined align-middle icon-sm">star</span> <strong>Récompense :</strong> Vous obtiendrez l'item spécial ${badge}</div>`;
+                                specialItemHtml = `<div class="text-center reward-notice" style="color: #d946ef; background: rgba(217, 70, 239, 0.1); border: 1px solid rgba(217, 70, 239, 0.3);"><span class="material-symbols-outlined align-middle icon-sm">star</span> <strong>Récompense :</strong> Vous obtiendrez l'item spécial ${badge}</div>`;
                             }
 
                             btnText = `Accepter`;
                         } else if (data.currentRoom.alterationType === 'ITEM') {
                             btnText = `Donner l'item et Toucher`;
                             let reqBadge = data.currentRoom.alterationRequiredItem ? createAnomalyBadgeHtml(data.currentRoom.alterationRequiredItem) : '"spécial"';
-                            warningHtml = `<div class="text-error text-center" style="font-size: 0.85rem; margin-top: 0.5rem; background: rgba(239, 68, 68, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3);"><span class="material-symbols-outlined align-middle icon-sm">warning</span> <strong>Attention :</strong> L'item ${reqBadge} sera définitivement détruit de l'inventaire.</div>`;
+                            warningHtml = `<div class="text-error text-center reward-notice" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3);"><span class="material-symbols-outlined align-middle icon-sm">warning</span> <strong>Attention :</strong> L'item ${reqBadge} sera définitivement détruit de l'inventaire.</div>`;
 
-                            if (data.currentRoom.alterationRewardType === 'SPIRITUAL_XP') {
-                                specialItemHtml = `<div class="text-center" style="color: #38bdf8; font-size: 0.85rem; margin-top: 0.5rem; background: rgba(56, 189, 248, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.3);"><span class="material-symbols-outlined align-middle icon-sm">star</span> <strong>Récompense :</strong> Vous obtiendrez +${data.currentRoom.alterationSpiritualXpReward || 0} XP Spirituel !</div>`;
-                            } else if (data.currentRoom.alterationRewardType === 'SPECIAL_ITEM') {
-                                let badge = data.currentRoom.alterationSpecialItemReward ? createAnomalyBadgeHtml(data.currentRoom.alterationSpecialItemReward) : '"Item"';
-                                specialItemHtml = `<div class="text-center" style="color: #d946ef; font-size: 0.85rem; margin-top: 0.5rem; background: rgba(217, 70, 239, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(217, 70, 239, 0.3);"><span class="material-symbols-outlined align-middle icon-sm">star</span> <strong>Récompense :</strong> Vous obtiendrez l'item spécial ${badge}</div>`;
+                            let rewType = data.currentRoom.alterationRewardType;
+                            if (rewType === 'SPECIAL_ITEM' && !data.currentRoom.alterationSpecialItemReward) {
+                                rewType = 'SPIRITUAL_XP';
                             }
 
-                            specialItemHtml += `<div class="text-center" id="itemAlterationCheckContainer" style="margin-top: 1rem; width: 100%;">
+                            if (rewType === 'SPIRITUAL_XP') {
+                                specialItemHtml = `<div class="text-center text-sky-medium reward-notice" style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3);"><span class="material-symbols-outlined align-middle icon-sm">star</span> <strong>Récompense :</strong> Vous obtiendrez +${data.currentRoom.alterationSpiritualXpReward || 0} XP Spirituel !</div>`;
+                            } else if (rewType === 'SPECIAL_ITEM') {
+                                let badge = data.currentRoom.alterationSpecialItemReward ? createAnomalyBadgeHtml(data.currentRoom.alterationSpecialItemReward) : '"Item"';
+                                specialItemHtml = `<div class="text-center reward-notice" style="color: #d946ef; background: rgba(217, 70, 239, 0.1); border: 1px solid rgba(217, 70, 239, 0.3);"><span class="material-symbols-outlined align-middle icon-sm">star</span> <strong>Récompense :</strong> Vous obtiendrez l'item spécial ${badge}</div>`;
+                            }
+
+                            specialItemHtml += `<div class="text-center mt-4 w-full" id="itemAlterationCheckContainer">
                                 <span class="material-symbols-outlined spin">sync</span> Vérification de votre inventaire...
                             </div>`;
                             globalFetch('/api/anomalies').then(res => {
@@ -1828,21 +2056,9 @@ function updateUI(data) {
                                 const reqItem = data.currentRoom.alterationRequiredItem;
                                 const ownsItem = anomalies.some(a => a.name === reqItem);
                                 if (!ownsItem) {
-                                    container.innerHTML = `<div class="font-bold text-error" style="background: rgba(239,68,68,0.1); padding: 0.5rem; border-radius: 6px;">Vous ne possédez pas cet item.</div>`;
-                                    const btn = document.getElementById('btnAcceptAlteration');
-                                    if (btn) {
-                                        btn.disabled = true;
-                                        btn.style.opacity = '0.5';
-                                        btn.style.cursor = 'not-allowed';
-                                    }
+                                    container.innerHTML = `<div id="itemAlterationMissingText" class="font-bold text-error bg-error-soft text-center" style="padding: 0.5rem; border-radius: 8px;">Vous ne possédez pas cet item.</div>`;
                                 } else {
                                     container.innerHTML = '';
-                                    const btn = document.getElementById('btnAcceptAlteration');
-                                    if (btn) {
-                                        btn.removeAttribute('disabled');
-                                        btn.style.opacity = '1';
-                                        btn.style.cursor = 'pointer';
-                                    }
                                 }
                             }).catch(err => {
                                 console.error(err);
@@ -1862,7 +2078,7 @@ function updateUI(data) {
                             } else if (data.currentRoom.altarRewardType === 'ITEM') {
                                 const eq = data.currentRoom.altarRewardEquipment;
                                 if (eq) {
-                                    const rarityColors = { 'COMMUN': '#94a3b8', 'INHABITUEL': '#22c55e', 'RARE': '#3b82f6', 'MYTHIQUE': '#f97316', 'LEGENDAIRE': '#eab308', 'EPIQUE': '#ef4444', 'RELIQUE': '#a855f7', 'MAUDIT': '#6b5252' };
+                                    const rarityColors = { 'COMMUN': '#94a3b8', 'INHABITUEL': '#22c55e', 'RARE': '#3b82f6', 'MYTHIQUE': '#f97316', 'LEGENDAIRE': '#eab308', 'EPIQUE': '#ef4444', 'RELIQUE': '#a855f7', 'MAUDIT': '#7f1d1d' };
                                     const rarityColor = getRarityColor(eq.rarity);
                                     const tooltipDataHtml = typeof window.getEquipmentTooltipHTML === 'function' ? window.getEquipmentTooltipHTML(eq) : '';
                                     const tooltipAttrs = tooltipDataHtml ? 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"' : '';
@@ -1873,7 +2089,7 @@ function updateUI(data) {
                             }
                             warningHtml += altarRewardHtml;
 
-                            specialItemHtml = `<div class="text-center" id="altarAnomalySelectContainer" style="margin-top: 1rem; width: 100%;">
+                            specialItemHtml = `<div class="text-center mt-4 w-full" id="altarAnomalySelectContainer">
                                 <span class="material-symbols-outlined spin">sync</span> Chargement de vos objets magiques...
                             </div>`;
 
@@ -1896,21 +2112,14 @@ function updateUI(data) {
                                 if (!container) return;
 
                                 if (eligible.length === 0) {
-                                    container.innerHTML = `<div class="font-bold text-error" style="background: rgba(239,68,68,0.1); padding: 0.5rem; border-radius: 6px;">Vous ne possédez aucun objet magique de cette spiritualité.</div>`;
-                                    const btn = document.getElementById('btnAcceptAlteration');
-                                    if (btn) {
-                                        btn.disabled = true;
-                                        btn.style.opacity = '0.5';
-                                        btn.style.cursor = 'not-allowed';
-                                    }
+                                    container.innerHTML = `<div id="altarAlterationMissingText" class="font-bold text-error bg-error-soft text-center" style="padding: 0.5rem; border-radius: 8px;">Vous ne possédez aucun objet magique de cette spiritualité.</div>`;
                                     return;
                                 }
 
                                 const btn = document.getElementById('btnAcceptAlteration');
                                 if (btn) {
                                     btn.removeAttribute('disabled');
-                                    btn.style.opacity = '1';
-                                    btn.style.cursor = 'pointer';
+                                    btn.classList.remove('disabled');
                                 }
 
                                 const first = eligible[0];
@@ -1965,13 +2174,12 @@ function updateUI(data) {
                                 console.error("Failed to load anomalies:", err);
                                 const container = document.getElementById('altarAnomalySelectContainer');
                                 if (container) {
-                                    container.innerHTML = `<div class="font-bold text-error" style="background: rgba(239,68,68,0.1); padding: 0.5rem; border-radius: 6px;">Erreur lors du chargement de vos objets magiques.</div>`;
+                                    container.innerHTML = `<div class="font-bold text-error bg-error-soft">Erreur lors du chargement de vos objets magiques.</div>`;
                                 }
                                 const btn = document.getElementById('btnAcceptAlteration');
                                 if (btn) {
                                     btn.disabled = true;
-                                    btn.style.opacity = '0.5';
-                                    btn.style.cursor = 'not-allowed';
+                                    btn.classList.add('disabled');
                                 }
                             });
                         }
@@ -1980,15 +2188,12 @@ function updateUI(data) {
                         lootContainer.classList.remove('hidden'); lootContainer.classList.add('flex');
 
                         let disabledState = '';
-                        if (data.currentRoom.alterationType === 'ITEM' || data.currentRoom.alterationType === 'AUTEL') {
-                            disabledState = 'disabled style="opacity: 0.5; cursor: not-allowed;"';
-                        }
 
                         lootContainer.innerHTML = `
-                            <div style="display: flex; flex-direction: column; align-items: center; max-width: 600px; width: 100%;">
+                            <div class="flex-col items-center w-full" style="max-width: 600px;">
                                 ${warningHtml}
                                 ${specialItemHtml}
-                                <div style="display: flex; gap: 1rem; margin-top: 1rem; justify-content: center; width: 100%;">
+                                <div class="btn-row">
                                     <button type="button" id="btnAcceptAlteration" class="btn" style="flex: 1; max-width: 250px; background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.3); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;" ${disabledState} onclick="event.preventDefault(); acceptAlteration();">${btnText}</button>
                                     <button type="button" class="btn text-muted" onclick="event.preventDefault(); nextRoom();" style="flex: 1; max-width: 250px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">Ignorer et passer</button>
                                 </div>
@@ -2079,7 +2284,7 @@ function updateUI(data) {
                                 const rarityColor = typeof getRarityColor === 'function' ? getRarityColor(eq.rarity) : '#10b981';
                                 const tooltipDataHtml = typeof window.getEquipmentTooltipHTML === 'function' ? window.getEquipmentTooltipHTML(eq) : '';
                                 const tooltipAttrs = tooltipDataHtml ? 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"' : '';
-                                
+
                                 gainedItemsHtml += `
                                     <div class="flex-center relative" ${tooltipAttrs} style="cursor: ${tooltipDataHtml ? 'help' : 'default'}; background: rgba(0, 0, 0, 0.4); border: 1px solid ${rarityColor}80; padding: 0.8rem 1rem; border-radius: 8px; color: ${rarityColor}; font-weight: 600; gap: 0.5rem; margin-top: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
                                         ${tooltipDataHtml ? `<template class="tooltip-data">${tooltipDataHtml}</template>` : ''}
@@ -2090,7 +2295,7 @@ function updateUI(data) {
 
                             if (gainedItemsHtml) {
                                 lootContainer.innerHTML += `
-                                    <div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; margin-top: 1rem; width: 100%;">
+                                    <div class="btn-row" style="flex-wrap: wrap;">
                                         ${gainedItemsHtml}
                                     </div>
                                 `;
@@ -2101,7 +2306,7 @@ function updateUI(data) {
                     }
                 } else if (subType === 'RENCONTRE') {
                     icon.textContent = 'storefront';
-                    icon.style.color = '#10b981';
+                    icon.className = 'material-symbols-outlined mb-4 text-[5rem] text-success';
                     title.textContent = 'Rencontre';
                     desc.innerHTML = data.currentRoom.eventText || 'Un marchand ambulant vous interpelle...';
 
@@ -2169,13 +2374,16 @@ function updateUI(data) {
                             }
 
                             let canAfford = true;
-                            let playerGold = (data.players && data.players[0]) ? (data.players[0].gold || 0) : 0;
+                            const myPlayer = (data.players && data.players.length > 0) ? (data.players.find(p => p.ownerUsername === pageState.currentUsername) || data.players[0]) : null;
+                            let playerGold = myPlayer ? (myPlayer.gold || 0) : 0;
                             if (goldPrice > 0 && playerGold < goldPrice) {
                                 canAfford = false;
                             }
                             if (entry.priceSpecialItemName) {
-                                let playerSpecialItems = (data.players && data.players[0] && data.players[0].specialItems) ? data.players[0].specialItems : {};
-                                let qte = playerSpecialItems[entry.priceSpecialItemName] || 0;
+                                let qte = 0;
+                                if (window.myGlobalAnomalies && Array.isArray(window.myGlobalAnomalies)) {
+                                    qte = window.myGlobalAnomalies.filter(a => a.name === entry.priceSpecialItemName).length;
+                                }
                                 if (qte < 1) {
                                     canAfford = false;
                                 }
@@ -2226,11 +2434,11 @@ function updateUI(data) {
                             lootContainer.innerHTML += `
                                 <div class="flex-center relative" ${tooltipAttrs} ${extraAttrs} onmouseover="this.style.transform='translateY(-2px)'; this.style.boxShadow='0 4px 12px rgba(0,0,0,0.4)';" onmouseout="this.style.transform='none'; this.style.boxShadow='none';" style="background: rgba(15, 23, 42, 0.6); border: 1px solid ${rarityColor}50; padding: 1rem; border-radius: 12px; justify-content: space-between; gap: 1rem; width: 48%; min-width: 350px; flex: 1 1 auto; max-width: 500px; transition: all 0.2s ease;">
                                     ${tooltipDataHtml ? `<template class="tooltip-data">${tooltipDataHtml}</template>` : ''}
-                                    <div class="flex-center" style="gap: 1rem;">
+                                    <div class="flex-center gap-4" >
                                         <div class="flex-center" style="width: 48px; height: 48px; border-radius: 8px; background: rgba(0,0,0,0.5); justify-content: center; border: 1px solid ${rarityColor}30;">
                                             ${iconHtml}
                                         </div>
-                                        <div style="display: flex; flex-direction: column; gap: 0.2rem;">
+                                        <div class="flex-col" style="gap: 0.2rem;">
                                             <span style="color: ${rarityColor}; font-weight: 700; font-size: 1.1rem; text-shadow: 0 0 10px ${rarityColor}40;">${nameHtml}</span>
                                             <div class="flex-center text-sm" style="font-weight: 600; background: rgba(0,0,0,0.3); padding: 0.2rem 0.6rem; border-radius: 4px; width: fit-content; margin-top: 0.2rem;">
                                                 ${priceHtml}
@@ -2246,13 +2454,13 @@ function updateUI(data) {
                     }
                 } else if (subType === 'PIEGE') {
                     icon.textContent = 'warning';
-                    icon.style.color = '#f87171';
+                    icon.className = 'material-symbols-outlined mb-4 text-[5rem] text-error';
                     title.textContent = 'Piège !';
 
                     let trapDesc = data.currentRoom.eventText || 'Un piège se déclenche !';
 
                     if (data.roomEventCompleted) {
-                        trapDesc += `<br><br><span style="color:#10b981;">🪢 Piège évité grâce à une Corde !</span>`;
+                        trapDesc += `<br><br><span class="text-success">🪢 Piège évité grâce à une Corde !</span>`;
                         desc.innerHTML = trapDesc;
                         btnOpen.classList.add('hidden');
                         btnCont.classList.remove('hidden');
@@ -2285,8 +2493,8 @@ function updateUI(data) {
                             const hasRope = data.activeConsumables && data.activeConsumables.some(eq => eq.name === 'Corde');
                             lootContainer.classList.remove('hidden'); lootContainer.classList.add('flex');
                             lootContainer.innerHTML = `
-                                <div style="display: flex; flex-direction: column; align-items: center; width: 100%;">
-                                    <div style="display: flex; gap: 1rem; margin-top: 1rem; justify-content: center; width: 100%;">
+                                <div class="flex-col items-center w-full">
+                                    <div class="btn-row">
                                         <button type="button" class="btn" ${!hasRope ? 'disabled title="Vous n\'avez pas de corde"' : ''} style="flex: 1; max-width: 250px; background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: ${hasRope ? 'pointer' : 'not-allowed'}; opacity: ${hasRope ? '1' : '0.5'}; transition: all 0.2s ease;" onclick="event.preventDefault(); ${hasRope ? 'useRope();' : ''}">Utiliser une Corde</button>
                                         <button type="button" class="btn text-muted" onclick="event.preventDefault(); nextRoom();" style="flex: 1; max-width: 250px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">Subir le piège et passer</button>
                                     </div>
@@ -2305,8 +2513,7 @@ function updateUI(data) {
 
                     if (data.roomEventCompleted) {
                         title.textContent = 'Rien...';
-                        icon.className = 'material-symbols-outlined mb-4 text-[5rem]';
-                        icon.style.color = '#475569'; // Gris foncé pour bien marquer "Rien"
+                        icon.className = 'material-symbols-outlined mb-4 text-[5rem] text-slate'; // Gris foncé pour bien marquer "Rien"
                         icon.style.textShadow = 'none';
                         desc.innerHTML = data.currentRoom.eventText || 'Vous avez ouvert la porte... mais il n\'y a absolument rien derrière.';
                         btnOpen.classList.add('hidden');
@@ -2324,7 +2531,7 @@ function updateUI(data) {
                                     const an = window.allAnomaliesCombat.find(a => a.name === eqName);
                                     if (an) {
                                         icon.textContent = 'crown';
-                                        icon.style.color = '#f59e0b';
+                                        icon.className = 'material-symbols-outlined mb-4 text-[5rem] text-gold';
                                         title.textContent = 'Trésor';
 
                                         const spColor = getSpiritualiteColor(an.spiritualite);
@@ -2349,7 +2556,7 @@ function updateUI(data) {
                         if (anomalyHtml) {
                             lootContainer.classList.remove('hidden'); lootContainer.classList.add('flex');
                             lootContainer.innerHTML = `
-                                <div style="display: flex; gap: 1rem; flex-wrap: wrap; justify-content: center; width: 100%; margin-top: 1rem;">
+                                <div class="btn-row" style="flex-wrap: wrap;">
                                     ${anomalyHtml}
                                 </div>
                             `;
@@ -2357,7 +2564,7 @@ function updateUI(data) {
                             lootContainer.classList.add('hidden'); lootContainer.classList.remove('flex');
                         }
                     } else {
-                        icon.style.color = '#fbbf24'; // Jaune
+                        icon.className = 'material-symbols-outlined mb-4 text-[5rem] text-gold'; // Jaune
                         desc.innerHTML = data.currentRoom.eventText || 'Une porte mystérieuse se dresse devant vous...';
                         btnOpen.classList.add('hidden');
                         btnCont.classList.remove('hidden');
@@ -2375,8 +2582,8 @@ function updateUI(data) {
                             if (outcomes.length > 0) {
                                 lootContainer.classList.remove('hidden'); lootContainer.classList.add('flex');
                                 lootContainer.innerHTML = `
-                                    <div class="text-muted text-center" style="font-size: 0.85rem; width: 100%;">
-                                        <span style="color: #fbbf24; font-weight: 600;">Que se cache-t-il derrière ?</span><br>
+                                    <div class="text-muted text-center text-sm w-full" >
+                                        <span class="text-gold font-semibold">Que se cache-t-il derrière ?</span><br>
                                         Le résultat sera révélé si vous passez la porte...
                                     </div>
                                 `;
@@ -2396,16 +2603,184 @@ function updateUI(data) {
     logContainer.innerHTML = '';
     data.combatLog.forEach(log => {
         const div = document.createElement('div');
-        div.className = 'log-entry';
-
         let text = log;
-        data.players.forEach(p => {
-            text = text.replace(new RegExp(p.name, 'g'), `<span style="color:#10b981;font-weight:600;">${p.name}</span>`);
-        });
-        text = text.replace(/inflige (\d+) dégâts/g, 'inflige <span style="color:#f59e0b;font-weight:bold;">$1</span> dégâts');
+        let isUseless = false;
 
-        div.innerHTML = text;
-        logContainer.appendChild(div);
+        data.players.forEach(p => {
+            // Un peu de regex pour ne pas remplacer dans les attributs HTML si p.name correspond
+            text = text.replace(new RegExp(`\\b${p.name}\\b`, 'g'), `<span class="log-player-name">${p.name}</span>`);
+        });
+
+        // 1. Turn Separator
+        if (text.startsWith("--- Tour de ")) {
+            div.className = 'log-entry log-turn-separator';
+            text = text.replace(/--- Tour de (.*?) ---/, '🏁 <strong>Tour de $1</strong>');
+        }
+        // 2. Damage (Crit or Normal)
+        else if (text.includes("inflige") && text.includes("dégâts")) {
+            if (text.includes("Coup Critique")) {
+                div.className = 'log-entry log-damage-crit';
+                // Couvre 'dégâts', 'dégâts magiques', etc. derrière le chiffre
+                text = text.replace(/inflige (\d+) dégâts(.*?)(?=\s|\(|<|$)/g, 'inflige <span class="log-val-crit">$1</span> dégâts$2');
+                text = text.replace("Coup Critique", '<span class="log-crit-text">Coup Critique</span>');
+            } else if (text.includes("magiques")) {
+                div.className = 'log-entry log-damage-magic';
+                text = text.replace(/inflige (\d+) dégâts magiques/g, 'inflige <span class="log-val-magic">$1</span> dégâts <span class="log-val-magic">magiques</span>');
+            } else if (text.includes("physiques")) {
+                div.className = 'log-entry log-damage-physic';
+                text = text.replace(/inflige (\d+) dégâts physiques/g, 'inflige <span class="log-val-physic">$1</span> dégâts <span class="log-val-physic">physiques</span>');
+            } else if (text.includes("bruts")) {
+                div.className = 'log-entry log-damage-brut';
+                text = text.replace(/inflige (\d+) dégâts bruts/g, 'inflige <span class="log-val-brut">$1</span> dégâts <span class="log-val-brut">bruts</span>');
+            } else {
+                div.className = 'log-entry log-damage-normal';
+                text = text.replace(/inflige (\d+) dégâts/g, 'inflige <span class="log-val-dmg">$1</span> dégâts');
+            }
+        }
+        // 3. Subit des dégâts (Dot, pièges...)
+        else if (text.includes("subit") && text.includes("dégâts")) {
+             if (text.includes("magiques")) {
+                 div.className = 'log-entry log-damage-magic';
+                 text = text.replace(/subit (\d+) dégâts magiques/g, 'subit <span class="log-val-magic">$1</span> dégâts <span class="log-val-magic">magiques</span>');
+             } else if (text.includes("physiques")) {
+                 div.className = 'log-entry log-damage-physic';
+                 text = text.replace(/subit (\d+) dégâts physiques/g, 'subit <span class="log-val-physic">$1</span> dégâts <span class="log-val-physic">physiques</span>');
+             } else if (text.includes("bruts")) {
+                 div.className = 'log-entry log-damage-brut';
+                 text = text.replace(/subit (\d+) dégâts bruts/g, 'subit <span class="log-val-brut">$1</span> dégâts <span class="log-val-brut">bruts</span>');
+             } else if (text.includes("Brûlure")) {
+                 div.className = 'log-entry log-damage-burn';
+                 text = text.replace(/subit (\d+) dégâts de Brûlure/g, 'subit <span class="log-val-burn">$1</span> dégâts de <span class="log-val-burn">Brûlure</span>');
+             } else if (text.includes("Poison")) {
+                 div.className = 'log-entry log-damage-poison';
+                 text = text.replace(/subit (\d+) dégâts de Poison/g, 'subit <span class="log-val-poison">$1</span> dégâts de <span class="log-val-poison">Poison</span>');
+             } else {
+                 div.className = 'log-entry log-damage-normal';
+                 text = text.replace(/subit (\d+) dégâts/g, 'subit <span class="log-val-dmg">$1</span> dégâts');
+             }
+        }
+        // 4. Healing (HP)
+        else if (text.includes("soigné") || (text.includes("récupère") && text.includes("PV"))) {
+            div.className = 'log-entry log-heal-hp';
+            text = text.replace(/(\d+) PV/g, '<span class="log-val-hp">$1 PV</span>');
+        }
+        // 5. Healing (Mana)
+        else if (text.toLowerCase().includes("mana") && (text.includes("récupère") || text.includes("régénère"))) {
+            div.className = 'log-entry log-heal-mana';
+            text = text.replace(/(\d+) (?:points de )?[mM]ana/g, '<span class="log-val-mana">$1 Mana</span>');
+            // Gérer aussi "Mana actuelle : X" pour cette ligne
+            text = text.replace(/Mana actuelle : (\d+)/g, 'Mana actuelle : <span class="log-val-mana">$1</span>');
+        }
+        // 6. Deaths
+        else if (text.includes("succombe") || text.includes("terrassé") || text.includes("mort") || text.includes("est vaincu")) {
+            div.className = 'log-entry log-death';
+        }
+        // 7. Dodge / Miss
+        else if (text.includes("esquive") || text.includes("rate") || text.includes("bloque")) {
+            div.className = 'log-entry log-miss';
+        }
+        // 8. Default
+        else {
+            div.className = 'log-entry log-generic';
+        }
+
+        // Global value replacements
+        text = text.replace(/Init: (\d+)/g, 'Init: <span class="log-val-init">$1</span>');
+        text = text.replace(/Vitesse: (\d+)/g, 'Vitesse: <span class="log-val-speed">$1</span>');
+        text = text.replace(/PV restants : (\d+)/g, 'PV restants : <span class="log-val-hp">$1</span>');
+        text = text.replace(/Vie actuelle : (\d+)/g, 'Vie actuelle : <span class="log-val-hp">$1</span>');
+        text = text.replace(/soigné de (\d+) points/g, 'soigné de <span class="log-val-hp">$1</span> points');
+        text = text.replace(/reçoit un bouclier de (\d+)/g, 'reçoit un <span class="log-val-shield">bouclier</span> de <span class="log-val-shield">$1</span>');
+        
+        const getStatClass = (statName) => {
+            let cssClass = 'log-val-stat'; // Default generic stat color
+            const lower = statName.toLowerCase();
+            if (lower.includes("brûlure")) cssClass = 'log-val-burn';
+            else if (lower.includes("poison")) cssClass = 'log-val-poison';
+            else if (lower.includes("vitesse")) cssClass = 'log-val-speed';
+            else if (lower.includes("critique")) cssClass = 'log-val-crit';
+            else if (lower.includes("mana")) cssClass = 'log-val-mana';
+            else if (lower.includes("vie") || lower.includes("soins")) cssClass = 'log-val-hp';
+            else if (lower.includes("armure")) cssClass = 'log-val-armor';
+            else if (lower.includes("résistance")) cssClass = 'log-val-resist';
+            else if (lower.includes("bouclier")) cssClass = 'log-val-shield';
+            else if (lower.includes("magique") || lower.includes("puissance")) cssClass = 'log-val-magic';
+            else if (lower.includes("physique") || lower.includes("force")) cssClass = 'log-val-physic';
+            else if (lower.includes("brut")) cssClass = 'log-val-brut';
+            return cssClass;
+        };
+
+        // Buffs & Gains
+        text = text.replace(/\+(\d+) de ([a-zA-Zéèàçûîôâê]+)/gi, function(match, amount, statName) {
+            const cssClass = getStatClass(statName);
+            return `+<span class="${cssClass}">${amount}</span> de <span class="${cssClass}">${statName}</span>`;
+        });
+        
+        // Passifs spécifiques
+        text = text.replace(/\+(\d+)% d'armure/gi, '+<span class="log-val-armor">$1%</span> d\'<span class="log-val-armor">armure</span>');
+        text = text.replace(/\+(\d+)% de résistance magique/gi, '+<span class="log-val-resist">$1%</span> de <span class="log-val-resist">résistance magique</span>');
+        text = text.replace(/\-(\d+)% sur le coût des sorts/gi, '-<span class="log-val-mana">$1%</span> sur le <span class="log-val-mana">coût des sorts</span>');
+        text = text.replace(/\+(\d+) Vitesse/gi, '+<span class="log-val-speed">$1</span> <span class="log-val-speed">Vitesse</span>');
+        
+        // Passifs Voies & Spiritualités (Mots clés et Phrases)
+        // Destruction
+        text = text.replace(/🔥 \[Destruction\]/g, '<span style="color:#ef4444;font-weight:bold;">🔥 [Destruction]</span>');
+        text = text.replace(/chaleur/gi, '<span style="color:#f97316;font-weight:bold;">chaleur</span>');
+        
+        // Création
+        text = text.replace(/🌱 \[Création\]/g, '<span style="color:#10b981;font-weight:bold;">🌱 [Création]</span>');
+        text = text.replace(/✨ \[Création\]/g, '<span style="color:#10b981;font-weight:bold;">✨ [Création]</span>');
+        text = text.replace(/bourgeon/gi, '<span style="color:#10b981;font-weight:bold;">bourgeon</span>');
+        text = text.replace(/instantané/gi, '<span style="color:#a855f7;font-weight:bold;">instantané</span>');
+        
+        // Sûreté
+        text = text.replace(/stocke (\d+) points de sûreté/gi, 'stocke <span class="log-val-shield">$1</span> <span class="log-val-shield">points de sûreté</span>');
+        text = text.replace(/\(Sûreté\)/g, '(<span class="log-val-shield">Sûreté</span>)');
+        text = text.replace(/\(Sûreté passive\)/g, '(<span class="log-val-shield">Sûreté passive</span>)');
+        text = text.replace(/\+(\d+)% de critique/gi, '+<span class="log-val-crit">$1%</span> de <span class="log-val-crit">critique</span>');
+        
+        // Raison
+        text = text.replace(/de la Raison/g, 'de la <span class="log-val-magic">Raison</span>');
+        text = text.replace(/\(Raison\)/g, '(<span class="log-val-magic">Raison</span>)');
+        text = text.replace(/cumuls de Vitesse/g, 'cumuls de <span class="log-val-speed">Vitesse</span>');
+        
+        // Violence
+        text = text.replace(/stacks de Violence/g, 'stacks de <span class="log-val-brut">Violence</span>');
+        
+        // Karma (Spiritualité)
+        text = text.replace(/✨ Harmonie Karmique/gi, '<span style="color:#d946ef;font-weight:bold;">✨ Harmonie Karmique</span>');
+        text = text.replace(/✨ Le Karma/gi, '<span style="color:#d946ef;font-weight:bold;">✨ Le Karma</span>');
+        text = text.replace(/✨ Équilibre Karmique Parfait atteint !/gi, '<span style="color:#d946ef;font-weight:bold;">✨ Équilibre Karmique Parfait atteint !</span>');
+        text = text.replace(/🌑 Le Karma/gi, '<span style="color:#64748b;font-weight:bold;">🌑 Le Karma</span>');
+        text = text.replace(/🌕 Le Karma/gi, '<span style="color:#fcd34d;font-weight:bold;">🌕 Le Karma</span>');
+        text = text.replace(/🌗 Le Karma/gi, '<span style="color:#a1a1aa;font-weight:bold;">🌗 Le Karma</span>');
+        text = text.replace(/🌗 Acte de rééquilibrage/gi, '<span style="color:#a1a1aa;font-weight:bold;">🌗 Acte de rééquilibrage</span>');
+        text = text.replace(/💥 Le Karma/gi, '<span style="color:#ef4444;font-weight:bold;">💥 Le Karma</span>');
+        text = text.replace(/⏳ Le Karma/gi, '<span style="color:#f59e0b;font-weight:bold;">⏳ Le Karma</span>');
+        text = text.replace(/⚖️/gi, '<span style="color:#d946ef;font-weight:bold;">⚖️</span>');
+        
+        // Jauge et Fractions
+        text = text.replace(/(\d+)\/100/g, '<span style="color:#ef4444;font-weight:bold;">$1/100</span>');
+        text = text.replace(/Jauge: ([\-\d]+)/gi, 'Jauge: <span style="color:#d946ef;font-weight:bold;">$1</span>');
+        
+        // Effets sur la durée (traductions)
+        text = text.replace(/Soins sur la durée/g, '<span class="log-val-hp">Soins sur la durée</span>');
+        text = text.replace(/Régénération de mana sur la durée/g, '<span class="log-val-mana">Régénération de mana sur la durée</span>');
+        text = text.replace(/Dégâts sur la durée/g, '<span class="log-val-dmg">Dégâts sur la durée</span>');
+        
+        text = text.replace(/\(Critique\)/g, '<span class="log-crit-text">(Critique)</span>');
+        text = text.replace(/fixe: ([\-\+\d\.]+)/g, 'fixe: <span style="color:#fbbf24;font-weight:bold;">$1</span>');
+        text = text.replace(/mult: ([\-\+\d\.]+)/g, 'mult: <span style="color:#fbbf24;font-weight:bold;">$1</span>');
+        
+        // Tous les effets de buffs/debuffs
+        text = text.replace(/effet sur (.*?) \(/g, function(match, statName) {
+            return `effet sur <span class="${getStatClass(statName)}">${statName}</span> (`;
+        });
+
+        if (!isUseless) {
+            div.innerHTML = text;
+            logContainer.appendChild(div);
+        }
     });
 
     logContainer.scrollTop = logContainer.scrollHeight;
@@ -2422,7 +2797,7 @@ function updateUI(data) {
         spellButtons.forEach(btn => {
             btn.disabled = true;
             btn.classList.add('disabled');
-            btn.style.pointerEvents = 'none';
+            btn.classList.add('disabled');
         });
 
         // Trigger animation and auto-turn
@@ -2455,11 +2830,11 @@ function updateUI(data) {
                         console.error('Auto-turn recovery failed:', e2);
                         // Last resort: re-enable buttons so user isn't stuck
                         const btnAttack = document.getElementById('btnAttack');
-                        if (btnAttack) { btnAttack.disabled = false; btnAttack.style.pointerEvents = 'auto'; btnAttack.style.opacity = '1'; }
+                        if (btnAttack) { btnAttack.disabled = false; btnAttack.classList.remove('disabled'); }
                         const btnEnd = document.getElementById('btnEndTurn');
                         if (btnEnd) { btnEnd.disabled = false; }
                         const spellButtons = document.querySelectorAll('.spell-btn, .filter-chip');
-                        spellButtons.forEach(btn => { btn.disabled = false; btn.classList.remove('disabled'); btn.style.pointerEvents = ''; });
+                        spellButtons.forEach(btn => { btn.disabled = false; btn.classList.remove('disabled'); btn.classList.remove('disabled'); });
                         window.showNotif("Erreur de synchronisation. Veuillez réessayer.", true);
                     }
                 }
@@ -2474,12 +2849,8 @@ function updateUI(data) {
             btnAttack.disabled = !canAttack;
             if (!canAttack) {
                 btnAttack.classList.add('disabled');
-                btnAttack.style.pointerEvents = 'none';
-                btnAttack.style.opacity = '0.5';
             } else {
                 btnAttack.classList.remove('disabled');
-                btnAttack.style.pointerEvents = 'auto';
-                btnAttack.style.opacity = '1';
             }
         }
 
@@ -2516,7 +2887,7 @@ function generateFighterHtml(c, isHero, skipBadges = false) {
 
     const manaPct = c.manaMax > 0 ? Math.max(0, Math.min(100, (c.manaCurrent / c.manaMax) * 100)) : 0;
     let manaHtml = `
-        <div class="gauge-container" style="margin-top: 0.5rem; text-align: left;">
+        <div class="gauge-container mt-4" style="text-align: left;">
             <div class="gauge-label"><span>Mana</span><span>${c.manaCurrent} / ${c.manaMax}</span></div>
             <div class="gauge-track"><div class="gauge-fill mana" style="width: ${manaPct}%;"></div></div>
         </div>`;
@@ -2642,8 +3013,8 @@ function generateFighterHtml(c, isHero, skipBadges = false) {
         let styleDebuff = debuffAvail ? 'border-color: rgba(168, 85, 247, 0.6); color: #c084fc;' : 'border-color: #4b5563; color: #6b7280; opacity: 0.5;';
 
         statsHtml += `<span class="hero-stat-chip" title="1er attaque physique du tour (+10% dégâts physiques)" style="${styleBase}"><span class="material-symbols-outlined" style="color: inherit;">bolt</span>+10%</span>`;
-        statsHtml += `<span class="hero-stat-chip" title="Cible < 50% PV (+15% dégâts physiques)" style="${styleLowHp}"><span class="material-symbols-outlined" style="color: inherit;">heart_broken</span>+15%</span>`;
-        statsHtml += `<span class="hero-stat-chip" title="Cible avec Débuff (+10% dégâts physiques)" style="${styleDebuff}"><span class="material-symbols-outlined" style="color: inherit;">trending_down</span>+10%</span>`;
+        statsHtml += `<span class="hero-stat-chip" title="Cible < 50% PV (+20% dégâts physiques)" style="${styleLowHp}"><span class="material-symbols-outlined" style="color: inherit;">heart_broken</span>+20%</span>`;
+        statsHtml += `<span class="hero-stat-chip" title="Cible avec Débuff (+15% dégâts physiques)" style="${styleDebuff}"><span class="material-symbols-outlined" style="color: inherit;">trending_down</span>+15%</span>`;
     }
 
     if (c.voie && c.voie.nom && (c.voie.nom.toLowerCase().includes('création') || c.voie.nom.toLowerCase().includes('creation'))) {
@@ -2661,15 +3032,15 @@ function generateFighterHtml(c, isHero, skipBadges = false) {
 
         let icon = 'shield', color = '#9ca3af', borderColor = 'rgba(156, 163, 175, 0.4)', text = '+5% Armure', title = "Consolidation (Défaut)";
         if (level === 1) {
-            icon = 'speed'; color = '#f59e0b'; borderColor = 'rgba(245, 158, 11, 0.4)'; text = '+1 Vit'; title = "Consolidation (Niveau 1)";
+            icon = 'speed'; color = '#f59e0b'; borderColor = 'rgba(245, 158, 11, 0.4)'; text = '+2 Vit'; title = "Consolidation (Niveau 1)";
         } else if (level === 2) {
-            icon = 'shield'; color = '#10b981'; borderColor = 'rgba(16, 185, 129, 0.4)'; text = '+10% Armure'; title = "Consolidation (Niveau 2)";
+            icon = 'shield'; color = '#10b981'; borderColor = 'rgba(16, 185, 129, 0.4)'; text = '+15% Armure'; title = "Consolidation (Niveau 2)";
         } else if (level === 3) {
-            icon = 'security'; color = '#a855f7'; borderColor = 'rgba(168, 85, 247, 0.4)'; text = '+10% Résist'; title = "Consolidation (Niveau 3)";
+            icon = 'security'; color = '#a855f7'; borderColor = 'rgba(168, 85, 247, 0.4)'; text = '+15% Résist'; title = "Consolidation (Niveau 3)";
         } else if (level === 4) {
-            icon = 'water_drop'; color = '#3b82f6'; borderColor = 'rgba(59, 130, 246, 0.4)'; text = '-20% Coût'; title = "Consolidation (Niveau 4)";
+            icon = 'water_drop'; color = '#3b82f6'; borderColor = 'rgba(59, 130, 246, 0.4)'; text = '-25% Coût'; title = "Consolidation (Niveau 4)";
         } else if (level === 5) {
-            icon = 'gpp_good'; color = '#eab308'; borderColor = 'rgba(234, 179, 8, 0.4)'; text = '+8% Arm/Rés'; title = "Consolidation (Niveau 5)";
+            icon = 'gpp_good'; color = '#eab308'; borderColor = 'rgba(234, 179, 8, 0.4)'; text = '+10% Arm/Rés'; title = "Consolidation (Niveau 5)";
         }
 
         statsHtml += `<span class="hero-stat-chip" title="${title}" style="border-color: ${borderColor}; color: ${color};"><span class="material-symbols-outlined" style="color: inherit;">${icon}</span>${text}</span>`;
@@ -2849,9 +3220,22 @@ function generateFighterHtml(c, isHero, skipBadges = false) {
         mutationsHtml += `</div>`;
     }
 
-    let hpRegenBadge = (!isHero && c.regenHp && c.regenHp > 0) ? `<span title="Régénère ${c.regenHp} PV au début du tour" style="cursor: help; margin-left: 0.5rem; font-size: 0.7rem; background: rgba(244, 114, 182, 0.15); color: #f472b6; padding: 0.1rem 0.35rem; border-radius: 4px; border: 1px solid rgba(244, 114, 182, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.15rem; vertical-align: text-bottom;"><span class="material-symbols-outlined text-sm">healing</span>${c.regenHp} PV/t</span>` : '';
-    let manaRegenBadge = (!isHero && c.regenMana && c.regenMana > 0) ? `<span title="Régénère ${c.regenMana} Mana au début du tour" style="cursor: help; margin-left: 0.5rem; font-size: 0.7rem; background: rgba(125, 211, 252, 0.15); color: #7dd3fc; padding: 0.1rem 0.35rem; border-radius: 4px; border: 1px solid rgba(125, 211, 252, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.15rem; vertical-align: text-bottom;"><span class="material-symbols-outlined text-sm">opacity</span>${c.regenMana} MP/t</span>` : '';
+    const rHp = c.totalRegenHp !== undefined ? c.totalRegenHp : (c.regenHp || 0);
+    const rMana = c.totalRegenMana !== undefined ? c.totalRegenMana : (c.regenMana || 0);
 
+    let hpRegenBadge = '';
+    if (rHp > 0) {
+        hpRegenBadge = `<span title="Régénère ${rHp} PV au début du tour" style="cursor: help; margin-left: 0.5rem; font-size: 0.7rem; background: rgba(244, 114, 182, 0.15); color: #f472b6; padding: 0.1rem 0.35rem; border-radius: 4px; border: 1px solid rgba(244, 114, 182, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.15rem; vertical-align: text-bottom;"><span class="material-symbols-outlined text-sm">healing</span>${rHp} PV/t</span>`;
+    } else if (rHp < 0) {
+        hpRegenBadge = `<span title="Perd ${-rHp} PV au début du tour" style="cursor: help; margin-left: 0.5rem; font-size: 0.7rem; background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 0.1rem 0.35rem; border-radius: 4px; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.15rem; vertical-align: text-bottom;"><span class="material-symbols-outlined text-sm">bloodtype</span>${rHp} PV/t</span>`;
+    }
+
+    let manaRegenBadge = '';
+    if (rMana > 0) {
+        manaRegenBadge = `<span title="Régénère ${rMana} Mana au début du tour" style="cursor: help; margin-left: 0.5rem; font-size: 0.7rem; background: rgba(125, 211, 252, 0.15); color: #7dd3fc; padding: 0.1rem 0.35rem; border-radius: 4px; border: 1px solid rgba(125, 211, 252, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.15rem; vertical-align: text-bottom;"><span class="material-symbols-outlined text-sm">opacity</span>${rMana} MP/t</span>`;
+    } else if (rMana < 0) {
+        manaRegenBadge = `<span title="Perd ${-rMana} Mana au début du tour (Famine)" style="cursor: help; margin-left: 0.5rem; font-size: 0.7rem; background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 0.1rem 0.35rem; border-radius: 4px; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.15rem; vertical-align: text-bottom;"><span class="material-symbols-outlined text-sm">water_drop</span>${rMana} MP/t</span>`;
+    }
     let avatarHtml = isHero ? '🧙‍♂️' : '👹';
     if (isHero && c.voie && c.voie.nom) {
         const vNom = c.voie.nom.toLowerCase();
@@ -2970,11 +3354,11 @@ function renderShieldsHtml(shieldList) {
     shieldList.forEach(s => {
         totalShield += s.amount;
         const entryHtml = `
-            <div style="display:flex; align-items:flex-start; gap:0.4rem; font-size:0.85rem;">
-                <span class="material-symbols-outlined" style="flex-shrink:0; font-size:1.1rem; color:#38bdf8;">security</span>
-                <span style="font-weight:600; color:#fff;">[${s.sourceName || 'Inconnu'}]</span>
-                <span style="color:#38bdf8; font-weight:500;">Bouclier</span>
-                <span style="color:#e2e8f0;">&rarr; ${s.amount} PV absorpt. (${s.duration} tours)</span>
+            <div class="flex-start-sm">
+                <span class="material-symbols-outlined icon-sm-shrink text-sky-300">security</span>
+                <span class="font-bold text-white">[${s.sourceName || 'Inconnu'}]</span>
+                <span class="text-sky-medium">Bouclier</span>
+                <span class="text-subtle">→ ${s.amount} PV absorpt. (${s.duration} tours)</span>
             </div>
         `;
         shieldEntries.push(entryHtml);
@@ -2985,10 +3369,10 @@ function renderShieldsHtml(shieldList) {
     const tooltipAttrs = 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"';
 
     return `<div class="sandbox-status-badge buff relative" ${tooltipAttrs} style="cursor: help; border-color: rgba(56, 189, 248, 0.4); color: #38bdf8; background: rgba(56, 189, 248, 0.1);">
-        <span class="material-symbols-outlined" style="font-size: 0.95rem;">shield</span>
+        <span class="material-symbols-outlined text-sm">shield</span>
         <span>Boucliers (${totalShield})</span>
         <template class="tooltip-data">
-            <div style="display: flex; flex-direction: column; gap: 0.3rem;">
+            <div class="flex-col-xs">
                 ${shieldEntries.join('')}
             </div>
         </template>
@@ -3005,21 +3389,21 @@ function renderPoisonBurnHtml(c) {
         if (b.statAffected === 'POISON') {
             const dmg = b.flatValue || 0;
             poisonEntries.push(`
-                <div style="display:flex; align-items:flex-start; gap:0.4rem; font-size:0.85rem;">
-                    <span class="material-symbols-outlined" style="flex-shrink:0; font-size:1.1rem; color:#22c55e;">pest_control</span>
-                    <span style="font-weight:600; color:#fff;">[Poison]</span>
+                <div class="flex-start-sm">
+                    <span class="material-symbols-outlined icon-sm-shrink text-success">pest_control</span>
+                    <span class="font-bold text-white">[Poison]</span>
                     <span style="color:#22c55e; font-weight:500;">${dmg} Dégâts Brut</span>
-                    <span style="color:#e2e8f0;">&#x23F3; (${b.duration} tours)</span>
+                    <span class="text-subtle">&#x23F3; (${b.duration} tours)</span>
                 </div>
             `);
         } else if (b.statAffected === 'BURN') {
             const dmg = b.flatValue || 0;
             burnEntries.push(`
-                <div style="display:flex; align-items:flex-start; gap:0.4rem; font-size:0.85rem;">
-                    <span class="material-symbols-outlined" style="flex-shrink:0; font-size:1.1rem; color:#ef4444;">local_fire_department</span>
-                    <span style="font-weight:600; color:#fff;">[Brûlure]</span>
+                <div class="flex-start-sm">
+                    <span class="material-symbols-outlined icon-sm-shrink text-error">local_fire_department</span>
+                    <span class="font-bold text-white">[Brûlure]</span>
                     <span style="color:#ef4444; font-weight:500;">${dmg} Dégâts Magique</span>
-                    <span style="color:#e2e8f0;">&#x23F3; (${b.duration} tours)</span>
+                    <span class="text-subtle">&#x23F3; (${b.duration} tours)</span>
                 </div>
             `);
         }
@@ -3029,20 +3413,20 @@ function renderPoisonBurnHtml(c) {
     dots.forEach(d => {
         if (d.poison) {
             poisonEntries.push(`
-                <div style="display:flex; align-items:flex-start; gap:0.4rem; font-size:0.85rem;">
-                    <span class="material-symbols-outlined" style="flex-shrink:0; font-size:1.1rem; color:#22c55e;">pest_control</span>
-                    <span style="font-weight:600; color:#fff;">[Poison]</span>
+                <div class="flex-start-sm">
+                    <span class="material-symbols-outlined icon-sm-shrink text-success">pest_control</span>
+                    <span class="font-bold text-white">[Poison]</span>
                     <span style="color:#22c55e; font-weight:500;">${d.fixedDamagePerTick} Dégâts Brut</span>
-                    <span style="color:#e2e8f0;">&#x23F3; (${d.duration} tours)</span>
+                    <span class="text-subtle">&#x23F3; (${d.duration} tours)</span>
                 </div>
             `);
         } else if (d.burn) {
             burnEntries.push(`
-                <div style="display:flex; align-items:flex-start; gap:0.4rem; font-size:0.85rem;">
-                    <span class="material-symbols-outlined" style="flex-shrink:0; font-size:1.1rem; color:#ef4444;">local_fire_department</span>
-                    <span style="font-weight:600; color:#fff;">[Brûlure]</span>
+                <div class="flex-start-sm">
+                    <span class="material-symbols-outlined icon-sm-shrink text-error">local_fire_department</span>
+                    <span class="font-bold text-white">[Brûlure]</span>
                     <span style="color:#ef4444; font-weight:500;">${d.fixedDamagePerTick} Dégâts Magique</span>
-                    <span style="color:#e2e8f0;">&#x23F3; (${d.duration} tours)</span>
+                    <span class="text-subtle">&#x23F3; (${d.duration} tours)</span>
                 </div>
             `);
         }
@@ -3052,10 +3436,10 @@ function renderPoisonBurnHtml(c) {
 
     if (poisonEntries.length > 0) {
         html += `<div class="sandbox-status-badge debuff relative" ${tooltipAttrs} style="cursor: help; border-color: rgba(34, 197, 94, 0.4); color: #22c55e; background: rgba(34, 197, 94, 0.1);">
-            <span class="material-symbols-outlined" style="font-size: 0.95rem;">pest_control</span>
+            <span class="material-symbols-outlined text-sm">pest_control</span>
             <span>Poison (${poisonEntries.length})</span>
             <template class="tooltip-data">
-                <div style="display: flex; flex-direction: column; gap: 0.3rem;">
+                <div class="flex-col-xs">
                     ${poisonEntries.join('')}
                 </div>
             </template>
@@ -3064,10 +3448,10 @@ function renderPoisonBurnHtml(c) {
 
     if (burnEntries.length > 0) {
         html += `<div class="sandbox-status-badge debuff text-error relative" ${tooltipAttrs} style="cursor: help; border-color: rgba(239, 68, 68, 0.4); background: rgba(239, 68, 68, 0.1);">
-            <span class="material-symbols-outlined" style="font-size: 0.95rem;">local_fire_department</span>
+            <span class="material-symbols-outlined text-sm">local_fire_department</span>
             <span>Brûlure (${burnEntries.length})</span>
             <template class="tooltip-data">
-                <div style="display: flex; flex-direction: column; gap: 0.3rem;">
+                <div class="flex-col-xs">
                     ${burnEntries.join('')}
                 </div>
             </template>
@@ -3142,12 +3526,12 @@ function renderBuffsHtml(buffList, motList, hotList) {
             }
 
             const entryHtml = `
-            <div style="display:flex; align-items:flex-start; gap:0.4rem; font-size:0.85rem;">
+            <div class="flex-start-sm">
                 <span class="material-symbols-outlined" style="flex-shrink:0; font-size:1.1rem; color:${indicatorColor};">${iconName}</span>
                 ${statIconHtml}
-                <span style="font-weight:600; color:#fff;">[Cible]</span>
-                <span style="color:#38bdf8; font-weight:500;">${typeStr}</span>
-                <span style="color:#e2e8f0;">&rarr; ${text} (${b.duration} tours)</span>
+                <span class="font-bold text-white">[Cible]</span>
+                <span class="text-sky-medium">${typeStr}</span>
+                <span class="text-subtle">→ ${text} (${b.duration} tours)</span>
             </div>
         `;
 
@@ -3177,12 +3561,12 @@ function renderBuffsHtml(buffList, motList, hotList) {
             const iconName = isBad ? 'trending_down' : 'trending_up';
 
             const entryHtml = `
-                <div style="display:flex; align-items:flex-start; gap:0.4rem; font-size:0.85rem;">
+                <div class="flex-start-sm">
                     <span class="material-symbols-outlined" style="flex-shrink:0; font-size:1.1rem; color:${indicatorColor};">${iconName}</span>
-                    <span class="material-symbols-outlined" style="flex-shrink:0; font-size:1.1rem; color:#38bdf8; margin-left:-0.1rem;">water_drop</span>
-                    <span style="font-weight:600; color:#fff;">[Cible]</span>
-                    <span style="color:#38bdf8; font-weight:500;">MoT</span>
-                    <span style="color:#e2e8f0;">&rarr; ${text} Mana/tour (${m.duration} tours)</span>
+                    <span class="material-symbols-outlined icon-sm-shrink text-sky-300" style="margin-left:-0.1rem;">water_drop</span>
+                    <span class="font-bold text-white">[Cible]</span>
+                    <span class="text-sky-medium">MoT</span>
+                    <span class="text-subtle">→ ${text} Mana/tour (${m.duration} tours)</span>
                 </div>
             `;
             if (isBad) badBuffs.push(entryHtml);
@@ -3211,11 +3595,11 @@ function renderBuffsHtml(buffList, motList, hotList) {
             const iconName = isBad ? 'trending_down' : 'trending_up';
 
             const entryHtml = `
-                <div style="display:flex; align-items:flex-start; gap:0.4rem; font-size:0.85rem;">
+                <div class="flex-start-sm">
                     <span class="material-symbols-outlined" style="flex-shrink:0; font-size:1.1rem; color:${indicatorColor};">${iconName}</span>
-                    <span class="material-symbols-outlined" style="flex-shrink:0; font-size:1.1rem; color:#22c55e; margin-left:-0.1rem;">healing</span>
-                    <span style="font-weight:600; color:#fff;">[Cible]</span>
-                    <span style="color:#22c55e; font-weight:500;">HoT</span>
+                    <span class="material-symbols-outlined icon-sm-shrink text-success" style="margin-left:-0.1rem;">healing</span>
+                    <span class="font-bold text-white">[Cible]</span>
+                    <span class="text-success font-medium">HoT</span>
                     <span style="color:#e2e8f0;">&rarr; ${text} PV/tour (${h.duration} tours)</span>
                 </div>
             `;
@@ -3230,10 +3614,10 @@ function renderBuffsHtml(buffList, motList, hotList) {
 
     if (goodBuffs.length > 0) {
         html += `<div class="sandbox-status-badge buff relative" ${tooltipAttrs} style="cursor: help;">
-            <span class="material-symbols-outlined" style="font-size: 0.95rem;">trending_up</span>
+            <span class="material-symbols-outlined text-sm">trending_up</span>
             <span>Buffs (${goodBuffs.length})</span>
             <template class="tooltip-data">
-                <div style="display: flex; flex-direction: column; gap: 0.3rem;">
+                <div class="flex-col-xs">
                     ${goodBuffs.join('')}
                 </div>
             </template>
@@ -3241,10 +3625,10 @@ function renderBuffsHtml(buffList, motList, hotList) {
     }
     if (badBuffs.length > 0) {
         html += `<div class="sandbox-status-badge debuff relative" ${tooltipAttrs} style="cursor: help;">
-            <span class="material-symbols-outlined" style="font-size: 0.95rem;">trending_down</span>
+            <span class="material-symbols-outlined text-sm">trending_down</span>
             <span>Débuffs (${badBuffs.length})</span>
             <template class="tooltip-data">
-                <div style="display: flex; flex-direction: column; gap: 0.3rem;">
+                <div class="flex-col-xs">
                     ${badBuffs.join('')}
                 </div>
             </template>
@@ -3399,30 +3783,30 @@ function renderSpellCard(sp) {
     if (costDetailsHtml.length === 0) costDetails = '';
     let castingTypeHtml = '';
     if (sp.castingType === 'INSTANTANE') {
-        castingTypeHtml = '<span class="material-symbols-outlined" style="font-size: 1rem; color: #f59e0b;" title="Action Instantanée">bolt</span>';
+        castingTypeHtml = '<span class="material-symbols-outlined text-base text-gold" title="Action Instantanée">bolt</span>';
     } else if (sp.castingType === 'CANALISE') {
-        castingTypeHtml = '<span class="material-symbols-outlined" style="font-size: 1rem; color: #8b5cf6;" title="Action Canalisée">cyclone</span>';
+        castingTypeHtml = '<span class="material-symbols-outlined text-base text-violet" title="Action Canalisée">cyclone</span>';
         castingTypeHtml += sp.allowInstantDuringChanneling ?
-            '<span class="material-symbols-outlined" style="font-size: 1rem; color: #f59e0b;" title="Instantanés autorisés pendant la canalisation">bolt</span>' :
-            '<span class="relative" title="Instantanés interdits pendant la canalisation" style="display: inline-flex; align-items: center; justify-content: center; width: 1rem; height: 1rem;"><span class="material-symbols-outlined" style="font-size: 1rem; color: #64748b;">bolt</span><span class="absolute" style="width: 100%; height: 2px; background: #ef4444; transform: rotate(-45deg);"></span></span>';
+            '<span class="material-symbols-outlined text-base text-gold" title="Instantanés autorisés pendant la canalisation">bolt</span>' :
+            '<span class="relative" title="Instantanés interdits pendant la canalisation" style="display: inline-flex; align-items: center; justify-content: center; width: 1rem; height: 1rem;"><span class="material-symbols-outlined text-base text-slate">bolt</span><span class="absolute" style="width: 100%; height: 2px; background: #ef4444; transform: rotate(-45deg);"></span></span>';
     } else {
-        castingTypeHtml = '<span class="material-symbols-outlined" style="font-size: 1rem; color: #3b82f6;" title="Action Banale">hourglass_empty</span>';
+        castingTypeHtml = '<span class="material-symbols-outlined text-base text-blue" title="Action Banale">hourglass_empty</span>';
     }
 
     let categoryHtml = '';
     if (sp.category === 'INSPIRATION') {
-        categoryHtml = '<span class="material-symbols-outlined" style="font-size: 1rem; color: #dc2626;" title="Sort d\'Inspiration">storm</span>';
+        categoryHtml = '<span class="material-symbols-outlined text-base text-crimson" title="Sort d\'Inspiration">storm</span>';
     } else if (sp.category === 'EXPIRATION') {
-        categoryHtml = '<span class="material-symbols-outlined" style="font-size: 1rem; color: #d946ef;" title="Sort d\'Expiration">air</span>';
+        categoryHtml = '<span class="material-symbols-outlined text-base text-fuchsia" title="Sort d\'Expiration">air</span>';
     }
 
     let karmaAlignHtml = '';
     if (sp.karmaAlignment === 'OFFENSIVE') {
-        karmaAlignHtml = '<span class="material-symbols-outlined" style="font-size: 1rem; color: #c084fc;" title="Sort des Ténèbres (Offensif)">dark_mode</span>';
+        karmaAlignHtml = '<span class="material-symbols-outlined text-base text-purple" title="Sort des Ténèbres (Offensif)">dark_mode</span>';
     } else if (sp.karmaAlignment === 'PROTECTIVE') {
-        karmaAlignHtml = '<span class="material-symbols-outlined" style="font-size: 1rem; color: #fde047;" title="Sort de Lumière (Protecteur)">light_mode</span>';
+        karmaAlignHtml = '<span class="material-symbols-outlined text-base text-yellow" title="Sort de Lumière (Protecteur)">light_mode</span>';
     } else if (sp.karmaAlignment === 'RESTORATIVE') {
-        karmaAlignHtml = '<span class="material-symbols-outlined" style="font-size: 1rem; color: #cbd5e1;" title="Sort d\'Harmonie (Restaurateur)">brightness_medium</span>';
+        karmaAlignHtml = '<span class="material-symbols-outlined text-base text-slate" title="Sort d\'Harmonie (Restaurateur)">brightness_medium</span>';
     }
 
     const generatesHeat = (sp.heatGenerated > 0) || (sp.effects && sp.effects.some(e => {
@@ -3432,7 +3816,7 @@ function renderSpellCard(sp) {
 
     let heatGenHtml = '';
     if (generatesHeat) {
-        heatGenHtml = `<span class="material-symbols-outlined" style="font-size: 1rem; color: #f97316;" title="Sort Générateur de Chaleur">local_fire_department</span>`;
+        heatGenHtml = `<span class="material-symbols-outlined text-base text-orange" title="Sort Générateur de Chaleur">local_fire_department</span>`;
     }
 
     let voieHtml = '';
@@ -3500,7 +3884,7 @@ function renderSpellCard(sp) {
         <div id="spell-card-${sp.id}" class="combat-spell-card spell-btn${disabledClass}" style="border-top: 2px solid ${titleColor}; position: relative;" ${onClickAttr} ${tooltipAttrs}>
             <div class="absolute" style="top: -9px; left: -5px; background: #0f172a; border: 1px solid ${titleColor}; color: ${titleColor}; border-radius: 4px; padding: 0.1rem 0.4rem; font-size: 0.65rem; font-weight: bold; z-index: 25;">Lvl ${sp.niveau}</div>
             
-            <div class="combat-spell-header" style="margin-top: 0.2rem;">
+            <div class="combat-spell-header mt-xs">
                 <div class="combat-spell-name" title="${sp.nom}" style="color: ${titleColor}; text-align: left; width: 100%;">${sp.nom}</div>
             </div>
             <div class="combat-spell-icons flex-center" style="flex-wrap: wrap; gap: 0.3rem; justify-content: flex-start; margin-bottom: 0.3rem;">
@@ -3528,11 +3912,11 @@ function showResult(data) {
 
     if (data.playerWon) {
         title.textContent = "VICTOIRE";
-        title.style.color = "#10b981";
+        title.classList.add('text-success');
         desc.textContent = "Le donjon a été complété.";
     } else {
         title.textContent = "DÉFAITE";
-        title.style.color = "#ef4444";
+        title.classList.add('text-error');
         const goldLost = data.totalGoldLostOnDefeat || 0;
         desc.innerHTML = `Votre équipe a été anéantie.<br><span style="color:#fbbf24; font-weight:600; margin-top:0.5rem; display:block;">Pénalité : -${goldLost} Or</span>`;
     }
@@ -3635,7 +4019,7 @@ window.renderOverlayInventory = function (containerId) {
     if (list.parentElement) {
         const weightSpan = list.parentElement.querySelector('.inventory-weight-display');
         if (weightSpan) {
-            weightSpan.textContent = `(${totalWeight.toFixed(1)} / ${maxWeight} kg)`;
+            weightSpan.textContent = `(${+Number(totalWeight).toFixed(1)} / ${maxWeight} kg)`;
             weightSpan.style.color = totalWeight > maxWeight ? '#ef4444' : '#94a3b8';
         }
     }
@@ -3643,20 +4027,21 @@ window.renderOverlayInventory = function (containerId) {
     // Add Gold reminder
     let goldAmount = 0;
     if (pageState.currentSessionData && pageState.currentSessionData.players && pageState.currentSessionData.players.length > 0) {
-        goldAmount = pageState.currentSessionData.players[0].gold || 0;
+        const myPlayer = pageState.currentSessionData.players.find(p => p.ownerUsername === pageState.currentUsername) || pageState.currentSessionData.players[0];
+        goldAmount = myPlayer.gold || 0;
     }
     list.innerHTML += `
         <div class="flex-center" style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px; padding: 0.8rem; gap: 0.8rem; margin-bottom: 0.5rem;">
             <span class="material-symbols-outlined" style="font-size: 1.5rem; color: #f59e0b;">monetization_on</span>
             <div class="flex-1">
-                <div class="text-sm" style="color: #f8fafc; font-weight: 600;">Or du compte</div>
+                <div class="text-sm text-white font-semibold" >Or du compte</div>
                 <div style="color: #f59e0b; font-weight: 700; font-size: 1.1rem;">${goldAmount}</div>
             </div>
         </div>
     `;
 
     if (!pageState.currentSessionData || !pageState.currentSessionData.activeConsumables || pageState.currentSessionData.activeConsumables.length === 0) {
-        list.innerHTML += `<div class="text-muted text-center" style="font-size: 0.85rem; padding: 1rem;">Aucun objet dans l'inventaire.</div>`;
+        list.innerHTML += `<div class="text-muted text-center text-sm" style="padding: 1rem;">Aucun objet dans l'inventaire.</div>`;
         return;
     }
 
@@ -3741,7 +4126,7 @@ window.confirmConsumeItem = async function (consumableId, characterId) {
     }
 };
 
-window.confirmDestroyItem = function(consumableId, consumableName) {
+window.confirmDestroyItem = function (consumableId, consumableName) {
     ui.showModal({
         title: 'Détruire un objet',
         body: `Êtes-vous sûr de vouloir détruire <strong class="text-white">${consumableName}</strong> ?<br><br>Cet objet sera <strong class="text-red-400">perdu définitivement</strong>.`,
@@ -3819,14 +4204,14 @@ function playDungeonMusic(data) {
             const btn = document.getElementById('musicToggleBtn');
             if (btn) {
                 btn.textContent = 'volume_off';
-                btn.style.color = '#ef4444';
+                btn.classList.add('text-error');
             }
         } else {
             window.dungeonMusic.muted = false;
             const btn = document.getElementById('musicToggleBtn');
             if (btn) {
                 btn.textContent = 'volume_up';
-                btn.style.color = '#10b981';
+                btn.classList.add('text-success');
             }
         }
 
@@ -3864,14 +4249,14 @@ window.toggleMusic = function () {
         window.dungeonMusic.muted = false;
         if (btn) {
             btn.textContent = 'volume_up';
-            btn.style.color = '#10b981';
+            btn.classList.add('text-success');
         }
         localStorage.setItem('grimoire_music_muted', 'false');
     } else {
         window.dungeonMusic.muted = true;
         if (btn) {
             btn.textContent = 'volume_off';
-            btn.style.color = '#ef4444';
+            btn.classList.add('text-error');
         }
         localStorage.setItem('grimoire_music_muted', 'true');
     }

@@ -25,7 +25,7 @@ public class CombatInterceptor implements HandlerInterceptor {
         String uri = request.getRequestURI();
 
         // Exclude specific URIs
-        if (uri.startsWith("/api/combat/") || uri.startsWith("/api/pve/combat/") || uri.startsWith("/api/auth/") || uri.startsWith("/api/meta/") || uri.startsWith("/css/")
+        if (uri.startsWith("/api/combat/") || uri.startsWith("/api/pve/combat/") || uri.startsWith("/api/pve/multi/") || uri.startsWith("/api/auth/") || uri.startsWith("/api/meta/") || uri.startsWith("/css/")
                 || uri.startsWith("/js/") || uri.startsWith("/images/") || uri.startsWith("/styles/") || uri.equals("/combat.html") || uri.equals("/error") || uri.startsWith("/api/anomalies/")) {
             return true;
         }
@@ -36,7 +36,7 @@ public class CombatInterceptor implements HandlerInterceptor {
             for (Map.Entry<String, CombatSession> entry : combatService.getActiveSessions().entrySet()) {
                 CombatSession session = entry.getValue();
                 boolean inCombat = session.getPlayers().stream()
-                        .anyMatch(p -> p.getUser() != null && username.equals(p.getUser().getUsername()));
+                        .anyMatch(p -> p.getUser() != null && username.equals(p.getUser().getUsername()) && p.getHealthCurrent() > 0);
 
                 if (inCombat && !session.isFinished()) {
                     if (uri.startsWith("/api/")) {

@@ -10,19 +10,18 @@
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin="">
     <link rel="icon" type="image/png" href="/favicon.svg">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&amp;family=Inter:wght@300;400;500&amp;display=swap"
-        rel="stylesheet">
-    <link
-        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200"
-        rel="stylesheet">
-    <link rel="stylesheet" href="/styles/variables.css?v=1786180000000">
-    <link rel="stylesheet" href="/styles/ui/components.css?v=1786180000000">
-    <link rel="stylesheet" href="/styles/ui/utilities.css?v=1786180000000">
-    <link rel="stylesheet" href="/styles/ui/forms.css?v=1786180000000">
-    <link rel="stylesheet" href="/styles/ui/equipment.css?v=1786180000000">
-    <link rel="stylesheet" href="/styles/pages/vault.css?v=1786180000000">
-    <link rel="stylesheet" href="/styles/sprites/fox.css?v=1786180000000">
+    <link rel="preload" href="/images/fox.png" as="image" fetchpriority="high">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;500;600;700&family=Inter:wght@300;400;500&display=swap">
+    <link rel="stylesheet"
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:opsz,wght,FILL,GRAD@20..48,100..700,0..1,-50..200&display=block">
+    <link rel="stylesheet" href="/styles/variables.css?v=1786180000001">
+    <link rel="stylesheet" href="/styles/ui/components.css?v=1786180000001">
+    <link rel="stylesheet" href="/styles/ui/utilities.css?v=1786180000001">
+    <link rel="stylesheet" href="/styles/ui/forms.css?v=1786180000001">
+    <link rel="stylesheet" href="/styles/ui/equipment.css?v=1786180000001">
+    <link rel="stylesheet" href="/styles/pages/vault.css?v=1786180000001">
+    <link rel="stylesheet" href="/styles/sprites/fox.css?v=1786180000001">
 </head>
 
 <body>
@@ -31,16 +30,18 @@
     <div class="fox-cycle">
         <div class="fox"></div>
     </div>
-    <div class="vault-main"> <!-- Toolbar -->
+    <main class="vault-main"> <!-- Toolbar -->
         <div class="vault-toolbar">
             <div class="flex-1 flex gap-4">
                 <div class="search-bar flex-1">
                     <span class="material-symbols-outlined text-muted text-xl">search</span>
-                    <input type="text" id="searchItemName" placeholder="Rechercher un objet..." oninput="filterVault()">
+                    <input type="text" id="searchItemName" placeholder="Rechercher un objet..."
+                        aria-label="Rechercher un objet" oninput="filterVault()">
                 </div>
                 <div class="search-bar flex-1 max-w-[250px] hidden" id="searchOwnerContainer">
                     <span class="material-symbols-outlined text-muted text-xl">person_search</span>
-                    <input type="text" id="searchOwnerName" placeholder="Nom de compte..." oninput="filterVault()">
+                    <input type="text" id="searchOwnerName" placeholder="Nom de compte..." aria-label="Nom de compte"
+                        oninput="filterVault()">
                 </div>
                 <button class="btn btn-primary vault-btn-create hidden" id="btnCreateVaultEq"
                     onclick="openCreateEqModal()">
@@ -208,7 +209,7 @@
                 Chargement des coffres...
             </div>
         </div>
-    </div>
+    </main>
     <style>
         /* Delete Confirmation Modal */
         .vault-modal-overlay {
@@ -353,7 +354,7 @@
                     </div>
                     <div class="eq-create-row quad">
                         <div class="eq-create-field col-span-2">
-                            <label>Nom</label>
+                            <label for="eqName">Nom</label>
                             <input type="text" id="eqName" placeholder="Ex: Casque de Fer">
                         </div>
                         <div class="eq-create-field">
@@ -531,32 +532,33 @@
                             </div>
                         </div>
                         <div class="eq-create-field">
-                            <label id="eqSpecialEffectValueTitle" class="text-power">Puissance (Valeur)</label>
+                            <label for="eqSpecialEffectValue" id="eqSpecialEffectValueTitle"
+                                class="text-power">Puissance (Valeur)</label>
                             <input type="number" id="eqSpecialEffectValue" value="0" class="border-purple">
                         </div>
                     </div>
 
                     <div class="eq-create-row quad">
                         <div class="eq-create-field">
-                            <label class="flex items-center gap-1"><span
+                            <label for="eqHp" class="flex items-center gap-1"><span
                                     class="material-symbols-outlined text-pv text-base align-bottom">favorite</span>
                                 PV</label>
                             <input type="number" id="eqHp" value="0">
                         </div>
                         <div class="eq-create-field">
-                            <label class="flex items-center gap-1"><span
+                            <label for="eqMana" class="flex items-center gap-1"><span
                                     class="material-symbols-outlined text-mana text-base align-bottom">water_drop</span>
                                 Mana</label>
                             <input type="number" id="eqMana" value="0">
                         </div>
                         <div class="eq-create-field non-consumable-stat">
-                            <label class="flex items-center gap-1"><span
+                            <label for="eqPower" class="flex items-center gap-1"><span
                                     class="material-symbols-outlined text-power text-base align-bottom">auto_awesome</span>
                                 Puissance</label>
                             <input type="number" id="eqPower" value="0">
                         </div>
                         <div class="eq-create-field non-consumable-stat">
-                            <label class="flex items-center gap-1"><span
+                            <label for="eqStr" class="flex items-center gap-1"><span
                                     class="material-symbols-outlined text-physic text-base align-bottom">fitness_center</span>
                                 Force</label>
                             <input type="number" id="eqStr" value="0">
@@ -565,25 +567,25 @@
 
                     <div class="eq-create-row quad non-consumable-stat">
                         <div class="eq-create-field">
-                            <label class="flex items-center gap-1"><span
+                            <label for="eqArmor" class="flex items-center gap-1"><span
                                     class="material-symbols-outlined text-armor text-base align-bottom">shield</span>
                                 Armure</label>
                             <input type="number" id="eqArmor" value="0">
                         </div>
                         <div class="eq-create-field">
-                            <label class="flex items-center gap-1"><span
+                            <label for="eqRes" class="flex items-center gap-1"><span
                                     class="material-symbols-outlined text-resist text-base align-bottom">shield</span>
                                 Résistance</label>
                             <input type="number" id="eqRes" value="0">
                         </div>
                         <div class="eq-create-field">
-                            <label class="flex items-center gap-1"><span
+                            <label for="eqSpeed" class="flex items-center gap-1"><span
                                     class="material-symbols-outlined text-speed text-base align-bottom">bolt</span>
                                 Vitesse</label>
                             <input type="number" id="eqSpeed" value="0">
                         </div>
                         <div class="eq-create-field">
-                            <label class="flex items-center gap-1"><span
+                            <label for="eqCrit" class="flex items-center gap-1"><span
                                     class="material-symbols-outlined text-crit text-base align-bottom">gps_fixed</span>
                                 Critique</label>
                             <input type="number" id="eqCrit" value="0">
@@ -592,14 +594,14 @@
 
                     <div class="eq-create-row non-consumable-stat">
                         <div class="eq-create-field">
-                            <label class="flex items-center gap-1"><span
+                            <label for="eqRegenHp" class="flex items-center gap-1"><span
                                     class="material-symbols-outlined text-resist text-base align-bottom">healing</span>
                                 Régen PV
                                 / tour</label>
                             <input type="number" id="eqRegenHp" value="0" placeholder="Positif ou Négatif">
                         </div>
                         <div class="eq-create-field">
-                            <label class="flex items-center gap-1"><span
+                            <label for="eqRegenMana" class="flex items-center gap-1"><span
                                     class="material-symbols-outlined text-mana text-base align-bottom">cyclone</span>
                                 Régen
                                 Mana / tour</label>
@@ -609,26 +611,26 @@
 
                     <div class="eq-create-row quad consumable-stat hidden">
                         <div class="eq-create-field">
-                            <label class="flex items-center gap-1"><span
+                            <label for="eqConsumableHpPercent" class="flex items-center gap-1"><span
                                     class="material-symbols-outlined text-pv text-base align-bottom">percent</span> PV
                                 (Max)</label>
                             <input type="number" id="eqConsumableHpPercent" value="0">
                         </div>
                         <div class="eq-create-field">
-                            <label class="flex items-center gap-1"><span
+                            <label for="eqConsumableManaPercent" class="flex items-center gap-1"><span
                                     class="material-symbols-outlined text-mana text-base align-bottom">percent</span>
                                 Mana
                                 (Max)</label>
                             <input type="number" id="eqConsumableManaPercent" value="0">
                         </div>
                         <div class="eq-create-field">
-                            <label class="flex items-center gap-1"><span
+                            <label for="eqConsumableMissingHpPercent" class="flex items-center gap-1"><span
                                     class="material-symbols-outlined text-pv-manquant text-base align-bottom">heart_broken</span>
                                 PV (Manq)</label>
                             <input type="number" id="eqConsumableMissingHpPercent" value="0">
                         </div>
                         <div class="eq-create-field">
-                            <label class="flex items-center gap-1"><span
+                            <label for="eqConsumableMissingManaPercent" class="flex items-center gap-1"><span
                                     class="material-symbols-outlined text-mana-manquant text-base align-bottom">cyclone</span>
                                 Mana (Manq)</label>
                             <input type="number" id="eqConsumableMissingManaPercent" value="0">
@@ -637,7 +639,7 @@
 
                     <div class="eq-create-row mb-4 hidden" id="eqBaseWeightRow">
                         <div class="eq-create-field">
-                            <label class="flex items-center gap-1"><span
+                            <label for="eqBaseWeight" class="flex items-center gap-1"><span
                                     class="material-symbols-outlined text-muted text-base align-bottom">scale</span>
                                 Poids de base (Consommable)</label>
                             <input type="number" step="0.1" id="eqBaseWeight" value="0">
@@ -790,9 +792,9 @@
                             <span class="text-muted text-xs">Désactivez pour en faire un
                                 Matériau.</span>
                         </div>
-                        <label class="magic-toggle-switch">
-                            <input class="magic-toggle-input" type="checkbox" id="anomalieMagicToggle" checked=""
-                                onchange="
+                        <label class="magic-toggle-switch" for="anomalieMagicToggle">
+                            <input class="magic-toggle-input" type="checkbox" id="anomalieMagicToggle"
+                                aria-label="Statut magique" checked="" onchange="
                                     this.nextElementSibling.style.backgroundColor = this.checked ? '#d946ef' : 'rgba(255, 255, 255, 0.1)';
                                     this.nextElementSibling.children[0].style.transform = this.checked ? 'translateX(16px)' : 'translateX(0)';
                                     document.getElementById('anomalieMagicToggleText').innerText = this.checked ? 'Magique' : 'Matériau';
@@ -874,12 +876,12 @@
         import * as api from '/js/api.js';
         window.api = api;
     </script>
-    <script src="/js/utils.js"></script>
+    <script defer src="/js/utils.js"></script>
     <script type="module" src="/js/ui.js"></script>
-    <script src="/js/equipment-form.js"></script>
-    <script src="/js/vault.js?v=109"></script>
+    <script defer src="/js/equipment-form.js"></script>
+    <script defer src="/js/vault.js?v=109"></script>
     <script type="module" src="/js/auth.js?v=10"></script>
-    <script src="/js/components/navbar.js"></script>
+    <script defer src="/js/components/navbar.js"></script>
 
 
 </body>

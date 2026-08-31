@@ -33,7 +33,7 @@ import java.util.HashMap;
         "channelingTarget", "channelingAlly", "channeledSpell" })
 @Entity
 @Table(name = "Personnage")
-@com.fasterxml.jackson.annotation.JsonIgnoreProperties({"channelingTarget", "channelingAlly", "channeledSpell"})
+@com.fasterxml.jackson.annotation.JsonIgnoreProperties({ "channelingTarget", "channelingAlly", "channeledSpell" })
 public class Personnage {
 
     @Id
@@ -102,6 +102,9 @@ public class Personnage {
                 this.resistance += 2;
                 this.healthMax += 7;
                 this.healthCurrent += 7;
+                this.manaMax += 20;
+                this.manaCurrent += 20;
+                this.regenMana += 4;
             } else if (nomVoie.contains("raison")) {
                 this.healthMax += 6;
                 this.healthCurrent += 6;
@@ -170,7 +173,7 @@ public class Personnage {
 
     private int spiritualiteExperience = 0;
 
-    @ElementCollection(fetch = FetchType.EAGER)
+    @ElementCollection
     @CollectionTable(name = "personnage_special_items", joinColumns = @JoinColumn(name = "personnage_id"))
     @MapKeyColumn(name = "item_name")
     @Column(name = "quantity")
@@ -178,6 +181,14 @@ public class Personnage {
 
     public int getSpecialItemQuantity(String itemName) {
         return specialItems.getOrDefault(itemName, 0);
+    }
+
+    public Map<String, Integer> getSpecialItems() {
+        return specialItems;
+    }
+
+    public void setSpecialItems(Map<String, Integer> specialItems) {
+        this.specialItems = specialItems;
     }
 
     public void addSpecialItem(String itemName, int quantity) {
@@ -218,6 +229,12 @@ public class Personnage {
     @JoinColumn(name = "user_id", nullable = true)
     @com.fasterxml.jackson.annotation.JsonIgnore
     private generation.grimoire.entity.auth.AppUser user;
+
+    @com.fasterxml.jackson.annotation.JsonProperty("ownerUsername")
+    @Transient
+    public String getOwnerUsername() {
+        return user != null ? user.getUsername() : null;
+    }
 
     @com.fasterxml.jackson.annotation.JsonProperty("gold")
     @Transient
@@ -592,7 +609,15 @@ public class Personnage {
         // Affichage des informations
         double finalReductionFactor = Math.min(reductionFactor, 0.90); // Limite la réduction à 90%
         String shieldText = absorbedByShields > 0 ? "absorbés par les boucliers : " + absorbedByShields + ", " : "";
-        System.out.println(this.name + " subit " + effectiveDamage + " dégâts (" +
+        String typeStr = "";
+        if (damageType != null) {
+            switch(damageType) {
+                case MAGIC: typeStr = " magiques"; break;
+                case PHYSIC: typeStr = " physiques"; break;
+                case BRUT: typeStr = " bruts"; break;
+            }
+        }
+        System.out.println(this.name + " subit " + effectiveDamage + " dégâts" + typeStr + " (" +
                 shieldText +
                 "réduction de " + (int) (finalReductionFactor * 100) + "%), " +
                 "PV restants : " + this.healthCurrent);
@@ -619,8 +644,7 @@ public class Personnage {
         }
 
         // Affichage pour le débogage
-        System.out.println("reductionFactor : " + reductionFactor);
-        System.out.println("damageTakenMultiplier : " + damageTakenMultiplier);
+
     }
 
     public int getTotalHealthMax() {
@@ -652,8 +676,7 @@ public class Personnage {
         } else if (this.healthCurrent < 0) {
             this.healthCurrent = 0;
         }
-        System.out.println(name + " est soigné de " + finalHeal + " points (multiplier soin reçu: " + multiplier
-                + "). Vie actuelle : " + healthCurrent);
+        System.out.println(name + " est soigné de " + finalHeal + " points. Vie actuelle : " + healthCurrent);
 
         boolean removedPoison = activeBuffs
                 .removeIf(b -> b.getStatAffected() == StatType.POISON && (b.getFlatValue() > 0 || b.getModifier() > 0));
@@ -806,8 +829,7 @@ public class Personnage {
         double multiplier = getStatBuffMultiplier(StatType.SHIELD_RECEIVED);
         int finalAmount = (int) (amount * Math.max(0, multiplier));
         activeShields.add(new ActiveShield(finalAmount, duration, sourceName));
-        System.out.println(name + " reçoit un bouclier de " + finalAmount + " (multiplier bouclier reçu: " + multiplier
-                + ") pour " + duration + " tours (" + sourceName + ").");
+        System.out.println(name + " reçoit un bouclier de " + finalAmount + " pour " + duration + " tours (" + sourceName + ").");
     }
 
     public void updateShields() {
@@ -986,6 +1008,33 @@ public class Personnage {
         return getEffectiveStat(StatType.SPEED);
     }
 
+    @com.fasterxml.jackson.annotation.JsonProperty("totalRegenHp")
+    public int getTotalRegenHp() {
+        int totalHpRegen = this.regenHp;
+        if (this.equipments != null) {
+            for (generation.grimoire.entity.Equipment eq : this.equipments) {
+                totalHpRegen += eq.getRegenHealthPerTurn();
+            }
+        }
+        return totalHpRegen;
+    }
+
+    @com.fasterxml.jackson.annotation.JsonProperty("totalRegenMana")
+    public int getTotalRegenMana() {
+        int totalManaRegen = this.regenMana;
+        if (this.equipments != null) {
+            for (generation.grimoire.entity.Equipment eq : this.equipments) {
+                totalManaRegen += eq.getRegenManaPerTurn();
+            }
+        }
+        int cursedManaDrain = getSpecialEffectValue(
+                generation.grimoire.enumeration.EquipmentEffectType.CURSED_MANA_DRAIN);
+        if (cursedManaDrain != 0) {
+            totalManaRegen -= Math.abs(cursedManaDrain);
+        }
+        return totalManaRegen;
+    }
+
     public boolean isAlly(Personnage other) {
         if (other == null)
             return false;
@@ -1116,11 +1165,11 @@ public class Personnage {
                             stat == StatType.DAMAGE_TAKEN_PHYSIC ||
                             stat == StatType.DAMAGE_TAKEN_BRUT ||
                             stat == StatType.SHIELD_PIERCED) {
-                        if (b.getFlatValue() > 0 || (b.getFlatValue() == 0 && b.getModifier() > 1.0)) {
+                        if (b.getFlatValue() > 0 || (b.getFlatValue() == 0 && b.getModifier() > 0.0)) {
                             return true;
                         }
                     } else {
-                        if (b.getFlatValue() < 0 || (b.getFlatValue() == 0 && b.getModifier() < 1.0)) {
+                        if (b.getFlatValue() < 0 || (b.getFlatValue() == 0 && b.getModifier() < 0.0)) {
                             return true;
                         }
                     }

@@ -20,8 +20,8 @@ public class TrahisonPassiveEffect extends VoiePassiveEffect {
     private static final String TRAHISON_DEBUFF_USED_THIS_TURN = "trahison_debuff_used_this_turn";
 
     private static final double BASE_BONUS_DAMAGE_RATIO = 0.10;
-    private static final double LOW_HP_BONUS_DAMAGE_RATIO = 0.15;
-    private static final double DEBUFFED_TARGET_BONUS_DAMAGE_RATIO = 0.10;
+    private static final double LOW_HP_BONUS_DAMAGE_RATIO = 0.20;
+    private static final double DEBUFFED_TARGET_BONUS_DAMAGE_RATIO = 0.15;
 
     @Override
     public void onSpellCast(Personnage personnage, Spell spell) {

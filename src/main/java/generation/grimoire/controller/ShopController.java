@@ -61,16 +61,24 @@ public class ShopController {
 
         List<Equipment> consumableTemplates = pickRandom(allConsumables, 4, random);
 
-        // Promo
+        // Promo (rotates every 2 hours)
         List<Equipment> remainingTemplates = new ArrayList<>(equipmentTemplates);
         remainingTemplates.removeAll(dailySelection);
+        
+        long currentEpochMillis = System.currentTimeMillis();
+        long twoHoursInMillis = 2 * 60 * 60 * 1000L;
+        long promoSeed = currentEpochMillis / twoHoursInMillis;
+        Random promoRandom = new Random(promoSeed);
+        long promoExpiresAt = (promoSeed + 1) * twoHoursInMillis;
+
         Equipment promoItem = null;
         if (!remainingTemplates.isEmpty()) {
-            promoItem = remainingTemplates.get(random.nextInt(remainingTemplates.size()));
+            promoItem = remainingTemplates.get(promoRandom.nextInt(remainingTemplates.size()));
         }
 
         Map<String, Object> response = new HashMap<>();
         response.put("daily", dailySelection.stream().map(this::toShopDto).toList());
+        response.put("promoExpiresAt", promoExpiresAt);
 
         if (promoItem != null) {
             Map<String, Object> promoDto = toShopDto(promoItem);
@@ -137,9 +145,15 @@ public class ShopController {
 
         List<Equipment> remainingTemplates = new ArrayList<>(equipmentTemplates);
         remainingTemplates.removeAll(dailySelection);
+        
+        long currentEpochMillis = System.currentTimeMillis();
+        long twoHoursInMillis = 2 * 60 * 60 * 1000L;
+        long promoSeed = currentEpochMillis / twoHoursInMillis;
+        Random promoRandom = new Random(promoSeed);
+        
         Equipment promoItem = null;
         if (!remainingTemplates.isEmpty()) {
-            promoItem = remainingTemplates.get(random.nextInt(remainingTemplates.size()));
+            promoItem = remainingTemplates.get(promoRandom.nextInt(remainingTemplates.size()));
         }
 
         boolean isDaily = dailySelection.stream().anyMatch(e -> e.getId().equals(templateId));

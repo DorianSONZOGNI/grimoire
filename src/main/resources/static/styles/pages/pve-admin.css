@@ -117,6 +117,17 @@
     box-shadow: 0 6px 16px rgba(220, 38, 38, 0.4);
 }
 
+.btn-success {
+    background: linear-gradient(135deg, #10b981, #047857);
+    color: white;
+    box-shadow: 0 4px 12px rgba(16, 185, 129, 0.3);
+}
+
+.btn-success:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 6px 16px rgba(16, 185, 129, 0.4);
+}
+
 .monster-card {
     background: rgba(15, 23, 42, 0.6);
     border: 1px solid rgba(255, 255, 255, 0.1);
@@ -153,7 +164,8 @@
 .monster-card-stats {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 0.5rem;
+    gap: 0 0.5rem;
+    align-content: start;
     font-size: 0.85rem;
     color: var(--text-muted);
 }
@@ -282,7 +294,7 @@
 .min-h-600 { min-height: 608px; }
 .admin-container {
     width: 100%;
-    max-width: 1200px;
+    max-width: 1500px;
     margin: 0 auto;
     padding: 2rem;
 }
@@ -346,6 +358,7 @@
     color: white;
     border: none;
     width: 2.5rem;
+    height: 2.5rem;
     padding: 0;
     font-weight: 600;
     border-radius: 8px;
@@ -356,6 +369,25 @@
     align-items: center;
 }
 .btn-room-add-boss:hover {
+    filter: brightness(1.1);
+}
+.btn-room-add-treasure {
+    background: linear-gradient(135deg, #f59e0b, #b45309);
+    color: white;
+    border: none;
+    min-width: 3.5rem;
+    height: auto;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 600;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 1.2rem;
+    transition: all 0.2s;
+}
+.btn-room-add-treasure:hover {
     filter: brightness(1.1);
 }
 .room-buff-col-lg {
@@ -374,15 +406,18 @@
 }
 .buff-combobox-btn {
     width: 100%;
+    height: 2.5rem;
     cursor: pointer;
     text-align: left;
-    padding: 0.5rem;
+    padding: 0 0.5rem;
     display: flex;
     justify-content: space-between;
     align-items: center;
     background: rgba(30, 41, 59, 0.7);
     border: 1px solid rgba(255,255,255,0.1);
     border-radius: 8px;
+    white-space: nowrap;
+    overflow: hidden;
 }
 .buff-combobox-menu {
     position: absolute;

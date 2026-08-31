@@ -2,20 +2,13 @@ package generation.grimoire.controller;
 
 import generation.grimoire.entity.Spell;
 import generation.grimoire.entity.SpellEffect;
-import generation.grimoire.entity.Spiritualite;
-import generation.grimoire.entity.Voie;
 import generation.grimoire.entity.spell.type.effect.*;
-import generation.grimoire.entity.spiritualite.passif.specific.EspritPassiveEffect;
-import generation.grimoire.entity.spiritualite.passif.specific.KarmaPassiveEffect;
-import generation.grimoire.entity.spiritualite.passif.specific.TenebrePassiveEffect;
 import generation.grimoire.enumeration.*;
 import generation.grimoire.repository.SpellRepository;
 import generation.grimoire.repository.SpiritualiteRepository;
 import generation.grimoire.repository.VoieRepository;
 import generation.grimoire.repository.pve.MutationRepository;
-import generation.grimoire.entity.voie.passif.VoiePassiveEffect;
 import generation.grimoire.service.SpellService;
-import jakarta.annotation.PostConstruct;
 import lombok.Data;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -45,202 +38,6 @@ public class WebSpellCreationController {
         this.voieRepository = voieRepository;
         this.spiritualiteRepository = spiritualiteRepository;
         this.mutationRepository = mutationRepository;
-    }
-
-    @PostConstruct
-    public void initStandardEntities() {
-        // 1. Initialiser les descriptions classiques
-        Map<String, String> descriptionsVoies = new HashMap<>();
-        descriptionsVoies.put("Voie de la Raison",
-                "Basé sur la vitesse et les coups critique.");
-        descriptionsVoies.put("Voie de la Sûreté",
-                "Défensive et sûre. Des buffs, de la santé et du débuff pour tout le monde.");
-        descriptionsVoies.put("Voie de Trahison",
-                "L'art d'exploiter les faiblesses ennemies et d'achever les cibles faciles.");
-        descriptionsVoies.put("Voie de la Consolidation",
-                "Protection et dégats physiques. Simple, efficasse, endurant.");
-        descriptionsVoies.put("Voie de la Conviction",
-                "Une magie inarrêtable , un flot continue de puissance et de résistance.");
-        descriptionsVoies.put("Voie de la Création",
-                "Imprévisible, adaptable, les longs combats ne lui font pas peur.");
-        descriptionsVoies.put("Voie de la Destruction",
-                "La destruction, c'est très parlant. Ici on envoie des boules de feu, des lasers, et autres joyeusetés.");
-        descriptionsVoies.put("Voie de la Violence",
-                "Un style de combat mortel conçu pour exterminer ces adverssaires d'un simple claquement de doigts.");
-
-        // 2. Initialiser les rangs personnalisés par Voie (basé sur tes captures
-        // d'écran)
-        Map<String, Map<Integer, String>> rangsVoies = new HashMap<>();
-        rangsVoies.put("Voie de la Raison", Map.of(1, "Air", 2, "Vibration", 3, "Vide", 4, "Déviation", 5, "Gravité"));
-        rangsVoies.put("Voie de la Sûreté", Map.of(1, "Eau", 2, "Glace", 3, "Sang", 4, "Vapeur", 5, "Pression"));
-        rangsVoies.put("Voie de Trahison", Map.of(1, "Neige", 2, "Acide", 3, "Poison", 4, "Corrosion", 5, "Friction"));
-        rangsVoies.put("Voie de la Consolidation",
-                Map.of(1, "Terre", 2, "Métal", 3, "Sable", 4, "Poussière", 5, "Atome"));
-        rangsVoies.put("Voie de la Conviction", Map.of(1, "Lave", 2, "Cristaux", 3, "Verre", 4, "Fibre", 5, "Tension"));
-        rangsVoies.put("Voie de la Création",
-                Map.of(1, "Plante", 2, "Pétrole", 3, "Plastic", 4, "Caoutchou", 5, "Fil"));
-        rangsVoies.put("Voie de la Destruction",
-                Map.of(1, "Feu", 2, "Explosion", 3, "Éclair", 4, "Laser", 5, "Absorption"));
-        rangsVoies.put("Voie de la Violence",
-                Map.of(1, "Combustion", 2, "Gas", 3, "Oxygen", 4, "Dioxide", 5, "Fragmentation"));
-
-        Map<String, String> passifsVoies = new HashMap<>();
-        passifsVoies.put("Voie de la Raison",
-                "Lancer un sort de Raison confère [c=speed]+1 Vitesse[/c] au tour suivant (max [c=warning]10 cumuls[/c], perdus si aucun n'est lancé).\nDe plus, le score de [c=crit]Critique[/c] est augmenté d'un montant égal au [c=speed]double de la Vitesse[/c].");
-        passifsVoies.put("Voie de la Sûreté",
-                "Accumule des [c=shield]points de Sûreté[/c] (10/tour et 35% du [c=mana]mana[/c] dépensé).\nÀ [c=warning]100 points[/c], octroie [c=crit]+15% de Critique[/c], ou [c=crit]+25%[/c] si le palier est atteint passivement en début de tour.");
-        passifsVoies.put("Voie de Trahison",
-                "Une fois par tour, vos [c=physic]attaques physiques[/c] infligent des dégâts bruts bonus [c=heal]qui vous soignent[/c] :\n[ul][li][c=brut]+10%[/c] de base[/li][li][c=brut]+15%[/c] si la cible a moins de 50% [c=pv]PV[/c][/li][li][c=brut]+10%[/c] si elle a un malus[/li][/ul]");
-        passifsVoies.put("Voie de la Consolidation",
-                "Octroie [c=armor]+5% d'Armure[/c] par défaut. Lancer un sort remplace ce bonus selon son niveau :\n[ul][li]Nv1: [c=speed]+1 Vitesse[/c][/li][li]Nv2: [c=armor]+10% Armure[/c][/li][li]Nv3: [c=resist]+10% Résistance Magique[/c][/li][li]Nv4: Coût des sorts [c=mana]-20%[/c][/li][li]Nv5: [c=armor]+8% Armure[/c] et [c=resist]Résistance[/c][/li][/ul]");
-        passifsVoies.put("Voie de la Conviction",
-                "Régénère [c=mana]25 points de mana[/c] par tour ([c=mana]+4[/c] par niveau de Voie).\nAugmente le [c=mana]mana maximum de 20[/c] par niveau au-delà du premier.");
-        passifsVoies.put("Voie de la Création",
-                "Chaque tour, le 1er sort lancé consomme un [c=heal]bourgeon[/c] s'il vous en reste en stock.\nVoici les effets du [c=heal]bourgeon[/c] pour chaque type de sort :\n[ul][li]Un sort Instantané devient [c=mana]gratuit[/c][/li][li]Un sort Banal devient [c=warning]Instantané[/c][/li][li]Un sort Canalisé octroie un [c=shield]bouclier[/c] (30% du [c=mana]mana[/c] dépensé)[/li][/ul]");
-        passifsVoies.put("Voie de la Destruction",
-                "Accumule de la [c=crit]Chaleur[/c] en lançant des sorts.\nLorsque la chaleur atteint [c=warning]100[/c], le prochain sort lancé est entièrement [c=mana]gratuit[/c].");
-        passifsVoies.put("Voie de la Violence",
-                "Lancer un sort octroie une charge d'[c=warning]Inspiration[/c] ou d'[c=power]Expiration[/c] selon le sort :\n[ul][li][c=warning]Inspiration[/c] : [c=crit]+2% Critique[/c] par cumul (max 5)[/li][li][c=power]Expiration[/c] : [c=power]+2 Puissance[/c] par cumul (max 10)[/li][/ul]Attention : Lancer un sort d'une affinité consomme tous les cumuls de l'autre. Les cumuls sont perdus si aucun sort de la Voie n'est lancé pendant le tour.");
-
-        String[] voies = { "Voie de la Raison", "Voie de la Sûreté", "Voie de Trahison", "Voie de la Consolidation",
-                "Voie de la Conviction", "Voie de la Création", "Voie de la Destruction", "Voie de la Violence" };
-
-        for (String v : voies) {
-            java.util.Optional<Voie> optVoie = voieRepository.findByNom(v);
-            Voie voie;
-            if (optVoie.isEmpty()) {
-                voie = new Voie();
-                voie.setNom(v);
-            } else {
-                voie = optVoie.get();
-            }
-
-            // Assigner la description personnalisée
-            voie.setDescription(descriptionsVoies.getOrDefault(v, "Voie classique du grimoire."));
-
-            // Assigner les rangs personnalisés
-            if (rangsVoies.containsKey(v)) {
-                voie.getRankNames().putAll(rangsVoies.get(v));
-            }
-
-            // Assigner le passif
-            if (passifsVoies.containsKey(v)) {
-                voie.setPassiveDescription(passifsVoies.get(v));
-            }
-
-            if (voie.getPassiveEffects() == null || voie.getPassiveEffects().isEmpty()) {
-                VoiePassiveEffect passif = null;
-                switch (v) {
-                    case "Voie de la Raison":
-                        passif = new generation.grimoire.entity.voie.passif.specific.RaisonPassiveEffect();
-                        break;
-                    case "Voie de la Sûreté":
-                        passif = new generation.grimoire.entity.voie.passif.specific.SuretePassiveEffect();
-                        break;
-                    case "Voie de Trahison":
-                        passif = new generation.grimoire.entity.voie.passif.specific.TrahisonPassiveEffect();
-                        break;
-                    case "Voie de la Consolidation":
-                        passif = new generation.grimoire.entity.voie.passif.specific.ConsolidationPassiveEffect();
-                        break;
-                    case "Voie de la Conviction":
-                        passif = new generation.grimoire.entity.voie.passif.specific.ConvictionPassiveEffect();
-                        break;
-                    case "Voie de la Création":
-                        passif = new generation.grimoire.entity.voie.passif.specific.CreationPassiveEffect();
-                        break;
-                    case "Voie de la Destruction":
-                        passif = new generation.grimoire.entity.voie.passif.specific.DestructionPassiveEffect();
-                        break;
-                    case "Voie de la Violence":
-                        passif = new generation.grimoire.entity.voie.passif.specific.ViolencePassiveEffect();
-                        break;
-                }
-                if (passif != null) {
-                    passif.setVoie(voie);
-                    voie.setPassiveEffects(List.of(passif));
-                }
-            }
-            voieRepository.save(voie);
-        }
-
-        // Initialiser les Spiritualités si absentes
-        // Renommer l'ancienne entrée "Lumière" en "Esprit" si présente
-        spiritualiteRepository.findByNom("Lumière").ifPresent(ancien -> {
-            ancien.setNom("Esprit");
-            spiritualiteRepository.save(ancien);
-        });
-
-        if (spiritualiteRepository.findByNom("Esprit").isEmpty()) {
-            Spiritualite esprit = new Spiritualite();
-            esprit.setNom("Esprit");
-            esprit.setDescription("Axée sur le renforcement et les ressources.");
-            EspritPassiveEffect ee = new EspritPassiveEffect();
-            ee.setSpiritualite(esprit);
-            esprit.setPassiveEffects(List.of(ee));
-            spiritualiteRepository.save(esprit);
-        }
-        if (spiritualiteRepository.findByNom("Ténèbres").isEmpty()) {
-            Spiritualite tenebres = new Spiritualite();
-            tenebres.setNom("Ténèbres");
-            tenebres.setDescription("Axée sur la puissance brute les buffs et les débuffs");
-            TenebrePassiveEffect te = new TenebrePassiveEffect();
-            te.setSpiritualite(tenebres);
-            tenebres.setPassiveEffects(List.of(te));
-            spiritualiteRepository.save(tenebres);
-        }
-        if (spiritualiteRepository.findByNom("Karma").isEmpty()) {
-            Spiritualite karma = new Spiritualite();
-            karma.setNom("Karma");
-            karma.setDescription("Polyvalent mix entre dégats, protection et soutien.");
-            KarmaPassiveEffect ke = new KarmaPassiveEffect();
-            ke.setSpiritualite(karma);
-            karma.setPassiveEffects(List.of(ke));
-            spiritualiteRepository.save(karma);
-        }
-
-        // Mettre à jour les noms de rangs pour les spiritualités si non définis
-        spiritualiteRepository.findByNom("Esprit").ifPresent(sp -> {
-            if (sp.getRankNames().isEmpty()) {
-                sp.getRankNames().put(1, "Méditation");
-                sp.getRankNames().put(2, "Illumination");
-                sp.getRankNames().put(3, "Élévation");
-                spiritualiteRepository.save(sp);
-            }
-        });
-
-        spiritualiteRepository.findByNom("Ténèbres").ifPresent(sp -> {
-            if (sp.getRankNames().isEmpty()) {
-                sp.getRankNames().put(1, "Ombrage");
-                sp.getRankNames().put(2, "Corruption");
-                sp.getRankNames().put(3, "Nécromancie");
-                spiritualiteRepository.save(sp);
-            }
-        });
-
-        spiritualiteRepository.findByNom("Karma").ifPresent(sp -> {
-            if (sp.getRankNames().isEmpty()) {
-                sp.getRankNames().put(1, "Équilibre");
-                sp.getRankNames().put(2, "Harmonie");
-                sp.getRankNames().put(3, "Jugement");
-                spiritualiteRepository.save(sp);
-            }
-        });
-
-        // Set passiveDescription for spiritualites
-        for (Spiritualite sp : spiritualiteRepository.findAll()) {
-            if ("Esprit".equals(sp.getNom())) {
-                sp.setPassiveDescription(
-                        "Les sorts de cette spiritualité ne peuvent être lancés que si vous possédez au moins [c=pv]20% de vos PV max[/c] ET [c=mana]20% de votre Mana max[/c].");
-            } else if ("Ténèbres".equals(sp.getNom())) {
-                sp.setPassiveDescription(
-                        "Sauf pour les sorts de base, le lancement nécessite d'avoir [c=pv]80% ou moins de vos PV max[/c] OU [c=mana]80% ou moins de votre Mana max[/c].");
-            } else if ("Karma".equals(sp.getNom())) {
-                sp.setPassiveDescription(
-                        "Gère une jauge affectée par l'alignement des sorts ([c=purple]Ténèbres[/c], [c=karma]Harmonie[/c], [c=warning]Lumière[/c]).\n[ul][li]À [c=warning]0[/c] ([c=karma]Harmonie[/c]) : octroie des bonus sur vos sorts.[/li][li]À [c=warning]+4 ou -4[/c] : verrouille la magie karmique (sauf sorts d'[c=karma]Harmonie[/c]) pendant [c=warning]6 tours[/c], mais confère un buff massif d'[c=armor]Illumination (+Armure/Résist)[/c] ou de [c=power]Corruption (+Dégâts)[/c].[/li][/ul]Astuce : On peut réduire ce timer en lançant des sorts d'[c=karma]Harmonie[/c].");
-            }
-            spiritualiteRepository.save(sp);
-        }
     }
 
     @GetMapping("/meta")
@@ -489,7 +286,7 @@ public class WebSpellCreationController {
                             eDto.getDetachedSoulRequirement() != null ? eDto.getDetachedSoulRequirement()
                                     : generation.grimoire.enumeration.DetachedSoulRequirement.NOT_AFFECTED);
                     if (eDto.getChannelingTurns() != null) {
-                        effect.setChannelingTurns(new java.util.ArrayList<>(eDto.getChannelingTurns()));
+                        effect.setChannelingTurns(new java.util.LinkedHashSet<>(eDto.getChannelingTurns()));
                     }
                     spell.addEffect(effect);
                 }

@@ -129,22 +129,13 @@ function renderRecipesList() {
     visibleRecipes.forEach(r => {
         const isCraftable = canCraftRecipe(r);
         const div = document.createElement('div');
-        div.style.background = 'rgba(0,0,0,0.3)';
-        div.style.border = '1px solid var(--glass-border)';
-        div.style.borderRadius = '12px';
-        div.style.padding = '1rem';
-        div.style.cursor = 'pointer';
-        div.style.transition = 'all 0.2s';
-
-        if (isCraftable) {
-            div.classList.add('craftable-pulse');
-            div.style.borderColor = 'rgba(16, 185, 129, 0.4)';
-        }
+        div.dataset.craftable = isCraftable ? 'true' : 'false';
+        div.className = `recipe-card bg-black/30 border ${isCraftable ? 'border-emerald-500/40 craftable-pulse' : 'border-white/10'} rounded-lg p-3 cursor-pointer hover:border-cyan-500/50 hover:-translate-y-1 transition-all duration-300`;
 
         div.onmouseover = () => div.style.borderColor = '#10b981';
         div.onmouseout = () => {
             if (pageState.selectedRecipe?.id !== r.id) {
-                div.style.borderColor = isCraftable ? 'rgba(16, 185, 129, 0.4)' : 'var(--glass-border)';
+                div.style.borderColor = '';
             }
         };
         div.onclick = () => selectRecipe(r, div);
@@ -157,15 +148,15 @@ function renderRecipesList() {
         else if (r.rewardType === 'GIVE_SPIRIT_XP') rewardIcon = `<span class="material-symbols-outlined" style="color: #38bdf8; font-size: 1.1rem; opacity: 0.8;" title="XP Spiritualité">self_improvement</span>`;
 
         div.innerHTML = `
-                    <h4 style="margin: 0; color: #06b6d4; display:flex; align-items:center; justify-content: space-between;">
-                        <span style="display:flex; align-items:center; gap:0.5rem;">
-                            <span class="material-symbols-outlined" style="font-size:1.2rem;">science</span>
-                            ${r.name}
-                        </span>
-                        ${rewardIcon}
-                    </h4>
-                    <p style="font-size: 0.8rem; color: var(--text-muted); margin-top: 0.5rem; display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;">${r.description || ''}</p>
-                `;
+            <h4 class="m-0 ${r.rewardType === 'UNLOCK_FEATURE' ? 'text-blue-500' : 'text-cyan-400'} flex items-center justify-between">
+                <span class="flex items-center gap-2">
+                    <span class="material-symbols-outlined text-xl">experiment</span>
+                    ${r.name}
+                </span>
+                ${rewardIcon}
+            </h4>
+            <p class="text-xs text-muted mt-2 line-clamp-2">${r.description || ''}</p>
+        `;
         container.appendChild(div);
     });
 }
@@ -174,12 +165,13 @@ function selectRecipe(recipe, element) {
     pageState.selectedRecipe = recipe;
     // Reset borders
     Array.from(document.getElementById('playerRecipesList').children).forEach(c => {
-        const isCraftable = c.classList.contains('craftable-pulse');
-        c.style.borderColor = isCraftable ? 'rgba(16, 185, 129, 0.4)' : 'var(--glass-border)';
-        c.style.background = 'rgba(0,0,0,0.3)';
+        const isCraftable = c.dataset.craftable === 'true';
+        c.className = `recipe-card bg-black/30 border ${isCraftable ? 'border-emerald-500/40 craftable-pulse' : 'border-white/10'} rounded-lg p-3 cursor-pointer hover:border-cyan-500/50 hover:-translate-y-1 transition-all duration-300`;
+        c.style.borderColor = '';
+        c.style.boxShadow = '';
     });
-    element.style.borderColor = '#10b981';
-    element.style.background = 'rgba(16, 185, 129, 0.1)';
+    element.className = `recipe-card bg-emerald-500/20 border border-emerald-500 rounded-lg p-3 cursor-pointer transition-all duration-300 ${element.dataset.craftable === 'true' ? 'craftable-pulse' : ''}`;
+    element.style.boxShadow = '0 0 15px rgba(16, 185, 129, 0.3)';
 
     renderCauldron(recipe);
 }
@@ -226,16 +218,22 @@ function renderCauldron(r) {
 
     let reqsHTML = '';
     if (r.costGold > 0) {
-        reqsHTML += `<div style="display:flex; align-items:center; gap:0.5rem; background:rgba(0,0,0,0.4); padding:0.6rem; border-radius:8px; border:1px solid rgba(245, 158, 11, 0.3); margin-bottom: 0.4rem;">
-                    <span class="material-symbols-outlined" style="color: #f59e0b; font-size:1.2rem;">monetization_on</span>
-                    <span style="color: #f59e0b; font-weight:600; font-size:0.9rem;">${r.costGold} Or</span>
-                </div>`;
+        const hasEnough = (window.currentUser?.monnaie || 0) >= r.costGold;
+        reqsHTML += `<div class="flex items-center gap-2 bg-black/40 p-2 rounded-lg border border-amber-500/30 mb-1">
+                        <span class="material-symbols-outlined text-amber-500 text-xl">monetization_on</span>
+                        <span class="text-amber-500 font-semibold text-sm">${r.costGold} Or</span>
+                        <span class="ml-auto text-xs font-semibold ${hasEnough ? 'text-green-500' : 'text-red-500'}">
+                            ${hasEnough ? '✓' : '✗'}
+                        </span>
+                     </div>`;
     }
 
     if (r.requiredAnomalies) {
         for (const [name, qty] of Object.entries(r.requiredAnomalies)) {
             let matching = pageState.userAnomalies.filter(a => a.name === name);
-
+            const currentAmount = matching.length;
+            const hasEnough = currentAmount >= qty;
+            const statusColor = hasEnough ? '#10b981' : '#ef4444';
             let isIdentical = true;
             if (matching.length > 0) {
                 const first = matching[0];
@@ -247,31 +245,30 @@ function renderCauldron(r) {
                 }
             }
 
-            const hasEnough = matching.length >= qty;
-            const statusColor = hasEnough ? '#10b981' : '#ef4444';
-            const statusIcon = hasEnough ? 'check_circle' : 'cancel';
-
             const temp = pageState.allAnomalyTemplates.find(a => a.name === name) || {};
             const style = {
                 icon: temp.category ? (getCategoryIcon(temp.category)) : 'star',
                 color: temp.spiritualite ? getSpiritualiteColor(temp.spiritualite) : '#a855f7'
             };
 
-            const tooltipData = getAnomalyTooltipHTML(pageState.allAnomalyTemplates.find(a => a.name === name) || { name: name, level: 1, spiritualite: 'Inconnu', description: 'Aucune description' }, name).replace(/"/g, '&quot;');
-            reqsHTML += `<div data-color="${style.color}" style="background:rgba(0,0,0,0.4); padding:0.6rem; border-radius:8px; border:1px solid ${style.color}40; margin-bottom: 0.4rem; cursor: help;" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData}">
-                        <div style="display:flex; align-items:center; justify-content: space-between; gap:0.5rem; margin-bottom: ${(!isIdentical && hasEnough) ? '0.5rem' : '0'};">
-                            <div style="display:flex; align-items:center; gap:0.5rem;">
-                                <span class="material-symbols-outlined" style="color: ${style.color}; font-size:1.2rem;">${style.icon}</span>
-                                <span style="font-weight: 600; font-size:0.9rem; color: #fff;">${qty}x ${name}</span>
-                            </div>
-                            <div style="display:flex; align-items:center; gap:0.3rem; color: ${statusColor}; font-size: 0.85rem; font-weight: 600;">
-                                <span class="material-symbols-outlined text-lg">${statusIcon}</span>
-                                ${matching.length}/${qty}
-                            </div>
-                        </div>`;
+            const aTemp = pageState.allAnomalyTemplates.find(a => a.name === name);
+            const tooltipData = aTemp ? getAnomalyTooltipHTML(aTemp, name) : '';
+            const tooltipHTML = tooltipData ? `data-color="${style.color}" class="cursor-help bg-black/40 p-2 rounded-lg mb-1" style="border: 1px solid ${style.color}40;" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}"` : `class="bg-black/40 p-2 rounded-lg mb-1" style="border: 1px solid ${style.color}40;"`;
+
+            reqsHTML += `<div ${tooltipHTML}>
+                            <div class="flex items-center justify-between gap-2" style="margin-bottom: ${(!isIdentical && hasEnough) ? '0.5rem' : '0'};">
+                                <div class="flex items-center gap-2">
+                                    <span class="material-symbols-outlined text-xl" style="color: ${style.color};">${style.icon}</span>
+                                    <span class="font-semibold text-sm text-white">${qty}x ${name}</span>
+                                </div>
+                                <div class="flex items-center gap-1 text-sm font-semibold" style="color: ${statusColor};">
+                                    <span class="material-symbols-outlined text-lg">${hasEnough ? 'check_circle' : 'cancel'}</span>
+                                    <span>${currentAmount} / ${qty}</span>
+                                </div>
+                            </div>`;
 
             if (!isIdentical && hasEnough) {
-                reqsHTML += `<div style="display: flex; flex-direction: column; gap: 0.4rem;">`;
+                reqsHTML += `<div class="flex flex-col gap-1.5">`;
                 let usedIndexes = new Set();
                 for (let i = 0; i < qty; i++) {
                     let selectedIndex = -1;
@@ -301,7 +298,7 @@ function renderCauldron(r) {
                 }
                 reqsHTML += `</div>`;
             } else if (hasEnough) {
-                reqsHTML += `<div style="display:none;">`;
+                reqsHTML += `<div class="hidden">`;
                 for (let i = 0; i < qty; i++) {
                     reqsHTML += `<input type="hidden" class="anomaly-select" value="${matching[i].id}">`;
                 }
@@ -330,22 +327,22 @@ function renderCauldron(r) {
                 </div>
                 <div style="display:flex; flex-direction:column; gap:4px;">${statsData}</div>
             `.replace(/"/g, '&quot;');
-            const tooltipAttrs = tooltipData ? `data-color="${style.color}" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData}" style="cursor: help; background:rgba(0,0,0,0.4); padding:0.6rem; border-radius:8px; border:1px solid ${style.color}40; margin-bottom: 0.4rem;"` : `style="background:rgba(0,0,0,0.4); padding:0.6rem; border-radius:8px; border:1px solid ${style.color}40; margin-bottom: 0.4rem;"`;
+            const tooltipAttrs = tooltipData ? `data-color="${style.color}" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData}" class="cursor-help bg-black/40 p-2 rounded-lg mb-1" style="border: 1px solid ${style.color}40;"` : `class="bg-black/40 p-2 rounded-lg mb-1" style="border: 1px solid ${style.color}40;"`;
 
             reqsHTML += `<div ${tooltipAttrs}>
-                        <div style="display:flex; align-items:center; justify-content: space-between; gap:0.5rem;">
-                            <div style="display:flex; align-items:center; gap:0.5rem;">
-                                <span class="material-symbols-outlined" style="color: ${style.color}; font-size:1.2rem;">${style.icon}</span>
-                                <span style="font-weight: 600; font-size:0.9rem; color: #fff;">${qty}x ${name}</span>
+                        <div class="flex items-center justify-between gap-2">
+                            <div class="flex items-center gap-2">
+                                <span class="material-symbols-outlined text-xl" style="color: ${style.color};">${style.icon}</span>
+                                <span class="font-semibold text-sm text-white">${qty}x ${name}</span>
                             </div>
-                            <div style="display:flex; align-items:center; gap:0.3rem; color: ${statusColor}; font-size: 0.85rem; font-weight: 600;">
+                            <div class="flex items-center gap-1 text-sm font-semibold" style="color: ${statusColor};">
                                 <span class="material-symbols-outlined text-lg">${statusIcon}</span>
                                 ${matching.length}/${qty}
                             </div>
                         </div>`;
 
             if (hasEnough) {
-                reqsHTML += `<div style="display:none;">`;
+                reqsHTML += `<div class="hidden">`;
                 for (let i = 0; i < qty; i++) {
                     reqsHTML += `<input type="hidden" class="consumable-select" value="${matching[i].id}">`;
                 }
@@ -368,13 +365,13 @@ function renderCauldron(r) {
         }
 
         crafterSelectHTML = `
-                    <div style="margin-top: 1rem; text-align:left; width: 100%;">
-                        <label style="color: #10b981; font-weight: 600; font-size: 0.85rem;">
-                            <span class="material-symbols-outlined" style="font-size: 1rem; vertical-align: middle; color: #10b981;">star</span>
+                    <div class="mt-4 text-left w-full">
+                        <label class="text-emerald font-semibold text-sm">
+                            <span class="material-symbols-outlined text-base align-middle text-emerald">star</span>
                             Sélectionnez le personnage canalisant ${actionText} :
                         </label>
-                        <div id="crafterSelectContainer" style="margin-top: 0.4rem;">
-                            <div style="padding:0.4rem; color:var(--text-muted); font-size:0.85rem;">Chargement...</div>
+                        <div id="crafterSelectContainer" class="mt-1">
+                            <div class="p-1 text-muted text-sm">Chargement...</div>
                         </div>
                     </div>
                 `;
@@ -443,39 +440,39 @@ function renderCauldron(r) {
     }
 
     container.innerHTML = `
-                <div style="width: 100%; display: flex; flex-direction: column; align-items: center; justify-content: flex-start; text-align: left;">
-                    <div style="margin-bottom: 1rem; text-align:center;">
-                        <span class="material-symbols-outlined" style="font-size: 2.2rem; color: #06b6d4;">experiment</span>
-                        <h2 style="margin: 0.2rem 0 0 0; color: #fff; font-size: 1.5rem;">${r.name}</h2>
-                        <p style="color: var(--text-muted); font-size: 0.9rem; max-width: 500px; margin: 0.2rem auto;">${r.description || ''}</p>
+                <div class="w-full flex flex-col items-center justify-start text-left">
+                    <div class="mb-4 text-center">
+                        <span class="material-symbols-outlined text-5xl text-cyan-400">experiment</span>
+                        <h2 class="m-0 mt-1 text-white text-2xl">${r.name}</h2>
+                        <p class="text-muted text-sm max-w-[500px] mx-auto mt-1">${r.description || ''}</p>
                     </div>
 
-                    <div style="width: 100%; max-width: 500px; background: rgba(0,0,0,0.2); border: 1px solid var(--glass-border); border-radius: 12px; padding: 1rem;">
-                        <h3 style="margin-top: 0; color: #e2e8f0; font-size: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.4rem;">Ingrédients Requis</h3>
-                        <div style="display: flex; flex-direction: column; gap: 0.2rem; margin-top: 0.6rem;">
-                            ${reqsHTML || '<span style="color:var(--text-muted); font-size:0.9rem;">Aucun coût matériel.</span>'}
+                    <div style="width: 100%; max-width: 500px; background: rgba(0, 0, 0, 0.2); border: 1px solid var(--glass-border); border-radius: 12px; padding: 1rem;">
+                        <h3 style="margin-top: 0; color: #e2e8f0; font-size: 1rem; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.4rem; margin-bottom: 0.75rem; text-align: left;">Ingrédients Requis</h3>
+                        <div class="flex flex-col gap-1 mt-2">
+                            ${reqsHTML || '<span class="text-muted text-sm">Aucun coût matériel.</span>'}
                         </div>
                         
                         ${crafterSelectHTML}
                     </div>
 
-                    <div style="margin-top: 0.5rem; margin-bottom: 0.5rem; display: flex; align-items: center; gap: 1rem;">
-                        <span class="material-symbols-outlined" style="color: #10b981; font-size: 1.8rem;">arrow_downward</span>
+                    <div class="my-2 flex items-center gap-4">
+                        <span class="material-symbols-outlined text-emerald text-3xl">arrow_downward</span>
                     </div>
 
-                    <div style="width: 100%; max-width: 500px; background: linear-gradient(135deg, ${resultColor}15, rgba(0,0,0,0.2)); border: 1px solid ${resultColor}50; border-radius: 12px; padding: 1rem; text-align: center; ${resultTooltipAttr ? 'cursor: help;' : ''}" ${resultTooltipAttr}>
-                        <span style="display:flex; justify-content:center; align-items:center; gap:0.3rem; font-size: 0.8rem; color: ${resultColor}; text-transform: uppercase; font-weight: 700; letter-spacing: 1px; margin-bottom: 0.3rem;">
+                    <div class="rounded-xl p-3 text-center ${resultTooltipAttr ? 'cursor-help' : ''}" style="width: 100%; max-width: 500px; background: linear-gradient(135deg, ${resultColor}15, rgba(0,0,0,0.2)); border: 1px solid ${resultColor}50;" ${resultTooltipAttr}>
+                        <span class="flex justify-center items-center gap-1 text-xs uppercase font-bold tracking-wider mb-1" style="color: ${resultColor};">
                             <span class="material-symbols-outlined text-lg">${resultIcon}</span>
                             ${resultLabel}
                         </span>
-                        <strong style="font-size: 1.2rem; color: ${resultColor};">${quantityDisplay}</strong>
+                        <strong class="text-lg" style="color: ${resultColor};">${quantityDisplay}</strong>
                     </div>
 
                     <button class="btn-transmute" style="margin-top: 1.5rem;" onclick="craftSelected()">
                         <span class="material-symbols-outlined">science</span>
                         Transmuter
                     </button>
-                    <div id="craftMessage" style="margin-top: 0.5rem; font-size:0.9rem; font-weight: 600; text-align: center;"></div>
+                    <div id="craftMessage" class="mt-2 text-sm font-semibold text-center"></div>
                 </div>
             `;
 
@@ -491,10 +488,10 @@ function buildCustomSelect(containerDiv, options, hiddenInputClass, hiddenInputI
     });
 
     containerDiv.innerHTML = `
-                <div class="custom-select-wrapper" style="position: relative;">
-                    <div class="custom-select-trigger" style="display:flex; justify-content:space-between; align-items:center; background: rgba(0,0,0,0.5); padding: 0.5rem 0.8rem; border: 1px solid var(--glass-border); color: #fff; border-radius: 6px; cursor: pointer; transition: all 0.2s; font-size:0.9rem;">
-                        <div class="cs-label" style="flex: 1; margin-right: 0.5rem; display: flex; align-items: center;">${selectedOption.html}</div>
-                        <span class="material-symbols-outlined" style="font-size:1.2rem;">expand_more</span>
+                <div class="custom-select-wrapper relative">
+                    <div class="custom-select-trigger flex items-center justify-between bg-black/50 p-2 border border-white/10 text-white rounded-md cursor-pointer transition-all duration-200 text-sm hover:border-white/20">
+                        <div class="cs-label flex-1 mr-2 flex items-center">${selectedOption.html}</div>
+                        <span class="material-symbols-outlined text-xl">expand_more</span>
                     </div>
                     <div class="custom-select-options">
                         ${optionsHTML}
@@ -518,7 +515,7 @@ async function fetchUserCharacters() {
                 chars.forEach(c => {
                     options.push({
                         value: c.id,
-                        html: `<div style="display:flex; justify-content:space-between; align-items:center; width:100%;"><span style="color:#38bdf8; font-weight: 500;">${c.name}</span> <span style="color:#94a3b8; font-size:0.8rem; background: rgba(0,0,0,0.3); padding: 0.2rem 0.5rem; border-radius: 4px; border: 1px solid rgba(255,255,255,0.05);">XP Spirit : <strong style="color:#f59e0b;">${c.spiritualiteExperience || 0}</strong></span></div>`,
+                        html: `<div class="flex justify-between items-center w-full"><span class="text-sky-400 font-medium">${c.name}</span> <span class="text-slate-400 text-xs bg-black/30 px-2 py-1 rounded border border-white/5">XP Spirit : <strong class="text-amber-500">${c.spiritualiteExperience || 0}</strong></span></div>`,
                         selected: false
                     });
                 });

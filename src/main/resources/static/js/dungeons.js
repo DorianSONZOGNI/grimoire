@@ -47,7 +47,10 @@ function collectDungeonAnomaliesLocal(salles) {
 
 
 function getMaxWeight() {
-    return 10 + 5 * pageState.selectedCharIds.length;
+    const toggle = document.getElementById('coopModeToggle');
+    const isCoop = toggle && toggle.checked;
+    const heroCount = isCoop ? (pageState.currentMaxHeroes || 1) : pageState.selectedCharIds.length;
+    return 10 + 5 * heroCount;
 }
 
 function getCurrentWeight() {
@@ -311,35 +314,17 @@ async function loadCharacters() {
                 return;
             }
 
-            const getVIcon = (nom) => {
-                const n = nom.toLowerCase();
-                if (n.includes('raison')) return { c: '#3b82f6', i: 'psychology' };
-                if (n.includes('s\u00fbret\u00e9') || n.includes('surete')) return { c: '#00e5cc', i: 'water_drop' };
-                if (n.includes('trahison')) return { c: '#ed5677', i: 'visibility_off' };
-                if (n.includes('consolidation')) return { c: '#99674c', i: 'foundation' };
-                if (n.includes('conviction')) return { c: '#b74c0b', i: 'volcano' };
-                if (n.includes('cr\u00e9ation') || n.includes('creation')) return { c: '#10b981', i: 'eco' };
-                if (n.includes('destruction')) return { c: '#ff0000', i: 'local_fire_department' };
-                if (n.includes('violence')) return { c: '#a70740', i: 'explosion' };
-                return { c: '#94a3b8', i: 'route' };
-            };
-            const getSIcon = (nom) => {
-                const n = nom.toLowerCase();
-                if (n.includes('esprit')) return { c: '#38bdf8', i: 'blur_on' };
-                if (n.includes('t\u00e9n\u00e8bres') || n.includes('tenebres')) return { c: '#c084fc', i: 'dark_mode' };
-                if (n.includes('karma')) return { c: '#e7d198', i: 'all_inclusive' };
-                return { c: '#a78bfa', i: 'psychology' };
-            };
-
             pageState.userCharacters.forEach(c => {
                 let iconsHtml = '';
                 if (c.voie && c.voie.nom) {
-                    const vi = getVIcon(c.voie.nom);
-                    iconsHtml += `<span class="material-symbols-outlined text-[1.1rem] ml-2" style="color: ${vi.c};" title="Voie : ${c.voie.nom}">${vi.i}</span>`;
+                    const cColor = window.getSpiritualiteColor ? window.getSpiritualiteColor(c.voie.nom) : '#94a3b8';
+                    const cIcon = window.getSpiritualiteIcon ? window.getSpiritualiteIcon(c.voie.nom) : 'route';
+                    iconsHtml += `<span class="material-symbols-outlined text-[1.1rem] ml-2" style="color: ${cColor};" title="Voie : ${c.voie.nom}">${cIcon}</span>`;
                 }
                 if (c.spiritualite && c.spiritualite.nom) {
-                    const si = getSIcon(c.spiritualite.nom);
-                    iconsHtml += `<span class="material-symbols-outlined text-[1.1rem] ml-1" style="color: ${si.c};" title="Spiritualité : ${c.spiritualite.nom}">${si.i}</span>`;
+                    const sColor = window.getSpiritualiteColor ? window.getSpiritualiteColor(c.spiritualite.nom) : '#a78bfa';
+                    const sIcon = window.getSpiritualiteIcon ? window.getSpiritualiteIcon(c.spiritualite.nom) : 'psychology';
+                    iconsHtml += `<span class="material-symbols-outlined text-[1.1rem] ml-1" style="color: ${sColor};" title="Spiritualité : ${c.spiritualite.nom}">${sIcon}</span>`;
                 }
                 list.innerHTML += `
                     <div class="char-card" id="charCard_${c.id}" onclick="selectCharacter(${c.id})">
@@ -375,7 +360,7 @@ async function loadConsumables() {
 
 async function loadAnomalies() {
     try {
-        const res = await globalFetch('/api/anomalies');
+        const res = await globalFetch('/api/anomalies/all-templates');
         if (res.ok) pageState.allAnomalies = await res.json();
     } catch (e) { console.error(e); }
 }
@@ -406,7 +391,7 @@ function renderConsumablesList() {
 
     const counterHtml = `<div class="text-center mb-3 text-sm ${isOverweight ? 'text-error' : 'text-muted'}">
         <span class="material-symbols-outlined text-sm align-middle">scale</span>
-        Poids: ${curWeight % 1 === 0 ? curWeight : curWeight.toFixed(1)} / ${maxWeight}
+        Poids: ${+Number(curWeight).toFixed(1)} / ${maxWeight}
     </div>`;
 
     const weightContainer = document.getElementById('prepWeightCounter');
@@ -466,7 +451,7 @@ function renderConsumablesList() {
                 <div class="flex-1 min-w-0">
                     <div class="flex-between items-center">
                         <div class="whitespace-nowrap text-slate-50 font-semibold text-[0.7rem] truncate" title="${c.name}">${c.name}</div>
-                        <div class="text-xxs font-bold text-muted bg-black/30 px-1 py-0.5 rounded inline-flex items-center gap-1"><span class="material-symbols-outlined" style="font-size: 0.7rem;">scale</span>${c.weight % 1 === 0 ? c.weight : Number(c.weight).toFixed(1)}</div>
+                        <div class="text-xxs font-bold text-muted bg-black/30 px-1 py-0.5 rounded inline-flex items-center gap-1"><span class="material-symbols-outlined" style="font-size: 0.7rem;">scale</span>${+Number(c.weight).toFixed(1)}</div>
                     </div>
                     <div class="text-muted text-xs flex gap-1.5 flex-wrap overflow-visible items-center mt-[2px]">
                         ${c.bonusHealthMax ? `<span class="inline-flex items-center text-pink-500" title="PV">+${c.bonusHealthMax}<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">favorite</span></span>` : ''}
@@ -527,9 +512,9 @@ window.selectCharacter = async function (id) {
     const btn = document.getElementById('btnEnterDungeon');
     if (btn) {
         if (pageState.selectedCharIds.length > 0) {
-            btn.classList.remove('opacity-50', 'pointer-events-none');
+          if (btn) btn.classList.remove('opacity-50', 'cursor-not-allowed');
         } else {
-            btn.classList.add('opacity-50', 'pointer-events-none');
+          if (btn) btn.classList.add('opacity-50', 'cursor-not-allowed');
         }
     }
 
@@ -595,7 +580,7 @@ window.selectCharacter = async function (id) {
     } else {
         const colorMap = {
             'COMMUN': '#94a3b8', 'INHABITUEL': '#22c55e', 'RARE': '#3b82f6', 'MYTHIQUE': '#f97316', 'LEGENDAIRE': '#eab308',
-            'EPIQUE': '#ef4444', 'RELIQUE': '#a855f7', 'MAUDIT': '#6b5252'
+            'EPIQUE': '#ef4444', 'RELIQUE': '#a855f7', 'MAUDIT': '#7f1d1d'
         };
         equipments.forEach(eq => {
             const slotName = eq.slot?.name || eq.slot;
@@ -622,15 +607,34 @@ window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost,
     window.currentDungeonEntryCost = entryCost || 0;
     window.currentDungeonReqLevel = reqLevel || 1;
 
+    const coopSection = document.getElementById('coopToggleSection');
+    if (coopSection) {
+        if (pageState.currentMaxHeroes <= 1) {
+            coopSection.style.display = 'none';
+            const toggle = document.getElementById('coopModeToggle');
+            if (toggle && toggle.checked) {
+                toggle.checked = false;
+                if (typeof window.onCoopToggleChange === 'function') {
+                    window.onCoopToggleChange();
+                }
+            }
+        } else {
+            coopSection.style.display = 'block'; // Or flex, if changed
+        }
+    }
+
     updateHeroCountDisplay();
 
     document.getElementById('prepDungeonTitle').textContent = `${name} (Max: ${pageState.currentMaxHeroes} h\u00e9ros)`;
 
     const btnEnter = document.getElementById('btnEnterDungeon');
+    const btnCreateLobby = document.getElementById('btnCreateLobby');
     if (window.currentDungeonEntryCost > 0) {
         btnEnter.innerHTML = `<span class="material-symbols-outlined">swords</span> Payer ${window.currentDungeonEntryCost} Or & Entrer`;
+        if (btnCreateLobby) btnCreateLobby.innerHTML = `<span class="material-symbols-outlined">group</span> Créer le lobby (${window.currentDungeonEntryCost} Or)`;
     } else {
         btnEnter.innerHTML = `<span class="material-symbols-outlined">swords</span> ENTRER DANS LE DONJON`;
+        if (btnCreateLobby) btnCreateLobby.innerHTML = `<span class="material-symbols-outlined">group</span> CRÉER LE LOBBY CO-OP`;
     }
 
     const salles = JSON.parse(decodeURIComponent(sallesData) || '[]');
@@ -712,7 +716,8 @@ window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost,
 
     const btn = document.getElementById('btnEnterDungeon');
     if (btn) {
-        btn.classList.add('opacity-50', 'pointer-events-none');
+        btn.classList.remove('pointer-events-none');
+        btn.classList.add('opacity-50', 'cursor-not-allowed');
     }
 
     renderConsumablesList();
@@ -860,9 +865,408 @@ window.closeEntryModal = function () {
     document.getElementById('entryModal').classList.remove('active');
 };
 
+// ═══════════════════════════════════════════════════════════════════════════
+// CO-OP LOBBY
+// ═══════════════════════════════════════════════════════════════════════════
 
+let coopLobbyId = null;       // multiSessionId du lobby actif (hôte)
+let coopLobbySSE = null;      // SSE EventSource pour les events du lobby
 
+// ─── Toggle co-op / solo ────────────────────────────────────────────────────
 
+window.onCoopToggleChange = function () {
+    const isCoopMode = document.getElementById('coopModeToggle').checked;
+    const btnSolo = document.getElementById('btnEnterDungeon');
+    const btnCoop = document.getElementById('btnCreateLobby');
+
+    if (isCoopMode) {
+        btnSolo.classList.add('hidden');
+        btnCoop.classList.remove('hidden');
+    } else {
+        btnSolo.classList.remove('hidden');
+        btnCoop.classList.add('hidden');
+    }
+    
+    // Mettre à jour le poids (qui dépend du mode Co-op)
+    if (typeof renderConsumablesList === 'function') {
+        renderConsumablesList();
+    }
+};
+
+// ─── Synchroniser l'état du bouton co-op avec la sélection ─────────────────
+// (appelé par updateHeroCountDisplay ou directement)
+const _origUpdateHeroCount = window.updateHeroCountDisplay;
+window.updateHeroCountDisplay = function () {
+    if (_origUpdateHeroCount) _origUpdateHeroCount();
+    const btnCoop = document.getElementById('btnCreateLobby');
+    if (!btnCoop) return;
+    const hasChars = pageState.selectedCharIds.length > 0;
+    const isFull = pageState.selectedCharIds.length >= pageState.currentMaxHeroes;
+    
+    if (hasChars && !isFull) {
+        btnCoop.classList.remove('opacity-50', 'cursor-not-allowed');
+        btnCoop.title = "";
+    } else {
+        btnCoop.classList.add('opacity-50', 'cursor-not-allowed');
+        if (isFull) {
+            btnCoop.title = "Laissez une place libre au minimum pour créer le lobby";
+        }
+    }
+};
+
+// ─── Création du lobby (hôte) ────────────────────────────────────────────────
+
+window.createCoopLobby = async function () {
+    if (pageState.selectedCharIds.length === 0) {
+        window.showNotif('Sélectionnez au moins un personnage.', true);
+        return;
+    }
+    const isFull = pageState.selectedCharIds.length >= pageState.currentMaxHeroes;
+    if (isFull) {
+        window.showNotif('Laissez une place libre au minimum pour créer le lobby.', true);
+        return;
+    }
+
+    if (window.currentDungeonEntryCost > 0) {
+        if (window.currentUser && window.currentUser.monnaie < window.currentDungeonEntryCost) {
+            window.showNotif(`Fonds insuffisants. Il vous faut ${window.currentDungeonEntryCost} Or pour entrer dans ce donjon.`, true);
+            return;
+        }
+    }
+
+    const charIdsParam = pageState.selectedCharIds.join(',');
+    let url = `/api/pve/multi/create?characterIds=${charIdsParam}&dungeonId=${pageState.currentDungeonId}`;
+    if (pageState.selectedConsumableIds.length > 0) {
+        url += `&consumableIds=${pageState.selectedConsumableIds.join(',')}`;
+    }
+
+    try {
+        const res = await globalFetch(url, { method: 'POST' });
+        if (!res.ok) {
+            const err = await res.text();
+            window.showNotif(err || 'Erreur lors de la création du lobby.', true);
+            return;
+        }
+        const lobby = await res.json();
+        coopLobbyId = lobby.multiSessionId;
+
+        // Afficher l'overlay d'attente
+        document.getElementById('lobbyShortCode').textContent = lobby.shortCode;
+        
+        const costWarning = document.getElementById('lobbyCostWarning');
+        const costAmount = document.getElementById('lobbyCostAmount');
+        if (costWarning && costAmount) {
+            if (window.currentDungeonEntryCost > 0) {
+                costAmount.textContent = window.currentDungeonEntryCost;
+                costWarning.style.display = 'block';
+            } else {
+                costWarning.style.display = 'none';
+            }
+        }
+
+        document.getElementById('lobbyWaitingStatus').innerHTML =
+            '<span class="material-symbols-outlined" style="font-size:1rem; vertical-align:middle; animation: spin 1s linear infinite;">autorenew</span> En attente du joueur 2...';
+        const overlay = document.getElementById('lobbyWaitingOverlay');
+        overlay.style.display = 'flex';
+
+        // Ouvrir SSE sur ce multiSessionId pour recevoir "lobby-ready"
+        coopLobbySSE = new EventSource(`/api/pve/multi/${coopLobbyId}/events`);
+        coopLobbySSE.addEventListener('lobby-ready', (e) => {
+            const data = JSON.parse(e.data);
+            onLobbyReady(data);
+        });
+        coopLobbySSE.addEventListener('lobby-cancelled', () => {
+            window.showNotif('Lobby annulé.', true);
+            closeLobbyOverlay();
+        });
+        coopLobbySSE.onerror = () => {
+            // SSE silently reconnects; only show error if lobby is gone
+        };
+    } catch (err) {
+        console.error(err);
+        window.showNotif('Erreur serveur.', true);
+    }
+};
+
+function onLobbyReady(lobby) {
+    if (coopLobbySSE) { coopLobbySSE.close(); coopLobbySSE = null; }
+    document.getElementById('lobbyWaitingStatus').innerHTML =
+        '<span style="color:#4ade80; font-size:1rem;">✔ Joueur 2 connecté ! Lancement...</span>';
+
+    // Courte pause puis redirect vers combat.html en tant qu'hôte
+    setTimeout(() => {
+        closeLobbyOverlay();
+        window.location.href = `/combat.html?sessionId=${lobby.combatSessionId}&multiId=${lobby.multiSessionId}&role=host`;
+    }, 1200);
+}
+
+// ─── Annulation du lobby ─────────────────────────────────────────────────────
+
+window.cancelCoopLobby = async function () {
+    if (!coopLobbyId) { closeLobbyOverlay(); return; }
+    try {
+        await globalFetch(`/api/pve/multi/${coopLobbyId}/cancel`, { method: 'DELETE' });
+    } catch (_) {}
+    if (coopLobbySSE) { coopLobbySSE.close(); coopLobbySSE = null; }
+    coopLobbyId = null;
+    closeLobbyOverlay();
+};
+
+function closeLobbyOverlay() {
+    document.getElementById('lobbyWaitingOverlay').style.display = 'none';
+}
+
+// ─── Modal Rejoindre un lobby ─────────────────────────────────────────────────
+
+let joinSelectedCharIds = [];
+
+window.openJoinLobbyModal = function () {
+    joinSelectedCharIds = [];
+    const modal = document.getElementById('joinLobbyModal');
+    modal.style.display = 'flex';
+
+    // Reset input and info
+    const input = document.getElementById('joinLobbyCodeInput');
+    if (input) input.value = '';
+    const infoContainer = document.getElementById('joinLobbyInfoContainer');
+    if (infoContainer) infoContainer.style.display = 'none';
+    window.maxSelectableJoinChars = 4;
+
+    // Remplir la liste de persos du joueur
+    const container = document.getElementById('joinLobbyCharSelect');
+    if (!pageState.userCharacters || pageState.userCharacters.length === 0) {
+        container.innerHTML = '<div style="color:#94a3b8; font-size:0.85rem;">Aucun personnage disponible.</div>';
+        return;
+    }
+    container.innerHTML = pageState.userCharacters.map(c => {
+        let iconsHtml = '';
+        if (c.voie && c.voie.nom) {
+            const cColor = window.getSpiritualiteColor ? window.getSpiritualiteColor(c.voie.nom) : '#94a3b8';
+            const cIcon = window.getSpiritualiteIcon ? window.getSpiritualiteIcon(c.voie.nom) : 'route';
+            iconsHtml += `<span class="material-symbols-outlined text-[0.95rem] ml-1.5 align-middle" style="color: ${cColor};" title="Voie : ${c.voie.nom}">${cIcon}</span>`;
+        }
+        if (c.spiritualite && c.spiritualite.nom) {
+            const sColor = window.getSpiritualiteColor ? window.getSpiritualiteColor(c.spiritualite.nom) : '#a78bfa';
+            const sIcon = window.getSpiritualiteIcon ? window.getSpiritualiteIcon(c.spiritualite.nom) : 'psychology';
+            iconsHtml += `<span class="material-symbols-outlined text-[0.95rem] ml-0.5 align-middle" style="color: ${sColor};" title="Spiritualité : ${c.spiritualite.nom}">${sIcon}</span>`;
+        }
+        
+        return `
+            <div id="joinChar_${c.id}"
+                onclick="toggleJoinChar(${c.id})"
+                style="display:flex; align-items:center; gap:0.75rem; padding:0.6rem 0.75rem; border-radius:0.6rem; border:1px solid rgba(255,255,255,0.1); margin-bottom:0.5rem; cursor:pointer; transition:all 0.2s;">
+                <div style="width:2rem; height:2rem; border-radius:50%; background:rgba(99,102,241,0.2); display:flex; flex-shrink:0; align-items:center; justify-content:center;">
+                    <span class="material-symbols-outlined" style="font-size:1.1rem; color:#818cf8;">person</span>
+                </div>
+                <div style="min-width:0; flex:1;">
+                    <div style="font-weight:600; color:#e2e8f0; font-size:0.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
+                        ${c.name} ${iconsHtml}
+                    </div>
+                    <div style="color:#64748b; font-size:0.75rem;">Niv. ${c.voieLevel || 1} &bull; ${c.totalHealthMax !== undefined ? c.totalHealthMax : c.healthMax} PV max</div>
+                </div>
+            </div>
+        `;
+    }).join('');
+};
+
+window.maxSelectableJoinChars = 4; // Default safe limit, will be updated by API
+
+window.toggleJoinChar = function (charId) {
+    const el = document.getElementById(`joinChar_${charId}`);
+    const idx = joinSelectedCharIds.indexOf(charId);
+    if (idx === -1) {
+        if (joinSelectedCharIds.length >= window.maxSelectableJoinChars) {
+            window.showNotif(`Vous ne pouvez sélectionner que ${window.maxSelectableJoinChars} héros pour ce lobby.`, true);
+            return;
+        }
+        joinSelectedCharIds.push(charId);
+        el.style.borderColor = 'rgba(14,165,233,0.6)';
+        el.style.background = 'rgba(14,165,233,0.1)';
+    } else {
+        joinSelectedCharIds.splice(idx, 1);
+        el.style.borderColor = 'rgba(255,255,255,0.1)';
+        el.style.background = '';
+    }
+};
+
+window.closeJoinLobbyModal = function () {
+    document.getElementById('joinLobbyModal').style.display = 'none';
+};
+
+window.updateJoinCharAvailability = function (minLevel) {
+    if (!pageState.userCharacters) return;
+    pageState.userCharacters.forEach(c => {
+        const el = document.getElementById(`joinChar_${c.id}`);
+        if (!el) return;
+        
+        const lvl = c.voieLevel || 1;
+        if (lvl < minLevel) {
+            el.style.opacity = '0.3';
+            el.style.pointerEvents = 'none';
+            // Unselect if currently selected
+            const idx = joinSelectedCharIds.indexOf(c.id);
+            if (idx !== -1) {
+                window.toggleJoinChar(c.id);
+            }
+        } else {
+            el.style.opacity = '1';
+            el.style.pointerEvents = 'auto';
+        }
+    });
+};
+
+document.addEventListener('DOMContentLoaded', () => {
+    const input = document.getElementById('joinLobbyCodeInput');
+    const infoContainer = document.getElementById('joinLobbyInfoContainer');
+
+    if (input) {
+        input.addEventListener('input', async (e) => {
+            const code = e.target.value.trim().toUpperCase();
+            if (code.length === 6) {
+                try {
+                    const res = await window.globalFetch(`/api/pve/multi/lobby/${code}/info`);
+                    if (res.ok) {
+                        const info = await res.json();
+                        window.maxSelectableJoinChars = info.availableSlots;
+                        
+                        let hostHeroesHtml = '';
+                        if (info.hostHeroes && info.hostHeroes.length > 0) {
+                            const getVIcon = (nom) => {
+                                const n = nom.toLowerCase();
+                                if (n.includes('raison')) return { c: '#3b82f6', i: 'psychology' };
+                                if (n.includes('sûreté') || n.includes('surete')) return { c: '#00e5cc', i: 'water_drop' };
+                                if (n.includes('trahison')) return { c: '#ed5677', i: 'visibility_off' };
+                                if (n.includes('consolidation')) return { c: '#99674c', i: 'foundation' };
+                                if (n.includes('conviction')) return { c: '#b74c0b', i: 'volcano' };
+                                if (n.includes('création') || n.includes('creation')) return { c: '#10b981', i: 'eco' };
+                                if (n.includes('destruction')) return { c: '#ff0000', i: 'local_fire_department' };
+                                if (n.includes('violence')) return { c: '#a70740', i: 'explosion' };
+                                return { c: '#94a3b8', i: 'route' };
+                            };
+                            const getSIcon = (nom) => {
+                                const n = nom.toLowerCase();
+                                if (n.includes('esprit')) return { c: '#38bdf8', i: 'blur_on' };
+                                if (n.includes('ténèbres') || n.includes('tenebres')) return { c: '#c084fc', i: 'dark_mode' };
+                                if (n.includes('karma')) return { c: '#e7d198', i: 'all_inclusive' };
+                                return { c: '#94a3b8', i: 'star' };
+                            };
+
+                            hostHeroesHtml = '<div style="margin-top: 0.75rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 0.75rem;">' +
+                                '<div style="font-size:0.75rem; color:#64748b; margin-bottom:0.5rem; text-transform:uppercase; letter-spacing:0.05em;">Héros de l\'hôte</div>' +
+                                '<div style="display:flex; flex-wrap:wrap; gap:0.4rem;">' +
+                                info.hostHeroes.map(h => {
+                                    let vHtml = '';
+                                    if (h.voieName) {
+                                        const v = getVIcon(h.voieName);
+                                        vHtml = `<span class="material-symbols-outlined" style="font-size:0.9rem; color:${v.c};" title="${h.voieName}">${v.i}</span>`;
+                                    }
+                                    let sHtml = '';
+                                    if (h.spiritualiteName) {
+                                        const s = getSIcon(h.spiritualiteName);
+                                        sHtml = `<span class="material-symbols-outlined" style="font-size:0.9rem; color:${s.c};" title="${h.spiritualiteName}">${s.i}</span>`;
+                                    }
+                                    return `
+                                    <div style="flex:1 1 calc(50% - 0.2rem); background:rgba(0,0,0,0.2); padding:0.4rem 0.6rem; border-radius:0.4rem; border:1px solid rgba(255,255,255,0.05);">
+                                        <div style="display:flex; align-items:center; gap:0.4rem; margin-bottom:0.15rem;">
+                                            <div style="font-weight:600; color:#f8fafc; font-size:0.85rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${h.name}</div>
+                                            <div style="display:flex; align-items:center; gap:0.25rem;">${vHtml}${sHtml}</div>
+                                        </div>
+                                        <div style="color:#94a3b8; font-size:0.75rem; white-space:nowrap;">
+                                            Niv. ${h.level} &bull; ${h.healthMax} PV max
+                                        </div>
+                                    </div>`;
+                                }).join('') +
+                                '</div></div>';
+                        }
+
+                        infoContainer.style.display = 'block';
+                        infoContainer.innerHTML = `
+                            <div style="font-weight:600; color:#e2e8f0; margin-bottom:0.25rem;">Hôte : <span style="color:#38bdf8;">${info.hostUsername}</span></div>
+                            <div style="color:#94a3b8; font-size:0.85rem; margin-bottom:0.5rem;">Donjon : ${info.dungeonName} (Niv. ${info.dungeonLevel})</div>
+                            <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.85rem;">
+                                <span style="color:#cbd5e1;">Héros maximum : ${info.maxHeroesTotal}</span>
+                                <span style="color:${info.availableSlots > 0 ? '#10b981' : '#f43f5e'}; font-weight:600;">Places restantes : ${info.availableSlots}</span>
+                            </div>
+                            ${hostHeroesHtml}
+                        `;
+
+                        window.updateJoinCharAvailability(info.dungeonLevel);
+
+                        // Auto-unselect characters if we are over the new limit
+                        while (joinSelectedCharIds.length > window.maxSelectableJoinChars) {
+                            const removedId = joinSelectedCharIds[joinSelectedCharIds.length - 1];
+                            window.toggleJoinChar(removedId);
+                        }
+
+                    } else {
+                        infoContainer.style.display = 'none';
+                        window.maxSelectableJoinChars = 4;
+                        window.updateJoinCharAvailability(1);
+                    }
+                } catch (err) {
+                    console.error("Erreur lors de la récupération des infos du lobby", err);
+                    infoContainer.style.display = 'none';
+                    window.maxSelectableJoinChars = 4;
+                    window.updateJoinCharAvailability(1);
+                }
+            } else {
+                infoContainer.style.display = 'none';
+                window.maxSelectableJoinChars = 4;
+                window.updateJoinCharAvailability(1);
+            }
+        });
+    }
+});
+
+window.submitJoinLobby = async function () {
+    const code = document.getElementById('joinLobbyCodeInput').value.trim().toUpperCase();
+    if (code.length < 4) {
+        window.showNotif('Entrez un code valide (6 caractères).', true);
+        return;
+    }
+    if (joinSelectedCharIds.length === 0) {
+        window.showNotif('Sélectionnez au moins un personnage.', true);
+        return;
+    }
+
+    const btn = document.getElementById('btnSubmitJoin');
+    btn.disabled = true;
+    btn.textContent = 'Connexion...';
+
+    try {
+        // 1. Trouver le lobby par code court
+        const findRes = await globalFetch(`/api/pve/multi/find/${code}`);
+        if (!findRes.ok) {
+            window.showNotif('Lobby introuvable ou déjà démarré.', true);
+            btn.disabled = false;
+            btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:1.1rem;">login</span> Rejoindre';
+            return;
+        }
+        const lobby = await findRes.json();
+
+        // 2. Rejoindre
+        const joinRes = await globalFetch(
+            `/api/pve/multi/${lobby.multiSessionId}/join?characterIds=${joinSelectedCharIds.join(',')}`,
+            { method: 'POST' }
+        );
+        if (!joinRes.ok) {
+            const err = await joinRes.text();
+            window.showNotif(err || 'Erreur lors du join.', true);
+            btn.disabled = false;
+            btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:1.1rem;">login</span> Rejoindre';
+            return;
+        }
+        const result = await joinRes.json();
+
+        // 3. Redirect vers combat.html en tant que guest
+        window.location.href = `/combat.html?sessionId=${result.sessionId}&multiId=${result.multiSessionId}&role=guest`;
+    } catch (err) {
+        console.error(err);
+        window.showNotif('Erreur serveur.', true);
+        btn.disabled = false;
+        btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:1.1rem;">login</span> Rejoindre';
+    }
+};
 window.closeEntryModal = function () {
     document.getElementById('entryModal').classList.remove('active');
 };

@@ -25,8 +25,11 @@ import generation.grimoire.event.CastingTypeAdjustEvent;
 import generation.grimoire.event.CanCastCheckEvent;
 import generation.grimoire.event.SpellCostAdjustEvent;
 import lombok.RequiredArgsConstructor;
+import lombok.Setter;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.lang.NonNull;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -35,6 +38,7 @@ import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 
 @Service
+@Transactional
 @RequiredArgsConstructor
 public class CombatService {
 
@@ -49,6 +53,11 @@ public class CombatService {
     private final SalleRepository salleRepository;
     private final generation.grimoire.repository.pve.MonstreRepository monstreRepository;
     private final com.fasterxml.jackson.databind.ObjectMapper objectMapper;
+
+    // Injected lazily to avoid circular dependency with MultiCombatService
+    @Setter
+    @Autowired(required = false)
+    private CombatEventEmitter combatEventEmitter;
 
     // In-memory combat sessions
     private final Map<String, CombatSession> activeSessions = new ConcurrentHashMap<>();
@@ -144,6 +153,114 @@ public class CombatService {
         activeSessions.put(sessionId, session);
         computeSpellAvailability(session);
         return session;
+    }
+
+    /**
+     * Variante multi-joueurs de startCombat.
+     * Les personnages sont validés selon leur owner réel (host ou guest).
+     */
+    public CombatSession startMultiCombat(@NonNull List<Long> characterIds,
+            @NonNull Long dungeonId,
+            List<Long> consumableIds,
+            String hostUsername,
+            String guestUsername) {
+        if (characterIds.isEmpty())
+            throw new RuntimeException("Aucun personnage sélectionné");
+
+        List<Personnage> players = new ArrayList<>();
+        for (Long characterId : characterIds) {
+            Personnage p = personnageRepository.findById(java.util.Objects.requireNonNull(characterId))
+                    .orElseThrow(() -> new RuntimeException("Personnage introuvable"));
+            String owner = p.getUser() != null ? p.getUser().getUsername() : null;
+            if (!hostUsername.equals(owner) && !guestUsername.equals(owner)) {
+                throw new RuntimeException("Non autorisé : personnage " + p.getName());
+            }
+            p.clearBuffs();
+            p.setHealthCurrent(p.getTotalHealthMax());
+            p.setManaCurrent(p.getTotalManaMax());
+            players.add(p);
+        }
+
+        Donjon d = donjonRepository.findById(dungeonId).orElseThrow(() -> new RuntimeException("Donjon introuvable"));
+
+        // Vérification secret + unlock pour l'hôte
+        AppUser hostAccount = userRepository.findByUsername(hostUsername)
+                .orElseThrow(() -> new RuntimeException("Utilisateur hôte introuvable"));
+        AppUser guestAccount = userRepository.findByUsername(guestUsername)
+                .orElseThrow(() -> new RuntimeException("Utilisateur guest introuvable"));
+
+        if (d.getRequiredSecret() != null && !d.getRequiredSecret().trim().isEmpty()) {
+            if (!hostAccount.getUnlockedSecrets().containsKey(d.getRequiredSecret())) {
+                throw new RuntimeException("L'hôte n'a pas débloqué le secret requis.");
+            }
+            if (!guestAccount.getUnlockedSecrets().containsKey(d.getRequiredSecret())) {
+                throw new RuntimeException("Le guest n'a pas débloqué le secret requis.");
+            }
+        }
+
+        if (d.getUnlockCostGold() > 0 && !hostAccount.getUnlockedDungeons().contains(d.getId())) {
+            throw new RuntimeException("Ce donjon doit être débloqué par l'hôte avant d'y entrer.");
+        }
+
+        // Frais d'entrée prélevés sur l'hôte uniquement
+        if (d.getEntryCostGold() > 0) {
+            if (hostAccount.getMonnaie() < d.getEntryCostGold()) {
+                throw new RuntimeException("L'hôte n'a pas assez d'or (Requis : " + d.getEntryCostGold() + " Or).");
+            }
+            hostAccount.setMonnaie(hostAccount.getMonnaie() - d.getEntryCostGold());
+            userRepository.save(hostAccount);
+        }
+
+        if (d.getSalles() == null || d.getSalles().isEmpty()) {
+            throw new RuntimeException("Ce donjon ne contient aucune salle.");
+        }
+
+        for (Personnage p : players) {
+            if (p.getVoieLevel() < d.getRecommendedLevel()) {
+                throw new RuntimeException("Le personnage " + p.getName() + " (Niv." + p.getVoieLevel()
+                        + ") n'a pas le niveau requis (" + d.getRecommendedLevel() + ").");
+            }
+        }
+
+        String sessionId = UUID.randomUUID().toString();
+        CombatSession session = new CombatSession(sessionId, d, players);
+
+        if (consumableIds != null && !consumableIds.isEmpty()) {
+            for (Long cid : consumableIds) {
+                if (cid != null) {
+                    equipmentRepository.findById(cid).ifPresent(eq -> {
+                        String ownerStr = eq.getOwnerUsername();
+                        if (ownerStr == null && eq.getUser() != null)
+                            ownerStr = eq.getUser().getUsername();
+                        if (hostUsername.equals(ownerStr) || guestUsername.equals(ownerStr)) {
+                            session.getActiveConsumables().add(eq);
+                        }
+                    });
+                }
+            }
+        }
+
+        double totalWeight = session.getActiveConsumables().stream()
+                .filter(java.util.Objects::nonNull)
+                .mapToDouble(e -> e.calculateWeight())
+                .sum();
+        double maxWeight = 10.0 + 5.0 * players.size();
+        if (totalWeight > maxWeight) {
+            throw new IllegalArgumentException(
+                    "Le poids total des objets dépasse la limite autorisée (" + maxWeight + ").");
+        }
+
+        handleRoomStart(session);
+        activeSessions.put(sessionId, session);
+        computeSpellAvailability(session);
+        return session;
+    }
+
+    /** Broadcast SSE si la session est multi (appelé depuis CombatController). */
+    public void broadcastIfMulti(CombatSession session) {
+        if (session != null && session.isMulti() && combatEventEmitter != null) {
+            combatEventEmitter.broadcast(session.getSessionId(), session);
+        }
     }
 
     public CombatSession getSession(String sessionId) {
@@ -307,18 +424,21 @@ public class CombatService {
         int exp = session.getCurrentRoom().getTreasureExp();
         session.setTotalGoldAccumulated(session.getTotalGoldAccumulated() + gold);
 
-        int expPerHero = exp / Math.max(1, session.getPlayers().size());
-        for (Personnage p : session.getPlayers()) {
+        List<Personnage> chestEligible = session.getPlayers().stream()
+                .filter(session::isEligibleForRewards).collect(java.util.stream.Collectors.toList());
+        int expPerHero = exp / Math.max(1, chestEligible.size());
+        for (Personnage p : chestEligible) {
             p.setExperience(p.getExperience() + expPerHero);
             personnageRepository.save(p);
         }
 
-        AppUser user = null;
-        if (!session.getPlayers().isEmpty()) {
-            user = session.getPlayers().get(0).getUser();
-            if (user != null && gold > 0) {
-                user.setMonnaie(user.getMonnaie() + gold);
-                userRepository.save(user);
+        if (!chestEligible.isEmpty() && gold > 0) {
+            for (Personnage p : chestEligible) {
+                AppUser user = p.getUser();
+                if (user != null) {
+                    user.setMonnaie(user.getMonnaie() + gold);
+                    userRepository.save(user);
+                }
             }
         }
 
@@ -331,44 +451,58 @@ public class CombatService {
         java.util.List<Equipment> lootedOthers = new java.util.ArrayList<>();
 
         java.util.Random rnd = new java.util.Random();
-        if (session.getCurrentRoom().getLootTable() != null && user != null) {
+        if (session.getCurrentRoom().getLootTable() != null) {
             for (generation.grimoire.entity.pve.LootEntry entry : session.getCurrentRoom().getLootTable()) {
                 double roll = rnd.nextDouble() * 100.0;
                 double proba = entry.getProbability() + (useKey ? 10.0 : 0.0);
                 if (roll <= proba && entry.getEquipment() != null) {
-                    Equipment template = entry.getEquipment();
+                    for (Personnage p : session.getPlayers()) {
+                        if (!session.isEligibleForRewards(p)) continue;
+                        AppUser u = p.getUser();
+                        if (u != null) {
+                            Equipment template = entry.getEquipment();
 
-                    Equipment clone = new Equipment();
-                    clone.copyStatsFrom(template);
+                            Equipment clone = new Equipment();
+                            clone.copyStatsFrom(template);
 
-                    clone.setTemplate(false);
-                    clone.setUser(user);
-                    clone.setOwnerUsername(user.getUsername());
+                            clone.setTemplate(false);
+                            clone.setUser(u);
+                            clone.setOwnerUsername(u.getUsername());
 
-                    equipmentRepository.save(clone);
+                            equipmentRepository.save(clone);
 
-                    if (clone.getSlot() == generation.grimoire.enumeration.EquipmentSlot.CONSOMMABLE) {
-                        totalConsumablesWeight += clone.calculateWeight();
-                        lootedConsumables.add(clone);
-                    } else {
-                        lootedOthers.add(clone);
+                            if (clone.getSlot() == generation.grimoire.enumeration.EquipmentSlot.CONSOMMABLE) {
+                                totalConsumablesWeight += clone.calculateWeight();
+                                lootedConsumables.add(clone);
+                            } else {
+                                lootedOthers.add(clone);
+                            }
+                        }
                     }
-                } else if (roll <= proba && entry.getSpecialItemName() != null && !entry.getSpecialItemName().trim().isEmpty()) {
+                } else if (roll <= proba && entry.getSpecialItemName() != null
+                        && !entry.getSpecialItemName().trim().isEmpty()) {
                     String anomalyName = entry.getSpecialItemName();
-                    generation.grimoire.entity.Anomalie template = anomalieRepository.findFirstByNameAndIsTemplateTrueOrderByIdAsc(anomalyName);
+                    generation.grimoire.entity.Anomalie template = anomalieRepository
+                            .findFirstByNameAndIsTemplateTrueOrderByIdAsc(anomalyName);
                     if (template != null) {
-                        generation.grimoire.entity.Anomalie clone = new generation.grimoire.entity.Anomalie();
-                        clone.setName(template.getName());
-                        clone.setDescription(template.getDescription());
-                        clone.setSpiritualite(template.getSpiritualite());
-                        clone.setCategory(template.getCategory());
-                        clone.setLevel(template.getLevel() != null ? template.getLevel() : 1);
-                        clone.setMagicObject(template.isMagicObject());
-                        clone.setTemplate(false);
-                        clone.setOwnerUsername(user.getUsername());
-                        clone.setUser(user);
-                        anomalieRepository.save(clone);
-                        session.addLog("Vous avez obtenu l'item : " + clone.getName() + " !");
+                        for (Personnage p : session.getPlayers()) {
+                            if (!session.isEligibleForRewards(p)) continue;
+                            AppUser u = p.getUser();
+                            if (u != null) {
+                                generation.grimoire.entity.Anomalie clone = new generation.grimoire.entity.Anomalie();
+                                clone.setName(template.getName());
+                                clone.setDescription(template.getDescription());
+                                clone.setSpiritualite(template.getSpiritualite());
+                                clone.setCategory(template.getCategory());
+                                clone.setLevel(template.getLevel() != null ? template.getLevel() : 1);
+                                clone.setMagicObject(template.isMagicObject());
+                                clone.setTemplate(false);
+                                clone.setOwnerUsername(u.getUsername());
+                                clone.setUser(u);
+                                anomalieRepository.save(clone);
+                            }
+                        }
+                        session.addLog("Vous avez obtenu l'item : " + template.getName() + " !");
                     }
                 }
             }
@@ -399,7 +533,7 @@ public class CombatService {
         return session;
     }
 
-    public CombatSession acceptAlteration(String sessionId, Long anomalyId) {
+    public CombatSession acceptAlteration(String sessionId, Long anomalyId, Long characterId) {
         CombatSession session = getSession(sessionId);
         if (session == null || session.isFinished())
             return session;
@@ -421,6 +555,8 @@ public class CombatService {
 
             for (Personnage p : session.getPlayers()) {
                 if (p.getHealthCurrent() <= 0)
+                    continue;
+                if (!session.isEligibleForRewards(p))
                     continue;
 
                 boolean hasEnoughHp = true;
@@ -444,7 +580,12 @@ public class CombatService {
                         p.setExperience(p.getExperience() + expEffect);
                     }
 
-                    if ("SPIRITUAL_XP".equals(room.getAlterationRewardType())) {
+                    String rewardTypeForP = room.getAlterationRewardType();
+                    if ("SPECIAL_ITEM".equals(rewardTypeForP) && (room.getAlterationSpecialItemReward() == null
+                            || room.getAlterationSpecialItemReward().trim().isEmpty())) {
+                        rewardTypeForP = "SPIRITUAL_XP";
+                    }
+                    if ("SPIRITUAL_XP".equals(rewardTypeForP)) {
                         int spXp = room.getAlterationSpiritualXpReward();
                         if (spXp > 0)
                             p.setSpiritualiteExperience(p.getSpiritualiteExperience() + spXp);
@@ -472,30 +613,39 @@ public class CombatService {
                     logged = true;
                 }
 
-                if ("SPIRITUAL_XP".equals(room.getAlterationRewardType())
+                String rewardType = room.getAlterationRewardType();
+                if ("SPECIAL_ITEM".equals(rewardType) && (room.getAlterationSpecialItemReward() == null
+                        || room.getAlterationSpecialItemReward().trim().isEmpty())) {
+                    rewardType = "SPIRITUAL_XP";
+                }
+
+                if ("SPIRITUAL_XP".equals(rewardType)
                         && room.getAlterationSpiritualXpReward() > 0) {
                     session.addLog(eligibleCount + " héros reçoivent " + room.getAlterationSpiritualXpReward()
                             + " XP de Spiritualité !");
                     logged = true;
-                } else if ("SPECIAL_ITEM".equals(room.getAlterationRewardType())) {
+                } else if ("SPECIAL_ITEM".equals(rewardType)) {
                     String itemName = room.getAlterationSpecialItemReward();
                     Anomalie template = anomalieRepository.findFirstByNameAndIsTemplateTrueOrderByIdAsc(itemName);
                     if (template != null && !session.getPlayers().isEmpty()) {
-                        generation.grimoire.entity.auth.AppUser user = session.getPlayers().get(0).getUser();
-                        if (user != null) {
-                            Anomalie newAnomaly = new Anomalie();
-                            newAnomaly.setName(template.getName());
-                            newAnomaly.setDescription(template.getDescription());
-                            newAnomaly.setSpiritualite(template.getSpiritualite());
-                            newAnomaly.setCategory(template.getCategory());
-                            newAnomaly.setLevel(template.getLevel() != null ? template.getLevel() : 1);
-                            newAnomaly.setMagicObject(template.isMagicObject());
-                            newAnomaly.setOwnerUsername(user.getUsername());
-                            newAnomaly.setUser(user);
-                            anomalieRepository.save(newAnomaly);
-                            session.addLog("L'équipe reçoit l'Item Spécial : " + itemName + " !");
-                            logged = true;
+                        for (Personnage p : session.getPlayers()) {
+                            if (!session.isEligibleForRewards(p)) continue;
+                            generation.grimoire.entity.auth.AppUser user = p.getUser();
+                            if (user != null) {
+                                Anomalie newAnomaly = new Anomalie();
+                                newAnomaly.setName(template.getName());
+                                newAnomaly.setDescription(template.getDescription());
+                                newAnomaly.setSpiritualite(template.getSpiritualite());
+                                newAnomaly.setCategory(template.getCategory());
+                                newAnomaly.setLevel(template.getLevel() != null ? template.getLevel() : 1);
+                                newAnomaly.setMagicObject(template.isMagicObject());
+                                newAnomaly.setOwnerUsername(user.getUsername());
+                                newAnomaly.setUser(user);
+                                anomalieRepository.save(newAnomaly);
+                            }
                         }
+                        session.addLog("L'équipe reçoit l'Item Spécial : " + itemName + " !");
+                        logged = true;
                     } else {
                         session.addLog("L'item spécial '" + itemName + "' n'est plus disponible.");
                         logged = true;
@@ -518,7 +668,17 @@ public class CombatService {
             if (session.getPlayers().isEmpty()) {
                 throw new RuntimeException("Aucun joueur dans la session.");
             }
-            AppUser user = session.getPlayers().get(0).getUser();
+
+            Personnage accepteur = null;
+            if (characterId != null) {
+                accepteur = session.getPlayers().stream().filter(p -> p.getId().equals(characterId)).findFirst()
+                        .orElse(null);
+            }
+            if (accepteur == null) {
+                accepteur = session.getPlayers().get(0);
+            }
+
+            AppUser user = accepteur.getUser();
             if (user == null) {
                 throw new RuntimeException("Utilisateur inconnu.");
             }
@@ -539,6 +699,8 @@ public class CombatService {
             for (Personnage p : session.getPlayers()) {
                 if (p.getHealthCurrent() <= 0)
                     continue;
+                if (!session.isEligibleForRewards(p))
+                    continue;
                 if (spXp > 0) {
                     p.setSpiritualiteExperience(p.getSpiritualiteExperience() + spXp);
                     personnageRepository.save(p);
@@ -553,13 +715,15 @@ public class CombatService {
                 throw new RuntimeException("Aucune anomalie sélectionnée pour le sacrifice.");
             }
 
-            if (session.getPlayers().isEmpty()) {
-                throw new RuntimeException("Aucun joueur dans la session.");
+            Personnage accepteur = null;
+            if (characterId != null) {
+                accepteur = session.getPlayers().stream().filter(p -> p.getId().equals(characterId)).findFirst()
+                        .orElse(null);
             }
-            AppUser user = session.getPlayers().get(0).getUser();
-            if (user == null) {
-                throw new RuntimeException("Utilisateur inconnu.");
+            if (accepteur == null) {
+                accepteur = session.getPlayers().get(0);
             }
+            AppUser user = accepteur.getUser();
 
             Anomalie toDestroy = anomalieRepository.findById(anomalyId)
                     .orElseThrow(() -> new RuntimeException("Anomalie introuvable."));
@@ -693,15 +857,28 @@ public class CombatService {
         if (session == null)
             throw new RuntimeException("Session introuvable");
 
-        generation.grimoire.entity.Equipment toConsume = null;
+        generation.grimoire.entity.Equipment clickedConsumable = null;
         for (generation.grimoire.entity.Equipment eq : session.getActiveConsumables()) {
             if (eq.getId().equals(consumableId)) {
+                clickedConsumable = eq;
+                break;
+            }
+        }
+        if (clickedConsumable == null)
+            throw new RuntimeException("Consommable non trouvé dans le combat");
+
+        // Prioritize consuming an item with the same name owned by the current user
+        generation.grimoire.entity.Equipment toConsume = null;
+        for (generation.grimoire.entity.Equipment eq : session.getActiveConsumables()) {
+            if (eq.getName().equals(clickedConsumable.getName()) &&
+                    username.equals(eq.getOwnerUsername())) {
                 toConsume = eq;
                 break;
             }
         }
-        if (toConsume == null)
-            throw new RuntimeException("Consommable non trouvé dans le combat");
+        if (toConsume == null) {
+            toConsume = clickedConsumable;
+        }
 
         generation.grimoire.entity.personnage.Personnage target = null;
         for (generation.grimoire.entity.personnage.Personnage p : session.getPlayers()) {
@@ -816,9 +993,6 @@ public class CombatService {
         }
 
         if (specialItemPriceName != null && !specialItemPriceName.trim().isEmpty()) {
-            if (acheteur.getSpecialItemQuantity(specialItemPriceName) < 1) {
-                throw new RuntimeException("Pas assez de " + specialItemPriceName + ".");
-            }
             if (user != null) {
                 List<Anomalie> userAnomalies = anomalieRepository.findByOwnerUsername(user.getUsername());
                 Anomalie toDestroy = userAnomalies.stream()
@@ -1152,7 +1326,7 @@ public class CombatService {
             } else if ("TRESOR".equals(type)) {
                 long anomalieId = selectedOutcome.path("treasureAnomalieId").asLong(0);
                 String anomalyName = null;
-                
+
                 if (anomalieId > 0) {
                     generation.grimoire.entity.Anomalie template = anomalieRepository.findById(anomalieId).orElse(null);
                     if (template != null) {
@@ -1164,12 +1338,15 @@ public class CombatService {
                         clone.setLevel(template.getLevel() != null ? template.getLevel() : 1);
                         clone.setMagicObject(template.isMagicObject());
                         clone.setTemplate(false);
-                        
+
                         AppUser user = null;
-                        if (!session.getPlayers().isEmpty()) {
-                            user = session.getPlayers().get(0).getUser();
+                        Personnage recipient = session.getPlayers().stream()
+                                .filter(session::isEligibleForRewards)
+                                .findFirst().orElse(null);
+                        if (recipient != null) {
+                            user = recipient.getUser();
                         }
-                        
+
                         if (user != null) {
                             clone.setOwnerUsername(user.getUsername());
                             clone.setUser(user);
@@ -1179,7 +1356,7 @@ public class CombatService {
                         }
                     }
                 }
-                
+
                 if (anomalyName != null) {
                     session.addLog("Derrière la porte, vous découvrez l'anomalie : " + anomalyName + " !");
                     room.setEventText("Derrière la porte, vous découvrez l'anomalie : " + anomalyName + " !");
@@ -1299,7 +1476,24 @@ public class CombatService {
             if (!targetMonster.isDead()) {
                 p.setBanalSpellCastThisTurn(true);
                 captureLogs(session, () -> {
-                    int playerDmg = p.getEffectiveStat(generation.grimoire.enumeration.StatType.STRENGTH);
+                    int pAtk = p.getEffectiveStat(generation.grimoire.enumeration.StatType.STRENGTH);
+                    int mAtk = p.getEffectiveStat(generation.grimoire.enumeration.StatType.POWER);
+
+                    int baseDmg;
+                    generation.grimoire.enumeration.DamageType dmgType;
+                    boolean isMixed = false;
+
+                    if (pAtk > mAtk) {
+                        baseDmg = (int) (pAtk * 0.8);
+                        dmgType = generation.grimoire.enumeration.DamageType.PHYSIC;
+                    } else if (mAtk > pAtk) {
+                        baseDmg = (int) (mAtk * 0.8);
+                        dmgType = generation.grimoire.enumeration.DamageType.MAGIC;
+                    } else {
+                        baseDmg = (int) (pAtk * 0.8); // Since they are equal
+                        dmgType = null;
+                        isMixed = true;
+                    }
 
                     int totalCrit = p.getCrit() + p.getStatFlatBonus(generation.grimoire.enumeration.StatType.CRIT);
                     totalCrit = Math.max(0, Math.min(100, totalCrit));
@@ -1308,18 +1502,26 @@ public class CombatService {
                     if (isCrit) {
                         System.out.println("💥 Coup Critique déclenché par " + p.getName() + " !");
                         double critMult = 1.5;
-                        int bonus = p
-                                .getSpecialEffectValue(generation.grimoire.enumeration.EquipmentEffectType.CRIT_DAMAGE);
+                        int bonus = p.getSpecialEffectValue(generation.grimoire.enumeration.EquipmentEffectType.CRIT_DAMAGE);
                         if (bonus > 0) {
                             critMult += (bonus / 100.0);
                         }
-                        playerDmg = (int) (playerDmg * critMult);
+                        baseDmg = (int) (baseDmg * critMult);
                     }
 
-                    System.out.println(p.getName() + " attaque " + targetMonster.getBase().getName() + " ("
-                            + (isCrit ? "Critique : " : "Force : ") + playerDmg + ") !");
-                    p.dealDamage(targetMonster.getAsPersonnage(), playerDmg,
-                            generation.grimoire.enumeration.DamageType.PHYSIC);
+                    if (isMixed) {
+                        int half = baseDmg / 2;
+                        int remainder = baseDmg - half;
+                        System.out.println(p.getName() + " attaque " + targetMonster.getBase().getName() + " ("
+                                + (isCrit ? "Critique mixte : " : "Force/Puissance : ") + baseDmg + ") !");
+                        if (half > 0) p.dealDamage(targetMonster.getAsPersonnage(), half, generation.grimoire.enumeration.DamageType.PHYSIC);
+                        if (remainder > 0) p.dealDamage(targetMonster.getAsPersonnage(), remainder, generation.grimoire.enumeration.DamageType.MAGIC);
+                    } else {
+                        String statLabel = (dmgType == generation.grimoire.enumeration.DamageType.PHYSIC) ? "Force" : "Puissance";
+                        System.out.println(p.getName() + " attaque " + targetMonster.getBase().getName() + " ("
+                                + (isCrit ? "Critique : " : statLabel + " : ") + baseDmg + ") !");
+                        p.dealDamage(targetMonster.getAsPersonnage(), baseDmg, dmgType);
+                    }
                 });
             }
         }
@@ -1406,16 +1608,20 @@ public class CombatService {
             session.setTotalExpAccumulated(session.getTotalExpAccumulated() + xpDrop);
             session.setTotalGoldAccumulated(session.getTotalGoldAccumulated() + goldDrop);
 
-            int expPerHero = xpDrop / Math.max(1, session.getPlayers().size());
-            for (Personnage p : session.getPlayers()) {
+            List<Personnage> eligiblePlayers = session.getPlayers().stream()
+                    .filter(session::isEligibleForRewards).collect(java.util.stream.Collectors.toList());
+            int expPerHero = xpDrop / Math.max(1, eligiblePlayers.size());
+            for (Personnage p : eligiblePlayers) {
                 p.setExperience(p.getExperience() + expPerHero);
                 personnageRepository.save(p);
             }
-            if (goldDrop > 0 && !session.getPlayers().isEmpty()) {
-                generation.grimoire.entity.auth.AppUser user = session.getPlayers().get(0).getUser();
-                if (user != null) {
-                    user.setMonnaie(user.getMonnaie() + goldDrop);
-                    userRepository.save(user);
+            if (goldDrop > 0 && !eligiblePlayers.isEmpty()) {
+                for (Personnage p : eligiblePlayers) {
+                    AppUser u = p.getUser();
+                    if (u != null) {
+                        u.setMonnaie(u.getMonnaie() + goldDrop);
+                        userRepository.save(u);
+                    }
                 }
                 session.addLog("Les monstres vaincus ont lâché " + goldDrop + " Or. Chaque héros reçoit " + expPerHero
                         + " XP.");
@@ -1443,22 +1649,26 @@ public class CombatService {
                         + " | bossRewardGold=" + bossGold
                         + " | nbPlayers=" + session.getPlayers().size());
 
-                if (bossSpXp > 0 && !session.getPlayers().isEmpty()) {
-                    int spXpPerHero = bossSpXp / Math.max(1, session.getPlayers().size());
-                    for (Personnage p : session.getPlayers()) {
+                List<Personnage> bossEligible = session.getPlayers().stream()
+                        .filter(session::isEligibleForRewards).collect(java.util.stream.Collectors.toList());
+                if (bossSpXp > 0 && !bossEligible.isEmpty()) {
+                    int spXpPerHero = bossSpXp / Math.max(1, bossEligible.size());
+                    for (Personnage p : bossEligible) {
                         p.setSpiritualiteExperience(p.getSpiritualiteExperience() + spXpPerHero);
                         personnageRepository.save(p);
                     }
                     session.setBossBonusSpiritualXp(bossSpXp);
                     session.addLog("🔮 Le Boss vaincu octroie " + bossSpXp + " XP Spiritualité, partagé entre "
-                            + session.getPlayers().size() + " héros (" + spXpPerHero + " chacun).");
+                            + bossEligible.size() + " héros (" + spXpPerHero + " chacun).");
                 }
 
-                if (bossGold > 0 && !session.getPlayers().isEmpty()) {
-                    generation.grimoire.entity.auth.AppUser user = session.getPlayers().get(0).getUser();
-                    if (user != null) {
-                        user.setMonnaie(user.getMonnaie() + bossGold);
-                        userRepository.save(user);
+                if (bossGold > 0 && !bossEligible.isEmpty()) {
+                    for (Personnage p : bossEligible) {
+                        AppUser u = p.getUser();
+                        if (u != null) {
+                            u.setMonnaie(u.getMonnaie() + bossGold);
+                            userRepository.save(u);
+                        }
                     }
                     session.setTotalGoldAccumulated(session.getTotalGoldAccumulated() + bossGold);
                     session.setBossBonusGold(bossGold);
@@ -1531,6 +1741,9 @@ public class CombatService {
         // Safety: if the current turn is a player, we shouldn't auto-process! We just
         // return.
         if (current.isPlayer()) {
+            if (session.getTurnStartTime() == null) {
+                session.setTurnStartTime(System.currentTimeMillis());
+            }
             computeSpellAvailability(session);
             return session;
         }
@@ -1819,10 +2032,51 @@ public class CombatService {
     }
 
     @org.springframework.transaction.annotation.Transactional
-    public void fleeCombat(String sessionId) {
+    public void fleeCombat(String sessionId, String username) {
         CombatSession session = getSession(sessionId);
         if (session == null || session.isFinished())
             return;
+
+        if (username != null) {
+            boolean playerKilled = false;
+            for (Personnage p : session.getPlayers()) {
+                if (username.equals(p.getOwnerUsername()) && p.getHealthCurrent() > 0) {
+                    p.setHealthCurrent(0);
+                    playerKilled = true;
+                }
+            }
+
+            if (playerKilled) {
+                session.addLog("Le joueur " + username + " a pris la fuite. Ses personnages tombent au combat !");
+
+                boolean anyAlive = session.getPlayers().stream().anyMatch(p -> p.getHealthCurrent() > 0);
+
+                if (anyAlive) {
+                    // Register as fled — excluded from all future rewards
+                    session.getFledUsernames().add(username);
+
+                    boolean wasTheirTurn = false;
+                    if (!session.isFinished() && !session.isRoundFinished() && session.getCurrentTurnIndex() < session.getTurnOrder().size()) {
+                        generation.grimoire.model.pve.InitiativeEntry current = session.getTurnOrder().get(session.getCurrentTurnIndex());
+                        if (current.isPlayer()) {
+                            Personnage currentP = session.getPlayers().get(current.getIndex());
+                            if (username.equals(currentP.getOwnerUsername())) {
+                                wasTheirTurn = true;
+                            }
+                        }
+                    }
+
+                    if (wasTheirTurn) {
+                        // Correctly advances the turn, runs monster AI if needed, and computes spell availability
+                        endTurn(sessionId);
+                    } else {
+                        // Recompute in case remaining player's spell availability changed (e.g. requires an alive ally)
+                        computeSpellAvailability(session);
+                    }
+                    return;
+                }
+            }
+        }
 
         int roomsCount = (session.getDonjon() != null && session.getDonjon().getSalles() != null)
                 ? session.getDonjon().getSalles().size()
@@ -2064,6 +2318,9 @@ public class CombatService {
                 session.advanceTurnIndex();
             } else if (current.isPlayer()) {
                 // It's a live player! Let's start their turn.
+                if (session.getTurnStartTime() == null) {
+                    session.setTurnStartTime(System.currentTimeMillis());
+                }
                 Personnage p = session.getPlayers().get(current.getIndex());
                 session.addLog("--- Tour de " + p.getName() + " ---");
                 captureLogs(session, () -> {
@@ -2239,7 +2496,7 @@ public class CombatService {
         passiveDispatcher.dispatch(p, spell, costEvent);
         actualManaCost = costs[0];
         actualHealCost = costs[1];
-        actualHeatCost = costs.length > 2 ? costs[2] : actualHeatCost;
+        actualHeatCost = costs[2];
 
         // 5) Vérification des ressources
         if (p.getManaCurrent() < actualManaCost) {
@@ -2318,5 +2575,22 @@ public class CombatService {
             }
         }
         anomalieRepository.delete(toDestroy);
+    }
+    @org.springframework.scheduling.annotation.Scheduled(fixedRate = 1000)
+    public void checkMultiplayerTimeouts() {
+        long now = System.currentTimeMillis();
+        for (CombatSession session : activeSessions.values()) {
+            if (session.isMulti() && !session.isFinished()) {
+                Long start = session.getTurnStartTime();
+                if (start != null && (now - start) > 90000) {
+                    Personnage p = session.getActivePlayer();
+                    if (p != null) {
+                        session.addLog("⏳ Le temps imparti pour " + p.getName() + " s'est écoulé ! Son tour passe automatiquement.");
+                        endTurn(session.getSessionId());
+                        broadcastIfMulti(session);
+                    }
+                }
+            }
+        }
     }
 }

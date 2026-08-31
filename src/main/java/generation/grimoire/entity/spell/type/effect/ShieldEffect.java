@@ -44,6 +44,5 @@ public class ShieldEffect extends SpellEffect {
         int finalShield = (int) shieldAmount;
         String spellName = getSpell() != null ? getSpell().getNom() : "Bouclier";
         target.addShield(finalShield, this.duration, spellName);
-        System.out.println(target.getName() + " reçoit un bouclier de " + finalShield + " pour " + this.duration + " tours (multiplier donné: " + shieldGivenMultiplier + ")");
     }
 }
