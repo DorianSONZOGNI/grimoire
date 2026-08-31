@@ -41,7 +41,7 @@ public class Donjon {
     // For a simple novice dungeon, it's one combat. 
     // We can map multiple monsters to a dungeon if needed later, or just one boss.
     // For now, let's keep it flexible with a list of encounters or simply a ManyToMany with monsters.
-    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @org.hibernate.annotations.Fetch(org.hibernate.annotations.FetchMode.SUBSELECT)
     @JoinColumn(name = "donjon_id")
     @OrderColumn(name = "room_order")
