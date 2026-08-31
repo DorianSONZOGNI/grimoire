@@ -2575,22 +2575,31 @@ button {
 /* Glass Backgrounds */
 .bg-success-glass {
     background: rgba(16, 185, 129, 0.2) !important;
+    border: 1px solid rgba(16, 185, 129, 0.3) !important;
 }
 
 .bg-error-glass {
     background: rgba(239, 68, 68, 0.2) !important;
+    border: 1px solid rgba(239, 68, 68, 0.3) !important;
 }
 
 .bg-amber-glass {
     background: rgba(245, 158, 11, 0.2) !important;
+    border: 1px solid rgba(245, 158, 11, 0.3) !important;
 }
 
 .bg-info-glass {
     background: rgba(59, 130, 246, 0.2) !important;
+    border: 1px solid rgba(59, 130, 246, 0.3) !important;
+}
+
+.bg-purple-glass {
+    background: rgba(168, 85, 247, 0.2) !important;
+    border: 1px solid rgba(168, 85, 247, 0.3) !important;
 }
 
 .bg-black-glass {
-    background: rgba(0, 0, 0, 0.3) !important;
+    background: rgba(0, 0, 0, 0.4) !important;
 }
 
 /* Typography */
@@ -2599,7 +2608,7 @@ button {
 }
 
 .text-md-num {
-    font-size: 1.1rem !important;
+    font-size: 0.95rem !important;
 }
 
 .font-family-inherit {
@@ -2683,74 +2692,6 @@ button {
     padding-top: 0.25rem !important;
     padding-bottom: 0.25rem !important;
 }
-
-
-/* --- Missing Classes Added for JS Style Audit --- */
-/* Font sizes manquantes */
-.text-lg-num {
-    font-size: 1.2rem;
-}
-
-.text-md-num {
-    font-size: 0.95rem;
-}
-
-/* Backgrounds verre manquants */
-.bg-success-glass {
-    background: rgba(16, 185, 129, 0.2);
-    border: 1px solid rgba(16, 185, 129, 0.3);
-}
-
-.bg-error-glass {
-    background: rgba(239, 68, 68, 0.2);
-    border: 1px solid rgba(239, 68, 68, 0.3);
-}
-
-.bg-amber-glass {
-    background: rgba(245, 158, 11, 0.2);
-    border: 1px solid rgba(245, 158, 11, 0.3);
-}
-
-.bg-purple-glass {
-    background: rgba(168, 85, 247, 0.2);
-    border: 1px solid rgba(168, 85, 247, 0.3);
-}
-
-.bg-info-glass {
-    background: rgba(59, 130, 246, 0.2);
-    border: 1px solid rgba(59, 130, 246, 0.3);
-}
-
-.bg-black-glass {
-    background: rgba(0, 0, 0, 0.4);
-}
-
-/* Border radius */
-.rounded-sm {
-    border-radius: 4px;
-}
-
-.rounded-full {
-    border-radius: 9999px;
-}
-
-/* Autres utilitaires */
-.cursor-help {
-    cursor: help;
-}
-
-.font-family-inherit {
-    font-family: inherit;
-}
-
-.min-w-0 {
-    min-width: 0;
-}
-
-.whitespace-pre-wrap {
-    white-space: pre-wrap;
-}
-
 
 .ml-2 {
     margin-left: 0.5rem;
