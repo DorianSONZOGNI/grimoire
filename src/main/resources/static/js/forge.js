@@ -129,6 +129,14 @@ export function updateSpecialVoieConfig() {
         }
     }
 
+    const seedCostCard = document.getElementById('seedCostCard');
+    if (seedCostCard) {
+        seedCostCard.style.display = isCreation ? 'block' : 'none';
+        if (!isCreation) {
+            document.getElementById('seedCost').value = 0;
+        }
+    }
+
     const heatTypes = ['HEAT_FIXED', 'HEAT_PERCENTAGE', 'HEAT_OVER_TIME'];
     if (!isDestruction) {
         const hasHeat = state.currentEffects.some(e => heatTypes.includes(e.effectType));

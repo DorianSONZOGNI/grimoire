@@ -2513,6 +2513,15 @@ public class CombatService {
                     "Chaleur insuffisante (" + currentHeat + "/" + actualHeatCost + ")");
         }
 
+        int actualSeedCost = spell.getSeedCost();
+        int currentBuds = p.getPassiveState("creation_buds", 0);
+        boolean willPassiveTrigger = currentBuds > 0 && p.getPassiveState("creation_used_this_turn", 0) == 0;
+        int requiredBuds = actualSeedCost + (willPassiveTrigger ? 1 : 0);
+        if (currentBuds < requiredBuds) {
+            return SpellAvailability.blocked(spell.getId(), "RESOURCE",
+                    "Graines insuffisantes (" + currentBuds + "/" + requiredBuds + ")");
+        }
+
         return SpellAvailability.available(spell.getId());
     }
 

@@ -592,6 +592,7 @@ export function getSpellCardHtml(sp) {
                         ${sp.manaCost > 0 || sp.percentManaCost > 0 ? `<span class="inline-flex items-center gap-1"><span class="material-symbols-outlined align-middle" style="font-size: 1.05rem; color: #38bdf8;">water_drop</span>${sp.manaCost > 0 ? sp.manaCost : ''}${sp.manaCost > 0 && sp.percentManaCost > 0 ? ' + ' : ''}${sp.percentManaCost > 0 ? `${sp.percentManaCost}% (${ui.formatSrc(sp.percentManaCostSource || 'CASTER_MANA_MAX')})` : ''} Mana</span>` : ''}
                         ${sp.healCost > 0 || sp.percentHealCost > 0 ? `<span class="inline-flex items-center gap-1"><span class="material-symbols-outlined align-middle" style="font-size: 1.05rem; color: #f43f5e;">bloodtype</span>${sp.healCost > 0 ? sp.healCost : (sp.percentHealCost > 0 ? '' : '0')}${sp.healCost > 0 && sp.percentHealCost > 0 ? ' + ' : ''}${sp.percentHealCost > 0 ? `${sp.percentHealCost}% (${ui.formatSrc(sp.percentHealCostSource || 'CASTER_HEALTH_MAX')})` : ''} PV</span>` : ''}
                         ${sp.heatCost > 0 || sp.percentHeatCost > 0 ? `<span class="inline-flex items-center gap-1"><span class="material-symbols-outlined align-middle" style="font-size: 1.05rem; color: #f97316;">local_fire_department</span>${sp.heatCost > 0 ? sp.heatCost : (sp.percentHeatCost > 0 ? '' : '0')}${sp.heatCost > 0 && sp.percentHeatCost > 0 ? ' + ' : ''}${sp.percentHeatCost > 0 ? `${sp.percentHeatCost}% Chaleur` : ''} Chaleur</span>` : ''}
+                        ${sp.seedCost > 0 ? `<span class="inline-flex items-center gap-1"><span class="material-symbols-outlined align-middle" style="font-size: 1.05rem; color: #6ee7b7;">yard</span>${sp.seedCost} Graines</span>` : ''}
                         ${sp.castingType === 'CANALISE' ? `
                             <span style="color: #a78bfa;" class="inline-flex items-center gap-1 text-sm" title="Paramètres du sort canalisé">
                                 <span class="material-symbols-outlined align-middle" style="font-size: 1.1rem; color: #a78bfa;">cyclone</span>
@@ -621,6 +622,7 @@ export function cancelEditSpell() {
     document.getElementById('description').value = '';
     document.getElementById('heatCost').value = 0;
     document.getElementById('percentHeatCost').value = 0;
+    document.getElementById('seedCost').value = 0;
     state.currentEffects = [];
     renderEffects();
 
@@ -718,6 +720,7 @@ export function editSpell(id) {
     document.getElementById('percentHealCostSource').dispatchEvent(new Event('change'));
     document.getElementById('heatCost').value = sp.heatCost || 0;
     document.getElementById('percentHeatCost').value = sp.percentHeatCost || 0;
+    document.getElementById('seedCost').value = sp.seedCost || 0;
 
     document.getElementById('voieSelect').value = sp.voie ? sp.voie.id : '';
     document.getElementById('voieSelect').dispatchEvent(new Event('change'));
