@@ -838,9 +838,9 @@ class SpellIntegrationTest {
         spellService.castSpell(banalSpell, hero, enemy, null);
         // Enemy has 10 armor -> 100 physical is reduced by 9% to 90.
         // Trahison base bonus = 10 (100 * 10%).
-        // Trahison debuff bonus = 10 (100 * 10%).
-        // Total damage = 90 + 10 + 10 = 110. HP should be 200 - 110 = 90.
-        assertThat(enemy.getHealthCurrent()).isEqualTo(90);
+        // Trahison debuff bonus = 15 (100 * 15%).
+        // Total damage = 90 + 10 + 15 = 115. HP should be 200 - 115 = 85.
+        assertThat(enemy.getHealthCurrent()).isEqualTo(85);
         assertThat(hero.getPassiveState("trahison_used_this_turn", 0)).isEqualTo(1);
         assertThat(hero.getPassiveState("trahison_debuff_used_this_turn", 0)).isEqualTo(1);
 
