@@ -37,9 +37,10 @@ public abstract class SpellEffect {
     @Column(name = "detached_soul_req")
     private generation.grimoire.enumeration.DetachedSoulRequirement detachedSoulRequirement = generation.grimoire.enumeration.DetachedSoulRequirement.NOT_AFFECTED;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "spell_effect_channeling_turns", joinColumns = @JoinColumn(name = "spell_effect_id"))
     @Column(name = "turn")
+    @org.hibernate.annotations.Fetch(org.hibernate.annotations.FetchMode.SUBSELECT)
     private java.util.Set<Integer> channelingTurns = new java.util.LinkedHashSet<>();
 
     /**
