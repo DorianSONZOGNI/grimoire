@@ -361,12 +361,12 @@ La boutique vend des templates. À l'achat, une instance est créée et associé
 > - [`Personnage.java`](file:///c:/Users/doson/IdeaProjects/grimoire/src/main/java/generation/grimoire/entity/personnage/Personnage.java) — **1343 lignes, 55 Ko**. Mélange entité JPA + logique métier (buffs, shields, DoTs, HoTs, calculs de stats). Envisager l'extraction de la logique en services dédiés.
 
 > [!IMPORTANT]
-> ### Risques identifiés
-> - **Combats in-memory** : perte totale en cas de restart. Pas de mécanisme de recovery.
-> - **`ddl-auto=update`** : dangereux en production (pas de rollback possible, perte de données sur certains changements de schéma).
-> - **Pas de tests unitaires** dans le code source (pas de répertoire `src/test` actif).
-> - **Batch fetch** configuré globalement (`default_batch_fetch_size=16`) — bon pour le N+1 mais peut surprendre.
-> - **Références par nom** (anomalies dans les prix/recettes) au lieu de FK — fragilité si un nom change sans passer par le `RenameCascadeService`.
+> ### Risques & Points de vigilance
+> - **Combats in-memory** : perte totale en cas de restart du serveur (pas de persistance ni de recovery des sessions en cours).
+> - **`ddl-auto=update`** : pratique en dev mais dangereux en production (pas de migration versionnée type Flyway/Liquibase).
+> - **Couverture de tests existante** : suite de tests présente sous `src/test/java` (tests d'intégration sorts, simulation de combat, sécurité JWT, alchimie, passifs, etc.), mais le build Docker actuel utilise `-DskipTests`.
+> - **Batch fetch** configuré globalement (`default_batch_fetch_size=16`) — optimise le problème N+1 mais requiert une surveillance des requêtes générées.
+> - **Références par nom** (anomalies dans les prix/recettes) au lieu de clés étrangères (FK) — repose sur le `RenameCascadeService` pour garantir l'intégrité référentielle.
 
 ---
 
