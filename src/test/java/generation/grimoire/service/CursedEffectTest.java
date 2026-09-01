@@ -75,7 +75,7 @@ class CursedEffectTest {
         Spell spell = new Spell();
         spell.setNom("Test Spell");
         spell.setManaCost(50);
-        spell.setEffects(new ArrayList<>());
+        spell.setEffects(new java.util.LinkedHashSet<>());
 
         spellService.castSpell(spell, hero, enemy, null);
 

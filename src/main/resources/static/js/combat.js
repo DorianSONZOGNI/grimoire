@@ -1583,6 +1583,16 @@ function setMultiActionsEnabled(enabled) {
 
 function updateUI(data) {
     resetCombatTimeoutWarning(data.finished);
+
+    if (pageState.currentSessionData && pageState.currentSessionData.activePlayer && data.activePlayer) {
+        if (pageState.currentSessionData.activePlayer.name !== data.activePlayer.name) {
+            const typeAll = document.querySelector('input[name="filterCastingType"][value="ALL"]');
+            if (typeAll) typeAll.checked = true;
+            const levelAll = document.querySelector('input[name="filterLevel"][value="ALL"]');
+            if (levelAll) levelAll.checked = true;
+        }
+    }
+
     pageState.currentSessionData = data;
 
     if (data.finished) {

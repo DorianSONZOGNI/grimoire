@@ -35,6 +35,5 @@ public class ManaPercentageEffect extends ManaEffect {
             manaAmount *= getCriticalMultiplier(caster);
         }
         target.restoreMana((int) manaAmount);
-        System.out.println(target.getName() + " régénère " + (int) manaAmount + " points de mana");
     }
 }

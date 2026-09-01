@@ -31,7 +31,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @SuppressWarnings("null")
-class CombatServiceRewardTest {
+class CombatRewardTest {
 
     @Mock
     private PersonnageRepository personnageRepository;
@@ -43,7 +43,10 @@ class CombatServiceRewardTest {
     private AnomalieRepository anomalieRepository;
 
     @InjectMocks
-    private CombatService combatService;
+    private CombatTurnService combatTurnService;
+
+    @InjectMocks
+    private CombatRoomService combatRoomService;
 
     private CombatSession session;
     private Personnage player;
@@ -91,7 +94,7 @@ class CombatServiceRewardTest {
         session.setCurrentRoom(room);
         session.getEnemies().add(activeMonster);
 
-        combatService.getActiveSessions().put("test-session", session);
+        session.getEnemies().add(activeMonster);
     }
 
     @Test
@@ -104,9 +107,9 @@ class CombatServiceRewardTest {
         activeMonster.getAsPersonnage().setHealthCurrent(0);
 
         // Access private checkDeaths via reflection
-        java.lang.reflect.Method checkDeaths = CombatService.class.getDeclaredMethod("checkDeaths", CombatSession.class);
+        java.lang.reflect.Method checkDeaths = CombatTurnService.class.getDeclaredMethod("checkDeaths", CombatSession.class);
         checkDeaths.setAccessible(true);
-        checkDeaths.invoke(combatService, session);
+        checkDeaths.invoke(combatTurnService, session);
 
         // Assertions
         assertThat(activeMonster.getMaxHp()).isEqualTo(0); // Mark as processed
@@ -126,16 +129,16 @@ class CombatServiceRewardTest {
         when(personnageRepository.findById(1L)).thenReturn(Optional.of(player));
         when(personnageRepository.save(any(Personnage.class))).thenReturn(player);
 
-        java.lang.reflect.Method checkDeaths = CombatService.class.getDeclaredMethod("checkDeaths", CombatSession.class);
+        java.lang.reflect.Method checkDeaths = CombatTurnService.class.getDeclaredMethod("checkDeaths", CombatSession.class);
         checkDeaths.setAccessible(true);
-        checkDeaths.invoke(combatService, session);
+        checkDeaths.invoke(combatTurnService, session);
 
         // Penalty for level 3 (500 xp) is 80.
         assertThat(player.getExperience()).isEqualTo(420); // 500 - 80
         assertThat(session.getPenalizedDeadPlayers()).contains(1L);
 
         // Test calling it twice does not apply penalty twice
-        checkDeaths.invoke(combatService, session);
+        checkDeaths.invoke(combatTurnService, session);
         assertThat(player.getExperience()).isEqualTo(420); 
     }
 
@@ -146,7 +149,7 @@ class CombatServiceRewardTest {
         when(personnageRepository.save(any(Personnage.class))).thenReturn(player);
         when(userRepository.save(any(AppUser.class))).thenReturn(appUser);
 
-        combatService.openChest("test-session", false);
+        combatRoomService.openChest(session, false);
 
         assertThat(player.getExperience()).isEqualTo(600); // 500 + 100 exp from chest
         assertThat(appUser.getMonnaie()).isEqualTo(250); // 100 + 150 gold from chest
@@ -170,7 +173,7 @@ class CombatServiceRewardTest {
         when(personnageRepository.save(any(Personnage.class))).thenReturn(player);
         when(userRepository.save(any(AppUser.class))).thenReturn(appUser);
 
-        combatService.openChest("test-session", true);
+        combatRoomService.openChest(session, true);
 
         // Key removed
         assertThat(session.getActiveConsumables()).isEmpty();

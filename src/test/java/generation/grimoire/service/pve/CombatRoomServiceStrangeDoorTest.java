@@ -24,7 +24,7 @@ import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.when;
 
 @ExtendWith(MockitoExtension.class)
-public class CombatServiceStrangeDoorTest {
+public class CombatRoomServiceStrangeDoorTest {
 
     @Mock
     private AnomalieRepository anomalieRepository;
@@ -33,13 +33,19 @@ public class CombatServiceStrangeDoorTest {
     private MonstreRepository monstreRepository;
 
     @Mock
-    private ObjectMapper objectMapper;
+    private SpellAvailabilityService spellAvailabilityService;
+
+    @Mock
+    private CombatTurnService combatTurnService;
+
+    @Mock
+    private com.fasterxml.jackson.databind.ObjectMapper objectMapper;
 
     @Mock
     private generation.grimoire.repository.SpellRepository spellRepository;
 
     @InjectMocks
-    private CombatService combatService;
+    private CombatRoomService combatRoomService;
 
     private CombatSession session;
     private Salle room;
@@ -67,14 +73,11 @@ public class CombatServiceStrangeDoorTest {
         mockDonjon.setSalles(new ArrayList<>(List.of(room)));
         session = new CombatSession("test-session", mockDonjon, new ArrayList<>(List.of(player)));
         session.setCurrentRoom(room);
-
-        combatService.getActiveSessions().put("test-session", session);
     }
-
     @Test
     void testOpenStrangeDoor_NullJson() {
         room.setDoorOutcomes(null);
-        combatService.openStrangeDoor("test-session");
+        combatRoomService.openStrangeDoor(session);
         assertThat(session.isRoomEventCompleted()).isTrue();
         assertThat(session.getCombatLog()).anyMatch(log -> log.contains("Rien ne se passe"));
     }
@@ -83,7 +86,7 @@ public class CombatServiceStrangeDoorTest {
     void testOpenStrangeDoor_EmptyArrayJson() throws Exception {
         room.setDoorOutcomes("[]");
 
-        combatService.openStrangeDoor("test-session");
+        combatRoomService.openStrangeDoor(session);
         assertThat(session.isRoomEventCompleted()).isTrue();
         assertThat(session.getCombatLog()).anyMatch(log -> log.contains("Rien ne se passe"));
     }
@@ -95,7 +98,7 @@ public class CombatServiceStrangeDoorTest {
         when(objectMapper.readTree(anyString()))
                 .thenAnswer(invocation -> realMapper.readTree((String) invocation.getArgument(0)));
 
-        combatService.openStrangeDoor("test-session");
+        combatRoomService.openStrangeDoor(session);
 
         assertThat(room.getType()).isEqualTo(RoomType.BOSS);
         assertThat(room.getBossRewardGold()).isEqualTo(50);
@@ -115,7 +118,7 @@ public class CombatServiceStrangeDoorTest {
         fakeAnomalie.setSpiritualite(generation.grimoire.enumeration.SpiritualiteType.TENEBRES);
         when(anomalieRepository.findById(1L)).thenReturn(java.util.Optional.of(fakeAnomalie));
 
-        combatService.openStrangeDoor("test-session");
+        combatRoomService.openStrangeDoor(session);
 
         assertThat(session.getCurrentRoom().getType()).isEqualTo(generation.grimoire.enumeration.RoomType.EVENT);
         assertThat(session.getCombatLog()).anyMatch(log -> log.contains("découvrez l'anomalie : Cœur de Démon"));
@@ -128,7 +131,7 @@ public class CombatServiceStrangeDoorTest {
         when(objectMapper.readTree(anyString()))
                 .thenAnswer(invocation -> realMapper.readTree((String) invocation.getArgument(0)));
 
-        combatService.openStrangeDoor("test-session");
+        combatRoomService.openStrangeDoor(session);
 
         assertThat(room.getEventSubType()).isEqualTo(EventSubType.PIEGE);
         assertThat(room.getTrapType()).isEqualTo("PV");
@@ -142,7 +145,7 @@ public class CombatServiceStrangeDoorTest {
         when(objectMapper.readTree(anyString()))
                 .thenAnswer(invocation -> realMapper.readTree((String) invocation.getArgument(0)));
 
-        combatService.openStrangeDoor("test-session");
+        combatRoomService.openStrangeDoor(session);
 
         assertThat(session.isRoomEventCompleted()).isTrue();
         assertThat(session.getCombatLog()).anyMatch(log -> log.contains("absolument rien"));
@@ -155,7 +158,7 @@ public class CombatServiceStrangeDoorTest {
         when(objectMapper.readTree(anyString()))
                 .thenAnswer(invocation -> realMapper.readTree((String) invocation.getArgument(0)));
 
-        combatService.openStrangeDoor("test-session");
+        combatRoomService.openStrangeDoor(session);
 
         assertThat(session.isRoomEventCompleted()).isTrue();
         assertThat(session.getCombatLog()).anyMatch(log -> log.contains("bloquée à jamais"));

@@ -1262,7 +1262,7 @@ window.submitJoinLobby = async function () {
         window.location.href = `/combat.html?sessionId=${result.sessionId}&multiId=${result.multiSessionId}&role=guest`;
     } catch (err) {
         console.error(err);
-        window.showNotif('Erreur serveur.', true);
+        window.showNotif(err.message || 'Erreur serveur.', true);
         btn.disabled = false;
         btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:1.1rem;">login</span> Rejoindre';
     }

@@ -8,7 +8,7 @@ import lombok.Data;
 import lombok.EqualsAndHashCode;
 
 @Data
-@EqualsAndHashCode(exclude = "spell")
+@EqualsAndHashCode(exclude = {"spell", "channelingTurns"})
 @Entity
 @Table(name = "spell_effect")
 @Inheritance(strategy = InheritanceType.SINGLE_TABLE)

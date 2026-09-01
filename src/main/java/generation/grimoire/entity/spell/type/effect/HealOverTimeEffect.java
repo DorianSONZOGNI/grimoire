@@ -61,9 +61,6 @@ public class HealOverTimeEffect extends HealEffect {
             totalHeal = (int) (totalHeal * getAmplificationMultiplier() * Math.max(0, healGivenMultiplier));
             target.heal(totalHeal);
             duration--;
-            System.out.println(
-                    target.getName() + " est soigné de " + totalHeal + " PV par heal over time (multiplier donné: "
-                            + healGivenMultiplier + "), durée restante : " + duration);
         }
     }
 

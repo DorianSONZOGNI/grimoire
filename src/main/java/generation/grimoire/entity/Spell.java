@@ -9,9 +9,6 @@ import generation.grimoire.entity.pve.Mutation;
 import jakarta.persistence.*;
 import lombok.Data;
 
-import java.util.ArrayList;
-import java.util.List;
-
 @Data
 @Entity
 @Table(name = "spell")
@@ -70,7 +67,8 @@ public class Spell {
     private Mutation mutation;
 
     @OneToMany(mappedBy = "spell", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<SpellEffect> effects = new ArrayList<>();
+    @OrderBy("id ASC")
+    private java.util.Set<SpellEffect> effects = new java.util.LinkedHashSet<>();
 
     public void addEffect(SpellEffect effect) {
         effect.setSpell(this);
