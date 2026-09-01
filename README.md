@@ -361,7 +361,7 @@ La boutique vend des templates. À l'achat, une instance est créée et associé
 > ### Risques & Points de vigilance
 > - **Combats in-memory** : perte totale en cas de restart du serveur (pas de persistance ni de recovery des sessions en cours).
 > - **`ddl-auto=update`** : pratique en dev mais dangereux en production (pas de migration versionnée type Flyway/Liquibase).
-> - **Couverture de tests existante** : suite de tests présente sous `src/test/java` (tests d'intégration sorts, simulation de combat, sécurité JWT, alchimie, passifs, etc.), mais le build Docker actuel utilise `-DskipTests`.
+> - **Couverture de tests existante** : suite présente (intégration, combat, JWT...), mais le build Docker ignore les tests (-DskipTests). Vigilance : S'assurer d'exécuter les tests manuellement avant chaque push ou de configurer une CI externe pour éviter de déployer des régressions.
 > - **Batch fetch** configuré globalement (`default_batch_fetch_size=16`) — optimise le problème N+1 mais requiert une surveillance des requêtes générées.
 > - **Références par nom** (anomalies dans les prix/recettes) au lieu de clés étrangères (FK) — repose sur le `RenameCascadeService` pour garantir l'intégrité référentielle.
 
