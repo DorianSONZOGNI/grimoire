@@ -2,9 +2,6 @@ package generation.grimoire.service;
 
 import generation.grimoire.entity.Spiritualite;
 import generation.grimoire.entity.Voie;
-import generation.grimoire.entity.spiritualite.passif.specific.EspritPassiveEffect;
-import generation.grimoire.entity.spiritualite.passif.specific.KarmaPassiveEffect;
-import generation.grimoire.entity.spiritualite.passif.specific.TenebrePassiveEffect;
 import generation.grimoire.entity.voie.passif.VoiePassiveEffect;
 import generation.grimoire.entity.voie.passif.specific.*;
 import generation.grimoire.repository.SpiritualiteRepository;
@@ -130,42 +127,6 @@ public class DataInitializerService {
                 }
             }
             voieRepository.save(voie);
-        }
-
-        // --- Spiritualités ---
-
-        // Renommer l'ancienne entrée "Lumière" en "Esprit" si présente
-        spiritualiteRepository.findByNom("Lumière").ifPresent(ancien -> {
-            ancien.setNom("Esprit");
-            spiritualiteRepository.save(ancien);
-        });
-
-        if (spiritualiteRepository.findByNom("Esprit").isEmpty()) {
-            Spiritualite esprit = new Spiritualite();
-            esprit.setNom("Esprit");
-            esprit.setDescription("Axée sur le renforcement et les ressources.");
-            EspritPassiveEffect ee = new EspritPassiveEffect();
-            ee.setSpiritualite(esprit);
-            esprit.setPassiveEffects(List.of(ee));
-            spiritualiteRepository.save(esprit);
-        }
-        if (spiritualiteRepository.findByNom("Ténèbres").isEmpty()) {
-            Spiritualite tenebres = new Spiritualite();
-            tenebres.setNom("Ténèbres");
-            tenebres.setDescription("Axée sur la puissance brute les buffs et les débuffs");
-            TenebrePassiveEffect te = new TenebrePassiveEffect();
-            te.setSpiritualite(tenebres);
-            tenebres.setPassiveEffects(List.of(te));
-            spiritualiteRepository.save(tenebres);
-        }
-        if (spiritualiteRepository.findByNom("Karma").isEmpty()) {
-            Spiritualite karma = new Spiritualite();
-            karma.setNom("Karma");
-            karma.setDescription("Polyvalent mix entre dégats, protection et soutien.");
-            KarmaPassiveEffect ke = new KarmaPassiveEffect();
-            ke.setSpiritualite(karma);
-            karma.setPassiveEffects(List.of(ke));
-            spiritualiteRepository.save(karma);
         }
 
         // Rangs des spiritualités
