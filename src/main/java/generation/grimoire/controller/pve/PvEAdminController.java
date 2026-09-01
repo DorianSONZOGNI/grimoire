@@ -89,6 +89,7 @@ public class PvEAdminController {
     }
 
     @PutMapping("/dungeons/{id}")
+    @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<Donjon> updateDungeon(@PathVariable @NonNull Long id, @RequestBody @NonNull DonjonDTO donjonDTO) {
         Donjon existing;
         try {

@@ -4,17 +4,18 @@ import io.jsonwebtoken.Jwts;
 import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.security.Keys;
 import org.springframework.stereotype.Service;
+import org.springframework.beans.factory.annotation.Value;
 
 import java.security.Key;
 import java.util.Date;
 
 @Service
 public class JwtService {
+    @Value("${jwt.secret}")
+    private String secret;
 
-    // Ideally, this should be in application.properties and injected via @Value
-    // We'll use a hardcoded secure key for now, or you can switch to properties later.
-    private final String secret = "grimoire_super_secret_key_that_must_be_at_least_256_bits_long_for_hs256_algorithm";
-    private final long jwtExpirationMs = 900000; // 15 minutes in milliseconds
+    @Value("${jwt.expiration}")
+    private long jwtExpirationMs;
 
     private Key getSigningKey() {
         return Keys.hmacShaKeyFor(secret.getBytes());

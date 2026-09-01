@@ -43,15 +43,15 @@ class TrahisonPassiveEffectTest {
     void shouldApplyLowHpBonusWhenTargetIsBelowHalfHealth() {
         target.setHealthCurrent(90); // < 100 (half of 200)
         
-        // Base bonus (10%) + Low HP bonus (15%) = 25% extra damage
+        // Base bonus (10%) + Low HP bonus (20%) = 30% extra damage
         passive.onPhysicalHit(hero, target, 100);
         
-        // 25 damage. 90 - 25 = 65
-        assertThat(target.getHealthCurrent()).isEqualTo(65);
+        // 30 damage. 90 - 30 = 60
+        assertThat(target.getHealthCurrent()).isEqualTo(60);
 
         // Next hit: bonuses consumed
         passive.onPhysicalHit(hero, target, 100);
-        assertThat(target.getHealthCurrent()).isEqualTo(65);
+        assertThat(target.getHealthCurrent()).isEqualTo(60);
     }
 
     @Test
@@ -61,11 +61,11 @@ class TrahisonPassiveEffectTest {
         debuff.setFlatValue(-10);
         target.getActiveBuffs().add(debuff);
 
-        // Base bonus (10%) + Debuff bonus (10%) = 20% extra
+        // Base bonus (10%) + Debuff bonus (15%) = 25% extra
         passive.onPhysicalHit(hero, target, 100);
         
-        // 20 damage. Health -> 180
-        assertThat(target.getHealthCurrent()).isEqualTo(180);
+        // 25 damage. Health -> 200 - 25 = 175
+        assertThat(target.getHealthCurrent()).isEqualTo(175);
     }
 
     @Test
@@ -77,11 +77,11 @@ class TrahisonPassiveEffectTest {
         debuff.setFlatValue(-10);
         target.getActiveBuffs().add(debuff);
 
-        // Base (10%) + Low HP (15%) + Debuff (10%) = 35%
+        // Base (10%) + Low HP (20%) + Debuff (15%) = 45%
         passive.onPhysicalHit(hero, target, 100);
         
-        // 35 damage. Health -> 90 - 35 = 55
-        assertThat(target.getHealthCurrent()).isEqualTo(55);
+        // 45 damage. Health -> 90 - 45 = 45
+        assertThat(target.getHealthCurrent()).isEqualTo(45);
     }
 
     @Test

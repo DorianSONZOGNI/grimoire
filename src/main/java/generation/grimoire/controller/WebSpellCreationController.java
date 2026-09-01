@@ -28,6 +28,9 @@ public class WebSpellCreationController {
     private final SpiritualiteRepository spiritualiteRepository;
     private final MutationRepository mutationRepository;
 
+    @org.springframework.beans.factory.annotation.Autowired
+    private jakarta.persistence.EntityManager entityManager;
+
     public WebSpellCreationController(SpellService spellService,
             SpellRepository spellRepository,
             VoieRepository voieRepository,
@@ -100,12 +103,17 @@ public class WebSpellCreationController {
             @org.springframework.cache.annotation.CacheEvict(value = "spellsByMutation", allEntries = true)
     })
     @PostMapping
+    @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<String> createSpellPayload(@RequestBody SpellCreationDto dto) {
         Spell spell;
         boolean isUpdate = false;
         Long id = dto.getId();
         if (id != null && spellRepository.existsById(id)) {
             spell = spellRepository.findById(id).get();
+            // Properly remove existing effects from the persistence context
+            for (generation.grimoire.entity.SpellEffect e : spell.getEffects()) {
+                entityManager.remove(e);
+            }
             spell.getEffects().clear();
             isUpdate = true;
         } else {
@@ -124,6 +132,7 @@ public class WebSpellCreationController {
             spell.setPercentHealCostSource(dto.getPercentHealCostSource());
         spell.setHeatCost(dto.getHeatCost());
         spell.setPercentHeatCost(dto.getPercentHeatCost());
+        spell.setSeedCost(dto.getSeedCost());
         if (dto.getCastingType() != null)
             spell.setCastingType(dto.getCastingType());
         spell.setChannelingDuration(dto.getChannelingDuration());
@@ -315,6 +324,7 @@ public class WebSpellCreationController {
         private Source percentHealCostSource;
         private int heatCost;
         private int percentHeatCost;
+        private int seedCost;
         private int heatGenerated;
         private Long voieId;
         private Long spiritualiteId;
