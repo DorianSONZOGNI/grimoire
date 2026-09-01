@@ -36,6 +36,7 @@ public class Spell {
     private int heatCost;
     private int percentHeatCost;
     private int heatGenerated;
+    private int seedCost;
     private int action;
     private Integer variantId; // Groupe de variantes de sorts
     @Enumerated(EnumType.STRING)

@@ -644,6 +644,17 @@ window.updateSpellCardState = function (spellId) {
             dynamicReason = 'HEAT';
         }
 
+        const actualSeedCost = sp.seedCost || 0;
+        const currentBuds = pageState.currentSessionData.activePlayer?.passiveStates ? (pageState.currentSessionData.activePlayer.passiveStates['creation_buds'] || 0) : 0;
+        const usedThisTurn = pageState.currentSessionData.activePlayer?.passiveStates ? (pageState.currentSessionData.activePlayer.passiveStates['creation_used_this_turn'] || 0) : 0;
+        const willPassiveTrigger = currentBuds > 0 && usedThisTurn === 0;
+        const requiredBuds = actualSeedCost + (willPassiveTrigger ? 1 : 0);
+        
+        if (currentBuds < requiredBuds) {
+            isCastable = false;
+            dynamicReason = 'SEEDS';
+        }
+
         // Dynamic NO_OTHER_ALLY check
         const targetsOnlyAlly = activeEffects.length > 0 && activeEffects.every(e => {
             const t = e.effectTarget || e.effect_target;
@@ -678,6 +689,16 @@ window.updateSpellCardState = function (spellId) {
                 badge.className = 'spell-disabled-badge badge-resource dynamic-spell-disabled-badge';
                 badge.title = 'Chaleur insuffisante pour cette option';
                 badge.innerHTML = '<span class="material-symbols-outlined">local_fire_department</span>';
+                card.appendChild(badge);
+            } else if (dynamicReason === 'SEEDS' && !card.querySelector('.spell-disabled-badge.dynamic-spell-disabled-badge')) {
+                const dynamicBadge = card.querySelector('.dynamic-spell-disabled-badge');
+                if (dynamicBadge) dynamicBadge.remove();
+
+                const badge = document.createElement('div');
+                badge.className = 'spell-disabled-badge badge-resource dynamic-spell-disabled-badge';
+                badge.style.color = '#6ee7b7';
+                badge.title = 'Graines insuffisantes pour cette option';
+                badge.innerHTML = '<span class="material-symbols-outlined">yard</span>';
                 card.appendChild(badge);
             } else if (dynamicReason === 'NO_OTHER_ALLY' && !card.querySelector('.spell-disabled-badge.dynamic-spell-disabled-badge')) {
                 const dynamicBadge = card.querySelector('.dynamic-spell-disabled-badge');
@@ -755,6 +776,17 @@ function initiateCombatCast(spellId) {
 
         if (playerHeat < totalHeatCost) {
             addCombatLog(`Chaleur insuffisante pour cette option (${playerHeat}/${totalHeatCost})`, 'system');
+            return;
+        }
+
+        const actualSeedCost = sp.seedCost || 0;
+        const currentBuds = pageState.currentSessionData.activePlayer?.passiveStates ? (pageState.currentSessionData.activePlayer.passiveStates['creation_buds'] || 0) : 0;
+        const usedThisTurn = pageState.currentSessionData.activePlayer?.passiveStates ? (pageState.currentSessionData.activePlayer.passiveStates['creation_used_this_turn'] || 0) : 0;
+        const willPassiveTrigger = currentBuds > 0 && usedThisTurn === 0;
+        const requiredBuds = actualSeedCost + (willPassiveTrigger ? 1 : 0);
+        
+        if (currentBuds < requiredBuds) {
+            addCombatLog(`Graines insuffisantes pour cette option (${currentBuds}/${requiredBuds})`, 'system');
             return;
         }
 
@@ -3778,6 +3810,9 @@ function renderSpellCard(sp) {
     }
     if (sp.heatCost > 0 || sp.percentHeatCost > 0) {
         costDetailsHtml.push(`<span style="display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem; color: #f97316;" title="Chaleur">local_fire_department</span><span style="border-bottom: 1px solid rgba(249, 115, 22, 0.5); padding-bottom: 0.05rem;">${sp.heatCost}${sp.percentHeatCost > 0 ? ` + ${sp.percentHeatCost}%` : ''}</span></span>`);
+    }
+    if (sp.seedCost > 0) {
+        costDetailsHtml.push(`<span style="display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem; color: #6ee7b7;" title="Graines">yard</span><span style="border-bottom: 1px solid rgba(110, 231, 183, 0.5); padding-bottom: 0.05rem;">${sp.seedCost}</span></span>`);
     }
     let costDetails = costDetailsHtml.join('<span style="color:rgba(255,255,255,0.2); margin:0 0.2rem;">|</span>');
     if (costDetailsHtml.length === 0) costDetails = '';
