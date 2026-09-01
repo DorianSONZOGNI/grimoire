@@ -328,9 +328,6 @@ GameEvent → PassiveDispatcher → [PassiveEffect₁, PassiveEffect₂, ...]
 - Les actions joueur (cast, equip, craft) nécessitent juste une authentification.
 - CSRF désactivé (API stateless), sessions désactivées.
 
-> [!WARNING]
-> La clé JWT est **hardcodée** dans `JwtService.java`. À externaliser dans `application.properties` ou un vault avant la production.
-
 ### 6. Sérialisation — Hibernate6Module
 
 [`JacksonConfig`](file:///c:/Users/doson/IdeaProjects/grimoire/src/main/java/generation/grimoire/config/JacksonConfig.java) enregistre le `Hibernate6Module` pour que les lazy proxies non-initialisés se sérialisent en `null` au lieu de crasher avec `LazyInitializationException`.
