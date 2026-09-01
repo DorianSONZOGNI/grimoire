@@ -2,9 +2,6 @@ package generation.grimoire.service;
 
 import generation.grimoire.entity.Spiritualite;
 import generation.grimoire.entity.Voie;
-import generation.grimoire.entity.spiritualite.passif.specific.EspritPassiveEffect;
-import generation.grimoire.entity.spiritualite.passif.specific.KarmaPassiveEffect;
-import generation.grimoire.entity.spiritualite.passif.specific.TenebrePassiveEffect;
 import generation.grimoire.entity.voie.passif.VoiePassiveEffect;
 import generation.grimoire.entity.voie.passif.specific.*;
 import generation.grimoire.repository.SpiritualiteRepository;
@@ -21,8 +18,10 @@ import java.util.Map;
 import java.util.Optional;
 
 /**
- * Service responsable de l'initialisation des données de référence (Voies, Spiritualités).
- * Déclenché après le démarrage complet de l'application pour éviter tout problème
+ * Service responsable de l'initialisation des données de référence (Voies,
+ * Spiritualités).
+ * Déclenché après le démarrage complet de l'application pour éviter tout
+ * problème
  * de dépendance cyclique ou de schema non-initialisé.
  */
 @Slf4j
@@ -39,25 +38,36 @@ public class DataInitializerService {
 
         // 1. Descriptions des Voies
         Map<String, String> descriptionsVoies = new HashMap<>();
-        descriptionsVoies.put("Voie de la Raison",         "Basé sur la vitesse et les coups critique.");
-        descriptionsVoies.put("Voie de la Sûreté",         "Défensive et sûre. Des buffs, de la santé et du débuff pour tout le monde.");
-        descriptionsVoies.put("Voie de Trahison",          "L'art d'exploiter les faiblesses ennemies et d'achever les cibles faciles.");
-        descriptionsVoies.put("Voie de la Consolidation",  "Protection et dégats physiques. Simple, efficasse, endurant.");
-        descriptionsVoies.put("Voie de la Conviction",     "Une magie inarrêtable , un flot continue de puissance et de résistance.");
-        descriptionsVoies.put("Voie de la Création",       "Imprévisible, adaptable, les longs combats ne lui font pas peur.");
-        descriptionsVoies.put("Voie de la Destruction",    "La destruction, c'est très parlant. Ici on envoie des boules de feu, des lasers, et autres joyeusetés.");
-        descriptionsVoies.put("Voie de la Violence",       "Un style de combat mortel conçu pour exterminer ces adverssaires d'un simple claquement de doigts.");
+        descriptionsVoies.put("Voie de la Raison", "Basé sur la vitesse et les coups critique.");
+        descriptionsVoies.put("Voie de la Sûreté",
+                "Défensive et sûre. Des buffs, de la santé et du débuff pour tout le monde.");
+        descriptionsVoies.put("Voie de Trahison",
+                "L'art d'exploiter les faiblesses ennemies et d'achever les cibles faciles.");
+        descriptionsVoies.put("Voie de la Consolidation",
+                "Protection et dégats physiques. Simple, efficasse, endurant.");
+        descriptionsVoies.put("Voie de la Conviction",
+                "Une magie inarrêtable , un flot continue de puissance et de résistance.");
+        descriptionsVoies.put("Voie de la Création",
+                "Imprévisible, adaptable, les longs combats ne lui font pas peur.");
+        descriptionsVoies.put("Voie de la Destruction",
+                "La destruction, c'est très parlant. Ici on envoie des boules de feu, des lasers, et autres joyeusetés.");
+        descriptionsVoies.put("Voie de la Violence",
+                "Un style de combat mortel conçu pour exterminer ces adverssaires d'un simple claquement de doigts.");
 
         // 2. Rangs personnalisés par Voie
         Map<String, Map<Integer, String>> rangsVoies = new HashMap<>();
-        rangsVoies.put("Voie de la Raison",        Map.of(1, "Air",       2, "Vibration", 3, "Vide",     4, "Déviation",  5, "Gravité"));
-        rangsVoies.put("Voie de la Sûreté",        Map.of(1, "Eau",       2, "Glace",     3, "Sang",     4, "Vapeur",     5, "Pression"));
-        rangsVoies.put("Voie de Trahison",          Map.of(1, "Neige",     2, "Acide",     3, "Poison",   4, "Corrosion",  5, "Friction"));
-        rangsVoies.put("Voie de la Consolidation",  Map.of(1, "Terre",     2, "Métal",     3, "Sable",    4, "Poussière",  5, "Atome"));
-        rangsVoies.put("Voie de la Conviction",     Map.of(1, "Lave",      2, "Cristaux",  3, "Verre",    4, "Fibre",      5, "Tension"));
-        rangsVoies.put("Voie de la Création",       Map.of(1, "Plante",    2, "Pétrole",   3, "Plastic",  4, "Caoutchou",  5, "Fil"));
-        rangsVoies.put("Voie de la Destruction",    Map.of(1, "Feu",       2, "Explosion", 3, "Éclair",   4, "Laser",      5, "Absorption"));
-        rangsVoies.put("Voie de la Violence",       Map.of(1, "Combustion",2, "Gas",       3, "Oxygen",   4, "Dioxide",    5, "Fragmentation"));
+        rangsVoies.put("Voie de la Raison", Map.of(1, "Air", 2, "Vibration", 3, "Vide", 4, "Déviation", 5, "Gravité"));
+        rangsVoies.put("Voie de la Sûreté", Map.of(1, "Eau", 2, "Glace", 3, "Sang", 4, "Vapeur", 5, "Pression"));
+        rangsVoies.put("Voie de Trahison", Map.of(1, "Neige", 2, "Acide", 3, "Poison", 4, "Corrosion", 5, "Friction"));
+        rangsVoies.put("Voie de la Consolidation",
+                Map.of(1, "Terre", 2, "Métal", 3, "Sable", 4, "Poussière", 5, "Atome"));
+        rangsVoies.put("Voie de la Conviction", Map.of(1, "Lave", 2, "Cristaux", 3, "Verre", 4, "Fibre", 5, "Tension"));
+        rangsVoies.put("Voie de la Création",
+                Map.of(1, "Plante", 2, "Pétrole", 3, "Plastic", 4, "Caoutchou", 5, "Fil"));
+        rangsVoies.put("Voie de la Destruction",
+                Map.of(1, "Feu", 2, "Explosion", 3, "Éclair", 4, "Laser", 5, "Absorption"));
+        rangsVoies.put("Voie de la Violence",
+                Map.of(1, "Combustion", 2, "Gas", 3, "Oxygen", 4, "Dioxide", 5, "Fragmentation"));
 
         // 3. Descriptions de passifs
         Map<String, String> passifsVoies = new HashMap<>();
@@ -72,15 +82,15 @@ public class DataInitializerService {
         passifsVoies.put("Voie de la Conviction",
                 "La Conviction est une force brute inarrêtable dénuée de mécanique complexe, se reposant entièrement sur des statistiques écrasantes.\nDès le niveau 1, elle offre une [c=mana]Régénération de Mana[/c] colossale (25/tour), en contrepartie, ces sorts coûtent plus cher.\n \nÀ chaque niveau, vous gagnez : [c=power]+1 Puissance[/c], [c=resist]+2 Résistance[/c], [c=pv]+7 PV[/c], [c=mana]+20 Mana[/c] et [c=mana]+4 Régen Mana[/c].");
         passifsVoies.put("Voie de la Création",
-                "Chaque tour, le 1er sort lancé consomme un [c=heal]bourgeon[/c] s'il vous en reste en stock.\nVoici les effets du [c=heal]bourgeon[/c] pour chaque type de sort :\n[ul][li]Un sort Instantané devient [c=mana]gratuit[/c][/li][li]Un sort Banal devient [c=warning]Instantané[/c][/li][li]Un sort Canalisé octroie un [c=shield]bouclier[/c] (30% du [c=mana]mana[/c] dépensé)[/li][/ul]\n \nÀ chaque niveau, vous gagnez : [c=pv]+5 PV[/c], [c=armor]+1 Armure[/c] et [c=heal]+2 Régen PV[/c].");
+                "Chaque tour, le 1er sort lancé consomme un [c=heal]bourgeon[/c] s'il vous en reste en stock.\nVoici les effets du [c=heal]bourgeon[/c] pour chaque type de sort :\n[ul][li]Un sort Instantané devient [c=mana]gratuit[/c] (sauf coût en graine)[/li][li]Un sort Banal devient [c=warning]Instantané[/c][/li][li]Un sort Canalisé octroie un [c=shield]bouclier[/c] (30% du [c=mana]mana[/c] dépensé)[/li][/ul]\n \nÀ chaque niveau, vous gagnez : [c=pv]+5 PV[/c], [c=armor]+1 Armure[/c] et [c=heal]+2 Régen PV[/c].");
         passifsVoies.put("Voie de la Destruction",
                 "Accumule de la [c=crit]Chaleur[/c] en lançant des sorts.\nLorsque la chaleur atteint [c=warning]100[/c], le prochain sort lancé est entièrement [c=mana]gratuit[/c].\n \nÀ chaque niveau, vous gagnez : [c=mana]+8 Mana[/c], [c=power]+2 Puissance[/c] et [c=mana]+2 Régen Mana[/c].");
         passifsVoies.put("Voie de la Violence",
                 "Lancer un sort octroie une charge d'[c=warning]Inspiration[/c] ou d'[c=power]Expiration[/c] selon le sort :\n[ul][li][c=warning]Inspiration[/c] : [c=crit]+2% Critique[/c] par cumul (max 5)[/li][li][c=power]Expiration[/c] : [c=power]+2 Puissance[/c] par cumul (max 10)[/li][/ul]Attention : Lancer un sort d'une affinité consomme tous les cumuls de l'autre. Les cumuls sont perdus si aucun sort de la Voie n'est lancé pendant le tour.\n \nÀ chaque niveau, vous gagnez : [c=mana]+8 Mana[/c], [c=power]+1 Puissance[/c] et [c=physic]+1 Force[/c].");
 
         String[] voies = {
-            "Voie de la Raison", "Voie de la Sûreté", "Voie de Trahison", "Voie de la Consolidation",
-            "Voie de la Conviction", "Voie de la Création", "Voie de la Destruction", "Voie de la Violence"
+                "Voie de la Raison", "Voie de la Sûreté", "Voie de Trahison", "Voie de la Consolidation",
+                "Voie de la Conviction", "Voie de la Création", "Voie de la Destruction", "Voie de la Violence"
         };
 
         for (String v : voies) {
@@ -101,14 +111,14 @@ public class DataInitializerService {
 
             if (voie.getPassiveEffects() == null || voie.getPassiveEffects().isEmpty()) {
                 VoiePassiveEffect passif = switch (v) {
-                    case "Voie de la Raison"       -> new RaisonPassiveEffect();
-                    case "Voie de la Sûreté"       -> new SuretePassiveEffect();
-                    case "Voie de Trahison"        -> new TrahisonPassiveEffect();
-                    case "Voie de la Consolidation"-> new ConsolidationPassiveEffect();
-                    case "Voie de la Conviction"   -> new ConvictionPassiveEffect();
-                    case "Voie de la Création"     -> new CreationPassiveEffect();
-                    case "Voie de la Destruction"  -> new DestructionPassiveEffect();
-                    case "Voie de la Violence"     -> new ViolencePassiveEffect();
+                    case "Voie de la Raison" -> new RaisonPassiveEffect();
+                    case "Voie de la Sûreté" -> new SuretePassiveEffect();
+                    case "Voie de Trahison" -> new TrahisonPassiveEffect();
+                    case "Voie de la Consolidation" -> new ConsolidationPassiveEffect();
+                    case "Voie de la Conviction" -> new ConvictionPassiveEffect();
+                    case "Voie de la Création" -> new CreationPassiveEffect();
+                    case "Voie de la Destruction" -> new DestructionPassiveEffect();
+                    case "Voie de la Violence" -> new ViolencePassiveEffect();
                     default -> null;
                 };
                 if (passif != null) {
@@ -117,42 +127,6 @@ public class DataInitializerService {
                 }
             }
             voieRepository.save(voie);
-        }
-
-        // --- Spiritualités ---
-
-        // Renommer l'ancienne entrée "Lumière" en "Esprit" si présente
-        spiritualiteRepository.findByNom("Lumière").ifPresent(ancien -> {
-            ancien.setNom("Esprit");
-            spiritualiteRepository.save(ancien);
-        });
-
-        if (spiritualiteRepository.findByNom("Esprit").isEmpty()) {
-            Spiritualite esprit = new Spiritualite();
-            esprit.setNom("Esprit");
-            esprit.setDescription("Axée sur le renforcement et les ressources.");
-            EspritPassiveEffect ee = new EspritPassiveEffect();
-            ee.setSpiritualite(esprit);
-            esprit.setPassiveEffects(List.of(ee));
-            spiritualiteRepository.save(esprit);
-        }
-        if (spiritualiteRepository.findByNom("Ténèbres").isEmpty()) {
-            Spiritualite tenebres = new Spiritualite();
-            tenebres.setNom("Ténèbres");
-            tenebres.setDescription("Axée sur la puissance brute les buffs et les débuffs");
-            TenebrePassiveEffect te = new TenebrePassiveEffect();
-            te.setSpiritualite(tenebres);
-            tenebres.setPassiveEffects(List.of(te));
-            spiritualiteRepository.save(tenebres);
-        }
-        if (spiritualiteRepository.findByNom("Karma").isEmpty()) {
-            Spiritualite karma = new Spiritualite();
-            karma.setNom("Karma");
-            karma.setDescription("Polyvalent mix entre dégats, protection et soutien.");
-            KarmaPassiveEffect ke = new KarmaPassiveEffect();
-            ke.setSpiritualite(karma);
-            karma.setPassiveEffects(List.of(ke));
-            spiritualiteRepository.save(karma);
         }
 
         // Rangs des spiritualités
@@ -191,7 +165,7 @@ public class DataInitializerService {
                         "Sauf pour les sorts de base, le lancement nécessite d'avoir [c=pv]80% ou moins de vos PV max[/c] OU [c=mana]80% ou moins de votre Mana max[/c].");
             } else if ("Karma".equals(sp.getNom())) {
                 sp.setPassiveDescription(
-                        "Gère une jauge affectée par l'alignement des sorts ([c=purple]Ténèbres[/c], [c=karma]Harmonie[/c], [c=warning]Lumière[/c]).\n[ul][li]À [c=warning]0[/c] ([c=karma]Harmonie[/c]) : octroie des bonus sur vos sorts.[/li][li]À [c=warning]+4 ou -4[/c] : verrouille la magie karmique (sauf sorts d'[c=karma]Harmonie[/c]) pendant [c=warning]6 tours[/c], mais confère un buff massif d'[c=armor]Illumination (+Armure/Résist)[/c] ou de [c=power]Corruption (+Dégâts)[/c].[/li][/ul]Astuce : On peut réduire ce timer en lançant des sorts d'[c=karma]Harmonie[/c].");
+                        "Gère une jauge affectée par l'alignement des sorts ([c=purple]Ténèbres[/c], [c=karma]Harmonie[/c], [c=warning]Lumière[/c]).\n[ul][li]À [c=warning]0[/c] ([c=karma]Harmonie[/c]) : octroie des bonus sur vos sorts ([c=purple]10% dégats[/c], [c=karma]Régen 5% vie max et mana max[/c], [c=warning]-20% coût[/c]).[/li][li]À [c=warning]+4 ou -4[/c] : verrouille la magie karmique (sauf sorts d'[c=karma]Harmonie[/c]) pendant [c=warning]6 tours[/c], mais confère un buff massif d'[c=armor]Illumination (+Armure/Résist)[/c] ou de [c=power]Corruption (+Dégâts)[/c].[/li][/ul]Astuce : On peut réduire ce timer en lançant des sorts d'[c=karma]Harmonie[/c].");
             }
             spiritualiteRepository.save(sp);
         }
