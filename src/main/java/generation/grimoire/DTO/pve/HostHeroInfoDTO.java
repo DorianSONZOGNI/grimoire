@@ -1,12 +1,8 @@
-package generation.grimoire.DTO.pve;
+package generation.grimoire.dto.pve;
 
-import lombok.AllArgsConstructor;
 import lombok.Data;
-import lombok.NoArgsConstructor;
 
 @Data
-@NoArgsConstructor
-@AllArgsConstructor
 public class HostHeroInfoDTO {
     private String name;
     private int level;

@@ -62,7 +62,9 @@ function getFormEquipmentData() {
     const slot = document.getElementById('eqSlot') ? document.getElementById('eqSlot').value : null;
     const rarity = document.getElementById('eqRarity') ? document.getElementById('eqRarity').value : 'COMMUN';
     const specialEffect = document.getElementById('eqSpecialEffect') ? document.getElementById('eqSpecialEffect').value : 'NONE';
-    const specialEffectValue = document.getElementById('eqSpecialEffectValue') ? parseInt(document.getElementById('eqSpecialEffectValue').value) || 0 : 0;
+    const isCle = document.getElementById('eqConsumableCategory') && document.getElementById('eqConsumableCategory').value === 'CLE';
+    const specialEffectValue = isCle && document.getElementById('eqKeyBonus') ? (parseInt(document.getElementById('eqKeyBonus').value) || 0) : 
+        (document.getElementById('eqSpecialEffectValue') ? (parseInt(document.getElementById('eqSpecialEffectValue').value) || 0) : 0);
 
     return {
         id: pageState.editingEquipmentId,

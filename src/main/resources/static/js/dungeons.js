@@ -1168,7 +1168,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         window.maxSelectableJoinChars = info.availableSlots;
                         
                         let hostHeroesHtml = '';
-                        if (info.hostHeroes && info.hostHeroes.length > 0) {
+                        if (info.hostHeroInfos && info.hostHeroInfos.length > 0) {
                             const getVIcon = (nom) => {
                                 const n = nom.toLowerCase();
                                 if (n.includes('raison')) return { c: '#3b82f6', i: 'psychology' };
@@ -1192,7 +1192,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             hostHeroesHtml = '<div style="margin-top: 0.75rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 0.75rem;">' +
                                 '<div style="font-size:0.75rem; color:#64748b; margin-bottom:0.5rem; text-transform:uppercase; letter-spacing:0.05em;">Héros de l\'hôte</div>' +
                                 '<div style="display:flex; flex-wrap:wrap; gap:0.4rem;">' +
-                                info.hostHeroes.map(h => {
+                                info.hostHeroInfos.map(h => {
                                     let vHtml = '';
                                     if (h.voieName) {
                                         const v = getVIcon(h.voieName);
@@ -1220,9 +1220,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         infoContainer.style.display = 'block';
                         infoContainer.innerHTML = `
                             <div style="font-weight:600; color:#e2e8f0; margin-bottom:0.25rem;">Hôte : <span style="color:#38bdf8;">${info.hostUsername}</span></div>
-                            <div style="color:#94a3b8; font-size:0.85rem; margin-bottom:0.5rem;">Donjon : ${info.dungeonName} (Niv. ${info.dungeonLevel})</div>
+                            <div style="color:#94a3b8; font-size:0.85rem; margin-bottom:0.5rem;">Donjon : ${info.dungeonName} (Niv. ${info.recommendedLevel})</div>
                             <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.85rem;">
-                                <span style="color:#cbd5e1;">Héros maximum : ${info.maxHeroesTotal}</span>
+                                <span style="color:#cbd5e1;">Héros maximum : ${info.maxHeroes}</span>
                                 <span style="color:${info.availableSlots > 0 ? '#10b981' : '#f43f5e'}; font-weight:600;">Places restantes : ${info.availableSlots}</span>
                             </div>
                             ${hostHeroesHtml}

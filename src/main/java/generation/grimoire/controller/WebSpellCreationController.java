@@ -1,19 +1,19 @@
 package generation.grimoire.controller;
 
+import generation.grimoire.dto.spell.SpellCreationRequestDTO;
 import generation.grimoire.entity.Spell;
 import generation.grimoire.entity.SpellEffect;
 import generation.grimoire.entity.spell.type.effect.*;
 import generation.grimoire.enumeration.*;
+import generation.grimoire.mapper.SpellMapper;
 import generation.grimoire.repository.SpellRepository;
 import generation.grimoire.repository.SpiritualiteRepository;
 import generation.grimoire.repository.VoieRepository;
 import generation.grimoire.repository.pve.MutationRepository;
 import generation.grimoire.service.SpellService;
-import lombok.Data;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +27,7 @@ public class WebSpellCreationController {
     private final VoieRepository voieRepository;
     private final SpiritualiteRepository spiritualiteRepository;
     private final MutationRepository mutationRepository;
+    private final SpellMapper spellMapper;
 
     @org.springframework.beans.factory.annotation.Autowired
     private jakarta.persistence.EntityManager entityManager;
@@ -35,12 +36,14 @@ public class WebSpellCreationController {
             SpellRepository spellRepository,
             VoieRepository voieRepository,
             SpiritualiteRepository spiritualiteRepository,
-            MutationRepository mutationRepository) {
+            MutationRepository mutationRepository,
+            SpellMapper spellMapper) {
         this.spellService = spellService;
         this.spellRepository = spellRepository;
         this.voieRepository = voieRepository;
         this.spiritualiteRepository = spiritualiteRepository;
         this.mutationRepository = mutationRepository;
+        this.spellMapper = spellMapper;
     }
 
     @GetMapping("/meta")
@@ -104,7 +107,7 @@ public class WebSpellCreationController {
     })
     @PostMapping
     @org.springframework.transaction.annotation.Transactional
-    public ResponseEntity<String> createSpellPayload(@RequestBody SpellCreationDto dto) {
+    public ResponseEntity<String> createSpellPayload(@RequestBody SpellCreationRequestDTO dto) {
         Spell spell;
         boolean isUpdate = false;
         Long id = dto.getId();
@@ -115,34 +118,33 @@ public class WebSpellCreationController {
                 entityManager.remove(e);
             }
             spell.getEffects().clear();
+            
+            // Map simple fields
+            Spell temp = spellMapper.toEntity(dto);
+            spell.setNom(temp.getNom());
+            spell.setNiveau(temp.getNiveau());
+            spell.setDescription(temp.getDescription());
+            spell.setManaCost(temp.getManaCost());
+            spell.setPercentManaCost(temp.getPercentManaCost());
+            spell.setPercentManaCostSource(temp.getPercentManaCostSource());
+            spell.setHealCost(temp.getHealCost());
+            spell.setPercentHealCost(temp.getPercentHealCost());
+            spell.setPercentHealCostSource(temp.getPercentHealCostSource());
+            spell.setHeatCost(temp.getHeatCost());
+            spell.setPercentHeatCost(temp.getPercentHeatCost());
+            spell.setSeedCost(temp.getSeedCost());
+            spell.setCastingType(temp.getCastingType());
+            spell.setChannelingDuration(temp.getChannelingDuration());
+            spell.setAllowInstantDuringChanneling(temp.isAllowInstantDuringChanneling());
+            spell.setHeatGenerated(temp.getHeatGenerated());
+            spell.setInspiration(temp.isInspiration());
+            spell.setKarmaAlignment(temp.getKarmaAlignment());
             isUpdate = true;
         } else {
-            spell = new Spell();
+            spell = spellMapper.toEntity(dto);
         }
-        spell.setNom(dto.getNom());
-        spell.setNiveau(dto.getNiveau());
-        spell.setDescription(dto.getDescription());
-        spell.setManaCost(dto.getManaCost());
-        spell.setPercentManaCost(dto.getPercentManaCost());
-        if (dto.getPercentManaCostSource() != null)
-            spell.setPercentManaCostSource(dto.getPercentManaCostSource());
-        spell.setHealCost(dto.getHealCost());
-        spell.setPercentHealCost(dto.getPercentHealCost());
-        if (dto.getPercentHealCostSource() != null)
-            spell.setPercentHealCostSource(dto.getPercentHealCostSource());
-        spell.setHeatCost(dto.getHeatCost());
-        spell.setPercentHeatCost(dto.getPercentHeatCost());
-        spell.setSeedCost(dto.getSeedCost());
-        if (dto.getCastingType() != null)
-            spell.setCastingType(dto.getCastingType());
-        spell.setChannelingDuration(dto.getChannelingDuration());
-        spell.setAllowInstantDuringChanneling(dto.isAllowInstantDuringChanneling());
-        spell.setHeatGenerated(dto.getHeatGenerated());
-        spell.setInspiration(dto.isInspiration());
-
-        if (dto.getKarmaAlignment() != null) {
-            spell.setKarmaAlignment(dto.getKarmaAlignment());
-        } else {
+        
+        if (spell.getKarmaAlignment() == null) {
             spell.setKarmaAlignment(generation.grimoire.enumeration.KarmaAlignment.NONE);
         }
 
@@ -175,7 +177,7 @@ public class WebSpellCreationController {
         }
 
         if (dto.getEffects() != null) {
-            for (EffectCreationDto eDto : dto.getEffects()) {
+            for (SpellCreationRequestDTO.EffectCreationDTO eDto : dto.getEffects()) {
                 SpellEffect effect = null;
                 switch (eDto.getEffectType()) {
                     case "FIXED_DAMAGE":
@@ -304,56 +306,6 @@ public class WebSpellCreationController {
 
         spellService.saveSpell(spell);
         String actionStr = isUpdate ? "mis à jour" : "créé";
-        return ResponseEntity
-                .ok("Sort '" + spell.getNom() + "' " + actionStr + " avec succès avec " + spell.getEffects().size()
-                        + " effets !");
+        return ResponseEntity.ok("Sort '" + spell.getNom() + "' " + actionStr + " avec succès avec " + spell.getEffects().size() + " effets !");
     }
-
-    @Data
-    public static class SpellCreationDto {
-        private Long id;
-        private String nom;
-        private int niveau = 1;
-        private SpellCastingType castingType;
-        private String description;
-        private int manaCost;
-        private int percentManaCost;
-        private Source percentManaCostSource;
-        private int healCost;
-        private int percentHealCost;
-        private Source percentHealCostSource;
-        private int heatCost;
-        private int percentHeatCost;
-        private int seedCost;
-        private int heatGenerated;
-        private Long voieId;
-        private Long spiritualiteId;
-        private Long mutationId;
-        private int channelingDuration;
-        private boolean allowInstantDuringChanneling = true;
-        private boolean inspiration;
-        private generation.grimoire.enumeration.KarmaAlignment karmaAlignment;
-        private List<EffectCreationDto> effects = new ArrayList<>();
-    }
-
-    @Data
-    public static class EffectCreationDto {
-        private String effectType; // FIXED_DAMAGE, PERCENTAGE_DAMAGE, FIXED_HEAL, PERCENTAGE_HEAL, BUFF_DEBUFF,
-                                   // DOT, HOT
-        private EffectTarget effectTarget = EffectTarget.TARGET;
-        private int damage;
-        private int healAmount;
-        private int manaAmount;
-        private double percentage;
-        private int flatValue;
-        private double modifier;
-        private int duration;
-        private DamageType damageType;
-        private StatType statAffected;
-        private Source source;
-        private Integer requiredChoiceKey;
-        private generation.grimoire.enumeration.DetachedSoulRequirement detachedSoulRequirement;
-        private List<Integer> channelingTurns = new ArrayList<>();
-    }
-
 }

@@ -65,7 +65,7 @@ function generateStandHtml(eq) {
         }
 
         const weight = eq.weight !== undefined ? eq.weight : (eq._weight !== undefined ? eq._weight : eq.baseWeight);
-        if (weight !== undefined && weight !== null && weight > 0) {
+        if (weight !== undefined && weight !== null && weight >= 0) {
             statsHtml += `<div class="shop-stand-stat" title="Poids">
                 <div class="flex-center-gap">
                     <span class="material-symbols-outlined text-sm text-muted">scale</span>

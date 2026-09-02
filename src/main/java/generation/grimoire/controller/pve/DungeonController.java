@@ -28,7 +28,7 @@ public class DungeonController {
 
     @GetMapping
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
-    public ResponseEntity<List<generation.grimoire.DTO.pve.DonjonSummaryDTO>> getAvailableDungeons() {
+    public ResponseEntity<List<generation.grimoire.dto.pve.DonjonSummaryDTO>> getAvailableDungeons() {
         // Here we could filter based on player level in the future
         return ResponseEntity.ok(pvEAdminService.getDungeonSummaries());
     }

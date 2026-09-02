@@ -1,9 +1,13 @@
 package generation.grimoire.controller.pve;
 
-import generation.grimoire.DTO.pve.DonjonDTO;
+import generation.grimoire.dto.pve.DonjonDTO;
 import generation.grimoire.entity.pve.Donjon;
 import generation.grimoire.entity.pve.Monstre;
 import generation.grimoire.entity.pve.Mutation;
+import generation.grimoire.dto.pve.MonstreRequestDTO;
+import generation.grimoire.dto.pve.MutationRequestDTO;
+import generation.grimoire.mapper.MonstreMapper;
+import generation.grimoire.mapper.MutationMapper;
 import generation.grimoire.service.pve.PvEAdminService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -19,6 +23,8 @@ import java.util.stream.Collectors;
 public class PvEAdminController {
     private final PvEAdminService pvEAdminService;
     private final generation.grimoire.repository.EquipmentRepository equipmentRepository;
+    private final MonstreMapper monstreMapper;
+    private final MutationMapper mutationMapper;
 
     // --- MONSTERS ---
 
@@ -28,17 +34,45 @@ public class PvEAdminController {
     }
 
     @PostMapping("/monsters")
-    public ResponseEntity<Monstre> createMonster(@RequestBody @NonNull Monstre monstre) {
-        return ResponseEntity.ok(pvEAdminService.createOrUpdateMonster(monstre));
+    public ResponseEntity<Monstre> createMonster(@RequestBody @NonNull MonstreRequestDTO dto) {
+        Monstre monstre = monstreMapper.toEntity(dto);
+        // Handle mutations relationship mapping
+        if (dto.getMutationIds() != null) {
+            monstre.setMutations(dto.getMutationIds().stream()
+                    .map(mId -> {
+                        try {
+                            return pvEAdminService.getMutationById(java.util.Objects.requireNonNull(mId));
+                        } catch (java.util.NoSuchElementException e) {
+                            return null;
+                        }
+                    })
+                    .filter(m -> m != null)
+                    .collect(Collectors.toList()));
+        }
+        return ResponseEntity.ok(pvEAdminService.createOrUpdateMonster(java.util.Objects.requireNonNull(monstre)));
     }
 
     @PutMapping("/monsters/{id}")
-    public ResponseEntity<Monstre> updateMonster(@PathVariable @NonNull Long id, @RequestBody @NonNull Monstre monstreDetails) {
+    public ResponseEntity<Monstre> updateMonster(@PathVariable @NonNull Long id, @RequestBody @NonNull MonstreRequestDTO dto) {
         if (!pvEAdminService.monsterExists(id)) {
             return ResponseEntity.notFound().build();
         }
-        monstreDetails.setId(id);
-        return ResponseEntity.ok(pvEAdminService.createOrUpdateMonster(monstreDetails));
+        Monstre existing = pvEAdminService.getMonsterById(id);
+        monstreMapper.updateEntity(dto, existing);
+        // Handle mutations relationship mapping
+        if (dto.getMutationIds() != null) {
+            existing.setMutations(dto.getMutationIds().stream()
+                    .map(mId -> {
+                        try {
+                            return pvEAdminService.getMutationById(java.util.Objects.requireNonNull(mId));
+                        } catch (java.util.NoSuchElementException e) {
+                            return null;
+                        }
+                    })
+                    .filter(m -> m != null)
+                    .collect(Collectors.toList()));
+        }
+        return ResponseEntity.ok(pvEAdminService.createOrUpdateMonster(java.util.Objects.requireNonNull(existing)));
     }
 
     @DeleteMapping("/monsters/{id}")
@@ -55,17 +89,19 @@ public class PvEAdminController {
     }
 
     @PostMapping("/mutations")
-    public ResponseEntity<Mutation> createMutation(@RequestBody @NonNull Mutation mutation) {
-        return ResponseEntity.ok(pvEAdminService.createOrUpdateMutation(mutation));
+    public ResponseEntity<Mutation> createMutation(@RequestBody @NonNull MutationRequestDTO dto) {
+        Mutation mutation = mutationMapper.toEntity(dto);
+        return ResponseEntity.ok(pvEAdminService.createOrUpdateMutation(java.util.Objects.requireNonNull(mutation)));
     }
 
     @PutMapping("/mutations/{id}")
-    public ResponseEntity<Mutation> updateMutation(@PathVariable @NonNull Long id, @RequestBody @NonNull Mutation mutation) {
+    public ResponseEntity<Mutation> updateMutation(@PathVariable @NonNull Long id, @RequestBody @NonNull MutationRequestDTO dto) {
         if (!pvEAdminService.mutationExists(id)) {
             return ResponseEntity.notFound().build();
         }
-        mutation.setId(id);
-        return ResponseEntity.ok(pvEAdminService.createOrUpdateMutation(mutation));
+        Mutation existing = pvEAdminService.getMutationById(id);
+        mutationMapper.updateEntity(dto, existing);
+        return ResponseEntity.ok(pvEAdminService.createOrUpdateMutation(java.util.Objects.requireNonNull(existing)));
     }
 
     @DeleteMapping("/mutations/{id}")
@@ -129,7 +165,7 @@ public class PvEAdminController {
             List<generation.grimoire.entity.pve.Salle> salles = dto.getSalles().stream().map(sDto -> {
                 generation.grimoire.entity.pve.Salle s = new generation.grimoire.entity.pve.Salle();
                 s.setType(sDto.getType());
-                s.setEventSubType(sDto.getEventSubType());
+                s.setEventSubType(sDto.getEventSubType() != null ? generation.grimoire.enumeration.EventSubType.valueOf(sDto.getEventSubType()) : null);
                 s.setEventText(sDto.getEventText());
                 s.setEventEffectAmount(sDto.getEventEffectAmount());
                 s.setAlterationType(sDto.getAlterationType());

@@ -90,20 +90,21 @@ public class PvEAdminService {
         return donjonRepository.findAllByOrderByDisplayOrderAsc();
     }
 
-    public List<generation.grimoire.DTO.pve.DonjonSummaryDTO> getDungeonSummaries() {
+    public List<generation.grimoire.dto.pve.DonjonSummaryDTO> getDungeonSummaries() {
         return donjonRepository.findAllByOrderByDisplayOrderAsc().stream().map(d -> {
-            generation.grimoire.DTO.pve.DonjonSummaryDTO dto = new generation.grimoire.DTO.pve.DonjonSummaryDTO();
+            generation.grimoire.dto.pve.DonjonSummaryDTO dto = new generation.grimoire.dto.pve.DonjonSummaryDTO();
             dto.setId(d.getId());
             dto.setName(d.getName());
             dto.setDescription(d.getDescription());
             dto.setImageUrl(d.getImageUrl());
             dto.setRecommendedLevel(d.getRecommendedLevel());
             dto.setMaxHeroes(d.getMaxHeroes());
-            dto.setUnlockCostGold(d.getUnlockCostGold());
+            dto.setUnlockCostGold((int) d.getUnlockCostGold());
             dto.setRequiredSecret(d.getRequiredSecret());
             dto.setRequiredSecretLevel(d.getRequiredSecretLevel());
-            dto.setEntryCostGold(d.getEntryCostGold());
+            dto.setEntryCostGold((int) d.getEntryCostGold());
             dto.setDisplayOrder(d.getDisplayOrder());
+            dto.setRoomCount(d.getSalles() != null ? d.getSalles().size() : 0);
             dto.setSalles(d.getSalles());
             return dto;
         }).toList();

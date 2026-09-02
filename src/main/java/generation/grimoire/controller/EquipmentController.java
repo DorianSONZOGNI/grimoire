@@ -1,13 +1,15 @@
 package generation.grimoire.controller;
 
+import generation.grimoire.dto.equipment.EquipmentRequestDTO;
+import generation.grimoire.dto.equipment.EquipmentResponseDTO;
 import generation.grimoire.entity.Equipment;
 import generation.grimoire.entity.personnage.Personnage;
 import generation.grimoire.enumeration.EquipmentSlot;
+import generation.grimoire.mapper.EquipmentMapper;
 import generation.grimoire.repository.EquipmentRepository;
 import generation.grimoire.repository.pve.LootEntryRepository;
 import generation.grimoire.service.PersonnageService;
 import jakarta.transaction.Transactional;
-import lombok.Data;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -24,33 +26,36 @@ public class EquipmentController {
     private final generation.grimoire.repository.auth.UserRepository userRepository;
     private final LootEntryRepository lootEntryRepository;
     private final generation.grimoire.service.RenameCascadeService renameCascadeService;
+    private final EquipmentMapper equipmentMapper;
 
     public EquipmentController(EquipmentRepository equipmentRepository,
             PersonnageService personnageService,
             generation.grimoire.repository.auth.UserRepository userRepository,
             LootEntryRepository lootEntryRepository,
-            generation.grimoire.service.RenameCascadeService renameCascadeService) {
+            generation.grimoire.service.RenameCascadeService renameCascadeService,
+            EquipmentMapper equipmentMapper) {
         this.equipmentRepository = equipmentRepository;
         this.personnageService = personnageService;
         this.userRepository = userRepository;
         this.lootEntryRepository = lootEntryRepository;
         this.renameCascadeService = renameCascadeService;
+        this.equipmentMapper = equipmentMapper;
     }
 
     /** Liste tous les équipements du joueur */
     @GetMapping
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
-    public ResponseEntity<List<Map<String, Object>>> getAll(java.security.Principal principal) {
+    public ResponseEntity<List<EquipmentResponseDTO>> getAll(java.security.Principal principal) {
         if (principal == null)
             return ResponseEntity.status(401).build();
         List<Equipment> equipmentList = equipmentRepository.findByUser_Username(principal.getName());
-        return ResponseEntity.ok(equipmentList.stream().filter(e -> !e.isTemplate()).map(this::toDto).toList());
+        return ResponseEntity.ok(equipmentList.stream().filter(e -> !e.isTemplate()).map(this::toResponseDto).toList());
     }
 
     /** Liste TOUS les équipements (réservé aux admins) */
     @GetMapping("/all")
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
-    public ResponseEntity<List<Map<String, Object>>> getAllAdmin(java.security.Principal principal) {
+    public ResponseEntity<List<EquipmentResponseDTO>> getAllAdmin(java.security.Principal principal) {
         if (principal == null)
             return ResponseEntity.status(401).build();
         boolean isAdmin = ((org.springframework.security.core.Authentication) principal).getAuthorities().stream()
@@ -59,14 +64,14 @@ public class EquipmentController {
             return ResponseEntity.status(403).build();
 
         List<Equipment> equipmentList = equipmentRepository.findAll();
-        return ResponseEntity.ok(equipmentList.stream().map(this::toDto).toList());
+        return ResponseEntity.ok(equipmentList.stream().map(this::toResponseDto).toList());
     }
 
     /** Récupérer tous les templates publiquement */
     @GetMapping("/templates/public")
     @org.springframework.cache.annotation.Cacheable("publicEquipmentTemplates")
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
-    public ResponseEntity<List<Map<String, Object>>> getPublicTemplates() {
+    public ResponseEntity<List<EquipmentResponseDTO>> getPublicTemplates() {
         List<Equipment> allTemplates = equipmentRepository.findByIsTemplateTrue();
         java.util.Map<String, Equipment> uniqueMap = new java.util.HashMap<>();
         for (Equipment e : allTemplates) {
@@ -76,13 +81,13 @@ public class EquipmentController {
                 }
             }
         }
-        return ResponseEntity.ok(uniqueMap.values().stream().map(this::toDto).toList());
+        return ResponseEntity.ok(uniqueMap.values().stream().map(this::toResponseDto).toList());
     }
 
     /** Liste les équipements d'un personnage */
     @GetMapping("/personnage/{personnageId}")
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
-    public ResponseEntity<List<Map<String, Object>>> getByPersonnage(@PathVariable Long personnageId,
+    public ResponseEntity<List<EquipmentResponseDTO>> getByPersonnage(@PathVariable Long personnageId,
             java.security.Principal principal) {
         if (principal == null)
             return ResponseEntity.status(401).build();
@@ -93,28 +98,28 @@ public class EquipmentController {
                 equipmentRepository.findByPersonnageId(personnageId).stream()
                         .filter(e -> isAdmin
                                 || (e.getUser() != null && e.getUser().getUsername().equals(principal.getName())))
-                        .map(this::toDto).toList());
+                        .map(this::toResponseDto).toList());
     }
 
     /** Liste les équipements non-assignés (inventaire libre) */
     @GetMapping("/unassigned")
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
-    public ResponseEntity<List<Map<String, Object>>> getUnassigned(java.security.Principal principal) {
+    public ResponseEntity<List<EquipmentResponseDTO>> getUnassigned(java.security.Principal principal) {
         if (principal == null)
             return ResponseEntity.status(401).build();
         return ResponseEntity.ok(
                 equipmentRepository.findByPersonnageIsNullAndUser_Username(principal.getName()).stream()
                         .filter(e -> !e.isTemplate())
-                        .map(this::toDto).toList());
+                        .map(this::toResponseDto).toList());
     }
 
     /**
      * Calcule le poids d'un équipement en fonction de ses statistiques (Règle B4)
      */
     @PostMapping("/simulate-weight")
-    public ResponseEntity<Map<String, Double>> simulateWeight(@RequestBody EquipmentDto dto) {
+    public ResponseEntity<Map<String, Double>> simulateWeight(@RequestBody EquipmentRequestDTO dto) {
         Equipment temp = new Equipment();
-        updateEquipmentFromDto(temp, dto);
+        equipmentMapper.updateEntity(dto, temp);
 
         double weight = temp.calculateWeight();
         double maxWeight = getMaxWeight(dto.getSlot(), dto.getRarity());
@@ -262,43 +267,12 @@ public class EquipmentController {
         return 5.0;
     }
 
-    private void updateEquipmentFromDto(Equipment equipment, EquipmentDto dto) {
-        equipment.setName(dto.getName());
-        equipment.setSlot(dto.getSlot());
-        equipment.setBonusHealthMax(dto.getBonusHealthMax());
-        equipment.setBonusManaMax(dto.getBonusManaMax());
-        equipment.setBonusPower(dto.getBonusPower());
-        equipment.setBonusStrength(dto.getBonusStrength());
-        equipment.setBonusArmor(dto.getBonusArmor());
-        equipment.setBonusResistance(dto.getBonusResistance());
-        equipment.setBonusSpeed(dto.getBonusSpeed());
-        equipment.setBonusCrit(dto.getBonusCrit());
-        equipment.setRegenHealthPerTurn(dto.getRegenHealthPerTurn());
-        equipment.setRegenManaPerTurn(dto.getRegenManaPerTurn());
-        equipment.setBaseWeight(dto.getBaseWeight());
-        equipment.setConsumableHpPercent(dto.getConsumableHpPercent());
-        equipment.setConsumableManaPercent(dto.getConsumableManaPercent());
-        equipment.setConsumableMissingHpPercent(dto.getConsumableMissingHpPercent());
-        equipment.setConsumableMissingManaPercent(dto.getConsumableMissingManaPercent());
-        if (dto.getConsumableCategory() != null) {
-            equipment.setConsumableCategory(dto.getConsumableCategory());
-        }
-        if (dto.getAvailableInShop() != null) {
-            equipment.setAvailableInShop(dto.getAvailableInShop());
-        }
-        if (dto.getRarity() != null) {
-            equipment.setRarity(dto.getRarity());
-        }
-        if (dto.getSpecialEffect() != null) {
-            equipment.setSpecialEffect(dto.getSpecialEffect());
-        }
-        equipment.setSpecialEffectValue(dto.getSpecialEffectValue());
-    }
+
 
     /** Créer ou mettre à jour un équipement */
     @PostMapping
     @org.springframework.cache.annotation.CacheEvict(value = {"equipmentTemplates", "equipmentShopTemplates", "equipmentTemplateByName", "publicEquipmentTemplates", "equipmentDistinctNames", "alchemyRecipes", "alchemyRecipesList", "alchemyRecipeById", "lootEntriesByEquipment", "salles", "monstres"}, allEntries = true)
-    public ResponseEntity<Map<String, Object>> createOrUpdate(@RequestBody EquipmentDto dto,
+    public ResponseEntity<Map<String, Object>> createOrUpdate(@RequestBody EquipmentRequestDTO dto,
             java.security.Principal principal) {
         if (principal == null)
             return ResponseEntity.status(401).build();
@@ -333,7 +307,7 @@ public class EquipmentController {
         }
 
         String oldName = isUpdate ? equipment.getName() : null;
-        updateEquipmentFromDto(equipment, dto);
+        equipmentMapper.updateEntity(dto, equipment);
 
         // Assigner à un personnage si fourni
         if (dto.getPersonnageId() != null) {
@@ -381,7 +355,7 @@ public class EquipmentController {
             for (Equipment instance : instances) {
                 if (instance.getId().equals(saved.getId()))
                     continue;
-                updateEquipmentFromDto(instance, dto);
+                equipmentMapper.updateEntity(dto, instance);
                 equipmentRepository.save(instance);
             }
             renameCascadeService.cascadeEquipmentRename(oldName, saved.getName());
@@ -391,7 +365,7 @@ public class EquipmentController {
         response.put("message", isUpdate
                 ? "Équipement \"" + saved.getName() + "\" mis à jour."
                 : "Équipement \"" + saved.getName() + "\" créé.");
-        response.put("equipment", toDto(saved));
+        response.put("equipment", toResponseDto(saved));
         return ResponseEntity.ok(response);
     }
 
@@ -623,78 +597,23 @@ public class EquipmentController {
         }
     }
 
-    private Map<String, Object> toDto(Equipment e) {
-        Map<String, Object> map = new HashMap<>();
-        map.put("id", e.getId());
-        map.put("name", e.getName());
-        map.put("slot", e.getSlot() != null ? e.getSlot().name() : null);
-        map.put("bonusHealthMax", e.getBonusHealthMax());
-        map.put("bonusManaMax", e.getBonusManaMax());
-        map.put("bonusPower", e.getBonusPower());
-        map.put("bonusStrength", e.getBonusStrength());
-        map.put("bonusArmor", e.getBonusArmor());
-        map.put("bonusResistance", e.getBonusResistance());
-        map.put("bonusSpeed", e.getBonusSpeed());
-        map.put("bonusCrit", e.getBonusCrit());
-        map.put("regenHealthPerTurn", e.getRegenHealthPerTurn());
-        map.put("regenManaPerTurn", e.getRegenManaPerTurn());
-        map.put("rarity", e.getRarity() != null ? e.getRarity().name() : null);
-        map.put("specialEffect", e.getSpecialEffect() != null ? e.getSpecialEffect().name() : null);
-        map.put("specialEffectValue", e.getSpecialEffectValue());
-        map.put("baseWeight", e.getBaseWeight());
-        map.put("consumableHpPercent", e.getConsumableHpPercent());
-        map.put("consumableManaPercent", e.getConsumableManaPercent());
-        map.put("consumableMissingHpPercent", e.getConsumableMissingHpPercent());
-        map.put("consumableMissingManaPercent", e.getConsumableMissingManaPercent());
-        map.put("consumableCategory", e.getConsumableCategory() != null ? e.getConsumableCategory().name() : "AUTRE");
-        map.put("weight", e.calculateWeight());
-        map.put("maxWeight", getMaxWeight(e.getSlot(), e.getRarity()));
-
+    private EquipmentResponseDTO toResponseDto(Equipment e) {
+        EquipmentResponseDTO dto = equipmentMapper.toResponse(e);
+        dto.setMaxWeight(getMaxWeight(e.getSlot(), e.getRarity()));
+        
         if (e.getPersonnage() != null) {
-            Map<String, Object> perso = new HashMap<>();
-            perso.put("id", e.getPersonnage().getId());
-            perso.put("name", e.getPersonnage().getName());
-            map.put("personnage", perso);
-        }
-
-        if (e.getOwnerUsername() != null) {
-            map.put("ownerUsername", e.getOwnerUsername());
-        } else if (e.getUser() != null) {
-            map.put("ownerUsername", e.getUser().getUsername());
+            EquipmentResponseDTO.PersonnageRef ref = new EquipmentResponseDTO.PersonnageRef();
+            ref.setId(e.getPersonnage().getId());
+            ref.setName(e.getPersonnage().getName());
+            dto.setPersonnage(ref);
         }
         
-        map.put("isTemplate", e.isTemplate());
-        map.put("availableInShop", e.isAvailableInShop());
-
-        return map;
-    }
-
-    @Data
-    public static class EquipmentDto {
-        private Long id;
-        private String name;
-        private EquipmentSlot slot;
-        private int bonusHealthMax = 0;
-        private int bonusManaMax = 0;
-        private int bonusPower = 0;
-        private int bonusStrength = 0;
-        private int bonusArmor = 0;
-        private int bonusResistance = 0;
-        private int bonusSpeed = 0;
-        private int bonusCrit = 0;
-        private int regenHealthPerTurn = 0;
-        private int regenManaPerTurn = 0;
-        private double baseWeight = 0.0;
-        private int consumableHpPercent = 0;
-        private int consumableManaPercent = 0;
-        private int consumableMissingHpPercent = 0;
-        private int consumableMissingManaPercent = 0;
-        private generation.grimoire.enumeration.ConsumableCategory consumableCategory;
-        private generation.grimoire.enumeration.EquipmentRarity rarity;
-        private generation.grimoire.enumeration.EquipmentEffectType specialEffect;
-        private int specialEffectValue = 0;
-        private Long personnageId;
-        private java.util.Map<String, Integer> priceAnomalies = new java.util.HashMap<>();
-        private Boolean availableInShop;
+        if (e.getOwnerUsername() != null) {
+            dto.setOwnerUsername(e.getOwnerUsername());
+        } else if (e.getUser() != null) {
+            dto.setOwnerUsername(e.getUser().getUsername());
+        }
+        
+        return dto;
     }
 }

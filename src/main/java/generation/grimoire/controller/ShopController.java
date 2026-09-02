@@ -1,8 +1,11 @@
 package generation.grimoire.controller;
 
+import generation.grimoire.dto.equipment.EquipmentRequestDTO;
+import generation.grimoire.dto.equipment.EquipmentShopDTO;
 import generation.grimoire.entity.Equipment;
 import generation.grimoire.entity.auth.AppUser;
 import generation.grimoire.entity.Anomalie;
+import generation.grimoire.mapper.EquipmentMapper;
 import generation.grimoire.repository.AnomalieRepository;
 import generation.grimoire.repository.EquipmentRepository;
 import generation.grimoire.repository.auth.UserRepository;
@@ -31,6 +34,9 @@ public class ShopController {
 
     @Autowired
     private generation.grimoire.service.RenameCascadeService renameCascadeService;
+
+    @Autowired
+    private EquipmentMapper equipmentMapper;
 
     // --- DAILY SHOP ---
 
@@ -81,16 +87,16 @@ public class ShopController {
         response.put("promoExpiresAt", promoExpiresAt);
 
         if (promoItem != null) {
-            Map<String, Object> promoDto = toShopDto(promoItem);
-            double originalPrice = (double) promoDto.get("shopPrice");
-            promoDto.put("originalPrice", originalPrice);
-            promoDto.put("shopPrice", Math.ceil(originalPrice * 0.8));
-            promoDto.put("isDiscount", true);
+            EquipmentShopDTO promoDto = toShopDto(promoItem);
+            double originalPrice = promoDto.getShopPrice();
+            promoDto.setShopPrice(Math.ceil(originalPrice * 0.8));
+            promoDto.setOriginalPrice(originalPrice);
+            promoDto.setDiscount(true);
             response.put("discount", promoDto);
         }
 
         // Consumables from templates
-        List<Map<String, Object>> consumables = consumableTemplates.stream()
+        List<EquipmentShopDTO> consumables = consumableTemplates.stream()
                 .map(this::toShopDto)
                 .toList();
         response.put("consumables", consumables);
@@ -247,12 +253,12 @@ public class ShopController {
     @PostMapping("/templates")
     @org.springframework.cache.annotation.CacheEvict(value = {"equipmentTemplates", "equipmentShopTemplates", "equipmentTemplateByName", "publicEquipmentTemplates", "equipmentDistinctNames", "alchemyRecipes", "alchemyRecipesList", "alchemyRecipeById", "lootEntriesByEquipment", "salles", "monstres"}, allEntries = true)
     public ResponseEntity<?> createTemplate(
-            @RequestBody generation.grimoire.controller.EquipmentController.EquipmentDto dto, Principal principal) {
+            @RequestBody EquipmentRequestDTO dto, Principal principal) {
         if (principal == null || !isAdmin(principal))
             return ResponseEntity.status(403).build();
 
         Equipment eq = new Equipment();
-        updateFromDto(eq, dto);
+        equipmentMapper.updateEntity(dto, eq);
         eq.setTemplate(true);
         eq.setOwnerUsername("MODELE");
         eq.setUser(null);
@@ -263,7 +269,7 @@ public class ShopController {
     @PutMapping("/templates/{id}")
     @org.springframework.cache.annotation.CacheEvict(value = {"equipmentTemplates", "equipmentShopTemplates", "equipmentTemplateByName", "publicEquipmentTemplates", "equipmentDistinctNames", "alchemyRecipes", "alchemyRecipesList", "alchemyRecipeById", "lootEntriesByEquipment", "salles", "monstres"}, allEntries = true)
     public ResponseEntity<?> updateTemplate(@PathVariable @org.springframework.lang.NonNull Long id,
-            @RequestBody generation.grimoire.controller.EquipmentController.EquipmentDto dto, Principal principal) {
+            @RequestBody EquipmentRequestDTO dto, Principal principal) {
         if (principal == null || !isAdmin(principal))
             return ResponseEntity.status(403).build();
 
@@ -272,7 +278,7 @@ public class ShopController {
                 return ResponseEntity.badRequest().body(Map.of("message", "Not a template"));
 
             String oldName = eq.getName();
-            updateFromDto(eq, dto);
+            equipmentMapper.updateEntity(dto, eq);
             equipmentRepository.save(eq);
 
             // Update all instances with the same old name
@@ -281,7 +287,7 @@ public class ShopController {
                 for (Equipment instance : instances) {
                     if (instance.getId().equals(eq.getId()))
                         continue;
-                    updateFromDto(instance, dto);
+                    equipmentMapper.updateEntity(dto, instance);
                     instance.setTemplate(false); // ensure it remains an instance
                     equipmentRepository.save(instance);
                 }
@@ -317,24 +323,9 @@ public class ShopController {
 
 
 
-    private Map<String, Object> toShopDto(Equipment e) {
-        Map<String, Object> map = new HashMap<>();
-        map.put("id", e.getId());
-        map.put("name", e.getName());
-        map.put("slot", e.getSlot());
-        map.put("bonusHealthMax", e.getBonusHealthMax());
-        map.put("bonusManaMax", e.getBonusManaMax());
-        map.put("bonusPower", e.getBonusPower());
-        map.put("bonusStrength", e.getBonusStrength());
-        map.put("bonusArmor", e.getBonusArmor());
-        map.put("bonusResistance", e.getBonusResistance());
-        map.put("bonusSpeed", e.getBonusSpeed());
-        map.put("bonusCrit", e.getBonusCrit());
-        map.put("regenHealthPerTurn", e.getRegenHealthPerTurn());
-        map.put("regenManaPerTurn", e.getRegenManaPerTurn());
-        map.put("rarity", e.getRarity());
-        map.put("specialEffect", e.getSpecialEffect());
-        map.put("specialEffectValue", e.getSpecialEffectValue());
+    private EquipmentShopDTO toShopDto(Equipment e) {
+        EquipmentShopDTO dto = equipmentMapper.toShopDto(e);
+        
         double shopPrice = e.calculateShopPrice();
         if (e.getSlot() == EquipmentSlot.CONSOMMABLE && e.getName() != null) {
             String nameLower = e.getName().toLowerCase().trim();
@@ -343,62 +334,8 @@ public class ShopController {
             else if (nameLower.equals("pain")) shopPrice = 5;
             else if (nameLower.equals("potion de mana")) shopPrice = 10;
         }
-        map.put("shopPrice", shopPrice);
-        map.put("priceAnomalies", e.getPriceAnomalies());
-        map.put("weight", e.calculateWeight());
-        map.put("baseWeight", e.getBaseWeight());
-        map.put("consumableHpPercent", e.getConsumableHpPercent());
-        map.put("consumableManaPercent", e.getConsumableManaPercent());
-        map.put("consumableMissingHpPercent", e.getConsumableMissingHpPercent());
-        map.put("consumableMissingManaPercent", e.getConsumableMissingManaPercent());
-        map.put("consumableCategory", e.getConsumableCategory() != null ? e.getConsumableCategory().name() : "AUTRE");
-        map.put("isConsumable", e.getSlot() == EquipmentSlot.CONSOMMABLE);
-        map.put("availableInShop", e.isAvailableInShop());
-        return map;
-    }
-
-    private void updateFromDto(Equipment eq, generation.grimoire.controller.EquipmentController.EquipmentDto dto) {
-        eq.setName(dto.getName());
-        eq.setSlot(dto.getSlot());
-        eq.setBonusHealthMax(dto.getBonusHealthMax());
-        eq.setBonusManaMax(dto.getBonusManaMax());
-        eq.setBonusPower(dto.getBonusPower());
-        eq.setBonusStrength(dto.getBonusStrength());
-        eq.setBonusArmor(dto.getBonusArmor());
-        eq.setBonusResistance(dto.getBonusResistance());
-        eq.setBonusSpeed(dto.getBonusSpeed());
-        eq.setBonusCrit(dto.getBonusCrit());
-        eq.setRegenHealthPerTurn(dto.getRegenHealthPerTurn());
-        eq.setRegenManaPerTurn(dto.getRegenManaPerTurn());
-        eq.setBaseWeight(dto.getBaseWeight());
-        eq.setConsumableHpPercent(dto.getConsumableHpPercent());
-        eq.setConsumableManaPercent(dto.getConsumableManaPercent());
-        eq.setConsumableMissingHpPercent(dto.getConsumableMissingHpPercent());
-        eq.setConsumableMissingManaPercent(dto.getConsumableMissingManaPercent());
-        if (dto.getConsumableCategory() != null) {
-            eq.setConsumableCategory(dto.getConsumableCategory());
-        }
-        if (dto.getAvailableInShop() != null) {
-            eq.setAvailableInShop(dto.getAvailableInShop());
-        }
-        if (dto.getPriceAnomalies() != null) {
-            eq.setPriceAnomalies(new HashMap<>(dto.getPriceAnomalies()));
-        } else {
-            eq.setPriceAnomalies(new HashMap<>());
-        }
-
-        if (dto.getRarity() != null) {
-            eq.setRarity(dto.getRarity());
-        } else {
-            eq.setRarity(EquipmentRarity.COMMUN);
-        }
-
-        if (dto.getSpecialEffect() != null) {
-            eq.setSpecialEffect(dto.getSpecialEffect());
-            eq.setSpecialEffectValue(dto.getSpecialEffectValue());
-        } else {
-            eq.setSpecialEffect(generation.grimoire.enumeration.EquipmentEffectType.NONE);
-            eq.setSpecialEffectValue(0);
-        }
+        dto.setShopPrice(shopPrice);
+        
+        return dto;
     }
 }
