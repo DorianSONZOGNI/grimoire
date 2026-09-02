@@ -3796,7 +3796,14 @@ function renderSpells(spells) {
     }
 
     // We sort all filtered spells by level, no grouping to save space
-    filteredSpells.sort((a, b) => (a.niveau || 1) - (b.niveau || 1));
+    const castingWeight = { 'INSTANTANE': 1, 'BANAL': 2, 'CANALISE': 3 };
+    filteredSpells.sort((a, b) => {
+        const lvlDiff = (a.niveau || 1) - (b.niveau || 1);
+        if (lvlDiff !== 0) return lvlDiff;
+        const weightA = castingWeight[a.castingType] || 2;
+        const weightB = castingWeight[b.castingType] || 2;
+        return weightA - weightB;
+    });
 
     let html = `
         <div class="csp-level-group" style="padding-top: 0.5rem;">
