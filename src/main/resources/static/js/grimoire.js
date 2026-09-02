@@ -168,7 +168,7 @@ export function getSpellEffectsSummaryHtml(sp) {
             effectsSummaryHtml += `
                         <div class="effect-line flex flex-wrap items-baseline gap-1">
                             <div class="indicator shrink-0 bg-amber-500"></div>
-                            <span class="font-semibold text-white">[Lanceur]</span>
+                            <span class="font-semibold" style="color:#34d399;">[Lanceur]</span>
                             <span class="text-error font-medium">🔥 Chaleur</span>
                             <span class="text-slate-200">➔ génère ${sp.heatGenerated} Chaleur</span>
                         </div>
@@ -186,6 +186,15 @@ export function getSpellEffectsSummaryHtml(sp) {
                     'ALL_COMBATANTS': 'Tout le Monde'
                 };
                 const targetText = effectTargetLabels[target] || 'Cible';
+                const targetColors = {
+                    'CASTER': '#34d399',
+                    'ALL_ALLIES': '#34d399',
+                    'ALLY': '#60a5fa',
+                    'TARGET': '#fb7185',
+                    'ALL_ENEMIES': '#fb7185',
+                    'ALL_COMBATANTS': '#fbbf24'
+                };
+                const tColor = targetColors[target] || '#fb7185';
 
                 let rawType = e.effectType || e.effect_type || '';
                 rawType = javaClassToCode[rawType] || rawType;
@@ -456,7 +465,7 @@ export function getSpellEffectsSummaryHtml(sp) {
                             ${turnBadge}
                             ${keyBadge}
                             ${dsBadge}
-                            <span class="font-semibold text-white">[${targetText}]</span>
+                            <span class="font-semibold" style="color:${tColor};">[${targetText}]</span>
                             <span class="font-medium" style="color:var(--spell-color, #38bdf8);">${eTypeStr}</span>
                             <span class="text-slate-200">${detailsStr}</span>
                         </div>
