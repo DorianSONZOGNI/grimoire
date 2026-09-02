@@ -29,8 +29,6 @@ public class WebSpellCreationController {
     private final MutationRepository mutationRepository;
     private final SpellMapper spellMapper;
 
-    @org.springframework.beans.factory.annotation.Autowired
-    private jakarta.persistence.EntityManager entityManager;
 
     public WebSpellCreationController(SpellService spellService,
             SpellRepository spellRepository,
@@ -113,10 +111,6 @@ public class WebSpellCreationController {
         Long id = dto.getId();
         if (id != null && spellRepository.existsById(id)) {
             spell = spellRepository.findById(id).get();
-            // Properly remove existing effects from the persistence context
-            for (generation.grimoire.entity.SpellEffect e : spell.getEffects()) {
-                entityManager.remove(e);
-            }
             spell.getEffects().clear();
             
             // Map simple fields
