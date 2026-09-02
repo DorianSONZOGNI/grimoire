@@ -119,10 +119,17 @@ generation.grimoire/
 │   ├── InitiativeEntry.java          ← Entrée dans l'ordre d'initiative
 │   └── SpellAvailability.java        ← Disponibilité d'un sort (grisage frontend)
 │
-├── DTO/pve/                          ← Data Transfer Objects
-│   ├── DonjonDTO.java / DonjonSummaryDTO.java
-│   ├── SalleDTO.java / MonstreDTO.java / LootEntryDTO.java
-│   ├── LobbyInfoDTO.java / HostHeroInfoDTO.java
+├── dto/                              ← Data Transfer Objects (Sécurisation des entrées/sorties)
+│   ├── alchemy/
+│   ├── equipment/
+│   ├── personnage/
+│   ├── pve/                          ← LobbyInfoDTO, DonjonDTO, etc.
+│   └── spell/
+│
+├── mapper/                           ← Mappers (MapStruct) pour la conversion Entité ↔ DTO
+│   ├── PersonnageMapper.java
+│   ├── EquipmentMapper.java
+│   └── ...
 │
 ├── enumeration/                      ← 21 enums de domaine
 │   ├── StatType, DamageType, EffectTarget, Source
