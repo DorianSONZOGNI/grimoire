@@ -151,3 +151,21 @@ export async function initMeta() {
 
 
 
+
+export const TARGET_LABELS = {
+    'CASTER': 'Lanceur',
+    'ALLY': 'Allié',
+    'TARGET': 'Cible',
+    'ALL_ALLIES': 'Lanceur & Alliés',
+    'ALL_ENEMIES': 'Tous les Ennemis',
+    'ALL_COMBATANTS': 'Tout le Monde'
+};
+
+export const TARGET_CSS_CLASSES = {
+    'CASTER': 'text-target-caster',
+    'ALL_ALLIES': 'text-target-caster',
+    'ALLY': 'text-target-ally',
+    'TARGET': 'text-target-enemy',
+    'ALL_ENEMIES': 'text-target-enemy',
+    'ALL_COMBATANTS': 'text-target-everyone'
+};
