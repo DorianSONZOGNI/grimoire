@@ -181,25 +181,70 @@ body {
 .text-shield {
     color: #3b82f6 !important;
 }
+
 /* Target Colors */
-.text-target-caster { color: var(--caster-color, #34d399); }
-.text-target-ally { color: var(--ally-color, #60a5fa); }
-.text-target-enemy { color: var(--target-color, #fb7185); }
-.text-target-everyone { color: var(--everyone-color, #fbbf24); }
+.text-target-caster {
+    color: var(--caster-color, #34d399);
+}
+
+.text-target-ally {
+    color: var(--ally-color, #60a5fa);
+}
+
+.text-target-enemy {
+    color: var(--target-color, #fb7185);
+}
+
+.text-target-everyone {
+    color: var(--everyone-color, #fbbf24);
+}
 
 
 /* Effect Colors */
-.text-effect-dmg { color: #fca5a5; }
-.text-effect-heal { color: #6ee7b7; }
-.text-effect-mana { color: #7dd3fc; }
-.text-effect-buff { color: #fde68a; }
-.text-effect-poison { color: #d9f99d; }
-.text-effect-burn { color: #fb923c; } /* orange-400 */
-.text-effect-purge { color: #ffffff; }
-.text-effect-ame { color: #fda4af; }
-.text-effect-heat { color: #fca5a5; }
-.text-effect-bud { color: #6ee7b7; }
+.text-effect-dmg {
+    color: #fca5a5;
+}
+
+.text-effect-heal {
+    color: #6ee7b7;
+}
+
+.text-effect-mana {
+    color: #7dd3fc;
+}
+
+.text-effect-buff {
+    color: #fde68a;
+}
+
+.text-effect-poison {
+    color: #d9f99d;
+}
+
+.text-effect-burn {
+    color: #fb923c;
+}
+
+/* orange-400 */
+.text-effect-purge {
+    color: #ffffff;
+}
+
+.text-effect-ame {
+    color: #fda4af;
+}
+
+.text-effect-heat {
+    color: #e14843;
+}
+
+.text-effect-bud {
+    color: #6ee7b7;
+}
 
 
-.text-effect-debuff { color: #c084fc; } /* fuchsia-400 */
+.text-effect-debuff {
+    color: #c084fc;
+}
 
+/* fuchsia-400 */
