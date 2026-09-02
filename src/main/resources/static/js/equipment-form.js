@@ -22,6 +22,10 @@ function resetEqForm() {
         const label = document.getElementById('eqConsumableCategoryLabel');
         if (label) label.innerHTML = '<span class="material-symbols-outlined cs-icon text-muted">inventory_2</span> Autre';
     }
+    if (document.getElementById('eqKeyBonusRow')) {
+        document.getElementById('eqKeyBonusRow').classList.add('hidden');
+        document.getElementById('eqKeyBonus').value = 10;
+    }
     if (document.getElementById('eqBaseWeight')) document.getElementById('eqBaseWeight').value = 0;
 
     const anomaliesContainer = document.getElementById('priceAnomaliesContainer');
@@ -58,7 +62,9 @@ function getFormEquipmentData() {
     const slot = document.getElementById('eqSlot') ? document.getElementById('eqSlot').value : null;
     const rarity = document.getElementById('eqRarity') ? document.getElementById('eqRarity').value : 'COMMUN';
     const specialEffect = document.getElementById('eqSpecialEffect') ? document.getElementById('eqSpecialEffect').value : 'NONE';
-    const specialEffectValue = document.getElementById('eqSpecialEffectValue') ? parseInt(document.getElementById('eqSpecialEffectValue').value) || 0 : 0;
+    const isCle = document.getElementById('eqConsumableCategory') && document.getElementById('eqConsumableCategory').value === 'CLE';
+    const specialEffectValue = isCle && document.getElementById('eqKeyBonus') ? (parseInt(document.getElementById('eqKeyBonus').value) || 0) : 
+        (document.getElementById('eqSpecialEffectValue') ? (parseInt(document.getElementById('eqSpecialEffectValue').value) || 0) : 0);
 
     return {
         id: pageState.editingEquipmentId,

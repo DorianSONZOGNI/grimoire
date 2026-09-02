@@ -1,5 +1,5 @@
 import { state } from './state.js';
-import { javaClassToCode } from './constants.js';
+import { javaClassToCode, TARGET_LABELS, TARGET_CSS_CLASSES, EFFECT_TYPE_CSS_CLASSES } from './constants.js';
 import * as ui from './ui.js?v=2';
 import * as api from './api.js';
 
@@ -22,7 +22,7 @@ export function renderFilteredSpells() {
     const searchVal = (document.getElementById('filterSearch')?.value || '').toLowerCase().trim();
     const effectVal = document.getElementById('filterEffect')?.value || 'ALL';
     const levelVal = document.getElementById('filterLevel')?.value || 'ALL';
-    const sortByVal = document.getElementById('sortBy')?.value || 'NEWEST';
+    const sortByVal = document.getElementById('sortBy')?.value || 'DEFAULT';
     const mutationVal = document.getElementById('filterMutation')?.value || 'NONE';
 
     // Filtrage multi-critères
@@ -100,8 +100,24 @@ export function renderFilteredSpells() {
     // Tri par critère
     filtered = [...filtered]; // Copie locale
     filtered.sort((a, b) => {
-        if (sortByVal === 'NEWEST') {
-            return b.id - a.id;
+        if (sortByVal === 'DEFAULT') {
+            const vA = a.voie ? (a.voie.nom || '') : '';
+            const vB = b.voie ? (b.voie.nom || '') : '';
+            const vDiff = vA.localeCompare(vB);
+            if (vDiff !== 0) return vDiff;
+            
+            const sA = a.spiritualite ? (a.spiritualite.nom || '') : '';
+            const sB = b.spiritualite ? (b.spiritualite.nom || '') : '';
+            const sDiff = sA.localeCompare(sB);
+            if (sDiff !== 0) return sDiff;
+            
+            const lvlDiff = (a.niveau || 1) - (b.niveau || 1);
+            if (lvlDiff !== 0) return lvlDiff;
+            
+            const castingWeight = { 'INSTANTANE': 1, 'BANAL': 2, 'CANALISE': 3 };
+            const weightA = castingWeight[a.castingType] || 2;
+            const weightB = castingWeight[b.castingType] || 2;
+            return weightA - weightB;
         } else if (sortByVal === 'NAME_ASC') {
             return (a.nom || '').localeCompare(b.nom || '');
         } else if (sortByVal === 'LEVEL_ASC') {
@@ -152,7 +168,7 @@ export function getSpellEffectsSummaryHtml(sp) {
             effectsSummaryHtml += `
                         <div class="effect-line flex flex-wrap items-baseline gap-1">
                             <div class="indicator shrink-0 bg-amber-500"></div>
-                            <span class="font-semibold text-white">[Lanceur]</span>
+                            <span class="font-semibold text-target-caster">[Lanceur]</span>
                             <span class="text-error font-medium">🔥 Chaleur</span>
                             <span class="text-slate-200">➔ génère ${sp.heatGenerated} Chaleur</span>
                         </div>
@@ -161,15 +177,8 @@ export function getSpellEffectsSummaryHtml(sp) {
         if (sp.effects && sp.effects.length > 0) {
             sp.effects.forEach(e => {
                 const target = e.effectTarget || e.effect_target;
-                const effectTargetLabels = {
-                    'CASTER': 'Lanceur',
-                    'ALLY': 'Allié',
-                    'TARGET': 'Cible',
-                    'ALL_ALLIES': 'Lanceur & Alliés',
-                    'ALL_ENEMIES': 'Tous les Ennemis',
-                    'ALL_COMBATANTS': 'Tout le Monde'
-                };
-                const targetText = effectTargetLabels[target] || 'Cible';
+                const targetText = TARGET_LABELS[target] || 'Cible';
+                const tClass = TARGET_CSS_CLASSES[target] || 'text-target-enemy';
 
                 let rawType = e.effectType || e.effect_type || '';
                 rawType = javaClassToCode[rawType] || rawType;
@@ -266,7 +275,13 @@ export function getSpellEffectsSummaryHtml(sp) {
                     'AME_DETACHEE': 'Âme Détachée',
                     'BUD': 'Bourgeon'
                 };
-                const eTypeStr = typeNames[rawType] || rawType || 'Effet';
+                let eTypeStr = typeNames[rawType] || rawType || 'Effet';
+                let eTypeClass = EFFECT_TYPE_CSS_CLASSES[t] || 'text-slate-200';
+                
+                if (['BuffDebuff', 'BUFF_DEBUFF'].includes(t) || ['BuffDebuffEffect', 'BUFF_DEBUFF', 'CONSUMABLE_BUFF'].includes(rawType)) {
+                    eTypeStr = isBad ? 'Débuff' : 'Buff';
+                    eTypeClass = isBad ? 'text-effect-debuff' : 'text-effect-buff';
+                }
 
                 const dt = (e.damageType || 'MAGIC').toLowerCase();
                 let dtColor = '#a855f7';
@@ -283,10 +298,19 @@ export function getSpellEffectsSummaryHtml(sp) {
                     const pct = Math.round((e.percentage || 0) * 100);
                     detailsStr = `➔ inflige ${pct}% de ${ui.formatSrc(e.damageSource || e.source)} en Dégâts ${dtHtml}`;
                 } else if (t === 'HealFixed' || t === 'FIXED_HEAL') {
-                    detailsStr = `➔ rend ${e.healAmount || 0} PV`;
+                    const amt = e.healAmount || 0;
+                    if (amt < 0) {
+                        detailsStr = target === 'CASTER' ? `➔ coûte ${Math.abs(amt)} PV` : `➔ retire ${Math.abs(amt)} PV`;
+                    } else {
+                        detailsStr = `➔ rend ${amt} PV`;
+                    }
                 } else if (t === 'HealPercentage' || t === 'PERCENTAGE_HEAL') {
                     const pct = Math.round((e.percentage || 0) * 100);
-                    detailsStr = `➔ rend ${pct}% de ${ui.formatSrc(e.healSource || e.source)} en PV`;
+                    if (pct < 0) {
+                        detailsStr = target === 'CASTER' ? `➔ coûte ${Math.abs(pct)}% de ${ui.formatSrc(e.healSource || e.source)} en PV` : `➔ retire ${Math.abs(pct)}% de ${ui.formatSrc(e.healSource || e.source)} en PV`;
+                    } else {
+                        detailsStr = `➔ rend ${pct}% de ${ui.formatSrc(e.healSource || e.source)} en PV`;
+                    }
                 } else if (t === 'AME_DETACHEE') {
                     detailsStr = `➔ +5 Dégâts Phys. et +40% Dégâts Phys. (2 tours)`;
                 } else if (t === 'BuffDebuff' || t === 'BUFF_DEBUFF' || t === 'POISON' || t === 'BURN') {
@@ -325,10 +349,19 @@ export function getSpellEffectsSummaryHtml(sp) {
                     const durStr = e.duration > 0 ? ` sur ${e.duration} tours` : '';
                     detailsStr = `➔ HoT de ${parts.join(' + ')} PV/tour${durStr}`;
                 } else if (t === 'ManaFixed' || t === 'FIXED_MANA') {
-                    detailsStr = `➔ rend ${e.manaAmount || 0} Mana`;
+                    const amt = e.manaAmount || 0;
+                    if (amt < 0) {
+                        detailsStr = target === 'CASTER' ? `➔ coûte ${Math.abs(amt)} Mana` : `➔ retire ${Math.abs(amt)} Mana`;
+                    } else {
+                        detailsStr = `➔ rend ${amt} Mana`;
+                    }
                 } else if (t === 'ManaPercentage' || t === 'PERCENTAGE_MANA') {
                     const pct = Math.round((e.percentage || 0) * 100);
-                    detailsStr = `➔ rend ${pct}% de ${ui.formatSrc(e.manaSource || e.source)} en Mana`;
+                    if (pct < 0) {
+                        detailsStr = target === 'CASTER' ? `➔ coûte ${Math.abs(pct)}% de ${ui.formatSrc(e.manaSource || e.source)} en Mana` : `➔ retire ${Math.abs(pct)}% de ${ui.formatSrc(e.manaSource || e.source)} en Mana`;
+                    } else {
+                        detailsStr = `➔ rend ${pct}% de ${ui.formatSrc(e.manaSource || e.source)} en Mana`;
+                    }
                 } else if (t === 'ManaOverTime' || t === 'MOT' || t === 'MANA_OVER_TIME') {
                     let parts = [];
                     const fm = e.fixedManaPerTick || e.manaAmount || 0;
@@ -440,8 +473,8 @@ export function getSpellEffectsSummaryHtml(sp) {
                             ${turnBadge}
                             ${keyBadge}
                             ${dsBadge}
-                            <span class="font-semibold text-white">[${targetText}]</span>
-                            <span class="font-medium" style="color:var(--spell-color, #38bdf8);">${eTypeStr}</span>
+                            <span class="font-semibold ${tClass}">[${targetText}]</span>
+                            <span class="font-medium ${eTypeClass}">${eTypeStr}</span>
                             <span class="text-slate-200">${detailsStr}</span>
                         </div>
                     `;

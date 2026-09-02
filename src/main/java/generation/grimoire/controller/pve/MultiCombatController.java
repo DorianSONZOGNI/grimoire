@@ -87,7 +87,7 @@ public class MultiCombatController {
 
     @GetMapping("/lobby/{shortCode}/info")
     public ResponseEntity<?> getLobbyInfo(@PathVariable String shortCode) {
-        generation.grimoire.DTO.pve.LobbyInfoDTO info = multiCombatService.getLobbyInfo(shortCode);
+        generation.grimoire.dto.pve.LobbyInfoDTO info = multiCombatService.getLobbyInfo(shortCode);
         if (info == null) return ResponseEntity.notFound().build();
         return ResponseEntity.ok(info);
     }

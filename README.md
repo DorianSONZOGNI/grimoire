@@ -72,7 +72,10 @@ generation.grimoire/
 │
 ├── service/                          ← Logique métier
 │   ├── pve/
-│   │   ├── CombatService.java        ← ⚠️ 2597 lignes — moteur de combat complet
+│   │   ├── CombatService.java        ← Service de façade pour le combat
+│   │   ├── CombatRoomService.java    ← Gestion des salles, loots et progression
+│   │   ├── CombatTurnService.java    ← Moteur de tours, initiative et statuts
+│   │   ├── CombatActionService.java  ← Résolution des actions de combat (fuite, etc)
 │   │   ├── MultiCombatService.java   ← Lobbies multi-joueur + synchronisation
 │   │   ├── CombatEventEmitter.java   ← SSE (Server-Sent Events) pour le temps réel
 │   │   └── PvEAdminService.java      ← Opérations CRUD admin PvE
@@ -89,7 +92,8 @@ generation.grimoire/
 │   │   ├── AppUser.java              ← Utilisateur (rôle, monnaie, unlocks)
 │   │   └── RefreshToken.java         ← Token de rafraîchissement
 │   ├── personnage/
-│   │   ├── Personnage.java           ← ⚠️ 1343 lignes — entité centrale du jeu
+│   │   ├── Personnage.java           ← Entité centrale du jeu
+│   │   ├── PersonnageCombatHelper.java ← Logique de combat et stats extraite
 │   │   └── ActiveShield.java         ← Bouclier actif en combat
 │   ├── pve/
 │   │   ├── Donjon.java               ← Donjon (salles ordonnées)
@@ -115,10 +119,17 @@ generation.grimoire/
 │   ├── InitiativeEntry.java          ← Entrée dans l'ordre d'initiative
 │   └── SpellAvailability.java        ← Disponibilité d'un sort (grisage frontend)
 │
-├── DTO/pve/                          ← Data Transfer Objects
-│   ├── DonjonDTO.java / DonjonSummaryDTO.java
-│   ├── SalleDTO.java / MonstreDTO.java / LootEntryDTO.java
-│   ├── LobbyInfoDTO.java / HostHeroInfoDTO.java
+├── dto/                              ← Data Transfer Objects (Sécurisation des entrées/sorties)
+│   ├── alchemy/
+│   ├── equipment/
+│   ├── personnage/
+│   ├── pve/                          ← LobbyInfoDTO, DonjonDTO, etc.
+│   └── spell/
+│
+├── mapper/                           ← Mappers (MapStruct) pour la conversion Entité ↔ DTO
+│   ├── PersonnageMapper.java
+│   ├── EquipmentMapper.java
+│   └── ...
 │
 ├── enumeration/                      ← 21 enums de domaine
 │   ├── StatType, DamageType, EffectTarget, Source
@@ -351,11 +362,6 @@ La boutique vend des templates. À l'achat, une instance est créée et associé
 ---
 
 ## Points d'attention
-
-> [!CAUTION]
-> ### Fichiers massifs
-> - [`CombatService.java`](file:///c:/Users/doson/IdeaProjects/grimoire/src/main/java/generation/grimoire/service/pve/CombatService.java) — **2597 lignes, 133 Ko**. Contient toute la logique de combat : initiative, IA des monstres, résolution des salles, loot, rewards, flee. Candidat prioritaire pour un refactoring en sous-services.
-> - [`Personnage.java`](file:///c:/Users/doson/IdeaProjects/grimoire/src/main/java/generation/grimoire/entity/personnage/Personnage.java) — **1343 lignes, 55 Ko**. Mélange entité JPA + logique métier (buffs, shields, DoTs, HoTs, calculs de stats). Envisager l'extraction de la logique en services dédiés.
 
 > [!IMPORTANT]
 > ### Risques & Points de vigilance

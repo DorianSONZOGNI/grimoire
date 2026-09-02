@@ -1,7 +1,6 @@
-package generation.grimoire.DTO.pve;
+package generation.grimoire.dto.pve;
 
 import lombok.Data;
-import java.util.List;
 
 @Data
 public class DonjonSummaryDTO {
@@ -11,12 +10,11 @@ public class DonjonSummaryDTO {
     private String imageUrl;
     private int recommendedLevel;
     private int maxHeroes;
-    
-    private double unlockCostGold;
+    private int unlockCostGold;
+    private int entryCostGold;
     private String requiredSecret;
     private int requiredSecretLevel;
-    private double entryCostGold;
+    private int roomCount;
     private int displayOrder;
-    
-    private List<generation.grimoire.entity.pve.Salle> salles;
+    private java.util.List<generation.grimoire.entity.pve.Salle> salles;
 }

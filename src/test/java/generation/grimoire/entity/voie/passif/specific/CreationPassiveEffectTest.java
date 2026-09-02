@@ -129,14 +129,14 @@ class CreationPassiveEffectTest {
     }
 
     @Test
-    void testSpellCast_ConsumesBudAndMarksUsed() {
+    void testCostPaid_ConsumesBudAndMarksUsed() {
         personnage.setPassiveState("creation_buds", 2);
         personnage.setPassiveState("creation_used_this_turn", 0);
 
         Spell spell = new Spell();
         spell.setAction(1);
 
-        SpellCastEvent event = new SpellCastEvent(personnage, null, spell);
+        SpellCostPaidEvent event = new SpellCostPaidEvent(personnage, null, spell, 0, 0, 0);
         passive.onEvent(event);
 
         assertEquals(1, personnage.getPassiveState("creation_buds", 0), "Un bourgeon doit être consommé");
@@ -144,14 +144,14 @@ class CreationPassiveEffectTest {
     }
 
     @Test
-    void testSpellCast_AlreadyUsedThisTurn_DoesNotConsumeBud() {
+    void testCostPaid_AlreadyUsedThisTurn_DoesNotConsumeBud() {
         personnage.setPassiveState("creation_buds", 2);
         personnage.setPassiveState("creation_used_this_turn", 1); // Déjà utilisé
 
         Spell spell = new Spell();
         spell.setAction(1);
 
-        SpellCastEvent event = new SpellCastEvent(personnage, null, spell);
+        SpellCostPaidEvent event = new SpellCostPaidEvent(personnage, null, spell, 0, 0, 0);
         passive.onEvent(event);
 
         assertEquals(2, personnage.getPassiveState("creation_buds", 0), "Ne doit pas consommer un autre bourgeon si déjà utilisé");

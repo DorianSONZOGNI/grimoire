@@ -49,8 +49,6 @@ public class ManaOverTimeEffect extends ManaEffect {
             totalMana = (int) (totalMana * getAmplificationMultiplier());
             target.restoreMana(totalMana);
             duration--;
-            System.out.println(target.getName() + " régénère " + totalMana
-                    + " mana par mana over time, durée restante : " + duration);
         }
     }
 

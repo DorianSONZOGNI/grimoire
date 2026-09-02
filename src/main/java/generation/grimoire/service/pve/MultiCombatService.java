@@ -9,8 +9,8 @@ import org.springframework.stereotype.Service;
 import generation.grimoire.repository.pve.DonjonRepository;
 import generation.grimoire.repository.PersonnageRepository;
 import generation.grimoire.entity.personnage.Personnage;
-import generation.grimoire.DTO.pve.LobbyInfoDTO;
-import generation.grimoire.DTO.pve.HostHeroInfoDTO;
+import generation.grimoire.dto.pve.LobbyInfoDTO;
+import generation.grimoire.dto.pve.HostHeroInfoDTO;
 import generation.grimoire.entity.pve.Donjon;
 
 import java.time.Instant;

@@ -1,6 +1,9 @@
 package generation.grimoire.controller;
 
+import generation.grimoire.dto.alchemy.AlchemyRecipeRequestDTO;
+import generation.grimoire.dto.alchemy.CraftRequestDTO;
 import generation.grimoire.entity.AlchemyRecipe;
+import generation.grimoire.mapper.AlchemyRecipeMapper;
 import generation.grimoire.service.AlchemyService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -13,9 +16,11 @@ import java.util.List;
 public class AlchemyController {
 
     private final AlchemyService alchemyService;
+    private final AlchemyRecipeMapper alchemyRecipeMapper;
 
-    public AlchemyController(AlchemyService alchemyService) {
+    public AlchemyController(AlchemyService alchemyService, AlchemyRecipeMapper alchemyRecipeMapper) {
         this.alchemyService = alchemyService;
+        this.alchemyRecipeMapper = alchemyRecipeMapper;
     }
 
     @GetMapping("/recipes")
@@ -24,24 +29,18 @@ public class AlchemyController {
         return ResponseEntity.ok(alchemyService.getAllRecipes());
     }
 
-    public static class CraftRequest {
-        public Long personnageId;
-        public List<Long> anomalieIds;
-        public List<Long> consumableIds;
-    }
-
     @PostMapping("/craft/{recipeId}")
     public ResponseEntity<?> craftRecipe(@PathVariable Long recipeId, 
-                                         @RequestBody(required = false) CraftRequest request,
+                                         @RequestBody(required = false) CraftRequestDTO request,
                                          Authentication authentication) {
         if (authentication == null || !authentication.isAuthenticated()) {
             return ResponseEntity.status(401).body("Non autorisé");
         }
         
         try {
-            Long persoId = request != null ? request.personnageId : null;
-            List<Long> anoms = request != null && request.anomalieIds != null ? request.anomalieIds : List.of();
-            List<Long> cons = request != null && request.consumableIds != null ? request.consumableIds : List.of();
+            Long persoId = request != null ? request.getPersonnageId() : null;
+            List<Long> anoms = request != null && request.getAnomalieIds() != null ? request.getAnomalieIds() : List.of();
+            List<Long> cons = request != null && request.getConsumableIds() != null ? request.getConsumableIds() : List.of();
             
             String resultMessage = alchemyService.craftRecipe(authentication.getName(), recipeId, persoId, anoms, cons);
             return ResponseEntity.ok(resultMessage);
@@ -53,11 +52,12 @@ public class AlchemyController {
     // --- ADMIN ENDPOINTS ---
 
     @PostMapping("/admin/recipe")
-    public ResponseEntity<?> createRecipe(@RequestBody AlchemyRecipe recipe, Authentication authentication) {
+    public ResponseEntity<?> createRecipe(@RequestBody AlchemyRecipeRequestDTO dto, Authentication authentication) {
         if (authentication == null || !authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"))) {
             return ResponseEntity.status(403).body("Accès refusé");
         }
         try {
+            AlchemyRecipe recipe = alchemyRecipeMapper.toEntity(dto);
             return ResponseEntity.ok(alchemyService.saveRecipe(recipe));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());

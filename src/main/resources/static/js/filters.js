@@ -42,7 +42,7 @@ export function resetFilters() {
     }
     const sort = document.getElementById('sortBy');
     if (sort) {
-        sort.value = 'NEWEST';
+        sort.value = 'DEFAULT';
         sort.dispatchEvent(new Event('change'));
     }
     renderFilteredSpells();

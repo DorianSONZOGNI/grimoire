@@ -163,7 +163,7 @@
 
 .monster-card-stats {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: 110px 110px;
     gap: 0 0.5rem;
     align-content: start;
     font-size: 0.85rem;

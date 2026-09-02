@@ -326,9 +326,29 @@ async function loadCharacters() {
                     const sIcon = window.getSpiritualiteIcon ? window.getSpiritualiteIcon(c.spiritualite.nom) : 'psychology';
                     iconsHtml += `<span class="material-symbols-outlined text-[1.1rem] ml-1" style="color: ${sColor};" title="Spiritualité : ${c.spiritualite.nom}">${sIcon}</span>`;
                 }
+                let avatarName = '';
+                if (c.voie && c.voie.nom) {
+                    const vNom = c.voie.nom.toLowerCase();
+                    if (vNom.includes('consolidation')) avatarName = 'consolidation';
+                    else if (vNom.includes('conviction')) avatarName = 'conviction';
+                    else if (vNom.includes('création') || vNom.includes('creation')) avatarName = 'creation';
+                    else if (vNom.includes('destruction')) avatarName = 'destruction';
+                    else if (vNom.includes('raison')) avatarName = 'raison';
+                    else if (vNom.includes('sûreté') || vNom.includes('surete')) avatarName = 'surete';
+                    else if (vNom.includes('trahison')) avatarName = 'trahison';
+                    else if (vNom.includes('violence')) avatarName = 'violence';
+                }
+                
+                let avatarHtml = c.name.charAt(0).toUpperCase();
+                let avatarStyle = "";
+                if (avatarName) {
+                    avatarHtml = `<img src="/images/avatar/${avatarName}.png" alt="${avatarName}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+                    avatarStyle = "background: transparent; box-shadow: none;";
+                }
+
                 list.innerHTML += `
                     <div class="char-card" id="charCard_${c.id}" onclick="selectCharacter(${c.id})">
-                        <div class="char-avatar">${c.name.charAt(0).toUpperCase()}</div>
+                        <div class="char-avatar" style="${avatarStyle}">${avatarHtml}</div>
                         <div>
                             <div class="flex-center text-slate-50 font-semibold font-outfit text-lg">
                                 ${c.name} ${iconsHtml}
@@ -1051,12 +1071,30 @@ window.openJoinLobbyModal = function () {
             iconsHtml += `<span class="material-symbols-outlined text-[0.95rem] ml-0.5 align-middle" style="color: ${sColor};" title="Spiritualité : ${c.spiritualite.nom}">${sIcon}</span>`;
         }
         
+        let avatarName = '';
+        if (c.voie && c.voie.nom) {
+            const vNom = c.voie.nom.toLowerCase();
+            if (vNom.includes('consolidation')) avatarName = 'consolidation';
+            else if (vNom.includes('conviction')) avatarName = 'conviction';
+            else if (vNom.includes('création') || vNom.includes('creation')) avatarName = 'creation';
+            else if (vNom.includes('destruction')) avatarName = 'destruction';
+            else if (vNom.includes('raison')) avatarName = 'raison';
+            else if (vNom.includes('sûreté') || vNom.includes('surete')) avatarName = 'surete';
+            else if (vNom.includes('trahison')) avatarName = 'trahison';
+            else if (vNom.includes('violence')) avatarName = 'violence';
+        }
+
+        let avatarHtml = `<span class="material-symbols-outlined" style="font-size:1.1rem; color:#818cf8;">person</span>`;
+        if (avatarName) {
+            avatarHtml = `<img src="/images/avatar/${avatarName}.png" alt="${avatarName}" style="width: 100%; height: 100%; object-fit: cover; border-radius: 50%;">`;
+        }
+
         return `
             <div id="joinChar_${c.id}"
                 onclick="toggleJoinChar(${c.id})"
                 style="display:flex; align-items:center; gap:0.75rem; padding:0.6rem 0.75rem; border-radius:0.6rem; border:1px solid rgba(255,255,255,0.1); margin-bottom:0.5rem; cursor:pointer; transition:all 0.2s;">
-                <div style="width:2rem; height:2rem; border-radius:50%; background:rgba(99,102,241,0.2); display:flex; flex-shrink:0; align-items:center; justify-content:center;">
-                    <span class="material-symbols-outlined" style="font-size:1.1rem; color:#818cf8;">person</span>
+                <div style="width:2.2rem; height:2.2rem; border-radius:50%; background:rgba(99,102,241,0.2); display:flex; flex-shrink:0; align-items:center; justify-content:center;">
+                    ${avatarHtml}
                 </div>
                 <div style="min-width:0; flex:1;">
                     <div style="font-weight:600; color:#e2e8f0; font-size:0.9rem; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">
@@ -1130,7 +1168,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         window.maxSelectableJoinChars = info.availableSlots;
                         
                         let hostHeroesHtml = '';
-                        if (info.hostHeroes && info.hostHeroes.length > 0) {
+                        if (info.hostHeroInfos && info.hostHeroInfos.length > 0) {
                             const getVIcon = (nom) => {
                                 const n = nom.toLowerCase();
                                 if (n.includes('raison')) return { c: '#3b82f6', i: 'psychology' };
@@ -1154,7 +1192,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             hostHeroesHtml = '<div style="margin-top: 0.75rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 0.75rem;">' +
                                 '<div style="font-size:0.75rem; color:#64748b; margin-bottom:0.5rem; text-transform:uppercase; letter-spacing:0.05em;">Héros de l\'hôte</div>' +
                                 '<div style="display:flex; flex-wrap:wrap; gap:0.4rem;">' +
-                                info.hostHeroes.map(h => {
+                                info.hostHeroInfos.map(h => {
                                     let vHtml = '';
                                     if (h.voieName) {
                                         const v = getVIcon(h.voieName);
@@ -1182,9 +1220,9 @@ document.addEventListener('DOMContentLoaded', () => {
                         infoContainer.style.display = 'block';
                         infoContainer.innerHTML = `
                             <div style="font-weight:600; color:#e2e8f0; margin-bottom:0.25rem;">Hôte : <span style="color:#38bdf8;">${info.hostUsername}</span></div>
-                            <div style="color:#94a3b8; font-size:0.85rem; margin-bottom:0.5rem;">Donjon : ${info.dungeonName} (Niv. ${info.dungeonLevel})</div>
+                            <div style="color:#94a3b8; font-size:0.85rem; margin-bottom:0.5rem;">Donjon : ${info.dungeonName} (Niv. ${info.recommendedLevel})</div>
                             <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.85rem;">
-                                <span style="color:#cbd5e1;">Héros maximum : ${info.maxHeroesTotal}</span>
+                                <span style="color:#cbd5e1;">Héros maximum : ${info.maxHeroes}</span>
                                 <span style="color:${info.availableSlots > 0 ? '#10b981' : '#f43f5e'}; font-weight:600;">Places restantes : ${info.availableSlots}</span>
                             </div>
                             ${hostHeroesHtml}
@@ -1262,7 +1300,7 @@ window.submitJoinLobby = async function () {
         window.location.href = `/combat.html?sessionId=${result.sessionId}&multiId=${result.multiSessionId}&role=guest`;
     } catch (err) {
         console.error(err);
-        window.showNotif('Erreur serveur.', true);
+        window.showNotif(err.message || 'Erreur serveur.', true);
         btn.disabled = false;
         btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:1.1rem;">login</span> Rejoindre';
     }

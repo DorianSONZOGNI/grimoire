@@ -41,6 +41,8 @@ public class Monstre {
     private int regenMana;
     private int startHpPct;
     private int startManaPct;
+    private int startShield;
+    private int startShieldDuration;
 
     // For simple AI logic / rewards
     private int rewardExp;

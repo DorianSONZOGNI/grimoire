@@ -29,7 +29,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
-class CombatServiceTest {
+class CombatTurnServiceTest {
 
     @Mock
     private PersonnageRepository personnageRepository;
@@ -51,11 +51,14 @@ class CombatServiceTest {
     private SalleRepository salleRepository;
     @Mock
     private MonstreRepository monstreRepository;
+    
+    @Mock
+    private SpellAvailabilityService spellAvailabilityService;
     @Mock
     private com.fasterxml.jackson.databind.ObjectMapper objectMapper;
 
     @InjectMocks
-    private CombatService combatService;
+    private CombatTurnService combatTurnService;
 
     private CombatSession session;
     private Personnage player1;
@@ -98,7 +101,7 @@ class CombatServiceTest {
     @Test
     void testResolveMonsterTarget_Normal() {
         activeMonster.getBase().setBehavior(MonsterBehavior.NORMAL);
-        Personnage target = combatService.resolveMonsterTarget(activeMonster, MonsterBehavior.NORMAL,
+        Personnage target = combatTurnService.resolveMonsterTarget(activeMonster, MonsterBehavior.NORMAL,
                 session.getPlayers(), session);
         assertThat(target).isIn(player1, player2);
     }
@@ -106,7 +109,7 @@ class CombatServiceTest {
     @Test
     void testResolveMonsterTarget_Assassin() {
         activeMonster.getBase().setBehavior(MonsterBehavior.ASSASSIN);
-        Personnage target = combatService.resolveMonsterTarget(activeMonster, MonsterBehavior.ASSASSIN,
+        Personnage target = combatTurnService.resolveMonsterTarget(activeMonster, MonsterBehavior.ASSASSIN,
                 session.getPlayers(), session);
         assertThat(target).isEqualTo(player2);
     }
@@ -114,7 +117,7 @@ class CombatServiceTest {
     @Test
     void testResolveMonsterTarget_Corrupteur() {
         activeMonster.getBase().setBehavior(MonsterBehavior.CORRUPTEUR);
-        Personnage target = combatService.resolveMonsterTarget(activeMonster, MonsterBehavior.CORRUPTEUR,
+        Personnage target = combatTurnService.resolveMonsterTarget(activeMonster, MonsterBehavior.CORRUPTEUR,
                 session.getPlayers(), session);
         assertThat(target).isEqualTo(player2);
     }
@@ -123,7 +126,7 @@ class CombatServiceTest {
     void testResolveMonsterTarget_Predateur() {
         activeMonster.setLockedTargetId(player1.getId());
         activeMonster.getBase().setBehavior(MonsterBehavior.PREDATEUR);
-        Personnage target = combatService.resolveMonsterTarget(activeMonster, MonsterBehavior.PREDATEUR,
+        Personnage target = combatTurnService.resolveMonsterTarget(activeMonster, MonsterBehavior.PREDATEUR,
                 session.getPlayers(), session);
         assertThat(target).isEqualTo(player1);
     }
@@ -132,7 +135,7 @@ class CombatServiceTest {
     void testResolveMonsterTarget_LeaderObedience() {
         activeMonster.setLeaderForcedTargetId(player2.getId());
         activeMonster.getBase().setBehavior(MonsterBehavior.NORMAL);
-        Personnage target = combatService.resolveMonsterTarget(activeMonster, MonsterBehavior.NORMAL,
+        Personnage target = combatTurnService.resolveMonsterTarget(activeMonster, MonsterBehavior.NORMAL,
                 session.getPlayers(), session);
         assertThat(target).isEqualTo(player2);
         assertThat(session.getCombatLog()).anyMatch(log -> log.contains("obéit au Leader"));
@@ -143,7 +146,7 @@ class CombatServiceTest {
         activeMonster.getBase().setBehavior(MonsterBehavior.BRUTAL);
         player1.setHealthMax(500);
         player2.setHealthMax(100);
-        Personnage target = combatService.resolveMonsterTarget(activeMonster, MonsterBehavior.BRUTAL,
+        Personnage target = combatTurnService.resolveMonsterTarget(activeMonster, MonsterBehavior.BRUTAL,
                 session.getPlayers(), session);
         assertThat(target).isEqualTo(player2);
     }
@@ -161,7 +164,7 @@ class CombatServiceTest {
         session.getEnemies().add(activeMonster);
         session.getEnemies().add(ally);
 
-        Personnage target = combatService.resolveMonsterTarget(activeMonster, MonsterBehavior.LEADER,
+        Personnage target = combatTurnService.resolveMonsterTarget(activeMonster, MonsterBehavior.LEADER,
                 session.getPlayers(), session);
 
         assertThat(target).isIn(player1, player2);

@@ -462,6 +462,20 @@ window.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
+    const categoryInput = document.getElementById('eqConsumableCategory');
+    if (categoryInput) {
+        categoryInput.addEventListener('change', () => {
+            const row = document.getElementById('eqKeyBonusRow');
+            if (row) {
+                if (categoryInput.value === 'CLE') {
+                    row.classList.remove('hidden');
+                } else {
+                    row.classList.add('hidden');
+                }
+            }
+        });
+    }
+
     // Render create form slot select
     const slotOptionsContainer = document.getElementById('eqSlotOptions');
     if (slotOptionsContainer) {
@@ -550,6 +564,15 @@ window.editEquipment = function (id) {
         const option = document.querySelector(`#eqConsumableCategoryOptions .custom-option[data-value="${eq.consumableCategory}"]`);
         if (option) {
             document.getElementById('eqConsumableCategoryLabel').innerHTML = option.innerHTML;
+        }
+        const row = document.getElementById('eqKeyBonusRow');
+        if (row) {
+            if (eq.consumableCategory === 'CLE') {
+                row.classList.remove('hidden');
+                document.getElementById('eqKeyBonus').value = eq.specialEffectValue || 10;
+            } else {
+                row.classList.add('hidden');
+            }
         }
     }
 
@@ -775,12 +798,20 @@ window.submitEquipment = async function () {
     let specialEffect = document.getElementById('eqSpecialEffect').value;
     let specialEffectValue = parseInt(document.getElementById('eqSpecialEffectValue').value) || 0;
 
-    if (rarity !== 'EPIQUE' && rarity !== 'RELIQUE' && rarity !== 'MAUDIT') {
+    const consumableCategory = document.getElementById('eqConsumableCategory') ? document.getElementById('eqConsumableCategory').value : 'AUTRE';
+
+    if (slot === 'CONSOMMABLE' && consumableCategory === 'CLE') {
         specialEffect = 'NONE';
-        specialEffectValue = 0;
+        const keyBonusEl = document.getElementById('eqKeyBonus');
+        specialEffectValue = keyBonusEl ? (parseInt(keyBonusEl.value) || 0) : 10;
     } else {
-        if (specialEffect === 'NONE') {
+        if (rarity !== 'EPIQUE' && rarity !== 'RELIQUE' && rarity !== 'MAUDIT') {
+            specialEffect = 'NONE';
             specialEffectValue = 0;
+        } else {
+            if (specialEffect === 'NONE') {
+                specialEffectValue = 0;
+            }
         }
     }
 
@@ -801,6 +832,9 @@ window.submitEquipment = async function () {
     dto.id = pageState.editingEquipmentId;
     dto.name = name;
     dto.personnageId = null; // Keep null when forged from vault
+
+    dto.specialEffect = specialEffect;
+    dto.specialEffectValue = specialEffectValue;
 
     try {
         const resSim = await globalFetch('/api/equipments/simulate-weight', {

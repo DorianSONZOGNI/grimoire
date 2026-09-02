@@ -151,3 +151,42 @@ export async function initMeta() {
 
 
 
+
+export const TARGET_LABELS = {
+    'CASTER': 'Lanceur',
+    'ALLY': 'Allié',
+    'TARGET': 'Cible',
+    'ALL_ALLIES': 'Lanceur & Alliés',
+    'ALL_ENEMIES': 'Tous les Ennemis',
+    'ALL_COMBATANTS': 'Tout le Monde'
+};
+
+export const TARGET_CSS_CLASSES = {
+    'CASTER': 'text-target-caster',
+    'ALL_ALLIES': 'text-target-caster',
+    'ALLY': 'text-target-ally',
+    'TARGET': 'text-target-enemy',
+    'ALL_ENEMIES': 'text-target-enemy',
+    'ALL_COMBATANTS': 'text-target-everyone'
+};
+
+export const EFFECT_TYPE_CSS_CLASSES = {
+    'DamageFixed': 'text-effect-dmg', 'FIXED_DAMAGE': 'text-effect-dmg',
+    'DamagePercentage': 'text-effect-dmg', 'PERCENTAGE_DAMAGE': 'text-effect-dmg',
+    'DamageOverTime': 'text-effect-dmg', 'DAMAGE_OVER_TIME': 'text-effect-dmg', 'DOT': 'text-effect-dmg',
+    'HealFixed': 'text-effect-heal', 'FIXED_HEAL': 'text-effect-heal',
+    'HealPercentage': 'text-effect-heal', 'PERCENTAGE_HEAL': 'text-effect-heal',
+    'HealOverTime': 'text-effect-heal', 'HEAL_OVER_TIME': 'text-effect-heal', 'HOT': 'text-effect-heal',
+    'ManaFixed': 'text-effect-mana', 'FIXED_MANA': 'text-effect-mana',
+    'ManaPercentage': 'text-effect-mana', 'PERCENTAGE_MANA': 'text-effect-mana',
+    'ManaOverTime': 'text-effect-mana', 'MANA_OVER_TIME': 'text-effect-mana', 'MOT': 'text-effect-mana',
+    'BuffDebuff': 'text-effect-buff', 'BUFF_DEBUFF': 'text-effect-buff', 'CONSUMABLE_BUFF': 'text-effect-buff',
+    'Shield': 'text-effect-buff', 'SHIELD': 'text-effect-buff',
+    'POISON': 'text-effect-poison',
+    'BURN': 'text-effect-burn',
+    'Purge': 'text-effect-purge', 'PURGE': 'text-effect-purge', 'DISPEL': 'text-effect-purge',
+    'AME_DETACHEE': 'text-effect-ame',
+    'HEAT': 'text-effect-heat', 'Heat': 'text-effect-heat', 'HEAT_FIXED': 'text-effect-heat', 'HEAT_PERCENTAGE': 'text-effect-heat', 'HEAT_OVER_TIME': 'text-effect-heat',
+    'BUD': 'text-effect-bud'
+};
+

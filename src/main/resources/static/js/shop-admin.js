@@ -353,6 +353,20 @@ window.addEventListener('DOMContentLoaded', async () => {
         }
     });
 
+    const categoryInput = document.getElementById('eqConsumableCategory');
+    if (categoryInput) {
+        categoryInput.addEventListener('change', () => {
+            const row = document.getElementById('eqKeyBonusRow');
+            if (row) {
+                if (categoryInput.value === 'CLE') {
+                    row.classList.remove('hidden');
+                } else {
+                    row.classList.add('hidden');
+                }
+            }
+        });
+    }
+
     // Render create form slot select
     const slotOptionsContainer = document.getElementById('eqSlotOptions');
     if (slotOptionsContainer) {
@@ -438,6 +452,15 @@ window.editEquipment = function (id) {
         const option = document.querySelector(`#eqConsumableCategoryOptions .custom-option[data-value="${cat}"]`);
         if (option) {
             document.getElementById('eqConsumableCategoryLabel').innerHTML = option.innerHTML;
+        }
+        const row = document.getElementById('eqKeyBonusRow');
+        if (row) {
+            if (cat === 'CLE') {
+                row.classList.remove('hidden');
+                document.getElementById('eqKeyBonus').value = eq.specialEffectValue || 10;
+            } else {
+                row.classList.add('hidden');
+            }
         }
     }
     if (document.getElementById('eqBaseWeight')) document.getElementById('eqBaseWeight').value = eq.baseWeight || 0;
@@ -570,12 +593,18 @@ window.submitEquipment = async function () {
     let specialEffect = dto.specialEffect;
     let specialEffectValue = dto.specialEffectValue;
 
-    if (rarity !== 'EPIQUE' && rarity !== 'RELIQUE' && rarity !== 'MAUDIT') {
+    if (slot === 'CONSOMMABLE' && dto.consumableCategory === 'CLE') {
         specialEffect = 'NONE';
-        specialEffectValue = 0;
+        const keyBonusEl = document.getElementById('eqKeyBonus');
+        specialEffectValue = keyBonusEl ? (parseInt(keyBonusEl.value) || 0) : 10;
     } else {
-        if (specialEffect === 'NONE') {
+        if (rarity !== 'EPIQUE' && rarity !== 'RELIQUE' && rarity !== 'MAUDIT') {
+            specialEffect = 'NONE';
             specialEffectValue = 0;
+        } else {
+            if (specialEffect === 'NONE') {
+                specialEffectValue = 0;
+            }
         }
     }
 

@@ -34,7 +34,7 @@ import java.util.List;
 import static org.assertj.core.api.Assertions.assertThat;
 
 @ExtendWith(MockitoExtension.class)
-class CombatServiceMonsterAITest {
+class CombatTurnServiceMonsterAITest {
 
     @Mock
     private PersonnageRepository personnageRepository;
@@ -59,8 +59,11 @@ class CombatServiceMonsterAITest {
     @Mock
     private com.fasterxml.jackson.databind.ObjectMapper objectMapper;
 
+    @Mock
+    private SpellAvailabilityService spellAvailabilityService;
+
     @InjectMocks
-    private CombatService combatService;
+    private CombatTurnService combatTurnService;
 
     private CombatSession session;
     private Personnage player;
@@ -108,10 +111,7 @@ class CombatServiceMonsterAITest {
         // Define a turn order where it's the monster's turn (index 0 in enemies list)
         session.getTurnOrder().add(new InitiativeEntry(false, 0, 15, 10, 50));
         session.setCurrentTurnIndex(0);
-
-        combatService.getActiveSessions().put("test-session", session);
     }
-
     @Test
     void testMonsterBehaviorBrutal_DealsRawDamage() {
         baseMonster.setBehavior(MonsterBehavior.BRUTAL);
@@ -119,7 +119,7 @@ class CombatServiceMonsterAITest {
         baseMonster.setPower(10);
 
         // Before attack: HP = 200
-        combatService.processNextAutoTurn("test-session");
+        combatTurnService.processNextAutoTurn(session);
 
         // Brutal applies (str + pwr) as raw damage, ignoring armor/resistance
         // Total = 25 raw damage. Hero HP should be 200 - 25 = 175
@@ -131,7 +131,7 @@ class CombatServiceMonsterAITest {
         baseMonster.setBehavior(MonsterBehavior.CORRUPTEUR);
         player.setManaCurrent(100);
 
-        combatService.processNextAutoTurn("test-session");
+        combatTurnService.processNextAutoTurn(session);
         session.getCombatLog().forEach(System.err::println);
 
         // Corrupteur drains 5% of max mana/current mana (actually logic says
@@ -147,7 +147,7 @@ class CombatServiceMonsterAITest {
         activeMonster.getAsPersonnage().setPassiveState("BURN_ON_HIT", 10);
         activeMonster.getAsPersonnage().setPassiveState("POISON_ON_HIT", 5);
 
-        combatService.processNextAutoTurn("test-session");
+        combatTurnService.processNextAutoTurn(session);
 
         // Hero should now have a BURN and POISON DamageOverTimeEffect
         List<DamageOverTimeEffect> dots = player.getActiveDamageOverTimeEffects();
@@ -171,7 +171,7 @@ class CombatServiceMonsterAITest {
         session.getEnemies().clear();
         session.getEnemies().add(activeMonster);
 
-        combatService.processNextAutoTurn("test-session");
+        combatTurnService.processNextAutoTurn(session);
 
         // 5% of 200 is 10. Current HP should become 110.
         assertThat(activeMonster.getAsPersonnage().getHealthCurrent()).isEqualTo(110);
@@ -182,7 +182,7 @@ class CombatServiceMonsterAITest {
         activeMonster.setMaxHp(100);
         activeMonster.getAsPersonnage().setHealthCurrent(0);
 
-        combatService.processNextAutoTurn("test-session");
+        combatTurnService.processNextAutoTurn(session);
 
         // The monster was already dead, so it should be skipped. It does not attack.
         assertThat(player.getHealthCurrent()).isEqualTo(200);

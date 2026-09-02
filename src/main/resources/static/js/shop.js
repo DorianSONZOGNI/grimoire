@@ -36,7 +36,7 @@ function generateStandHtml(eq) {
         slotInfo.icon = eq.iconId;
     }
 
-    const statsHtml = STAT_DEFS
+    let statsHtml = STAT_DEFS
         .filter(s => eq[s.key] && eq[s.key] !== 0)
         .map(s => {
             const val = eq[s.key];
@@ -51,6 +51,30 @@ function generateStandHtml(eq) {
                 <span class="font-bold">${sign}${val}${suffix}</span>
             </div>`;
         }).join('');
+
+    if (isConsumable) {
+        const cat = eq.consumableCategory || eq.category;
+        if (cat === 'CLE' && eq.specialEffectValue) {
+            statsHtml += `<div class="shop-stand-stat" title="Bonus de Butin">
+                <div class="flex-center-gap">
+                    <span class="material-symbols-outlined text-sm" style="color:#fbbf24;">diamond</span>
+                    Butin
+                </div>
+                <span class="font-bold">+${eq.specialEffectValue}%</span>
+            </div>`;
+        }
+
+        const weight = eq.weight !== undefined ? eq.weight : (eq._weight !== undefined ? eq._weight : eq.baseWeight);
+        if (weight !== undefined && weight !== null && weight >= 0) {
+            statsHtml += `<div class="shop-stand-stat" title="Poids">
+                <div class="flex-center-gap">
+                    <span class="material-symbols-outlined text-sm text-muted">scale</span>
+                    Poids
+                </div>
+                <span class="font-bold">${+Number(weight).toFixed(1)}</span>
+            </div>`;
+        }
+    }
 
     let effectHtml = '';
     if (eq.specialEffect && eq.specialEffect !== 'NONE') {

@@ -49,12 +49,10 @@ public class CreationPassiveEffect extends VoiePassiveEffect {
             handleCastingTypeAdjust(e);
         } else if (event instanceof SpellCostAdjustEvent e) {
             handleCostAdjust(e);
-        } else if (event instanceof SpellCostPaidEvent e) {
-            handleCostPaid(e);
-        } else if (event instanceof SpellCastEvent e) {
-            handleSpellCast(e);
-        } else if (event instanceof TurnStartEvent e) {
-            handleTurnStart(e);
+        } else if (event instanceof SpellCostPaidEvent scpEvent) {
+            handleCostPaid(scpEvent);
+        } else if (event instanceof TurnStartEvent tsEvent) {
+            handleTurnStart(tsEvent);
         }
     }
 
@@ -111,8 +109,15 @@ public class CreationPassiveEffect extends VoiePassiveEffect {
         Spell spell = event.getSpell();
 
         if (hasBuds(caster) && canUsePassiveThisTurn(caster)) {
+            consumeBudAndMarkUsed(caster);
+
             int spellAction = resolveSpellAction(spell, spell.getCastingType());
-            if (spellAction >= 3) {
+            if (spellAction == 1) {
+                System.out.println(caster.getName() + " lance un sort instantané gratuit (Création, bourgeon consommé).");
+            } else if (spellAction == 2) {
+                System.out.println(caster.getName() + " transforme un sort banal en instantané (Création, bourgeon consommé).");
+            } else if (spellAction >= 3) {
+                System.out.println(caster.getName() + " obtient un bouclier pour le sort canalisé (Création, bourgeon consommé).");
                 int shieldDuration = spell.getChannelingDuration();
                 if (shieldDuration <= 0) {
                     shieldDuration = 3;
@@ -123,23 +128,6 @@ public class CreationPassiveEffect extends VoiePassiveEffect {
         }
     }
 
-    private void handleSpellCast(SpellCastEvent event) {
-        Personnage personnage = event.getSource();
-        Spell spell = event.getSpell();
-
-        if (hasBuds(personnage) && canUsePassiveThisTurn(personnage)) {
-            consumeBudAndMarkUsed(personnage);
-
-            int spellAction = resolveSpellAction(spell, spell.getCastingType());
-            if (spellAction == 1) {
-                System.out.println(personnage.getName() + " lance un sort instantané gratuit (Création, bourgeon consommé).");
-            } else if (spellAction == 2) {
-                System.out.println(personnage.getName() + " transforme un sort banal en instantané (Création, bourgeon consommé).");
-            } else if (spellAction >= 3) {
-                System.out.println(personnage.getName() + " obtient un bouclier pour le sort canalisé (Création, bourgeon consommé).");
-            }
-        }
-    }
 
     private void handleTurnStart(TurnStartEvent event) {
         Personnage p = event.getSource();
@@ -175,7 +163,7 @@ public class CreationPassiveEffect extends VoiePassiveEffect {
 
     @Override
     public void onSpellCast(Personnage personnage, Spell spell) {
-        handleSpellCast(new SpellCastEvent(personnage, null, spell));
+        // Obsolete: géré par handleCostPaid via le dispatcher unifié.
     }
 
     @Override

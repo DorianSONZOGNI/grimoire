@@ -14,7 +14,6 @@ import generation.grimoire.repository.PersonnageRepository;
 import generation.grimoire.repository.SpellRepository;
 import generation.grimoire.repository.auth.UserRepository;
 import generation.grimoire.repository.pve.DonjonRepository;
-import generation.grimoire.repository.pve.MonstreRepository;
 import generation.grimoire.repository.pve.SalleRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -32,7 +31,7 @@ import static org.mockito.Mockito.*;
 
 @ExtendWith(MockitoExtension.class)
 @SuppressWarnings("null")
-class CombatServiceProgressionTest {
+class CombatRoomServiceProgressionTest {
 
     @Mock
     private PersonnageRepository personnageRepository;
@@ -45,7 +44,10 @@ class CombatServiceProgressionTest {
     @Mock
     private SalleRepository salleRepository;
     @Mock
-    private MonstreRepository monstreRepository;
+    private SpellAvailabilityService spellAvailabilityService;
+    
+    @Mock
+    private CombatTurnService combatTurnService;
     @Mock
     private DonjonRepository donjonRepository;
     @Mock
@@ -54,7 +56,7 @@ class CombatServiceProgressionTest {
     private com.fasterxml.jackson.databind.ObjectMapper objectMapper;
 
     @InjectMocks
-    private CombatService combatService;
+    private CombatRoomService combatRoomService;
 
     private CombatSession session;
     private Personnage player;
@@ -94,10 +96,7 @@ class CombatServiceProgressionTest {
 
         session = new CombatSession("test-session", mockDonjon, players);
         session.setCurrentRoom(room1);
-
-        combatService.getActiveSessions().put("test-session", session);
     }
-
     @Test
     void testProceedToNextRoom_Normal() {
         // Room 1 has no trap damage set, so it shouldn't damage.
@@ -106,7 +105,7 @@ class CombatServiceProgressionTest {
         // When handleRoomStart runs for room2, it might need the salleRepository
         when(salleRepository.findById(2L)).thenReturn(java.util.Optional.of(room2));
 
-        combatService.proceedToNextRoom("test-session");
+        combatRoomService.proceedToNextRoom(session);
 
         assertThat(session.getCurrentRoomIndex()).isEqualTo(1);
         assertThat(session.getCurrentRoom()).isEqualTo(room2);
@@ -119,13 +118,12 @@ class CombatServiceProgressionTest {
         mockDonjon.setSalles(List.of(room1));
         session = new CombatSession("test-session", mockDonjon, List.of(player));
         session.setCurrentRoom(room1);
-        combatService.getActiveSessions().put("test-session", session);
 
         // Mock user/personnage saving at the end of dungeon
         when(userRepository.save(any(AppUser.class))).thenReturn(appUser);
         when(personnageRepository.save(any(Personnage.class))).thenReturn(player);
 
-        combatService.proceedToNextRoom("test-session");
+        combatRoomService.proceedToNextRoom(session);
 
         assertThat(session.isFinished()).isTrue();
         assertThat(session.getCombatLog())
@@ -138,7 +136,7 @@ class CombatServiceProgressionTest {
 
         when(salleRepository.findById(2L)).thenReturn(java.util.Optional.of(room2));
 
-        combatService.proceedToNextRoom("test-session");
+        combatRoomService.proceedToNextRoom(session);
 
         // Player took 50 trap damage
         assertThat(player.getHealthCurrent()).isEqualTo(150);
@@ -151,11 +149,13 @@ class CombatServiceProgressionTest {
         room1.setTrapDamageHpFixed(50);
 
         Equipment rope = new Equipment();
+        rope.setId(15L);
         rope.setName("Corde");
+        rope.setConsumableCategory(generation.grimoire.enumeration.ConsumableCategory.CORDE);
         session.getActiveConsumables().add(rope);
 
         // 1. Use rope
-        combatService.useRope("test-session");
+        combatRoomService.useRope(session, 15L);
 
         assertThat(session.getActiveConsumables()).isEmpty();
         assertThat(session.isRoomEventCompleted()).isTrue();
@@ -163,7 +163,7 @@ class CombatServiceProgressionTest {
 
         // 2. Proceed to next room
         when(salleRepository.findById(2L)).thenReturn(java.util.Optional.of(room2));
-        combatService.proceedToNextRoom("test-session");
+        combatRoomService.proceedToNextRoom(session);
 
         // Player took NO damage because trap was bypassed by rope!
         assertThat(player.getHealthCurrent()).isEqualTo(200);
@@ -176,7 +176,7 @@ class CombatServiceProgressionTest {
         room1.setEventSubType(EventSubType.PORTE_ETRANGE);
         room1.setDoorOutcomes("[]"); // Empty outcome for simplicity
 
-        combatService.openStrangeDoor("test-session");
+        combatRoomService.openStrangeDoor(session);
 
         assertThat(session.isRoomEventCompleted()).isTrue();
         assertThat(session.getCombatLog()).anyMatch(log -> log.contains("illusion"));

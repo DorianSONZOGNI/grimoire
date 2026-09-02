@@ -1,10 +1,13 @@
 package generation.grimoire.controller;
 
+import generation.grimoire.dto.personnage.PersonnageRequestDTO;
+import generation.grimoire.dto.personnage.PersonnageResponseDTO;
 import generation.grimoire.entity.personnage.Personnage;
+import generation.grimoire.mapper.PersonnageMapper;
+import generation.grimoire.repository.PersonnageRepository;
 import generation.grimoire.repository.SpiritualiteRepository;
 import generation.grimoire.repository.VoieRepository;
 import generation.grimoire.service.PersonnageService;
-import lombok.Data;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -17,30 +20,33 @@ import java.util.Map;
 public class PersonnageController {
 
     private final PersonnageService personnageService;
-    private final generation.grimoire.repository.PersonnageRepository personnageRepository;
+    private final PersonnageRepository personnageRepository;
     private final generation.grimoire.repository.auth.UserRepository userRepository;
     private final VoieRepository voieRepository;
     private final SpiritualiteRepository spiritualiteRepository;
+    private final PersonnageMapper personnageMapper;
 
     public PersonnageController(PersonnageService personnageService,
-            generation.grimoire.repository.PersonnageRepository personnageRepository,
+            PersonnageRepository personnageRepository,
             generation.grimoire.repository.auth.UserRepository userRepository,
             VoieRepository voieRepository,
-            SpiritualiteRepository spiritualiteRepository) {
+            SpiritualiteRepository spiritualiteRepository,
+            PersonnageMapper personnageMapper) {
         this.personnageService = personnageService;
         this.personnageRepository = personnageRepository;
         this.userRepository = userRepository;
         this.voieRepository = voieRepository;
         this.spiritualiteRepository = spiritualiteRepository;
+        this.personnageMapper = personnageMapper;
     }
 
     @GetMapping
-    public ResponseEntity<List<Map<String, Object>>> getAllPersonnages(java.security.Principal principal) {
+    public ResponseEntity<List<PersonnageResponseDTO>> getAllPersonnages(java.security.Principal principal) {
         if (principal == null) {
             return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
         }
         List<Personnage> all = personnageRepository.findByUser_Username(principal.getName());
-        List<Map<String, Object>> result = all.stream().map(this::toDto).toList();
+        List<PersonnageResponseDTO> result = all.stream().map(this::toResponseDto).toList();
         return ResponseEntity.ok(result);
     }
 
@@ -66,7 +72,7 @@ public class PersonnageController {
     }
 
     @GetMapping("/all")
-    public ResponseEntity<List<Map<String, Object>>> getAllAdmin(java.security.Principal principal) {
+    public ResponseEntity<List<PersonnageResponseDTO>> getAllAdmin(java.security.Principal principal) {
         if (principal == null)
             return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
         boolean isAdmin = ((org.springframework.security.core.Authentication) principal).getAuthorities().stream()
@@ -75,12 +81,12 @@ public class PersonnageController {
             return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).build();
 
         List<Personnage> all = personnageRepository.findAll();
-        List<Map<String, Object>> result = all.stream().map(this::toDto).toList();
+        List<PersonnageResponseDTO> result = all.stream().map(this::toResponseDto).toList();
         return ResponseEntity.ok(result);
     }
 
     @PostMapping
-    public ResponseEntity<Map<String, Object>> createOrUpdate(@RequestBody PersonnageCreationDto dto,
+    public ResponseEntity<Map<String, Object>> createOrUpdate(@RequestBody PersonnageRequestDTO dto,
             java.security.Principal principal) {
         if (principal == null) {
             return ResponseEntity.status(org.springframework.http.HttpStatus.UNAUTHORIZED).build();
@@ -143,8 +149,6 @@ public class PersonnageController {
                 personnage.setVoie(null);
             }
             personnage.setExperience(Math.max(0, dto.getExperience()));
-            // Note: voieLevel est dérivé de l'expérience, mais pour garder la
-            // rétrocompatibilité ou un éventuel forçage :
             if (dto.getVoieLevel() > 1 && dto.getExperience() == 0) {
                 personnage.setVoieLevel(Math.max(1, Math.min(5, dto.getVoieLevel())));
             }
@@ -170,7 +174,7 @@ public class PersonnageController {
 
             Map<String, Object> response = new HashMap<>();
             response.put("message", message);
-            response.put("personnage", toDto(saved));
+            response.put("personnage", toResponseDto(saved));
             return ResponseEntity.ok(response);
         } catch (Throwable e) {
             e.printStackTrace();
@@ -200,38 +204,14 @@ public class PersonnageController {
         return ResponseEntity.notFound().build();
     }
 
-    private Map<String, Object> toDto(Personnage p) {
-        Map<String, Object> map = new HashMap<>();
-        map.put("id", p.getId());
-        map.put("name", p.getName());
-        map.put("ownerUsername", p.getUser() != null ? p.getUser().getUsername() : "Inconnu");
+    private PersonnageResponseDTO toResponseDto(Personnage p) {
+        PersonnageResponseDTO dto = personnageMapper.toResponse(p);
 
-        // Base stats pour le formulaire d'édition
-        map.put("healthMax", p.getBaseHealthMax());
-        map.put("manaMax", p.getBaseManaMax());
-        map.put("power", p.getPower());
-        map.put("strength", p.getStrength());
-        map.put("armor", p.getArmor());
-        map.put("resistance", p.getResistance());
-        map.put("speed", p.getSpeed());
-        map.put("crit", p.getCrit());
-        map.put("regenHp", p.getRegenHp());
-        map.put("regenMana", p.getRegenMana());
-
-        // Total stats pour l'affichage (inclus équipements, buffs, passifs)
-        map.put("totalHealthMax", p.getTotalHealthMax());
-        map.put("totalManaMax", p.getTotalManaMax());
-        map.put("totalPower", p.getEffectiveStat(generation.grimoire.enumeration.StatType.POWER));
-        map.put("totalStrength", p.getEffectiveStat(generation.grimoire.enumeration.StatType.STRENGTH));
-        map.put("totalArmor", p.getEffectiveStat(generation.grimoire.enumeration.StatType.ARMURE));
-        map.put("totalResistance", p.getEffectiveStat(generation.grimoire.enumeration.StatType.RESISTANCE));
-        map.put("totalSpeed", p.getEffectiveStat(generation.grimoire.enumeration.StatType.SPEED));
-        map.put("totalCrit", p.getEffectiveStat(generation.grimoire.enumeration.StatType.CRIT));
-
-        map.put("totalRegenHp", p.getTotalRegenHp());
-        map.put("totalRegenMana", p.getTotalRegenMana());
-
-        map.put("experience", p.getExperience());
+        if (p.getUser() != null) {
+            dto.setOwnerUsername(p.getUser().getUsername());
+        } else {
+            dto.setOwnerUsername("Inconnu");
+        }
 
         int currentLevelXp = 0;
         int nextLevelXp = 100;
@@ -252,13 +232,8 @@ public class PersonnageController {
             currentLevelXp = 1400;
             nextLevelXp = 1400;
         }
-
-        map.put("currentLevelXp", currentLevelXp);
-        map.put("nextLevelXp", nextLevelXp);
-
-        map.put("voieLevel", p.getVoieLevel());
-        map.put("spiritualiteLevel", p.getSpiritualiteLevel());
-        map.put("spiritualiteExperience", p.getSpiritualiteExperience());
+        dto.setCurrentLevelXp(currentLevelXp);
+        dto.setNextLevelXp(nextLevelXp);
 
         int currentLevelSpiritXp = 0;
         int nextLevelSpiritXp = 100;
@@ -273,45 +248,22 @@ public class PersonnageController {
             currentLevelSpiritXp = 350;
             nextLevelSpiritXp = 350;
         }
-
-        map.put("currentLevelSpiritXp", currentLevelSpiritXp);
-        map.put("nextLevelSpiritXp", nextLevelSpiritXp);
+        dto.setCurrentLevelSpiritXp(currentLevelSpiritXp);
+        dto.setNextLevelSpiritXp(nextLevelSpiritXp);
 
         if (p.getVoie() != null) {
-            Map<String, Object> voie = new HashMap<>();
-            voie.put("id", p.getVoie().getId());
-            voie.put("nom", p.getVoie().getNom());
-            map.put("voie", voie);
+            PersonnageResponseDTO.VoieRef voie = new PersonnageResponseDTO.VoieRef();
+            voie.setId(p.getVoie().getId());
+            voie.setNom(p.getVoie().getNom());
+            dto.setVoie(voie);
         }
         if (p.getSpiritualite() != null) {
-            Map<String, Object> spirit = new HashMap<>();
-            spirit.put("id", p.getSpiritualite().getId());
-            spirit.put("nom", p.getSpiritualite().getNom());
-            map.put("spiritualite", spirit);
+            PersonnageResponseDTO.SpiritualiteRef spirit = new PersonnageResponseDTO.SpiritualiteRef();
+            spirit.setId(p.getSpiritualite().getId());
+            spirit.setNom(p.getSpiritualite().getNom());
+            dto.setSpiritualite(spirit);
         }
 
-        return map;
-    }
-
-    @Data
-    public static class PersonnageCreationDto {
-        private Long id;
-        private String name;
-        private int healthMax = 100;
-        private int manaMax = 100;
-        private int power = 10;
-        private int strength = 10;
-        private int armor = 5;
-        private int resistance = 5;
-        private int speed = 1;
-        private int crit = 5;
-        private int regenHp = 2;
-        private int regenMana = 4;
-        private Long voieId;
-        private int voieLevel = 1;
-        private int experience = 0;
-        private Long spiritualiteId;
-        private int spiritualiteLevel = 1;
-        private int spiritualiteExperience = 0;
+        return dto;
     }
 }

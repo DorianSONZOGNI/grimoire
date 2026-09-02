@@ -1251,12 +1251,14 @@ async function acceptAlteration() {
     }
 }
 
-async function useRope() {
+async function useRope(equipmentId) {
     if (!pageState.sessionId || pageState.isProcessing) return;
     pageState.isProcessing = true;
     setButtonsProcessing(true);
     try {
-        const res = await globalFetch(`/api/pve/combat/${pageState.sessionId}/use-rope`, {
+        let url = `/api/pve/combat/${pageState.sessionId}/use-rope`;
+        if (equipmentId) url += `?equipmentId=${equipmentId}`;
+        const res = await globalFetch(url, {
             method: 'POST'
         });
         if (!res.ok) {
@@ -1386,7 +1388,7 @@ async function addLootedConsumable(itemName, iconElement) {
     }
 }
 
-async function openChest(useKey = false) {
+async function openChest(equipmentId) {
     if (!pageState.sessionId || pageState.isProcessing) return;
     pageState.isProcessing = true;
     setButtonsProcessing(true);
@@ -1396,13 +1398,15 @@ async function openChest(useKey = false) {
         if (btn) btn.disabled = true;
         if (btnKey) btnKey.disabled = true;
 
-        if (useKey && btnKey) {
+        if (equipmentId && btnKey) {
             btnKey.innerHTML = `<span class="material-symbols-outlined spin">sync</span> Ouverture...`;
-        } else if (!useKey && btn) {
+        } else if (!equipmentId && btn) {
             btn.innerHTML = `<span class="material-symbols-outlined spin">sync</span> Ouverture...`;
         }
 
-        const res = await globalFetch(`/api/pve/combat/${pageState.sessionId}/open-chest?useKey=${useKey}`, { method: 'POST' });
+        let url = `/api/pve/combat/${pageState.sessionId}/open-chest`;
+        if (equipmentId) url += `?equipmentId=${equipmentId}`;
+        const res = await globalFetch(url, { method: 'POST' });
         if (!res.ok) {
             const err = await res.text();
             if (typeof showNotif !== 'undefined') window.showNotif("Erreur : " + err, true);
@@ -1583,6 +1587,16 @@ function setMultiActionsEnabled(enabled) {
 
 function updateUI(data) {
     resetCombatTimeoutWarning(data.finished);
+
+    if (pageState.currentSessionData && pageState.currentSessionData.activePlayer && data.activePlayer) {
+        if (pageState.currentSessionData.activePlayer.name !== data.activePlayer.name) {
+            const typeAll = document.querySelector('input[name="filterCastingType"][value="ALL"]');
+            if (typeAll) typeAll.checked = true;
+            const levelAll = document.querySelector('input[name="filterLevel"][value="ALL"]');
+            if (levelAll) levelAll.checked = true;
+        }
+    }
+
     pageState.currentSessionData = data;
 
     if (data.finished) {
@@ -1873,6 +1887,11 @@ function updateUI(data) {
                 btnCont.onclick = nextRoom;
             }
 
+            const actionContainer = document.getElementById('eventActionContainer');
+            if (actionContainer) {
+                actionContainer.querySelectorAll('.dynamic-key-btn').forEach(b => b.remove());
+            }
+
             if (data.currentRoom.type === 'TREASURE') {
                 icon.textContent = data.roomEventCompleted ? 'lock_open' : 'lock';
                 icon.className = 'material-symbols-outlined mb-4 text-[5rem] text-gold';
@@ -2005,10 +2024,19 @@ function updateUI(data) {
                     lootContainer.innerHTML = ''; // reset
                     delete lootContainer.dataset.filled;
 
-                    const btnKey = document.getElementById('btnOpenChestKey');
-                    if (btnKey) {
-                        const hasKey = data.activeConsumables && data.activeConsumables.some(eq => eq.name === 'Clé');
-                        btnKey.classList.toggle('hidden', !hasKey);
+                    const actionContainer = document.getElementById('eventActionContainer');
+                    if (actionContainer && btnCont) {
+                        const keys = data.activeConsumables ? data.activeConsumables.filter(eq => eq.consumableCategory === 'CLE') : [];
+                        keys.forEach(key => {
+                            const btn = document.createElement('button');
+                            btn.className = 'action-btn epic dynamic-key-btn';
+                            btn.onclick = () => openChest(key.id);
+                            const bonus = key.specialEffectValue > 0 ? key.specialEffectValue : 10;
+                            btn.innerHTML = `<span class="material-symbols-outlined">vpn_key</span> Ouvrir (${key.name} : +${bonus}% de butin)`;
+                            actionContainer.insertBefore(btn, btnCont);
+                        });
+                        const btnKey = document.getElementById('btnOpenChestKey');
+                        if (btnKey) btnKey.classList.add('hidden');
                     }
                 }
             } else if (data.currentRoom.type === 'EVENT') {
@@ -2522,12 +2550,23 @@ function updateUI(data) {
                         btnOpen.classList.add('hidden');
 
                         if (data.currentRoom.trapHasRopeOption) {
-                            const hasRope = data.activeConsumables && data.activeConsumables.some(eq => eq.name === 'Corde');
+                            const ropes = data.activeConsumables ? data.activeConsumables.filter(eq => eq.consumableCategory === 'CORDE') : [];
+                            let ropeButtonsHtml = '';
+                            if (ropes.length > 0) {
+                                ropes.forEach(rope => {
+                                    ropeButtonsHtml += `<button type="button" class="btn" style="flex: 1; max-width: 250px; background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; margin-bottom: 0.5rem;" onclick="event.preventDefault(); useRope(${rope.id});"><span class="material-symbols-outlined text-[1.1rem] align-middle mr-1">gesture</span> Utiliser ${rope.name}</button>`;
+                                });
+                            } else {
+                                ropeButtonsHtml = `<button type="button" class="btn" disabled title="Vous n'avez pas de corde" style="flex: 1; max-width: 250px; background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: not-allowed; opacity: 0.5; transition: all 0.2s ease; margin-bottom: 0.5rem;"><span class="material-symbols-outlined text-[1.1rem] align-middle mr-1">gesture</span> Utiliser une Corde</button>`;
+                            }
+
                             lootContainer.classList.remove('hidden'); lootContainer.classList.add('flex');
                             lootContainer.innerHTML = `
                                 <div class="flex-col items-center w-full">
-                                    <div class="btn-row">
-                                        <button type="button" class="btn" ${!hasRope ? 'disabled title="Vous n\'avez pas de corde"' : ''} style="flex: 1; max-width: 250px; background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: ${hasRope ? 'pointer' : 'not-allowed'}; opacity: ${hasRope ? '1' : '0.5'}; transition: all 0.2s ease;" onclick="event.preventDefault(); ${hasRope ? 'useRope();' : ''}">Utiliser une Corde</button>
+                                    <div class="flex-col items-center w-full" style="display:flex;">
+                                        ${ropeButtonsHtml}
+                                    </div>
+                                    <div class="btn-row" style="margin-top: 1rem;">
                                         <button type="button" class="btn text-muted" onclick="event.preventDefault(); nextRoom();" style="flex: 1; max-width: 250px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">Subir le piège et passer</button>
                                     </div>
                                 </div>
@@ -3757,7 +3796,14 @@ function renderSpells(spells) {
     }
 
     // We sort all filtered spells by level, no grouping to save space
-    filteredSpells.sort((a, b) => (a.niveau || 1) - (b.niveau || 1));
+    const castingWeight = { 'INSTANTANE': 1, 'BANAL': 2, 'CANALISE': 3 };
+    filteredSpells.sort((a, b) => {
+        const lvlDiff = (a.niveau || 1) - (b.niveau || 1);
+        if (lvlDiff !== 0) return lvlDiff;
+        const weightA = castingWeight[a.castingType] || 2;
+        const weightB = castingWeight[b.castingType] || 2;
+        return weightA - weightB;
+    });
 
     let html = `
         <div class="csp-level-group" style="padding-top: 0.5rem;">
