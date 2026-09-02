@@ -298,10 +298,19 @@ export function getSpellEffectsSummaryHtml(sp) {
                     const pct = Math.round((e.percentage || 0) * 100);
                     detailsStr = `➔ inflige ${pct}% de ${ui.formatSrc(e.damageSource || e.source)} en Dégâts ${dtHtml}`;
                 } else if (t === 'HealFixed' || t === 'FIXED_HEAL') {
-                    detailsStr = `➔ rend ${e.healAmount || 0} PV`;
+                    const amt = e.healAmount || 0;
+                    if (amt < 0) {
+                        detailsStr = target === 'CASTER' ? `➔ coûte ${Math.abs(amt)} PV` : `➔ retire ${Math.abs(amt)} PV`;
+                    } else {
+                        detailsStr = `➔ rend ${amt} PV`;
+                    }
                 } else if (t === 'HealPercentage' || t === 'PERCENTAGE_HEAL') {
                     const pct = Math.round((e.percentage || 0) * 100);
-                    detailsStr = `➔ rend ${pct}% de ${ui.formatSrc(e.healSource || e.source)} en PV`;
+                    if (pct < 0) {
+                        detailsStr = target === 'CASTER' ? `➔ coûte ${Math.abs(pct)}% de ${ui.formatSrc(e.healSource || e.source)} en PV` : `➔ retire ${Math.abs(pct)}% de ${ui.formatSrc(e.healSource || e.source)} en PV`;
+                    } else {
+                        detailsStr = `➔ rend ${pct}% de ${ui.formatSrc(e.healSource || e.source)} en PV`;
+                    }
                 } else if (t === 'AME_DETACHEE') {
                     detailsStr = `➔ +5 Dégâts Phys. et +40% Dégâts Phys. (2 tours)`;
                 } else if (t === 'BuffDebuff' || t === 'BUFF_DEBUFF' || t === 'POISON' || t === 'BURN') {
@@ -340,10 +349,19 @@ export function getSpellEffectsSummaryHtml(sp) {
                     const durStr = e.duration > 0 ? ` sur ${e.duration} tours` : '';
                     detailsStr = `➔ HoT de ${parts.join(' + ')} PV/tour${durStr}`;
                 } else if (t === 'ManaFixed' || t === 'FIXED_MANA') {
-                    detailsStr = `➔ rend ${e.manaAmount || 0} Mana`;
+                    const amt = e.manaAmount || 0;
+                    if (amt < 0) {
+                        detailsStr = target === 'CASTER' ? `➔ coûte ${Math.abs(amt)} Mana` : `➔ retire ${Math.abs(amt)} Mana`;
+                    } else {
+                        detailsStr = `➔ rend ${amt} Mana`;
+                    }
                 } else if (t === 'ManaPercentage' || t === 'PERCENTAGE_MANA') {
                     const pct = Math.round((e.percentage || 0) * 100);
-                    detailsStr = `➔ rend ${pct}% de ${ui.formatSrc(e.manaSource || e.source)} en Mana`;
+                    if (pct < 0) {
+                        detailsStr = target === 'CASTER' ? `➔ coûte ${Math.abs(pct)}% de ${ui.formatSrc(e.manaSource || e.source)} en Mana` : `➔ retire ${Math.abs(pct)}% de ${ui.formatSrc(e.manaSource || e.source)} en Mana`;
+                    } else {
+                        detailsStr = `➔ rend ${pct}% de ${ui.formatSrc(e.manaSource || e.source)} en Mana`;
+                    }
                 } else if (t === 'ManaOverTime' || t === 'MOT' || t === 'MANA_OVER_TIME') {
                     let parts = [];
                     const fm = e.fixedManaPerTick || e.manaAmount || 0;
