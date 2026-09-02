@@ -104,6 +104,8 @@ document.addEventListener('DOMContentLoaded', async () => {
             manaMax: parseInt(document.getElementById('mMana').value) || 0,
             regenMana: parseInt(document.getElementById('mRegenMana').value) || 0,
             startManaPct: parseInt(document.getElementById('mStartManaPct').value) || 0,
+            startShield: parseInt(document.getElementById('mStartShield').value) || 0,
+            startShieldDuration: parseInt(document.getElementById('mStartShieldDuration').value) || 0,
             speed: parseInt(document.getElementById('mSpeed').value) || 0,
             crit: parseInt(document.getElementById('mCrit').value) || 0,
             strength: parseInt(document.getElementById('mStrength').value) || 0,
@@ -1640,6 +1642,7 @@ window.renderMonstersList = function () {
                             <span class="flex-center gap-1" ><span class="material-symbols-outlined text-success icon-sm" >shield</span> Rés: ${m.resistance}</span>
                             <span class="flex-center gap-1" ><span class="material-symbols-outlined text-base text-amber-500" >monetization_on</span> Or: ${m.rewardGold}</span>
                             <span class="flex-center gap-1" ><span class="material-symbols-outlined text-base text-amber-300" >stars</span> XP: ${m.rewardExp}</span>
+                            ${m.startShield > 0 ? `<span class="flex-center gap-1" ><span class="material-symbols-outlined text-base text-info" >security</span> Shield: ${m.startShield}</span>` : ''}
                         </div>
                     </div>
                     ${mutationsHtml}
@@ -1677,6 +1680,8 @@ async function editMonster(id) {
             document.getElementById('mMana').value = m.manaMax || 0;
             document.getElementById('mRegenMana').value = m.regenMana || 0;
             document.getElementById('mStartManaPct').value = m.startManaPct !== undefined && m.startManaPct !== 0 ? m.startManaPct : 100;
+            document.getElementById('mStartShield').value = m.startShield || 0;
+            document.getElementById('mStartShieldDuration').value = m.startShieldDuration || -1;
             document.getElementById('mSpeed').value = m.speed;
             document.getElementById('mCrit').value = m.crit || 0;
             document.getElementById('mStrength').value = m.strength;

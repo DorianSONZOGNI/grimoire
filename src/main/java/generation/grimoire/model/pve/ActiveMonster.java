@@ -40,6 +40,11 @@ public class ActiveMonster {
         this.asPersonnage.setSpeed(base.getSpeed());
         this.asPersonnage.setCrit(base.getCrit());
         this.asPersonnage.setTeamId("2"); // Team Ennemi (pour les sorts)
+
+        if (base.getStartShield() > 0) {
+            int shieldDuration = base.getStartShieldDuration() > 0 ? base.getStartShieldDuration() : -1;
+            this.asPersonnage.addShield(base.getStartShield(), shieldDuration, "Bouclier Initial");
+        }
     }
 
     public int getCurrentHp() {
