@@ -8,6 +8,8 @@ import org.springframework.security.access.AccessDeniedException;
 import org.springframework.web.bind.annotation.ControllerAdvice;
 import org.springframework.web.bind.annotation.ExceptionHandler;
 
+import org.springframework.web.servlet.resource.NoResourceFoundException;
+
 import java.util.Map;
 import java.util.NoSuchElementException;
 
@@ -35,6 +37,14 @@ public class GlobalExceptionHandler {
         return ResponseEntity
                 .status(HttpStatus.NOT_FOUND)
                 .body(Map.of("error", "Ressource introuvable"));
+    }
+
+    @ExceptionHandler(NoResourceFoundException.class)
+    public ResponseEntity<Map<String, String>> handleNoResourceFound(NoResourceFoundException ex) {
+        log.warn("Fichier statique introuvable: {}", ex.getResourcePath());
+        return ResponseEntity
+                .status(HttpStatus.NOT_FOUND)
+                .body(Map.of("error", "Fichier introuvable: " + ex.getResourcePath()));
     }
 
     @ExceptionHandler(AccessDeniedException.class)
