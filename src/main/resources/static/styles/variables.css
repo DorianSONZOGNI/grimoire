@@ -194,12 +194,12 @@ body {
 .text-effect-mana { color: #7dd3fc; }
 .text-effect-buff { color: #fde68a; }
 .text-effect-poison { color: #d9f99d; }
-.text-effect-burn { color: #fed7aa; }
+.text-effect-burn { color: #fb923c; } /* orange-400 */
 .text-effect-purge { color: #ffffff; }
 .text-effect-ame { color: #fda4af; }
 .text-effect-heat { color: #fca5a5; }
 .text-effect-bud { color: #6ee7b7; }
 
 
-.text-effect-debuff { color: #fb923c; } /* orange-400 */
+.text-effect-debuff { color: #c084fc; } /* fuchsia-400 */
 
