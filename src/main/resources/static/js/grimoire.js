@@ -1,5 +1,5 @@
 import { state } from './state.js';
-import { javaClassToCode, TARGET_LABELS, TARGET_CSS_CLASSES } from './constants.js';
+import { javaClassToCode, TARGET_LABELS, TARGET_CSS_CLASSES, EFFECT_TYPE_CSS_CLASSES } from './constants.js';
 import * as ui from './ui.js?v=2';
 import * as api from './api.js';
 
@@ -275,7 +275,13 @@ export function getSpellEffectsSummaryHtml(sp) {
                     'AME_DETACHEE': 'Âme Détachée',
                     'BUD': 'Bourgeon'
                 };
-                const eTypeStr = typeNames[rawType] || rawType || 'Effet';
+                let eTypeStr = typeNames[rawType] || rawType || 'Effet';
+                let eTypeClass = EFFECT_TYPE_CSS_CLASSES[t] || 'text-slate-200';
+                
+                if (['BuffDebuff', 'BUFF_DEBUFF'].includes(t) || ['BuffDebuffEffect', 'BUFF_DEBUFF', 'CONSUMABLE_BUFF'].includes(rawType)) {
+                    eTypeStr = isBad ? 'Débuff' : 'Buff';
+                    eTypeClass = isBad ? 'text-effect-debuff' : 'text-effect-buff';
+                }
 
                 const dt = (e.damageType || 'MAGIC').toLowerCase();
                 let dtColor = '#a855f7';
@@ -450,7 +456,7 @@ export function getSpellEffectsSummaryHtml(sp) {
                             ${keyBadge}
                             ${dsBadge}
                             <span class="font-semibold ${tClass}">[${targetText}]</span>
-                            <span class="font-medium" style="color:var(--spell-color, #38bdf8);">${eTypeStr}</span>
+                            <span class="font-medium ${eTypeClass}">${eTypeStr}</span>
                             <span class="text-slate-200">${detailsStr}</span>
                         </div>
                     `;
