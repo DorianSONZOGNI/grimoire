@@ -149,7 +149,7 @@ class CombatRewardTest {
         when(personnageRepository.save(any(Personnage.class))).thenReturn(player);
         when(userRepository.save(any(AppUser.class))).thenReturn(appUser);
 
-        combatRoomService.openChest(session, false);
+        combatRoomService.openChest(session, null);
 
         assertThat(player.getExperience()).isEqualTo(600); // 500 + 100 exp from chest
         assertThat(appUser.getMonnaie()).isEqualTo(250); // 100 + 150 gold from chest
@@ -167,13 +167,15 @@ class CombatRewardTest {
         room.setLootTable(List.of(entry));
 
         Equipment key = new Equipment();
+        key.setId(10L);
         key.setName("Clé");
+        key.setConsumableCategory(generation.grimoire.enumeration.ConsumableCategory.CLE);
         session.getActiveConsumables().add(key);
 
         when(personnageRepository.save(any(Personnage.class))).thenReturn(player);
         when(userRepository.save(any(AppUser.class))).thenReturn(appUser);
 
-        combatRoomService.openChest(session, true);
+        combatRoomService.openChest(session, 10L);
 
         // Key removed
         assertThat(session.getActiveConsumables()).isEmpty();

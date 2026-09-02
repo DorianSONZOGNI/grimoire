@@ -338,11 +338,11 @@ public class CombatService {
     // Room interactions — delegates to CombatRoomService
     // ═══════════════════════════════════════════════════════════════════════
 
-    public CombatSession openChest(String sessionId, boolean useKey) {
+    public CombatSession openChest(String sessionId, Long equipmentId) {
         CombatSession session = getSession(sessionId);
         if (session == null || session.isFinished())
             return session;
-        return combatRoomService.openChest(session, useKey);
+        return combatRoomService.openChest(session, equipmentId);
     }
 
     public CombatSession acceptAlteration(String sessionId, Long anomalyId, Long characterId) {
@@ -352,11 +352,11 @@ public class CombatService {
         return combatRoomService.acceptAlteration(session, anomalyId, characterId);
     }
 
-    public CombatSession useRope(String sessionId) {
+    public CombatSession useRope(String sessionId, Long equipmentId) {
         CombatSession session = getSession(sessionId);
         if (session == null || session.isFinished())
             return session;
-        return combatRoomService.useRope(session);
+        return combatRoomService.useRope(session, equipmentId);
     }
 
     public CombatSession consumeItem(String sessionId, Long consumableId, Long targetCharacterId, String username) {

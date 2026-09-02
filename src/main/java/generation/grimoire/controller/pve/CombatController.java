@@ -215,9 +215,9 @@ public class CombatController {
 
     @PostMapping("/{sessionId}/open-chest")
     public ResponseEntity<?> openChest(@PathVariable("sessionId") String sessionId,
-            @RequestParam(required = false, defaultValue = "false") boolean useKey) {
+            @RequestParam(required = false) Long equipmentId) {
         try {
-            CombatSession session = combatService.openChest(sessionId, useKey);
+            CombatSession session = combatService.openChest(sessionId, equipmentId);
             combatService.broadcastIfMulti(session);
             return ResponseEntity.ok(session);
         } catch (Exception e) {
@@ -241,9 +241,10 @@ public class CombatController {
     }
 
     @PostMapping("/{sessionId}/use-rope")
-    public ResponseEntity<?> useRope(@PathVariable("sessionId") String sessionId) {
+    public ResponseEntity<?> useRope(@PathVariable("sessionId") String sessionId,
+            @RequestParam(required = false) Long equipmentId) {
         try {
-            CombatSession session = combatService.useRope(sessionId);
+            CombatSession session = combatService.useRope(sessionId, equipmentId);
             combatService.broadcastIfMulti(session);
             return ResponseEntity.ok(session);
         } catch (Exception e) {

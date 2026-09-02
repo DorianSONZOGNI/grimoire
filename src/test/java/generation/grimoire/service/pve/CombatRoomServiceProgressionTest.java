@@ -149,11 +149,13 @@ class CombatRoomServiceProgressionTest {
         room1.setTrapDamageHpFixed(50);
 
         Equipment rope = new Equipment();
+        rope.setId(15L);
         rope.setName("Corde");
+        rope.setConsumableCategory(generation.grimoire.enumeration.ConsumableCategory.CORDE);
         session.getActiveConsumables().add(rope);
 
         // 1. Use rope
-        combatRoomService.useRope(session);
+        combatRoomService.useRope(session, 15L);
 
         assertThat(session.getActiveConsumables()).isEmpty();
         assertThat(session.isRoomEventCompleted()).isTrue();

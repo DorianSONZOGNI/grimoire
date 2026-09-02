@@ -146,7 +146,7 @@ class CombatRoomService {
         }
     }
 
-    CombatSession openChest(CombatSession session, boolean useKey) {
+    CombatSession openChest(CombatSession session, Long equipmentId) {
         if (session.getCurrentRoom().getType() != generation.grimoire.enumeration.RoomType.TREASURE) {
             throw new RuntimeException("Ce n'est pas une salle de trésor !");
         }
@@ -154,21 +154,26 @@ class CombatRoomService {
             throw new RuntimeException("Le coffre a déjà été ouvert.");
         }
 
+        boolean useKey = (equipmentId != null);
+        double extraLootPercent = 0.0;
         if (useKey) {
             Equipment key = null;
             for (Equipment eq : session.getActiveConsumables()) {
-                if ("Clé".equalsIgnoreCase(eq.getName())) {
+                if (eq.getId().equals(equipmentId) && eq.getConsumableCategory() == generation.grimoire.enumeration.ConsumableCategory.CLE) {
                     key = eq;
                     break;
                 }
             }
             if (key == null) {
-                throw new RuntimeException("L'équipe ne possède pas de Clé !");
+                throw new RuntimeException("L'équipe ne possède pas cette Clé !");
             }
+            
+            // Use specialEffectValue as percentage, default to 10 if 0 (backward compatibility)
+            extraLootPercent = key.getSpecialEffectValue() > 0 ? key.getSpecialEffectValue() : 10.0;
+            
             session.getActiveConsumables().remove(key);
             equipmentRepository.delete(key);
-            session.addLog(
-                    "Vous utilisez une Clé pour ouvrir les compartiments secrets du coffre ! (+10% de chance de butin)");
+            session.addLog("Vous utilisez " + key.getName() + " pour ouvrir les compartiments secrets du coffre ! (+" + extraLootPercent + "% de chance de butin)");
         }
 
         int gold = session.getCurrentRoom().getTreasureGold();
@@ -205,7 +210,7 @@ class CombatRoomService {
         if (session.getCurrentRoom().getLootTable() != null) {
             for (LootEntry entry : session.getCurrentRoom().getLootTable()) {
                 double roll = rnd.nextDouble() * 100.0;
-                double proba = entry.getProbability() + (useKey ? 10.0 : 0.0);
+                double proba = entry.getProbability() + extraLootPercent;
                 if (roll <= proba && entry.getEquipment() != null) {
                     java.util.Set<Long> rewardedUserIds = new java.util.HashSet<>();
                     for (Personnage p : session.getPlayers()) {
@@ -561,7 +566,7 @@ class CombatRoomService {
         return session;
     }
 
-    CombatSession useRope(CombatSession session) {
+    CombatSession useRope(CombatSession session, Long equipmentId) {
         if (session.getCurrentRoom().getType() != generation.grimoire.enumeration.RoomType.EVENT ||
                 session.getCurrentRoom().getEventSubType() != generation.grimoire.enumeration.EventSubType.PIEGE) {
             throw new RuntimeException("Ce n'est pas un piège !");
@@ -577,20 +582,20 @@ class CombatRoomService {
 
         Equipment rope = null;
         for (Equipment eq : session.getActiveConsumables()) {
-            if ("Corde".equalsIgnoreCase(eq.getName())) {
+            if (eq.getId().equals(equipmentId) && eq.getConsumableCategory() == generation.grimoire.enumeration.ConsumableCategory.CORDE) {
                 rope = eq;
                 break;
             }
         }
 
         if (rope == null) {
-            throw new RuntimeException("L'équipe ne possède pas de Corde !");
+            throw new RuntimeException("L'équipe ne possède pas cette Corde !");
         }
 
         session.getActiveConsumables().remove(rope);
         equipmentRepository.delete(rope);
 
-        session.addLog("Vous utilisez une Corde pour éviter le piège !");
+        session.addLog("Vous utilisez " + rope.getName() + " pour éviter le piège !");
         session.setRoomEventCompleted(true);
         return session;
     }

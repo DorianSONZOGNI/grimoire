@@ -331,7 +331,7 @@ window.generateEquipmentStatsHtml = function(eq, cssClass = 'vault-stat-chip') {
         { key: 'consumableMissingHpPercent', label: 'PV Manq', icon: 'healing', color: '#f43f5e', isPercent: true },
         { key: 'consumableMissingManaPercent', label: 'Mana Manq', icon: 'cyclone', color: '#a855f7', isPercent: true }
     ];
-    return statsDef
+    let html = statsDef
         .filter(s => eq[s.key] && eq[s.key] !== 0)
         .map(s => {
             const val = eq[s.key];
@@ -343,6 +343,26 @@ window.generateEquipmentStatsHtml = function(eq, cssClass = 'vault-stat-chip') {
                 ${sign}${val}${suffix}
             </span>`;
         }).join('');
+
+    if (eq.slot === 'CONSOMMABLE' || eq.isConsumable) {
+        const cat = eq.consumableCategory || eq.category; 
+        if (cat === 'CLE' && eq.specialEffectValue) {
+            html += `<span class="${cssClass}" title="Bonus de Butin">
+                <span class="material-symbols-outlined text-xs" style="color:#fbbf24;">diamond</span>
+                +${eq.specialEffectValue}%
+            </span>`;
+        }
+
+        const weight = eq.weight !== undefined ? eq.weight : (eq._weight !== undefined ? eq._weight : eq.baseWeight);
+        if (weight !== undefined && weight !== null && weight > 0) {
+            html += `<span class="${cssClass}" title="Poids">
+                <span class="material-symbols-outlined text-xs text-muted">scale</span>
+                ${+Number(weight).toFixed(1)}
+            </span>`;
+        }
+    }
+
+    return html;
 };
 
 window.generateEquipmentEffectHtml = function(eq, baseClass = 'vault-card-effect') {

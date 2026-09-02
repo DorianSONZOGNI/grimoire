@@ -22,6 +22,10 @@ function resetEqForm() {
         const label = document.getElementById('eqConsumableCategoryLabel');
         if (label) label.innerHTML = '<span class="material-symbols-outlined cs-icon text-muted">inventory_2</span> Autre';
     }
+    if (document.getElementById('eqKeyBonusRow')) {
+        document.getElementById('eqKeyBonusRow').classList.add('hidden');
+        document.getElementById('eqKeyBonus').value = 10;
+    }
     if (document.getElementById('eqBaseWeight')) document.getElementById('eqBaseWeight').value = 0;
 
     const anomaliesContainer = document.getElementById('priceAnomaliesContainer');
