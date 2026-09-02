@@ -22,7 +22,7 @@ export function renderFilteredSpells() {
     const searchVal = (document.getElementById('filterSearch')?.value || '').toLowerCase().trim();
     const effectVal = document.getElementById('filterEffect')?.value || 'ALL';
     const levelVal = document.getElementById('filterLevel')?.value || 'ALL';
-    const sortByVal = document.getElementById('sortBy')?.value || 'NEWEST';
+    const sortByVal = document.getElementById('sortBy')?.value || 'DEFAULT';
     const mutationVal = document.getElementById('filterMutation')?.value || 'NONE';
 
     // Filtrage multi-critères
@@ -100,8 +100,24 @@ export function renderFilteredSpells() {
     // Tri par critère
     filtered = [...filtered]; // Copie locale
     filtered.sort((a, b) => {
-        if (sortByVal === 'NEWEST') {
-            return b.id - a.id;
+        if (sortByVal === 'DEFAULT') {
+            const vA = a.voie ? (a.voie.nom || '') : '';
+            const vB = b.voie ? (b.voie.nom || '') : '';
+            const vDiff = vA.localeCompare(vB);
+            if (vDiff !== 0) return vDiff;
+            
+            const sA = a.spiritualite ? (a.spiritualite.nom || '') : '';
+            const sB = b.spiritualite ? (b.spiritualite.nom || '') : '';
+            const sDiff = sA.localeCompare(sB);
+            if (sDiff !== 0) return sDiff;
+            
+            const lvlDiff = (a.niveau || 1) - (b.niveau || 1);
+            if (lvlDiff !== 0) return lvlDiff;
+            
+            const castingWeight = { 'INSTANTANE': 1, 'BANAL': 2, 'CANALISE': 3 };
+            const weightA = castingWeight[a.castingType] || 2;
+            const weightB = castingWeight[b.castingType] || 2;
+            return weightA - weightB;
         } else if (sortByVal === 'NAME_ASC') {
             return (a.nom || '').localeCompare(b.nom || '');
         } else if (sortByVal === 'LEVEL_ASC') {
