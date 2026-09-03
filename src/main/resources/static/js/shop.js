@@ -28,8 +28,8 @@ async function loadShop() {
 
 
 function generateStandHtml(eq) {
-    const isPromo = eq.isDiscount;
-    const isConsumable = eq.isConsumable;
+    const isPromo = eq.isDiscount === true || eq.discount === true;
+    const isConsumable = eq.slot === 'CONSOMMABLE' || eq.isConsumable === true || eq.consumable === true;
     const slotInfo = getSlotInfo(eq);
 
     if (isConsumable && eq.iconId) {

@@ -33,7 +33,7 @@ import java.util.HashMap;
         "channelingTarget", "channelingAlly", "channeledSpell" })
 @Entity
 @Table(name = "Personnage")
-@com.fasterxml.jackson.annotation.JsonIgnoreProperties({ "channelingTarget", "channelingAlly", "channeledSpell" })
+@com.fasterxml.jackson.annotation.JsonIgnoreProperties({ "channelingTarget", "channelingAlly" })
 public class Personnage {
 
     @Id
@@ -306,8 +306,13 @@ public class Personnage {
     private boolean allowInstantDuringCurrentChanneling = true;
 
     @Transient
-    @com.fasterxml.jackson.annotation.JsonIgnore
+    @com.fasterxml.jackson.annotation.JsonProperty("channeledSpell")
     private Spell channeledSpell;
+    
+    @com.fasterxml.jackson.annotation.JsonProperty("channeledSpellId")
+    public Long getChanneledSpellId() {
+        return channeledSpell != null ? channeledSpell.getId() : null;
+    }
 
     @Transient
     @com.fasterxml.jackson.annotation.JsonIgnore
