@@ -34,6 +34,7 @@
     <script defer src="/js/shop.js?v=99"></script>
     <script type="module" src="/js/auth.js?v=10"></script>
     <script defer src="/js/components/navbar.js"></script>
+    <script defer src="/js/components/loader.js"></script>
 </head>
 
 <body>
@@ -54,7 +55,7 @@
             </div>
 
             <div class="shop-showcase" id="shopGrid">
-                <div class="text-muted font-italic">Chargement de la boutique...</div>
+                <app-loader message="Chargement de la boutique..."></app-loader>
             </div>
 
             <div class="page-header mt-1 mb-2">
@@ -70,7 +71,7 @@
             </div>
 
             <div class="shop-showcase" id="specialsGrid">
-                <div class="text-muted font-italic">Chargement des offres...</div>
+                <app-loader message="Chargement des offres..."></app-loader>
             </div>
         </div>
     </div>

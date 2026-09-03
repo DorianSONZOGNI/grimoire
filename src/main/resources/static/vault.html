@@ -204,10 +204,7 @@
 
         <!-- Grid -->
         <div class="vault-grid" id="vaultGrid">
-            <div class="vault-empty-state">
-                <span class="material-symbols-outlined icon-xl" class="text-white/10">hourglass_empty</span>
-                Chargement des coffres...
-            </div>
+            <app-loader message="Chargement des coffres..."></app-loader>
         </div>
     </main>
     <style>
@@ -891,6 +888,7 @@
     <script defer src="/js/vault.js?v=109"></script>
     <script type="module" src="/js/auth.js?v=10"></script>
     <script defer src="/js/components/navbar.js"></script>
+    <script defer src="/js/components/loader.js"></script>
 
 
 </body>
