@@ -169,16 +169,19 @@ class SpellAvailabilityService {
         // 5) Vérification des ressources
         if (p.getManaCurrent() < actualManaCost) {
             return SpellAvailability.blocked(spell.getId(), "RESOURCE",
-                    "Mana insuffisant (" + p.getManaCurrent() + "/" + actualManaCost + ")");
+                    "Mana insuffisant (" + p.getManaCurrent() + "/" + actualManaCost + ")",
+                    actualManaCost, actualHealCost, actualHeatCost);
         }
         if (p.getHealthCurrent() < actualHealCost) {
             return SpellAvailability.blocked(spell.getId(), "RESOURCE",
-                    "PV insuffisants (" + p.getHealthCurrent() + "/" + actualHealCost + ")");
+                    "PV insuffisants (" + p.getHealthCurrent() + "/" + actualHealCost + ")",
+                    actualManaCost, actualHealCost, actualHeatCost);
         }
         int currentHeat = p.getPassiveState("destruction_heat", 0);
         if (currentHeat < actualHeatCost) {
             return SpellAvailability.blocked(spell.getId(), "RESOURCE",
-                    "Chaleur insuffisante (" + currentHeat + "/" + actualHeatCost + ")");
+                    "Chaleur insuffisante (" + currentHeat + "/" + actualHeatCost + ")",
+                    actualManaCost, actualHealCost, actualHeatCost);
         }
 
         int actualSeedCost = spell.getSeedCost();
@@ -187,10 +190,11 @@ class SpellAvailabilityService {
         int requiredBuds = actualSeedCost + (willPassiveTrigger ? 1 : 0);
         if (currentBuds < requiredBuds) {
             return SpellAvailability.blocked(spell.getId(), "RESOURCE",
-                    "Graines insuffisantes (" + currentBuds + "/" + requiredBuds + ")");
+                    "Graines insuffisantes (" + currentBuds + "/" + requiredBuds + ")",
+                    actualManaCost, actualHealCost, actualHeatCost);
         }
 
-        return SpellAvailability.available(spell.getId());
+        return SpellAvailability.available(spell.getId(), actualManaCost, actualHealCost, actualHeatCost);
     }
 
     /**

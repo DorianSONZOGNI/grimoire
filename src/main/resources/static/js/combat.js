@@ -612,8 +612,11 @@ window.updateSpellCardState = function (spellId) {
         }
 
         let requiredHeatFromEffects = 0;
+        let requiredManaFromEffects = 0;
+
         activeEffects.forEach(e => {
             const rawType = e.effectType || e.effect_type || '';
+            
             if (rawType === 'HEAT_FIXED' || rawType === 'HeatFixedEffect') {
                 if ((e.amount || 0) < 0) {
                     requiredHeatFromEffects += Math.abs(e.amount);
@@ -631,17 +634,54 @@ window.updateSpellCardState = function (spellId) {
                         if (src === 'CASTER_RESISTANCE') srcVal = pageState.currentSessionData.activePlayer.resistance || 1;
                         if (src === 'CASTER_SPEED') srcVal = pageState.currentSessionData.activePlayer.speed || 1;
                     }
-                    requiredHeatFromEffects += Math.floor(Math.abs(e.percentage) * srcVal);
+                    requiredHeatFromEffects += Math.floor((Math.abs(e.percentage) / 100) * srcVal);
+                }
+            }
+
+            const isImmediateOrT1 = !e.channelingTurns || e.channelingTurns.length === 0 || e.channelingTurns.includes(1);
+            const targetsCaster = (e.effectTarget || e.effect_target) === 'CASTER';
+            if (isImmediateOrT1 && targetsCaster) {
+                if (rawType === 'FIXED_MANA' || rawType === 'ManaFixedEffect' || rawType === 'MANA_OVER_TIME' || rawType === 'ManaOverTimeEffect') {
+                    const amt = e.manaAmount || e.mana_amount || e.fixedManaPerTick || e.fixed_mana_per_tick || e.amount || 0;
+                    if (amt < 0) {
+                        requiredManaFromEffects += Math.abs(amt);
+                    }
+                }
+                
+                if (rawType === 'PERCENTAGE_MANA' || rawType === 'ManaPercentageEffect' || rawType === 'MANA_OVER_TIME' || rawType === 'ManaOverTimeEffect') {
+                    const pct = e.percentage || e.percentageManaPerTick || e.percentage_mana_per_tick || 0;
+                    if (pct < 0) {
+                        const src = e.source || e.manaSource || e.mana_source || 'TARGET_MANA_MAX';
+                        let srcVal = 1;
+                        if (pageState.currentSessionData && pageState.currentSessionData.activePlayer) {
+                            if (src === 'CASTER_HEALTH_MAX') srcVal = pageState.currentSessionData.activePlayer.hpMax || 1;
+                            if (src === 'CASTER_MANA_MAX') srcVal = pageState.currentSessionData.activePlayer.manaMax || 1;
+                            if (src === 'CASTER_POWER') srcVal = pageState.currentSessionData.activePlayer.power || 1;
+                            if (src === 'CASTER_STRENGTH') srcVal = pageState.currentSessionData.activePlayer.strength || 1;
+                            if (src === 'CASTER_ARMOR') srcVal = pageState.currentSessionData.activePlayer.armor || 1;
+                            if (src === 'CASTER_RESISTANCE') srcVal = pageState.currentSessionData.activePlayer.resistance || 1;
+                            if (src === 'CASTER_SPEED') srcVal = pageState.currentSessionData.activePlayer.speed || 1;
+                        }
+                        requiredManaFromEffects += Math.floor((Math.abs(pct) / 100) * srcVal);
+                    }
                 }
             }
         });
 
         const playerHeat = pageState.currentSessionData.activePlayer?.passiveStates ? (pageState.currentSessionData.activePlayer.passiveStates['destruction_heat'] || 0) : 0;
-        const totalHeatCost = (sp.heatCost || 0) + requiredHeatFromEffects;
+        const totalHeatCost = (avail && avail.finalHeatCost !== undefined ? avail.finalHeatCost : (sp.heatCost || 0)) + requiredHeatFromEffects;
 
         if (playerHeat < totalHeatCost) {
             isCastable = false;
             dynamicReason = 'HEAT';
+        }
+
+        const playerMana = pageState.currentSessionData.activePlayer ? pageState.currentSessionData.activePlayer.manaCurrent : 0;
+        const totalManaCost = (avail && avail.finalManaCost !== undefined ? avail.finalManaCost : (sp.manaCost || 0)) + requiredManaFromEffects;
+        
+        if (isCastable && playerMana < totalManaCost) {
+            isCastable = false;
+            dynamicReason = 'MANA';
         }
 
         const actualSeedCost = sp.seedCost || 0;
@@ -689,6 +729,15 @@ window.updateSpellCardState = function (spellId) {
                 badge.className = 'spell-disabled-badge badge-resource dynamic-spell-disabled-badge';
                 badge.title = 'Chaleur insuffisante pour cette option';
                 badge.innerHTML = '<span class="material-symbols-outlined">local_fire_department</span>';
+                card.appendChild(badge);
+            } else if (dynamicReason === 'MANA' && !card.querySelector('.spell-disabled-badge.dynamic-spell-disabled-badge')) {
+                const dynamicBadge = card.querySelector('.dynamic-spell-disabled-badge');
+                if (dynamicBadge) dynamicBadge.remove();
+
+                const badge = document.createElement('div');
+                badge.className = 'spell-disabled-badge badge-resource dynamic-spell-disabled-badge';
+                badge.title = 'Mana insuffisant pour cette option';
+                badge.innerHTML = '<span class="material-symbols-outlined" style="color: #38bdf8;">water_drop</span>';
                 card.appendChild(badge);
             } else if (dynamicReason === 'SEEDS' && !card.querySelector('.spell-disabled-badge.dynamic-spell-disabled-badge')) {
                 const dynamicBadge = card.querySelector('.dynamic-spell-disabled-badge');
