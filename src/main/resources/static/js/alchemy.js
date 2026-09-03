@@ -121,6 +121,12 @@ function renderRecipesList() {
         return true;
     });
 
+    visibleRecipes.sort((a, b) => {
+        const typeDiff = a.rewardType.localeCompare(b.rewardType);
+        if (typeDiff !== 0) return typeDiff;
+        return a.name.localeCompare(b.name);
+    });
+
     if (visibleRecipes.length === 0) {
         container.innerHTML = "<p style='color: var(--text-muted); text-align:center;'>Aucune recette disponible pour le moment.</p>";
         return;
