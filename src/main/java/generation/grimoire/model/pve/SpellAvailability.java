@@ -28,11 +28,23 @@ public class SpellAvailability {
     /** Message explicatif pour le tooltip */
     private String tooltip;
     
+    private int finalManaCost;
+    private int finalHealCost;
+    private int finalHeatCost;
+    
     public static SpellAvailability available(Long spellId) {
-        return new SpellAvailability(spellId, true, null, null);
+        return new SpellAvailability(spellId, true, null, null, 0, 0, 0);
+    }
+    
+    public static SpellAvailability available(Long spellId, int manaCost, int healCost, int heatCost) {
+        return new SpellAvailability(spellId, true, null, null, manaCost, healCost, heatCost);
     }
     
     public static SpellAvailability blocked(Long spellId, String reason, String tooltip) {
-        return new SpellAvailability(spellId, false, reason, tooltip);
+        return new SpellAvailability(spellId, false, reason, tooltip, 0, 0, 0);
+    }
+    
+    public static SpellAvailability blocked(Long spellId, String reason, String tooltip, int manaCost, int healCost, int heatCost) {
+        return new SpellAvailability(spellId, false, reason, tooltip, manaCost, healCost, heatCost);
     }
 }

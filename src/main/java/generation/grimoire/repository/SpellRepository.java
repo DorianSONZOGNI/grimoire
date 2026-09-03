@@ -15,19 +15,19 @@ public interface SpellRepository extends JpaRepository<Spell, Long> {
 
     @NonNull
     @Cacheable("spells")
-    @EntityGraph(attributePaths = {"effects", "effects.channelingTurns", "voie", "spiritualite", "mutation"})
+    @EntityGraph(attributePaths = {"effects", "effects.channelingTurns", "voie", "voie.rankNames", "spiritualite", "spiritualite.rankNames", "mutation"})
     List<Spell> findAll();
 
     @NonNull
     @Cacheable("spellById")
-    @EntityGraph(attributePaths = {"effects", "effects.channelingTurns", "voie", "spiritualite", "mutation"})
+    @EntityGraph(attributePaths = {"effects", "effects.channelingTurns", "voie", "voie.rankNames", "spiritualite", "spiritualite.rankNames", "mutation"})
     Optional<Spell> findById(@NonNull Long id);
 
     @Cacheable("spellsByVariant")
-    @EntityGraph(attributePaths = {"effects", "effects.channelingTurns", "voie", "spiritualite", "mutation"})
+    @EntityGraph(attributePaths = {"effects", "effects.channelingTurns", "voie", "voie.rankNames", "spiritualite", "spiritualite.rankNames", "mutation"})
     List<Spell> findByVariantId(Integer variantId);
 
     @Cacheable("spellsByMutation")
-    @EntityGraph(attributePaths = {"effects", "effects.channelingTurns", "voie", "spiritualite", "mutation"})
+    @EntityGraph(attributePaths = {"effects", "effects.channelingTurns", "voie", "voie.rankNames", "spiritualite", "spiritualite.rankNames", "mutation"})
     List<Spell> findByMutationId(Long mutationId);
 }

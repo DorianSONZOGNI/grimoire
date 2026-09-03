@@ -224,13 +224,13 @@ public class PersonnageController {
             nextLevelXp = 350;
         } else if (level == 3) {
             currentLevelXp = 350;
-            nextLevelXp = 700;
+            nextLevelXp = 1000;
         } else if (level == 4) {
-            currentLevelXp = 700;
-            nextLevelXp = 1400;
+            currentLevelXp = 1000;
+            nextLevelXp = 2000;
         } else if (level == 5) {
-            currentLevelXp = 1400;
-            nextLevelXp = 1400;
+            currentLevelXp = 2000;
+            nextLevelXp = 2000;
         }
         dto.setCurrentLevelXp(currentLevelXp);
         dto.setNextLevelXp(nextLevelXp);
