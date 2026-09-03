@@ -39,6 +39,8 @@ public class ActiveMonster {
         this.asPersonnage.setResistance(base.getResistance());
         this.asPersonnage.setSpeed(base.getSpeed());
         this.asPersonnage.setCrit(base.getCrit());
+        this.asPersonnage.setRegenHp(base.getRegenHp());
+        this.asPersonnage.setRegenMana(base.getRegenMana());
         this.asPersonnage.setTeamId("2"); // Team Ennemi (pour les sorts)
 
         if (base.getStartShield() > 0) {
