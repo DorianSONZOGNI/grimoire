@@ -661,6 +661,9 @@ class CombatTurnService {
                 break;
             }
         }
+        
+        // Process any deaths that occurred from DoTs, channeled spells, or skipped turns
+        checkDeaths(session);
     }
 
     Personnage resolveMonsterTarget(ActiveMonster m, MonsterBehavior behavior,
