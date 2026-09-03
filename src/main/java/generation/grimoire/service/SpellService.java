@@ -289,6 +289,9 @@ public class SpellService {
             List<Personnage> recipients = resolveRecipients(effect.getEffectTarget(), caster, target);
             processAndApplyEffect(channeledSpell, effect, choiceKey, currentTurn, caster, recipients);
         }
+
+        SpellChannelingTickEvent tickEvent = new SpellChannelingTickEvent(caster, target, channeledSpell, currentTurn);
+        passiveDispatcher.dispatch(caster, channeledSpell, tickEvent);
     }
 
     public void tickChanneling(Personnage caster, Personnage target, Integer choiceKey, Personnage ally, List<Personnage> allAllies, List<Personnage> allEnemies) {
@@ -301,6 +304,9 @@ public class SpellService {
             List<Personnage> recipients = resolveRecipientsGroup(effect.getEffectTarget(), caster, target, ally, allAllies, allEnemies);
             processAndApplyEffect(channeledSpell, effect, choiceKey, currentTurn, caster, recipients);
         }
+
+        SpellChannelingTickEvent tickEvent = new SpellChannelingTickEvent(caster, target, channeledSpell, currentTurn);
+        passiveDispatcher.dispatch(caster, channeledSpell, tickEvent);
     }
 
     private Spell processChannelingTurn(Personnage caster) {

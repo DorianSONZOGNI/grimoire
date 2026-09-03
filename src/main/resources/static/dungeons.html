@@ -55,10 +55,7 @@
                 <!-- Rempli par JS -->
             </div>
 
-            <div id="loadingDungeonsMsg" class="flex-center gap-2 mb-8 text-purple">
-                <span class="material-symbols-outlined animate-spin">autorenew</span>
-                Chargement des donjons...
-            </div>
+            <app-loader id="loadingDungeonsMsg" message="Chargement des donjons..."></app-loader>
 
             <div id="dungeonsSectionsContainer">
                 <!-- Rempli par JS -->
@@ -313,6 +310,7 @@
     <script type="module" src="/js/ui.js"></script>
     <script defer src="/js/dungeons.js?v=3"></script>
     <script defer src="/js/components/navbar.js"></script>
+    <script defer src="/js/components/loader.js"></script>
 
 
 </body>

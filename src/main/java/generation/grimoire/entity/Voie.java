@@ -29,7 +29,7 @@ public class Voie {
     @Column(length = 1000)
     private String passiveDescription;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "voie_rank_names", joinColumns = @JoinColumn(name = "voie_id"))
     @MapKeyColumn(name = "rang")
     @Column(name = "nom_rang")

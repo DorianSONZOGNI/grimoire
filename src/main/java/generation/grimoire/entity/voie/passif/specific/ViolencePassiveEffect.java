@@ -7,6 +7,7 @@ import generation.grimoire.enumeration.SpellCategory;
 import generation.grimoire.event.GameEvent;
 import generation.grimoire.event.SpellCastEvent;
 import generation.grimoire.event.TurnStartEvent;
+import generation.grimoire.event.SpellChannelingTickEvent;
 import jakarta.persistence.DiscriminatorValue;
 import jakarta.persistence.Entity;
 import lombok.Data;
@@ -26,6 +27,8 @@ public class ViolencePassiveEffect extends VoiePassiveEffect {
     public void onEvent(GameEvent event) {
         if (event instanceof SpellCastEvent e) {
             handleSpellCast(e);
+        } else if (event instanceof SpellChannelingTickEvent e) {
+            handleSpellChannelingTick(e);
         } else if (event instanceof TurnStartEvent e) {
             handleTurnStart(e);
         } else {
@@ -33,36 +36,46 @@ public class ViolencePassiveEffect extends VoiePassiveEffect {
         }
     }
 
-    private void handleSpellCast(SpellCastEvent event) {
-        Personnage personnage = event.getSource();
+    private void handleSpellChannelingTick(SpellChannelingTickEvent event) {
         Spell spell = event.getSpell();
-
         if (spell.getVoie() != null && "Voie de la Violence".equals(spell.getVoie().getNom())) {
-            personnage.setPassiveState(STATE_CAST_THIS_TURN, 1);
-            int inspirationCount = personnage.getPassiveState(STATE_INSPIRATION, 0);
-            int expirationCount = personnage.getPassiveState(STATE_EXPIRATION, 0);
+            // Un tour de canalisation compte comme le lancer du sort pour le passif.
+            applyViolencePassive(event.getSource(), spell);
+        }
+    }
 
-            if (spell.getCategory() == SpellCategory.INSPIRATION) {
-                inspirationCount = Math.min(inspirationCount + 1, 5);
-                personnage.setPassiveState(STATE_INSPIRATION, inspirationCount);
-                personnage.setPassiveState(STATE_EXPIRATION, 0); // Réinitialise l'autre cumul
+    private void handleSpellCast(SpellCastEvent event) {
+        Spell spell = event.getSpell();
+        if (spell.getVoie() != null && "Voie de la Violence".equals(spell.getVoie().getNom())) {
+            applyViolencePassive(event.getSource(), spell);
+        }
+    }
 
-                // Appliquer un bonus de critique de +2% par stack (remplace l'ancien via stat_flat)
-                personnage.setPassiveState("stat_flat_" + generation.grimoire.enumeration.StatType.CRIT.name(), inspirationCount * 2);
-                personnage.setPassiveState("stat_flat_" + generation.grimoire.enumeration.StatType.POWER.name(), 0);
+    private void applyViolencePassive(Personnage personnage, Spell spell) {
+        personnage.setPassiveState(STATE_CAST_THIS_TURN, 1);
+        int inspirationCount = personnage.getPassiveState(STATE_INSPIRATION, 0);
+        int expirationCount = personnage.getPassiveState(STATE_EXPIRATION, 0);
 
-                System.out.println(personnage.getName() + " gagne +" + (inspirationCount * 2) + " de critique (inspiration " + inspirationCount + "/5).");
-            } else if (spell.getCategory() == SpellCategory.EXPIRATION) {
-                expirationCount = Math.min(expirationCount + 1, 10);
-                personnage.setPassiveState(STATE_EXPIRATION, expirationCount);
-                personnage.setPassiveState(STATE_INSPIRATION, 0);
+        if (spell.getCategory() == SpellCategory.INSPIRATION) {
+            inspirationCount = Math.min(inspirationCount + 1, 5);
+            personnage.setPassiveState(STATE_INSPIRATION, inspirationCount);
+            personnage.setPassiveState(STATE_EXPIRATION, 0); // Réinitialise l'autre cumul
 
-                // Augmenter la puissance de +2 par sort d'expiration
-                personnage.setPassiveState("stat_flat_" + generation.grimoire.enumeration.StatType.POWER.name(), expirationCount * 2);
-                personnage.setPassiveState("stat_flat_" + generation.grimoire.enumeration.StatType.CRIT.name(), 0);
+            // Appliquer un bonus de critique de +2% par stack (remplace l'ancien via stat_flat)
+            personnage.setPassiveState("stat_flat_" + generation.grimoire.enumeration.StatType.CRIT.name(), inspirationCount * 2);
+            personnage.setPassiveState("stat_flat_" + generation.grimoire.enumeration.StatType.POWER.name(), 0);
 
-                System.out.println(personnage.getName() + " gagne +" + (expirationCount * 2) + " de puissance (expiration " + expirationCount + "/10).");
-            }
+            System.out.println(personnage.getName() + " gagne +" + (inspirationCount * 2) + " de critique (inspiration " + inspirationCount + "/5).");
+        } else if (spell.getCategory() == SpellCategory.EXPIRATION) {
+            expirationCount = Math.min(expirationCount + 1, 10);
+            personnage.setPassiveState(STATE_EXPIRATION, expirationCount);
+            personnage.setPassiveState(STATE_INSPIRATION, 0);
+
+            // Augmenter la puissance de +2 par sort d'expiration
+            personnage.setPassiveState("stat_flat_" + generation.grimoire.enumeration.StatType.POWER.name(), expirationCount * 2);
+            personnage.setPassiveState("stat_flat_" + generation.grimoire.enumeration.StatType.CRIT.name(), 0);
+
+            System.out.println(personnage.getName() + " gagne +" + (expirationCount * 2) + " de puissance (expiration " + expirationCount + "/10).");
         }
     }
 

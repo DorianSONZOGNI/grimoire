@@ -28,7 +28,7 @@ public class Spiritualite {
     @Column(length = 1000)
     private String passiveDescription;
 
-    @ElementCollection
+    @ElementCollection(fetch = FetchType.EAGER)
     @CollectionTable(name = "spiritualite_rank_names", joinColumns = @JoinColumn(name = "spiritualite_id"))
     @MapKeyColumn(name = "rang")
     @Column(name = "nom_rang")
