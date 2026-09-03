@@ -105,15 +105,15 @@ export function renderFilteredSpells() {
             const vB = b.voie ? (b.voie.nom || '') : '';
             const vDiff = vA.localeCompare(vB);
             if (vDiff !== 0) return vDiff;
-            
+
             const sA = a.spiritualite ? (a.spiritualite.nom || '') : '';
             const sB = b.spiritualite ? (b.spiritualite.nom || '') : '';
             const sDiff = sA.localeCompare(sB);
             if (sDiff !== 0) return sDiff;
-            
+
             const lvlDiff = (a.niveau || 1) - (b.niveau || 1);
             if (lvlDiff !== 0) return lvlDiff;
-            
+
             const castingWeight = { 'INSTANTANE': 1, 'BANAL': 2, 'CANALISE': 3 };
             const weightA = castingWeight[a.castingType] || 2;
             const weightB = castingWeight[b.castingType] || 2;
@@ -277,7 +277,7 @@ export function getSpellEffectsSummaryHtml(sp) {
                 };
                 let eTypeStr = typeNames[rawType] || rawType || 'Effet';
                 let eTypeClass = EFFECT_TYPE_CSS_CLASSES[t] || 'text-slate-200';
-                
+
                 if (['BuffDebuff', 'BUFF_DEBUFF'].includes(t) || ['BuffDebuffEffect', 'BUFF_DEBUFF', 'CONSUMABLE_BUFF'].includes(rawType)) {
                     eTypeStr = isBad ? 'Débuff' : 'Buff';
                     eTypeClass = isBad ? 'text-effect-debuff' : 'text-effect-buff';
@@ -598,7 +598,24 @@ export function getSpellCardHtml(sp) {
         lvlBadgeStyle = `background: linear-gradient(135deg, var(--spell-color), rgba(var(--spell-rgb), 0.6)); border: 1px solid #fff; color: #fff; font-weight: 800; text-shadow: 0 1px 3px rgba(0,0,0,0.9); box-shadow: 0 0 20px rgba(var(--spell-rgb), 0.8);`;
         lvlIcon = '<span class="material-symbols-outlined" style="font-size: 1.05rem;">workspace_premium</span>';
     }
-    const lvlBadge = `<span class="badge-pill" style="${lvlBadgeStyle}">${lvlIcon}Lvl ${sp.niveau}</span>`;
+    let rankName = "";
+    if (sp.voie && sp.voie.rankNames && sp.voie.rankNames[sp.niveau]) {
+        rankName = sp.voie.rankNames[sp.niveau];
+    } else if (sp.spiritualite && sp.spiritualite.rankNames && sp.spiritualite.rankNames[sp.niveau]) {
+        rankName = sp.spiritualite.rankNames[sp.niveau];
+    }
+
+    let lvlBadge = `<span class="badge-pill" style="${lvlBadgeStyle}">${lvlIcon}Lvl ${sp.niveau}</span>`;
+    if (rankName) {
+        lvlBadge = `<span class="badge-pill cursor-help" style="${lvlBadgeStyle}" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()">
+            ${lvlIcon}Lvl ${sp.niveau}
+            <template class="tooltip-data">
+                <div class="p-2">
+                    <div class="text-white-50 small mt-1"><span class="font-bold" style="color: ${titleColor};">${rankName}</span></div>
+                </div>
+            </template>
+        </span>`;
+    }
 
     return `
                 <div class="spell-card spell-card-lvl-${isMaxLevel ? 5 : (sp.niveau || 1)}" style="--spell-color: ${titleColor}; --spell-rgb: ${titleRgb};">
