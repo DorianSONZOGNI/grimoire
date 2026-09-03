@@ -3274,6 +3274,16 @@ function generateFighterHtml(c, isHero, skipBadges = false) {
 
     let channelingBadgeHtml = '';
     if (c.remainingChannelingTurns > 0) {
+        let spellInfoHtml = '';
+        if (c.channeledSpell) {
+            spellInfoHtml = `
+                <div style="margin-top:0.5rem; padding-top:0.5rem; border-top:1px solid rgba(139, 92, 246, 0.3);">
+                    <div class="font-bold text-sm" style="color:#c4b5fd; margin-bottom: 0.25rem;">${c.channeledSpell.nom}</div>
+                    <div style="font-size:0.8rem; line-height:1.4;">${getSpellEffectsSummaryHtml(c.channeledSpell, true)}</div>
+                </div>
+            `;
+        }
+
         channelingBadgeHtml = `<div class="flex-center absolute" onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null" style="top: -10px; right: -10px; z-index: 10; cursor: help; justify-content: center; background: #1e293b; border-radius: 50%; padding: 4px; box-shadow: 0 0 10px rgba(139, 92, 246, 0.6); border: 2px solid #8b5cf6;">
             <span class="material-symbols-outlined" style="font-size: 1.5rem; color: #8b5cf6;">cyclone</span>
             <span class="flex-center font-bold absolute" style="bottom: -2px; right: -2px; background: #ef4444; color: white; font-size: 0.75rem; border-radius: 50%; width: 16px; height: 16px; justify-content: center; border: 1px solid #1e293b;">${c.remainingChannelingTurns}</span>
@@ -3287,6 +3297,7 @@ function generateFighterHtml(c, isHero, skipBadges = false) {
                     <span class="material-symbols-outlined" style="font-size: 0.95rem; color: #8b5cf6;">hourglass_top</span>
                     <span class="font-italic">Temps restant : ${c.remainingChannelingTurns} tour(s)</span>
                 </div>
+                ${spellInfoHtml}
             </template>
         </div>`;
     }
