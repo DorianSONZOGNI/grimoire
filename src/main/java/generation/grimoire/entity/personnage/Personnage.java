@@ -305,8 +305,7 @@ public class Personnage {
     @Transient
     private boolean allowInstantDuringCurrentChanneling = true;
 
-    @ManyToOne(fetch = FetchType.EAGER)
-    @JoinColumn(name = "channeled_spell_id")
+    @Transient
     @com.fasterxml.jackson.annotation.JsonProperty("channeledSpell")
     private Spell channeledSpell;
     
@@ -315,17 +314,15 @@ public class Personnage {
         return channeledSpell != null ? channeledSpell.getId() : null;
     }
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "channeling_target_id")
+    @Transient
     @com.fasterxml.jackson.annotation.JsonIgnore
     private Personnage channelingTarget;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "channeling_ally_id")
+    @Transient
     @com.fasterxml.jackson.annotation.JsonIgnore
     private Personnage channelingAlly;
 
-    @Column(name = "channeling_choice_key")
+    @Transient
     private Integer channelingChoiceKey;
 
     public void startTurn() {
