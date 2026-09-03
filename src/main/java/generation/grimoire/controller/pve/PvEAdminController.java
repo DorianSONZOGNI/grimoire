@@ -4,10 +4,6 @@ import generation.grimoire.dto.pve.DonjonDTO;
 import generation.grimoire.entity.pve.Donjon;
 import generation.grimoire.entity.pve.Monstre;
 import generation.grimoire.entity.pve.Mutation;
-import generation.grimoire.dto.pve.MonstreRequestDTO;
-import generation.grimoire.dto.pve.MutationRequestDTO;
-import generation.grimoire.mapper.MonstreMapper;
-import generation.grimoire.mapper.MutationMapper;
 import generation.grimoire.service.pve.PvEAdminService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
@@ -23,8 +19,6 @@ import java.util.stream.Collectors;
 public class PvEAdminController {
     private final PvEAdminService pvEAdminService;
     private final generation.grimoire.repository.EquipmentRepository equipmentRepository;
-    private final MonstreMapper monstreMapper;
-    private final MutationMapper mutationMapper;
 
     // --- MONSTERS ---
 
@@ -34,14 +28,13 @@ public class PvEAdminController {
     }
 
     @PostMapping("/monsters")
-    public ResponseEntity<Monstre> createMonster(@RequestBody @NonNull MonstreRequestDTO dto) {
-        Monstre monstre = monstreMapper.toEntity(dto);
+    public ResponseEntity<Monstre> createMonster(@RequestBody @NonNull Monstre monstre) {
         // Handle mutations relationship mapping
-        if (dto.getMutationIds() != null) {
-            monstre.setMutations(dto.getMutationIds().stream()
-                    .map(mId -> {
+        if (monstre.getMutations() != null) {
+            monstre.setMutations(monstre.getMutations().stream()
+                    .map(m -> {
                         try {
-                            return pvEAdminService.getMutationById(java.util.Objects.requireNonNull(mId));
+                            return pvEAdminService.getMutationById(java.util.Objects.requireNonNull(m.getId()));
                         } catch (java.util.NoSuchElementException e) {
                             return null;
                         }
@@ -53,18 +46,43 @@ public class PvEAdminController {
     }
 
     @PutMapping("/monsters/{id}")
-    public ResponseEntity<Monstre> updateMonster(@PathVariable @NonNull Long id, @RequestBody @NonNull MonstreRequestDTO dto) {
+    public ResponseEntity<Monstre> updateMonster(@PathVariable @NonNull Long id, @RequestBody @NonNull Monstre dto) {
         if (!pvEAdminService.monsterExists(id)) {
             return ResponseEntity.notFound().build();
         }
         Monstre existing = pvEAdminService.getMonsterById(id);
-        monstreMapper.updateEntity(dto, existing);
+        
+        // Update fields from dto to existing
+        existing.setName(dto.getName());
+        existing.setDescription(dto.getDescription());
+        existing.setImageUrl(dto.getImageUrl());
+        existing.setLevel(dto.getLevel());
+        existing.setHealthMax(dto.getHealthMax());
+        existing.setManaMax(dto.getManaMax());
+        existing.setPower(dto.getPower());
+        existing.setStrength(dto.getStrength());
+        existing.setArmor(dto.getArmor());
+        existing.setResistance(dto.getResistance());
+        existing.setCrit(dto.getCrit());
+        existing.setSpeed(dto.getSpeed());
+        existing.setRegenHp(dto.getRegenHp());
+        existing.setRegenMana(dto.getRegenMana());
+        existing.setStartHpPct(dto.getStartHpPct());
+        existing.setStartManaPct(dto.getStartManaPct());
+        existing.setStartShield(dto.getStartShield());
+        existing.setStartShieldDuration(dto.getStartShieldDuration());
+        existing.setRewardExp(dto.getRewardExp());
+        existing.setRewardGold(dto.getRewardGold());
+        existing.setMonsterType(dto.getMonsterType());
+        existing.setBehavior(dto.getBehavior());
+        existing.setNativeSecret(dto.getNativeSecret());
+
         // Handle mutations relationship mapping
-        if (dto.getMutationIds() != null) {
-            existing.setMutations(dto.getMutationIds().stream()
-                    .map(mId -> {
+        if (dto.getMutations() != null) {
+            existing.setMutations(dto.getMutations().stream()
+                    .map(m -> {
                         try {
-                            return pvEAdminService.getMutationById(java.util.Objects.requireNonNull(mId));
+                            return pvEAdminService.getMutationById(java.util.Objects.requireNonNull(m.getId()));
                         } catch (java.util.NoSuchElementException e) {
                             return null;
                         }
@@ -89,18 +107,24 @@ public class PvEAdminController {
     }
 
     @PostMapping("/mutations")
-    public ResponseEntity<Mutation> createMutation(@RequestBody @NonNull MutationRequestDTO dto) {
-        Mutation mutation = mutationMapper.toEntity(dto);
+    public ResponseEntity<Mutation> createMutation(@RequestBody @NonNull Mutation mutation) {
         return ResponseEntity.ok(pvEAdminService.createOrUpdateMutation(java.util.Objects.requireNonNull(mutation)));
     }
 
     @PutMapping("/mutations/{id}")
-    public ResponseEntity<Mutation> updateMutation(@PathVariable @NonNull Long id, @RequestBody @NonNull MutationRequestDTO dto) {
+    public ResponseEntity<Mutation> updateMutation(@PathVariable @NonNull Long id, @RequestBody @NonNull Mutation dto) {
         if (!pvEAdminService.mutationExists(id)) {
             return ResponseEntity.notFound().build();
         }
         Mutation existing = pvEAdminService.getMutationById(id);
-        mutationMapper.updateEntity(dto, existing);
+        
+        // Update fields from dto to existing
+        existing.setNom(dto.getNom());
+        existing.setDescription(dto.getDescription());
+        existing.setLevel(dto.getLevel());
+        existing.setIcon(dto.getIcon());
+        existing.setColor(dto.getColor());
+        
         return ResponseEntity.ok(pvEAdminService.createOrUpdateMutation(java.util.Objects.requireNonNull(existing)));
     }
 
