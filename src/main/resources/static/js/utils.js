@@ -302,6 +302,8 @@ function getEquipmentTooltipHTML(eq) {
         const icon = isCursed ? 'skull' : 'auto_awesome';
         const color = isCursed ? '#ef4444' : '#c084fc';
 
+        const desc = (window.EFFECT_DESCRIPTIONS && window.EFFECT_DESCRIPTIONS[eq.specialEffect]) || '';
+
         effectHtml = `<div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.1);">
             <div class="flex-center" style="color: ${color}; justify-content: space-between; gap: 0.3rem;">
                 <div class="flex-center" style="gap: 0.3rem;">
@@ -310,6 +312,7 @@ function getEquipmentTooltipHTML(eq) {
                 </div>
                 <span style="font-weight: 600; color: #fff;">${eq.specialEffectValue || ''}</span>
             </div>
+            ${desc ? `<div style="font-size: 0.75rem; color: #94a3b8; margin-top: 4px; font-style: italic; white-space: normal; text-align: left;">${desc}</div>` : ''}
         </div>`;
     }
 
@@ -375,6 +378,18 @@ window.generateEquipmentStatsHtml = function (eq, cssClass = 'vault-stat-chip') 
     return html;
 };
 
+window.getEffectInfoIconHtml = function (effectKey) {
+    if (!effectKey || effectKey === 'NONE') return '';
+    const desc = (window.EFFECT_DESCRIPTIONS && window.EFFECT_DESCRIPTIONS[effectKey]) || 'Aucune description disponible.';
+    const escapedDesc = desc.replace(/"/g, '&quot;').replace(/'/g, "\\'");
+    return `<span class="inline-flex items-center justify-center ml-2 align-middle" 
+                  style="cursor: default;"
+                  onmouseenter="if(window.showEffectTooltip) window.showEffectTooltip(this, '${escapedDesc}')"
+                  onmouseleave="if(window.hideEffectTooltip) window.hideEffectTooltip()">
+                <span class="material-symbols-outlined" style="font-size: 1.1rem; color: #94a3b8;">info</span>
+            </span>`;
+};
+
 window.generateEquipmentEffectHtml = function (eq, baseClass = 'vault-card-effect') {
     if (!eq || !eq.specialEffect || eq.specialEffect === 'NONE') return '';
 
@@ -383,9 +398,11 @@ window.generateEquipmentEffectHtml = function (eq, baseClass = 'vault-card-effec
     const icon = isCursed ? 'skull' : 'auto_awesome';
     const color = isCursed ? '#9b2d2d' : '#c084fc';
     const bg = isCursed ? 'rgba(156, 163, 175, 0.15)' : 'rgba(168, 85, 247, 0.1)';
+    const infoIcon = window.getEffectInfoIconHtml(eq.specialEffect);
 
     return `<div class="${baseClass}" style="color: ${color}; background: ${bg}; ${isCursed ? 'border: 1px solid rgba(156, 163, 175, 0.2);' : ''}">
-        <span class="material-symbols-outlined text-sm">${icon}</span>
-        ${label} : ${eq.specialEffectValue || ''}
+        <span class="material-symbols-outlined text-sm align-middle">${icon}</span>
+        <span class="align-middle">${label} : ${eq.specialEffectValue || ''}</span>
+        ${infoIcon}
     </div>`;
 };

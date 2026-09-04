@@ -14,7 +14,7 @@ window.EFFECT_LABELS = {
     'MANA_SHIELD': 'Bouclier de Mana',
     'CHEAT_DEATH': 'Ange Gardien',
     'CRIT_DAMAGE': 'Dégâts Critiques',
-    'CURSED_MANA_DRAIN': 'Famine (Drain Mana)',
+    'CURSED_MANA_DRAIN': 'Famine (% Drain Mana)',
     'CURSED_HP_LOSS_ON_MANA': 'Brèche spirituelle (- hp % en mana Act.)',
     'CURSED_MAGIC_DAMAGE_REDUCTION': 'Folie (% dégâts magique -)',
     'CURSED_PHYSICAL_DAMAGE_REDUCTION': 'Faiblesse (% dégâts physique -)',
@@ -23,6 +23,23 @@ window.EFFECT_LABELS = {
     'EXECUTION': 'Exécution (% Phy)',
     'MAGIC_OVERLOAD': 'Surcharge (% Mag mana Act)',
     'VITAL_ARCANE': 'Arcane Vitale (Régen X% mana)'
+};
+
+window.EFFECT_DESCRIPTIONS = {
+    'LIFESTEAL': 'Convertit une partie des dégâts physiques infligés en points de vie (Soin).',
+    'THORNS': 'Renvoie automatiquement une partie des dégâts subis directement à l\'attaquant.',
+    'MANA_SHIELD': 'Bouclier de mana : le mana encaisse une partie des dégâts à la place des points de vie.',
+    'CHEAT_DEATH': 'Survie miraculeuse : une fois par combat, annule un coup mortel et rend des points de vie.',
+    'CRIT_DAMAGE': 'Augmente le multiplicateur de dégâts de toutes les attaques critiques du porteur.',
+    'CURSED_MANA_DRAIN': '[Malédiction] Famine : draine chaque tour un pourcentage du mana actuel du porteur.',
+    'CURSED_HP_LOSS_ON_MANA': '[Malédiction] Brûlure d\'éther : le porteur perd de la vie proportionnellement à son mana actuel.',
+    'CURSED_MAGIC_DAMAGE_REDUCTION': '[Malédiction] Affaiblit la puissance de tous les dégâts magiques infligés par le porteur.',
+    'CURSED_PHYSICAL_DAMAGE_REDUCTION': '[Malédiction] Affaiblit la puissance de tous les dégâts physiques infligés par le porteur.',
+    'CURSED_VULNERABILITY': '[Malédiction] Fragilité : augmente l\'intégralité des dégâts subis par le porteur.',
+    'CURSED_HEALING_REDUCTION': '[Malédiction] Chair putréfiée : réduit considérablement l\'efficacité des soins reçus.',
+    'EXECUTION': 'Coup de grâce : inflige des dégâts supplémentaires basés sur les PV manquants de la cible.',
+    'MAGIC_OVERLOAD': 'Surcharge : consomme du mana additionnel pour décupler les dégâts magiques infligés.',
+    'VITAL_ARCANE': 'Flux arcanique : régénère passivement une portion du mana maximal du porteur à chaque tour.'
 };
 
 export const STAT_DEFS = [

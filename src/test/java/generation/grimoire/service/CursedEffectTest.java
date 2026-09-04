@@ -61,7 +61,9 @@ class CursedEffectTest {
         hero.setManaCurrent(50);
         hero.startTurn();
 
-        assertThat(hero.getManaCurrent()).isEqualTo(55);
+        // Drain is 10% of 50 = 5.
+        // Base regen is 15. Net change = +10.
+        assertThat(hero.getManaCurrent()).isEqualTo(60);
     }
 
     @Test

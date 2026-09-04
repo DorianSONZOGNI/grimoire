@@ -42,7 +42,9 @@ public class PersonnageCombatHelper {
 
             int cursedManaDrain = p.getSpecialEffectValue(generation.grimoire.enumeration.EquipmentEffectType.CURSED_MANA_DRAIN);
             if (cursedManaDrain != 0) {
-                totalManaRegen -= Math.abs(cursedManaDrain);
+                int percentToDrain = Math.abs(cursedManaDrain);
+                int amountToDrain = (int) (p.getManaCurrent() * (percentToDrain / 100.0));
+                totalManaRegen -= amountToDrain;
             }
 
             if (totalManaRegen != 0) {
