@@ -134,6 +134,16 @@ export async function fetchMeta() {
             if (optgroupSpirits) optgroupSpirits.innerHTML += `<option value="S_${s.id}">${s.nom}</option>`;
         });
 
+        if (state.metaData.mutations) {
+            state.metaData.mutations.sort((a, b) => {
+                const nomA = (a.nom || '').toLowerCase();
+                const nomB = (b.nom || '').toLowerCase();
+                if (nomA < nomB) return -1;
+                if (nomA > nomB) return 1;
+                return (a.level || 0) - (b.level || 0);
+            });
+        }
+
         const mutationSel = document.getElementById('mutationSelect');
         if (mutationSel) {
             mutationSel.style.fontFamily = "";
@@ -141,11 +151,16 @@ export async function fetchMeta() {
                 mutationSel.innerHTML += `<option value="${m.id}" data-icon="${m.icon || 'pets'}" data-color="${m.color || '#e879f9'}">${m.nom} (Niv. ${m.level || 1})</option>`;
             });
         }
+        
         const filterMutationSel = document.getElementById('filterMutation');
         if (filterMutationSel) {
             filterMutationSel.style.fontFamily = "";
+            const seenNames = new Set();
             state.metaData.mutations.forEach(m => {
-                filterMutationSel.innerHTML += `<option value="${m.id}" data-icon="${m.icon || 'pets'}" data-color="${m.color || '#e879f9'}">${m.nom} (Niv. ${m.level || 1})</option>`;
+                if (!seenNames.has(m.nom)) {
+                    seenNames.add(m.nom);
+                    filterMutationSel.innerHTML += `<option value="${m.nom.replace(/"/g, '&quot;')}" data-icon="${m.icon || 'pets'}" data-color="${m.color || '#e879f9'}">${m.nom}</option>`;
+                }
             });
         }
 

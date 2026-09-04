@@ -37,7 +37,7 @@ export function renderFilteredSpells() {
             } else if (mutationVal === 'ONLY_MUTATIONS') {
                 if (!sp.mutation) return false;
             } else {
-                if (!sp.mutation || sp.mutation.id != mutationVal) return false;
+                if (!sp.mutation || sp.mutation.nom != mutationVal) return false;
             }
         }
 
