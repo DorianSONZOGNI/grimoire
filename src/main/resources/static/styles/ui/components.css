@@ -1094,3 +1094,39 @@
 .btn-icon:hover {
     background: color-mix(in srgb, currentColor 15%, transparent);
 }
+
+/* Effect Info Tooltip */
+.effect-info-tooltip-container {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: help;
+    margin-left: 0.5rem;
+    vertical-align: middle;
+}
+
+.effect-info-tooltip {
+    display: none;
+    position: absolute;
+    bottom: 125%;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 50;
+    background-color: #1e293b;
+    color: #ffffff;
+    font-size: 0.75rem;
+    border-radius: 0.25rem;
+    padding: 0.5rem;
+    width: 14rem;
+    text-align: center;
+    border: 1px solid rgba(168, 85, 247, 0.5);
+    box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+    font-weight: normal;
+    font-family: 'Inter', sans-serif;
+    pointer-events: none;
+}
+
+.effect-info-tooltip-container:hover .effect-info-tooltip {
+    display: block;
+}

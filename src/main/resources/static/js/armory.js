@@ -604,7 +604,7 @@ function renderEquipModal() {
 
                 specialEffectHtml = `<div style="margin-top: 0.3rem; font-size: 0.7rem; color: ${color}; background: ${bg}; padding: 0.1rem 0.4rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 0.2rem; border: ${isCursed ? '1px solid rgba(156, 163, 175, 0.2)' : 'none'};">
                     <span class="material-symbols-outlined text-xs">${icon}</span>
-                    ${label} : ${equipped.specialEffectValue}
+                    ${label} : ${equipped.specialEffectValue} ${window.getEffectInfoIconHtml ? window.getEffectInfoIconHtml(equipped.specialEffect) : ''}
                 </div>`;
             }
 
@@ -705,7 +705,7 @@ function renderEquipModal() {
 
                         aSpecialEffectHtml = `<div style="margin-top: 0.3rem; font-size: 0.7rem; color: ${color}; background: ${bg}; padding: 0.1rem 0.4rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 0.2rem; border: ${isCursed ? '1px solid rgba(156, 163, 175, 0.2)' : 'none'};">
                                     <span class="material-symbols-outlined text-xs">${icon}</span>
-                                    ${label} : ${a.specialEffectValue}
+                                    ${label} : ${a.specialEffectValue} ${window.getEffectInfoIconHtml ? window.getEffectInfoIconHtml(a.specialEffect) : ''}
                                 </div>`;
                     }
 

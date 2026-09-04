@@ -61,6 +61,12 @@ document.addEventListener('change', (e) => {
             }
             updateWeightUI();
         } else if (hiddenInput.id.startsWith('eq') || hiddenInput.id === 'eqSpecialEffect') {
+            if (hiddenInput.id === 'eqSpecialEffect') {
+                const infoContainer = document.getElementById('eqSpecialEffectInfoContainer');
+                if (infoContainer) {
+                    infoContainer.innerHTML = window.getEffectInfoIconHtml(hiddenInput.value);
+                }
+            }
             updateWeightUI();
         } else {
             filterVault(); // Mettre à jour l'affichage au changement
@@ -667,6 +673,13 @@ window.editEquipment = function (id) {
         if (option) {
             document.getElementById('eqSpecialEffectLabel').innerHTML = option.innerHTML;
         }
+        const infoContainer = document.getElementById('eqSpecialEffectInfoContainer');
+        if (infoContainer) {
+            infoContainer.innerHTML = window.getEffectInfoIconHtml(eq.specialEffect);
+        }
+    } else {
+        const infoContainer = document.getElementById('eqSpecialEffectInfoContainer');
+        if (infoContainer) infoContainer.innerHTML = '';
     }
 
     document.getElementById('eqSpecialEffectValue').value = eq.specialEffectValue || 0;
@@ -854,8 +867,9 @@ window.submitEquipment = async function () {
         });
         if (resSim && resSim.ok) {
             const simData = await resSim.json();
-            if (simData.weight > simData.maxWeight) {
-                showNotif(`Le poids (${simData.weight.toFixed(1)}) dépasse la limite (${simData.maxWeight}) !`, true);
+            const roundedWeight = Math.round(simData.weight * 10) / 10;
+            if (roundedWeight > simData.maxWeight) {
+                showNotif(`Le poids (${roundedWeight.toFixed(1)}) dépasse la limite (${simData.maxWeight}) !`, true);
                 return;
             }
         }
@@ -938,7 +952,8 @@ window.updateWeightUI = async function () {
         });
         if (res) {
             const data = await res.json();
-            w = data.weight || 0;
+            const rawWeight = data.weight || 0;
+            w = Math.round(rawWeight * 10) / 10;
             maxW = data.maxWeight || 5;
         }
     } catch (e) {

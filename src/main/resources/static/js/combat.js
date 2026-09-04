@@ -2451,6 +2451,9 @@ function updateUI(data) {
                                 rarityColor = getRarityColor(eq.rarity);
                                 const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
                                 nameHtml = eq.name;
+                                if (eq.specialEffect && eq.specialEffect !== 'NONE') {
+                                    nameHtml += window.getEffectInfoIconHtml(eq.specialEffect);
+                                }
                                 iconHtml = `<span class="material-symbols-outlined${extraClass}" style="color: ${slotInfo.color}; font-size: 1.2rem;">${slotInfo.icon}</span>`;
                             }
 
