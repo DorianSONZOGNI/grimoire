@@ -1583,7 +1583,7 @@ window.renderMonstersList = function () {
                 mutationsHtml += `<div class="flex-center" onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null" style="width: 32px; height: 32px; border-radius: 6px; background: rgba(255,255,255,0.05); justify-content: center; border: 1px solid ${mut.color || '#e879f9'}; cursor: help;">
                     <template class="tooltip-data" >
                         <div style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:${mut.color || '#e879f9'}; border-bottom: 1px solid ${mut.color || '#e879f9'}; padding-bottom: 4px;">${mut.nom} (Lvl ${mut.level || 1})</div>
-                        <div class="italic text-slate-300 mt-2 max-w-[250px] leading-relaxed whitespace-normal break-words" >${mut.description}</div>
+                        <div class="italic text-slate-300 mt-2 leading-relaxed" style="width: max-content; max-width: 500px; white-space: normal !important; word-wrap: break-word;">${mut.description}</div>
                     </template>
                     <span class="material-symbols-outlined" style="font-size: 1.2rem; color: ${mut.color || '#e879f9'};">${mut.icon || 'pets'}</span>
                 </div>`;
