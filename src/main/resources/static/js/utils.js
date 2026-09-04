@@ -14,10 +14,10 @@ window.ALL_SPIRITUALITIES = [
 
 function getSpiritualiteColor(sp) {
     if (!sp) return '#cbd5e1';
-    const normalized = (typeof sp === 'string') 
-        ? sp.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() 
+    const normalized = (typeof sp === 'string')
+        ? sp.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase()
         : sp;
-    
+
     if (typeof normalized !== 'string') return '#cbd5e1';
 
     if (normalized.includes('TENEBRES')) return '#a855f7';
@@ -31,16 +31,16 @@ function getSpiritualiteColor(sp) {
     if (normalized.includes('CREATION')) return '#10b981';
     if (normalized.includes('CONVICTION')) return '#b74c0b';
     if (normalized.includes('CONSOLIDATION')) return '#99674c';
-    
+
     return '#cbd5e1';
 }
 
 function getSpiritualiteIcon(sp) {
     if (!sp) return 'radio_button_unchecked';
-    const normalized = (typeof sp === 'string') 
-        ? sp.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase() 
+    const normalized = (typeof sp === 'string')
+        ? sp.normalize("NFD").replace(/[\u0300-\u036f]/g, "").toUpperCase()
         : sp;
-        
+
     if (typeof normalized !== 'string') return 'radio_button_unchecked';
 
     if (normalized.includes('TENEBRES')) return 'dark_mode';
@@ -54,7 +54,7 @@ function getSpiritualiteIcon(sp) {
     if (normalized.includes('CREATION')) return 'eco';
     if (normalized.includes('CONVICTION')) return 'volcano';
     if (normalized.includes('CONSOLIDATION')) return 'foundation';
-    
+
     return 'radio_button_unchecked';
 }
 
@@ -97,14 +97,14 @@ function calculateWeight(eq) {
     let w = eq.baseWeight || 0;
 
     let mHp = 0.2, mMana = 0.2, mPow = 2.0, mStr = 2.0, mArm = 1.0, mRes = 1.0;
-    let mSpd = 3.0, mCrit = 1.5, mRegHp = 3.0, mRegMana = 1.5;
+    let mSpd = 3.0, mCrit = 1.5, mRegHp = 2.5, mRegMana = 1.5;
 
     const s = eq.slot;
     if (s === 'ARME_GAUCHE' || s === 'ARME_DROITE' || s === 'ARME_DEUX_MAINS') {
         mArm = 1.5; mRes = 1.5;
         mHp = 0.4; mMana = 0.4;
         mStr = 1.8; mPow = 1.8;
-        mRegHp = 2.4; mRegMana = 1.2;
+        mRegHp = 2.2; mRegMana = 1.2;
     } else if (s === 'CASQUE' || s === 'PLASTRON') {
         mArm = 0.8; mRes = 0.8;
         mStr = 2.5; mPow = 2.5;
@@ -116,8 +116,18 @@ function calculateWeight(eq) {
         mRegMana = 0.8;
     } else if (s === 'BOTTES') {
         mSpd = 1.5;
+        mCrit = 1.2;
+        mArm = 0.8;
+        mRes = 1.2;
+        mMana = 0.3;
     } else if (s === 'CAPE') {
-        mCrit = 1.5;
+        mHp = 0.1;
+        mRegHp = 2.0;
+        mCrit = 1.3;
+        mArm = 1.2;
+        mRes = 0.8;
+        mSpd = 2.4;
+        mRegMana = 1.8;
     }
 
     w += (eq.bonusHealthMax || 0) * mHp;
@@ -154,12 +164,12 @@ async function showNotif(message, isError = false) {
     ui.showNotif(message, isError);
 }
 
-window.showGlobalTooltip = async function(el) {
+window.showGlobalTooltip = async function (el) {
     const ui = await import('/js/ui.js');
     ui.showGlobalTooltip(el);
 }
 
-window.hideGlobalTooltip = async function() {
+window.hideGlobalTooltip = async function () {
     const ui = await import('/js/ui.js');
     ui.hideGlobalTooltip();
 }
@@ -313,7 +323,7 @@ function getEquipmentTooltipHTML(eq) {
 
 window.getEquipmentTooltipHTML = getEquipmentTooltipHTML;
 
-window.generateEquipmentStatsHtml = function(eq, cssClass = 'vault-stat-chip') {
+window.generateEquipmentStatsHtml = function (eq, cssClass = 'vault-stat-chip') {
     if (!eq) return '';
     const statsDef = [
         { key: 'bonusHealthMax', label: 'PV', icon: 'favorite', color: '#ec4899' },
@@ -345,7 +355,7 @@ window.generateEquipmentStatsHtml = function(eq, cssClass = 'vault-stat-chip') {
         }).join('');
 
     if (eq.slot === 'CONSOMMABLE' || eq.isConsumable) {
-        const cat = eq.consumableCategory || eq.category; 
+        const cat = eq.consumableCategory || eq.category;
         if (cat === 'CLE' && eq.specialEffectValue) {
             html += `<span class="${cssClass}" title="Bonus de Butin">
                 <span class="material-symbols-outlined text-xs" style="color:#fbbf24;">diamond</span>
@@ -365,9 +375,9 @@ window.generateEquipmentStatsHtml = function(eq, cssClass = 'vault-stat-chip') {
     return html;
 };
 
-window.generateEquipmentEffectHtml = function(eq, baseClass = 'vault-card-effect') {
+window.generateEquipmentEffectHtml = function (eq, baseClass = 'vault-card-effect') {
     if (!eq || !eq.specialEffect || eq.specialEffect === 'NONE') return '';
-    
+
     const label = (window.EFFECT_LABELS && window.EFFECT_LABELS[eq.specialEffect]) || eq.specialEffect;
     const isCursed = eq.specialEffect.startsWith('CURSED_');
     const icon = isCursed ? 'skull' : 'auto_awesome';
