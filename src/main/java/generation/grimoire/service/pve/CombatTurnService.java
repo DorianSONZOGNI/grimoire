@@ -132,11 +132,8 @@ class CombatTurnService {
                     mType = MonsterType.NORMAL;
                 if (mType == MonsterType.MORT_VIVANT && !m.isDead()) {
                     int regenAmount = (int) Math.ceil(m.getBase().getHealthMax() * 0.05);
-                    int newHp = Math.min(m.getBase().getHealthMax(),
-                            m.getAsPersonnage().getHealthCurrent() + regenAmount);
-                    m.getAsPersonnage().setHealthCurrent(newHp);
-                    session.addLog("\uD83D\uDC80 " + m.getBase().getName() + " se régénère de " + regenAmount
-                            + " PV (Mort-vivant).");
+                    session.addLog("💀 " + m.getBase().getName() + " tente de se régénérer de " + regenAmount + " PV (Mort-vivant).");
+                    m.getAsPersonnage().heal(regenAmount);
                 }
 
                 if (!m.isDead()) {

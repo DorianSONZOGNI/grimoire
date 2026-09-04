@@ -309,8 +309,8 @@ public class PersonnageCombatHelper {
         if (p.getMonsterType() == generation.grimoire.enumeration.MonsterType.VAMPIRE) {
             int healAmount = (int) Math.ceil(baseDamage * 0.20);
             if (healAmount > 0) {
-                p.setHealthCurrent(Math.min(p.getHealthMax(), p.getHealthCurrent() + healAmount));
-                System.out.println("🧛 " + p.getName() + " vole " + healAmount + " PV (Vampire).");
+                System.out.println("🧛 " + p.getName() + " tente de voler " + healAmount + " PV (Vampire).");
+                p.heal(healAmount);
             }
         }
 
