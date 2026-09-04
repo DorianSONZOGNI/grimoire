@@ -1807,6 +1807,10 @@ function collectDungeonAnomalies(dungeon) {
                 if (entry.specialItemName) {
                     names.add(entry.specialItemName);
                 }
+                if (entry.equipmentId) {
+                    const an = pageState.allAnomalies.find(a => a.id === entry.equipmentId);
+                    if (an) names.add(an.name);
+                }
             });
         }
         // Strange Door -> TRESOR outcome: anomalie stored by ID

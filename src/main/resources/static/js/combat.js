@@ -132,7 +132,7 @@ function processNewDeathLogs(combatLogs) {
     }
     for (let i = pageState.lastCombatLogCount; i < combatLogs.length; i++) {
         const log = combatLogs[i];
-        const match = log.match(/&#x2620;&#xFE0F; (.*?) succombe à ses blessures et perd (\d+) XP/);
+        const match = log.match(/☠️ (.*?) succombe à ses blessures et perd (\d+) XP/);
         if (match) {
             const heroName = match[1];
             const xpLost = match[2];
