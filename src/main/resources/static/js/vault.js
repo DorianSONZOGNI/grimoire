@@ -240,6 +240,15 @@ function filterVault() {
 
         const getRarityIndex = r => window.GRIMOIRE_META?.equipmentRarities?.findIndex(er => er.name === r) || 0;
 
+        if (a.isAnomalie && b.isAnomalie && (sortVault === 'rarity_desc' || sortVault === 'rarity_asc')) {
+            const spA = a.spiritualite || '';
+            const spB = b.spiritualite || '';
+            if (spA !== spB) return spA.localeCompare(spB);
+            const lvlA = a.level || 1;
+            const lvlB = b.level || 1;
+            return sortVault === 'rarity_desc' ? lvlB - lvlA : lvlA - lvlB;
+        }
+
         if (sortVault === 'rarity_desc') {
             const ra = getRarityIndex(typeof a.rarity === 'object' ? a.rarity?.name : a.rarity);
             const rb = getRarityIndex(typeof b.rarity === 'object' ? b.rarity?.name : b.rarity);
