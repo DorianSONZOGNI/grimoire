@@ -186,6 +186,6 @@ class CombatTurnServiceMonsterAITest {
 
         // The monster was already dead, so it should be skipped. It does not attack.
         assertThat(player.getHealthCurrent()).isEqualTo(200);
-        assertThat(session.getCombatLog()).isEmpty();
+        assertThat(session.getCombatLog()).anyMatch(log -> log.contains("est mort"));
     }
 }

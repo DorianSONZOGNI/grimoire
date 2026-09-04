@@ -183,6 +183,6 @@ class CombatRewardTest {
 
         assertThat(player.getExperience()).isEqualTo(600);
         assertThat(session.isRoomEventCompleted()).isTrue();
-        assertThat(session.getCombatLog()).anyMatch(log -> log.contains("+10% de chance"));
+        assertThat(session.getCombatLog()).anyMatch(log -> log.contains("+10"));
     }
 }

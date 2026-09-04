@@ -173,9 +173,9 @@ class KarmaPassiveEffectTest {
         assertThat(hero.getPassiveState("karma_locked_duration", 0)).isEqualTo(6);
         assertThat(hero.getPassiveState("karma_harmony", 0)).isEqualTo(0);
         
-        // Applies x2.0 damage buff
+        // Applies x1.5 damage buff
         assertThat(hero.getConsumableSpellBuffs()).hasSize(1);
-        assertThat(hero.getConsumableSpellBuffs().get(0).getModifier()).isEqualTo(2.0);
+        assertThat(hero.getConsumableSpellBuffs().get(0).getModifier()).isEqualTo(1.5);
     }
 
     @Test

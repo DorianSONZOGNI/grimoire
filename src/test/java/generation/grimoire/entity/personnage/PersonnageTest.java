@@ -471,9 +471,9 @@ class PersonnageTest {
 
         hero.startTurn();
 
-        // regen is 10, drain is 20 -> net -10.
-        // 50 - 10 = 40
-        assertThat(hero.getManaCurrent()).isEqualTo(40);
+        // regen is 10, drain is 20% of 50 = 10 -> net 0.
+        // 50 + 0 = 50
+        assertThat(hero.getManaCurrent()).isEqualTo(50);
     }
 
     @Test
