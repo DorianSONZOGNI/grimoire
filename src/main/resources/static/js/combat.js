@@ -2397,7 +2397,7 @@ function updateUI(data) {
                                 gainedItemsHtml += `
                                     <div class="flex-center relative" ${tooltipAttrs} style="cursor: ${tooltipDataHtml ? 'help' : 'default'}; background: rgba(0, 0, 0, 0.4); border: 1px solid ${rarityColor}80; padding: 0.8rem 1rem; border-radius: 8px; color: ${rarityColor}; font-weight: 600; gap: 0.5rem; margin-top: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
                                         ${tooltipDataHtml ? `<template class="tooltip-data">${tooltipDataHtml}</template>` : ''}
-                                        <span class="material-symbols-outlined" style="color: ${slotInfo.color};">${slotInfo.icon}</span> <span style="${tooltipDataHtml ? `border-bottom: 1px dashed ${rarityColor};` : ''}">${eq.name}</span>
+                                        <span class="material-symbols-outlined ${slotInfo.extraClass || ''}" style="color: ${slotInfo.color};">${slotInfo.icon}</span> <span style="${tooltipDataHtml ? `border-bottom: 1px dashed ${rarityColor};` : ''}">${eq.name}</span>
                                     </div>
                                 `;
                             }
