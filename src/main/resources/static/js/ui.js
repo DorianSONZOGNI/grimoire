@@ -642,5 +642,50 @@ export function hideGlobalTooltip() {
 window.showGlobalTooltip = showGlobalTooltip;
 window.hideGlobalTooltip = hideGlobalTooltip;
 
+export function showEffectTooltip(el, text) {
+    let tooltip = document.getElementById('effectFixedTooltip');
+    if (!tooltip) {
+        tooltip = document.createElement('div');
+        tooltip.id = 'effectFixedTooltip';
+        tooltip.className = 'global-tooltip';
+        tooltip.style.zIndex = '9999999'; // Higher than globalFixedTooltip
+        document.body.appendChild(tooltip);
+    }
+    
+    if (tooltip.hideTimeout) clearTimeout(tooltip.hideTimeout);
 
+    tooltip.innerHTML = text;
+    tooltip.style.borderColor = 'rgba(168, 85, 247, 0.5)';
+    tooltip.style.display = 'block';
+
+    const rect = el.getBoundingClientRect();
+    const tooltipHeight = tooltip.offsetHeight;
+    const tooltipWidth = tooltip.offsetWidth;
+
+    let topPos = rect.bottom + 8;
+    let leftPos = rect.left + rect.width / 2 - tooltipWidth / 2;
+
+    if (topPos + tooltipHeight > window.innerHeight) {
+        topPos = rect.top - tooltipHeight - 8;
+    }
+    
+    if (leftPos < 10) leftPos = 10;
+    if (leftPos + tooltipWidth > window.innerWidth - 10) {
+        leftPos = window.innerWidth - tooltipWidth - 10;
+    }
+
+    tooltip.style.top = topPos + 'px';
+    tooltip.style.left = leftPos + 'px';
+}
+
+export function hideEffectTooltip() {
+    const tooltip = document.getElementById('effectFixedTooltip');
+    if (tooltip) {
+        tooltip.style.display = 'none';
+        if (tooltip.hideTimeout) clearTimeout(tooltip.hideTimeout);
+    }
+}
+
+window.showEffectTooltip = showEffectTooltip;
+window.hideEffectTooltip = hideEffectTooltip;
 

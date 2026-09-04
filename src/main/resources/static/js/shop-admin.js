@@ -61,6 +61,12 @@ document.addEventListener('change', (e) => {
             }
             updateWeightUI();
         } else if (hiddenInput.id.startsWith('eq') || hiddenInput.id === 'eqSpecialEffect') {
+            if (hiddenInput.id === 'eqSpecialEffect') {
+                const infoContainer = document.getElementById('eqSpecialEffectInfoContainer');
+                if (infoContainer) {
+                    infoContainer.innerHTML = window.getEffectInfoIconHtml(hiddenInput.value);
+                }
+            }
             updateWeightUI();
         } else {
             renderVault(); // Mettre à jour l'affichage au changement
@@ -555,6 +561,13 @@ window.editEquipment = function (id) {
         if (option) {
             document.getElementById('eqSpecialEffectLabel').innerHTML = option.innerHTML;
         }
+        const infoContainer = document.getElementById('eqSpecialEffectInfoContainer');
+        if (infoContainer) {
+            infoContainer.innerHTML = window.getEffectInfoIconHtml(eq.specialEffect);
+        }
+    } else {
+        const infoContainer = document.getElementById('eqSpecialEffectInfoContainer');
+        if (infoContainer) infoContainer.innerHTML = '';
     }
 
     document.getElementById('eqSpecialEffectValue').value = eq.specialEffectValue || 0;
@@ -584,7 +597,8 @@ window.submitEquipment = async function () {
     });
     if (res) {
         const data = await res.json();
-        if (data.weight > data.maxWeight && slot !== 'CONSOMMABLE') {
+        const roundedWeight = Math.round(data.weight * 10) / 10;
+        if (roundedWeight > data.maxWeight && slot !== 'CONSOMMABLE') {
             showNotif('Le poids de cet équipement dépasse la limite autorisée !', true);
             return;
         }
@@ -702,7 +716,8 @@ window.updateWeightUI = async function () {
         });
         if (res) {
             const data = await res.json();
-            w = data.weight || 0;
+            const rawWeight = data.weight || 0;
+            w = Math.round(rawWeight * 10) / 10;
             maxW = data.maxWeight || 5;
             price = data.shopPrice || 0;
         }
