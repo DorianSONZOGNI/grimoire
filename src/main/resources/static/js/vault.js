@@ -498,7 +498,8 @@ window.addEventListener('authLoaded', async () => {
         else btnCreate.classList.add('hidden');
     }
     if (btnCreateAnomalie) {
-        btnCreateAnomalie.style.display = window.isAdmin ? 'flex' : 'none';
+        if (window.isAdmin) btnCreateAnomalie.classList.remove('hidden');
+        else btnCreateAnomalie.classList.add('hidden');
     }
 
     const searchOwnerContainer = document.getElementById('searchOwnerContainer');

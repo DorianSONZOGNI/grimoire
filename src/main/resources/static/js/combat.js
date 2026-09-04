@@ -616,7 +616,7 @@ window.updateSpellCardState = function (spellId) {
 
         activeEffects.forEach(e => {
             const rawType = e.effectType || e.effect_type || '';
-            
+
             if (rawType === 'HEAT_FIXED' || rawType === 'HeatFixedEffect') {
                 if ((e.amount || 0) < 0) {
                     requiredHeatFromEffects += Math.abs(e.amount);
@@ -647,7 +647,7 @@ window.updateSpellCardState = function (spellId) {
                         requiredManaFromEffects += Math.abs(amt);
                     }
                 }
-                
+
                 if (rawType === 'PERCENTAGE_MANA' || rawType === 'ManaPercentageEffect' || rawType === 'MANA_OVER_TIME' || rawType === 'ManaOverTimeEffect') {
                     const pct = e.percentage || e.percentageManaPerTick || e.percentage_mana_per_tick || 0;
                     if (pct < 0) {
@@ -678,7 +678,7 @@ window.updateSpellCardState = function (spellId) {
 
         const playerMana = pageState.currentSessionData.activePlayer ? pageState.currentSessionData.activePlayer.manaCurrent : 0;
         const totalManaCost = (avail && avail.finalManaCost !== undefined ? avail.finalManaCost : (sp.manaCost || 0)) + requiredManaFromEffects;
-        
+
         if (isCastable && playerMana < totalManaCost) {
             isCastable = false;
             dynamicReason = 'MANA';
@@ -689,7 +689,7 @@ window.updateSpellCardState = function (spellId) {
         const usedThisTurn = pageState.currentSessionData.activePlayer?.passiveStates ? (pageState.currentSessionData.activePlayer.passiveStates['creation_used_this_turn'] || 0) : 0;
         const willPassiveTrigger = currentBuds > 0 && usedThisTurn === 0;
         const requiredBuds = actualSeedCost + (willPassiveTrigger ? 1 : 0);
-        
+
         if (currentBuds < requiredBuds) {
             isCastable = false;
             dynamicReason = 'SEEDS';
@@ -833,7 +833,7 @@ function initiateCombatCast(spellId) {
         const usedThisTurn = pageState.currentSessionData.activePlayer?.passiveStates ? (pageState.currentSessionData.activePlayer.passiveStates['creation_used_this_turn'] || 0) : 0;
         const willPassiveTrigger = currentBuds > 0 && usedThisTurn === 0;
         const requiredBuds = actualSeedCost + (willPassiveTrigger ? 1 : 0);
-        
+
         if (currentBuds < requiredBuds) {
             addCombatLog(`Graines insuffisantes pour cette option (${currentBuds}/${requiredBuds})`, 'system');
             return;
@@ -2759,25 +2759,25 @@ function updateUI(data) {
         }
         // 3. Subit des dégâts (Dot, pièges...)
         else if (text.includes("subit") && text.includes("dégâts")) {
-             if (text.includes("magiques")) {
-                 div.className = 'log-entry log-damage-magic';
-                 text = text.replace(/subit (\d+) dégâts magiques/g, 'subit <span class="log-val-magic">$1</span> dégâts <span class="log-val-magic">magiques</span>');
-             } else if (text.includes("physiques")) {
-                 div.className = 'log-entry log-damage-physic';
-                 text = text.replace(/subit (\d+) dégâts physiques/g, 'subit <span class="log-val-physic">$1</span> dégâts <span class="log-val-physic">physiques</span>');
-             } else if (text.includes("bruts")) {
-                 div.className = 'log-entry log-damage-brut';
-                 text = text.replace(/subit (\d+) dégâts bruts/g, 'subit <span class="log-val-brut">$1</span> dégâts <span class="log-val-brut">bruts</span>');
-             } else if (text.includes("Brûlure")) {
-                 div.className = 'log-entry log-damage-burn';
-                 text = text.replace(/subit (\d+) dégâts de Brûlure/g, 'subit <span class="log-val-burn">$1</span> dégâts de <span class="log-val-burn">Brûlure</span>');
-             } else if (text.includes("Poison")) {
-                 div.className = 'log-entry log-damage-poison';
-                 text = text.replace(/subit (\d+) dégâts de Poison/g, 'subit <span class="log-val-poison">$1</span> dégâts de <span class="log-val-poison">Poison</span>');
-             } else {
-                 div.className = 'log-entry log-damage-normal';
-                 text = text.replace(/subit (\d+) dégâts/g, 'subit <span class="log-val-dmg">$1</span> dégâts');
-             }
+            if (text.includes("magiques")) {
+                div.className = 'log-entry log-damage-magic';
+                text = text.replace(/subit (\d+) dégâts magiques/g, 'subit <span class="log-val-magic">$1</span> dégâts <span class="log-val-magic">magiques</span>');
+            } else if (text.includes("physiques")) {
+                div.className = 'log-entry log-damage-physic';
+                text = text.replace(/subit (\d+) dégâts physiques/g, 'subit <span class="log-val-physic">$1</span> dégâts <span class="log-val-physic">physiques</span>');
+            } else if (text.includes("bruts")) {
+                div.className = 'log-entry log-damage-brut';
+                text = text.replace(/subit (\d+) dégâts bruts/g, 'subit <span class="log-val-brut">$1</span> dégâts <span class="log-val-brut">bruts</span>');
+            } else if (text.includes("Brûlure")) {
+                div.className = 'log-entry log-damage-burn';
+                text = text.replace(/subit (\d+) dégâts de Brûlure/g, 'subit <span class="log-val-burn">$1</span> dégâts de <span class="log-val-burn">Brûlure</span>');
+            } else if (text.includes("Poison")) {
+                div.className = 'log-entry log-damage-poison';
+                text = text.replace(/subit (\d+) dégâts de Poison/g, 'subit <span class="log-val-poison">$1</span> dégâts de <span class="log-val-poison">Poison</span>');
+            } else {
+                div.className = 'log-entry log-damage-normal';
+                text = text.replace(/subit (\d+) dégâts/g, 'subit <span class="log-val-dmg">$1</span> dégâts');
+            }
         }
         // 4. Healing (HP)
         else if (text.includes("soigné") || (text.includes("récupère") && text.includes("PV"))) {
@@ -2811,7 +2811,7 @@ function updateUI(data) {
         text = text.replace(/Vie actuelle : (\d+)/g, 'Vie actuelle : <span class="log-val-hp">$1</span>');
         text = text.replace(/soigné de (\d+) points/g, 'soigné de <span class="log-val-hp">$1</span> points');
         text = text.replace(/reçoit un bouclier de (\d+)/g, 'reçoit un <span class="log-val-shield">bouclier</span> de <span class="log-val-shield">$1</span>');
-        
+
         const getStatClass = (statName) => {
             let cssClass = 'log-val-stat'; // Default generic stat color
             const lower = statName.toLowerCase();
@@ -2831,42 +2831,42 @@ function updateUI(data) {
         };
 
         // Buffs & Gains
-        text = text.replace(/\+(\d+) de ([a-zA-Zéèàçûîôâê]+)/gi, function(match, amount, statName) {
+        text = text.replace(/\+(\d+) de ([a-zA-Zéèàçûîôâê]+)/gi, function (match, amount, statName) {
             const cssClass = getStatClass(statName);
             return `+<span class="${cssClass}">${amount}</span> de <span class="${cssClass}">${statName}</span>`;
         });
-        
+
         // Passifs spécifiques
         text = text.replace(/\+(\d+)% d'armure/gi, '+<span class="log-val-armor">$1%</span> d\'<span class="log-val-armor">armure</span>');
         text = text.replace(/\+(\d+)% de résistance magique/gi, '+<span class="log-val-resist">$1%</span> de <span class="log-val-resist">résistance magique</span>');
         text = text.replace(/\-(\d+)% sur le coût des sorts/gi, '-<span class="log-val-mana">$1%</span> sur le <span class="log-val-mana">coût des sorts</span>');
         text = text.replace(/\+(\d+) Vitesse/gi, '+<span class="log-val-speed">$1</span> <span class="log-val-speed">Vitesse</span>');
-        
+
         // Passifs Voies & Spiritualités (Mots clés et Phrases)
         // Destruction
         text = text.replace(/🔥 \[Destruction\]/g, '<span style="color:#ef4444;font-weight:bold;">🔥 [Destruction]</span>');
         text = text.replace(/chaleur/gi, '<span style="color:#f97316;font-weight:bold;">chaleur</span>');
-        
+
         // Création
         text = text.replace(/🌱 \[Création\]/g, '<span style="color:#10b981;font-weight:bold;">🌱 [Création]</span>');
         text = text.replace(/✨ \[Création\]/g, '<span style="color:#10b981;font-weight:bold;">✨ [Création]</span>');
         text = text.replace(/bourgeon/gi, '<span style="color:#10b981;font-weight:bold;">bourgeon</span>');
         text = text.replace(/instantané/gi, '<span style="color:#a855f7;font-weight:bold;">instantané</span>');
-        
+
         // Sûreté
         text = text.replace(/stocke (\d+) points de sûreté/gi, 'stocke <span class="log-val-shield">$1</span> <span class="log-val-shield">points de sûreté</span>');
         text = text.replace(/\(Sûreté\)/g, '(<span class="log-val-shield">Sûreté</span>)');
         text = text.replace(/\(Sûreté passive\)/g, '(<span class="log-val-shield">Sûreté passive</span>)');
         text = text.replace(/\+(\d+)% de critique/gi, '+<span class="log-val-crit">$1%</span> de <span class="log-val-crit">critique</span>');
-        
+
         // Raison
         text = text.replace(/de la Raison/g, 'de la <span class="log-val-magic">Raison</span>');
         text = text.replace(/\(Raison\)/g, '(<span class="log-val-magic">Raison</span>)');
         text = text.replace(/cumuls de Vitesse/g, 'cumuls de <span class="log-val-speed">Vitesse</span>');
-        
+
         // Violence
         text = text.replace(/stacks de Violence/g, 'stacks de <span class="log-val-brut">Violence</span>');
-        
+
         // Karma (Spiritualité)
         text = text.replace(/✨ Harmonie Karmique/gi, '<span style="color:#d946ef;font-weight:bold;">✨ Harmonie Karmique</span>');
         text = text.replace(/✨ Le Karma/gi, '<span style="color:#d946ef;font-weight:bold;">✨ Le Karma</span>');
@@ -2878,22 +2878,22 @@ function updateUI(data) {
         text = text.replace(/💥 Le Karma/gi, '<span style="color:#ef4444;font-weight:bold;">💥 Le Karma</span>');
         text = text.replace(/⏳ Le Karma/gi, '<span style="color:#f59e0b;font-weight:bold;">⏳ Le Karma</span>');
         text = text.replace(/⚖️/gi, '<span style="color:#d946ef;font-weight:bold;">⚖️</span>');
-        
+
         // Jauge et Fractions
         text = text.replace(/(\d+)\/100/g, '<span style="color:#ef4444;font-weight:bold;">$1/100</span>');
         text = text.replace(/Jauge: ([\-\d]+)/gi, 'Jauge: <span style="color:#d946ef;font-weight:bold;">$1</span>');
-        
+
         // Effets sur la durée (traductions)
         text = text.replace(/Soins sur la durée/g, '<span class="log-val-hp">Soins sur la durée</span>');
         text = text.replace(/Régénération de mana sur la durée/g, '<span class="log-val-mana">Régénération de mana sur la durée</span>');
         text = text.replace(/Dégâts sur la durée/g, '<span class="log-val-dmg">Dégâts sur la durée</span>');
-        
+
         text = text.replace(/\(Critique\)/g, '<span class="log-crit-text">(Critique)</span>');
         text = text.replace(/fixe: ([\-\+\d\.]+)/g, 'fixe: <span style="color:#fbbf24;font-weight:bold;">$1</span>');
         text = text.replace(/mult: ([\-\+\d\.]+)/g, 'mult: <span style="color:#fbbf24;font-weight:bold;">$1</span>');
-        
+
         // Tous les effets de buffs/debuffs
-        text = text.replace(/effet sur (.*?) \(/g, function(match, statName) {
+        text = text.replace(/effet sur (.*?) \(/g, function (match, statName) {
             return `effet sur <span class="${getStatClass(statName)}">${statName}</span> (`;
         });
 
