@@ -1,14 +1,22 @@
 package generation.grimoire.dto.alchemy;
 
+import generation.grimoire.enumeration.RecipeRewardType;
 import lombok.Data;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Data
 public class AlchemyRecipeRequestDTO {
-    private Long resultTemplateId;
-    private Long requiredMaterial1Id;
-    private int quantity1;
-    private Long requiredMaterial2Id;
-    private int quantity2;
-    private Long requiredMaterial3Id;
-    private int quantity3;
+    private Long id;
+    private String name;
+    private String description;
+    private double costGold;
+    private double costSpiritXp;
+    private Map<String, Integer> requiredAnomalies = new HashMap<>();
+    private Map<String, Integer> requiredConsumables = new HashMap<>();
+    private RecipeRewardType rewardType;
+    private String rewardName;
+    private int rewardQuantity;
+    private int rewardLevel;
 }

@@ -321,7 +321,7 @@ function addRequirement(type, selectedName = '', qty = 1) {
     }
 
     div.innerHTML = `
-                <div class="custom-select-wrapper flex-[2]">
+                <div class="custom-select-wrapper flex-1 min-w-0">
                     <div class="custom-select-trigger bg-slate-900/60 p-2 rounded-lg">
                         <span class="cs-label text-sm">${displayLabel}</span>
                         <span class="material-symbols-outlined text-slate-500 text-lg">expand_more</span>
@@ -331,7 +331,7 @@ function addRequirement(type, selectedName = '', qty = 1) {
                     </div>
                     <input type="hidden" class="req-name" value="${selectedName}">
                 </div>
-                <input type="number" value="${qty}" min="1" class="req-qty form-control flex-1 p-2 bg-slate-900/60 border border-white/10 text-white rounded-lg">
+                <input type="number" value="${qty}" min="1" class="req-qty form-control p-2 bg-slate-900/60 border border-white/10 text-white rounded-lg w-20 flex-none">
                 <button type="button" class="btn-remove-row bg-red-500/20 border border-red-500/40 text-red-300 rounded-md cursor-pointer p-2 flex justify-center items-center">
                     <span class="material-symbols-outlined text-lg">delete</span>
                 </button>
