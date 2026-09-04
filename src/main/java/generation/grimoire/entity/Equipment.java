@@ -15,13 +15,13 @@ import lombok.ToString;
 
 @Data
 @NoArgsConstructor
-@EqualsAndHashCode(exclude = {"personnage", "user"})
-@ToString(exclude = {"personnage", "user"})
+@EqualsAndHashCode(exclude = { "personnage", "user" })
+@ToString(exclude = { "personnage", "user" })
 @Entity
 @Table(name = "Equipment", indexes = {
-    @Index(name = "idx_equipment_owner", columnList = "owner_username")
+        @Index(name = "idx_equipment_owner", columnList = "owner_username")
 })
-@com.fasterxml.jackson.annotation.JsonIgnoreProperties({"personnage", "user"})
+@com.fasterxml.jackson.annotation.JsonIgnoreProperties({ "personnage", "user" })
 public class Equipment {
 
     @Id
@@ -122,24 +122,30 @@ public class Equipment {
 
     public double calculateWeight() {
         double w = this.baseWeight;
-        
+
         double mHp = 0.2, mMana = 0.2, mPow = 2.0, mStr = 2.0, mArm = 1.0, mRes = 1.0;
-        double mSpd = 3.0, mCrit = 1.5, mRegHp = 3.0, mRegMana = 1.5;
+        double mSpd = 3.0, mCrit = 1.5, mRegHp = 2.5, mRegMana = 1.5;
 
         if (this.slot != null) {
             switch (this.slot) {
                 case ARME_GAUCHE:
                 case ARME_DROITE:
                 case ARME_DEUX_MAINS:
-                    mArm = 1.5; mRes = 1.5;
-                    mHp = 0.4; mMana = 0.4;
-                    mStr = 1.8; mPow = 1.8;
-                    mRegHp = 2.4; mRegMana = 1.2;
+                    mArm = 1.5;
+                    mRes = 1.5;
+                    mHp = 0.4;
+                    mMana = 0.4;
+                    mStr = 1.8;
+                    mPow = 1.8;
+                    mRegHp = 2.2;
+                    mRegMana = 1.2;
                     break;
                 case CASQUE:
                 case PLASTRON:
-                    mArm = 0.8; mRes = 0.8;
-                    mStr = 2.5; mPow = 2.5;
+                    mArm = 0.8;
+                    mRes = 0.8;
+                    mStr = 2.5;
+                    mPow = 2.5;
                     mSpd = 3.5;
                     mCrit = 2.0;
                     break;
@@ -147,14 +153,25 @@ public class Equipment {
                 case ANNEAU_GAUCHE:
                 case ANNEAU_DROIT:
                     mMana = 0.1;
-                    mArm = 2.0; mRes = 2.0;
+                    mArm = 2.0;
+                    mRes = 2.0;
                     mRegMana = 0.8;
                     break;
                 case BOTTES:
                     mSpd = 1.5;
+                    mCrit = 1.2;
+                    mArm = 0.8;
+                    mRes = 1.2;
+                    mMana = 0.3;
                     break;
                 case CAPE:
-                    mCrit = 1.5;
+                    mHp = 0.1;
+                    mRegHp = 2.0;
+                    mCrit = 1.3;
+                    mArm = 1.2;
+                    mRes = 0.8;
+                    mSpd = 2.4;
+                    mRegMana = 1.8;
                     break;
                 default:
                     break;
@@ -193,8 +210,8 @@ public class Equipment {
 
     public double calculateShopPrice() {
         double weight = this.calculateWeight();
-        double multiplier     = this.rarity != null ? this.rarity.getShopMultiplier() : 1.0;
-        double slotMultiplier = this.slot   != null ? this.slot.getShopMultiplier()   : 1.0;
+        double multiplier = this.rarity != null ? this.rarity.getShopMultiplier() : 1.0;
+        double slotMultiplier = this.slot != null ? this.slot.getShopMultiplier() : 1.0;
         return Math.ceil(weight * 2 * multiplier * slotMultiplier);
     }
 

@@ -1807,6 +1807,10 @@ function collectDungeonAnomalies(dungeon) {
                 if (entry.specialItemName) {
                     names.add(entry.specialItemName);
                 }
+                if (entry.equipmentId) {
+                    const an = pageState.allAnomalies.find(a => a.id === entry.equipmentId);
+                    if (an) names.add(an.name);
+                }
             });
         }
         // Strange Door -> TRESOR outcome: anomalie stored by ID
@@ -2506,6 +2510,15 @@ async function loadMutations() {
         const res = await globalFetch('/api/admin/pve/mutations');
         if (res.ok) {
             pageState.allMutations = await res.json();
+            if (pageState.allMutations) {
+                pageState.allMutations.sort((a, b) => {
+                    const nomA = (a.nom || '').toLowerCase();
+                    const nomB = (b.nom || '').toLowerCase();
+                    if (nomA < nomB) return -1;
+                    if (nomA > nomB) return 1;
+                    return (a.level || 0) - (b.level || 0);
+                });
+            }
             renderMutationsList();
             renderMutationsSelector();
         }
