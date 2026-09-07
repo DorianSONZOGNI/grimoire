@@ -3409,7 +3409,7 @@ function generateFighterHtml(c, isHero, skipBadges = false) {
         <div class="sandbox-status-list" style="justify-content: center;">${passiveBadges}</div>
         <div class="sandbox-status-list" style="justify-content: center;">
             ${renderShieldsHtml(c.activeShields)}
-            ${renderBuffsHtml(c.activeBuffs || c.buffs, c.activeManaOverTimeEffects, c.activeHealOverTimeEffects)}
+            ${renderBuffsHtml(c, c.activeBuffs || c.buffs, c.activeManaOverTimeEffects, c.activeHealOverTimeEffects)}
             ${renderPoisonBurnHtml(c)}
             ${renderDotsHtml(c.activeDamageOverTimeEffects)}
         </div>
@@ -3595,7 +3595,7 @@ function renderPoisonBurnHtml(c) {
     return html;
 }
 
-function renderBuffsHtml(buffList, motList, hotList) {
+function renderBuffsHtml(c, buffList, motList, hotList) {
     const goodBuffs = [];
     const badBuffs = [];
 
@@ -3603,7 +3603,6 @@ function renderBuffsHtml(buffList, motList, hotList) {
         buffList.forEach(b => {
             if (b.statAffected === 'AME_DETACHEE' || b.effectType === 'AME_DETACHEE') return;
             if (b.statAffected === 'POISON' || b.statAffected === 'BURN') return;
-
             const inverseStats = ['DAMAGE_TAKEN_MAGIC', 'DAMAGE_TAKEN_PHYSIC', 'DAMAGE_TAKEN_BRUT', 'SHIELD_PIERCED', 'BURN', 'POISON'];
             const isInverse = inverseStats.includes(b.statAffected);
             const isNegativeValue = b.modifier < 0 || b.flatValue < 0;
@@ -3611,9 +3610,47 @@ function renderBuffsHtml(buffList, motList, hotList) {
             let isBad = isNegativeValue;
             if (isInverse) isBad = !isNegativeValue;
 
+            let effectiveFlat = b.flatValue || 0;
+            let showModifier = true;
+
+            if (b.modifier && c) {
+                let finalStat = null;
+                const affected = b.statAffected ? b.statAffected.toUpperCase() : '';
+                
+                if (affected.includes('ARMURE') || affected.includes('ARMOR')) finalStat = c.totalArmor !== undefined ? c.totalArmor : c.armor;
+                else if (affected.includes('RESISTANCE')) finalStat = c.totalResistance !== undefined ? c.totalResistance : c.resistance;
+                else if (affected === 'POWER' || affected.includes('PUISSANCE')) finalStat = c.totalPower !== undefined ? c.totalPower : c.power;
+                else if (affected.includes('STRENGTH') || affected.includes('FORCE')) finalStat = c.totalStrength !== undefined ? c.totalStrength : c.strength;
+                else if (affected.includes('SPEED') || affected.includes('VITESSE')) finalStat = c.totalSpeed !== undefined ? c.totalSpeed : c.speed;
+                else if (affected === 'CRIT' || affected.includes('CRITIQUE')) finalStat = c.totalCrit !== undefined ? c.totalCrit : c.crit;
+                else if (affected.includes('HEALTH_MAX') || affected.includes('PV_MAX') || affected.includes('HP_MAX')) finalStat = c.healthMax;
+                else if (affected.includes('MANA_MAX') || affected.includes('MP_MAX')) finalStat = c.manaMax;
+                
+                if (finalStat !== null && finalStat !== undefined) {
+                    let totalModifier = 0;
+                    const allBuffs = c.activeBuffs || c.buffs || [];
+                    allBuffs.forEach(otherBuff => {
+                        if (otherBuff.statAffected === b.statAffected && otherBuff.modifier) {
+                            totalModifier += otherBuff.modifier;
+                        }
+                    });
+                    
+                    let multiplier = Math.max(0, 1.0 + totalModifier);
+                    let baseStat = multiplier > 0 ? (finalStat / multiplier) : 0;
+                    
+                    let modFlat = Math.round(baseStat * b.modifier);
+                    if (modFlat !== 0) {
+                        effectiveFlat += modFlat;
+                        showModifier = false;
+                    }
+                }
+            }
+
             let text = '';
-            if (b.flatValue) text += `${b.flatValue > 0 ? '+' : ''}${b.flatValue} ${ui.formatStat(b.statAffected)}`;
-            if (b.modifier) {
+            if (effectiveFlat !== 0) {
+                text += `${effectiveFlat > 0 ? '+' : ''}${effectiveFlat} ${ui.formatStat(b.statAffected)}`;
+            }
+            if (b.modifier && showModifier) {
                 if (text) text += ' et ';
                 text += `${b.modifier > 0 ? '+' : ''}${Math.round(b.modifier * 100)}% ${ui.formatStat(b.statAffected)}`;
             }
