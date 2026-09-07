@@ -420,7 +420,9 @@ class SpellIntegrationTest {
         // Le Karma n'a pas de restriction, le sort se lance
         hero.setManaCurrent(10);
         spellService.castSpell(karmaSpell, hero, enemy, null);
-        assertThat(hero.getManaCurrent()).isEqualTo(5);
+        // Cost is 5. Harmony state (gauge 0) restores 3% of max mana.
+        // Assuming max mana is 50 (3% = 1). 10 - 5 + 1 = 6.
+        assertThat(hero.getManaCurrent()).isEqualTo(6);
     }
 
     @Test

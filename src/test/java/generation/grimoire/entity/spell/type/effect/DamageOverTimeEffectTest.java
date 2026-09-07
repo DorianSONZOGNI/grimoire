@@ -53,8 +53,10 @@ class DamageOverTimeEffectTest {
         dotEffect.setDamageType(DamageType.MAGIC);
 
         dotEffect.apply(null, target);
-        dotEffect.tick(target); // first tick: 10 dmg
-        dotEffect.tick(target); // second tick: another 10 dmg
+        
+        DamageOverTimeEffect appliedEffect = target.getActiveDamageOverTimeEffects().get(0);
+        appliedEffect.tick(target); // first tick: 10 dmg
+        appliedEffect.tick(target); // second tick: another 10 dmg
         assertThat(target.getHealthCurrent()).isEqualTo(80);
     }
 
