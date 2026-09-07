@@ -3409,7 +3409,7 @@ function generateFighterHtml(c, isHero, skipBadges = false) {
         <div class="sandbox-status-list" style="justify-content: center;">${passiveBadges}</div>
         <div class="sandbox-status-list" style="justify-content: center;">
             ${renderShieldsHtml(c.activeShields)}
-            ${renderBuffsHtml(c, c.activeBuffs || c.buffs, c.activeManaOverTimeEffects, c.activeHealOverTimeEffects)}
+            ${renderBuffsHtml(c, c, c.activeBuffs || c.buffs, c.activeManaOverTimeEffects, c.activeHealOverTimeEffects)}
             ${renderPoisonBurnHtml(c)}
             ${renderDotsHtml(c.activeDamageOverTimeEffects)}
         </div>
@@ -3645,6 +3645,8 @@ function renderBuffsHtml(c, buffList, motList, hotList) {
                     }
                 }
             }
+
+
 
             let text = '';
             if (effectiveFlat !== 0) {

@@ -68,6 +68,7 @@ public abstract class SpellEffect {
      * Calcule si le sort déclenche un coup critique.
      */
     protected boolean checkCriticalHit(Personnage caster) {
+        if (caster == null) return false;
         int totalCrit = caster.getCrit() + caster.getStatFlatBonus(generation.grimoire.enumeration.StatType.CRIT);
         totalCrit = Math.max(0, Math.min(100, totalCrit));
         int roll = (int) (Math.random() * 100) + 1;
