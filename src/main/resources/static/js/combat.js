@@ -4101,7 +4101,10 @@ const GAME_TIPS = [
     "Les objets <span class=\"text-red-500 font-semibold\">Maudits</span> offrent des bonus plus de statistique, mais au prix de contreparties parfois mortelles. Lisez bien leurs effets avant de les équiper !",
     "Vous ne pouvez équiper qu'un seul objet <span class=\"text-amber-500 font-semibold\">Relique</span> et un seul objet <span class=\"text-fuchsia-400 font-semibold\">Épique</span> à la fois sur l'ensemble de votre équipement. Choisissez-les judicieusement !",
     "Il est impossible d'équiper deux fois le même type d'anneau sur un personnage. Chaque emplacement d'anneau doit comporter un bijou différent.",
-    "Tous les types d'objets ne se valent pas : une arme donnera statistiquement beaucoup plus de Force ou de Puissance qu'un bijou, tandis qu'un plastron excellera pour vos Points de Vie et votre Armure. Optimisez vos emplacements !"
+    "Tous les types d'objets ne se valent pas : une arme donnera statistiquement beaucoup plus de Force ou de Puissance qu'un bijou, tandis qu'un plastron excellera pour vos Points de Vie et votre Armure. Optimisez vos emplacements !",
+    "Votre inventaire déborde ou vous trouvez un objet inutile dans un coffre ? Vous pouvez le vendre instantanément en le <span class=\"text-red-400 font-semibold\">détruisant</span> pour récupérer un peu d'Or !",
+    "La <span class=\"text-yellow-400 font-semibold\">Boutique</span> se réinitialise tous les jours à minuit. Gardez l'œil ouvert : l'objet en <span class=\"text-emerald-400 font-semibold\">Promotion</span> change toutes les deux heures.",
+    "N'hésitez pas à consulter votre <span class=\"text-purple-400 font-semibold\">Grimoire</span> ! Il vous permet de voir à l'avance tous les sorts disponibles pour chaque voie et spiritualité, idéal pour planifier votre évolution."
 ];
 
 function showResult(data) {
