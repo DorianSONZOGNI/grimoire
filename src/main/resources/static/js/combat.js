@@ -1590,8 +1590,8 @@ function updateMultiTurnBanner(data) {
     const allEnemiesDead = !data.enemies || data.enemies.length === 0 || data.enemies.every(e => e.dead || e.currentHp <= 0);
 
     if (!isCombatRoom || allEnemiesDead) {
-        banner.innerHTML = `<span class="material-symbols-outlined" style="color:#a855f7;">explore</span>
-            <span style="color:#a855f7; font-weight:600;">Exploration en cours</span>`;
+        banner.innerHTML = `<span class="material-symbols-outlined text-[#a855f7]">explore</span>
+            <span class="text-[#a855f7] font-semibold">Exploration en cours</span>`;
         setMultiActionsEnabled(true);
         return;
     }
@@ -1602,12 +1602,12 @@ function updateMultiTurnBanner(data) {
     const isEnemyTurn = !data.turnOrder?.[data.currentTurnIndex]?.player;
 
     if (isEnemyTurn) {
-        banner.innerHTML = `<span class="material-symbols-outlined" style="color:#f87171;">swords</span>
-            <span style="color:#f87171; font-weight:600;">Tour ennemi</span>`;
+        banner.innerHTML = `<span class="material-symbols-outlined text-[#f87171]">swords</span>
+            <span class="text-[#f87171] font-semibold">Tour ennemi</span>`;
         setMultiActionsEnabled(false);
     } else if (isMyTurn) {
-        banner.innerHTML = `<span class="material-symbols-outlined" style="color:#4ade80;">person</span>
-            <span style="color:#4ade80; font-weight:600;">👤 Votre tour — ${activePlayer?.name || ''}</span>`;
+        banner.innerHTML = `<span class="material-symbols-outlined text-[#4ade80]">person</span>
+            <span class="text-[#4ade80] font-semibold">👤 Votre tour — ${activePlayer?.name || ''}</span>`;
         setMultiActionsEnabled(true);
     } else {
         const otherName = ownerUsername || 'Allié';
