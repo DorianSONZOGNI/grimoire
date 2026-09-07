@@ -4086,20 +4086,43 @@ function renderSpellCard(sp) {
     `;
 }
 
+const GAME_TIPS = [
+    "Les dégâts de [Brûlure] sont de type Magique, mais ils subissent l'impact de la Résistance deux fois : à l'application et au déclenchement !",
+    "Le [Poison] inflige des dégâts Bruts, mais c'est la seule altération totalement purifiée par le moindre soin (un soin direct, un vol de vie ou un DoT de soin dissipe tous les poisons). La régénération native n'a par contre aucun effet.",
+    "Chaque point d'Armure ou de Résistance offre un gain linéaire en Points de Vie effectifs. La réduction diminue en pourcentage pour éviter l'invincibilité absolue, mais votre robustesse continue bien d'augmenter !",
+    "Certains Secrets ne peuvent être découverts qu'en remplissant des conditions très spécifiques (actions précises, combinaison d'éléments...). Lisez attentivement les indices pour les débloquer !",
+    "Une attaque de base (banale) inflige 80% de votre Force ou de votre Puissance (la plus haute). Si vos deux statistiques sont parfaitement égales, l'attaque devient mixte (50% Physique, 50% Magique).",
+    "Un sort 'Instantané' ne consomme pas votre action du tour. Mieux encore : vous pouvez lancer des sorts instantanés pendant que vous êtes en train de canaliser un autre sort !",
+    "Un sort 'Canalisé' s'exécute généralement à la fin du tour ou au tour suivant, vous laissant vulnérable pendant la préparation.",
+    "La majorité des sorts possèdent des variantes (Options). Elles permettent de modifier drastiquement le fonctionnement d'un sort, parfois même son type de dégâts. Explorez-les !",
+    "Les Coups Critiques multiplient par 1.5 l'efficacité de presque tout : les dégâts (bruts, magiques, physiques), mais aussi les soins, la génération de bouclier et la restauration de mana !",
+    "Les dégâts sur la durée (DoT) peuvent être critiques au moment de leur application. Leurs dégâts par tour seront alors amplifiés pendant toute leur durée.",
+    "Lorsque plusieurs héros participent au même donjon, l'expérience gagnée à la fin du combat est partagée équitablement entre tous les héros en vie."
+];
+
 function showResult(data) {
     const overlay = document.getElementById('resultOverlay');
     const title = document.getElementById('resultTitle');
     const desc = document.getElementById('resultDesc');
+    const tipContainer = document.getElementById('resultTip');
+    const tipText = document.getElementById('resultTipText');
 
     if (data.playerWon) {
         title.textContent = "VICTOIRE";
         title.classList.add('text-success');
         desc.textContent = "Le donjon a été complété.";
+        
+        if (tipContainer && tipText) {
+            const randomTip = GAME_TIPS[Math.floor(Math.random() * GAME_TIPS.length)];
+            tipText.textContent = randomTip;
+            tipContainer.style.display = 'block';
+        }
     } else {
         title.textContent = "DÉFAITE";
         title.classList.add('text-error');
         const goldLost = data.totalGoldLostOnDefeat || 0;
         desc.innerHTML = `Votre équipe a été anéantie.<br><span style="color:#fbbf24; font-weight:600; margin-top:0.5rem; display:block;">Pénalité : -${goldLost} Or</span>`;
+        if (tipContainer) tipContainer.style.display = 'none';
     }
 
     overlay.classList.add('show');
