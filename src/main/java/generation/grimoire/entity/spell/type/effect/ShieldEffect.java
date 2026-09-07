@@ -34,7 +34,7 @@ public class ShieldEffect extends SpellEffect {
         }
 
         if (checkCriticalHit(caster)) {
-            shieldAmount *= getCriticalMultiplier(caster);
+            shieldAmount *= getCriticalMultiplier(caster, false);
         }
 
         // Apply SHIELD_GIVEN multiplier from caster

@@ -35,7 +35,7 @@ public class PersonnageCombatHelper {
                 }
             }
             if (totalHpRegen > 0) {
-                p.heal(totalHpRegen);
+                p.healRegen(totalHpRegen);
             } else if (totalHpRegen < 0) {
                 p.takeDamage(-totalHpRegen, DamageType.BRUT);
             }
@@ -326,7 +326,7 @@ public class PersonnageCombatHelper {
         }
     }
 
-    public static void heal(Personnage p, int healAmount) {
+    public static void heal(Personnage p, int healAmount, boolean isNativeRegen) {
         double multiplier = p.getStatBuffMultiplier(StatType.HEAL_RECEIVED);
 
         int cursedHeal = p.getSpecialEffectValue(generation.grimoire.enumeration.EquipmentEffectType.CURSED_HEALING_REDUCTION);
@@ -343,10 +343,12 @@ public class PersonnageCombatHelper {
         }
         System.out.println(p.getName() + " est soigné de " + finalHeal + " points. Vie actuelle : " + p.getHealthCurrent());
 
-        boolean removedPoison = p.getActiveBuffs().removeIf(b -> b.getStatAffected() == StatType.POISON && (b.getFlatValue() > 0 || b.getModifier() > 0));
-        boolean removedPoisonDot = p.getActiveDamageOverTimeEffects().removeIf(dot -> Boolean.TRUE.equals(dot.getPoison()));
-        if (removedPoison || removedPoisonDot) {
-            System.out.println("💧 Le soin a purifié le Poison sur " + p.getName() + " !");
+        if (!isNativeRegen) {
+            boolean removedPoison = p.getActiveBuffs().removeIf(b -> b.getStatAffected() == StatType.POISON && (b.getFlatValue() > 0 || b.getModifier() > 0));
+            boolean removedPoisonDot = p.getActiveDamageOverTimeEffects().removeIf(dot -> Boolean.TRUE.equals(dot.getPoison()));
+            if (removedPoison || removedPoisonDot) {
+                System.out.println("💧 Le soin a purifié le Poison sur " + p.getName() + " !");
+            }
         }
     }
 

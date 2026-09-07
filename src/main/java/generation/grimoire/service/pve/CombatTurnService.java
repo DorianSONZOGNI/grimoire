@@ -109,7 +109,7 @@ class CombatTurnService {
                     int rHp = m.getBase().getRegenHp();
                     if (rHp > 0) {
                         int beforeHp = m.getAsPersonnage().getHealthCurrent();
-                        m.getAsPersonnage().heal(rHp);
+                        m.getAsPersonnage().healRegen(rHp);
                         int healed = m.getAsPersonnage().getHealthCurrent() - beforeHp;
                         if (healed > 0) {
                             session.addLog("💖 " + m.getBase().getName() + " régénère " + healed + " PV.");

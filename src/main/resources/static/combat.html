@@ -49,10 +49,7 @@
         </div>
 
         <!-- Bandeau co-op : indicateur de tour (maintenant intégré centré dans le header) -->
-        <div id="multiTurnBanner"
-            style="display:none; align-items:center; justify-content:center; gap:0.6rem;
-                   position:absolute; left:50%; top:50%; transform:translate(-50%, -50%);
-                   font-size:0.9rem; z-index:100; white-space:nowrap;">
+        <div id="multiTurnBanner" class="multi-turn-banner">
             <!-- rempli par updateMultiTurnBanner() -->
         </div>
     </div>
@@ -169,8 +166,15 @@
 
         <div class="result-overlay" id="resultOverlay">
             <div class="result-title" id="resultTitle">VICTOIRE</div>
-            <p class="text-muted text-xl mb-8" id="resultDesc">Le donjon a été complété.
-            </p>
+            <p class="text-muted text-xl mb-8" id="resultDesc">Le donjon a été complété.</p>
+
+            <div id="resultTip" class="result-tip" style="display: none;">
+                <div class="result-tip-header">
+                    <span class="material-symbols-outlined">lightbulb</span> TIPS
+                </div>
+                <div id="resultTipText" class="result-tip-text"></div>
+            </div>
+
             <a class="action-btn no-underline" href="/dungeons.html">
                 Retourner à la page des donjons
             </a>

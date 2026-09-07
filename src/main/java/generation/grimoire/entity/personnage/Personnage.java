@@ -374,7 +374,14 @@ public class Personnage {
      * @param healAmount le montant de soin à appliquer
      */
     public void heal(int healAmount) {
-        PersonnageCombatHelper.heal(this, healAmount);
+        PersonnageCombatHelper.heal(this, healAmount, false);
+    }
+
+    /**
+     * Soigne ce personnage via régénération native (ne purifie pas le poison).
+     */
+    public void healRegen(int healAmount) {
+        PersonnageCombatHelper.heal(this, healAmount, true);
     }
 
     public void restoreMana(int manaAmount) {

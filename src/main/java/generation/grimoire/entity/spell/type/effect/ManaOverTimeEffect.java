@@ -40,14 +40,7 @@ public class ManaOverTimeEffect extends ManaEffect {
 
     public void tick(Personnage target) {
         if (duration > 0) {
-            int totalMana = fixedManaPerTick;
-            if (percentageManaPerTick != 0) {
-                double sourceValue = generation.grimoire.utils.StatCalculator.getSourceValue(manaSource, caster,
-                        target);
-                totalMana += (int) (sourceValue * percentageManaPerTick);
-            }
-            totalMana = (int) (totalMana * getAmplificationMultiplier());
-            target.restoreMana(totalMana);
+            target.restoreMana(fixedManaPerTick);
             duration--;
         }
     }
@@ -72,6 +65,24 @@ public class ManaOverTimeEffect extends ManaEffect {
     public void apply(Personnage caster, Personnage target) {
         ManaOverTimeEffect clone = this.cloneEffect();
         clone.caster = caster;
+        
+        int totalMana = clone.getFixedManaPerTick();
+        if (clone.percentageManaPerTick != 0) {
+            double sourceValue = generation.grimoire.utils.StatCalculator.getSourceValue(clone.manaSource, caster, target);
+            totalMana += (int) (sourceValue * clone.percentageManaPerTick);
+            clone.setPercentageManaPerTick(0);
+        }
+
+        totalMana = (int) (totalMana * this.getAmplificationMultiplier());
+
+        if (checkCriticalHit(caster)) {
+            totalMana = (int) (totalMana * this.getCriticalMultiplier(caster, false));
+            System.out.println("✨ Coup Critique sur le MoT !");
+        }
+
+        clone.setFixedManaPerTick(totalMana);
+        clone.setAmplificationMultiplier(1.0);
+
         target.addManaOverTimeEffect(clone);
         System.out.println("Régénération de mana sur la durée appliquée sur " + target.getName() + " pour " + duration + " tours.");
     }

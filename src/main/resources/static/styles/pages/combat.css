@@ -578,6 +578,20 @@ body {
     transform: translateY(-2px);
 }
 
+.multi-turn-banner {
+    display: none;
+    align-items: center;
+    justify-content: center;
+    gap: 0.6rem;
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    transform: translate(-50%, -50%);
+    font-size: 0.9rem;
+    z-index: 100;
+    white-space: nowrap;
+}
+
 .result-overlay {
     position: absolute;
     top: 0;
@@ -594,6 +608,35 @@ body {
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.5s;
+}
+
+.result-tip {
+    max-width: 600px;
+    margin: 0 auto 2rem auto;
+    padding: 1rem;
+    background: rgba(10, 15, 20, 0.6);
+    border-radius: 8px;
+    border-left: 4px solid var(--magic-color, #a855f7);
+    text-align: left;
+}
+
+.result-tip-header {
+    font-weight: bold;
+    color: var(--magic-color, #a855f7);
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.result-tip-header .material-symbols-outlined {
+    font-size: 1.2rem;
+}
+
+.result-tip-text {
+    color: var(--text-muted, #e2e8f0);
+    font-size: 0.95rem;
+    line-height: 1.5;
 }
 
 .result-overlay.show {
@@ -892,10 +935,38 @@ body {
     align-items: center;
     gap: 0.4rem;
 }
-.btn-combat-success { background: rgba(16, 185, 129, 0.2); border: 1px solid rgba(16, 185, 129, 0.4); padding: 0.3rem 0.6rem; border-radius: 4px; cursor: pointer; font-weight: bold; font-family: 'Outfit', sans-serif; color: #10b981; transition: all 0.2s; }
-.btn-combat-success:hover { background: rgba(16, 185, 129, 0.3); }
-.btn-combat-danger { background: rgba(239, 68, 68, 0.2); border: 1px solid rgba(239, 68, 68, 0.4); padding: 0.3rem 0.6rem; border-radius: 4px; cursor: pointer; font-weight: bold; font-family: 'Outfit', sans-serif; color: #ef4444; transition: all 0.2s; }
-.btn-combat-danger:hover { background: rgba(239, 68, 68, 0.3); }
+
+.btn-combat-success {
+    background: rgba(16, 185, 129, 0.2);
+    border: 1px solid rgba(16, 185, 129, 0.4);
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    font-family: 'Outfit', sans-serif;
+    color: #10b981;
+    transition: all 0.2s;
+}
+
+.btn-combat-success:hover {
+    background: rgba(16, 185, 129, 0.3);
+}
+
+.btn-combat-danger {
+    background: rgba(239, 68, 68, 0.2);
+    border: 1px solid rgba(239, 68, 68, 0.4);
+    padding: 0.3rem 0.6rem;
+    border-radius: 4px;
+    cursor: pointer;
+    font-weight: bold;
+    font-family: 'Outfit', sans-serif;
+    color: #ef4444;
+    transition: all 0.2s;
+}
+
+.btn-combat-danger:hover {
+    background: rgba(239, 68, 68, 0.3);
+}
 
 /* --- Combat Log Rework Styles --- */
 .log-entry {
@@ -998,7 +1069,8 @@ body {
 }
 
 .log-val-speed {
-    color: #fde047; /* Jaune pour la vitesse */
+    color: #fde047;
+    /* Jaune pour la vitesse */
     font-weight: bold;
 }
 
@@ -1013,41 +1085,62 @@ body {
 }
 
 .log-val-armor {
-    color: #3b82f6; /* Bleu plus vif pour l'armure */
+    color: #3b82f6;
+    /* Bleu plus vif pour l'armure */
     font-weight: bold;
 }
 
 .log-val-resist {
-    color: #4ade80; /* Vert pour la résistance */
+    color: #4ade80;
+    /* Vert pour la résistance */
     font-weight: bold;
 }
 
 /* Nouvelles couleurs pour les types de dégâts spécifiques */
-.log-damage-magic { border-left-color: #a855f7; }
-.log-damage-physic { border-left-color: #f43f5e; }
-.log-damage-brut { border-left-color: #790000; }
-.log-damage-burn { border-left-color: #f97316; background: rgba(249, 115, 22, 0.05); }
-.log-damage-poison { border-left-color: #84cc16; background: rgba(132, 204, 22, 0.05); }
+.log-damage-magic {
+    border-left-color: #a855f7;
+}
+
+.log-damage-physic {
+    border-left-color: #f43f5e;
+}
+
+.log-damage-brut {
+    border-left-color: #790000;
+}
+
+.log-damage-burn {
+    border-left-color: #f97316;
+    background: rgba(249, 115, 22, 0.05);
+}
+
+.log-damage-poison {
+    border-left-color: #84cc16;
+    background: rgba(132, 204, 22, 0.05);
+}
 
 .log-val-magic {
     color: #c084fc;
     font-weight: bold;
     text-shadow: 0 0 4px rgba(192, 132, 252, 0.3);
 }
+
 .log-val-physic {
     color: #f43f5e;
     font-weight: bold;
 }
+
 .log-val-brut {
     color: #790000;
     font-weight: 900;
 }
+
 .log-val-burn {
     color: #fb923c;
     font-weight: bold;
 }
+
 .log-val-poison {
     color: #a3e635;
     font-weight: bold;
 }
-

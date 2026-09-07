@@ -48,18 +48,7 @@ public class HealOverTimeEffect extends HealEffect {
      */
     public void tick(Personnage target) {
         if (duration > 0) {
-            int totalHeal = fixedHealPerTick;
-            if (percentageHealPerTick != 0) {
-                double sourceValue = generation.grimoire.utils.StatCalculator.getSourceValue(healSource, caster,
-                        target);
-                totalHeal += (int) (sourceValue * percentageHealPerTick);
-            }
-            double healGivenMultiplier = 1.0;
-            if (caster != null) {
-                healGivenMultiplier = caster.getStatBuffMultiplier(StatType.HEAL_GIVEN);
-            }
-            totalHeal = (int) (totalHeal * getAmplificationMultiplier() * Math.max(0, healGivenMultiplier));
-            target.heal(totalHeal);
+            target.heal(fixedHealPerTick);
             duration--;
         }
     }
@@ -88,6 +77,28 @@ public class HealOverTimeEffect extends HealEffect {
     public void apply(Personnage caster, Personnage target) {
         HealOverTimeEffect clone = this.cloneEffect();
         clone.caster = caster;
+        
+        int totalHeal = clone.getFixedHealPerTick();
+        if (clone.percentageHealPerTick != 0) {
+            double sourceValue = generation.grimoire.utils.StatCalculator.getSourceValue(clone.healSource, caster, target);
+            totalHeal += (int) (sourceValue * clone.percentageHealPerTick);
+            clone.setPercentageHealPerTick(0);
+        }
+
+        double healGivenMultiplier = 1.0;
+        if (caster != null) {
+            healGivenMultiplier = caster.getStatBuffMultiplier(StatType.HEAL_GIVEN);
+        }
+        totalHeal = (int) (totalHeal * this.getAmplificationMultiplier() * Math.max(0, healGivenMultiplier));
+
+        if (checkCriticalHit(caster)) {
+            totalHeal = (int) (totalHeal * this.getCriticalMultiplier(caster, false));
+            System.out.println("✨ Coup Critique sur le HoT !");
+        }
+
+        clone.setFixedHealPerTick(totalHeal);
+        clone.setAmplificationMultiplier(1.0);
+
         target.addHealOverTimeEffect(clone);
         System.out.println("Soins sur la durée appliqués sur " + target.getName() + " pour " + duration + " tours.");
     }

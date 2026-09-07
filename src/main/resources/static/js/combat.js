@@ -1590,8 +1590,8 @@ function updateMultiTurnBanner(data) {
     const allEnemiesDead = !data.enemies || data.enemies.length === 0 || data.enemies.every(e => e.dead || e.currentHp <= 0);
 
     if (!isCombatRoom || allEnemiesDead) {
-        banner.innerHTML = `<span class="material-symbols-outlined" style="color:#a855f7;">explore</span>
-            <span style="color:#a855f7; font-weight:600;">Exploration en cours</span>`;
+        banner.innerHTML = `<span class="material-symbols-outlined text-[#a855f7]">explore</span>
+            <span class="text-[#a855f7] font-semibold">Exploration en cours</span>`;
         setMultiActionsEnabled(true);
         return;
     }
@@ -1602,12 +1602,12 @@ function updateMultiTurnBanner(data) {
     const isEnemyTurn = !data.turnOrder?.[data.currentTurnIndex]?.player;
 
     if (isEnemyTurn) {
-        banner.innerHTML = `<span class="material-symbols-outlined" style="color:#f87171;">swords</span>
-            <span style="color:#f87171; font-weight:600;">Tour ennemi</span>`;
+        banner.innerHTML = `<span class="material-symbols-outlined text-[#f87171]">swords</span>
+            <span class="text-[#f87171] font-semibold">Tour ennemi</span>`;
         setMultiActionsEnabled(false);
     } else if (isMyTurn) {
-        banner.innerHTML = `<span class="material-symbols-outlined" style="color:#4ade80;">person</span>
-            <span style="color:#4ade80; font-weight:600;">👤 Votre tour — ${activePlayer?.name || ''}</span>`;
+        banner.innerHTML = `<span class="material-symbols-outlined text-[#4ade80]">person</span>
+            <span class="text-[#4ade80] font-semibold">👤 Votre tour — ${activePlayer?.name || ''}</span>`;
         setMultiActionsEnabled(true);
     } else {
         const otherName = ownerUsername || 'Allié';
@@ -3409,7 +3409,7 @@ function generateFighterHtml(c, isHero, skipBadges = false) {
         <div class="sandbox-status-list" style="justify-content: center;">${passiveBadges}</div>
         <div class="sandbox-status-list" style="justify-content: center;">
             ${renderShieldsHtml(c.activeShields)}
-            ${renderBuffsHtml(c.activeBuffs || c.buffs, c.activeManaOverTimeEffects, c.activeHealOverTimeEffects)}
+            ${renderBuffsHtml(c, c.activeBuffs || c.buffs, c.activeManaOverTimeEffects, c.activeHealOverTimeEffects)}
             ${renderPoisonBurnHtml(c)}
             ${renderDotsHtml(c.activeDamageOverTimeEffects)}
         </div>
@@ -3523,8 +3523,8 @@ function renderPoisonBurnHtml(c) {
         if (b.statAffected === 'POISON') {
             const dmg = b.flatValue || 0;
             poisonEntries.push(`
-                <div class="flex-start-sm">
-                    <span class="material-symbols-outlined icon-sm-shrink text-success">pest_control</span>
+                <div style="display:flex; align-items:center; gap:0.4rem; font-size:0.85rem;">
+                    <span class="material-symbols-outlined text-success" style="flex-shrink:0; font-size:1.1rem; transform: translateY(-1px);">pest_control</span>
                     <span class="font-bold text-white">[Poison]</span>
                     <span style="color:#22c55e; font-weight:500;">${dmg} Dégâts Brut</span>
                     <span class="text-subtle">&#x23F3; (${b.duration} tours)</span>
@@ -3533,8 +3533,8 @@ function renderPoisonBurnHtml(c) {
         } else if (b.statAffected === 'BURN') {
             const dmg = b.flatValue || 0;
             burnEntries.push(`
-                <div class="flex-start-sm">
-                    <span class="material-symbols-outlined icon-sm-shrink text-error">local_fire_department</span>
+                <div style="display:flex; align-items:center; gap:0.4rem; font-size:0.85rem;">
+                    <span class="material-symbols-outlined text-error" style="flex-shrink:0; font-size:1.1rem; transform: translateY(-1px);">local_fire_department</span>
                     <span class="font-bold text-white">[Brûlure]</span>
                     <span style="color:#ef4444; font-weight:500;">${dmg} Dégâts Magique</span>
                     <span class="text-subtle">&#x23F3; (${b.duration} tours)</span>
@@ -3547,8 +3547,8 @@ function renderPoisonBurnHtml(c) {
     dots.forEach(d => {
         if (d.poison) {
             poisonEntries.push(`
-                <div class="flex-start-sm">
-                    <span class="material-symbols-outlined icon-sm-shrink text-success">pest_control</span>
+                <div style="display:flex; align-items:center; gap:0.4rem; font-size:0.85rem;">
+                    <span class="material-symbols-outlined text-success" style="flex-shrink:0; font-size:1.1rem; transform: translateY(-1px);">pest_control</span>
                     <span class="font-bold text-white">[Poison]</span>
                     <span style="color:#22c55e; font-weight:500;">${d.fixedDamagePerTick} Dégâts Brut</span>
                     <span class="text-subtle">&#x23F3; (${d.duration} tours)</span>
@@ -3556,8 +3556,8 @@ function renderPoisonBurnHtml(c) {
             `);
         } else if (d.burn) {
             burnEntries.push(`
-                <div class="flex-start-sm">
-                    <span class="material-symbols-outlined icon-sm-shrink text-error">local_fire_department</span>
+                <div style="display:flex; align-items:center; gap:0.4rem; font-size:0.85rem;">
+                    <span class="material-symbols-outlined text-error" style="flex-shrink:0; font-size:1.1rem; transform: translateY(-1px);">local_fire_department</span>
                     <span class="font-bold text-white">[Brûlure]</span>
                     <span style="color:#ef4444; font-weight:500;">${d.fixedDamagePerTick} Dégâts Magique</span>
                     <span class="text-subtle">&#x23F3; (${d.duration} tours)</span>
@@ -3595,7 +3595,7 @@ function renderPoisonBurnHtml(c) {
     return html;
 }
 
-function renderBuffsHtml(buffList, motList, hotList) {
+function renderBuffsHtml(c, buffList, motList, hotList) {
     const goodBuffs = [];
     const badBuffs = [];
 
@@ -3603,7 +3603,6 @@ function renderBuffsHtml(buffList, motList, hotList) {
         buffList.forEach(b => {
             if (b.statAffected === 'AME_DETACHEE' || b.effectType === 'AME_DETACHEE') return;
             if (b.statAffected === 'POISON' || b.statAffected === 'BURN') return;
-
             const inverseStats = ['DAMAGE_TAKEN_MAGIC', 'DAMAGE_TAKEN_PHYSIC', 'DAMAGE_TAKEN_BRUT', 'SHIELD_PIERCED', 'BURN', 'POISON'];
             const isInverse = inverseStats.includes(b.statAffected);
             const isNegativeValue = b.modifier < 0 || b.flatValue < 0;
@@ -3611,9 +3610,47 @@ function renderBuffsHtml(buffList, motList, hotList) {
             let isBad = isNegativeValue;
             if (isInverse) isBad = !isNegativeValue;
 
+            let effectiveFlat = b.flatValue || 0;
+            let showModifier = true;
+
+            if (b.modifier && c) {
+                let finalStat = null;
+                const affected = b.statAffected ? b.statAffected.toUpperCase() : '';
+
+                if (affected.includes('ARMURE') || affected.includes('ARMOR')) finalStat = c.totalArmor !== undefined ? c.totalArmor : c.armor;
+                else if (affected.includes('RESISTANCE')) finalStat = c.totalResistance !== undefined ? c.totalResistance : c.resistance;
+                else if (affected === 'POWER' || affected.includes('PUISSANCE')) finalStat = c.totalPower !== undefined ? c.totalPower : c.power;
+                else if (affected.includes('STRENGTH') || affected.includes('FORCE')) finalStat = c.totalStrength !== undefined ? c.totalStrength : c.strength;
+                else if (affected.includes('SPEED') || affected.includes('VITESSE')) finalStat = c.totalSpeed !== undefined ? c.totalSpeed : c.speed;
+                else if (affected === 'CRIT' || affected.includes('CRITIQUE')) finalStat = c.totalCrit !== undefined ? c.totalCrit : c.crit;
+                else if (affected.includes('HEALTH_MAX') || affected.includes('PV_MAX') || affected.includes('HP_MAX')) finalStat = c.healthMax;
+                else if (affected.includes('MANA_MAX') || affected.includes('MP_MAX')) finalStat = c.manaMax;
+
+                if (finalStat !== null && finalStat !== undefined) {
+                    let totalModifier = 0;
+                    const allBuffs = c.activeBuffs || c.buffs || [];
+                    allBuffs.forEach(otherBuff => {
+                        if (otherBuff.statAffected === b.statAffected && otherBuff.modifier) {
+                            totalModifier += otherBuff.modifier;
+                        }
+                    });
+
+                    let multiplier = Math.max(0, 1.0 + totalModifier);
+                    let baseStat = multiplier > 0 ? (finalStat / multiplier) : 0;
+
+                    let modFlat = Math.round(baseStat * b.modifier);
+                    if (modFlat !== 0) {
+                        effectiveFlat += modFlat;
+                        showModifier = false;
+                    }
+                }
+            }
+
             let text = '';
-            if (b.flatValue) text += `${b.flatValue > 0 ? '+' : ''}${b.flatValue} ${ui.formatStat(b.statAffected)}`;
-            if (b.modifier) {
+            if (effectiveFlat !== 0) {
+                text += `${effectiveFlat > 0 ? '+' : ''}${effectiveFlat} ${ui.formatStat(b.statAffected)}`;
+            }
+            if (b.modifier && showModifier) {
                 if (text) text += ' et ';
                 text += `${b.modifier > 0 ? '+' : ''}${Math.round(b.modifier * 100)}% ${ui.formatStat(b.statAffected)}`;
             }
@@ -4049,20 +4086,63 @@ function renderSpellCard(sp) {
     `;
 }
 
+const GAME_TIPS = [
+    "Les dégâts de <span class=\"text-red-400 font-semibold\">[Brûlure]</span> sont de type <span class=\"text-blue-400 font-semibold\">Magique</span>. Contrairement aux autres attaques <span class=\"text-blue-400 font-semibold\">Magique</span>, la <span class=\"text-purple-400 font-semibold\">Résistance</span> de la cible réduit deux fois plus les dégats de brûlure !",
+    "Le <span class=\"text-emerald-400 font-semibold\">[Poison]</span> inflige des dégâts <span class=\"text-slate-300 font-semibold\">Bruts</span>, mais c'est la seule altération totalement purifiée par le moindre <span class=\"text-emerald-300 font-semibold\">soin</span> (un soin direct, un vol de vie ou un HoT dissipe tous les poisons). Note : La régénération native ne compte pas comme un soin.",
+    "L'<span class=\"text-amber-400 font-semibold\">Armure</span> et la <span class=\"text-purple-400 font-semibold\">Résistance</span> réduisent les dégâts que vous subissez. Mais attention : plus vous en accumulez, moins chaque nouveau point est efficace. Il est impossible d'atteindre 100% de réduction et de devenir invincible !",
+    "Les <span class=\"text-yellow-400 font-semibold\">Secrets</span> peuvent être découverts via des recettes alchimiques. Ils donnent accès à de nouveaux donjons, plus dangereux et contenant de meilleurs équipements !",
+    "Une attaque de base inflige 80% de votre <span class=\"text-amber-400 font-semibold\">Force</span> ou de votre <span class=\"text-blue-400 font-semibold\">Puissance</span> (la plus haute). Si vous avez autant de <span class=\"text-amber-400 font-semibold\">Force</span> que de <span class=\"text-blue-400 font-semibold\">Puissance</span>, l'attaque devient mixte (50% Physique, 50% Magique [donc 20% de dégats en plus]).",
+    "Un sort <span class=\"text-emerald-400 font-semibold\">'Instantané'</span> ne consomme pas votre action du tour. Mais attention, si vous faites une autre action avant de lancer votre sort instantané, vous perdrez la capaciter d'en lancer un !",
+    "Vous pouvez lancer des sorts instantanés pendant que vous êtes en train de caster la plupart des sorts canalisés ! Attention, certain rare sorts canalisés sont trop puissant et ne le permettent pas.",
+    "Un sort <span class=\"text-purple-400 font-semibold\">'Canalisé'</span> s'exécute au moment de le lancer au T1, puis à la fin de chaque tour durant le reste de la canalisation.",
+    "Certains sorts possèdent des variantes (Options). Elles permettent de choisir quel effet on exécute parmi plusieurs propositions.",
+    "Les <span class=\"text-yellow-400 font-semibold\">Coups Critiques</span> multiplient par 1.5 l'efficacité de presque tout : les dégâts (bruts, magiques, physiques, brûlure, poison), mais aussi les soins, les boucliers et la restauration de mana !",
+    "Les dégâts sur la durée <span class=\"text-red-400 font-semibold\">(DoT)</span> peuvent être critiques au moment de leur application. Leurs dégâts par tour seront alors amplifiés pendant toute leur durée.",
+    "Lorsque plusieurs héros participent au même donjon, l'expérience gagnée à la fin du combat est partagée équitablement entre tous les héros en vie.",
+    "Les objets <span class=\"text-red-500 font-semibold\">Maudits</span> offrent des bonus plus de statistique, mais au prix de contreparties parfois mortelles. Lisez bien leurs effets avant de les équiper !",
+    "Vous ne pouvez équiper qu'un seul objet <span class=\"text-amber-500 font-semibold\">Relique</span> et un seul objet <span class=\"text-fuchsia-400 font-semibold\">Épique</span> à la fois sur l'ensemble de votre équipement. Choisissez-les judicieusement !",
+    "Il est impossible d'équiper deux fois le même type d'anneau sur un personnage. Chaque emplacement d'anneau doit comporter un bijou différent.",
+    "Tous les types d'objets ne se valent pas : une arme donnera statistiquement beaucoup plus de Force ou de Puissance qu'un bijou, tandis qu'un plastron excellera pour vos Points de Vie et votre Armure. Optimisez vos emplacements !",
+    "Votre inventaire déborde ou vous trouvez un objet inutile dans un coffre ? Vous pouvez le vendre instantanément en le <span class=\"text-red-400 font-semibold\">détruisant</span> pour récupérer un peu d'Or !",
+    "La <span class=\"text-yellow-400 font-semibold\">Boutique</span> se réinitialise tous les jours à minuit. Gardez l'œil ouvert : l'objet en <span class=\"text-emerald-400 font-semibold\">Promotion</span> change toutes les deux heures.",
+    "N'hésitez pas à consulter votre <span class=\"text-purple-400 font-semibold\">Grimoire</span> ! Il vous permet de voir à l'avance tous les sorts disponibles pour chaque voie et spiritualité, idéal pour planifier votre évolution.",
+    "Certains monstres possèdent des <span class=\"text-purple-400 font-semibold\">Mutations</span>. Elles leur permettent de lancer des sorts dévastateurs ou d'utiliser des compétences pour s'entraider. Prudence !",
+    "Le <span class=\"text-blue-400 font-semibold\">Type</span> d'un monstre (Mort-Vivant, Bête, Démon...) définit certaines modifications importante à prendre en compte. Régénération, dégats suplémentaires, débuffs, etc.",
+    "Chaque monstre possède un <span class=\"text-amber-400 font-semibold\">Comportement</span> unique (Prédateur, Corrupteur, Brutal). Observez-les bien pour anticiper leur priorité de ciblage et leur comportement général !",
+    "Avant de lancer un donjon, n'oubliez pas d'équiper' vos <span class=\"text-emerald-400 font-semibold\">Consommables</span> (potions, clé, corde, etc.) dans votre Inventaire de Combat. Vous pourrez les utiliser entre les affontements.",
+    "En donjon, les salles de <span class=\"text-red-400 font-semibold\">Combat</span> sont fréquentes. Mais attention aux salles de <span class=\"text-orange-500 font-semibold\">Boss</span> qui mettront votre équipe à rude épreuve en boostant les monstres !",
+    "Les <span class=\"text-yellow-400 font-semibold\">Salles des Trésors</span> regorgent d'or et d'objets, tandis que les salles d'<span class=\"text-blue-400 font-semibold\">Altération</span> peuvent vous soigner (ou l'inverse !) en échange d'<span class=\"text-fuchsia-400 font-semibold\">Anomalies</span> ou d'<span class=\"text-amber-400 font-semibold\">XP Spirituel</span>.",
+    "Les <span class=\"text-purple-400 font-semibold\">portes étranges</span> sont des évènements aléatoires. Elles peuvent vous déboucher sur des pièges, des trésors inatendus, des marchants secret, des autels sacrificiels ou bien des monstres en embuscade... ",
+    "C'est dans l'<span class=\"text-amber-500 font-semibold\">Armurerie</span> que vous pouvez gérer et équiper le matériel de vos héros. Un équipement bien pensé est la clé de la victoire !",
+    "Besoin d'une plus grande équipes ? Rendez-vous dans l'<span class=\"text-emerald-400 font-semibold\">Armurerie</span> pour <span class=\"text-blue-400 font-semibold\">Recruter</span> de nouveaux héros pour compléter votre équipe.",
+    "Les <span class=\"text-fuchsia-400 font-semibold\">Anomalies</span> servent comme monais ou bien comme ingredient alchimique.",
+    "L'<span class=\"text-emerald-400 font-semibold\">Expérience Spirituelle</span> permet de gagner des niveaux spirituels ce qui débloquera de nouveaux sorts, mais sert aussi de ressources dans certain craft alchimique.",
+    "Vous pouvez jouer en <span class=\"text-blue-400 font-semibold\">Multijoueur</span> ! Créez un <span class=\"text-emerald-400 font-semibold\">Lobby</span> et partagez le code d'invitation à un ami. Attention : il doit avoir débloqué le donjon pour pouvoir s'y aventurer avec vous."
+];
+
 function showResult(data) {
     const overlay = document.getElementById('resultOverlay');
     const title = document.getElementById('resultTitle');
     const desc = document.getElementById('resultDesc');
+    const tipContainer = document.getElementById('resultTip');
+    const tipText = document.getElementById('resultTipText');
 
     if (data.playerWon) {
         title.textContent = "VICTOIRE";
         title.classList.add('text-success');
         desc.textContent = "Le donjon a été complété.";
+
+        if (tipContainer && tipText) {
+            const randomTip = GAME_TIPS[Math.floor(Math.random() * GAME_TIPS.length)];
+            tipText.innerHTML = randomTip;
+            tipContainer.style.display = 'block';
+        }
     } else {
         title.textContent = "DÉFAITE";
         title.classList.add('text-error');
         const goldLost = data.totalGoldLostOnDefeat || 0;
         desc.innerHTML = `Votre équipe a été anéantie.<br><span style="color:#fbbf24; font-weight:600; margin-top:0.5rem; display:block;">Pénalité : -${goldLost} Or</span>`;
+        if (tipContainer) tipContainer.style.display = 'none';
     }
 
     overlay.classList.add('show');
@@ -4087,7 +4167,7 @@ function renderDotsHtml(dotList) {
 
         let icon = "bloodtype";
         let color = "#ef4444";
-        let nameStr = d.sourceName || "Affliction";
+        let nameStr = d.sourceName || d.spellName || "DoT";
 
         if (d.burn) {
             icon = "local_fire_department";
@@ -4098,8 +4178,16 @@ function renderDotsHtml(dotList) {
             color = "#22c55e";
             nameStr = "Poison";
         } else {
-            if (d.damageType === "MAGIC") { icon = "local_fire_department"; color = "#f97316"; }
-            if (dTypeStr === "Brut") { icon = "pest_control"; color = "#22c55e"; }
+            if (d.damageType === "MAGIC") {
+                icon = "auto_awesome";
+                color = "#a855f7";
+            } else if (d.damageType === "PHYSIC") {
+                icon = "swords";
+                color = "#f43f5e";
+            } else if (d.damageType === "BRUT") {
+                icon = "bloodtype";
+                color = "#ef4444";
+            }
         }
 
         let dmgStr = d.fixedDamagePerTick ? `${d.fixedDamagePerTick}` : '';
@@ -4110,8 +4198,8 @@ function renderDotsHtml(dotList) {
         if (!dmgStr) dmgStr = "0";
 
         dotEntries.push(`
-            <div style="display:flex; align-items:flex-start; gap:0.4rem; font-size:0.85rem;">
-                <span class="material-symbols-outlined" style="flex-shrink:0; font-size:1.1rem; color:${color};">${icon}</span>
+            <div style="display:flex; align-items:center; gap:0.4rem; font-size:0.85rem;">
+                <span class="material-symbols-outlined" style="flex-shrink:0; font-size:1.1rem; color:${color}; transform: translateY(-1px);">${icon}</span>
                 <span style="font-weight:600; color:#fff;">[${nameStr}]</span>
                 <span style="color:${color}; font-weight:500;">${dmgStr} Dégâts ${dTypeStr}</span>
                 <span style="color:#e2e8f0;">&#x23F3; (${d.duration} tours)</span>
