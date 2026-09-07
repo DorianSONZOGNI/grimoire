@@ -18,7 +18,7 @@ public class ManaFixedEffect extends ManaEffect {
     public void apply(Personnage caster, Personnage target) {
         int finalMana = (int) (manaAmount * getAmplificationMultiplier());
         if (checkCriticalHit(caster)) {
-            finalMana = (int) (finalMana * getCriticalMultiplier(caster));
+            finalMana = (int) (finalMana * getCriticalMultiplier(caster, false));
         }
         target.restoreMana(finalMana);
     }

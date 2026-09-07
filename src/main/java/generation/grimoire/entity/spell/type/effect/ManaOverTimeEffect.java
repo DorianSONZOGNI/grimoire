@@ -76,7 +76,7 @@ public class ManaOverTimeEffect extends ManaEffect {
         totalMana = (int) (totalMana * this.getAmplificationMultiplier());
 
         if (checkCriticalHit(caster)) {
-            totalMana = (int) (totalMana * this.getCriticalMultiplier(caster));
+            totalMana = (int) (totalMana * this.getCriticalMultiplier(caster, false));
             System.out.println("✨ Coup Critique sur le MoT !");
         }
 

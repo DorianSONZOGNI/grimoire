@@ -32,7 +32,7 @@ public class ManaPercentageEffect extends ManaEffect {
         double sourceValue = getSourceValue(manaSource != null ? manaSource : Source.TARGET_MANA_MAX, caster, target);
         double manaAmount = calculateMana(sourceValue) * getAmplificationMultiplier();
         if (checkCriticalHit(caster)) {
-            manaAmount *= getCriticalMultiplier(caster);
+            manaAmount *= getCriticalMultiplier(caster, false);
         }
         target.restoreMana((int) manaAmount);
     }
