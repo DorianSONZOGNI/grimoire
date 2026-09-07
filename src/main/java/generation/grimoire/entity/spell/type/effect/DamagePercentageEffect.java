@@ -39,7 +39,7 @@ public class DamagePercentageEffect extends DamageEffect {
         damage *= getAmplificationMultiplier();
 
         if (checkCriticalHit(caster)) {
-            damage *= getCriticalMultiplier(caster);
+            damage *= getCriticalMultiplier(caster, true);
         }
 
         // Appliquer la réduction des malédictions

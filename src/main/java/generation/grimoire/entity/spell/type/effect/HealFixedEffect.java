@@ -20,7 +20,7 @@ public class HealFixedEffect extends HealEffect {
         double healGivenMultiplier = caster.getStatBuffMultiplier(StatType.HEAL_GIVEN);
         int finalHeal = (int) (healAmount * getAmplificationMultiplier() * Math.max(0, healGivenMultiplier));
         if (checkCriticalHit(caster)) {
-            finalHeal = (int) (finalHeal * getCriticalMultiplier(caster));
+            finalHeal = (int) (finalHeal * getCriticalMultiplier(caster, false));
         }
         target.heal(finalHeal);
     }

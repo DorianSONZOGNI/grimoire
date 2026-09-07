@@ -115,6 +115,13 @@ public class BuffDebuffEffect extends SpellEffect {
             }
         }
 
+        if (statAffected == StatType.BURN || statAffected == StatType.POISON) {
+            if (checkCriticalHit(caster)) {
+                totalFlatToApply = (int) Math.round(totalFlatToApply * getCriticalMultiplier(caster, true));
+                System.out.println("✨ Coup Critique sur le DoT (" + statAffected + ") !");
+            }
+        }
+
         if (totalFlatToApply != 0 || totalModifierToApply != 0) {
             if (duration > 0) {
                 if (totalFlatToApply != 0) {

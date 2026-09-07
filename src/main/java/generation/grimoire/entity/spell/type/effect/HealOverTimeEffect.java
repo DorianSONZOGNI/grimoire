@@ -92,7 +92,7 @@ public class HealOverTimeEffect extends HealEffect {
         totalHeal = (int) (totalHeal * this.getAmplificationMultiplier() * Math.max(0, healGivenMultiplier));
 
         if (checkCriticalHit(caster)) {
-            totalHeal = (int) (totalHeal * this.getCriticalMultiplier(caster));
+            totalHeal = (int) (totalHeal * this.getCriticalMultiplier(caster, false));
             System.out.println("✨ Coup Critique sur le HoT !");
         }
 
