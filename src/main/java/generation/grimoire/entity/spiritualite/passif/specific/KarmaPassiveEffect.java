@@ -28,7 +28,7 @@ public class KarmaPassiveEffect extends SpiritualitePassiveEffect {
                 return;
 
             int gauge = caster.getPassiveState("karma_gauge", 0);
-            
+
             boolean willPopLight = false;
             if (gauge >= 3 && e.getSpell().getSpiritualite() != null && this.getSpiritualite() != null
                     && e.getSpell().getSpiritualite().getId().equals(this.getSpiritualite().getId())) {
@@ -43,7 +43,7 @@ public class KarmaPassiveEffect extends SpiritualitePassiveEffect {
                 e.getCosts()[2] = 0;
                 System.out.println("✨ Esprit Karmique (Illumination imminente) : Le sort est gratuit !");
             } else if (gauge > 0) { // Esprit state
-                double reduction = gauge * 0.05; // 5% par niveau, max 15% (gauge=3)
+                double reduction = gauge * 0.08; // 8% par niveau, max 24% (gauge=3)
                 e.getCosts()[0] = (int) (e.getCosts()[0] * (1.0 - reduction));
                 e.getCosts()[1] = (int) (e.getCosts()[1] * (1.0 - reduction));
                 e.getCosts()[2] = (int) (e.getCosts()[2] * (1.0 - reduction));
@@ -58,15 +58,15 @@ public class KarmaPassiveEffect extends SpiritualitePassiveEffect {
                 int gauge = caster.getPassiveState("karma_gauge", 0);
                 if (gauge == 0) {
                     // Harmonie state
-                    int healBonus = (int) (caster.getHealthMax() * 0.02);
-                    int manaBonus = (int) (caster.getManaMax() * 0.02);
+                    int healBonus = (int) (caster.getHealthMax() * 0.03);
+                    int manaBonus = (int) (caster.getManaMax() * 0.03);
                     caster.heal(healBonus);
                     caster.restoreMana(manaBonus);
                     System.out.println("✨ Harmonie Karmique : " + caster.getName() + " restaure " + healBonus
                             + " PV et " + manaBonus + " Mana.");
                 } else if (gauge < 0) {
                     // Ténèbres state
-                    double dmgBonus = Math.abs(gauge) * 0.05; // 5% par niveau
+                    double dmgBonus = Math.abs(gauge) * 0.08; // 8% par niveau
                     for (generation.grimoire.entity.SpellEffect eff : spell.getEffects()) {
                         if (eff instanceof generation.grimoire.entity.spell.type.effect.DamageEffect de) {
                             if (de.getDamageType() == generation.grimoire.enumeration.DamageType.PHYSIC
@@ -157,8 +157,8 @@ public class KarmaPassiveEffect extends SpiritualitePassiveEffect {
                     resBuff.setDuration(3);
                     resBuff.setEffectTarget(generation.grimoire.enumeration.EffectTarget.CASTER);
 
-                    caster.applyBuff(armorBuff, 0.20);
-                    caster.applyBuff(resBuff, 0.20);
+                    caster.applyBuff(armorBuff, 0.25);
+                    caster.applyBuff(resBuff, 0.25);
                 }
                 caster.setPassiveState("karma_locked", 1);
                 caster.setPassiveState("karma_locked_duration", 6);
