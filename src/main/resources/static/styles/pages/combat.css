@@ -596,6 +596,35 @@ body {
     transition: opacity 0.5s;
 }
 
+.result-tip {
+    max-width: 600px;
+    margin: 0 auto 2rem auto;
+    padding: 1rem;
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 8px;
+    border-left: 4px solid var(--magic-color, #a855f7);
+    text-align: left;
+}
+
+.result-tip-header {
+    font-weight: bold;
+    color: var(--magic-color, #a855f7);
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.result-tip-header .material-symbols-outlined {
+    font-size: 1.2rem;
+}
+
+.result-tip-text {
+    color: var(--text-muted, #e2e8f0);
+    font-size: 0.95rem;
+    line-height: 1.5;
+}
+
 .result-overlay.show {
     opacity: 1;
     pointer-events: all;

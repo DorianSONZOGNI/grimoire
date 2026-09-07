@@ -65,26 +65,10 @@ public class DamageOverTimeEffect extends DamageEffect {
      */
     public void tick(Personnage target) {
         if (duration > 0) {
-            int baseDamage = fixedDamagePerTick;
-            if (percentageDamagePerTick > 0) {
-                double sourceValue = generation.grimoire.utils.StatCalculator.getSourceValue(damageSource, caster, target);
-                baseDamage += (int)(sourceValue * percentageDamagePerTick);
-            }
-
-            // Appliquer l'amplification du lanceur
-            int totalDamage = (int)(baseDamage * getAmplificationMultiplier());
-
-            // Check crit on each tick? Let's check crit on each tick for fun.
-            if (caster != null && checkCriticalHit(caster)) {
-                totalDamage = (int) (totalDamage * 1.5);
-            }
-            
-            double reducedDamage = applyEquipmentModifiers(totalDamage, caster, target, this.damageType);
-
-            target.takeDamage((int) reducedDamage, damageType, caster, burn != null && burn);
+            target.takeDamage(fixedDamagePerTick, damageType, caster, burn != null && burn);
             duration--;
 
-            System.out.println(target.getName() + " subit " + ((int)reducedDamage)
+            System.out.println(target.getName() + " subit " + fixedDamagePerTick
                     + " dégâts (" + damageType + ") de damage over time, durée restante: " + duration);
         }
     }
@@ -118,12 +102,24 @@ public class DamageOverTimeEffect extends DamageEffect {
         DamageOverTimeEffect clone = this.cloneEffect();
         clone.caster = caster;
 
+        int baseDamage = clone.getFixedDamagePerTick();
         if (clone.percentageDamagePerTick > 0) {
             double sourceValue = generation.grimoire.utils.StatCalculator.getSourceValue(clone.damageSource, caster, target);
-            int calculatedDamage = (int) (sourceValue * clone.percentageDamagePerTick);
-            clone.setFixedDamagePerTick(clone.getFixedDamagePerTick() + calculatedDamage);
+            baseDamage += (int) (sourceValue * clone.percentageDamagePerTick);
             clone.setPercentageDamagePerTick(0);
         }
+
+        int totalDamage = (int) (baseDamage * this.getAmplificationMultiplier());
+
+        if (checkCriticalHit(caster)) {
+            totalDamage = (int) (totalDamage * 1.5);
+            System.out.println("✨ Coup Critique sur le DoT !");
+        }
+
+        double reducedDamage = applyEquipmentModifiers(totalDamage, caster, target, clone.getDamageType());
+        
+        clone.setFixedDamagePerTick((int) reducedDamage);
+        clone.setAmplificationMultiplier(1.0);
 
         target.addDamageOverTimeEffect(clone);
         System.out.println("Dégâts sur la durée appliqués sur " + target.getName()
