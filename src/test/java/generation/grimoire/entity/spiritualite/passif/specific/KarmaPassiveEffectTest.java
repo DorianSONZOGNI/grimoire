@@ -65,57 +65,62 @@ class KarmaPassiveEffectTest {
         harmonieSpell.setKarmaAlignment(KarmaAlignment.OFFENSIVE); // Even if offensive, it has harmonie in name
     }
 
-    // --- Harmonie Karmique ---
+    // --- Esprit Karmique (Cost reduction) ---
     
     @Test
-    void shouldReduceProtectiveSpellCostWhenInHarmony() {
-        hero.setPassiveState("karma_harmony", 1);
+    void shouldReduceProtectiveSpellCostWhenInEspritState() {
+        hero.setPassiveState("karma_gauge", 2);
         
         int[] costs = {100, 50, 20}; // mana, hp, heat
         SpellCostAdjustEvent event = new SpellCostAdjustEvent(hero, enemy, protSpell, costs);
         passive.onEvent(event);
         
-        assertThat(costs[0]).isEqualTo(80);
-        assertThat(costs[1]).isEqualTo(40);
+        // 2 * 0.08 = 0.16 reduction -> 84, 42, 16
+        assertThat(costs[0]).isEqualTo(84);
+        assertThat(costs[1]).isEqualTo(42);
         assertThat(costs[2]).isEqualTo(16);
     }
     
     @Test
-    void shouldNotReduceCostIfNotInHarmonyOrNotProtective() {
-        hero.setPassiveState("karma_harmony", 0);
+    void shouldNotReduceCostIfNotInEsprit() {
+        hero.setPassiveState("karma_gauge", 0);
         
         int[] costs = {100, 50, 20};
         SpellCostAdjustEvent event = new SpellCostAdjustEvent(hero, enemy, protSpell, costs);
         passive.onEvent(event);
-        assertThat(costs[0]).isEqualTo(100); // Not reduced
-        
-        hero.setPassiveState("karma_harmony", 1);
-        SpellCostAdjustEvent event2 = new SpellCostAdjustEvent(hero, enemy, offSpell, costs);
-        passive.onEvent(event2);
-        assertThat(costs[0]).isEqualTo(100); // Not reduced because offensive
+        assertThat(costs[0]).isEqualTo(100); // Not reduced because gauge == 0
     }
     
+    // --- Ténèbres Karmiques (Damage buff) ---
+    
     @Test
-    void shouldApplyDamageBuffOnOffensiveSpellWhenInHarmony() {
-        hero.setPassiveState("karma_harmony", 1);
+    void shouldApplyDamageMultiplierOnOffensiveSpellWhenInTenebres() {
+        hero.setPassiveState("karma_gauge", -2);
+        
+        generation.grimoire.entity.spell.type.effect.DamageFixedEffect dmgEff = new generation.grimoire.entity.spell.type.effect.DamageFixedEffect();
+        dmgEff.setDamageType(generation.grimoire.enumeration.DamageType.MAGIC);
+        dmgEff.setAmplificationMultiplier(1.0);
+        offSpell.getEffects().add(dmgEff);
         
         passive.onEvent(new SpellCostPaidEvent(hero, enemy, offSpell, 10, 0, 0));
         
-        assertThat(hero.getConsumableSpellBuffs()).hasSize(1);
-        assertThat(hero.getConsumableSpellBuffs().get(0).getModifier()).isEqualTo(1.10);
+        // Bonus is 2 * 0.08 = 0.16. So amplification becomes 1.16
+        assertThat(dmgEff.getAmplificationMultiplier()).isEqualTo(1.16);
     }
+
+    // --- Harmonie Karmique (Heal/Mana on 0) ---
 
     @Test
     void shouldHealAndRestoreManaOnRestorativeSpellWhenInHarmony() {
-        hero.setPassiveState("karma_harmony", 1);
+        hero.setPassiveState("karma_gauge", 0);
         hero.setHealthCurrent(50);
         hero.setManaCurrent(50);
         
         passive.onEvent(new SpellCostPaidEvent(hero, enemy, restSpell, 10, 0, 0));
         
-        // 5% of 100 max = 5
-        assertThat(hero.getHealthCurrent()).isEqualTo(55);
-        assertThat(hero.getManaCurrent()).isEqualTo(55);
+        // 3% of 100 max = 3
+        assertThat(hero.getHealthCurrent()).isEqualTo(53);
+        assertThat(hero.getManaCurrent()).isEqualTo(53);
     }
 
     // --- Mécanique de Jauge ---
@@ -159,7 +164,6 @@ class KarmaPassiveEffectTest {
         passive.onEvent(new SpellCostPaidEvent(hero, enemy, offSpell, 10, 0, 0));
         
         assertThat(hero.getPassiveState("karma_gauge", 0)).isEqualTo(0);
-        assertThat(hero.getPassiveState("karma_harmony", 0)).isEqualTo(1);
     }
 
     // --- Verrouillage ---
@@ -167,15 +171,19 @@ class KarmaPassiveEffectTest {
     @Test
     void shouldTriggerCorruptionWhenGaugeReachesMinus4() {
         hero.setPassiveState("karma_gauge", -3);
+        
+        generation.grimoire.entity.spell.type.effect.DamageFixedEffect dmgEff = new generation.grimoire.entity.spell.type.effect.DamageFixedEffect();
+        dmgEff.setDamageType(generation.grimoire.enumeration.DamageType.MAGIC);
+        dmgEff.setAmplificationMultiplier(1.0);
+        offSpell.getEffects().add(dmgEff);
+        
         passive.onEvent(new SpellCostPaidEvent(hero, enemy, offSpell, 10, 0, 0));
         
         assertThat(hero.getPassiveState("karma_locked", 0)).isEqualTo(1);
         assertThat(hero.getPassiveState("karma_locked_duration", 0)).isEqualTo(6);
-        assertThat(hero.getPassiveState("karma_harmony", 0)).isEqualTo(0);
         
-        // Applies x1.5 damage buff
-        assertThat(hero.getConsumableSpellBuffs()).hasSize(1);
-        assertThat(hero.getConsumableSpellBuffs().get(0).getModifier()).isEqualTo(1.5);
+        // Applies initial Tenebres buff (x1.24) and then corruption (x1.5) -> 1.24 * 1.5 = 1.86
+        assertThat(dmgEff.getAmplificationMultiplier()).isCloseTo(1.86, org.assertj.core.data.Offset.offset(0.01));
     }
 
     @Test
@@ -185,7 +193,6 @@ class KarmaPassiveEffectTest {
         
         assertThat(hero.getPassiveState("karma_locked", 0)).isEqualTo(1);
         assertThat(hero.getPassiveState("karma_locked_duration", 0)).isEqualTo(6);
-        assertThat(hero.getPassiveState("karma_harmony", 0)).isEqualTo(0);
         
         // Applies +20% Armor and Res buff for 3 turns
         assertThat(hero.getActiveBuffs()).hasSize(2);
