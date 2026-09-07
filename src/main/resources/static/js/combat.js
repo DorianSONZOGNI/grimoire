@@ -4124,7 +4124,7 @@ function renderDotsHtml(dotList) {
 
         let icon = "bloodtype";
         let color = "#ef4444";
-        let nameStr = d.sourceName || "Affliction";
+        let nameStr = d.sourceName || d.spellName || "DoT";
 
         if (d.burn) {
             icon = "local_fire_department";
@@ -4135,8 +4135,16 @@ function renderDotsHtml(dotList) {
             color = "#22c55e";
             nameStr = "Poison";
         } else {
-            if (d.damageType === "MAGIC") { icon = "local_fire_department"; color = "#f97316"; }
-            if (dTypeStr === "Brut") { icon = "pest_control"; color = "#22c55e"; }
+            if (d.damageType === "MAGIC") { 
+                icon = "auto_awesome"; 
+                color = "#a855f7"; 
+            } else if (d.damageType === "PHYSIC") { 
+                icon = "swords"; 
+                color = "#f43f5e"; 
+            } else if (d.damageType === "BRUT") { 
+                icon = "bloodtype"; 
+                color = "#ef4444"; 
+            }
         }
 
         let dmgStr = d.fixedDamagePerTick ? `${d.fixedDamagePerTick}` : '';
