@@ -3616,7 +3616,7 @@ function renderBuffsHtml(c, buffList, motList, hotList) {
             if (b.modifier && c) {
                 let finalStat = null;
                 const affected = b.statAffected ? b.statAffected.toUpperCase() : '';
-                
+
                 if (affected.includes('ARMURE') || affected.includes('ARMOR')) finalStat = c.totalArmor !== undefined ? c.totalArmor : c.armor;
                 else if (affected.includes('RESISTANCE')) finalStat = c.totalResistance !== undefined ? c.totalResistance : c.resistance;
                 else if (affected === 'POWER' || affected.includes('PUISSANCE')) finalStat = c.totalPower !== undefined ? c.totalPower : c.power;
@@ -3625,7 +3625,7 @@ function renderBuffsHtml(c, buffList, motList, hotList) {
                 else if (affected === 'CRIT' || affected.includes('CRITIQUE')) finalStat = c.totalCrit !== undefined ? c.totalCrit : c.crit;
                 else if (affected.includes('HEALTH_MAX') || affected.includes('PV_MAX') || affected.includes('HP_MAX')) finalStat = c.healthMax;
                 else if (affected.includes('MANA_MAX') || affected.includes('MP_MAX')) finalStat = c.manaMax;
-                
+
                 if (finalStat !== null && finalStat !== undefined) {
                     let totalModifier = 0;
                     const allBuffs = c.activeBuffs || c.buffs || [];
@@ -3634,10 +3634,10 @@ function renderBuffsHtml(c, buffList, motList, hotList) {
                             totalModifier += otherBuff.modifier;
                         }
                     });
-                    
+
                     let multiplier = Math.max(0, 1.0 + totalModifier);
                     let baseStat = multiplier > 0 ? (finalStat / multiplier) : 0;
-                    
+
                     let modFlat = Math.round(baseStat * b.modifier);
                     if (modFlat !== 0) {
                         effectiveFlat += modFlat;
@@ -4087,16 +4087,16 @@ function renderSpellCard(sp) {
 }
 
 const GAME_TIPS = [
-    "Les dégâts de [Brûlure] sont de type Magique, mais ils subissent l'impact de la Résistance deux fois : à l'application et au déclenchement !",
-    "Le [Poison] inflige des dégâts Bruts, mais c'est la seule altération totalement purifiée par le moindre soin (un soin direct, un vol de vie ou un DoT de soin dissipe tous les poisons). La régénération native n'a par contre aucun effet.",
-    "Chaque point d'Armure ou de Résistance offre un gain linéaire en Points de Vie effectifs. La réduction diminue en pourcentage pour éviter l'invincibilité absolue, mais votre robustesse continue bien d'augmenter !",
-    "Certains Secrets ne peuvent être découverts qu'en remplissant des conditions très spécifiques (actions précises, combinaison d'éléments...). Lisez attentivement les indices pour les débloquer !",
-    "Une attaque de base (banale) inflige 80% de votre Force ou de votre Puissance (la plus haute). Si vos deux statistiques sont parfaitement égales, l'attaque devient mixte (50% Physique, 50% Magique).",
-    "Un sort 'Instantané' ne consomme pas votre action du tour. Mieux encore : vous pouvez lancer des sorts instantanés pendant que vous êtes en train de canaliser un autre sort !",
-    "Un sort 'Canalisé' s'exécute généralement à la fin du tour ou au tour suivant, vous laissant vulnérable pendant la préparation.",
-    "La majorité des sorts possèdent des variantes (Options). Elles permettent de modifier drastiquement le fonctionnement d'un sort, parfois même son type de dégâts. Explorez-les !",
-    "Les Coups Critiques multiplient par 1.5 l'efficacité de presque tout : les dégâts (bruts, magiques, physiques), mais aussi les soins, la génération de bouclier et la restauration de mana !",
-    "Les dégâts sur la durée (DoT) peuvent être critiques au moment de leur application. Leurs dégâts par tour seront alors amplifiés pendant toute leur durée.",
+    "Les dégâts de <span class=\"text-red-400 font-semibold\">[Brûlure]</span> sont de type <span class=\"text-blue-400 font-semibold\">Magique</span>, mais ils subissent l'impact de la <span class=\"text-purple-400 font-semibold\">Résistance</span> deux fois : à l'application et au déclenchement !",
+    "Le <span class=\"text-emerald-400 font-semibold\">[Poison]</span> inflige des dégâts <span class=\"text-slate-300 font-semibold\">Bruts</span>, mais c'est la seule altération totalement purifiée par le moindre <span class=\"text-emerald-300 font-semibold\">soin</span> (un soin direct, un vol de vie ou un DoT de soin dissipe tous les poisons). La régénération native n'a par contre aucun effet.",
+    "Chaque point d'<span class=\"text-amber-400 font-semibold\">Armure</span> ou de <span class=\"text-purple-400 font-semibold\">Résistance</span> offre un gain linéaire en Points de Vie effectifs. La réduction diminue en pourcentage pour éviter l'invincibilité absolue, mais votre robustesse continue bien d'augmenter !",
+    "Les <span class=\"text-yellow-400 font-semibold\">Secrets</span> peuvent être découverts via des recettes alchimiques. Ils donnent accès à de nouveaux donjons, plus dangereux et contenant de meilleurs équipements !",
+    "Une attaque de base inflige <span class=\"text-amber-400 font-semibold\">80% de votre Force</span> ou de votre <span class=\"text-blue-400 font-semibold\">Puissance</span> (la plus haute). Si vos deux statistiques sont parfaitement égales, l'attaque devient mixte (50% Physique, 50% Magique [donc 20% de dégats en plus]).",
+    "Un sort <span class=\"text-emerald-400 font-semibold\">'Instantané'</span> ne consomme pas votre action du tour. Mieux encore : vous pouvez lancer des sorts instantanés pendant que vous êtes en train de caster la plupart des sorts canalisés !",
+    "Un sort <span class=\"text-purple-400 font-semibold\">'Canalisé'</span> s'exécute au moment de le lancer au T1, puis à la fin de chaque tour durant le reste de la canalisation.",
+    "Certains sorts possèdent des variantes (Options). Elles permettent de choisir quel effet on exécute parmi plusieurs propositions.",
+    "Les <span class=\"text-yellow-400 font-semibold\">Coups Critiques</span> multiplient par 1.5 l'efficacité de presque tout : les dégâts (bruts, magiques, physiques, brûlure, poison), mais aussi les soins, les boucliers et la restauration de mana !",
+    "Les dégâts sur la durée <span class=\"text-red-400 font-semibold\">(DoT)</span> peuvent être critiques au moment de leur application. Leurs dégâts par tour seront alors amplifiés pendant toute leur durée.",
     "Lorsque plusieurs héros participent au même donjon, l'expérience gagnée à la fin du combat est partagée équitablement entre tous les héros en vie."
 ];
 
@@ -4111,10 +4111,10 @@ function showResult(data) {
         title.textContent = "VICTOIRE";
         title.classList.add('text-success');
         desc.textContent = "Le donjon a été complété.";
-        
+
         if (tipContainer && tipText) {
             const randomTip = GAME_TIPS[Math.floor(Math.random() * GAME_TIPS.length)];
-            tipText.textContent = randomTip;
+            tipText.innerHTML = randomTip;
             tipContainer.style.display = 'block';
         }
     } else {
@@ -4158,15 +4158,15 @@ function renderDotsHtml(dotList) {
             color = "#22c55e";
             nameStr = "Poison";
         } else {
-            if (d.damageType === "MAGIC") { 
-                icon = "auto_awesome"; 
-                color = "#a855f7"; 
-            } else if (d.damageType === "PHYSIC") { 
-                icon = "swords"; 
-                color = "#f43f5e"; 
-            } else if (d.damageType === "BRUT") { 
-                icon = "bloodtype"; 
-                color = "#ef4444"; 
+            if (d.damageType === "MAGIC") {
+                icon = "auto_awesome";
+                color = "#a855f7";
+            } else if (d.damageType === "PHYSIC") {
+                icon = "swords";
+                color = "#f43f5e";
+            } else if (d.damageType === "BRUT") {
+                icon = "bloodtype";
+                color = "#ef4444";
             }
         }
 
