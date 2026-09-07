@@ -4097,7 +4097,11 @@ const GAME_TIPS = [
     "Certains sorts possèdent des variantes (Options). Elles permettent de choisir quel effet on exécute parmi plusieurs propositions.",
     "Les <span class=\"text-yellow-400 font-semibold\">Coups Critiques</span> multiplient par 1.5 l'efficacité de presque tout : les dégâts (bruts, magiques, physiques, brûlure, poison), mais aussi les soins, les boucliers et la restauration de mana !",
     "Les dégâts sur la durée <span class=\"text-red-400 font-semibold\">(DoT)</span> peuvent être critiques au moment de leur application. Leurs dégâts par tour seront alors amplifiés pendant toute leur durée.",
-    "Lorsque plusieurs héros participent au même donjon, l'expérience gagnée à la fin du combat est partagée équitablement entre tous les héros en vie."
+    "Lorsque plusieurs héros participent au même donjon, l'expérience gagnée à la fin du combat est partagée équitablement entre tous les héros en vie.",
+    "Les objets <span class=\"text-red-500 font-semibold\">Maudits</span> offrent des bonus plus de statistique, mais au prix de contreparties parfois mortelles. Lisez bien leurs effets avant de les équiper !",
+    "Vous ne pouvez équiper qu'un seul objet <span class=\"text-amber-500 font-semibold\">Relique</span> et un seul objet <span class=\"text-fuchsia-400 font-semibold\">Épique</span> à la fois sur l'ensemble de votre équipement. Choisissez-les judicieusement !",
+    "Il est impossible d'équiper deux fois le même type d'anneau sur un personnage. Chaque emplacement d'anneau doit comporter un bijou différent.",
+    "Tous les types d'objets ne se valent pas : une arme donnera statistiquement beaucoup plus de Force ou de Puissance qu'un bijou, tandis qu'un plastron excellera pour vos Points de Vie et votre Armure. Optimisez vos emplacements !"
 ];
 
 function showResult(data) {
