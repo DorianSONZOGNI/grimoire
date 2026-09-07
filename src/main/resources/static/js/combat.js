@@ -3523,8 +3523,8 @@ function renderPoisonBurnHtml(c) {
         if (b.statAffected === 'POISON') {
             const dmg = b.flatValue || 0;
             poisonEntries.push(`
-                <div class="flex-start-sm">
-                    <span class="material-symbols-outlined icon-sm-shrink text-success">pest_control</span>
+                <div style="display:flex; align-items:center; gap:0.4rem; font-size:0.85rem;">
+                    <span class="material-symbols-outlined text-success" style="flex-shrink:0; font-size:1.1rem; transform: translateY(-1px);">pest_control</span>
                     <span class="font-bold text-white">[Poison]</span>
                     <span style="color:#22c55e; font-weight:500;">${dmg} Dégâts Brut</span>
                     <span class="text-subtle">&#x23F3; (${b.duration} tours)</span>
@@ -3533,8 +3533,8 @@ function renderPoisonBurnHtml(c) {
         } else if (b.statAffected === 'BURN') {
             const dmg = b.flatValue || 0;
             burnEntries.push(`
-                <div class="flex-start-sm">
-                    <span class="material-symbols-outlined icon-sm-shrink text-error">local_fire_department</span>
+                <div style="display:flex; align-items:center; gap:0.4rem; font-size:0.85rem;">
+                    <span class="material-symbols-outlined text-error" style="flex-shrink:0; font-size:1.1rem; transform: translateY(-1px);">local_fire_department</span>
                     <span class="font-bold text-white">[Brûlure]</span>
                     <span style="color:#ef4444; font-weight:500;">${dmg} Dégâts Magique</span>
                     <span class="text-subtle">&#x23F3; (${b.duration} tours)</span>
@@ -3547,8 +3547,8 @@ function renderPoisonBurnHtml(c) {
     dots.forEach(d => {
         if (d.poison) {
             poisonEntries.push(`
-                <div class="flex-start-sm">
-                    <span class="material-symbols-outlined icon-sm-shrink text-success">pest_control</span>
+                <div style="display:flex; align-items:center; gap:0.4rem; font-size:0.85rem;">
+                    <span class="material-symbols-outlined text-success" style="flex-shrink:0; font-size:1.1rem; transform: translateY(-1px);">pest_control</span>
                     <span class="font-bold text-white">[Poison]</span>
                     <span style="color:#22c55e; font-weight:500;">${d.fixedDamagePerTick} Dégâts Brut</span>
                     <span class="text-subtle">&#x23F3; (${d.duration} tours)</span>
@@ -3556,8 +3556,8 @@ function renderPoisonBurnHtml(c) {
             `);
         } else if (d.burn) {
             burnEntries.push(`
-                <div class="flex-start-sm">
-                    <span class="material-symbols-outlined icon-sm-shrink text-error">local_fire_department</span>
+                <div style="display:flex; align-items:center; gap:0.4rem; font-size:0.85rem;">
+                    <span class="material-symbols-outlined text-error" style="flex-shrink:0; font-size:1.1rem; transform: translateY(-1px);">local_fire_department</span>
                     <span class="font-bold text-white">[Brûlure]</span>
                     <span style="color:#ef4444; font-weight:500;">${d.fixedDamagePerTick} Dégâts Magique</span>
                     <span class="text-subtle">&#x23F3; (${d.duration} tours)</span>
@@ -4155,8 +4155,8 @@ function renderDotsHtml(dotList) {
         if (!dmgStr) dmgStr = "0";
 
         dotEntries.push(`
-            <div style="display:flex; align-items:flex-start; gap:0.4rem; font-size:0.85rem;">
-                <span class="material-symbols-outlined" style="flex-shrink:0; font-size:1.1rem; color:${color};">${icon}</span>
+            <div style="display:flex; align-items:center; gap:0.4rem; font-size:0.85rem;">
+                <span class="material-symbols-outlined" style="flex-shrink:0; font-size:1.1rem; color:${color}; transform: translateY(-1px);">${icon}</span>
                 <span style="font-weight:600; color:#fff;">[${nameStr}]</span>
                 <span style="color:${color}; font-weight:500;">${dmgStr} Dégâts ${dTypeStr}</span>
                 <span style="color:#e2e8f0;">&#x23F3; (${d.duration} tours)</span>
