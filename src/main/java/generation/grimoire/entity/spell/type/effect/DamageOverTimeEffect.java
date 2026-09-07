@@ -112,7 +112,7 @@ public class DamageOverTimeEffect extends DamageEffect {
         int totalDamage = (int) (baseDamage * this.getAmplificationMultiplier());
 
         if (checkCriticalHit(caster)) {
-            totalDamage = (int) (totalDamage * 1.5);
+            totalDamage = (int) (totalDamage * this.getCriticalMultiplier(caster));
             System.out.println("✨ Coup Critique sur le DoT !");
         }
 
