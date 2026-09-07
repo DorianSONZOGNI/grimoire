@@ -88,6 +88,14 @@ public class HealOverTimeEffect extends HealEffect {
     public void apply(Personnage caster, Personnage target) {
         HealOverTimeEffect clone = this.cloneEffect();
         clone.caster = caster;
+        
+        if (clone.percentageHealPerTick != 0) {
+            double sourceValue = generation.grimoire.utils.StatCalculator.getSourceValue(clone.healSource, caster, target);
+            int calculatedHeal = (int) (sourceValue * clone.percentageHealPerTick);
+            clone.setFixedHealPerTick(clone.getFixedHealPerTick() + calculatedHeal);
+            clone.setPercentageHealPerTick(0);
+        }
+
         target.addHealOverTimeEffect(clone);
         System.out.println("Soins sur la durée appliqués sur " + target.getName() + " pour " + duration + " tours.");
     }

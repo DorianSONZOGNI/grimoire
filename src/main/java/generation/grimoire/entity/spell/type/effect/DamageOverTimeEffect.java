@@ -118,8 +118,12 @@ public class DamageOverTimeEffect extends DamageEffect {
         DamageOverTimeEffect clone = this.cloneEffect();
         clone.caster = caster;
 
-        // On ne convertit plus le pourcentage en dégâts fixes lors de l'application
-        // pour permettre un calcul dynamique à chaque tick et conserver l'affichage UI.
+        if (clone.percentageDamagePerTick > 0) {
+            double sourceValue = generation.grimoire.utils.StatCalculator.getSourceValue(clone.damageSource, caster, target);
+            int calculatedDamage = (int) (sourceValue * clone.percentageDamagePerTick);
+            clone.setFixedDamagePerTick(clone.getFixedDamagePerTick() + calculatedDamage);
+            clone.setPercentageDamagePerTick(0);
+        }
 
         target.addDamageOverTimeEffect(clone);
         System.out.println("Dégâts sur la durée appliqués sur " + target.getName()

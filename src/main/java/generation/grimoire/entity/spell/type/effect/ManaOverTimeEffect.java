@@ -72,6 +72,14 @@ public class ManaOverTimeEffect extends ManaEffect {
     public void apply(Personnage caster, Personnage target) {
         ManaOverTimeEffect clone = this.cloneEffect();
         clone.caster = caster;
+        
+        if (clone.percentageManaPerTick != 0) {
+            double sourceValue = generation.grimoire.utils.StatCalculator.getSourceValue(clone.manaSource, caster, target);
+            int calculatedMana = (int) (sourceValue * clone.percentageManaPerTick);
+            clone.setFixedManaPerTick(clone.getFixedManaPerTick() + calculatedMana);
+            clone.setPercentageManaPerTick(0);
+        }
+
         target.addManaOverTimeEffect(clone);
         System.out.println("Régénération de mana sur la durée appliquée sur " + target.getName() + " pour " + duration + " tours.");
     }
