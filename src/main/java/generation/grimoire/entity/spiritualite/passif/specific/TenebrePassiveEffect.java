@@ -21,7 +21,32 @@ public class TenebrePassiveEffect extends SpiritualitePassiveEffect {
 
     @Override
     public void onTurnStart(Personnage personnage) {
-        // Remplacé par la contrainte de lancement
+        int missingHp = personnage.getHealthMax() - personnage.getHealthCurrent();
+        int missingMana = personnage.getManaMax() - personnage.getManaCurrent();
+        int physBonusDmg = (int) (missingHp * 0.10);
+        int magBonusDmg = (int) (missingMana * 0.10);
+
+        if (physBonusDmg > 0) {
+            generation.grimoire.entity.spell.type.effect.BuffDebuffEffect physBuff = new generation.grimoire.entity.spell.type.effect.BuffDebuffEffect();
+            physBuff.setStatAffected(generation.grimoire.enumeration.StatType.DAMAGE_GIVEN_PHYSIC);
+            physBuff.setFlatValue(physBonusDmg);
+            physBuff.setDuration(1);
+            physBuff.setSourceName("Passif Ténèbres");
+            personnage.getActiveBuffs().add(physBuff);
+        }
+
+        if (magBonusDmg > 0) {
+            generation.grimoire.entity.spell.type.effect.BuffDebuffEffect magBuff = new generation.grimoire.entity.spell.type.effect.BuffDebuffEffect();
+            magBuff.setStatAffected(generation.grimoire.enumeration.StatType.DAMAGE_GIVEN_MAGIC);
+            magBuff.setFlatValue(magBonusDmg);
+            magBuff.setDuration(1);
+            magBuff.setSourceName("Passif Ténèbres");
+            personnage.getActiveBuffs().add(magBuff);
+        }
+
+        if (physBonusDmg > 0 || magBonusDmg > 0) {
+            System.out.println(personnage.getName() + " gagne " + physBonusDmg + " dégâts physiques et " + magBonusDmg + " dégâts magiques ce tour via Ténèbres.");
+        }
     }
 
     @Override

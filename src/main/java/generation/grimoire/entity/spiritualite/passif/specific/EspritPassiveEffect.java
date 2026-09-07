@@ -21,7 +21,18 @@ public class EspritPassiveEffect extends SpiritualitePassiveEffect {
 
     @Override
     public void onTurnStart(Personnage personnage) {
-        // Contrainte de lancement uniquement
+        int manaRegen = (int) (personnage.getManaCurrent() * 0.10);
+        if (manaRegen > 0) {
+            personnage.restoreMana(manaRegen);
+        }
+
+        if (personnage.getHealthCurrent() < (personnage.getHealthMax() * 0.20)) {
+            int shieldAmount = (int) (personnage.getHealthMax() * 0.05);
+            if (shieldAmount > 0) {
+                personnage.addShield(shieldAmount, 1, "Passif Esprit");
+                System.out.println(personnage.getName() + " reçoit un bouclier de " + shieldAmount + " via l'Esprit.");
+            }
+        }
     }
 
     @Override
