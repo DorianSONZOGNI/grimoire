@@ -4104,7 +4104,17 @@ const GAME_TIPS = [
     "Tous les types d'objets ne se valent pas : une arme donnera statistiquement beaucoup plus de Force ou de Puissance qu'un bijou, tandis qu'un plastron excellera pour vos Points de Vie et votre Armure. Optimisez vos emplacements !",
     "Votre inventaire déborde ou vous trouvez un objet inutile dans un coffre ? Vous pouvez le vendre instantanément en le <span class=\"text-red-400 font-semibold\">détruisant</span> pour récupérer un peu d'Or !",
     "La <span class=\"text-yellow-400 font-semibold\">Boutique</span> se réinitialise tous les jours à minuit. Gardez l'œil ouvert : l'objet en <span class=\"text-emerald-400 font-semibold\">Promotion</span> change toutes les deux heures.",
-    "N'hésitez pas à consulter votre <span class=\"text-purple-400 font-semibold\">Grimoire</span> ! Il vous permet de voir à l'avance tous les sorts disponibles pour chaque voie et spiritualité, idéal pour planifier votre évolution."
+    "N'hésitez pas à consulter votre <span class=\"text-purple-400 font-semibold\">Grimoire</span> ! Il vous permet de voir à l'avance tous les sorts disponibles pour chaque voie et spiritualité, idéal pour planifier votre évolution.",
+    "Certains monstres possèdent des <span class=\"text-purple-400 font-semibold\">Mutations</span>. Elles leur permettent de lancer des sorts dévastateurs ou d'utiliser des compétences pour s'entraider. Prudence !",
+    "Le <span class=\"text-blue-400 font-semibold\">Type</span> d'un monstre (Mort-Vivant, Bête, Démon...) définit certaines modifications importante à prendre en compte. Régénération, dégats suplémentaires, débuffs, etc.",
+    "Chaque monstre possède un <span class=\"text-amber-400 font-semibold\">Comportement</span> unique (Prédateur, Corrupteur, Brutal). Observez-les bien pour anticiper leur priorité de ciblage et leur comportement général !",
+    "Avant de lancer un donjon, n'oubliez pas d'équiper' vos <span class=\"text-emerald-400 font-semibold\">Consommables</span> (potions, clé, corde, etc.) dans votre Inventaire de Combat. Vous pourrez les utiliser entre les affontements.",
+    "En donjon, les salles de <span class=\"text-red-400 font-semibold\">Combat</span> sont fréquentes. Mais attention aux salles de <span class=\"text-orange-500 font-semibold\">Boss</span> qui mettront votre équipe à rude épreuve en boostant les monstres !",
+    "Les <span class=\"text-yellow-400 font-semibold\">Salles de Trésor</span> regorgent d'or et d'objets, tandis que les salles d'<span class=\"text-blue-400 font-semibold\">Altération</span> peuvent vous soigner (ou l'inverse !) en échange d'<span class=\"text-fuchsia-400 font-semibold\">Anomalies</span> ou d'<span class=\"text-amber-400 font-semibold\">XP Spirituel</span>.",
+    "Les <span class=\"text-purple-400 font-semibold\">portes étranges</span> sont des évènements aléatoires. Elles peuvent vous déboucher sur des pièges, des trésors inatendus, des marchants secret, des autels sacrificiels ou bien des monstres en embuscade... ",
+    "C'est dans l'<span class=\"text-amber-500 font-semibold\">Armurerie</span> que vous pouvez gérer et équiper le matériel de vos héros. Un équipement bien pensé est la clé de la victoire !",
+    "Besoin d'une plus grande équipes ? Rendez-vous dans l'<span class=\"text-emerald-400 font-semibold\">Armurerie</span> pour <span class=\"text-blue-400 font-semibold\">Recruter</span> de nouveaux héros pour compléter votre équipe.",
+    "Les <span class=\"text-fuchsia-400 font-semibold\">Anomalies</span> servent comme monais ou bien comme ingredient alchimique."
 ];
 
 function showResult(data) {
