@@ -165,7 +165,7 @@ public class DataInitializerService {
                 for (Spiritualite sp : spiritualiteRepository.findAll()) {
                         if ("Esprit".equals(sp.getNom())) {
                                 sp.setPassiveDescription(
-                                                "Les sorts de cette spiritualité ne peuvent être lancés que si vous possédez au moins [c=pv]20% de vos PV max[/c] ET [c=mana]20% de votre Mana max[/c].");
+                                                "Les sorts de cette spiritualité ne peuvent être lancés que si vous possédez au moins [c=pv]20% de vos PV max[/c] ET [c=mana]20% de votre Mana max[/c].\nDe plus, au début de votre tour, vous régénérez [c=mana]10% de votre Mana actuel[/c]. Si vos PV sont sous les 20%, vous obtenez un [c=shield]Bouclier (5% PV max)[/c] (dure 1 tour).");
                         } else if ("Ténèbres".equals(sp.getNom())) {
                                 sp.setPassiveDescription(
                                                 "Sauf pour les sorts de base, le lancement nécessite d'avoir [c=pv]80% ou moins de vos PV max[/c] OU [c=mana]80% ou moins de votre Mana max[/c].\nDe plus, à chaque début de tour, vous gagnez un bonus aux [c=physic]dégâts physiques[/c] équivalent à 10% de vos [c=pv]PV manquants[/c] et aux [c=magic]dégâts magiques[/c] équivalent à 10% de votre [c=mana]Mana manquant[/c] (dure 1 tour).");
