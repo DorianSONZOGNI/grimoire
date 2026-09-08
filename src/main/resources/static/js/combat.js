@@ -3695,7 +3695,7 @@ function renderBuffsHtml(c, buffList, motList, hotList) {
             }
 
             const entryHtml = `
-            <div class="flex justify-center items-center gap-1 w-full text-sm">
+            <div class="flex justify-start items-center gap-1 w-full text-sm">
                 <span class="material-symbols-outlined icon-sm-shrink text-base" style="color:${indicatorColor};">${iconName}</span>
                 ${statIconHtml}
                 <span class="font-bold text-white">[Cible]</span>
@@ -3730,7 +3730,7 @@ function renderBuffsHtml(c, buffList, motList, hotList) {
             const iconName = isBad ? 'trending_down' : 'trending_up';
 
             const entryHtml = `
-                <div class="flex justify-center items-center gap-1 w-full text-sm">
+                <div class="flex justify-start items-center gap-1 w-full text-sm">
                     <span class="material-symbols-outlined icon-sm-shrink text-base" style="color:${indicatorColor};">${iconName}</span>
                     <span class="material-symbols-outlined icon-sm-shrink text-base text-sky-300">water_drop</span>
                     <span class="font-bold text-white">[Cible]</span>
@@ -3764,7 +3764,7 @@ function renderBuffsHtml(c, buffList, motList, hotList) {
             const iconName = isBad ? 'trending_down' : 'trending_up';
 
             const entryHtml = `
-                <div class="flex justify-center items-center gap-1 w-full text-sm">
+                <div class="flex justify-start items-center gap-1 w-full text-sm">
                     <span class="material-symbols-outlined icon-sm-shrink text-base" style="color:${indicatorColor};">${iconName}</span>
                     <span class="material-symbols-outlined icon-sm-shrink text-base text-success">healing</span>
                     <span class="font-bold text-white">[Cible]</span>
