@@ -30,6 +30,7 @@ public class EquipmentResponseDTO {
     private double maxWeight;
     private boolean isTemplate;
     private boolean availableInShop;
+    private java.util.Map<String, Integer> priceAnomalies;
     private String ownerUsername;
     private PersonnageRef personnage;
 

@@ -122,14 +122,22 @@ export function renderStatOptions(arr, selectedVal) {
 
 export function getSpellColor(sp) {
     if (sp.voie && sp.voie.nom) {
+        const vNom = sp.voie.nom.toLowerCase();
+        if (vNom.includes('karma')) {
+            let spirit = '';
+            if (sp.spiritualite) {
+                spirit = (typeof sp.spiritualite === 'object' ? sp.spiritualite.nom : sp.spiritualite).toLowerCase();
+            }
+            if (spirit.includes('lumière') || spirit.includes('lumiere')) return '#eecd6b'; // Discret vers jaune (Karma Lumière)
+            if (spirit.includes('ténèbres') || spirit.includes('tenebres') || spirit.includes('ténèbre')) return '#d2b9d8'; // Discret vers violet (Karma Ténèbres)
+            return '#e7d198'; // Couleur de base Karma
+        }
         return getVoieButtonColor(sp.voie);
     }
-    if (sp.spiritualite && sp.spiritualite.nom) {
-        if (sp.spiritualite.nom.toLowerCase().includes('karma') && sp.karmaAlignment) {
-            if (sp.karmaAlignment === 'OFFENSIVE') return '#c19fd5';
-            if (sp.karmaAlignment === 'PROTECTIVE') return '#f0c235';
-        }
-        return getSpiritButtonColor(sp.spiritualite);
+    if (sp.spiritualite && (sp.spiritualite.nom || typeof sp.spiritualite === 'string')) {
+        const sNom = (typeof sp.spiritualite === 'object' ? sp.spiritualite.nom : sp.spiritualite).toLowerCase();
+        if (sNom.includes('karma')) return '#e7d198';
+        return getSpiritButtonColor(typeof sp.spiritualite === 'object' ? sp.spiritualite : { nom: sp.spiritualite });
     }
     return '#ffffff';
 }

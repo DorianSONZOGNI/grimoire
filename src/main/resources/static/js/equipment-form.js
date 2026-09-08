@@ -92,9 +92,9 @@ function getFormEquipmentData() {
         specialEffectValue,
         personnageId: null, // Keep null when forged from vault
         priceAnomalies: (() => {
-            const map = {};
             const container = document.getElementById('priceAnomaliesContainer');
             if (container) {
+                const map = {};
                 const rows = container.querySelectorAll('.anomaly-price-row');
                 rows.forEach(row => {
                     const selectVal = row.querySelector('.anomaly-select-hidden').value;
@@ -103,8 +103,17 @@ function getFormEquipmentData() {
                         map[selectVal] = (map[selectVal] || 0) + qtyVal;
                     }
                 });
+                return map;
             }
-            return map;
+            
+            const state = typeof pageState !== 'undefined' ? pageState : (window.pageState || null);
+            if (state && state.editingEquipmentId && state.allEquipments) {
+                const eq = state.allEquipments.find(e => e.id === state.editingEquipmentId);
+                if (eq && eq.priceAnomalies) {
+                    return eq.priceAnomalies;
+                }
+            }
+            return {};
         })(),
     };
 }
