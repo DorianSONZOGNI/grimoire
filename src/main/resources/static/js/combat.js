@@ -3409,7 +3409,7 @@ function generateFighterHtml(c, isHero, skipBadges = false) {
         <div class="sandbox-status-list" style="justify-content: center;">${passiveBadges}</div>
         <div class="sandbox-status-list" style="justify-content: center;">
             ${renderShieldsHtml(c.activeShields)}
-            ${renderBuffsHtml(c, c, c.activeBuffs || c.buffs, c.activeManaOverTimeEffects, c.activeHealOverTimeEffects)}
+            ${renderBuffsHtml(c, c.activeBuffs || c.buffs, c.activeManaOverTimeEffects, c.activeHealOverTimeEffects)}
             ${renderPoisonBurnHtml(c)}
             ${renderDotsHtml(c.activeDamageOverTimeEffects)}
         </div>
@@ -3488,8 +3488,8 @@ function renderShieldsHtml(shieldList) {
     shieldList.forEach(s => {
         totalShield += s.amount;
         const entryHtml = `
-            <div class="flex-start-sm">
-                <span class="material-symbols-outlined icon-sm-shrink text-sky-300">security</span>
+            <div class="flex justify-center items-center gap-1 w-full text-sm">
+                <span class="material-symbols-outlined icon-sm-shrink text-base text-sky-300">security</span>
                 <span class="font-bold text-white">[${s.sourceName || 'Inconnu'}]</span>
                 <span class="text-sky-medium">Bouclier</span>
                 <span class="text-subtle">→ ${s.amount} PV absorpt. (${s.duration} tours)</span>
@@ -3668,45 +3668,41 @@ function renderBuffsHtml(c, buffList, motList, hotList) {
             let statIconHtml = '';
             if (b.statAffected && b.statAffected !== 'POISON' && b.statAffected !== 'BURN') {
                 const sa = b.statAffected.toUpperCase();
-                let statIcon = { icon: 'star', color: '#94a3b8' };
-                if (sa.includes('SPEED')) statIcon = { icon: 'bolt', color: '#f59e0b' };
-                else if (sa.includes('MANA')) statIcon = { icon: 'water_drop', color: '#38bdf8' };
-                else if (sa.includes('HEALTH') || sa.includes('HP') || sa.includes('LIFE')) statIcon = { icon: 'favorite', color: '#ec4899' };
-                else if (sa.includes('CRIT')) statIcon = { icon: 'gps_fixed', color: '#ef4444' };
-                else if (sa.includes('ARMOR') || sa.includes('ARMURE')) statIcon = { icon: 'shield', color: '#3b82f6' };
-                else if (sa.includes('RESISTANCE')) statIcon = { icon: 'shield', color: '#10b981' };
-                else if (sa.includes('PHYSICAL_POWER') || sa.includes('STRENGTH')) statIcon = { icon: 'fitness_center', color: '#f43f5e' };
-                else if (sa.includes('POWER')) statIcon = { icon: 'auto_awesome', color: '#a855f7' };
-                else if (sa.includes('HEAL_RECEIVED')) statIcon = { icon: 'health_and_safety', color: '#10b981' };
-                else if (sa.includes('SHIELD_RECEIVED')) statIcon = { icon: 'security', color: '#06b6d4' };
-                else if (sa.includes('HEAL_GIVEN')) statIcon = { icon: 'healing', color: '#34d399' };
-                else if (sa.includes('SHIELD_GIVEN')) statIcon = { icon: 'add_moderator', color: '#22d3ee' };
-                else if (sa === 'SHIELD_PIERCED') statIcon = { icon: 'heart_broken', color: '#ef4444' };
-                else if (sa === 'SHIELD_PENETRATION') statIcon = { icon: 'heart_broken', color: '#fb923c' };
-                else if (sa === 'DAMAGE_TAKEN_MAGIC') statIcon = { icon: 'explosion', color: '#a855f7' };
-                else if (sa === 'DAMAGE_TAKEN_PHYSIC') statIcon = { icon: 'explosion', color: '#ef4444' };
-                else if (sa === 'DAMAGE_TAKEN_BRUT') statIcon = { icon: 'explosion', color: '#b91c1c' };
-                else if (sa === 'DAMAGE_GIVEN_MAGIC') statIcon = { icon: 'auto_awesome', color: '#a855f7' };
-                else if (sa === 'DAMAGE_GIVEN_PHYSIC') statIcon = { icon: 'swords', color: '#f43f5e' };
-                else if (sa === 'DAMAGE_GIVEN_BRUT') statIcon = { icon: 'bloodtype', color: '#b91c1c' };
-                else if (sa === 'DAMAGE_GIVEN_MAGIC_TO_SHIELD') statIcon = { icon: 'gavel', color: '#d946ef' };
-                else if (sa === 'DAMAGE_GIVEN_PHYSIC_TO_SHIELD') statIcon = { icon: 'gavel', color: '#f43f5e' };
-                else if (sa.includes('DAMAGE_TAKEN')) statIcon = { icon: 'explosion', color: '#ef4444' };
-                else if (sa.includes('DAMAGE_GIVEN')) statIcon = { icon: 'swords', color: '#f43f5e' };
-                else if (sa.includes('PIERCED') || sa.includes('PIERCING')) statIcon = { icon: 'heart_broken', color: '#fb923c' };
+                let statIcon = { icon: 'star', color: 'var(--text-muted)' };
+
+                if (sa.includes('SPEED')) statIcon = { icon: 'bolt', color: 'var(--slot-anneau)' };
+                else if (sa.includes('MANA')) statIcon = { icon: 'water_drop', color: 'var(--mana)' };
+                else if (sa.includes('HEALTH') || sa.includes('HP') || sa.includes('LIFE')) statIcon = { icon: 'favorite', color: 'var(--secondary)' };
+                else if (sa.includes('CRIT')) statIcon = { icon: 'gps_fixed', color: 'var(--crit)' };
+                else if (sa.includes('ARMOR') || sa.includes('ARMURE')) statIcon = { icon: 'shield', color: 'var(--accent)' };
+                else if (sa.includes('RESISTANCE')) statIcon = { icon: 'shield', color: 'var(--success)' };
+                else if (sa.includes('PHYSICAL_POWER') || sa.includes('STRENGTH')) statIcon = { icon: 'fitness_center', color: 'var(--danger)' };
+                else if (sa.includes('POWER')) statIcon = { icon: 'auto_awesome', color: 'var(--magic)' };
+                else if (sa.includes('HEAL_RECEIVED')) statIcon = { icon: 'health_and_safety', color: 'var(--success)' };
+                else if (sa.includes('SHIELD_RECEIVED')) statIcon = { icon: 'security', color: 'var(--shield-light)' };
+                else if (sa.includes('HEAL_GIVEN')) statIcon = { icon: 'healing', color: 'var(--caster-color)' };
+                else if (sa.includes('SHIELD_GIVEN')) statIcon = { icon: 'add_moderator', color: 'var(--shield-lighter)' };
+                else if (sa === 'SHIELD_PIERCED' || sa === 'SHIELD_PENETRATION') statIcon = { icon: 'heart_broken', color: 'var(--pierce)' };
+                else if (sa === 'DAMAGE_TAKEN_MAGIC' || sa === 'DAMAGE_GIVEN_MAGIC') statIcon = { icon: 'auto_awesome', color: 'var(--magic)' };
+                else if (sa === 'DAMAGE_TAKEN_PHYSIC' || sa.includes('DAMAGE_TAKEN')) statIcon = { icon: 'explosion', color: 'var(--crit)' };
+                else if (sa === 'DAMAGE_TAKEN_BRUT' || sa === 'DAMAGE_GIVEN_BRUT') statIcon = { icon: 'bloodtype', color: 'var(--brut)' };
+                else if (sa === 'DAMAGE_GIVEN_PHYSIC' || sa.includes('DAMAGE_GIVEN')) statIcon = { icon: 'swords', color: 'var(--danger)' };
+                else if (sa === 'DAMAGE_GIVEN_MAGIC_TO_SHIELD') statIcon = { icon: 'gavel', color: 'var(--magic-shield)' };
+                else if (sa === 'DAMAGE_GIVEN_PHYSIC_TO_SHIELD') statIcon = { icon: 'gavel', color: 'var(--danger)' };
+                else if (sa.includes('PIERCED') || sa.includes('PIERCING')) statIcon = { icon: 'heart_broken', color: 'var(--pierce)' };
 
                 statIconHtml = `<span class="material-symbols-outlined" style="flex-shrink:0; font-size:1.1rem; color:${statIcon.color}; margin-left:-0.1rem;">${statIcon.icon}</span>`;
             }
 
             const entryHtml = `
-            <div class="flex-start-sm">
-                <span class="material-symbols-outlined" style="flex-shrink:0; font-size:1.1rem; color:${indicatorColor};">${iconName}</span>
+            <div class="flex justify-start items-center gap-1 w-full text-sm">
+                <span class="material-symbols-outlined icon-sm-shrink text-base" style="color:${indicatorColor};">${iconName}</span>
                 ${statIconHtml}
                 <span class="font-bold text-white">[Cible]</span>
                 <span class="text-sky-medium">${typeStr}</span>
                 <span class="text-subtle">→ ${text} (${b.duration} tours)</span>
             </div>
-        `;
+            `;
 
             if (isBad) badBuffs.push(entryHtml);
             else goodBuffs.push(entryHtml);
@@ -3734,9 +3730,9 @@ function renderBuffsHtml(c, buffList, motList, hotList) {
             const iconName = isBad ? 'trending_down' : 'trending_up';
 
             const entryHtml = `
-                <div class="flex-start-sm">
-                    <span class="material-symbols-outlined" style="flex-shrink:0; font-size:1.1rem; color:${indicatorColor};">${iconName}</span>
-                    <span class="material-symbols-outlined icon-sm-shrink text-sky-300" style="margin-left:-0.1rem;">water_drop</span>
+                <div class="flex justify-start items-center gap-1 w-full text-sm">
+                    <span class="material-symbols-outlined icon-sm-shrink text-base" style="color:${indicatorColor};">${iconName}</span>
+                    <span class="material-symbols-outlined icon-sm-shrink text-base text-sky-300">water_drop</span>
                     <span class="font-bold text-white">[Cible]</span>
                     <span class="text-sky-medium">MoT</span>
                     <span class="text-subtle">→ ${text} Mana/tour (${m.duration} tours)</span>
@@ -3768,12 +3764,12 @@ function renderBuffsHtml(c, buffList, motList, hotList) {
             const iconName = isBad ? 'trending_down' : 'trending_up';
 
             const entryHtml = `
-                <div class="flex-start-sm">
-                    <span class="material-symbols-outlined" style="flex-shrink:0; font-size:1.1rem; color:${indicatorColor};">${iconName}</span>
-                    <span class="material-symbols-outlined icon-sm-shrink text-success" style="margin-left:-0.1rem;">healing</span>
+                <div class="flex justify-start items-center gap-1 w-full text-sm">
+                    <span class="material-symbols-outlined icon-sm-shrink text-base" style="color:${indicatorColor};">${iconName}</span>
+                    <span class="material-symbols-outlined icon-sm-shrink text-base text-success">healing</span>
                     <span class="font-bold text-white">[Cible]</span>
                     <span class="text-success font-medium">HoT</span>
-                    <span style="color:#e2e8f0;">&rarr; ${text} PV/tour (${h.duration} tours)</span>
+                    <span class="text-subtle">→ ${text} PV/tour (${h.duration} tours)</span>
                 </div>
             `;
             if (isBad) badBuffs.push(entryHtml);
