@@ -125,6 +125,10 @@ export function getSpellColor(sp) {
         return getVoieButtonColor(sp.voie);
     }
     if (sp.spiritualite && sp.spiritualite.nom) {
+        if (sp.spiritualite.nom.toLowerCase().includes('karma') && sp.karmaAlignment) {
+            if (sp.karmaAlignment === 'OFFENSIVE') return '#c19fd5';
+            if (sp.karmaAlignment === 'PROTECTIVE') return '#f0c235';
+        }
         return getSpiritButtonColor(sp.spiritualite);
     }
     return '#ffffff';
@@ -485,7 +489,7 @@ export function showNotif(text, isError = false) {
     }, 4000);
 }
 
-window.initGlobalCustomSelect = function() {
+window.initGlobalCustomSelect = function () {
     if (window._globalCustomSelectInit) return;
     window._globalCustomSelectInit = true;
 
@@ -493,8 +497,8 @@ window.initGlobalCustomSelect = function() {
         if (!e.target.closest('.custom-select-wrapper')) {
             document.querySelectorAll('.custom-select-wrapper.open').forEach(w => w.classList.remove('open'));
             document.querySelectorAll('.custom-select-options').forEach(el => {
-                if(el.parentElement && el.parentElement.classList.contains('custom-select-wrapper')) {
-                } else if(!e.target.closest('.custom-select-options')) {
+                if (el.parentElement && el.parentElement.classList.contains('custom-select-wrapper')) {
+                } else if (!e.target.closest('.custom-select-options')) {
                     el.style.display = 'none';
                 }
             });
@@ -514,17 +518,17 @@ window.initGlobalCustomSelect = function() {
                         }
                     }
                 });
-                
+
                 if (!trigger.hasAttribute('onclick')) {
                     const isOpen = wrapper.classList.toggle('open');
                     const optionsContainer = wrapper.querySelector('.custom-select-options');
-                    
+
                     if (optionsContainer && isOpen) {
                         const rect = trigger.getBoundingClientRect();
                         const modal = trigger.closest('.equip-modal');
                         const modalBottom = modal ? modal.getBoundingClientRect().bottom : window.innerHeight;
                         const spaceBelow = modalBottom - rect.bottom;
-                        const dropdownHeight = 220; 
+                        const dropdownHeight = 220;
 
                         if (spaceBelow < dropdownHeight && rect.top > dropdownHeight) {
                             optionsContainer.style.top = 'auto';
@@ -585,7 +589,7 @@ export function showGlobalTooltip(el) {
         tooltip.className = 'global-tooltip';
         document.body.appendChild(tooltip);
     }
-    
+
     if (tooltip.hideTimeout) clearTimeout(tooltip.hideTimeout);
 
     const dataEl = el.querySelector('.tooltip-data');
@@ -621,7 +625,7 @@ export function showGlobalTooltip(el) {
     if (topPos + tooltipHeight > window.innerHeight) {
         topPos = rect.top - tooltipHeight - 8;
     }
-    
+
     if (leftPos < 10) leftPos = 10;
     if (leftPos + tooltipWidth > window.innerWidth - 10) {
         leftPos = window.innerWidth - tooltipWidth - 10;
@@ -651,7 +655,7 @@ export function showEffectTooltip(el, text) {
         tooltip.style.zIndex = '9999999'; // Higher than globalFixedTooltip
         document.body.appendChild(tooltip);
     }
-    
+
     if (tooltip.hideTimeout) clearTimeout(tooltip.hideTimeout);
 
     tooltip.innerHTML = text;
@@ -668,7 +672,7 @@ export function showEffectTooltip(el, text) {
     if (topPos + tooltipHeight > window.innerHeight) {
         topPos = rect.top - tooltipHeight - 8;
     }
-    
+
     if (leftPos < 10) leftPos = 10;
     if (leftPos + tooltipWidth > window.innerWidth - 10) {
         leftPos = window.innerWidth - tooltipWidth - 10;
