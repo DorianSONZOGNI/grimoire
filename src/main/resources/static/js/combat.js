@@ -4115,7 +4115,8 @@ const GAME_TIPS = [
     "Besoin d'une plus grande équipes ? Rendez-vous dans l'<span class=\"text-emerald-400 font-semibold\">Armurerie</span> pour <span class=\"text-blue-400 font-semibold\">Recruter</span> de nouveaux héros pour compléter votre équipe.",
     "Les <span class=\"text-fuchsia-400 font-semibold\">Anomalies</span> servent comme monais ou bien comme ingredient alchimique.",
     "L'<span class=\"text-emerald-400 font-semibold\">Expérience Spirituelle</span> permet de gagner des niveaux spirituels ce qui débloquera de nouveaux sorts, mais sert aussi de ressources dans certain craft alchimique.",
-    "Vous pouvez jouer en <span class=\"text-blue-400 font-semibold\">Multijoueur</span> ! Créez un <span class=\"text-emerald-400 font-semibold\">Lobby</span> et partagez le code d'invitation à un ami. Attention : il doit avoir débloqué le donjon pour pouvoir s'y aventurer avec vous."
+    "Vous pouvez jouer en <span class=\"text-blue-400 font-semibold\">Multijoueur</span> ! Créez un <span class=\"text-emerald-400 font-semibold\">Lobby</span> et partagez le code d'invitation à un ami. Attention : il doit avoir débloqué le donjon pour pouvoir s'y aventurer avec vous.",
+    "Fuir un donjon  fait perdre de l'or et de l'expérience proportionnellement à la taille du donjon. Un perso qui meurt en donjon perd aussi de l'expérience en fonction de son niveau."
 ];
 
 function showResult(data) {
