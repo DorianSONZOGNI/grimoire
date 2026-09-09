@@ -334,6 +334,17 @@ public class CombatService {
         }
     }
 
+    /** Called by CombatTimeoutScheduler — applies flee penalties without recording a FLEE stat (TIMEOUT already recorded). */
+    public void fleeCombatTimeout(String sessionId) {
+        CombatSession session = getSession(sessionId);
+        if (session == null || session.isFinished())
+            return;
+        combatTurnService.fleeCombatNoStat(session);
+        if (session.isFinished()) {
+            activeSessions.remove(sessionId);
+        }
+    }
+
     // ═══════════════════════════════════════════════════════════════════════
     // Room interactions — delegates to CombatRoomService
     // ═══════════════════════════════════════════════════════════════════════

@@ -1,6 +1,10 @@
 package generation.grimoire.scheduler;
 
+import generation.grimoire.entity.personnage.Personnage;
+import generation.grimoire.entity.pve.DungeonRunStat;
+import generation.grimoire.enumeration.DungeonOutcome;
 import generation.grimoire.model.pve.CombatSession;
+import generation.grimoire.repository.pve.DungeonRunStatRepository;
 import generation.grimoire.service.pve.CombatService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -14,6 +18,7 @@ import java.util.Map;
 public class CombatTimeoutScheduler {
 
     private final CombatService combatService;
+    private final DungeonRunStatRepository dungeonRunStatRepository;
 
     @Scheduled(fixedRate = 60000)
     public void checkAndTimeoutCombats() {
@@ -23,9 +28,36 @@ public class CombatTimeoutScheduler {
             CombatSession session = entry.getValue();
 
             if (session.getLastActivity().isBefore(threshold)) {
+                // Record TIMEOUT stat before applying flee penalties
+                try {
+                    int runNumber = dungeonRunStatRepository.findMaxRunNumberByDungeonId(session.getDungeonId()) + 1;
+                    for (Personnage p : session.getPlayers()) {
+                        DungeonRunStat stat = new DungeonRunStat();
+                        stat.setDungeonId(session.getDungeonId());
+                        stat.setDungeonName(session.getDonjonName());
+                        
+                        if (session.hasFled(p)) {
+                            stat.setOutcome(DungeonOutcome.FLEE);
+                        } else {
+                            stat.setOutcome(DungeonOutcome.TIMEOUT);
+                        }
+
+                        stat.setVoieName(p.getVoie() != null ? p.getVoie().getNom() : null);
+                        stat.setSpiritualiteName(p.getSpiritualite() != null ? p.getSpiritualite().getNom() : null);
+                        stat.setHeroLevel(p.getVoieLevel());
+                        stat.setMulti(session.isMulti());
+                        stat.setRunNumber(runNumber);
+                        stat.setDead(p.getHealthCurrent() <= 0);
+                        stat.setTimestamp(Instant.now());
+                        dungeonRunStatRepository.save(stat);
+                    }
+                } catch (Exception e) {
+                    System.err.println("[DungeonStats] Erreur enregistrement timeout: " + e.getMessage());
+                }
+
                 // Apply actual flee penalties
                 try {
-                    combatService.fleeCombat(session.getSessionId(), null);
+                    combatService.fleeCombatTimeout(session.getSessionId());
                 } catch (Exception e) {
                     System.err.println("Error applying flee penalties for timed out session " + session.getSessionId()
                             + ": " + e.getMessage());
@@ -44,3 +76,4 @@ public class CombatTimeoutScheduler {
         }
     }
 }
+
