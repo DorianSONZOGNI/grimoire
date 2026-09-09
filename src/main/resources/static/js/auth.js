@@ -211,6 +211,7 @@ window.checkAuthStatus = async function checkAuthStatus() {
             window.isAdmin = data.roles && data.roles.some(r => r.authority === 'ADMIN' || r.authority === 'ROLE_ADMIN');
             window.dispatchEvent(new Event('authLoaded'));
             container.innerHTML = `
+                ${window.isAdmin ? `<a href="/dungeon-stats.html" class="flex-center text-info no-underline text-sm mx-1 px-2 py-1 rounded transition-all" title="Statistiques PvE" onmouseover="this.style.background='rgba(56, 189, 248, 0.1)'" onmouseout="this.style.background='transparent'"><span class="material-symbols-outlined text-lg">insights</span></a>` : ''}
                 <a class="flex-center-gap font-medium text-success no-underline text-sm px-2 py-1 rounded transition-all" href="/secrets.html" onmouseover="this.style.background='rgba(16, 185, 129, 0.1)'" onmouseout="this.style.background='transparent'">
                     <span class="material-symbols-outlined text-lg">account_circle</span>
                     ${data.username}
