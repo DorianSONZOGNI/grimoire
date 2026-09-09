@@ -41,6 +41,10 @@ public class StatCalculator {
             case CASTER_HEALTH_CURRENT -> caster.getHealthCurrent();
             case CASTER_MANA_CURRENT -> caster.getManaCurrent();
             case TARGET_MANA_CURRENT -> target.getManaCurrent();
+            case CASTER_SPEED -> caster.getTotalSpeed();
+            case TARGET_SPEED -> target.getTotalSpeed();
+            case CASTER_CRIT -> caster.getTotalCrit();
+            case TARGET_CRIT -> target.getTotalCrit();
         };
     }
 

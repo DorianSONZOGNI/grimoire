@@ -18,7 +18,11 @@ public enum Source {
     CASTER_HEALTH_MISSING("PV Manq. Lanc."),
     TARGET_HEALTH_MISSING("PV Manq. Cib."),
     CASTER_HEALTH_CURRENT("PV Act. Lanc."),
-    TARGET_HEALTH_CURRENT("PV Act. Cib.");
+    TARGET_HEALTH_CURRENT("PV Act. Cib."),
+    CASTER_SPEED("Vit. Lanceur"),
+    TARGET_SPEED("Vit. Cible"),
+    CASTER_CRIT("Crit. Lanceur"),
+    TARGET_CRIT("Crit. Cible");
 
     private final String label;
 
