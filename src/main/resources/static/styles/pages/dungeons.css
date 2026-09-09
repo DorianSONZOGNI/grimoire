@@ -632,3 +632,118 @@
     transform: translateY(-2px);
     box-shadow: 0 6px 20px rgba(220, 38, 38, 0.5);
 }
+/* Co-op Lobby Overlay Styles */
+.lobby-waiting-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.85);
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    gap: 1.5rem;
+}
+
+.lobby-modal {
+    background: linear-gradient(135deg, #0f1629, #1a2744);
+    border: 1px solid rgba(99, 102, 241, 0.3);
+    border-radius: 1.5rem;
+    padding: 2.5rem 3rem;
+    max-width: 460px;
+    width: 90%;
+    text-align: center;
+}
+
+.lobby-modal-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+}
+
+.lobby-modal-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #e2e8f0;
+    margin-bottom: 0.5rem;
+}
+
+.lobby-modal-subtitle {
+    color: #94a3b8;
+    margin-bottom: 1.5rem;
+    font-size: 0.9rem;
+}
+
+.lobby-short-code-container {
+    background: rgba(99, 102, 241, 0.15);
+    border: 2px solid rgba(99, 102, 241, 0.5);
+    border-radius: 1rem;
+    padding: 1rem 2rem;
+    margin-bottom: 1.5rem;
+}
+
+.lobby-short-code {
+    font-size: 2.5rem;
+    font-weight: 800;
+    color: #818cf8;
+    letter-spacing: 0.3em;
+}
+
+.lobby-cost-warning {
+    color: #fca5a5;
+    font-size: 0.85rem;
+    margin-bottom: 1.5rem;
+    background: rgba(239, 68, 68, 0.1);
+    padding: 0.5rem;
+    border-radius: 0.5rem;
+    border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.lobby-waiting-status {
+    color: #64748b;
+    font-size: 0.8rem;
+    margin-bottom: 1.5rem;
+}
+
+.lobby-waiting-status .material-symbols-outlined {
+    font-size: 1rem;
+    vertical-align: middle;
+    animation: spin 1s linear infinite;
+}
+
+.btn-lobby-cancel {
+    background: rgba(239, 68, 68, 0.15);
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    color: #fca5a5;
+    padding: 0.6rem 1.5rem;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    font-size: 0.9rem;
+    transition: all 0.2s;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+}
+
+.btn-lobby-cancel:hover {
+    background: rgba(239, 68, 68, 0.25);
+}
+
+.btn-lobby-join {
+    background: rgba(14, 165, 233, 0.1);
+    border: 1px solid rgba(14, 165, 233, 0.25);
+    color: #38bdf8;
+    padding: 0.6rem 1.2rem;
+    border-radius: 0.75rem;
+    cursor: pointer;
+    font-size: 0.85rem;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.4rem;
+    height: fit-content;
+    transition: all 0.2s;
+}
+
+.btn-lobby-join:hover {
+    background: rgba(14, 165, 233, 0.2);
+}
+
