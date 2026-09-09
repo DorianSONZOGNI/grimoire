@@ -11,7 +11,8 @@ export function formatSrc(src) {
 }
 
 export function getSourceIconInfo(srcValue) {
-    const text = formatSrc(srcValue).toLowerCase();
+    const rawVal = typeof srcValue === 'object' ? (srcValue.value || srcValue.text || '') : srcValue;
+    const text = (formatSrc(rawVal) || '').toString().toLowerCase();
     const isLanceur = text.includes('lanceur') || text.includes('lanc') || text.includes('caster');
 
     if (text.includes('pv') || text.includes('health') || text.includes('vie')) {
