@@ -874,6 +874,7 @@ class CombatRoomService {
         handleRoomStart(session);
 
         if (session.isFinished()) {
+            combatTurnService.recordOutcome(session, generation.grimoire.enumeration.DungeonOutcome.VICTORY);
             session.addLog("Félicitations, vous avez terminé le donjon !");
             if (!session.getPlayers().isEmpty()) {
                 AppUser user = session.getPlayers().get(0).getUser();

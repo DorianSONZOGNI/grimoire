@@ -3,6 +3,8 @@ package generation.grimoire.service.pve;
 import generation.grimoire.entity.Spell;
 import generation.grimoire.entity.auth.AppUser;
 import generation.grimoire.entity.personnage.Personnage;
+import generation.grimoire.entity.pve.DungeonRunStat;
+import generation.grimoire.enumeration.DungeonOutcome;
 import generation.grimoire.enumeration.MonsterBehavior;
 import generation.grimoire.enumeration.MonsterType;
 import generation.grimoire.enumeration.SpellCastingType;
@@ -12,6 +14,7 @@ import generation.grimoire.model.pve.InitiativeEntry;
 import generation.grimoire.repository.PersonnageRepository;
 import generation.grimoire.repository.SpellRepository;
 import generation.grimoire.repository.auth.UserRepository;
+import generation.grimoire.repository.pve.DungeonRunStatRepository;
 import generation.grimoire.service.SpellService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -34,6 +37,7 @@ class CombatTurnService {
     private final SpellRepository spellRepository;
     private final SpellService spellService;
     private final SpellAvailabilityService spellAvailabilityService;
+    private final DungeonRunStatRepository dungeonRunStatRepository;
 
     CombatSession endTurn(CombatSession session) {
         if (session.getCurrentRoom().getType() != generation.grimoire.enumeration.RoomType.COMBAT
@@ -366,6 +370,7 @@ class CombatTurnService {
             session.setFinished(true);
             session.setPlayerWon(false);
             session.addLog("Toute l'équipe a été vaincue...");
+            recordOutcome(session, DungeonOutcome.DEFEAT);
 
             // Defeat penalty: 4 gold per room (half of flee penalty)
             int roomsCount = (session.getDonjon() != null && session.getDonjon().getSalles() != null)
@@ -436,6 +441,51 @@ class CombatTurnService {
             }
         }
 
+        int roomsCount = (session.getDonjon() != null && session.getDonjon().getSalles() != null)
+                ? session.getDonjon().getSalles().size()
+                : 1;
+        int penaltyGold = 10 * roomsCount;
+        int penaltyXpTotal = 10 * roomsCount;
+        int nbHeroes = Math.max(1, session.getPlayers().size());
+        int penaltyXpPerPlayer = penaltyXpTotal / nbHeroes;
+
+        boolean goldDeducted = false;
+
+        for (Personnage p : session.getPlayers()) {
+            p.resetCombatState();
+            Long playerId = p.getId();
+
+            if (playerId == null) {
+                continue;
+            }
+
+            Personnage dbPersonnage = personnageRepository.findById(playerId).orElse(null);
+
+            if (dbPersonnage != null) {
+                dbPersonnage.setExperience(Math.max(0, dbPersonnage.getExperience() - penaltyXpPerPlayer));
+                personnageRepository.save(dbPersonnage);
+
+                if (!goldDeducted) {
+                    AppUser user = dbPersonnage.getUser();
+                    if (user != null) {
+                        user.setMonnaie(Math.max(0, user.getMonnaie() - penaltyGold));
+                        userRepository.save(user);
+                        goldDeducted = true;
+                    }
+                }
+
+                p.setExperience(dbPersonnage.getExperience());
+            }
+        }
+
+        session.setFinished(true);
+        session.setPlayerWon(false);
+        recordOutcome(session, DungeonOutcome.FLEE);
+    }
+
+    /** Flee without recording stat — used by timeout scheduler which already recorded TIMEOUT. */
+    @Transactional
+    void fleeCombatNoStat(CombatSession session) {
         int roomsCount = (session.getDonjon() != null && session.getDonjon().getSalles() != null)
                 ? session.getDonjon().getSalles().size()
                 : 1;
@@ -767,5 +817,33 @@ class CombatTurnService {
             extraRoll = rnd.nextInt(speed - 5) + 1;
         }
         return baseRoll + flatBonus + extraRoll;
+    }
+
+    void recordOutcome(CombatSession session, DungeonOutcome outcome) {
+        try {
+            int runNumber = dungeonRunStatRepository.findMaxRunNumberByDungeonId(session.getDungeonId()) + 1;
+            for (Personnage p : session.getPlayers()) {
+                DungeonRunStat stat = new DungeonRunStat();
+                stat.setDungeonId(session.getDungeonId());
+                stat.setDungeonName(session.getDonjonName());
+                
+                if (session.hasFled(p)) {
+                    stat.setOutcome(DungeonOutcome.FLEE);
+                } else {
+                    stat.setOutcome(outcome);
+                }
+
+                stat.setVoieName(p.getVoie() != null ? p.getVoie().getNom() : null);
+                stat.setSpiritualiteName(p.getSpiritualite() != null ? p.getSpiritualite().getNom() : null);
+                stat.setHeroLevel(p.getVoieLevel());
+                stat.setMulti(session.isMulti());
+                stat.setRunNumber(runNumber);
+                stat.setDead(p.getHealthCurrent() <= 0);
+                stat.setTimestamp(java.time.Instant.now());
+                dungeonRunStatRepository.save(stat);
+            }
+        } catch (Exception e) {
+            System.err.println("[DungeonStats] Erreur enregistrement stat: " + e.getMessage());
+        }
     }
 }
