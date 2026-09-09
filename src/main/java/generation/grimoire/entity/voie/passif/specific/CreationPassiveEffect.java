@@ -122,7 +122,7 @@ public class CreationPassiveEffect extends VoiePassiveEffect {
                 if (shieldDuration <= 0) {
                     shieldDuration = 3;
                 }
-                int shieldAmount = (int) (event.getManaPaid() * 0.3);
+                int shieldAmount = (int) (event.getManaPaid() * 0.5);
                 caster.addShield(shieldAmount, shieldDuration, "Création");
             }
         }
