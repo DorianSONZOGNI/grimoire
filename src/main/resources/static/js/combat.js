@@ -1,5 +1,5 @@
 
-import * as ui from './ui.js?v=3';
+import * as ui from './ui.js?v=4';
 import { getSpellEffectsSummaryHtml } from './grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from './filters.js';
 
@@ -3937,26 +3937,34 @@ function renderSpellCard(sp) {
     }
 
     const getSrcIcon = (src) => {
-        const s = src || '';
-        if (s.includes('MANA')) return `<span class="material-symbols-outlined align-middle" title="${ui.formatSrc(s)}" style="font-size: 0.95rem; color: #38bdf8;">water_drop</span>`;
-        if (s.includes('HEALTH') || s.includes('PV')) return `<span class="material-symbols-outlined align-middle" title="${ui.formatSrc(s)}" style="font-size: 0.95rem; color: #f43f5e;">bloodtype</span>`;
-        if (s.includes('POWER') || s.includes('Puiss')) return `<span class="material-symbols-outlined align-middle" title="${ui.formatSrc(s)}" style="font-size: 0.95rem; color: #a855f7;">auto_awesome</span>`;
-        if (s.includes('PHYSICAL') || s.includes('Force Phy')) return `<span class="material-symbols-outlined align-middle" title="${ui.formatSrc(s)}" style="font-size: 0.95rem; color: #f43f5e;">fitness_center</span>`;
-        return `(${ui.formatSrc(s)})`;
+        const info = ui.getSourceIconInfo(src);
+        return `<span class="material-symbols-outlined align-middle" title="${ui.formatSrc(src || '')}" style="font-size: 0.95rem; color: ${info.color};">${info.icon}</span>`;
     };
 
     let costDetailsHtml = [];
     if (sp.manaCost > 0 || sp.percentManaCost > 0) {
-        costDetailsHtml.push(`<span style="display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem; color: #38bdf8;" title="Mana">water_drop</span><span style="border-bottom: 1px solid rgba(56, 189, 248, 0.5); padding-bottom: 0.05rem;">${sp.manaCost}${sp.percentManaCost > 0 ? ` + ${sp.percentManaCost}% ${getSrcIcon(sp.percentManaCostSource || 'CASTER_MANA_MAX')}` : ''}</span></span>`);
+        let text = '';
+        if (sp.manaCost > 0 && sp.percentManaCost > 0) text = `<span>${sp.manaCost} + ${sp.percentManaCost}%</span>${getSrcIcon(sp.percentManaCostSource || 'CASTER_MANA_MAX')}`;
+        else if (sp.manaCost > 0) text = `<span>${sp.manaCost}</span>`;
+        else text = `<span>${sp.percentManaCost}%</span>${getSrcIcon(sp.percentManaCostSource || 'CASTER_MANA_MAX')}`;
+        costDetailsHtml.push(`<span style="display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem; color: #38bdf8;" title="Mana">water_drop</span><span style="display:inline-flex; align-items:center; gap:0.2rem; border-bottom: 1px solid rgba(56, 189, 248, 0.5); padding-bottom: 0.05rem; white-space:nowrap;">${text}</span></span>`);
     }
     if (sp.healCost > 0 || sp.percentHealCost > 0) {
-        costDetailsHtml.push(`<span style="display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem; color: #f43f5e;" title="PV">bloodtype</span><span style="border-bottom: 1px solid rgba(244, 63, 94, 0.5); padding-bottom: 0.05rem;">${sp.healCost}${sp.percentHealCost > 0 ? ` + ${sp.percentHealCost}% ${getSrcIcon(sp.percentHealCostSource || 'CASTER_HEALTH_MAX')}` : ''}</span></span>`);
+        let text = '';
+        if (sp.healCost > 0 && sp.percentHealCost > 0) text = `<span>${sp.healCost} + ${sp.percentHealCost}%</span>${getSrcIcon(sp.percentHealCostSource || 'CASTER_HEALTH_MAX')}`;
+        else if (sp.healCost > 0) text = `<span>${sp.healCost}</span>`;
+        else text = `<span>${sp.percentHealCost}%</span>${getSrcIcon(sp.percentHealCostSource || 'CASTER_HEALTH_MAX')}`;
+        costDetailsHtml.push(`<span style="display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem; color: #f43f5e;" title="PV">bloodtype</span><span style="display:inline-flex; align-items:center; gap:0.2rem; border-bottom: 1px solid rgba(244, 63, 94, 0.5); padding-bottom: 0.05rem; white-space:nowrap;">${text}</span></span>`);
     }
     if (sp.heatCost > 0 || sp.percentHeatCost > 0) {
-        costDetailsHtml.push(`<span style="display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem; color: #f97316;" title="Chaleur">local_fire_department</span><span style="border-bottom: 1px solid rgba(249, 115, 22, 0.5); padding-bottom: 0.05rem;">${sp.heatCost}${sp.percentHeatCost > 0 ? ` + ${sp.percentHeatCost}%` : ''}</span></span>`);
+        let text = '';
+        if (sp.heatCost > 0 && sp.percentHeatCost > 0) text = `<span>${sp.heatCost} + ${sp.percentHeatCost}%</span>`;
+        else if (sp.heatCost > 0) text = `<span>${sp.heatCost}</span>`;
+        else text = `<span>${sp.percentHeatCost}%</span>`;
+        costDetailsHtml.push(`<span style="display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem; color: #f97316;" title="Chaleur">local_fire_department</span><span style="display:inline-flex; align-items:center; gap:0.2rem; border-bottom: 1px solid rgba(249, 115, 22, 0.5); padding-bottom: 0.05rem; white-space:nowrap;">${text}</span></span>`);
     }
     if (sp.seedCost > 0) {
-        costDetailsHtml.push(`<span style="display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem; color: #6ee7b7;" title="Graines">yard</span><span style="border-bottom: 1px solid rgba(110, 231, 183, 0.5); padding-bottom: 0.05rem;">${sp.seedCost}</span></span>`);
+        costDetailsHtml.push(`<span style="display:inline-flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem; color: #6ee7b7;" title="Graines">yard</span><span style="display:inline-flex; align-items:center; gap:0.2rem; border-bottom: 1px solid rgba(110, 231, 183, 0.5); padding-bottom: 0.05rem; white-space:nowrap;"><span>${sp.seedCost}</span></span></span>`);
     }
     let costDetails = costDetailsHtml.join('<span style="color:rgba(255,255,255,0.2); margin:0 0.2rem;">|</span>');
     if (costDetailsHtml.length === 0) costDetails = '';

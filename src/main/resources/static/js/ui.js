@@ -10,6 +10,36 @@ export function formatSrc(src) {
     return GLOBAL_SRC_LABELS[src] || src;
 }
 
+export function getSourceIconInfo(srcValue) {
+    const text = formatSrc(srcValue).toLowerCase();
+    const isLanceur = text.includes('lanceur') || text.includes('lanc') || text.includes('caster');
+
+    if (text.includes('pv') || text.includes('health') || text.includes('vie')) {
+        if (text.includes('max')) return { icon: 'favorite', color: isLanceur ? '#10b981' : '#f43f5e' };
+        if (text.includes('act') || text.includes('curr') || text.includes('tour')) return { icon: 'monitor_heart', color: isLanceur ? '#34d399' : '#ec4899' };
+        if (text.includes('manq') || text.includes('miss')) return { icon: 'heart_broken', color: isLanceur ? '#059669' : '#b91c1c' };
+        return { icon: 'favorite', color: isLanceur ? '#10b981' : '#f43f5e' };
+    }
+
+    if (text.includes('mana')) {
+        const manaColor = isLanceur ? '#1d4ed8' : '#22d3ee';
+        if (text.includes('max')) return { icon: 'water_drop', color: manaColor };
+        if (text.includes('act') || text.includes('curr') || text.includes('tour')) return { icon: 'waves', color: manaColor };
+        if (text.includes('manq') || text.includes('miss')) return { icon: 'opacity', color: manaColor };
+        return { icon: 'water_drop', color: manaColor };
+    }
+
+    if (text.includes('force phy') || text.includes('physical')) {
+        return { icon: 'fitness_center', color: isLanceur ? '#f43f5e' : '#f97316' };
+    }
+
+    if (text.includes('puiss') || text.includes('power')) {
+        return { icon: 'auto_awesome', color: isLanceur ? '#a855f7' : '#fb923c' };
+    }
+
+    return { icon: 'stars', color: '#8b5cf6' };
+}
+
 export function updateDisplayModeUI() {
     const container = document.getElementById('createdSpellsContainer');
     const btnText = document.getElementById('toggleDisplayText');
@@ -331,41 +361,7 @@ export function makeCustomSelect(selectIdOrElement) {
             return { icon: 'star', color: '#94a3b8' };
         }
         if (id && id.toLowerCase().includes('source')) {
-            const t = text.toLowerCase();
-            const isLanceur = t.includes('lanceur') || t.includes('lanc') || t.includes('caster');
-
-            if (t.includes('pv') || t.includes('health') || t.includes('vie')) {
-                if (t.includes('max')) {
-                    return { icon: 'favorite', color: isLanceur ? '#10b981' : '#f43f5e' };
-                } else if (t.includes('act') || t.includes('curr') || t.includes('tour')) {
-                    return { icon: 'monitor_heart', color: isLanceur ? '#34d399' : '#ec4899' };
-                } else if (t.includes('manq') || t.includes('miss')) {
-                    return { icon: 'heart_broken', color: isLanceur ? '#059669' : '#b91c1c' };
-                }
-                return { icon: 'favorite', color: isLanceur ? '#10b981' : '#f43f5e' };
-            }
-
-            if (t.includes('mana')) {
-                const manaColor = isLanceur ? '#1d4ed8' : '#22d3ee';
-                if (t.includes('max')) {
-                    return { icon: 'water_drop', color: manaColor };
-                } else if (t.includes('act') || t.includes('curr')) {
-                    return { icon: 'waves', color: manaColor };
-                } else if (t.includes('manq') || t.includes('miss')) {
-                    return { icon: 'opacity', color: manaColor };
-                }
-                return { icon: 'water_drop', color: manaColor };
-            }
-
-            if (t.includes('force phy') || t.includes('physical')) {
-                return { icon: 'fitness_center', color: isLanceur ? '#f43f5e' : '#f97316' };
-            }
-
-            if (t.includes('puiss') || t.includes('power')) {
-                return { icon: 'auto_awesome', color: isLanceur ? '#a855f7' : '#fb923c' };
-            }
-
-            return { icon: 'stars', color: '#8b5cf6' };
+            return getSourceIconInfo(optionOrText);
         }
         return { icon: 'radio_button_unchecked', color: 'var(--text-muted)' };
     };
