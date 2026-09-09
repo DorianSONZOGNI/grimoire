@@ -37,8 +37,9 @@ export async function getMeta() {
     return res.json();
 }
 
-export async function getSpells() {
-    const res = await globalFetch('/api/spells-editor');
+export async function getSpells(forceRefresh = false) {
+    const url = forceRefresh ? `/api/spells-editor?t=${new Date().getTime()}` : '/api/spells-editor';
+    const res = await globalFetch(url);
     if (!res.ok) throw new Error("Failed to fetch spells");
     return res.json();
 }
@@ -328,10 +329,10 @@ export async function submitSpell() {
     }
 }
 
-export async function loadSpells() {
+export async function loadSpells(forceRefresh = false) {
     const container = document.getElementById('createdSpellsContainer');
     try {
-        const spells = await getSpells();
+        const spells = await getSpells(forceRefresh);
         state.loadedSpells = spells;
         renderFilteredSpells();
     } catch (err) {
