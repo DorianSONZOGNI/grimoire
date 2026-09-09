@@ -43,20 +43,20 @@ window.EFFECT_DESCRIPTIONS = {
 };
 
 export const STAT_DEFS = [
-    { key: 'bonusHealthMax', label: 'PV', icon: 'favorite', color: '#ec4899' },
-    { key: 'bonusManaMax', label: 'Mana', icon: 'water_drop', color: '#38bdf8' },
-    { key: 'bonusPower', label: 'Pui', icon: 'auto_awesome', color: '#a855f7' },
-    { key: 'bonusStrength', label: 'For', icon: 'fitness_center', color: '#f43f5e' },
-    { key: 'bonusArmor', label: 'Arm', icon: 'shield', color: '#3b82f6' },
-    { key: 'bonusResistance', label: 'Rés', icon: 'shield', color: '#10b981' },
-    { key: 'bonusSpeed', label: 'Vit', icon: 'bolt', color: '#f59e0b' },
-    { key: 'bonusCrit', label: 'Crit', icon: 'gps_fixed', color: '#ef4444' },
-    { key: 'regenHealthPerTurn', label: 'PV/t', icon: 'healing', color: '#10b981' },
-    { key: 'regenManaPerTurn', label: 'Mana/t', icon: 'cyclone', color: '#38bdf8' },
-    { key: 'consumableHpPercent', label: 'PV Max', icon: 'favorite', color: '#ec4899', isPercent: true },
-    { key: 'consumableManaPercent', label: 'Mana Max', icon: 'water_drop', color: '#38bdf8', isPercent: true },
-    { key: 'consumableMissingHpPercent', label: 'PV Manq', icon: 'healing', color: '#f43f5e', isPercent: true },
-    { key: 'consumableMissingManaPercent', label: 'Mana Manq', icon: 'cyclone', color: '#a855f7', isPercent: true }
+    { key: 'bonusHealthMax', label: 'PV', icon: 'favorite', color: 'var(--secondary)' },
+    { key: 'bonusManaMax', label: 'Mana', icon: 'water_drop', color: 'var(--mana)' },
+    { key: 'bonusPower', label: 'Pui', icon: 'auto_awesome', color: 'var(--magic)' },
+    { key: 'bonusStrength', label: 'For', icon: 'fitness_center', color: 'var(--danger)' },
+    { key: 'bonusArmor', label: 'Arm', icon: 'shield', color: 'var(--accent)' },
+    { key: 'bonusResistance', label: 'Rés', icon: 'shield', color: 'var(--success)' },
+    { key: 'bonusSpeed', label: 'Vit', icon: 'bolt', color: 'var(--warning, #f59e0b)' },
+    { key: 'bonusCrit', label: 'Crit', icon: 'gps_fixed', color: 'var(--crit)' },
+    { key: 'regenHealthPerTurn', label: 'PV/t', icon: 'healing', color: 'var(--success)' },
+    { key: 'regenManaPerTurn', label: 'Mana/t', icon: 'cyclone', color: 'var(--mana)' },
+    { key: 'consumableHpPercent', label: 'PV Max', icon: 'favorite', color: 'var(--secondary)', isPercent: true },
+    { key: 'consumableManaPercent', label: 'Mana Max', icon: 'water_drop', color: 'var(--mana)', isPercent: true },
+    { key: 'consumableMissingHpPercent', label: 'PV Manq', icon: 'healing', color: 'var(--danger)', isPercent: true },
+    { key: 'consumableMissingManaPercent', label: 'Mana Manq', icon: 'cyclone', color: 'var(--magic)', isPercent: true }
 ];
 
 window.STAT_DEFS = STAT_DEFS;
@@ -83,15 +83,15 @@ export async function initMeta() {
             window.SLOT_LABELS = {};
             if (allMeta.equipmentSlots) {
                 allMeta.equipmentSlots.forEach(s => {
-                    window.SLOT_LABELS[s.name] = { label: s.label, icon: s.icon, color: s.color || '#ef4444', extraClass: s.extraClass || '' };
+                    window.SLOT_LABELS[s.name] = { label: s.label, icon: s.icon, color: s.color || 'var(--danger, #ef4444)', extraClass: s.extraClass || '' };
                 });
-                window.SLOT_LABELS['ANOMALIE'] = { label: 'Anomalie', icon: 'auto_awesome', color: '#f59e0b', extraClass: '' };
+                window.SLOT_LABELS['ANOMALIE'] = { label: 'Anomalie', icon: 'auto_awesome', color: 'var(--warning, #f59e0b)', extraClass: '' };
             }
 
             window.CONSUMABLE_CATEGORIES = {};
             if (allMeta.consumableCategories) {
                 allMeta.consumableCategories.forEach(c => {
-                    window.CONSUMABLE_CATEGORIES[c.name] = { label: c.label, icon: c.icon, color: c.color || '#854c4c' };
+                    window.CONSUMABLE_CATEGORIES[c.name] = { label: c.label, icon: c.icon, color: c.color || 'var(--slot-consommable)' };
                 });
             }
 
@@ -106,7 +106,7 @@ export async function initMeta() {
             let rarityStyles = '';
             if (allMeta.equipmentRarities) {
                 allMeta.equipmentRarities.forEach(r => {
-                    let color = r.color || '#fbbf24';
+                    let color = r.color || 'var(--everyone-color, #fbbf24)';
                     window.RARITY_COLORS[r.name] = color;
 
                     let weight = 600;
