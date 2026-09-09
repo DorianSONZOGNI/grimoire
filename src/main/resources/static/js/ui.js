@@ -38,6 +38,14 @@ export function getSourceIconInfo(srcValue) {
         return { icon: 'auto_awesome', color: isLanceur ? '#a855f7' : '#fb923c' };
     }
 
+    if (text.includes('vit') || text.includes('speed')) {
+        return { icon: 'speed', color: isLanceur ? '#fcd34d' : '#f59e0b' };
+    }
+
+    if (text.includes('crit')) {
+        return { icon: 'crisis_alert', color: isLanceur ? '#f87171' : '#dc2626' };
+    }
+
     return { icon: 'stars', color: '#8b5cf6' };
 }
 
