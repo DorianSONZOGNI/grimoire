@@ -728,7 +728,7 @@ class CombatRoomService {
             }
         }
 
-        if (specialItemPriceName != null && !specialItemPriceName.trim().isEmpty()) {
+        if (specialItemPriceName != null && !specialItemPriceName.trim().isEmpty() && !specialItemPriceName.trim().equalsIgnoreCase("null")) {
             if (user != null) {
                 List<Anomalie> userAnomalies = anomalieRepository.findByOwnerUsername(user.getUsername());
                 Anomalie toDestroy = userAnomalies.stream()
@@ -748,12 +748,12 @@ class CombatRoomService {
             user.setMonnaie(user.getMonnaie() - goldPrice);
             userRepository.save(user);
         }
-        if (specialItemPriceName != null && !specialItemPriceName.trim().isEmpty()) {
+        if (specialItemPriceName != null && !specialItemPriceName.trim().isEmpty() && !specialItemPriceName.trim().equalsIgnoreCase("null")) {
             acheteur.removeSpecialItem(specialItemPriceName, 1);
         }
 
         // Give item
-        if (entry.getSpecialItemName() != null && !entry.getSpecialItemName().trim().isEmpty()) {
+        if (entry.getSpecialItemName() != null && !entry.getSpecialItemName().trim().isEmpty() && !entry.getSpecialItemName().trim().equalsIgnoreCase("null")) {
             String itemName = entry.getSpecialItemName();
             acheteur.addSpecialItem(itemName, 1);
 
