@@ -275,6 +275,7 @@ function updateRunsTable(runs) {
         tr.innerHTML = `
             <td class="text-muted" style="white-space:nowrap">${date}</td>
             <td class="font-medium text-white">${r.dungeonName}</td>
+            <td class="text-white">${r.accountName || '-'}</td>
             <td>
                 <div class="text-white">${r.voieName || '-'}</div>
                 <div class="text-xs text-info">${r.spiritualiteName || '-'}</div>

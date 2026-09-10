@@ -21,4 +21,5 @@ public class DungeonRunStatDto {
     private int runNumber;
     private boolean isDead;
     private Instant timestamp;
+    private String accountName;
 }
