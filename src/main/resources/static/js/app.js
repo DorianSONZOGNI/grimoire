@@ -28,11 +28,11 @@ window.addEventListener('authLoaded', async () => {
 
     const user = window.currentUser;
 
-    if (!api.isAdmin(user)) {
+    if (api.isAdmin(user)) {
         const forgePanel = document.getElementById('spellForgePanel');
-        if (forgePanel) forgePanel.style.display = 'none';
+        if (forgePanel) forgePanel.style.display = '';
         const mainEl = document.querySelector('main');
-        if (mainEl) mainEl.style.gridTemplateColumns = '1fr';
+        if (mainEl) mainEl.style.gridTemplateColumns = '';
     }
 
     await api.loadSpells();

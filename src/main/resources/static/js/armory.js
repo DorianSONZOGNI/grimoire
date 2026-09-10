@@ -1,18 +1,18 @@
 // ===== Armory Page JavaScript =====
 
 function applyRbac() {
-    if (window.currentUser !== undefined && !window.isAdmin) {
+    if (window.isAdmin) {
         const baseStats = document.getElementById('baseStatsSection');
-        if (baseStats) baseStats.classList.add('hidden');
+        if (baseStats) baseStats.classList.remove('hidden');
 
         const xpField = document.getElementById('charExperience');
-        if (xpField && xpField.parentElement) xpField.parentElement.classList.add('hidden');
+        if (xpField && xpField.parentElement) xpField.parentElement.classList.remove('hidden');
 
         const spiritExpField = document.getElementById('charSpiritExperience');
-        if (spiritExpField && spiritExpField.parentElement) spiritExpField.parentElement.classList.add('hidden');
+        if (spiritExpField && spiritExpField.parentElement) spiritExpField.parentElement.classList.remove('hidden');
 
         const eqCreateSection = document.querySelector('.equip-create-section');
-        if (eqCreateSection) eqCreateSection.classList.add('hidden');
+        if (eqCreateSection) eqCreateSection.classList.remove('hidden');
     }
 
     // Re-render characters to apply button visibility rules
