@@ -5,8 +5,8 @@ import { currentSpellsTab, initiateCombatCast, confirmCombatCast, cancelCombatCa
 import { endTurn, nextRoom, openStrangeDoor, acceptAlteration, useRope, buyMerchantItem, openBuyModal, closeBuyModal, addLootedConsumable, openChest } from './combat-actions.js';
 import { loadAnomaliesCombat, resumeCombat, startCombat } from './combat-init.js';
 import * as ui from '../ui.js?v=4';
-import { getSpellEffectsSummaryHtml } from '../grimoire.js';
-import { getVoieButtonColor, getSpiritButtonColor } from '../filters.js';
+import { getSpellEffectsSummaryHtml } from '../pages/grimoire.js';
+import { getVoieButtonColor, getSpiritButtonColor } from '../utils/filters.js';
 
 
 if (!window.allAnomaliesCombat || !Array.isArray(window.allAnomaliesCombat)) {

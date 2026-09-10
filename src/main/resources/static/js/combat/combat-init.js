@@ -2,8 +2,8 @@ import { pageState } from './combat-state.js';
 import { initMultiSSE } from './combat-socket.js';
 import { updateUI } from './combat-ui.js';
 import * as ui from '../ui.js?v=4';
-import { getSpellEffectsSummaryHtml } from '../grimoire.js';
-import { getVoieButtonColor, getSpiritButtonColor } from '../filters.js';
+import { getSpellEffectsSummaryHtml } from '../pages/grimoire.js';
+import { getVoieButtonColor, getSpiritButtonColor } from '../utils/filters.js';
 
 
 export async function loadAnomaliesCombat() {

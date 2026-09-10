@@ -1,5 +1,5 @@
 import * as ui from '../ui.js?v=4';
-import { getSpellEffectsSummaryHtml } from '../grimoire.js';
+import { getSpellEffectsSummaryHtml } from '../pages/grimoire.js';
 
 
 export async function loadAnomalies() {
