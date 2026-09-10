@@ -97,6 +97,11 @@ export function toggleFilterVoie(event, id, hexColor) {
     }
     renderOriginButtons();
     renderFilteredSpells();
+    
+    const container = document.getElementById('createdSpellsContainer');
+    if (container) {
+        container.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 }
 
 export function toggleFilterSpirit(event, id, hexColor) {
@@ -111,6 +116,11 @@ export function toggleFilterSpirit(event, id, hexColor) {
     }
     renderOriginButtons();
     renderFilteredSpells();
+    
+    const container = document.getElementById('createdSpellsContainer');
+    if (container) {
+        container.scrollTo({ top: 0, behavior: 'smooth' });
+    }
 }
 
 
