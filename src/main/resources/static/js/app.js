@@ -1,11 +1,11 @@
-import { state } from './state.js';
-import * as constants from './constants.js';
-import * as api from './api.js';
-import * as particles from './particles.js';
-import * as animations from './animations.js';
-import * as filters from './filters.js';
-import * as grimoire from './grimoire.js';
-import * as forge from './forge.js';
+import { state } from './utils/state.js';
+import * as constants from './utils/constants.js';
+import * as api from './services/api.js';
+import * as particles from './components/particles.js';
+import * as animations from './components/animations.js';
+import * as filters from './utils/filters.js';
+import * as grimoire from './pages/grimoire.js';
+import * as forge from './pages/forge.js';
 import * as ui from './ui.js';
 
 window.state = state;
@@ -28,11 +28,11 @@ window.addEventListener('authLoaded', async () => {
 
     const user = window.currentUser;
 
-    if (!api.isAdmin(user)) {
+    if (api.isAdmin(user)) {
         const forgePanel = document.getElementById('spellForgePanel');
-        if (forgePanel) forgePanel.style.display = 'none';
+        if (forgePanel) forgePanel.style.display = '';
         const mainEl = document.querySelector('main');
-        if (mainEl) mainEl.style.gridTemplateColumns = '1fr';
+        if (mainEl) mainEl.style.gridTemplateColumns = '';
     }
 
     await api.loadSpells();

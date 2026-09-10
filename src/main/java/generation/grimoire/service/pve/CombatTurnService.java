@@ -840,6 +840,7 @@ class CombatTurnService {
                 stat.setRunNumber(runNumber);
                 stat.setDead(p.getHealthCurrent() <= 0);
                 stat.setTimestamp(java.time.Instant.now());
+                stat.setAccountName(p.getOwnerUsername());
                 dungeonRunStatRepository.save(stat);
             }
         } catch (Exception e) {

@@ -243,7 +243,7 @@ public class Personnage {
     }
 
     @com.fasterxml.jackson.annotation.JsonIgnore
-    @OneToMany(mappedBy = "personnage", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "personnage", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.LAZY)
 
     private List<generation.grimoire.entity.Equipment> equipments = new ArrayList<>();
 

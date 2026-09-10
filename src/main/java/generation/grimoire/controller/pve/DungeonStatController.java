@@ -45,7 +45,8 @@ public class DungeonStatController {
                     stat.isMulti(),
                     stat.getRunNumber(),
                     stat.isDead(),
-                    stat.getTimestamp()
+                    stat.getTimestamp(),
+                    stat.getAccountName()
             );
             runDtos.add(dto);
 

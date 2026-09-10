@@ -49,6 +49,7 @@ public class CombatTimeoutScheduler {
                         stat.setRunNumber(runNumber);
                         stat.setDead(p.getHealthCurrent() <= 0);
                         stat.setTimestamp(Instant.now());
+                        stat.setAccountName(p.getOwnerUsername());
                         dungeonRunStatRepository.save(stat);
                     }
                 } catch (Exception e) {

@@ -39,4 +39,6 @@ public class DungeonRunStat {
     private boolean isDead;
 
     private Instant timestamp;
+
+    private String accountName;
 }
