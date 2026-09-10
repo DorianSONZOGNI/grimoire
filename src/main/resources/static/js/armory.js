@@ -466,19 +466,56 @@ function renderPersonnages() {
                     return slotOrder.indexOf(sNameA) - slotOrder.indexOf(sNameB);
                 }).map(eq => {
                     const slotInfo = getSlotInfo(eq);
-                    const statsStr = STAT_DEFS
+                    
+                    const eqStatsHtml = STAT_DEFS
                         .filter(s => eq[s.key] && eq[s.key] !== 0)
-                        .map(s => `${eq[s.key] > 0 ? '+' : ''}${eq[s.key]}${s.isPercent ? '%' : ''} ${s.label}`)
-                        .join(', ');
+                        .map(s => {
+                            const val = eq[s.key];
+                            const isMalus = val < 0;
+                            const sign = val > 0 ? '+' : '';
+                            const suffix = s.isPercent ? '%' : '';
+                            return `<div class="eq-stat-row ${isMalus ? 'malus' : ''}" title="${s.label}">
+                                <div class="flex-center-gap">
+                                    <span class="material-symbols-outlined text-sm" style="color:${isMalus ? '#ef4444' : s.color};">${s.icon}</span>
+                                    ${s.label}
+                                </div>
+                                <span class="font-bold">${sign}${val}${suffix}</span>
+                            </div>`;
+                        }).join('');
+
+                    let eqSpecialEffectHtml = '';
+                    if (eq.specialEffect && eq.specialEffect !== 'NONE') {
+                        const label = window.EFFECT_LABELS[eq.specialEffect] || eq.specialEffect;
+                        const isCursed = eq.specialEffect.startsWith('CURSED_');
+                        const icon = isCursed ? 'skull' : 'auto_awesome';
+                        const color = isCursed ? '#9b2d2d' : '#c084fc';
+                        const bg = isCursed ? 'rgba(156, 163, 175, 0.15)' : 'rgba(168, 85, 247, 0.1)';
+                        const infoIcon = window.getEffectInfoIconHtml ? window.getEffectInfoIconHtml(eq.specialEffect) : '';
+                        eqSpecialEffectHtml = `<div class="eq-stat-row ${isCursed ? 'border-cursed' : ''}" style="background: ${bg}; color: ${color}; gap: 0.5rem;">
+                            <div class="flex-center-gap">
+                                <span class="material-symbols-outlined text-sm">${icon}</span>
+                                <span>${label} <span class="font-bold">${eq.specialEffectValue}</span></span>
+                            </div>
+                            ${infoIcon}
+                        </div>`;
+                    }
+
                     const rarityName = getRarityName(eq.rarity);
                     const rarityClass = rarityName ? `rarity-${rarityName}` : '';
                     let effectStar = '';
                     if (eq.specialEffect && eq.specialEffect !== 'NONE') {
                         effectStar = `<span class="material-symbols-outlined text-xs text-purple ml-1">auto_awesome</span>`;
                     }
-                    return `<span class="char-equip-chip ${rarityClass}" title="${statsStr || 'Aucun bonus'}">
+                    return `<span class="char-equip-chip ${rarityClass}" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" style="cursor: pointer;">
                         <span class="material-symbols-outlined ${slotInfo.extraClass || ''} text-sm" style="color: ${slotInfo.color};">${slotInfo.icon}</span>
                         ${eq.name}${effectStar}
+                        <template class="tooltip-data">
+                            <div class="${rarityClass} font-bold mb-1 text-base">${eq.name}</div>
+                            <div class="eq-stats-container mt-2">
+                                ${eqStatsHtml || '<div class="text-muted text-sm font-italic">Aucun bonus</div>'}
+                                ${eqSpecialEffectHtml}
+                            </div>
+                        </template>
                     </span>`;
                 }).join('') +
                 `</div>`;

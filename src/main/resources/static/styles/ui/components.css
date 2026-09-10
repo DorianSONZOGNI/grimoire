@@ -1077,8 +1077,25 @@
     color: #f43f5e;
 }
 
-.badge-danger { background: rgba(239, 68, 68, 0.15); color: #ef4444; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 600; font-size: 0.75rem; }
-.badge-violet { background: rgba(139, 92, 246, 0.15); color: #8b5cf6; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(139, 92, 246, 0.3); font-weight: 600; font-size: 0.75rem; }
+.badge-danger {
+    background: rgba(239, 68, 68, 0.15);
+    color: #ef4444;
+    padding: 0.15rem 0.5rem;
+    border-radius: 6px;
+    border: 1px solid rgba(239, 68, 68, 0.3);
+    font-weight: 600;
+    font-size: 0.75rem;
+}
+
+.badge-violet {
+    background: rgba(139, 92, 246, 0.15);
+    color: #8b5cf6;
+    padding: 0.15rem 0.5rem;
+    border-radius: 6px;
+    border: 1px solid rgba(139, 92, 246, 0.3);
+    font-weight: 600;
+    font-size: 0.75rem;
+}
 
 .btn-icon {
     background: transparent;
@@ -1129,4 +1146,29 @@
 
 .effect-info-tooltip-container:hover .effect-info-tooltip {
     display: block;
+}
+
+
+/* Equipment Stats Display */
+.eq-stats-container {
+    display: flex;
+    flex-direction: column;
+    gap: 0.3rem;
+    width: 100%;
+}
+
+.eq-stat-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    font-size: 0.85rem;
+    color: #cbd5e1;
+    background: rgba(0, 0, 0, 0.2);
+    padding: 0.2rem 0.5rem;
+    border-radius: 4px;
+}
+
+.eq-stat-row.malus {
+    color: #ef4444;
+    background: rgba(239, 68, 68, 0.1);
 }
