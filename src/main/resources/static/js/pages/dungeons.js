@@ -253,12 +253,25 @@ async function loadDungeons() {
 
                     const entryCostHtml = d.entryCostGold > 0 ? `<div class="text-sm text-warning font-semibold mt-2"><span class="material-symbols-outlined align-middle icon-sm">monetization_on</span> Coût d'entrée : ${d.entryCostGold} Or</div>` : '';
 
+                    let questBadges = '';
+                    if (d.dailyQuest || d.weeklyQuest) {
+                        questBadges = `<div style="position: absolute; top: -14px; left: -14px; display: flex; gap: 6px; z-index: 5;">
+                            ${d.dailyQuest ? `<div style="background: rgba(15,23,42,0.95); border: 2px solid #f59e0b; border-radius: 50%; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(245, 158, 11, 0.4);" title="Cible de la Quête Journalière">
+                                <span class="material-symbols-outlined text-warning" style="font-size: 1.5rem;">workspace_premium</span>
+                            </div>` : ''}
+                            ${d.weeklyQuest ? `<div style="background: rgba(15,23,42,0.95); border: 2px solid #a855f7; border-radius: 50%; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(168, 85, 247, 0.4);" title="Cible de la Quête Hebdomadaire">
+                                <span class="material-symbols-outlined text-purple" style="font-size: 1.5rem;">emoji_events</span>
+                            </div>` : ''}
+                        </div>`;
+                    }
+
                     const cardHtml = `
-                        <div class="dungeon-card ${isLocked ? 'locked' : ''}" ${isLocked ? '' : `onclick="openPrepInterface(${d.id}, '${d.name.replace(/'/g, "\\'")}', '${sallesData}', ${d.maxHeroes || 1}, ${d.entryCostGold || 0}, ${d.recommendedLevel || 1})"`}>
+                        <div class="dungeon-card ${isLocked ? 'locked' : ''}" style="position: relative;" ${isLocked ? '' : `onclick="openPrepInterface(${d.id}, '${d.name.replace(/'/g, "\\'")}', '${sallesData}', ${d.maxHeroes || 1}, ${d.entryCostGold || 0}, ${d.recommendedLevel || 1})"`}>
                             ${lockedHtml}
+                            ${questBadges}
                             <div class="dungeon-title">
                                 <span class="material-symbols-outlined">castle</span>
-                                ${d.name}
+                                <span>${d.name}</span>
                             </div>
                             <div class="dungeon-level">Niveau ${d.recommendedLevel}</div>
                             <div class="dungeon-desc">${d.description || 'Affrontez les dangers qui r\u00f4dent.'}</div>
