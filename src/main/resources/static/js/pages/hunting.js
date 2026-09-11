@@ -4,7 +4,11 @@ let currentUser = null;
 let refreshInterval = null;
 
 document.addEventListener('DOMContentLoaded', () => {
-    window.addEventListener('authLoaded', initHunting);
+    if (window.currentUser !== undefined) {
+        initHunting();
+    } else {
+        window.addEventListener('authLoaded', initHunting);
+    }
 });
 
 async function initHunting() {
