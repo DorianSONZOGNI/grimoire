@@ -80,7 +80,9 @@ async function loadDaily() {
                         <span class="material-symbols-outlined" style="font-size: 1rem;">emoji_events</span>
                         Premiers à conquérir
                     </div>
-                    ${renderLeaderboard(lb, 'daily')}
+                    <div class="quest-leaderboard-list">
+                        ${renderLeaderboard(lb, 'daily')}
+                    </div>
                 </div>
             </div>
         `;
@@ -148,7 +150,9 @@ async function loadWeekly() {
                         <span class="material-symbols-outlined" style="font-size: 1rem;">military_tech</span>
                         Meilleurs Chasseurs
                     </div>
-                    ${renderLeaderboard(lb, 'weekly')}
+                    <div class="quest-leaderboard-list">
+                        ${renderLeaderboard(lb, 'weekly')}
+                    </div>
                 </div>
             </div>
         `;
@@ -183,7 +187,9 @@ async function loadWeekly() {
                             <span class="material-symbols-outlined" style="font-size: 1rem;">military_tech</span>
                             Classement Final
                         </div>
-                        ${renderLeaderboard(plb, 'weekly')}
+                        <div class="quest-leaderboard-list">
+                            ${renderLeaderboard(plb, 'weekly')}
+                        </div>
                     </div>
                 </div>
             `;

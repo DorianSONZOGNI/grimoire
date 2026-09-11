@@ -188,6 +188,30 @@
     gap: 6px;
 }
 
+.quest-leaderboard-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+    max-height: 250px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.quest-leaderboard-list::-webkit-scrollbar {
+    width: 6px;
+}
+.quest-leaderboard-list::-webkit-scrollbar-track {
+    background: rgba(15, 23, 42, 0.4);
+    border-radius: 4px;
+}
+.quest-leaderboard-list::-webkit-scrollbar-thumb {
+    background: rgba(56, 189, 248, 0.2);
+    border-radius: 4px;
+}
+.quest-leaderboard-list::-webkit-scrollbar-thumb:hover {
+    background: rgba(56, 189, 248, 0.4);
+}
+
 .lb-row {
     display: flex;
     align-items: center;

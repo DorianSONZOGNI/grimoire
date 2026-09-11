@@ -4325,15 +4325,27 @@ window.renderOverlayInventory = function (containerId) {
         const myPlayer = pageState.currentSessionData.players.find(p => p.ownerUsername === pageState.currentUsername) || pageState.currentSessionData.players[0];
         goldAmount = myPlayer.gold || 0;
     }
+    
+    let prevGold = window.previousInventoryGold !== undefined ? window.previousInventoryGold : goldAmount;
+    window.previousInventoryGold = goldAmount;
+    
+    const goldSpanId = 'combatGold_' + containerId;
     list.innerHTML += `
         <div class="flex-center" style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px; padding: 0.8rem; gap: 0.8rem; margin-bottom: 0.5rem;">
             <span class="material-symbols-outlined" style="font-size: 1.5rem; color: #f59e0b;">monetization_on</span>
             <div class="flex-1">
                 <div class="text-sm text-white font-semibold" >Or du compte</div>
-                <div style="color: #f59e0b; font-weight: 700; font-size: 1.1rem;">${goldAmount}</div>
+                <div id="${goldSpanId}" style="color: #f59e0b; font-weight: 700; font-size: 1.1rem; display:inline-block; transition: transform 0.1s ease;">${prevGold}</div>
             </div>
         </div>
     `;
+
+    if (prevGold !== goldAmount && window.animateGoldValue) {
+        setTimeout(() => {
+            const goldSpan = document.getElementById(goldSpanId);
+            if (goldSpan) window.animateGoldValue(goldSpan, prevGold, goldAmount, 1000);
+        }, 50);
+    }
 
     if (!pageState.currentSessionData || !pageState.currentSessionData.activeConsumables || pageState.currentSessionData.activeConsumables.length === 0) {
         list.innerHTML += `<div class="text-muted text-center text-sm" style="padding: 1rem;">Aucun objet dans l'inventaire.</div>`;
