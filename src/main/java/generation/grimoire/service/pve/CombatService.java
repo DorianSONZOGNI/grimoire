@@ -333,9 +333,19 @@ public class CombatService {
     }
 
     public CombatSession endTurn(String sessionId) {
+        return endTurn(sessionId, false);
+    }
+
+    public CombatSession endTurn(String sessionId, boolean isTimeout) {
         CombatSession session = getSession(sessionId);
         if (session == null || session.isFinished())
             return session;
+
+        Personnage p = session.getActivePlayer();
+        if (p != null && !isTimeout) {
+            session.increasePlayerTurnTimeLimit(p.getId(), 30000);
+        }
+
         return combatTurnService.endTurn(session);
     }
 
@@ -451,12 +461,16 @@ public class CombatService {
         for (CombatSession session : activeSessions.values()) {
             if (session.isMulti() && !session.isFinished()) {
                 Long start = session.getTurnStartTime();
-                if (start != null && (now - start) > 90000) {
+                if (start != null) {
                     Personnage p = session.getActivePlayer();
                     if (p != null) {
-                        session.addLog("⏳ Le temps imparti pour " + p.getName() + " s'est écoulé ! Son tour passe automatiquement.");
-                        endTurn(session.getSessionId());
-                        broadcastIfMulti(session);
+                        long maxTurnTime = session.getCurrentTurnTimeLimit();
+                        if ((now - start) > maxTurnTime) {
+                            session.addLog("⏳ Le temps imparti pour " + p.getName() + " s'est écoulé ! Son tour passe automatiquement.");
+                            session.reducePlayerTurnTimeLimit(p.getId(), 30000);
+                            endTurn(session.getSessionId(), true);
+                            broadcastIfMulti(session);
+                        }
                     }
                 }
             }

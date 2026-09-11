@@ -1759,7 +1759,8 @@ function updateUI(data) {
     if (pageState.isMulti && !data.finished && data.turnStartTime) {
         window.multiplayerTurnInterval = setInterval(() => {
             const elapsed = Math.floor((Date.now() - data.turnStartTime) / 1000);
-            let remaining = Math.max(0, 90 - elapsed);
+            const maxTime = data.currentTurnTimeLimit ? Math.floor(data.currentTurnTimeLimit / 1000) : 90;
+            let remaining = Math.max(0, maxTime - elapsed);
 
             document.querySelectorAll('.turn-timer-badge').forEach(badge => {
                 badge.textContent = `⏳ ${remaining}s`;
