@@ -16,6 +16,6 @@ public interface HuntingQuestEntryRepository extends JpaRepository<HuntingQuestE
 
     long countByQuestId(Long questId);
 
-    @org.springframework.data.jpa.repository.Query("SELECT COUNT(e) FROM HuntingQuestEntry e WHERE e.accountName = :accountName AND e.rewardClaimed = false AND e.rank >= 1 AND e.rank <= 3 AND (e.quest.type = 'DAILY' OR (e.quest.type = 'WEEKLY' AND e.quest.active = false))")
+    @org.springframework.data.jpa.repository.Query("SELECT COUNT(e) FROM HuntingQuestEntry e WHERE e.accountName = :accountName AND e.rewardClaimed = false AND ((e.quest.type = 'DAILY') OR (e.quest.type = 'WEEKLY' AND e.quest.active = false AND e.rank >= 1 AND e.rank <= 3))")
     int countClaimable(@org.springframework.data.repository.query.Param("accountName") String accountName);
 }
