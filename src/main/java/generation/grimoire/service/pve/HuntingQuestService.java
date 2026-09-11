@@ -141,9 +141,6 @@ public class HuntingQuestService {
      * Sélectionne un donjon avec une pondération inversement proportionnelle
      * au nombre de runs. Moins un donjon a été joué → plus de poids.
      */
-    @Value("${grimoire.pve.quests.weekly-dungeons:}")
-    private List<Long> allowedWeeklyDungeonIds;
-
     @jakarta.annotation.PostConstruct
     public void fixActiveWeeklyQuest() {
         questRepository.findByTypeAndActiveTrue("WEEKLY").stream().findFirst().ifPresent(quest -> {
