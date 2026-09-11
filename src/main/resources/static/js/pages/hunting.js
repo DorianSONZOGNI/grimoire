@@ -285,6 +285,20 @@ function bindClaimButton(container, questId) {
                 } else {
                     btn.className = 'btn-claim claimed';
                     btn.innerHTML = `<span class="material-symbols-outlined">check_circle</span> ${escHtml(data.message)}`;
+                    
+                    // Diminuer le badge rouge en temps réel
+                    const badge = document.getElementById('navHuntingBadge');
+                    if (badge) {
+                        let currentCount = parseInt(badge.textContent) || 0;
+                        if (currentCount > 1) {
+                            badge.textContent = currentCount - 1;
+                        } else {
+                            badge.style.display = 'none';
+                        }
+                    }
+                    if (window.currentUser && window.currentUser.huntingClaimable > 0) {
+                        window.currentUser.huntingClaimable--;
+                    }
                 }
             } catch (e) {
                 alert('Erreur lors de la récupération.');

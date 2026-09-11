@@ -9,6 +9,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import generation.grimoire.repository.pve.HuntingQuestEntryRepository;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.crypto.password.PasswordEncoder;
@@ -29,14 +30,17 @@ public class AuthController {
     private final PasswordEncoder passwordEncoder;
     private final JwtService jwtService;
     private final RefreshTokenService refreshTokenService;
+    private final HuntingQuestEntryRepository huntingQuestEntryRepository;
 
     public AuthController(AuthenticationManager authenticationManager, UserRepository userRepository,
-            PasswordEncoder passwordEncoder, JwtService jwtService, RefreshTokenService refreshTokenService) {
+            PasswordEncoder passwordEncoder, JwtService jwtService, RefreshTokenService refreshTokenService,
+            HuntingQuestEntryRepository huntingQuestEntryRepository) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.refreshTokenService = refreshTokenService;
+        this.huntingQuestEntryRepository = huntingQuestEntryRepository;
     }
 
     @PostMapping("/register")
@@ -86,6 +90,7 @@ public class AuthController {
             res.put("unlockedVault", u.isUnlockedVault());
             res.put("unlockedAlchemy", u.isUnlockedAlchemy());
             res.put("unlockedShop", u.isUnlockedShop());
+            res.put("huntingClaimable", huntingQuestEntryRepository.countClaimable(u.getUsername()));
         });
 
         return ResponseEntity.ok(res);

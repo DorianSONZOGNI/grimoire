@@ -282,6 +282,17 @@ window.addEventListener('authLoaded', () => {
     document.querySelectorAll('.nav-vault').forEach(el => applyFeatureLock(el, hasVault, 'Coffres', 50, 'vault', '/vault.html'));
     document.querySelectorAll('.nav-alchemy').forEach(el => applyFeatureLock(el, hasAlchemy, 'Alchimie', 150, 'alchemy', '/alchemy.html'));
     document.querySelectorAll('.nav-shop').forEach(el => applyFeatureLock(el, hasShop, 'Boutique', 75, 'shop', '/shop.html'));
+
+    const huntingBadge = document.getElementById('navHuntingBadge');
+    if (huntingBadge) {
+        const claimable = window.currentUser ? (window.currentUser.huntingClaimable || 0) : 0;
+        if (claimable > 0) {
+            huntingBadge.textContent = claimable;
+            huntingBadge.style.display = 'inline-block';
+        } else {
+            huntingBadge.style.display = 'none';
+        }
+    }
 });
 
 function applyFeatureLock(el, isUnlocked, featureName, cost, featureId, originalHref) {
