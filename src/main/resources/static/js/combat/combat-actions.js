@@ -1,5 +1,5 @@
 import { pageState, combatWarningTimer, combatCountdownInterval, setButtonsProcessing } from './combat-state.js';
-import { updateUI } from './combat-ui.js';
+import { updateUI } from './combat-ui.js?v=203';
 import * as ui from '../ui.js?v=4';
 import { getSpellEffectsSummaryHtml } from '../pages/grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from '../utils/filters.js';

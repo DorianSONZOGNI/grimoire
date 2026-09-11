@@ -208,6 +208,10 @@ public class MultiCombatService {
                 maxHeroes,
                 hostCount,
                 availableSlots,
+                donjon.getId(),
+                donjon.getRequiredSecret(),
+                donjon.getRequiredSecretLevel(),
+                (int) donjon.getUnlockCostGold(),
                 hostHeroInfos
         );
     }

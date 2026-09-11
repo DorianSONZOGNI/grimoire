@@ -11,6 +11,8 @@ import java.util.List;
 import java.util.Set;
 import java.util.HashSet;
 import java.time.Instant;
+import java.util.Map;
+import java.util.HashMap;
 
 @Data
 public class CombatSession {
@@ -48,6 +50,32 @@ public class CombatSession {
     private boolean roomEventCompleted = false;
 
     private Long turnStartTime;
+
+    private Map<Long, Long> playerTurnTimeLimits = new HashMap<>();
+
+    public long getPlayerTurnTimeLimit(Long playerId) {
+        return playerTurnTimeLimits.getOrDefault(playerId, 90_000L);
+    }
+
+    public void reducePlayerTurnTimeLimit(Long playerId, long amount) {
+        long current = getPlayerTurnTimeLimit(playerId);
+        long newLimit = Math.max(30_000L, current - amount);
+        playerTurnTimeLimits.put(playerId, newLimit);
+    }
+
+    public void increasePlayerTurnTimeLimit(Long playerId, long amount) {
+        long current = getPlayerTurnTimeLimit(playerId);
+        long newLimit = Math.min(90_000L, current + amount);
+        playerTurnTimeLimits.put(playerId, newLimit);
+    }
+
+    public long getCurrentTurnTimeLimit() {
+        Personnage p = getActivePlayer();
+        if (p != null) {
+            return getPlayerTurnTimeLimit(p.getId());
+        }
+        return 90_000L;
+    }
 
     // Track players who died and already lost XP
     private java.util.Set<Long> penalizedDeadPlayers = new java.util.HashSet<>();

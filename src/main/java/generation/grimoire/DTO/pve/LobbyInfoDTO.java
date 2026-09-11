@@ -16,5 +16,9 @@ public class LobbyInfoDTO {
     private int maxHeroes;
     private int hostCount;
     private int availableSlots;
+    private Long dungeonId;
+    private String requiredSecret;
+    private int requiredSecretLevel;
+    private int unlockCostGold;
     private List<HostHeroInfoDTO> hostHeroInfos;
 }

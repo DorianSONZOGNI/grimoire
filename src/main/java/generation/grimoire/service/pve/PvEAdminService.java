@@ -21,6 +21,7 @@ public class PvEAdminService {
     private final MonstreRepository monstreRepository;
     private final DonjonRepository donjonRepository;
     private final MutationRepository mutationRepository;
+    private final generation.grimoire.repository.pve.HuntingQuestRepository huntingQuestRepository;
 
     public List<Monstre> getAllMonsters() {
         return monstreRepository.findAll();
@@ -91,6 +92,19 @@ public class PvEAdminService {
     }
 
     public List<generation.grimoire.dto.pve.DonjonSummaryDTO> getDungeonSummaries() {
+        Long activeDailyDungeonId = null;
+        Long activeWeeklyDungeonId = null;
+        try {
+            var dailyQuest = huntingQuestRepository.findByTypeAndActiveTrue("DAILY").orElse(null);
+            if (dailyQuest != null) activeDailyDungeonId = dailyQuest.getDungeonId();
+
+            var weeklyQuest = huntingQuestRepository.findByTypeAndActiveTrue("WEEKLY").orElse(null);
+            if (weeklyQuest != null) activeWeeklyDungeonId = weeklyQuest.getDungeonId();
+        } catch (Exception e) {}
+
+        final Long finalDailyDungeonId = activeDailyDungeonId;
+        final Long finalWeeklyDungeonId = activeWeeklyDungeonId;
+
         return donjonRepository.findAllByOrderByDisplayOrderAsc().stream().map(d -> {
             generation.grimoire.dto.pve.DonjonSummaryDTO dto = new generation.grimoire.dto.pve.DonjonSummaryDTO();
             dto.setId(d.getId());
@@ -106,6 +120,14 @@ public class PvEAdminService {
             dto.setDisplayOrder(d.getDisplayOrder());
             dto.setRoomCount(d.getSalles() != null ? d.getSalles().size() : 0);
             dto.setSalles(d.getSalles());
+            
+            if (finalDailyDungeonId != null && finalDailyDungeonId.equals(d.getId())) {
+                dto.setDailyQuest(true);
+            }
+            if (finalWeeklyDungeonId != null && finalWeeklyDungeonId.equals(d.getId())) {
+                dto.setWeeklyQuest(true);
+            }
+            
             return dto;
         }).toList();
     }

@@ -1635,6 +1635,25 @@ function setMultiActionsEnabled(enabled) {
 }
 
 function updateUI(data) {
+    const oldStats = {};
+    document.querySelectorAll('.fighter').forEach((el) => {
+        let fId = el.dataset.fighterId;
+        if (!fId) return;
+        const hpTextEl = el.querySelector('.hp-text-val');
+        const manaTextEl = el.querySelector('.mana-text-val');
+        let hp = null, mana = null;
+        if (hpTextEl) {
+            const m = hpTextEl.textContent.match(/(\d+)/);
+            if (m) hp = parseInt(m[1], 10);
+        }
+        if (manaTextEl) {
+            const m = manaTextEl.textContent.match(/(\d+)/);
+            if (m) mana = parseInt(m[1], 10);
+        }
+        oldStats[fId] = { hp, mana };
+    });
+    window.combatOldStats = oldStats;
+
     resetCombatTimeoutWarning(data.finished);
 
     if (pageState.currentSessionData && pageState.currentSessionData.activePlayer && data.activePlayer) {
@@ -1730,23 +1749,34 @@ function updateUI(data) {
             if (pageState.isMulti && isActive && data.turnStartTime) {
                 timerHtml = `<div class="turn-timer-badge" id="timerBadge_${index}" style="position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(4px); border: 1px solid #38bdf8; color: #38bdf8; padding: 4px 14px; border-radius: 8px; font-weight: bold; box-shadow: 0 0 12px rgba(56, 189, 248, 0.5); z-index: 10; display: flex; align-items: center; gap: 6px; letter-spacing: 0.5px;">⏳ Calcul...</div>`;
             }
-            div.innerHTML = timerHtml + generateFighterHtml(p, true);
+            
+            const fId = `hero-${p.id || index}`;
+            div.dataset.fighterId = fId;
+            let forcedHp = null;
+            let forcedMana = null;
+            if (window.combatOldStats && window.combatOldStats[fId]) {
+                forcedHp = window.combatOldStats[fId].hp;
+                forcedMana = window.combatOldStats[fId].mana;
+            }
+
+            div.innerHTML = timerHtml + generateFighterHtml(p, true, false, forcedHp, forcedMana);
             playersContainer.appendChild(div);
+
+            const hpBar = div.querySelector('.gauge-fill.hp');
+            const hpTextEl = div.querySelector('.hp-text-val');
+            const manaBar = div.querySelector('.gauge-fill.mana');
+            const manaTextEl = div.querySelector('.mana-text-val');
+            
+            if (forcedHp !== null && forcedHp !== actualHp) {
+                const suffix = p.shieldTotal > 0 ? ` (+${p.shieldTotal} 🛡️)` : '';
+                animateGaugeJS(hpBar, hpTextEl, forcedHp, actualHp, p.healthMax, 800, suffix);
+            }
+            if (forcedMana !== null && forcedMana !== p.manaCurrent) {
+                animateGaugeJS(manaBar, manaTextEl, forcedMana, p.manaCurrent, p.manaMax, 800);
+            }
 
             if (needsDelay) {
                 p.healthCurrent = actualHp;
-                setTimeout(() => {
-                    const hpBar = div.querySelector('.gauge-fill.hp');
-                    const hpLabel = div.querySelector('.gauge-label span:nth-child(2)');
-                    if (hpBar) {
-                        hpBar.style.width = (p.healthMax > 0 ? Math.max(0, Math.min(100, (actualHp / p.healthMax) * 100)) : 0) + '%';
-                    }
-                    if (hpLabel) {
-                        let labelText = `${actualHp} / ${p.healthMax}`;
-                        if (p.shieldTotal > 0) labelText += ` (+${p.shieldTotal} 🛡️)`;
-                        hpLabel.textContent = labelText;
-                    }
-                }, 800);
             }
         });
     }
@@ -1759,7 +1789,8 @@ function updateUI(data) {
     if (pageState.isMulti && !data.finished && data.turnStartTime) {
         window.multiplayerTurnInterval = setInterval(() => {
             const elapsed = Math.floor((Date.now() - data.turnStartTime) / 1000);
-            let remaining = Math.max(0, 90 - elapsed);
+            const maxTime = data.currentTurnTimeLimit ? Math.floor(data.currentTurnTimeLimit / 1000) : 90;
+            let remaining = Math.max(0, maxTime - elapsed);
 
             document.querySelectorAll('.turn-timer-badge').forEach(badge => {
                 badge.textContent = `⏳ ${remaining}s`;
@@ -3004,15 +3035,17 @@ function getBossBuffsHtml(c) {
 
 // Removed GLOBAL_STAT_LABELS and formatStat (imported from ui.js)
 
-function generateFighterHtml(c, isHero, skipBadges = false) {
-    const hpPct = c.healthMax > 0 ? Math.max(0, Math.min(100, (c.healthCurrent / c.healthMax) * 100)) : 0;
-    let hpLabel = `${c.healthCurrent} / ${c.healthMax}`;
+function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = null, forcedMana = null) {
+    const hpToRender = forcedHp !== null && !isNaN(forcedHp) ? forcedHp : c.healthCurrent;
+    const hpPct = c.healthMax > 0 ? Math.max(0, Math.min(100, (hpToRender / c.healthMax) * 100)) : 0;
+    let hpLabel = `${hpToRender} / ${c.healthMax}`;
     if (c.shieldTotal > 0) hpLabel += ` (+${c.shieldTotal} 🛡️)`;
 
-    const manaPct = c.manaMax > 0 ? Math.max(0, Math.min(100, (c.manaCurrent / c.manaMax) * 100)) : 0;
+    const manaToRender = forcedMana !== null && !isNaN(forcedMana) ? forcedMana : c.manaCurrent;
+    const manaPct = c.manaMax > 0 ? Math.max(0, Math.min(100, (manaToRender / c.manaMax) * 100)) : 0;
     let manaHtml = `
         <div class="gauge-container mt-4" style="text-align: left;">
-            <div class="gauge-label"><span>Mana</span><span>${c.manaCurrent} / ${c.manaMax}</span></div>
+            <div class="gauge-label"><span>Mana</span><span class="mana-text-val">${manaToRender} / ${c.manaMax}</span></div>
             <div class="gauge-track"><div class="gauge-fill mana" style="width: ${manaPct}%;"></div></div>
         </div>`;
 
@@ -3402,7 +3435,7 @@ function generateFighterHtml(c, isHero, skipBadges = false) {
         ${monsterBadgesHtml}
         ${statsHtml}
         <div class="gauge-container" style="text-align: left;">
-            <div class="gauge-label"><span style="display:flex; align-items:center;">Santé (PV)${hpRegenBadge}</span><span>${hpLabel}</span></div>
+            <div class="gauge-label"><span style="display:flex; align-items:center;">Santé (PV)${hpRegenBadge}</span><span class="hp-text-val">${hpLabel}</span></div>
             <div class="gauge-track"><div class="gauge-fill hp" style="width: ${hpPct}%;"></div></div>
         </div>
         ${manaHtml.replace('<span>Mana</span>', `<span style="display:flex; align-items:center;">Mana${manaRegenBadge}</span>`)}
@@ -3475,8 +3508,30 @@ function renderEnemies(enemies) {
             }
         }
 
-        div.innerHTML = generateFighterHtml(pMonster, false, isBoss);
+                const fId = 'hero-' + (pMonster.id || index);
+        div.dataset.fighterId = fId;
+        let forcedHp = null;
+        let forcedMana = null;
+        if (window.combatOldStats && window.combatOldStats[fId]) {
+            forcedHp = window.combatOldStats[fId].hp;
+            forcedMana = window.combatOldStats[fId].mana;
+        }
+
+        div.innerHTML = generateFighterHtml(pMonster, false, isBoss, forcedHp, forcedMana);
         container.appendChild(div);
+
+        const hpBar = div.querySelector('.gauge-fill.hp');
+        const hpTextEl = div.querySelector('.hp-text-val');
+        const manaBar = div.querySelector('.gauge-fill.mana');
+        const manaTextEl = div.querySelector('.mana-text-val');
+        
+        if (forcedHp !== null && forcedHp !== pMonster.healthCurrent) {
+            const suffix = pMonster.shieldTotal > 0 ? ' (+' + pMonster.shieldTotal + ' 🛡️)' : '';
+            animateGaugeJS(hpBar, hpTextEl, forcedHp, pMonster.healthCurrent, pMonster.healthMax, 800, suffix);
+        }
+        if (forcedMana !== null && forcedMana !== pMonster.manaCurrent) {
+            animateGaugeJS(manaBar, manaTextEl, forcedMana, pMonster.manaCurrent, pMonster.manaMax, 800);
+        }
     });
 }
 
@@ -4270,15 +4325,27 @@ window.renderOverlayInventory = function (containerId) {
         const myPlayer = pageState.currentSessionData.players.find(p => p.ownerUsername === pageState.currentUsername) || pageState.currentSessionData.players[0];
         goldAmount = myPlayer.gold || 0;
     }
+    
+    let prevGold = window.previousInventoryGold !== undefined ? window.previousInventoryGold : goldAmount;
+    window.previousInventoryGold = goldAmount;
+    
+    const goldSpanId = 'combatGold_' + containerId;
     list.innerHTML += `
         <div class="flex-center" style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px; padding: 0.8rem; gap: 0.8rem; margin-bottom: 0.5rem;">
             <span class="material-symbols-outlined" style="font-size: 1.5rem; color: #f59e0b;">monetization_on</span>
             <div class="flex-1">
                 <div class="text-sm text-white font-semibold" >Or du compte</div>
-                <div style="color: #f59e0b; font-weight: 700; font-size: 1.1rem;">${goldAmount}</div>
+                <div id="${goldSpanId}" style="color: #f59e0b; font-weight: 700; font-size: 1.1rem; display:inline-block; transition: transform 0.1s ease;">${prevGold}</div>
             </div>
         </div>
     `;
+
+    if (prevGold !== goldAmount && window.animateGoldValue) {
+        setTimeout(() => {
+            const goldSpan = document.getElementById(goldSpanId);
+            if (goldSpan) window.animateGoldValue(goldSpan, prevGold, goldAmount, 1000);
+        }, 50);
+    }
 
     if (!pageState.currentSessionData || !pageState.currentSessionData.activeConsumables || pageState.currentSessionData.activeConsumables.length === 0) {
         list.innerHTML += `<div class="text-muted text-center text-sm" style="padding: 1rem;">Aucun objet dans l'inventaire.</div>`;
@@ -4508,4 +4575,29 @@ window.changeMusicVolume = function (value) {
     }
     localStorage.setItem('grimoire_music_volume', value);
 };
+
+
+function animateGaugeJS(barEl, textEl, oldVal, newVal, max, duration = 600, suffix = '') {
+    if (!barEl) return;
+    let startTime = null;
+    barEl.style.transition = 'none';
+    function step(currentTime) {
+        if (!startTime) startTime = currentTime;
+        let t = (currentTime - startTime) / duration;
+        if (t > 1) t = 1;
+        let easeT = 1 - Math.pow(1 - t, 3);
+        let currentVal = Math.floor(oldVal + (newVal - oldVal) * easeT);
+        let pct = max > 0 ? Math.max(0, Math.min(100, (currentVal / max) * 100)) : 0;
+        barEl.style.width = pct + '%';
+        if (textEl) textEl.textContent = currentVal + ' / ' + max + suffix;
+        if (t < 1) requestAnimationFrame(step);
+        else {
+            barEl.style.width = (max > 0 ? Math.max(0, Math.min(100, (newVal / max) * 100)) : 0) + '%';
+            if (textEl) textEl.textContent = newVal + ' / ' + max + suffix;
+        }
+    }
+    requestAnimationFrame(step);
+}
+
+
 

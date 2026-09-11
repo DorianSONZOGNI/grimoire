@@ -73,7 +73,7 @@ function updateHeroCountDisplay() {
 document.addEventListener('DOMContentLoaded', () => {
     const checkAuth = async () => {
         if (!window.currentUser) {
-            document.getElementById('authWarning').style.display = 'block';
+            window.location.href = '/login.html';
             return;
         }
 
@@ -253,12 +253,25 @@ async function loadDungeons() {
 
                     const entryCostHtml = d.entryCostGold > 0 ? `<div class="text-sm text-warning font-semibold mt-2"><span class="material-symbols-outlined align-middle icon-sm">monetization_on</span> Coût d'entrée : ${d.entryCostGold} Or</div>` : '';
 
+                    let questBadges = '';
+                    if (d.dailyQuest || d.weeklyQuest) {
+                        questBadges = `<div style="position: absolute; top: -14px; left: -14px; display: flex; gap: 6px; z-index: 5;">
+                            ${d.dailyQuest ? `<div style="background: rgba(15,23,42,0.95); border: 2px solid #f59e0b; border-radius: 50%; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(245, 158, 11, 0.4);" title="Cible de la Quête Journalière">
+                                <span class="material-symbols-outlined text-warning" style="font-size: 1.5rem;">workspace_premium</span>
+                            </div>` : ''}
+                            ${d.weeklyQuest ? `<div style="background: rgba(15,23,42,0.95); border: 2px solid #a855f7; border-radius: 50%; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(168, 85, 247, 0.4);" title="Cible de la Quête Hebdomadaire">
+                                <span class="material-symbols-outlined text-purple" style="font-size: 1.5rem;">emoji_events</span>
+                            </div>` : ''}
+                        </div>`;
+                    }
+
                     const cardHtml = `
-                        <div class="dungeon-card ${isLocked ? 'locked' : ''}" ${isLocked ? '' : `onclick="openPrepInterface(${d.id}, '${d.name.replace(/'/g, "\\'")}', '${sallesData}', ${d.maxHeroes || 1}, ${d.entryCostGold || 0}, ${d.recommendedLevel || 1})"`}>
+                        <div class="dungeon-card ${isLocked ? 'locked' : ''}" style="position: relative;" ${isLocked ? '' : `onclick="openPrepInterface(${d.id}, '${d.name.replace(/'/g, "\\'")}', '${sallesData}', ${d.maxHeroes || 1}, ${d.entryCostGold || 0}, ${d.recommendedLevel || 1})"`}>
                             ${lockedHtml}
+                            ${questBadges}
                             <div class="dungeon-title">
                                 <span class="material-symbols-outlined">castle</span>
-                                ${d.name}
+                                <span>${d.name}</span>
                             </div>
                             <div class="dungeon-level">Niveau ${d.recommendedLevel}</div>
                             <div class="dungeon-desc">${d.description || 'Affrontez les dangers qui r\u00f4dent.'}</div>
@@ -338,7 +351,7 @@ async function loadCharacters() {
                     else if (vNom.includes('trahison')) avatarName = 'trahison';
                     else if (vNom.includes('violence')) avatarName = 'violence';
                 }
-                
+
                 let avatarHtml = c.name.charAt(0).toUpperCase();
                 let avatarStyle = "";
                 if (avatarName) {
@@ -517,6 +530,19 @@ window.selectCharacter = async function (id) {
             window.showNotif(`Ce donjon est limit\u00e9 \u00e0 ${pageState.currentMaxHeroes} h\u00e9ros maximum.`, true);
             return;
         }
+
+        const charToAdd = pageState.userCharacters.find(c => c.id === id);
+        if (charToAdd && charToAdd.voie && charToAdd.voie.nom) {
+            const hasSameVoie = pageState.selectedCharIds.some(cid => {
+                const c = pageState.userCharacters.find(uc => uc.id === cid);
+                return c && c.voie && c.voie.nom === charToAdd.voie.nom;
+            });
+            if (hasSameVoie) {
+                window.showNotif(`Vous avez déjà sélectionné un personnage de la ${charToAdd.voie.nom}.`, true);
+                return;
+            }
+        }
+
         pageState.selectedCharIds.push(id);
     }
 
@@ -532,9 +558,9 @@ window.selectCharacter = async function (id) {
     const btn = document.getElementById('btnEnterDungeon');
     if (btn) {
         if (pageState.selectedCharIds.length > 0) {
-          if (btn) btn.classList.remove('opacity-50', 'cursor-not-allowed');
+            if (btn) btn.classList.remove('opacity-50', 'cursor-not-allowed');
         } else {
-          if (btn) btn.classList.add('opacity-50', 'cursor-not-allowed');
+            if (btn) btn.classList.add('opacity-50', 'cursor-not-allowed');
         }
     }
 
@@ -906,7 +932,7 @@ window.onCoopToggleChange = function () {
         btnSolo.classList.remove('hidden');
         btnCoop.classList.add('hidden');
     }
-    
+
     // Mettre à jour le poids (qui dépend du mode Co-op)
     if (typeof renderConsumablesList === 'function') {
         renderConsumablesList();
@@ -922,7 +948,7 @@ window.updateHeroCountDisplay = function () {
     if (!btnCoop) return;
     const hasChars = pageState.selectedCharIds.length > 0;
     const isFull = pageState.selectedCharIds.length >= pageState.currentMaxHeroes;
-    
+
     if (hasChars && !isFull) {
         btnCoop.classList.remove('opacity-50', 'cursor-not-allowed');
         btnCoop.title = "";
@@ -972,7 +998,7 @@ window.createCoopLobby = async function () {
 
         // Afficher l'overlay d'attente
         document.getElementById('lobbyShortCode').textContent = lobby.shortCode;
-        
+
         const costWarning = document.getElementById('lobbyCostWarning');
         const costAmount = document.getElementById('lobbyCostAmount');
         if (costWarning && costAmount) {
@@ -1026,7 +1052,7 @@ window.cancelCoopLobby = async function () {
     if (!coopLobbyId) { closeLobbyOverlay(); return; }
     try {
         await globalFetch(`/api/pve/multi/${coopLobbyId}/cancel`, { method: 'DELETE' });
-    } catch (_) {}
+    } catch (_) { }
     if (coopLobbySSE) { coopLobbySSE.close(); coopLobbySSE = null; }
     coopLobbyId = null;
     closeLobbyOverlay();
@@ -1070,7 +1096,7 @@ window.openJoinLobbyModal = function () {
             const sIcon = window.getSpiritualiteIcon ? window.getSpiritualiteIcon(c.spiritualite.nom) : 'psychology';
             iconsHtml += `<span class="material-symbols-outlined text-[0.95rem] ml-0.5 align-middle" style="color: ${sColor};" title="Spiritualité : ${c.spiritualite.nom}">${sIcon}</span>`;
         }
-        
+
         let avatarName = '';
         if (c.voie && c.voie.nom) {
             const vNom = c.voie.nom.toLowerCase();
@@ -1117,6 +1143,19 @@ window.toggleJoinChar = function (charId) {
             window.showNotif(`Vous ne pouvez sélectionner que ${window.maxSelectableJoinChars} héros pour ce lobby.`, true);
             return;
         }
+
+        const charToAdd = pageState.userCharacters.find(c => c.id === charId);
+        if (charToAdd && charToAdd.voie && charToAdd.voie.nom) {
+            const hasSameVoie = joinSelectedCharIds.some(cid => {
+                const c = pageState.userCharacters.find(uc => uc.id === cid);
+                return c && c.voie && c.voie.nom === charToAdd.voie.nom;
+            });
+            if (hasSameVoie) {
+                window.showNotif(`Vous avez déjà sélectionné un personnage de la ${charToAdd.voie.nom}.`, true);
+                return;
+            }
+        }
+
         joinSelectedCharIds.push(charId);
         el.style.borderColor = 'rgba(14,165,233,0.6)';
         el.style.background = 'rgba(14,165,233,0.1)';
@@ -1131,26 +1170,80 @@ window.closeJoinLobbyModal = function () {
     document.getElementById('joinLobbyModal').style.display = 'none';
 };
 
-window.updateJoinCharAvailability = function (minLevel) {
+window.updateJoinCharAvailability = function (info) {
     if (!pageState.userCharacters) return;
+
+    let hasSecret = true;
+    let hasGoldUnlock = true;
+    let lockReason = "";
+    if (info && info.requiredSecret) {
+        let userSecretLvl = window.currentUser.unlockedSecrets ? window.currentUser.unlockedSecrets[info.requiredSecret] : undefined;
+        if (userSecretLvl === undefined || userSecretLvl < info.requiredSecretLevel) {
+            hasSecret = false;
+            lockReason = "Secret requis non débloqué ou niveau insuffisant";
+        }
+    }
+    if (hasSecret && info && info.unlockCostGold > 0) {
+        if (!window.currentUser.unlockedDungeons || !window.currentUser.unlockedDungeons.includes(info.dungeonId)) {
+            hasGoldUnlock = false;
+            lockReason = "Donjon non débloqué";
+        }
+    }
+
+    const minLevel = info ? info.recommendedLevel : 1;
+    let anyCharMeetsLevel = false;
+
     pageState.userCharacters.forEach(c => {
         const el = document.getElementById(`joinChar_${c.id}`);
         if (!el) return;
-        
+
         const lvl = c.voieLevel || 1;
-        if (lvl < minLevel) {
+        if (lvl >= minLevel) {
+            anyCharMeetsLevel = true;
+        }
+
+        if (!hasSecret) {
             el.style.opacity = '0.3';
             el.style.pointerEvents = 'none';
-            // Unselect if currently selected
+            el.title = lockReason;
             const idx = joinSelectedCharIds.indexOf(c.id);
-            if (idx !== -1) {
-                window.toggleJoinChar(c.id);
-            }
+            if (idx !== -1) window.toggleJoinChar(c.id);
+        } else if (!hasGoldUnlock) {
+            el.style.opacity = '0.3';
+            el.style.pointerEvents = 'none';
+            el.title = lockReason;
+            const idx = joinSelectedCharIds.indexOf(c.id);
+            if (idx !== -1) window.toggleJoinChar(c.id);
+        } else if (lvl < minLevel) {
+            el.style.opacity = '0.3';
+            el.style.pointerEvents = 'none';
+            el.title = `Niveau ${minLevel} requis`;
+            const idx = joinSelectedCharIds.indexOf(c.id);
+            if (idx !== -1) window.toggleJoinChar(c.id);
         } else {
             el.style.opacity = '1';
             el.style.pointerEvents = 'auto';
+            el.title = "";
         }
     });
+
+    const msgContainer = document.getElementById('joinLobbyErrorMsg');
+    if (msgContainer) {
+        if (!info) {
+            msgContainer.style.display = 'none';
+        } else if (!hasSecret) {
+            msgContainer.textContent = "Vous n'avez pas débloqué le niveau de secret requis pour ce donjon";
+            msgContainer.style.display = 'block';
+        } else if (!hasGoldUnlock) {
+            msgContainer.textContent = "Vous n'avez pas payé le prix en Or pour déverrouiller ce donjon.";
+            msgContainer.style.display = 'block';
+        } else if (!anyCharMeetsLevel) {
+            msgContainer.textContent = "Vous n'avez aucun personnage ayant le niveau minimum requis pour ce donjon.";
+            msgContainer.style.display = 'block';
+        } else {
+            msgContainer.style.display = 'none';
+        }
+    }
 };
 
 document.addEventListener('DOMContentLoaded', () => {
@@ -1166,7 +1259,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     if (res.ok) {
                         const info = await res.json();
                         window.maxSelectableJoinChars = info.availableSlots;
-                        
+
                         let hostHeroesHtml = '';
                         if (info.hostHeroInfos && info.hostHeroInfos.length > 0) {
                             const getVIcon = (nom) => {
@@ -1228,7 +1321,7 @@ document.addEventListener('DOMContentLoaded', () => {
                             ${hostHeroesHtml}
                         `;
 
-                        window.updateJoinCharAvailability(info.dungeonLevel);
+                        window.updateJoinCharAvailability(info);
 
                         // Auto-unselect characters if we are over the new limit
                         while (joinSelectedCharIds.length > window.maxSelectableJoinChars) {
@@ -1239,7 +1332,7 @@ document.addEventListener('DOMContentLoaded', () => {
                     } else {
                         infoContainer.style.display = 'none';
                         window.maxSelectableJoinChars = 4;
-                        window.updateJoinCharAvailability(1);
+                        window.updateJoinCharAvailability(null);
                     }
                 } catch (err) {
                     console.error("Erreur lors de la récupération des infos du lobby", err);

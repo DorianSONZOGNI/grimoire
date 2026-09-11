@@ -69,11 +69,17 @@ public class CombatService {
             throw new RuntimeException("Aucun personnage sélectionné");
 
         List<Personnage> players = new ArrayList<>();
+        java.util.Set<Long> usedVoies = new java.util.HashSet<>();
         for (Long characterId : characterIds) {
             Personnage p = personnageRepository.findById(java.util.Objects.requireNonNull(characterId))
                     .orElseThrow(() -> new RuntimeException("Personnage introuvable"));
             if (p.getUser() == null || !p.getUser().getUsername().equals(username)) {
                 throw new RuntimeException("Non autorisé");
+            }
+            if (p.getVoie() != null && p.getVoie().getId() != null) {
+                if (!usedVoies.add(p.getVoie().getId())) {
+                    throw new RuntimeException("Vous ne pouvez pas jouer deux fois la même voie (" + p.getVoie().getNom() + ") dans le même donjon.");
+                }
             }
             p.clearBuffs();
             p.setHealthCurrent(p.getTotalHealthMax());
@@ -169,12 +175,21 @@ public class CombatService {
             throw new RuntimeException("Aucun personnage sélectionné");
 
         List<Personnage> players = new ArrayList<>();
+        java.util.Map<String, java.util.Set<Long>> userVoies = new java.util.HashMap<>();
+        userVoies.put(hostUsername, new java.util.HashSet<>());
+        userVoies.put(guestUsername, new java.util.HashSet<>());
+
         for (Long characterId : characterIds) {
             Personnage p = personnageRepository.findById(java.util.Objects.requireNonNull(characterId))
                     .orElseThrow(() -> new RuntimeException("Personnage introuvable"));
             String owner = p.getUser() != null ? p.getUser().getUsername() : null;
             if (!hostUsername.equals(owner) && !guestUsername.equals(owner)) {
                 throw new RuntimeException("Non autorisé : personnage " + p.getName());
+            }
+            if (p.getVoie() != null && p.getVoie().getId() != null) {
+                if (!userVoies.get(owner).add(p.getVoie().getId())) {
+                    throw new RuntimeException("Le joueur " + owner + " ne peut pas jouer deux fois la même voie (" + p.getVoie().getNom() + ") dans le même donjon.");
+                }
             }
             p.clearBuffs();
             p.setHealthCurrent(p.getTotalHealthMax());
@@ -190,16 +205,23 @@ public class CombatService {
                 .orElseThrow(() -> new RuntimeException("Utilisateur guest introuvable"));
 
         if (d.getRequiredSecret() != null && !d.getRequiredSecret().trim().isEmpty()) {
-            if (!hostAccount.getUnlockedSecrets().containsKey(d.getRequiredSecret())) {
-                throw new RuntimeException("L'hôte n'a pas débloqué le secret requis.");
+            Integer hostSecretLevel = hostAccount.getUnlockedSecrets().get(d.getRequiredSecret());
+            if (hostSecretLevel == null || hostSecretLevel < d.getRequiredSecretLevel()) {
+                throw new RuntimeException("L'hôte n'a pas débloqué le secret requis ou son niveau est insuffisant.");
             }
-            if (!guestAccount.getUnlockedSecrets().containsKey(d.getRequiredSecret())) {
-                throw new RuntimeException("Le guest n'a pas débloqué le secret requis.");
+            Integer guestSecretLevel = guestAccount.getUnlockedSecrets().get(d.getRequiredSecret());
+            if (guestSecretLevel == null || guestSecretLevel < d.getRequiredSecretLevel()) {
+                throw new RuntimeException("Le guest n'a pas débloqué le secret requis ou son niveau est insuffisant.");
             }
         }
 
-        if (d.getUnlockCostGold() > 0 && !hostAccount.getUnlockedDungeons().contains(d.getId())) {
-            throw new RuntimeException("Ce donjon doit être débloqué par l'hôte avant d'y entrer.");
+        if (d.getUnlockCostGold() > 0) {
+            if (!hostAccount.getUnlockedDungeons().contains(d.getId())) {
+                throw new RuntimeException("Ce donjon doit être débloqué par l'hôte avant d'y entrer.");
+            }
+            if (!guestAccount.getUnlockedDungeons().contains(d.getId())) {
+                throw new RuntimeException("Le guest doit avoir débloqué ce donjon au préalable.");
+            }
         }
 
         if (d.getEntryCostGold() > 0) {
@@ -311,9 +333,19 @@ public class CombatService {
     }
 
     public CombatSession endTurn(String sessionId) {
+        return endTurn(sessionId, false);
+    }
+
+    public CombatSession endTurn(String sessionId, boolean isTimeout) {
         CombatSession session = getSession(sessionId);
         if (session == null || session.isFinished())
             return session;
+
+        Personnage p = session.getActivePlayer();
+        if (p != null && !isTimeout) {
+            session.increasePlayerTurnTimeLimit(p.getId(), 30000);
+        }
+
         return combatTurnService.endTurn(session);
     }
 
@@ -429,12 +461,16 @@ public class CombatService {
         for (CombatSession session : activeSessions.values()) {
             if (session.isMulti() && !session.isFinished()) {
                 Long start = session.getTurnStartTime();
-                if (start != null && (now - start) > 90000) {
+                if (start != null) {
                     Personnage p = session.getActivePlayer();
                     if (p != null) {
-                        session.addLog("⏳ Le temps imparti pour " + p.getName() + " s'est écoulé ! Son tour passe automatiquement.");
-                        endTurn(session.getSessionId());
-                        broadcastIfMulti(session);
+                        long maxTurnTime = session.getCurrentTurnTimeLimit();
+                        if ((now - start) > maxTurnTime) {
+                            session.addLog("⏳ Le temps imparti pour " + p.getName() + " s'est écoulé ! Son tour passe automatiquement.");
+                            session.reducePlayerTurnTimeLimit(p.getId(), 30000);
+                            endTurn(session.getSessionId(), true);
+                            broadcastIfMulti(session);
+                        }
                     }
                 }
             }

@@ -40,6 +40,7 @@ class CombatRoomService {
     private final ObjectMapper objectMapper;
     private final CombatTurnService combatTurnService;
     private final SpellAvailabilityService spellAvailabilityService;
+    private final HuntingQuestService huntingQuestService;
 
     void handleRoomStart(CombatSession session) {
         if (session.getCurrentRoom() == null)
@@ -876,6 +877,20 @@ class CombatRoomService {
         if (session.isFinished()) {
             combatTurnService.recordOutcome(session, generation.grimoire.enumeration.DungeonOutcome.VICTORY);
             session.addLog("Félicitations, vous avez terminé le donjon !");
+
+            // Hook Tableau de Chasse — enregistrer la victoire pour chaque joueur
+            try {
+                java.util.Set<String> recorded = new java.util.HashSet<>();
+                for (generation.grimoire.entity.personnage.Personnage p : session.getPlayers()) {
+                    String owner = p.getOwnerUsername();
+                    if (owner != null && recorded.add(owner)) {
+                        huntingQuestService.recordCompletion(session.getDungeonId(), owner);
+                    }
+                }
+            } catch (Exception e) {
+                System.err.println("[HuntingQuest] Erreur enregistrement complétion: " + e.getMessage());
+            }
+
             if (!session.getPlayers().isEmpty()) {
                 AppUser user = session.getPlayers().get(0).getUser();
                 if (user != null) {

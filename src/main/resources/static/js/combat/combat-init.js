@@ -1,6 +1,6 @@
 import { pageState } from './combat-state.js';
 import { initMultiSSE } from './combat-socket.js';
-import { updateUI } from './combat-ui.js';
+import { updateUI } from './combat-ui.js?v=203';
 import * as ui from '../ui.js?v=4';
 import { getSpellEffectsSummaryHtml } from '../pages/grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from '../utils/filters.js';
@@ -74,8 +74,13 @@ export async function startCombat(characterIds, dungeonId, consumableIds) {
         });
 
         if (!res.ok) {
-            if (typeof showNotif !== 'undefined') window.showNotif("Erreur lors de l'initialisation du donjon.", true);
-            else ui.showNotif("Erreur lors de l'initialisation du donjon.", true);
+            let errText = "Erreur lors de l'initialisation du donjon.";
+            try {
+                const text = await res.text();
+                if (text) errText = text;
+            } catch(e) {}
+            if (typeof showNotif !== 'undefined') window.showNotif(errText, true);
+            else ui.showNotif(errText, true);
             window.location.href = '/dungeons.html';
             return;
         }

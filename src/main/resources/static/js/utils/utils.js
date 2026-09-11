@@ -324,6 +324,7 @@ function getEquipmentTooltipHTML(eq) {
     </div>`;
 }
 
+window.getAnomalyTooltipHTML = getAnomalyTooltipHTML;
 window.getEquipmentTooltipHTML = getEquipmentTooltipHTML;
 
 window.generateEquipmentStatsHtml = function (eq, cssClass = 'vault-stat-chip') {

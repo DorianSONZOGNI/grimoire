@@ -9,6 +9,41 @@ window.setAccessToken = function (token) {
     accessToken = token;
 };
 
+window.animateGoldValue = function(element, start, end, duration) {
+    if (!element) return;
+    const isGain = end >= start;
+    const range = end - start;
+    let startTime = null;
+
+    const originalColor = element.style.color || '';
+    const originalTransform = element.style.transform || '';
+    
+    element.style.transition = 'color 0.2s ease, transform 0.1s ease';
+    element.style.color = isGain ? '#10b981' : '#ef4444';
+    element.style.transform = isGain ? 'scale(1.1)' : 'scale(0.9)';
+
+    function step(timestamp) {
+        if (!startTime) startTime = timestamp;
+        const progress = Math.min((timestamp - startTime) / duration, 1);
+        
+        const easeProgress = progress * (2 - progress);
+        const current = start + (range * easeProgress);
+        
+        element.textContent = Number(current).toFixed(1);
+        
+        if (progress < 1) {
+            window.requestAnimationFrame(step);
+        } else {
+            element.textContent = Number(end).toFixed(1);
+            setTimeout(() => {
+                element.style.color = originalColor;
+                element.style.transform = originalTransform;
+            }, 200);
+        }
+    }
+    window.requestAnimationFrame(step);
+};
+
 window.globalFetch = async function (url, options = {}) {
     if (!options.headers) options.headers = {};
     if (accessToken) {
@@ -206,9 +241,14 @@ window.checkAuthStatus = async function checkAuthStatus() {
         const res = await globalFetch('/api/auth/me', { credentials: 'same-origin' });
         if (res.ok) {
             const data = await res.json();
+            window.previousGold = window.currentUser && window.currentUser.monnaie !== undefined ? window.currentUser.monnaie : (data.monnaie || 0);
             window.currentUser = data;
             window.isAdmin = data.roles && data.roles.some(r => r.authority === 'ADMIN' || r.authority === 'ROLE_ADMIN');
             window.dispatchEvent(new Event('authLoaded'));
+            
+            let prevGold = window.previousGold || 0;
+            let currentGold = data.monnaie !== undefined ? +Number(data.monnaie) : 0;
+            
             container.innerHTML = `
                 ${window.isAdmin ? `<a href="/dungeon-stats.html" class="flex-center text-info no-underline text-sm mx-1 px-2 py-1 rounded transition-all" title="Statistiques PvE" onmouseover="this.style.background='rgba(56, 189, 248, 0.1)'" onmouseout="this.style.background='transparent'"><span class="material-symbols-outlined text-lg">insights</span></a>` : ''}
                 <a class="flex-center-gap font-medium text-success no-underline text-sm px-2 py-1 rounded transition-all" href="/secrets.html" onmouseover="this.style.background='rgba(16, 185, 129, 0.1)'" onmouseout="this.style.background='transparent'">
@@ -217,12 +257,17 @@ window.checkAuthStatus = async function checkAuthStatus() {
                 </a>
                 <div class="flex-center font-bold text-amber text-sm ml-2" title="Monnaie" style="gap: 0.2rem;">
                     <span class="material-symbols-outlined text-lg">monetization_on</span>
-                    ${data.monnaie !== undefined ? +Number(data.monnaie).toFixed(1) : '0'}
+                    <span id="navUserGold" style="display:inline-block; transition: transform 0.1s ease;">${Number(prevGold).toFixed(1)}</span>
                 </div>
                 <button class="flex-center text-xs text-error rounded px-2 py-1 cursor-pointer font-family-inherit ml-2 transition-all" onclick="logout()" style="background: transparent; border: 1px solid rgba(239, 68, 68, 0.3);">
                     <span class="material-symbols-outlined icon-sm">logout</span>
                 </button>
             `;
+            
+            if (prevGold !== currentGold && window.animateGoldValue) {
+                const goldSpan = document.getElementById('navUserGold');
+                window.animateGoldValue(goldSpan, prevGold, currentGold, 1000);
+            }
         } else {
             localStorage.removeItem('isLikelyLoggedIn');
             window.currentUser = null;
@@ -282,6 +327,17 @@ window.addEventListener('authLoaded', () => {
     document.querySelectorAll('.nav-vault').forEach(el => applyFeatureLock(el, hasVault, 'Coffres', 50, 'vault', '/vault.html'));
     document.querySelectorAll('.nav-alchemy').forEach(el => applyFeatureLock(el, hasAlchemy, 'Alchimie', 150, 'alchemy', '/alchemy.html'));
     document.querySelectorAll('.nav-shop').forEach(el => applyFeatureLock(el, hasShop, 'Boutique', 75, 'shop', '/shop.html'));
+
+    const huntingBadge = document.getElementById('navHuntingBadge');
+    if (huntingBadge) {
+        const claimable = window.currentUser ? (window.currentUser.huntingClaimable || 0) : 0;
+        if (claimable > 0) {
+            huntingBadge.textContent = claimable;
+            huntingBadge.style.display = 'inline-block';
+        } else {
+            huntingBadge.style.display = 'none';
+        }
+    }
 });
 
 function applyFeatureLock(el, isUnlocked, featureName, cost, featureId, originalHref) {
