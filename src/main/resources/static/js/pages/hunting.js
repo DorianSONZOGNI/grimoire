@@ -140,7 +140,7 @@ async function loadWeekly() {
                             <strong>Anomalie Niv.2+</strong> liée au secret <strong>${escHtml(quest.requiredSecret || '?')}</strong>.
                         </div>
                     </div>
-                    ${renderClaimButton(quest, myEntry, 'weekly')}
+                    ${renderClaimButton(quest, myEntry, 'weekly', data.rewardAnomalie)}
                 </div>
                 <div class="quest-leaderboard">
                     <div class="quest-leaderboard-title">
@@ -158,19 +158,24 @@ async function loadWeekly() {
         const prevSection = document.getElementById('previousWeeklySection');
         const prevCard = document.getElementById('previousWeeklyCard');
         if (data.previous && data.previous.quest) {
-            prevSection.style.display = '';
-            const pq = data.previous.quest;
-            const plb = data.previous.leaderboard || [];
-            const pMyEntry = data.previous.myEntry || null;
+            prevSection.style.display = 'block';
+            const pQuest = data.previous.quest;
+            const pLb = data.previous.leaderboard || [];
+            const pEntry = data.previous.myEntry || null;
+            
+            updateTimer('previousWeeklyTimer', pQuest.endDate, 'Expire dans', 7);
 
             prevCard.innerHTML = `
                 <div class="quest-card-inner">
                     <div class="quest-dungeon-info">
-                        <div class="quest-dungeon-name" style="opacity: 0.7;">${escHtml(pq.dungeonName)}</div>
+                        <div class="quest-dungeon-name">${escHtml(pQuest.dungeonName)}</div>
                         <div class="quest-meta">
-                            <span class="quest-meta-tag">Niveau ${pq.dungeonLevel}</span>
+                            <span class="quest-meta-tag">
+                                <span class="material-symbols-outlined">signal_cellular_alt</span>
+                                Niveau ${pQuest.dungeonLevel}
+                            </span>
                         </div>
-                        ${renderClaimButton(pq, pMyEntry, 'weekly')}
+                        ${renderClaimButton(pQuest, pEntry, 'weekly', data.previous.rewardAnomalie)}
                     </div>
                     <div class="quest-leaderboard">
                         <div class="quest-leaderboard-title">
@@ -222,50 +227,76 @@ function renderLeaderboard(entries, type) {
     }).join('');
 }
 
-function renderClaimButton(quest, myEntry, type) {
+function renderClaimButton(quest, myEntry, type, rewardAnomalie = null) {
     if (!currentUser) return '';
 
+    // Construction du badge d'anomalie s'il existe
+    let anomalieHtml = '';
+    if (rewardAnomalie) {
+        const icon = window.getCategoryIcon ? window.getCategoryIcon(rewardAnomalie.category) : 'auto_awesome';
+        const color = window.getSpiritualiteColor ? window.getSpiritualiteColor(rewardAnomalie.spiritualite) : '#a855f7';
+        
+        // Escape quotes to safely put HTML into an attribute
+        const tooltipHtml = window.getAnomalyTooltipHTML(rewardAnomalie, rewardAnomalie.name).replace(/"/g, '&quot;');
+        
+        anomalieHtml = `
+            <div class="reward-anomalie-badge" 
+                 style="border: 2px solid ${color}; color: ${color}; box-shadow: 0 0 10px ${color}40;"
+                 onmouseenter="if(window.showGlobalTooltip) window.showGlobalTooltip(this)"
+                 onmouseleave="if(window.hideGlobalTooltip) window.hideGlobalTooltip()"
+                 data-tooltip-html="${tooltipHtml}">
+                <span class="material-symbols-outlined">${icon}</span>
+            </div>
+        `;
+    }
+
     if (!myEntry) {
-        return `<button class="btn-claim locked" disabled>
+        return `<button class="btn-claim locked">
             <span class="material-symbols-outlined">lock</span>
             Terminez le défi pour débloquer
+            ${anomalieHtml}
         </button>`;
     }
 
     if (myEntry.rewardClaimed) {
-        return `<button class="btn-claim claimed" disabled>
+        return `<button class="btn-claim claimed">
             <span class="material-symbols-outlined">check_circle</span>
             Récompense récupérée
+            ${anomalieHtml}
         </button>`;
     }
 
     // Daily : top 3 seulement
     if (type === 'daily' && (myEntry.rank < 1 || myEntry.rank > 3)) {
-        return `<button class="btn-claim locked" disabled>
+        return `<button class="btn-claim locked">
             <span class="material-symbols-outlined">lock</span>
             Réservé au Top 3
+            ${anomalieHtml}
         </button>`;
     }
 
     // Weekly active : on peut claim seulement si la quête est terminée (pas active)
     if (type === 'weekly' && quest.active) {
-        return `<button class="btn-claim locked" disabled>
+        return `<button class="btn-claim locked">
             <span class="material-symbols-outlined">hourglass_top</span>
             Disponible à la fin de la semaine
+            ${anomalieHtml}
         </button>`;
     }
 
     // Weekly : top 3 seulement
     if (type === 'weekly' && (myEntry.rank < 1 || myEntry.rank > 3)) {
-        return `<button class="btn-claim locked" disabled>
+        return `<button class="btn-claim locked">
             <span class="material-symbols-outlined">lock</span>
             Réservé au Top 3
+            ${anomalieHtml}
         </button>`;
     }
 
     return `<button class="btn-claim claimable" data-quest-id="${quest.id}">
         <span class="material-symbols-outlined">redeem</span>
         Récupérer la récompense
+        ${anomalieHtml}
     </button>`;
 }
 

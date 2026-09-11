@@ -42,4 +42,6 @@ public class HuntingQuest {
 
     @Column(nullable = false)
     private boolean active = true;
+
+    private Long rewardAnomalieId;
 }

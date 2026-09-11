@@ -7,6 +7,7 @@
 .logo-hunting {
     background: linear-gradient(135deg, #f59e0b, #ef4444, #ec4899);
     -webkit-background-clip: text;
+    background-clip: text;
     -webkit-text-fill-color: transparent;
 }
 
@@ -260,7 +261,6 @@
     border: 1px solid rgba(255, 255, 255, 0.08);
     color: #475569;
     cursor: not-allowed;
-    pointer-events: none;
 }
 
 .btn-claim.claimable {
@@ -294,4 +294,26 @@
 }
 .spin {
     animation: spin 1s linear infinite;
+}
+
+.reward-anomalie-badge {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: help;
+    transition: transform 0.2s, box-shadow 0.2s;
+    background: rgba(15, 23, 42, 0.9);
+    backdrop-filter: blur(4px);
+    margin-left: 4px;
+}
+
+.reward-anomalie-badge:hover {
+    transform: scale(1.1);
+}
+
+.reward-anomalie-badge .material-symbols-outlined {
+    font-size: 1.1rem;
 }

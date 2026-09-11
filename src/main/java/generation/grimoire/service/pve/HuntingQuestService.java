@@ -90,6 +90,25 @@ public class HuntingQuestService {
         quest.setStartDate(LocalDate.now(ZONE));
         quest.setEndDate(LocalDate.now(ZONE).plusWeeks(1));
         quest.setActive(true);
+
+        // --- Tirage de l'Anomalie récompense ---
+        String secret = selected.getRequiredSecret();
+        List<Anomalie> templates = anomalieRepository.findByIsTemplateTrue().stream()
+                .filter(a -> a.getLevel() >= 2)
+                .filter(a -> a.getSpiritualite() != null && a.getSpiritualite().name().equalsIgnoreCase(secret))
+                .collect(Collectors.toList());
+
+        if (templates.isEmpty()) {
+            templates = anomalieRepository.findByIsTemplateTrue().stream()
+                    .filter(a -> a.getLevel() >= 2)
+                    .collect(Collectors.toList());
+        }
+        if (!templates.isEmpty()) {
+            Anomalie template = templates.get(new Random().nextInt(templates.size()));
+            quest.setRewardAnomalieId(template.getId());
+        }
+        // ---------------------------------------
+
         questRepository.save(quest);
 
         System.out.println("[HuntingQuest] Weekly quest rotated: " + selected.getName());
@@ -249,25 +268,31 @@ public class HuntingQuestService {
                 throw new IllegalStateException("La période de récupération a expiré.");
             }
 
-            // Trouver une anomalie template correspondant au secret du donjon, niv 2+
-            String secret = quest.getRequiredSecret();
-            List<Anomalie> templates = anomalieRepository.findByIsTemplateTrue().stream()
-                    .filter(a -> a.getLevel() >= 2)
-                    .filter(a -> a.getSpiritualite() != null && a.getSpiritualite().name().equalsIgnoreCase(secret))
-                    .collect(Collectors.toList());
+            Anomalie template = null;
+            if (quest.getRewardAnomalieId() != null) {
+                template = anomalieRepository.findById(quest.getRewardAnomalieId().longValue()).orElse(null);
+            }
 
-            if (templates.isEmpty()) {
-                // Fallback : toute anomalie template niv 2+
-                templates = anomalieRepository.findByIsTemplateTrue().stream()
+            if (template == null) {
+                // Fallback si la quête n'avait pas d'anomalie pré-tirée (ou introuvable)
+                String secret = quest.getRequiredSecret();
+                List<Anomalie> templates = anomalieRepository.findByIsTemplateTrue().stream()
                         .filter(a -> a.getLevel() >= 2)
+                        .filter(a -> a.getSpiritualite() != null && a.getSpiritualite().name().equalsIgnoreCase(secret))
                         .collect(Collectors.toList());
-            }
 
-            if (templates.isEmpty()) {
-                throw new IllegalStateException("Aucune anomalie disponible comme récompense.");
-            }
+                if (templates.isEmpty()) {
+                    templates = anomalieRepository.findByIsTemplateTrue().stream()
+                            .filter(a -> a.getLevel() >= 2)
+                            .collect(Collectors.toList());
+                }
 
-            Anomalie template = templates.get(new Random().nextInt(templates.size()));
+                if (templates.isEmpty()) {
+                    throw new IllegalStateException("Aucune anomalie disponible comme récompense.");
+                }
+
+                template = templates.get(new Random().nextInt(templates.size()));
+            }
             AppUser user = userRepository.findByUsername(username)
                     .orElseThrow(() -> new IllegalArgumentException("Utilisateur introuvable."));
 
@@ -316,7 +341,14 @@ public class HuntingQuestService {
         questRepository.findByTypeAndActiveTrue("WEEKLY").ifPresent(quest -> {
             result.put("quest", questToMap(quest));
             result.put("leaderboard", getLeaderboard(quest.getId()));
-            result.put("reward", "Anomalie Niv.2+ correspondant au secret du donjon");
+            
+            if (quest.getRewardAnomalieId() != null) {
+                anomalieRepository.findById(quest.getRewardAnomalieId().longValue())
+                        .ifPresent(a -> result.put("rewardAnomalie", anomalieToMap(a)));
+            } else {
+                result.put("reward", "Anomalie Niv.2+ correspondant au secret du donjon");
+            }
+            
             if (username != null) {
                 entryRepository.findByQuestIdAndAccountName(quest.getId(), username)
                         .ifPresent(e -> result.put("myEntry", entryToMap(e)));
@@ -329,6 +361,14 @@ public class HuntingQuestService {
                 Map<String, Object> prevData = new HashMap<>();
                 prevData.put("quest", questToMap(prev));
                 prevData.put("leaderboard", getLeaderboard(prev.getId()));
+                
+                if (prev.getRewardAnomalieId() != null) {
+                    anomalieRepository.findById(prev.getRewardAnomalieId().longValue())
+                            .ifPresent(a -> prevData.put("rewardAnomalie", anomalieToMap(a)));
+                } else {
+                    prevData.put("reward", "Anomalie Niv.2+ correspondant au secret du donjon");
+                }
+
                 if (username != null) {
                     entryRepository.findByQuestIdAndAccountName(prev.getId(), username)
                             .ifPresent(e -> prevData.put("myEntry", entryToMap(e)));
@@ -416,5 +456,16 @@ public class HuntingQuestService {
             questRepository.save(q);
             System.out.println("[HuntingQuest] Expired: " + q.getType() + " - " + q.getDungeonName());
         }
+    }
+
+    private Map<String, Object> anomalieToMap(Anomalie anomalie) {
+        Map<String, Object> map = new HashMap<>();
+        map.put("name", anomalie.getName());
+        map.put("spiritualite", anomalie.getSpiritualite() != null ? anomalie.getSpiritualite().name() : null);
+        map.put("category", anomalie.getCategory() != null ? anomalie.getCategory().name() : null);
+        map.put("description", anomalie.getDescription());
+        map.put("level", anomalie.getLevel());
+        map.put("magicObject", anomalie.isMagicObject());
+        return map;
     }
 }
