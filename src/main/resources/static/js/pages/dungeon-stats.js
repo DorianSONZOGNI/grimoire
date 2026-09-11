@@ -5,7 +5,7 @@ let globalStats = {};
 
 let outcomesChartInstance = null;
 let classesChartInstance = null;
-let levelDeathChartInstance = null;
+let spiritualityChartInstance = null;
 
 // Theming for charts to match the site
 const chartTheme = {
@@ -82,6 +82,7 @@ function renderDashboard(dungeonFilterKey) {
         totalTimeouts: 0,
         totalDeaths: 0,
         classPopularity: {},
+        spiritualitePopularity: {},
         multiRuns: 0 // calculate manually from runs
     };
 
@@ -108,6 +109,11 @@ function renderDashboard(dungeonFilterKey) {
             for (const c in stat.classPopularity) {
                 combinedGlobalStats.classPopularity[c] = (combinedGlobalStats.classPopularity[c] || 0) + stat.classPopularity[c];
             }
+            if (stat.spiritualitePopularity) {
+                for (const s in stat.spiritualitePopularity) {
+                    combinedGlobalStats.spiritualitePopularity[s] = (combinedGlobalStats.spiritualitePopularity[s] || 0) + stat.spiritualitePopularity[s];
+                }
+            }
         }
         combinedGlobalStats.multiRuns = filteredRuns.filter(r => r.multi).length;
     }
@@ -115,7 +121,7 @@ function renderDashboard(dungeonFilterKey) {
     updateKPIs(combinedGlobalStats);
     updateOutcomesChart(combinedGlobalStats);
     updateClassesChart(combinedGlobalStats);
-    updateLevelDeathChart(filteredRuns);
+    updateSpiritualityChart(combinedGlobalStats);
     updateRunsTable(filteredRuns.slice(0, 50));
 }
 
@@ -207,46 +213,38 @@ function updateClassesChart(stats) {
     });
 }
 
-function updateLevelDeathChart(runs) {
-    const ctx = document.getElementById('levelDeathChart').getContext('2d');
+function updateSpiritualityChart(stats) {
+    const ctx = document.getElementById('spiritualityChart').getContext('2d');
     
-    if (levelDeathChartInstance) levelDeathChartInstance.destroy();
+    if (spiritualityChartInstance) spiritualityChartInstance.destroy();
 
-    // Group runs by level bucket (1-5, 6-10, etc)
-    const buckets = {};
-    for (let r of runs) {
-        const bucket = Math.floor(r.heroLevel / 5) * 5;
-        const bucketLabel = `${bucket}-${bucket+4}`;
-        
-        if (!buckets[bucketLabel]) buckets[bucketLabel] = { total: 0, deaths: 0 };
-        buckets[bucketLabel].total++;
-        if (r.dead) buckets[bucketLabel].deaths++;
-    }
+    const sortedSpirits = Object.entries(stats.spiritualitePopularity || {})
+        .sort((a, b) => b[1] - a[1]);
 
-    const sortedBuckets = Object.keys(buckets).sort((a, b) => parseInt(a) - parseInt(b));
-    const dataRates = sortedBuckets.map(b => (buckets[b].deaths / buckets[b].total) * 100);
+    const labels = sortedSpirits.map(s => s[0] || 'Sans Spiritualité');
+    const data = sortedSpirits.map(s => s[1]);
 
-    levelDeathChartInstance = new Chart(ctx, {
-        type: 'line',
+    spiritualityChartInstance = new Chart(ctx, {
+        type: 'bar',
         data: {
-            labels: sortedBuckets,
+            labels: labels,
             datasets: [{
-                label: 'Taux de Mortalité (%)',
-                data: dataRates,
-                borderColor: 'rgba(239, 68, 68, 1)',
-                backgroundColor: 'rgba(239, 68, 68, 0.2)',
-                borderWidth: 2,
-                fill: true,
-                tension: 0.4,
-                pointBackgroundColor: 'rgba(239, 68, 68, 1)'
+                label: 'Participations',
+                data: data,
+                backgroundColor: 'rgba(192, 132, 252, 0.7)',
+                borderColor: 'rgba(192, 132, 252, 1)',
+                borderWidth: 1,
+                borderRadius: 4
             }]
         },
         options: {
             responsive: true,
             maintainAspectRatio: false,
-            plugins: { legend: { display: false } },
+            plugins: {
+                legend: { display: false }
+            },
             scales: {
-                y: { beginAtZero: true, max: 100 }
+                y: { beginAtZero: true, ticks: { precision: 0 } }
             }
         }
     });
