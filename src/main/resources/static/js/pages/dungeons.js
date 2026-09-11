@@ -73,7 +73,7 @@ function updateHeroCountDisplay() {
 document.addEventListener('DOMContentLoaded', () => {
     const checkAuth = async () => {
         if (!window.currentUser) {
-            document.getElementById('authWarning').style.display = 'block';
+            window.location.href = '/login.html';
             return;
         }
 

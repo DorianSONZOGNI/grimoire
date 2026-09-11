@@ -8,7 +8,11 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function initHunting() {
-    currentUser = window.currentUser ? window.currentUser.username : null;
+    if (!window.currentUser) {
+        window.location.href = '/login.html';
+        return;
+    }
+    currentUser = window.currentUser.username;
     await loadAll();
 
     // Refresh toutes les 30s
