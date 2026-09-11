@@ -322,6 +322,9 @@ function bindClaimButton(container, questId) {
                     if (window.currentUser && window.currentUser.huntingClaimable > 0) {
                         window.currentUser.huntingClaimable--;
                     }
+                    if (window.checkAuthStatus) {
+                        window.checkAuthStatus();
+                    }
                 }
             } catch (e) {
                 alert('Erreur lors de la récupération.');
