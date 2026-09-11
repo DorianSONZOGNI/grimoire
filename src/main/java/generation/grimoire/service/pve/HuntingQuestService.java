@@ -40,7 +40,9 @@ public class HuntingQuestService {
             questRepository.save(old);
         });
 
-        List<Donjon> allDungeons = donjonRepository.findAll();
+        List<Donjon> allDungeons = donjonRepository.findAll().stream()
+                .filter(d -> d.getRecommendedLevel() <= 2)
+                .collect(java.util.stream.Collectors.toList());
         if (allDungeons.isEmpty()) return;
 
         Donjon selected = selectDungeonWeighted(allDungeons);
