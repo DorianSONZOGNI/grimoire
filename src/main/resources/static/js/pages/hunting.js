@@ -69,7 +69,8 @@ async function loadDaily() {
                         <div class="quest-reward-detail">
                             🥇 1er : <strong>${reward['1st'] || '?'}</strong> gold &nbsp;
                             🥈 2ème : <strong>${reward['2nd'] || '?'}</strong> gold &nbsp;
-                            🥉 3ème : <strong>${reward['3rd'] || '?'}</strong> gold
+                            🥉 3ème : <strong>${reward['3rd'] || '?'}</strong> gold<br>
+                            <span style="font-size: 0.85em; color: #94a3b8; display: inline-block; margin-top: 4px;">4ème et + : <strong>${reward['other'] || '0'}</strong> gold</span>
                         </div>
                     </div>
                     ${renderClaimButton(quest, myEntry, 'daily')}
@@ -251,9 +252,9 @@ function renderClaimButton(quest, myEntry, type, rewardAnomalie = null) {
     }
 
     if (!myEntry) {
-        return `<button class="btn-claim locked">
+        return `<button class="btn-claim locked" title="Vous n'avez pas de score sur cette quête.">
             <span class="material-symbols-outlined">lock</span>
-            Terminez le défi pour débloquer
+            Non participé
             ${anomalieHtml}
         </button>`;
     }
@@ -262,15 +263,6 @@ function renderClaimButton(quest, myEntry, type, rewardAnomalie = null) {
         return `<button class="btn-claim claimed">
             <span class="material-symbols-outlined">check_circle</span>
             Récompense récupérée
-            ${anomalieHtml}
-        </button>`;
-    }
-
-    // Daily : top 3 seulement
-    if (type === 'daily' && (myEntry.rank < 1 || myEntry.rank > 3)) {
-        return `<button class="btn-claim locked">
-            <span class="material-symbols-outlined">lock</span>
-            Réservé au Top 3
             ${anomalieHtml}
         </button>`;
     }

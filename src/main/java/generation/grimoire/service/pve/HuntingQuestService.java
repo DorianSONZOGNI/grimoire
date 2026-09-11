@@ -93,10 +93,15 @@ public class HuntingQuestService {
 
         // --- Tirage de l'Anomalie récompense ---
         String secret = selected.getRequiredSecret();
-        List<Anomalie> templates = anomalieRepository.findByIsTemplateTrue().stream()
-                .filter(a -> a.getLevel() >= 2)
-                .filter(a -> a.getSpiritualite() != null && a.getSpiritualite().name().equalsIgnoreCase(secret))
-                .collect(Collectors.toList());
+        generation.grimoire.enumeration.SpiritualiteType mappedSpiri = mapSecretToSpiritualite(secret);
+        
+        List<Anomalie> templates = new ArrayList<>();
+        if (mappedSpiri != null) {
+            templates = anomalieRepository.findByIsTemplateTrue().stream()
+                    .filter(a -> a.getLevel() >= 2)
+                    .filter(a -> a.getSpiritualite() == mappedSpiri)
+                    .collect(Collectors.toList());
+        }
 
         if (templates.isEmpty()) {
             templates = anomalieRepository.findByIsTemplateTrue().stream()
@@ -114,10 +119,49 @@ public class HuntingQuestService {
         System.out.println("[HuntingQuest] Weekly quest rotated: " + selected.getName());
     }
 
+    private generation.grimoire.enumeration.SpiritualiteType mapSecretToSpiritualite(String secret) {
+        if (secret == null) return null;
+        return switch (secret) {
+            case "Secret du Chaos" -> generation.grimoire.enumeration.SpiritualiteType.DESTRUCTION;
+            case "Secret de l'Abondance" -> generation.grimoire.enumeration.SpiritualiteType.CREATION;
+            case "Secret de la Préservation" -> generation.grimoire.enumeration.SpiritualiteType.CONSOLIDATION;
+            case "Secret de la Sérénité" -> generation.grimoire.enumeration.SpiritualiteType.SURETE;
+            case "Secret de la Chasse" -> generation.grimoire.enumeration.SpiritualiteType.TRAHISON;
+            case "Secret du Carnage" -> generation.grimoire.enumeration.SpiritualiteType.VIOLENCE;
+            case "Secret de la Joie" -> generation.grimoire.enumeration.SpiritualiteType.CONVICTION;
+            case "Secret du Savoir" -> generation.grimoire.enumeration.SpiritualiteType.RAISON;
+            case "Secret du Destin" -> generation.grimoire.enumeration.SpiritualiteType.KARMA;
+            case "Secret de l'Éther" -> generation.grimoire.enumeration.SpiritualiteType.ESPRIT;
+            case "Secret des Abysses" -> generation.grimoire.enumeration.SpiritualiteType.TENEBRES;
+            default -> null;
+        };
+    }
+
     /**
      * Sélectionne un donjon avec une pondération inversement proportionnelle
      * au nombre de runs. Moins un donjon a été joué → plus de poids.
      */
+    @Value("${grimoire.pve.quests.weekly-dungeons:}")
+    private List<Long> allowedWeeklyDungeonIds;
+
+    @jakarta.annotation.PostConstruct
+    public void fixActiveWeeklyQuest() {
+        questRepository.findByTypeAndActiveTrue("WEEKLY").stream().findFirst().ifPresent(quest -> {
+            generation.grimoire.enumeration.SpiritualiteType mappedSpiri = mapSecretToSpiritualite(quest.getRequiredSecret());
+            if (mappedSpiri != null) {
+                anomalieRepository.findByIsTemplateTrue().stream()
+                        .filter(a -> a.getLevel() >= 2)
+                        .filter(a -> a.getSpiritualite() == mappedSpiri)
+                        .findFirst()
+                        .ifPresent(a -> {
+                            quest.setRewardAnomalieId(a.getId());
+                            questRepository.save(quest);
+                            System.out.println("[Fix] Updated active weekly quest anomaly to: " + a.getName());
+                        });
+            }
+        });
+    }
+
     private Donjon selectDungeonWeighted(List<Donjon> dungeons) {
         // Compter les runs par dungeon
         List<DungeonRunStat> allStats = runStatRepository.findAll();
@@ -232,22 +276,17 @@ public class HuntingQuestService {
 
         // Vérifier éligibilité
         if ("DAILY".equals(quest.getType())) {
-            if (entry.getRank() < 1 || entry.getRank() > 3) {
-                throw new IllegalStateException("Vous n'êtes pas dans le top 3.");
-            }
             // Vérifier que la quête daily est encore active ou date pas trop vieille
             if (!quest.isActive() && quest.getEndDate().isBefore(LocalDate.now(ZONE))) {
                 throw new IllegalStateException("La quête journalière a expiré.");
             }
 
             int baseGold = 5 * quest.getDungeonRoomCount() * quest.getDungeonLevel();
-            int bonusGold = switch (entry.getRank()) {
-                case 1 -> 100;
-                case 2 -> 50;
-                case 3 -> 25;
-                default -> 0;
-            };
-            int totalGold = baseGold + bonusGold;
+            int totalGold;
+            if (entry.getRank() == 1) totalGold = baseGold + 100;
+            else if (entry.getRank() == 2) totalGold = baseGold + 50;
+            else if (entry.getRank() == 3) totalGold = baseGold + 25;
+            else totalGold = (baseGold + 25) / 2;
 
             AppUser user = userRepository.findByUsername(username)
                     .orElseThrow(() -> new IllegalArgumentException("Utilisateur introuvable."));
@@ -428,6 +467,7 @@ public class HuntingQuestService {
         m.put("1st", baseGold + 100);
         m.put("2nd", baseGold + 50);
         m.put("3rd", baseGold + 25);
+        m.put("other", (baseGold + 25) / 2);
         m.put("base", baseGold);
         return m;
     }
