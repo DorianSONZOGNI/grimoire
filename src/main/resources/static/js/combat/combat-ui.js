@@ -139,6 +139,25 @@ export function renderAndAnimateXPCards(containerId, players, prefix) {
 }
 
 export function updateUI(data) {
+    const oldStats = {};
+    document.querySelectorAll('.fighter').forEach((el) => {
+        let fId = el.dataset.fighterId;
+        if (!fId) return;
+        const hpTextEl = el.querySelector('.hp-text-val');
+        const manaTextEl = el.querySelector('.mana-text-val');
+        let hp = null, mana = null;
+        if (hpTextEl) {
+            const m = hpTextEl.textContent.match(/(\d+)/);
+            if (m) hp = parseInt(m[1], 10);
+        }
+        if (manaTextEl) {
+            const m = manaTextEl.textContent.match(/(\d+)/);
+            if (m) mana = parseInt(m[1], 10);
+        }
+        oldStats[fId] = { hp, mana };
+    });
+    window.combatOldStats = oldStats;
+
     resetCombatTimeoutWarning(data.finished);
 
     if (pageState.currentSessionData && pageState.currentSessionData.activePlayer && data.activePlayer) {
@@ -214,6 +233,7 @@ export function updateUI(data) {
 
             const div = document.createElement('div');
             div.className = `fighter fighter-player ${isActive ? 'active' : ''} ${isAllySelected ? 'selected-ally' : ''} ${isDead ? 'dead' : ''}`;
+            div.dataset.fighterId = `hero-${p.id || index}`;
 
             if (isAllySelected) {
                 div.style.borderColor = '#10b981';
@@ -234,8 +254,61 @@ export function updateUI(data) {
             if (pageState.isMulti && isActive && data.turnStartTime) {
                 timerHtml = `<div class="turn-timer-badge" id="timerBadge_${index}" style="position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(4px); border: 1px solid #38bdf8; color: #38bdf8; padding: 4px 14px; border-radius: 8px; font-weight: bold; box-shadow: 0 0 12px rgba(56, 189, 248, 0.5); z-index: 10; display: flex; align-items: center; gap: 6px; letter-spacing: 0.5px;">⏳ Calcul...</div>`;
             }
-            div.innerHTML = timerHtml + generateFighterHtml(p, true);
+            const fId = div.dataset.fighterId;
+            let forcedHp = null;
+            let forcedMana = null;
+            if (window.combatOldStats && window.combatOldStats[fId]) {
+                forcedHp = window.combatOldStats[fId].hp;
+                forcedMana = window.combatOldStats[fId].mana;
+            }
+
+            div.innerHTML = timerHtml + generateFighterHtml(p, true, false, forcedHp, forcedMana);
             playersContainer.appendChild(div);
+
+            // Animate bars with JS loop
+            const hpBar = div.querySelector('.gauge-fill.hp');
+            const hpTextEl = div.querySelector('.hp-text-val');
+            const manaBar = div.querySelector('.gauge-fill.mana');
+            const manaTextEl = div.querySelector('.mana-text-val');
+
+            if (forcedHp !== null && forcedHp !== p.healthCurrent) {
+                const suffix = p.shieldTotal > 0 ? ` (+${p.shieldTotal} 🛡️)` : '';
+                
+                // DEBUG
+                const log = document.getElementById('combatLog');
+                if(log) {
+                    const el = document.createElement('div');
+                    el.className = 'log-entry';
+                    el.style.color = 'yellow';
+                    el.innerText = `[DEBUG] Player ${fId} HP: ${forcedHp} -> ${p.healthCurrent}`;
+                    log.prepend(el);
+                }
+
+                animateGaugeJS(hpBar, hpTextEl, forcedHp, p.healthCurrent, p.healthMax, 800, suffix);
+            } else if (forcedHp === p.healthCurrent) {
+                // DEBUG
+                const log = document.getElementById('combatLog');
+                if(log) {
+                    const el = document.createElement('div');
+                    el.className = 'log-entry';
+                    el.style.color = 'orange';
+                    el.innerText = `[DEBUG] Player ${fId} skipped HP anim (same val: ${forcedHp})`;
+                    log.prepend(el);
+                }
+            } else if (forcedHp === null) {
+                // DEBUG
+                const log = document.getElementById('combatLog');
+                if(log) {
+                    const el = document.createElement('div');
+                    el.className = 'log-entry';
+                    el.style.color = 'red';
+                    el.innerText = `[DEBUG] Player ${fId} skipped HP anim (forcedHp is NULL)`;
+                    log.prepend(el);
+                }
+            }
+            if (forcedMana !== null && forcedMana !== p.manaCurrent) {
+                animateGaugeJS(manaBar, manaTextEl, forcedMana, p.manaCurrent, p.manaMax, 800);
+            }
 
             if (needsDelay) {
                 p.healthCurrent = actualHp;
@@ -1506,15 +1579,17 @@ export function getBossBuffsHtml(c) {
     return html;
 }
 
-export function generateFighterHtml(c, isHero, skipBadges = false) {
-    const hpPct = c.healthMax > 0 ? Math.max(0, Math.min(100, (c.healthCurrent / c.healthMax) * 100)) : 0;
-    let hpLabel = `${c.healthCurrent} / ${c.healthMax}`;
+export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = null, forcedMana = null) {
+    const hpToRender = forcedHp !== null && !isNaN(forcedHp) ? forcedHp : c.healthCurrent;
+    const hpPct = c.healthMax > 0 ? Math.max(0, Math.min(100, (hpToRender / c.healthMax) * 100)) : 0;
+    let hpLabel = `${hpToRender} / ${c.healthMax}`;
     if (c.shieldTotal > 0) hpLabel += ` (+${c.shieldTotal} 🛡️)`;
 
-    const manaPct = c.manaMax > 0 ? Math.max(0, Math.min(100, (c.manaCurrent / c.manaMax) * 100)) : 0;
+    const manaToRender = forcedMana !== null && !isNaN(forcedMana) ? forcedMana : c.manaCurrent;
+    const manaPct = c.manaMax > 0 ? Math.max(0, Math.min(100, (manaToRender / c.manaMax) * 100)) : 0;
     let manaHtml = `
         <div class="gauge-container mt-4" style="text-align: left;">
-            <div class="gauge-label"><span>Mana</span><span>${c.manaCurrent} / ${c.manaMax}</span></div>
+            <div class="gauge-label"><span style="display:flex; align-items:center;">Mana</span><span class="mana-text-val">${manaToRender} / ${c.manaMax}</span></div>
             <div class="gauge-track"><div class="gauge-fill mana" style="width: ${manaPct}%;"></div></div>
         </div>`;
 
@@ -1904,10 +1979,10 @@ export function generateFighterHtml(c, isHero, skipBadges = false) {
         ${monsterBadgesHtml}
         ${statsHtml}
         <div class="gauge-container" style="text-align: left;">
-            <div class="gauge-label"><span style="display:flex; align-items:center;">Santé (PV)${hpRegenBadge}</span><span>${hpLabel}</span></div>
+            <div class="gauge-label"><span style="display:flex; align-items:center;">Santé (PV)${hpRegenBadge}</span><span class="hp-text-val">${hpLabel}</span></div>
             <div class="gauge-track"><div class="gauge-fill hp" style="width: ${hpPct}%;"></div></div>
         </div>
-        ${manaHtml.replace('<span>Mana</span>', `<span style="display:flex; align-items:center;">Mana${manaRegenBadge}</span>`)}
+        ${manaHtml.replace('<span style="display:flex; align-items:center;">Mana</span>', `<span style="display:flex; align-items:center;">Mana${manaRegenBadge}</span>`)}
         ${specialItemsHtml}
         <div class="sandbox-status-list" style="justify-content: center;">${passiveBadges}</div>
         <div class="sandbox-status-list" style="justify-content: center;">
@@ -1955,6 +2030,7 @@ export function renderEnemies(enemies) {
         const div = document.createElement('div');
         div.className = `fighter fighter-enemy enemy-card ${isActive ? 'active' : ''} ${activeMonster.dead ? 'dead' : ''}`;
         div.dataset.index = index;
+        div.dataset.fighterId = `monster-${m.monsterId || index}`;
         div.style.position = 'relative';
 
         if (isActive) {
@@ -1977,9 +2053,90 @@ export function renderEnemies(enemies) {
             }
         }
 
-        div.innerHTML = generateFighterHtml(pMonster, false, isBoss);
+        const fId = div.dataset.fighterId;
+        let forcedHp = null;
+        let forcedMana = null;
+        if (window.combatOldStats && window.combatOldStats[fId]) {
+            forcedHp = window.combatOldStats[fId].hp;
+            forcedMana = window.combatOldStats[fId].mana;
+        }
+
+        div.innerHTML = generateFighterHtml(pMonster, false, isBoss, forcedHp, forcedMana);
         container.appendChild(div);
+
+        // Animate bars with JS loop
+        const hpBar = div.querySelector('.gauge-fill.hp');
+        const hpTextEl = div.querySelector('.hp-text-val');
+        const manaBar = div.querySelector('.gauge-fill.mana');
+        const manaTextEl = div.querySelector('.mana-text-val');
+
+        if (forcedHp !== null && forcedHp !== pMonster.healthCurrent) {
+            const suffix = pMonster.shieldTotal > 0 ? ` (+${pMonster.shieldTotal} 🛡️)` : '';
+            
+            // DEBUG
+            const log = document.getElementById('combatLog');
+            if(log) {
+                const el = document.createElement('div');
+                el.className = 'log-entry';
+                el.style.color = 'yellow';
+                el.innerText = `[DEBUG] Enemy ${fId} HP: ${forcedHp} -> ${pMonster.healthCurrent}`;
+                log.prepend(el);
+            }
+
+            animateGaugeJS(hpBar, hpTextEl, forcedHp, pMonster.healthCurrent, pMonster.healthMax, 800, suffix);
+        } else if (forcedHp === pMonster.healthCurrent) {
+            // DEBUG
+            const log = document.getElementById('combatLog');
+            if(log) {
+                const el = document.createElement('div');
+                el.className = 'log-entry';
+                el.style.color = 'orange';
+                el.innerText = `[DEBUG] Enemy ${fId} skipped HP anim (same val: ${forcedHp})`;
+                log.prepend(el);
+            }
+        } else if (forcedHp === null) {
+            // DEBUG
+            const log = document.getElementById('combatLog');
+            if(log) {
+                const el = document.createElement('div');
+                el.className = 'log-entry';
+                el.style.color = 'red';
+                el.innerText = `[DEBUG] Enemy ${fId} skipped HP anim (forcedHp is NULL)`;
+                log.prepend(el);
+            }
+        }
+        if (forcedMana !== null && forcedMana !== pMonster.manaCurrent) {
+            animateGaugeJS(manaBar, manaTextEl, forcedMana, pMonster.manaCurrent, pMonster.manaMax, 800);
+        }
     });
+}
+
+function animateGaugeJS(barEl, textEl, oldVal, newVal, max, duration = 600, suffix = '') {
+    if (!barEl) return;
+    let startTime = null;
+    barEl.style.transition = 'none'; // Ensure JS controls the width smoothly
+    
+    function step(currentTime) {
+        if (!startTime) startTime = currentTime;
+        let t = (currentTime - startTime) / duration;
+        if (t > 1) t = 1;
+        let easeT = 1 - Math.pow(1 - t, 3); // ease-out cubic
+        let currentVal = Math.floor(oldVal + (newVal - oldVal) * easeT);
+        let pct = max > 0 ? Math.max(0, Math.min(100, (currentVal / max) * 100)) : 0;
+        
+        barEl.style.width = pct + '%';
+        if (textEl) {
+            textEl.textContent = `${currentVal} / ${max}${suffix}`;
+        }
+        
+        if (t < 1) {
+            requestAnimationFrame(step);
+        } else {
+            barEl.style.width = (max > 0 ? Math.max(0, Math.min(100, (newVal / max) * 100)) : 0) + '%';
+            if (textEl) textEl.textContent = `${newVal} / ${max}${suffix}`;
+        }
+    }
+    requestAnimationFrame(step);
 }
 
 export function renderShieldsHtml(shieldList) {
