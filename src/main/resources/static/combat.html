@@ -21,6 +21,7 @@
     <link rel="stylesheet" href="/styles/ui/utilities.css?v=1786180000001">
     <link rel="stylesheet" href="/styles/pages/sandbox.css?v=1786180000001">
     <link rel="stylesheet" href="/styles/pages/combat.css?v=1786180000001">
+    <link rel="stylesheet" href="/styles/pages/armory.css?v=1786180000001">
     <script src="/js/utils/utils.js"></script>
 </head>
 
@@ -278,6 +279,11 @@
 
     <!-- Consume Target Selection Modal -->
 
+
+    <!-- Hero Equipment Tooltip -->
+    <div id="heroEquipmentTooltip" style="display:none; position:fixed; z-index:9999; background:linear-gradient(135deg, rgba(15,23,41,0.95), rgba(26,39,68,0.95)); border:1px solid rgba(56,189,248,0.3); border-radius:0.75rem; padding:1rem; min-width:300px; width: max-content; max-width:800px; box-shadow:0 10px 25px rgba(0,0,0,0.5); backdrop-filter:blur(8px); pointer-events:none;">
+        <div id="heroEquipmentTooltipContent" style="display:flex; flex-direction:column; gap:0.5rem;"></div>
+    </div>
 
     <script type="module" src="/js/services/auth.js?v=11"></script>
     <script type="module" src="/js/pages/combat.js?v=205"></script>

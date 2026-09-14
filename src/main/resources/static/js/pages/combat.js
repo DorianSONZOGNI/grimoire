@@ -77,6 +77,8 @@ export const pageState = {
     isProcessing: null,
     selectedTargetIndex: null,
     selectedAllyIndex: null,
+    selectedItemType: null,
+    combatEquipments: {},
     previousPlayerXP: null,
     previousPlayerSpiritXP: null,
     isFleeing: null,
@@ -432,6 +434,145 @@ async function loadAnomaliesCombat() {
     }
 }
 
+async function fetchCombatEquipments(sessionId) {
+    try {
+        const res = await globalFetch(`/api/pve/combat/${sessionId}/equipments`);
+        if (res.ok) {
+            pageState.combatEquipments = await res.json();
+        }
+    } catch (e) {
+        console.error("Erreur récupération des équipements:", e);
+    }
+}
+
+window.showHeroEquipmentTooltip = function (el, characterId) {
+    const tooltip = document.getElementById('heroEquipmentTooltip');
+    const content = document.getElementById('heroEquipmentTooltipContent');
+    if (!tooltip || !content) return;
+
+    let eqs = pageState.combatEquipments[characterId];
+    if (!eqs || eqs.length === 0) {
+        content.innerHTML = '<div style="color:#cbd5e1; font-size:0.9rem; text-align:center;">Aucun équipement</div>';
+    } else {
+        let html = '<div class="equip-slots-grid" style="width: 100%; min-width: 500px;">';
+        
+        const slots = Object.keys(window.SLOT_LABELS || {}).filter(s => s !== 'CONSOMMABLE' && s !== 'ANOMALIE' && s !== 'ARME_DEUX_MAINS' && s !== 'ARME' && s !== 'ANNEAU');
+        
+        // If SLOT_LABELS isn't loaded for some reason, fallback to basic list
+        if (slots.length === 0) {
+            slots.push('CASQUE', 'PLASTRON', 'ARME_GAUCHE', 'ANNEAU_GAUCHE', 'ANNEAU_DROIT', 'ARME_DROITE', 'BOTTES', 'CAPE');
+        }
+
+        slots.forEach(slotKey => {
+            const slotInfo = window.SLOT_LABELS && window.SLOT_LABELS[slotKey] ? window.SLOT_LABELS[slotKey] : { icon: 'help', color: '#94a3b8', label: slotKey };
+            
+            let equipped = eqs.find(e => e.slot === slotKey);
+            const twoHanded = eqs.find(e => e.slot === 'ARME_DEUX_MAINS');
+
+            if (slotKey === 'ARME_GAUCHE' && twoHanded) {
+                equipped = twoHanded;
+            }
+            if (slotKey === 'ARME_DROITE' && twoHanded) {
+                equipped = twoHanded;
+            }
+
+            if (equipped) {
+                const rarityName = typeof getRarityName === 'function' ? getRarityName(equipped.rarity) : '';
+                const rarityClass = rarityName ? `rarity-${rarityName}` : '';
+                
+                let statsChips = '';
+                if (typeof STAT_DEFS !== 'undefined') {
+                    statsChips = STAT_DEFS
+                        .filter(s => equipped[s.key] && equipped[s.key] !== 0)
+                        .map(s => {
+                            const val = equipped[s.key];
+                            const sign = val > 0 ? '+' : '';
+                            const isMalus = val < 0;
+                            const suffix = s.isPercent ? '%' : '';
+                            return `<span class="eq-stat-mini ${isMalus ? 'malus' : ''}" title="${s.label}"><span class="material-symbols-outlined text-xs" style="color:${isMalus ? '#ef4444' : s.color};">${s.icon}</span>${sign}${val}${suffix}</span>`;
+                        }).join('');
+                } else {
+                    let statsHtml = '';
+                    if (equipped.power > 0) statsHtml += `<span style="color:#a855f7;">${equipped.power} Pui</span> `;
+                    if (equipped.strength > 0) statsHtml += `<span style="color:#f43f5e;">${equipped.strength} For</span> `;
+                    if (equipped.armor > 0) statsHtml += `<span style="color:#3b82f6;">${equipped.armor} Arm</span> `;
+                    if (equipped.resistance > 0) statsHtml += `<span style="color:#10b981;">${equipped.resistance} Rés</span> `;
+                    if (equipped.speed > 0) statsHtml += `<span style="color:#eab308;">${equipped.speed} Vit</span> `;
+                    if (equipped.crit > 0) statsHtml += `<span style="color:#ef4444;">${equipped.crit}% Crit</span> `;
+                    statsChips = statsHtml;
+                }
+                
+                let specialEffectHtml = '';
+                if (equipped.specialEffect && equipped.specialEffect !== 'NONE' && equipped.specialEffect !== 'AUCUN') {
+                    const label = window.EFFECT_LABELS ? (window.EFFECT_LABELS[equipped.specialEffect] || equipped.specialEffect) : equipped.specialEffect;
+                    const isCursed = equipped.specialEffect.startsWith('CURSED_');
+                    const icon = isCursed ? 'skull' : 'auto_awesome';
+                    const color = isCursed ? '#9b2d2d' : '#c084fc';
+                    const bg = isCursed ? 'rgba(156, 163, 175, 0.15)' : 'rgba(168, 85, 247, 0.1)';
+
+                    specialEffectHtml = `<div style="margin-top: 0.3rem; font-size: 0.7rem; color: ${color}; background: ${bg}; padding: 0.1rem 0.4rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 0.2rem; border: ${isCursed ? '1px solid rgba(156, 163, 175, 0.2)' : 'none'};">
+                        <span class="material-symbols-outlined text-xs">${icon}</span>
+                        ${label} : ${equipped.specialEffectValue || ''} ${window.getEffectInfoIconHtml ? window.getEffectInfoIconHtml(equipped.specialEffect) : ''}
+                    </div>`;
+                }
+
+                html += `
+                    <div class="equip-slot-card equipped" data-slot="${slotKey}">
+                        <div class="equip-slot-header">
+                            <span class="equip-slot-label">
+                                <span class="material-symbols-outlined text-lg ${slotInfo.extraClass || ''}" style="color: ${slotInfo.color};">${slotInfo.icon}</span>
+                                ${slotInfo.label || slotKey}
+                            </span>
+                        </div>
+                        <div class="equip-slot-item-name ${rarityClass}">${equipped.name}</div>
+                        <div class="equip-slot-stats">
+                            ${statsChips || '<span class="opacity-40">Aucun bonus</span>'}
+                            ${specialEffectHtml}
+                        </div>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="equip-slot-card empty" data-slot="${slotKey}">
+                        <div class="equip-slot-header" style="justify-content: center; opacity: 0.5;">
+                            <span class="equip-slot-label">
+                                <span class="material-symbols-outlined text-lg ${slotInfo.extraClass || ''}" style="color: ${slotInfo.color};">${slotInfo.icon}</span>
+                                ${slotInfo.label || slotKey}
+                            </span>
+                        </div>
+                    </div>
+                `;
+            }
+        });
+        html += '</div>';
+        content.innerHTML = html;
+    }
+
+    const rect = el.getBoundingClientRect();
+    tooltip.style.display = 'block';
+    
+    // Position tooltip to the right or left of the avatar depending on screen space
+    let top = rect.top + window.scrollY;
+    let left = rect.right + 10;
+    
+    if (left + 750 > window.innerWidth) {
+        left = rect.left - 760;
+    }
+    
+    // Ensure left is not negative
+    if (left < 10) {
+        left = 10;
+    }
+    
+    tooltip.style.top = top + 'px';
+    tooltip.style.left = left + 'px';
+};
+
+window.hideHeroEquipmentTooltip = function () {
+    const tooltip = document.getElementById('heroEquipmentTooltip');
+    if (tooltip) tooltip.style.display = 'none';
+};
+
 document.addEventListener('DOMContentLoaded', async () => {
     window.dungeonMusic = null;
 
@@ -543,6 +684,8 @@ async function resumeCombat(savedSessionId) {
             pageState.previousPlayerSpiritXP[p.id] = p.spiritualiteExperience || 0;
         });
 
+        await fetchCombatEquipments(savedSessionId);
+
         updateUI(data);
     } catch (e) {
         console.error(e);
@@ -581,6 +724,8 @@ async function startCombat(characterIds, dungeonId, consumableIds) {
             pageState.previousPlayerXP[p.id] = p.experience;
             pageState.previousPlayerSpiritXP[p.id] = p.spiritualiteExperience || 0;
         });
+
+        await fetchCombatEquipments(pageState.sessionId);
 
         updateUI(data);
     } catch (e) {
@@ -3449,7 +3594,7 @@ function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = null, for
         ${mutationsHtml}
         ${channelingBadgeHtml}
         <div class="fighter-name" style="color: ${isHero ? '#f8fafc' : '#ef4444'}; font-size: 1.3rem; display: flex; justify-content: center; align-items: center; gap: 0.2rem; margin-bottom: 0.8rem; width: 100%;">
-            <span style="flex-shrink: 0; display: flex; align-items: center;">${avatarHtml}</span>
+            <span style="flex-shrink: 0; display: flex; align-items: center; ${isHero ? 'cursor: help;' : ''}" ${isHero ? `onmouseenter="if(window.showHeroEquipmentTooltip) window.showHeroEquipmentTooltip(this, ${c.id})" onmouseleave="if(window.hideHeroEquipmentTooltip) window.hideHeroEquipmentTooltip()"` : ''}>${avatarHtml}</span>
             <div style="display: flex; align-items: center; gap: 0.3rem; min-width: 0;">
                 <span style="flex-shrink: 0; display: flex;">${titleIconsHtml}</span>
                 <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;" title="${c.name}">${c.name}</span>
