@@ -82,6 +82,7 @@ public class CombatService {
                 }
             }
             p.clearBuffs();
+            p.setUsedCheatDeath(false);
             p.setHealthCurrent(p.getTotalHealthMax());
             p.setManaCurrent(p.getTotalManaMax());
             players.add(p);
@@ -192,6 +193,7 @@ public class CombatService {
                 }
             }
             p.clearBuffs();
+            p.setUsedCheatDeath(false);
             p.setHealthCurrent(p.getTotalHealthMax());
             p.setManaCurrent(p.getTotalManaMax());
             players.add(p);

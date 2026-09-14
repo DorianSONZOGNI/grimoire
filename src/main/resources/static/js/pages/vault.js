@@ -221,7 +221,7 @@ function filterVault() {
         let matchSlot = true;
         if (filterSlot) {
             if (filterSlot === 'ANNEAU') {
-                matchSlot = ((eq.slot?.name || eq.slot) === 'ANNEAU');
+                matchSlot = ((eq.slot?.name || eq.slot) === 'ANNEAU' || (eq.slot?.name || eq.slot) === 'ANNEAU_GAUCHE' || (eq.slot?.name || eq.slot) === 'ANNEAU_DROIT');
             } else if (filterSlot === 'ARME') {
                 matchSlot = ((eq.slot?.name || eq.slot) === 'ARME_GAUCHE' || (eq.slot?.name || eq.slot) === 'ARME_DROITE' || (eq.slot?.name || eq.slot) === 'ARME_DEUX_MAINS');
             } else {

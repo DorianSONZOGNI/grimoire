@@ -29,7 +29,7 @@ window.EFFECT_DESCRIPTIONS = {
     'LIFESTEAL': 'Convertit une partie des dégâts infligés (physiques ou magiques) en points de vie (Soin).',
     'THORNS': 'Renvoie automatiquement à l\'attaquant une partie des dégâts physiques subis.',
     'MANA_SHIELD': 'Bouclier de mana : le mana encaisse une partie des dégâts à la place des points de vie.',
-    'CHEAT_DEATH': 'Survie miraculeuse : une fois par combat, annule un coup mortel et rend des points de vie.',
+    'CHEAT_DEATH': 'Survie miraculeuse : une fois par donjon, annule un coup mortel et rend des points de vie.',
     'CRIT_DAMAGE': 'Augmente le multiplicateur de dégâts de toutes les attaques critiques du porteur.',
     'CURSED_MANA_DRAIN': '[Malédiction] Draine chaque tour un pourcentage du mana actuel du porteur.',
     'CURSED_HP_LOSS_ON_MANA': '[Malédiction] Le porteur subit des dégâts proportionnels au mana dépensé lors du lancement d\'un sort.',
