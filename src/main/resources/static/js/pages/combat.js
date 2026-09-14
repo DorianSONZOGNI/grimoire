@@ -3975,6 +3975,10 @@ function renderSpells(spells) {
             window.updateSpellCardState(sp.id);
         }
     });
+    
+    if (pageState.currentSessionData) {
+        updateMultiTurnBanner(pageState.currentSessionData);
+    }
 }
 
 function renderSpellCard(sp) {
