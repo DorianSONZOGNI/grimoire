@@ -84,12 +84,13 @@ function generateStandHtml(eq) {
         const color = isCursed ? '#9b2d2d' : '#c084fc';
         const bg = isCursed ? 'rgba(156, 163, 175, 0.15)' : 'rgba(168, 85, 247, 0.1)';
 
-        effectHtml = `<div class="shop-stand-stat ${isCursed ? 'border-cursed' : ''}" style="background: ${bg}; color: ${color};">
+        const infoIcon = window.getEffectInfoIconHtml ? window.getEffectInfoIconHtml(eq.specialEffect) : '';
+        effectHtml = `<div class="shop-stand-stat ${isCursed ? 'border-cursed' : ''}" style="background: ${bg}; color: ${color}; gap: 0.5rem;">
             <div class="flex-center-gap">
                 <span class="material-symbols-outlined text-sm">${icon}</span>
-                ${label}
+                <span>${label} : <span class="font-bold">${eq.specialEffectValue}</span></span>
             </div>
-            <span class="font-bold">${eq.specialEffectValue}</span>
+            ${infoIcon}
         </div>`;
     }
 
