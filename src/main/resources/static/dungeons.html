@@ -198,8 +198,11 @@
             <div class="lobby-modal-icon">⚔️</div>
             <h3 class="lobby-modal-title">Lobby Co-op Créé !</h3>
             <p class="lobby-modal-subtitle">Partagez ce code à votre allié :</p>
-            <div class="lobby-short-code-container">
+            <div class="lobby-short-code-container" style="display:flex; align-items:center; justify-content:center; gap:0.5rem; flex-wrap:wrap;">
                 <span id="lobbyShortCode" class="lobby-short-code">------</span>
+                <button onclick="copyLobbyCode()" id="btnCopyLobbyCode" title="Copier le code" style="background:rgba(255,255,255,0.1); border:none; border-radius:0.5rem; color:#e2e8f0; width:40px; height:40px; display:flex; align-items:center; justify-content:center; cursor:pointer; transition:all 0.2s;">
+                    <span class="material-symbols-outlined">content_copy</span>
+                </button>
             </div>
             
             <div id="lobbyCostWarning" class="lobby-cost-warning" style="display:none;">
@@ -226,10 +229,14 @@
             </h3>
             <p style="color:#94a3b8; font-size:0.85rem; margin-bottom:1.5rem;">Entrez le code à 6 caractères partagé par votre allié.</p>
 
-            <div style="margin-bottom:1rem;">
+            <div style="margin-bottom:1rem; display:flex; gap:0.5rem;">
                 <input id="joinLobbyCodeInput" type="text" maxlength="6"
                     placeholder="EX: A3F7K2"
-                    style="width:100%; padding:0.85rem 1rem; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.15); border-radius:0.75rem; color:#f8fafc; font-size:1.2rem; text-align:center; letter-spacing:0.2em; text-transform:uppercase; outline:none;">
+                    style="flex:1; padding:0.85rem 1rem; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.15); border-radius:0.75rem; color:#f8fafc; font-size:1.2rem; text-align:center; letter-spacing:0.2em; text-transform:uppercase; outline:none;">
+                <button onclick="pasteLobbyCode()" title="Coller le code"
+                    style="padding:0 1rem; background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.15); border-radius:0.75rem; color:#94a3b8; cursor:pointer; display:flex; align-items:center; justify-content:center; transition:all 0.2s;">
+                    <span class="material-symbols-outlined">content_paste</span>
+                </button>
             </div>
 
             <div id="joinLobbyInfoContainer" style="display:none; margin-bottom:1rem; padding:1rem; background:rgba(0,0,0,0.3); border:1px solid rgba(14,165,233,0.3); border-radius:0.75rem;">

@@ -1238,6 +1238,30 @@ window.closeJoinLobbyModal = function () {
     document.getElementById('joinLobbyModal').style.display = 'none';
 };
 
+window.copyLobbyCode = function () {
+    const codeSpan = document.getElementById('lobbyShortCode');
+    if (codeSpan && codeSpan.innerText && codeSpan.innerText !== '------') {
+        navigator.clipboard.writeText(codeSpan.innerText).then(() => {
+            const btn = document.getElementById('btnCopyLobbyCode');
+            if (btn) {
+                const originalHtml = btn.innerHTML;
+                btn.innerHTML = '<span class="material-symbols-outlined" style="color:#10b981;">check</span>';
+                setTimeout(() => { btn.innerHTML = originalHtml; }, 2000);
+            }
+        }).catch(err => console.error('Erreur de copie:', err));
+    }
+};
+
+window.pasteLobbyCode = function () {
+    navigator.clipboard.readText().then(text => {
+        const input = document.getElementById('joinLobbyCodeInput');
+        if (input && text) {
+            input.value = text.trim().substring(0, 6).toUpperCase();
+            input.dispatchEvent(new Event('input'));
+        }
+    }).catch(err => console.error('Erreur de collage:', err));
+};
+
 window.updateJoinCharAvailability = function (info) {
     if (!pageState.userCharacters) return;
 
