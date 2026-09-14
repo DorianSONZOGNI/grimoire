@@ -478,8 +478,16 @@ function renderConsumablesList() {
         const isSelected = pageState.selectedConsumableIds.includes(c.id);
         const selIndex = pageState.selectedConsumableIds.indexOf(c.id);
         const badgeHtml = isSelected ? `<div class="flex-center text-xxs absolute sel-badge">${selIndex + 1}</div>` : '';
+
+        let cardTooltip = '';
+        if (c.consumableCategory === 'CLE') {
+            cardTooltip = ` onmouseenter="if(window.showGlobalTooltip) window.showGlobalTooltip(this)" onmouseleave="if(window.hideGlobalTooltip) window.hideGlobalTooltip()" data-tooltip-html="Permet d'augmenter les chances de loot lors d'ouverture de coffre" style="cursor: help;"`;
+        } else if (c.consumableCategory === 'CORDE') {
+            cardTooltip = ` onmouseenter="if(window.showGlobalTooltip) window.showGlobalTooltip(this)" onmouseleave="if(window.hideGlobalTooltip) window.hideGlobalTooltip()" data-tooltip-html="Permet d'éviter certain piège" style="cursor: help;"`;
+        }
+
         cardsHtml += `
-            <div class="consumable-card ${isSelected ? 'selected' : ''} relative overflow-visible" onclick="selectConsumable(${c.id})">
+            <div class="consumable-card ${isSelected ? 'selected' : ''} relative overflow-visible" onclick="selectConsumable(${c.id})" ${cardTooltip}>
                 <span class="material-symbols-outlined flex-shrink-0" style="font-size: 1.1rem; color: ${isSelected ? '#10b981' : iconColor};">${iconName}</span>
                 <div class="flex-1 min-w-0">
                     <div class="flex-between items-center">
@@ -493,6 +501,7 @@ function renderConsumablesList() {
                         ${c.consumableManaPercent ? `<span class="inline-flex items-center text-sky-500" title="Mana Max">+${c.consumableManaPercent}%<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">water_drop</span></span>` : ''}
                         ${c.consumableMissingHpPercent ? `<span class="inline-flex items-center text-red-500" title="PV Manq">+${c.consumableMissingHpPercent}%<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">healing</span></span>` : ''}
                         ${c.consumableMissingManaPercent ? `<span class="inline-flex items-center text-purple-500" title="Mana Manq">+${c.consumableMissingManaPercent}%<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">cyclone</span></span>` : ''}
+                        ${c.consumableCategory === 'CLE' && c.specialEffectValue ? `<span class="inline-flex items-center text-yellow-400" title="Bonus butin coffre">+${c.specialEffectValue}%<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">diamond</span></span>` : ''}
                     </div>
                 </div>
                 ${badgeHtml}

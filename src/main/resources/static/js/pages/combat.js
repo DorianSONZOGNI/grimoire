@@ -766,6 +766,13 @@ window.updateSpellCardState = function (spellId) {
 
 function initiateCombatCast(spellId) {
     if (!pageState.currentSessionData) return;
+    
+    if (pageState.currentSessionData.multi) {
+        const activePlayer = pageState.currentSessionData.activePlayer;
+        if (activePlayer && activePlayer.ownerUsername !== pageState.currentUsername) {
+            return;
+        }
+    }
 
     let needsEnemy = false;
     let needsAlly = false;
@@ -1081,6 +1088,14 @@ function cancelCombatCast() {
 
 async function doAction(spellId = null) {
     if (!pageState.sessionId || !pageState.currentSessionData || pageState.isProcessing) return;
+
+    if (pageState.currentSessionData.multi) {
+        const activePlayer = pageState.currentSessionData.activePlayer;
+        if (activePlayer && activePlayer.ownerUsername !== pageState.currentUsername) {
+            return;
+        }
+    }
+
     pageState.isProcessing = true;
 
     // Ensure we have a valid target
@@ -1623,11 +1638,9 @@ function setMultiActionsEnabled(enabled) {
         document.querySelectorAll(sel).forEach(el => {
             if (enabled) {
                 el.classList.remove('multi-disabled');
-                el.style.pointerEvents = '';
                 el.style.opacity = '';
             } else {
                 el.classList.add('multi-disabled');
-                el.style.pointerEvents = 'none';
                 el.style.opacity = '0.35';
             }
         });
@@ -3975,6 +3988,10 @@ function renderSpells(spells) {
             window.updateSpellCardState(sp.id);
         }
     });
+    
+    if (pageState.currentSessionData) {
+        updateMultiTurnBanner(pageState.currentSessionData);
+    }
 }
 
 function renderSpellCard(sp) {

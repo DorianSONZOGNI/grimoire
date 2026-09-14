@@ -160,7 +160,8 @@ class CombatRoomService {
         if (useKey) {
             Equipment key = null;
             for (Equipment eq : session.getActiveConsumables()) {
-                if (eq.getId().equals(equipmentId) && eq.getConsumableCategory() == generation.grimoire.enumeration.ConsumableCategory.CLE) {
+                if (eq.getId().equals(equipmentId)
+                        && eq.getConsumableCategory() == generation.grimoire.enumeration.ConsumableCategory.CLE) {
                     key = eq;
                     break;
                 }
@@ -168,13 +169,15 @@ class CombatRoomService {
             if (key == null) {
                 throw new RuntimeException("L'équipe ne possède pas cette Clé !");
             }
-            
-            // Use specialEffectValue as percentage, default to 10 if 0 (backward compatibility)
+
+            // Use specialEffectValue as percentage, default to 10 if 0 (backward
+            // compatibility)
             extraLootPercent = key.getSpecialEffectValue() > 0 ? key.getSpecialEffectValue() : 10.0;
-            
+
             session.getActiveConsumables().remove(key);
             equipmentRepository.delete(key);
-            session.addLog("Vous utilisez " + key.getName() + " pour ouvrir les compartiments secrets du coffre ! (+" + extraLootPercent + "% de chance de butin)");
+            session.addLog("Vous utilisez " + key.getName() + " pour ouvrir les compartiments secrets du coffre ! (+"
+                    + extraLootPercent + "% de chance de butin)");
         }
 
         int gold = session.getCurrentRoom().getTreasureGold();
@@ -215,7 +218,8 @@ class CombatRoomService {
                 if (roll <= proba && entry.getEquipment() != null) {
                     java.util.Set<Long> rewardedUserIds = new java.util.HashSet<>();
                     for (Personnage p : session.getPlayers()) {
-                        if (!session.isEligibleForRewards(p)) continue;
+                        if (!session.isEligibleForRewards(p))
+                            continue;
                         AppUser u = p.getUser();
                         if (u != null && !rewardedUserIds.contains(u.getId())) {
                             rewardedUserIds.add(u.getId());
@@ -246,7 +250,8 @@ class CombatRoomService {
                     if (template != null) {
                         java.util.Set<Long> rewardedUserIds = new java.util.HashSet<>();
                         for (Personnage p : session.getPlayers()) {
-                            if (!session.isEligibleForRewards(p)) continue;
+                            if (!session.isEligibleForRewards(p))
+                                continue;
                             AppUser u = p.getUser();
                             if (u != null && !rewardedUserIds.contains(u.getId())) {
                                 rewardedUserIds.add(u.getId());
@@ -282,16 +287,20 @@ class CombatRoomService {
         for (Equipment clone : lootedConsumables) {
             if (canFitAll) {
                 session.getActiveConsumables().add(clone);
-                String msg = "Vous avez trouvé un objet : " + clone.getName() + " et il a été ajouté à l'inventaire du groupe.";
-                if (displayedLootLogs.add(msg)) session.addLog(msg);
+                String msg = "Vous avez trouvé un objet : " + clone.getName()
+                        + " et il a été ajouté à l'inventaire du groupe.";
+                if (displayedLootLogs.add(msg))
+                    session.addLog(msg);
             } else {
                 String msg = "Vous avez trouvé un objet : " + clone.getName() + " (envoyé au coffre, choix manuel).";
-                if (displayedLootLogs.add(msg)) session.addLog(msg);
+                if (displayedLootLogs.add(msg))
+                    session.addLog(msg);
             }
         }
         for (Equipment clone : lootedOthers) {
             String msg = "Vous avez trouvé un objet : " + clone.getName() + " !";
-            if (displayedLootLogs.add(msg)) session.addLog(msg);
+            if (displayedLootLogs.add(msg))
+                session.addLog(msg);
         }
 
         session.setRoomEventCompleted(true);
@@ -383,7 +392,8 @@ class CombatRoomService {
                     Anomalie template = anomalieRepository.findFirstByNameAndIsTemplateTrueOrderByIdAsc(itemName);
                     if (template != null && !session.getPlayers().isEmpty()) {
                         for (Personnage p : session.getPlayers()) {
-                            if (!session.isEligibleForRewards(p)) continue;
+                            if (!session.isEligibleForRewards(p))
+                                continue;
                             AppUser user = p.getUser();
                             if (user != null) {
                                 Anomalie newAnomaly = new Anomalie();
@@ -503,7 +513,7 @@ class CombatRoomService {
             String rewardType = room.getAltarRewardType();
             int rewardValue = room.getAltarRewardValue();
             int level = toDestroy.getLevel() != null ? toDestroy.getLevel() : 1;
-            double multiplier = level == 1 ? 1.0 : (level == 2 ? 1.3 : 1.8);
+            double multiplier = level == 1 ? 1.0 : (level == 2 ? 1.6 : 2.4);
 
             if ("GOLD".equals(rewardType)) {
                 int multipliedValue = (int) Math.round(rewardValue * multiplier);
@@ -583,7 +593,8 @@ class CombatRoomService {
 
         Equipment rope = null;
         for (Equipment eq : session.getActiveConsumables()) {
-            if (eq.getId().equals(equipmentId) && eq.getConsumableCategory() == generation.grimoire.enumeration.ConsumableCategory.CORDE) {
+            if (eq.getId().equals(equipmentId)
+                    && eq.getConsumableCategory() == generation.grimoire.enumeration.ConsumableCategory.CORDE) {
                 rope = eq;
                 break;
             }
@@ -729,7 +740,8 @@ class CombatRoomService {
             }
         }
 
-        if (specialItemPriceName != null && !specialItemPriceName.trim().isEmpty() && !specialItemPriceName.trim().equalsIgnoreCase("null")) {
+        if (specialItemPriceName != null && !specialItemPriceName.trim().isEmpty()
+                && !specialItemPriceName.trim().equalsIgnoreCase("null")) {
             if (user != null) {
                 List<Anomalie> userAnomalies = anomalieRepository.findByOwnerUsername(user.getUsername());
                 Anomalie toDestroy = userAnomalies.stream()
@@ -749,12 +761,14 @@ class CombatRoomService {
             user.setMonnaie(user.getMonnaie() - goldPrice);
             userRepository.save(user);
         }
-        if (specialItemPriceName != null && !specialItemPriceName.trim().isEmpty() && !specialItemPriceName.trim().equalsIgnoreCase("null")) {
+        if (specialItemPriceName != null && !specialItemPriceName.trim().isEmpty()
+                && !specialItemPriceName.trim().equalsIgnoreCase("null")) {
             acheteur.removeSpecialItem(specialItemPriceName, 1);
         }
 
         // Give item
-        if (entry.getSpecialItemName() != null && !entry.getSpecialItemName().trim().isEmpty() && !entry.getSpecialItemName().trim().equalsIgnoreCase("null")) {
+        if (entry.getSpecialItemName() != null && !entry.getSpecialItemName().trim().isEmpty()
+                && !entry.getSpecialItemName().trim().equalsIgnoreCase("null")) {
             String itemName = entry.getSpecialItemName();
             acheteur.addSpecialItem(itemName, 1);
 
