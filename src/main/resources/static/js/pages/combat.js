@@ -4208,6 +4208,18 @@ function showResult(data) {
         if (tipContainer) tipContainer.style.display = 'none';
     }
 
+    const retryBtn = document.getElementById('retryDungeonBtn');
+    if (retryBtn) {
+        const urlParams = new URLSearchParams(window.location.search);
+        const dId = (data && data.dungeonId) || urlParams.get('dungeonId');
+        if (dId) {
+            retryBtn.href = `/dungeons.html?dungeonId=${dId}`;
+            retryBtn.style.display = 'inline-flex';
+        } else {
+            retryBtn.style.display = 'none';
+        }
+    }
+
     overlay.classList.add('show');
 }
 

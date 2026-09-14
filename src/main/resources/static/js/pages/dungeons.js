@@ -266,7 +266,7 @@ async function loadDungeons() {
                     }
 
                     const cardHtml = `
-                        <div class="dungeon-card ${isLocked ? 'locked' : ''}" style="position: relative;" ${isLocked ? '' : `onclick="openPrepInterface(${d.id}, '${d.name.replace(/'/g, "\\'")}', '${sallesData}', ${d.maxHeroes || 1}, ${d.entryCostGold || 0}, ${d.recommendedLevel || 1})"`}>
+                        <div class="dungeon-card ${isLocked ? 'locked' : ''}" id="dungeon-card-${d.id}" style="position: relative;" ${isLocked ? '' : `onclick="openPrepInterface(${d.id}, '${d.name.replace(/'/g, "\\'")}', '${sallesData}', ${d.maxHeroes || 1}, ${d.entryCostGold || 0}, ${d.recommendedLevel || 1})"`}>
                             ${lockedHtml}
                             ${questBadges}
                             <div class="dungeon-title">
@@ -311,6 +311,20 @@ async function loadDungeons() {
         console.error('Error loading dungeons:', e);
         const msg = document.getElementById('loadingDungeonsMsg');
         if (msg) msg.style.display = 'none';
+    }
+
+    const urlParams = new URLSearchParams(window.location.search);
+    const openDungeonId = urlParams.get('dungeonId');
+    if (openDungeonId) {
+        const card = document.getElementById(`dungeon-card-${openDungeonId}`);
+        if (card && !card.classList.contains('locked')) {
+            card.click();
+            
+            // Remove the parameter from URL so it doesn't stay on refresh
+            const url = new URL(window.location);
+            url.searchParams.delete('dungeonId');
+            window.history.replaceState({}, '', url);
+        }
     }
 }
 
