@@ -43,7 +43,8 @@ public class HuntingQuestService {
         List<Donjon> allDungeons = donjonRepository.findAll().stream()
                 .filter(d -> d.getRecommendedLevel() <= 2)
                 .collect(java.util.stream.Collectors.toList());
-        if (allDungeons.isEmpty()) return;
+        if (allDungeons.isEmpty())
+            return;
 
         Donjon selected = selectDungeonWeighted(allDungeons);
 
@@ -77,7 +78,8 @@ public class HuntingQuestService {
                 .filter(d -> d.getSalles().stream().anyMatch(s -> s.getType() == RoomType.BOSS))
                 .collect(Collectors.toList());
 
-        if (eligible.isEmpty()) return;
+        if (eligible.isEmpty())
+            return;
 
         Donjon selected = eligible.get(new Random().nextInt(eligible.size()));
 
@@ -96,7 +98,7 @@ public class HuntingQuestService {
         // --- Tirage de l'Anomalie récompense ---
         String secret = selected.getRequiredSecret();
         generation.grimoire.enumeration.SpiritualiteType mappedSpiri = mapSecretToSpiritualite(secret);
-        
+
         List<Anomalie> templates = new ArrayList<>();
         if (mappedSpiri != null) {
             templates = anomalieRepository.findByIsTemplateTrue().stream()
@@ -122,7 +124,8 @@ public class HuntingQuestService {
     }
 
     private generation.grimoire.enumeration.SpiritualiteType mapSecretToSpiritualite(String secret) {
-        if (secret == null) return null;
+        if (secret == null)
+            return null;
         return switch (secret) {
             case "Secret du Chaos" -> generation.grimoire.enumeration.SpiritualiteType.DESTRUCTION;
             case "Secret de l'Abondance" -> generation.grimoire.enumeration.SpiritualiteType.CREATION;
@@ -146,7 +149,8 @@ public class HuntingQuestService {
     @jakarta.annotation.PostConstruct
     public void fixActiveWeeklyQuest() {
         questRepository.findByTypeAndActiveTrue("WEEKLY").stream().findFirst().ifPresent(quest -> {
-            generation.grimoire.enumeration.SpiritualiteType mappedSpiri = mapSecretToSpiritualite(quest.getRequiredSecret());
+            generation.grimoire.enumeration.SpiritualiteType mappedSpiri = mapSecretToSpiritualite(
+                    quest.getRequiredSecret());
             if (mappedSpiri != null) {
                 anomalieRepository.findByIsTemplateTrue().stream()
                         .filter(a -> a.getLevel() >= 2)
@@ -282,10 +286,14 @@ public class HuntingQuestService {
 
             int baseGold = 5 * quest.getDungeonRoomCount() * quest.getDungeonLevel();
             int totalGold;
-            if (entry.getRank() == 1) totalGold = baseGold + 100;
-            else if (entry.getRank() == 2) totalGold = baseGold + 50;
-            else if (entry.getRank() == 3) totalGold = baseGold + 25;
-            else totalGold = (baseGold + 25) / 2;
+            if (entry.getRank() == 1)
+                totalGold = baseGold + 100;
+            else if (entry.getRank() == 2)
+                totalGold = baseGold + 50;
+            else if (entry.getRank() == 3)
+                totalGold = baseGold + 25;
+            else
+                totalGold = (baseGold + 25) / 2;
 
             AppUser user = userRepository.findByUsername(username)
                     .orElseThrow(() -> new IllegalArgumentException("Utilisateur introuvable."));
@@ -379,14 +387,14 @@ public class HuntingQuestService {
         questRepository.findByTypeAndActiveTrue("WEEKLY").ifPresent(quest -> {
             result.put("quest", questToMap(quest));
             result.put("leaderboard", getLeaderboard(quest.getId()));
-            
+
             if (quest.getRewardAnomalieId() != null) {
                 anomalieRepository.findById(quest.getRewardAnomalieId().longValue())
                         .ifPresent(a -> result.put("rewardAnomalie", anomalieToMap(a)));
             } else {
                 result.put("reward", "Anomalie Niv.2+ correspondant au secret du donjon");
             }
-            
+
             if (username != null) {
                 entryRepository.findByQuestIdAndAccountName(quest.getId(), username)
                         .ifPresent(e -> result.put("myEntry", entryToMap(e)));
@@ -399,7 +407,7 @@ public class HuntingQuestService {
                 Map<String, Object> prevData = new HashMap<>();
                 prevData.put("quest", questToMap(prev));
                 prevData.put("leaderboard", getLeaderboard(prev.getId()));
-                
+
                 if (prev.getRewardAnomalieId() != null) {
                     anomalieRepository.findById(prev.getRewardAnomalieId().longValue())
                             .ifPresent(a -> prevData.put("rewardAnomalie", anomalieToMap(a)));
@@ -419,10 +427,12 @@ public class HuntingQuestService {
     }
 
     private List<Map<String, Object>> getLeaderboard(Long questId) {
-        if (questId == null) return List.of();
+        if (questId == null)
+            return List.of();
         // Récupérer toutes les entrées triées
         HuntingQuest quest = questRepository.findById(questId).orElse(null);
-        if (quest == null) return List.of();
+        if (quest == null)
+            return List.of();
 
         List<HuntingQuestEntry> entries;
         if ("DAILY".equals(quest.getType())) {

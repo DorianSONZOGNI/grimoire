@@ -40,6 +40,7 @@ public class Anomalie {
     private Integer level = 1;
 
     @Column(nullable = false, columnDefinition = "boolean default true")
+    @com.fasterxml.jackson.annotation.JsonProperty("magicObject")
     private boolean isMagicObject = true;
 
     @Column(name = "is_template", nullable = false)

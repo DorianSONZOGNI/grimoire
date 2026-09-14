@@ -96,6 +96,59 @@ async function loadDaily() {
         `;
 
         bindClaimButton(card, quest.id);
+
+        // Previous daily
+        const prevSection = document.getElementById('previousDailySection');
+        const prevCard = document.getElementById('previousDailyCard');
+        if (data.previous && data.previous.quest) {
+            prevSection.style.display = 'block';
+            const pQuest = data.previous.quest;
+            const pLb = data.previous.leaderboard || [];
+            const pEntry = data.previous.myEntry || null;
+            const pReward = data.previous.reward || {};
+            
+            updateTimer('previousDailyTimer', pQuest.endDate, 'Expire dans', 1);
+            
+            prevCard.innerHTML = `
+                <div class="quest-card-inner">
+                    <div class="quest-dungeon-info">
+                        <div class="quest-dungeon-name">${escHtml(pQuest.dungeonName)}</div>
+                        <div class="quest-meta">
+                            <span class="quest-meta-tag">
+                                <span class="material-symbols-outlined">signal_cellular_alt</span>
+                                Niveau ${pQuest.dungeonLevel}
+                            </span>
+                        </div>
+                        <div class="quest-reward-box">
+                            <div class="quest-reward-title">
+                                <span class="material-symbols-outlined" style="font-size: 1rem;">payments</span>
+                                Récompenses en Or
+                            </div>
+                            <div class="quest-reward-detail">
+                                🥇 1er : <strong>${pReward['1st'] || '?'}</strong> gold &nbsp;
+                                🥈 2ème : <strong>${pReward['2nd'] || '?'}</strong> gold &nbsp;
+                                🥉 3ème : <strong>${pReward['3rd'] || '?'}</strong> gold<br>
+                                <span style="font-size: 0.85em; color: #94a3b8; display: inline-block; margin-top: 4px;">4ème et + : <strong>${pReward['other'] || '0'}</strong> gold</span>
+                            </div>
+                        </div>
+                        ${renderClaimButton(pQuest, pEntry, 'daily')}
+                    </div>
+                    <div class="quest-leaderboard">
+                        <div class="quest-leaderboard-title">
+                            <span class="material-symbols-outlined" style="font-size: 1rem;">military_tech</span>
+                            Classement Final
+                        </div>
+                        <div class="quest-leaderboard-list">
+                            ${renderLeaderboard(pLb, 'daily')}
+                        </div>
+                    </div>
+                </div>
+            `;
+            bindClaimButton(prevCard, pQuest.id);
+        } else {
+            prevSection.style.display = 'none';
+        }
+
     } catch (e) {
         console.error('Error loading daily quest:', e);
     }
@@ -353,27 +406,67 @@ function bindClaimButton(container, questId) {
 // UTILITIES
 // ═══════════════════════════════════════════════════════════════════════
 
-function updateTimer(elementId, endDateStr, prefix) {
+let dynamicTimers = {};
+
+function updateTimer(elementId, endDateStr, prefix, offsetDays = 0, isDynamic = true) {
     const el = document.getElementById(elementId);
     if (!el) return;
 
-    const end = new Date(endDateStr + 'T00:00:00');
-    const now = new Date();
-    const diff = end - now;
-
-    if (diff <= 0) {
-        el.textContent = prefix + ' : bientôt…';
-        return;
+    if (dynamicTimers[elementId]) {
+        clearInterval(dynamicTimers[elementId]);
+        delete dynamicTimers[elementId];
     }
 
-    const hours = Math.floor(diff / (1000 * 60 * 60));
-    const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-
-    if (hours >= 24) {
-        const days = Math.floor(hours / 24);
-        el.textContent = `${prefix} ${days}j ${hours % 24}h`;
+    let end;
+    if (elementId === 'dailyTimer') {
+        // Le timer journalier compte toujours jusqu'à minuit du jour actuel
+        end = new Date();
+        end.setHours(24, 0, 0, 0);
     } else {
-        el.textContent = `${prefix} ${hours}h ${minutes}m`;
+        end = new Date(endDateStr + 'T00:00:00');
+        if (offsetDays) {
+            end.setDate(end.getDate() + offsetDays);
+        }
+    }
+
+    const tick = () => {
+        const now = new Date();
+        const diff = end - now;
+
+        if (diff <= 0) {
+            el.textContent = prefix + ' : bientôt…';
+            if (dynamicTimers[elementId]) {
+                clearInterval(dynamicTimers[elementId]);
+                delete dynamicTimers[elementId];
+            }
+            return;
+        }
+
+        const hoursTotal = Math.floor(diff / (1000 * 60 * 60));
+        const hours = hoursTotal % 24;
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const seconds = Math.floor((diff % (1000 * 60)) / 1000);
+
+        if (isDynamic) {
+            if (hoursTotal >= 24) {
+                const days = Math.floor(hoursTotal / 24);
+                el.textContent = `${prefix} ${days}j ${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            } else {
+                el.textContent = `${prefix} ${hoursTotal.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${seconds.toString().padStart(2, '0')}`;
+            }
+        } else {
+            if (hoursTotal >= 24) {
+                const days = Math.floor(hoursTotal / 24);
+                el.textContent = `${prefix} ${days}j ${hours}h`;
+            } else {
+                el.textContent = `${prefix} ${hoursTotal}h ${minutes}m`;
+            }
+        }
+    };
+
+    tick();
+    if (isDynamic && end - new Date() > 0) {
+        dynamicTimers[elementId] = setInterval(tick, 1000);
     }
 }
 

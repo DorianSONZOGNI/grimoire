@@ -20,6 +20,7 @@ public class CombatController {
 
     private final CombatService combatService;
     private final CombatEventEmitter combatEventEmitter;
+    private final generation.grimoire.mapper.EquipmentMapper equipmentMapper;
 
     // ─────────────────────────────────────────────────────────────────────────
     // SSE — abonnement aux mises à jour temps réel
@@ -77,6 +78,26 @@ public class CombatController {
         if (session == null)
             return ResponseEntity.notFound().build();
         return ResponseEntity.ok(session);
+    }
+
+    @GetMapping("/{sessionId}/equipments")
+    public ResponseEntity<?> getCombatEquipments(@PathVariable("sessionId") String sessionId) {
+        CombatSession session = combatService.getSession(sessionId);
+        if (session == null)
+            return ResponseEntity.notFound().build();
+
+        java.util.Map<Long, java.util.List<generation.grimoire.dto.equipment.EquipmentShopDTO>> result = new java.util.HashMap<>();
+        if (session.getPlayers() != null) {
+            for (generation.grimoire.entity.personnage.Personnage p : session.getPlayers()) {
+                if (p.getEquipments() != null) {
+                    java.util.List<generation.grimoire.dto.equipment.EquipmentShopDTO> mapped = p.getEquipments().stream()
+                            .map(equipmentMapper::toShopDto)
+                            .collect(java.util.stream.Collectors.toList());
+                    result.put(p.getId(), mapped);
+                }
+            }
+        }
+        return ResponseEntity.ok(result);
     }
 
     @PostMapping("/{sessionId}/resume")
