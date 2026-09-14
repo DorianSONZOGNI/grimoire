@@ -273,10 +273,10 @@ export function updateUI(data) {
 
             if (forcedHp !== null && forcedHp !== p.healthCurrent) {
                 const suffix = p.shieldTotal > 0 ? ` (+${p.shieldTotal} 🛡️)` : '';
-                
+
                 // DEBUG
                 const log = document.getElementById('combatLog');
-                if(log) {
+                if (log) {
                     const el = document.createElement('div');
                     el.className = 'log-entry';
                     el.style.color = 'yellow';
@@ -288,7 +288,7 @@ export function updateUI(data) {
             } else if (forcedHp === p.healthCurrent) {
                 // DEBUG
                 const log = document.getElementById('combatLog');
-                if(log) {
+                if (log) {
                     const el = document.createElement('div');
                     el.className = 'log-entry';
                     el.style.color = 'orange';
@@ -298,7 +298,7 @@ export function updateUI(data) {
             } else if (forcedHp === null) {
                 // DEBUG
                 const log = document.getElementById('combatLog');
-                if(log) {
+                if (log) {
                     const el = document.createElement('div');
                     el.className = 'log-entry';
                     el.style.color = 'red';
@@ -839,7 +839,7 @@ export function updateUI(data) {
                                     }
                                     const valEl = document.getElementById('altarDynamicRewardValue');
                                     if (valEl) {
-                                        let multiplier = level === 1 ? 1.0 : (level === 2 ? 1.3 : 1.8);
+                                        let multiplier = level === 1 ? 1.0 : (level === 2 ? 1.6 : 2.4);
                                         let baseVal = parseInt(valEl.getAttribute('data-base-value'), 10);
                                         let finalVal = Math.round(baseVal * multiplier);
 
@@ -2072,10 +2072,10 @@ export function renderEnemies(enemies) {
 
         if (forcedHp !== null && forcedHp !== pMonster.healthCurrent) {
             const suffix = pMonster.shieldTotal > 0 ? ` (+${pMonster.shieldTotal} 🛡️)` : '';
-            
+
             // DEBUG
             const log = document.getElementById('combatLog');
-            if(log) {
+            if (log) {
                 const el = document.createElement('div');
                 el.className = 'log-entry';
                 el.style.color = 'yellow';
@@ -2087,7 +2087,7 @@ export function renderEnemies(enemies) {
         } else if (forcedHp === pMonster.healthCurrent) {
             // DEBUG
             const log = document.getElementById('combatLog');
-            if(log) {
+            if (log) {
                 const el = document.createElement('div');
                 el.className = 'log-entry';
                 el.style.color = 'orange';
@@ -2097,7 +2097,7 @@ export function renderEnemies(enemies) {
         } else if (forcedHp === null) {
             // DEBUG
             const log = document.getElementById('combatLog');
-            if(log) {
+            if (log) {
                 const el = document.createElement('div');
                 el.className = 'log-entry';
                 el.style.color = 'red';
@@ -2115,7 +2115,7 @@ function animateGaugeJS(barEl, textEl, oldVal, newVal, max, duration = 600, suff
     if (!barEl) return;
     let startTime = null;
     barEl.style.transition = 'none'; // Ensure JS controls the width smoothly
-    
+
     function step(currentTime) {
         if (!startTime) startTime = currentTime;
         let t = (currentTime - startTime) / duration;
@@ -2123,12 +2123,12 @@ function animateGaugeJS(barEl, textEl, oldVal, newVal, max, duration = 600, suff
         let easeT = 1 - Math.pow(1 - t, 3); // ease-out cubic
         let currentVal = Math.floor(oldVal + (newVal - oldVal) * easeT);
         let pct = max > 0 ? Math.max(0, Math.min(100, (currentVal / max) * 100)) : 0;
-        
+
         barEl.style.width = pct + '%';
         if (textEl) {
             textEl.textContent = `${currentVal} / ${max}${suffix}`;
         }
-        
+
         if (t < 1) {
             requestAnimationFrame(step);
         } else {
