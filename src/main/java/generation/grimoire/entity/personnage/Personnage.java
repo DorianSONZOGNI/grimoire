@@ -75,7 +75,17 @@ public class Personnage {
         this.experience = newExperience;
 
         int newCalculated = 1;
-        if (this.experience >= 1000)
+        if (this.experience >= 6000)
+            newCalculated = 10;
+        else if (this.experience >= 4200)
+            newCalculated = 9;
+        else if (this.experience >= 3200)
+            newCalculated = 8;
+        else if (this.experience >= 2400)
+            newCalculated = 7;
+        else if (this.experience >= 1600)
+            newCalculated = 6;
+        else if (this.experience >= 1000)
             newCalculated = 5;
         else if (this.experience >= 600)
             newCalculated = 4;
@@ -148,7 +158,17 @@ public class Personnage {
     @Column(name = "voie_level", nullable = false)
     public int getVoieLevel() {
         int calculated = 1;
-        if (experience >= 1000)
+        if (experience >= 6000)
+            calculated = 10;
+        else if (experience >= 4200)
+            calculated = 9;
+        else if (experience >= 3200)
+            calculated = 8;
+        else if (experience >= 2400)
+            calculated = 7;
+        else if (experience >= 1600)
+            calculated = 6;
+        else if (experience >= 1000)
             calculated = 5;
         else if (experience >= 600)
             calculated = 4;
@@ -172,6 +192,57 @@ public class Personnage {
     private Spiritualite spiritualite;
 
     private int spiritualiteExperience = 0;
+
+    public void setSpiritualiteExperience(int newExperience) {
+        this.spiritualiteExperience = newExperience;
+
+        int newCalculated = 1;
+        if (this.spiritualiteExperience >= 4500)
+            newCalculated = 10;
+        else if (this.spiritualiteExperience >= 3600)
+            newCalculated = 9;
+        else if (this.spiritualiteExperience >= 2800)
+            newCalculated = 8;
+        else if (this.spiritualiteExperience >= 2100)
+            newCalculated = 7;
+        else if (this.spiritualiteExperience >= 1500)
+            newCalculated = 6;
+        else if (this.spiritualiteExperience >= 1000)
+            newCalculated = 5;
+        else if (this.spiritualiteExperience >= 600)
+            newCalculated = 4;
+        else if (this.spiritualiteExperience >= 300)
+            newCalculated = 3;
+        else if (this.spiritualiteExperience >= 100)
+            newCalculated = 2;
+
+        if (newCalculated > this.spiritualiteLevel) {
+            int levelsGained = newCalculated - this.spiritualiteLevel;
+            this.spiritualiteLevel = newCalculated;
+            applySpiritualiteLevelUpStats(levelsGained);
+        }
+    }
+
+    private void applySpiritualiteLevelUpStats(int levelsGained) {
+        if (this.spiritualite == null || this.spiritualite.getNom() == null)
+            return;
+        String nomSpiri = this.spiritualite.getNom().toLowerCase();
+
+        for (int i = 0; i < levelsGained; i++) {
+            if (nomSpiri.contains("ténèbre") || nomSpiri.contains("tenebre")) {
+                this.manaMax += 2;
+                this.manaCurrent += 2;
+                this.healthMax += 2;
+                this.healthCurrent += 2;
+            } else if (nomSpiri.contains("esprit")) {
+                this.armor += 2;
+                this.resistance += 2;
+            } else if (nomSpiri.contains("karma")) {
+                this.power += 1;
+                this.strength += 1;
+            }
+        }
+    }
 
     @ElementCollection
     @CollectionTable(name = "personnage_special_items", joinColumns = @JoinColumn(name = "personnage_id"))
@@ -210,7 +281,21 @@ public class Personnage {
     @Column(name = "spiritualite_level", nullable = false)
     public int getSpiritualiteLevel() {
         int calculated = 1;
-        if (spiritualiteExperience >= 300)
+        if (spiritualiteExperience >= 4500)
+            calculated = 10;
+        else if (spiritualiteExperience >= 3600)
+            calculated = 9;
+        else if (spiritualiteExperience >= 2800)
+            calculated = 8;
+        else if (spiritualiteExperience >= 2100)
+            calculated = 7;
+        else if (spiritualiteExperience >= 1500)
+            calculated = 6;
+        else if (spiritualiteExperience >= 1000)
+            calculated = 5;
+        else if (spiritualiteExperience >= 600)
+            calculated = 4;
+        else if (spiritualiteExperience >= 300)
             calculated = 3;
         else if (spiritualiteExperience >= 100)
             calculated = 2;
@@ -243,7 +328,8 @@ public class Personnage {
     }
 
     @com.fasterxml.jackson.annotation.JsonIgnore
-    @OneToMany(mappedBy = "personnage", cascade = {CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH, CascadeType.DETACH}, fetch = FetchType.LAZY)
+    @OneToMany(mappedBy = "personnage", cascade = { CascadeType.PERSIST, CascadeType.MERGE, CascadeType.REFRESH,
+            CascadeType.DETACH }, fetch = FetchType.LAZY)
 
     private List<generation.grimoire.entity.Equipment> equipments = new ArrayList<>();
 
@@ -308,7 +394,7 @@ public class Personnage {
     @Transient
     @com.fasterxml.jackson.annotation.JsonProperty("channeledSpell")
     private Spell channeledSpell;
-    
+
     @com.fasterxml.jackson.annotation.JsonProperty("channeledSpellId")
     public Long getChanneledSpellId() {
         return channeledSpell != null ? channeledSpell.getId() : null;
@@ -464,7 +550,8 @@ public class Personnage {
         double multiplier = getStatBuffMultiplier(StatType.SHIELD_RECEIVED);
         int finalAmount = (int) (amount * Math.max(0, multiplier));
         activeShields.add(new ActiveShield(finalAmount, duration, sourceName));
-        System.out.println(name + " reçoit un bouclier de " + finalAmount + " pour " + duration + " tours (" + sourceName + ").");
+        System.out.println(
+                name + " reçoit un bouclier de " + finalAmount + " pour " + duration + " tours (" + sourceName + ").");
     }
 
     public void updateShields() {

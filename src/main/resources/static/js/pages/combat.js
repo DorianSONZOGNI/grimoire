@@ -166,7 +166,12 @@ function setButtonsProcessing(isProc) {
 
 function getExpStats(exp) {
     let level = 1;
-    if (exp >= 1000) level = 5;
+    if (exp >= 6000) level = 10;
+    else if (exp >= 4200) level = 9;
+    else if (exp >= 3200) level = 8;
+    else if (exp >= 2400) level = 7;
+    else if (exp >= 1600) level = 6;
+    else if (exp >= 1000) level = 5;
     else if (exp >= 600) level = 4;
     else if (exp >= 300) level = 3;
     else if (exp >= 100) level = 2;
@@ -176,10 +181,15 @@ function getExpStats(exp) {
     if (level === 2) { currentLvlXp = 100; nextLvlXp = 300; }
     else if (level === 3) { currentLvlXp = 300; nextLvlXp = 600; }
     else if (level === 4) { currentLvlXp = 600; nextLvlXp = 1000; }
-    else if (level === 5) { currentLvlXp = 1000; nextLvlXp = exp; }
+    else if (level === 5) { currentLvlXp = 1000; nextLvlXp = 1600; }
+    else if (level === 6) { currentLvlXp = 1600; nextLvlXp = 2400; }
+    else if (level === 7) { currentLvlXp = 2400; nextLvlXp = 3200; }
+    else if (level === 8) { currentLvlXp = 3200; nextLvlXp = 4200; }
+    else if (level === 9) { currentLvlXp = 4200; nextLvlXp = 6000; }
+    else if (level === 10) { currentLvlXp = 6000; nextLvlXp = exp; }
 
     let progress = 100;
-    if (level < 5) {
+    if (level < 10) {
         progress = ((exp - currentLvlXp) / (nextLvlXp - currentLvlXp)) * 100;
     }
     return { level, currentLvlXp, nextLvlXp, progress };
