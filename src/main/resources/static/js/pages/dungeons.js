@@ -483,15 +483,44 @@ function renderConsumablesList() {
         return;
     }
 
-    let cardsHtml = '';
+    const groupedConsumables = {};
     filteredConsumables.forEach(c => {
+        if (!groupedConsumables[c.name]) {
+            groupedConsumables[c.name] = { base: c, ids: [], selectedIds: [] };
+        }
+        groupedConsumables[c.name].ids.push(c.id);
+        if (pageState.selectedConsumableIds.includes(c.id)) {
+            groupedConsumables[c.name].selectedIds.push(c.id);
+        }
+    });
+
+    let cardsHtml = '';
+    Object.values(groupedConsumables).forEach(group => {
+        const c = group.base;
+        const total = group.ids.length;
+        const selCount = group.selectedIds.length;
+        const isSelected = selCount > 0;
+        
         const catIcons = { POTION_ROSE: 'science', POTION_BLEUE: 'science', POTION_ROUGE: 'science', POTION_VIOLETTE: 'science', CLE: 'vpn_key', CORDE: 'gesture', PARCHEMIN: 'history_edu', NOURRITURE: 'restaurant', OUTIL: 'construction', AUTRE: 'inventory_2' };
         const catColors = { POTION_ROSE: '#ec4899', POTION_BLEUE: '#0ea5e9', POTION_ROUGE: '#ef4444', POTION_VIOLETTE: '#a855f7', CLE: '#eab308', CORDE: '#8b4513', PARCHEMIN: '#f59e0b', NOURRITURE: '#f43f5e', OUTIL: '#64748b', AUTRE: '#94a3b8' };
         const iconName = c.consumableCategory ? (catIcons[c.consumableCategory] || 'inventory_2') : 'inventory_2';
         const iconColor = c.consumableCategory ? (catColors[c.consumableCategory] || '#854c4c') : '#854c4c';
-        const isSelected = pageState.selectedConsumableIds.includes(c.id);
-        const selIndex = pageState.selectedConsumableIds.indexOf(c.id);
-        const badgeHtml = isSelected ? `<div class="flex-center text-xxs absolute sel-badge">${selIndex + 1}</div>` : '';
+        
+        let badgeHtml = '';
+        if (isSelected) {
+            badgeHtml = `
+            <div class="flex items-center gap-1 absolute shadow-md" style="bottom: -6px; right: -6px; background: #0f172a; border-radius: 6px; padding: 2px 4px; border: 1px solid #334155; z-index: 10;">
+                <button onclick="removeConsumableGroup('${c.name.replace(/'/g, "\\'")}'); event.stopPropagation();" class="flex-center text-slate-400 hover:text-white hover:bg-slate-700 rounded transition-colors" style="width: 18px; height: 18px;" title="Retirer">
+                    <span class="material-symbols-outlined" style="font-size: 14px;">remove</span>
+                </button>
+                <span class="text-xs font-bold px-1 text-emerald-400">${selCount}/${total}</span>
+                <button onclick="addConsumableGroup('${c.name.replace(/'/g, "\\'")}'); event.stopPropagation();" class="flex-center text-slate-400 hover:text-white hover:bg-slate-700 rounded transition-colors" style="width: 18px; height: 18px;" title="Ajouter">
+                    <span class="material-symbols-outlined" style="font-size: 14px;">add</span>
+                </button>
+            </div>`;
+        } else {
+            badgeHtml = `<div class="flex-center text-xs absolute font-bold text-muted shadow-sm" style="bottom: -5px; right: -5px; background: rgba(15,23,42,0.9); padding: 3px 6px; border-radius: 6px; border: 1px solid #334155;">0/${total}</div>`;
+        }
 
         let cardTooltip = '';
         if (c.consumableCategory === 'CLE') {
@@ -501,14 +530,14 @@ function renderConsumablesList() {
         }
 
         cardsHtml += `
-            <div class="consumable-card ${isSelected ? 'selected' : ''} relative overflow-visible" onclick="selectConsumable(${c.id})" ${cardTooltip}>
+            <div class="consumable-card ${isSelected ? 'selected' : ''} relative overflow-visible cursor-pointer" onclick="addConsumableGroup('${c.name.replace(/'/g, "\\'")}')" ${cardTooltip}>
                 <span class="material-symbols-outlined flex-shrink-0" style="font-size: 1.1rem; color: ${isSelected ? '#10b981' : iconColor};">${iconName}</span>
                 <div class="flex-1 min-w-0">
                     <div class="flex-between items-center">
                         <div class="whitespace-nowrap text-slate-50 font-semibold text-[0.7rem] truncate" title="${c.name}">${c.name}</div>
                         <div class="text-xxs font-bold text-muted bg-black/30 px-1 py-0.5 rounded inline-flex items-center gap-1"><span class="material-symbols-outlined" style="font-size: 0.7rem;">scale</span>${+Number(c.weight).toFixed(1)}</div>
                     </div>
-                    <div class="text-muted text-xs flex gap-1.5 flex-wrap overflow-visible items-center mt-[2px]">
+                    <div class="text-muted text-xs flex gap-1.5 flex-wrap overflow-visible items-center mt-[2px]" style="min-height: 18px;">
                         ${c.bonusHealthMax ? `<span class="inline-flex items-center text-pink-500" title="PV">+${c.bonusHealthMax}<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">favorite</span></span>` : ''}
                         ${c.bonusManaMax ? `<span class="inline-flex items-center text-sky-500" title="Mana">+${c.bonusManaMax}<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">water_drop</span></span>` : ''}
                         ${c.consumableHpPercent ? `<span class="inline-flex items-center text-pink-500" title="PV Max">+${c.consumableHpPercent}%<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">favorite</span></span>` : ''}
@@ -525,20 +554,36 @@ function renderConsumablesList() {
     list.innerHTML = `<div class="grid grid-cols-2 gap-2">${cardsHtml}</div>`;
 }
 
-window.selectConsumable = function (id) {
-    const idx = pageState.selectedConsumableIds.indexOf(id);
-    if (idx !== -1) {
-        pageState.selectedConsumableIds.splice(idx, 1);
-    } else {
-        const c = pageState.availableConsumables.find(item => item.id === id);
-        const itemWeight = c ? (c.weight || 0) : 0;
+window.addConsumableGroup = function(name) {
+    const groupItems = pageState.availableConsumables.filter(c => c.name === name);
+    if (!groupItems.length) return;
+    
+    const unselectedItem = groupItems.find(c => !pageState.selectedConsumableIds.includes(c.id));
+    if (unselectedItem) {
+        const itemWeight = unselectedItem.weight || 0;
         if (getCurrentWeight() + itemWeight > getMaxWeight()) {
-            window.showNotif(`Le poids maximum serait d\u00e9pass\u00e9 !`, true);
+            window.showNotif(`Le poids maximum serait dépassé !`, true);
             return;
         }
-        pageState.selectedConsumableIds.push(id);
+        pageState.selectedConsumableIds.push(unselectedItem.id);
+        renderConsumablesList();
+    } else {
+        window.showNotif(`Vous n'avez pas d'autres exemplaires de cet objet.`, true);
     }
-    renderConsumablesList();
+};
+
+window.removeConsumableGroup = function(name) {
+    const groupItems = pageState.availableConsumables.filter(c => c.name === name);
+    if (!groupItems.length) return;
+    
+    const selectedId = groupItems.find(c => pageState.selectedConsumableIds.includes(c.id))?.id;
+    if (selectedId) {
+        const idx = pageState.selectedConsumableIds.indexOf(selectedId);
+        if (idx !== -1) {
+            pageState.selectedConsumableIds.splice(idx, 1);
+            renderConsumablesList();
+        }
+    }
 };
 
 window.selectCharacter = async function (id) {
