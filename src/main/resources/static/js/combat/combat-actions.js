@@ -427,7 +427,8 @@ export const GAME_TIPS = [
     "Les <span class=\"text-fuchsia-400 font-semibold\">Anomalies</span> servent comme monais ou bien comme ingredient alchimique.",
     "L'<span class=\"text-emerald-400 font-semibold\">Expérience Spirituelle</span> permet de gagner des niveaux spirituels ce qui débloquera de nouveaux sorts, mais sert aussi de ressources dans certain craft alchimique.",
     "Vous pouvez jouer en <span class=\"text-blue-400 font-semibold\">Multijoueur</span> ! Créez un <span class=\"text-emerald-400 font-semibold\">Lobby</span> et partagez le code d'invitation à un ami. Attention : il doit avoir débloqué le donjon pour pouvoir s'y aventurer avec vous.",
-    "Fuir un donjon  fait perdre de l'or et de l'expérience proportionnellement à la taille du donjon. Un perso qui meurt en donjon perd aussi de l'expérience en fonction de son niveau."
+    "Fuir un donjon  fait perdre de l'or et de l'expérience proportionnellement à la taille du donjon. Un perso qui meurt en donjon perd aussi de l'expérience en fonction de son niveau.",
+    "En multijoueur, l'inventaire est partagé, mais l'utilisation d'un consommable le déduit en priorité de la réserve personnelle du joueur qui l'active. En cas de rupture de stock, l'objet est prélevé dans la réserve de votre coéquipier."
 ];
 
 export function playDungeonMusic(data) {

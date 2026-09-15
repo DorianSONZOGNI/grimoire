@@ -455,9 +455,9 @@ window.showHeroEquipmentTooltip = function (el, characterId) {
         content.innerHTML = '<div style="color:#cbd5e1; font-size:0.9rem; text-align:center;">Aucun équipement</div>';
     } else {
         let html = '<div class="equip-slots-grid" style="width: 100%; min-width: 500px;">';
-        
+
         const slots = Object.keys(window.SLOT_LABELS || {}).filter(s => s !== 'CONSOMMABLE' && s !== 'ANOMALIE' && s !== 'ARME_DEUX_MAINS' && s !== 'ARME' && s !== 'ANNEAU');
-        
+
         // If SLOT_LABELS isn't loaded for some reason, fallback to basic list
         if (slots.length === 0) {
             slots.push('CASQUE', 'PLASTRON', 'ARME_GAUCHE', 'ANNEAU_GAUCHE', 'ANNEAU_DROIT', 'ARME_DROITE', 'BOTTES', 'CAPE');
@@ -465,7 +465,7 @@ window.showHeroEquipmentTooltip = function (el, characterId) {
 
         slots.forEach(slotKey => {
             const slotInfo = window.SLOT_LABELS && window.SLOT_LABELS[slotKey] ? window.SLOT_LABELS[slotKey] : { icon: 'help', color: '#94a3b8', label: slotKey };
-            
+
             let equipped = eqs.find(e => e.slot === slotKey);
             const twoHanded = eqs.find(e => e.slot === 'ARME_DEUX_MAINS');
 
@@ -479,7 +479,7 @@ window.showHeroEquipmentTooltip = function (el, characterId) {
             if (equipped) {
                 const rarityName = typeof getRarityName === 'function' ? getRarityName(equipped.rarity) : '';
                 const rarityClass = rarityName ? `rarity-${rarityName}` : '';
-                
+
                 let statsChips = '';
                 if (typeof STAT_DEFS !== 'undefined') {
                     statsChips = STAT_DEFS
@@ -501,7 +501,7 @@ window.showHeroEquipmentTooltip = function (el, characterId) {
                     if (equipped.crit > 0) statsHtml += `<span style="color:#ef4444;">${equipped.crit}% Crit</span> `;
                     statsChips = statsHtml;
                 }
-                
+
                 let specialEffectHtml = '';
                 if (equipped.specialEffect && equipped.specialEffect !== 'NONE' && equipped.specialEffect !== 'AUCUN') {
                     const label = window.EFFECT_LABELS ? (window.EFFECT_LABELS[equipped.specialEffect] || equipped.specialEffect) : equipped.specialEffect;
@@ -550,20 +550,20 @@ window.showHeroEquipmentTooltip = function (el, characterId) {
 
     const rect = el.getBoundingClientRect();
     tooltip.style.display = 'block';
-    
+
     // Position tooltip to the right or left of the avatar depending on screen space
     let top = rect.top + window.scrollY;
     let left = rect.right + 10;
-    
+
     if (left + 750 > window.innerWidth) {
         left = rect.left - 760;
     }
-    
+
     // Ensure left is not negative
     if (left < 10) {
         left = 10;
     }
-    
+
     tooltip.style.top = top + 'px';
     tooltip.style.left = left + 'px';
 };
@@ -921,7 +921,7 @@ window.updateSpellCardState = function (spellId) {
 
 function initiateCombatCast(spellId) {
     if (!pageState.currentSessionData) return;
-    
+
     if (pageState.currentSessionData.multi) {
         const activePlayer = pageState.currentSessionData.activePlayer;
         if (activePlayer && activePlayer.ownerUsername !== pageState.currentUsername) {
@@ -1917,7 +1917,7 @@ function updateUI(data) {
             if (pageState.isMulti && isActive && data.turnStartTime) {
                 timerHtml = `<div class="turn-timer-badge" id="timerBadge_${index}" style="position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(4px); border: 1px solid #38bdf8; color: #38bdf8; padding: 4px 14px; border-radius: 8px; font-weight: bold; box-shadow: 0 0 12px rgba(56, 189, 248, 0.5); z-index: 10; display: flex; align-items: center; gap: 6px; letter-spacing: 0.5px;">⏳ Calcul...</div>`;
             }
-            
+
             const fId = `hero-${p.id || index}`;
             div.dataset.fighterId = fId;
             let forcedHp = null;
@@ -1934,7 +1934,7 @@ function updateUI(data) {
             const hpTextEl = div.querySelector('.hp-text-val');
             const manaBar = div.querySelector('.gauge-fill.mana');
             const manaTextEl = div.querySelector('.mana-text-val');
-            
+
             if (forcedHp !== null && forcedHp !== actualHp) {
                 const suffix = p.shieldTotal > 0 ? ` (+${p.shieldTotal} 🛡️)` : '';
                 animateGaugeJS(hpBar, hpTextEl, forcedHp, actualHp, p.healthMax, 800, suffix);
@@ -3676,7 +3676,7 @@ function renderEnemies(enemies) {
             }
         }
 
-                const fId = 'hero-' + (pMonster.id || index);
+        const fId = 'hero-' + (pMonster.id || index);
         div.dataset.fighterId = fId;
         let forcedHp = null;
         let forcedMana = null;
@@ -3692,7 +3692,7 @@ function renderEnemies(enemies) {
         const hpTextEl = div.querySelector('.hp-text-val');
         const manaBar = div.querySelector('.gauge-fill.mana');
         const manaTextEl = div.querySelector('.mana-text-val');
-        
+
         if (forcedHp !== null && forcedHp !== pMonster.healthCurrent) {
             const suffix = pMonster.shieldTotal > 0 ? ' (+' + pMonster.shieldTotal + ' 🛡️)' : '';
             animateGaugeJS(hpBar, hpTextEl, forcedHp, pMonster.healthCurrent, pMonster.healthMax, 800, suffix);
@@ -4143,7 +4143,7 @@ function renderSpells(spells) {
             window.updateSpellCardState(sp.id);
         }
     });
-    
+
     if (pageState.currentSessionData) {
         updateMultiTurnBanner(pageState.currentSessionData);
     }
@@ -4352,7 +4352,8 @@ const GAME_TIPS = [
     "Les <span class=\"text-fuchsia-400 font-semibold\">Anomalies</span> servent comme monais ou bien comme ingredient alchimique.",
     "L'<span class=\"text-emerald-400 font-semibold\">Expérience Spirituelle</span> permet de gagner des niveaux spirituels ce qui débloquera de nouveaux sorts, mais sert aussi de ressources dans certain craft alchimique.",
     "Vous pouvez jouer en <span class=\"text-blue-400 font-semibold\">Multijoueur</span> ! Créez un <span class=\"text-emerald-400 font-semibold\">Lobby</span> et partagez le code d'invitation à un ami. Attention : il doit avoir débloqué le donjon pour pouvoir s'y aventurer avec vous.",
-    "Fuir un donjon  fait perdre de l'or et de l'expérience proportionnellement à la taille du donjon. Un perso qui meurt en donjon perd aussi de l'expérience en fonction de son niveau."
+    "Fuir un donjon  fait perdre de l'or et de l'expérience proportionnellement à la taille du donjon. Un perso qui meurt en donjon perd aussi de l'expérience en fonction de son niveau.",
+    "En multijoueur, l'inventaire est partagé, mais l'utilisation d'un consommable le déduit en priorité de la réserve personnelle du joueur qui l'active. En cas de rupture de stock, l'objet est prélevé dans la réserve de votre coéquipier."
 ];
 
 function showResult(data) {
@@ -4509,10 +4510,10 @@ window.renderOverlayInventory = function (containerId) {
         const myPlayer = pageState.currentSessionData.players.find(p => p.ownerUsername === pageState.currentUsername) || pageState.currentSessionData.players[0];
         goldAmount = myPlayer.gold || 0;
     }
-    
+
     let prevGold = window.previousInventoryGold !== undefined ? window.previousInventoryGold : goldAmount;
     window.previousInventoryGold = goldAmount;
-    
+
     const goldSpanId = 'combatGold_' + containerId;
     list.innerHTML += `
         <div class="flex-center" style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px; padding: 0.8rem; gap: 0.8rem; margin-bottom: 0.5rem;">
