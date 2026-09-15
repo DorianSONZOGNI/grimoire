@@ -838,6 +838,9 @@ window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost,
     if (tooltipTrigger) {
         if (lootItems.length === 0) {
             tooltipTrigger.style.display = 'none';
+            tooltipTrigger.classList.add('hidden');
+            tooltipTrigger.classList.remove('flex');
+            tooltipTrigger.removeAttribute('data-tooltip-html');
         } else {
             const colorMap = {
                 'COMMUN': '#94a3b8', 'INHABITUEL': '#22c55e', 'RARE': '#3b82f6', 'MYTHIQUE': '#f97316', 'LEGENDAIRE': '#eab308',
@@ -877,6 +880,8 @@ window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost,
             
             tooltipTrigger.setAttribute('data-tooltip-html', tooltipContent);
             tooltipTrigger.style.display = 'flex';
+            tooltipTrigger.classList.remove('hidden');
+            tooltipTrigger.classList.add('flex');
         }
     }
 
