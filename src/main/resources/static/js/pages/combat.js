@@ -627,6 +627,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             pageState.previousPlayerXP[p.id] = p.experience;
             pageState.previousPlayerSpiritXP[p.id] = p.spiritualiteExperience || 0;
         });
+
+        // Charger les équipements pour le multijoueur (initialisation)
+        await fetchCombatEquipments(directSessionId);
+
         updateUI(data);
         return;
     }
@@ -1811,6 +1815,14 @@ function setMultiActionsEnabled(enabled) {
 }
 
 function updateUI(data) {
+    let turnMap = { players: {}, enemies: {} };
+    if (data.turnOrder) {
+        data.turnOrder.forEach((entry, i) => {
+            if (entry.player) turnMap.players[entry.index] = i + 1;
+            else turnMap.enemies[entry.index] = i + 1;
+        });
+    }
+
     const oldStats = {};
     document.querySelectorAll('.fighter').forEach((el) => {
         let fId = el.dataset.fighterId;
@@ -1935,7 +1947,7 @@ function updateUI(data) {
                 forcedMana = window.combatOldStats[fId].mana;
             }
 
-            div.innerHTML = timerHtml + generateFighterHtml(p, true, false, forcedHp, forcedMana);
+            div.innerHTML = timerHtml + generateFighterHtml(p, true, false, forcedHp, forcedMana, turnMap.players[index] || null);
             playersContainer.appendChild(div);
 
             const hpBar = div.querySelector('.gauge-fill.hp');
@@ -2115,7 +2127,7 @@ function updateUI(data) {
                 if (vicOverlay) vicOverlay.classList.remove('show');
 
                 document.getElementById('btnAttack').disabled = false;
-                renderEnemies(data.enemies);
+                renderEnemies(data.enemies, turnMap);
 
                 // Track previous XP to animate next time
                 data.players.forEach(p => {
@@ -3213,7 +3225,7 @@ function getBossBuffsHtml(c) {
 
 // Removed GLOBAL_STAT_LABELS and formatStat (imported from ui.js)
 
-function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = null, forcedMana = null) {
+function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = null, forcedMana = null, turnNum = null) {
     const hpToRender = forcedHp !== null && !isNaN(forcedHp) ? forcedHp : c.healthCurrent;
     const hpPct = c.healthMax > 0 ? Math.max(0, Math.min(100, (hpToRender / c.healthMax) * 100)) : 0;
     let hpLabel = `${hpToRender} / ${c.healthMax}`;
@@ -3600,7 +3612,13 @@ function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = null, for
         }
     }
 
+    let turnBadgeHtml = '';
+    if (turnNum !== null) {
+        turnBadgeHtml = `<div style="position: absolute; top: -12px; left: -12px; width: 30px; height: 30px; background: rgba(15, 23, 42, 1); color: #f8fafc; font-size: 1.1rem; font-weight: bold; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #38bdf8; z-index: 10; box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);">${turnNum}</div>`;
+    }
+
     return `
+        ${turnBadgeHtml}
         ${mutationsHtml}
         ${channelingBadgeHtml}
         <div class="fighter-name" style="color: ${isHero ? '#f8fafc' : '#ef4444'}; font-size: 1.3rem; display: flex; justify-content: center; align-items: center; gap: 0.2rem; margin-bottom: 0.8rem; width: 100%;">
@@ -3628,7 +3646,7 @@ function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = null, for
     `;
 }
 
-function renderEnemies(enemies) {
+function renderEnemies(enemies, turnMap = null) {
     const container = document.getElementById('enemiesContainer');
     container.innerHTML = '';
 
@@ -3695,7 +3713,7 @@ function renderEnemies(enemies) {
             forcedMana = window.combatOldStats[fId].mana;
         }
 
-        div.innerHTML = generateFighterHtml(pMonster, false, isBoss, forcedHp, forcedMana);
+        div.innerHTML = generateFighterHtml(pMonster, false, isBoss, forcedHp, forcedMana, turnMap && turnMap.enemies ? turnMap.enemies[index] : null);
         container.appendChild(div);
 
         const hpBar = div.querySelector('.gauge-fill.hp');

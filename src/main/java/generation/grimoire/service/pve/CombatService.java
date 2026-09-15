@@ -85,6 +85,12 @@ public class CombatService {
             p.setUsedCheatDeath(false);
             p.setHealthCurrent(p.getTotalHealthMax());
             p.setManaCurrent(p.getTotalManaMax());
+
+            // Force initialization of equipments
+            if (p.getEquipments() != null) {
+                p.getEquipments().size();
+            }
+
             players.add(p);
         }
 
@@ -197,6 +203,12 @@ public class CombatService {
             p.setUsedCheatDeath(false);
             p.setHealthCurrent(p.getTotalHealthMax());
             p.setManaCurrent(p.getTotalManaMax());
+
+            // Force initialization of equipments for the detached in-memory session
+            if (p.getEquipments() != null) {
+                p.getEquipments().size();
+            }
+
             players.add(p);
         }
 
