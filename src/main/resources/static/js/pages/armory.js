@@ -188,8 +188,8 @@ async function submitPersonnage() {
             await loadPersonnages();
         }
     } catch (e) {
-        showNotif('Erreur lors de la sauvegarde.', true);
-        console.error(e);
+        // globalFetch already calls showNotif with the specific error message
+        console.error("Erreur lors de la sauvegarde:", e);
     }
 }
 
