@@ -730,9 +730,13 @@ async function startCombat(characterIds, dungeonId, consumableIds) {
         updateUI(data);
     } catch (e) {
         console.error(e);
-        if (typeof showNotif !== 'undefined') window.showNotif("Erreur de connexion.", true);
-        else ui.showNotif("Erreur de connexion.", true);
-        window.location.href = '/dungeons.html';
+        const msg = e.message || "Erreur de connexion.";
+        if (typeof showNotif !== 'undefined') window.showNotif(msg, true);
+        else if (window.ui) ui.showNotif(msg, true);
+        
+        setTimeout(() => {
+            window.location.href = '/dungeons.html';
+        }, 3000);
     }
 }
 

@@ -150,6 +150,7 @@ public class CombatService {
                 .filter(java.util.Objects::nonNull)
                 .mapToDouble(e -> e.calculateWeight())
                 .sum();
+        totalWeight = Math.round(totalWeight * 10.0) / 10.0;
         double maxWeight = 10.0 + 5.0 * players.size();
         if (totalWeight > maxWeight) {
             throw new IllegalArgumentException(
@@ -267,6 +268,7 @@ public class CombatService {
                 .filter(java.util.Objects::nonNull)
                 .mapToDouble(e -> e.calculateWeight())
                 .sum();
+        totalWeight = Math.round(totalWeight * 10.0) / 10.0;
         double maxWeight = 10.0 + 5.0 * players.size();
         if (totalWeight > maxWeight) {
             throw new IllegalArgumentException(
