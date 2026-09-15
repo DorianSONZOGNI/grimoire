@@ -111,9 +111,9 @@ document.addEventListener('DOMContentLoaded', () => {
 
         document.getElementById('dungeonsContent').style.display = 'block';
         await loadCharacters();
-        await loadDungeons();
+        await loadAnomalies();
         loadConsumables();
-        loadAnomalies();
+        await loadDungeons();
     };
 
     if (window.currentUser !== undefined) {
