@@ -4570,30 +4570,110 @@ window.renderOverlayInventory = function (containerId) {
 };
 
 window.openConsumeModal = function (consumableId, consumableName) {
-    let btnContainerHtml = '';
-    pageState.currentSessionData.players.forEach(p => {
-        let hpColor = p.healthCurrent <= 0 ? '#ef4444' : (p.healthCurrent < p.healthMax ? '#f59e0b' : '#10b981');
-        let mpColor = p.manaCurrent < p.manaMax ? '#3b82f6' : '#60a5fa';
-        btnContainerHtml += `
-            <button class="flex-between w-100" onclick="document.querySelector('app-modal').hide(false); window.confirmConsumeItem(${consumableId}, ${p.id})"
-                ${p.healthCurrent <= 0 ? 'disabled' : ''}
-                style="align-items: center; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 0.8rem; border-radius: 8px; cursor: ${p.healthCurrent <= 0 ? 'not-allowed' : 'pointer'}; opacity: ${p.healthCurrent <= 0 ? '0.5' : '1'}; transition: all 0.2s ease; margin-bottom: 8px; width: 100%;">
-                <span style="font-weight: 600;">${p.name}</span>
-                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.2rem;">
-                    <span style="font-size: 0.85rem; color: ${hpColor};"><b>${p.healthCurrent}</b> / ${p.healthMax} PV</span>
-                    <span style="font-size: 0.85rem; color: ${mpColor};"><b>${p.manaCurrent}</b> / ${p.manaMax} MP</span>
-                </div>
-            </button>
-        `;
-    });
+    const c = pageState.currentSessionData.activeConsumables.find(item => item.id === consumableId);
+    let selectedPlayerId = null;
+
+    const renderPlayers = () => {
+        let btnContainerHtml = '';
+        pageState.currentSessionData.players.forEach(p => {
+            let previewHp = p.healthCurrent;
+            let previewMp = p.manaCurrent;
+            
+            let hpGain = 0;
+            let mpGain = 0;
+            
+            if (c && selectedPlayerId === p.id) {
+                hpGain = (c.bonusHealthMax || 0) 
+                    + (c.consumableHpPercent ? Math.floor(p.healthMax * c.consumableHpPercent / 100) : 0)
+                    + (c.consumableMissingHpPercent ? Math.floor((p.healthMax - p.healthCurrent) * c.consumableMissingHpPercent / 100) : 0);
+                    
+                mpGain = (c.bonusManaMax || 0)
+                    + (c.consumableManaPercent ? Math.floor(p.manaMax * c.consumableManaPercent / 100) : 0)
+                    + (c.consumableMissingManaPercent ? Math.floor((p.manaMax - p.manaCurrent) * c.consumableMissingManaPercent / 100) : 0);
+                
+                previewHp = Math.min(p.healthMax, Math.max(0, p.healthCurrent + hpGain));
+                previewMp = Math.min(p.manaMax, Math.max(0, p.manaCurrent + mpGain));
+            }
+
+            let hpColor = p.healthCurrent <= 0 ? '#ef4444' : (p.healthCurrent < p.healthMax ? '#f59e0b' : '#10b981');
+            let mpColor = p.manaCurrent < p.manaMax ? '#3b82f6' : '#60a5fa';
+
+            let hpGainHtml = '';
+            let mpGainHtml = '';
+
+            if (selectedPlayerId === p.id) {
+                if (hpGain > 0) {
+                    hpColor = '#f472b6'; // rose
+                    hpGainHtml = ` <span style="font-size: 0.75rem; opacity: 0.9;">(+${hpGain})</span>`;
+                } else if (hpGain < 0) {
+                    hpColor = '#ff2a2a'; // rouge agressif
+                    hpGainHtml = ` <span style="font-size: 0.75rem; opacity: 0.9;">(${hpGain})</span>`;
+                }
+                
+                if (mpGain > 0) {
+                    mpColor = '#38bdf8'; // bleu clair
+                    mpGainHtml = ` <span style="font-size: 0.75rem; opacity: 0.9;">(+${mpGain})</span>`;
+                } else if (mpGain < 0) {
+                    mpColor = '#b026ff'; // mauve agressif (violet vif)
+                    mpGainHtml = ` <span style="font-size: 0.75rem; opacity: 0.9;">(${mpGain})</span>`;
+                }
+            }
+            
+            const isSelected = selectedPlayerId === p.id;
+            const borderStyle = isSelected ? 'border: 1px solid rgba(244, 114, 182, 0.5); background: rgba(244, 114, 182, 0.1);' : 'border: 1px solid rgba(255,255,255,0.1); background: rgba(15, 23, 42, 0.8);';
+
+            btnContainerHtml += `
+                <button class="flex-between w-100" onclick="window.selectConsumeTarget(${p.id}, ${consumableId}, '${consumableName.replace(/'/g, "\\'")}')"
+                    ${p.healthCurrent <= 0 ? 'disabled' : ''}
+                    style="align-items: center; ${borderStyle} color: #fff; padding: 0.8rem; border-radius: 8px; cursor: ${p.healthCurrent <= 0 ? 'not-allowed' : 'pointer'}; opacity: ${p.healthCurrent <= 0 ? '0.5' : '1'}; transition: all 0.2s ease; margin-bottom: 8px; width: 100%;">
+                    <span style="font-weight: 600;">${p.name}</span>
+                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.2rem;">
+                        <span style="font-size: 0.85rem; color: ${hpColor}; transition: color 0.3s;"><b>${previewHp}</b>${hpGainHtml} / ${p.healthMax} PV</span>
+                        <span style="font-size: 0.85rem; color: ${mpColor}; transition: color 0.3s;"><b>${previewMp}</b>${mpGainHtml} / ${p.manaMax} MP</span>
+                    </div>
+                </button>
+            `;
+        });
+        return btnContainerHtml;
+    };
+
+    window.selectConsumeTarget = function(playerId, cId, cName) {
+        selectedPlayerId = playerId;
+        const listContainer = document.getElementById('consumePlayersList');
+        if (listContainer) {
+            listContainer.innerHTML = renderPlayers();
+        }
+        
+        const confirmBtn = document.getElementById('appModalConfirmBtn');
+        if (confirmBtn) {
+            confirmBtn.disabled = false;
+            confirmBtn.style.opacity = '1';
+            confirmBtn.style.cursor = 'pointer';
+        }
+    };
 
     ui.showModal({
         title: 'Consommer un objet',
-        body: `Qui doit utiliser <strong class="text-white">${consumableName}</strong> ?<br><br><div style="display: flex; flex-direction: column; width: 100%;">${btnContainerHtml}</div>`,
+        body: `Qui doit utiliser <strong class="text-white">${consumableName}</strong> ?<br><br><div id="consumePlayersList" style="display: flex; flex-direction: column; width: 100%;">${renderPlayers()}</div>`,
         icon: 'science',
-        hideConfirm: true,
-        cancelText: 'Fermer'
+        hideConfirm: false,
+        confirmText: 'Confirmer',
+        cancelText: 'Fermer',
+        onConfirm: () => {
+            if (selectedPlayerId) {
+                window.confirmConsumeItem(consumableId, selectedPlayerId);
+            }
+        }
     });
+
+    setTimeout(() => {
+        const confirmBtn = document.getElementById('appModalConfirmBtn');
+        if (confirmBtn) {
+            confirmBtn.disabled = true;
+            confirmBtn.style.opacity = '0.5';
+            confirmBtn.style.cursor = 'not-allowed';
+        }
+    }, 10);
 };
 
 window.confirmConsumeItem = async function (consumableId, characterId) {
