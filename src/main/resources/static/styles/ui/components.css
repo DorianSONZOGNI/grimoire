@@ -693,6 +693,13 @@
     background: rgba(6, 182, 212, 0.1) !important;
 }
 
+.top-nav-link.nav-hunting:hover,
+.top-nav-link.nav-hunting.active {
+    color: #d47406 !important;
+    border-color: rgba(255, 128, 0, 0.3) !important;
+    background: rgba(255, 128, 0, 0.1) !important;
+}
+
 .top-nav-link.nav-admin:hover,
 .top-nav-link.nav-admin.active {
     color: #ef4444 !important;
