@@ -1283,10 +1283,6 @@
     background-color: rgba(168, 85, 247, 0.1) !important;
 }
 
-.text-purple-300 {
-    color: #d8b4fe !important;
-}
-
 .max-h-\[250px\] {
     max-height: 250px !important;
 }
@@ -3010,6 +3006,14 @@ button {
 
 /* Important Color Overrides */
 .text-purple {
+    color: #a855f7 !important;
+}
+
+.text-purple-300 {
+    color: #bb3ad6 !important;
+}
+
+.text-purple-400 {
     color: #a855f7 !important;
 }
 

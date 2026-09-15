@@ -648,11 +648,10 @@ export function getSpellCardHtml(sp) {
                                 <span class="material-symbols-outlined align-middle" style="font-size: 1.1rem; color: #a78bfa;">cyclone</span>
                                 <span>${sp.channelingDuration} tour${sp.channelingDuration > 1 ? 's' : ''}</span>
                                 ${sp.allowInstantDuringChanneling ? `
-                                    <span class="material-symbols-outlined align-middle" title="Instantanés autorisés pendant la canalisation" style="font-size: 1.1rem; color: #f59e0b;">flash_on</span>
+                                    <span class="material-symbols-outlined align-middle text-purple-300" title="Instantanés autorisés pendant la canalisation" style="font-size: 1.1rem;">flash_on</span>
                                 ` : `
                                     <span class="relative align-middle inline-flex items-center justify-center w-[1.1rem] h-[1.1rem]" title="Instantanés interdits pendant la canalisation">
                                         <span class="material-symbols-outlined" style="font-size: 1.1rem; color: #64748b;">flash_off</span>
-                                        <span class="absolute w-full h-[2px] bg-error-500 -rotate-45"></span>
                                     </span>
                                 `}
                             </span>

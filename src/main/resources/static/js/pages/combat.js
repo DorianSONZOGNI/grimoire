@@ -4202,7 +4202,7 @@ function renderSpellCard(sp) {
     } else if (sp.castingType === 'CANALISE') {
         castingTypeHtml = '<span class="material-symbols-outlined text-base text-violet-500" title="Action Canalisée">cyclone</span>';
         castingTypeHtml += sp.allowInstantDuringChanneling ?
-            '<span class="material-symbols-outlined text-base text-gold" title="Instantanés autorisés pendant la canalisation">flash_on</span>' :
+            '<span class="material-symbols-outlined text-base text-purple-300" title="Instantanés autorisés pendant la canalisation">flash_on</span>' :
             '<span class="relative" title="Instantanés interdits pendant la canalisation" style="display: inline-flex; align-items: center; justify-content: center; width: 1rem; height: 1rem;"><span class="material-symbols-outlined text-base text-slate">flash_off</span><span class="absolute" style="width: 100%; height: 2px; background: #ef4444; transform: rotate(-45deg);"></span></span>';
     } else {
         castingTypeHtml = '<span class="material-symbols-outlined text-base text-blue" title="Action Banale">hourglass_empty</span>';
