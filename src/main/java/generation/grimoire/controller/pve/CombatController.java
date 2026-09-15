@@ -92,7 +92,7 @@ public class CombatController {
         if (session.getPlayers() != null) {
             for (generation.grimoire.entity.personnage.Personnage p : session.getPlayers()) {
                 // Re-fetch the Personnage inside this transaction to safely initialize lazy collections
-                generation.grimoire.entity.personnage.Personnage attached = personnageRepository.findById(p.getId()).orElse(null);
+                generation.grimoire.entity.personnage.Personnage attached = personnageRepository.findById(java.util.Objects.requireNonNull(p.getId())).orElse(null);
                 if (attached != null && attached.getEquipments() != null) {
                     java.util.List<generation.grimoire.dto.equipment.EquipmentShopDTO> mapped = attached.getEquipments().stream()
                             .map(equipmentMapper::toShopDto)

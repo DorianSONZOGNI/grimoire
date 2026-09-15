@@ -25,6 +25,9 @@ class PersonnageServiceTest {
     @Mock
     private PersonnageRepository personnageRepository;
 
+    @Mock
+    private generation.grimoire.repository.EquipmentRepository equipmentRepository;
+
     @InjectMocks
     private PersonnageService personnageService;
 
@@ -83,11 +86,14 @@ class PersonnageServiceTest {
 
     @Test
     void deleteById_shouldDelegateToRepository() {
-        doNothing().when(personnageRepository).deleteById(1L);
+        Personnage mockP = new Personnage();
+        when(personnageRepository.findById(1L)).thenReturn(Optional.of(mockP));
+        when(equipmentRepository.findByPersonnageId(1L)).thenReturn(java.util.Collections.emptyList());
+        doNothing().when(personnageRepository).delete(mockP);
 
         personnageService.deleteById(1L);
 
-        verify(personnageRepository).deleteById(1L);
+        verify(personnageRepository).delete(mockP);
     }
 
     @Test

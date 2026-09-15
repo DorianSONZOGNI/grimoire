@@ -284,9 +284,9 @@ class SpellIntegrationTest {
         spellService.castSpell(channeledSpell, hero, enemy, null);
         // Doit coûter du mana
         assertThat(hero.getManaCurrent()).isEqualTo(manaBefore - 25);
-        // Doit avoir généré un bouclier égal à 30% du coût en mana dépensé (25 * 0.3 = 7) pour la durée
+        // Doit avoir généré un bouclier égal à 50% du coût en mana dépensé (25 * 0.5 = 12) pour la durée
         // du sort (3 tours)
-        assertThat(hero.getTotalShield()).isEqualTo(7);
+        assertThat(hero.getTotalShield()).isEqualTo(12);
     }
 
     @Test

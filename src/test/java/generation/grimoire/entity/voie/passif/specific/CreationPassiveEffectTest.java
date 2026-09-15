@@ -108,7 +108,7 @@ class CreationPassiveEffectTest {
         passive.onEvent(event);
 
         // Le bouclier est égal à 30% du mana dépensé (100 * 0.3 = 30)
-        assertEquals(30, personnage.getTotalShield(), "Doit donner un bouclier équivalent à 30% du mana dépensé");
+        assertEquals(50, personnage.getTotalShield(), "Doit donner un bouclier équivalent à 50% du mana dépensé");
     }
 
     @Test
@@ -124,8 +124,8 @@ class CreationPassiveEffectTest {
         SpellCostPaidEvent event = new SpellCostPaidEvent(personnage, null, spell, 50, 0, 0);
         passive.onEvent(event);
 
-        // 50 * 0.3 = 15
-        assertEquals(15, personnage.getTotalShield());
+        // 50 * 0.5 = 25
+        assertEquals(25, personnage.getTotalShield());
     }
 
     @Test
