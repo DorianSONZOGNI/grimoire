@@ -114,6 +114,11 @@ public class CombatController {
         }
     }
 
+    @GetMapping("/debug/sessions")
+    public ResponseEntity<?> debugSessions() {
+        return ResponseEntity.ok(combatService.getActiveSessions());
+    }
+
     @PostMapping("/{sessionId}/action")
     public ResponseEntity<?> executeAction(
             @PathVariable("sessionId") String sessionId,

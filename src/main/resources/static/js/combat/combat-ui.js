@@ -390,6 +390,7 @@ export function updateUI(data) {
                 const vicOverlay = document.getElementById('combatVictoryOverlay');
                 if (vicOverlay) {
                     if (typeof window.renderOverlayInventory === 'function') window.renderOverlayInventory('combatVictoryInventoryList');
+                    if (typeof window.renderOverlayMap === 'function') window.renderOverlayMap('combatVictoryMapList');
                     vicOverlay.classList.add('show');
                     const xpContainer = document.getElementById('combatVictoryXpContainer');
                     if (xpContainer) {
@@ -1295,6 +1296,7 @@ export function updateUI(data) {
             }
 
             if (typeof window.renderOverlayInventory === 'function') window.renderOverlayInventory('eventOverlayInventoryList');
+            if (typeof window.renderOverlayMap === 'function') window.renderOverlayMap('eventMapList');
             overlay.classList.add('show');
         }
     }

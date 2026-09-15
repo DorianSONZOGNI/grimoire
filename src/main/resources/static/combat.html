@@ -78,24 +78,45 @@
 
         <!-- Room Event Overlay (Treasure/Event) -->
         <div class="event-overlay" id="eventOverlay">
-            <!-- Left: Inventory Panel Wrapper -->
-            <div id="eventInventoryWrapper"
+            <!-- Left: Side Panel Wrapper -->
+            <div id="eventSidePanelWrapper"
                 class="absolute inset-y-0 left-0 w-[320px] z-20 -translate-x-full transition-transform duration-300">
-                <div
-                    class="custom-scrollbar w-full h-full bg-slate-900/95 border-r border-white/10 p-6 flex flex-col overflow-y-auto relative">
-                    <h3
-                        class="text-emerald mb-4 text-xl text-center font-outfit flex items-center justify-center gap-2">
-                        <span class="material-symbols-outlined">inventory_2</span> Inventaire
-                        <span class="inventory-weight-display text-muted text-sm font-normal"></span>
-                    </h3>
-                    <div id="eventOverlayInventoryList" class="flex flex-col gap-[0.8rem]">
-                        <!-- JS injects consumable cards here -->
+                
+                <div class="custom-scrollbar w-full h-full bg-slate-900/95 border-r border-white/10 p-6 flex flex-col overflow-y-auto relative">
+                    <!-- Inventory Content -->
+                    <div id="eventInventoryContent" class="h-full flex flex-col">
+                        <h3 class="text-emerald mb-4 text-xl text-center font-outfit flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined">inventory_2</span> Inventaire
+                            <span class="inventory-weight-display text-muted text-sm font-normal"></span>
+                        </h3>
+                        <div id="eventOverlayInventoryList" class="flex flex-col gap-[0.8rem]">
+                            <!-- JS injects consumable cards here -->
+                        </div>
+                    </div>
+
+                    <!-- Map Content -->
+                    <div id="eventMapContent" class="h-full flex flex-col hidden">
+                        <h3 class="text-blue-400 mb-4 text-xl text-center font-outfit flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined">map</span> Carte du Donjon
+                        </h3>
+                        <div id="eventMapList" class="flex flex-col gap-[0.8rem] relative">
+                            <!-- JS injects map timeline here -->
+                        </div>
                     </div>
                 </div>
-                <!-- Toggle Tab -->
-                <div class="text-emerald absolute -right-10 top-1/2 -translate-y-1/2 w-10 h-[100px] bg-slate-900/95 border border-l-0 border-white/10 rounded-r-lg flex items-center justify-center cursor-pointer shadow-[5px_0_10px_rgba(0,0,0,0.3)]"
-                    onclick="document.getElementById('eventInventoryWrapper').classList.toggle('-translate-x-full');">
-                    <span class="material-symbols-outlined">inventory_2</span>
+
+                <!-- Toggle Tabs -->
+                <div class="absolute -right-10 top-1/2 -translate-y-1/2 flex flex-col gap-1">
+                    <!-- Inventory Tab -->
+                    <div id="eventInventoryTabBtn" class="text-emerald w-10 h-[80px] bg-slate-900/95 border border-l-0 border-white/10 rounded-r-lg flex items-center justify-center cursor-pointer shadow-[5px_0_10px_rgba(0,0,0,0.3)] transition-all opacity-100 hover:opacity-100"
+                        onclick="window.toggleSidePanel('event', 'inventory')">
+                        <span class="material-symbols-outlined">inventory_2</span>
+                    </div>
+                    <!-- Map Tab -->
+                    <div id="eventMapTabBtn" class="text-blue-400 w-10 h-[80px] bg-slate-900/95 border border-l-0 border-white/10 rounded-r-lg flex items-center justify-center cursor-pointer shadow-[5px_0_10px_rgba(0,0,0,0.3)] transition-all opacity-50 hover:opacity-100"
+                        onclick="window.toggleSidePanel('event', 'map')">
+                        <span class="material-symbols-outlined">map</span>
+                    </div>
                 </div>
             </div>
 
@@ -127,24 +148,45 @@
 
         <!-- Combat Victory Overlay -->
         <div class="event-overlay" id="combatVictoryOverlay">
-            <!-- Left: Inventory Panel Wrapper -->
-            <div id="combatVictoryInventoryWrapper"
+            <!-- Left: Side Panel Wrapper -->
+            <div id="combatVictorySidePanelWrapper"
                 class="absolute inset-y-0 left-0 w-[320px] z-20 -translate-x-full transition-transform duration-300">
-                <div
-                    class="custom-scrollbar w-full h-full bg-slate-900/95 border-r border-white/10 p-6 flex flex-col overflow-y-auto relative">
-                    <h3
-                        class="text-emerald mb-4 text-xl text-center font-outfit flex items-center justify-center gap-2">
-                        <span class="material-symbols-outlined">inventory_2</span> Inventaire
-                        <span class="inventory-weight-display text-muted text-sm font-normal"></span>
-                    </h3>
-                    <div id="combatVictoryInventoryList" class="flex flex-col gap-[0.8rem]">
-                        <!-- JS injects consumable cards here -->
+                
+                <div class="custom-scrollbar w-full h-full bg-slate-900/95 border-r border-white/10 p-6 flex flex-col overflow-y-auto relative">
+                    <!-- Inventory Content -->
+                    <div id="combatVictoryInventoryContent" class="h-full flex flex-col">
+                        <h3 class="text-emerald mb-4 text-xl text-center font-outfit flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined">inventory_2</span> Inventaire
+                            <span class="inventory-weight-display text-muted text-sm font-normal"></span>
+                        </h3>
+                        <div id="combatVictoryInventoryList" class="flex flex-col gap-[0.8rem]">
+                            <!-- JS injects consumable cards here -->
+                        </div>
+                    </div>
+
+                    <!-- Map Content -->
+                    <div id="combatVictoryMapContent" class="h-full flex flex-col hidden">
+                        <h3 class="text-blue-400 mb-4 text-xl text-center font-outfit flex items-center justify-center gap-2">
+                            <span class="material-symbols-outlined">map</span> Carte du Donjon
+                        </h3>
+                        <div id="combatVictoryMapList" class="flex flex-col gap-[0.8rem] relative">
+                            <!-- JS injects map timeline here -->
+                        </div>
                     </div>
                 </div>
-                <!-- Toggle Tab -->
-                <div class="text-emerald absolute -right-10 top-1/2 -translate-y-1/2 w-10 h-[100px] bg-slate-900/95 border border-l-0 border-white/10 rounded-r-lg flex items-center justify-center cursor-pointer shadow-[5px_0_10px_rgba(0,0,0,0.3)]"
-                    onclick="document.getElementById('combatVictoryInventoryWrapper').classList.toggle('-translate-x-full');">
-                    <span class="material-symbols-outlined">inventory_2</span>
+
+                <!-- Toggle Tabs -->
+                <div class="absolute -right-10 top-1/2 -translate-y-1/2 flex flex-col gap-1">
+                    <!-- Inventory Tab -->
+                    <div id="combatVictoryInventoryTabBtn" class="text-emerald w-10 h-[80px] bg-slate-900/95 border border-l-0 border-white/10 rounded-r-lg flex items-center justify-center cursor-pointer shadow-[5px_0_10px_rgba(0,0,0,0.3)] transition-all opacity-100 hover:opacity-100"
+                        onclick="window.toggleSidePanel('combatVictory', 'inventory')">
+                        <span class="material-symbols-outlined">inventory_2</span>
+                    </div>
+                    <!-- Map Tab -->
+                    <div id="combatVictoryMapTabBtn" class="text-blue-400 w-10 h-[80px] bg-slate-900/95 border border-l-0 border-white/10 rounded-r-lg flex items-center justify-center cursor-pointer shadow-[5px_0_10px_rgba(0,0,0,0.3)] transition-all opacity-50 hover:opacity-100"
+                        onclick="window.toggleSidePanel('combatVictory', 'map')">
+                        <span class="material-symbols-outlined">map</span>
+                    </div>
                 </div>
             </div>
 
@@ -286,7 +328,7 @@
     </div>
 
     <script type="module" src="/js/services/auth.js?v=11"></script>
-    <script type="module" src="/js/pages/combat.js?v=205"></script>
+    <script type="module" src="/js/pages/combat.js?v=208"></script>
 
 
 </body>

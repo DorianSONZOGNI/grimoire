@@ -20,6 +20,14 @@ public class CombatSession {
     private Long dungeonId;
     @com.fasterxml.jackson.annotation.JsonIgnore
     private Donjon donjon;
+
+    @com.fasterxml.jackson.annotation.JsonProperty("salles")
+    private List<Salle> salles;
+
+    public List<Salle> getSalles() {
+        return this.salles;
+    }
+
     private String donjonName;
     private String donjonSecret;
     private int donjonSecretLevel;
@@ -113,6 +121,7 @@ public class CombatSession {
         this.sessionId = sessionId;
         this.dungeonId = donjon.getId();
         this.donjon = donjon;
+        this.salles = donjon != null ? donjon.getSalles() : new ArrayList<>();
         this.donjonName = donjon.getName();
         this.donjonSecret = donjon.getRequiredSecret();
         this.donjonSecretLevel = donjon.getRequiredSecretLevel();
