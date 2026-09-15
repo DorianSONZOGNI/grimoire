@@ -27,7 +27,7 @@ window.EFFECT_LABELS = {
 
 window.EFFECT_DESCRIPTIONS = {
     'LIFESTEAL': 'Convertit une partie des dégâts infligés (physiques ou magiques) en points de vie (Soin).',
-    'THORNS': 'Renvoie automatiquement à l\'attaquant une partie des dégâts physiques subis.',
+    'THORNS': 'Renvoie à l\'attaquant une partie des dégâts physiques subis.',
     'MANA_SHIELD': 'Bouclier de mana : le mana encaisse une partie des dégâts à la place des points de vie.',
     'CHEAT_DEATH': 'Survie miraculeuse : une fois par donjon, annule un coup mortel et rend des points de vie.',
     'CRIT_DAMAGE': 'Augmente le multiplicateur de dégâts de toutes les attaques critiques du porteur.',
@@ -66,9 +66,17 @@ window.STAT_DEFS = STAT_DEFS;
 export async function initMeta() {
     if (window.GRIMOIRE_META) return;
     try {
-        const res = await globalFetch('/api/meta/all');
-        if (res && res.ok) {
-            const allMeta = await res.json();
+        const [metaRes, recipesRes] = await Promise.all([
+            globalFetch('/api/meta/all').catch(() => null),
+            globalFetch('/api/alchemy/recipes').catch(() => null)
+        ]);
+
+        if (recipesRes && recipesRes.ok) {
+            window.GRIMOIRE_ALCHEMY_RECIPES = await recipesRes.json();
+        }
+
+        if (metaRes && metaRes.ok) {
+            const allMeta = await metaRes.json();
             window.GRIMOIRE_META = allMeta;
 
             // Retro-compatibility

@@ -455,9 +455,9 @@ window.showHeroEquipmentTooltip = function (el, characterId) {
         content.innerHTML = '<div style="color:#cbd5e1; font-size:0.9rem; text-align:center;">Aucun équipement</div>';
     } else {
         let html = '<div class="equip-slots-grid" style="width: 100%; min-width: 500px;">';
-        
+
         const slots = Object.keys(window.SLOT_LABELS || {}).filter(s => s !== 'CONSOMMABLE' && s !== 'ANOMALIE' && s !== 'ARME_DEUX_MAINS' && s !== 'ARME' && s !== 'ANNEAU');
-        
+
         // If SLOT_LABELS isn't loaded for some reason, fallback to basic list
         if (slots.length === 0) {
             slots.push('CASQUE', 'PLASTRON', 'ARME_GAUCHE', 'ANNEAU_GAUCHE', 'ANNEAU_DROIT', 'ARME_DROITE', 'BOTTES', 'CAPE');
@@ -465,7 +465,7 @@ window.showHeroEquipmentTooltip = function (el, characterId) {
 
         slots.forEach(slotKey => {
             const slotInfo = window.SLOT_LABELS && window.SLOT_LABELS[slotKey] ? window.SLOT_LABELS[slotKey] : { icon: 'help', color: '#94a3b8', label: slotKey };
-            
+
             let equipped = eqs.find(e => e.slot === slotKey);
             const twoHanded = eqs.find(e => e.slot === 'ARME_DEUX_MAINS');
 
@@ -479,7 +479,7 @@ window.showHeroEquipmentTooltip = function (el, characterId) {
             if (equipped) {
                 const rarityName = typeof getRarityName === 'function' ? getRarityName(equipped.rarity) : '';
                 const rarityClass = rarityName ? `rarity-${rarityName}` : '';
-                
+
                 let statsChips = '';
                 if (typeof STAT_DEFS !== 'undefined') {
                     statsChips = STAT_DEFS
@@ -501,7 +501,7 @@ window.showHeroEquipmentTooltip = function (el, characterId) {
                     if (equipped.crit > 0) statsHtml += `<span style="color:#ef4444;">${equipped.crit}% Crit</span> `;
                     statsChips = statsHtml;
                 }
-                
+
                 let specialEffectHtml = '';
                 if (equipped.specialEffect && equipped.specialEffect !== 'NONE' && equipped.specialEffect !== 'AUCUN') {
                     const label = window.EFFECT_LABELS ? (window.EFFECT_LABELS[equipped.specialEffect] || equipped.specialEffect) : equipped.specialEffect;
@@ -550,20 +550,20 @@ window.showHeroEquipmentTooltip = function (el, characterId) {
 
     const rect = el.getBoundingClientRect();
     tooltip.style.display = 'block';
-    
+
     // Position tooltip to the right or left of the avatar depending on screen space
     let top = rect.top + window.scrollY;
     let left = rect.right + 10;
-    
+
     if (left + 750 > window.innerWidth) {
         left = rect.left - 760;
     }
-    
+
     // Ensure left is not negative
     if (left < 10) {
         left = 10;
     }
-    
+
     tooltip.style.top = top + 'px';
     tooltip.style.left = left + 'px';
 };
@@ -921,7 +921,7 @@ window.updateSpellCardState = function (spellId) {
 
 function initiateCombatCast(spellId) {
     if (!pageState.currentSessionData) return;
-    
+
     if (pageState.currentSessionData.multi) {
         const activePlayer = pageState.currentSessionData.activePlayer;
         if (activePlayer && activePlayer.ownerUsername !== pageState.currentUsername) {
@@ -1917,7 +1917,7 @@ function updateUI(data) {
             if (pageState.isMulti && isActive && data.turnStartTime) {
                 timerHtml = `<div class="turn-timer-badge" id="timerBadge_${index}" style="position: absolute; top: 0; left: 50%; transform: translate(-50%, -50%); background: rgba(15, 23, 42, 0.9); backdrop-filter: blur(4px); border: 1px solid #38bdf8; color: #38bdf8; padding: 4px 14px; border-radius: 8px; font-weight: bold; box-shadow: 0 0 12px rgba(56, 189, 248, 0.5); z-index: 10; display: flex; align-items: center; gap: 6px; letter-spacing: 0.5px;">⏳ Calcul...</div>`;
             }
-            
+
             const fId = `hero-${p.id || index}`;
             div.dataset.fighterId = fId;
             let forcedHp = null;
@@ -1934,7 +1934,7 @@ function updateUI(data) {
             const hpTextEl = div.querySelector('.hp-text-val');
             const manaBar = div.querySelector('.gauge-fill.mana');
             const manaTextEl = div.querySelector('.mana-text-val');
-            
+
             if (forcedHp !== null && forcedHp !== actualHp) {
                 const suffix = p.shieldTotal > 0 ? ` (+${p.shieldTotal} 🛡️)` : '';
                 animateGaugeJS(hpBar, hpTextEl, forcedHp, actualHp, p.healthMax, 800, suffix);
@@ -2297,7 +2297,7 @@ function updateUI(data) {
                         title.textContent = 'Autel Sacrificiel';
                     } else {
                         icon.textContent = 'blur_on';
-                        icon.className = 'material-symbols-outlined mb-4 text-[5rem] text-violet';
+                        icon.className = 'material-symbols-outlined mb-4 text-[5rem] text-violet-500';
                         title.textContent = 'Altération';
                     }
                     desc.innerHTML = data.currentRoom.eventText || 'Une force mystérieuse vous entoure...';
@@ -3676,7 +3676,7 @@ function renderEnemies(enemies) {
             }
         }
 
-                const fId = 'hero-' + (pMonster.id || index);
+        const fId = 'hero-' + (pMonster.id || index);
         div.dataset.fighterId = fId;
         let forcedHp = null;
         let forcedMana = null;
@@ -3692,7 +3692,7 @@ function renderEnemies(enemies) {
         const hpTextEl = div.querySelector('.hp-text-val');
         const manaBar = div.querySelector('.gauge-fill.mana');
         const manaTextEl = div.querySelector('.mana-text-val');
-        
+
         if (forcedHp !== null && forcedHp !== pMonster.healthCurrent) {
             const suffix = pMonster.shieldTotal > 0 ? ' (+' + pMonster.shieldTotal + ' 🛡️)' : '';
             animateGaugeJS(hpBar, hpTextEl, forcedHp, pMonster.healthCurrent, pMonster.healthMax, 800, suffix);
@@ -4143,7 +4143,7 @@ function renderSpells(spells) {
             window.updateSpellCardState(sp.id);
         }
     });
-    
+
     if (pageState.currentSessionData) {
         updateMultiTurnBanner(pageState.currentSessionData);
     }
@@ -4200,10 +4200,10 @@ function renderSpellCard(sp) {
     if (sp.castingType === 'INSTANTANE') {
         castingTypeHtml = '<span class="material-symbols-outlined text-base text-gold" title="Action Instantanée">bolt</span>';
     } else if (sp.castingType === 'CANALISE') {
-        castingTypeHtml = '<span class="material-symbols-outlined text-base text-violet" title="Action Canalisée">cyclone</span>';
+        castingTypeHtml = '<span class="material-symbols-outlined text-base text-violet-500" title="Action Canalisée">cyclone</span>';
         castingTypeHtml += sp.allowInstantDuringChanneling ?
-            '<span class="material-symbols-outlined text-base text-gold" title="Instantanés autorisés pendant la canalisation">bolt</span>' :
-            '<span class="relative" title="Instantanés interdits pendant la canalisation" style="display: inline-flex; align-items: center; justify-content: center; width: 1rem; height: 1rem;"><span class="material-symbols-outlined text-base text-slate">bolt</span><span class="absolute" style="width: 100%; height: 2px; background: #ef4444; transform: rotate(-45deg);"></span></span>';
+            '<span class="material-symbols-outlined text-base text-purple-300" title="Instantanés autorisés pendant la canalisation">flash_on</span>' :
+            '<span class="relative" title="Instantanés interdits pendant la canalisation" style="display: inline-flex; align-items: center; justify-content: center; width: 1rem; height: 1rem;"><span class="material-symbols-outlined text-base text-slate">flash_off</span><span class="absolute" style="width: 100%; height: 2px; background: #ef4444; transform: rotate(-45deg);"></span></span>';
     } else {
         castingTypeHtml = '<span class="material-symbols-outlined text-base text-blue" title="Action Banale">hourglass_empty</span>';
     }
@@ -4320,39 +4320,42 @@ function renderSpellCard(sp) {
     `;
 }
 
-const GAME_TIPS = [
-    "Les dégâts de <span class=\"text-red-400 font-semibold\">[Brûlure]</span> sont de type <span class=\"text-blue-400 font-semibold\">Magique</span>. Contrairement aux autres attaques <span class=\"text-blue-400 font-semibold\">Magique</span>, la <span class=\"text-purple-400 font-semibold\">Résistance</span> de la cible réduit deux fois plus les dégats de brûlure !",
-    "Le <span class=\"text-emerald-400 font-semibold\">[Poison]</span> inflige des dégâts <span class=\"text-slate-300 font-semibold\">Bruts</span>, mais c'est la seule altération totalement purifiée par le moindre <span class=\"text-emerald-300 font-semibold\">soin</span> (un soin direct, un vol de vie ou un HoT dissipe tous les poisons). Note : La régénération native ne compte pas comme un soin.",
-    "L'<span class=\"text-amber-400 font-semibold\">Armure</span> et la <span class=\"text-purple-400 font-semibold\">Résistance</span> réduisent les dégâts que vous subissez. Mais attention : plus vous en accumulez, moins chaque nouveau point est efficace. Il est impossible d'atteindre 100% de réduction et de devenir invincible !",
+export const GAME_TIPS = [
+    "Les dégâts de <span class=\"text-red-400 font-semibold\">[Brûlure]</span> sont de type <span class=\"text-violet-500 font-semibold\">Magique</span>. Contrairement aux autres attaques <span class=\"text-blue-400 font-semibold\">Magique</span>, la <span class=\"text-emerald font-semibold\">Résistance</span> de la cible réduit deux fois plus les dégats de brûlure !",
+    "Le <span class=\"text-emerald-400 font-semibold\">[Poison]</span> inflige des dégâts <span class=\"text-brut font-semibold\">Bruts</span>, mais c'est la seule altération totalement purifiée par le moindre <span class=\"text-emerald-300 font-semibold\">soin</span> (un soin direct, un vol de vie ou un HoT dissipe tous les poisons). Note : La régénération native ne compte pas comme un soin.",
+    "L'<span class=\"text-blue font-semibold\">Armure</span> et la <span class=\"text-emerald font-semibold\">Résistance</span> réduisent les dégâts que vous subissez. Mais attention : plus vous en accumulez, moins chaque nouveau point est efficace. Il est impossible d'atteindre 100% de réduction et de devenir invincible !",
     "Les <span class=\"text-yellow-400 font-semibold\">Secrets</span> peuvent être découverts via des recettes alchimiques. Ils donnent accès à de nouveaux donjons, plus dangereux et contenant de meilleurs équipements !",
-    "Une attaque de base inflige 80% de votre <span class=\"text-amber-400 font-semibold\">Force</span> ou de votre <span class=\"text-blue-400 font-semibold\">Puissance</span> (la plus haute). Si vous avez autant de <span class=\"text-amber-400 font-semibold\">Force</span> que de <span class=\"text-blue-400 font-semibold\">Puissance</span>, l'attaque devient mixte (50% Physique, 50% Magique [donc 20% de dégats en plus]).",
-    "Un sort <span class=\"text-emerald-400 font-semibold\">'Instantané'</span> ne consomme pas votre action du tour. Mais attention, si vous faites une autre action avant de lancer votre sort instantané, vous perdrez la capaciter d'en lancer un !",
-    "Vous pouvez lancer des sorts instantanés pendant que vous êtes en train de caster la plupart des sorts canalisés ! Attention, certain rare sorts canalisés sont trop puissant et ne le permettent pas.",
+    "Une attaque de base inflige 80% de votre <span class=\"text-red-600 font-semibold\">Force</span> ou de votre <span class=\"text-violet-500 font-semibold\">Puissance</span> (la plus haute). Si vous avez autant de <span class=\"text-red-600 font-semibold\">Force</span> que de <span class=\"text-violet-500 font-semibold\">Puissance</span>, l'attaque devient mixte (50% Physique, 50% Magique [donc 20% de dégats en plus]).",
+    "Un sort <span class=\"text-yellow-500 font-semibold\">Instantané</span> ne consomme pas votre action du tour. Mais attention, si vous faites une action <span class=\"text-blue-400 font-semibold\">basique</span> avant de lancer votre sort instantané, vous perdrez la capacité d'en lancer un !",
+    "Vous pouvez lancer des sorts <span class=\"text-yellow-500 font-semibold\">Instantané</span> pendant que vous êtes en train de caster la plupart des sorts <span class=\"text-purple-400 font-semibold\">'Canalisé'</span> ! Attention, certain rare sorts canalisés sont trop puissant et ne le permettent pas.",
     "Un sort <span class=\"text-purple-400 font-semibold\">'Canalisé'</span> s'exécute au moment de le lancer au T1, puis à la fin de chaque tour durant le reste de la canalisation.",
     "Certains sorts possèdent des variantes (Options). Elles permettent de choisir quel effet on exécute parmi plusieurs propositions.",
-    "Les <span class=\"text-yellow-400 font-semibold\">Coups Critiques</span> multiplient par 1.5 l'efficacité de presque tout : les dégâts (bruts, magiques, physiques, brûlure, poison), mais aussi les soins, les boucliers et la restauration de mana !",
-    "Les dégâts sur la durée <span class=\"text-red-400 font-semibold\">(DoT)</span> peuvent être critiques au moment de leur application. Leurs dégâts par tour seront alors amplifiés pendant toute leur durée.",
-    "Lorsque plusieurs héros participent au même donjon, l'expérience gagnée à la fin du combat est partagée équitablement entre tous les héros en vie.",
-    "Les objets <span class=\"text-red-500 font-semibold\">Maudits</span> offrent des bonus plus de statistique, mais au prix de contreparties parfois mortelles. Lisez bien leurs effets avant de les équiper !",
-    "Vous ne pouvez équiper qu'un seul objet <span class=\"text-amber-500 font-semibold\">Relique</span> et un seul objet <span class=\"text-fuchsia-400 font-semibold\">Épique</span> à la fois sur l'ensemble de votre équipement. Choisissez-les judicieusement !",
-    "Il est impossible d'équiper deux fois le même type d'anneau sur un personnage. Chaque emplacement d'anneau doit comporter un bijou différent.",
-    "Tous les types d'objets ne se valent pas : une arme donnera statistiquement beaucoup plus de Force ou de Puissance qu'un bijou, tandis qu'un plastron excellera pour vos Points de Vie et votre Armure. Optimisez vos emplacements !",
-    "Votre inventaire déborde ou vous trouvez un objet inutile dans un coffre ? Vous pouvez le vendre instantanément en le <span class=\"text-red-400 font-semibold\">détruisant</span> pour récupérer un peu d'Or !",
+    "Les <span class=\"text-red-600 font-semibold\">Coups Critiques</span> multiplient par 1.5 l'efficacité de presque tout : les dégâts (bruts, magiques, physiques, brûlure, poison), mais aussi les soins, les boucliers et la restauration de mana !",
+    "Les dégâts sur la durée <span class=\"text-red-400 font-semibold\">(DoT)</span> peuvent être <span class=\"text-red-600 font-semibold\">critiques</span> au moment de leur application. Leurs dégâts par tour seront alors amplifiés pendant toute leur durée.",
+    "Lorsque plusieurs héros participent au même donjon, <span class=\"text-sky-300 font-semibold\">l'expérience</span> gagnée à la fin du combat est partagée équitablement entre tous les héros en vie.",
+    "Les objets <span class=\"text-maudit font-semibold\">Maudits</span> offrent des bonus plus de statistique, mais au prix de contreparties parfois mortelles. Lisez bien leurs effets avant de les équiper !",
+    "Vous ne pouvez équiper qu'un seul objet <span class=\"text-relique font-semibold\">Relique</span> et un seul objet <span class=\"text-epique font-semibold\">Épique</span> à la fois sur l'ensemble de votre équipement. Choisissez-les judicieusement !",
+    "Il est impossible d'équiper deux fois le même type d'anneau sur un héros. Chaque emplacement d'anneau doit comporter un bijou différent.",
+    "Tous les types d'objets ne se valent pas : une arme donnera statistiquement beaucoup plus de <span class=\"text-red-600 font-semibold\">Force</span> et de <span class=\"text-violet-500 font-semibold\">Puissance</span> qu'un bijou, tandis qu'un plastron excellera pour vos <span class=\"text-pink-500 font-semibold\">Points de Vie</span> et votre <span class=\"text-blue font-semibold\">Armure</span>. Optimisez vos emplacements !",
+    "Votre inventaire déborde ou vous trouvez un objet inutile dans votre coffre ? Vous pouvez le vendre en le <span class=\"text-red-400 font-semibold\">détruisant</span> pour récupérer un peu <span class=\"text-yellow-400 font-semibold\">d'Or</span> !",
     "La <span class=\"text-yellow-400 font-semibold\">Boutique</span> se réinitialise tous les jours à minuit. Gardez l'œil ouvert : l'objet en <span class=\"text-emerald-400 font-semibold\">Promotion</span> change toutes les deux heures.",
     "N'hésitez pas à consulter votre <span class=\"text-purple-400 font-semibold\">Grimoire</span> ! Il vous permet de voir à l'avance tous les sorts disponibles pour chaque voie et spiritualité, idéal pour planifier votre évolution.",
     "Certains monstres possèdent des <span class=\"text-purple-400 font-semibold\">Mutations</span>. Elles leur permettent de lancer des sorts dévastateurs ou d'utiliser des compétences pour s'entraider. Prudence !",
-    "Le <span class=\"text-blue-400 font-semibold\">Type</span> d'un monstre (Mort-Vivant, Bête, Démon...) définit certaines modifications importante à prendre en compte. Régénération, dégats suplémentaires, débuffs, etc.",
-    "Chaque monstre possède un <span class=\"text-amber-400 font-semibold\">Comportement</span> unique (Prédateur, Corrupteur, Brutal). Observez-les bien pour anticiper leur priorité de ciblage et leur comportement général !",
+    "Le <span class=\"text-red-400 font-semibold\">Type</span> d'un monstre (Mort-Vivant, Bête, Démon...) définit certaines modifications importante à prendre en compte. Régénération, dégats suplémentaires, débuffs, etc.",
+    "Certains monstres possèdent un <span class=\"text-amber-400 font-semibold\">Comportement</span> unique (Prédateur, Corrupteur, Brutal). Observez-les bien pour anticiper leur priorité de ciblage et leur comportement général !",
     "Avant de lancer un donjon, n'oubliez pas d'équiper' vos <span class=\"text-emerald-400 font-semibold\">Consommables</span> (potions, clé, corde, etc.) dans votre Inventaire de Combat. Vous pourrez les utiliser entre les affontements.",
-    "En donjon, les salles de <span class=\"text-red-400 font-semibold\">Combat</span> sont fréquentes. Mais attention aux salles de <span class=\"text-orange-500 font-semibold\">Boss</span> qui mettront votre équipe à rude épreuve en boostant les monstres !",
-    "Les <span class=\"text-yellow-400 font-semibold\">Salles des Trésors</span> regorgent d'or et d'objets, tandis que les salles d'<span class=\"text-blue-400 font-semibold\">Altération</span> peuvent vous soigner (ou l'inverse !) en échange d'<span class=\"text-fuchsia-400 font-semibold\">Anomalies</span> ou d'<span class=\"text-amber-400 font-semibold\">XP Spirituel</span>.",
+    "En donjon, les salles de <span class=\"text-orange-500 font-semibold\">Combat</span> sont fréquentes. Mais attention aux salles de <span class=\"text-red-500 font-semibold\">Boss</span> qui mettront votre équipe à rude épreuve en boostant les monstres !",
+    "Les <span class=\"text-yellow-400 font-semibold\">Salles des Trésors</span> regorgent d'or et d'objets, tandis que les salles d'<span class=\"text-purple-500 font-semibold\">Altération</span> peuvent vous soigner (ou l'inverse !) en échange d'<span class=\"text-fuchsia-400 font-semibold\">Anomalies</span> ou d'<span class=\"text-amber-400 font-semibold\">XP Spirituel</span>.",
     "Les <span class=\"text-purple-400 font-semibold\">portes étranges</span> sont des évènements aléatoires. Elles peuvent vous déboucher sur des pièges, des trésors inatendus, des marchants secret, des autels sacrificiels ou bien des monstres en embuscade... ",
     "C'est dans l'<span class=\"text-amber-500 font-semibold\">Armurerie</span> que vous pouvez gérer et équiper le matériel de vos héros. Un équipement bien pensé est la clé de la victoire !",
-    "Besoin d'une plus grande équipes ? Rendez-vous dans l'<span class=\"text-emerald-400 font-semibold\">Armurerie</span> pour <span class=\"text-blue-400 font-semibold\">Recruter</span> de nouveaux héros pour compléter votre équipe.",
+    "Besoin d'une plus grande équipes ? Rendez-vous dans l'<span class=\"text-amber-500 font-semibold\">Armurerie</span> pour <span class=\"text-blue-400 font-semibold\">Recruter</span> de nouveaux héros pour compléter votre équipe.",
     "Les <span class=\"text-fuchsia-400 font-semibold\">Anomalies</span> servent comme monais ou bien comme ingredient alchimique.",
-    "L'<span class=\"text-emerald-400 font-semibold\">Expérience Spirituelle</span> permet de gagner des niveaux spirituels ce qui débloquera de nouveaux sorts, mais sert aussi de ressources dans certain craft alchimique.",
+    "L'<span class=\"text-yellow-200 font-semibold\">Expérience Spirituelle</span> permet de gagner des niveaux spirituels ce qui débloquera de nouveaux sorts, mais sert aussi de ressources dans certain craft alchimique.",
     "Vous pouvez jouer en <span class=\"text-blue-400 font-semibold\">Multijoueur</span> ! Créez un <span class=\"text-emerald-400 font-semibold\">Lobby</span> et partagez le code d'invitation à un ami. Attention : il doit avoir débloqué le donjon pour pouvoir s'y aventurer avec vous.",
-    "Fuir un donjon  fait perdre de l'or et de l'expérience proportionnellement à la taille du donjon. Un perso qui meurt en donjon perd aussi de l'expérience en fonction de son niveau."
+    "Fuir un donjon  fait perdre de <span class=\"text-yellow-400 font-semibold\">l'or</span> et de <span class=\"text-sky-300 font-semibold\">l'expérience</span> proportionnellement à la taille du donjon. Un perso qui meurt en donjon perd aussi de <span class=\"text-sky-300 font-semibold\">l'expérience</span> en fonction de son niveau.",
+    "En multijoueur, l'inventaire est partagé, mais l'utilisation d'un <span class=\"text-green-400 font-semibold\">consommable</span> le déduit en priorité de la réserve personnelle du joueur qui l'active. En cas de rupture de stock, l'objet est prélevé dans la réserve de votre coéquipier.",
+    "La <span class=\"text-amber-500 font-semibold\">chasse journalière</span> est une course contre les autres joueurs. Soyez le premier à terminer le donjon du jour pour remporter le plus grand prix !",
+    "Pour remporter la <span class=\"text-amber-500 font-semibold\">chasse hebdomadaire</span>, il vous faut être le joueur qui a terrassé le plus de fois le donjon ciblé. Attention, ce sont souvent des donjons plus difficiles que la moyenne !"
 ];
 
 function showResult(data) {
@@ -4509,10 +4512,10 @@ window.renderOverlayInventory = function (containerId) {
         const myPlayer = pageState.currentSessionData.players.find(p => p.ownerUsername === pageState.currentUsername) || pageState.currentSessionData.players[0];
         goldAmount = myPlayer.gold || 0;
     }
-    
+
     let prevGold = window.previousInventoryGold !== undefined ? window.previousInventoryGold : goldAmount;
     window.previousInventoryGold = goldAmount;
-    
+
     const goldSpanId = 'combatGold_' + containerId;
     list.innerHTML += `
         <div class="flex-center" style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(245, 158, 11, 0.3); border-radius: 8px; padding: 0.8rem; gap: 0.8rem; margin-bottom: 0.5rem;">
@@ -4567,30 +4570,110 @@ window.renderOverlayInventory = function (containerId) {
 };
 
 window.openConsumeModal = function (consumableId, consumableName) {
-    let btnContainerHtml = '';
-    pageState.currentSessionData.players.forEach(p => {
-        let hpColor = p.healthCurrent <= 0 ? '#ef4444' : (p.healthCurrent < p.healthMax ? '#f59e0b' : '#10b981');
-        let mpColor = p.manaCurrent < p.manaMax ? '#3b82f6' : '#60a5fa';
-        btnContainerHtml += `
-            <button class="flex-between w-100" onclick="document.querySelector('app-modal').hide(false); window.confirmConsumeItem(${consumableId}, ${p.id})"
-                ${p.healthCurrent <= 0 ? 'disabled' : ''}
-                style="align-items: center; background: rgba(15, 23, 42, 0.8); border: 1px solid rgba(255,255,255,0.1); color: #fff; padding: 0.8rem; border-radius: 8px; cursor: ${p.healthCurrent <= 0 ? 'not-allowed' : 'pointer'}; opacity: ${p.healthCurrent <= 0 ? '0.5' : '1'}; transition: all 0.2s ease; margin-bottom: 8px; width: 100%;">
-                <span style="font-weight: 600;">${p.name}</span>
-                <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.2rem;">
-                    <span style="font-size: 0.85rem; color: ${hpColor};"><b>${p.healthCurrent}</b> / ${p.healthMax} PV</span>
-                    <span style="font-size: 0.85rem; color: ${mpColor};"><b>${p.manaCurrent}</b> / ${p.manaMax} MP</span>
-                </div>
-            </button>
-        `;
-    });
+    const c = pageState.currentSessionData.activeConsumables.find(item => item.id === consumableId);
+    let selectedPlayerId = null;
+
+    const renderPlayers = () => {
+        let btnContainerHtml = '';
+        pageState.currentSessionData.players.forEach(p => {
+            let previewHp = p.healthCurrent;
+            let previewMp = p.manaCurrent;
+            
+            let hpGain = 0;
+            let mpGain = 0;
+            
+            if (c && selectedPlayerId === p.id) {
+                hpGain = (c.bonusHealthMax || 0) 
+                    + (c.consumableHpPercent ? Math.floor(p.healthMax * c.consumableHpPercent / 100) : 0)
+                    + (c.consumableMissingHpPercent ? Math.floor((p.healthMax - p.healthCurrent) * c.consumableMissingHpPercent / 100) : 0);
+                    
+                mpGain = (c.bonusManaMax || 0)
+                    + (c.consumableManaPercent ? Math.floor(p.manaMax * c.consumableManaPercent / 100) : 0)
+                    + (c.consumableMissingManaPercent ? Math.floor((p.manaMax - p.manaCurrent) * c.consumableMissingManaPercent / 100) : 0);
+                
+                previewHp = Math.min(p.healthMax, Math.max(0, p.healthCurrent + hpGain));
+                previewMp = Math.min(p.manaMax, Math.max(0, p.manaCurrent + mpGain));
+            }
+
+            let hpColor = p.healthCurrent <= 0 ? '#ef4444' : (p.healthCurrent < p.healthMax ? '#f59e0b' : '#10b981');
+            let mpColor = p.manaCurrent < p.manaMax ? '#3b82f6' : '#60a5fa';
+
+            let hpGainHtml = '';
+            let mpGainHtml = '';
+
+            if (selectedPlayerId === p.id) {
+                if (hpGain > 0) {
+                    hpColor = '#f472b6'; // rose
+                    hpGainHtml = ` <span style="font-size: 0.75rem; opacity: 0.9;">(+${hpGain})</span>`;
+                } else if (hpGain < 0) {
+                    hpColor = '#ff2a2a'; // rouge agressif
+                    hpGainHtml = ` <span style="font-size: 0.75rem; opacity: 0.9;">(${hpGain})</span>`;
+                }
+                
+                if (mpGain > 0) {
+                    mpColor = '#38bdf8'; // bleu clair
+                    mpGainHtml = ` <span style="font-size: 0.75rem; opacity: 0.9;">(+${mpGain})</span>`;
+                } else if (mpGain < 0) {
+                    mpColor = '#b026ff'; // mauve agressif (violet vif)
+                    mpGainHtml = ` <span style="font-size: 0.75rem; opacity: 0.9;">(${mpGain})</span>`;
+                }
+            }
+            
+            const isSelected = selectedPlayerId === p.id;
+            const borderStyle = isSelected ? 'border: 1px solid rgba(244, 114, 182, 0.5); background: rgba(244, 114, 182, 0.1);' : 'border: 1px solid rgba(255,255,255,0.1); background: rgba(15, 23, 42, 0.8);';
+
+            btnContainerHtml += `
+                <button class="flex-between w-100" onclick="window.selectConsumeTarget(${p.id}, ${consumableId}, '${consumableName.replace(/'/g, "\\'")}')"
+                    ${p.healthCurrent <= 0 ? 'disabled' : ''}
+                    style="align-items: center; ${borderStyle} color: #fff; padding: 0.8rem; border-radius: 8px; cursor: ${p.healthCurrent <= 0 ? 'not-allowed' : 'pointer'}; opacity: ${p.healthCurrent <= 0 ? '0.5' : '1'}; transition: all 0.2s ease; margin-bottom: 8px; width: 100%;">
+                    <span style="font-weight: 600;">${p.name}</span>
+                    <div style="display: flex; flex-direction: column; align-items: flex-end; gap: 0.2rem;">
+                        <span style="font-size: 0.85rem; color: ${hpColor}; transition: color 0.3s;"><b>${previewHp}</b>${hpGainHtml} / ${p.healthMax} PV</span>
+                        <span style="font-size: 0.85rem; color: ${mpColor}; transition: color 0.3s;"><b>${previewMp}</b>${mpGainHtml} / ${p.manaMax} MP</span>
+                    </div>
+                </button>
+            `;
+        });
+        return btnContainerHtml;
+    };
+
+    window.selectConsumeTarget = function(playerId, cId, cName) {
+        selectedPlayerId = playerId;
+        const listContainer = document.getElementById('consumePlayersList');
+        if (listContainer) {
+            listContainer.innerHTML = renderPlayers();
+        }
+        
+        const confirmBtn = document.getElementById('appModalConfirmBtn');
+        if (confirmBtn) {
+            confirmBtn.disabled = false;
+            confirmBtn.style.opacity = '1';
+            confirmBtn.style.cursor = 'pointer';
+        }
+    };
 
     ui.showModal({
         title: 'Consommer un objet',
-        body: `Qui doit utiliser <strong class="text-white">${consumableName}</strong> ?<br><br><div style="display: flex; flex-direction: column; width: 100%;">${btnContainerHtml}</div>`,
+        body: `Qui doit utiliser <strong class="text-white">${consumableName}</strong> ?<br><br><div id="consumePlayersList" style="display: flex; flex-direction: column; width: 100%;">${renderPlayers()}</div>`,
         icon: 'science',
-        hideConfirm: true,
-        cancelText: 'Fermer'
+        hideConfirm: false,
+        confirmText: 'Confirmer',
+        cancelText: 'Fermer',
+        onConfirm: () => {
+            if (selectedPlayerId) {
+                window.confirmConsumeItem(consumableId, selectedPlayerId);
+            }
+        }
     });
+
+    setTimeout(() => {
+        const confirmBtn = document.getElementById('appModalConfirmBtn');
+        if (confirmBtn) {
+            confirmBtn.disabled = true;
+            confirmBtn.style.opacity = '0.5';
+            confirmBtn.style.cursor = 'not-allowed';
+        }
+    }, 10);
 };
 
 window.confirmConsumeItem = async function (consumableId, characterId) {

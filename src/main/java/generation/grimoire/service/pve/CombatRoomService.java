@@ -217,6 +217,7 @@ class CombatRoomService {
                 double proba = entry.getProbability() + extraLootPercent;
                 if (roll <= proba && entry.getEquipment() != null) {
                     java.util.Set<Long> rewardedUserIds = new java.util.HashSet<>();
+                    boolean isFirstConsumable = true;
                     for (Personnage p : session.getPlayers()) {
                         if (!session.isEligibleForRewards(p))
                             continue;
@@ -235,8 +236,11 @@ class CombatRoomService {
                             equipmentRepository.save(clone);
 
                             if (clone.getSlot() == generation.grimoire.enumeration.EquipmentSlot.CONSOMMABLE) {
-                                totalConsumablesWeight += clone.calculateWeight();
-                                lootedConsumables.add(clone);
+                                if (isFirstConsumable) {
+                                    totalConsumablesWeight += clone.calculateWeight();
+                                    lootedConsumables.add(clone);
+                                    isFirstConsumable = false;
+                                }
                             } else {
                                 lootedOthers.add(clone);
                             }
@@ -633,6 +637,16 @@ class CombatRoomService {
             }
         }
         if (toConsume == null) {
+            List<Equipment> userEquipments = equipmentRepository.findByOwnerUsername(username);
+            for (Equipment eq : userEquipments) {
+                if (eq.getSlot() == generation.grimoire.enumeration.EquipmentSlot.CONSOMMABLE
+                        && eq.getName().equals(clickedConsumable.getName())) {
+                    toConsume = eq;
+                    break;
+                }
+            }
+        }
+        if (toConsume == null) {
             toConsume = clickedConsumable;
         }
 
@@ -679,7 +693,10 @@ class CombatRoomService {
             throw new RuntimeException("Cet objet n'est pas un consommable.");
         }
 
-        session.getActiveConsumables().remove(toConsume);
+        session.getActiveConsumables().remove(clickedConsumable);
+        if (toConsume != clickedConsumable) {
+            session.getActiveConsumables().remove(toConsume);
+        }
         personnageRepository.save(target);
         equipmentRepository.delete(toConsume);
         return session;
