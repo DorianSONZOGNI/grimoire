@@ -85,6 +85,12 @@ public class CombatService {
             p.setUsedCheatDeath(false);
             p.setHealthCurrent(p.getTotalHealthMax());
             p.setManaCurrent(p.getTotalManaMax());
+
+            // Force initialization of equipments
+            if (p.getEquipments() != null) {
+                p.getEquipments().size();
+            }
+
             players.add(p);
         }
 
@@ -150,6 +156,7 @@ public class CombatService {
                 .filter(java.util.Objects::nonNull)
                 .mapToDouble(e -> e.calculateWeight())
                 .sum();
+        totalWeight = Math.round(totalWeight * 10.0) / 10.0;
         double maxWeight = 10.0 + 5.0 * players.size();
         if (totalWeight > maxWeight) {
             throw new IllegalArgumentException(
@@ -196,6 +203,12 @@ public class CombatService {
             p.setUsedCheatDeath(false);
             p.setHealthCurrent(p.getTotalHealthMax());
             p.setManaCurrent(p.getTotalManaMax());
+
+            // Force initialization of equipments for the detached in-memory session
+            if (p.getEquipments() != null) {
+                p.getEquipments().size();
+            }
+
             players.add(p);
         }
 
@@ -267,6 +280,7 @@ public class CombatService {
                 .filter(java.util.Objects::nonNull)
                 .mapToDouble(e -> e.calculateWeight())
                 .sum();
+        totalWeight = Math.round(totalWeight * 10.0) / 10.0;
         double maxWeight = 10.0 + 5.0 * players.size();
         if (totalWeight > maxWeight) {
             throw new IllegalArgumentException(

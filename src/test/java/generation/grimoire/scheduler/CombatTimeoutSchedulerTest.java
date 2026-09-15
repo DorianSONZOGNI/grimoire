@@ -54,11 +54,11 @@ class CombatTimeoutSchedulerTest {
 
         // Verify recent session is kept
         assertThat(activeSessions).containsEntry("session-recent", recentSession);
-        verify(combatService, never()).fleeCombat(eq("session-recent"), any());
+        verify(combatService, never()).fleeCombatTimeout("session-recent");
 
         // Verify old session is removed and fled
         assertThat(activeSessions).doesNotContainKey("session-old");
-        verify(combatService).fleeCombat("session-old", null);
+        verify(combatService).fleeCombatTimeout("session-old");
         verify(oldSession).setFinished(true);
         verify(oldSession).setPlayerWon(false);
     }
@@ -67,13 +67,13 @@ class CombatTimeoutSchedulerTest {
     void shouldHandleExceptionDuringFleeCombatAndStillRemoveSession() {
         activeSessions.put("session-old", oldSession);
 
-        doThrow(new RuntimeException("Test Exception")).when(combatService).fleeCombat("session-old", null);
+        doThrow(new RuntimeException("Test Exception")).when(combatService).fleeCombatTimeout("session-old");
 
         scheduler.checkAndTimeoutCombats();
 
         // Verify old session is still removed despite the exception
         assertThat(activeSessions).doesNotContainKey("session-old");
-        verify(combatService).fleeCombat("session-old", null);
+        verify(combatService).fleeCombatTimeout("session-old");
         verify(oldSession).setFinished(true);
         verify(oldSession).setPlayerWon(false);
     }

@@ -199,16 +199,30 @@ function getExpStats(exp) {
 
 function getSpiritExpStats(exp) {
     let level = 1;
-    if (exp >= 300) level = 3;
+    if (exp >= 4500) level = 10;
+    else if (exp >= 3600) level = 9;
+    else if (exp >= 2800) level = 8;
+    else if (exp >= 2100) level = 7;
+    else if (exp >= 1500) level = 6;
+    else if (exp >= 1000) level = 5;
+    else if (exp >= 600) level = 4;
+    else if (exp >= 300) level = 3;
     else if (exp >= 100) level = 2;
 
     let currentLvlXp = 0;
     let nextLvlXp = 100;
     if (level === 2) { currentLvlXp = 100; nextLvlXp = 300; }
-    else if (level === 3) { currentLvlXp = 300; nextLvlXp = exp; }
+    else if (level === 3) { currentLvlXp = 300; nextLvlXp = 600; }
+    else if (level === 4) { currentLvlXp = 600; nextLvlXp = 1000; }
+    else if (level === 5) { currentLvlXp = 1000; nextLvlXp = 1500; }
+    else if (level === 6) { currentLvlXp = 1500; nextLvlXp = 2100; }
+    else if (level === 7) { currentLvlXp = 2100; nextLvlXp = 2800; }
+    else if (level === 8) { currentLvlXp = 2800; nextLvlXp = 3600; }
+    else if (level === 9) { currentLvlXp = 3600; nextLvlXp = 4500; }
+    else if (level === 10) { currentLvlXp = 4500; nextLvlXp = exp; }
 
     let progress = 100;
-    if (level < 3) {
+    if (level < 10) {
         progress = ((exp - currentLvlXp) / (nextLvlXp - currentLvlXp)) * 100;
     }
     return { level, currentLvlXp, nextLvlXp, progress };
@@ -234,7 +248,7 @@ function renderAndAnimateXPCards(containerId, players, prefix) {
                 <div class="progress-track">
                     <div id="${prefix}-xp-fill-${p.id}" style="height: 100%; width: ${Math.min(100, oldStats.progress)}%; background: #10b981; transition: box-shadow 0.3s;"></div>
                 </div>
-                <div class="text-muted" id="${prefix}-xp-text-${p.id}" style="font-size: 0.7rem; font-family: monospace;">${oldExp} / ${oldStats.level === 5 ? 'MAX' : oldStats.nextLvlXp} XP</div>
+                <div class="text-muted" id="${prefix}-xp-text-${p.id}" style="font-size: 0.7rem; font-family: monospace;">${oldExp} / ${oldStats.level === 10 ? 'MAX' : oldStats.nextLvlXp} XP</div>
         `;
 
         if (oldSpiritExp > 0 || (p.spiritualiteExperience || 0) > 0 || prefix === 'treasure') {
@@ -244,7 +258,7 @@ function renderAndAnimateXPCards(containerId, players, prefix) {
                 <div class="progress-track">
                     <div id="${prefix}-spirit-fill-${p.id}" style="height: 100%; width: ${Math.min(100, oldSpiritStats.progress)}%; background: #f59e0b; transition: box-shadow 0.3s;"></div>
                 </div>
-                <div class="text-muted" id="${prefix}-spirit-text-${p.id}" style="font-size: 0.7rem; font-family: monospace;">${oldSpiritExp} / ${oldSpiritStats.level === 3 ? 'MAX' : oldSpiritStats.nextLvlXp} XP</div>
+                <div class="text-muted" id="${prefix}-spirit-text-${p.id}" style="font-size: 0.7rem; font-family: monospace;">${oldSpiritExp} / ${oldSpiritStats.level === 10 ? 'MAX' : oldSpiritStats.nextLvlXp} XP</div>
             `;
         }
 
@@ -283,7 +297,7 @@ function renderAndAnimateXPCards(containerId, players, prefix) {
                 let stats = getExpStats(currentExp);
                 if (bar && text && lvlText) {
                     bar.style.width = Math.min(100, stats.progress) + "%";
-                    text.innerText = currentExp + " / " + (stats.level === 5 ? 'MAX' : stats.nextLvlXp) + " XP";
+                    text.innerText = currentExp + " / " + (stats.level === 10 ? 'MAX' : stats.nextLvlXp) + " XP";
                     if (lvlText.innerText !== "Voie Niv. " + stats.level) {
                         lvlText.innerText = "Voie Niv. " + stats.level;
                         lvlText.style.color = "#f59e0b";
@@ -300,7 +314,7 @@ function renderAndAnimateXPCards(containerId, players, prefix) {
                 let spiritStats = getSpiritExpStats(currentSpiritExp);
                 if (spiritBar && spiritText && spiritLvlText) {
                     spiritBar.style.width = Math.min(100, spiritStats.progress) + "%";
-                    spiritText.innerText = currentSpiritExp + " / " + (spiritStats.level === 3 ? 'MAX' : spiritStats.nextLvlXp) + " XP";
+                    spiritText.innerText = currentSpiritExp + " / " + (spiritStats.level === 10 ? 'MAX' : spiritStats.nextLvlXp) + " XP";
                     if (spiritLvlText.innerText !== "Spirit Niv. " + spiritStats.level) {
                         spiritLvlText.innerText = "Spirit Niv. " + spiritStats.level;
                         spiritLvlText.style.color = "#f59e0b";
@@ -627,6 +641,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             pageState.previousPlayerXP[p.id] = p.experience;
             pageState.previousPlayerSpiritXP[p.id] = p.spiritualiteExperience || 0;
         });
+
+        // Charger les équipements pour le multijoueur (initialisation)
+        await fetchCombatEquipments(directSessionId);
+
         updateUI(data);
         return;
     }
@@ -730,9 +748,13 @@ async function startCombat(characterIds, dungeonId, consumableIds) {
         updateUI(data);
     } catch (e) {
         console.error(e);
-        if (typeof showNotif !== 'undefined') window.showNotif("Erreur de connexion.", true);
-        else ui.showNotif("Erreur de connexion.", true);
-        window.location.href = '/dungeons.html';
+        const msg = e.message || "Erreur de connexion.";
+        if (typeof showNotif !== 'undefined') window.showNotif(msg, true);
+        else if (window.ui) ui.showNotif(msg, true);
+        
+        setTimeout(() => {
+            window.location.href = '/dungeons.html';
+        }, 3000);
     }
 }
 
@@ -1598,6 +1620,10 @@ async function addLootedConsumable(itemName, iconElement) {
             window.renderOverlayInventory('eventOverlayInventoryList');
             window.renderOverlayInventory('combatVictoryInventoryList');
         }
+        if (typeof window.renderOverlayMap === 'function') {
+            window.renderOverlayMap('eventMapList');
+            window.renderOverlayMap('combatVictoryMapList');
+        }
         window.showNotif(`${itemName} a été ajouté à votre inventaire actif.`);
     } catch (e) {
         console.error(e);
@@ -1803,6 +1829,14 @@ function setMultiActionsEnabled(enabled) {
 }
 
 function updateUI(data) {
+    let turnMap = { players: {}, enemies: {} };
+    if (data.turnOrder) {
+        data.turnOrder.forEach((entry, i) => {
+            if (entry.player) turnMap.players[entry.index] = i + 1;
+            else turnMap.enemies[entry.index] = i + 1;
+        });
+    }
+
     const oldStats = {};
     document.querySelectorAll('.fighter').forEach((el) => {
         let fId = el.dataset.fighterId;
@@ -1927,7 +1961,7 @@ function updateUI(data) {
                 forcedMana = window.combatOldStats[fId].mana;
             }
 
-            div.innerHTML = timerHtml + generateFighterHtml(p, true, false, forcedHp, forcedMana);
+            div.innerHTML = timerHtml + generateFighterHtml(p, true, false, forcedHp, forcedMana, turnMap.players[index] || null);
             playersContainer.appendChild(div);
 
             const hpBar = div.querySelector('.gauge-fill.hp');
@@ -2011,6 +2045,7 @@ function updateUI(data) {
                 const vicOverlay = document.getElementById('combatVictoryOverlay');
                 if (vicOverlay) {
                     if (typeof window.renderOverlayInventory === 'function') window.renderOverlayInventory('combatVictoryInventoryList');
+                    if (typeof window.renderOverlayMap === 'function') window.renderOverlayMap('combatVictoryMapList');
                     vicOverlay.classList.add('show');
                     const xpContainer = document.getElementById('combatVictoryXpContainer');
                     if (xpContainer) {
@@ -2106,7 +2141,7 @@ function updateUI(data) {
                 if (vicOverlay) vicOverlay.classList.remove('show');
 
                 document.getElementById('btnAttack').disabled = false;
-                renderEnemies(data.enemies);
+                renderEnemies(data.enemies, turnMap);
 
                 // Track previous XP to animate next time
                 data.players.forEach(p => {
@@ -2339,10 +2374,7 @@ function updateUI(data) {
                             let reqBadge = data.currentRoom.alterationRequiredItem ? createAnomalyBadgeHtml(data.currentRoom.alterationRequiredItem) : '"spécial"';
                             warningHtml = `<div class="text-error text-center reward-notice" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3);"><span class="material-symbols-outlined align-middle icon-sm">warning</span> <strong>Attention :</strong> L'item ${reqBadge} sera définitivement détruit de l'inventaire.</div>`;
 
-                            let rewType = data.currentRoom.alterationRewardType;
-                            if (rewType === 'SPECIAL_ITEM' && !data.currentRoom.alterationSpecialItemReward) {
-                                rewType = 'SPIRITUAL_XP';
-                            }
+                            let rewType = 'SPIRITUAL_XP'; // ITEM alteration always gives spiritual XP in the backend
 
                             if (rewType === 'SPIRITUAL_XP') {
                                 specialItemHtml = `<div class="text-center text-sky-medium reward-notice" style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3);"><span class="material-symbols-outlined align-middle icon-sm">star</span> <strong>Récompense :</strong> Vous obtiendrez +${data.currentRoom.alterationSpiritualXpReward || 0} XP Spirituel !</div>`;
@@ -2905,7 +2937,7 @@ function updateUI(data) {
                             if (outcomes.length > 0) {
                                 lootContainer.classList.remove('hidden'); lootContainer.classList.add('flex');
                                 lootContainer.innerHTML = `
-                                    <div class="text-muted text-center text-sm w-full" >
+                                    <div class="text-slate-400 text-center text-sm w-full" >
                                         <span class="text-gold font-semibold">Que se cache-t-il derrière ?</span><br>
                                         Le résultat sera révélé si vous passez la porte...
                                     </div>
@@ -2917,6 +2949,7 @@ function updateUI(data) {
             }
 
             if (typeof window.renderOverlayInventory === 'function') window.renderOverlayInventory('eventOverlayInventoryList');
+            if (typeof window.renderOverlayMap === 'function') window.renderOverlayMap('eventMapList');
             overlay.classList.add('show');
         }
     }
@@ -3203,7 +3236,7 @@ function getBossBuffsHtml(c) {
 
 // Removed GLOBAL_STAT_LABELS and formatStat (imported from ui.js)
 
-function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = null, forcedMana = null) {
+function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = null, forcedMana = null, turnNum = null) {
     const hpToRender = forcedHp !== null && !isNaN(forcedHp) ? forcedHp : c.healthCurrent;
     const hpPct = c.healthMax > 0 ? Math.max(0, Math.min(100, (hpToRender / c.healthMax) * 100)) : 0;
     let hpLabel = `${hpToRender} / ${c.healthMax}`;
@@ -3590,7 +3623,13 @@ function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = null, for
         }
     }
 
+    let turnBadgeHtml = '';
+    if (turnNum !== null) {
+        turnBadgeHtml = `<div style="position: absolute; top: -12px; left: -12px; width: 30px; height: 30px; background: rgba(15, 23, 42, 1); color: #f8fafc; font-size: 1.1rem; font-weight: bold; border-radius: 50%; display: flex; align-items: center; justify-content: center; border: 2px solid #38bdf8; z-index: 10; box-shadow: 0 0 10px rgba(56, 189, 248, 0.5);">${turnNum}</div>`;
+    }
+
     return `
+        ${turnBadgeHtml}
         ${mutationsHtml}
         ${channelingBadgeHtml}
         <div class="fighter-name" style="color: ${isHero ? '#f8fafc' : '#ef4444'}; font-size: 1.3rem; display: flex; justify-content: center; align-items: center; gap: 0.2rem; margin-bottom: 0.8rem; width: 100%;">
@@ -3618,7 +3657,7 @@ function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = null, for
     `;
 }
 
-function renderEnemies(enemies) {
+function renderEnemies(enemies, turnMap = null) {
     const container = document.getElementById('enemiesContainer');
     container.innerHTML = '';
 
@@ -3685,7 +3724,7 @@ function renderEnemies(enemies) {
             forcedMana = window.combatOldStats[fId].mana;
         }
 
-        div.innerHTML = generateFighterHtml(pMonster, false, isBoss, forcedHp, forcedMana);
+        div.innerHTML = generateFighterHtml(pMonster, false, isBoss, forcedHp, forcedMana, turnMap && turnMap.enemies ? turnMap.enemies[index] : null);
         container.appendChild(div);
 
         const hpBar = div.querySelector('.gauge-fill.hp');
@@ -4478,6 +4517,48 @@ function renderDotsHtml(dotList) {
 
 
 
+window.toggleSidePanel = function(overlayPrefix, tabName) {
+    const wrapper = document.getElementById(`${overlayPrefix}SidePanelWrapper`);
+    if (!wrapper) return;
+
+    const invContent = document.getElementById(`${overlayPrefix}InventoryContent`);
+    const mapContent = document.getElementById(`${overlayPrefix}MapContent`);
+    const invBtn = document.getElementById(`${overlayPrefix}InventoryTabBtn`);
+    const mapBtn = document.getElementById(`${overlayPrefix}MapTabBtn`);
+
+    const isWrapperClosed = wrapper.classList.contains('-translate-x-full');
+    
+    if (tabName === 'inventory') {
+        if (!invContent.classList.contains('hidden') && !isWrapperClosed) {
+            // Already on inventory and open -> close it
+            wrapper.classList.add('-translate-x-full');
+        } else {
+            // Switch to inventory and open
+            invContent.classList.remove('hidden');
+            mapContent.classList.add('hidden');
+            invBtn.classList.remove('opacity-50');
+            invBtn.classList.add('opacity-100');
+            mapBtn.classList.add('opacity-50');
+            mapBtn.classList.remove('opacity-100');
+            wrapper.classList.remove('-translate-x-full');
+        }
+    } else if (tabName === 'map') {
+        if (!mapContent.classList.contains('hidden') && !isWrapperClosed) {
+            // Already on map and open -> close it
+            wrapper.classList.add('-translate-x-full');
+        } else {
+            // Switch to map and open
+            mapContent.classList.remove('hidden');
+            invContent.classList.add('hidden');
+            mapBtn.classList.remove('opacity-50');
+            mapBtn.classList.add('opacity-100');
+            invBtn.classList.add('opacity-50');
+            invBtn.classList.remove('opacity-100');
+            wrapper.classList.remove('-translate-x-full');
+        }
+    }
+};
+
 window.renderOverlayInventory = function (containerId) {
     const list = document.getElementById(containerId);
     if (!list) return;
@@ -4535,8 +4616,36 @@ window.renderOverlayInventory = function (containerId) {
     }
 
     if (!pageState.currentSessionData || !pageState.currentSessionData.activeConsumables || pageState.currentSessionData.activeConsumables.length === 0) {
-        list.innerHTML += `<div class="text-muted text-center text-sm" style="padding: 1rem;">Aucun objet dans l'inventaire.</div>`;
+        list.innerHTML += `<div class="text-slate-400 text-center text-sm" style="padding: 1rem;">Aucun objet dans l'inventaire.</div>`;
+        const wrapper = list.closest('.absolute.inset-y-0.left-0');
+        if (wrapper && !wrapper.classList.contains('-translate-x-full')) {
+            // Only close if it was currently showing the inventory? Or close it entirely?
+            // The user said: "and conversely when we have the map, above the inventory btn"
+            // Let's just close the whole wrapper if it's empty, or maybe not close it if they are looking at the map!
+            // Actually, if we close it here, we might close the map while they are looking at it!
+            // Let's only close it if the inventory content is visible.
+            const prefix = containerId.includes('event') ? 'event' : 'combatVictory';
+            const invContent = document.getElementById(`${prefix}InventoryContent`);
+            if (invContent && !invContent.classList.contains('hidden')) {
+                wrapper.classList.add('-translate-x-full');
+            }
+        }
         return;
+    }
+
+    // Automatically open the inventory if there are consumables
+    const wrapper = list.closest('.absolute.inset-y-0.left-0');
+    if (wrapper) {
+        const prefix = containerId.includes('event') ? 'event' : 'combatVictory';
+        const invContent = document.getElementById(`${prefix}InventoryContent`);
+        // Only auto-open if it is closed
+        if (wrapper.classList.contains('-translate-x-full')) {
+            if (typeof window.toggleSidePanel === 'function') {
+                window.toggleSidePanel(prefix, 'inventory');
+            } else {
+                wrapper.classList.remove('-translate-x-full');
+            }
+        }
     }
 
     pageState.currentSessionData.activeConsumables.forEach(c => {
@@ -4567,6 +4676,72 @@ window.renderOverlayInventory = function (containerId) {
             </div>
         `;
     });
+};
+
+window.renderOverlayMap = function (containerId) {
+    const list = document.getElementById(containerId);
+    if (!list) return;
+    list.innerHTML = '';
+
+    if (!pageState.currentSessionData || !pageState.currentSessionData.salles) {
+        list.innerHTML = `<div class="text-slate-400 text-center text-sm" style="padding: 1rem;">Carte indisponible.</div>`;
+        return;
+    }
+
+    const salles = pageState.currentSessionData.salles;
+    const currentIndex = pageState.currentSessionData.currentRoomIndex || 0;
+
+    let html = '<div class="relative pl-4 border-l-2 border-slate-700 ml-4 mt-2">';
+    
+    salles.forEach((s, index) => {
+        const isPast = index < currentIndex;
+        const isCurrent = index === currentIndex;
+        const isFuture = index > currentIndex;
+        
+        let icon = 'help';
+        let color = '#94a3b8'; // default
+        let label = 'Étape ' + (index + 1);
+        
+        if (s.type === 'COMBAT') {
+            icon = 'swords';
+            color = '#ef4444'; // red
+            label += ' : Combat';
+        } else if (s.type === 'BOSS') {
+            icon = 'skull';
+            color = '#dc2626'; // darker red
+            label += ' : Boss';
+        } else if (s.type === 'TREASURE') {
+            icon = 'lock';
+            color = '#f59e0b'; // amber
+            label += ' : Trésor';
+        } else if (s.type === 'EVENT') {
+            icon = 'auto_awesome';
+            color = '#a855f7'; // purple
+            label += ' : Événement';
+        }
+
+        let dotColor = isCurrent ? '#38bdf8' : (isPast ? '#10b981' : '#475569');
+        let opacity = isPast ? '0.5' : (isFuture ? '0.7' : '1');
+        let fontWeight = isCurrent ? '700' : '500';
+        let borderColor = isCurrent ? 'border-sky-400' : 'border-transparent';
+        
+        html += `
+            <div class="relative mb-6" style="opacity: ${opacity};">
+                <div class="absolute -left-[1.35rem] top-2 w-4 h-4 rounded-full" style="background: ${dotColor}; box-shadow: 0 0 8px ${dotColor}80;"></div>
+                <div class="flex items-center gap-3 p-2 rounded-lg border ${borderColor}" style="background: rgba(30, 41, 59, 0.5);">
+                    <span class="material-symbols-outlined" style="color: ${color}; font-size: 1.5rem;">${icon}</span>
+                    <div class="flex-1">
+                        <div style="color: ${isCurrent ? '#f8fafc' : '#cbd5e1'}; font-weight: ${fontWeight}; font-size: 0.95rem;">${label}</div>
+                        ${isCurrent ? `<div class="text-sky-400 text-xs mt-1">Vous êtes ici</div>` : ''}
+                        ${isPast ? `<div class="text-emerald-400 text-xs mt-1">Terminé</div>` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    list.innerHTML = html;
 };
 
 window.openConsumeModal = function (consumableId, consumableName) {
@@ -4690,6 +4865,10 @@ window.confirmConsumeItem = async function (consumableId, characterId) {
                 window.renderOverlayInventory('eventOverlayInventoryList');
                 window.renderOverlayInventory('combatVictoryInventoryList');
             }
+            if (typeof window.renderOverlayMap === 'function') {
+                window.renderOverlayMap('eventMapList');
+                window.renderOverlayMap('combatVictoryMapList');
+            }
         } else {
             const err = await res.text();
             ui.showNotif("Erreur: " + err, true);
@@ -4721,6 +4900,10 @@ window.confirmDestroyItem = function (consumableId, consumableName) {
                     if (typeof window.renderOverlayInventory === 'function') {
                         window.renderOverlayInventory('eventOverlayInventoryList');
                         window.renderOverlayInventory('combatVictoryInventoryList');
+                    }
+                    if (typeof window.renderOverlayMap === 'function') {
+                        window.renderOverlayMap('eventMapList');
+                        window.renderOverlayMap('combatVictoryMapList');
                     }
                 } else {
                     const err = await res.text();

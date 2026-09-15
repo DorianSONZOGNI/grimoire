@@ -28,7 +28,7 @@ export function renderAndAnimateXPCards(containerId, players, prefix) {
                 <div class="progress-track">
                     <div id="${prefix}-xp-fill-${p.id}" style="height: 100%; width: ${Math.min(100, oldStats.progress)}%; background: #10b981; transition: box-shadow 0.3s;"></div>
                 </div>
-                <div class="text-muted" id="${prefix}-xp-text-${p.id}" style="font-size: 0.7rem; font-family: monospace;">${oldExp} / ${oldStats.level === 5 ? 'MAX' : oldStats.nextLvlXp} XP</div>
+                <div class="text-muted" id="${prefix}-xp-text-${p.id}" style="font-size: 0.7rem; font-family: monospace;">${oldExp} / ${oldStats.level === 10 ? 'MAX' : oldStats.nextLvlXp} XP</div>
         `;
 
         if (oldSpiritExp > 0 || (p.spiritualiteExperience || 0) > 0 || prefix === 'treasure') {
@@ -38,7 +38,7 @@ export function renderAndAnimateXPCards(containerId, players, prefix) {
                 <div class="progress-track">
                     <div id="${prefix}-spirit-fill-${p.id}" style="height: 100%; width: ${Math.min(100, oldSpiritStats.progress)}%; background: #f59e0b; transition: box-shadow 0.3s;"></div>
                 </div>
-                <div class="text-muted" id="${prefix}-spirit-text-${p.id}" style="font-size: 0.7rem; font-family: monospace;">${oldSpiritExp} / ${oldSpiritStats.level === 3 ? 'MAX' : oldSpiritStats.nextLvlXp} XP</div>
+                <div class="text-muted" id="${prefix}-spirit-text-${p.id}" style="font-size: 0.7rem; font-family: monospace;">${oldSpiritExp} / ${oldSpiritStats.level === 10 ? 'MAX' : oldSpiritStats.nextLvlXp} XP</div>
             `;
         }
 
@@ -77,7 +77,7 @@ export function renderAndAnimateXPCards(containerId, players, prefix) {
                 let stats = getExpStats(currentExp);
                 if (bar && text && lvlText) {
                     bar.style.width = Math.min(100, stats.progress) + "%";
-                    text.innerText = currentExp + " / " + (stats.level === 5 ? 'MAX' : stats.nextLvlXp) + " XP";
+                    text.innerText = currentExp + " / " + (stats.level === 10 ? 'MAX' : stats.nextLvlXp) + " XP";
                     if (lvlText.innerText !== "Voie Niv. " + stats.level) {
                         lvlText.innerText = "Voie Niv. " + stats.level;
                         lvlText.style.color = "#f59e0b";
@@ -94,7 +94,7 @@ export function renderAndAnimateXPCards(containerId, players, prefix) {
                 let spiritStats = getSpiritExpStats(currentSpiritExp);
                 if (spiritBar && spiritText && spiritLvlText) {
                     spiritBar.style.width = Math.min(100, spiritStats.progress) + "%";
-                    spiritText.innerText = currentSpiritExp + " / " + (spiritStats.level === 3 ? 'MAX' : spiritStats.nextLvlXp) + " XP";
+                    spiritText.innerText = currentSpiritExp + " / " + (spiritStats.level === 10 ? 'MAX' : spiritStats.nextLvlXp) + " XP";
                     if (spiritLvlText.innerText !== "Spirit Niv. " + spiritStats.level) {
                         spiritLvlText.innerText = "Spirit Niv. " + spiritStats.level;
                         spiritLvlText.style.color = "#f59e0b";
@@ -139,6 +139,14 @@ export function renderAndAnimateXPCards(containerId, players, prefix) {
 }
 
 export function updateUI(data) {
+    let turnMap = { players: {}, enemies: {} };
+    if (data.turnOrder) {
+        data.turnOrder.forEach((entry, i) => {
+            if (entry.player) turnMap.players[entry.index] = i + 1;
+            else turnMap.enemies[entry.index] = i + 1;
+        });
+    }
+
     const oldStats = {};
     document.querySelectorAll('.fighter').forEach((el) => {
         let fId = el.dataset.fighterId;
@@ -262,7 +270,7 @@ export function updateUI(data) {
                 forcedMana = window.combatOldStats[fId].mana;
             }
 
-            div.innerHTML = timerHtml + generateFighterHtml(p, true, false, forcedHp, forcedMana);
+            div.innerHTML = timerHtml + generateFighterHtml(p, true, false, forcedHp, forcedMana, turnMap.players[index] || null);
             playersContainer.appendChild(div);
 
             // Animate bars with JS loop
@@ -390,6 +398,7 @@ export function updateUI(data) {
                 const vicOverlay = document.getElementById('combatVictoryOverlay');
                 if (vicOverlay) {
                     if (typeof window.renderOverlayInventory === 'function') window.renderOverlayInventory('combatVictoryInventoryList');
+                    if (typeof window.renderOverlayMap === 'function') window.renderOverlayMap('combatVictoryMapList');
                     vicOverlay.classList.add('show');
                     const xpContainer = document.getElementById('combatVictoryXpContainer');
                     if (xpContainer) {
@@ -485,7 +494,7 @@ export function updateUI(data) {
                 if (vicOverlay) vicOverlay.classList.remove('show');
 
                 document.getElementById('btnAttack').disabled = false;
-                renderEnemies(data.enemies);
+                renderEnemies(data.enemies, turnMap);
 
                 // Track previous XP to animate next time
                 data.players.forEach(p => {
@@ -718,10 +727,7 @@ export function updateUI(data) {
                             let reqBadge = data.currentRoom.alterationRequiredItem ? createAnomalyBadgeHtml(data.currentRoom.alterationRequiredItem) : '"spécial"';
                             warningHtml = `<div class="text-error text-center reward-notice" style="background: rgba(239, 68, 68, 0.1); border: 1px solid rgba(239, 68, 68, 0.3);"><span class="material-symbols-outlined align-middle icon-sm">warning</span> <strong>Attention :</strong> L'item ${reqBadge} sera définitivement détruit de l'inventaire.</div>`;
 
-                            let rewType = data.currentRoom.alterationRewardType;
-                            if (rewType === 'SPECIAL_ITEM' && !data.currentRoom.alterationSpecialItemReward) {
-                                rewType = 'SPIRITUAL_XP';
-                            }
+                            let rewType = 'SPIRITUAL_XP'; // ITEM alteration always gives spiritual XP in the backend
 
                             if (rewType === 'SPIRITUAL_XP') {
                                 specialItemHtml = `<div class="text-center text-sky-medium reward-notice" style="background: rgba(56, 189, 248, 0.1); border: 1px solid rgba(56, 189, 248, 0.3);"><span class="material-symbols-outlined align-middle icon-sm">star</span> <strong>Récompense :</strong> Vous obtiendrez +${data.currentRoom.alterationSpiritualXpReward || 0} XP Spirituel !</div>`;
@@ -1295,6 +1301,7 @@ export function updateUI(data) {
             }
 
             if (typeof window.renderOverlayInventory === 'function') window.renderOverlayInventory('eventOverlayInventoryList');
+            if (typeof window.renderOverlayMap === 'function') window.renderOverlayMap('eventMapList');
             overlay.classList.add('show');
         }
     }
@@ -1579,7 +1586,7 @@ export function getBossBuffsHtml(c) {
     return html;
 }
 
-export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = null, forcedMana = null) {
+export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = null, forcedMana = null, turnOrderNum = null) {
     const hpToRender = forcedHp !== null && !isNaN(forcedHp) ? forcedHp : c.healthCurrent;
     const hpPct = c.healthMax > 0 ? Math.max(0, Math.min(100, (hpToRender / c.healthMax) * 100)) : 0;
     let hpLabel = `${hpToRender} / ${c.healthMax}`;
@@ -1966,7 +1973,13 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
         }
     }
 
+    let turnOrderBadgeHtml = '';
+    if (turnOrderNum) {
+        turnOrderBadgeHtml = `<div title="Ordre de jeu : ${turnOrderNum}" style="position: absolute; top: -8px; left: -8px; width: 28px; height: 28px; background: linear-gradient(135deg, #1e293b, #0f172a); border: 2px solid ${isHero ? '#38bdf8' : '#ef4444'}; border-radius: 50%; color: #f8fafc; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.95rem; box-shadow: 0 4px 6px rgba(0,0,0,0.5); z-index: 5;">${turnOrderNum}</div>`;
+    }
+
     return `
+        ${turnOrderBadgeHtml}
         ${mutationsHtml}
         ${channelingBadgeHtml}
         <div class="fighter-name" style="color: ${isHero ? '#f8fafc' : '#ef4444'}; font-size: 1.3rem; display: flex; justify-content: center; align-items: center; gap: 0.2rem; margin-bottom: 0.8rem; width: 100%;">
@@ -1994,7 +2007,7 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
     `;
 }
 
-export function renderEnemies(enemies) {
+export function renderEnemies(enemies, turnMap = null) {
     const container = document.getElementById('enemiesContainer');
     container.innerHTML = '';
 
@@ -2061,7 +2074,7 @@ export function renderEnemies(enemies) {
             forcedMana = window.combatOldStats[fId].mana;
         }
 
-        div.innerHTML = generateFighterHtml(pMonster, false, isBoss, forcedHp, forcedMana);
+        div.innerHTML = generateFighterHtml(pMonster, false, isBoss, forcedHp, forcedMana, turnMap && turnMap.enemies ? turnMap.enemies[index] : null);
         container.appendChild(div);
 
         // Animate bars with JS loop

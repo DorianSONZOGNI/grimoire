@@ -1,5 +1,5 @@
 import { pageState, combatWarningTimer, combatCountdownInterval, setButtonsProcessing } from './combat-state.js';
-import { updateUI } from './combat-ui.js?v=203';
+import { updateUI } from './combat-ui.js?v=206';
 import * as ui from '../ui.js?v=4';
 import { getSpellEffectsSummaryHtml } from '../pages/grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from '../utils/filters.js';
@@ -283,6 +283,10 @@ export async function addLootedConsumable(itemName, iconElement) {
         if (typeof window.renderOverlayInventory === 'function') {
             window.renderOverlayInventory('eventOverlayInventoryList');
             window.renderOverlayInventory('combatVictoryInventoryList');
+        }
+        if (typeof window.renderOverlayMap === 'function') {
+            window.renderOverlayMap('eventMapList');
+            window.renderOverlayMap('combatVictoryMapList');
         }
         window.showNotif(`${itemName} a été ajouté à votre inventaire actif.`);
     } catch (e) {

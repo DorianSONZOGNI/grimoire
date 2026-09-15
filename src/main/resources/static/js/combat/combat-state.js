@@ -1,6 +1,6 @@
 import { shakeStyle } from './combat-utils.js';
 import { initMultiSSE } from './combat-socket.js';
-import { updateUI, renderSpells } from './combat-ui.js?v=203';
+import { updateUI, renderSpells } from './combat-ui.js?v=206';
 import { currentSpellsTab, initiateCombatCast, confirmCombatCast, cancelCombatCast, doAction } from './combat-spells.js';
 import { endTurn, nextRoom, openStrangeDoor, acceptAlteration, useRope, buyMerchantItem, openBuyModal, closeBuyModal, addLootedConsumable, openChest } from './combat-actions.js';
 import { loadAnomaliesCombat, resumeCombat, startCombat } from './combat-init.js';
@@ -449,6 +449,48 @@ window.applySpellFilters = function (clickedEl) {
     }
 }
 
+window.toggleSidePanel = function(overlayPrefix, tabName) {
+    const wrapper = document.getElementById(`${overlayPrefix}SidePanelWrapper`);
+    if (!wrapper) return;
+
+    const invContent = document.getElementById(`${overlayPrefix}InventoryContent`);
+    const mapContent = document.getElementById(`${overlayPrefix}MapContent`);
+    const invBtn = document.getElementById(`${overlayPrefix}InventoryTabBtn`);
+    const mapBtn = document.getElementById(`${overlayPrefix}MapTabBtn`);
+
+    const isWrapperClosed = wrapper.classList.contains('-translate-x-full');
+    
+    if (tabName === 'inventory') {
+        if (!invContent.classList.contains('hidden') && !isWrapperClosed) {
+            // Already on inventory and open -> close it
+            wrapper.classList.add('-translate-x-full');
+        } else {
+            // Switch to inventory and open
+            invContent.classList.remove('hidden');
+            mapContent.classList.add('hidden');
+            invBtn.classList.remove('opacity-50');
+            invBtn.classList.add('opacity-100');
+            mapBtn.classList.add('opacity-50');
+            mapBtn.classList.remove('opacity-100');
+            wrapper.classList.remove('-translate-x-full');
+        }
+    } else if (tabName === 'map') {
+        if (!mapContent.classList.contains('hidden') && !isWrapperClosed) {
+            // Already on map and open -> close it
+            wrapper.classList.add('-translate-x-full');
+        } else {
+            // Switch to map and open
+            mapContent.classList.remove('hidden');
+            invContent.classList.add('hidden');
+            mapBtn.classList.remove('opacity-50');
+            mapBtn.classList.add('opacity-100');
+            invBtn.classList.add('opacity-50');
+            invBtn.classList.remove('opacity-100');
+            wrapper.classList.remove('-translate-x-full');
+        }
+    }
+};
+
 window.renderOverlayInventory = function (containerId) {
     const list = document.getElementById(containerId);
     if (!list) return;
@@ -495,7 +537,30 @@ window.renderOverlayInventory = function (containerId) {
 
     if (!pageState.currentSessionData || !pageState.currentSessionData.activeConsumables || pageState.currentSessionData.activeConsumables.length === 0) {
         list.innerHTML += `<div class="text-muted text-center text-sm" style="padding: 1rem;">Aucun objet dans l'inventaire.</div>`;
+        const wrapper = list.closest('.absolute.inset-y-0.left-0');
+        if (wrapper && !wrapper.classList.contains('-translate-x-full')) {
+            const prefix = containerId.includes('event') ? 'event' : 'combatVictory';
+            const invContent = document.getElementById(`${prefix}InventoryContent`);
+            if (invContent && !invContent.classList.contains('hidden')) {
+                wrapper.classList.add('-translate-x-full');
+            }
+        }
         return;
+    }
+
+    // Automatically open the inventory if there are consumables
+    const wrapper = list.closest('.absolute.inset-y-0.left-0');
+    if (wrapper) {
+        const prefix = containerId.includes('event') ? 'event' : 'combatVictory';
+        const invContent = document.getElementById(`${prefix}InventoryContent`);
+        // Only auto-open if it is closed
+        if (wrapper.classList.contains('-translate-x-full')) {
+            if (typeof window.toggleSidePanel === 'function') {
+                window.toggleSidePanel(prefix, 'inventory');
+            } else {
+                wrapper.classList.remove('-translate-x-full');
+            }
+        }
     }
 
     pageState.currentSessionData.activeConsumables.forEach(c => {
@@ -526,6 +591,72 @@ window.renderOverlayInventory = function (containerId) {
             </div>
         `;
     });
+};
+
+window.renderOverlayMap = function (containerId) {
+    const list = document.getElementById(containerId);
+    if (!list) return;
+    list.innerHTML = '';
+
+    if (!pageState.currentSessionData || !pageState.currentSessionData.salles) {
+        list.innerHTML = `<div class="text-muted text-center text-sm" style="padding: 1rem;">Carte indisponible.</div>`;
+        return;
+    }
+
+    const salles = pageState.currentSessionData.salles;
+    const currentIndex = pageState.currentSessionData.currentRoomIndex || 0;
+
+    let html = '<div class="relative pl-4 border-l-2 border-slate-700 ml-4 mt-2">';
+    
+    salles.forEach((s, index) => {
+        const isPast = index < currentIndex;
+        const isCurrent = index === currentIndex;
+        const isFuture = index > currentIndex;
+        
+        let icon = 'help';
+        let color = '#94a3b8'; // default
+        let label = 'Étape ' + (index + 1);
+        
+        if (s.type === 'COMBAT') {
+            icon = 'swords';
+            color = '#ef4444'; // red
+            label += ' : Combat';
+        } else if (s.type === 'BOSS') {
+            icon = 'skull';
+            color = '#dc2626'; // darker red
+            label += ' : Boss';
+        } else if (s.type === 'TREASURE') {
+            icon = 'lock';
+            color = '#f59e0b'; // amber
+            label += ' : Trésor';
+        } else if (s.type === 'EVENT') {
+            icon = 'auto_awesome';
+            color = '#a855f7'; // purple
+            label += ' : Événement';
+        }
+
+        let dotColor = isCurrent ? '#38bdf8' : (isPast ? '#10b981' : '#475569');
+        let opacity = isPast ? '0.5' : (isFuture ? '0.7' : '1');
+        let fontWeight = isCurrent ? '700' : '500';
+        let borderColor = isCurrent ? 'border-sky-400' : 'border-transparent';
+        
+        html += `
+            <div class="relative mb-6" style="opacity: ${opacity};">
+                <div class="absolute -left-[1.35rem] top-2 w-4 h-4 rounded-full" style="background: ${dotColor}; box-shadow: 0 0 8px ${dotColor}80;"></div>
+                <div class="flex items-center gap-3 p-2 rounded-lg border ${borderColor}" style="background: rgba(30, 41, 59, 0.5);">
+                    <span class="material-symbols-outlined" style="color: ${color}; font-size: 1.5rem;">${icon}</span>
+                    <div class="flex-1">
+                        <div style="color: ${isCurrent ? '#f8fafc' : '#cbd5e1'}; font-weight: ${fontWeight}; font-size: 0.95rem;">${label}</div>
+                        ${isCurrent ? `<div class="text-sky-400 text-xs mt-1">Vous êtes ici</div>` : ''}
+                        ${isPast ? `<div class="text-emerald-400 text-xs mt-1">Terminé</div>` : ''}
+                    </div>
+                </div>
+            </div>
+        `;
+    });
+    
+    html += '</div>';
+    list.innerHTML = html;
 };
 
 window.openConsumeModal = function (consumableId, consumableName) {
@@ -649,6 +780,10 @@ window.confirmConsumeItem = async function (consumableId, characterId) {
                 window.renderOverlayInventory('eventOverlayInventoryList');
                 window.renderOverlayInventory('combatVictoryInventoryList');
             }
+            if (typeof window.renderOverlayMap === 'function') {
+                window.renderOverlayMap('eventMapList');
+                window.renderOverlayMap('combatVictoryMapList');
+            }
         } else {
             const err = await res.text();
             ui.showNotif("Erreur: " + err, true);
@@ -680,6 +815,10 @@ window.confirmDestroyItem = function (consumableId, consumableName) {
                     if (typeof window.renderOverlayInventory === 'function') {
                         window.renderOverlayInventory('eventOverlayInventoryList');
                         window.renderOverlayInventory('combatVictoryInventoryList');
+                    }
+                    if (typeof window.renderOverlayMap === 'function') {
+                        window.renderOverlayMap('eventMapList');
+                        window.renderOverlayMap('combatVictoryMapList');
                     }
                 } else {
                     const err = await res.text();

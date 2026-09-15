@@ -121,7 +121,7 @@ public class PersonnageController {
                 if (current >= max) {
                     Map<String, Object> errorResp = new HashMap<>();
                     errorResp.put("message", "Limite de personnages atteinte (" + max + ").");
-                    return ResponseEntity.status(org.springframework.http.HttpStatus.FORBIDDEN).body(errorResp);
+                    return ResponseEntity.status(org.springframework.http.HttpStatus.BAD_REQUEST).body(errorResp);
                 }
                 personnage = new Personnage();
                 personnage.setUser(user);
