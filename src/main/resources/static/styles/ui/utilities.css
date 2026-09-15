@@ -1499,10 +1499,6 @@
     max-height: calc(100vh - 140px) !important;
 }
 
-.text-slate-500 {
-    color: #64748b !important;
-}
-
 .mb-1 {
     margin-bottom: 0.25rem !important;
 }

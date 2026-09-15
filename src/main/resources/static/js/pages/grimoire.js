@@ -651,7 +651,7 @@ export function getSpellCardHtml(sp) {
                                     <span class="material-symbols-outlined align-middle text-purple-300" title="Instantanés autorisés pendant la canalisation" style="font-size: 1.1rem;">flash_on</span>
                                 ` : `
                                     <span class="relative align-middle inline-flex items-center justify-center w-[1.1rem] h-[1.1rem]" title="Instantanés interdits pendant la canalisation">
-                                        <span class="material-symbols-outlined" style="font-size: 1.1rem; color: #64748b;">flash_off</span>
+                                        <span class="material-symbols-outlined text-slate-500" style="font-size: 1.1rem;">flash_off</span>
                                     </span>
                                 `}
                             </span>
