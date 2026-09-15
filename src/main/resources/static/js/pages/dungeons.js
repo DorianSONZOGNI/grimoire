@@ -43,6 +43,36 @@ function collectDungeonAnomaliesLocal(salles) {
     return Array.from(names);
 }
 
+function collectDungeonLootItemsLocal(salles) {
+    const itemsMap = new Map();
+    (salles || []).forEach(s => {
+        if (s.lootTable) {
+            s.lootTable.forEach(e => {
+                if (e.equipment) {
+                    if (!itemsMap.has(e.equipment.name)) {
+                        itemsMap.set(e.equipment.name, e.equipment);
+                    }
+                }
+            });
+        }
+    });
+    
+    const rarityOrder = { 'MAUDIT': 1, 'RELIQUE': 2, 'EPIQUE': 3, 'LEGENDAIRE': 4, 'MYTHIQUE': 5, 'RARE': 6, 'INHABITUEL': 7, 'COMMUN': 8 };
+    const slotOrder = { 'CASQUE': 1, 'PLASTRON': 2, 'ARME_DEUX_MAINS': 3, 'ARME_GAUCHE': 4, 'ARME_DROITE': 5, 'ANNEAU': 6, 'BOTTES': 8, 'CAPE': 9, 'CONSOMMABLE': 10 };
+    
+    return Array.from(itemsMap.values()).sort((a, b) => {
+        const rA = rarityOrder[a.rarity?.name || a.rarity] || 100;
+        const rB = rarityOrder[b.rarity?.name || b.rarity] || 100;
+        if (rA !== rB) return rA - rB;
+        
+        const sA = slotOrder[a.slot?.name || a.slot] || 100;
+        const sB = slotOrder[b.slot?.name || b.slot] || 100;
+        if (sA !== sB) return sA - sB;
+        
+        return a.name.localeCompare(b.name);
+    });
+}
+
 
 
 
@@ -799,6 +829,54 @@ window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost,
                     <span class="material-symbols-outlined text-[0.9rem]">auto_awesome</span> ANOMALIES TROUVABLE
                 </div>
                 <div class="flex flex-wrap gap-1">${badges}</div>`;
+        }
+    }
+
+    // Items recap
+    const lootItems = collectDungeonLootItemsLocal(salles);
+    const tooltipTrigger = document.getElementById('prepLootTooltipTrigger');
+    if (tooltipTrigger) {
+        if (lootItems.length === 0) {
+            tooltipTrigger.style.display = 'none';
+        } else {
+            const colorMap = {
+                'COMMUN': '#94a3b8', 'INHABITUEL': '#22c55e', 'RARE': '#3b82f6', 'MYTHIQUE': '#f97316', 'LEGENDAIRE': '#eab308',
+                'EPIQUE': '#ef4444', 'RELIQUE': '#a855f7', 'MAUDIT': '#7f1d1d'
+            };
+            const listHtml = lootItems.map(eq => {
+                const slotName = eq.slot?.name || eq.slot;
+                const slotInfo = Object.assign({}, window.SLOT_LABELS && window.SLOT_LABELS[slotName] ? window.SLOT_LABELS[slotName] : { label: slotName, icon: 'help', color: '#94a3b8', extraClass: '' });
+                const rarityName = eq.rarity?.name || eq.rarity;
+                const rarityColor = colorMap[rarityName] || '#f8fafc';
+                
+                if (slotName === 'CONSOMMABLE') {
+                    const catName = eq.consumableCategory?.name || eq.consumableCategory;
+                    if (catName && window.CONSUMABLE_CATEGORIES && window.CONSUMABLE_CATEGORIES[catName]) {
+                        slotInfo.icon = window.CONSUMABLE_CATEGORIES[catName].icon;
+                        slotInfo.color = window.CONSUMABLE_CATEGORIES[catName].color;
+                    } else if (catName) {
+                        const catIcons = { POTION_ROSE: 'science', POTION_BLEUE: 'science', POTION_ROUGE: 'science', POTION_VIOLETTE: 'science', CLE: 'vpn_key', CORDE: 'gesture', PARCHEMIN: 'history_edu', NOURRITURE: 'restaurant', OUTIL: 'construction', AUTRE: 'inventory_2' };
+                        const catColors = { POTION_ROSE: '#ec4899', POTION_BLEUE: '#0ea5e9', POTION_ROUGE: '#ef4444', POTION_VIOLETTE: '#a855f7', CLE: '#eab308', CORDE: '#8b4513', PARCHEMIN: '#f59e0b', NOURRITURE: '#f43f5e', OUTIL: '#64748b', AUTRE: '#94a3b8' };
+                        slotInfo.icon = catIcons[catName] || 'inventory_2';
+                        slotInfo.color = catColors[catName] || '#854c4c';
+                    }
+                }
+                
+                return `<div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem;">
+                    <span class="material-symbols-outlined text-[1.1rem] ${slotInfo.extraClass || ''}" style="color:${slotInfo.color || rarityColor};">${slotInfo.icon}</span>
+                    <span style="color:${rarityColor}; font-weight:500; font-size:0.9rem;">${eq.name}</span>
+                </div>`;
+            }).join('');
+            
+            const tooltipContent = `
+                <div style="font-weight:600; color:#f59e0b; margin-bottom:0.5rem; font-size:0.85rem; text-transform:uppercase; letter-spacing:0.05em; display:flex; align-items:center; gap:0.25rem;">
+                    <span class="material-symbols-outlined text-[1.1rem]">shopping_bag</span> Équipements trouvables
+                </div>
+                <div style="display:flex; flex-direction:column; padding-right: 0.5rem;">${listHtml}</div>
+            `;
+            
+            tooltipTrigger.setAttribute('data-tooltip-html', tooltipContent);
+            tooltipTrigger.style.display = 'flex';
         }
     }
 

@@ -148,9 +148,18 @@
                         <!-- Rempli par JS -->
                     </div>
 
-                    <div class="bg-red-600/5 p-6 rounded-xl border border-red-600/20 mb-6">
-                        <div class="mb-4 text-sm text-red-300 font-semibold uppercase tracking-[1px]">
-                            Ennemis détectés</div>
+                    <div class="bg-red-600/5 p-6 rounded-xl border border-red-600/20 mb-6 relative">
+                        <div class="flex justify-between items-start mb-4">
+                            <div class="text-sm text-red-300 font-semibold uppercase tracking-[1px]">
+                                Ennemis détectés
+                            </div>
+                            <div id="prepLootTooltipTrigger" style="display:none;" 
+                                 class="w-7 h-7 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center cursor-help transition-all hover:bg-amber-500/20"
+                                 onmouseenter="window.showGlobalTooltip && window.showGlobalTooltip(this)" 
+                                 onmouseleave="window.hideGlobalTooltip && window.hideGlobalTooltip()">
+                                <span class="material-symbols-outlined text-[1rem]">shield</span>
+                            </div>
+                        </div>
                         <div class="text-danger font-medium" id="prepMonstersList">
                             <!-- Rempli par JS -->
                         </div>
