@@ -253,6 +253,16 @@ function getAnomalyTooltipHTML(aTemp, fallbackName) {
             </span>`;
     }
 
+    const safeName = n ? n.trim().toLowerCase() : '';
+    const isCraftable = window.GRIMOIRE_ALCHEMY_RECIPES && window.GRIMOIRE_ALCHEMY_RECIPES.some(r => r.rewardName && r.rewardName.trim().toLowerCase() === safeName);
+    if (isCraftable) {
+        html += `
+            <span class="flex-center font-bold" style="border: 1px solid #10b981; color: #10b981; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem; gap: 4px;" title="Craftable via Alchimie">
+                <span class="material-symbols-outlined text-sm">science</span>
+                Craftable
+            </span>`;
+    }
+
     html += `
         </div>
         <div class="anomaly-tooltip-desc">${aTemp && aTemp.description ? aTemp.description : 'Aucune description'}</div>

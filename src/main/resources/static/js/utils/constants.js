@@ -66,9 +66,17 @@ window.STAT_DEFS = STAT_DEFS;
 export async function initMeta() {
     if (window.GRIMOIRE_META) return;
     try {
-        const res = await globalFetch('/api/meta/all');
-        if (res && res.ok) {
-            const allMeta = await res.json();
+        const [metaRes, recipesRes] = await Promise.all([
+            globalFetch('/api/meta/all').catch(() => null),
+            globalFetch('/api/alchemy/recipes').catch(() => null)
+        ]);
+
+        if (recipesRes && recipesRes.ok) {
+            window.GRIMOIRE_ALCHEMY_RECIPES = await recipesRes.json();
+        }
+
+        if (metaRes && metaRes.ok) {
+            const allMeta = await metaRes.json();
             window.GRIMOIRE_META = allMeta;
 
             // Retro-compatibility
