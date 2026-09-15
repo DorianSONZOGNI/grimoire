@@ -28,7 +28,7 @@ export function renderAndAnimateXPCards(containerId, players, prefix) {
                 <div class="progress-track">
                     <div id="${prefix}-xp-fill-${p.id}" style="height: 100%; width: ${Math.min(100, oldStats.progress)}%; background: #10b981; transition: box-shadow 0.3s;"></div>
                 </div>
-                <div class="text-muted" id="${prefix}-xp-text-${p.id}" style="font-size: 0.7rem; font-family: monospace;">${oldExp} / ${oldStats.level === 5 ? 'MAX' : oldStats.nextLvlXp} XP</div>
+                <div class="text-muted" id="${prefix}-xp-text-${p.id}" style="font-size: 0.7rem; font-family: monospace;">${oldExp} / ${oldStats.level === 10 ? 'MAX' : oldStats.nextLvlXp} XP</div>
         `;
 
         if (oldSpiritExp > 0 || (p.spiritualiteExperience || 0) > 0 || prefix === 'treasure') {
@@ -38,7 +38,7 @@ export function renderAndAnimateXPCards(containerId, players, prefix) {
                 <div class="progress-track">
                     <div id="${prefix}-spirit-fill-${p.id}" style="height: 100%; width: ${Math.min(100, oldSpiritStats.progress)}%; background: #f59e0b; transition: box-shadow 0.3s;"></div>
                 </div>
-                <div class="text-muted" id="${prefix}-spirit-text-${p.id}" style="font-size: 0.7rem; font-family: monospace;">${oldSpiritExp} / ${oldSpiritStats.level === 3 ? 'MAX' : oldSpiritStats.nextLvlXp} XP</div>
+                <div class="text-muted" id="${prefix}-spirit-text-${p.id}" style="font-size: 0.7rem; font-family: monospace;">${oldSpiritExp} / ${oldSpiritStats.level === 10 ? 'MAX' : oldSpiritStats.nextLvlXp} XP</div>
             `;
         }
 
@@ -77,7 +77,7 @@ export function renderAndAnimateXPCards(containerId, players, prefix) {
                 let stats = getExpStats(currentExp);
                 if (bar && text && lvlText) {
                     bar.style.width = Math.min(100, stats.progress) + "%";
-                    text.innerText = currentExp + " / " + (stats.level === 5 ? 'MAX' : stats.nextLvlXp) + " XP";
+                    text.innerText = currentExp + " / " + (stats.level === 10 ? 'MAX' : stats.nextLvlXp) + " XP";
                     if (lvlText.innerText !== "Voie Niv. " + stats.level) {
                         lvlText.innerText = "Voie Niv. " + stats.level;
                         lvlText.style.color = "#f59e0b";
@@ -94,7 +94,7 @@ export function renderAndAnimateXPCards(containerId, players, prefix) {
                 let spiritStats = getSpiritExpStats(currentSpiritExp);
                 if (spiritBar && spiritText && spiritLvlText) {
                     spiritBar.style.width = Math.min(100, spiritStats.progress) + "%";
-                    spiritText.innerText = currentSpiritExp + " / " + (spiritStats.level === 3 ? 'MAX' : spiritStats.nextLvlXp) + " XP";
+                    spiritText.innerText = currentSpiritExp + " / " + (spiritStats.level === 10 ? 'MAX' : spiritStats.nextLvlXp) + " XP";
                     if (spiritLvlText.innerText !== "Spirit Niv. " + spiritStats.level) {
                         spiritLvlText.innerText = "Spirit Niv. " + spiritStats.level;
                         spiritLvlText.style.color = "#f59e0b";
