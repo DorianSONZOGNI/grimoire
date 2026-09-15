@@ -495,7 +495,17 @@ window.renderOverlayInventory = function (containerId) {
 
     if (!pageState.currentSessionData || !pageState.currentSessionData.activeConsumables || pageState.currentSessionData.activeConsumables.length === 0) {
         list.innerHTML += `<div class="text-muted text-center text-sm" style="padding: 1rem;">Aucun objet dans l'inventaire.</div>`;
+        const wrapper = list.closest('.absolute.inset-y-0.left-0');
+        if (wrapper) {
+            wrapper.classList.add('-translate-x-full');
+        }
         return;
+    }
+
+    // Automatically open the inventory if there are consumables
+    const wrapper = list.closest('.absolute.inset-y-0.left-0');
+    if (wrapper) {
+        wrapper.classList.remove('-translate-x-full');
     }
 
     pageState.currentSessionData.activeConsumables.forEach(c => {
