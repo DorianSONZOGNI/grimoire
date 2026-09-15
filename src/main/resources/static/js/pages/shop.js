@@ -271,7 +271,7 @@ function renderSpecials() {
     if (consumables.length > 0) {
         html += `
             <div class="shop-rarity-group border-t-violet bg-violet-light">
-                <div class="shop-rarity-title text-violet border-violet-glass">CONSOMABLE</div>
+                <div class="shop-rarity-title text-violet-500 border-violet-glass">CONSOMABLE</div>
         `;
         consumables.forEach(eq => {
             html += generateStandHtml(eq);

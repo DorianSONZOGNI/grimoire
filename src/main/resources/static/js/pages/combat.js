@@ -2297,7 +2297,7 @@ function updateUI(data) {
                         title.textContent = 'Autel Sacrificiel';
                     } else {
                         icon.textContent = 'blur_on';
-                        icon.className = 'material-symbols-outlined mb-4 text-[5rem] text-violet';
+                        icon.className = 'material-symbols-outlined mb-4 text-[5rem] text-violet-500';
                         title.textContent = 'Altération';
                     }
                     desc.innerHTML = data.currentRoom.eventText || 'Une force mystérieuse vous entoure...';
@@ -4200,7 +4200,7 @@ function renderSpellCard(sp) {
     if (sp.castingType === 'INSTANTANE') {
         castingTypeHtml = '<span class="material-symbols-outlined text-base text-gold" title="Action Instantanée">bolt</span>';
     } else if (sp.castingType === 'CANALISE') {
-        castingTypeHtml = '<span class="material-symbols-outlined text-base text-violet" title="Action Canalisée">cyclone</span>';
+        castingTypeHtml = '<span class="material-symbols-outlined text-base text-violet-500" title="Action Canalisée">cyclone</span>';
         castingTypeHtml += sp.allowInstantDuringChanneling ?
             '<span class="material-symbols-outlined text-base text-gold" title="Instantanés autorisés pendant la canalisation">bolt</span>' :
             '<span class="relative" title="Instantanés interdits pendant la canalisation" style="display: inline-flex; align-items: center; justify-content: center; width: 1rem; height: 1rem;"><span class="material-symbols-outlined text-base text-slate">bolt</span><span class="absolute" style="width: 100%; height: 2px; background: #ef4444; transform: rotate(-45deg);"></span></span>';
@@ -4320,40 +4320,42 @@ function renderSpellCard(sp) {
     `;
 }
 
-const GAME_TIPS = [
-    "Les dégâts de <span class=\"text-red-400 font-semibold\">[Brûlure]</span> sont de type <span class=\"text-blue-400 font-semibold\">Magique</span>. Contrairement aux autres attaques <span class=\"text-blue-400 font-semibold\">Magique</span>, la <span class=\"text-purple-400 font-semibold\">Résistance</span> de la cible réduit deux fois plus les dégats de brûlure !",
-    "Le <span class=\"text-emerald-400 font-semibold\">[Poison]</span> inflige des dégâts <span class=\"text-slate-300 font-semibold\">Bruts</span>, mais c'est la seule altération totalement purifiée par le moindre <span class=\"text-emerald-300 font-semibold\">soin</span> (un soin direct, un vol de vie ou un HoT dissipe tous les poisons). Note : La régénération native ne compte pas comme un soin.",
-    "L'<span class=\"text-amber-400 font-semibold\">Armure</span> et la <span class=\"text-purple-400 font-semibold\">Résistance</span> réduisent les dégâts que vous subissez. Mais attention : plus vous en accumulez, moins chaque nouveau point est efficace. Il est impossible d'atteindre 100% de réduction et de devenir invincible !",
+export const GAME_TIPS = [
+    "Les dégâts de <span class=\"text-red-400 font-semibold\">[Brûlure]</span> sont de type <span class=\"text-violet-500 font-semibold\">Magique</span>. Contrairement aux autres attaques <span class=\"text-blue-400 font-semibold\">Magique</span>, la <span class=\"text-emerald font-semibold\">Résistance</span> de la cible réduit deux fois plus les dégats de brûlure !",
+    "Le <span class=\"text-emerald-400 font-semibold\">[Poison]</span> inflige des dégâts <span class=\"text-brut font-semibold\">Bruts</span>, mais c'est la seule altération totalement purifiée par le moindre <span class=\"text-emerald-300 font-semibold\">soin</span> (un soin direct, un vol de vie ou un HoT dissipe tous les poisons). Note : La régénération native ne compte pas comme un soin.",
+    "L'<span class=\"text-blue font-semibold\">Armure</span> et la <span class=\"text-emerald font-semibold\">Résistance</span> réduisent les dégâts que vous subissez. Mais attention : plus vous en accumulez, moins chaque nouveau point est efficace. Il est impossible d'atteindre 100% de réduction et de devenir invincible !",
     "Les <span class=\"text-yellow-400 font-semibold\">Secrets</span> peuvent être découverts via des recettes alchimiques. Ils donnent accès à de nouveaux donjons, plus dangereux et contenant de meilleurs équipements !",
-    "Une attaque de base inflige 80% de votre <span class=\"text-amber-400 font-semibold\">Force</span> ou de votre <span class=\"text-blue-400 font-semibold\">Puissance</span> (la plus haute). Si vous avez autant de <span class=\"text-amber-400 font-semibold\">Force</span> que de <span class=\"text-blue-400 font-semibold\">Puissance</span>, l'attaque devient mixte (50% Physique, 50% Magique [donc 20% de dégats en plus]).",
-    "Un sort <span class=\"text-emerald-400 font-semibold\">'Instantané'</span> ne consomme pas votre action du tour. Mais attention, si vous faites une autre action avant de lancer votre sort instantané, vous perdrez la capaciter d'en lancer un !",
-    "Vous pouvez lancer des sorts instantanés pendant que vous êtes en train de caster la plupart des sorts canalisés ! Attention, certain rare sorts canalisés sont trop puissant et ne le permettent pas.",
+    "Une attaque de base inflige 80% de votre <span class=\"text-red-600 font-semibold\">Force</span> ou de votre <span class=\"text-violet-500 font-semibold\">Puissance</span> (la plus haute). Si vous avez autant de <span class=\"text-red-600 font-semibold\">Force</span> que de <span class=\"text-violet-500 font-semibold\">Puissance</span>, l'attaque devient mixte (50% Physique, 50% Magique [donc 20% de dégats en plus]).",
+    "Un sort <span class=\"text-yellow-500 font-semibold\">Instantané</span> ne consomme pas votre action du tour. Mais attention, si vous faites une action <span class=\"text-blue-400 font-semibold\">basique</span> avant de lancer votre sort instantané, vous perdrez la capacité d'en lancer un !",
+    "Vous pouvez lancer des sorts <span class=\"text-yellow-500 font-semibold\">Instantané</span> pendant que vous êtes en train de caster la plupart des sorts <span class=\"text-purple-400 font-semibold\">'Canalisé'</span> ! Attention, certain rare sorts canalisés sont trop puissant et ne le permettent pas.",
     "Un sort <span class=\"text-purple-400 font-semibold\">'Canalisé'</span> s'exécute au moment de le lancer au T1, puis à la fin de chaque tour durant le reste de la canalisation.",
     "Certains sorts possèdent des variantes (Options). Elles permettent de choisir quel effet on exécute parmi plusieurs propositions.",
-    "Les <span class=\"text-yellow-400 font-semibold\">Coups Critiques</span> multiplient par 1.5 l'efficacité de presque tout : les dégâts (bruts, magiques, physiques, brûlure, poison), mais aussi les soins, les boucliers et la restauration de mana !",
-    "Les dégâts sur la durée <span class=\"text-red-400 font-semibold\">(DoT)</span> peuvent être critiques au moment de leur application. Leurs dégâts par tour seront alors amplifiés pendant toute leur durée.",
-    "Lorsque plusieurs héros participent au même donjon, l'expérience gagnée à la fin du combat est partagée équitablement entre tous les héros en vie.",
-    "Les objets <span class=\"text-red-500 font-semibold\">Maudits</span> offrent des bonus plus de statistique, mais au prix de contreparties parfois mortelles. Lisez bien leurs effets avant de les équiper !",
-    "Vous ne pouvez équiper qu'un seul objet <span class=\"text-amber-500 font-semibold\">Relique</span> et un seul objet <span class=\"text-fuchsia-400 font-semibold\">Épique</span> à la fois sur l'ensemble de votre équipement. Choisissez-les judicieusement !",
-    "Il est impossible d'équiper deux fois le même type d'anneau sur un personnage. Chaque emplacement d'anneau doit comporter un bijou différent.",
-    "Tous les types d'objets ne se valent pas : une arme donnera statistiquement beaucoup plus de Force ou de Puissance qu'un bijou, tandis qu'un plastron excellera pour vos Points de Vie et votre Armure. Optimisez vos emplacements !",
-    "Votre inventaire déborde ou vous trouvez un objet inutile dans un coffre ? Vous pouvez le vendre instantanément en le <span class=\"text-red-400 font-semibold\">détruisant</span> pour récupérer un peu d'Or !",
+    "Les <span class=\"text-red-600 font-semibold\">Coups Critiques</span> multiplient par 1.5 l'efficacité de presque tout : les dégâts (bruts, magiques, physiques, brûlure, poison), mais aussi les soins, les boucliers et la restauration de mana !",
+    "Les dégâts sur la durée <span class=\"text-red-400 font-semibold\">(DoT)</span> peuvent être <span class=\"text-red-600 font-semibold\">critiques</span> au moment de leur application. Leurs dégâts par tour seront alors amplifiés pendant toute leur durée.",
+    "Lorsque plusieurs héros participent au même donjon, <span class=\"text-sky-300 font-semibold\">l'expérience</span> gagnée à la fin du combat est partagée équitablement entre tous les héros en vie.",
+    "Les objets <span class=\"text-maudit font-semibold\">Maudits</span> offrent des bonus plus de statistique, mais au prix de contreparties parfois mortelles. Lisez bien leurs effets avant de les équiper !",
+    "Vous ne pouvez équiper qu'un seul objet <span class=\"text-relique font-semibold\">Relique</span> et un seul objet <span class=\"text-epique font-semibold\">Épique</span> à la fois sur l'ensemble de votre équipement. Choisissez-les judicieusement !",
+    "Il est impossible d'équiper deux fois le même type d'anneau sur un héros. Chaque emplacement d'anneau doit comporter un bijou différent.",
+    "Tous les types d'objets ne se valent pas : une arme donnera statistiquement beaucoup plus de <span class=\"text-red-600 font-semibold\">Force</span> et de <span class=\"text-violet-500 font-semibold\">Puissance</span> qu'un bijou, tandis qu'un plastron excellera pour vos <span class=\"text-pink-500 font-semibold\">Points de Vie</span> et votre <span class=\"text-blue font-semibold\">Armure</span>. Optimisez vos emplacements !",
+    "Votre inventaire déborde ou vous trouvez un objet inutile dans votre coffre ? Vous pouvez le vendre en le <span class=\"text-red-400 font-semibold\">détruisant</span> pour récupérer un peu <span class=\"text-yellow-400 font-semibold\">d'Or</span> !",
     "La <span class=\"text-yellow-400 font-semibold\">Boutique</span> se réinitialise tous les jours à minuit. Gardez l'œil ouvert : l'objet en <span class=\"text-emerald-400 font-semibold\">Promotion</span> change toutes les deux heures.",
     "N'hésitez pas à consulter votre <span class=\"text-purple-400 font-semibold\">Grimoire</span> ! Il vous permet de voir à l'avance tous les sorts disponibles pour chaque voie et spiritualité, idéal pour planifier votre évolution.",
     "Certains monstres possèdent des <span class=\"text-purple-400 font-semibold\">Mutations</span>. Elles leur permettent de lancer des sorts dévastateurs ou d'utiliser des compétences pour s'entraider. Prudence !",
-    "Le <span class=\"text-blue-400 font-semibold\">Type</span> d'un monstre (Mort-Vivant, Bête, Démon...) définit certaines modifications importante à prendre en compte. Régénération, dégats suplémentaires, débuffs, etc.",
-    "Chaque monstre possède un <span class=\"text-amber-400 font-semibold\">Comportement</span> unique (Prédateur, Corrupteur, Brutal). Observez-les bien pour anticiper leur priorité de ciblage et leur comportement général !",
+    "Le <span class=\"text-red-400 font-semibold\">Type</span> d'un monstre (Mort-Vivant, Bête, Démon...) définit certaines modifications importante à prendre en compte. Régénération, dégats suplémentaires, débuffs, etc.",
+    "Certains monstres possèdent un <span class=\"text-amber-400 font-semibold\">Comportement</span> unique (Prédateur, Corrupteur, Brutal). Observez-les bien pour anticiper leur priorité de ciblage et leur comportement général !",
     "Avant de lancer un donjon, n'oubliez pas d'équiper' vos <span class=\"text-emerald-400 font-semibold\">Consommables</span> (potions, clé, corde, etc.) dans votre Inventaire de Combat. Vous pourrez les utiliser entre les affontements.",
-    "En donjon, les salles de <span class=\"text-red-400 font-semibold\">Combat</span> sont fréquentes. Mais attention aux salles de <span class=\"text-orange-500 font-semibold\">Boss</span> qui mettront votre équipe à rude épreuve en boostant les monstres !",
-    "Les <span class=\"text-yellow-400 font-semibold\">Salles des Trésors</span> regorgent d'or et d'objets, tandis que les salles d'<span class=\"text-blue-400 font-semibold\">Altération</span> peuvent vous soigner (ou l'inverse !) en échange d'<span class=\"text-fuchsia-400 font-semibold\">Anomalies</span> ou d'<span class=\"text-amber-400 font-semibold\">XP Spirituel</span>.",
+    "En donjon, les salles de <span class=\"text-orange-500 font-semibold\">Combat</span> sont fréquentes. Mais attention aux salles de <span class=\"text-red-500 font-semibold\">Boss</span> qui mettront votre équipe à rude épreuve en boostant les monstres !",
+    "Les <span class=\"text-yellow-400 font-semibold\">Salles des Trésors</span> regorgent d'or et d'objets, tandis que les salles d'<span class=\"text-purple-500 font-semibold\">Altération</span> peuvent vous soigner (ou l'inverse !) en échange d'<span class=\"text-fuchsia-400 font-semibold\">Anomalies</span> ou d'<span class=\"text-amber-400 font-semibold\">XP Spirituel</span>.",
     "Les <span class=\"text-purple-400 font-semibold\">portes étranges</span> sont des évènements aléatoires. Elles peuvent vous déboucher sur des pièges, des trésors inatendus, des marchants secret, des autels sacrificiels ou bien des monstres en embuscade... ",
     "C'est dans l'<span class=\"text-amber-500 font-semibold\">Armurerie</span> que vous pouvez gérer et équiper le matériel de vos héros. Un équipement bien pensé est la clé de la victoire !",
-    "Besoin d'une plus grande équipes ? Rendez-vous dans l'<span class=\"text-emerald-400 font-semibold\">Armurerie</span> pour <span class=\"text-blue-400 font-semibold\">Recruter</span> de nouveaux héros pour compléter votre équipe.",
+    "Besoin d'une plus grande équipes ? Rendez-vous dans l'<span class=\"text-amber-500 font-semibold\">Armurerie</span> pour <span class=\"text-blue-400 font-semibold\">Recruter</span> de nouveaux héros pour compléter votre équipe.",
     "Les <span class=\"text-fuchsia-400 font-semibold\">Anomalies</span> servent comme monais ou bien comme ingredient alchimique.",
-    "L'<span class=\"text-emerald-400 font-semibold\">Expérience Spirituelle</span> permet de gagner des niveaux spirituels ce qui débloquera de nouveaux sorts, mais sert aussi de ressources dans certain craft alchimique.",
+    "L'<span class=\"text-yellow-200 font-semibold\">Expérience Spirituelle</span> permet de gagner des niveaux spirituels ce qui débloquera de nouveaux sorts, mais sert aussi de ressources dans certain craft alchimique.",
     "Vous pouvez jouer en <span class=\"text-blue-400 font-semibold\">Multijoueur</span> ! Créez un <span class=\"text-emerald-400 font-semibold\">Lobby</span> et partagez le code d'invitation à un ami. Attention : il doit avoir débloqué le donjon pour pouvoir s'y aventurer avec vous.",
-    "Fuir un donjon  fait perdre de l'or et de l'expérience proportionnellement à la taille du donjon. Un perso qui meurt en donjon perd aussi de l'expérience en fonction de son niveau.",
-    "En multijoueur, l'inventaire est partagé, mais l'utilisation d'un consommable le déduit en priorité de la réserve personnelle du joueur qui l'active. En cas de rupture de stock, l'objet est prélevé dans la réserve de votre coéquipier."
+    "Fuir un donjon  fait perdre de <span class=\"text-yellow-400 font-semibold\">l'or</span> et de <span class=\"text-sky-300 font-semibold\">l'expérience</span> proportionnellement à la taille du donjon. Un perso qui meurt en donjon perd aussi de <span class=\"text-sky-300 font-semibold\">l'expérience</span> en fonction de son niveau.",
+    "En multijoueur, l'inventaire est partagé, mais l'utilisation d'un <span class=\"text-green-400 font-semibold\">consommable</span> le déduit en priorité de la réserve personnelle du joueur qui l'active. En cas de rupture de stock, l'objet est prélevé dans la réserve de votre coéquipier.",
+    "La <span class=\"text-amber-500 font-semibold\">chasse journalière</span> est une course contre les autres joueurs. Soyez le premier à terminer le donjon du jour pour remporter le plus grand prix !",
+    "Pour remporter la <span class=\"text-amber-500 font-semibold\">chasse hebdomadaire</span>, il vous faut être le joueur qui a terrassé le plus de fois le donjon ciblé. Attention, ce sont souvent des donjons plus difficiles que la moyenne !"
 ];
 
 function showResult(data) {
