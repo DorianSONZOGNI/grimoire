@@ -513,6 +513,11 @@ export function updateUI(data) {
             document.getElementById('btnAttack').disabled = true;
             document.getElementById('enemiesContainer').innerHTML = ''; // Clear enemies
 
+            // Reset les textes originaux des boutons pour ne pas garder ceux de la salle précédente
+            document.querySelectorAll('button[onclick*="nextRoom"]').forEach(btn => {
+                delete btn.dataset.origText;
+            });
+
             const overlay = document.getElementById('eventOverlay');
             const icon = document.getElementById('eventIcon');
             const title = document.getElementById('eventTitle');
@@ -1236,7 +1241,7 @@ export function updateUI(data) {
                         if (data.combatLog) {
                             for (let i = data.combatLog.length - 1; i >= Math.max(0, data.combatLog.length - 5); i--) {
                                 const log = data.combatLog[i];
-                                const match = log.match(/Vous avez obtenu l'item : (.*?) !/);
+                                const match = log.match(/a obtenu l'item : (.*?) !/);
                                 if (match && Array.isArray(window.allAnomaliesCombat)) {
                                     const eqName = match[1];
                                     const an = window.allAnomaliesCombat.find(a => a.name === eqName);

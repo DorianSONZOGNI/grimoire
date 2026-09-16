@@ -404,12 +404,7 @@ window.getEffectInfoIconHtml = function (effectKey) {
     if (!effectKey || effectKey === 'NONE') return '';
     const desc = (window.EFFECT_DESCRIPTIONS && window.EFFECT_DESCRIPTIONS[effectKey]) || 'Aucune description disponible.';
     const escapedDesc = desc.replace(/"/g, '&quot;').replace(/'/g, "\\'");
-    return `<span class="inline-flex items-center justify-center ml-2 align-middle" 
-                  style="cursor: default;"
-                  onmouseenter="if(window.showEffectTooltip) window.showEffectTooltip(this, '${escapedDesc}')"
-                  onmouseleave="if(window.hideEffectTooltip) window.hideEffectTooltip()">
-                <span class="material-symbols-outlined" style="font-size: 1.1rem; color: #94a3b8;">info</span>
-            </span>`;
+    return `<span class="inline-flex items-center justify-center ml-2 align-middle" style="cursor: default;" onmouseenter="if(window.showEffectTooltip) window.showEffectTooltip(this, '${escapedDesc}')" onmouseleave="if(window.hideEffectTooltip) window.hideEffectTooltip()"><span class="material-symbols-outlined" style="font-size: 1.1rem; color: #94a3b8;">info</span></span>`;
 };
 
 window.generateEquipmentEffectHtml = function (eq, baseClass = 'vault-card-effect') {

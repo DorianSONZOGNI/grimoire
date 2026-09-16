@@ -218,9 +218,10 @@ public class CombatController {
     }
 
     @PostMapping("/{sessionId}/open-strange-door")
-    public ResponseEntity<?> openStrangeDoor(@PathVariable("sessionId") String sessionId) {
+    public ResponseEntity<?> openStrangeDoor(@PathVariable("sessionId") String sessionId, java.security.Principal principal) {
         try {
-            CombatSession session = combatService.openStrangeDoor(sessionId);
+            String username = principal != null ? principal.getName() : "Anonymous";
+            CombatSession session = combatService.openStrangeDoor(sessionId, username);
             combatService.broadcastIfMulti(session);
             return ResponseEntity.ok(session);
         } catch (Exception e) {
