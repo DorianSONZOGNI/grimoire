@@ -57,6 +57,8 @@ class CombatRoomService {
             freshSalle.getLootTable().size();
 
         session.setCurrentRoom(freshSalle);
+        session.setRoomExpAccumulated(0);
+        session.setRoomGoldAccumulated(0);
 
         if (session.getCurrentRoom().getType() == generation.grimoire.enumeration.RoomType.COMBAT
                 || session.getCurrentRoom().getType() == generation.grimoire.enumeration.RoomType.BOSS) {
@@ -953,9 +955,13 @@ class CombatRoomService {
             if (!session.getPlayers().isEmpty()) {
                 AppUser user = session.getPlayers().get(0).getUser();
                 if (user != null) {
+                    if (!user.getCompletedDungeons().contains(session.getDungeonId())) {
+                        user.getCompletedDungeons().add(session.getDungeonId());
+                        session.addLog("🎉 Félicitations, vous avez terminé ce donjon pour la première fois !");
+                    }
                     userRepository.save(user);
                 }
-                for (Personnage p : session.getPlayers()) {
+                for (generation.grimoire.entity.personnage.Personnage p : session.getPlayers()) {
                     personnageRepository.save(java.util.Objects.requireNonNull(p));
                 }
             }

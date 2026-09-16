@@ -1,6 +1,11 @@
+@view-transition {
+    navigation: auto;
+}
+
 app-navbar {
     display: block;
     width: 100%;
+    view-transition-name: app-navbar;
 }
 
 header{

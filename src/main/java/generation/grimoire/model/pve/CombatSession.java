@@ -105,6 +105,10 @@ public class CombatSession {
     private int totalGoldAccumulated = 0;
     private int totalGoldLostOnDefeat = 0;
     private int totalExpAccumulated = 0;
+    private int roomExpAccumulated = 0;
+    private int roomGoldAccumulated = 0;
+    private int firstClearBonusXp = 0; // Bonus XP for first completion
+    private boolean firstClear = false; // Is this the first time completing this dungeon?
     private int bossBonusSpiritualXp = 0; // XP Spiritualité bonus boss (total distribué)
     private int bossBonusGold = 0; // Or bonus boss
 

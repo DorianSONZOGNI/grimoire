@@ -571,8 +571,13 @@ class CombatTurnService {
         }
 
         if (xpDrop > 0 || goldDrop > 0) {
+            if (session.isFirstClear()) {
+                xpDrop *= 2;
+            }
             session.setTotalExpAccumulated(session.getTotalExpAccumulated() + xpDrop);
             session.setTotalGoldAccumulated(session.getTotalGoldAccumulated() + goldDrop);
+            session.setRoomExpAccumulated(session.getRoomExpAccumulated() + xpDrop);
+            session.setRoomGoldAccumulated(session.getRoomGoldAccumulated() + goldDrop);
 
             List<Personnage> eligiblePlayers = session.getPlayers().stream()
                     .filter(session::isEligibleForRewards).collect(java.util.stream.Collectors.toList());
@@ -801,6 +806,14 @@ class CombatTurnService {
                         .orElse(alivePlayers.get(0));
                 session.addLog("\uD83E\uDDA0 " + m.getBase().getName() + " frappe " + target.getName()
                         + " (le moins de PV max - Brutal).");
+                return target;
+            }
+            case SADIQUE -> {
+                Personnage target = alivePlayers.stream()
+                        .min(java.util.Comparator.comparingInt(p -> p.getHealthCurrent()))
+                        .orElse(alivePlayers.get(0));
+                session.addLog("\uD83D\uDE08 " + m.getBase().getName() + " s'acharne sur " + target.getName()
+                        + " (le moins de PV actuel - Sadique).");
                 return target;
             }
             default -> {

@@ -56,19 +56,19 @@ function collectDungeonLootItemsLocal(salles) {
             });
         }
     });
-    
+
     const rarityOrder = { 'MAUDIT': 1, 'RELIQUE': 2, 'EPIQUE': 3, 'LEGENDAIRE': 4, 'MYTHIQUE': 5, 'RARE': 6, 'INHABITUEL': 7, 'COMMUN': 8 };
     const slotOrder = { 'CASQUE': 1, 'PLASTRON': 2, 'ARME_DEUX_MAINS': 3, 'ARME_GAUCHE': 4, 'ARME_DROITE': 5, 'ANNEAU': 6, 'BOTTES': 8, 'CAPE': 9, 'CONSOMMABLE': 10 };
-    
+
     return Array.from(itemsMap.values()).sort((a, b) => {
         const rA = rarityOrder[a.rarity?.name || a.rarity] || 100;
         const rB = rarityOrder[b.rarity?.name || b.rarity] || 100;
         if (rA !== rB) return rA - rB;
-        
+
         const sA = slotOrder[a.slot?.name || a.slot] || 100;
         const sB = slotOrder[b.slot?.name || b.slot] || 100;
         if (sA !== sB) return sA - sB;
-        
+
         return a.name.localeCompare(b.name);
     });
 }
@@ -285,27 +285,39 @@ async function loadDungeons() {
 
                     const diff = d.difficulty !== undefined ? d.difficulty : 0;
                     let skullsHtml = '<div style="position: absolute; top: 10px; right: 12px; display: flex; gap: 2px; align-items: center;" title="Difficulté">';
-                    for(let i=0; i<3; i++) {
+                    for (let i = 0; i < 3; i++) {
                         skullsHtml += `<span class="material-symbols-outlined" style="font-size: 1.2rem; color: ${i < diff ? '#ef4444' : 'rgba(255,255,255,0.2)'}; text-shadow: ${i < diff ? '0 0 5px rgba(239, 68, 68, 0.5)' : 'none'};">skull</span>`;
                     }
                     skullsHtml += '</div>';
 
-                    let questBadges = '';
-                    if (d.dailyQuest || d.weeklyQuest) {
-                        questBadges = `<div style="position: absolute; top: -14px; left: -14px; display: flex; gap: 6px; z-index: 5;">
-                            ${d.dailyQuest ? `<div style="background: rgba(15,23,42,0.95); border: 2px solid #f59e0b; border-radius: 50%; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(245, 158, 11, 0.4);" title="Cible de la Quête Journalière">
-                                <span class="material-symbols-outlined text-warning" style="font-size: 1.5rem;">workspace_premium</span>
-                            </div>` : ''}
-                            ${d.weeklyQuest ? `<div style="background: rgba(15,23,42,0.95); border: 2px solid #a855f7; border-radius: 50%; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; box-shadow: 0 4px 10px rgba(168, 85, 247, 0.4);" title="Cible de la Quête Hebdomadaire">
-                                <span class="material-symbols-outlined text-purple" style="font-size: 1.5rem;">emoji_events</span>
-                            </div>` : ''}
+                    let leftBadges = `<div class="dungeon-badges-left">`;
+
+                    if (d.completed) {
+                        leftBadges += `<div class="badge-completed" title="Donjon Terminé">
+                            <span class="material-symbols-outlined text-green-600 badge-icon">check_circle</span>
+                        </div>`;
+                    } else if (!isLocked) {
+                        leftBadges += `<div class="badge-xp2" title="Bonus XP de Première Complétion !">
+                            <span class="text-xs font-bold text-amber-500 flex items-center gap-1"><span class="material-symbols-outlined text-[1rem]">star</span> XP x2</span>
                         </div>`;
                     }
+
+                    if (d.dailyQuest) {
+                        leftBadges += `<div class="badge-quest daily" title="Cible de la Quête Journalière">
+                            <span class="material-symbols-outlined text-warning badge-icon">workspace_premium</span>
+                        </div>`;
+                    }
+                    if (d.weeklyQuest) {
+                        leftBadges += `<div class="badge-quest weekly" title="Cible de la Quête Hebdomadaire">
+                            <span class="material-symbols-outlined text-purple badge-icon">emoji_events</span>
+                        </div>`;
+                    }
+                    leftBadges += `</div>`;
 
                     const cardHtml = `
                         <div class="dungeon-card ${isLocked ? 'locked' : ''}" id="dungeon-card-${d.id}" style="position: relative;" ${isLocked ? '' : `onclick="openPrepInterface(${d.id}, '${d.name.replace(/'/g, "\\'")}', '${sallesData}', ${d.maxHeroes || 1}, ${d.entryCostGold || 0}, ${d.recommendedLevel || 1})"`}>
                             ${lockedHtml}
-                            ${questBadges}
+                            ${leftBadges}
                             ${skullsHtml}
                             <div class="dungeon-title">
                                 <span class="material-symbols-outlined">castle</span>
@@ -357,7 +369,7 @@ async function loadDungeons() {
         const card = document.getElementById(`dungeon-card-${openDungeonId}`);
         if (card && !card.classList.contains('locked')) {
             card.click();
-            
+
             // Remove the parameter from URL so it doesn't stay on refresh
             const url = new URL(window.location);
             url.searchParams.delete('dungeonId');
@@ -538,12 +550,12 @@ function renderConsumablesList() {
         const total = group.ids.length;
         const selCount = group.selectedIds.length;
         const isSelected = selCount > 0;
-        
+
         const catIcons = { POTION_ROSE: 'science', POTION_BLEUE: 'science', POTION_ROUGE: 'science', POTION_VIOLETTE: 'science', CLE: 'vpn_key', CORDE: 'gesture', PARCHEMIN: 'history_edu', NOURRITURE: 'restaurant', OUTIL: 'construction', AUTRE: 'inventory_2' };
         const catColors = { POTION_ROSE: '#ec4899', POTION_BLEUE: '#0ea5e9', POTION_ROUGE: '#ef4444', POTION_VIOLETTE: '#a855f7', CLE: '#eab308', CORDE: '#8b4513', PARCHEMIN: '#f59e0b', NOURRITURE: '#f43f5e', OUTIL: '#64748b', AUTRE: '#94a3b8' };
         const iconName = c.consumableCategory ? (catIcons[c.consumableCategory] || 'inventory_2') : 'inventory_2';
         const iconColor = c.consumableCategory ? (catColors[c.consumableCategory] || '#854c4c') : '#854c4c';
-        
+
         let badgeHtml = '';
         if (isSelected) {
             badgeHtml = `
@@ -592,10 +604,10 @@ function renderConsumablesList() {
     list.innerHTML = `<div class="grid grid-cols-2 gap-2">${cardsHtml}</div>`;
 }
 
-window.addConsumableGroup = function(name) {
+window.addConsumableGroup = function (name) {
     const groupItems = pageState.availableConsumables.filter(c => c.name === name);
     if (!groupItems.length) return;
-    
+
     const unselectedItem = groupItems.find(c => !pageState.selectedConsumableIds.includes(c.id));
     if (unselectedItem) {
         const itemWeight = unselectedItem.weight || 0;
@@ -610,10 +622,10 @@ window.addConsumableGroup = function(name) {
     }
 };
 
-window.removeConsumableGroup = function(name) {
+window.removeConsumableGroup = function (name) {
     const groupItems = pageState.availableConsumables.filter(c => c.name === name);
     if (!groupItems.length) return;
-    
+
     const selectedId = groupItems.find(c => pageState.selectedConsumableIds.includes(c.id))?.id;
     if (selectedId) {
         const idx = pageState.selectedConsumableIds.indexOf(selectedId);
@@ -859,7 +871,7 @@ window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost,
                 const slotInfo = Object.assign({}, window.SLOT_LABELS && window.SLOT_LABELS[slotName] ? window.SLOT_LABELS[slotName] : { label: slotName, icon: 'help', color: '#94a3b8', extraClass: '' });
                 const rarityName = eq.rarity?.name || eq.rarity;
                 const rarityColor = colorMap[rarityName] || '#f8fafc';
-                
+
                 if (slotName === 'CONSOMMABLE') {
                     const catName = eq.consumableCategory?.name || eq.consumableCategory;
                     if (catName && window.CONSUMABLE_CATEGORIES && window.CONSUMABLE_CATEGORIES[catName]) {
@@ -872,20 +884,20 @@ window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost,
                         slotInfo.color = catColors[catName] || '#854c4c';
                     }
                 }
-                
+
                 return `<div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem;">
                     <span class="material-symbols-outlined text-[1.1rem] ${slotInfo.extraClass || ''}" style="color:${slotInfo.color || rarityColor};">${slotInfo.icon}</span>
                     <span style="color:${rarityColor}; font-weight:500; font-size:0.9rem;">${eq.name}</span>
                 </div>`;
             }).join('');
-            
+
             const tooltipContent = `
                 <div style="font-weight:600; color:#f59e0b; margin-bottom:0.5rem; font-size:0.85rem; text-transform:uppercase; letter-spacing:0.05em; display:flex; align-items:center; gap:0.25rem;">
                     <span class="material-symbols-outlined text-[1.1rem]">shopping_bag</span> Équipements trouvables
                 </div>
                 <div style="display:flex; flex-direction:column; padding-right: 0.5rem;">${listHtml}</div>
             `;
-            
+
             tooltipTrigger.setAttribute('data-tooltip-html', tooltipContent);
             tooltipTrigger.style.display = 'flex';
             tooltipTrigger.classList.remove('hidden');

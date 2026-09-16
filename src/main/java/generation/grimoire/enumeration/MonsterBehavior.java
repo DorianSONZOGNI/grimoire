@@ -11,7 +11,8 @@ public enum MonsterBehavior {
     LEADER("Leader", "Force tous les alliés monstres à attaquer la même cible", "military_tech"),
     ASSASSIN("Assassin", "Cible le joueur avec le moins de Résistance", "visibility"),
     BRUTAL("Brutal", "Dégâts bruts (ignore armure/résistance)", "local_fire_department"),
-    TRANSCENDANT("Transcendant", "Attaque toutes les cibles adverses à la fois", "flare");
+    TRANSCENDANT("Transcendant", "Attaque toutes les cibles adverses à la fois", "flare"),
+    SADIQUE("Sadique", "Attaque la cible qui a le moins de PV actuels", "favorite_border");
 
     private final String label;
     private final String description;

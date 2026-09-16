@@ -10,7 +10,8 @@ public enum MonsterType {
     MORT_VIVANT("Mort-vivant", "Régénère 5% de ses PV max à chaque début de tour", "skull"),
     HYBRIDE("Hybride", "Dégâts = (Force + Puissance) × 1.2, répartis moitié physique moitié magique", "merge_type"),
     VAMPIRE("Vampire", "20% de vol de vie sur les dégâts infligés", "water_drop"),
-    ECTOPLASME("Ectoplasme", "Ses attaques appliquent un débuff de résistance magique (-5 rés pendant 3 tours)", "blur_on");
+    ECTOPLASME("Ectoplasme", "Ses attaques appliquent un débuff de résistance magique (-5 rés pendant 3 tours)", "blur_on"),
+    EPINE("Épine", "Renvoie 10% des dégâts Phy/Mag reçus", "change_history");
 
     private final String label;
     private final String description;

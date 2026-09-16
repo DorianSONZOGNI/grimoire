@@ -31,16 +31,19 @@ public class AuthController {
     private final JwtService jwtService;
     private final RefreshTokenService refreshTokenService;
     private final HuntingQuestEntryRepository huntingQuestEntryRepository;
+    private final generation.grimoire.repository.pve.DonjonRepository donjonRepository;
 
     public AuthController(AuthenticationManager authenticationManager, UserRepository userRepository,
             PasswordEncoder passwordEncoder, JwtService jwtService, RefreshTokenService refreshTokenService,
-            HuntingQuestEntryRepository huntingQuestEntryRepository) {
+            HuntingQuestEntryRepository huntingQuestEntryRepository,
+            generation.grimoire.repository.pve.DonjonRepository donjonRepository) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
         this.jwtService = jwtService;
         this.refreshTokenService = refreshTokenService;
         this.huntingQuestEntryRepository = huntingQuestEntryRepository;
+        this.donjonRepository = donjonRepository;
     }
 
     @PostMapping("/register")
@@ -86,6 +89,10 @@ public class AuthController {
             res.put("id", u.getId());
             res.put("monnaie", u.getMonnaie());
             res.put("unlockedSecrets", u.getUnlockedSecrets());
+            res.put("claimedSecretRewards", u.getClaimedSecretRewards());
+            java.util.List<String> claimable = getClaimableSecretRewards(u);
+            res.put("claimableSecretRewards", claimable);
+            res.put("claimableSecretRewardsCount", claimable.size());
             res.put("unlockedDungeons", u.getUnlockedDungeons());
             res.put("unlockedVault", u.isUnlockedVault());
             res.put("unlockedAlchemy", u.isUnlockedAlchemy());
@@ -94,6 +101,40 @@ public class AuthController {
         });
 
         return ResponseEntity.ok(res);
+    }
+
+    private java.util.List<String> getClaimableSecretRewards(AppUser u) {
+        java.util.List<String> claimable = new java.util.ArrayList<>();
+        java.util.List<generation.grimoire.entity.pve.Donjon> allDungeons = donjonRepository.findAll();
+        
+        for (Map.Entry<String, Integer> entry : u.getUnlockedSecrets().entrySet()) {
+            String secretName = entry.getKey();
+            int maxUnlockedLevel = entry.getValue();
+            
+            for (int lvl = 1; lvl <= maxUnlockedLevel; lvl++) {
+                String key = secretName + ":" + lvl;
+                if (!u.getClaimedSecretRewards().contains(key)) {
+                    final int currentLvl = lvl;
+                    java.util.List<generation.grimoire.entity.pve.Donjon> dungeonsForLevel = allDungeons.stream()
+                        .filter(d -> secretName.equalsIgnoreCase(d.getRequiredSecret()) && d.getRequiredSecretLevel() == currentLvl)
+                        .toList();
+                        
+                    if (!dungeonsForLevel.isEmpty()) {
+                        boolean allCompleted = true;
+                        for (generation.grimoire.entity.pve.Donjon d : dungeonsForLevel) {
+                            if (!u.getCompletedDungeons().contains(d.getId())) {
+                                allCompleted = false;
+                                break;
+                            }
+                        }
+                        if (allCompleted) {
+                            claimable.add(key);
+                        }
+                    }
+                }
+            }
+        }
+        return claimable;
     }
 
     @PostMapping("/unlock/{feature}")

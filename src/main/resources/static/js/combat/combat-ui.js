@@ -404,9 +404,9 @@ export function updateUI(data) {
                     if (xpContainer) {
                         xpContainer.innerHTML = '';
 
-                        // Base Gold and XP accumulated over the entire combat
-                        const totalGold = data.totalGoldAccumulated || 0;
-                        const totalRawXp = data.totalExpAccumulated || 0;
+                        // Base Gold and XP accumulated over the CURRENT room
+                        const totalGold = data.roomGoldAccumulated || 0;
+                        const totalRawXp = data.roomExpAccumulated || 0;
                         const nbPlayers = Math.max(1, (data.players || []).length);
                         const xpPerHero = Math.floor(totalRawXp / nbPlayers);
 
@@ -430,15 +430,19 @@ export function updateUI(data) {
                                 baseContent += `<span class="text-muted" style="margin: 0 0.5rem;">|</span>`;
                             }
                             if (xpAmount > 0) {
+                                let xpBadge = data.firstClear ? '<span class="text-xs text-amber-500 font-bold ml-2">(XP x2)</span>' : '';
                                 baseContent += `
-                                    <span class="material-symbols-outlined text-info">upgrade</span>
-                                    <span class="text-info">+${xpAmount} XP</span>
+                                    <div class="relative flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-info">upgrade</span>
+                                        <span class="text-info">+${xpAmount} XP</span>
+                                        ${xpBadge}
+                                    </div>
                                 `;
                             }
 
                             xpContainer.innerHTML += `
-                                <div class="text-center w-full"  style="margin-bottom: 0.5rem; animation: popIn 0.5s ease-out forwards;">
-                                    <div class="font-bold" style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(0,0,0,0.4); border: 1px solid #f59e0b80; padding: 0.5rem 1rem; border-radius: 8px; font-size: 1.2rem;">
+                                <div class="victory-xp-block">
+                                    <div class="victory-xp-block-inner victory-xp-base">
                                         ${baseContent}
                                     </div>
                                 </div>
@@ -478,8 +482,8 @@ export function updateUI(data) {
 
                             // Injection dans le container (une seule fois)
                             xpContainer.innerHTML += `
-                                <div class="text-center w-full"  style="margin-bottom: 0.5rem; animation: popIn 0.6s ease-out forwards;">
-                                    <div class="font-bold" style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(0,0,0,0.4); border: 1px solid #e11d4880; padding: 0.5rem 1rem; border-radius: 8px; font-size: 1.1rem;">
+                                <div class="victory-xp-block">
+                                    <div class="victory-xp-block-inner victory-xp-boss">
                                         ${innerContent}
                                     </div>
                                 </div>
@@ -1927,12 +1931,11 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
             const color = mut.color || '#e879f9';
             const tooltipAttrs = 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"';
             mutationsHtml += `
-                <div class="flex-center" ${tooltipAttrs} style="border-color: ${color}; color: ${color}; cursor: help; border-radius: 8px; border: 1px solid ${color}; background: #0f172a; width: 32px; height: 32px; justify-content: center; box-shadow: 0 4px 6px rgba(0,0,0,0.4);">
+                <div class="flex-center combat-mutation shadow-sm" ${tooltipAttrs} style="width: 38px; height: 38px; border-radius: 8px; background: #0f172a; justify-content: center; border: 1px solid ${color}; color: ${color}; cursor: help; box-shadow: 0 4px 6px rgba(0,0,0,0.4);">
                     <template class="tooltip-data">
-                        <div style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:${color}; border-bottom: 1px solid ${color}; padding-bottom: 4px;">${mut.nom} <span class="text-xs" style="color: #cbd5e1;">(Lvl ${mut.level || 1})</span></div>
-                        <div style="font-style:italic; color:#cbd5e1; margin-top:8px; width: max-content; max-width: 500px; line-height: 1.4; white-space: normal !important; word-wrap: break-word;">${mut.description || 'Une mutation monstrueuse.'}</div>
+                        ${window.generateMutationTooltipHtml ? window.generateMutationTooltipHtml(mut) : ''}
                     </template>
-                    <span class="material-symbols-outlined text-lg">${icon}</span>
+                    <span class="material-symbols-outlined" style="font-size: 1.4rem; color: ${color};">${icon}</span>
                 </div>
             `;
         });
@@ -2282,11 +2285,11 @@ export function renderBuffsHtml(c, buffList, motList, hotList) {
 
             let isBad = isNegativeValue;
             if (isInverse) isBad = !isNegativeValue;
-            
+
             let effectiveFlat = b.flatValue || 0;
             let showModifier = true;
             let text = '';
-            
+
             if (b.modifier && c) {
                 let finalStat = null;
                 const affected = b.statAffected ? b.statAffected.toUpperCase() : '';
@@ -2304,7 +2307,7 @@ export function renderBuffsHtml(c, buffList, motList, hotList) {
                     let totalPos = 0.0;
                     let totalNeg = 1.0;
                     const allBuffs = c.activeBuffs || c.buffs || [];
-                    
+
                     allBuffs.forEach(otherBuff => {
                         if (otherBuff.statAffected === b.statAffected && otherBuff.modifier) {
                             if (otherBuff.modifier > 0) totalPos += otherBuff.modifier;

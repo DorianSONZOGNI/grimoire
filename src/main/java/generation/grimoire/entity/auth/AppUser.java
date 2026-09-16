@@ -43,6 +43,16 @@ public class AppUser {
     @Column(name = "dungeon_id")
     private Set<Long> unlockedDungeons = new HashSet<>();
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_claimed_secret_rewards", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "secret_level_key")
+    private Set<String> claimedSecretRewards = new HashSet<>();
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @CollectionTable(name = "user_completed_dungeons", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "dungeon_id")
+    private Set<Long> completedDungeons = new HashSet<>();
+
     @Column(nullable = false)
     private boolean unlockedVault = false;
 

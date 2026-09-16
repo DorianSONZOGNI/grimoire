@@ -8,6 +8,7 @@ import { getVoieButtonColor, getSpiritButtonColor, } from '../utils/filters.js';
 
 window.handleAffinityChange = handleAffinityChange;
 window.setViolenceType = setViolenceType;
+window.getSpellEffectsSummaryHtml = getSpellEffectsSummaryHtml;
 
 export function renderFilteredSpells() {
     const container = document.getElementById('createdSpellsContainer');

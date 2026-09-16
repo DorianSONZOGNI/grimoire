@@ -28,9 +28,16 @@ public class DungeonController {
 
     @GetMapping
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
-    public ResponseEntity<List<generation.grimoire.dto.pve.DonjonSummaryDTO>> getAvailableDungeons() {
-        // Here we could filter based on player level in the future
-        return ResponseEntity.ok(pvEAdminService.getDungeonSummaries());
+    public ResponseEntity<List<generation.grimoire.dto.pve.DonjonSummaryDTO>> getAvailableDungeons(Principal principal) {
+        List<generation.grimoire.dto.pve.DonjonSummaryDTO> summaries = pvEAdminService.getDungeonSummaries();
+        if (principal != null) {
+            userRepository.findByUsername(principal.getName()).ifPresent(user -> {
+                for (generation.grimoire.dto.pve.DonjonSummaryDTO summary : summaries) {
+                    summary.setCompleted(user.getCompletedDungeons().contains(summary.getId()));
+                }
+            });
+        }
+        return ResponseEntity.ok(summaries);
     }
 
     @PostMapping("/{id}/unlock")
