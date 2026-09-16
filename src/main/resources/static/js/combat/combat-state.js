@@ -604,6 +604,7 @@ window.renderOverlayInventory = function (containerId) {
                         ${c.consumableManaPercent ? `<span style="display:inline-flex; align-items:center; color:#38bdf8;" title="Mana Max">+${c.consumableManaPercent}%<span class="material-symbols-outlined" style="font-size:0.85rem; margin-left:2px;">water_drop</span></span>` : ''}
                         ${c.consumableMissingHpPercent ? `<span style="display:inline-flex; align-items:center; color:#f43f5e;" title="PV Manq">+${c.consumableMissingHpPercent}%<span class="material-symbols-outlined" style="font-size:0.85rem; margin-left:2px;">healing</span></span>` : ''}
                         ${c.consumableMissingManaPercent ? `<span style="display:inline-flex; align-items:center; color:#a855f7;" title="Mana Manq">+${c.consumableMissingManaPercent}%<span class="material-symbols-outlined" style="font-size:0.85rem; margin-left:2px;">cyclone</span></span>` : ''}
+                        ${c.consumableCategory === 'CLE' && c.specialEffectValue ? `<span style="display:inline-flex; align-items:center; color:#fbbf24;" title="Bonus Butin">+${c.specialEffectValue}%<span class="material-symbols-outlined" style="font-size:0.85rem; margin-left:2px;">diamond</span></span>` : ''}
                     </div>
                     ${canConsume ? '<div class="font-medium" style="color: #0ea5e9; font-size: 0.75rem;">Cliquable pour utiliser</div>' : ''}
                 </div>
