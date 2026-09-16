@@ -582,21 +582,73 @@ window.renderOverlayInventory = function (containerId) {
         }
     }
 
+    window.combatConsumeSelections = window.combatConsumeSelections || {};
+    window.incrementConsumeSelection = function(name, maxQty, cId) {
+        if (!window.combatConsumeSelections[name]) window.combatConsumeSelections[name] = 0;
+        if (window.combatConsumeSelections[name] < maxQty) {
+            window.combatConsumeSelections[name]++;
+            window.renderOverlayInventory(cId);
+        }
+    };
+    window.decrementConsumeSelection = function(name, cId) {
+        if (!window.combatConsumeSelections[name]) window.combatConsumeSelections[name] = 0;
+        if (window.combatConsumeSelections[name] > 0) {
+            window.combatConsumeSelections[name]--;
+            window.renderOverlayInventory(cId);
+        }
+    };
+    window.openGroupedConsumeModal = function(name) {
+        const qty = window.combatConsumeSelections[name] || 0;
+        if (qty <= 0) return;
+        const groupItems = pageState.currentSessionData.activeConsumables.filter(c => c.name === name);
+        if (!groupItems.length) return;
+        const selectedIds = groupItems.slice(0, qty).map(c => c.id);
+        window.openConsumeModal(name, selectedIds);
+    };
+
+    const groupedConsumables = {};
     pageState.currentSessionData.activeConsumables.forEach(c => {
+        if (!groupedConsumables[c.name]) {
+            groupedConsumables[c.name] = { base: c, ids: [] };
+        }
+        groupedConsumables[c.name].ids.push(c.id);
+    });
+
+    Object.values(groupedConsumables).forEach(group => {
+        const c = group.base;
+        const total = group.ids.length;
+        const selCount = window.combatConsumeSelections[c.name] || 0;
+        
         const canConsume = Boolean(c.bonusHealthMax || c.bonusManaMax || c.consumableHpPercent || c.consumableManaPercent || c.consumableMissingHpPercent || c.consumableMissingManaPercent);
-        const onClickAttr = canConsume ? `onclick="window.openConsumeModal(${c.id}, '${c.name.replace(/'/g, "\\'")}')"` : '';
+        const onClickAttr = canConsume ? `onclick="window.incrementConsumeSelection('${c.name.replace(/'/g, "\\'")}', ${total}, '${containerId}')"` : '';
         const cursorStyle = canConsume ? 'cursor: pointer;' : '';
         const hoverClass = canConsume ? 'consumable-hover' : '';
         const slotInfo = getSlotInfo(c);
 
+        let badgeHtml = '';
+        if (total > 1 || selCount > 0) {
+            badgeHtml = `<div class="flex-center text-xs absolute font-bold ${selCount > 0 ? 'text-emerald-400' : 'text-muted'} shadow-sm" style="bottom: -5px; right: -5px; background: rgba(15,23,42,0.9); padding: 3px 6px; border-radius: 6px; border: 1px solid #334155; z-index: 5;">${selCount}/${total}</div>`;
+        }
+
+        let actionHtml = '';
+        if (selCount > 0) {
+            actionHtml = `<div class="flex items-center gap-2 mt-2">
+                <button onclick="event.stopPropagation(); window.decrementConsumeSelection('${c.name.replace(/'/g, "\\'")}', '${containerId}')" class="btn btn-secondary" style="padding: 0.2rem 0.5rem; min-height: 24px;">-</button>
+                <button onclick="event.stopPropagation(); window.openGroupedConsumeModal('${c.name.replace(/'/g, "\\'")}')" class="btn btn-primary flex-1" style="padding: 0.2rem; min-height: 24px; font-size: 0.8rem;">Consommer (${selCount})</button>
+            </div>`;
+        }
+
         list.innerHTML += `
-            <div class="${hoverClass} flex-center" ${onClickAttr} style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 0.8rem; gap: 0.8rem; margin-bottom: 0.5rem; transition: all 0.2s; ${cursorStyle}; position: relative;">
-                <button class="destroy-item-btn" onclick="event.stopPropagation(); window.confirmDestroyItem(${c.id}, '${c.name.replace(/'/g, "\\'")}')" style="position: absolute; top: -5px; right: -5px; background: #ef4444; color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.3); transition: transform 0.2s;">
+            <div class="${hoverClass} flex-center" ${onClickAttr} style="background: rgba(30, 41, 59, 0.5); border: ${selCount > 0 ? '1px solid #10b981' : '1px solid rgba(255, 255, 255, 0.05)'}; border-radius: 8px; padding: 0.8rem; gap: 0.8rem; margin-bottom: 0.5rem; transition: all 0.2s; ${cursorStyle}; position: relative;">
+                <button class="destroy-item-btn" onclick="event.stopPropagation(); window.confirmDestroyItem(${group.ids[0]}, '${c.name.replace(/'/g, "\\'")}')" style="position: absolute; top: -5px; right: -5px; background: #ef4444; color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.3); transition: transform 0.2s;" title="Détruire (1x)">
                     <span class="material-symbols-outlined" style="font-size: 14px; font-weight: bold;">close</span>
                 </button>
-                <span class="material-symbols-outlined" style="font-size: 1.5rem; color: ${slotInfo.color};">${slotInfo.icon}</span>
-                <div class="flex-1">
-                    <div class="text-sm" style="color: #f8fafc; font-weight: 600;">${c.name}</div>
+                ${badgeHtml}
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 0.3rem;">
+                    <span class="material-symbols-outlined" style="font-size: 1.5rem; color: ${slotInfo.color};">${slotInfo.icon}</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="text-sm truncate" style="color: #f8fafc; font-weight: 600;">${c.name}</div>
                     <div class="text-xs text-muted" style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin-bottom: 4px;">
                         ${c.bonusHealthMax ? `<span style="display:inline-flex; align-items:center; color:#ec4899;" title="PV">+${c.bonusHealthMax}<span class="material-symbols-outlined" style="font-size:0.85rem; margin-left:2px;">favorite</span></span>` : ''}
                         ${c.bonusManaMax ? `<span style="display:inline-flex; align-items:center; color:#38bdf8;" title="Mana">+${c.bonusManaMax}<span class="material-symbols-outlined" style="font-size:0.85rem; margin-left:2px;">water_drop</span></span>` : ''}
@@ -606,7 +658,7 @@ window.renderOverlayInventory = function (containerId) {
                         ${c.consumableMissingManaPercent ? `<span style="display:inline-flex; align-items:center; color:#a855f7;" title="Mana Manq">+${c.consumableMissingManaPercent}%<span class="material-symbols-outlined" style="font-size:0.85rem; margin-left:2px;">cyclone</span></span>` : ''}
                         ${c.consumableCategory === 'CLE' && c.specialEffectValue ? `<span style="display:inline-flex; align-items:center; color:#fbbf24;" title="Bonus Butin">+${c.specialEffectValue}%<span class="material-symbols-outlined" style="font-size:0.85rem; margin-left:2px;">diamond</span></span>` : ''}
                     </div>
-                    ${canConsume ? '<div class="font-medium" style="color: #0ea5e9; font-size: 0.75rem;">Cliquable pour utiliser</div>' : ''}
+                    ${actionHtml || (canConsume ? '<div class="font-medium" style="color: #0ea5e9; font-size: 0.75rem;">Cliquer pour préparer</div>' : '')}
                 </div>
             </div>
         `;
@@ -679,8 +731,9 @@ window.renderOverlayMap = function (containerId) {
     list.innerHTML = html;
 };
 
-window.openConsumeModal = function (consumableId, consumableName) {
-    const c = pageState.currentSessionData.activeConsumables.find(item => item.id === consumableId);
+window.openConsumeModal = function (consumableName, consumableIds) {
+    const qty = consumableIds.length;
+    const c = pageState.currentSessionData.activeConsumables.find(item => item.id === consumableIds[0]);
     let selectedPlayerId = null;
 
     const renderPlayers = () => {
@@ -693,13 +746,13 @@ window.openConsumeModal = function (consumableId, consumableName) {
             let mpGain = 0;
             
             if (c && selectedPlayerId === p.id) {
-                hpGain = (c.bonusHealthMax || 0) 
+                hpGain = ((c.bonusHealthMax || 0) 
                     + (c.consumableHpPercent ? Math.floor(p.healthMax * c.consumableHpPercent / 100) : 0)
-                    + (c.consumableMissingHpPercent ? Math.floor((p.healthMax - p.healthCurrent) * c.consumableMissingHpPercent / 100) : 0);
+                    + (c.consumableMissingHpPercent ? Math.floor((p.healthMax - p.healthCurrent) * c.consumableMissingHpPercent / 100) : 0)) * qty;
                     
-                mpGain = (c.bonusManaMax || 0)
+                mpGain = ((c.bonusManaMax || 0)
                     + (c.consumableManaPercent ? Math.floor(p.manaMax * c.consumableManaPercent / 100) : 0)
-                    + (c.consumableMissingManaPercent ? Math.floor((p.manaMax - p.manaCurrent) * c.consumableMissingManaPercent / 100) : 0);
+                    + (c.consumableMissingManaPercent ? Math.floor((p.manaMax - p.manaCurrent) * c.consumableMissingManaPercent / 100) : 0)) * qty;
                 
                 previewHp = Math.min(p.healthMax, Math.max(0, p.healthCurrent + hpGain));
                 previewMp = Math.min(p.manaMax, Math.max(0, p.manaCurrent + mpGain));
@@ -733,7 +786,7 @@ window.openConsumeModal = function (consumableId, consumableName) {
             const borderStyle = isSelected ? 'border: 1px solid rgba(244, 114, 182, 0.5); background: rgba(244, 114, 182, 0.1);' : 'border: 1px solid rgba(255,255,255,0.1); background: rgba(15, 23, 42, 0.8);';
 
             btnContainerHtml += `
-                <button class="flex-between w-100" onclick="window.selectConsumeTarget(${p.id}, ${consumableId}, '${consumableName.replace(/'/g, "\\'")}')"
+                <button class="flex-between w-100" onclick="window.selectConsumeTarget(${p.id})"
                     ${p.healthCurrent <= 0 ? 'disabled' : ''}
                     style="align-items: center; ${borderStyle} color: #fff; padding: 0.8rem; border-radius: 8px; cursor: ${p.healthCurrent <= 0 ? 'not-allowed' : 'pointer'}; opacity: ${p.healthCurrent <= 0 ? '0.5' : '1'}; transition: all 0.2s ease; margin-bottom: 8px; width: 100%;">
                     <span style="font-weight: 600;">${p.name}</span>
@@ -747,7 +800,7 @@ window.openConsumeModal = function (consumableId, consumableName) {
         return btnContainerHtml;
     };
 
-    window.selectConsumeTarget = function(playerId, cId, cName) {
+    window.selectConsumeTarget = function(playerId) {
         selectedPlayerId = playerId;
         const listContainer = document.getElementById('consumePlayersList');
         if (listContainer) {
@@ -764,14 +817,14 @@ window.openConsumeModal = function (consumableId, consumableName) {
 
     ui.showModal({
         title: 'Consommer un objet',
-        body: `Qui doit utiliser <strong class="text-white">${consumableName}</strong> ?<br><br><div id="consumePlayersList" style="display: flex; flex-direction: column; width: 100%;">${renderPlayers()}</div>`,
+        body: `Qui doit utiliser <strong class="text-white">${qty}x ${consumableName}</strong> ?<br><br><div id="consumePlayersList" style="display: flex; flex-direction: column; width: 100%;">${renderPlayers()}</div>`,
         icon: 'science',
         hideConfirm: false,
         confirmText: 'Confirmer',
         cancelText: 'Fermer',
         onConfirm: () => {
             if (selectedPlayerId) {
-                window.confirmConsumeItem(consumableId, selectedPlayerId);
+                window.confirmConsumeItem(consumableIds, selectedPlayerId, consumableName);
             }
         }
     });
@@ -786,15 +839,28 @@ window.openConsumeModal = function (consumableId, consumableName) {
     }, 10);
 };
 
-window.confirmConsumeItem = async function (consumableId, characterId) {
+window.confirmConsumeItem = async function (consumableIds, characterId, consumableName) {
     if (!pageState.sessionId) return;
     try {
-        const res = await globalFetch(`/api/pve/combat/${pageState.sessionId}/consume/${consumableId}/target/${characterId}`, {
-            method: 'POST'
-        });
-        if (res.ok) {
-            pageState.currentSessionData = await res.json();
-            ui.showNotif("Objet consommé avec succès !");
+        let lastRes = null;
+        for (const cId of consumableIds) {
+            lastRes = await globalFetch(`/api/pve/combat/${pageState.sessionId}/consume/${cId}/target/${characterId}`, {
+                method: 'POST'
+            });
+            if (!lastRes.ok) {
+                const err = await lastRes.text();
+                ui.showNotif("Erreur: " + err, true);
+                return;
+            }
+        }
+        if (lastRes && lastRes.ok) {
+            pageState.currentSessionData = await lastRes.json();
+            ui.showNotif(`${consumableIds.length}x ${consumableName} consommé(s) avec succès !`);
+            
+            if (window.combatConsumeSelections) {
+                window.combatConsumeSelections[consumableName] = 0;
+            }
+            
             updateUI(pageState.currentSessionData);
             if (typeof window.renderOverlayInventory === 'function') {
                 window.renderOverlayInventory('eventOverlayInventoryList');
@@ -804,9 +870,6 @@ window.confirmConsumeItem = async function (consumableId, characterId) {
                 window.renderOverlayMap('eventMapList');
                 window.renderOverlayMap('combatVictoryMapList');
             }
-        } else {
-            const err = await res.text();
-            ui.showNotif("Erreur: " + err, true);
         }
     } catch (e) {
         console.error(e);
