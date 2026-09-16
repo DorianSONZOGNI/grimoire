@@ -326,10 +326,22 @@ function getEquipmentTooltipHTML(eq) {
         </div>`;
     }
 
-    if (!statsHtml && !effectHtml) return `<div class="font-italic text-muted text-center" style="min-width: 150px; padding: 0.5rem;">Aucun attribut</div>`;
+    let cleHtml = '';
+    if (eq.consumableCategory === 'CLE' && eq.specialEffectValue) {
+        cleHtml = `<div class="flex-between" style="gap: 1rem; margin-bottom: 0.3rem;">
+            <div class="flex-center text-muted" style="gap: 0.3rem;">
+                <span class="material-symbols-outlined" style="color:#eab308; font-size: 1rem;">diamond</span>
+                Bonus Butin
+            </div>
+            <span style="font-weight: 600; color: #fff;">+${eq.specialEffectValue}%</span>
+        </div>`;
+    }
+
+    if (!statsHtml && !effectHtml && !cleHtml) return `<div class="font-italic text-muted text-center" style="min-width: 150px; padding: 0.5rem;">Aucun attribut</div>`;
 
     return `<div style="min-width: 150px; padding: 0.5rem;">
         ${statsHtml}
+        ${cleHtml}
         ${effectHtml}
     </div>`;
 }
