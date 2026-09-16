@@ -252,6 +252,15 @@ public class PersonnageCombatHelper {
                 "PV restants : " + p.getHealthCurrent());
 
         if (caster != null && totalDamageToHealth > 0) {
+            if (damageType == DamageType.PHYSIC || damageType == DamageType.MAGIC) {
+                if (p.getMonsterType() == generation.grimoire.enumeration.MonsterType.EPINE) {
+                    int epineDmg = (int) Math.ceil(totalDamageToHealth * 0.10);
+                    if (epineDmg > 0) {
+                        System.out.println("🌵 Épines (Monstre) renvoie " + epineDmg + " dégâts !");
+                        caster.takeDamage(epineDmg, DamageType.BRUT);
+                    }
+                }
+            }
             if (damageType == DamageType.PHYSIC) {
                 int thornsPct = p.getSpecialEffectValue(generation.grimoire.enumeration.EquipmentEffectType.THORNS);
                 if (thornsPct > 0) {

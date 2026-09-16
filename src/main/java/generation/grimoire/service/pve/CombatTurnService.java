@@ -808,6 +808,14 @@ class CombatTurnService {
                         + " (le moins de PV max - Brutal).");
                 return target;
             }
+            case SADIQUE -> {
+                Personnage target = alivePlayers.stream()
+                        .min(java.util.Comparator.comparingInt(p -> p.getHealthCurrent()))
+                        .orElse(alivePlayers.get(0));
+                session.addLog("\uD83D\uDE08 " + m.getBase().getName() + " s'acharne sur " + target.getName()
+                        + " (le moins de PV actuel - Sadique).");
+                return target;
+            }
             default -> {
                 return alivePlayers.get(rnd.nextInt(alivePlayers.size()));
             }

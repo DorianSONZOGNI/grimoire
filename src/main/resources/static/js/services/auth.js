@@ -273,7 +273,7 @@ window.checkAuthStatus = async function checkAuthStatus() {
                     <span class="material-symbols-outlined text-lg">account_circle</span>
                     ${data.username}
                 </a>
-                <div class="flex-center font-bold text-amber text-sm ml-2" title="Monnaie" style="gap: 0.2rem;">
+                <div class="flex-center font-bold text-amber text-sm ml-2" title="Monnaie" style="gap: 0.2rem; min-width: 70px; justify-content: flex-end;">
                     <span class="material-symbols-outlined text-lg">monetization_on</span>
                     <span id="navUserGold" style="display:inline-block; transition: transform 0.1s ease;">${Number(prevGold).toFixed(1)}</span>
                 </div>

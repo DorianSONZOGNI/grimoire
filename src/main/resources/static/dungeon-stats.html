@@ -1,6 +1,7 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+    <meta name="view-transition" content="same-origin">
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Grimoire - Statistiques des Donjons</title>
@@ -176,6 +177,7 @@
             box-shadow: 0 0 10px rgba(56, 189, 248, 0.2);
         }
     </style>
+    <script src="/js/components/navbar.js"></script>
 </head>
 <body>
     <app-navbar active-page="dungeon-stats"></app-navbar>
@@ -286,7 +288,7 @@
         </div>
     </main>
 
-    <script type="module" src="/js/components/navbar.js"></script>
+    
     <script type="module" src="/js/components/loader.js"></script>
     <script type="module" src="/js/services/auth.js?v=14"></script>
     <script type="module" src="/js/pages/dungeon-stats.js"></script>

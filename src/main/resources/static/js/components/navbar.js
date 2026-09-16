@@ -72,7 +72,7 @@ class AppNavbar extends HTMLElement {
                     <span class="material-symbols-outlined" style="font-size: 1.1rem;">science</span> Admin Alchimie
                 </a>
 
-                <div id="authNavContainer" style="display: flex; align-items: center; gap: 0.5rem; margin-left: 1rem; padding-left: 1rem; border-left: 1px solid var(--glass-border);">
+                <div id="authNavContainer" style="display: flex; align-items: center; justify-content: flex-end; min-width: 260px; gap: 0.5rem; margin-left: 1rem; padding-left: 1rem; border-left: 1px solid var(--glass-border);">
                     <span style="font-size: 0.85rem; color: var(--text-muted);">Chargement...</span>
                 </div>
             </div>

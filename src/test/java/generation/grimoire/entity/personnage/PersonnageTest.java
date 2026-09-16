@@ -420,6 +420,20 @@ class PersonnageTest {
     }
 
     @Test
+    void testMonsterType_Epine_ReflectsDamage() {
+        enemy.setMonsterType(generation.grimoire.enumeration.MonsterType.EPINE);
+        // Hero has 100 max HP.
+        hero.setHealthCurrent(100);
+        // Hero deals 100 base physical damage. Enemy has 100 armor -> 50% reduction.
+        // Effective damage to enemy = 50.
+        // EPINE reflects 10% of 50 = 5 damage.
+        hero.dealDamage(enemy, 100, DamageType.PHYSIC);
+        
+        assertThat(enemy.getHealthCurrent()).isEqualTo(50);
+        assertThat(hero.getHealthCurrent()).isEqualTo(95);
+    }
+
+    @Test
     void shouldNotReduceHealthBelowZero() {
         hero.setHealthCurrent(10);
         hero.takeDamage(100, DamageType.BRUT);

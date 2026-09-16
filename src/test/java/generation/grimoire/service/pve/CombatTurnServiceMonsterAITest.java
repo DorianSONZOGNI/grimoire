@@ -188,4 +188,30 @@ class CombatTurnServiceMonsterAITest {
         assertThat(player.getHealthCurrent()).isEqualTo(200);
         assertThat(session.getCombatLog()).anyMatch(log -> log.contains("est mort"));
     }
+
+    @Test
+    void testMonsterBehaviorSadique_AttacksLowestHp() {
+        baseMonster.setBehavior(MonsterBehavior.SADIQUE);
+        baseMonster.setStrength(10);
+        baseMonster.setPower(0);
+        
+        // Add a second player with lower current HP
+        Personnage weakPlayer = new Personnage();
+        weakPlayer.setId(2L);
+        weakPlayer.setName("WeakHero");
+        weakPlayer.setHealthMax(200);
+        weakPlayer.setHealthCurrent(50); // Lower current HP than player (200)
+        weakPlayer.setResistance(0);
+        weakPlayer.setArmor(0);
+        session.getPlayers().add(weakPlayer);
+
+        combatTurnService.processNextAutoTurn(session);
+
+        // Player 1 (200 HP) should be untouched
+        assertThat(player.getHealthCurrent()).isEqualTo(200);
+        
+        // WeakPlayer should take damage (10 base damage)
+        assertThat(weakPlayer.getHealthCurrent()).isEqualTo(40);
+        assertThat(session.getCombatLog()).anyMatch(log -> log.contains("Sadique"));
+    }
 }
