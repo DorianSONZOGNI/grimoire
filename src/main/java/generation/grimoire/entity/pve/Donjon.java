@@ -24,6 +24,8 @@ public class Donjon {
     
     private int recommendedLevel;
     
+    private int difficulty = 1;
+    
     private int maxHeroes = 1;
     
     private String imageUrl;
