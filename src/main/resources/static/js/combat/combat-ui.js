@@ -8,10 +8,17 @@ import { getSpellEffectsSummaryHtml } from '../pages/grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from '../utils/filters.js';
 
 
-export function renderAndAnimateXPCards(containerId, players, prefix) {
+export function renderAndAnimateXPCards(containerId, players, prefix, isFirstClear = false) {
     const container = document.getElementById(containerId);
     if (!container) return;
     container.classList.remove('hidden'); container.classList.add('flex');
+
+    let maxGainedExp = 0;
+    players.forEach(p => {
+        let oldExp = pageState.previousPlayerXP[p.id] !== undefined ? pageState.previousPlayerXP[p.id] : p.experience;
+        let gainedExp = Math.max(0, p.experience - oldExp);
+        if (gainedExp > maxGainedExp) maxGainedExp = gainedExp;
+    });
 
     let cardsHtml = '';
     players.forEach(p => {
@@ -20,9 +27,19 @@ export function renderAndAnimateXPCards(containerId, players, prefix) {
         let oldSpiritExp = pageState.previousPlayerSpiritXP[p.id] !== undefined ? pageState.previousPlayerSpiritXP[p.id] : (p.spiritualiteExperience || 0);
         let oldSpiritStats = getSpiritExpStats(oldSpiritExp);
 
+        let gainedExp = Math.max(0, p.experience - oldExp);
+        
+        let x2Badge = '';
+        if (isFirstClear && gainedExp === maxGainedExp && gainedExp > 0 && (prefix === 'vic' || prefix === 'treasure')) {
+            x2Badge = `<span class="material-symbols-outlined text-amber-500" style="font-size: 1.1rem; vertical-align: middle; margin-left: 2px;" title="Bonus Première Complétion (x2)">star</span>`;
+        }
+
+        let gainedHtml = gainedExp > 0 ? `<div class="text-info font-bold flex items-center justify-center" style="font-size: 0.95rem; text-shadow: 0 0 5px rgba(56, 189, 248, 0.5); margin-bottom: 0.4rem;">+${gainedExp} XP ${x2Badge}</div>` : '';
+
         let cardsHtmlPart = `
             <div class="text-center relative" id="${prefix}-xp-card-${p.id}" style="background: rgba(0,0,0,0.4); padding: 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); width: 180px; overflow: hidden; transition: all 0.5s; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8); display: flex; flex-direction: column; gap: 0.3rem;">
-                <div class="font-bold whitespace-nowrap text-subtle"  style="margin-bottom: 0.3rem; text-overflow: ellipsis; overflow: hidden;">${p.name}</div>
+                <div class="font-bold whitespace-nowrap text-subtle" style="margin-bottom: 0.1rem; text-overflow: ellipsis; overflow: hidden;">${p.name}</div>
+                ${gainedHtml}
                 
                 <div class="text-xs" id="${prefix}-xp-lvl-${p.id}" style="color: #38bdf8; font-weight: 600; transition: color 0.3s, transform 0.3s;">Voie Niv. ${oldStats.level}</div>
                 <div class="progress-track">
@@ -417,29 +434,12 @@ export function updateUI(data) {
                         let goldAmount = Math.max(0, totalGold - bossBonusGold);
                         let xpAmount = xpPerHero;
 
-                        // Display base Gold and Base XP together
-                        if (goldAmount > 0 || xpAmount > 0) {
-                            let baseContent = '';
-                            if (goldAmount > 0) {
-                                baseContent += `
-                                    <span class="material-symbols-outlined text-warning">monetization_on</span>
-                                    <span class="text-warning">+${goldAmount} Or</span>
-                                `;
-                            }
-                            if (goldAmount > 0 && xpAmount > 0) {
-                                baseContent += `<span class="text-muted" style="margin: 0 0.5rem;">|</span>`;
-                            }
-                            if (xpAmount > 0) {
-                                let xpBadge = data.firstClear ? '<span class="text-xs text-amber-500 font-bold ml-2">(XP x2)</span>' : '';
-                                baseContent += `
-                                    <div class="relative flex items-center gap-1">
-                                        <span class="material-symbols-outlined text-info">upgrade</span>
-                                        <span class="text-info">+${xpAmount} XP</span>
-                                        ${xpBadge}
-                                    </div>
-                                `;
-                            }
-
+                        // Display base Gold only
+                        if (goldAmount > 0) {
+                            let baseContent = `
+                                <span class="material-symbols-outlined text-warning">monetization_on</span>
+                                <span class="text-warning">+${goldAmount} Or</span>
+                            `;
                             xpContainer.innerHTML += `
                                 <div class="victory-xp-block">
                                     <div class="victory-xp-block-inner victory-xp-base">
@@ -490,7 +490,7 @@ export function updateUI(data) {
                             `;
                         }
 
-                        renderAndAnimateXPCards('combatVictoryXpContainer', data.players, 'vic');
+                        renderAndAnimateXPCards('combatVictoryXpContainer', data.players, 'vic', data.firstClear);
                     }
                 }
             } else {
@@ -549,7 +549,7 @@ export function updateUI(data) {
                         lootContainer.dataset.filled = 'true';
                         lootContainer.innerHTML = ''; // Clear comments
 
-                        renderAndAnimateXPCards('eventLootContainer', data.players, 'treasure');
+                        renderAndAnimateXPCards('eventLootContainer', data.players, 'treasure', data.firstClear);
 
                         let gainedItemsHtml = '';
                         let goldAmount = 0;
@@ -904,7 +904,7 @@ export function updateUI(data) {
                             lootContainer.dataset.filled = 'true';
                             lootContainer.innerHTML = ''; // Clear previous content
 
-                            renderAndAnimateXPCards('eventLootContainer', data.players, 'alt');
+                            renderAndAnimateXPCards('eventLootContainer', data.players, 'alt', false);
 
                             let gainedItemsHtml = '';
                             if (data.combatLog) {

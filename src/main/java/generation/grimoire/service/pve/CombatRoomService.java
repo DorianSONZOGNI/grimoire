@@ -190,7 +190,12 @@ class CombatRoomService {
                 .filter(session::isEligibleForRewards).collect(java.util.stream.Collectors.toList());
         int expPerHero = exp / Math.max(1, chestEligible.size());
         for (Personnage p : chestEligible) {
-            p.setExperience(p.getExperience() + expPerHero);
+            int actualExp = expPerHero;
+            AppUser u = p.getUser();
+            if (u != null && !u.getCompletedDungeons().contains(session.getDungeonId())) {
+                actualExp *= 2;
+            }
+            p.setExperience(p.getExperience() + actualExp);
             personnageRepository.save(p);
         }
 
@@ -205,7 +210,7 @@ class CombatRoomService {
         }
 
         session.addLog("Vous avez ouvert le coffre ! Vous trouvez " + gold + " Or et chaque héros gagne " + expPerHero
-                + " XP.");
+                + " XP (x2 si 1ère fois).");
 
         // First pass: collect items
         double totalConsumablesWeight = 0.0;
@@ -953,14 +958,25 @@ class CombatRoomService {
             }
 
             if (!session.getPlayers().isEmpty()) {
-                AppUser user = session.getPlayers().get(0).getUser();
-                if (user != null) {
+                java.util.Set<AppUser> uniqueUsers = session.getPlayers().stream()
+                        .filter(java.util.Objects::nonNull)
+                        .map(p -> p.getUser())
+                        .filter(java.util.Objects::nonNull)
+                        .collect(java.util.stream.Collectors.toSet());
+                
+                boolean anyFirstClear = false;
+                for (AppUser user : uniqueUsers) {
                     if (!user.getCompletedDungeons().contains(session.getDungeonId())) {
                         user.getCompletedDungeons().add(session.getDungeonId());
-                        session.addLog("🎉 Félicitations, vous avez terminé ce donjon pour la première fois !");
+                        anyFirstClear = true;
                     }
                     userRepository.save(user);
                 }
+                
+                if (anyFirstClear) {
+                    session.addLog("🎉 Félicitations, vous avez terminé ce donjon pour la première fois !");
+                }
+                
                 for (generation.grimoire.entity.personnage.Personnage p : session.getPlayers()) {
                     personnageRepository.save(java.util.Objects.requireNonNull(p));
                 }
