@@ -1,9 +1,21 @@
 import { pageState } from './combat-state.js';
 import { initMultiSSE } from './combat-socket.js';
-import { updateUI } from './combat-ui.js?v=206';
-import * as ui from '../ui.js?v=4';
+import { updateUI } from './combat-ui.js';
+import * as ui from '../ui.js';
 import { getSpellEffectsSummaryHtml } from '../pages/grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from '../utils/filters.js';
+
+
+export async function fetchCombatEquipments(sessionId) {
+    try {
+        const res = await globalFetch(`/api/pve/combat/${sessionId}/equipments`);
+        if (res.ok) {
+            pageState.combatEquipments = await res.json();
+        }
+    } catch (e) {
+        console.error("Erreur récupération des équipements:", e);
+    }
+}
 
 
 export async function loadAnomaliesCombat() {
@@ -54,6 +66,8 @@ export async function resumeCombat(savedSessionId) {
             pageState.previousPlayerSpiritXP[p.id] = p.spiritualiteExperience || 0;
         });
 
+        await fetchCombatEquipments(savedSessionId);
+
         updateUI(data);
     } catch (e) {
         console.error(e);
@@ -98,11 +112,17 @@ export async function startCombat(characterIds, dungeonId, consumableIds) {
             pageState.previousPlayerSpiritXP[p.id] = p.spiritualiteExperience || 0;
         });
 
+        await fetchCombatEquipments(pageState.sessionId);
+
         updateUI(data);
     } catch (e) {
         console.error(e);
-        if (typeof showNotif !== 'undefined') window.showNotif("Erreur de connexion.", true);
-        else ui.showNotif("Erreur de connexion.", true);
-        window.location.href = '/dungeons.html';
+        const msg = e.message || "Erreur de connexion.";
+        if (typeof showNotif !== 'undefined') window.showNotif(msg, true);
+        else if (window.ui) ui.showNotif(msg, true);
+
+        setTimeout(() => {
+            window.location.href = '/dungeons.html';
+        }, 3000);
     }
 }

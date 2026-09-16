@@ -112,6 +112,7 @@ public class PvEAdminService {
             dto.setDescription(d.getDescription());
             dto.setImageUrl(d.getImageUrl());
             dto.setRecommendedLevel(d.getRecommendedLevel());
+            dto.setDifficulty(d.getDifficulty());
             dto.setMaxHeroes(d.getMaxHeroes());
             dto.setUnlockCostGold((int) d.getUnlockCostGold());
             dto.setRequiredSecret(d.getRequiredSecret());

@@ -326,10 +326,22 @@ function getEquipmentTooltipHTML(eq) {
         </div>`;
     }
 
-    if (!statsHtml && !effectHtml) return `<div class="font-italic text-muted text-center" style="min-width: 150px; padding: 0.5rem;">Aucun attribut</div>`;
+    let cleHtml = '';
+    if (eq.consumableCategory === 'CLE' && eq.specialEffectValue) {
+        cleHtml = `<div class="flex-between" style="gap: 1rem; margin-bottom: 0.3rem;">
+            <div class="flex-center text-muted" style="gap: 0.3rem;">
+                <span class="material-symbols-outlined" style="color:#eab308; font-size: 1rem;">diamond</span>
+                Bonus Butin
+            </div>
+            <span style="font-weight: 600; color: #fff;">+${eq.specialEffectValue}%</span>
+        </div>`;
+    }
+
+    if (!statsHtml && !effectHtml && !cleHtml) return `<div class="font-italic text-muted text-center" style="min-width: 150px; padding: 0.5rem;">Aucun attribut</div>`;
 
     return `<div style="min-width: 150px; padding: 0.5rem;">
         ${statsHtml}
+        ${cleHtml}
         ${effectHtml}
     </div>`;
 }
@@ -363,20 +375,19 @@ window.generateEquipmentStatsHtml = function (eq, cssClass = 'vault-stat-chip') 
             const sign = val > 0 ? '+' : '';
             const suffix = s.isPercent ? '%' : '';
             return `<span class="${cssClass} ${isMalus ? 'malus' : ''}" title="${s.label}">
-                <span class="material-symbols-outlined text-xs" style="color:${isMalus ? '#ef4444' : s.color};">${s.icon}</span>
+                <span class="material-symbols-outlined text-xs ${isMalus ? 'text-error' : ''}" style="${!isMalus ? `color: ${s.color};` : ''}">${s.icon}</span>
                 ${sign}${val}${suffix}
             </span>`;
         }).join('');
 
-    if (eq.slot === 'CONSOMMABLE' || eq.isConsumable) {
-        const cat = eq.consumableCategory || eq.category;
-        if (cat === 'CLE' && eq.specialEffectValue) {
-            html += `<span class="${cssClass}" title="Bonus de Butin">
-                <span class="material-symbols-outlined text-xs" style="color:#fbbf24;">diamond</span>
-                +${eq.specialEffectValue}%
-            </span>`;
-        }
+    if (eq.consumableCategory === 'CLE' && eq.specialEffectValue) {
+        html += `<span class="${cssClass}" title="Bonus Butin">
+            <span class="material-symbols-outlined text-xs text-yellow-400">diamond</span>
+            +${eq.specialEffectValue}%
+        </span>`;
+    }
 
+    if (eq.slot === 'CONSOMMABLE' || eq.isConsumable) {
         const weight = eq.weight !== undefined ? eq.weight : (eq._weight !== undefined ? eq._weight : eq.baseWeight);
         if (weight !== undefined && weight !== null && weight > 0) {
             html += `<span class="${cssClass}" title="Poids">

@@ -168,6 +168,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             name: document.getElementById('dName').value,
             description: document.getElementById('dDesc').value,
             recommendedLevel: parseInt(document.getElementById('dLevel').value),
+            difficulty: parseInt(document.getElementById('dDifficulty').value) || 0,
             maxHeroes: parseInt(document.getElementById('dMaxHeroes').value) || 1,
             unlockCostGold: parseFloat(document.getElementById('dUnlockCost').value) || 0,
             entryCostGold: parseFloat(document.getElementById('dEntryCost').value) || 0,
@@ -1993,6 +1994,7 @@ async function editDungeon(id) {
             document.getElementById('dName').value = d.name;
             document.getElementById('dDesc').value = d.description || '';
             document.getElementById('dLevel').value = d.recommendedLevel;
+            document.getElementById('dDifficulty').value = d.difficulty !== undefined ? d.difficulty : 0;
             document.getElementById('dMaxHeroes').value = d.maxHeroes || 1;
             document.getElementById('dUnlockCost').value = d.unlockCostGold || 0;
             document.getElementById('dEntryCost').value = d.entryCostGold || 0;

@@ -3,7 +3,7 @@ import { pageState } from './combat-state.js';
 import { processNewDeathLogs, updateMultiTurnBanner } from './combat-socket.js';
 import { currentSpellsTab, initiateCombatCast } from './combat-spells.js';
 import { nextRoom, openStrangeDoor, acceptAlteration, useRope, openBuyModal, addLootedConsumable, openChest, resetCombatTimeoutWarning, playDungeonMusic, GAME_TIPS } from './combat-actions.js';
-import * as ui from '../ui.js?v=4';
+import * as ui from '../ui.js';
 import { getSpellEffectsSummaryHtml } from '../pages/grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from '../utils/filters.js';
 
@@ -1983,7 +1983,7 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
         ${mutationsHtml}
         ${channelingBadgeHtml}
         <div class="fighter-name" style="color: ${isHero ? '#f8fafc' : '#ef4444'}; font-size: 1.3rem; display: flex; justify-content: center; align-items: center; gap: 0.2rem; margin-bottom: 0.8rem; width: 100%;">
-            <span style="flex-shrink: 0; display: flex; align-items: center;">${avatarHtml}</span>
+            <span style="flex-shrink: 0; display: flex; align-items: center; ${isHero ? 'cursor: help;' : ''}" ${isHero ? `onmouseenter="if(window.showHeroEquipmentTooltip) window.showHeroEquipmentTooltip(this, ${c.id})" onmouseleave="if(window.hideHeroEquipmentTooltip) window.hideHeroEquipmentTooltip()"` : ''}>${avatarHtml}</span>
             <div style="display: flex; align-items: center; gap: 0.3rem; min-width: 0;">
                 <span style="flex-shrink: 0; display: flex;">${titleIconsHtml}</span>
                 <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;" title="${c.name}">${c.name}</span>
@@ -2282,10 +2282,11 @@ export function renderBuffsHtml(c, buffList, motList, hotList) {
 
             let isBad = isNegativeValue;
             if (isInverse) isBad = !isNegativeValue;
-
+            
             let effectiveFlat = b.flatValue || 0;
             let showModifier = true;
-
+            let text = '';
+            
             if (b.modifier && c) {
                 let finalStat = null;
                 const affected = b.statAffected ? b.statAffected.toUpperCase() : '';
@@ -2300,28 +2301,58 @@ export function renderBuffsHtml(c, buffList, motList, hotList) {
                 else if (affected.includes('MANA_MAX') || affected.includes('MP_MAX')) finalStat = c.manaMax;
 
                 if (finalStat !== null && finalStat !== undefined) {
-                    let totalModifier = 0;
+                    let totalPos = 0.0;
+                    let totalNeg = 1.0;
                     const allBuffs = c.activeBuffs || c.buffs || [];
+                    
                     allBuffs.forEach(otherBuff => {
                         if (otherBuff.statAffected === b.statAffected && otherBuff.modifier) {
-                            totalModifier += otherBuff.modifier;
+                            if (otherBuff.modifier > 0) totalPos += otherBuff.modifier;
+                            else if (otherBuff.modifier < 0) totalNeg *= (1.0 + otherBuff.modifier);
                         }
                     });
 
-                    let multiplier = Math.max(0, 1.0 + totalModifier);
-                    let baseStat = multiplier > 0 ? (finalStat / multiplier) : 0;
+                    if (b.statAffected === 'DAMAGE_GIVEN_PHYSIC') {
+                        if (allBuffs.some(ab => ab.statAffected === 'AME_DETACHEE')) {
+                            totalPos += 0.40;
+                        }
+                    }
 
-                    let modFlat = Math.round(baseStat * b.modifier);
-                    if (modFlat !== 0) {
+                    let totalMultiplier = (1.0 + totalPos) * totalNeg;
+                    let baseStat = totalMultiplier > 0 ? (finalStat / totalMultiplier) : 0;
+
+                    let runPos = 0.0;
+                    let runNeg = 1.0;
+                    let statBefore = 0;
+                    let statAfter = 0;
+
+                    if (b.statAffected === 'DAMAGE_GIVEN_PHYSIC') {
+                        if (allBuffs.some(ab => ab.statAffected === 'AME_DETACHEE')) {
+                            runPos += 0.40;
+                        }
+                    }
+
+                    for (let other of allBuffs) {
+                        if (other.statAffected === b.statAffected && other.modifier) {
+                            if (other === b) statBefore = baseStat * (1.0 + runPos) * runNeg;
+
+                            if (other.modifier > 0) runPos += other.modifier;
+                            else if (other.modifier < 0) runNeg *= (1.0 + other.modifier);
+
+                            if (other === b) {
+                                statAfter = baseStat * (1.0 + runPos) * runNeg;
+                                break;
+                            }
+                        }
+                    }
+
+                    let modFlat = Math.round(statAfter) - Math.round(statBefore);
+                    if (modFlat !== 0 || b.modifier !== 0) {
                         effectiveFlat += modFlat;
                         showModifier = false;
                     }
                 }
             }
-
-
-
-            let text = '';
             if (effectiveFlat !== 0) {
                 text += `${effectiveFlat > 0 ? '+' : ''}${effectiveFlat} ${ui.formatStat(b.statAffected)}`;
             }

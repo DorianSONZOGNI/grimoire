@@ -1,10 +1,10 @@
 import { shakeStyle } from './combat-utils.js';
 import { initMultiSSE } from './combat-socket.js';
-import { updateUI, renderSpells } from './combat-ui.js?v=206';
-import { currentSpellsTab, initiateCombatCast, confirmCombatCast, cancelCombatCast, doAction } from './combat-spells.js';
+import { updateUI, renderSpells } from './combat-ui.js';
+import { currentSpellsTab, setCurrentSpellsTab, initiateCombatCast, confirmCombatCast, cancelCombatCast, doAction } from './combat-spells.js';
 import { endTurn, nextRoom, openStrangeDoor, acceptAlteration, useRope, buyMerchantItem, openBuyModal, closeBuyModal, addLootedConsumable, openChest } from './combat-actions.js';
-import { loadAnomaliesCombat, resumeCombat, startCombat } from './combat-init.js';
-import * as ui from '../ui.js?v=4';
+import { loadAnomaliesCombat, resumeCombat, startCombat, fetchCombatEquipments } from './combat-init.js';
+import * as ui from '../ui.js';
 import { getSpellEffectsSummaryHtml } from '../pages/grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from '../utils/filters.js';
 
@@ -45,6 +45,8 @@ export const pageState = {
     isProcessing: null,
     selectedTargetIndex: null,
     selectedAllyIndex: null,
+    selectedItemType: null,
+    combatEquipments: {},
     previousPlayerXP: null,
     previousPlayerSpiritXP: null,
     isFleeing: null,
@@ -58,6 +60,10 @@ export const pageState = {
     multiRole: null,   // 'host' | 'guest'
     multiId: null,
     currentUsername: null,  // rempli au chargement
+    
+    // Timers
+    combatWarningTimer: null,
+    combatCountdownInterval: null,
 };
 
 pageState.lastCombatLogCount = 0;
@@ -94,6 +100,19 @@ export function setButtonsProcessing(isProc) {
 
 window.showGlobalTooltip = ui.showGlobalTooltip;
 window.hideGlobalTooltip = ui.hideGlobalTooltip;
+
+window.doAction = doAction;
+window.endTurn = endTurn;
+window.nextRoom = nextRoom;
+window.openStrangeDoor = openStrangeDoor;
+window.openChest = openChest;
+window.acceptAlteration = acceptAlteration;
+window.useRope = useRope;
+window.addLootedConsumable = addLootedConsumable;
+window.buyMerchantItem = buyMerchantItem;
+window.initiateCombatCast = initiateCombatCast;
+window.confirmCombatCast = confirmCombatCast;
+window.cancelCombatCast = cancelCombatCast;
 
 window.promptFlee = function () {
     ui.showModal({
@@ -191,6 +210,10 @@ document.addEventListener('DOMContentLoaded', async () => {
             pageState.previousPlayerXP[p.id] = p.experience;
             pageState.previousPlayerSpiritXP[p.id] = p.spiritualiteExperience || 0;
         });
+
+        // Charger les équipements pour le multijoueur (initialisation)
+        await fetchCombatEquipments(directSessionId);
+
         updateUI(data);
         return;
     }
@@ -402,12 +425,8 @@ window.openBuyModal = openBuyModal;
 
 window.closeBuyModal = closeBuyModal;
 
-export let combatWarningTimer = null;
-
-export let combatCountdownInterval = null;
-
 window.switchSpellTab = function (tab) {
-    currentSpellsTab = tab;
+    setCurrentSpellsTab(tab);
     // Update tab UI
     document.querySelectorAll('.csp-tab').forEach(t => t.classList.remove('active'));
     const tabEl = document.querySelector(`.csp-tab[data-target="${tab}"]`);
@@ -563,21 +582,88 @@ window.renderOverlayInventory = function (containerId) {
         }
     }
 
+    window.combatConsumeSelections = window.combatConsumeSelections || {};
+    window.incrementConsumeSelection = function(name, maxQty, cId) {
+        if (!window.combatConsumeSelections[name]) window.combatConsumeSelections[name] = 0;
+        if (window.combatConsumeSelections[name] < maxQty) {
+            window.combatConsumeSelections[name]++;
+            window.renderOverlayInventory(cId);
+        }
+    };
+    window.decrementConsumeSelection = function(name, cId) {
+        if (!window.combatConsumeSelections[name]) window.combatConsumeSelections[name] = 0;
+        if (window.combatConsumeSelections[name] > 0) {
+            window.combatConsumeSelections[name]--;
+            window.renderOverlayInventory(cId);
+        }
+    };
+    window.openGroupedConsumeModal = function(name) {
+        const qty = window.combatConsumeSelections[name] || 0;
+        if (qty <= 0) return;
+        const groupItems = pageState.currentSessionData.activeConsumables.filter(c => c.name === name);
+        if (!groupItems.length) return;
+        const selectedIds = groupItems.slice(0, qty).map(c => c.id);
+        window.openConsumeModal(name, selectedIds);
+    };
+
+    const groupedConsumables = {};
     pageState.currentSessionData.activeConsumables.forEach(c => {
+        if (!groupedConsumables[c.name]) {
+            groupedConsumables[c.name] = { base: c, ids: [] };
+        }
+        groupedConsumables[c.name].ids.push(c.id);
+    });
+
+    Object.values(groupedConsumables).forEach(group => {
+        const c = group.base;
+        const total = group.ids.length;
+        const selCount = window.combatConsumeSelections[c.name] || 0;
+        
         const canConsume = Boolean(c.bonusHealthMax || c.bonusManaMax || c.consumableHpPercent || c.consumableManaPercent || c.consumableMissingHpPercent || c.consumableMissingManaPercent);
-        const onClickAttr = canConsume ? `onclick="window.openConsumeModal(${c.id}, '${c.name.replace(/'/g, "\\'")}')"` : '';
+        const onClickAttr = canConsume ? `onclick="window.incrementConsumeSelection('${c.name.replace(/'/g, "\\'")}', ${total}, '${containerId}')"` : '';
         const cursorStyle = canConsume ? 'cursor: pointer;' : '';
         const hoverClass = canConsume ? 'consumable-hover' : '';
         const slotInfo = getSlotInfo(c);
 
+        let badgeHtml = '';
+        if (total > 1 || selCount > 0) {
+            badgeHtml = `<div class="flex-center text-xs absolute font-bold ${selCount > 0 ? 'text-emerald-400' : 'text-muted'} shadow-sm" style="bottom: -5px; right: -5px; background: rgba(15,23,42,0.9); padding: 3px 6px; border-radius: 6px; border: 1px solid #334155; z-index: 5;">${selCount}/${total}</div>`;
+        }
+
+        let actionHtml = '';
+        if (selCount > 0) {
+            actionHtml = `<div class="flex items-center gap-2 mt-3 w-full" style="animation: popIn 0.2s ease-out;">
+                <button onclick="event.stopPropagation(); window.decrementConsumeSelection('${c.name.replace(/'/g, "\\'")}', '${containerId}')" 
+                    class="flex-center" 
+                    style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); padding: 0.4rem 0.8rem; border-radius: 8px; font-weight: bold; cursor: pointer; transition: all 0.2s ease;" 
+                    onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'" 
+                    onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'">
+                    <span class="material-symbols-outlined" style="font-size: 1.1rem;">remove</span>
+                </button>
+                <button onclick="event.stopPropagation(); window.openGroupedConsumeModal('${c.name.replace(/'/g, "\\'")}')" 
+                    class="flex-1 flex-center gap-1" 
+                    style="background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.4rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;"
+                    onmouseover="this.style.background='rgba(16, 185, 129, 0.2)'"
+                    onmouseout="this.style.background='rgba(16, 185, 129, 0.1)'">
+                    <span class="material-symbols-outlined" style="font-size: 1.2rem;">science</span> Consommer (${selCount})
+                </button>
+            </div>`;
+        }
+
+        const destroyIds = selCount > 0 ? group.ids.slice(0, selCount) : [group.ids[0]];
+        const destroyIdsJson = JSON.stringify(destroyIds);
+
         list.innerHTML += `
-            <div class="${hoverClass} flex-center" ${onClickAttr} style="background: rgba(30, 41, 59, 0.5); border: 1px solid rgba(255, 255, 255, 0.05); border-radius: 8px; padding: 0.8rem; gap: 0.8rem; margin-bottom: 0.5rem; transition: all 0.2s; ${cursorStyle}; position: relative;">
-                <button class="destroy-item-btn" onclick="event.stopPropagation(); window.confirmDestroyItem(${c.id}, '${c.name.replace(/'/g, "\\'")}')" style="position: absolute; top: -5px; right: -5px; background: #ef4444; color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.3); transition: transform 0.2s;">
+            <div class="${hoverClass} flex-center" ${onClickAttr} style="background: rgba(30, 41, 59, 0.5); border: ${selCount > 0 ? '1px solid #10b981' : '1px solid rgba(255, 255, 255, 0.05)'}; border-radius: 8px; padding: 0.8rem; gap: 0.8rem; margin-bottom: 0.5rem; transition: all 0.2s; ${cursorStyle}; position: relative;">
+                <button class="destroy-item-btn" onclick="event.stopPropagation(); window.confirmDestroyItem(${destroyIdsJson}, '${c.name.replace(/'/g, "\\'")}')" style="position: absolute; top: -5px; right: -5px; background: #ef4444; color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.3); transition: transform 0.2s;" title="Détruire (${destroyIds.length}x)">
                     <span class="material-symbols-outlined" style="font-size: 14px; font-weight: bold;">close</span>
                 </button>
-                <span class="material-symbols-outlined" style="font-size: 1.5rem; color: ${slotInfo.color};">${slotInfo.icon}</span>
-                <div class="flex-1">
-                    <div class="text-sm" style="color: #f8fafc; font-weight: 600;">${c.name}</div>
+                ${badgeHtml}
+                <div style="display: flex; flex-direction: column; align-items: center; gap: 0.3rem;">
+                    <span class="material-symbols-outlined" style="font-size: 1.5rem; color: ${slotInfo.color};">${slotInfo.icon}</span>
+                </div>
+                <div class="flex-1 min-w-0">
+                    <div class="text-sm truncate" style="color: #f8fafc; font-weight: 600;">${c.name}</div>
                     <div class="text-xs text-muted" style="display: flex; gap: 0.5rem; flex-wrap: wrap; align-items: center; margin-bottom: 4px;">
                         ${c.bonusHealthMax ? `<span style="display:inline-flex; align-items:center; color:#ec4899;" title="PV">+${c.bonusHealthMax}<span class="material-symbols-outlined" style="font-size:0.85rem; margin-left:2px;">favorite</span></span>` : ''}
                         ${c.bonusManaMax ? `<span style="display:inline-flex; align-items:center; color:#38bdf8;" title="Mana">+${c.bonusManaMax}<span class="material-symbols-outlined" style="font-size:0.85rem; margin-left:2px;">water_drop</span></span>` : ''}
@@ -585,8 +671,9 @@ window.renderOverlayInventory = function (containerId) {
                         ${c.consumableManaPercent ? `<span style="display:inline-flex; align-items:center; color:#38bdf8;" title="Mana Max">+${c.consumableManaPercent}%<span class="material-symbols-outlined" style="font-size:0.85rem; margin-left:2px;">water_drop</span></span>` : ''}
                         ${c.consumableMissingHpPercent ? `<span style="display:inline-flex; align-items:center; color:#f43f5e;" title="PV Manq">+${c.consumableMissingHpPercent}%<span class="material-symbols-outlined" style="font-size:0.85rem; margin-left:2px;">healing</span></span>` : ''}
                         ${c.consumableMissingManaPercent ? `<span style="display:inline-flex; align-items:center; color:#a855f7;" title="Mana Manq">+${c.consumableMissingManaPercent}%<span class="material-symbols-outlined" style="font-size:0.85rem; margin-left:2px;">cyclone</span></span>` : ''}
+                        ${c.consumableCategory === 'CLE' && c.specialEffectValue ? `<span style="display:inline-flex; align-items:center; color:#fbbf24;" title="Bonus Butin">+${c.specialEffectValue}%<span class="material-symbols-outlined" style="font-size:0.85rem; margin-left:2px;">diamond</span></span>` : ''}
                     </div>
-                    ${canConsume ? '<div class="font-medium" style="color: #0ea5e9; font-size: 0.75rem;">Cliquable pour utiliser</div>' : ''}
+                    ${actionHtml || (canConsume ? '<div class="font-medium" style="color: #0ea5e9; font-size: 0.75rem;">Cliquer pour préparer</div>' : '')}
                 </div>
             </div>
         `;
@@ -659,8 +746,9 @@ window.renderOverlayMap = function (containerId) {
     list.innerHTML = html;
 };
 
-window.openConsumeModal = function (consumableId, consumableName) {
-    const c = pageState.currentSessionData.activeConsumables.find(item => item.id === consumableId);
+window.openConsumeModal = function (consumableName, consumableIds) {
+    const qty = consumableIds.length;
+    const c = pageState.currentSessionData.activeConsumables.find(item => item.id === consumableIds[0]);
     let selectedPlayerId = null;
 
     const renderPlayers = () => {
@@ -673,13 +761,13 @@ window.openConsumeModal = function (consumableId, consumableName) {
             let mpGain = 0;
             
             if (c && selectedPlayerId === p.id) {
-                hpGain = (c.bonusHealthMax || 0) 
+                hpGain = ((c.bonusHealthMax || 0) 
                     + (c.consumableHpPercent ? Math.floor(p.healthMax * c.consumableHpPercent / 100) : 0)
-                    + (c.consumableMissingHpPercent ? Math.floor((p.healthMax - p.healthCurrent) * c.consumableMissingHpPercent / 100) : 0);
+                    + (c.consumableMissingHpPercent ? Math.floor((p.healthMax - p.healthCurrent) * c.consumableMissingHpPercent / 100) : 0)) * qty;
                     
-                mpGain = (c.bonusManaMax || 0)
+                mpGain = ((c.bonusManaMax || 0)
                     + (c.consumableManaPercent ? Math.floor(p.manaMax * c.consumableManaPercent / 100) : 0)
-                    + (c.consumableMissingManaPercent ? Math.floor((p.manaMax - p.manaCurrent) * c.consumableMissingManaPercent / 100) : 0);
+                    + (c.consumableMissingManaPercent ? Math.floor((p.manaMax - p.manaCurrent) * c.consumableMissingManaPercent / 100) : 0)) * qty;
                 
                 previewHp = Math.min(p.healthMax, Math.max(0, p.healthCurrent + hpGain));
                 previewMp = Math.min(p.manaMax, Math.max(0, p.manaCurrent + mpGain));
@@ -713,7 +801,7 @@ window.openConsumeModal = function (consumableId, consumableName) {
             const borderStyle = isSelected ? 'border: 1px solid rgba(244, 114, 182, 0.5); background: rgba(244, 114, 182, 0.1);' : 'border: 1px solid rgba(255,255,255,0.1); background: rgba(15, 23, 42, 0.8);';
 
             btnContainerHtml += `
-                <button class="flex-between w-100" onclick="window.selectConsumeTarget(${p.id}, ${consumableId}, '${consumableName.replace(/'/g, "\\'")}')"
+                <button class="flex-between w-100" onclick="window.selectConsumeTarget(${p.id})"
                     ${p.healthCurrent <= 0 ? 'disabled' : ''}
                     style="align-items: center; ${borderStyle} color: #fff; padding: 0.8rem; border-radius: 8px; cursor: ${p.healthCurrent <= 0 ? 'not-allowed' : 'pointer'}; opacity: ${p.healthCurrent <= 0 ? '0.5' : '1'}; transition: all 0.2s ease; margin-bottom: 8px; width: 100%;">
                     <span style="font-weight: 600;">${p.name}</span>
@@ -727,7 +815,7 @@ window.openConsumeModal = function (consumableId, consumableName) {
         return btnContainerHtml;
     };
 
-    window.selectConsumeTarget = function(playerId, cId, cName) {
+    window.selectConsumeTarget = function(playerId) {
         selectedPlayerId = playerId;
         const listContainer = document.getElementById('consumePlayersList');
         if (listContainer) {
@@ -744,14 +832,14 @@ window.openConsumeModal = function (consumableId, consumableName) {
 
     ui.showModal({
         title: 'Consommer un objet',
-        body: `Qui doit utiliser <strong class="text-white">${consumableName}</strong> ?<br><br><div id="consumePlayersList" style="display: flex; flex-direction: column; width: 100%;">${renderPlayers()}</div>`,
+        body: `Qui doit utiliser <strong class="text-white">${qty}x ${consumableName}</strong> ?<br><br><div id="consumePlayersList" style="display: flex; flex-direction: column; width: 100%;">${renderPlayers()}</div>`,
         icon: 'science',
         hideConfirm: false,
         confirmText: 'Confirmer',
         cancelText: 'Fermer',
         onConfirm: () => {
             if (selectedPlayerId) {
-                window.confirmConsumeItem(consumableId, selectedPlayerId);
+                window.confirmConsumeItem(consumableIds, selectedPlayerId, consumableName);
             }
         }
     });
@@ -766,15 +854,28 @@ window.openConsumeModal = function (consumableId, consumableName) {
     }, 10);
 };
 
-window.confirmConsumeItem = async function (consumableId, characterId) {
+window.confirmConsumeItem = async function (consumableIds, characterId, consumableName) {
     if (!pageState.sessionId) return;
     try {
-        const res = await globalFetch(`/api/pve/combat/${pageState.sessionId}/consume/${consumableId}/target/${characterId}`, {
-            method: 'POST'
-        });
-        if (res.ok) {
-            pageState.currentSessionData = await res.json();
-            ui.showNotif("Objet consommé avec succès !");
+        let lastRes = null;
+        for (const cId of consumableIds) {
+            lastRes = await globalFetch(`/api/pve/combat/${pageState.sessionId}/consume/${cId}/target/${characterId}`, {
+                method: 'POST'
+            });
+            if (!lastRes.ok) {
+                const err = await lastRes.text();
+                ui.showNotif("Erreur: " + err, true);
+                return;
+            }
+        }
+        if (lastRes && lastRes.ok) {
+            pageState.currentSessionData = await lastRes.json();
+            ui.showNotif(`${consumableIds.length}x ${consumableName} consommé(s) avec succès !`);
+            
+            if (window.combatConsumeSelections) {
+                window.combatConsumeSelections[consumableName] = 0;
+            }
+            
             updateUI(pageState.currentSessionData);
             if (typeof window.renderOverlayInventory === 'function') {
                 window.renderOverlayInventory('eventOverlayInventoryList');
@@ -784,9 +885,6 @@ window.confirmConsumeItem = async function (consumableId, characterId) {
                 window.renderOverlayMap('eventMapList');
                 window.renderOverlayMap('combatVictoryMapList');
             }
-        } else {
-            const err = await res.text();
-            ui.showNotif("Erreur: " + err, true);
         }
     } catch (e) {
         console.error(e);
@@ -794,10 +892,11 @@ window.confirmConsumeItem = async function (consumableId, characterId) {
     }
 };
 
-window.confirmDestroyItem = function (consumableId, consumableName) {
+window.confirmDestroyItem = function (consumableIds, consumableName) {
+    const qty = consumableIds.length;
     ui.showModal({
         title: 'Détruire un objet',
-        body: `Êtes-vous sûr de vouloir détruire <strong class="text-white">${consumableName}</strong> ?<br><br>Cet objet sera <strong class="text-red-400">perdu définitivement</strong>.`,
+        body: `Êtes-vous sûr de vouloir détruire <strong class="text-white">${qty}x ${consumableName}</strong> ?<br><br>Cet objet sera <strong class="text-red-400">perdu définitivement</strong>.`,
         icon: 'delete',
         confirmText: 'Détruire',
         confirmStyle: 'danger',
@@ -805,12 +904,25 @@ window.confirmDestroyItem = function (consumableId, consumableName) {
         onConfirm: async () => {
             if (!pageState.sessionId) return;
             try {
-                const res = await globalFetch(`/api/pve/combat/${pageState.sessionId}/consumable/${consumableId}`, {
-                    method: 'DELETE'
-                });
-                if (res.ok) {
-                    pageState.currentSessionData = await res.json();
-                    ui.showNotif("Objet détruit.");
+                let lastRes = null;
+                for (const cId of consumableIds) {
+                    lastRes = await globalFetch(`/api/pve/combat/${pageState.sessionId}/consumable/${cId}`, {
+                        method: 'DELETE'
+                    });
+                    if (!lastRes.ok) {
+                        const err = await lastRes.text();
+                        ui.showNotif("Erreur: " + err, true);
+                        return;
+                    }
+                }
+                if (lastRes && lastRes.ok) {
+                    pageState.currentSessionData = await lastRes.json();
+                    ui.showNotif(`${qty}x ${consumableName} détruit(s).`);
+                    
+                    if (window.combatConsumeSelections) {
+                        window.combatConsumeSelections[consumableName] = 0;
+                    }
+                    
                     updateUI(pageState.currentSessionData);
                     if (typeof window.renderOverlayInventory === 'function') {
                         window.renderOverlayInventory('eventOverlayInventoryList');
@@ -820,9 +932,6 @@ window.confirmDestroyItem = function (consumableId, consumableName) {
                         window.renderOverlayMap('eventMapList');
                         window.renderOverlayMap('combatVictoryMapList');
                     }
-                } else {
-                    const err = await res.text();
-                    ui.showNotif("Erreur: " + err, true);
                 }
             } catch (e) {
                 console.error(e);
@@ -857,4 +966,132 @@ window.changeMusicVolume = function (value) {
         window.dungeonMusic.volume = value / 100;
     }
     localStorage.setItem('grimoire_music_volume', value);
+};
+
+window.showHeroEquipmentTooltip = function (el, characterId) {
+    const tooltip = document.getElementById('heroEquipmentTooltip');
+    const content = document.getElementById('heroEquipmentTooltipContent');
+    if (!tooltip || !content) return;
+
+    let eqs = pageState.combatEquipments[characterId];
+    if (!eqs || eqs.length === 0) {
+        content.innerHTML = '<div style="color:#cbd5e1; font-size:0.9rem; text-align:center;">Aucun équipement</div>';
+    } else {
+        let html = '<div class="equip-slots-grid" style="width: 100%; min-width: 500px;">';
+
+        const slots = Object.keys(window.SLOT_LABELS || {}).filter(s => s !== 'CONSOMMABLE' && s !== 'ANOMALIE' && s !== 'ARME_DEUX_MAINS' && s !== 'ARME' && s !== 'ANNEAU');
+
+        // If SLOT_LABELS isn't loaded for some reason, fallback to basic list
+        if (slots.length === 0) {
+            slots.push('CASQUE', 'PLASTRON', 'ARME_GAUCHE', 'ANNEAU_GAUCHE', 'ANNEAU_DROIT', 'ARME_DROITE', 'BOTTES', 'CAPE');
+        }
+
+        slots.forEach(slotKey => {
+            const slotInfo = window.SLOT_LABELS && window.SLOT_LABELS[slotKey] ? window.SLOT_LABELS[slotKey] : { icon: 'help', color: '#94a3b8', label: slotKey };
+
+            let equipped = eqs.find(e => e.slot === slotKey);
+            const twoHanded = eqs.find(e => e.slot === 'ARME_DEUX_MAINS');
+
+            if (slotKey === 'ARME_GAUCHE' && twoHanded) {
+                equipped = twoHanded;
+            }
+            if (slotKey === 'ARME_DROITE' && twoHanded) {
+                equipped = twoHanded;
+            }
+
+            if (equipped) {
+                const rarityName = typeof getRarityName === 'function' ? getRarityName(equipped.rarity) : '';
+                const rarityClass = rarityName ? `rarity-${rarityName}` : '';
+
+                let statsChips = '';
+                if (typeof STAT_DEFS !== 'undefined') {
+                    statsChips = STAT_DEFS
+                        .filter(s => equipped[s.key] && equipped[s.key] !== 0)
+                        .map(s => {
+                            const val = equipped[s.key];
+                            const sign = val > 0 ? '+' : '';
+                            const isMalus = val < 0;
+                            const suffix = s.isPercent ? '%' : '';
+                            return `<span class="eq-stat-mini ${isMalus ? 'malus' : ''}" title="${s.label}"><span class="material-symbols-outlined text-xs" style="color:${isMalus ? '#ef4444' : s.color};">${s.icon}</span>${sign}${val}${suffix}</span>`;
+                        }).join('');
+                } else {
+                    let statsHtml = '';
+                    if (equipped.power > 0) statsHtml += `<span style="color:#a855f7;">${equipped.power} Pui</span> `;
+                    if (equipped.strength > 0) statsHtml += `<span style="color:#f43f5e;">${equipped.strength} For</span> `;
+                    if (equipped.armor > 0) statsHtml += `<span style="color:#3b82f6;">${equipped.armor} Arm</span> `;
+                    if (equipped.resistance > 0) statsHtml += `<span style="color:#10b981;">${equipped.resistance} Rés</span> `;
+                    if (equipped.speed > 0) statsHtml += `<span style="color:#eab308;">${equipped.speed} Vit</span> `;
+                    if (equipped.crit > 0) statsHtml += `<span style="color:#ef4444;">${equipped.crit}% Crit</span> `;
+                    statsChips = statsHtml;
+                }
+
+                let specialEffectHtml = '';
+                if (equipped.specialEffect && equipped.specialEffect !== 'NONE' && equipped.specialEffect !== 'AUCUN') {
+                    const label = window.EFFECT_LABELS ? (window.EFFECT_LABELS[equipped.specialEffect] || equipped.specialEffect) : equipped.specialEffect;
+                    const isCursed = equipped.specialEffect.startsWith('CURSED_');
+                    const icon = isCursed ? 'skull' : 'auto_awesome';
+                    const color = isCursed ? '#9b2d2d' : '#c084fc';
+                    const bg = isCursed ? 'rgba(156, 163, 175, 0.15)' : 'rgba(168, 85, 247, 0.1)';
+
+                    specialEffectHtml = `<div style="margin-top: 0.3rem; font-size: 0.7rem; color: ${color}; background: ${bg}; padding: 0.1rem 0.4rem; border-radius: 4px; display: inline-flex; align-items: center; gap: 0.2rem; border: ${isCursed ? '1px solid rgba(156, 163, 175, 0.2)' : 'none'};">
+                        <span class="material-symbols-outlined text-xs">${icon}</span>
+                        ${label} : ${equipped.specialEffectValue || ''} ${window.getEffectInfoIconHtml ? window.getEffectInfoIconHtml(equipped.specialEffect) : ''}
+                    </div>`;
+                }
+
+                html += `
+                    <div class="equip-slot-card equipped" data-slot="${slotKey}">
+                        <div class="equip-slot-header">
+                            <span class="equip-slot-label">
+                                <span class="material-symbols-outlined text-lg ${slotInfo.extraClass || ''}" style="color: ${slotInfo.color};">${slotInfo.icon}</span>
+                                ${slotInfo.label || slotKey}
+                            </span>
+                        </div>
+                        <div class="equip-slot-item-name ${rarityClass}">${equipped.name}</div>
+                        <div class="equip-slot-stats">
+                            ${statsChips || '<span class="opacity-40">Aucun bonus</span>'}
+                            ${specialEffectHtml}
+                        </div>
+                    </div>
+                `;
+            } else {
+                html += `
+                    <div class="equip-slot-card empty" data-slot="${slotKey}">
+                        <div class="equip-slot-header" style="justify-content: center; opacity: 0.5;">
+                            <span class="equip-slot-label">
+                                <span class="material-symbols-outlined text-lg ${slotInfo.extraClass || ''}" style="color: ${slotInfo.color};">${slotInfo.icon}</span>
+                                ${slotInfo.label || slotKey}
+                            </span>
+                        </div>
+                    </div>
+                `;
+            }
+        });
+        html += '</div>';
+        content.innerHTML = html;
+    }
+
+    const rect = el.getBoundingClientRect();
+    tooltip.style.display = 'block';
+
+    // Position tooltip to the right or left of the avatar depending on screen space
+    let top = rect.top + window.scrollY;
+    let left = rect.right + 10;
+
+    if (left + 750 > window.innerWidth) {
+        left = rect.left - 760;
+    }
+
+    // Ensure left is not negative
+    if (left < 10) {
+        left = 10;
+    }
+
+    tooltip.style.top = top + 'px';
+    tooltip.style.left = left + 'px';
+};
+
+window.hideHeroEquipmentTooltip = function () {
+    const tooltip = document.getElementById('heroEquipmentTooltip');
+    if (tooltip) tooltip.style.display = 'none';
 };

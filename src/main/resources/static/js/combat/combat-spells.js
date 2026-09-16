@@ -1,6 +1,6 @@
 import { pageState, setButtonsProcessing } from './combat-state.js';
-import { updateUI } from './combat-ui.js?v=206';
-import * as ui from '../ui.js?v=4';
+import { updateUI } from './combat-ui.js';
+import * as ui from '../ui.js';
 import { getSpellEffectsSummaryHtml } from '../pages/grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from '../utils/filters.js';
 
@@ -385,3 +385,6 @@ export async function doAction(spellId = null) {
 }
 
 export let currentSpellsTab = 'VOIE';
+export function setCurrentSpellsTab(tab) {
+    currentSpellsTab = tab;
+}

@@ -1,6 +1,6 @@
-import { pageState, combatWarningTimer, combatCountdownInterval, setButtonsProcessing } from './combat-state.js';
-import { updateUI } from './combat-ui.js?v=206';
-import * as ui from '../ui.js?v=4';
+import { pageState, setButtonsProcessing } from './combat-state.js';
+import { updateUI } from './combat-ui.js';
+import * as ui from '../ui.js';
 import { getSpellEffectsSummaryHtml } from '../pages/grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from '../utils/filters.js';
 
@@ -350,17 +350,17 @@ export async function openChest(equipmentId) {
 }
 
 export function resetCombatTimeoutWarning(finished) {
-    if (combatWarningTimer) {
-        clearTimeout(combatWarningTimer);
-        combatWarningTimer = null;
+    if (pageState.combatWarningTimer) {
+        clearTimeout(pageState.combatWarningTimer);
+        pageState.combatWarningTimer = null;
     }
-    if (combatCountdownInterval) {
-        clearInterval(combatCountdownInterval);
-        combatCountdownInterval = null;
+    if (pageState.combatCountdownInterval) {
+        clearInterval(pageState.combatCountdownInterval);
+        pageState.combatCountdownInterval = null;
     }
     if (finished) return;
 
-    combatWarningTimer = setTimeout(() => {
+    pageState.combatWarningTimer = setTimeout(() => {
         if (typeof ui !== 'undefined' && ui.showModal) {
             let seconds = 60;
 
@@ -371,7 +371,7 @@ export function resetCombatTimeoutWarning(finished) {
                 confirmText: 'Je suis là',
                 hideCancel: true,
                 onConfirm: async () => {
-                    clearInterval(combatCountdownInterval);
+                    clearInterval(pageState.combatCountdownInterval);
                     try {
                         await window.globalFetch('/api/pve/combat/' + pageState.sessionId, { method: 'GET' });
                         resetCombatTimeoutWarning(false);
@@ -381,14 +381,14 @@ export function resetCombatTimeoutWarning(finished) {
                 }
             });
 
-            combatCountdownInterval = setInterval(() => {
+            pageState.combatCountdownInterval = setInterval(() => {
                 seconds--;
                 const counterEl = document.getElementById('combat-timeout-countdown');
                 if (counterEl) {
                     counterEl.innerText = seconds;
                 }
                 if (seconds <= 0) {
-                    clearInterval(combatCountdownInterval);
+                    clearInterval(pageState.combatCountdownInterval);
                     window.location.reload();
                 }
             }, 1000);

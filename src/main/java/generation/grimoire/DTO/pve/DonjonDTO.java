@@ -9,6 +9,7 @@ public class DonjonDTO {
     private String description;
     private String imageUrl;
     private int recommendedLevel;
+    private int difficulty = 1;
     private int maxHeroes;
     private int unlockCostGold;
     private int entryCostGold;

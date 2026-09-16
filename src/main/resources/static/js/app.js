@@ -23,10 +23,11 @@ window.addEventListener('DOMContentLoaded', () => {
 });
 
 window.addEventListener('authLoaded', async () => {
+    const user = window.currentUser;
+    if (!user) return; // Ne pas charger les metas si non connecté
+
     await constants.initMeta();
     await api.fetchMeta();
-
-    const user = window.currentUser;
 
     if (api.isAdmin(user)) {
         const forgePanel = document.getElementById('spellForgePanel');

@@ -283,6 +283,13 @@ async function loadDungeons() {
 
                     const entryCostHtml = d.entryCostGold > 0 ? `<div class="text-sm text-warning font-semibold mt-2"><span class="material-symbols-outlined align-middle icon-sm">monetization_on</span> Coût d'entrée : ${d.entryCostGold} Or</div>` : '';
 
+                    const diff = d.difficulty !== undefined ? d.difficulty : 0;
+                    let skullsHtml = '<div style="position: absolute; top: 10px; right: 12px; display: flex; gap: 2px; align-items: center;" title="Difficulté">';
+                    for(let i=0; i<3; i++) {
+                        skullsHtml += `<span class="material-symbols-outlined" style="font-size: 1.2rem; color: ${i < diff ? '#ef4444' : 'rgba(255,255,255,0.2)'}; text-shadow: ${i < diff ? '0 0 5px rgba(239, 68, 68, 0.5)' : 'none'};">skull</span>`;
+                    }
+                    skullsHtml += '</div>';
+
                     let questBadges = '';
                     if (d.dailyQuest || d.weeklyQuest) {
                         questBadges = `<div style="position: absolute; top: -14px; left: -14px; display: flex; gap: 6px; z-index: 5;">
@@ -299,6 +306,7 @@ async function loadDungeons() {
                         <div class="dungeon-card ${isLocked ? 'locked' : ''}" id="dungeon-card-${d.id}" style="position: relative;" ${isLocked ? '' : `onclick="openPrepInterface(${d.id}, '${d.name.replace(/'/g, "\\'")}', '${sallesData}', ${d.maxHeroes || 1}, ${d.entryCostGold || 0}, ${d.recommendedLevel || 1})"`}>
                             ${lockedHtml}
                             ${questBadges}
+                            ${skullsHtml}
                             <div class="dungeon-title">
                                 <span class="material-symbols-outlined">castle</span>
                                 <span>${d.name}</span>

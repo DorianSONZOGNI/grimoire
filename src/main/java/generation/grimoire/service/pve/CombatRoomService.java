@@ -395,11 +395,13 @@ class CombatRoomService {
                     String itemName = room.getAlterationSpecialItemReward();
                     Anomalie template = anomalieRepository.findFirstByNameAndIsTemplateTrueOrderByIdAsc(itemName);
                     if (template != null && !session.getPlayers().isEmpty()) {
+                        java.util.Set<AppUser> rewardedUsers = new java.util.HashSet<>();
                         for (Personnage p : session.getPlayers()) {
                             if (!session.isEligibleForRewards(p))
                                 continue;
                             AppUser user = p.getUser();
-                            if (user != null) {
+                            if (user != null && !rewardedUsers.contains(user)) {
+                                rewardedUsers.add(user);
                                 Anomalie newAnomaly = new Anomalie();
                                 newAnomaly.setName(template.getName());
                                 newAnomaly.setDescription(template.getDescription());
@@ -521,9 +523,16 @@ class CombatRoomService {
 
             if ("GOLD".equals(rewardType)) {
                 int multipliedValue = (int) Math.round(rewardValue * multiplier);
-                user.setMonnaie(user.getMonnaie() + multipliedValue);
-                userRepository.save(user);
-                session.addLog("L'autel vous récompense de " + multipliedValue + " Or !");
+                java.util.Set<AppUser> rewardedUsers = new java.util.HashSet<>();
+                for (Personnage p : session.getPlayers()) {
+                    AppUser u = p.getUser();
+                    if (u != null && !rewardedUsers.contains(u)) {
+                        rewardedUsers.add(u);
+                        u.setMonnaie(u.getMonnaie() + multipliedValue);
+                        userRepository.save(u);
+                    }
+                }
+                session.addLog("L'autel récompense le groupe de " + multipliedValue + " Or !");
             } else if ("XP".equals(rewardType)) {
                 int multipliedValue = (int) Math.round(rewardValue * multiplier);
                 int aliveHeroes = (int) session.getPlayers().stream().filter(p -> p.getHealthCurrent() > 0).count();
@@ -544,14 +553,21 @@ class CombatRoomService {
                 if (success) {
                     Equipment template = equipmentRepository.findById((long) rewardValue).orElse(null);
                     if (template != null) {
-                        Equipment clone = new Equipment();
-                        clone.copyStatsFrom(template);
-                        clone.setTemplate(false);
-                        clone.setUser(user);
-                        clone.setOwnerUsername(user.getUsername());
-                        equipmentRepository.save(clone);
+                        java.util.Set<AppUser> rewardedUsers = new java.util.HashSet<>();
+                        for (Personnage p : session.getPlayers()) {
+                            if (p.getUser() != null) {
+                                rewardedUsers.add(p.getUser());
+                            }
+                        }
 
-                        if (clone.getSlot() == generation.grimoire.enumeration.EquipmentSlot.CONSOMMABLE) {
+                        if (template.getSlot() == generation.grimoire.enumeration.EquipmentSlot.CONSOMMABLE) {
+                            Equipment clone = new Equipment();
+                            clone.copyStatsFrom(template);
+                            clone.setTemplate(false);
+                            clone.setUser(user);
+                            clone.setOwnerUsername(user.getUsername());
+                            equipmentRepository.save(clone);
+
                             double currentWeight = session.getActiveConsumables().stream()
                                     .filter(java.util.Objects::nonNull)
                                     .mapToDouble(e -> e.calculateWeight())
@@ -566,12 +582,24 @@ class CombatRoomService {
                                 session.addLog("L'autel vous a offert un équipement : " + template.getName()
                                         + " (envoyé au coffre, poids max atteint).");
                             }
+                            room.setAltarRewardEquipment(clone);
                         } else {
-                            session.addLog("L'autel vous a offert un équipement : " + template.getName() + " !");
+                            Equipment firstClone = null;
+                            for (AppUser u : rewardedUsers) {
+                                Equipment clone = new Equipment();
+                                clone.copyStatsFrom(template);
+                                clone.setTemplate(false);
+                                clone.setUser(u);
+                                clone.setOwnerUsername(u.getUsername());
+                                equipmentRepository.save(clone);
+                                if (firstClone == null) firstClone = clone;
+                            }
+                            session.addLog("L'autel a offert un équipement à chaque joueur : " + template.getName() + " !");
+                            room.setAltarRewardEquipment(firstClone);
                         }
-                        room.setAltarRewardEquipment(clone);
                     }
                 } else {
+                    room.setAltarRewardEquipment(null);
                     session.addLog("L'autel a consumé votre offrande sans vous accorder d'équipement...");
                 }
             }
