@@ -572,6 +572,7 @@ class CombatRoomService {
                         room.setAltarRewardEquipment(clone);
                     }
                 } else {
+                    room.setAltarRewardEquipment(null);
                     session.addLog("L'autel a consumé votre offrande sans vous accorder d'équipement...");
                 }
             }

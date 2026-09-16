@@ -632,15 +632,30 @@ window.renderOverlayInventory = function (containerId) {
 
         let actionHtml = '';
         if (selCount > 0) {
-            actionHtml = `<div class="flex items-center gap-2 mt-2">
-                <button onclick="event.stopPropagation(); window.decrementConsumeSelection('${c.name.replace(/'/g, "\\'")}', '${containerId}')" class="btn btn-secondary" style="padding: 0.2rem 0.5rem; min-height: 24px;">-</button>
-                <button onclick="event.stopPropagation(); window.openGroupedConsumeModal('${c.name.replace(/'/g, "\\'")}')" class="btn btn-primary flex-1" style="padding: 0.2rem; min-height: 24px; font-size: 0.8rem;">Consommer (${selCount})</button>
+            actionHtml = `<div class="flex items-center gap-2 mt-3 w-full" style="animation: popIn 0.2s ease-out;">
+                <button onclick="event.stopPropagation(); window.decrementConsumeSelection('${c.name.replace(/'/g, "\\'")}', '${containerId}')" 
+                    class="flex-center" 
+                    style="background: rgba(239, 68, 68, 0.1); color: #ef4444; border: 1px solid rgba(239, 68, 68, 0.3); padding: 0.4rem 0.8rem; border-radius: 8px; font-weight: bold; cursor: pointer; transition: all 0.2s ease;" 
+                    onmouseover="this.style.background='rgba(239, 68, 68, 0.2)'" 
+                    onmouseout="this.style.background='rgba(239, 68, 68, 0.1)'">
+                    <span class="material-symbols-outlined" style="font-size: 1.1rem;">remove</span>
+                </button>
+                <button onclick="event.stopPropagation(); window.openGroupedConsumeModal('${c.name.replace(/'/g, "\\'")}')" 
+                    class="flex-1 flex-center gap-1" 
+                    style="background: rgba(16, 185, 129, 0.1); color: #10b981; border: 1px solid rgba(16, 185, 129, 0.3); padding: 0.4rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;"
+                    onmouseover="this.style.background='rgba(16, 185, 129, 0.2)'"
+                    onmouseout="this.style.background='rgba(16, 185, 129, 0.1)'">
+                    <span class="material-symbols-outlined" style="font-size: 1.2rem;">science</span> Consommer (${selCount})
+                </button>
             </div>`;
         }
 
+        const destroyIds = selCount > 0 ? group.ids.slice(0, selCount) : [group.ids[0]];
+        const destroyIdsJson = JSON.stringify(destroyIds);
+
         list.innerHTML += `
             <div class="${hoverClass} flex-center" ${onClickAttr} style="background: rgba(30, 41, 59, 0.5); border: ${selCount > 0 ? '1px solid #10b981' : '1px solid rgba(255, 255, 255, 0.05)'}; border-radius: 8px; padding: 0.8rem; gap: 0.8rem; margin-bottom: 0.5rem; transition: all 0.2s; ${cursorStyle}; position: relative;">
-                <button class="destroy-item-btn" onclick="event.stopPropagation(); window.confirmDestroyItem(${group.ids[0]}, '${c.name.replace(/'/g, "\\'")}')" style="position: absolute; top: -5px; right: -5px; background: #ef4444; color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.3); transition: transform 0.2s;" title="Détruire (1x)">
+                <button class="destroy-item-btn" onclick="event.stopPropagation(); window.confirmDestroyItem(${destroyIdsJson}, '${c.name.replace(/'/g, "\\'")}')" style="position: absolute; top: -5px; right: -5px; background: #ef4444; color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.3); transition: transform 0.2s;" title="Détruire (${destroyIds.length}x)">
                     <span class="material-symbols-outlined" style="font-size: 14px; font-weight: bold;">close</span>
                 </button>
                 ${badgeHtml}
@@ -877,10 +892,11 @@ window.confirmConsumeItem = async function (consumableIds, characterId, consumab
     }
 };
 
-window.confirmDestroyItem = function (consumableId, consumableName) {
+window.confirmDestroyItem = function (consumableIds, consumableName) {
+    const qty = consumableIds.length;
     ui.showModal({
         title: 'Détruire un objet',
-        body: `Êtes-vous sûr de vouloir détruire <strong class="text-white">${consumableName}</strong> ?<br><br>Cet objet sera <strong class="text-red-400">perdu définitivement</strong>.`,
+        body: `Êtes-vous sûr de vouloir détruire <strong class="text-white">${qty}x ${consumableName}</strong> ?<br><br>Cet objet sera <strong class="text-red-400">perdu définitivement</strong>.`,
         icon: 'delete',
         confirmText: 'Détruire',
         confirmStyle: 'danger',
@@ -888,12 +904,25 @@ window.confirmDestroyItem = function (consumableId, consumableName) {
         onConfirm: async () => {
             if (!pageState.sessionId) return;
             try {
-                const res = await globalFetch(`/api/pve/combat/${pageState.sessionId}/consumable/${consumableId}`, {
-                    method: 'DELETE'
-                });
-                if (res.ok) {
-                    pageState.currentSessionData = await res.json();
-                    ui.showNotif("Objet détruit.");
+                let lastRes = null;
+                for (const cId of consumableIds) {
+                    lastRes = await globalFetch(`/api/pve/combat/${pageState.sessionId}/consumable/${cId}`, {
+                        method: 'DELETE'
+                    });
+                    if (!lastRes.ok) {
+                        const err = await lastRes.text();
+                        ui.showNotif("Erreur: " + err, true);
+                        return;
+                    }
+                }
+                if (lastRes && lastRes.ok) {
+                    pageState.currentSessionData = await lastRes.json();
+                    ui.showNotif(`${qty}x ${consumableName} détruit(s).`);
+                    
+                    if (window.combatConsumeSelections) {
+                        window.combatConsumeSelections[consumableName] = 0;
+                    }
+                    
                     updateUI(pageState.currentSessionData);
                     if (typeof window.renderOverlayInventory === 'function') {
                         window.renderOverlayInventory('eventOverlayInventoryList');
@@ -903,9 +932,6 @@ window.confirmDestroyItem = function (consumableId, consumableName) {
                         window.renderOverlayMap('eventMapList');
                         window.renderOverlayMap('combatVictoryMapList');
                     }
-                } else {
-                    const err = await res.text();
-                    ui.showNotif("Erreur: " + err, true);
                 }
             } catch (e) {
                 console.error(e);
