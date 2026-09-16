@@ -1582,9 +1582,8 @@ window.renderMonstersList = function () {
             mutationsHtml = `<div class="flex-shrink-0" style="display: flex; flex-direction: column; gap: 0.5rem; border-left: 1px solid rgba(255, 255, 255, 0.1); padding-left: 0.8rem; margin-left: 0.8rem; justify-content: center;">`;
             m.mutations.forEach(mut => {
                 mutationsHtml += `<div class="flex-center" onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null" style="width: 32px; height: 32px; border-radius: 6px; background: rgba(255,255,255,0.05); justify-content: center; border: 1px solid ${mut.color || '#e879f9'}; cursor: help;">
-                    <template class="tooltip-data" >
-                        <div style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:${mut.color || '#e879f9'}; border-bottom: 1px solid ${mut.color || '#e879f9'}; padding-bottom: 4px;">${mut.nom} (Lvl ${mut.level || 1})</div>
-                        <div class="italic text-slate-300 mt-2 leading-relaxed" style="width: max-content; max-width: 500px; white-space: normal !important; word-wrap: break-word;">${mut.description}</div>
+                    <template class="tooltip-data">
+                        ${window.generateMutationTooltipHtml ? window.generateMutationTooltipHtml(mut) : ''}
                     </template>
                     <span class="material-symbols-outlined" style="font-size: 1.2rem; color: ${mut.color || '#e879f9'};">${mut.icon || 'pets'}</span>
                 </div>`;
@@ -2540,7 +2539,8 @@ function renderMutationsList() {
         const mHex = mut.color || '#e879f9';
         const mIcon = mut.icon || 'pets';
         html += `
-        <div class="list-item flex-between" style="border-left: 3px solid ${mHex}; align-items: center; padding: 0.8rem; background: rgba(15, 23, 42, 0.4); border-radius: 8px; margin-bottom: 0.5rem;">
+        <div class="list-item flex-between" style="border-left: 3px solid ${mHex}; align-items: center; padding: 0.8rem; background: rgba(15, 23, 42, 0.4); border-radius: 8px; margin-bottom: 0.5rem;" onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null">
+            <template class="tooltip-data">${window.generateMutationTooltipHtml ? window.generateMutationTooltipHtml(mut) : ''}</template>
             <div style="display: flex; flex-direction: column; gap: 0.3rem;">
                 <div class="flex-center" style="gap: 0.5rem;">
                     <span class="material-symbols-outlined" style="color: ${mHex};">${mIcon}</span>
@@ -2646,7 +2646,8 @@ function renderMutationsSelector() {
         const shadow = isSelected ? `box-shadow: 0 0 8px rgba(232, 121, 249, 0.4);` : '';
 
         html += `
-        <div onclick="toggleMutationSelection(${mut.id})" style="cursor: pointer; padding: 0.3rem 0.6rem; border-radius: 6px; background: ${bg}; border: ${border}; opacity: ${opacity}; ${shadow} display: inline-flex; align-items: center; gap: 0.4rem; transition: all 0.2s;" title="${mut.description}">
+        <div onclick="toggleMutationSelection(${mut.id})" onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null" style="cursor: pointer; padding: 0.3rem 0.6rem; border-radius: 6px; background: ${bg}; border: ${border}; opacity: ${opacity}; ${shadow} display: inline-flex; align-items: center; gap: 0.4rem; transition: all 0.2s;">
+            <template class="tooltip-data">${window.generateMutationTooltipHtml ? window.generateMutationTooltipHtml(mut) : ''}</template>
             <span class="material-symbols-outlined" style="font-size: 1.1rem; color: ${mHex};">${mIcon}</span>
             <span class="text-sm text-slate-50" >${mut.nom} <span class="opacity-70 text-xs" >(Niv. ${mut.level || 1})</span></span>
         </div>`;

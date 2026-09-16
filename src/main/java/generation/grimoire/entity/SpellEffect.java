@@ -95,8 +95,10 @@ public abstract class SpellEffect {
     }
 
     @Transient
+    @com.fasterxml.jackson.annotation.JsonProperty("effectType")
     public String getEffectType() {
-        DiscriminatorValue val = this.getClass().getAnnotation(DiscriminatorValue.class);
-        return val != null ? val.value() : this.getClass().getSimpleName();
+        Class<?> trueClass = org.hibernate.Hibernate.getClass(this);
+        DiscriminatorValue val = trueClass.getAnnotation(DiscriminatorValue.class);
+        return val != null ? val.value() : trueClass.getSimpleName();
     }
 }
