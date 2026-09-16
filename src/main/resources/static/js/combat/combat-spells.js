@@ -7,6 +7,7 @@ import { getVoieButtonColor, getSpiritButtonColor } from '../utils/filters.js';
 
 export function initiateCombatCast(spellId) {
     if (!pageState.currentSessionData) return;
+    if (window.combatIsMyTurn === false) return; // Cannot cast during enemy/ally turn
 
     let needsEnemy = false;
     let needsAlly = false;

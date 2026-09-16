@@ -76,6 +76,8 @@ export function updateMultiTurnBanner(data) {
     const ownerUsername = activePlayer?.ownerUsername || null;
     const isMyTurn = ownerUsername === pageState.currentUsername;
     const isEnemyTurn = !data.turnOrder?.[data.currentTurnIndex]?.player;
+    
+    window.combatIsMyTurn = isEnemyTurn ? false : isMyTurn;
 
     if (isEnemyTurn) {
         banner.innerHTML = `<span class="material-symbols-outlined text-[#f87171]">swords</span>
@@ -103,7 +105,9 @@ export function setMultiActionsEnabled(enabled) {
                 el.style.opacity = '';
             } else {
                 el.classList.add('multi-disabled');
-                el.style.pointerEvents = 'none';
+                if (!el.classList.contains('combat-spell-card')) {
+                    el.style.pointerEvents = 'none';
+                }
                 el.style.opacity = '0.35';
             }
         });

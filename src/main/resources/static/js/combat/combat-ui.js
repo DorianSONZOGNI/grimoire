@@ -2690,8 +2690,16 @@ export function renderSpellCard(sp) {
     const availabilityList = pageState.currentSessionData.spellAvailability || [];
     const avail = availabilityList.find(a => a.spellId === sp.id);
     const isCastable = !avail || avail.castable;
-    const disabledClass = isCastable ? '' : ' spell-disabled';
+    let disabledClass = isCastable ? '' : ' spell-disabled';
     const onClickAttr = isCastable ? `onclick="initiateCombatCast(${sp.id})"` : '';
+    
+    // Check multiplayer turn
+    let multiDisabledClass = '';
+    let multiDisabledStyle = '';
+    if (window.combatIsMyTurn === false) {
+        multiDisabledClass = ' multi-disabled';
+        multiDisabledStyle = 'opacity: 0.35;';
+    }
 
     // Build disabled badge HTML
     let disabledBadgeHtml = '';
@@ -2730,7 +2738,7 @@ export function renderSpellCard(sp) {
     }
 
     return `
-        <div id="spell-card-${sp.id}" class="combat-spell-card spell-btn${disabledClass}" style="border-top: 2px solid ${titleColor}; position: relative;" ${onClickAttr} ${tooltipAttrs}>
+        <div id="spell-card-${sp.id}" class="combat-spell-card spell-btn${disabledClass}${multiDisabledClass}" style="border-top: 2px solid ${titleColor}; position: relative; ${multiDisabledStyle}" ${onClickAttr} ${tooltipAttrs}>
             <div class="absolute" style="top: -9px; left: -5px; background: #0f172a; border: 1px solid ${titleColor}; color: ${titleColor}; border-radius: 4px; padding: 0.1rem 0.4rem; font-size: 0.65rem; font-weight: bold; z-index: 25;">Lvl ${sp.niveau}</div>
             
             <div class="combat-spell-header mt-xs">
