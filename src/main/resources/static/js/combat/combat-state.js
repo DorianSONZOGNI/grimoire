@@ -1,7 +1,7 @@
 import { shakeStyle } from './combat-utils.js';
 import { initMultiSSE } from './combat-socket.js';
 import { updateUI, renderSpells } from './combat-ui.js';
-import { currentSpellsTab, initiateCombatCast, confirmCombatCast, cancelCombatCast, doAction } from './combat-spells.js';
+import { currentSpellsTab, setCurrentSpellsTab, initiateCombatCast, confirmCombatCast, cancelCombatCast, doAction } from './combat-spells.js';
 import { endTurn, nextRoom, openStrangeDoor, acceptAlteration, useRope, buyMerchantItem, openBuyModal, closeBuyModal, addLootedConsumable, openChest } from './combat-actions.js';
 import { loadAnomaliesCombat, resumeCombat, startCombat, fetchCombatEquipments } from './combat-init.js';
 import * as ui from '../ui.js';
@@ -426,7 +426,7 @@ window.openBuyModal = openBuyModal;
 window.closeBuyModal = closeBuyModal;
 
 window.switchSpellTab = function (tab) {
-    currentSpellsTab = tab;
+    setCurrentSpellsTab(tab);
     // Update tab UI
     document.querySelectorAll('.csp-tab').forEach(t => t.classList.remove('active'));
     const tabEl = document.querySelector(`.csp-tab[data-target="${tab}"]`);

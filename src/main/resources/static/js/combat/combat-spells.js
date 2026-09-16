@@ -385,3 +385,6 @@ export async function doAction(spellId = null) {
 }
 
 export let currentSpellsTab = 'VOIE';
+export function setCurrentSpellsTab(tab) {
+    currentSpellsTab = tab;
+}

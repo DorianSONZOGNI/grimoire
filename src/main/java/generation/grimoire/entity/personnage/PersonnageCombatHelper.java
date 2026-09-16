@@ -454,18 +454,28 @@ public class PersonnageCombatHelper {
 
     public static double getStatBuffMultiplier(Personnage p, StatType statType) {
         if (p.getActiveBuffs() == null) return 1.0;
-        double totalModifier = p.getActiveBuffs().stream()
-                .filter(buff -> buff.affectsStatType(statType) && buff.getFlatValue() == 0)
-                .mapToDouble(buff -> buff.getModifier())
-                .sum();
+        
+        double positiveModifier = 0.0;
+        double negativeMultiplier = 1.0;
+
+        for (BuffDebuffEffect buff : p.getActiveBuffs()) {
+            if (buff.affectsStatType(statType) && buff.getFlatValue() == 0) {
+                double mod = buff.getModifier();
+                if (mod > 0) {
+                    positiveModifier += mod;
+                } else if (mod < 0) {
+                    negativeMultiplier *= (1.0 + mod);
+                }
+            }
+        }
 
         if (statType == StatType.DAMAGE_GIVEN_PHYSIC) {
             boolean hasAmeDetachee = p.getActiveBuffs().stream().anyMatch(b -> b.getStatAffected() == StatType.AME_DETACHEE);
             if (hasAmeDetachee) {
-                totalModifier += 0.40;
+                positiveModifier += 0.40;
             }
         }
-        return 1.0 + totalModifier;
+        return (1.0 + positiveModifier) * negativeMultiplier;
     }
 
     public static int getStatFlatBonus(Personnage p, StatType statType) {
