@@ -402,13 +402,13 @@ class CombatRoomService {
                     String itemName = room.getAlterationSpecialItemReward();
                     Anomalie template = anomalieRepository.findFirstByNameAndIsTemplateTrueOrderByIdAsc(itemName);
                     if (template != null && !session.getPlayers().isEmpty()) {
-                        java.util.Set<AppUser> rewardedUsers = new java.util.HashSet<>();
+                        java.util.Set<String> rewardedUsernames = new java.util.HashSet<>();
                         for (Personnage p : session.getPlayers()) {
                             if (!session.isEligibleForRewards(p))
                                 continue;
                             AppUser user = p.getUser();
-                            if (user != null && !rewardedUsers.contains(user)) {
-                                rewardedUsers.add(user);
+                            if (user != null && !rewardedUsernames.contains(user.getUsername())) {
+                                rewardedUsernames.add(user.getUsername());
                                 Anomalie newAnomaly = new Anomalie();
                                 newAnomaly.setName(template.getName());
                                 newAnomaly.setDescription(template.getDescription());
@@ -1155,29 +1155,27 @@ class CombatRoomService {
                 if (anomalieId > 0) {
                     Anomalie template = anomalieRepository.findById(anomalieId).orElse(null);
                     if (template != null) {
-                        Anomalie clone = new Anomalie();
-                        clone.setName(template.getName());
-                        clone.setDescription(template.getDescription());
-                        clone.setSpiritualite(template.getSpiritualite());
-                        clone.setCategory(template.getCategory());
-                        clone.setLevel(template.getLevel() != null ? template.getLevel() : 1);
-                        clone.setMagicObject(template.isMagicObject());
-                        clone.setTemplate(false);
-
-                        AppUser user = null;
-                        Personnage recipient = session.getPlayers().stream()
-                                .filter(session::isEligibleForRewards)
-                                .findFirst().orElse(null);
-                        if (recipient != null) {
-                            user = recipient.getUser();
-                        }
-
-                        if (user != null) {
-                            clone.setOwnerUsername(user.getUsername());
-                            clone.setUser(user);
-                            anomalieRepository.save(clone);
-                            anomalyName = clone.getName();
-                            session.addLog("Vous avez obtenu l'item : " + anomalyName + " !");
+                        anomalyName = template.getName();
+                        java.util.Set<String> rewardedUsernames = new java.util.HashSet<>();
+                        for (Personnage p : session.getPlayers()) {
+                            if (!session.isEligibleForRewards(p))
+                                continue;
+                            AppUser user = p.getUser();
+                            if (user != null && !rewardedUsernames.contains(user.getUsername())) {
+                                rewardedUsernames.add(user.getUsername());
+                                Anomalie clone = new Anomalie();
+                                clone.setName(template.getName());
+                                clone.setDescription(template.getDescription());
+                                clone.setSpiritualite(template.getSpiritualite());
+                                clone.setCategory(template.getCategory());
+                                clone.setLevel(template.getLevel() != null ? template.getLevel() : 1);
+                                clone.setMagicObject(template.isMagicObject());
+                                clone.setTemplate(false);
+                                clone.setOwnerUsername(user.getUsername());
+                                clone.setUser(user);
+                                anomalieRepository.save(clone);
+                                session.addLog(user.getUsername() + " a obtenu l'item : " + anomalyName + " !");
+                            }
                         }
                     }
                 }
