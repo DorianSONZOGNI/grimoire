@@ -1571,6 +1571,42 @@ export function updateUI(data) {
     }
 
     processNewDeathLogs(data.combatLog);
+    updateNextRoomButtons(data);
+}
+
+function updateNextRoomButtons(data) {
+    if (!data.multi) return;
+    
+    const activeUsers = new Set();
+    if (data.players) {
+        data.players.forEach(p => {
+            if (p.healthCurrent > 0 && !(data.fledUsernames && data.fledUsernames.includes(p.ownerUsername))) {
+                if (p.ownerUsername) activeUsers.add(p.ownerUsername);
+            }
+        });
+    }
+    const totalActive = activeUsers.size;
+    if (totalActive <= 1) return; // Only show for 2+ active players
+    
+    const readyUsers = data.readyForNextRoomUsers || [];
+    const readyCount = readyUsers.length;
+    const isMeReady = readyUsers.includes(pageState.currentUsername);
+    
+    document.querySelectorAll('button[onclick*="nextRoom"]').forEach(btn => {
+        let origText = btn.dataset.origText || btn.textContent.trim().replace(/\s*\(\d+\/\d+\)$/, '');
+        btn.dataset.origText = origText;
+        
+        let newText = isMeReady ? `En attente (${readyCount}/${totalActive})` : `${origText} (${readyCount}/${totalActive})`;
+        btn.textContent = newText;
+        btn.disabled = isMeReady;
+        btn.classList.toggle('waiting-ready', isMeReady);
+        if (isMeReady) {
+            btn.classList.add('disabled');
+        } else {
+            btn.classList.remove('disabled');
+        }
+        btn.style.opacity = isMeReady ? '0.5' : '1';
+    });
 }
 
 export function getBossBuffsHtml(c) {

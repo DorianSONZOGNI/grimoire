@@ -206,9 +206,10 @@ public class CombatController {
     }
 
     @PostMapping("/{sessionId}/next-room")
-    public ResponseEntity<?> nextRoom(@PathVariable("sessionId") String sessionId) {
+    public ResponseEntity<?> nextRoom(@PathVariable("sessionId") String sessionId, java.security.Principal principal) {
         try {
-            CombatSession session = combatService.proceedToNextRoom(sessionId);
+            String username = principal != null ? principal.getName() : "Anonymous";
+            CombatSession session = combatService.proceedToNextRoom(sessionId, username);
             combatService.broadcastIfMulti(session);
             return ResponseEntity.ok(session);
         } catch (Exception e) {

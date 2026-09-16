@@ -42,9 +42,8 @@ export async function nextRoom() {
     pageState.isProcessing = true;
     setButtonsProcessing(true);
 
-    document.getElementById('eventOverlay').classList.remove('show');
-    const vicOverlay = document.getElementById('combatVictoryOverlay');
-    if (vicOverlay) vicOverlay.classList.remove('show');
+    // We don't hide overlays immediately anymore, because in multi-player we might just be waiting.
+    // updateUI() will handle hiding/showing based on the actual session state.
 
     try {
         const res = await globalFetch(`/api/pve/combat/${pageState.sessionId}/next-room`, { method: 'POST' });
