@@ -54,12 +54,36 @@ window.globalFetch = async function (url, options = {}) {
         let res = await fetch(url, options);
 
         if (res.status === 401 && !url.includes('/api/auth/refresh') && !url.includes('/api/auth/login') && !url.includes('/api/auth/register')) {
-            // Attempt to refresh
-            try {
-                const refreshRes = await fetch('/api/auth/refresh', { method: 'POST', credentials: 'same-origin' });
-                if (refreshRes.ok) {
-                    const data = await refreshRes.json();
-                    accessToken = data.token;
+            // Check if we just refreshed the token recently (within 5 seconds)
+            const now = Date.now();
+            if (window.lastRefreshTime && now - window.lastRefreshTime < 5000) {
+                // Token was just refreshed, simply retry with the new token
+                options.headers['Authorization'] = `Bearer ${accessToken}`;
+                res = await fetch(url, options);
+            } else {
+                if (!window.refreshPromise) {
+                    window.refreshPromise = fetch('/api/auth/refresh', { method: 'POST', credentials: 'same-origin' })
+                        .then(async (refreshRes) => {
+                            if (refreshRes.ok) {
+                                const data = await refreshRes.json();
+                                accessToken = data.token;
+                                window.lastRefreshTime = Date.now();
+                                return true;
+                            } else {
+                                return false;
+                            }
+                        })
+                        .catch(() => {
+                            return false;
+                        })
+                        .finally(() => {
+                            window.refreshPromise = null;
+                        });
+                }
+
+                const refreshSuccess = await window.refreshPromise;
+
+                if (refreshSuccess) {
                     // Retry original request
                     options.headers['Authorization'] = `Bearer ${accessToken}`;
                     res = await fetch(url, options);
@@ -70,12 +94,6 @@ window.globalFetch = async function (url, options = {}) {
                     }
                     throw new Error('Session expirée');
                 }
-            } catch (e) {
-                if (!url.includes('/api/auth/me')) {
-                    window.location.href = '/login.html';
-                    await new Promise(() => {}); // Halt execution
-                }
-                throw new Error('Session expirée');
             }
         } else if (res.status === 403) {
             if (!url.includes('/api/auth/me')) {
@@ -87,7 +105,7 @@ window.globalFetch = async function (url, options = {}) {
 
         if (!res.ok) {
             if (res.status === 401 && !url.includes('/api/auth/me')) {
-                window.location.href = '/login.html';
+                console.error('Would redirect to login', url);
                 await new Promise(() => {});
             }
             let errorMsg = "Erreur serveur";

@@ -3,7 +3,7 @@ import { pageState } from './combat-state.js';
 import { processNewDeathLogs, updateMultiTurnBanner } from './combat-socket.js';
 import { currentSpellsTab, initiateCombatCast } from './combat-spells.js';
 import { nextRoom, openStrangeDoor, acceptAlteration, useRope, openBuyModal, addLootedConsumable, openChest, resetCombatTimeoutWarning, playDungeonMusic, GAME_TIPS } from './combat-actions.js';
-import * as ui from '../ui.js?v=4';
+import * as ui from '../ui.js';
 import { getSpellEffectsSummaryHtml } from '../pages/grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from '../utils/filters.js';
 
@@ -1983,7 +1983,7 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
         ${mutationsHtml}
         ${channelingBadgeHtml}
         <div class="fighter-name" style="color: ${isHero ? '#f8fafc' : '#ef4444'}; font-size: 1.3rem; display: flex; justify-content: center; align-items: center; gap: 0.2rem; margin-bottom: 0.8rem; width: 100%;">
-            <span style="flex-shrink: 0; display: flex; align-items: center;">${avatarHtml}</span>
+            <span style="flex-shrink: 0; display: flex; align-items: center; ${isHero ? 'cursor: help;' : ''}" ${isHero ? `onmouseenter="if(window.showHeroEquipmentTooltip) window.showHeroEquipmentTooltip(this, ${c.id})" onmouseleave="if(window.hideHeroEquipmentTooltip) window.hideHeroEquipmentTooltip()"` : ''}>${avatarHtml}</span>
             <div style="display: flex; align-items: center; gap: 0.3rem; min-width: 0;">
                 <span style="flex-shrink: 0; display: flex;">${titleIconsHtml}</span>
                 <span style="white-space: nowrap; overflow: hidden; text-overflow: ellipsis; min-width: 0;" title="${c.name}">${c.name}</span>
