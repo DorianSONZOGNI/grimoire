@@ -20,4 +20,5 @@ public class DonjonSummaryDTO {
     private java.util.List<generation.grimoire.entity.pve.Salle> salles;
     private boolean dailyQuest;
     private boolean weeklyQuest;
+    private boolean completed;
 }

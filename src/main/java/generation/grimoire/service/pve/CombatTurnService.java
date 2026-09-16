@@ -571,8 +571,13 @@ class CombatTurnService {
         }
 
         if (xpDrop > 0 || goldDrop > 0) {
+            if (session.isFirstClear()) {
+                xpDrop *= 2;
+            }
             session.setTotalExpAccumulated(session.getTotalExpAccumulated() + xpDrop);
             session.setTotalGoldAccumulated(session.getTotalGoldAccumulated() + goldDrop);
+            session.setRoomExpAccumulated(session.getRoomExpAccumulated() + xpDrop);
+            session.setRoomGoldAccumulated(session.getRoomGoldAccumulated() + goldDrop);
 
             List<Personnage> eligiblePlayers = session.getPlayers().stream()
                     .filter(session::isEligibleForRewards).collect(java.util.stream.Collectors.toList());

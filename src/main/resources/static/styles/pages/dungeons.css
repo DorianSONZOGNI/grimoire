@@ -748,3 +748,61 @@
     background: rgba(14, 165, 233, 0.2);
 }
 
+/* Dungeon Badges */
+.dungeon-badges-left {
+    position: absolute;
+    top: -11px;
+    left: -11px;
+    display: flex;
+    gap: 6px;
+    z-index: 5;
+}
+
+.dungeon-badges-left .badge-completed {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: #0f172a;
+    border-radius: 50%;
+    width: 22px;
+    height: 22px;
+}
+
+.dungeon-badges-left .badge-xp2 {
+    background: rgba(15, 23, 42, 0.95);
+    border: 2px solid #f59e0b;
+    border-radius: 20px;
+    padding: 2px 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px 10px rgba(245, 158, 11, 0.4);
+}
+
+.dungeon-badges-left .badge-quest {
+    background: rgba(15, 23, 42, 0.95);
+    border-radius: 50%;
+    width: 38px;
+    height: 38px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.dungeon-badges-left .badge-quest.daily {
+    border: 2px solid #f59e0b;
+    box-shadow: 0 4px 10px rgba(245, 158, 11, 0.4);
+}
+
+.dungeon-badges-left .badge-quest.weekly {
+    border: 2px solid #a855f7;
+    box-shadow: 0 4px 10px rgba(168, 85, 247, 0.4);
+}
+
+.dungeon-badges-left .badge-completed .badge-icon {
+    font-size: 1.4rem;
+}
+
+.dungeon-badges-left .badge-quest .badge-icon {
+    font-size: 1.5rem;
+}

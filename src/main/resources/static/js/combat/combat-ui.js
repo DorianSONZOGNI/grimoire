@@ -404,9 +404,9 @@ export function updateUI(data) {
                     if (xpContainer) {
                         xpContainer.innerHTML = '';
 
-                        // Base Gold and XP accumulated over the entire combat
-                        const totalGold = data.totalGoldAccumulated || 0;
-                        const totalRawXp = data.totalExpAccumulated || 0;
+                        // Base Gold and XP accumulated over the CURRENT room
+                        const totalGold = data.roomGoldAccumulated || 0;
+                        const totalRawXp = data.roomExpAccumulated || 0;
                         const nbPlayers = Math.max(1, (data.players || []).length);
                         const xpPerHero = Math.floor(totalRawXp / nbPlayers);
 
@@ -430,15 +430,19 @@ export function updateUI(data) {
                                 baseContent += `<span class="text-muted" style="margin: 0 0.5rem;">|</span>`;
                             }
                             if (xpAmount > 0) {
+                                let xpBadge = data.firstClear ? '<span class="text-xs text-amber-500 font-bold ml-2">(XP x2)</span>' : '';
                                 baseContent += `
-                                    <span class="material-symbols-outlined text-info">upgrade</span>
-                                    <span class="text-info">+${xpAmount} XP</span>
+                                    <div class="relative flex items-center gap-1">
+                                        <span class="material-symbols-outlined text-info">upgrade</span>
+                                        <span class="text-info">+${xpAmount} XP</span>
+                                        ${xpBadge}
+                                    </div>
                                 `;
                             }
 
                             xpContainer.innerHTML += `
-                                <div class="text-center w-full"  style="margin-bottom: 0.5rem; animation: popIn 0.5s ease-out forwards;">
-                                    <div class="font-bold" style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(0,0,0,0.4); border: 1px solid #f59e0b80; padding: 0.5rem 1rem; border-radius: 8px; font-size: 1.2rem;">
+                                <div class="victory-xp-block">
+                                    <div class="victory-xp-block-inner victory-xp-base">
                                         ${baseContent}
                                     </div>
                                 </div>
@@ -478,8 +482,8 @@ export function updateUI(data) {
 
                             // Injection dans le container (une seule fois)
                             xpContainer.innerHTML += `
-                                <div class="text-center w-full"  style="margin-bottom: 0.5rem; animation: popIn 0.6s ease-out forwards;">
-                                    <div class="font-bold" style="display: inline-flex; align-items: center; gap: 0.5rem; background: rgba(0,0,0,0.4); border: 1px solid #e11d4880; padding: 0.5rem 1rem; border-radius: 8px; font-size: 1.1rem;">
+                                <div class="victory-xp-block">
+                                    <div class="victory-xp-block-inner victory-xp-boss">
                                         ${innerContent}
                                     </div>
                                 </div>
@@ -2281,11 +2285,11 @@ export function renderBuffsHtml(c, buffList, motList, hotList) {
 
             let isBad = isNegativeValue;
             if (isInverse) isBad = !isNegativeValue;
-            
+
             let effectiveFlat = b.flatValue || 0;
             let showModifier = true;
             let text = '';
-            
+
             if (b.modifier && c) {
                 let finalStat = null;
                 const affected = b.statAffected ? b.statAffected.toUpperCase() : '';
@@ -2303,7 +2307,7 @@ export function renderBuffsHtml(c, buffList, motList, hotList) {
                     let totalPos = 0.0;
                     let totalNeg = 1.0;
                     const allBuffs = c.activeBuffs || c.buffs || [];
-                    
+
                     allBuffs.forEach(otherBuff => {
                         if (otherBuff.statAffected === b.statAffected && otherBuff.modifier) {
                             if (otherBuff.modifier > 0) totalPos += otherBuff.modifier;

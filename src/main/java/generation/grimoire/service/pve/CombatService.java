@@ -135,6 +135,7 @@ public class CombatService {
 
         String sessionId = UUID.randomUUID().toString();
         CombatSession session = new CombatSession(sessionId, d, players);
+        session.setFirstClear(!account.getCompletedDungeons().contains(d.getId()));
 
         if (consumableIds != null && !consumableIds.isEmpty()) {
             for (Long cid : consumableIds) {
@@ -260,6 +261,9 @@ public class CombatService {
 
         String sessionId = UUID.randomUUID().toString();
         CombatSession session = new CombatSession(sessionId, d, players);
+        boolean hostFirstClear = !hostAccount.getCompletedDungeons().contains(d.getId());
+        boolean guestFirstClear = !guestAccount.getCompletedDungeons().contains(d.getId());
+        session.setFirstClear(hostFirstClear || guestFirstClear);
 
         if (consumableIds != null && !consumableIds.isEmpty()) {
             for (Long cid : consumableIds) {
