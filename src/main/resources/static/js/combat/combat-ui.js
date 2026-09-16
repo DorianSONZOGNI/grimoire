@@ -1927,12 +1927,11 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
             const color = mut.color || '#e879f9';
             const tooltipAttrs = 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"';
             mutationsHtml += `
-                <div class="flex-center" ${tooltipAttrs} style="border-color: ${color}; color: ${color}; cursor: help; border-radius: 8px; border: 1px solid ${color}; background: #0f172a; width: 32px; height: 32px; justify-content: center; box-shadow: 0 4px 6px rgba(0,0,0,0.4);">
+                <div class="flex-center combat-mutation shadow-sm" ${tooltipAttrs} style="width: 38px; height: 38px; border-radius: 8px; background: #0f172a; justify-content: center; border: 1px solid ${color}; color: ${color}; cursor: help; box-shadow: 0 4px 6px rgba(0,0,0,0.4);">
                     <template class="tooltip-data">
-                        <div style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:${color}; border-bottom: 1px solid ${color}; padding-bottom: 4px;">${mut.nom} <span class="text-xs" style="color: #cbd5e1;">(Lvl ${mut.level || 1})</span></div>
-                        <div style="font-style:italic; color:#cbd5e1; margin-top:8px; width: max-content; max-width: 500px; line-height: 1.4; white-space: normal !important; word-wrap: break-word;">${mut.description || 'Une mutation monstrueuse.'}</div>
+                        ${window.generateMutationTooltipHtml ? window.generateMutationTooltipHtml(mut) : ''}
                     </template>
-                    <span class="material-symbols-outlined text-lg">${icon}</span>
+                    <span class="material-symbols-outlined" style="font-size: 1.4rem; color: ${color};">${icon}</span>
                 </div>
             `;
         });

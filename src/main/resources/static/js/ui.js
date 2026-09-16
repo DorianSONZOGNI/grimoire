@@ -659,6 +659,60 @@ export function hideGlobalTooltip() {
 window.showGlobalTooltip = showGlobalTooltip;
 window.hideGlobalTooltip = hideGlobalTooltip;
 
+export function generateMutationTooltipHtml(mut) {
+    if (!mut) return '';
+    const color = mut.color || '#e879f9';
+    let html = `<div class="font-bold text-lg mb-1 pb-1" style="color: ${color}; border-bottom: 1px solid ${color};">
+                    <span class="material-symbols-outlined align-middle mr-1">${mut.icon || 'pets'}</span>
+                    ${mut.nom} (Niv. ${mut.level || 1})
+                </div>`;
+    if (mut.description) {
+        html += `<div class="text-sm text-slate-300 italic mb-2 leading-relaxed" style="max-width: 350px; white-space: normal;">
+                    ${mut.description}
+                 </div>`;
+    }
+
+    if (mut.spells && mut.spells.length > 0) {
+        html += `<div class="mt-2 pt-2" style="border-top: 1px dashed rgba(255,255,255,0.2);">
+                    <div class="flex flex-col gap-1">`;
+        mut.spells.forEach(spell => {
+            let costs = [];
+            if (spell.action > 0) costs.push(`<span class="text-amber-400 font-bold">${spell.action} AP</span>`);
+            if (spell.manaCost > 0) costs.push(`<span class="text-blue-400 font-bold">${spell.manaCost} Mana</span>`);
+            if (spell.heatCost > 0) costs.push(`<span class="text-orange-500 font-bold">${spell.heatCost} Chaleur</span>`);
+            if (spell.healCost > 0) costs.push(`<span class="text-red-400 font-bold">${spell.healCost} PV</span>`);
+            let costStr = costs.length > 0 ? costs.join(' • ') : '<span class="text-slate-500 text-xs">Gratuit</span>';
+
+            let effectsHtml = window.getSpellEffectsSummaryHtml ? window.getSpellEffectsSummaryHtml(spell) : '';
+
+            let castingTypeHtml = '';
+            if (spell.castingType === 'INSTANTANE') {
+                castingTypeHtml = '<span class="material-symbols-outlined" style="font-size: 1.1rem; color: #fbbf24;" title="Action Instantanée">bolt</span>';
+            } else if (spell.castingType === 'CANALISE') {
+                castingTypeHtml = '<span class="material-symbols-outlined" style="font-size: 1.1rem; color: #8b5cf6;" title="Action Canalisée">cyclone</span>';
+                castingTypeHtml += spell.allowInstantDuringChanneling ?
+                    '<span class="material-symbols-outlined" style="font-size: 1.1rem; color: #d8b4fe;" title="Instantanés autorisés pendant la canalisation">flash_on</span>' :
+                    '<span class="relative" title="Instantanés interdits pendant la canalisation" style="display: inline-flex; align-items: center; justify-content: center; width: 1.1rem; height: 1.1rem;"><span class="material-symbols-outlined" style="font-size: 1.1rem; color: #94a3b8;">flash_off</span><span class="absolute" style="width: 100%; height: 2px; background: #ef4444; transform: rotate(-45deg);"></span></span>';
+            } else {
+                castingTypeHtml = '<span class="material-symbols-outlined" style="font-size: 1.1rem; color: #60a5fa;" title="Action Banale">hourglass_empty</span>';
+            }
+
+            html += `<div class="bg-slate-800/80 rounded p-1.5 border border-slate-700/50">
+                        <div class="flex justify-between items-center mb-0.5">
+                            <span class="text-sm text-slate-200 font-bold flex items-center gap-1">${castingTypeHtml} <span class="translate-y-[1px]">${spell.nom}</span></span>
+                            <span class="text-xs" style="background: rgba(0,0,0,0.3); padding: 1px 4px; border-radius: 4px;">${costStr}</span>
+                        </div>
+                        ${spell.description ? `<div class="text-xs text-slate-400 leading-tight">${spell.description}</div>` : ''}
+                        ${effectsHtml ? `<div class="mt-1" style="font-size: 0.8em;">${effectsHtml}</div>` : ''}
+                     </div>`;
+        });
+        html += `   </div>
+                 </div>`;
+    }
+    return html;
+}
+window.generateMutationTooltipHtml = generateMutationTooltipHtml;
+
 export function showEffectTooltip(el, text) {
     let tooltip = document.getElementById('effectFixedTooltip');
     if (!tooltip) {

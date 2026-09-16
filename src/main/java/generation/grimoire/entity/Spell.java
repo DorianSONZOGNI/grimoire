@@ -66,7 +66,7 @@ public class Spell {
     @JoinColumn(name = "mutation_id")
     private Mutation mutation;
 
-    @OneToMany(mappedBy = "spell", cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToMany(mappedBy = "spell", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)
     @OrderBy("id ASC")
     private java.util.Set<SpellEffect> effects = new java.util.LinkedHashSet<>();
 
