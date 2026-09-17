@@ -20,6 +20,9 @@
     --slot-bottes: var(--success);
     --slot-cape: var(--secondary);
     --slot-consommable: #854c4c;
+    --karma-light: #fde047;
+    --karma-dark: #d8b4fe;
+    --karma-base: #e7d198;
 }
 
 * {
