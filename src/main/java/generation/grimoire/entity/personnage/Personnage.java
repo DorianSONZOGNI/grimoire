@@ -230,10 +230,10 @@ public class Personnage {
 
         for (int i = 0; i < levelsGained; i++) {
             if (nomSpiri.contains("ténèbre") || nomSpiri.contains("tenebre")) {
-                this.manaMax += 2;
-                this.manaCurrent += 2;
-                this.healthMax += 2;
-                this.healthCurrent += 2;
+                this.manaMax += 5;
+                this.manaCurrent += 5;
+                this.healthMax += 5;
+                this.healthCurrent += 5;
             } else if (nomSpiri.contains("esprit")) {
                 this.armor += 2;
                 this.resistance += 2;
