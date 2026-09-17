@@ -10,6 +10,7 @@ const pageState = {
     allMutations: null,
     selectedRooms: null,
     selectedMutationIds: null,
+    monsterMeta: null
 };
 pageState.editingMonsterId = null;
 pageState.editingDungeonId = null;
@@ -84,6 +85,7 @@ document.addEventListener('DOMContentLoaded', async () => {
         loadAnomalies();
         loadDungeons();
         loadMutations();
+        loadMonsterMeta();
     };
 
     if (window.currentUser !== undefined) {
@@ -1459,6 +1461,42 @@ function renderRooms() {
     window.scrollTo(0, currentScroll);
 }
 
+async function loadMonsterMeta() {
+    try {
+        const res = await globalFetch('/api/admin/pve/monster-meta');
+        if (res.ok) {
+            const meta = await res.json();
+            pageState.monsterMeta = meta;
+
+            window.tMap = {};
+            meta.types.forEach(t => window.tMap[t.name] = { l: t.label, i: t.icon, c: t.color });
+            
+            window.bMap = {};
+            meta.behaviors.forEach(b => window.bMap[b.name] = { l: b.label, i: b.icon, c: b.color });
+            
+            const typeOptionsContainer = document.querySelector('#mTypeWrapper .custom-select-options');
+            if (typeOptionsContainer) {
+                typeOptionsContainer.innerHTML = meta.types.map(t => `
+                    <div class="custom-option" onclick="selectMonsterType('${t.name}', '${t.label.replace(/'/g, "\\'")}', '${t.icon}', '${t.color}')">
+                        <span class="material-symbols-outlined cs-icon" style="color: ${t.color}">${t.icon}</span>${t.label}
+                    </div>
+                `).join('');
+            }
+            
+            const behaviorOptionsContainer = document.querySelector('#mBehaviorWrapper .custom-select-options');
+            if (behaviorOptionsContainer) {
+                behaviorOptionsContainer.innerHTML = meta.behaviors.map(b => `
+                    <div class="custom-option" onclick="selectMonsterBehavior('${b.name}', '${b.label.replace(/'/g, "\\'")}', '${b.icon}', '${b.color}')">
+                        <span class="material-symbols-outlined cs-icon" style="color: ${b.color}">${b.icon}</span>${b.label}
+                    </div>
+                `).join('');
+            }
+        }
+    } catch(err) {
+        console.error("Error loading monster meta", err);
+    }
+}
+
 async function loadMonsters() {
     try {
         const res = await globalFetch('/api/admin/pve/monsters');
@@ -1699,27 +1737,8 @@ async function editMonster(id) {
             const mbObj = m.behavior || 'NORMAL';
             const mb = typeof mbObj === 'object' ? mbObj.name : mbObj;
 
-            const tMap = {
-                'NORMAL': { l: 'Normal', i: 'check_box_outline_blank', c: '#94a3b8' },
-                'DEMON': { l: 'Démon', i: 'rib_cage', c: '#ef4444' },
-                'REPTILE': { l: 'Reptile', i: 'grass', c: '#10b981' },
-                'MORT_VIVANT': { l: 'Mort-vivant', i: 'skull', c: '#94a3b8' },
-                'HYBRIDE': { l: 'Hybride', i: 'network_node', c: '#3b82f6' },
-                'VAMPIRE': { l: 'Vampire', i: 'bloodtype', c: '#e11d48' },
-                'ECTOPLASME': { l: 'Ectoplasme', i: 'candle', c: '#a855f7' }
-            };
-            const bMap = {
-                'NORMAL': { l: 'Normal', i: 'check_box_outline_blank', c: '#94a3b8' },
-                'PREDATEUR': { l: 'Prédateur', i: 'track_changes', c: '#f59e0b' },
-                'CORRUPTEUR': { l: 'Corrupteur', i: 'allergy', c: '#8b5cf6' },
-                'LEADER': { l: 'Leader', i: 'crown', c: '#fcd34d' },
-                'ASSASSIN': { l: 'Assassin', i: 'gps_fixed', c: '#ef4444' },
-                'BRUTAL': { l: 'Brutal', i: 'shield', c: '#9ca3af' },
-                'TRANSCENDANT': { l: 'Transcendant', i: 'grid_view', c: '#fbbf24' }
-            };
-
-            const tData = tMap[mt] || tMap['NORMAL'];
-            const bData = bMap[mb] || bMap['NORMAL'];
+            const tData = window.tMap && window.tMap[mt] ? window.tMap[mt] : { l: mt, i: 'check_box_outline_blank', c: '#94a3b8' };
+            const bData = window.bMap && window.bMap[mb] ? window.bMap[mb] : { l: mb, i: 'check_box_outline_blank', c: '#94a3b8' };
 
             window.selectMonsterType(mt, tData.l, tData.i, tData.c);
             window.selectMonsterBehavior(mb, bData.l, bData.i, bData.c);

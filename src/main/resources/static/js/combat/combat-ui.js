@@ -1948,18 +1948,20 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
             const tTitle = typeof c.monsterType === 'object' ? c.monsterType.description : '';
             const tIcon = typeof c.monsterType === 'object' ? c.monsterType.icon : 'check_box_outline_blank';
             const tLabel = typeof c.monsterType === 'object' ? c.monsterType.label : typeName;
+            const tColor = typeof c.monsterType === 'object' && c.monsterType.color ? c.monsterType.color : '#ef4444';
             const tooltipAttrs = 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"';
 
-            monsterBadgesHtml += `<span class="text-error" ${tooltipAttrs} style="cursor: help; font-size: 0.75rem; background: rgba(239, 68, 68, 0.15); padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><template class="tooltip-data"><div style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:#ef4444; border-bottom: 1px solid #ef4444; padding-bottom: 4px;">${tLabel}</div><div style="font-style:italic; color:#cbd5e1; margin-top:8px; max-width: 350px; line-height: 1.4; white-space: normal !important; word-wrap: break-word;">${tTitle}</div></template><span class="material-symbols-outlined text-sm">${tIcon}</span>${tLabel}</span>`;
+            monsterBadgesHtml += `<span class="text-error" ${tooltipAttrs} style="cursor: help; font-size: 0.75rem; background: ${tColor}20; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid ${tColor}60; font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem; color: ${tColor};"><template class="tooltip-data"><div style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:${tColor}; border-bottom: 1px solid ${tColor}; padding-bottom: 4px;">${tLabel}</div><div style="font-style:italic; color:#cbd5e1; margin-top:8px; max-width: 350px; line-height: 1.4; white-space: normal !important; word-wrap: break-word;">${tTitle}</div></template><span class="material-symbols-outlined text-sm">${tIcon}</span>${tLabel}</span>`;
         }
         let behaviorName = typeof c.behavior === 'object' ? c.behavior?.name : c.behavior;
         if (behaviorName && behaviorName !== 'NORMAL') {
             const bTitle = typeof c.behavior === 'object' ? c.behavior.description : '';
             const bIcon = typeof c.behavior === 'object' ? c.behavior.icon : 'check_box_outline_blank';
             const bLabel = typeof c.behavior === 'object' ? c.behavior.label : behaviorName;
+            const bColor = typeof c.behavior === 'object' && c.behavior.color ? c.behavior.color : '#f59e0b';
             const tooltipAttrs = 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"';
 
-            monsterBadgesHtml += `<span ${tooltipAttrs} style="cursor: help; font-size: 0.75rem; background: rgba(139, 92, 246, 0.15); color: #8b5cf6; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(139, 92, 246, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><template class="tooltip-data"><div style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:#8b5cf6; border-bottom: 1px solid #8b5cf6; padding-bottom: 4px;">${bLabel}</div><div style="font-style:italic; color:#cbd5e1; margin-top:8px; max-width: 350px; line-height: 1.4; white-space: normal !important; word-wrap: break-word;">${bTitle}</div></template><span class="material-symbols-outlined text-sm">${bIcon}</span>${bLabel}</span>`;
+            monsterBadgesHtml += `<span class="text-warning" ${tooltipAttrs} style="cursor: help; font-size: 0.75rem; background: ${bColor}20; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid ${bColor}60; font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem; color: ${bColor};"><template class="tooltip-data"><div style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:${bColor}; border-bottom: 1px solid ${bColor}; padding-bottom: 4px;">${bLabel}</div><div style="font-style:italic; color:#cbd5e1; margin-top:8px; max-width: 350px; line-height: 1.4; white-space: normal !important; word-wrap: break-word;">${bTitle}</div></template><span class="material-symbols-outlined text-sm">${bIcon}</span>${bLabel}</span>`;
         }
         monsterBadgesHtml += `</div>`;
     }

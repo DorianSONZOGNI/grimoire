@@ -22,6 +22,14 @@ public class PvEAdminController {
 
     // --- MONSTERS ---
 
+    @GetMapping("/monster-meta")
+    public ResponseEntity<java.util.Map<String, Object>> getMonsterMeta() {
+        java.util.Map<String, Object> meta = new java.util.HashMap<>();
+        meta.put("types", generation.grimoire.enumeration.MonsterType.values());
+        meta.put("behaviors", generation.grimoire.enumeration.MonsterBehavior.values());
+        return ResponseEntity.ok(meta);
+    }
+
     @GetMapping("/monsters")
     public ResponseEntity<List<Monstre>> getAllMonsters() {
         return ResponseEntity.ok(pvEAdminService.getAllMonsters());
