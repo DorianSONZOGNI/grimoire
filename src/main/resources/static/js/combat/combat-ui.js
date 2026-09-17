@@ -1043,11 +1043,13 @@ export function updateUI(data) {
 
                         data.currentRoom.lootTable.forEach((entry, idx) => {
                             let nameHtml = '';
+                            let rawName = '';
                             let iconHtml = '';
                             let rarityColor = '#10b981';
 
                             if (entry.specialItemName) {
                                 nameHtml = entry.specialItemName;
+                                rawName = entry.specialItemName;
                                 rarityColor = '#d946ef';
                                 let catIcon = 'star';
                                 if (Array.isArray(window.allAnomaliesCombat)) {
@@ -1064,6 +1066,7 @@ export function updateUI(data) {
                                 rarityColor = getRarityColor(eq.rarity);
                                 const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
                                 nameHtml = eq.name;
+                                rawName = eq.name;
                                 if (eq.specialEffect && eq.specialEffect !== 'NONE') {
                                     nameHtml += window.getEffectInfoIconHtml(eq.specialEffect);
                                 }
@@ -1127,7 +1130,7 @@ export function updateUI(data) {
                                               </button>`;
                             } else {
                                 let specialItemNameArg = entry.priceSpecialItemName ? `'${entry.priceSpecialItemName.replace(/'/g, "\\'").replace(/"/g, '&quot;')}'` : 'null';
-                                buttonHtml = `<button class="flex-center" id="btn_buy_${idx}" type="button" onclick="openBuyModal(${idx}, '${nameHtml.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', ${goldPrice}, ${specialItemNameArg})" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='none'" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 8px; padding: 0.6rem 1.2rem; font-weight: 700; font-size: 1rem; cursor: pointer; gap: 0.5rem; transition: all 0.2s ease; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);">
+                                buttonHtml = `<button class="flex-center" id="btn_buy_${idx}" type="button" onclick="openBuyModal(${idx}, '${rawName.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', ${goldPrice}, ${specialItemNameArg})" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='none'" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 8px; padding: 0.6rem 1.2rem; font-weight: 700; font-size: 1rem; cursor: pointer; gap: 0.5rem; transition: all 0.2s ease; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);">
                                                   <span class="material-symbols-outlined icon-md">shopping_cart</span>
                                                   Acheter
                                               </button>`;
