@@ -2021,7 +2021,14 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
 
     let turnOrderBadgeHtml = '';
     if (turnOrderNum) {
-        turnOrderBadgeHtml = `<div title="Ordre de jeu : ${turnOrderNum}" style="position: absolute; top: -8px; left: -8px; width: 28px; height: 28px; background: linear-gradient(135deg, #1e293b, #0f172a); border: 2px solid ${isHero ? '#38bdf8' : '#ef4444'}; border-radius: 50%; color: #f8fafc; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.95rem; box-shadow: 0 4px 6px rgba(0,0,0,0.5); z-index: 5;">${turnOrderNum}</div>`;
+        let hasPlayed = false;
+        if (window.pageState && window.pageState.currentSessionData && window.pageState.currentSessionData.currentTurnIndex !== undefined) {
+            hasPlayed = (turnOrderNum - 1) < window.pageState.currentSessionData.currentTurnIndex;
+        }
+        const opacity = hasPlayed ? '0.5' : '1';
+        const filter = hasPlayed ? 'grayscale(1)' : 'none';
+        
+        turnOrderBadgeHtml = `<div title="Ordre de jeu : ${turnOrderNum}" style="position: absolute; top: -8px; left: -8px; width: 28px; height: 28px; background: linear-gradient(135deg, #1e293b, #0f172a); border: 2px solid ${isHero ? '#38bdf8' : '#ef4444'}; border-radius: 50%; color: #f8fafc; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.95rem; box-shadow: 0 4px 6px rgba(0,0,0,0.5); z-index: 5; opacity: ${opacity}; filter: ${filter}; transition: all 0.3s;">${turnOrderNum}</div>`;
     }
 
     return `
