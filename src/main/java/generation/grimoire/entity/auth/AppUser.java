@@ -3,6 +3,8 @@ package generation.grimoire.entity.auth;
 import jakarta.persistence.*;
 import lombok.Data;
 import lombok.NoArgsConstructor;
+import org.hibernate.annotations.Fetch;
+import org.hibernate.annotations.FetchMode;
 
 import java.util.HashSet;
 import java.util.Set;
@@ -33,22 +35,26 @@ public class AppUser {
     private int maxCharacters = 2;
 
     @ElementCollection(fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SUBSELECT)
     @CollectionTable(name = "user_unlocked_secrets", joinColumns = @JoinColumn(name = "user_id"))
     @MapKeyColumn(name = "secret_name")
     @Column(name = "level")
     private java.util.Map<String, Integer> unlockedSecrets = new java.util.HashMap<>();
 
     @ElementCollection(fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SUBSELECT)
     @CollectionTable(name = "user_unlocked_dungeons", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "dungeon_id")
     private Set<Long> unlockedDungeons = new HashSet<>();
 
     @ElementCollection(fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SUBSELECT)
     @CollectionTable(name = "user_claimed_secret_rewards", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "secret_level_key")
     private Set<String> claimedSecretRewards = new HashSet<>();
 
     @ElementCollection(fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SUBSELECT)
     @CollectionTable(name = "user_completed_dungeons", joinColumns = @JoinColumn(name = "user_id"))
     @Column(name = "dungeon_id")
     private Set<Long> completedDungeons = new HashSet<>();
