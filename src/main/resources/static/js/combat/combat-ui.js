@@ -367,6 +367,26 @@ export function updateUI(data) {
             document.querySelectorAll('.turn-timer-badge').forEach(badge => {
                 badge.textContent = `⏳ ${remaining}s`;
                 if (remaining <= 10) {
+                    if (window.combatIsMyTurn) {
+                        const turnId = `${data.turnNumber}-${data.currentTurnIndex}`;
+                        if (window.lastWarningTurnId !== turnId) {
+                            window.lastWarningTurnId = turnId;
+                            try {
+                                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                                const osc = ctx.createOscillator();
+                                const gain = ctx.createGain();
+                                osc.type = 'triangle';
+                                osc.frequency.setValueAtTime(880, ctx.currentTime);
+                                osc.frequency.setValueAtTime(440, ctx.currentTime + 0.1);
+                                gain.gain.setValueAtTime(0.05, ctx.currentTime);
+                                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+                                osc.connect(gain);
+                                gain.connect(ctx.destination);
+                                osc.start();
+                                osc.stop(ctx.currentTime + 0.3);
+                            } catch(e) {}
+                        }
+                    }
                     badge.style.background = 'rgba(69, 10, 10, 0.9)';
                     badge.style.borderColor = '#ef4444';
                     badge.style.color = '#ef4444';
