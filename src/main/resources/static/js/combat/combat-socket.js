@@ -74,7 +74,12 @@ export function updateMultiTurnBanner(data) {
 
     const activePlayer = data.activePlayer;
     const ownerUsername = activePlayer?.ownerUsername || null;
-    const isMyTurn = ownerUsername === pageState.currentUsername;
+    
+    let isMyTurn = false;
+    if (pageState.currentUsername && ownerUsername === pageState.currentUsername) {
+        isMyTurn = true;
+    }
+    
     const isEnemyTurn = !data.turnOrder?.[data.currentTurnIndex]?.player;
     
     window.combatIsMyTurn = isEnemyTurn ? false : isMyTurn;
