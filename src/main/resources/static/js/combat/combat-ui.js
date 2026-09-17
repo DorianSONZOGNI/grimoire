@@ -28,7 +28,7 @@ export function renderAndAnimateXPCards(containerId, players, prefix, isFirstCle
         let oldSpiritStats = getSpiritExpStats(oldSpiritExp);
 
         let gainedExp = Math.max(0, p.experience - oldExp);
-        
+
         let x2Badge = '';
         if (isFirstClear && gainedExp === maxGainedExp && gainedExp > 0 && (prefix === 'vic' || prefix === 'treasure')) {
             x2Badge = `<span class="material-symbols-outlined text-amber-500" style="font-size: 1.1rem; vertical-align: middle; margin-left: 2px;" title="Bonus Première Complétion (x2)">star</span>`;
@@ -1581,7 +1581,7 @@ export function updateUI(data) {
 
 function updateNextRoomButtons(data) {
     if (!data.multi) return;
-    
+
     const activeUsers = new Set();
     if (data.players) {
         data.players.forEach(p => {
@@ -1592,15 +1592,15 @@ function updateNextRoomButtons(data) {
     }
     const totalActive = activeUsers.size;
     if (totalActive <= 1) return; // Only show for 2+ active players
-    
+
     const readyUsers = data.readyForNextRoomUsers || [];
     const readyCount = readyUsers.length;
     const isMeReady = readyUsers.includes(pageState.currentUsername);
-    
+
     document.querySelectorAll('button[onclick*="nextRoom"]').forEach(btn => {
         let origText = btn.dataset.origText || btn.textContent.trim().replace(/\s*\(\d+\/\d+\)$/, '');
         btn.dataset.origText = origText;
-        
+
         let newText = isMeReady ? `En attente (${readyCount}/${totalActive})` : `${origText} (${readyCount}/${totalActive})`;
         btn.textContent = newText;
         btn.disabled = isMeReady;
@@ -2399,8 +2399,12 @@ export function renderBuffsHtml(c, buffList, motList, hotList) {
                     }
                 }
             }
-            if (effectiveFlat !== 0) {
-                text += `${effectiveFlat > 0 ? '+' : ''}${effectiveFlat} ${ui.formatStat(b.statAffected)}`;
+            if (effectiveFlat !== 0 || (!showModifier && b.modifier !== 0)) {
+                let sign = effectiveFlat > 0 ? '+' : '';
+                if (effectiveFlat === 0) {
+                    sign = b.modifier > 0 ? '+' : '-';
+                }
+                text += `${sign}${Math.abs(effectiveFlat)} ${ui.formatStat(b.statAffected)}`;
             }
             if (b.modifier && showModifier) {
                 if (text) text += ' et ';
@@ -2735,7 +2739,7 @@ export function renderSpellCard(sp) {
     const isCastable = !avail || avail.castable;
     let disabledClass = isCastable ? '' : ' spell-disabled';
     const onClickAttr = isCastable ? `onclick="initiateCombatCast(${sp.id})"` : '';
-    
+
     // Check multiplayer turn
     let multiDisabledClass = '';
     let multiDisabledStyle = '';
