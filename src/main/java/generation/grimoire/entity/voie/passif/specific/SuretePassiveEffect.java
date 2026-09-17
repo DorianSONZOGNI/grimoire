@@ -27,7 +27,7 @@ public class SuretePassiveEffect extends VoiePassiveEffect {
         System.out.println(personnage.getName() + " stocke " + pointsGained + " points de sûreté (35% de " + manaPaid
                 + " mana). Total: " + storedPoints + "/100");
         if (storedPoints >= 100) {
-            System.out.println(personnage.getName() + " obtient +15% de critique et +50% de soins prodigués pour le prochain tour (Sûreté).");
+            System.out.println(personnage.getName() + " obtient +15% de critique et +25% de soins prodigués pour le prochain tour (Sûreté).");
 
             generation.grimoire.entity.spell.type.effect.BuffDebuffEffect buffCrit = new generation.grimoire.entity.spell.type.effect.BuffDebuffEffect();
             buffCrit.setStatAffected(generation.grimoire.enumeration.StatType.CRIT);
@@ -37,7 +37,7 @@ public class SuretePassiveEffect extends VoiePassiveEffect {
             
             generation.grimoire.entity.spell.type.effect.BuffDebuffEffect buffHeal = new generation.grimoire.entity.spell.type.effect.BuffDebuffEffect();
             buffHeal.setStatAffected(generation.grimoire.enumeration.StatType.HEAL_GIVEN);
-            buffHeal.setModifier(0.50);
+            buffHeal.setModifier(0.25);
             buffHeal.setDuration(3);
             personnage.getActiveBuffs().add(buffHeal);
 
