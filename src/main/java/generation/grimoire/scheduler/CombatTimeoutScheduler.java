@@ -32,6 +32,9 @@ public class CombatTimeoutScheduler {
                 try {
                     int runNumber = dungeonRunStatRepository.findMaxRunNumberByDungeonId(session.getDungeonId()) + 1;
                     for (Personnage p : session.getPlayers()) {
+                        if (p.getUser() != null && "ADMIN".equalsIgnoreCase(p.getUser().getRole())) {
+                            continue;
+                        }
                         DungeonRunStat stat = new DungeonRunStat();
                         stat.setDungeonId(session.getDungeonId());
                         stat.setDungeonName(session.getDonjonName());
