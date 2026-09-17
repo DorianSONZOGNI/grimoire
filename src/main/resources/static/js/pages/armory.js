@@ -54,7 +54,9 @@ async function loadPersonnages() {
         const url = window.isAdmin ? '/api/personnages/all' : '/api/personnages';
         const res = await globalFetch(url);
         if (res) {
-            pageState.personnages = await res.json();
+            let chars = await res.json();
+            chars.sort((a, b) => (b.voieLevel || 1) - (a.voieLevel || 1));
+            pageState.personnages = chars;
             renderPersonnages();
             await updateCharLimitUI();
         }
@@ -387,15 +389,19 @@ function renderPersonnages() {
         return matchName && matchOwner && matchVoie && matchSpirit;
     });
 
-    // Sort logic: Sort by User then Name for admins, else by Name only
+    // Sort logic: Sort by User then VoieLevel then Name for admins, else by VoieLevel then Name
     filtered.sort((a, b) => {
         if (window.isAdmin) {
             const uA = a.ownerUsername || '';
             const uB = b.ownerUsername || '';
-            if (uA === uB) return a.name.localeCompare(b.name);
+            if (uA === uB) {
+                const diff = (b.voieLevel || 1) - (a.voieLevel || 1);
+                return diff !== 0 ? diff : a.name.localeCompare(b.name);
+            }
             return uA.localeCompare(uB);
         } else {
-            return a.name.localeCompare(b.name);
+            const diff = (b.voieLevel || 1) - (a.voieLevel || 1);
+            return diff !== 0 ? diff : a.name.localeCompare(b.name);
         }
     });
 
