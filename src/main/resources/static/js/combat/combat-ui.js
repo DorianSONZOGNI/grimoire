@@ -1764,8 +1764,10 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
             if (c.passiveStates['violence_inspiration'] !== undefined) insp = c.passiveStates['violence_inspiration'];
             if (c.passiveStates['violence_expiration'] !== undefined) exp = c.passiveStates['violence_expiration'];
         }
-        statsHtml += `<span class="hero-stat-chip" title="Inspiration (Violence)" style="border-color: rgba(220, 38, 38, 0.4);"><span class="material-symbols-outlined" style="color: #dc2626;">storm</span>${insp} Insp</span>`;
-        statsHtml += `<span class="hero-stat-chip" title="Expiration (Violence)" style="border-color: rgba(217, 70, 239, 0.4);"><span class="material-symbols-outlined" style="color: #d946ef;">air</span>${exp} Exp</span>`;
+        let inspDanger = insp >= 6 ? ' violence-danger' : '';
+        let expDanger = exp >= 6 ? ' violence-danger' : '';
+        statsHtml += `<span class="hero-stat-chip violence-insp-chip${inspDanger}" title="Inspiration (Violence)"><span class="material-symbols-outlined violence-insp-icon">storm</span>${insp}/7 Insp</span>`;
+        statsHtml += `<span class="hero-stat-chip violence-exp-chip${expDanger}" title="Expiration (Violence)"><span class="material-symbols-outlined violence-exp-icon">air</span>${exp}/7 Exp</span>`;
     }
 
     if (c.voie && c.voie.nom && c.voie.nom.toLowerCase().includes('raison')) {

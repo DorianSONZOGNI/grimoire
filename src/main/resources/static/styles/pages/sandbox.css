@@ -115,6 +115,32 @@
             font-size: 0.8rem;
         }
 
+.violence-insp-chip {
+    border-color: rgba(220, 38, 38, 0.4) !important;
+}
+.violence-insp-icon {
+    color: #dc2626 !important;
+}
+
+.violence-exp-chip {
+    border-color: rgba(217, 70, 239, 0.4) !important;
+}
+.violence-exp-icon {
+    color: #d946ef !important;
+}
+
+.violence-danger {
+    color: #ff0000 !important;
+    font-weight: bold;
+    animation: violencePulse 1.5s infinite;
+}
+
+@keyframes violencePulse {
+    0% { opacity: 1; }
+    50% { opacity: 0.5; }
+    100% { opacity: 1; }
+}
+
 .modal-title{
             font-family: 'Outfit', sans-serif;
             font-size: 1.3rem;
