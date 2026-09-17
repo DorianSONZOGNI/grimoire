@@ -31,7 +31,7 @@ public class ConsolidationPassiveEffect extends VoiePassiveEffect {
             int hpCost = (int) (maxHp * 0.05);
             personnage.setHealthCurrent(Math.max(1, currentHp - hpCost));
             
-            int shieldAmount = (int) (maxHp * 0.10);
+            int shieldAmount = (int) (currentHp * 0.10);
             personnage.addShield(shieldAmount, 1, SOURCE_NAME);
             
             System.out.println(personnage.getName() + " perd " + hpCost + " PV et gagne un bouclier de " + shieldAmount + " (Consolidation).");

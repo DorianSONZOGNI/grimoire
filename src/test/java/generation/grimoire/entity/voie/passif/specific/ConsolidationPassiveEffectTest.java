@@ -27,7 +27,7 @@ class ConsolidationPassiveEffectTest {
         passive.onTurnStart(hero);
         
         assertThat(hero.getHealthCurrent()).isEqualTo(45); // 50 - 5
-        assertThat(hero.getTotalShield()).isEqualTo(10); // 10% de 100
+        assertThat(hero.getTotalShield()).isEqualTo(5); // 10% de 50
     }
 
     @Test
