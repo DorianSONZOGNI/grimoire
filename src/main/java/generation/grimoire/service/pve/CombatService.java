@@ -444,10 +444,27 @@ public class CombatService {
         return combatRoomService.buyMerchantItem(session, lootIndex, characterId);
     }
 
-    public CombatSession proceedToNextRoom(String sessionId) {
+    public CombatSession proceedToNextRoom(String sessionId, String username) {
         CombatSession session = getSession(sessionId);
         if (session == null || session.isFinished())
             return session;
+
+        if (session.isMulti()) {
+            session.getReadyForNextRoomUsers().add(username);
+            java.util.Set<String> activeUsers = new java.util.HashSet<>();
+            for (Personnage p : session.getPlayers()) {
+                if (session.isEligibleForRewards(p) && p.getHealthCurrent() > 0) {
+                    if (p.getOwnerUsername() != null) {
+                        activeUsers.add(p.getOwnerUsername());
+                    }
+                }
+            }
+            if (!session.getReadyForNextRoomUsers().containsAll(activeUsers)) {
+                return session;
+            }
+            session.getReadyForNextRoomUsers().clear();
+        }
+
         CombatSession result = combatRoomService.proceedToNextRoom(session);
         if (session.isFinished()) {
             activeSessions.remove(sessionId);
@@ -455,10 +472,27 @@ public class CombatService {
         return result;
     }
 
-    public CombatSession openStrangeDoor(String sessionId) {
+    public CombatSession openStrangeDoor(String sessionId, String username) {
         CombatSession session = getSession(sessionId);
         if (session == null || session.isFinished())
             return session;
+
+        if (session.isMulti()) {
+            session.getReadyForNextRoomUsers().add(username);
+            java.util.Set<String> activeUsers = new java.util.HashSet<>();
+            for (Personnage p : session.getPlayers()) {
+                if (session.isEligibleForRewards(p) && p.getHealthCurrent() > 0) {
+                    if (p.getOwnerUsername() != null) {
+                        activeUsers.add(p.getOwnerUsername());
+                    }
+                }
+            }
+            if (!session.getReadyForNextRoomUsers().containsAll(activeUsers)) {
+                return session;
+            }
+            session.getReadyForNextRoomUsers().clear();
+        }
+
         return combatRoomService.openStrangeDoor(session);
     }
 

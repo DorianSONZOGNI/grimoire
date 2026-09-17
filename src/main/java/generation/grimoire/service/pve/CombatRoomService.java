@@ -190,7 +190,12 @@ class CombatRoomService {
                 .filter(session::isEligibleForRewards).collect(java.util.stream.Collectors.toList());
         int expPerHero = exp / Math.max(1, chestEligible.size());
         for (Personnage p : chestEligible) {
-            p.setExperience(p.getExperience() + expPerHero);
+            int actualExp = expPerHero;
+            AppUser u = p.getUser();
+            if (u != null && !u.getCompletedDungeons().contains(session.getDungeonId())) {
+                actualExp *= 2;
+            }
+            p.setExperience(p.getExperience() + actualExp);
             personnageRepository.save(p);
         }
 
@@ -205,7 +210,7 @@ class CombatRoomService {
         }
 
         session.addLog("Vous avez ouvert le coffre ! Vous trouvez " + gold + " Or et chaque héros gagne " + expPerHero
-                + " XP.");
+                + " XP (x2 si 1ère fois).");
 
         // First pass: collect items
         double totalConsumablesWeight = 0.0;
@@ -397,13 +402,13 @@ class CombatRoomService {
                     String itemName = room.getAlterationSpecialItemReward();
                     Anomalie template = anomalieRepository.findFirstByNameAndIsTemplateTrueOrderByIdAsc(itemName);
                     if (template != null && !session.getPlayers().isEmpty()) {
-                        java.util.Set<AppUser> rewardedUsers = new java.util.HashSet<>();
+                        java.util.Set<String> rewardedUsernames = new java.util.HashSet<>();
                         for (Personnage p : session.getPlayers()) {
                             if (!session.isEligibleForRewards(p))
                                 continue;
                             AppUser user = p.getUser();
-                            if (user != null && !rewardedUsers.contains(user)) {
-                                rewardedUsers.add(user);
+                            if (user != null && !rewardedUsernames.contains(user.getUsername())) {
+                                rewardedUsernames.add(user.getUsername());
                                 Anomalie newAnomaly = new Anomalie();
                                 newAnomaly.setName(template.getName());
                                 newAnomaly.setDescription(template.getDescription());
@@ -953,14 +958,25 @@ class CombatRoomService {
             }
 
             if (!session.getPlayers().isEmpty()) {
-                AppUser user = session.getPlayers().get(0).getUser();
-                if (user != null) {
+                java.util.Set<AppUser> uniqueUsers = session.getPlayers().stream()
+                        .filter(java.util.Objects::nonNull)
+                        .map(p -> p.getUser())
+                        .filter(java.util.Objects::nonNull)
+                        .collect(java.util.stream.Collectors.toSet());
+                
+                boolean anyFirstClear = false;
+                for (AppUser user : uniqueUsers) {
                     if (!user.getCompletedDungeons().contains(session.getDungeonId())) {
                         user.getCompletedDungeons().add(session.getDungeonId());
-                        session.addLog("🎉 Félicitations, vous avez terminé ce donjon pour la première fois !");
+                        anyFirstClear = true;
                     }
                     userRepository.save(user);
                 }
+                
+                if (anyFirstClear) {
+                    session.addLog("🎉 Félicitations, vous avez terminé ce donjon pour la première fois !");
+                }
+                
                 for (generation.grimoire.entity.personnage.Personnage p : session.getPlayers()) {
                     personnageRepository.save(java.util.Objects.requireNonNull(p));
                 }
@@ -1139,29 +1155,27 @@ class CombatRoomService {
                 if (anomalieId > 0) {
                     Anomalie template = anomalieRepository.findById(anomalieId).orElse(null);
                     if (template != null) {
-                        Anomalie clone = new Anomalie();
-                        clone.setName(template.getName());
-                        clone.setDescription(template.getDescription());
-                        clone.setSpiritualite(template.getSpiritualite());
-                        clone.setCategory(template.getCategory());
-                        clone.setLevel(template.getLevel() != null ? template.getLevel() : 1);
-                        clone.setMagicObject(template.isMagicObject());
-                        clone.setTemplate(false);
-
-                        AppUser user = null;
-                        Personnage recipient = session.getPlayers().stream()
-                                .filter(session::isEligibleForRewards)
-                                .findFirst().orElse(null);
-                        if (recipient != null) {
-                            user = recipient.getUser();
-                        }
-
-                        if (user != null) {
-                            clone.setOwnerUsername(user.getUsername());
-                            clone.setUser(user);
-                            anomalieRepository.save(clone);
-                            anomalyName = clone.getName();
-                            session.addLog("Vous avez obtenu l'item : " + anomalyName + " !");
+                        anomalyName = template.getName();
+                        java.util.Set<String> rewardedUsernames = new java.util.HashSet<>();
+                        for (Personnage p : session.getPlayers()) {
+                            if (!session.isEligibleForRewards(p))
+                                continue;
+                            AppUser user = p.getUser();
+                            if (user != null && !rewardedUsernames.contains(user.getUsername())) {
+                                rewardedUsernames.add(user.getUsername());
+                                Anomalie clone = new Anomalie();
+                                clone.setName(template.getName());
+                                clone.setDescription(template.getDescription());
+                                clone.setSpiritualite(template.getSpiritualite());
+                                clone.setCategory(template.getCategory());
+                                clone.setLevel(template.getLevel() != null ? template.getLevel() : 1);
+                                clone.setMagicObject(template.isMagicObject());
+                                clone.setTemplate(false);
+                                clone.setOwnerUsername(user.getUsername());
+                                clone.setUser(user);
+                                anomalieRepository.save(clone);
+                                session.addLog(user.getUsername() + " a obtenu l'item : " + anomalyName + " !");
+                            }
                         }
                     }
                 }

@@ -571,9 +571,6 @@ class CombatTurnService {
         }
 
         if (xpDrop > 0 || goldDrop > 0) {
-            if (session.isFirstClear()) {
-                xpDrop *= 2;
-            }
             session.setTotalExpAccumulated(session.getTotalExpAccumulated() + xpDrop);
             session.setTotalGoldAccumulated(session.getTotalGoldAccumulated() + goldDrop);
             session.setRoomExpAccumulated(session.getRoomExpAccumulated() + xpDrop);
@@ -583,7 +580,12 @@ class CombatTurnService {
                     .filter(session::isEligibleForRewards).collect(java.util.stream.Collectors.toList());
             int expPerHero = xpDrop / Math.max(1, eligiblePlayers.size());
             for (Personnage p : eligiblePlayers) {
-                p.setExperience(p.getExperience() + expPerHero);
+                int actualExp = expPerHero;
+                AppUser u = p.getUser();
+                if (u != null && !u.getCompletedDungeons().contains(session.getDungeonId())) {
+                    actualExp *= 2;
+                }
+                p.setExperience(p.getExperience() + actualExp);
                 personnageRepository.save(p);
             }
             if (goldDrop > 0 && !eligiblePlayers.isEmpty()) {
@@ -595,9 +597,9 @@ class CombatTurnService {
                     }
                 }
                 session.addLog("Les monstres vaincus ont lâché " + goldDrop + " Or. Chaque héros reçoit " + expPerHero
-                        + " XP.");
+                        + " XP (x2 si 1ère fois).");
             } else {
-                session.addLog("Chaque héros reçoit " + expPerHero + " XP.");
+                session.addLog("Chaque héros reçoit " + expPerHero + " XP (x2 si 1ère fois).");
             }
         }
 
@@ -624,12 +626,17 @@ class CombatTurnService {
                 if (bossSpXp > 0 && !bossEligible.isEmpty()) {
                     int spXpPerHero = bossSpXp / Math.max(1, bossEligible.size());
                     for (Personnage p : bossEligible) {
-                        p.setSpiritualiteExperience(p.getSpiritualiteExperience() + spXpPerHero);
+                        int actualSpXp = spXpPerHero;
+                        AppUser u = p.getUser();
+                        if (u != null && !u.getCompletedDungeons().contains(session.getDungeonId())) {
+                            actualSpXp *= 2;
+                        }
+                        p.setSpiritualiteExperience(p.getSpiritualiteExperience() + actualSpXp);
                         personnageRepository.save(p);
                     }
                     session.setBossBonusSpiritualXp(bossSpXp);
                     session.addLog("🔮 Le Boss vaincu octroie " + bossSpXp + " XP Spiritualité, partagé entre "
-                            + bossEligible.size() + " héros (" + spXpPerHero + " chacun).");
+                            + bossEligible.size() + " héros (" + spXpPerHero + " chacun, x2 si 1ère fois).");
                 }
 
                 if (bossGold > 0 && !bossEligible.isEmpty()) {

@@ -8,10 +8,17 @@ import { getSpellEffectsSummaryHtml } from '../pages/grimoire.js';
 import { getVoieButtonColor, getSpiritButtonColor } from '../utils/filters.js';
 
 
-export function renderAndAnimateXPCards(containerId, players, prefix) {
+export function renderAndAnimateXPCards(containerId, players, prefix, isFirstClear = false) {
     const container = document.getElementById(containerId);
     if (!container) return;
     container.classList.remove('hidden'); container.classList.add('flex');
+
+    let maxGainedExp = 0;
+    players.forEach(p => {
+        let oldExp = pageState.previousPlayerXP[p.id] !== undefined ? pageState.previousPlayerXP[p.id] : p.experience;
+        let gainedExp = Math.max(0, p.experience - oldExp);
+        if (gainedExp > maxGainedExp) maxGainedExp = gainedExp;
+    });
 
     let cardsHtml = '';
     players.forEach(p => {
@@ -20,9 +27,19 @@ export function renderAndAnimateXPCards(containerId, players, prefix) {
         let oldSpiritExp = pageState.previousPlayerSpiritXP[p.id] !== undefined ? pageState.previousPlayerSpiritXP[p.id] : (p.spiritualiteExperience || 0);
         let oldSpiritStats = getSpiritExpStats(oldSpiritExp);
 
+        let gainedExp = Math.max(0, p.experience - oldExp);
+        
+        let x2Badge = '';
+        if (isFirstClear && gainedExp === maxGainedExp && gainedExp > 0 && (prefix === 'vic' || prefix === 'treasure')) {
+            x2Badge = `<span class="material-symbols-outlined text-amber-500" style="font-size: 1.1rem; vertical-align: middle; margin-left: 2px;" title="Bonus Première Complétion (x2)">star</span>`;
+        }
+
+        let gainedHtml = gainedExp > 0 ? `<div class="text-info font-bold flex items-center justify-center" style="font-size: 0.95rem; text-shadow: 0 0 5px rgba(56, 189, 248, 0.5); margin-bottom: 0.4rem;">+${gainedExp} XP ${x2Badge}</div>` : '';
+
         let cardsHtmlPart = `
             <div class="text-center relative" id="${prefix}-xp-card-${p.id}" style="background: rgba(0,0,0,0.4); padding: 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); width: 180px; overflow: hidden; transition: all 0.5s; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8); display: flex; flex-direction: column; gap: 0.3rem;">
-                <div class="font-bold whitespace-nowrap text-subtle"  style="margin-bottom: 0.3rem; text-overflow: ellipsis; overflow: hidden;">${p.name}</div>
+                <div class="font-bold whitespace-nowrap text-subtle" style="margin-bottom: 0.1rem; text-overflow: ellipsis; overflow: hidden;">${p.name}</div>
+                ${gainedHtml}
                 
                 <div class="text-xs" id="${prefix}-xp-lvl-${p.id}" style="color: #38bdf8; font-weight: 600; transition: color 0.3s, transform 0.3s;">Voie Niv. ${oldStats.level}</div>
                 <div class="progress-track">
@@ -417,29 +434,12 @@ export function updateUI(data) {
                         let goldAmount = Math.max(0, totalGold - bossBonusGold);
                         let xpAmount = xpPerHero;
 
-                        // Display base Gold and Base XP together
-                        if (goldAmount > 0 || xpAmount > 0) {
-                            let baseContent = '';
-                            if (goldAmount > 0) {
-                                baseContent += `
-                                    <span class="material-symbols-outlined text-warning">monetization_on</span>
-                                    <span class="text-warning">+${goldAmount} Or</span>
-                                `;
-                            }
-                            if (goldAmount > 0 && xpAmount > 0) {
-                                baseContent += `<span class="text-muted" style="margin: 0 0.5rem;">|</span>`;
-                            }
-                            if (xpAmount > 0) {
-                                let xpBadge = data.firstClear ? '<span class="text-xs text-amber-500 font-bold ml-2">(XP x2)</span>' : '';
-                                baseContent += `
-                                    <div class="relative flex items-center gap-1">
-                                        <span class="material-symbols-outlined text-info">upgrade</span>
-                                        <span class="text-info">+${xpAmount} XP</span>
-                                        ${xpBadge}
-                                    </div>
-                                `;
-                            }
-
+                        // Display base Gold only
+                        if (goldAmount > 0) {
+                            let baseContent = `
+                                <span class="material-symbols-outlined text-warning">monetization_on</span>
+                                <span class="text-warning">+${goldAmount} Or</span>
+                            `;
                             xpContainer.innerHTML += `
                                 <div class="victory-xp-block">
                                     <div class="victory-xp-block-inner victory-xp-base">
@@ -490,7 +490,7 @@ export function updateUI(data) {
                             `;
                         }
 
-                        renderAndAnimateXPCards('combatVictoryXpContainer', data.players, 'vic');
+                        renderAndAnimateXPCards('combatVictoryXpContainer', data.players, 'vic', data.firstClear);
                     }
                 }
             } else {
@@ -512,6 +512,11 @@ export function updateUI(data) {
 
             document.getElementById('btnAttack').disabled = true;
             document.getElementById('enemiesContainer').innerHTML = ''; // Clear enemies
+
+            // Reset les textes originaux des boutons pour ne pas garder ceux de la salle précédente
+            document.querySelectorAll('button[onclick*="nextRoom"]').forEach(btn => {
+                delete btn.dataset.origText;
+            });
 
             const overlay = document.getElementById('eventOverlay');
             const icon = document.getElementById('eventIcon');
@@ -549,7 +554,7 @@ export function updateUI(data) {
                         lootContainer.dataset.filled = 'true';
                         lootContainer.innerHTML = ''; // Clear comments
 
-                        renderAndAnimateXPCards('eventLootContainer', data.players, 'treasure');
+                        renderAndAnimateXPCards('eventLootContainer', data.players, 'treasure', data.firstClear);
 
                         let gainedItemsHtml = '';
                         let goldAmount = 0;
@@ -904,7 +909,7 @@ export function updateUI(data) {
                             lootContainer.dataset.filled = 'true';
                             lootContainer.innerHTML = ''; // Clear previous content
 
-                            renderAndAnimateXPCards('eventLootContainer', data.players, 'alt');
+                            renderAndAnimateXPCards('eventLootContainer', data.players, 'alt', false);
 
                             let gainedItemsHtml = '';
                             if (data.combatLog) {
@@ -1236,7 +1241,7 @@ export function updateUI(data) {
                         if (data.combatLog) {
                             for (let i = data.combatLog.length - 1; i >= Math.max(0, data.combatLog.length - 5); i--) {
                                 const log = data.combatLog[i];
-                                const match = log.match(/Vous avez obtenu l'item : (.*?) !/);
+                                const match = log.match(/a obtenu l'item : (.*?) !/);
                                 if (match && Array.isArray(window.allAnomaliesCombat)) {
                                     const eqName = match[1];
                                     const an = window.allAnomaliesCombat.find(a => a.name === eqName);
@@ -1571,6 +1576,42 @@ export function updateUI(data) {
     }
 
     processNewDeathLogs(data.combatLog);
+    updateNextRoomButtons(data);
+}
+
+function updateNextRoomButtons(data) {
+    if (!data.multi) return;
+    
+    const activeUsers = new Set();
+    if (data.players) {
+        data.players.forEach(p => {
+            if (p.healthCurrent > 0 && !(data.fledUsernames && data.fledUsernames.includes(p.ownerUsername))) {
+                if (p.ownerUsername) activeUsers.add(p.ownerUsername);
+            }
+        });
+    }
+    const totalActive = activeUsers.size;
+    if (totalActive <= 1) return; // Only show for 2+ active players
+    
+    const readyUsers = data.readyForNextRoomUsers || [];
+    const readyCount = readyUsers.length;
+    const isMeReady = readyUsers.includes(pageState.currentUsername);
+    
+    document.querySelectorAll('button[onclick*="nextRoom"]').forEach(btn => {
+        let origText = btn.dataset.origText || btn.textContent.trim().replace(/\s*\(\d+\/\d+\)$/, '');
+        btn.dataset.origText = origText;
+        
+        let newText = isMeReady ? `En attente (${readyCount}/${totalActive})` : `${origText} (${readyCount}/${totalActive})`;
+        btn.textContent = newText;
+        btn.disabled = isMeReady;
+        btn.classList.toggle('waiting-ready', isMeReady);
+        if (isMeReady) {
+            btn.classList.add('disabled');
+        } else {
+            btn.classList.remove('disabled');
+        }
+        btn.style.opacity = isMeReady ? '0.5' : '1';
+    });
 }
 
 export function getBossBuffsHtml(c) {
@@ -1907,18 +1948,20 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
             const tTitle = typeof c.monsterType === 'object' ? c.monsterType.description : '';
             const tIcon = typeof c.monsterType === 'object' ? c.monsterType.icon : 'check_box_outline_blank';
             const tLabel = typeof c.monsterType === 'object' ? c.monsterType.label : typeName;
+            const tColor = typeof c.monsterType === 'object' && c.monsterType.color ? c.monsterType.color : '#ef4444';
             const tooltipAttrs = 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"';
 
-            monsterBadgesHtml += `<span class="text-error" ${tooltipAttrs} style="cursor: help; font-size: 0.75rem; background: rgba(239, 68, 68, 0.15); padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><template class="tooltip-data"><div style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:#ef4444; border-bottom: 1px solid #ef4444; padding-bottom: 4px;">${tLabel}</div><div style="font-style:italic; color:#cbd5e1; margin-top:8px; max-width: 350px; line-height: 1.4; white-space: normal !important; word-wrap: break-word;">${tTitle}</div></template><span class="material-symbols-outlined text-sm">${tIcon}</span>${tLabel}</span>`;
+            monsterBadgesHtml += `<span class="text-error" ${tooltipAttrs} style="cursor: help; font-size: 0.75rem; background: ${tColor}20; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid ${tColor}60; font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem; color: ${tColor};"><template class="tooltip-data"><div style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:${tColor}; border-bottom: 1px solid ${tColor}; padding-bottom: 4px;">${tLabel}</div><div style="font-style:italic; color:#cbd5e1; margin-top:8px; max-width: 350px; line-height: 1.4; white-space: normal !important; word-wrap: break-word;">${tTitle}</div></template><span class="material-symbols-outlined text-sm">${tIcon}</span>${tLabel}</span>`;
         }
         let behaviorName = typeof c.behavior === 'object' ? c.behavior?.name : c.behavior;
         if (behaviorName && behaviorName !== 'NORMAL') {
             const bTitle = typeof c.behavior === 'object' ? c.behavior.description : '';
             const bIcon = typeof c.behavior === 'object' ? c.behavior.icon : 'check_box_outline_blank';
             const bLabel = typeof c.behavior === 'object' ? c.behavior.label : behaviorName;
+            const bColor = typeof c.behavior === 'object' && c.behavior.color ? c.behavior.color : '#f59e0b';
             const tooltipAttrs = 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"';
 
-            monsterBadgesHtml += `<span ${tooltipAttrs} style="cursor: help; font-size: 0.75rem; background: rgba(139, 92, 246, 0.15); color: #8b5cf6; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(139, 92, 246, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><template class="tooltip-data"><div style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:#8b5cf6; border-bottom: 1px solid #8b5cf6; padding-bottom: 4px;">${bLabel}</div><div style="font-style:italic; color:#cbd5e1; margin-top:8px; max-width: 350px; line-height: 1.4; white-space: normal !important; word-wrap: break-word;">${bTitle}</div></template><span class="material-symbols-outlined text-sm">${bIcon}</span>${bLabel}</span>`;
+            monsterBadgesHtml += `<span class="text-warning" ${tooltipAttrs} style="cursor: help; font-size: 0.75rem; background: ${bColor}20; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid ${bColor}60; font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem; color: ${bColor};"><template class="tooltip-data"><div style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:${bColor}; border-bottom: 1px solid ${bColor}; padding-bottom: 4px;">${bLabel}</div><div style="font-style:italic; color:#cbd5e1; margin-top:8px; max-width: 350px; line-height: 1.4; white-space: normal !important; word-wrap: break-word;">${bTitle}</div></template><span class="material-symbols-outlined text-sm">${bIcon}</span>${bLabel}</span>`;
         }
         monsterBadgesHtml += `</div>`;
     }
@@ -2690,8 +2733,16 @@ export function renderSpellCard(sp) {
     const availabilityList = pageState.currentSessionData.spellAvailability || [];
     const avail = availabilityList.find(a => a.spellId === sp.id);
     const isCastable = !avail || avail.castable;
-    const disabledClass = isCastable ? '' : ' spell-disabled';
+    let disabledClass = isCastable ? '' : ' spell-disabled';
     const onClickAttr = isCastable ? `onclick="initiateCombatCast(${sp.id})"` : '';
+    
+    // Check multiplayer turn
+    let multiDisabledClass = '';
+    let multiDisabledStyle = '';
+    if (window.combatIsMyTurn === false) {
+        multiDisabledClass = ' multi-disabled';
+        multiDisabledStyle = 'opacity: 0.35;';
+    }
 
     // Build disabled badge HTML
     let disabledBadgeHtml = '';
@@ -2730,7 +2781,7 @@ export function renderSpellCard(sp) {
     }
 
     return `
-        <div id="spell-card-${sp.id}" class="combat-spell-card spell-btn${disabledClass}" style="border-top: 2px solid ${titleColor}; position: relative;" ${onClickAttr} ${tooltipAttrs}>
+        <div id="spell-card-${sp.id}" class="combat-spell-card spell-btn${disabledClass}${multiDisabledClass}" style="border-top: 2px solid ${titleColor}; position: relative; ${multiDisabledStyle}" ${onClickAttr} ${tooltipAttrs}>
             <div class="absolute" style="top: -9px; left: -5px; background: #0f172a; border: 1px solid ${titleColor}; color: ${titleColor}; border-radius: 4px; padding: 0.1rem 0.4rem; font-size: 0.65rem; font-weight: bold; z-index: 25;">Lvl ${sp.niveau}</div>
             
             <div class="combat-spell-header mt-xs">

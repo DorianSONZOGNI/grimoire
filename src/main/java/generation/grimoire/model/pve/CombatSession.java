@@ -120,6 +120,7 @@ public class CombatSession {
     // Multi-player co-op
     private boolean isMulti = false;
     private String multiSessionId = null;
+    private Set<String> readyForNextRoomUsers = new HashSet<>();
 
     public CombatSession(String sessionId, Donjon donjon, List<Personnage> players) {
         this.sessionId = sessionId;

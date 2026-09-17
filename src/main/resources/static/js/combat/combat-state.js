@@ -89,11 +89,14 @@ pageState.pendingNeedsAlly = false;
 export function setButtonsProcessing(isProc) {
     const buttons = document.querySelectorAll('.action-btn, .btn');
     buttons.forEach(btn => {
-        btn.disabled = isProc;
         if (isProc) {
+            btn.disabled = true;
             btn.classList.add('disabled');
         } else {
-            btn.classList.remove('disabled');
+            if (!btn.classList.contains('waiting-ready')) {
+                btn.disabled = false;
+                btn.classList.remove('disabled');
+            }
         }
     });
 }
