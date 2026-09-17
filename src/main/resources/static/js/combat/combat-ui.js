@@ -2022,8 +2022,8 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
     let turnOrderBadgeHtml = '';
     if (turnOrderNum) {
         let hasPlayed = false;
-        if (window.pageState && window.pageState.currentSessionData && window.pageState.currentSessionData.currentTurnIndex !== undefined) {
-            hasPlayed = (turnOrderNum - 1) < window.pageState.currentSessionData.currentTurnIndex;
+        if (pageState && pageState.currentSessionData && pageState.currentSessionData.currentTurnIndex !== undefined) {
+            hasPlayed = (turnOrderNum - 1) < pageState.currentSessionData.currentTurnIndex;
         }
         const opacity = hasPlayed ? '0.5' : '1';
         const filter = hasPlayed ? 'grayscale(1)' : 'none';
