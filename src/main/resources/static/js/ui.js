@@ -678,9 +678,30 @@ export function generateMutationTooltipHtml(mut) {
         mut.spells.forEach(spell => {
             let costs = [];
             if (spell.action > 0) costs.push(`<span class="text-amber-400 font-bold">${spell.action} AP</span>`);
-            if (spell.manaCost > 0) costs.push(`<span class="text-blue-400 font-bold">${spell.manaCost} Mana</span>`);
-            if (spell.heatCost > 0) costs.push(`<span class="text-orange-500 font-bold">${spell.heatCost} Chaleur</span>`);
-            if (spell.healCost > 0) costs.push(`<span class="text-red-400 font-bold">${spell.healCost} PV</span>`);
+            if (spell.manaCost > 0 || spell.percentManaCost > 0) {
+                let manaStr = '';
+                if (spell.manaCost > 0) manaStr += spell.manaCost;
+                if (spell.manaCost > 0 && spell.percentManaCost > 0) manaStr += ' + ';
+                if (spell.percentManaCost > 0) manaStr += `${spell.percentManaCost}% (${formatSrc(spell.percentManaCostSource || 'CASTER_MANA_MAX')})`;
+                costs.push(`<span class="text-blue-400 font-bold">${manaStr} Mana</span>`);
+            }
+            if (spell.healCost > 0 || spell.percentHealCost > 0) {
+                let healStr = '';
+                if (spell.healCost > 0) healStr += spell.healCost;
+                else if (spell.percentHealCost > 0) healStr += '';
+                if (spell.healCost > 0 && spell.percentHealCost > 0) healStr += ' + ';
+                if (spell.percentHealCost > 0) healStr += `${spell.percentHealCost}% (${formatSrc(spell.percentHealCostSource || 'CASTER_HEALTH_MAX')})`;
+                costs.push(`<span class="text-red-400 font-bold">${healStr} PV</span>`);
+            }
+            if (spell.heatCost > 0 || spell.percentHeatCost > 0) {
+                let heatStr = '';
+                if (spell.heatCost > 0) heatStr += spell.heatCost;
+                else if (spell.percentHeatCost > 0) heatStr += '';
+                if (spell.heatCost > 0 && spell.percentHeatCost > 0) heatStr += ' + ';
+                if (spell.percentHeatCost > 0) heatStr += `${spell.percentHeatCost}%`;
+                costs.push(`<span class="text-orange-500 font-bold">${heatStr} Chaleur</span>`);
+            }
+            if (spell.seedCost > 0) costs.push(`<span class="text-emerald-400 font-bold">${spell.seedCost} Graines</span>`);
             let costStr = costs.length > 0 ? costs.join(' • ') : '<span class="text-slate-500 text-xs">Gratuit</span>';
 
             let effectsHtml = window.getSpellEffectsSummaryHtml ? window.getSpellEffectsSummaryHtml(spell) : '';
