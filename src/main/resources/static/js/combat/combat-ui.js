@@ -2334,38 +2334,30 @@ export function renderBuffsHtml(c, buffList, motList, hotList) {
             let text = '';
 
             if (b.modifier && c) {
-                let finalStat = null;
+                let rawStat = null;
                 const affected = b.statAffected ? b.statAffected.toUpperCase() : '';
 
-                if (affected.includes('ARMURE') || affected.includes('ARMOR')) finalStat = c.totalArmor !== undefined ? c.totalArmor : c.armor;
-                else if (affected.includes('RESISTANCE')) finalStat = c.totalResistance !== undefined ? c.totalResistance : c.resistance;
-                else if (affected === 'POWER' || affected.includes('PUISSANCE')) finalStat = c.totalPower !== undefined ? c.totalPower : c.power;
-                else if (affected.includes('STRENGTH') || affected.includes('FORCE')) finalStat = c.totalStrength !== undefined ? c.totalStrength : c.strength;
-                else if (affected.includes('SPEED') || affected.includes('VITESSE')) finalStat = c.totalSpeed !== undefined ? c.totalSpeed : c.speed;
-                else if (affected === 'CRIT' || affected.includes('CRITIQUE')) finalStat = c.totalCrit !== undefined ? c.totalCrit : c.crit;
-                else if (affected.includes('HEALTH_MAX') || affected.includes('PV_MAX') || affected.includes('HP_MAX')) finalStat = c.healthMax;
-                else if (affected.includes('MANA_MAX') || affected.includes('MP_MAX')) finalStat = c.manaMax;
+                if (affected.includes('ARMURE') || affected.includes('ARMOR')) rawStat = c.armor;
+                else if (affected.includes('RESISTANCE')) rawStat = c.resistance;
+                else if (affected === 'POWER' || affected.includes('PUISSANCE')) rawStat = c.power;
+                else if (affected.includes('STRENGTH') || affected.includes('FORCE')) rawStat = c.strength;
+                else if (affected.includes('SPEED') || affected.includes('VITESSE')) rawStat = c.speed;
+                else if (affected === 'CRIT' || affected.includes('CRITIQUE')) rawStat = c.crit;
+                else if (affected.includes('HEALTH_MAX') || affected.includes('PV_MAX') || affected.includes('HP_MAX')) rawStat = c.healthMax;
+                else if (affected.includes('MANA_MAX') || affected.includes('MP_MAX')) rawStat = c.manaMax;
 
-                if (finalStat !== null && finalStat !== undefined) {
-                    let totalPos = 0.0;
-                    let totalNeg = 1.0;
+                if (rawStat !== null && rawStat !== undefined) {
                     const allBuffs = c.activeBuffs || c.buffs || [];
 
+                    // Compute flat bonus from buffs (same as server getStatFlatBonus)
+                    let flatBonus = 0;
                     allBuffs.forEach(otherBuff => {
-                        if (otherBuff.statAffected === b.statAffected && otherBuff.modifier) {
-                            if (otherBuff.modifier > 0) totalPos += otherBuff.modifier;
-                            else if (otherBuff.modifier < 0) totalNeg *= (1.0 + otherBuff.modifier);
+                        if (otherBuff.statAffected === b.statAffected && otherBuff.flatValue) {
+                            flatBonus += otherBuff.flatValue;
                         }
                     });
 
-                    if (b.statAffected === 'DAMAGE_GIVEN_PHYSIC') {
-                        if (allBuffs.some(ab => ab.statAffected === 'AME_DETACHEE')) {
-                            totalPos += 0.40;
-                        }
-                    }
-
-                    let totalMultiplier = (1.0 + totalPos) * totalNeg;
-                    let baseStat = totalMultiplier > 0 ? (finalStat / totalMultiplier) : 0;
+                    let baseStat = rawStat + flatBonus;
 
                     let runPos = 0.0;
                     let runNeg = 1.0;
