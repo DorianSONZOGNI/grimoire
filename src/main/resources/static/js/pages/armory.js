@@ -464,15 +464,19 @@ function renderPersonnages() {
         const persoEquips = pageState.allEquipments.filter(e => e.personnage && e.personnage.id === p.id);
         let equipHtml = '';
         if (persoEquips.length > 0) {
-            const slotOrder = ['CASQUE', 'PLASTRON', 'ARME_GAUCHE', 'ARME_DROITE', 'ANNEAU_GAUCHE', 'ANNEAU_DROIT', 'BOTTES', 'CAPE'];
-            equipHtml = `<div class="char-equip-row">` +
-                persoEquips.sort((a, b) => {
-                    const sNameA = typeof (a.slot?.name || a.slot) === 'object' ? a.slot?.name : a.slot;
-                    const sNameB = typeof (b.slot?.name || b.slot) === 'object' ? b.slot?.name : b.slot;
-                    return slotOrder.indexOf(sNameA) - slotOrder.indexOf(sNameB);
-                }).map(eq => {
+            const slotOrder = ['CASQUE', 'PLASTRON', 'CAPE', 'BOTTES', 'ANNEAU_GAUCHE', 'ANNEAU_DROIT', 'ARME_GAUCHE', 'ARME_DROITE', 'ARME_DEUX_MAINS'];
+            const sortedEquips = persoEquips.sort((a, b) => {
+                const sNameA = typeof (a.slot?.name || a.slot) === 'object' ? a.slot?.name : a.slot;
+                const sNameB = typeof (b.slot?.name || b.slot) === 'object' ? b.slot?.name : b.slot;
+                return slotOrder.indexOf(sNameA) - slotOrder.indexOf(sNameB);
+            });
+
+            equipHtml = `<div style="display: flex; flex-direction: column; gap: 0.3rem;">`;
+            for (let i = 0; i < sortedEquips.length; i += 4) {
+                const chunk = sortedEquips.slice(i, i + 4);
+                equipHtml += `<div class="char-equip-row">` + chunk.map(eq => {
                     const slotInfo = getSlotInfo(eq);
-                    
+
                     const eqStatsHtml = STAT_DEFS
                         .filter(s => eq[s.key] && eq[s.key] !== 0)
                         .map(s => {
@@ -523,8 +527,9 @@ function renderPersonnages() {
                             </div>
                         </template>
                     </span>`;
-                }).join('') +
-                `</div>`;
+                }).join('') + `</div>`;
+            }
+            equipHtml += `</div>`;
         }
 
         return `
