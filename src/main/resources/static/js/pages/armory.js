@@ -54,7 +54,9 @@ async function loadPersonnages() {
         const url = window.isAdmin ? '/api/personnages/all' : '/api/personnages';
         const res = await globalFetch(url);
         if (res) {
-            pageState.personnages = await res.json();
+            let chars = await res.json();
+            chars.sort((a, b) => (b.voieLevel || 1) - (a.voieLevel || 1));
+            pageState.personnages = chars;
             renderPersonnages();
             await updateCharLimitUI();
         }
@@ -387,15 +389,19 @@ function renderPersonnages() {
         return matchName && matchOwner && matchVoie && matchSpirit;
     });
 
-    // Sort logic: Sort by User then Name for admins, else by Name only
+    // Sort logic: Sort by User then VoieLevel then Name for admins, else by VoieLevel then Name
     filtered.sort((a, b) => {
         if (window.isAdmin) {
             const uA = a.ownerUsername || '';
             const uB = b.ownerUsername || '';
-            if (uA === uB) return a.name.localeCompare(b.name);
+            if (uA === uB) {
+                const diff = (b.voieLevel || 1) - (a.voieLevel || 1);
+                return diff !== 0 ? diff : a.name.localeCompare(b.name);
+            }
             return uA.localeCompare(uB);
         } else {
-            return a.name.localeCompare(b.name);
+            const diff = (b.voieLevel || 1) - (a.voieLevel || 1);
+            return diff !== 0 ? diff : a.name.localeCompare(b.name);
         }
     });
 
@@ -458,15 +464,19 @@ function renderPersonnages() {
         const persoEquips = pageState.allEquipments.filter(e => e.personnage && e.personnage.id === p.id);
         let equipHtml = '';
         if (persoEquips.length > 0) {
-            const slotOrder = ['CASQUE', 'PLASTRON', 'ARME_GAUCHE', 'ARME_DROITE', 'ANNEAU_GAUCHE', 'ANNEAU_DROIT', 'BOTTES', 'CAPE'];
-            equipHtml = `<div class="char-equip-row">` +
-                persoEquips.sort((a, b) => {
-                    const sNameA = typeof (a.slot?.name || a.slot) === 'object' ? a.slot?.name : a.slot;
-                    const sNameB = typeof (b.slot?.name || b.slot) === 'object' ? b.slot?.name : b.slot;
-                    return slotOrder.indexOf(sNameA) - slotOrder.indexOf(sNameB);
-                }).map(eq => {
+            const slotOrder = ['CASQUE', 'PLASTRON', 'CAPE', 'BOTTES', 'ANNEAU_GAUCHE', 'ANNEAU_DROIT', 'ARME_GAUCHE', 'ARME_DROITE', 'ARME_DEUX_MAINS'];
+            const sortedEquips = persoEquips.sort((a, b) => {
+                const sNameA = typeof (a.slot?.name || a.slot) === 'object' ? a.slot?.name : a.slot;
+                const sNameB = typeof (b.slot?.name || b.slot) === 'object' ? b.slot?.name : b.slot;
+                return slotOrder.indexOf(sNameA) - slotOrder.indexOf(sNameB);
+            });
+
+            equipHtml = `<div style="display: flex; flex-direction: column; gap: 0.3rem;">`;
+            for (let i = 0; i < sortedEquips.length; i += 4) {
+                const chunk = sortedEquips.slice(i, i + 4);
+                equipHtml += `<div class="char-equip-row">` + chunk.map(eq => {
                     const slotInfo = getSlotInfo(eq);
-                    
+
                     const eqStatsHtml = STAT_DEFS
                         .filter(s => eq[s.key] && eq[s.key] !== 0)
                         .map(s => {
@@ -517,8 +527,9 @@ function renderPersonnages() {
                             </div>
                         </template>
                     </span>`;
-                }).join('') +
-                `</div>`;
+                }).join('') + `</div>`;
+            }
+            equipHtml += `</div>`;
         }
 
         return `

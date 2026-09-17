@@ -53,16 +53,17 @@ class SuretePassiveEffectTest {
         // Overflow should be 25 points
         assertThat(hero.getPassiveState("surete_points", 0)).isEqualTo(25);
         
-        // Should gain +15% CRIT buff for 2 turns
-        assertThat(hero.getActiveBuffs()).hasSize(1);
-        assertThat(hero.getActiveBuffs().get(0).getStatAffected()).isEqualTo(StatType.CRIT);
-        assertThat(hero.getActiveBuffs().get(0).getFlatValue()).isEqualTo(15);
-        assertThat(hero.getActiveBuffs().get(0).getDuration()).isEqualTo(2);
+        // Should gain +15% CRIT buff for 2 turns and +50% HEAL_GIVEN
+        assertThat(hero.getActiveBuffs()).hasSize(2);
+        assertThat(hero.getActiveBuffs().stream().anyMatch(b -> b.getStatAffected() == StatType.CRIT && b.getFlatValue() == 15)).isTrue();
+        assertThat(hero.getActiveBuffs().stream().anyMatch(b -> b.getStatAffected() == StatType.HEAL_GIVEN && b.getModifier() == 0.50)).isTrue();
     }
 
     @Test
     void shouldTriggerCritBuffAtTurnStartIfPointsReach100() {
         hero.setPassiveState("surete_points", 95);
+        hero.setManaMax(100);
+        hero.setManaCurrent(50); // 50 missing mana
         
         // +10 passive points -> 105 points
         passive.onTurnStart(hero);
@@ -74,5 +75,9 @@ class SuretePassiveEffectTest {
         assertThat(hero.getActiveBuffs()).hasSize(1);
         assertThat(hero.getActiveBuffs().get(0).getStatAffected()).isEqualTo(StatType.CRIT);
         assertThat(hero.getActiveBuffs().get(0).getFlatValue()).isEqualTo(25);
+        
+        // Should restore 25% of 50 missing mana = 13 (Math.round(12.5))
+        // manaCurrent becomes 50 + 13 = 63
+        assertThat(hero.getManaCurrent()).isEqualTo(63);
     }
 }

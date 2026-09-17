@@ -382,7 +382,9 @@ async function loadCharacters() {
     try {
         const res = await globalFetch('/api/personnages');
         if (res.ok) {
-            pageState.userCharacters = await res.json();
+            let chars = await res.json();
+            chars.sort((a, b) => (b.voieLevel || 1) - (a.voieLevel || 1));
+            pageState.userCharacters = chars;
             const list = document.getElementById('prepCharList');
             list.innerHTML = '';
 

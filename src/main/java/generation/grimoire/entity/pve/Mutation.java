@@ -27,6 +27,6 @@ public class Mutation {
     private String color;
 
     @OneToMany(mappedBy = "mutation", fetch = FetchType.EAGER)
-    @com.fasterxml.jackson.annotation.JsonIgnore
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"mutation"})
     private java.util.List<generation.grimoire.entity.Spell> spells;
 }

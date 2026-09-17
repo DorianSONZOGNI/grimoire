@@ -74,7 +74,12 @@ export function updateMultiTurnBanner(data) {
 
     const activePlayer = data.activePlayer;
     const ownerUsername = activePlayer?.ownerUsername || null;
-    const isMyTurn = ownerUsername === pageState.currentUsername;
+    
+    let isMyTurn = false;
+    if (pageState.currentUsername && ownerUsername === pageState.currentUsername) {
+        isMyTurn = true;
+    }
+    
     const isEnemyTurn = !data.turnOrder?.[data.currentTurnIndex]?.player;
     
     window.combatIsMyTurn = isEnemyTurn ? false : isMyTurn;
@@ -84,6 +89,24 @@ export function updateMultiTurnBanner(data) {
             <span class="text-[#f87171] font-semibold">Tour ennemi</span>`;
         setMultiActionsEnabled(false);
     } else if (isMyTurn) {
+        const turnId = `${data.turnNumber}-${data.currentTurnIndex}`;
+        if (window.lastPlayedTurnId !== turnId) {
+            window.lastPlayedTurnId = turnId;
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.type = 'sine';
+                osc.frequency.setValueAtTime(523.25, ctx.currentTime);
+                osc.frequency.exponentialRampToValueAtTime(1046.50, ctx.currentTime + 0.15);
+                gain.gain.setValueAtTime(0.1, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.start();
+                osc.stop(ctx.currentTime + 0.3);
+            } catch(e) {}
+        }
         banner.innerHTML = `<span class="material-symbols-outlined text-[#4ade80]">person</span>
             <span class="text-[#4ade80] font-semibold">👤 Votre tour — ${activePlayer?.name || ''}</span>`;
         setMultiActionsEnabled(true);

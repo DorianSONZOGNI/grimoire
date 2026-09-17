@@ -64,6 +64,7 @@ public class Spell {
 
     @ManyToOne
     @JoinColumn(name = "mutation_id")
+    @com.fasterxml.jackson.annotation.JsonIgnoreProperties({"spells"})
     private Mutation mutation;
 
     @OneToMany(mappedBy = "spell", cascade = CascadeType.ALL, orphanRemoval = true, fetch = FetchType.EAGER)

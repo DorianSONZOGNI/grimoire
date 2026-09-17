@@ -28,7 +28,7 @@ export function renderAndAnimateXPCards(containerId, players, prefix, isFirstCle
         let oldSpiritStats = getSpiritExpStats(oldSpiritExp);
 
         let gainedExp = Math.max(0, p.experience - oldExp);
-        
+
         let x2Badge = '';
         if (isFirstClear && gainedExp === maxGainedExp && gainedExp > 0 && (prefix === 'vic' || prefix === 'treasure')) {
             x2Badge = `<span class="material-symbols-outlined text-amber-500" style="font-size: 1.1rem; vertical-align: middle; margin-left: 2px;" title="Bonus Première Complétion (x2)">star</span>`;
@@ -367,6 +367,26 @@ export function updateUI(data) {
             document.querySelectorAll('.turn-timer-badge').forEach(badge => {
                 badge.textContent = `⏳ ${remaining}s`;
                 if (remaining <= 10) {
+                    if (window.combatIsMyTurn) {
+                        const turnId = `${data.turnNumber}-${data.currentTurnIndex}`;
+                        if (window.lastWarningTurnId !== turnId) {
+                            window.lastWarningTurnId = turnId;
+                            try {
+                                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                                const osc = ctx.createOscillator();
+                                const gain = ctx.createGain();
+                                osc.type = 'triangle';
+                                osc.frequency.setValueAtTime(880, ctx.currentTime);
+                                osc.frequency.setValueAtTime(440, ctx.currentTime + 0.1);
+                                gain.gain.setValueAtTime(0.05, ctx.currentTime);
+                                gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.3);
+                                osc.connect(gain);
+                                gain.connect(ctx.destination);
+                                osc.start();
+                                osc.stop(ctx.currentTime + 0.3);
+                            } catch(e) {}
+                        }
+                    }
                     badge.style.background = 'rgba(69, 10, 10, 0.9)';
                     badge.style.borderColor = '#ef4444';
                     badge.style.color = '#ef4444';
@@ -1581,7 +1601,7 @@ export function updateUI(data) {
 
 function updateNextRoomButtons(data) {
     if (!data.multi) return;
-    
+
     const activeUsers = new Set();
     if (data.players) {
         data.players.forEach(p => {
@@ -1592,15 +1612,15 @@ function updateNextRoomButtons(data) {
     }
     const totalActive = activeUsers.size;
     if (totalActive <= 1) return; // Only show for 2+ active players
-    
+
     const readyUsers = data.readyForNextRoomUsers || [];
     const readyCount = readyUsers.length;
     const isMeReady = readyUsers.includes(pageState.currentUsername);
-    
+
     document.querySelectorAll('button[onclick*="nextRoom"]').forEach(btn => {
         let origText = btn.dataset.origText || btn.textContent.trim().replace(/\s*\(\d+\/\d+\)$/, '');
         btn.dataset.origText = origText;
-        
+
         let newText = isMeReady ? `En attente (${readyCount}/${totalActive})` : `${origText} (${readyCount}/${totalActive})`;
         btn.textContent = newText;
         btn.disabled = isMeReady;
@@ -2021,7 +2041,14 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
 
     let turnOrderBadgeHtml = '';
     if (turnOrderNum) {
-        turnOrderBadgeHtml = `<div title="Ordre de jeu : ${turnOrderNum}" style="position: absolute; top: -8px; left: -8px; width: 28px; height: 28px; background: linear-gradient(135deg, #1e293b, #0f172a); border: 2px solid ${isHero ? '#38bdf8' : '#ef4444'}; border-radius: 50%; color: #f8fafc; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.95rem; box-shadow: 0 4px 6px rgba(0,0,0,0.5); z-index: 5;">${turnOrderNum}</div>`;
+        let hasPlayed = false;
+        if (pageState && pageState.currentSessionData && pageState.currentSessionData.currentTurnIndex !== undefined) {
+            hasPlayed = (turnOrderNum - 1) < pageState.currentSessionData.currentTurnIndex;
+        }
+        const opacity = hasPlayed ? '0.5' : '1';
+        const filter = hasPlayed ? 'grayscale(1)' : 'none';
+        
+        turnOrderBadgeHtml = `<div title="Ordre de jeu : ${turnOrderNum}" style="position: absolute; top: -8px; left: -8px; width: 28px; height: 28px; background: linear-gradient(135deg, #1e293b, #0f172a); border: 2px solid ${isHero ? '#38bdf8' : '#ef4444'}; border-radius: 50%; color: #f8fafc; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.95rem; box-shadow: 0 4px 6px rgba(0,0,0,0.5); z-index: 5; opacity: ${opacity}; filter: ${filter}; transition: all 0.3s;">${turnOrderNum}</div>`;
     }
 
     return `
@@ -2334,38 +2361,30 @@ export function renderBuffsHtml(c, buffList, motList, hotList) {
             let text = '';
 
             if (b.modifier && c) {
-                let finalStat = null;
+                let rawStat = null;
                 const affected = b.statAffected ? b.statAffected.toUpperCase() : '';
 
-                if (affected.includes('ARMURE') || affected.includes('ARMOR')) finalStat = c.totalArmor !== undefined ? c.totalArmor : c.armor;
-                else if (affected.includes('RESISTANCE')) finalStat = c.totalResistance !== undefined ? c.totalResistance : c.resistance;
-                else if (affected === 'POWER' || affected.includes('PUISSANCE')) finalStat = c.totalPower !== undefined ? c.totalPower : c.power;
-                else if (affected.includes('STRENGTH') || affected.includes('FORCE')) finalStat = c.totalStrength !== undefined ? c.totalStrength : c.strength;
-                else if (affected.includes('SPEED') || affected.includes('VITESSE')) finalStat = c.totalSpeed !== undefined ? c.totalSpeed : c.speed;
-                else if (affected === 'CRIT' || affected.includes('CRITIQUE')) finalStat = c.totalCrit !== undefined ? c.totalCrit : c.crit;
-                else if (affected.includes('HEALTH_MAX') || affected.includes('PV_MAX') || affected.includes('HP_MAX')) finalStat = c.healthMax;
-                else if (affected.includes('MANA_MAX') || affected.includes('MP_MAX')) finalStat = c.manaMax;
+                if (affected.includes('ARMURE') || affected.includes('ARMOR')) rawStat = c.armor;
+                else if (affected.includes('RESISTANCE')) rawStat = c.resistance;
+                else if (affected === 'POWER' || affected.includes('PUISSANCE')) rawStat = c.power;
+                else if (affected.includes('STRENGTH') || affected.includes('FORCE')) rawStat = c.strength;
+                else if (affected.includes('SPEED') || affected.includes('VITESSE')) rawStat = c.speed;
+                else if (affected === 'CRIT' || affected.includes('CRITIQUE')) rawStat = c.crit;
+                else if (affected.includes('HEALTH_MAX') || affected.includes('PV_MAX') || affected.includes('HP_MAX')) rawStat = c.healthMax;
+                else if (affected.includes('MANA_MAX') || affected.includes('MP_MAX')) rawStat = c.manaMax;
 
-                if (finalStat !== null && finalStat !== undefined) {
-                    let totalPos = 0.0;
-                    let totalNeg = 1.0;
+                if (rawStat !== null && rawStat !== undefined) {
                     const allBuffs = c.activeBuffs || c.buffs || [];
 
+                    // Compute flat bonus from buffs (same as server getStatFlatBonus)
+                    let flatBonus = 0;
                     allBuffs.forEach(otherBuff => {
-                        if (otherBuff.statAffected === b.statAffected && otherBuff.modifier) {
-                            if (otherBuff.modifier > 0) totalPos += otherBuff.modifier;
-                            else if (otherBuff.modifier < 0) totalNeg *= (1.0 + otherBuff.modifier);
+                        if (otherBuff.statAffected === b.statAffected && otherBuff.flatValue) {
+                            flatBonus += otherBuff.flatValue;
                         }
                     });
 
-                    if (b.statAffected === 'DAMAGE_GIVEN_PHYSIC') {
-                        if (allBuffs.some(ab => ab.statAffected === 'AME_DETACHEE')) {
-                            totalPos += 0.40;
-                        }
-                    }
-
-                    let totalMultiplier = (1.0 + totalPos) * totalNeg;
-                    let baseStat = totalMultiplier > 0 ? (finalStat / totalMultiplier) : 0;
+                    let baseStat = rawStat + flatBonus;
 
                     let runPos = 0.0;
                     let runNeg = 1.0;
@@ -2399,8 +2418,12 @@ export function renderBuffsHtml(c, buffList, motList, hotList) {
                     }
                 }
             }
-            if (effectiveFlat !== 0) {
-                text += `${effectiveFlat > 0 ? '+' : ''}${effectiveFlat} ${ui.formatStat(b.statAffected)}`;
+            if (effectiveFlat !== 0 || (!showModifier && b.modifier !== 0)) {
+                let sign = effectiveFlat > 0 ? '+' : '';
+                if (effectiveFlat === 0) {
+                    sign = b.modifier > 0 ? '+' : '-';
+                }
+                text += `${sign}${Math.abs(effectiveFlat)} ${ui.formatStat(b.statAffected)}`;
             }
             if (b.modifier && showModifier) {
                 if (text) text += ' et ';
@@ -2735,7 +2758,7 @@ export function renderSpellCard(sp) {
     const isCastable = !avail || avail.castable;
     let disabledClass = isCastable ? '' : ' spell-disabled';
     const onClickAttr = isCastable ? `onclick="initiateCombatCast(${sp.id})"` : '';
-    
+
     // Check multiplayer turn
     let multiDisabledClass = '';
     let multiDisabledStyle = '';
