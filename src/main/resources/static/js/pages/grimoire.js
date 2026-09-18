@@ -10,6 +10,57 @@ window.handleAffinityChange = handleAffinityChange;
 window.setViolenceType = setViolenceType;
 window.getSpellEffectsSummaryHtml = getSpellEffectsSummaryHtml;
 
+window.toggleSpellTypeFilter = function() {
+    const states = ['ALL', 'INSTANTANE', 'BANAL', 'CANALISE'];
+    const currentIndex = states.indexOf(state.spellTypeFilter || 'ALL');
+    state.spellTypeFilter = states[(currentIndex + 1) % states.length];
+    
+    const btn = document.getElementById('spellTypeFilterBtn');
+    if (btn) {
+        btn.style.transform = 'scale(0.85)';
+        setTimeout(() => btn.style.transform = 'scale(1)', 150);
+        
+        let html = '';
+        if (state.spellTypeFilter === 'ALL') {
+            html = `
+                <div class="relative w-full h-full" style="pointer-events: none;">
+                    <span class="material-symbols-outlined absolute text-amber-400" style="top: 3px; left: 50%; transform: translateX(-50%); font-size: 18px;">bolt</span>
+                    <span class="material-symbols-outlined absolute text-blue-400" style="bottom: 2px; left: 2px; font-size: 16px;">hourglass_empty</span>
+                    <span class="material-symbols-outlined absolute text-purple-400" style="bottom: 2px; right: 2px; font-size: 17px;">cyclone</span>
+                </div>
+            `;
+            btn.className = "flex-shrink-0 flex items-center justify-center bg-slate-900/80 border border-white/10 text-slate-200 rounded-md cursor-pointer outline-none hover:bg-slate-800";
+            btn.style.boxShadow = 'none';
+            btn.style.backgroundColor = '';
+            btn.style.borderColor = '';
+            btn.style.color = '';
+        } else if (state.spellTypeFilter === 'INSTANTANE') {
+            html = `<span class="material-symbols-outlined text-amber-400" style="pointer-events: none; font-size: 26px;">bolt</span>`;
+            btn.className = "flex-shrink-0 flex items-center justify-center rounded-md cursor-pointer outline-none transition-all";
+            btn.style.backgroundColor = 'rgba(245, 158, 11, 0.1)';
+            btn.style.borderColor = 'rgba(245, 158, 11, 0.3)';
+            btn.style.color = '#f59e0b';
+            btn.style.boxShadow = '0 0 10px rgba(245, 158, 11, 0.2)';
+        } else if (state.spellTypeFilter === 'BANAL') {
+            html = `<span class="material-symbols-outlined text-blue-400" style="pointer-events: none; font-size: 24px;">hourglass_empty</span>`;
+            btn.className = "flex-shrink-0 flex items-center justify-center rounded-md cursor-pointer outline-none transition-all";
+            btn.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
+            btn.style.borderColor = 'rgba(59, 130, 246, 0.3)';
+            btn.style.color = '#60a5fa';
+            btn.style.boxShadow = '0 0 10px rgba(59, 130, 246, 0.2)';
+        } else if (state.spellTypeFilter === 'CANALISE') {
+            html = `<span class="material-symbols-outlined text-purple-400" style="pointer-events: none; font-size: 26px;">cyclone</span>`;
+            btn.className = "flex-shrink-0 flex items-center justify-center rounded-md cursor-pointer outline-none transition-all";
+            btn.style.backgroundColor = 'rgba(168, 85, 247, 0.1)';
+            btn.style.borderColor = 'rgba(168, 85, 247, 0.3)';
+            btn.style.color = '#c084fc';
+            btn.style.boxShadow = '0 0 10px rgba(168, 85, 247, 0.2)';
+        }
+        btn.innerHTML = html;
+    }
+    renderFilteredSpells();
+};
+
 export function renderFilteredSpells() {
     const container = document.getElementById('createdSpellsContainer');
     if (!container) return;
@@ -55,6 +106,12 @@ export function renderFilteredSpells() {
         }
         if (state.selectedFilterSpiritId !== null) {
             if (!sp.spiritualite || sp.spiritualite.id != state.selectedFilterSpiritId) return false;
+        }
+
+        // Type d'action (Instantané, Banal, Canalisé)
+        const typeFilter = state.spellTypeFilter || 'ALL';
+        if (typeFilter !== 'ALL') {
+            if (sp.castingType !== typeFilter) return false;
         }
 
         // Type d'effet
