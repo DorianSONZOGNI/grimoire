@@ -283,10 +283,30 @@ async function loadDungeons() {
 
                     const entryCostHtml = d.entryCostGold > 0 ? `<div class="text-sm text-warning font-semibold mt-2"><span class="material-symbols-outlined align-middle icon-sm">monetization_on</span> Coût d'entrée : ${d.entryCostGold} Or</div>` : '';
 
-                    const diff = d.difficulty !== undefined ? d.difficulty : 0;
+                    const rawDiff = d.difficulty !== undefined ? d.difficulty : 0;
+
+                    let activeSkulls = 0;
+                    let skullColor = '#ff8108';
+                    let skullGlow = 'rgba(246, 0, 9, 0.5)';
+
+                    if (rawDiff <= 3) {
+                        activeSkulls = rawDiff;
+                    } else if (rawDiff <= 6) {
+                        activeSkulls = rawDiff - 3;
+                        skullColor = '#ef4444';
+                        skullGlow = 'rgba(239, 68, 68, 0.5)';
+
+                    } else {
+                        activeSkulls = rawDiff - 6;
+                        if (activeSkulls > 3) activeSkulls = 3;
+                        skullColor = '#a855f7'; // Violet
+                        skullGlow = 'rgba(168, 85, 247, 0.5)';
+                    }
+
                     let skullsHtml = '<div style="position: absolute; top: 10px; right: 12px; display: flex; gap: 2px; align-items: center;" title="Difficulté">';
                     for (let i = 0; i < 3; i++) {
-                        skullsHtml += `<span class="material-symbols-outlined" style="font-size: 1.2rem; color: ${i < diff ? '#ef4444' : 'rgba(255,255,255,0.2)'}; text-shadow: ${i < diff ? '0 0 5px rgba(239, 68, 68, 0.5)' : 'none'};">skull</span>`;
+                        const isActive = i < activeSkulls;
+                        skullsHtml += `<span class="material-symbols-outlined" style="font-size: 1.2rem; color: ${isActive ? skullColor : 'rgba(255,255,255,0.2)'}; text-shadow: ${isActive ? '0 0 5px ' + skullGlow : 'none'};">skull</span>`;
                     }
                     skullsHtml += '</div>';
 
