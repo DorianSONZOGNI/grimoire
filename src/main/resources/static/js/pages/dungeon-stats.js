@@ -35,6 +35,14 @@ async function initStats() {
         allRuns = data.runs;
         globalStats = data.globalStatsByDungeon;
 
+        // Fetch dungeons for secrets
+        const donjonsRes = await window.globalFetch('/api/pve/dungeons');
+        const allDonjons = await donjonsRes.json();
+        window.dungeonSecretMap = {};
+        allDonjons.forEach(d => {
+            window.dungeonSecretMap[d.id] = d.requiredSecret;
+        });
+
         // Sort runs by timestamp desc
         allRuns.sort((a, b) => new Date(b.timestamp) - new Date(a.timestamp));
 
@@ -42,10 +50,6 @@ async function initStats() {
         
         document.getElementById('statsLoader').style.display = 'none';
         document.getElementById('statsContent').style.display = 'block';
-
-        document.getElementById('dungeonSelect').addEventListener('change', (e) => {
-            renderDashboard(e.target.value);
-        });
 
         renderDashboard('ALL');
 
@@ -56,7 +60,8 @@ async function initStats() {
 }
 
 function populateDungeonSelect() {
-    const select = document.getElementById('dungeonSelect');
+    const optionsContainer = document.getElementById('dungeonSelectOptions');
+    if (!optionsContainer) return;
     
     // Extract unique dungeons
     const uniqueDungeons = {};
@@ -64,13 +69,78 @@ function populateDungeonSelect() {
         uniqueDungeons[key] = globalStats[key].dungeonName;
     }
 
-    for (const [key, name] of Object.entries(uniqueDungeons)) {
-        const option = document.createElement('option');
-        option.value = key; // "id_name"
-        option.textContent = name;
-        select.appendChild(option);
+    const dungeonsList = Object.keys(uniqueDungeons).map(key => {
+        const dId = key.split('_')[0];
+        const secret = window.dungeonSecretMap[dId];
+        return { key, name: uniqueDungeons[key], secret };
+    });
+
+    let html = `<div class="custom-option" onclick="selectDungeonFilter('ALL', 'Tous les donjons')">Tous les donjons</div>`;
+    
+    // Group dungeons by secret to create the "Secret" aggregates
+    const secretsPresent = [...new Set(dungeonsList.map(d => d.secret).filter(s => s))];
+    if (secretsPresent.length > 0) {
+        html += `<div class="text-xs text-slate-500 px-3 py-1 mt-2 uppercase tracking-wider font-bold">Par Secret</div>`;
+        secretsPresent.forEach(secret => {
+            const secretMeta = (window.DEFAULT_SECRETS_META || []).find(s => s.name === secret) || { icon: 'help', color: '#fff' };
+            const iconHtml = `<span class="material-symbols-outlined" style="color: ${secretMeta.color}; font-size: 1.2rem;">${secretMeta.icon}</span>`;
+            const escapedSecret = secret.replace(/'/g, "\\'");
+            html += `<div class="custom-option flex items-center gap-2" onclick="selectDungeonFilter('SECRET_${escapedSecret}', 'Tous - ${escapedSecret}', '${escapedSecret}')">
+                ${iconHtml}
+                <span>Tous - ${secret}</span>
+            </div>`;
+        });
     }
+
+    // Individual dungeons sorted by secret then name
+    dungeonsList.sort((a, b) => {
+        if (a.secret !== b.secret) {
+            if (!a.secret) return 1;
+            if (!b.secret) return -1;
+            return a.secret.localeCompare(b.secret);
+        }
+        return a.name.localeCompare(b.name);
+    });
+
+    html += `<div class="text-xs text-slate-500 px-3 py-1 mt-2 uppercase tracking-wider font-bold">Donjons Individuels</div>`;
+    dungeonsList.forEach(d => {
+        let iconHtml = '';
+        let secretArg = 'null';
+        if (d.secret) {
+            const secretMeta = (window.DEFAULT_SECRETS_META || []).find(s => s.name === d.secret) || { icon: 'help', color: '#fff' };
+            iconHtml = `<span class="material-symbols-outlined" style="color: ${secretMeta.color}; font-size: 1.2rem;" title="${d.secret.replace(/"/g, '&quot;')}">${secretMeta.icon}</span>`;
+            secretArg = `'${d.secret.replace(/'/g, "\\'")}'`;
+        } else {
+            iconHtml = `<span class="material-symbols-outlined opacity-0" style="font-size: 1.2rem;">help</span>`; // Just for alignment
+        }
+        
+        const escapedName = d.name.replace(/'/g, "\\'");
+        html += `
+            <div class="custom-option flex items-center gap-2" onclick="selectDungeonFilter('${d.key}', '${escapedName}', ${secretArg})">
+                ${iconHtml}
+                <span>${d.name}</span>
+            </div>
+        `;
+    });
+
+    optionsContainer.innerHTML = html;
 }
+
+window.selectDungeonFilter = function(filterKey, label, secretName = null) {
+    let iconHtml = '';
+    if (secretName && secretName !== 'null') {
+        const secretMeta = (window.DEFAULT_SECRETS_META || []).find(s => s.name === secretName) || { icon: 'help', color: '#fff' };
+        iconHtml = `<span class="material-symbols-outlined" style="color: ${secretMeta.color}; font-size: 1.2rem;">${secretMeta.icon}</span>`;
+    }
+
+    const content = document.getElementById('dungeonSelectContent');
+    if (content) {
+        content.innerHTML = iconHtml ? `<div class="flex items-center gap-2">${iconHtml}<span>${label}</span></div>` : label;
+    }
+    const wrapper = document.getElementById('dungeonSelectWrapper');
+    if (wrapper) wrapper.classList.remove('open');
+    renderDashboard(filterKey);
+};
 
 function renderDashboard(dungeonFilterKey) {
     let filteredRuns = allRuns;
@@ -86,36 +156,49 @@ function renderDashboard(dungeonFilterKey) {
         multiRuns: 0 // calculate manually from runs
     };
 
-    if (dungeonFilterKey !== 'ALL') {
+    const aggregateStat = (stat) => {
+        combinedGlobalStats.totalRuns += stat.totalRuns;
+        combinedGlobalStats.totalVictories += stat.totalVictories;
+        combinedGlobalStats.totalDefeats += stat.totalDefeats;
+        combinedGlobalStats.totalFlees += stat.totalFlees;
+        combinedGlobalStats.totalTimeouts += stat.totalTimeouts;
+        combinedGlobalStats.totalDeaths += stat.totalDeaths;
+        
+        for (const c in stat.classPopularity) {
+            combinedGlobalStats.classPopularity[c] = (combinedGlobalStats.classPopularity[c] || 0) + stat.classPopularity[c];
+        }
+        if (stat.spiritualitePopularity) {
+            for (const s in stat.spiritualitePopularity) {
+                combinedGlobalStats.spiritualitePopularity[s] = (combinedGlobalStats.spiritualitePopularity[s] || 0) + stat.spiritualitePopularity[s];
+            }
+        }
+    };
+
+    if (dungeonFilterKey === 'ALL') {
+        for (const key in globalStats) {
+            aggregateStat(globalStats[key]);
+        }
+        filteredRuns = allRuns;
+        combinedGlobalStats.multiRuns = filteredRuns.filter(r => r.multi).length;
+    } else if (dungeonFilterKey.startsWith('SECRET_')) {
+        const secretFilter = dungeonFilterKey.substring(7);
+        const matchingKeys = Object.keys(globalStats).filter(key => {
+            const dId = key.split('_')[0];
+            return window.dungeonSecretMap[dId] === secretFilter;
+        });
+        matchingKeys.forEach(key => {
+            aggregateStat(globalStats[key]);
+        });
+        filteredRuns = allRuns.filter(r => window.dungeonSecretMap[r.dungeonId] === secretFilter);
+        combinedGlobalStats.multiRuns = filteredRuns.filter(r => r.multi).length;
+    } else {
         const [dungeonId] = dungeonFilterKey.split('_');
         filteredRuns = allRuns.filter(r => r.dungeonId == dungeonId);
         
         if (globalStats[dungeonFilterKey]) {
             Object.assign(combinedGlobalStats, globalStats[dungeonFilterKey]);
-            // recalculate multiRuns
             combinedGlobalStats.multiRuns = filteredRuns.filter(r => r.multi).length;
         }
-    } else {
-        // Aggregate ALL
-        for (const key in globalStats) {
-            const stat = globalStats[key];
-            combinedGlobalStats.totalRuns += stat.totalRuns;
-            combinedGlobalStats.totalVictories += stat.totalVictories;
-            combinedGlobalStats.totalDefeats += stat.totalDefeats;
-            combinedGlobalStats.totalFlees += stat.totalFlees;
-            combinedGlobalStats.totalTimeouts += stat.totalTimeouts;
-            combinedGlobalStats.totalDeaths += stat.totalDeaths;
-            
-            for (const c in stat.classPopularity) {
-                combinedGlobalStats.classPopularity[c] = (combinedGlobalStats.classPopularity[c] || 0) + stat.classPopularity[c];
-            }
-            if (stat.spiritualitePopularity) {
-                for (const s in stat.spiritualitePopularity) {
-                    combinedGlobalStats.spiritualitePopularity[s] = (combinedGlobalStats.spiritualitePopularity[s] || 0) + stat.spiritualitePopularity[s];
-                }
-            }
-        }
-        combinedGlobalStats.multiRuns = filteredRuns.filter(r => r.multi).length;
     }
 
     updateKPIs(combinedGlobalStats);

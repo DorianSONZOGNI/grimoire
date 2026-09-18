@@ -188,9 +188,15 @@
                 <span class="material-symbols-outlined text-info" style="font-size: 2.5rem;">insights</span>
                 <span class="logo-text-gradient logo-dungeon">Statistiques PvE</span>
             </h2>
-            <select id="dungeonSelect" class="dungeon-selector">
-                <option value="ALL">Tous les donjons</option>
-            </select>
+            <div class="custom-select-wrapper dungeon-selector w-[280px] z-50" id="dungeonSelectWrapper" tabindex="0">
+                <div class="custom-select-trigger" id="dungeonSelectTrigger" onclick="document.getElementById('dungeonSelectWrapper').classList.toggle('open')">
+                    <div class="cs-content" id="dungeonSelectContent">Tous les donjons</div>
+                    <span class="material-symbols-outlined cs-arrow">expand_more</span>
+                </div>
+                <div class="custom-select-options max-h-[400px]" id="dungeonSelectOptions">
+                    <!-- filled by JS -->
+                </div>
+            </div>
         </div>
 
         <app-loader id="statsLoader" message="Analyse des archives..."></app-loader>
@@ -291,6 +297,7 @@
     
     <script type="module" src="/js/components/loader.js"></script>
     <script type="module" src="/js/services/auth.js?v=14"></script>
+    <script defer src="/js/utils/utils.js"></script>
     <script type="module" src="/js/pages/dungeon-stats.js"></script>
 </body>
 </html>
