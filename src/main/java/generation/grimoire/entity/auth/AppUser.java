@@ -59,6 +59,18 @@ public class AppUser {
     @Column(name = "dungeon_id")
     private Set<Long> completedDungeons = new HashSet<>();
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SUBSELECT)
+    @CollectionTable(name = "user_discovered_items", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "item_name")
+    private Set<String> discoveredItems = new HashSet<>();
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SUBSELECT)
+    @CollectionTable(name = "user_seen_alchemy_recipes", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "recipe_id")
+    private Set<Long> seenAlchemyRecipes = new HashSet<>();
+
     @Column(nullable = false)
     private boolean unlockedVault = false;
 

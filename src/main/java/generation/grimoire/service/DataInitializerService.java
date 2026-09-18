@@ -31,6 +31,9 @@ public class DataInitializerService {
 
         private final VoieRepository voieRepository;
         private final SpiritualiteRepository spiritualiteRepository;
+        private final generation.grimoire.repository.auth.UserRepository userRepository;
+        private final generation.grimoire.repository.AnomalieRepository anomalieRepository;
+        private final generation.grimoire.repository.EquipmentRepository equipmentRepository;
 
         @EventListener(ApplicationReadyEvent.class)
         public void initStandardEntities() {
@@ -177,5 +180,43 @@ public class DataInitializerService {
                 }
 
                 log.info("Initialisation des entités de référence terminée.");
+
+                // Migration: peupler discoveredItems pour les utilisateurs existants
+                migrateDiscoveredItems();
+        }
+
+        private void migrateDiscoveredItems() {
+                List<generation.grimoire.entity.auth.AppUser> users = userRepository.findAll();
+                int migrated = 0;
+                for (generation.grimoire.entity.auth.AppUser user : users) {
+                        if (!user.getDiscoveredItems().isEmpty()) continue; // Déjà migré
+
+                        java.util.Set<String> items = new java.util.HashSet<>();
+
+                        // Anomalies possédées
+                        List<generation.grimoire.entity.Anomalie> anomalies = anomalieRepository.findByOwnerUsername(user.getUsername());
+                        for (generation.grimoire.entity.Anomalie a : anomalies) {
+                                if (!a.isTemplate() && a.getName() != null) {
+                                        items.add(a.getName());
+                                }
+                        }
+
+                        // Consommables possédés
+                        List<generation.grimoire.entity.Equipment> equipments = equipmentRepository.findByOwnerUsername(user.getUsername());
+                        for (generation.grimoire.entity.Equipment eq : equipments) {
+                                if (!eq.isTemplate() && eq.getName() != null) {
+                                        items.add(eq.getName());
+                                }
+                        }
+
+                        if (!items.isEmpty()) {
+                                user.getDiscoveredItems().addAll(items);
+                                userRepository.save(user);
+                                migrated++;
+                        }
+                }
+                if (migrated > 0) {
+                        log.info("Migration discoveredItems : {} utilisateurs mis à jour.", migrated);
+                }
         }
 }

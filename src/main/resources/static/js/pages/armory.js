@@ -86,6 +86,21 @@ async function updateCharLimitUI() {
 
             limitContainer.innerHTML = html;
             window.charLimitData = data;
+            
+            if (window.currentUser) {
+                window.currentUser.availableCharacterSlots = Math.max(0, data.maxCharacters - data.currentCharacters);
+            }
+            const armoryBadge = document.getElementById('navArmoryBadge');
+            if (armoryBadge) {
+                const availableSlots = Math.max(0, data.maxCharacters - data.currentCharacters);
+                if (availableSlots > 0) {
+                    armoryBadge.textContent = availableSlots;
+                    armoryBadge.style.display = 'inline-block';
+                } else {
+                    armoryBadge.style.display = 'none';
+                }
+            }
+            
             updateSubmitButtonState();
         }
     } catch (e) {

@@ -1017,7 +1017,6 @@ window.unlockDungeon = async function (id, cost, event) {
             window.showNotif(err, true);
         }
     } catch (e) {
-        window.showNotif("Erreur serveur", true);
         console.error(e);
     }
 };

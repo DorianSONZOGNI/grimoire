@@ -25,7 +25,13 @@ public class AlchemyController {
 
     @GetMapping("/recipes")
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
-    public ResponseEntity<List<AlchemyRecipe>> getAllRecipes() {
+    public ResponseEntity<List<AlchemyRecipe>> getAllRecipes(org.springframework.security.core.Authentication authentication) {
+        if (authentication != null && authentication.isAuthenticated()) {
+            generation.grimoire.entity.auth.AppUser user = alchemyService.findUserByUsername(authentication.getName());
+            if (user != null) {
+                return ResponseEntity.ok(alchemyService.getDiscoveredRecipes(user));
+            }
+        }
         return ResponseEntity.ok(alchemyService.getAllRecipes());
     }
 
@@ -44,6 +50,19 @@ public class AlchemyController {
             
             String resultMessage = alchemyService.craftRecipe(authentication.getName(), recipeId, persoId, anoms, cons);
             return ResponseEntity.ok(resultMessage);
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
+    @PostMapping("/recipes/{recipeId}/seen")
+    public ResponseEntity<?> markRecipeAsSeen(@PathVariable Long recipeId, Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).body("Non autorisé");
+        }
+        try {
+            alchemyService.markRecipeAsSeen(authentication.getName(), recipeId);
+            return ResponseEntity.ok().build();
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(e.getMessage());
         }

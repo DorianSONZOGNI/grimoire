@@ -358,6 +358,28 @@ window.addEventListener('authLoaded', () => {
             huntingBadge.style.display = 'none';
         }
     }
+
+    const alchemyBadge = document.getElementById('navAlchemyBadge');
+    if (alchemyBadge) {
+        const unseenCount = window.currentUser ? (window.currentUser.unseenAlchemyCount || 0) : 0;
+        if (unseenCount > 0) {
+            alchemyBadge.textContent = unseenCount;
+            alchemyBadge.style.display = 'inline-block';
+        } else {
+            alchemyBadge.style.display = 'none';
+        }
+    }
+
+    const armoryBadge = document.getElementById('navArmoryBadge');
+    if (armoryBadge) {
+        const availableSlots = window.currentUser ? (window.currentUser.availableCharacterSlots || 0) : 0;
+        if (availableSlots > 0) {
+            armoryBadge.textContent = availableSlots;
+            armoryBadge.style.display = 'inline-block';
+        } else {
+            armoryBadge.style.display = 'none';
+        }
+    }
 });
 
 function applyFeatureLock(el, isUnlocked, featureName, cost, featureId, originalHref) {

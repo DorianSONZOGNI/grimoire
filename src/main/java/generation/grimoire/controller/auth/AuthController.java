@@ -32,11 +32,15 @@ public class AuthController {
     private final RefreshTokenService refreshTokenService;
     private final HuntingQuestEntryRepository huntingQuestEntryRepository;
     private final generation.grimoire.repository.pve.DonjonRepository donjonRepository;
+    private final generation.grimoire.service.AlchemyService alchemyService;
+    private final generation.grimoire.repository.PersonnageRepository personnageRepository;
 
     public AuthController(AuthenticationManager authenticationManager, UserRepository userRepository,
             PasswordEncoder passwordEncoder, JwtService jwtService, RefreshTokenService refreshTokenService,
             HuntingQuestEntryRepository huntingQuestEntryRepository,
-            generation.grimoire.repository.pve.DonjonRepository donjonRepository) {
+            generation.grimoire.repository.pve.DonjonRepository donjonRepository,
+            generation.grimoire.service.AlchemyService alchemyService,
+            generation.grimoire.repository.PersonnageRepository personnageRepository) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
@@ -44,6 +48,8 @@ public class AuthController {
         this.refreshTokenService = refreshTokenService;
         this.huntingQuestEntryRepository = huntingQuestEntryRepository;
         this.donjonRepository = donjonRepository;
+        this.alchemyService = alchemyService;
+        this.personnageRepository = personnageRepository;
     }
 
     @PostMapping("/register")
@@ -98,6 +104,24 @@ public class AuthController {
             res.put("unlockedAlchemy", u.isUnlockedAlchemy());
             res.put("unlockedShop", u.isUnlockedShop());
             res.put("huntingClaimable", huntingQuestEntryRepository.countClaimable(u.getUsername()));
+            
+            res.put("seenAlchemyRecipes", u.getSeenAlchemyRecipes());
+            if (u.isUnlockedAlchemy()) {
+                long unseenCount = alchemyService.getDiscoveredRecipes(u).stream()
+                    .filter(r -> !u.getSeenAlchemyRecipes().contains(r.getId()))
+                    .count();
+                res.put("unseenAlchemyCount", unseenCount);
+            } else {
+                res.put("unseenAlchemyCount", 0);
+            }
+            
+            boolean isAdmin = auth.getAuthorities().stream()
+                    .anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"));
+            int userMax = u.getMaxCharacters();
+            if (userMax < 2) userMax = 2;
+            int maxChars = isAdmin ? 999 : userMax;
+            int currentChars = personnageRepository.findByUser_Username(u.getUsername()).size();
+            res.put("availableCharacterSlots", Math.max(0, maxChars - currentChars));
         });
 
         return ResponseEntity.ok(res);

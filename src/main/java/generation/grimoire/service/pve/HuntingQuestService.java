@@ -354,6 +354,8 @@ public class HuntingQuestService {
             reward.setOwnerUsername(username);
             reward.setUser(user);
             anomalieRepository.save(reward);
+            user.getDiscoveredItems().add(reward.getName());
+            userRepository.save(user);
 
             entry.setRewardClaimed(true);
             entryRepository.save(entry);

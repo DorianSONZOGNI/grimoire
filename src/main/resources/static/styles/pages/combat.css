@@ -605,7 +605,7 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    z-index: 100;
+    z-index: 99999;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.5s;
@@ -726,7 +726,7 @@ body {
     flex-direction: column;
     justify-content: center;
     align-items: center;
-    z-index: 90;
+    z-index: 99999;
     opacity: 0;
     pointer-events: none;
     transition: opacity 0.5s;

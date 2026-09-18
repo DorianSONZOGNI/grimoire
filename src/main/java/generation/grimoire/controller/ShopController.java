@@ -234,6 +234,8 @@ public class ShopController {
         clone.setOwnerUsername(user.getUsername());
 
         equipmentRepository.save(clone);
+        user.getDiscoveredItems().add(clone.getName());
+        userRepository.save(user);
 
         return ResponseEntity.ok(Map.of("message", "Achat réussi !"));
     }
