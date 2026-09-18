@@ -106,29 +106,29 @@ class CombatTurnService {
         if (!m.isDead()) {
             CombatLogCapture.captureLogs(session, () -> {
                 session.addLog("--- Tour de l'ennemi " + m.getBase().getName() + " ---");
-                spellService.startTurn(m.getAsPersonnage());
-
                 // === REGÉNÉRATION HP & MANA ===
                 if (!m.isDead()) {
                     int rHp = m.getBase().getRegenHp();
                     if (rHp > 0) {
-                        int beforeHp = m.getAsPersonnage().getHealthCurrent();
-                        m.getAsPersonnage().healRegen(rHp);
-                        int healed = m.getAsPersonnage().getHealthCurrent() - beforeHp;
+                        int maxHp = m.getAsPersonnage().getHealthMax();
+                        int currentHp = m.getAsPersonnage().getHealthCurrent();
+                        int healed = Math.min(rHp, Math.max(0, maxHp - currentHp));
                         if (healed > 0) {
                             session.addLog("💖 " + m.getBase().getName() + " régénère " + healed + " PV.");
                         }
                     }
                     int rMana = m.getBase().getRegenMana();
                     if (rMana > 0) {
-                        int beforeMana = m.getAsPersonnage().getManaCurrent();
-                        m.getAsPersonnage().restoreMana(rMana);
-                        int recovered = m.getAsPersonnage().getManaCurrent() - beforeMana;
+                        int maxMana = m.getAsPersonnage().getManaMax();
+                        int currentMana = m.getAsPersonnage().getManaCurrent();
+                        int recovered = Math.min(rMana, Math.max(0, maxMana - currentMana));
                         if (recovered > 0) {
                             session.addLog("💧 " + m.getBase().getName() + " régénère " + recovered + " Mana.");
                         }
                     }
                 }
+                
+                spellService.startTurn(m.getAsPersonnage());
 
                 // === PASSIF TYPE : MORT_VIVANT — Régénération début de tour ===
                 MonsterType mType = m.getBase().getMonsterType();
