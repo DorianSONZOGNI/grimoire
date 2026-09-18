@@ -85,9 +85,30 @@ async function updateCharLimitUI() {
             }
 
             limitContainer.innerHTML = html;
+            window.charLimitData = data;
+            updateSubmitButtonState();
         }
     } catch (e) {
         console.error('Erreur limite personnages:', e);
+    }
+}
+
+function updateSubmitButtonState() {
+    const submitBtn = document.getElementById('submitBtn');
+    if (!submitBtn) return;
+    
+    if (pageState.editingId || window.isAdmin) {
+        submitBtn.disabled = false;
+        submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+    } else if (window.charLimitData) {
+        const isMaxedOut = window.charLimitData.currentCharacters >= window.charLimitData.maxCharacters;
+        if (isMaxedOut) {
+            submitBtn.disabled = true;
+            submitBtn.classList.add('opacity-50', 'cursor-not-allowed');
+        } else {
+            submitBtn.disabled = false;
+            submitBtn.classList.remove('opacity-50', 'cursor-not-allowed');
+        }
     }
 }
 
@@ -848,6 +869,7 @@ function editPersonnage(id) {
     document.getElementById('cancelBtn').classList.remove('hidden');
     document.getElementById('cancelBtn').classList.add('inline-flex');
 
+    updateSubmitButtonState();
     window.scrollTo({ top: 0, behavior: 'smooth' });
 }
 
@@ -883,6 +905,7 @@ function resetForm() {
         Forger le Personnage`;
     document.getElementById('cancelBtn').classList.add('hidden');
     document.getElementById('cancelBtn').classList.remove('inline-flex');
+    updateSubmitButtonState();
 }
 
 // showNotif, showModal → utils.js
