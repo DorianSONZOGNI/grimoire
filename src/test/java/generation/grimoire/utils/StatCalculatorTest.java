@@ -109,6 +109,8 @@ class StatCalculatorTest {
     void shouldCalculateHealthCurrentSources() {
         assertThat(StatCalculator.getSourceValue(Source.CASTER_HEALTH_CURRENT, caster, target)).isEqualTo(400.0);
         assertThat(StatCalculator.getSourceValue(Source.TARGET_HEALTH_CURRENT, caster, target)).isEqualTo(300.0);
+    }
+
     @Test
     void shouldCalculatePowerSourcesWithPercentageBuffs() {
         // Apply a percentage buff (+20% power)
@@ -130,5 +132,47 @@ class StatCalculatorTest {
 
         // Base Power is 80. 80 * 1.50 = 120
         assertThat(StatCalculator.getSourceValue(Source.TARGET_POWER, caster, target)).isEqualTo(120.0);
+    }
+    @Test
+    void shouldCalculatePhysicalPowerSourcesWithPercentageBuffs() {
+        // Apply a percentage buff (+30% strength)
+        generation.grimoire.entity.spell.type.effect.BuffDebuffEffect buff = new generation.grimoire.entity.spell.type.effect.BuffDebuffEffect();
+        buff.setStatAffected(StatType.STRENGTH);
+        buff.setModifier(0.30);
+        buff.setDuration(2);
+        caster.applyBuff(buff, 0.30);
+
+        // Base strength is 50. 50 * 1.30 = 65
+        assertThat(StatCalculator.getSourceValue(Source.CASTER_PHYSICAL_POWER, caster, target)).isEqualTo(65.0);
+    }
+
+    @Test
+    void shouldCalculateSpeedSourcesWithPercentageBuffs() {
+        caster.setSpeed(100);
+        
+        // Apply a percentage buff (+10% speed)
+        generation.grimoire.entity.spell.type.effect.BuffDebuffEffect buff = new generation.grimoire.entity.spell.type.effect.BuffDebuffEffect();
+        buff.setStatAffected(StatType.SPEED);
+        buff.setModifier(0.10);
+        buff.setDuration(2);
+        caster.applyBuff(buff, 0.10);
+
+        // Base speed is 100. 100 * 1.10 = 110
+        assertThat(StatCalculator.getSourceValue(Source.CASTER_SPEED, caster, target)).isEqualTo(110.0);
+    }
+
+    @Test
+    void shouldCalculateCritSourcesWithPercentageBuffs() {
+        caster.setCrit(20);
+        
+        // Apply a percentage buff (+50% crit)
+        generation.grimoire.entity.spell.type.effect.BuffDebuffEffect buff = new generation.grimoire.entity.spell.type.effect.BuffDebuffEffect();
+        buff.setStatAffected(StatType.CRIT);
+        buff.setModifier(0.50);
+        buff.setDuration(2);
+        caster.applyBuff(buff, 0.50);
+
+        // Base crit is 20. 20 * 1.50 = 30
+        assertThat(StatCalculator.getSourceValue(Source.CASTER_CRIT, caster, target)).isEqualTo(30.0);
     }
 }
