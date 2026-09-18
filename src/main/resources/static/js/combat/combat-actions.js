@@ -282,10 +282,12 @@ export async function addLootedConsumable(itemName, iconElement) {
         if (typeof window.renderOverlayInventory === 'function') {
             window.renderOverlayInventory('eventOverlayInventoryList');
             window.renderOverlayInventory('combatVictoryInventoryList');
+            window.renderOverlayInventory('combatMainInventoryList');
         }
         if (typeof window.renderOverlayMap === 'function') {
             window.renderOverlayMap('eventMapList');
             window.renderOverlayMap('combatVictoryMapList');
+            window.renderOverlayMap('combatMainMapList');
         }
         window.showNotif(`${itemName} a été ajouté à votre inventaire actif.`);
     } catch (e) {
