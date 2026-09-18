@@ -34,6 +34,7 @@ public class DataInitializerService {
         private final generation.grimoire.repository.auth.UserRepository userRepository;
         private final generation.grimoire.repository.AnomalieRepository anomalieRepository;
         private final generation.grimoire.repository.EquipmentRepository equipmentRepository;
+        private final generation.grimoire.repository.AlchemyRecipeRepository alchemyRecipeRepository;
 
         @EventListener(ApplicationReadyEvent.class)
         public void initStandardEntities() {
@@ -183,6 +184,9 @@ public class DataInitializerService {
 
                 // Migration: peupler discoveredItems pour les utilisateurs existants
                 migrateDiscoveredItems();
+                
+                // Migration: marquer les anciennes recettes secrètes comme lues
+                fixUnseenSecretRecipes();
         }
 
         private void migrateDiscoveredItems() {
@@ -217,6 +221,44 @@ public class DataInitializerService {
                 }
                 if (migrated > 0) {
                         log.info("Migration discoveredItems : {} utilisateurs mis à jour.", migrated);
+                }
+        }
+
+        private void fixUnseenSecretRecipes() {
+                List<generation.grimoire.entity.auth.AppUser> users = userRepository.findAll();
+                List<generation.grimoire.entity.AlchemyRecipe> allRecipes = alchemyRecipeRepository.findAll();
+                List<generation.grimoire.entity.AlchemyRecipe> secretRecipes = allRecipes.stream()
+                        .filter(r -> generation.grimoire.enumeration.RecipeRewardType.UNLOCK_FEATURE.equals(r.getRewardType()))
+                        .toList();
+
+                int migratedSecrets = 0;
+                for (generation.grimoire.entity.auth.AppUser user : users) {
+                        Map<String, Integer> unlockedSecrets = user.getUnlockedSecrets();
+                        if (unlockedSecrets == null || unlockedSecrets.isEmpty()) continue;
+
+                        boolean changed = false;
+                        for (generation.grimoire.entity.AlchemyRecipe sr : secretRecipes) {
+                                String secretName = sr.getRewardName();
+                                int currentLevel = unlockedSecrets.getOrDefault(secretName, 0);
+                                
+                                // Si le niveau débloqué actuel est supérieur ou égal au niveau de la recette,
+                                // cela signifie que l'utilisateur a déjà passé ce palier et la recette ne s'affiche plus.
+                                // S'il ne l'avait pas vue, la pastille rouge reste coincée.
+                                if (currentLevel >= sr.getRewardLevel()) {
+                                        if (!user.getSeenAlchemyRecipes().contains(sr.getId())) {
+                                                user.getSeenAlchemyRecipes().add(sr.getId());
+                                                changed = true;
+                                        }
+                                }
+                        }
+                        if (changed) {
+                                userRepository.save(user);
+                                migratedSecrets++;
+                        }
+                }
+                
+                if (migratedSecrets > 0) {
+                        log.info("Migration secrets coincés vus : {} utilisateurs mis à jour.", migratedSecrets);
                 }
         }
 }
