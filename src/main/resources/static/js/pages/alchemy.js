@@ -42,10 +42,52 @@ window.addEventListener('authLoaded', async () => {
             fetchUserCharacters(),
             globalFetch('/api/alchemy/recipes').then(res => res.json()).then(data => pageState.allRecipes = data)
         ]).then(() => {
+            setDefaultFilter();
             renderRecipesList();
         }).catch(e => console.error("Erreur chargement alchimie:", e));
     }
 });
+
+function setDefaultFilter() {
+    if (!window.currentUser || !window.currentUser.seenAlchemyRecipes) return;
+    
+    const unlockedSecrets = window.currentUser.unlockedSecrets || {};
+    const priority = ['UNLOCK_FEATURE', 'GIVE_ANOMALY', 'GIVE_EQUIPMENT', 'GIVE_SPIRIT_XP', 'GIVE_CONSUMABLE'];
+    
+    let bestType = 'GIVE_CONSUMABLE';
+    let bestPrio = 999;
+    
+    for (const r of pageState.allRecipes) {
+        // Is it unseen?
+        if (window.currentUser.seenAlchemyRecipes.includes(r.id)) continue;
+        
+        // Is it actually visible based on secrets progression?
+        if (r.rewardType === 'UNLOCK_FEATURE') {
+            const currentLevel = unlockedSecrets[r.rewardName] || 0;
+            if (currentLevel !== (r.rewardLevel - 1)) continue;
+        }
+        
+        const pIndex = priority.indexOf(r.rewardType);
+        if (pIndex !== -1 && pIndex < bestPrio) {
+            bestPrio = pIndex;
+            bestType = r.rewardType;
+        }
+    }
+    
+    // Set the filter visually if we found an unseen recipe, OR if there's no unseen recipe, it stays GIVE_CONSUMABLE
+    const input = document.getElementById('filterRewardType');
+    if (!input) return;
+    input.value = bestType;
+    
+    const wrapper = input.closest('.custom-select-wrapper');
+    if (wrapper) {
+        const option = wrapper.querySelector(`.custom-option[data-value="${bestType}"]`);
+        const label = wrapper.querySelector('.cs-label');
+        if (option && label) {
+            label.innerHTML = option.innerHTML;
+        }
+    }
+}
 
 async function fetchUserInventory() {
     try {
