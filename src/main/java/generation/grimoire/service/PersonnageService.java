@@ -12,10 +12,14 @@ public class PersonnageService {
 
     private final PersonnageRepository persoRepo;
     private final generation.grimoire.repository.EquipmentRepository equipmentRepository;
+    private final generation.grimoire.repository.auth.UserRepository userRepository;
 
-    public PersonnageService(PersonnageRepository persoRepo, generation.grimoire.repository.EquipmentRepository equipmentRepository) {
+    public PersonnageService(PersonnageRepository persoRepo, 
+                             generation.grimoire.repository.EquipmentRepository equipmentRepository,
+                             generation.grimoire.repository.auth.UserRepository userRepository) {
         this.persoRepo = persoRepo;
         this.equipmentRepository = equipmentRepository;
+        this.userRepository = userRepository;
     }
 
     public Personnage findByIdOrThrow(@org.springframework.lang.NonNull Long id) {
@@ -28,6 +32,29 @@ public class PersonnageService {
     }
 
     public Personnage save(@org.springframework.lang.NonNull Personnage personnage) {
+        boolean userUpdated = false;
+        generation.grimoire.entity.auth.AppUser user = personnage.getUser();
+        if (user != null) {
+            if (personnage.getVoie() != null) {
+                Long voieId = personnage.getVoie().getId();
+                int currentMax = user.getUnlockedVoieLevels().getOrDefault(voieId, 0);
+                if (personnage.getVoieLevel() > currentMax) {
+                    user.getUnlockedVoieLevels().put(voieId, personnage.getVoieLevel());
+                    userUpdated = true;
+                }
+            }
+            if (personnage.getSpiritualite() != null) {
+                Long spiritId = personnage.getSpiritualite().getId();
+                int currentMax = user.getUnlockedSpiritualiteLevels().getOrDefault(spiritId, 0);
+                if (personnage.getSpiritualiteLevel() > currentMax) {
+                    user.getUnlockedSpiritualiteLevels().put(spiritId, personnage.getSpiritualiteLevel());
+                    userUpdated = true;
+                }
+            }
+            if (userUpdated) {
+                userRepository.save(user);
+            }
+        }
         return persoRepo.save(personnage);
     }
 

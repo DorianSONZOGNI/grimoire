@@ -114,7 +114,6 @@ export function renderFilteredSpells() {
             if (sp.castingType !== typeFilter) return false;
         }
 
-        // Type d'effet
         if (effectVal !== 'ALL') {
             if (!sp.effects || !sp.effects.some(e => {
                 let rawType = e.effectType || e.effect_type || '';
@@ -145,6 +144,23 @@ export function renderFilteredSpells() {
             })) {
                 return false;
             }
+        }
+
+        let maxVoieLevel = 1;
+        let maxSpiritLevel = 1;
+
+        if (window.currentUser) {
+            if (sp.voie && window.currentUser.unlockedVoieLevels && window.currentUser.unlockedVoieLevels[sp.voie.id]) {
+                maxVoieLevel = window.currentUser.unlockedVoieLevels[sp.voie.id];
+            }
+            if (sp.spiritualite && window.currentUser.unlockedSpiritualiteLevels && window.currentUser.unlockedSpiritualiteLevels[sp.spiritualite.id]) {
+                maxSpiritLevel = window.currentUser.unlockedSpiritualiteLevels[sp.spiritualite.id];
+            }
+        }
+
+        if (!window.isAdmin) {
+            if (sp.voie && (sp.niveau || 1) > maxVoieLevel) return false;
+            if (sp.spiritualite && (sp.niveau || 1) > maxSpiritLevel) return false;
         }
 
         // Niveau

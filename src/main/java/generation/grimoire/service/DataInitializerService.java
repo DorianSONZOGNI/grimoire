@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.transaction.annotation.Transactional;
+
 /**
  * Service responsable de l'initialisation des données de référence (Voies,
  * Spiritualités).
@@ -35,8 +37,10 @@ public class DataInitializerService {
         private final generation.grimoire.repository.AnomalieRepository anomalieRepository;
         private final generation.grimoire.repository.EquipmentRepository equipmentRepository;
         private final generation.grimoire.repository.AlchemyRecipeRepository alchemyRecipeRepository;
+        private final generation.grimoire.repository.PersonnageRepository personnageRepository;
 
         @EventListener(ApplicationReadyEvent.class)
+        @Transactional
         public void initStandardEntities() {
                 log.info("Initialisation des entités de référence (Voies, Spiritualités)...");
 
@@ -187,6 +191,9 @@ public class DataInitializerService {
                 
                 // Migration: marquer les anciennes recettes secrètes comme lues
                 fixUnseenSecretRecipes();
+
+                // Migration: débloquer l'accès aux sorts du grimoire selon la progression des persos
+                migrateUnlockedSpellLevels();
         }
 
         private void migrateDiscoveredItems() {
@@ -259,6 +266,44 @@ public class DataInitializerService {
                 
                 if (migratedSecrets > 0) {
                         log.info("Migration secrets coincés vus : {} utilisateurs mis à jour.", migratedSecrets);
+                }
+        }
+
+        private void migrateUnlockedSpellLevels() {
+                List<generation.grimoire.entity.personnage.Personnage> allPersos = personnageRepository.findAll();
+                int updatedUsers = 0;
+                
+                for (generation.grimoire.entity.personnage.Personnage p : allPersos) {
+                        generation.grimoire.entity.auth.AppUser user = p.getUser();
+                        if (user == null) continue;
+                        
+                        boolean changed = false;
+                        if (p.getVoie() != null) {
+                                Long voieId = p.getVoie().getId();
+                                int currentMax = user.getUnlockedVoieLevels().getOrDefault(voieId, 0);
+                                if (p.getVoieLevel() > currentMax) {
+                                        user.getUnlockedVoieLevels().put(voieId, p.getVoieLevel());
+                                        changed = true;
+                                }
+                        }
+                        
+                        if (p.getSpiritualite() != null) {
+                                Long spiritId = p.getSpiritualite().getId();
+                                int currentMax = user.getUnlockedSpiritualiteLevels().getOrDefault(spiritId, 0);
+                                if (p.getSpiritualiteLevel() > currentMax) {
+                                        user.getUnlockedSpiritualiteLevels().put(spiritId, p.getSpiritualiteLevel());
+                                        changed = true;
+                                }
+                        }
+                        
+                        if (changed) {
+                                userRepository.save(user);
+                                updatedUsers++;
+                        }
+                }
+                
+                if (updatedUsers > 0) {
+                        log.info("Migration niveaux débloqués : {} mises à jour de profil.", updatedUsers);
                 }
         }
 }
