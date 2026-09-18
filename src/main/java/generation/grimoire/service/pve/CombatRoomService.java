@@ -46,6 +46,9 @@ class CombatRoomService {
         if (session.getCurrentRoom() == null)
             return;
 
+        // Reset le timer de tour pour éviter qu'il ne continue de tourner hors combat
+        session.setTurnStartTime(null);
+
         // Re-fetch la salle pour éviter les LazyInitializationException
         generation.grimoire.entity.pve.Salle freshSalle = salleRepository
                 .findById(java.util.Objects.requireNonNull(session.getCurrentRoom().getId()))
