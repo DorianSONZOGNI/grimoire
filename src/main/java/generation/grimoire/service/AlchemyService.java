@@ -51,6 +51,45 @@ public class AlchemyService {
         return recipeRepository.findAll();
     }
 
+    /**
+     * Retourne les recettes visibles pour un joueur donné.
+     * - UNLOCK_FEATURE (secrets) : toujours visibles (le filtrage par niveau se fait côté front)
+     * - Autres : visibles seulement si le joueur a découvert au moins une fois chaque ingrédient requis
+     */
+    public List<AlchemyRecipe> getDiscoveredRecipes(AppUser user) {
+        List<AlchemyRecipe> all = getAllRecipes();
+        if (user == null) return all;
+
+        // Admins voient tout
+        if ("ADMIN".equalsIgnoreCase(user.getRole()) || "ROLE_ADMIN".equalsIgnoreCase(user.getRole())) {
+            return all;
+        }
+
+        java.util.Set<String> discovered = user.getDiscoveredItems();
+        return all.stream().filter(recipe -> {
+            // Les secrets sont toujours visibles
+            if (recipe.getRewardType() == RecipeRewardType.UNLOCK_FEATURE) {
+                return true;
+            }
+            // Vérifier que tous les ingrédients ont été découverts
+            if (recipe.getRequiredAnomalies() != null) {
+                for (String name : recipe.getRequiredAnomalies().keySet()) {
+                    if (!discovered.contains(name)) return false;
+                }
+            }
+            if (recipe.getRequiredConsumables() != null) {
+                for (String name : recipe.getRequiredConsumables().keySet()) {
+                    if (!discovered.contains(name)) return false;
+                }
+            }
+            return true;
+        }).collect(java.util.stream.Collectors.toList());
+    }
+
+    public AppUser findUserByUsername(String username) {
+        return userRepository.findByUsername(username).orElse(null);
+    }
+
     @CacheEvict(value = {"alchemyRecipes", "alchemyRecipesList", "alchemyRecipeById"}, allEntries = true)
     public AlchemyRecipe saveRecipe(AlchemyRecipe recipe) {
         return recipeRepository.save(java.util.Objects.requireNonNull(recipe));
@@ -233,6 +272,7 @@ public class AlchemyService {
                 
                 anomalieRepository.save(anomaly);
             }
+            if (user != null) user.getDiscoveredItems().add(recipe.getRewardName());
             return "Vous avez obtenu " + recipe.getRewardQuantity() + "x Anomalie : " + recipe.getRewardName();
         } else if (recipe.getRewardType() == RecipeRewardType.GIVE_CONSUMABLE) {
             Equipment template = equipmentRepository.findFirstByNameAndIsTemplateTrueOrderByIdAsc(recipe.getRewardName());
@@ -247,6 +287,7 @@ public class AlchemyService {
                 }
                 equipmentRepository.save(consumable);
             }
+            if (user != null) user.getDiscoveredItems().add(recipe.getRewardName());
             return "Vous avez obtenu " + recipe.getRewardQuantity() + "x Consommable : " + recipe.getRewardName();
         } else if (recipe.getRewardType() == RecipeRewardType.GIVE_EQUIPMENT) {
             Equipment template = equipmentRepository.findFirstByNameAndIsTemplateTrueOrderByIdAsc(recipe.getRewardName());
@@ -263,6 +304,7 @@ public class AlchemyService {
                 }
                 equipmentRepository.save(eq);
             }
+            if (user != null) user.getDiscoveredItems().add(recipe.getRewardName());
             return "Vous avez obtenu " + recipe.getRewardQuantity() + "x Équipement : " + recipe.getRewardName();
         } else if (recipe.getRewardType() == RecipeRewardType.UPGRADE_ANOMALY) {
             // Dans ce MVP, on crée directement une anomalie d'un niveau supérieur 
@@ -283,6 +325,7 @@ public class AlchemyService {
             }
             
             anomalieRepository.save(upgraded);
+            if (user != null) user.getDiscoveredItems().add(recipe.getRewardName());
             return "Vous avez amélioré une anomalie en : " + recipe.getRewardName() + " (Niv. " + recipe.getRewardLevel() + ")";
         } else if (recipe.getRewardType() == RecipeRewardType.UNLOCK_FEATURE) {
             if (user != null) {

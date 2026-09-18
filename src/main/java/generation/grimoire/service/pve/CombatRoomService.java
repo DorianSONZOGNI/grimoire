@@ -244,6 +244,7 @@ class CombatRoomService {
                             clone.setOwnerUsername(u.getUsername());
 
                             equipmentRepository.save(clone);
+                            u.getDiscoveredItems().add(clone.getName());
 
                             if (clone.getSlot() == generation.grimoire.enumeration.EquipmentSlot.CONSOMMABLE) {
                                 if (isFirstConsumable) {
@@ -280,6 +281,7 @@ class CombatRoomService {
                                 clone.setOwnerUsername(u.getUsername());
                                 clone.setUser(u);
                                 anomalieRepository.save(clone);
+                                u.getDiscoveredItems().add(clone.getName());
                             }
                         }
                         session.addLog("Vous avez obtenu l'item : " + template.getName() + " !");
@@ -422,6 +424,7 @@ class CombatRoomService {
                                 newAnomaly.setOwnerUsername(user.getUsername());
                                 newAnomaly.setUser(user);
                                 anomalieRepository.save(newAnomaly);
+                                user.getDiscoveredItems().add(newAnomaly.getName());
                             }
                         }
                         session.addLog("L'équipe reçoit l'Item Spécial : " + itemName + " !");
@@ -577,6 +580,7 @@ class CombatRoomService {
                             clone.setUser(user);
                             clone.setOwnerUsername(user.getUsername());
                             equipmentRepository.save(clone);
+                            user.getDiscoveredItems().add(clone.getName());
 
                             double currentWeight = session.getActiveConsumables().stream()
                                     .filter(java.util.Objects::nonNull)
@@ -602,6 +606,7 @@ class CombatRoomService {
                                 clone.setUser(u);
                                 clone.setOwnerUsername(u.getUsername());
                                 equipmentRepository.save(clone);
+                                u.getDiscoveredItems().add(clone.getName());
                                 if (firstClone == null) firstClone = clone;
                             }
                             session.addLog("L'autel a offert un équipement à chaque joueur : " + template.getName() + " !");
@@ -840,6 +845,7 @@ class CombatRoomService {
                     newAnomaly.setOwnerUsername(user.getUsername());
                     newAnomaly.setUser(user);
                     anomalieRepository.save(newAnomaly);
+                    user.getDiscoveredItems().add(newAnomaly.getName());
                 }
             }
 
@@ -1177,6 +1183,7 @@ class CombatRoomService {
                                 clone.setOwnerUsername(user.getUsername());
                                 clone.setUser(user);
                                 anomalieRepository.save(clone);
+                                user.getDiscoveredItems().add(clone.getName());
                                 session.addLog(user.getUsername() + " a obtenu l'item : " + anomalyName + " !");
                             }
                         }

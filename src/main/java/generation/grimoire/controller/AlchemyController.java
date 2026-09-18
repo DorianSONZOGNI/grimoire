@@ -25,7 +25,13 @@ public class AlchemyController {
 
     @GetMapping("/recipes")
     @org.springframework.transaction.annotation.Transactional(readOnly = true)
-    public ResponseEntity<List<AlchemyRecipe>> getAllRecipes() {
+    public ResponseEntity<List<AlchemyRecipe>> getAllRecipes(org.springframework.security.core.Authentication authentication) {
+        if (authentication != null && authentication.isAuthenticated()) {
+            generation.grimoire.entity.auth.AppUser user = alchemyService.findUserByUsername(authentication.getName());
+            if (user != null) {
+                return ResponseEntity.ok(alchemyService.getDiscoveredRecipes(user));
+            }
+        }
         return ResponseEntity.ok(alchemyService.getAllRecipes());
     }
 
