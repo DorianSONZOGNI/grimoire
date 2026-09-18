@@ -358,6 +358,17 @@ window.addEventListener('authLoaded', () => {
             huntingBadge.style.display = 'none';
         }
     }
+
+    const alchemyBadge = document.getElementById('navAlchemyBadge');
+    if (alchemyBadge) {
+        const unseenCount = window.currentUser ? (window.currentUser.unseenAlchemyCount || 0) : 0;
+        if (unseenCount > 0) {
+            alchemyBadge.textContent = unseenCount;
+            alchemyBadge.style.display = 'inline-block';
+        } else {
+            alchemyBadge.style.display = 'none';
+        }
+    }
 });
 
 function applyFeatureLock(el, isUnlocked, featureName, cost, featureId, originalHref) {

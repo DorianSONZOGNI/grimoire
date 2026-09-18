@@ -153,13 +153,16 @@ function renderRecipesList() {
         else if (r.rewardType === 'UNLOCK_FEATURE') rewardIcon = `<span class="material-symbols-outlined" style="color: #f59e0b; font-size: 1.1rem; opacity: 0.8;" title="Secret">key</span>`;
         else if (r.rewardType === 'GIVE_SPIRIT_XP') rewardIcon = `<span class="material-symbols-outlined" style="color: #38bdf8; font-size: 1.1rem; opacity: 0.8;" title="XP Spiritualité">self_improvement</span>`;
 
+        const isUnseen = window.currentUser && window.currentUser.seenAlchemyRecipes && !window.currentUser.seenAlchemyRecipes.includes(r.id);
+
         div.innerHTML = `
-            <h4 class="m-0 ${r.rewardType === 'UNLOCK_FEATURE' ? 'text-blue-500' : 'text-cyan-400'} flex items-center justify-between">
+            <h4 class="m-0 ${r.rewardType === 'UNLOCK_FEATURE' ? 'text-blue-500' : 'text-cyan-400'} flex items-center justify-between" style="position:relative;">
                 <span class="flex items-center gap-2">
                     <span class="material-symbols-outlined text-xl">experiment</span>
                     ${r.name}
                 </span>
                 ${rewardIcon}
+                ${isUnseen ? `<span class="unseen-badge" style="position:absolute; top:-12px; right:-12px; background:red; color:white; border-radius:50%; font-size:0.7rem; padding:1px 6px; font-weight:bold; box-shadow:0 0 5px rgba(255,0,0,0.5);">1</span>` : ''}
             </h4>
             <p class="text-xs text-muted mt-2 line-clamp-2">${r.description || ''}</p>
         `;
@@ -178,6 +181,18 @@ function selectRecipe(recipe, element) {
     });
     element.className = `recipe-card bg-emerald-500/20 border border-emerald-500 rounded-lg p-3 cursor-pointer transition-all duration-300 ${element.dataset.craftable === 'true' ? 'craftable-pulse' : ''}`;
     element.style.boxShadow = '0 0 15px rgba(16, 185, 129, 0.3)';
+
+    // Mark as seen
+    if (window.currentUser && window.currentUser.seenAlchemyRecipes && !window.currentUser.seenAlchemyRecipes.includes(recipe.id)) {
+        window.currentUser.seenAlchemyRecipes.push(recipe.id);
+        if (window.currentUser.unseenAlchemyCount > 0) {
+            window.currentUser.unseenAlchemyCount--;
+            window.dispatchEvent(new Event('authLoaded')); // Update header badge
+        }
+        const badge = element.querySelector('.unseen-badge');
+        if (badge) badge.remove();
+        globalFetch(`/api/alchemy/recipes/${recipe.id}/seen`, { method: 'POST' }).catch(e => console.error("Could not mark recipe as seen", e));
+    }
 
     renderCauldron(recipe);
 }
@@ -641,7 +656,16 @@ async function craftSelected() {
 
             // Refresh user data (gold) in header
             if (window.checkAuthStatus) {
-                window.checkAuthStatus();
+                window.checkAuthStatus().then(() => {
+                    // Fetch recipes again because a new recipe might have been unlocked
+                    globalFetch('/api/alchemy/recipes')
+                        .then(r => r.json())
+                        .then(data => {
+                            pageState.allRecipes = data;
+                            renderRecipesList();
+                        })
+                        .catch(e => console.error("Could not refresh recipes", e));
+                });
             }
 
             // Refresh inventory

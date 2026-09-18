@@ -32,11 +32,13 @@ public class AuthController {
     private final RefreshTokenService refreshTokenService;
     private final HuntingQuestEntryRepository huntingQuestEntryRepository;
     private final generation.grimoire.repository.pve.DonjonRepository donjonRepository;
+    private final generation.grimoire.service.AlchemyService alchemyService;
 
     public AuthController(AuthenticationManager authenticationManager, UserRepository userRepository,
             PasswordEncoder passwordEncoder, JwtService jwtService, RefreshTokenService refreshTokenService,
             HuntingQuestEntryRepository huntingQuestEntryRepository,
-            generation.grimoire.repository.pve.DonjonRepository donjonRepository) {
+            generation.grimoire.repository.pve.DonjonRepository donjonRepository,
+            generation.grimoire.service.AlchemyService alchemyService) {
         this.authenticationManager = authenticationManager;
         this.userRepository = userRepository;
         this.passwordEncoder = passwordEncoder;
@@ -44,6 +46,7 @@ public class AuthController {
         this.refreshTokenService = refreshTokenService;
         this.huntingQuestEntryRepository = huntingQuestEntryRepository;
         this.donjonRepository = donjonRepository;
+        this.alchemyService = alchemyService;
     }
 
     @PostMapping("/register")
@@ -98,6 +101,16 @@ public class AuthController {
             res.put("unlockedAlchemy", u.isUnlockedAlchemy());
             res.put("unlockedShop", u.isUnlockedShop());
             res.put("huntingClaimable", huntingQuestEntryRepository.countClaimable(u.getUsername()));
+            
+            res.put("seenAlchemyRecipes", u.getSeenAlchemyRecipes());
+            if (u.isUnlockedAlchemy()) {
+                long unseenCount = alchemyService.getDiscoveredRecipes(u).stream()
+                    .filter(r -> !u.getSeenAlchemyRecipes().contains(r.getId()))
+                    .count();
+                res.put("unseenAlchemyCount", unseenCount);
+            } else {
+                res.put("unseenAlchemyCount", 0);
+            }
         });
 
         return ResponseEntity.ok(res);

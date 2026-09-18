@@ -55,6 +55,19 @@ public class AlchemyController {
         }
     }
 
+    @PostMapping("/recipes/{recipeId}/seen")
+    public ResponseEntity<?> markRecipeAsSeen(@PathVariable Long recipeId, Authentication authentication) {
+        if (authentication == null || !authentication.isAuthenticated()) {
+            return ResponseEntity.status(401).body("Non autorisé");
+        }
+        try {
+            alchemyService.markRecipeAsSeen(authentication.getName(), recipeId);
+            return ResponseEntity.ok().build();
+        } catch (Exception e) {
+            return ResponseEntity.badRequest().body(e.getMessage());
+        }
+    }
+
     // --- ADMIN ENDPOINTS ---
 
     @PostMapping("/admin/recipe")

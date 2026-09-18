@@ -67,10 +67,6 @@ public class AlchemyService {
 
         java.util.Set<String> discovered = user.getDiscoveredItems();
         return all.stream().filter(recipe -> {
-            // Les secrets sont toujours visibles
-            if (recipe.getRewardType() == RecipeRewardType.UNLOCK_FEATURE) {
-                return true;
-            }
             // Vérifier que tous les ingrédients ont été découverts
             if (recipe.getRequiredAnomalies() != null) {
                 for (String name : recipe.getRequiredAnomalies().keySet()) {
@@ -98,6 +94,15 @@ public class AlchemyService {
     @CacheEvict(value = {"alchemyRecipes", "alchemyRecipesList", "alchemyRecipeById"}, allEntries = true)
     public void deleteRecipe(Long id) {
         recipeRepository.deleteById(java.util.Objects.requireNonNull(id));
+    }
+
+    @Transactional
+    public void markRecipeAsSeen(String username, Long recipeId) {
+        AppUser user = userRepository.findByUsername(username).orElse(null);
+        if (user != null) {
+            user.getSeenAlchemyRecipes().add(recipeId);
+            userRepository.save(user);
+        }
     }
 
     @Transactional
