@@ -1815,7 +1815,7 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
 
         let karmaLockedDuration = c.passiveStates && c.passiveStates['karma_locked_duration'] !== undefined ? c.passiveStates['karma_locked_duration'] : 0;
 
-        let borderColor, color, icon, text, title;
+        let borderColor, color, icon, text, title, extraClass = '';
         if (karmaLocked) {
             borderColor = 'rgba(239, 68, 68, 0.4)'; color = '#f87171'; icon = 'block';
             text = `Brisé (${karmaLockedDuration})`; title = "Karma Brisé (Voie désactivée)";
@@ -1825,14 +1825,16 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
         } else if (karmaGauge < 0) {
             borderColor = 'rgba(168, 85, 247, 0.4)'; color = '#c084fc'; icon = 'dark_mode';
             text = `${karmaGauge}/3`; title = "Karma Ténèbres";
+            if (karmaGauge <= -3) extraClass = ' karma-dark-danger';
         } else if (karmaGauge > 0) {
             borderColor = 'rgba(253, 224, 71, 0.4)'; color = '#fde047'; icon = 'light_mode';
             text = `+${karmaGauge}/3`; title = "Karma Lumière";
+            if (karmaGauge >= 3) extraClass = ' karma-light-danger';
         } else {
             borderColor = 'rgba(156, 163, 175, 0.4)'; color = '#9ca3af'; icon = 'all_inclusive';
             text = `0/3`; title = "Karma Neutre";
         }
-        statsHtml += `<span class="hero-stat-chip" title="${title}" style="border-color: ${borderColor}; color: ${color};"><span class="material-symbols-outlined" style="color: inherit;">${icon}</span>${text}</span>`;
+        statsHtml += `<span class="hero-stat-chip${extraClass}" title="${title}" style="border-color: ${borderColor}; color: ${color};"><span class="material-symbols-outlined" style="color: inherit;">${icon}</span>${text}</span>`;
     }
 
     const isEsprit = c.spiritualite && c.spiritualite.nom && c.spiritualite.nom.toLowerCase().includes('esprit');

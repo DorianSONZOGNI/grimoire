@@ -133,13 +133,16 @@ public class KarmaPassiveEffect extends SpiritualitePassiveEffect {
                 if (gauge <= -4) {
                     System.out.println(
                             "💥 Le Karma est corrompu par les ténèbres. La voie du Karma est verrouillée pour 6 tours (+50% de dégâts sur ce sort) !");
+                    boolean logged50 = false;
                     for (generation.grimoire.entity.SpellEffect eff : spell.getEffects()) {
                         if (eff instanceof generation.grimoire.entity.spell.type.effect.DamageEffect de) {
                             if (de.getDamageType() == generation.grimoire.enumeration.DamageType.PHYSIC
                                     || de.getDamageType() == generation.grimoire.enumeration.DamageType.MAGIC) {
                                 de.setAmplificationMultiplier(de.getAmplificationMultiplier() * 1.5);
-                                System.out.println(
-                                        "✨ Amplification appliquée : +50% de dégâts (" + de.getDamageType() + ")");
+                                if (!logged50) {
+                                    System.out.println("✨ Amplification appliquée : +50% de dégâts (" + de.getDamageType() + ")");
+                                    logged50 = true;
+                                }
                             }
                         }
                     }

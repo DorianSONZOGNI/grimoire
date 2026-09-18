@@ -141,6 +141,22 @@
     100% { opacity: 1; }
 }
 
+.karma-dark-danger {
+    color: #c084fc !important;
+    font-weight: bold;
+    border-color: #c084fc !important;
+    box-shadow: 0 0 10px rgba(192, 132, 252, 0.6) !important;
+    animation: violencePulse 1.5s infinite;
+}
+
+.karma-light-danger {
+    color: #fde047 !important;
+    font-weight: bold;
+    border-color: #fde047 !important;
+    box-shadow: 0 0 10px rgba(253, 224, 71, 0.6) !important;
+    animation: violencePulse 1.5s infinite;
+}
+
 .modal-title{
             font-family: 'Outfit', sans-serif;
             font-size: 1.3rem;
