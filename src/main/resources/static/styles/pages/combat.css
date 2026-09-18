@@ -1189,3 +1189,11 @@ body {
     line-height: 1;
     box-shadow: 0 0 5px rgba(245, 158, 11, 0.5);
 }
+
+.hero-stats-row {
+    margin-bottom: 0.5rem;
+    justify-content: center;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.3rem;
+}

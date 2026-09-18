@@ -157,6 +157,23 @@
     animation: violencePulse 1.5s infinite;
 }
 
+.destruction-danger {
+    color: #f97316 !important;
+    font-weight: bold;
+    border-color: #f97316 !important;
+    box-shadow: 0 0 10px rgba(249, 115, 22, 0.6) !important;
+    animation: violencePulse 1.5s infinite;
+}
+
+.chip-destruction { border-color: rgba(249, 115, 22, 0.4); }
+.text-destruction { color: #f97316; }
+
+.chip-surete { border-color: rgba(20, 184, 166, 0.4); }
+.text-surete { color: #14b8a6; }
+
+.chip-raison { border-color: rgba(234, 179, 8, 0.4); }
+.text-raison { color: #eab308; }
+
 .modal-title{
             font-family: 'Outfit', sans-serif;
             font-size: 1.3rem;

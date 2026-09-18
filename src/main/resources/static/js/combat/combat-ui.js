@@ -1741,10 +1741,10 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
     const vit = getEffectiveStat('SPEED');
     const crit = getEffectiveStat('CRIT');
 
-    let statsHtml = `<div class="hero-stats-row" style="margin-bottom: 0.5rem; justify-content: center; display: flex; flex-wrap: wrap; gap: 0.3rem;">`;
+    let statsHtml = `<div class="hero-stats-row">`;
     statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined text-purple">auto_awesome</span>${pui} Pui</span>`;
-    statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #f43f5e;">fitness_center</span>${forPhy} For</span>`;
-    statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #3b82f6;">shield</span>${arm} Arm</span>`;
+    statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined text-rose-500">fitness_center</span>${forPhy} For</span>`;
+    statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined text-blue-500">shield</span>${arm} Arm</span>`;
     statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined text-success">shield</span>${res} Rés</span>`;
     statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined text-warning">bolt</span>${vit} Vit</span>`;
     statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined text-error">gps_fixed</span>${crit}% Crit</span>`;
@@ -1754,7 +1754,8 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
         if (c.passiveStates && c.passiveStates['destruction_heat'] !== undefined) {
             heat = c.passiveStates['destruction_heat'];
         }
-        statsHtml += `<span class="hero-stat-chip" title="Chaleur accumulée" style="border-color: rgba(249, 115, 22, 0.4);"><span class="material-symbols-outlined" style="color: #f97316;">local_fire_department</span>${heat}/100</span>`;
+        let heatDangerClass = heat >= 100 ? ' destruction-danger' : '';
+        statsHtml += `<span class="hero-stat-chip chip-destruction${heatDangerClass}" title="Chaleur accumulée"><span class="material-symbols-outlined text-destruction">local_fire_department</span>${heat}/100</span>`;
     }
 
     if (c.voie && c.voie.nom && (c.voie.nom.toLowerCase().includes('surete') || c.voie.nom.toLowerCase().includes('sûreté'))) {
@@ -1762,7 +1763,7 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
         if (c.passiveStates && c.passiveStates['surete_points'] !== undefined) {
             suretePoints = c.passiveStates['surete_points'];
         }
-        statsHtml += `<span class="hero-stat-chip" title="Points de Sûreté" style="border-color: rgba(20, 184, 166, 0.4);"><span class="material-symbols-outlined" style="color: #14b8a6;">security</span>${suretePoints}</span>`;
+        statsHtml += `<span class="hero-stat-chip chip-surete" title="Points de Sûreté"><span class="material-symbols-outlined text-surete">security</span>${suretePoints}</span>`;
     }
 
     if (c.voie && c.voie.nom && c.voie.nom.toLowerCase().includes('violence')) {
@@ -1782,7 +1783,7 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
         if (c.passiveStates && c.passiveStates['raison_speed_stacks'] !== undefined) {
             raisonStacks = c.passiveStates['raison_speed_stacks'];
         }
-        statsHtml += `<span class="hero-stat-chip" title="Cumuls de Vitesse (Raison)" style="border-color: rgba(234, 179, 8, 0.4);"><span class="material-symbols-outlined" style="color: #eab308;">speed</span>${raisonStacks}</span>`;
+        statsHtml += `<span class="hero-stat-chip chip-raison" title="Cumuls de Vitesse (Raison)"><span class="material-symbols-outlined text-raison">speed</span>${raisonStacks}</span>`;
     }
 
     if (c.voie && c.voie.nom && c.voie.nom.toLowerCase().includes('trahison')) {
