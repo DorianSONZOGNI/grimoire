@@ -136,6 +136,7 @@ window.formatRichText = function (text) {
     if (!text) return '';
     return text
         .replace(/\[c=(.*?)\](.*?)\[\/c\]/g, '<strong class="text-$1">$2</strong>')
+        .replace(/\[b\](.*?)\[\/b\]/g, '<strong>$1</strong>')
         .replace(/\[ul\](.*?)\[\/ul\]/gs, '<ul class="list-disc mt-1 mb-1 pl-5">$1</ul>')
         .replace(/\[li\](.*?)\[\/li\]/g, '<li>$1</li>')
         .replace(/\n/g, '<br>');

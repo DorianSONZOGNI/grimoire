@@ -716,6 +716,11 @@ class CombatTurnService {
     void advanceToNextLiveTurn(CombatSession session) {
         // Process dead entities and start player turn
         while (!session.isRoundFinished()) {
+            // Si le combat est terminé, on arrête de faire défiler les tours (et donc le timer)
+            if (session.areAllEnemiesDead() || session.areAllPlayersDead()) {
+                break;
+            }
+
             InitiativeEntry current = session.getTurnOrder()
                     .get(session.getCurrentTurnIndex());
             if (current.isPlayer() && session.getPlayers().get(current.getIndex()).getHealthCurrent() <= 0) {

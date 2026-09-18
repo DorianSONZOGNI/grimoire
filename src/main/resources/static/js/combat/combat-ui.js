@@ -427,6 +427,22 @@ export function updateUI(data) {
     if (data.currentRoom) {
         if (data.currentRoom.type === 'COMBAT' || data.currentRoom.type === 'BOSS') {
             document.getElementById('eventOverlay').classList.remove('show');
+            
+            if (typeof window.renderOverlayInventory === 'function') {
+                window.renderOverlayInventory('combatMainInventoryList');
+            }
+            if (typeof window.renderOverlayMap === 'function') {
+                window.renderOverlayMap('combatMainMapList');
+            }
+            
+            // Auto fold when a new combat starts
+            if (window.lastCombatRoomIndex !== data.currentRoomIndex) {
+                const wrapper = document.getElementById('combatMainSidePanelWrapper');
+                if (wrapper && !wrapper.classList.contains('-translate-x-full')) {
+                    wrapper.classList.add('-translate-x-full');
+                }
+                window.lastCombatRoomIndex = data.currentRoomIndex;
+            }
 
             const allEnemiesDead = !data.enemies || data.enemies.length === 0 || data.enemies.every(e => e.dead || e.currentHp <= 0);
 
@@ -434,8 +450,14 @@ export function updateUI(data) {
                 document.getElementById('btnAttack').disabled = true;
                 const vicOverlay = document.getElementById('combatVictoryOverlay');
                 if (vicOverlay) {
-                    if (typeof window.renderOverlayInventory === 'function') window.renderOverlayInventory('combatVictoryInventoryList');
-                    if (typeof window.renderOverlayMap === 'function') window.renderOverlayMap('combatVictoryMapList');
+                    if (typeof window.renderOverlayInventory === 'function') {
+                        window.renderOverlayInventory('combatVictoryInventoryList');
+                        window.renderOverlayInventory('combatMainInventoryList');
+                    }
+                    if (typeof window.renderOverlayMap === 'function') {
+                        window.renderOverlayMap('combatVictoryMapList');
+                        window.renderOverlayMap('combatMainMapList');
+                    }
                     vicOverlay.classList.add('show');
                     const xpContainer = document.getElementById('combatVictoryXpContainer');
                     if (xpContainer) {
@@ -1336,8 +1358,14 @@ export function updateUI(data) {
                 }
             }
 
-            if (typeof window.renderOverlayInventory === 'function') window.renderOverlayInventory('eventOverlayInventoryList');
-            if (typeof window.renderOverlayMap === 'function') window.renderOverlayMap('eventMapList');
+            if (typeof window.renderOverlayInventory === 'function') {
+                window.renderOverlayInventory('eventOverlayInventoryList');
+                window.renderOverlayInventory('combatMainInventoryList');
+            }
+            if (typeof window.renderOverlayMap === 'function') {
+                window.renderOverlayMap('eventMapList');
+                window.renderOverlayMap('combatMainMapList');
+            }
             overlay.classList.add('show');
         }
     }

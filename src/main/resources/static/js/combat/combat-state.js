@@ -573,10 +573,10 @@ window.renderOverlayInventory = function (containerId) {
     // Automatically open the inventory if there are consumables
     const wrapper = list.closest('.absolute.inset-y-0.left-0');
     if (wrapper) {
-        const prefix = containerId.includes('event') ? 'event' : 'combatVictory';
+        const prefix = containerId.includes('event') ? 'event' : (containerId.includes('combatMain') ? 'combatMain' : 'combatVictory');
         const invContent = document.getElementById(`${prefix}InventoryContent`);
-        // Only auto-open if it is closed
-        if (wrapper.classList.contains('-translate-x-full')) {
+        // Only auto-open if it is closed, and never auto-open the combatMain wrapper (during combat)
+        if (wrapper.classList.contains('-translate-x-full') && prefix !== 'combatMain') {
             if (typeof window.toggleSidePanel === 'function') {
                 window.toggleSidePanel(prefix, 'inventory');
             } else {
@@ -617,12 +617,19 @@ window.renderOverlayInventory = function (containerId) {
         groupedConsumables[c.name].ids.push(c.id);
     });
 
+    const isCombat = pageState.currentSessionData && 
+                     (pageState.currentSessionData.currentRoom.type === 'COMBAT' || pageState.currentSessionData.currentRoom.type === 'BOSS') && 
+                     !pageState.currentSessionData.finished &&
+                     !(pageState.currentSessionData.enemies && pageState.currentSessionData.enemies.every(e => e.dead || e.currentHp <= 0));
+
     Object.values(groupedConsumables).forEach(group => {
         const c = group.base;
         const total = group.ids.length;
         const selCount = window.combatConsumeSelections[c.name] || 0;
         
-        const canConsume = Boolean(c.bonusHealthMax || c.bonusManaMax || c.consumableHpPercent || c.consumableManaPercent || c.consumableMissingHpPercent || c.consumableMissingManaPercent);
+        const isConsumableEffect = Boolean(c.bonusHealthMax || c.bonusManaMax || c.consumableHpPercent || c.consumableManaPercent || c.consumableMissingHpPercent || c.consumableMissingManaPercent);
+        const canConsume = !isCombat && isConsumableEffect;
+        
         const onClickAttr = canConsume ? `onclick="window.incrementConsumeSelection('${c.name.replace(/'/g, "\\'")}', ${total}, '${containerId}')"` : '';
         const cursorStyle = canConsume ? 'cursor: pointer;' : '';
         const hoverClass = canConsume ? 'consumable-hover' : '';
@@ -634,7 +641,7 @@ window.renderOverlayInventory = function (containerId) {
         }
 
         let actionHtml = '';
-        if (selCount > 0) {
+        if (selCount > 0 && !isCombat) {
             actionHtml = `<div class="flex items-center gap-2 mt-3 w-full" style="animation: popIn 0.2s ease-out;">
                 <button onclick="event.stopPropagation(); window.decrementConsumeSelection('${c.name.replace(/'/g, "\\'")}', '${containerId}')" 
                     class="flex-center" 
@@ -655,12 +662,22 @@ window.renderOverlayInventory = function (containerId) {
 
         const destroyIds = selCount > 0 ? group.ids.slice(0, selCount) : [group.ids[0]];
         const destroyIdsJson = JSON.stringify(destroyIds);
+        
+        let destroyBtnHtml = '';
+        if (!isCombat) {
+            destroyBtnHtml = `<button class="destroy-item-btn" onclick="event.stopPropagation(); window.confirmDestroyItem(${destroyIdsJson}, '${c.name.replace(/'/g, "\\'")}')" style="position: absolute; top: -5px; right: -5px; background: #ef4444; color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.3); transition: transform 0.2s;" title="Détruire (${destroyIds.length}x)">
+                    <span class="material-symbols-outlined" style="font-size: 14px; font-weight: bold;">close</span>
+                </button>`;
+        }
+
+        let combatLockHtml = '';
+        if (isCombat) {
+            combatLockHtml = '<div class="font-medium" style="color: #64748b; font-size: 0.75rem;"><span class="material-symbols-outlined" style="font-size:0.85rem; vertical-align:-1px;">lock</span> Utilisable hors combat</div>';
+        }
 
         list.innerHTML += `
             <div class="${hoverClass} flex-center" ${onClickAttr} style="background: rgba(30, 41, 59, 0.5); border: ${selCount > 0 ? '1px solid #10b981' : '1px solid rgba(255, 255, 255, 0.05)'}; border-radius: 8px; padding: 0.8rem; gap: 0.8rem; margin-bottom: 0.5rem; transition: all 0.2s; ${cursorStyle}; position: relative;">
-                <button class="destroy-item-btn" onclick="event.stopPropagation(); window.confirmDestroyItem(${destroyIdsJson}, '${c.name.replace(/'/g, "\\'")}')" style="position: absolute; top: -5px; right: -5px; background: #ef4444; color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; cursor: pointer; border: none; z-index: 10; box-shadow: 0 2px 4px rgba(0,0,0,0.3); transition: transform 0.2s;" title="Détruire (${destroyIds.length}x)">
-                    <span class="material-symbols-outlined" style="font-size: 14px; font-weight: bold;">close</span>
-                </button>
+                ${destroyBtnHtml}
                 ${badgeHtml}
                 <div style="display: flex; flex-direction: column; align-items: center; gap: 0.3rem;">
                     <span class="material-symbols-outlined" style="font-size: 1.5rem; color: ${slotInfo.color};">${slotInfo.icon}</span>
@@ -676,7 +693,7 @@ window.renderOverlayInventory = function (containerId) {
                         ${c.consumableMissingManaPercent ? `<span style="display:inline-flex; align-items:center; color:#a855f7;" title="Mana Manq">+${c.consumableMissingManaPercent}%<span class="material-symbols-outlined" style="font-size:0.85rem; margin-left:2px;">cyclone</span></span>` : ''}
                         ${c.consumableCategory === 'CLE' && c.specialEffectValue ? `<span style="display:inline-flex; align-items:center; color:#fbbf24;" title="Bonus Butin">+${c.specialEffectValue}%<span class="material-symbols-outlined" style="font-size:0.85rem; margin-left:2px;">diamond</span></span>` : ''}
                     </div>
-                    ${actionHtml || (canConsume ? '<div class="font-medium" style="color: #0ea5e9; font-size: 0.75rem;">Cliquer pour préparer</div>' : '')}
+                    ${actionHtml || (canConsume ? '<div class="font-medium" style="color: #0ea5e9; font-size: 0.75rem;">Cliquer pour préparer</div>' : combatLockHtml)}
                 </div>
             </div>
         `;
@@ -883,10 +900,12 @@ window.confirmConsumeItem = async function (consumableIds, characterId, consumab
             if (typeof window.renderOverlayInventory === 'function') {
                 window.renderOverlayInventory('eventOverlayInventoryList');
                 window.renderOverlayInventory('combatVictoryInventoryList');
+                window.renderOverlayInventory('combatMainInventoryList');
             }
             if (typeof window.renderOverlayMap === 'function') {
                 window.renderOverlayMap('eventMapList');
                 window.renderOverlayMap('combatVictoryMapList');
+                window.renderOverlayMap('combatMainMapList');
             }
         }
     } catch (e) {
