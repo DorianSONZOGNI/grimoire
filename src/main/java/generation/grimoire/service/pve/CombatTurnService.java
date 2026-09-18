@@ -15,6 +15,7 @@ import generation.grimoire.repository.PersonnageRepository;
 import generation.grimoire.repository.SpellRepository;
 import generation.grimoire.repository.auth.UserRepository;
 import generation.grimoire.repository.pve.DungeonRunStatRepository;
+import generation.grimoire.service.PersonnageService;
 import generation.grimoire.service.SpellService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
@@ -33,11 +34,38 @@ import java.util.List;
 class CombatTurnService {
 
     private final PersonnageRepository personnageRepository;
+    private final PersonnageService personnageService;
     private final UserRepository userRepository;
     private final SpellRepository spellRepository;
     private final SpellService spellService;
     private final SpellAvailabilityService spellAvailabilityService;
     private final DungeonRunStatRepository dungeonRunStatRepository;
+
+    private void evaluateDynamicChallenges(CombatSession session) {
+        if (session.getActiveChallenges() == null || session.getActiveChallenges().isEmpty()) return;
+        List<Personnage> players = session.getPlayers();
+        if (players == null || players.isEmpty()) return;
+
+        for (generation.grimoire.model.pve.Challenge c : session.getActiveChallenges()) {
+            if (c.isFailed()) continue;
+            
+            if ("MAX_HP_LOSS_PCT".equals(c.getType())) {
+                boolean failed = false;
+                for (Personnage p : players) {
+                    int lowest = p.getLowestHpReached() != null ? p.getLowestHpReached() : p.getHealthCurrent();
+                    double threshold = p.getHealthMax() * ((100.0 - c.getValue()) / 100.0);
+                    if (lowest < threshold) {
+                        failed = true;
+                        break;
+                    }
+                }
+                if (failed) {
+                    c.setFailed(true);
+                    session.addLog("❌ Challenge échoué : Un héros est passé en dessous de " + (100 - c.getValue()) + "% PV.");
+                }
+            }
+        }
+    }
 
     CombatSession endTurn(CombatSession session) {
         if (session.getCurrentRoom().getType() != generation.grimoire.enumeration.RoomType.COMBAT
@@ -67,6 +95,8 @@ class CombatTurnService {
         }
         session.advanceTurnIndex();
         advanceToNextLiveTurn(session);
+        
+        evaluateDynamicChallenges(session);
 
         if (session.isRoundFinished() && !session.areAllEnemiesDead() && !session.areAllPlayersDead()) {
             session.setTurnNumber(session.getTurnNumber() + 1);
@@ -471,7 +501,7 @@ class CombatTurnService {
 
             if (dbPersonnage != null) {
                 dbPersonnage.setExperience(Math.max(0, dbPersonnage.getExperience() - penaltyXpPerPlayer));
-                personnageRepository.save(dbPersonnage);
+                personnageService.save(dbPersonnage);
 
                 if (!goldDeducted) {
                     AppUser user = dbPersonnage.getUser();
@@ -516,7 +546,7 @@ class CombatTurnService {
 
             if (dbPersonnage != null) {
                 dbPersonnage.setExperience(Math.max(0, dbPersonnage.getExperience() - penaltyXpPerPlayer));
-                personnageRepository.save(dbPersonnage);
+                personnageService.save(dbPersonnage);
 
                 if (!goldDeducted) {
                     AppUser user = dbPersonnage.getUser();
@@ -555,7 +585,7 @@ class CombatTurnService {
                         .orElse(null);
                 if (dbPersonnage != null) {
                     dbPersonnage.setExperience(Math.max(0, dbPersonnage.getExperience() - penalty));
-                    personnageRepository.save(dbPersonnage);
+                    personnageService.save(dbPersonnage);
                     p.setExperience(dbPersonnage.getExperience());
                     session.addLog(
                             "☠️ " + p.getName() + " succombe à ses blessures et perd " + penalty + " XP normal...");
@@ -594,7 +624,7 @@ class CombatTurnService {
                     actualExp *= 2;
                 }
                 p.setExperience(p.getExperience() + actualExp);
-                personnageRepository.save(p);
+                personnageService.save(p);
             }
             if (goldDrop > 0 && !eligiblePlayers.isEmpty()) {
                 for (Personnage p : eligiblePlayers) {
@@ -640,7 +670,7 @@ class CombatTurnService {
                             actualSpXp *= 2;
                         }
                         p.setSpiritualiteExperience(p.getSpiritualiteExperience() + actualSpXp);
-                        personnageRepository.save(p);
+                        personnageService.save(p);
                     }
                     session.setBossBonusSpiritualXp(bossSpXp);
                     session.addLog("🔮 Le Boss vaincu octroie " + bossSpXp + " XP Spiritualité, partagé entre "
@@ -658,6 +688,75 @@ class CombatTurnService {
                     session.setTotalGoldAccumulated(session.getTotalGoldAccumulated() + bossGold);
                     session.setBossBonusGold(bossGold);
                     session.addLog("💰 Le Boss vaincu octroie " + bossGold + " Or supplémentaires !");
+                }
+                
+                evaluateEndOfCombatChallengesAndGiveRewards(session, bossEligible);
+            }
+        }
+    }
+    
+    private void evaluateEndOfCombatChallengesAndGiveRewards(CombatSession session, List<Personnage> bossEligible) {
+        if (session.getActiveChallenges() == null || session.getActiveChallenges().isEmpty()) return;
+        List<Personnage> players = session.getPlayers();
+        if (players == null || players.isEmpty()) return;
+
+        for (generation.grimoire.model.pve.Challenge c : session.getActiveChallenges()) {
+            if ("MIN_HP_LOSS_PCT".equals(c.getType()) && !c.isFailed()) {
+                boolean anyHeroDropped = false;
+                for (Personnage p : players) {
+                    int lowest = p.getLowestHpReached() != null ? p.getLowestHpReached() : p.getHealthCurrent();
+                    double threshold = p.getHealthMax() * ((100.0 - c.getValue()) / 100.0);
+                    if (lowest <= threshold) {
+                        anyHeroDropped = true;
+                        break;
+                    }
+                }
+                if (!anyHeroDropped) {
+                    c.setFailed(true);
+                    session.addLog("❌ Challenge échoué : Aucun héros n'est passé en dessous de " + (100 - c.getValue()) + "% PV.");
+                } else {
+                    session.addLog("✅ Challenge réussi (Risque-tout) !");
+                }
+            }
+
+            if (!c.isFailed()) {
+                // Give reward
+                session.addLog("🎁 Récompense de challenge obtenue !");
+                if ("BONUS_SPIRIT_XP".equals(c.getRewardType()) && !bossEligible.isEmpty()) {
+                    int spXpPerHero = c.getRewardValue() / Math.max(1, bossEligible.size());
+                    for (Personnage p : bossEligible) {
+                        int actualSpXp = spXpPerHero;
+                        AppUser u = p.getUser();
+                        if (u != null && !u.getCompletedDungeons().contains(session.getDungeonId())) {
+                            actualSpXp *= 2;
+                        }
+                        p.setSpiritualiteExperience(p.getSpiritualiteExperience() + actualSpXp);
+                        personnageService.save(p);
+                    }
+                    session.setBossBonusSpiritualXp(session.getBossBonusSpiritualXp() + c.getRewardValue());
+                    session.addLog("🔮 Challenge : +" + c.getRewardValue() + " XP Spiritualité.");
+                } else if ("BONUS_GOLD".equals(c.getRewardType()) && !bossEligible.isEmpty()) {
+                    for (Personnage p : bossEligible) {
+                        AppUser u = p.getUser();
+                        if (u != null) {
+                            u.setMonnaie(u.getMonnaie() + c.getRewardValue());
+                            userRepository.save(u);
+                        }
+                    }
+                    session.setTotalGoldAccumulated(session.getTotalGoldAccumulated() + c.getRewardValue());
+                    session.setBossBonusGold(session.getBossBonusGold() + c.getRewardValue());
+                    session.addLog("💰 Challenge : +" + c.getRewardValue() + " Or.");
+                } else if ("REGEN_HP_MANA".equals(c.getRewardType())) {
+                    for (Personnage p : bossEligible) {
+                        int healAmount = (int) (p.getHealthMax() * (c.getRewardValue() / 100.0));
+                        int manaAmount = (int) (p.getManaMax() * (c.getRewardValue() / 100.0));
+                        p.setHealthCurrent(Math.min(p.getHealthMax(), p.getHealthCurrent() + healAmount));
+                        p.setManaCurrent(Math.min(p.getManaMax(), p.getManaCurrent() + manaAmount));
+                    }
+                    session.addLog("💖 Challenge : L'équipe régénère " + c.getRewardValue() + "% de ses PV et Mana.");
+                } else if ("EXTRA_LOOT".equals(c.getRewardType())) {
+                    session.addLog("🎁 Challenge : " + c.getRewardValue() + " Loots supplémentaires. (A implémenter : extra loot sur le drop !)");
+                    // TODO: Implement EXTRA_LOOT in loot dropping logic
                 }
             }
         }

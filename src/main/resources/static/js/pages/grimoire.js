@@ -158,9 +158,10 @@ export function renderFilteredSpells() {
             }
         }
 
+        sp.isLocked = false;
         if (!window.isAdmin) {
-            if (sp.voie && (sp.niveau || 1) > maxVoieLevel) return false;
-            if (sp.spiritualite && (sp.niveau || 1) > maxSpiritLevel) return false;
+            if (sp.voie && (sp.niveau || 1) > maxVoieLevel) sp.isLocked = true;
+            if (sp.spiritualite && (sp.niveau || 1) > maxSpiritLevel) sp.isLocked = true;
         }
 
         // Niveau
@@ -692,10 +693,13 @@ export function getSpellCardHtml(sp) {
     }
 
     return `
-                <div class="spell-card spell-card-lvl-${isMaxLevel ? 5 : (sp.niveau || 1)}" style="--spell-color: ${titleColor}; --spell-rgb: ${titleRgb};">
+                <div class="spell-card spell-card-lvl-${isMaxLevel ? 5 : (sp.niveau || 1)}" style="--spell-color: ${titleColor}; --spell-rgb: ${titleRgb}; ${sp.isLocked ? 'opacity: 0.6; filter: grayscale(60%); pointer-events: none;' : ''}">
                     <div class="spell-card-header items-start">
                         <div class="flex flex-col gap-1.5">
-                            <div class="spell-name" style="color: ${titleColor};">${sp.nom}</div>
+                            <div class="spell-name" style="color: ${titleColor};">
+                                ${sp.isLocked ? '<span class="material-symbols-outlined align-middle mr-1" style="font-size: 1.1em;">lock</span> ' : ''}
+                                ${sp.isLocked ? 'Sortilège Inconnu' : sp.nom}
+                            </div>
                             <div class="spell-badges">
                                 ${castBadge}
                                 ${lvlBadge}
@@ -731,8 +735,8 @@ export function getSpellCardHtml(sp) {
                             </span>
                         ` : ''}
                     </div>
-                    ${sp.description ? `<div style="font-size:0.9rem; color:var(--text-muted); font-style:italic;">"${sp.description}"</div>` : ''}
-                    ${effectsSummaryHtml}
+                    ${sp.description ? `<div style="font-size:0.9rem; color:var(--text-muted); font-style:italic;">"${sp.isLocked ? 'Description illisible...' : sp.description}"</div>` : ''}
+                    ${sp.isLocked ? '<div class="spell-effects-summary"><div class="effect-line text-slate-400"><i>Atteignez le niveau de maîtrise requis pour déchiffrer ce sortilège.</i></div></div>' : effectsSummaryHtml}
                 </div>
             `;
 }
