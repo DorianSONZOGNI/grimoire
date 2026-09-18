@@ -109,5 +109,26 @@ class StatCalculatorTest {
     void shouldCalculateHealthCurrentSources() {
         assertThat(StatCalculator.getSourceValue(Source.CASTER_HEALTH_CURRENT, caster, target)).isEqualTo(400.0);
         assertThat(StatCalculator.getSourceValue(Source.TARGET_HEALTH_CURRENT, caster, target)).isEqualTo(300.0);
+    @Test
+    void shouldCalculatePowerSourcesWithPercentageBuffs() {
+        // Apply a percentage buff (+20% power)
+        generation.grimoire.entity.spell.type.effect.BuffDebuffEffect buff = new generation.grimoire.entity.spell.type.effect.BuffDebuffEffect();
+        buff.setStatAffected(StatType.POWER);
+        buff.setModifier(0.20);
+        buff.setDuration(2);
+        caster.applyBuff(buff, 0.20);
+
+        // Base power is 100. 100 * 1.20 = 120
+        assertThat(StatCalculator.getSourceValue(Source.CASTER_POWER, caster, target)).isEqualTo(120.0);
+
+        // Target Power is 80. Add 50%
+        generation.grimoire.entity.spell.type.effect.BuffDebuffEffect buffTarget = new generation.grimoire.entity.spell.type.effect.BuffDebuffEffect();
+        buffTarget.setStatAffected(StatType.POWER);
+        buffTarget.setModifier(0.50);
+        buffTarget.setDuration(2);
+        target.applyBuff(buffTarget, 0.50);
+
+        // Base Power is 80. 80 * 1.50 = 120
+        assertThat(StatCalculator.getSourceValue(Source.TARGET_POWER, caster, target)).isEqualTo(120.0);
     }
 }

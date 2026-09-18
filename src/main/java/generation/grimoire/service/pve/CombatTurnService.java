@@ -209,11 +209,19 @@ class CombatTurnService {
 
                                 int totalManaCost = mutSpell.getManaCost();
                                 if (mutSpell.getPercentManaCost() > 0) {
-                                    totalManaCost += (int) Math.ceil(m.getAsPersonnage().getManaMax()
-                                            * mutSpell.getPercentManaCost() / 100.0);
+                                    generation.grimoire.enumeration.Source mSource = mutSpell.getPercentManaCostSource() != null ? mutSpell.getPercentManaCostSource() : generation.grimoire.enumeration.Source.CASTER_MANA_MAX;
+                                    double manaBase = generation.grimoire.utils.StatCalculator.getSourceValue(mSource, m.getAsPersonnage(), null);
+                                    totalManaCost += (int) Math.ceil(manaBase * mutSpell.getPercentManaCost() / 100.0);
                                 }
 
-                                if (m.getAsPersonnage().getManaCurrent() >= totalManaCost && totalManaCost > 0) {
+                                int totalHealCost = mutSpell.getHealCost();
+                                if (mutSpell.getPercentHealCost() > 0) {
+                                    generation.grimoire.enumeration.Source hSource = mutSpell.getPercentHealCostSource() != null ? mutSpell.getPercentHealCostSource() : generation.grimoire.enumeration.Source.CASTER_HEALTH_MAX;
+                                    double healBase = generation.grimoire.utils.StatCalculator.getSourceValue(hSource, m.getAsPersonnage(), null);
+                                    totalHealCost += (int) Math.ceil(healBase * mutSpell.getPercentHealCost() / 100.0);
+                                }
+
+                                if (m.getAsPersonnage().getManaCurrent() >= totalManaCost && m.getAsPersonnage().getHealthCurrent() >= totalHealCost && totalManaCost >= 0) {
                                     String castError = m.getAsPersonnage().canCast(mutSpell);
                                     if (castError != null)
                                         continue;
