@@ -804,7 +804,11 @@ export function updateUI(data) {
                                     const rarityColor = getRarityColor(eq.rarity);
                                     const tooltipDataHtml = typeof window.getEquipmentTooltipHTML === 'function' ? window.getEquipmentTooltipHTML(eq) : '';
                                     const tooltipAttrs = tooltipDataHtml ? 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"' : '';
-                                    altarRewardHtml = `<div class="text-center" style="margin-top: 0.5rem; background: rgba(192, 132, 252, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(192, 132, 252, 0.3);"><span style="color: #cbd5e1; margin-right: 0.5rem;"><strong>Récompense :</strong></span> <span class="font-bold relative" ${tooltipAttrs} style="color: ${rarityColor}; cursor: help; border-bottom: 1px dashed ${rarityColor};">${eq.name}${tooltipDataHtml ? `<template class="tooltip-data">${tooltipDataHtml}</template>` : ''}</span> <span class="text-sm font-bold" id="altarDropChance" style="margin-left: 0.5rem;"></span></div>`;
+                                    const slotInfo = typeof getSlotInfo === 'function' ? getSlotInfo(eq) : { icon: 'help' };
+                                    const eqIcon = slotInfo.icon;
+                                    const sName = typeof eq.slot === 'object' ? eq.slot?.name : eq.slot;
+                                    const flipStyle = (sName === 'CASQUE' || eq.category === 'HELMET' || eq.type === 'HELMET') ? 'transform: rotateX(180deg);' : '';
+                                    altarRewardHtml = `<div class="flex items-center justify-center flex-wrap" style="margin-top: 0.5rem; background: rgba(192, 132, 252, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(192, 132, 252, 0.3);"><span style="color: #cbd5e1; margin-right: 0.5rem;"><strong>Récompense :</strong></span> <span class="material-symbols-outlined align-middle" style="color: ${slotInfo.color || rarityColor}; font-size: 1.2rem; margin-right: 4px; ${flipStyle}">${eqIcon}</span> <span class="font-bold relative" ${tooltipAttrs} style="color: ${rarityColor}; cursor: help; border-bottom: 1px dashed ${rarityColor};">${eq.name}${tooltipDataHtml ? `<template class="tooltip-data">${tooltipDataHtml}</template>` : ''}</span> <span class="text-sm font-bold" id="altarDropChance" style="margin-left: 0.5rem;"></span></div>`;
                                 } else {
                                     altarRewardHtml = `<div class="font-bold text-center" style="color: #c084fc; margin-top: 0.5rem; background: rgba(192, 132, 252, 0.1); padding: 0.5rem; border-radius: 6px; border: 1px solid rgba(192, 132, 252, 0.3);"><span class="material-symbols-outlined align-middle" style="font-size: 1.1rem; margin-right: 0.2rem;">star</span> <strong>Récompense :</strong> Équipement mystère</div>`;
                                 }
@@ -1043,11 +1047,13 @@ export function updateUI(data) {
 
                         data.currentRoom.lootTable.forEach((entry, idx) => {
                             let nameHtml = '';
+                            let rawName = '';
                             let iconHtml = '';
                             let rarityColor = '#10b981';
 
                             if (entry.specialItemName) {
                                 nameHtml = entry.specialItemName;
+                                rawName = entry.specialItemName;
                                 rarityColor = '#d946ef';
                                 let catIcon = 'star';
                                 if (Array.isArray(window.allAnomaliesCombat)) {
@@ -1064,6 +1070,7 @@ export function updateUI(data) {
                                 rarityColor = getRarityColor(eq.rarity);
                                 const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
                                 nameHtml = eq.name;
+                                rawName = eq.name;
                                 if (eq.specialEffect && eq.specialEffect !== 'NONE') {
                                     nameHtml += window.getEffectInfoIconHtml(eq.specialEffect);
                                 }
@@ -1127,7 +1134,7 @@ export function updateUI(data) {
                                               </button>`;
                             } else {
                                 let specialItemNameArg = entry.priceSpecialItemName ? `'${entry.priceSpecialItemName.replace(/'/g, "\\'").replace(/"/g, '&quot;')}'` : 'null';
-                                buttonHtml = `<button class="flex-center" id="btn_buy_${idx}" type="button" onclick="openBuyModal(${idx}, '${nameHtml.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', ${goldPrice}, ${specialItemNameArg})" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='none'" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 8px; padding: 0.6rem 1.2rem; font-weight: 700; font-size: 1rem; cursor: pointer; gap: 0.5rem; transition: all 0.2s ease; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);">
+                                buttonHtml = `<button class="flex-center" id="btn_buy_${idx}" type="button" onclick="openBuyModal(${idx}, '${rawName.replace(/'/g, "\\'").replace(/"/g, '&quot;')}', ${goldPrice}, ${specialItemNameArg})" onmouseover="this.style.transform='scale(1.05)'" onmouseout="this.style.transform='none'" style="background: linear-gradient(135deg, #10b981, #059669); color: white; border: none; border-radius: 8px; padding: 0.6rem 1.2rem; font-weight: 700; font-size: 1rem; cursor: pointer; gap: 0.5rem; transition: all 0.2s ease; box-shadow: 0 4px 10px rgba(16, 185, 129, 0.3);">
                                                   <span class="material-symbols-outlined icon-md">shopping_cart</span>
                                                   Acheter
                                               </button>`;
@@ -1734,10 +1741,10 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
     const vit = getEffectiveStat('SPEED');
     const crit = getEffectiveStat('CRIT');
 
-    let statsHtml = `<div class="hero-stats-row" style="margin-bottom: 0.5rem; justify-content: center; display: flex; flex-wrap: wrap; gap: 0.3rem;">`;
+    let statsHtml = `<div class="hero-stats-row">`;
     statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined text-purple">auto_awesome</span>${pui} Pui</span>`;
-    statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #f43f5e;">fitness_center</span>${forPhy} For</span>`;
-    statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined" style="color: #3b82f6;">shield</span>${arm} Arm</span>`;
+    statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined text-rose-500">fitness_center</span>${forPhy} For</span>`;
+    statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined text-blue-500">shield</span>${arm} Arm</span>`;
     statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined text-success">shield</span>${res} Rés</span>`;
     statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined text-warning">bolt</span>${vit} Vit</span>`;
     statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined text-error">gps_fixed</span>${crit}% Crit</span>`;
@@ -1747,7 +1754,8 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
         if (c.passiveStates && c.passiveStates['destruction_heat'] !== undefined) {
             heat = c.passiveStates['destruction_heat'];
         }
-        statsHtml += `<span class="hero-stat-chip" title="Chaleur accumulée" style="border-color: rgba(249, 115, 22, 0.4);"><span class="material-symbols-outlined" style="color: #f97316;">local_fire_department</span>${heat}/100</span>`;
+        let heatDangerClass = heat >= 100 ? ' destruction-danger' : '';
+        statsHtml += `<span class="hero-stat-chip chip-destruction${heatDangerClass}" title="Chaleur accumulée"><span class="material-symbols-outlined text-destruction">local_fire_department</span>${heat}/100</span>`;
     }
 
     if (c.voie && c.voie.nom && (c.voie.nom.toLowerCase().includes('surete') || c.voie.nom.toLowerCase().includes('sûreté'))) {
@@ -1755,7 +1763,7 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
         if (c.passiveStates && c.passiveStates['surete_points'] !== undefined) {
             suretePoints = c.passiveStates['surete_points'];
         }
-        statsHtml += `<span class="hero-stat-chip" title="Points de Sûreté" style="border-color: rgba(20, 184, 166, 0.4);"><span class="material-symbols-outlined" style="color: #14b8a6;">security</span>${suretePoints}</span>`;
+        statsHtml += `<span class="hero-stat-chip chip-surete" title="Points de Sûreté"><span class="material-symbols-outlined text-surete">security</span>${suretePoints}</span>`;
     }
 
     if (c.voie && c.voie.nom && c.voie.nom.toLowerCase().includes('violence')) {
@@ -1764,8 +1772,10 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
             if (c.passiveStates['violence_inspiration'] !== undefined) insp = c.passiveStates['violence_inspiration'];
             if (c.passiveStates['violence_expiration'] !== undefined) exp = c.passiveStates['violence_expiration'];
         }
-        statsHtml += `<span class="hero-stat-chip" title="Inspiration (Violence)" style="border-color: rgba(220, 38, 38, 0.4);"><span class="material-symbols-outlined" style="color: #dc2626;">storm</span>${insp} Insp</span>`;
-        statsHtml += `<span class="hero-stat-chip" title="Expiration (Violence)" style="border-color: rgba(217, 70, 239, 0.4);"><span class="material-symbols-outlined" style="color: #d946ef;">air</span>${exp} Exp</span>`;
+        let inspDanger = insp >= 6 ? ' violence-danger' : '';
+        let expDanger = exp >= 6 ? ' violence-danger' : '';
+        statsHtml += `<span class="hero-stat-chip violence-insp-chip${inspDanger}" title="Inspiration (Violence)"><span class="material-symbols-outlined violence-insp-icon">storm</span>${insp}/7 Insp</span>`;
+        statsHtml += `<span class="hero-stat-chip violence-exp-chip${expDanger}" title="Expiration (Violence)"><span class="material-symbols-outlined violence-exp-icon">air</span>${exp}/7 Exp</span>`;
     }
 
     if (c.voie && c.voie.nom && c.voie.nom.toLowerCase().includes('raison')) {
@@ -1773,7 +1783,7 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
         if (c.passiveStates && c.passiveStates['raison_speed_stacks'] !== undefined) {
             raisonStacks = c.passiveStates['raison_speed_stacks'];
         }
-        statsHtml += `<span class="hero-stat-chip" title="Cumuls de Vitesse (Raison)" style="border-color: rgba(234, 179, 8, 0.4);"><span class="material-symbols-outlined" style="color: #eab308;">speed</span>${raisonStacks}</span>`;
+        statsHtml += `<span class="hero-stat-chip chip-raison" title="Cumuls de Vitesse (Raison)"><span class="material-symbols-outlined text-raison">speed</span>${raisonStacks}</span>`;
     }
 
     if (c.voie && c.voie.nom && c.voie.nom.toLowerCase().includes('trahison')) {
@@ -1797,27 +1807,6 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
         statsHtml += `<span class="hero-stat-chip" title="Bourgeons : ${buds}" style="${styleCreation}"><span class="material-symbols-outlined" style="color: inherit;">yard</span>${buds}</span>`;
     }
 
-    if (c.voie && c.voie.nom && c.voie.nom.toLowerCase().includes('consolidation')) {
-        let level = 0;
-        if (c.passiveStates && c.passiveStates['consolidation_active_level'] !== undefined) {
-            level = c.passiveStates['consolidation_active_level'];
-        }
-
-        let icon = 'shield', color = '#9ca3af', borderColor = 'rgba(156, 163, 175, 0.4)', text = '+5% Armure', title = "Consolidation (Défaut)";
-        if (level === 1) {
-            icon = 'speed'; color = '#f59e0b'; borderColor = 'rgba(245, 158, 11, 0.4)'; text = '+2 Vit'; title = "Consolidation (Niveau 1)";
-        } else if (level === 2) {
-            icon = 'shield'; color = '#10b981'; borderColor = 'rgba(16, 185, 129, 0.4)'; text = '+15% Armure'; title = "Consolidation (Niveau 2)";
-        } else if (level === 3) {
-            icon = 'security'; color = '#a855f7'; borderColor = 'rgba(168, 85, 247, 0.4)'; text = '+15% Résist'; title = "Consolidation (Niveau 3)";
-        } else if (level === 4) {
-            icon = 'water_drop'; color = '#3b82f6'; borderColor = 'rgba(59, 130, 246, 0.4)'; text = '-25% Coût'; title = "Consolidation (Niveau 4)";
-        } else if (level === 5) {
-            icon = 'gpp_good'; color = '#eab308'; borderColor = 'rgba(234, 179, 8, 0.4)'; text = '+10% Arm/Rés'; title = "Consolidation (Niveau 5)";
-        }
-
-        statsHtml += `<span class="hero-stat-chip" title="${title}" style="border-color: ${borderColor}; color: ${color};"><span class="material-symbols-outlined" style="color: inherit;">${icon}</span>${text}</span>`;
-    }
 
     const hasKarma = c.hasKarma || (c.spiritualite && c.spiritualite.nom && c.spiritualite.nom.toLowerCase().includes('karma'));
     if (hasKarma) {
@@ -1827,7 +1816,7 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
 
         let karmaLockedDuration = c.passiveStates && c.passiveStates['karma_locked_duration'] !== undefined ? c.passiveStates['karma_locked_duration'] : 0;
 
-        let borderColor, color, icon, text, title;
+        let borderColor, color, icon, text, title, extraClass = '';
         if (karmaLocked) {
             borderColor = 'rgba(239, 68, 68, 0.4)'; color = '#f87171'; icon = 'block';
             text = `Brisé (${karmaLockedDuration})`; title = "Karma Brisé (Voie désactivée)";
@@ -1837,14 +1826,16 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
         } else if (karmaGauge < 0) {
             borderColor = 'rgba(168, 85, 247, 0.4)'; color = '#c084fc'; icon = 'dark_mode';
             text = `${karmaGauge}/3`; title = "Karma Ténèbres";
+            if (karmaGauge <= -3) extraClass = ' karma-dark-danger';
         } else if (karmaGauge > 0) {
             borderColor = 'rgba(253, 224, 71, 0.4)'; color = '#fde047'; icon = 'light_mode';
             text = `+${karmaGauge}/3`; title = "Karma Lumière";
+            if (karmaGauge >= 3) extraClass = ' karma-light-danger';
         } else {
             borderColor = 'rgba(156, 163, 175, 0.4)'; color = '#9ca3af'; icon = 'all_inclusive';
             text = `0/3`; title = "Karma Neutre";
         }
-        statsHtml += `<span class="hero-stat-chip" title="${title}" style="border-color: ${borderColor}; color: ${color};"><span class="material-symbols-outlined" style="color: inherit;">${icon}</span>${text}</span>`;
+        statsHtml += `<span class="hero-stat-chip${extraClass}" title="${title}" style="border-color: ${borderColor}; color: ${color};"><span class="material-symbols-outlined" style="color: inherit;">${icon}</span>${text}</span>`;
     }
 
     const isEsprit = c.spiritualite && c.spiritualite.nom && c.spiritualite.nom.toLowerCase().includes('esprit');

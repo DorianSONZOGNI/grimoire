@@ -75,6 +75,9 @@ public class SpellService {
             List<Personnage> recipients = resolveRecipients(effect.getEffectTarget(), caster, target);
             processAndApplyEffect(toCast, effect, choiceKey, 1, caster, recipients);
         }
+        for (SpellEffect effect : toCast.getEffects()) {
+            effect.resetModifiers();
+        }
 
         SpellCastEvent spellCastEvent = new SpellCastEvent(caster, target, toCast);
         passiveDispatcher.dispatch(caster, toCast, spellCastEvent);
@@ -98,6 +101,9 @@ public class SpellService {
         for (SpellEffect effect : toCast.getEffects()) {
             List<Personnage> recipients = resolveRecipientsGroup(effect.getEffectTarget(), caster, target, ally, allAllies, allEnemies);
             processAndApplyEffect(toCast, effect, choiceKey, 1, caster, recipients);
+        }
+        for (SpellEffect effect : toCast.getEffects()) {
+            effect.resetModifiers();
         }
 
         SpellCastEvent spellCastEvent = new SpellCastEvent(caster, target, toCast);
@@ -289,6 +295,9 @@ public class SpellService {
             List<Personnage> recipients = resolveRecipients(effect.getEffectTarget(), caster, target);
             processAndApplyEffect(channeledSpell, effect, choiceKey, currentTurn, caster, recipients);
         }
+        for (SpellEffect effect : channeledSpell.getEffects()) {
+            effect.resetModifiers();
+        }
 
         SpellChannelingTickEvent tickEvent = new SpellChannelingTickEvent(caster, target, channeledSpell, currentTurn);
         passiveDispatcher.dispatch(caster, channeledSpell, tickEvent);
@@ -303,6 +312,9 @@ public class SpellService {
         for (SpellEffect effect : channeledSpell.getEffects()) {
             List<Personnage> recipients = resolveRecipientsGroup(effect.getEffectTarget(), caster, target, ally, allAllies, allEnemies);
             processAndApplyEffect(channeledSpell, effect, choiceKey, currentTurn, caster, recipients);
+        }
+        for (SpellEffect effect : channeledSpell.getEffects()) {
+            effect.resetModifiers();
         }
 
         SpellChannelingTickEvent tickEvent = new SpellChannelingTickEvent(caster, target, channeledSpell, currentTurn);
@@ -650,8 +662,6 @@ public class SpellService {
             }
             effect.apply(caster, recipient);
         }
-        
-        effect.resetModifiers();
     }
 
 }

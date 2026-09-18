@@ -2,8 +2,11 @@ package generation.grimoire.entity.voie.passif.specific;
 
 import generation.grimoire.entity.Spell;
 import generation.grimoire.entity.personnage.Personnage;
+import generation.grimoire.entity.personnage.PersonnageCombatHelper;
+import generation.grimoire.entity.spell.type.effect.BuffDebuffEffect;
 import generation.grimoire.entity.voie.passif.VoiePassiveEffect;
 import generation.grimoire.enumeration.SpellCategory;
+import generation.grimoire.enumeration.StatType;
 import generation.grimoire.event.GameEvent;
 import generation.grimoire.event.SpellCastEvent;
 import generation.grimoire.event.TurnStartEvent;
@@ -19,7 +22,6 @@ import lombok.EqualsAndHashCode;
 @DiscriminatorValue("VIOLENCE_PASSIVE")
 public class ViolencePassiveEffect extends VoiePassiveEffect {
 
-    private static final String STATE_CAST_THIS_TURN = "violence_cast_this_turn";
     private static final String STATE_INSPIRATION = "violence_inspiration";
     private static final String STATE_EXPIRATION = "violence_expiration";
 
@@ -39,7 +41,6 @@ public class ViolencePassiveEffect extends VoiePassiveEffect {
     private void handleSpellChannelingTick(SpellChannelingTickEvent event) {
         Spell spell = event.getSpell();
         if (spell.getVoie() != null && "Voie de la Violence".equals(spell.getVoie().getNom())) {
-            // Un tour de canalisation compte comme le lancer du sort pour le passif.
             applyViolencePassive(event.getSource(), spell);
         }
     }
@@ -52,46 +53,80 @@ public class ViolencePassiveEffect extends VoiePassiveEffect {
     }
 
     private void applyViolencePassive(Personnage personnage, Spell spell) {
-        personnage.setPassiveState(STATE_CAST_THIS_TURN, 1);
         int inspirationCount = personnage.getPassiveState(STATE_INSPIRATION, 0);
         int expirationCount = personnage.getPassiveState(STATE_EXPIRATION, 0);
 
         if (spell.getCategory() == SpellCategory.INSPIRATION) {
-            inspirationCount = Math.min(inspirationCount + 1, 5);
+            // Swap check: Consuming Expiration stacks
+            if (expirationCount >= 4 && expirationCount <= 6) {
+                applyBuff(personnage, StatType.STRENGTH, 0.30, 0, 2);
+            } else if (expirationCount >= 7) {
+                applyBuff(personnage, StatType.STRENGTH, 0.60, 0, 2);
+            }
+
+            personnage.setPassiveState(STATE_EXPIRATION, 0); // Reset Expiration
+
+            // Check if we are casting same type after 6 stacks
+            if (inspirationCount >= 6) {
+                applyBurn(personnage);
+            }
+
+            inspirationCount = Math.min(inspirationCount + 1, 7);
             personnage.setPassiveState(STATE_INSPIRATION, inspirationCount);
-            personnage.setPassiveState(STATE_EXPIRATION, 0); // Réinitialise l'autre cumul
 
-            // Appliquer un bonus de critique de +2% par stack (remplace l'ancien via stat_flat)
-            personnage.setPassiveState("stat_flat_" + generation.grimoire.enumeration.StatType.CRIT.name(), inspirationCount * 2);
-            personnage.setPassiveState("stat_flat_" + generation.grimoire.enumeration.StatType.POWER.name(), 0);
+            System.out.println(personnage.getName() + " cast Inspiration. Stacks: " + inspirationCount + "/7");
 
-            System.out.println(personnage.getName() + " gagne +" + (inspirationCount * 2) + " de critique (inspiration " + inspirationCount + "/5).");
         } else if (spell.getCategory() == SpellCategory.EXPIRATION) {
-            expirationCount = Math.min(expirationCount + 1, 10);
+            // Swap check: Consuming Inspiration stacks
+            if (inspirationCount >= 4 && inspirationCount <= 6) {
+                applyBuff(personnage, StatType.CRIT, 0, 100, 2);
+            } else if (inspirationCount >= 7) {
+                applyBuff(personnage, StatType.CRIT, 0, 200, 2);
+            }
+
+            personnage.setPassiveState(STATE_INSPIRATION, 0); // Reset Inspiration
+
+            // Check if we are casting same type after 6 stacks
+            if (expirationCount >= 6) {
+                applyBurn(personnage);
+            }
+
+            expirationCount = Math.min(expirationCount + 1, 7);
             personnage.setPassiveState(STATE_EXPIRATION, expirationCount);
-            personnage.setPassiveState(STATE_INSPIRATION, 0);
 
-            // Augmenter la puissance de +2 par sort d'expiration
-            personnage.setPassiveState("stat_flat_" + generation.grimoire.enumeration.StatType.POWER.name(), expirationCount * 2);
-            personnage.setPassiveState("stat_flat_" + generation.grimoire.enumeration.StatType.CRIT.name(), 0);
-
-            System.out.println(personnage.getName() + " gagne +" + (expirationCount * 2) + " de puissance (expiration " + expirationCount + "/10).");
+            System.out.println(personnage.getName() + " cast Expiration. Stacks: " + expirationCount + "/7");
         }
     }
 
+    private void applyBuff(Personnage personnage, StatType statType, double modifier, int flatValue, int duration) {
+        BuffDebuffEffect buff = new BuffDebuffEffect();
+        buff.setStatAffected(statType);
+        buff.setModifier(modifier);
+        buff.setFlatValue(flatValue);
+        buff.setDuration(duration);
+        buff.setSourceName("Violence (Swap)");
+        personnage.applyBuff(buff, modifier);
+    }
+
+    private void applyBurn(Personnage personnage) {
+        int power = PersonnageCombatHelper.getEffectiveStat(personnage, StatType.POWER);
+        int strength = PersonnageCombatHelper.getEffectiveStat(personnage, StatType.STRENGTH);
+        int burnDamage = (int) Math.round((power * 0.15) + (strength * 0.15));
+
+        BuffDebuffEffect burn = new BuffDebuffEffect();
+        burn.setStatAffected(StatType.BURN);
+        burn.setFlatValue(burnDamage);
+        burn.setDuration(3);
+        burn.setSourceName("Violence (Surcharge)");
+        personnage.applyBuff(burn, 0.0); // modifier is 0.0, we use flatValue
+
+        System.out.println(personnage.getName() + " subit un contrecoup de Brûlure (" + burnDamage
+                + " dégâts de Brûlure par tour pour 3 tours).");
+    }
+
     private void handleTurnStart(TurnStartEvent event) {
-        Personnage personnage = event.getSource();
-        int castLastTurn = personnage.getPassiveState(STATE_CAST_THIS_TURN, 0);
-        if (castLastTurn == 0) {
-            // Aucun sort de la voie n'a été lancé au tour précédent, on perd les stacks
-            personnage.setPassiveState(STATE_INSPIRATION, 0);
-            personnage.setPassiveState(STATE_EXPIRATION, 0);
-            personnage.setPassiveState("stat_flat_" + generation.grimoire.enumeration.StatType.CRIT.name(), 0);
-            personnage.setPassiveState("stat_flat_" + generation.grimoire.enumeration.StatType.POWER.name(), 0);
-            System.out.println(personnage.getName() + " perd ses stacks de Violence (aucun sort lancé au tour précédent).");
-        }
-        // On réinitialise le flag pour le nouveau tour
-        personnage.setPassiveState(STATE_CAST_THIS_TURN, 0);
+        // La logique des dégâts de surcharge a été remplacée par l'application de
+        // brûlures lors du lancer.
     }
 
     // ─── Méthodes legacy (conservées pour rétro-compatibilité) ───

@@ -106,29 +106,29 @@ class CombatTurnService {
         if (!m.isDead()) {
             CombatLogCapture.captureLogs(session, () -> {
                 session.addLog("--- Tour de l'ennemi " + m.getBase().getName() + " ---");
-                spellService.startTurn(m.getAsPersonnage());
-
                 // === REGÉNÉRATION HP & MANA ===
                 if (!m.isDead()) {
                     int rHp = m.getBase().getRegenHp();
                     if (rHp > 0) {
-                        int beforeHp = m.getAsPersonnage().getHealthCurrent();
-                        m.getAsPersonnage().healRegen(rHp);
-                        int healed = m.getAsPersonnage().getHealthCurrent() - beforeHp;
+                        int maxHp = m.getAsPersonnage().getHealthMax();
+                        int currentHp = m.getAsPersonnage().getHealthCurrent();
+                        int healed = Math.min(rHp, Math.max(0, maxHp - currentHp));
                         if (healed > 0) {
                             session.addLog("💖 " + m.getBase().getName() + " régénère " + healed + " PV.");
                         }
                     }
                     int rMana = m.getBase().getRegenMana();
                     if (rMana > 0) {
-                        int beforeMana = m.getAsPersonnage().getManaCurrent();
-                        m.getAsPersonnage().restoreMana(rMana);
-                        int recovered = m.getAsPersonnage().getManaCurrent() - beforeMana;
+                        int maxMana = m.getAsPersonnage().getManaMax();
+                        int currentMana = m.getAsPersonnage().getManaCurrent();
+                        int recovered = Math.min(rMana, Math.max(0, maxMana - currentMana));
                         if (recovered > 0) {
                             session.addLog("💧 " + m.getBase().getName() + " régénère " + recovered + " Mana.");
                         }
                     }
                 }
+                
+                spellService.startTurn(m.getAsPersonnage());
 
                 // === PASSIF TYPE : MORT_VIVANT — Régénération début de tour ===
                 MonsterType mType = m.getBase().getMonsterType();
@@ -209,11 +209,19 @@ class CombatTurnService {
 
                                 int totalManaCost = mutSpell.getManaCost();
                                 if (mutSpell.getPercentManaCost() > 0) {
-                                    totalManaCost += (int) Math.ceil(m.getAsPersonnage().getManaMax()
-                                            * mutSpell.getPercentManaCost() / 100.0);
+                                    generation.grimoire.enumeration.Source mSource = mutSpell.getPercentManaCostSource() != null ? mutSpell.getPercentManaCostSource() : generation.grimoire.enumeration.Source.CASTER_MANA_MAX;
+                                    double manaBase = generation.grimoire.utils.StatCalculator.getSourceValue(mSource, m.getAsPersonnage(), null);
+                                    totalManaCost += (int) Math.ceil(manaBase * mutSpell.getPercentManaCost() / 100.0);
                                 }
 
-                                if (m.getAsPersonnage().getManaCurrent() >= totalManaCost && totalManaCost > 0) {
+                                int totalHealCost = mutSpell.getHealCost();
+                                if (mutSpell.getPercentHealCost() > 0) {
+                                    generation.grimoire.enumeration.Source hSource = mutSpell.getPercentHealCostSource() != null ? mutSpell.getPercentHealCostSource() : generation.grimoire.enumeration.Source.CASTER_HEALTH_MAX;
+                                    double healBase = generation.grimoire.utils.StatCalculator.getSourceValue(hSource, m.getAsPersonnage(), null);
+                                    totalHealCost += (int) Math.ceil(healBase * mutSpell.getPercentHealCost() / 100.0);
+                                }
+
+                                if (m.getAsPersonnage().getManaCurrent() >= totalManaCost && m.getAsPersonnage().getHealthCurrent() >= totalHealCost && totalManaCost >= 0) {
                                     String castError = m.getAsPersonnage().canCast(mutSpell);
                                     if (castError != null)
                                         continue;
@@ -843,6 +851,9 @@ class CombatTurnService {
         try {
             int runNumber = dungeonRunStatRepository.findMaxRunNumberByDungeonId(session.getDungeonId()) + 1;
             for (Personnage p : session.getPlayers()) {
+                if (p.getUser() != null && "ADMIN".equalsIgnoreCase(p.getUser().getRole())) {
+                    continue;
+                }
                 DungeonRunStat stat = new DungeonRunStat();
                 stat.setDungeonId(session.getDungeonId());
                 stat.setDungeonName(session.getDonjonName());
