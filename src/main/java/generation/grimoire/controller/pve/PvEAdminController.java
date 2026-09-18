@@ -195,8 +195,23 @@ public class PvEAdminController {
         entity.setRequiredSecretLevel(dto.getRequiredSecretLevel());
 
         if (dto.getSalles() != null) {
-            List<generation.grimoire.entity.pve.Salle> salles = dto.getSalles().stream().map(sDto -> {
-                generation.grimoire.entity.pve.Salle s = new generation.grimoire.entity.pve.Salle();
+            List<generation.grimoire.entity.pve.Salle> existingSalles = entity.getSalles();
+            if (existingSalles == null) {
+                existingSalles = new java.util.ArrayList<>();
+                entity.setSalles(existingSalles);
+            }
+            java.util.Map<Long, generation.grimoire.entity.pve.Salle> existingMap = existingSalles.stream()
+                    .filter(s -> s.getId() != null)
+                    .collect(Collectors.toMap(s -> s.getId(), s -> s));
+
+            List<generation.grimoire.entity.pve.Salle> newSalles = dto.getSalles().stream().map(sDto -> {
+                generation.grimoire.entity.pve.Salle s;
+                if (sDto.getId() != null && existingMap.containsKey(sDto.getId())) {
+                    s = existingMap.get(sDto.getId());
+                } else {
+                    s = new generation.grimoire.entity.pve.Salle();
+                }
+
                 s.setType(sDto.getType());
                 s.setEventSubType(sDto.getEventSubType() != null ? generation.grimoire.enumeration.EventSubType.valueOf(sDto.getEventSubType()) : null);
                 s.setEventText(sDto.getEventText());
@@ -239,9 +254,23 @@ public class PvEAdminController {
                 }
 
                 if (sDto.getLootTable() != null) {
-                    List<generation.grimoire.entity.pve.LootEntry> lootEntries = sDto.getLootTable().stream()
+                    List<generation.grimoire.entity.pve.LootEntry> existingLoot = s.getLootTable();
+                    if (existingLoot == null) {
+                        existingLoot = new java.util.ArrayList<>();
+                        s.setLootTable(existingLoot);
+                    }
+                    java.util.Map<Long, generation.grimoire.entity.pve.LootEntry> existingLootMap = existingLoot.stream()
+                            .filter(l -> l.getId() != null)
+                            .collect(Collectors.toMap(l -> l.getId(), l -> l));
+
+                    List<generation.grimoire.entity.pve.LootEntry> newLoot = sDto.getLootTable().stream()
                             .map(lDto -> {
-                                generation.grimoire.entity.pve.LootEntry entry = new generation.grimoire.entity.pve.LootEntry();
+                                generation.grimoire.entity.pve.LootEntry entry;
+                                if (lDto.getId() != null && existingLootMap.containsKey(lDto.getId())) {
+                                    entry = existingLootMap.get(lDto.getId());
+                                } else {
+                                    entry = new generation.grimoire.entity.pve.LootEntry();
+                                }
                                 entry.setSalle(s);
                                 
                                 if (lDto.getEquipmentId() != null) {
@@ -257,18 +286,16 @@ public class PvEAdminController {
                                 return entry;
                             })
                             .collect(Collectors.toList());
-                    s.setLootTable(lootEntries);
+                    existingLoot.clear();
+                    existingLoot.addAll(newLoot);
                 }
 
                 return s;
             }).collect(Collectors.toList());
 
             // Clear and add to keep orphanRemoval working if there was an existing list
-            if (entity.getSalles() == null) {
-                entity.setSalles(new java.util.ArrayList<>());
-            }
-            entity.getSalles().clear();
-            entity.getSalles().addAll(salles);
+            existingSalles.clear();
+            existingSalles.addAll(newSalles);
         }
     }
 }

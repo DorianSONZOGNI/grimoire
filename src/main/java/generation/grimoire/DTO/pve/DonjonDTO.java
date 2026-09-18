@@ -19,6 +19,7 @@ public class DonjonDTO {
 
     @Data
     public static class SalleDTO {
+        private Long id;
         private generation.grimoire.enumeration.RoomType type;
         private String eventSubType;
         private String eventText;
@@ -54,6 +55,7 @@ public class DonjonDTO {
 
     @Data
     public static class LootEntryDTO {
+        private Long id;
         private Long equipmentId;
         private double probability;
         private String specialItemName;

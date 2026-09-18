@@ -177,7 +177,7 @@ document.addEventListener('DOMContentLoaded', async () => {
             requiredSecret: document.getElementById('dRequiredSecret').value || null,
             requiredSecretLevel: parseInt(document.getElementById('dRequiredSecretLevel').value) || 1,
             salles: pageState.selectedRooms.map(r => {
-                const s = { type: r.type };
+                const s = { id: r.id || null, type: r.type };
                 if (r.type === 'COMBAT') {
                     s.monsters = r.monsters.map(mId => ({ id: mId }));
                 } else if (r.type === 'BOSS') {
