@@ -232,6 +232,12 @@ public class PersonnageCombatHelper {
                 System.out.println("👼 Ange Gardien activé ! Le personnage survit avec " + revivedHp + " PV.");
             }
         }
+        
+        // Track lowest HP for challenges
+        int currentHp = p.getHealthCurrent();
+        if (p.getLowestHpReached() == null || currentHp < p.getLowestHpReached()) {
+            p.setLowestHpReached(currentHp);
+        }
 
         if (bypassDamage > 0) {
             System.out.println("🛡️ Perce-Bouclier / Bouclier Percé : " + bypassDamage + " dégâts passent en dessous du bouclier.");

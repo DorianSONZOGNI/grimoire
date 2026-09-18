@@ -183,6 +183,7 @@ document.addEventListener('DOMContentLoaded', async () => {
                 } else if (r.type === 'BOSS') {
                     s.monsters = r.monsters.map(mId => ({ id: mId }));
                     s.globalBuffs = r.globalBuffs && r.globalBuffs.length > 0 ? JSON.stringify(r.globalBuffs) : null;
+                    s.challenges = r.challenges && r.challenges.length > 0 ? JSON.stringify(r.challenges) : null;
                     s.bossRewardSpiritualXp = r.bossRewardSpiritualXp || 0;
                     s.bossRewardGold = r.bossRewardGold || 0;
                 } else if (r.type === 'TREASURE') {
@@ -606,11 +607,80 @@ function renderRooms() {
                 </button>
             </div>`;
 
+            // Challenges HTML
+            if (!room.challenges) room.challenges = [];
+            let challengesHtml = '<div class="flex-col gap-2 mt-4" >';
+            if (room.challenges.length === 0) {
+                challengesHtml += `<div class="text-muted text-xs" >Aucun challenge configuré.</div>`;
+            } else {
+                room.challenges.forEach((chall, cIndex) => {
+                    let challLabel = '';
+                    if (chall.type === 'MAX_HEROES') challLabel = `Max Héros : ${chall.value}`;
+                    else if (chall.type === 'MAX_HP_LOSS_PCT') challLabel = `Max PV perdus : ${chall.value}%`;
+                    else if (chall.type === 'MIN_HP_LOSS_PCT') challLabel = `Min PV perdus : ${chall.value}%`;
+
+                    let rewLabel = '';
+                    if (chall.rewardType === 'BONUS_SPIRIT_XP') rewLabel = `+${chall.rewardValue} XP Spirit.`;
+                    else if (chall.rewardType === 'BONUS_GOLD') rewLabel = `+${chall.rewardValue} Or`;
+                    else if (chall.rewardType === 'REGEN_HP_MANA') rewLabel = `+${chall.rewardValue}% Régénération`;
+                    else if (chall.rewardType === 'EXTRA_LOOT') rewLabel = `+${chall.rewardValue} Loot (Roll final)`;
+
+                    challengesHtml += `
+                        <div class="room-entity-row" >
+                            <span class="flex-center text-sm text-slate-50 gap-1" >
+                                <span class="material-symbols-outlined text-base text-amber-500" >stars</span>
+                                ${challLabel} <span class="text-muted mx-1">|</span> <span class="text-xs text-green-400">${rewLabel}</span>
+                            </span>
+                            <button class="text-error btn-icon" type="button" onclick="removeChallengeFromRoomBoss(${rIndex}, ${cIndex})" ><span class="material-symbols-outlined icon-sm" >close</span></button>
+                        </div>
+                    `;
+                });
+            }
+            challengesHtml += `</div>
+            <div class="flex flex-col gap-2 mt-2 p-3 bg-slate-800 rounded border border-slate-700">
+                <div class="flex gap-2">
+                    <div class="flex-1">
+                        <label class="text-muted text-xxs m-0 pl-1" >Condition</label>
+                        <select class="form-control text-xs w-full" id="room_boss_chall_type_${rIndex}">
+                            <option value="MAX_HEROES">Max Héros</option>
+                            <option value="MAX_HP_LOSS_PCT">Max PV perdus (%)</option>
+                            <option value="MIN_HP_LOSS_PCT">Min PV perdus (%)</option>
+                        </select>
+                    </div>
+                    <div class="w-20">
+                        <label class="text-muted text-xxs m-0 pl-1" >Valeur</label>
+                        <input class="form-control w-full text-xs" type="number" id="room_boss_chall_val_${rIndex}" value="1">
+                    </div>
+                </div>
+                <div class="flex gap-2 items-end">
+                    <div class="flex-1">
+                        <label class="text-muted text-xxs m-0 pl-1" >Récompense</label>
+                        <select class="form-control text-xs w-full" id="room_boss_chall_rew_type_${rIndex}">
+                            <option value="EXTRA_LOOT">Roll de Loot Sup.</option>
+                            <option value="BONUS_SPIRIT_XP">XP Spirituelle Bonus</option>
+                            <option value="BONUS_GOLD">Or Bonus</option>
+                            <option value="REGEN_HP_MANA">Régénération (PV/Mana %)</option>
+                        </select>
+                    </div>
+                    <div class="w-20">
+                        <label class="text-muted text-xxs m-0 pl-1" >Valeur</label>
+                        <input class="form-control w-full text-xs" type="number" id="room_boss_chall_rew_val_${rIndex}" value="1">
+                    </div>
+                    <button class="btn-room-add-boss h-[32px] px-3" type="button" onclick="addChallengeToRoomBoss(${rIndex})" >
+                        <span class="material-symbols-outlined text-lg" >add</span>
+                    </button>
+                </div>
+            </div>`;
+
             contentHtml = `
                 ${monstersHtml}
                 <div class="section-divider mt-4 pt-4 border-t-dashed" >
                     <label class="text-xs text-info" >Buffs Globaux du Boss</label>
                     ${buffsHtml}
+                </div>
+                <div class="section-divider mt-4 pt-4 border-t-dashed" >
+                    <label class="text-xs text-amber-500 flex items-center gap-1 mb-2" ><span class="material-symbols-outlined icon-sm">military_tech</span> Challenges du Boss</label>
+                    ${challengesHtml}
                 </div>
                 <div class="section-divider mt-4 pt-4 border-t-dashed" >
                     <label class="flex-center text-xs text-rose-600 gap-1 mb-2" >
@@ -1188,6 +1258,71 @@ function renderRooms() {
                                 </button>
                             </div>`;
 
+                            // Challenges HTML
+                            if (!outcome.challenges) outcome.challenges = [];
+                            let challengesHtml = '<div class="flex-col gap-2 mt-4" >';
+                            if (outcome.challenges.length === 0) {
+                                challengesHtml += `<div class="text-muted text-xs" >Aucun challenge configuré.</div>`;
+                            } else {
+                                outcome.challenges.forEach((chall, cIndex) => {
+                                    let challLabel = '';
+                                    if (chall.type === 'MAX_HEROES') challLabel = `Max Héros : ${chall.value}`;
+                                    else if (chall.type === 'MAX_HP_LOSS_PCT') challLabel = `Max PV perdus : ${chall.value}%`;
+                                    else if (chall.type === 'MIN_HP_LOSS_PCT') challLabel = `Min PV perdus : ${chall.value}%`;
+
+                                    let rewLabel = '';
+                                    if (chall.rewardType === 'BONUS_SPIRIT_XP') rewLabel = `+${chall.rewardValue} XP Spirit.`;
+                                    else if (chall.rewardType === 'BONUS_GOLD') rewLabel = `+${chall.rewardValue} Or`;
+                                    else if (chall.rewardType === 'REGEN_HP_MANA') rewLabel = `+${chall.rewardValue}% Régénération`;
+                                    else if (chall.rewardType === 'EXTRA_LOOT') rewLabel = `+${chall.rewardValue} Loot (Roll final)`;
+
+                                    challengesHtml += `
+                                        <div class="room-entity-row" >
+                                            <span class="flex-center text-sm text-slate-50 gap-1" >
+                                                <span class="material-symbols-outlined text-base text-amber-500" >stars</span>
+                                                ${challLabel} <span class="text-muted mx-1">|</span> <span class="text-xs text-green-400">${rewLabel}</span>
+                                            </span>
+                                            <button class="text-error btn-icon" type="button" onclick="removeChallengeFromBoss(${rIndex}, ${oIndex}, ${cIndex})" ><span class="material-symbols-outlined icon-sm" >close</span></button>
+                                        </div>
+                                    `;
+                                });
+                            }
+                            challengesHtml += `</div>
+                            <div class="flex flex-col gap-2 mt-2 p-3 bg-slate-800 rounded border border-slate-700">
+                                <div class="flex gap-2">
+                                    <div class="flex-1">
+                                        <label class="text-muted text-xxs m-0 pl-1" >Condition</label>
+                                        <select class="form-control text-xs w-full" id="room_door_boss_chall_type_${rIndex}_${oIndex}">
+                                            <option value="MAX_HEROES">Max Héros</option>
+                                            <option value="MAX_HP_LOSS_PCT">Max PV perdus (%)</option>
+                                            <option value="MIN_HP_LOSS_PCT">Min PV perdus (%)</option>
+                                        </select>
+                                    </div>
+                                    <div class="w-20">
+                                        <label class="text-muted text-xxs m-0 pl-1" >Valeur</label>
+                                        <input class="form-control w-full text-xs" type="number" id="room_door_boss_chall_val_${rIndex}_${oIndex}" value="1">
+                                    </div>
+                                </div>
+                                <div class="flex gap-2 items-end">
+                                    <div class="flex-1">
+                                        <label class="text-muted text-xxs m-0 pl-1" >Récompense</label>
+                                        <select class="form-control text-xs w-full" id="room_door_boss_chall_rew_type_${rIndex}_${oIndex}">
+                                            <option value="EXTRA_LOOT">Roll de Loot Sup.</option>
+                                            <option value="BONUS_SPIRIT_XP">XP Spirituelle Bonus</option>
+                                            <option value="BONUS_GOLD">Or Bonus</option>
+                                            <option value="REGEN_HP_MANA">Régénération (PV/Mana %)</option>
+                                        </select>
+                                    </div>
+                                    <div class="w-20">
+                                        <label class="text-muted text-xxs m-0 pl-1" >Valeur</label>
+                                        <input class="form-control w-full text-xs" type="number" id="room_door_boss_chall_rew_val_${rIndex}_${oIndex}" value="1">
+                                    </div>
+                                    <button class="btn-room-add-boss h-[32px] px-3" type="button" onclick="addChallengeToBoss(${rIndex}, ${oIndex})" >
+                                        <span class="material-symbols-outlined text-lg" >add</span>
+                                    </button>
+                                </div>
+                            </div>`;
+
                             extraHtml = `
                                 <div class="mt-3 p-3 bg-black/20 rounded-lg border border-dashed border-white/15 w-full" >
                                     <label class="text-xs text-error block mb-2" >Configuration du Boss</label>
@@ -1196,6 +1331,10 @@ function renderRooms() {
                                 <div class="mt-3 p-3 bg-black/20 rounded-lg border border-dashed border-white/15 w-full" >
                                     <label class="text-xs text-info block mb-2" >Buffs Globaux du Boss</label>
                                     ${buffsHtml}
+                                </div>
+                                <div class="mt-3 p-3 bg-black/20 rounded-lg border border-dashed border-white/15 w-full" >
+                                    <label class="text-xs text-amber-500 block mb-2" ><span class="material-symbols-outlined icon-sm align-middle">military_tech</span> Challenges du Boss</label>
+                                    ${challengesHtml}
                                 </div>
                                 <div class="mt-3 p-3 bg-black/20 rounded-lg border border-dashed border-white/15 w-full" >
                                     <label class="text-xs text-warning block mb-2" >Récompenses du Boss (Fin de combat)</label>
@@ -2034,6 +2173,15 @@ async function editDungeon(id) {
                     } else {
                         room.globalBuffs = [];
                     }
+                    if (s.challenges) {
+                        try {
+                            room.challenges = typeof s.challenges === 'string' ? JSON.parse(s.challenges) : s.challenges;
+                        } catch (e) {
+                            room.challenges = [];
+                        }
+                    } else {
+                        room.challenges = [];
+                    }
                     room.bossRewardSpiritualXp = s.bossRewardSpiritualXp || 0;
                     room.bossRewardGold = s.bossRewardGold || 0;
                 } else if (s.type === 'TREASURE') {
@@ -2510,6 +2658,68 @@ window.updateDoorBossField = function (rIndex, oIndex, fieldName, value) {
     const outcome = pageState.selectedRooms[rIndex].doorOutcomes[oIndex];
     if (outcome) {
         outcome[fieldName] = parseInt(value) || 0;
+    }
+};
+
+window.addChallengeToRoomBoss = function (rIndex) {
+    const typeEl = document.getElementById(`room_boss_chall_type_${rIndex}`);
+    const valEl = document.getElementById(`room_boss_chall_val_${rIndex}`);
+    const rewTypeEl = document.getElementById(`room_boss_chall_rew_type_${rIndex}`);
+    const rewValEl = document.getElementById(`room_boss_chall_rew_val_${rIndex}`);
+
+    if (!typeEl || !valEl || !rewTypeEl || !rewValEl) return;
+
+    const type = typeEl.value;
+    const val = parseInt(valEl.value) || 0;
+    const rewType = rewTypeEl.value;
+    const rewVal = parseInt(rewValEl.value) || 0;
+
+    if (val <= 0 || rewVal <= 0) { showNotif('Les valeurs doivent être positives.', true); return; }
+    const room = pageState.selectedRooms[rIndex];
+    if (!room.challenges) room.challenges = [];
+    room.challenges.push({ type: type, value: val, rewardType: rewType, rewardValue: rewVal });
+    renderRooms();
+};
+
+window.removeChallengeFromRoomBoss = function (rIndex, cIndex) {
+    const room = pageState.selectedRooms[rIndex];
+    if (room && room.challenges) {
+        room.challenges.splice(cIndex, 1);
+        renderRooms();
+    }
+};
+
+window.addChallengeToBoss = function (rIndex, oIndex) {
+    const typeEl = document.getElementById(`room_door_boss_chall_type_${rIndex}_${oIndex}`);
+    const valEl = document.getElementById(`room_door_boss_chall_val_${rIndex}_${oIndex}`);
+    const rewTypeEl = document.getElementById(`room_door_boss_chall_rew_type_${rIndex}_${oIndex}`);
+    const rewValEl = document.getElementById(`room_door_boss_chall_rew_val_${rIndex}_${oIndex}`);
+    if (!typeEl || !valEl || !rewTypeEl || !rewValEl) return;
+
+    const type = typeEl.value;
+    const val = parseInt(valEl.value) || 0;
+    const rewType = rewTypeEl.value;
+    const rewVal = parseInt(rewValEl.value) || 0;
+
+    if (val <= 0 || rewVal <= 0) {
+        showNotif('Les valeurs doivent être positives.', true);
+        return;
+    }
+
+    const outcome = pageState.selectedRooms[rIndex].doorOutcomes[oIndex];
+    if (!outcome.challenges) outcome.challenges = [];
+    outcome.challenges.push({ type: type, value: val, rewardType: rewType, rewardValue: rewVal });
+
+    valEl.value = '';
+    rewValEl.value = '';
+    renderRooms();
+};
+
+window.removeChallengeFromBoss = function (rIndex, oIndex, cIndex) {
+    const outcome = pageState.selectedRooms[rIndex].doorOutcomes[oIndex];
+    if (outcome && outcome.challenges) {
+        outcome.challenges.splice(cIndex, 1);
+        renderRooms();
     }
 };
 

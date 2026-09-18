@@ -30,13 +30,19 @@
 <body>
 
     <div class="combat-header">
-        <div class="page-logo">
-            <span class="material-symbols-outlined logo-icon-gradient logo-dungeon">swords</span>
-            <span class="logo-text-gradient logo-dungeon" id="headerDungeonName">Combat en cours...</span>
-        </div>
         <div class="flex items-center gap-6">
+            <div class="page-logo">
+                <span class="material-symbols-outlined logo-icon-gradient logo-dungeon">swords</span>
+                <span class="logo-text-gradient logo-dungeon" id="headerDungeonName">Combat en cours...</span>
+            </div>
+            
+            <!-- Boss Challenges Container -->
+            <div id="bossChallengesContainer" class="flex gap-2 items-center flex-wrap justify-start max-w-[40vw]">
+            </div>
+        </div>
+        <div class="flex items-center gap-6 flex-wrap justify-end">
             <!-- New Boss Buff Container -->
-            <div id="bossBuffsContainer" class="flex gap-2 items-center flex-wrap justify-end max-w-[50vw]">
+            <div id="bossBuffsContainer" class="flex gap-2 items-center flex-wrap justify-end max-w-[40vw]">
             </div>
 
             <div class="flex items-center gap-2 bg-white/5 py-1 px-3 rounded-lg border border-white/10">

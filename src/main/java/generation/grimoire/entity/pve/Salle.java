@@ -73,6 +73,9 @@ public class Salle {
     private int bossRewardSpiritualXp; // Spiritual XP awarded on boss defeat, split per hero
     private int bossRewardGold;        // Gold awarded on boss defeat (to the team)
     
+    @Column(columnDefinition = "TEXT")
+    private String challenges; // JSON list of boss challenges
+    
     private Integer trapDamageHpPct;
     private Integer trapDamageManaPct;
     private Integer trapDamageHpFixed;

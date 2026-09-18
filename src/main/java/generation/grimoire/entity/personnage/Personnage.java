@@ -193,6 +193,17 @@ public class Personnage {
 
     private int spiritualiteExperience = 0;
 
+    @Transient
+    private Integer lowestHpReached = null;
+
+    public Integer getLowestHpReached() {
+        return lowestHpReached;
+    }
+
+    public void setLowestHpReached(Integer lowestHpReached) {
+        this.lowestHpReached = lowestHpReached;
+    }
+
     public void setSpiritualiteExperience(int newExperience) {
         this.spiritualiteExperience = newExperience;
 

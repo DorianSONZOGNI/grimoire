@@ -1669,6 +1669,51 @@ function updateNextRoomButtons(data) {
     });
 }
 
+export function getBossChallengesHtml(activeChallenges) {
+    if (!activeChallenges || activeChallenges.length === 0) return '';
+
+    let html = '';
+    activeChallenges.forEach(chall => {
+        let challLabel = '';
+        if (chall.type === 'MAX_HEROES') challLabel = `Max Héros : ${chall.value}`;
+        else if (chall.type === 'MAX_HP_LOSS_PCT') challLabel = `Max PV perdus : ${chall.value}%`;
+        else if (chall.type === 'MIN_HP_LOSS_PCT') challLabel = `Min PV perdus : ${chall.value}%`;
+
+        let rewLabel = '';
+        if (chall.rewardType === 'BONUS_SPIRIT_XP') rewLabel = `+${chall.rewardValue} XP Spirit.`;
+        else if (chall.rewardType === 'BONUS_GOLD') rewLabel = `+${chall.rewardValue} Or`;
+        else if (chall.rewardType === 'REGEN_HP_MANA') rewLabel = `+${chall.rewardValue}% Régénération`;
+        else if (chall.rewardType === 'EXTRA_LOOT') rewLabel = `+${chall.rewardValue} Loot Sup.`;
+
+        const tooltipContent = `
+            <div style="font-size: 0.85rem;">
+                <div class="text-amber-400 font-bold mb-1">Challenge : ${challLabel}</div>
+                <div class="text-green-400">Récompense : ${rewLabel}</div>
+                ${chall.failed ? '<div class="text-error font-bold mt-2">❌ Challenge Échoué</div>' : '<div class="text-success font-bold mt-2">✅ Challenge En cours</div>'}
+            </div>
+        `;
+        const tooltipAttrs = 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"';
+
+        const badgeStyle = chall.failed ? 'border-color: rgba(239, 68, 68, 0.4); color: #ef4444; background: rgba(239, 68, 68, 0.1); text-decoration: line-through;' : 'border-color: rgba(245, 158, 11, 0.4); color: #f59e0b; background: rgba(245, 158, 11, 0.1);';
+        const iconStyle = chall.failed ? 'text-error' : 'text-warning';
+        const iconName = chall.failed ? 'cancel' : 'military_tech';
+
+        html += `
+            <div class="sandbox-status-badge buff relative" ${tooltipAttrs} style="cursor: help; ${badgeStyle}">
+                <span class="material-symbols-outlined text-sm ${iconStyle}">${iconName}</span>
+                <span>${challLabel}</span>
+                <template class="tooltip-data">
+                    <div class="flex-col-xs">
+                        ${tooltipContent}
+                    </div>
+                </template>
+            </div>
+        `;
+    });
+
+    return html;
+}
+
 export function getBossBuffsHtml(c) {
     if (!c.passiveStates) return '';
 
@@ -2108,7 +2153,13 @@ export function renderEnemies(enemies, turnMap = null) {
         bossBuffsContainer.innerHTML = '';
     }
 
+    const bossChallengesContainer = document.getElementById('bossChallengesContainer');
+    if (bossChallengesContainer) {
+        bossChallengesContainer.innerHTML = '';
+    }
+
     let bossBuffsRendered = false;
+    let bossChallengesRendered = false;
 
     enemies.forEach((activeMonster, index) => {
         const m = activeMonster.base;
@@ -2150,11 +2201,13 @@ export function renderEnemies(enemies, turnMap = null) {
 
         const isBoss = pMonster.passiveStates && Object.keys(pMonster.passiveStates).some(k => k.startsWith('BOSS_BUFF_'));
 
-        if (isBoss && bossBuffsContainer && !bossBuffsRendered) {
-            const bossHtml = getBossBuffsHtml(pMonster);
-            if (bossHtml) {
-                bossBuffsContainer.innerHTML = bossHtml;
-                bossBuffsRendered = true;
+        if (isBoss) {
+            if (bossBuffsContainer && !bossBuffsRendered) {
+                const bossHtml = getBossBuffsHtml(pMonster);
+                if (bossHtml) {
+                    bossBuffsContainer.innerHTML = bossHtml;
+                    bossBuffsRendered = true;
+                }
             }
         }
 
@@ -2214,6 +2267,13 @@ export function renderEnemies(enemies, turnMap = null) {
             animateGaugeJS(manaBar, manaTextEl, forcedMana, pMonster.manaCurrent, pMonster.manaMax, 800);
         }
     });
+
+    if (bossChallengesContainer && pageState.currentSessionData && pageState.currentSessionData.activeChallenges) {
+        const challHtml = getBossChallengesHtml(pageState.currentSessionData.activeChallenges);
+        if (challHtml) {
+            bossChallengesContainer.innerHTML = challHtml;
+        }
+    }
 }
 
 function animateGaugeJS(barEl, textEl, oldVal, newVal, max, duration = 600, suffix = '') {

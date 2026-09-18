@@ -11,11 +11,13 @@ import generation.grimoire.model.pve.ActiveMonster;
 import generation.grimoire.model.pve.CombatSession;
 import generation.grimoire.repository.AnomalieRepository;
 import generation.grimoire.repository.EquipmentRepository;
-import generation.grimoire.repository.PersonnageRepository;
 import generation.grimoire.repository.auth.UserRepository;
+
 import generation.grimoire.repository.pve.MonstreRepository;
 import generation.grimoire.repository.pve.SalleRepository;
+import generation.grimoire.service.PersonnageService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,9 +31,11 @@ import java.util.List;
 @Service
 @Transactional
 @RequiredArgsConstructor
-class CombatRoomService {
+@Slf4j
+public class CombatRoomService {
 
-    private final PersonnageRepository personnageRepository;
+    private final PersonnageService personnageService;
+
     private final UserRepository userRepository;
     private final EquipmentRepository equipmentRepository;
     private final AnomalieRepository anomalieRepository;
@@ -66,6 +70,15 @@ class CombatRoomService {
         if (session.getCurrentRoom().getType() == generation.grimoire.enumeration.RoomType.COMBAT
                 || session.getCurrentRoom().getType() == generation.grimoire.enumeration.RoomType.BOSS) {
             session.getEnemies().clear();
+
+            if (session.getCurrentRoom().getType() == generation.grimoire.enumeration.RoomType.BOSS) {
+                loadChallenges(session, session.getCurrentRoom().getChallenges());
+            } else {
+                if (session.getActiveChallenges() == null)
+                    session.setActiveChallenges(new ArrayList<>());
+                session.getActiveChallenges().clear();
+            }
+
             if (session.getCurrentRoom().getMonsters() != null) {
                 for (generation.grimoire.entity.pve.Monstre m : session.getCurrentRoom().getMonsters()) {
                     ActiveMonster am = new ActiveMonster(m);
@@ -152,6 +165,54 @@ class CombatRoomService {
         }
     }
 
+    private void loadChallenges(CombatSession session, String challengesJson) {
+        if (session.getActiveChallenges() == null)
+            session.setActiveChallenges(new ArrayList<>());
+        session.getActiveChallenges().clear();
+        if (challengesJson == null || challengesJson.trim().isEmpty())
+            return;
+        try {
+            JsonNode challengesNode = objectMapper.readTree(challengesJson);
+            if (challengesNode.isArray()) {
+                for (JsonNode challNode : challengesNode) {
+                    generation.grimoire.model.pve.Challenge chall = new generation.grimoire.model.pve.Challenge();
+                    chall.setType(challNode.path("type").asText(""));
+                    chall.setValue(challNode.path("value").asInt(0));
+                    chall.setRewardType(challNode.path("rewardType").asText(""));
+                    chall.setRewardValue(challNode.path("rewardValue").asInt(0));
+                    chall.setFailed(false);
+                    session.getActiveChallenges().add(chall);
+                }
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+
+        // Immediate evaluation for MAX_HEROES
+        evaluateMaxHeroesChallenge(session);
+    }
+
+    private void evaluateMaxHeroesChallenge(CombatSession session) {
+        int heroCount = session.getPlayers() != null ? session.getPlayers().size() : 0;
+        for (generation.grimoire.model.pve.Challenge c : session.getActiveChallenges()) {
+            if ("MAX_HEROES".equals(c.getType())) {
+                if (heroCount > c.getValue()) {
+                    c.setFailed(true);
+                    session.addLog(
+                            "❌ Challenge échoué (Max " + c.getValue() + " Héros) : L'équipe est trop nombreuse.");
+                } else {
+                    session.addLog("✅ Challenge en cours : Terminer avec " + c.getValue() + " héros ou moins.");
+                }
+            } else if ("MAX_HP_LOSS_PCT".equals(c.getType())) {
+                session.addLog("✅ Challenge en cours : Ne perdre aucun héros en dessous de " + (100 - c.getValue())
+                        + "% de ses PV.");
+            } else if ("MIN_HP_LOSS_PCT".equals(c.getType())) {
+                session.addLog(
+                        "✅ Challenge en cours : Finir le combat avec moins de " + (100 - c.getValue()) + "% PV.");
+            }
+        }
+    }
+
     CombatSession openChest(CombatSession session, Long equipmentId) {
         if (session.getCurrentRoom().getType() != generation.grimoire.enumeration.RoomType.TREASURE) {
             throw new RuntimeException("Ce n'est pas une salle de trésor !");
@@ -199,7 +260,7 @@ class CombatRoomService {
                 actualExp *= 2;
             }
             p.setExperience(p.getExperience() + actualExp);
-            personnageRepository.save(p);
+            personnageService.save(p);
         }
 
         if (!chestEligible.isEmpty() && gold > 0) {
@@ -371,7 +432,7 @@ class CombatRoomService {
                             p.setSpiritualiteExperience(p.getSpiritualiteExperience() + spXp);
                     }
 
-                    personnageRepository.save(p);
+                    personnageService.save(p);
                 }
             }
 
@@ -486,7 +547,7 @@ class CombatRoomService {
                     continue;
                 if (spXp > 0) {
                     p.setSpiritualiteExperience(p.getSpiritualiteExperience() + spXp);
-                    personnageRepository.save(p);
+                    personnageService.save(p);
                 }
             }
             session.addLog("Vous avez sacrifié l'item : " + requiredItemName + " !");
@@ -554,7 +615,7 @@ class CombatRoomService {
                     for (Personnage p : session.getPlayers()) {
                         if (p.getHealthCurrent() > 0) {
                             p.setSpiritualiteExperience(p.getSpiritualiteExperience() + xpPerHero);
-                            personnageRepository.save(p);
+                            personnageService.save(p);
                         }
                     }
                     session.addLog("L'autel accorde " + xpPerHero + " XP de Spiritualité à chaque héros !");
@@ -607,9 +668,11 @@ class CombatRoomService {
                                 clone.setOwnerUsername(u.getUsername());
                                 equipmentRepository.save(clone);
                                 u.getDiscoveredItems().add(clone.getName());
-                                if (firstClone == null) firstClone = clone;
+                                if (firstClone == null)
+                                    firstClone = clone;
                             }
-                            session.addLog("L'autel a offert un équipement à chaque joueur : " + template.getName() + " !");
+                            session.addLog(
+                                    "L'autel a offert un équipement à chaque joueur : " + template.getName() + " !");
                             room.setAltarRewardEquipment(firstClone);
                         }
                     }
@@ -740,7 +803,7 @@ class CombatRoomService {
         if (toConsume != clickedConsumable) {
             session.getActiveConsumables().remove(toConsume);
         }
-        personnageRepository.save(target);
+        personnageService.save(target);
         equipmentRepository.delete(toConsume);
         return session;
     }
@@ -879,7 +942,7 @@ class CombatRoomService {
         }
 
         session.getPurchasedMerchantItems().add(lootIndex);
-        personnageRepository.save(acheteur);
+        personnageService.save(acheteur);
         return session;
     }
 
@@ -972,7 +1035,7 @@ class CombatRoomService {
                         .map(p -> p.getUser())
                         .filter(java.util.Objects::nonNull)
                         .collect(java.util.stream.Collectors.toSet());
-                
+
                 boolean anyFirstClear = false;
                 for (AppUser user : uniqueUsers) {
                     if (!user.getCompletedDungeons().contains(session.getDungeonId())) {
@@ -981,13 +1044,13 @@ class CombatRoomService {
                     }
                     userRepository.save(user);
                 }
-                
+
                 if (anyFirstClear) {
                     session.addLog("🎉 Félicitations, vous avez terminé ce donjon pour la première fois !");
                 }
-                
+
                 for (generation.grimoire.entity.personnage.Personnage p : session.getPlayers()) {
-                    personnageRepository.save(java.util.Objects.requireNonNull(p));
+                    personnageService.save(java.util.Objects.requireNonNull(p));
                 }
             }
         }
@@ -1059,6 +1122,15 @@ class CombatRoomService {
                 room.setEventSubType(null);
                 room.setBossRewardGold(selectedOutcome.path("bossRewardGold").asInt(0));
                 room.setBossRewardSpiritualXp(selectedOutcome.path("bossRewardSpiritualXp").asInt(0));
+
+                JsonNode challengesNode = selectedOutcome.path("challenges");
+                if (!challengesNode.isMissingNode() && challengesNode.isArray() && challengesNode.size() > 0) {
+                    loadChallenges(session, challengesNode.toString());
+                } else {
+                    if (session.getActiveChallenges() == null)
+                        session.setActiveChallenges(new ArrayList<>());
+                    session.getActiveChallenges().clear();
+                }
 
                 if (room.getMonsters() == null) {
                     room.setMonsters(new ArrayList<>());
