@@ -6,7 +6,9 @@ import lombok.NoArgsConstructor;
 import org.hibernate.annotations.Fetch;
 import org.hibernate.annotations.FetchMode;
 
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Map;
 import java.util.Set;
 
 @Data
@@ -80,4 +82,17 @@ public class AppUser {
     @Column(nullable = false)
     private boolean unlockedShop = false;
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SUBSELECT)
+    @CollectionTable(name = "user_unlocked_voie_levels", joinColumns = @JoinColumn(name = "user_id"))
+    @MapKeyColumn(name = "voie_id")
+    @Column(name = "max_level")
+    private Map<Long, Integer> unlockedVoieLevels = new HashMap<>();
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SUBSELECT)
+    @CollectionTable(name = "user_unlocked_spirit_levels", joinColumns = @JoinColumn(name = "user_id"))
+    @MapKeyColumn(name = "spirit_id")
+    @Column(name = "max_level")
+    private Map<Long, Integer> unlockedSpiritualiteLevels = new HashMap<>();
 }

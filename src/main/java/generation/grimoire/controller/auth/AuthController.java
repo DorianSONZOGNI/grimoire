@@ -122,6 +122,9 @@ public class AuthController {
             int maxChars = isAdmin ? 999 : userMax;
             int currentChars = personnageRepository.findByUser_Username(u.getUsername()).size();
             res.put("availableCharacterSlots", Math.max(0, maxChars - currentChars));
+            
+            res.put("unlockedVoieLevels", u.getUnlockedVoieLevels());
+            res.put("unlockedSpiritualiteLevels", u.getUnlockedSpiritualiteLevels());
         });
 
         return ResponseEntity.ok(res);

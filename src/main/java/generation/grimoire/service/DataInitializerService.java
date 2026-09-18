@@ -17,6 +17,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Optional;
 
+import org.springframework.transaction.annotation.Transactional;
+
 /**
  * Service responsable de l'initialisation des données de référence (Voies,
  * Spiritualités).
@@ -34,8 +36,11 @@ public class DataInitializerService {
         private final generation.grimoire.repository.auth.UserRepository userRepository;
         private final generation.grimoire.repository.AnomalieRepository anomalieRepository;
         private final generation.grimoire.repository.EquipmentRepository equipmentRepository;
+        private final generation.grimoire.repository.AlchemyRecipeRepository alchemyRecipeRepository;
+        private final generation.grimoire.repository.PersonnageRepository personnageRepository;
 
         @EventListener(ApplicationReadyEvent.class)
+        @Transactional
         public void initStandardEntities() {
                 log.info("Initialisation des entités de référence (Voies, Spiritualités)...");
 
@@ -183,6 +188,12 @@ public class DataInitializerService {
 
                 // Migration: peupler discoveredItems pour les utilisateurs existants
                 migrateDiscoveredItems();
+                
+                // Migration: marquer les anciennes recettes secrètes comme lues
+                fixUnseenSecretRecipes();
+
+                // Migration: débloquer l'accès aux sorts du grimoire selon la progression des persos
+                migrateUnlockedSpellLevels();
         }
 
         private void migrateDiscoveredItems() {
@@ -217,6 +228,82 @@ public class DataInitializerService {
                 }
                 if (migrated > 0) {
                         log.info("Migration discoveredItems : {} utilisateurs mis à jour.", migrated);
+                }
+        }
+
+        private void fixUnseenSecretRecipes() {
+                List<generation.grimoire.entity.auth.AppUser> users = userRepository.findAll();
+                List<generation.grimoire.entity.AlchemyRecipe> allRecipes = alchemyRecipeRepository.findAll();
+                List<generation.grimoire.entity.AlchemyRecipe> secretRecipes = allRecipes.stream()
+                        .filter(r -> generation.grimoire.enumeration.RecipeRewardType.UNLOCK_FEATURE.equals(r.getRewardType()))
+                        .toList();
+
+                int migratedSecrets = 0;
+                for (generation.grimoire.entity.auth.AppUser user : users) {
+                        Map<String, Integer> unlockedSecrets = user.getUnlockedSecrets();
+                        if (unlockedSecrets == null || unlockedSecrets.isEmpty()) continue;
+
+                        boolean changed = false;
+                        for (generation.grimoire.entity.AlchemyRecipe sr : secretRecipes) {
+                                String secretName = sr.getRewardName();
+                                int currentLevel = unlockedSecrets.getOrDefault(secretName, 0);
+                                
+                                // Si le niveau débloqué actuel est supérieur ou égal au niveau de la recette,
+                                // cela signifie que l'utilisateur a déjà passé ce palier et la recette ne s'affiche plus.
+                                // S'il ne l'avait pas vue, la pastille rouge reste coincée.
+                                if (currentLevel >= sr.getRewardLevel()) {
+                                        if (!user.getSeenAlchemyRecipes().contains(sr.getId())) {
+                                                user.getSeenAlchemyRecipes().add(sr.getId());
+                                                changed = true;
+                                        }
+                                }
+                        }
+                        if (changed) {
+                                userRepository.save(user);
+                                migratedSecrets++;
+                        }
+                }
+                
+                if (migratedSecrets > 0) {
+                        log.info("Migration secrets coincés vus : {} utilisateurs mis à jour.", migratedSecrets);
+                }
+        }
+
+        private void migrateUnlockedSpellLevels() {
+                List<generation.grimoire.entity.personnage.Personnage> allPersos = personnageRepository.findAll();
+                int updatedUsers = 0;
+                
+                for (generation.grimoire.entity.personnage.Personnage p : allPersos) {
+                        generation.grimoire.entity.auth.AppUser user = p.getUser();
+                        if (user == null) continue;
+                        
+                        boolean changed = false;
+                        if (p.getVoie() != null) {
+                                Long voieId = p.getVoie().getId();
+                                int currentMax = user.getUnlockedVoieLevels().getOrDefault(voieId, 0);
+                                if (p.getVoieLevel() > currentMax) {
+                                        user.getUnlockedVoieLevels().put(voieId, p.getVoieLevel());
+                                        changed = true;
+                                }
+                        }
+                        
+                        if (p.getSpiritualite() != null) {
+                                Long spiritId = p.getSpiritualite().getId();
+                                int currentMax = user.getUnlockedSpiritualiteLevels().getOrDefault(spiritId, 0);
+                                if (p.getSpiritualiteLevel() > currentMax) {
+                                        user.getUnlockedSpiritualiteLevels().put(spiritId, p.getSpiritualiteLevel());
+                                        changed = true;
+                                }
+                        }
+                        
+                        if (changed) {
+                                userRepository.save(user);
+                                updatedUsers++;
+                        }
+                }
+                
+                if (updatedUsers > 0) {
+                        log.info("Migration niveaux débloqués : {} mises à jour de profil.", updatedUsers);
                 }
         }
 }

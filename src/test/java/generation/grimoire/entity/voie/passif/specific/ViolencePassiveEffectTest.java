@@ -40,54 +40,47 @@ class ViolencePassiveEffectTest {
     }
 
     @Test
-    void shouldGainInspirationBuffOnInspirationSpell() {
+    void shouldGainStrengthBuffOnInspirationAfterExpirationStacks() {
+        // Set 4 Expiration stacks
+        hero.setPassiveState("violence_expiration", 4);
+        
         passive.onSpellCast(hero, inspirationSpell);
 
+        // Inspiration stack added
         assertThat(hero.getPassiveState("violence_inspiration", 0)).isEqualTo(1);
-        assertThat(hero.getPassiveState("stat_flat_CRIT", 0)).isEqualTo(2); // +2 flat CRIT
-        assertThat(hero.getPassiveState("stat_flat_POWER", 0)).isEqualTo(0);
-
-        // Expiration is reset
+        // Expiration reset
         assertThat(hero.getPassiveState("violence_expiration", -1)).isEqualTo(0);
+        // Should have a STRENGTH buff
+        assertThat(hero.getActiveBuffs()).anyMatch(b -> b.getStatAffected() == generation.grimoire.enumeration.StatType.STRENGTH);
     }
 
     @Test
-    void shouldGainExpirationBuffOnExpirationSpellAndResetInspiration() {
-        // Assume we had Inspiration before
-        hero.setPassiveState("violence_inspiration", 1);
-        hero.setPassiveState("stat_flat_CRIT", 2);
+    void shouldGainCritBuffOnExpirationAfterInspirationStacks() {
+        // Set 7 Inspiration stacks
+        hero.setPassiveState("violence_inspiration", 7);
 
         passive.onSpellCast(hero, expirationSpell);
 
+        // Expiration stack added
         assertThat(hero.getPassiveState("violence_expiration", 0)).isEqualTo(1);
-        assertThat(hero.getPassiveState("stat_flat_POWER", 0)).isEqualTo(2); // +2 flat POWER
-
-        // Inspiration is reset
+        // Inspiration reset
         assertThat(hero.getPassiveState("violence_inspiration", -1)).isEqualTo(0);
-        assertThat(hero.getPassiveState("stat_flat_CRIT", -1)).isEqualTo(0);
+        // Should have a CRIT buff of +200%
+        assertThat(hero.getActiveBuffs()).anyMatch(b -> b.getStatAffected() == generation.grimoire.enumeration.StatType.CRIT && b.getModifier() == 2.0);
     }
 
     @Test
-    void shouldMaintainBuffOnTurnStartIfSpellWasCast() {
+    void shouldBurnSelfOn6StacksOfSameType() {
+        // 6 stacks of Inspiration
+        hero.setPassiveState("violence_inspiration", 6);
+        hero.setPower(10);
+        hero.setStrength(10);
+
         passive.onSpellCast(hero, inspirationSpell);
 
-        // Next turn
-        passive.onTurnStart(hero);
-
-        assertThat(hero.getPassiveState("violence_inspiration", 0)).isEqualTo(1);
-        assertThat(hero.getPassiveState("stat_flat_CRIT", 0)).isEqualTo(2);
-    }
-
-    @Test
-    void shouldLoseBuffOnTurnStartIfNoSpellWasCast() {
-        passive.onSpellCast(hero, inspirationSpell);
-        passive.onTurnStart(hero); // maintains
-
-        // Turn 3 (no spell cast in Turn 2)
-        passive.onTurnStart(hero);
-
-        assertThat(hero.getPassiveState("violence_inspiration", -1)).isEqualTo(0);
-        assertThat(hero.getPassiveState("stat_flat_CRIT", -1)).isEqualTo(0);
+        // Should have a BURN debuff
+        assertThat(hero.getActiveBuffs()).anyMatch(b -> b.getStatAffected() == generation.grimoire.enumeration.StatType.BURN);
+        assertThat(hero.getPassiveState("violence_inspiration", 0)).isEqualTo(7); // Max 7
     }
 
     @Test
