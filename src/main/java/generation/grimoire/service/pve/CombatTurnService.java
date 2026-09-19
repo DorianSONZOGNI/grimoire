@@ -92,6 +92,7 @@ class CombatTurnService {
                             allEnemies);
                 }
             });
+            spellService.endTurn(p);
         }
         session.advanceTurnIndex();
         advanceToNextLiveTurn(session);
@@ -399,6 +400,7 @@ class CombatTurnService {
                 }
                 checkDeaths(session);
             });
+            spellService.endTurn(m.getAsPersonnage());
         }
 
         session.advanceTurnIndex();

@@ -20,6 +20,10 @@ public class HeatOverTimeEffect extends SpellEffect {
     private int fixedValue;
     private double percentage;
     private int duration;
+    
+    @jakarta.persistence.Transient
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    private boolean newlyApplied = true;
 
     @Enumerated(jakarta.persistence.EnumType.STRING)
     private Source source = Source.TARGET_HEALTH_MAX;
@@ -31,6 +35,10 @@ public class HeatOverTimeEffect extends SpellEffect {
     private Personnage caster;
 
     public void tick(Personnage target) {
+        if (newlyApplied) {
+            newlyApplied = false;
+            return;
+        }
         if (duration > 0) {
             int amount = fixedValue;
             if (percentage > 0) {

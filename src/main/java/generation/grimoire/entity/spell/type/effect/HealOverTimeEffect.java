@@ -31,6 +31,9 @@ public class HealOverTimeEffect extends HealEffect {
      * Durée en nombre de tours pendant lesquels cet effet est actif.
      */
     private int duration;
+    @jakarta.persistence.Transient
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    private boolean newlyApplied = true;
 
     @jakarta.persistence.Enumerated(jakarta.persistence.EnumType.STRING)
     private generation.grimoire.enumeration.Source healSource = generation.grimoire.enumeration.Source.TARGET_HEALTH_MAX;
@@ -47,6 +50,10 @@ public class HealOverTimeEffect extends HealEffect {
      * effets) à chaque début ou fin de tour.
      */
     public void tick(Personnage target) {
+        if (newlyApplied) {
+            newlyApplied = false;
+            return;
+        }
         if (duration > 0) {
             target.heal(fixedHealPerTick);
             duration--;
