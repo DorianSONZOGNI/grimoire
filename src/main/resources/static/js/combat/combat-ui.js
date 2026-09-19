@@ -1773,8 +1773,8 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
                     hasTotal = true; // critDerived also includes buffs usually
                 } else if (c.voie && c.voie.nom && c.voie.nom.toLowerCase().includes('raison')) {
                     // For Voie de la Raison, crit is based on speed. We'll handle this specially.
-                    let speed = c.totalSpeed !== undefined ? c.totalSpeed : (c.speed || 0);
-                    base = speed * 2;
+                    let effSpeed = getEffectiveStat('SPEED');
+                    base = (c.crit || 0) + (effSpeed * 2);
                 } else {
                     base = c.crit || 0;
                 }

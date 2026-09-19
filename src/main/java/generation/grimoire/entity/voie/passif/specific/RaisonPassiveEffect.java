@@ -73,7 +73,7 @@ public class RaisonPassiveEffect extends VoiePassiveEffect {
     @Override
     public int adjustFlatBonus(Personnage personnage, generation.grimoire.enumeration.StatType statType, int currentBonus) {
         if (statType == generation.grimoire.enumeration.StatType.CRIT) {
-            int effectiveSpeed = personnage.getSpeed() + personnage.getStatFlatBonus(generation.grimoire.enumeration.StatType.SPEED);
+            int effectiveSpeed = personnage.getEffectiveStat(generation.grimoire.enumeration.StatType.SPEED);
             return currentBonus + effectiveSpeed * 2;
         }
         return currentBonus;
