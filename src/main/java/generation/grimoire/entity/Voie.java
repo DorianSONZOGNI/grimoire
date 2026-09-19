@@ -1,6 +1,5 @@
 package generation.grimoire.entity;
 
-
 import generation.grimoire.entity.voie.passif.VoiePassiveEffect;
 import jakarta.persistence.*;
 import lombok.Data;
@@ -11,8 +10,8 @@ import java.util.List;
 import java.util.Map;
 
 @Data
-@EqualsAndHashCode(exclude = {"passiveEffects"})
-@ToString(exclude = {"passiveEffects"})
+@EqualsAndHashCode(exclude = { "passiveEffects" })
+@ToString(exclude = { "passiveEffects" })
 @Entity
 @Table(name = "voie")
 public class Voie {
@@ -23,10 +22,10 @@ public class Voie {
 
     private String nom;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(length = 2500)
     private String description;
 
-    @Column(columnDefinition = "TEXT")
+    @Column(length = 2500)
     private String passiveDescription;
 
     @ElementCollection(fetch = FetchType.EAGER)
