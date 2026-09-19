@@ -86,6 +86,7 @@ public class PersonnageController {
     }
 
     @PostMapping
+    @org.springframework.transaction.annotation.Transactional
     public ResponseEntity<Map<String, Object>> createOrUpdate(@RequestBody PersonnageRequestDTO dto,
             java.security.Principal principal) {
         if (principal == null) {
