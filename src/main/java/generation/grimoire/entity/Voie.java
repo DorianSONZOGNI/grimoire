@@ -23,10 +23,10 @@ public class Voie {
 
     private String nom;
 
-    @Column(length = 500)
+    @Column(columnDefinition = "TEXT")
     private String description;
 
-    @Column(length = 1000)
+    @Column(columnDefinition = "TEXT")
     private String passiveDescription;
 
     @ElementCollection(fetch = FetchType.EAGER)
