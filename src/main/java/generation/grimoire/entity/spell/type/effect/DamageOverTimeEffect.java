@@ -43,6 +43,10 @@ public class DamageOverTimeEffect extends DamageEffect {
     private Boolean poison = false;
     private Boolean burn = false;
 
+    @jakarta.persistence.Transient
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    private boolean newlyApplied = true;
+
     public DamageOverTimeEffect() {
         super();
         this.setEffectTarget(generation.grimoire.enumeration.EffectTarget.TARGET);
@@ -64,6 +68,11 @@ public class DamageOverTimeEffect extends DamageEffect {
      * @param target la cible du DamageOverTimeEffect
      */
     public void tick(Personnage target) {
+        if (newlyApplied) {
+            newlyApplied = false;
+            return;
+        }
+
         if (duration > 0) {
             target.takeDamage(fixedDamagePerTick, damageType, caster, burn != null && burn);
             duration--;

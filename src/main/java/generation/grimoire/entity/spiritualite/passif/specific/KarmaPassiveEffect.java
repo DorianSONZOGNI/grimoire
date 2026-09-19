@@ -43,7 +43,7 @@ public class KarmaPassiveEffect extends SpiritualitePassiveEffect {
                 e.getCosts()[2] = 0;
                 System.out.println("✨ Esprit Karmique (Illumination imminente) : Le sort est gratuit !");
             } else if (gauge > 0) { // Esprit state
-                double reduction = gauge * 0.08; // 8% par niveau, max 24% (gauge=3)
+                double reduction = gauge * 0.1; // 10% par niveau, max 30% (gauge=3)
                 e.getCosts()[0] = (int) (e.getCosts()[0] * (1.0 - reduction));
                 e.getCosts()[1] = (int) (e.getCosts()[1] * (1.0 - reduction));
                 e.getCosts()[2] = (int) (e.getCosts()[2] * (1.0 - reduction));
@@ -66,7 +66,7 @@ public class KarmaPassiveEffect extends SpiritualitePassiveEffect {
                             + " PV et " + manaBonus + " Mana.");
                 } else if (gauge < 0) {
                     // Ténèbres state
-                    double dmgBonus = Math.abs(gauge) * 0.08; // 8% par niveau
+                    double dmgBonus = Math.abs(gauge) * 0.1; // 10% par niveau
                     for (generation.grimoire.entity.SpellEffect eff : spell.getEffects()) {
                         if (eff instanceof generation.grimoire.entity.spell.type.effect.DamageEffect de) {
                             if (de.getDamageType() == generation.grimoire.enumeration.DamageType.PHYSIC
@@ -140,7 +140,8 @@ public class KarmaPassiveEffect extends SpiritualitePassiveEffect {
                                     || de.getDamageType() == generation.grimoire.enumeration.DamageType.MAGIC) {
                                 de.setAmplificationMultiplier(de.getAmplificationMultiplier() * 1.5);
                                 if (!logged50) {
-                                    System.out.println("✨ Amplification appliquée : +50% de dégâts (" + de.getDamageType() + ")");
+                                    System.out.println(
+                                            "✨ Amplification appliquée : +50% de dégâts (" + de.getDamageType() + ")");
                                     logged50 = true;
                                 }
                             }

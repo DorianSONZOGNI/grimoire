@@ -30,13 +30,19 @@
 <body>
 
     <div class="combat-header">
-        <div class="page-logo">
-            <span class="material-symbols-outlined logo-icon-gradient logo-dungeon">swords</span>
-            <span class="logo-text-gradient logo-dungeon" id="headerDungeonName">Combat en cours...</span>
-        </div>
         <div class="flex items-center gap-6">
+            <div class="page-logo">
+                <span class="material-symbols-outlined logo-icon-gradient logo-dungeon">swords</span>
+                <span class="logo-text-gradient logo-dungeon" id="headerDungeonName">Combat en cours...</span>
+            </div>
+
+            <!-- Boss Challenges Container -->
+            <div id="bossChallengesContainer" class="flex gap-2 items-center flex-wrap justify-start max-w-[40vw]">
+            </div>
+        </div>
+        <div class="flex items-center gap-6 flex-wrap justify-end">
             <!-- New Boss Buff Container -->
-            <div id="bossBuffsContainer" class="flex gap-2 items-center flex-wrap justify-end max-w-[50vw]">
+            <div id="bossBuffsContainer" class="flex gap-2 items-center flex-wrap justify-end max-w-[40vw]">
             </div>
 
             <div class="flex items-center gap-2 bg-white/5 py-1 px-3 rounded-lg border border-white/10">
@@ -60,14 +66,15 @@
     <div class="combat-arena relative overflow-hidden" id="arena">
 
         <!-- Combat Main Overlay (During combat) -->
-        <div id="combatMainSidePanelWrapper"
-            style="z-index: 1000;"
+        <div id="combatMainSidePanelWrapper" style="z-index: 1000;"
             class="absolute inset-y-0 left-0 w-[320px] -translate-x-full transition-transform duration-300 pointer-events-auto">
-            
-            <div class="custom-scrollbar w-full h-full bg-slate-900/95 border-r border-white/10 p-6 flex flex-col overflow-y-auto relative pointer-events-auto">
+
+            <div
+                class="custom-scrollbar w-full h-full bg-slate-900/95 border-r border-white/10 p-6 flex flex-col overflow-y-auto relative pointer-events-auto">
                 <!-- Inventory Content -->
                 <div id="combatMainInventoryContent" class="h-full flex flex-col">
-                    <h3 class="text-emerald mb-4 text-xl text-center font-outfit flex items-center justify-center gap-2">
+                    <h3
+                        class="text-emerald mb-4 text-xl text-center font-outfit flex items-center justify-center gap-2">
                         <span class="material-symbols-outlined">inventory_2</span> Inventaire
                         <span class="inventory-weight-display text-muted text-sm font-normal"></span>
                     </h3>
@@ -78,7 +85,8 @@
 
                 <!-- Map Content -->
                 <div id="combatMainMapContent" class="h-full flex flex-col hidden">
-                    <h3 class="text-blue-400 mb-4 text-xl text-center font-outfit flex items-center justify-center gap-2">
+                    <h3
+                        class="text-blue-400 mb-4 text-xl text-center font-outfit flex items-center justify-center gap-2">
                         <span class="material-symbols-outlined">map</span> Carte du Donjon
                     </h3>
                     <div id="combatMainMapList" class="flex flex-col gap-[0.8rem] relative">
@@ -90,12 +98,14 @@
             <!-- Toggle Tabs -->
             <div class="absolute -right-10 top-1/2 -translate-y-1/2 flex flex-col gap-1 pointer-events-auto">
                 <!-- Inventory Tab -->
-                <div id="combatMainInventoryTabBtn" class="text-emerald w-10 h-[80px] bg-slate-900/95 border border-l-0 border-white/10 rounded-r-lg flex items-center justify-center cursor-pointer shadow-[5px_0_10px_rgba(0,0,0,0.3)] transition-all opacity-100 hover:opacity-100"
+                <div id="combatMainInventoryTabBtn"
+                    class="text-emerald w-10 h-[80px] bg-slate-900/95 border border-l-0 border-white/10 rounded-r-lg flex items-center justify-center cursor-pointer shadow-[5px_0_10px_rgba(0,0,0,0.3)] transition-all opacity-100 hover:opacity-100"
                     onclick="window.toggleSidePanel('combatMain', 'inventory')">
                     <span class="material-symbols-outlined">inventory_2</span>
                 </div>
                 <!-- Map Tab -->
-                <div id="combatMainMapTabBtn" class="text-blue-400 w-10 h-[80px] bg-slate-900/95 border border-l-0 border-white/10 rounded-r-lg flex items-center justify-center cursor-pointer shadow-[5px_0_10px_rgba(0,0,0,0.3)] transition-all opacity-50 hover:opacity-100"
+                <div id="combatMainMapTabBtn"
+                    class="text-blue-400 w-10 h-[80px] bg-slate-900/95 border border-l-0 border-white/10 rounded-r-lg flex items-center justify-center cursor-pointer shadow-[5px_0_10px_rgba(0,0,0,0.3)] transition-all opacity-50 hover:opacity-100"
                     onclick="window.toggleSidePanel('combatMain', 'map')">
                     <span class="material-symbols-outlined">map</span>
                 </div>
@@ -126,11 +136,13 @@
             <!-- Left: Side Panel Wrapper -->
             <div id="eventSidePanelWrapper"
                 class="absolute inset-y-0 left-0 w-[320px] z-20 -translate-x-full transition-transform duration-300">
-                
-                <div class="custom-scrollbar w-full h-full bg-slate-900/95 border-r border-white/10 p-6 flex flex-col overflow-y-auto relative">
+
+                <div
+                    class="custom-scrollbar w-full h-full bg-slate-900/95 border-r border-white/10 p-6 flex flex-col overflow-y-auto relative">
                     <!-- Inventory Content -->
                     <div id="eventInventoryContent" class="h-full flex flex-col">
-                        <h3 class="text-emerald mb-4 text-xl text-center font-outfit flex items-center justify-center gap-2">
+                        <h3
+                            class="text-emerald mb-4 text-xl text-center font-outfit flex items-center justify-center gap-2">
                             <span class="material-symbols-outlined">inventory_2</span> Inventaire
                             <span class="inventory-weight-display text-muted text-sm font-normal"></span>
                         </h3>
@@ -141,7 +153,8 @@
 
                     <!-- Map Content -->
                     <div id="eventMapContent" class="h-full flex flex-col hidden">
-                        <h3 class="text-blue-400 mb-4 text-xl text-center font-outfit flex items-center justify-center gap-2">
+                        <h3
+                            class="text-blue-400 mb-4 text-xl text-center font-outfit flex items-center justify-center gap-2">
                             <span class="material-symbols-outlined">map</span> Carte du Donjon
                         </h3>
                         <div id="eventMapList" class="flex flex-col gap-[0.8rem] relative">
@@ -153,12 +166,14 @@
                 <!-- Toggle Tabs -->
                 <div class="absolute -right-10 top-1/2 -translate-y-1/2 flex flex-col gap-1">
                     <!-- Inventory Tab -->
-                    <div id="eventInventoryTabBtn" class="text-emerald w-10 h-[80px] bg-slate-900/95 border border-l-0 border-white/10 rounded-r-lg flex items-center justify-center cursor-pointer shadow-[5px_0_10px_rgba(0,0,0,0.3)] transition-all opacity-100 hover:opacity-100"
+                    <div id="eventInventoryTabBtn"
+                        class="text-emerald w-10 h-[80px] bg-slate-900/95 border border-l-0 border-white/10 rounded-r-lg flex items-center justify-center cursor-pointer shadow-[5px_0_10px_rgba(0,0,0,0.3)] transition-all opacity-100 hover:opacity-100"
                         onclick="window.toggleSidePanel('event', 'inventory')">
                         <span class="material-symbols-outlined">inventory_2</span>
                     </div>
                     <!-- Map Tab -->
-                    <div id="eventMapTabBtn" class="text-blue-400 w-10 h-[80px] bg-slate-900/95 border border-l-0 border-white/10 rounded-r-lg flex items-center justify-center cursor-pointer shadow-[5px_0_10px_rgba(0,0,0,0.3)] transition-all opacity-50 hover:opacity-100"
+                    <div id="eventMapTabBtn"
+                        class="text-blue-400 w-10 h-[80px] bg-slate-900/95 border border-l-0 border-white/10 rounded-r-lg flex items-center justify-center cursor-pointer shadow-[5px_0_10px_rgba(0,0,0,0.3)] transition-all opacity-50 hover:opacity-100"
                         onclick="window.toggleSidePanel('event', 'map')">
                         <span class="material-symbols-outlined">map</span>
                     </div>
@@ -167,10 +182,12 @@
 
             <!-- Right: Event Content -->
             <div
-                class="flex flex-col items-center justify-start bg-slate-900/80 border border-white/10 rounded-2xl p-8 md:p-12 fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[99999] max-w-[800px] w-[90%] min-h-[400px] shadow-2xl max-h-[95vh] overflow-y-auto custom-scrollbar">
-                <span class="material-symbols-outlined text-amber mb-4 text-[5rem]" id="eventIcon" style="flex-shrink: 0;">money_bag</span>
+                class="flex flex-col items-center justify-start bg-slate-900/80 border border-white/10 rounded-2xl p-8 md:p-12 fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[99999] w-[90%] min-h-[400px] shadow-2xl max-h-[95vh] overflow-y-auto custom-scrollbar" style="max-width: 1000px;">
+                <span class="material-symbols-outlined text-amber mb-4 text-[5rem]" id="eventIcon"
+                    style="flex-shrink: 0;">money_bag</span>
                 <div class="result-title mb-4 text-[3rem]" id="eventTitle" style="flex-shrink: 0;">Trésor !</div>
-                <p class="text-muted text-xl mb-8 max-w-[600px] text-center" id="eventDesc" style="flex-shrink: 0;">Vous avez trouvé un trésor.
+                <p class="text-muted text-xl mb-8 max-w-[600px] text-center" id="eventDesc" style="flex-shrink: 0;">Vous
+                    avez trouvé un trésor.
                 </p>
 
                 <div id="eventLootContainer" class="hidden gap-4 flex-wrap justify-center mb-8 w-full">
@@ -196,11 +213,13 @@
             <!-- Left: Side Panel Wrapper -->
             <div id="combatVictorySidePanelWrapper"
                 class="absolute inset-y-0 left-0 w-[320px] z-20 -translate-x-full transition-transform duration-300">
-                
-                <div class="custom-scrollbar w-full h-full bg-slate-900/95 border-r border-white/10 p-6 flex flex-col overflow-y-auto relative">
+
+                <div
+                    class="custom-scrollbar w-full h-full bg-slate-900/95 border-r border-white/10 p-6 flex flex-col overflow-y-auto relative">
                     <!-- Inventory Content -->
                     <div id="combatVictoryInventoryContent" class="h-full flex flex-col">
-                        <h3 class="text-emerald mb-4 text-xl text-center font-outfit flex items-center justify-center gap-2">
+                        <h3
+                            class="text-emerald mb-4 text-xl text-center font-outfit flex items-center justify-center gap-2">
                             <span class="material-symbols-outlined">inventory_2</span> Inventaire
                             <span class="inventory-weight-display text-muted text-sm font-normal"></span>
                         </h3>
@@ -211,7 +230,8 @@
 
                     <!-- Map Content -->
                     <div id="combatVictoryMapContent" class="h-full flex flex-col hidden">
-                        <h3 class="text-blue-400 mb-4 text-xl text-center font-outfit flex items-center justify-center gap-2">
+                        <h3
+                            class="text-blue-400 mb-4 text-xl text-center font-outfit flex items-center justify-center gap-2">
                             <span class="material-symbols-outlined">map</span> Carte du Donjon
                         </h3>
                         <div id="combatVictoryMapList" class="flex flex-col gap-[0.8rem] relative">
@@ -223,12 +243,14 @@
                 <!-- Toggle Tabs -->
                 <div class="absolute -right-10 top-1/2 -translate-y-1/2 flex flex-col gap-1">
                     <!-- Inventory Tab -->
-                    <div id="combatVictoryInventoryTabBtn" class="text-emerald w-10 h-[80px] bg-slate-900/95 border border-l-0 border-white/10 rounded-r-lg flex items-center justify-center cursor-pointer shadow-[5px_0_10px_rgba(0,0,0,0.3)] transition-all opacity-100 hover:opacity-100"
+                    <div id="combatVictoryInventoryTabBtn"
+                        class="text-emerald w-10 h-[80px] bg-slate-900/95 border border-l-0 border-white/10 rounded-r-lg flex items-center justify-center cursor-pointer shadow-[5px_0_10px_rgba(0,0,0,0.3)] transition-all opacity-100 hover:opacity-100"
                         onclick="window.toggleSidePanel('combatVictory', 'inventory')">
                         <span class="material-symbols-outlined">inventory_2</span>
                     </div>
                     <!-- Map Tab -->
-                    <div id="combatVictoryMapTabBtn" class="text-blue-400 w-10 h-[80px] bg-slate-900/95 border border-l-0 border-white/10 rounded-r-lg flex items-center justify-center cursor-pointer shadow-[5px_0_10px_rgba(0,0,0,0.3)] transition-all opacity-50 hover:opacity-100"
+                    <div id="combatVictoryMapTabBtn"
+                        class="text-blue-400 w-10 h-[80px] bg-slate-900/95 border border-l-0 border-white/10 rounded-r-lg flex items-center justify-center cursor-pointer shadow-[5px_0_10px_rgba(0,0,0,0.3)] transition-all opacity-50 hover:opacity-100"
                         onclick="window.toggleSidePanel('combatVictory', 'map')">
                         <span class="material-symbols-outlined">map</span>
                     </div>
@@ -237,10 +259,12 @@
 
             <!-- Right: Victory Content -->
             <div
-                class="flex flex-col items-center justify-start bg-slate-900/80 border border-white/10 rounded-2xl p-8 md:p-12 fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[99999] max-w-[800px] w-[90%] min-h-[400px] shadow-2xl max-h-[95vh] overflow-y-auto custom-scrollbar">
-                <span class="material-symbols-outlined text-emerald mb-4 text-[5rem]" style="flex-shrink: 0;">emoji_events</span>
+                class="flex flex-col items-center justify-start bg-slate-900/80 border border-white/10 rounded-2xl p-8 md:p-12 fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[99999] max-w-[1000px] w-[90%] min-h-[400px] shadow-2xl max-h-[95vh] overflow-y-auto custom-scrollbar">
+                <span class="material-symbols-outlined text-emerald mb-4 text-[5rem]"
+                    style="flex-shrink: 0;">emoji_events</span>
                 <div class="result-title text-emerald mb-4 text-[3rem]" style="flex-shrink: 0;">Victoire !</div>
-                <p class="text-muted text-xl mb-8 max-w-[600px] text-center" id="combatVictoryDesc" style="flex-shrink: 0;">
+                <p class="text-muted text-xl mb-8 max-w-[600px] text-center" id="combatVictoryDesc"
+                    style="flex-shrink: 0;">
                 </p>
                 <div id="combatVictoryXpContainer" class="flex gap-4 flex-wrap justify-center mb-8 w-full">
                     <!-- Rempli par JS -->
@@ -267,7 +291,8 @@
                 <a class="action-btn no-underline" href="/dungeons.html">
                     Retourner à la page des donjons
                 </a>
-                <a class="action-btn no-underline bg-amber-500/20 text-amber-400 border-amber-500/40 hover:bg-amber-500/30" id="retryDungeonBtn" href="#" style="display: none;">
+                <a class="action-btn no-underline bg-amber-500/20 text-amber-400 border-amber-500/40 hover:bg-amber-500/30"
+                    id="retryDungeonBtn" href="#" style="display: none;">
                     Relancer le donjon
                 </a>
             </div>
@@ -368,7 +393,8 @@
 
 
     <!-- Hero Equipment Tooltip -->
-    <div id="heroEquipmentTooltip" style="display:none; position:fixed; z-index:9999; background:linear-gradient(135deg, rgba(15,23,41,0.95), rgba(26,39,68,0.95)); border:1px solid rgba(56,189,248,0.3); border-radius:0.75rem; padding:1rem; min-width:300px; width: max-content; max-width:800px; box-shadow:0 10px 25px rgba(0,0,0,0.5); backdrop-filter:blur(8px); pointer-events:none;">
+    <div id="heroEquipmentTooltip"
+        style="display:none; position:fixed; z-index:9999; background:linear-gradient(135deg, rgba(15,23,41,0.95), rgba(26,39,68,0.95)); border:1px solid rgba(56,189,248,0.3); border-radius:0.75rem; padding:1rem; min-width:300px; width: max-content; max-width:800px; box-shadow:0 10px 25px rgba(0,0,0,0.5); backdrop-filter:blur(8px); pointer-events:none;">
         <div id="heroEquipmentTooltipContent" style="display:flex; flex-direction:column; gap:0.5rem;"></div>
     </div>
 

@@ -179,7 +179,7 @@ public class DataInitializerService {
                                                 "Sauf pour les sorts de base, le lancement nécessite d'avoir [c=pv]80% ou moins de vos PV max[/c] OU [c=mana]80% ou moins de votre Mana max[/c].\nDe plus, à chaque début de tour, vous gagnez un bonus aux [c=physic]dégâts physiques[/c] équivalent à 10% de vos [c=pv]PV manquants[/c] et aux [c=purple]dégâts magiques[/c] équivalent à 10% de votre [c=mana]Mana manquant[/c] (dure 1 tour).\n \nÀ chaque niveau, vous gagnez : [c=pv]+5 PV[/c] et [c=mana]+5 Mana[/c].");
                         } else if ("Karma".equals(sp.getNom())) {
                                 sp.setPassiveDescription(
-                                                "Gère une jauge affectée par vos sorts du Karma ([c=purple]Ténèbres -1[/c], [c=karma]Harmonie à 0[/c], [c=warning]Esprit +1[/c]). Selon votre état actuel, vous gagnez des bonus [c=karma]sur TOUS vos sorts[/c] :\n[ul][li]À [c=warning]0[/c] ([c=karma]Harmonie[/c]) : Chaque sort lancé régénère [c=heal]3% PV et Mana Max[/c].[/li][li][c=purple]État Ténèbres[/c] (jauge < 0) : [c=purple]+8% Dégâts (Phy/Mag)[/c] par point (max +24%).[/li][li][c=warning]État Esprit[/c] (jauge > 0) : Coût des sorts [c=mana]réduit de 8%[/c] par point (max -24%).[/li][li]À [c=warning]+4 ou -4[/c] : verrouille la magie karmique (sauf sorts d'[c=karma]Harmonie[/c]) pendant [c=warning]6 tours[/c], mais confère un buff d'[c=armor]Illumination (+25% Armure/Résist et -100% Coût du sort)[/c] ou de [c=power]Corruption (+50% Dégâts)[/c].[/li][/ul]Astuce : On peut réduire le timer de verrouillage en lançant des sorts d'[c=karma]Harmonie[/c].\n \nÀ chaque niveau, vous gagnez : [c=power]+1 Puissance[/c] et [c=physic]+1 Force[/c].");
+                                                "Gère une jauge affectée par vos sorts du Karma ([c=purple]Ténèbres -1[/c], [c=karma]Harmonie à 0[/c], [c=warning]Esprit +1[/c]). Selon votre état actuel, vous gagnez des bonus [c=karma]sur TOUS vos sorts[/c] :\n[ul][li]À [c=warning]0[/c] ([c=karma]Harmonie[/c]) : Chaque sort lancé régénère [c=heal]3% PV et Mana Max[/c].[/li][li][c=purple]État Ténèbres[/c] (jauge < 0) : [c=purple]+10% Dégâts (Phy/Mag)[/c] par point (max +30%).[/li][li][c=warning]État Esprit[/c] (jauge > 0) : Coût des sorts [c=mana]réduit de 10%[/c] par point (max -30%).[/li][li]À [c=warning]+4 ou -4[/c] : verrouille la magie karmique (sauf sorts d'[c=karma]Harmonie[/c]) pendant [c=warning]6 tours[/c], mais confère un buff d'[c=armor]Illumination (+25% Armure/Résist et -100% Coût du sort)[/c] ou de [c=power]Corruption (+50% Dégâts)[/c].[/li][/ul]Astuce : On peut réduire le timer de verrouillage en lançant des sorts d'[c=karma]Harmonie[/c].\n \nÀ chaque niveau, vous gagnez : [c=power]+1 Puissance[/c] et [c=physic]+1 Force[/c].");
                         }
                         spiritualiteRepository.save(sp);
                 }
@@ -188,11 +188,12 @@ public class DataInitializerService {
 
                 // Migration: peupler discoveredItems pour les utilisateurs existants
                 migrateDiscoveredItems();
-                
+
                 // Migration: marquer les anciennes recettes secrètes comme lues
                 fixUnseenSecretRecipes();
 
-                // Migration: débloquer l'accès aux sorts du grimoire selon la progression des persos
+                // Migration: débloquer l'accès aux sorts du grimoire selon la progression des
+                // persos
                 migrateUnlockedSpellLevels();
         }
 
@@ -200,12 +201,14 @@ public class DataInitializerService {
                 List<generation.grimoire.entity.auth.AppUser> users = userRepository.findAll();
                 int migrated = 0;
                 for (generation.grimoire.entity.auth.AppUser user : users) {
-                        if (!user.getDiscoveredItems().isEmpty()) continue; // Déjà migré
+                        if (!user.getDiscoveredItems().isEmpty())
+                                continue; // Déjà migré
 
                         java.util.Set<String> items = new java.util.HashSet<>();
 
                         // Anomalies possédées
-                        List<generation.grimoire.entity.Anomalie> anomalies = anomalieRepository.findByOwnerUsername(user.getUsername());
+                        List<generation.grimoire.entity.Anomalie> anomalies = anomalieRepository
+                                        .findByOwnerUsername(user.getUsername());
                         for (generation.grimoire.entity.Anomalie a : anomalies) {
                                 if (!a.isTemplate() && a.getName() != null) {
                                         items.add(a.getName());
@@ -213,7 +216,8 @@ public class DataInitializerService {
                         }
 
                         // Consommables possédés
-                        List<generation.grimoire.entity.Equipment> equipments = equipmentRepository.findByOwnerUsername(user.getUsername());
+                        List<generation.grimoire.entity.Equipment> equipments = equipmentRepository
+                                        .findByOwnerUsername(user.getUsername());
                         for (generation.grimoire.entity.Equipment eq : equipments) {
                                 if (!eq.isTemplate() && eq.getName() != null) {
                                         items.add(eq.getName());
@@ -235,21 +239,24 @@ public class DataInitializerService {
                 List<generation.grimoire.entity.auth.AppUser> users = userRepository.findAll();
                 List<generation.grimoire.entity.AlchemyRecipe> allRecipes = alchemyRecipeRepository.findAll();
                 List<generation.grimoire.entity.AlchemyRecipe> secretRecipes = allRecipes.stream()
-                        .filter(r -> generation.grimoire.enumeration.RecipeRewardType.UNLOCK_FEATURE.equals(r.getRewardType()))
-                        .toList();
+                                .filter(r -> generation.grimoire.enumeration.RecipeRewardType.UNLOCK_FEATURE
+                                                .equals(r.getRewardType()))
+                                .toList();
 
                 int migratedSecrets = 0;
                 for (generation.grimoire.entity.auth.AppUser user : users) {
                         Map<String, Integer> unlockedSecrets = user.getUnlockedSecrets();
-                        if (unlockedSecrets == null || unlockedSecrets.isEmpty()) continue;
+                        if (unlockedSecrets == null || unlockedSecrets.isEmpty())
+                                continue;
 
                         boolean changed = false;
                         for (generation.grimoire.entity.AlchemyRecipe sr : secretRecipes) {
                                 String secretName = sr.getRewardName();
                                 int currentLevel = unlockedSecrets.getOrDefault(secretName, 0);
-                                
+
                                 // Si le niveau débloqué actuel est supérieur ou égal au niveau de la recette,
-                                // cela signifie que l'utilisateur a déjà passé ce palier et la recette ne s'affiche plus.
+                                // cela signifie que l'utilisateur a déjà passé ce palier et la recette ne
+                                // s'affiche plus.
                                 // S'il ne l'avait pas vue, la pastille rouge reste coincée.
                                 if (currentLevel >= sr.getRewardLevel()) {
                                         if (!user.getSeenAlchemyRecipes().contains(sr.getId())) {
@@ -263,7 +270,7 @@ public class DataInitializerService {
                                 migratedSecrets++;
                         }
                 }
-                
+
                 if (migratedSecrets > 0) {
                         log.info("Migration secrets coincés vus : {} utilisateurs mis à jour.", migratedSecrets);
                 }
@@ -272,11 +279,12 @@ public class DataInitializerService {
         private void migrateUnlockedSpellLevels() {
                 List<generation.grimoire.entity.personnage.Personnage> allPersos = personnageRepository.findAll();
                 int updatedUsers = 0;
-                
+
                 for (generation.grimoire.entity.personnage.Personnage p : allPersos) {
                         generation.grimoire.entity.auth.AppUser user = p.getUser();
-                        if (user == null) continue;
-                        
+                        if (user == null)
+                                continue;
+
                         boolean changed = false;
                         if (p.getVoie() != null) {
                                 Long voieId = p.getVoie().getId();
@@ -286,7 +294,7 @@ public class DataInitializerService {
                                         changed = true;
                                 }
                         }
-                        
+
                         if (p.getSpiritualite() != null) {
                                 Long spiritId = p.getSpiritualite().getId();
                                 int currentMax = user.getUnlockedSpiritualiteLevels().getOrDefault(spiritId, 0);
@@ -295,13 +303,13 @@ public class DataInitializerService {
                                         changed = true;
                                 }
                         }
-                        
+
                         if (changed) {
                                 userRepository.save(user);
                                 updatedUsers++;
                         }
                 }
-                
+
                 if (updatedUsers > 0) {
                         log.info("Migration niveaux débloqués : {} mises à jour de profil.", updatedUsers);
                 }

@@ -234,6 +234,7 @@ public class PvEAdminController {
                 s.setTrapDamageManaFixed(sDto.getTrapDamageManaFixed());
                 s.setDoorOutcomes(sDto.getDoorOutcomes());
                 s.setGlobalBuffs(sDto.getGlobalBuffs());
+                s.setChallenges(sDto.getChallenges());
                 s.setBossRewardSpiritualXp(sDto.getBossRewardSpiritualXp());
                 s.setBossRewardGold(sDto.getBossRewardGold());
 

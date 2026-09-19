@@ -37,6 +37,10 @@ public class BuffDebuffEffect extends SpellEffect {
     // Duration 0 -> tours en cours (on invalide les buff duration == 0 en fin de tours et duration -1 après)
     private int duration;
 
+    @jakarta.persistence.Transient
+    @com.fasterxml.jackson.annotation.JsonIgnore
+    private boolean newlyApplied = true;
+
     /**
      * Liste des sorts qui ont été impactés par ce buff (pour suivi ou log).
      */
@@ -67,6 +71,7 @@ public class BuffDebuffEffect extends SpellEffect {
         clone.setDuration(this.duration);
         clone.setModifierSource(this.getModifierSource());
         clone.setSourceName(this.getSourceName());
+        clone.setNewlyApplied(this.newlyApplied);
         return clone;
     }
 

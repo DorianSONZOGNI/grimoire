@@ -43,6 +43,7 @@ public class CombatSession {
 
     private int currentRoomIndex = 0;
     private Salle currentRoom;
+    private List<Challenge> activeChallenges = new ArrayList<>();
 
     private List<Spell> availableSpells = new ArrayList<>();
 
@@ -155,6 +156,22 @@ public class CombatSession {
             return enemies.get(current.getIndex());
         }
         return null;
+    }
+
+    public Salle getCurrentRoom() {
+        return currentRoom;
+    }
+
+    public void setCurrentRoom(Salle currentRoom) {
+        this.currentRoom = currentRoom;
+    }
+
+    public List<Challenge> getActiveChallenges() {
+        return activeChallenges;
+    }
+
+    public void setActiveChallenges(List<Challenge> activeChallenges) {
+        this.activeChallenges = activeChallenges;
     }
 
     public void advanceTurnIndex() {

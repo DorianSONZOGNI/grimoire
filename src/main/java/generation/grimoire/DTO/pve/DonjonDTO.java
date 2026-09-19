@@ -42,6 +42,7 @@ public class DonjonDTO {
         private Integer trapDamageManaFixed;
         private String doorOutcomes;
         private String globalBuffs;
+        private String challenges;
         private int bossRewardSpiritualXp;
         private int bossRewardGold;
         private List<MonsterRefDTO> monsters;

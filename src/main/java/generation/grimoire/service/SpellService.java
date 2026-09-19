@@ -419,15 +419,19 @@ public class SpellService {
     public void startTurn(Personnage personnage) {
         personnage.startTurn();
         personnage.setBanalSpellCastThisTurn(false);
+        passiveDispatcher.dispatch(personnage, null, new TurnStartEvent(personnage));
+        
+        checkAndCancelDeadChanneling(personnage);
+    }
+
+    public void endTurn(Personnage personnage) {
         personnage.updateHealOverTimeEffects();
         personnage.updateManaOverTimeEffects();
         personnage.updateDamageOverTimeEffects();
         personnage.updateHeatOverTimeEffects();
         personnage.updateBuffs();
-        passiveDispatcher.dispatch(personnage, null, new TurnStartEvent(personnage));
-        
-        checkAndCancelDeadChanneling(personnage);
     }
+
 
     public void checkAndCancelDeadChanneling(Personnage caster) {
         Spell channeledSpell = caster.getChanneledSpell();
