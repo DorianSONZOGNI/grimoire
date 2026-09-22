@@ -1,0 +1,23 @@
+/clear
+
+    Cas : Changement radical de sujet.
+
+    Exemple : Fini UI inventaire (JS). Début API paiement (Java).
+
+    Action : IA oublie UI. Zéro hallucination JS dans Java. Focus total.
+
+/compact
+
+    Cas : Session debug trop longue. Plafond tokens proche.
+
+    Exemple : 20 messages pour corriger bug Hibernate. Plein d'erreurs et faux codes.
+
+    Action : IA résume historique. Garde solution finale, jette impasses. Libère mémoire sans perdre contexte actuel.
+
+ctx purge
+
+    Cas : Index context-mode pollué ou obsolète.
+
+    Exemple : Changement grosse branche Git (refacto-v2 vers main). Ou suppression massive de fichiers.
+
+    Action : Base de recherche détruite. Évite outils MCP de trouver "code fantôme" qui n'existe plus sur disque. Repart propre.

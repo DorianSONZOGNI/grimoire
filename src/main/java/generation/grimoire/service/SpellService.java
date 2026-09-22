@@ -555,7 +555,8 @@ public class SpellService {
             return false;
         }
         int currentHeat = caster.getPassiveState("destruction_heat", 0);
-        if (currentHeat < actualHeatCost + requiredHeatFromEffects) {
+        int totalHeatCost = actualHeatCost + requiredHeatFromEffects;
+        if (totalHeatCost > 0 && currentHeat < totalHeatCost) {
             log.debug("Chaleur insuffisante pour lancer le sort {}", toCast.getNom());
             return false;
         }

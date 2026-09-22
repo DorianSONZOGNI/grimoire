@@ -2788,9 +2788,10 @@ export function renderSpellCard(sp) {
     }
 
     let categoryHtml = '';
-    if (sp.category === 'INSPIRATION') {
+    const isViolence = (sp.voie && sp.voie.nom && sp.voie.nom.toLowerCase().includes('violence')) || (sp.spiritualite && sp.spiritualite.nom && sp.spiritualite.nom.toLowerCase().includes('violence'));
+    if (sp.category === 'INSPIRATION' || (isViolence && sp.inspiration === true)) {
         categoryHtml = '<span class="material-symbols-outlined text-base text-crimson" title="Sort d\'Inspiration">storm</span>';
-    } else if (sp.category === 'EXPIRATION') {
+    } else if (sp.category === 'EXPIRATION' || (isViolence && sp.inspiration === false)) {
         categoryHtml = '<span class="material-symbols-outlined text-base text-fuchsia" title="Sort d\'Expiration">air</span>';
     }
 

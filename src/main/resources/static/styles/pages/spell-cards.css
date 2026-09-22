@@ -40,8 +40,8 @@
             z-index: 1;
 
             --card-glow-alpha: 0;
-            --card-border-alpha: 0.08;
-            --card-bg-alpha: 0.02;
+            --card-border-alpha: 0.15;
+            --card-bg-alpha: 0.06;
 
             border: 1px solid rgba(var(--spell-rgb), var(--card-border-alpha));
             background: linear-gradient(135deg, rgba(var(--spell-rgb), var(--card-bg-alpha)) 0%, rgba(255, 255, 255, 0.01) 100%);
@@ -50,9 +50,9 @@
 
 .spell-card:hover{
             z-index: 10;
-            --card-glow-alpha: 0.05;
-            --card-border-alpha: 0.2;
-            --card-bg-alpha: 0.04;
+            --card-glow-alpha: 0.15;
+            --card-border-alpha: 0.35;
+            --card-bg-alpha: 0.12;
             transform: translateY(-2px);
         }
 

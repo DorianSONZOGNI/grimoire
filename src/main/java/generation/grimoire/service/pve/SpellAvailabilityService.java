@@ -178,7 +178,7 @@ class SpellAvailabilityService {
                     actualManaCost, actualHealCost, actualHeatCost);
         }
         int currentHeat = p.getPassiveState("destruction_heat", 0);
-        if (currentHeat < actualHeatCost) {
+        if (actualHeatCost > 0 && currentHeat < actualHeatCost) {
             return SpellAvailability.blocked(spell.getId(), "RESOURCE",
                     "Chaleur insuffisante (" + currentHeat + "/" + actualHeatCost + ")",
                     actualManaCost, actualHealCost, actualHeatCost);

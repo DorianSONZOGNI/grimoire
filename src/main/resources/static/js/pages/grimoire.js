@@ -629,10 +629,10 @@ export function getSpellCardHtml(sp) {
         castBadge = `<span class="badge-pill badge-slate"><span class="material-symbols-outlined" style="font-size: 1.05rem;">hourglass_empty</span>Banal</span>`;
     }
 
-    if (sp.voie && sp.voie.nom && sp.voie.nom.toLowerCase().includes('violence')) {
-        if (sp.inspiration) {
+    if ((sp.voie && sp.voie.nom && sp.voie.nom.toLowerCase().includes('violence')) || (sp.spiritualite && sp.spiritualite.nom && sp.spiritualite.nom.toLowerCase().includes('violence'))) {
+        if (sp.category === 'INSPIRATION' || sp.inspiration === true) {
             castBadge += ` <span class="badge-pill badge-red"><span class="material-symbols-outlined" style="font-size: 1.05rem;">storm</span>Inspiration</span>`;
-        } else {
+        } else if (sp.category === 'EXPIRATION' || sp.inspiration === false) {
             castBadge += ` <span class="badge-pill badge-pink"><span class="material-symbols-outlined" style="font-size: 1.05rem;">air</span>Expiration</span>`;
         }
     }
