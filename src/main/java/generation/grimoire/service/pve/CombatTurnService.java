@@ -621,41 +621,47 @@ class CombatTurnService {
             session.setTotalGoldAccumulated(session.getTotalGoldAccumulated() + goldDrop);
             session.setRoomExpAccumulated(session.getRoomExpAccumulated() + xpDrop);
             session.setRoomGoldAccumulated(session.getRoomGoldAccumulated() + goldDrop);
-
-            List<Personnage> eligiblePlayers = session.getPlayers().stream()
-                    .filter(session::isEligibleForRewards).collect(java.util.stream.Collectors.toList());
-            int expPerHero = xpDrop / Math.max(1, eligiblePlayers.size());
-            for (Personnage p : eligiblePlayers) {
-                int actualExp = expPerHero;
-                AppUser u = p.getUser();
-                if (u != null && !u.getCompletedDungeons().contains(session.getDungeonId())) {
-                    actualExp *= 2;
-                }
-                p.setExperience(p.getExperience() + actualExp);
-                personnageService.save(p);
-            }
-            if (goldDrop > 0 && !eligiblePlayers.isEmpty()) {
-                java.util.Set<Long> processedUserIds = new java.util.HashSet<>();
-                for (Personnage p : eligiblePlayers) {
-                    AppUser u = p.getUser();
-                    if (u != null && u.getId() != null && !processedUserIds.contains(u.getId())) {
-                        processedUserIds.add(u.getId());
-                        u.setMonnaie(u.getMonnaie() + goldDrop);
-                        userRepository.save(u);
-                    }
-                }
-                session.addLog("Les monstres vaincus ont lâché " + goldDrop + " Or. Chaque héros reçoit " + expPerHero
-                        + " XP (x2 si 1ère fois).");
-            } else {
-                session.addLog("Chaque héros reçoit " + expPerHero + " XP (x2 si 1ère fois).");
-            }
         }
 
         // Check if all enemies are now processed and weren't all processed before
         boolean allNowProcessed = session.getEnemies().stream()
                 .allMatch(e -> e.getMaxHp() <= 0);
+
         if (!allAlreadyProcessed && allNowProcessed) {
             session.addLog("Combat terminé, vous avez vaincu tous les monstres !");
+            
+            int roomXpDrop = session.getRoomExpAccumulated();
+            int roomGoldDrop = session.getRoomGoldAccumulated();
+
+            if (roomXpDrop > 0 || roomGoldDrop > 0) {
+                List<Personnage> eligiblePlayers = session.getPlayers().stream()
+                        .filter(session::isEligibleForRewards).collect(java.util.stream.Collectors.toList());
+                int expPerHero = roomXpDrop / Math.max(1, eligiblePlayers.size());
+                for (Personnage p : eligiblePlayers) {
+                    int actualExp = expPerHero;
+                    AppUser u = p.getUser();
+                    if (u != null && !u.getCompletedDungeons().contains(session.getDungeonId())) {
+                        actualExp *= 2;
+                    }
+                    p.setExperience(p.getExperience() + actualExp);
+                    personnageService.save(p);
+                }
+                if (roomGoldDrop > 0 && !eligiblePlayers.isEmpty()) {
+                    java.util.Set<Long> processedUserIds = new java.util.HashSet<>();
+                    for (Personnage p : eligiblePlayers) {
+                        AppUser u = p.getUser();
+                        if (u != null && u.getId() != null && !processedUserIds.contains(u.getId())) {
+                            processedUserIds.add(u.getId());
+                            u.setMonnaie(u.getMonnaie() + roomGoldDrop);
+                            userRepository.save(u);
+                        }
+                    }
+                    session.addLog("Les monstres vaincus ont lâché " + roomGoldDrop + " Or. Chaque héros reçoit " + expPerHero + " XP (x2 si 1ère fois).");
+                } else if (roomXpDrop > 0) {
+                    session.addLog("Chaque héros reçoit " + expPerHero + " XP (x2 si 1ère fois).");
+                }
+            }
+
             for (Personnage p : session.getPlayers()) {
                 p.resetCombatState();
             }
