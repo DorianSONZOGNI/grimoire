@@ -290,34 +290,43 @@ window.checkAuthStatus = async function checkAuthStatus() {
             }
 
             // Check for newly unlocked secret dungeons
-            if (data.unlockedSecrets && Object.keys(data.unlockedSecrets).length > 0) {
-                globalFetch('/api/pve/dungeons', { credentials: 'same-origin' })
-                    .then(r => r.ok ? r.json() : [])
-                    .then(dungeons => {
-                        let seen = [];
-                        try { seen = JSON.parse(localStorage.getItem('seenUnlockedDungeons')) || []; } catch(e) {}
-                        let newCount = 0;
-                        dungeons.forEach(d => {
+            Promise.all([
+                    globalFetch('/api/pve/dungeons', { credentials: 'same-origin' }).then(r => r.ok ? r.json() : []),
+                    globalFetch('/api/personnages', { credentials: 'same-origin' }).then(r => r.ok ? r.json() : [])
+                ]).then(([dungeons, characters]) => {
+                    let seen = [];
+                    try { seen = JSON.parse(localStorage.getItem('seenUnlockedDungeons')) || []; } catch(e) {}
+                    let newCount = 0;
+                    const maxLevel = characters.length > 0 ? Math.max(...characters.map(c => c.voieLevel || 1)) : 0;
+
+                    dungeons.forEach(d => {
+                        if (maxLevel >= (d.recommendedLevel || 1)) {
+                            let isUnlocked = false;
                             if (d.requiredSecret && d.requiredSecret.trim() !== '') {
                                 const userLevel = data.unlockedSecrets[d.requiredSecret] || 0;
                                 if (userLevel >= (d.requiredSecretLevel || 1)) {
-                                    if (!seen.includes(d.id)) {
-                                        newCount++;
-                                    }
+                                    isUnlocked = true;
                                 }
-                            }
-                        });
-                        const badge = document.getElementById('navDungeonBadge');
-                        if (badge) {
-                            if (newCount > 0) {
-                                badge.textContent = newCount;
-                                badge.style.display = 'block';
                             } else {
-                                badge.style.display = 'none';
+                                isUnlocked = true;
+                            }
+
+                            if (isUnlocked && !seen.includes(d.id)) {
+                                newCount++;
                             }
                         }
-                    }).catch(() => {});
-            }
+                    });
+
+                    const badge = document.getElementById('navDungeonBadge');
+                    if (badge) {
+                        if (newCount > 0) {
+                            badge.textContent = newCount;
+                            badge.style.display = 'block';
+                        } else {
+                            badge.style.display = 'none';
+                        }
+                    }
+                }).catch(() => {});
 
         } else {
             localStorage.removeItem('isLikelyLoggedIn');

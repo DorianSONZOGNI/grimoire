@@ -197,7 +197,7 @@ async function loadDungeons() {
                 
                 categories.get(catId).dungeons.push(d);
                 
-                if (catId !== 'free' && !seenDungeons.includes(d.id)) {
+                if (!seenDungeons.includes(d.id)) {
                     categories.get(catId).newCount++;
                 }
             });
