@@ -90,7 +90,12 @@ public class PersonnageCombatHelper {
             }
         };
 
-        double reductionFactor = resistanceValue / (resistanceValue + constant);
+        double reductionFactor = 0;
+        if (resistanceValue >= 0) {
+            reductionFactor = Math.min(resistanceValue / (resistanceValue + constant), 0.90);
+        } else {
+            reductionFactor = resistanceValue / (Math.abs(resistanceValue) + constant);
+        }
 
         StatType statType = switch (damageType) {
             case MAGIC -> StatType.DAMAGE_TAKEN_MAGIC;
@@ -243,7 +248,6 @@ public class PersonnageCombatHelper {
             System.out.println("🛡️ Perce-Bouclier / Bouclier Percé : " + bypassDamage + " dégâts passent en dessous du bouclier.");
         }
 
-        double finalReductionFactor = Math.min(reductionFactor, 0.90);
         String shieldText = absorbedByShields > 0 ? "absorbés par les boucliers : " + absorbedByShields + ", " : "";
         String typeStr = "";
         if (damageType != null) {
@@ -253,8 +257,12 @@ public class PersonnageCombatHelper {
                 case BRUT: typeStr = " bruts"; break;
             }
         }
+
+        int pct = (int) Math.round(reductionFactor * 100);
+        String reductionStr = pct >= 0 ? "réduction de " + pct + "%" : "amplification de " + Math.abs(pct) + "%";
+
         System.out.println(p.getName() + " subit " + effectiveDamage + " dégâts" + typeStr + " (" +
-                shieldText + "réduction de " + (int) (finalReductionFactor * 100) + "%), " +
+                shieldText + reductionStr + "), " +
                 "PV restants : " + p.getHealthCurrent());
 
         if (caster != null && totalDamageToHealth > 0) {
