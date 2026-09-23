@@ -128,6 +128,7 @@ public class ShopController {
 
     @PostMapping("/buy/{templateId}")
     public ResponseEntity<?> buyItem(@PathVariable @org.springframework.lang.NonNull Long templateId,
+            @org.springframework.web.bind.annotation.RequestParam(defaultValue = "1") int quantity,
             Principal principal) {
         if (principal == null)
             return ResponseEntity.status(401).build();
@@ -192,7 +193,13 @@ public class ShopController {
             price = Math.ceil(price * 0.8);
         }
 
-        if (user.getMonnaie() < price) {
+        if (quantity < 1) quantity = 1;
+        if (template.getSlot() != EquipmentSlot.CONSOMMABLE && quantity > 1) {
+            quantity = 1;
+        }
+        
+        double totalGoldPrice = price * quantity;
+        if (user.getMonnaie() < totalGoldPrice) {
             return ResponseEntity.badRequest().body(Map.of("message", "Fonds insuffisants en or."));
         }
 
@@ -221,7 +228,7 @@ public class ShopController {
 
             for (Map.Entry<String, Integer> entry : template.getPriceAnomalies().entrySet()) {
                 String reqName = entry.getKey();
-                int reqQuantity = entry.getValue();
+                int reqQuantity = entry.getValue() * quantity;
 
                 List<Anomalie> matches = userAnomalies.stream()
                         .filter(a -> a.getName() != null && a.getName().equals(reqName))
@@ -234,6 +241,7 @@ public class ShopController {
                     int qtyToConsume = reqQuantity;
                     if (isAdmin && matches.size() == reqQuantity) {
                         qtyToConsume = reqQuantity - 1;
+                        if (qtyToConsume < 0) qtyToConsume = 0;
                     }
 
                     for (int i = 0; i < qtyToConsume; i++) {
@@ -249,23 +257,25 @@ public class ShopController {
         }
 
         // Deductions
-        user.setMonnaie(user.getMonnaie() - price);
+        user.setMonnaie(user.getMonnaie() - totalGoldPrice);
         userRepository.save(user);
 
         if (!toConsumeList.isEmpty()) {
             anomalieRepository.deleteAll(toConsumeList);
         }
 
-        // Clone equipment
-        Equipment clone = new Equipment();
-        clone.copyStatsFrom(template);
-
-        clone.setTemplate(false);
-        clone.setUser(user);
-        clone.setOwnerUsername(user.getUsername());
-
-        equipmentRepository.save(clone);
-        user.getDiscoveredItems().add(clone.getName());
+        // Clone equipment(s)
+        List<Equipment> toSave = new ArrayList<>();
+        for (int i = 0; i < quantity; i++) {
+            Equipment clone = new Equipment();
+            clone.copyStatsFrom(template);
+            clone.setTemplate(false);
+            clone.setUser(user);
+            clone.setOwnerUsername(user.getUsername());
+            toSave.add(clone);
+        }
+        equipmentRepository.saveAll(toSave);
+        user.getDiscoveredItems().add(template.getName());
         userRepository.save(user);
 
         return ResponseEntity.ok(Map.of("message", "Achat réussi !"));
