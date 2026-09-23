@@ -48,33 +48,33 @@ window.addEventListener('authLoaded', async () => {
     }
 });
 
+let alchemyInitialFilterSet = false;
 function setDefaultFilter() {
     if (!window.currentUser || !window.currentUser.seenAlchemyRecipes) return;
+    if (alchemyInitialFilterSet) return;
+    alchemyInitialFilterSet = true;
     
+    window.initialSeenRecipes = [...(window.currentUser.seenAlchemyRecipes || [])];
+
     const unlockedSecrets = window.currentUser.unlockedSecrets || {};
-    const priority = ['UNLOCK_FEATURE', 'GIVE_ANOMALY', 'GIVE_EQUIPMENT', 'GIVE_SPIRIT_XP', 'GIVE_CONSUMABLE'];
-    
-    let bestType = 'GIVE_CONSUMABLE';
-    let bestPrio = 999;
-    
+    let hasUnseen = false;
     for (const r of pageState.allRecipes) {
-        // Is it unseen?
         if (window.currentUser.seenAlchemyRecipes.includes(r.id)) continue;
         
-        // Is it actually visible based on secrets progression?
         if (r.rewardType === 'UNLOCK_FEATURE') {
             const currentLevel = unlockedSecrets[r.rewardName] || 0;
             if (currentLevel !== (r.rewardLevel - 1)) continue;
         }
         
-        const pIndex = priority.indexOf(r.rewardType);
-        if (pIndex !== -1 && pIndex < bestPrio) {
-            bestPrio = pIndex;
-            bestType = r.rewardType;
-        }
+        hasUnseen = true;
+        break;
     }
     
-    // Set the filter visually if we found an unseen recipe, OR if there's no unseen recipe, it stays GIVE_CONSUMABLE
+    let bestType = 'GIVE_CONSUMABLE';
+    if (hasUnseen) {
+        bestType = 'NOUVEAUTE';
+    }
+    
     const input = document.getElementById('filterRewardType');
     if (!input) return;
     input.value = bestType;
@@ -149,11 +149,39 @@ function renderRecipesList() {
 
     const unlockedSecrets = window.currentUser?.unlockedSecrets || {};
 
+    let hasUnseen = false;
+    if (pageState.allRecipes && window.currentUser) {
+        for (const r of pageState.allRecipes) {
+            if (window.currentUser.seenAlchemyRecipes?.includes(r.id)) continue;
+            if (r.rewardType === 'UNLOCK_FEATURE') {
+                const currentLevel = unlockedSecrets[r.rewardName] || 0;
+                if (currentLevel !== (r.rewardLevel - 1)) continue;
+            }
+            hasUnseen = true;
+            break;
+        }
+    }
+    const nouvOption = document.querySelector('.custom-option[data-value="NOUVEAUTE"]');
+    if (nouvOption) {
+        nouvOption.style.display = hasUnseen ? '' : 'none';
+    }
+
     const searchTxt = (document.getElementById('searchRecipeName')?.value || '').toLowerCase();
     const filterType = document.getElementById('filterRewardType')?.value || '';
 
+    if (filterType === 'NOUVEAUTE' && window.lastFilterType !== 'NOUVEAUTE') {
+        window.initialSeenRecipes = [...(window.currentUser?.seenAlchemyRecipes || [])];
+    }
+    window.lastFilterType = filterType;
+
     const visibleRecipes = pageState.allRecipes.filter(r => {
-        if (filterType && r.rewardType !== filterType) return false;
+        if (filterType === 'NOUVEAUTE') {
+            if (window.initialSeenRecipes && window.initialSeenRecipes.includes(r.id)) return false;
+            if (!window.initialSeenRecipes && window.currentUser?.seenAlchemyRecipes.includes(r.id)) return false;
+        } else if (filterType && r.rewardType !== filterType) {
+            return false;
+        }
+        
         if (searchTxt && !r.name.toLowerCase().includes(searchTxt)) return false;
 
         if (r.rewardType === 'UNLOCK_FEATURE') {

@@ -288,6 +288,46 @@ window.checkAuthStatus = async function checkAuthStatus() {
                 const goldSpan = document.getElementById('navUserGold');
                 window.animateGoldValue(goldSpan, prevGold, currentGold, 1000);
             }
+
+            // Check for newly unlocked secret dungeons
+            Promise.all([
+                    globalFetch('/api/pve/dungeons', { credentials: 'same-origin' }).then(r => r.ok ? r.json() : []),
+                    globalFetch('/api/personnages', { credentials: 'same-origin' }).then(r => r.ok ? r.json() : [])
+                ]).then(([dungeons, characters]) => {
+                    let seen = [];
+                    try { seen = JSON.parse(localStorage.getItem('seenUnlockedDungeons')) || []; } catch(e) {}
+                    let newCount = 0;
+                    const maxLevel = characters.length > 0 ? Math.max(...characters.map(c => c.voieLevel || 1)) : 0;
+
+                    dungeons.forEach(d => {
+                        if (maxLevel >= (d.recommendedLevel || 1)) {
+                            let isUnlocked = false;
+                            if (d.requiredSecret && d.requiredSecret.trim() !== '') {
+                                const userLevel = data.unlockedSecrets[d.requiredSecret] || 0;
+                                if (userLevel >= (d.requiredSecretLevel || 1)) {
+                                    isUnlocked = true;
+                                }
+                            } else {
+                                isUnlocked = true;
+                            }
+
+                            if (isUnlocked && !seen.includes(d.id)) {
+                                newCount++;
+                            }
+                        }
+                    });
+
+                    const badge = document.getElementById('navDungeonBadge');
+                    if (badge) {
+                        if (newCount > 0) {
+                            badge.textContent = newCount;
+                            badge.style.display = 'block';
+                        } else {
+                            badge.style.display = 'none';
+                        }
+                    }
+                }).catch(() => {});
+
         } else {
             localStorage.removeItem('isLikelyLoggedIn');
             window.currentUser = null;

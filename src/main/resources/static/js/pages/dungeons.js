@@ -156,9 +156,10 @@ async function loadDungeons() {
 
             const categories = new Map();
             // Force Libre to be the first key in the map to guarantee tab order
-            categories.set('free', { id: 'free', label: 'Libres', icon: 'public', color: '#38bdf8', dungeons: [] });
+            categories.set('free', { id: 'free', label: 'Libres', icon: 'public', color: '#38bdf8', dungeons: [], newCount: 0 });
 
-
+            let seenDungeons = [];
+            try { seenDungeons = JSON.parse(localStorage.getItem('seenUnlockedDungeons')) || []; } catch(e) {}
 
             dungeons.forEach(d => {
                 let catId, label, icon, color;
@@ -191,9 +192,14 @@ async function loadDungeons() {
                 }
 
                 if (!categories.has(catId)) {
-                    categories.set(catId, { id: catId, label, icon, color, dungeons: [] });
+                    categories.set(catId, { id: catId, label, icon, color, dungeons: [], newCount: 0 });
                 }
+                
                 categories.get(catId).dungeons.push(d);
+                
+                if (!seenDungeons.includes(d.id)) {
+                    categories.get(catId).newCount++;
+                }
             });
 
             if (categories.get('free').dungeons.length === 0) {
@@ -218,8 +224,42 @@ async function loadDungeons() {
                 else btn.classList.add('tab-secret'); // Use secret style for all secret tabs
 
                 // Add inline style for custom active color
-                btn.innerHTML = `<span class="material-symbols-outlined" style="color: ${cat.color};">${cat.icon}</span> ${cat.label} <span class="tab-badge">${cat.dungeons.length}</span>`;
-                btn.onclick = () => switchDungeonTab(cat.id);
+                const redBadgeHtml = cat.newCount > 0 ? `<span id="badge-new-${cat.id}" style="background:red; color:white; border-radius:50%; font-size:0.75rem; padding:2px 6px; position:absolute; top:-5px; right:-5px; z-index:10;">${cat.newCount}</span>` : '';
+                btn.innerHTML = `<span class="material-symbols-outlined" style="color: ${cat.color};">${cat.icon}</span> ${cat.label} <span class="tab-badge">${cat.dungeons.length}</span>${redBadgeHtml}`;
+                btn.onclick = () => {
+                    switchDungeonTab(cat.id);
+                    // Mark as seen
+                    if (cat.newCount > 0) {
+                        let currentSeen = [];
+                        try { currentSeen = JSON.parse(localStorage.getItem('seenUnlockedDungeons')) || []; } catch(e) {}
+                        cat.dungeons.forEach(d => {
+                            if (!currentSeen.includes(d.id)) currentSeen.push(d.id);
+                        });
+                        localStorage.setItem('seenUnlockedDungeons', JSON.stringify(currentSeen));
+                        // Update global header badge
+                        const globalBadge = document.getElementById('navDungeonBadge');
+                        if (globalBadge) {
+                            let currentTotal = parseInt(globalBadge.textContent || '0', 10);
+                            let newTotal = currentTotal - cat.newCount;
+                            if (newTotal > 0) {
+                                globalBadge.textContent = newTotal;
+                            } else {
+                                globalBadge.style.display = 'none';
+                                globalBadge.textContent = '0';
+                            }
+                        }
+                        cat.newCount = 0;
+                        const badgeEl = document.getElementById(`badge-new-${cat.id}`);
+                        if (badgeEl) badgeEl.remove();
+                    }
+                };
+                
+                // If it's the active tab, we also want to mark it as seen immediately
+                if (isActive && cat.newCount > 0) {
+                    // setTimeout to allow rendering first
+                    setTimeout(() => { btn.onclick(); }, 0);
+                }
+                
                 tabsHeader.appendChild(btn);
 
                 // Generate Content Section

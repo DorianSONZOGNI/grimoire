@@ -419,13 +419,23 @@ class CombatTurnService {
             int goldLoss = 4 * roomsCount;
             session.setTotalGoldLostOnDefeat(goldLoss);
 
-            if (!session.getPlayers().isEmpty() && session.getPlayers().get(0).getId() != null) {
-                Personnage dbP = personnageRepository
-                        .findById(java.util.Objects.requireNonNull(session.getPlayers().get(0).getId())).orElse(null);
-                if (dbP != null && dbP.getUser() != null) {
-                    AppUser user = dbP.getUser();
-                    user.setMonnaie(Math.max(0, user.getMonnaie() - goldLoss));
-                    userRepository.save(user);
+            if (!session.getPlayers().isEmpty()) {
+                java.util.Set<Long> processedUserIds = new java.util.HashSet<>();
+                boolean anyGoldLost = false;
+                for (Personnage p : session.getPlayers()) {
+                    if (p.getId() == null) continue;
+                    Personnage dbP = personnageRepository.findById(java.util.Objects.requireNonNull(p.getId())).orElse(null);
+                    if (dbP != null && dbP.getUser() != null) {
+                        AppUser user = dbP.getUser();
+                        if (user.getId() != null && !processedUserIds.contains(user.getId())) {
+                            processedUserIds.add(user.getId());
+                            user.setMonnaie(Math.max(0, user.getMonnaie() - goldLoss));
+                            userRepository.save(user);
+                            anyGoldLost = true;
+                        }
+                    }
+                }
+                if (anyGoldLost) {
                     session.addLog("L'équipe perd " + goldLoss + " Or suite à cette défaite.");
                 }
             }
@@ -489,7 +499,7 @@ class CombatTurnService {
         int nbHeroes = Math.max(1, session.getPlayers().size());
         int penaltyXpPerPlayer = penaltyXpTotal / nbHeroes;
 
-        boolean goldDeducted = false;
+        java.util.Set<Long> processedUserIds = new java.util.HashSet<>();
 
         for (Personnage p : session.getPlayers()) {
             p.resetCombatState();
@@ -505,13 +515,11 @@ class CombatTurnService {
                 dbPersonnage.setExperience(Math.max(0, dbPersonnage.getExperience() - penaltyXpPerPlayer));
                 personnageService.save(dbPersonnage);
 
-                if (!goldDeducted) {
-                    AppUser user = dbPersonnage.getUser();
-                    if (user != null) {
-                        user.setMonnaie(Math.max(0, user.getMonnaie() - penaltyGold));
-                        userRepository.save(user);
-                        goldDeducted = true;
-                    }
+                AppUser user = dbPersonnage.getUser();
+                if (user != null && user.getId() != null && !processedUserIds.contains(user.getId())) {
+                    processedUserIds.add(user.getId());
+                    user.setMonnaie(Math.max(0, user.getMonnaie() - penaltyGold));
+                    userRepository.save(user);
                 }
 
                 p.setExperience(dbPersonnage.getExperience());
@@ -534,7 +542,7 @@ class CombatTurnService {
         int nbHeroes = Math.max(1, session.getPlayers().size());
         int penaltyXpPerPlayer = penaltyXpTotal / nbHeroes;
 
-        boolean goldDeducted = false;
+        java.util.Set<Long> processedUserIds = new java.util.HashSet<>();
 
         for (Personnage p : session.getPlayers()) {
             p.resetCombatState();
@@ -550,13 +558,11 @@ class CombatTurnService {
                 dbPersonnage.setExperience(Math.max(0, dbPersonnage.getExperience() - penaltyXpPerPlayer));
                 personnageService.save(dbPersonnage);
 
-                if (!goldDeducted) {
-                    AppUser user = dbPersonnage.getUser();
-                    if (user != null) {
-                        user.setMonnaie(Math.max(0, user.getMonnaie() - penaltyGold));
-                        userRepository.save(user);
-                        goldDeducted = true;
-                    }
+                AppUser user = dbPersonnage.getUser();
+                if (user != null && user.getId() != null && !processedUserIds.contains(user.getId())) {
+                    processedUserIds.add(user.getId());
+                    user.setMonnaie(Math.max(0, user.getMonnaie() - penaltyGold));
+                    userRepository.save(user);
                 }
 
                 p.setExperience(dbPersonnage.getExperience());
@@ -615,39 +621,47 @@ class CombatTurnService {
             session.setTotalGoldAccumulated(session.getTotalGoldAccumulated() + goldDrop);
             session.setRoomExpAccumulated(session.getRoomExpAccumulated() + xpDrop);
             session.setRoomGoldAccumulated(session.getRoomGoldAccumulated() + goldDrop);
-
-            List<Personnage> eligiblePlayers = session.getPlayers().stream()
-                    .filter(session::isEligibleForRewards).collect(java.util.stream.Collectors.toList());
-            int expPerHero = xpDrop / Math.max(1, eligiblePlayers.size());
-            for (Personnage p : eligiblePlayers) {
-                int actualExp = expPerHero;
-                AppUser u = p.getUser();
-                if (u != null && !u.getCompletedDungeons().contains(session.getDungeonId())) {
-                    actualExp *= 2;
-                }
-                p.setExperience(p.getExperience() + actualExp);
-                personnageService.save(p);
-            }
-            if (goldDrop > 0 && !eligiblePlayers.isEmpty()) {
-                for (Personnage p : eligiblePlayers) {
-                    AppUser u = p.getUser();
-                    if (u != null) {
-                        u.setMonnaie(u.getMonnaie() + goldDrop);
-                        userRepository.save(u);
-                    }
-                }
-                session.addLog("Les monstres vaincus ont lâché " + goldDrop + " Or. Chaque héros reçoit " + expPerHero
-                        + " XP (x2 si 1ère fois).");
-            } else {
-                session.addLog("Chaque héros reçoit " + expPerHero + " XP (x2 si 1ère fois).");
-            }
         }
 
         // Check if all enemies are now processed and weren't all processed before
         boolean allNowProcessed = session.getEnemies().stream()
                 .allMatch(e -> e.getMaxHp() <= 0);
+
         if (!allAlreadyProcessed && allNowProcessed) {
             session.addLog("Combat terminé, vous avez vaincu tous les monstres !");
+            
+            int roomXpDrop = session.getRoomExpAccumulated();
+            int roomGoldDrop = session.getRoomGoldAccumulated();
+
+            if (roomXpDrop > 0 || roomGoldDrop > 0) {
+                List<Personnage> eligiblePlayers = session.getPlayers().stream()
+                        .filter(session::isEligibleForRewards).collect(java.util.stream.Collectors.toList());
+                int expPerHero = roomXpDrop / Math.max(1, eligiblePlayers.size());
+                for (Personnage p : eligiblePlayers) {
+                    int actualExp = expPerHero;
+                    AppUser u = p.getUser();
+                    if (u != null && !u.getCompletedDungeons().contains(session.getDungeonId())) {
+                        actualExp *= 2;
+                    }
+                    p.setExperience(p.getExperience() + actualExp);
+                    personnageService.save(p);
+                }
+                if (roomGoldDrop > 0 && !eligiblePlayers.isEmpty()) {
+                    java.util.Set<Long> processedUserIds = new java.util.HashSet<>();
+                    for (Personnage p : eligiblePlayers) {
+                        AppUser u = p.getUser();
+                        if (u != null && u.getId() != null && !processedUserIds.contains(u.getId())) {
+                            processedUserIds.add(u.getId());
+                            u.setMonnaie(u.getMonnaie() + roomGoldDrop);
+                            userRepository.save(u);
+                        }
+                    }
+                    session.addLog("Les monstres vaincus ont lâché " + roomGoldDrop + " Or. Chaque héros reçoit " + expPerHero + " XP (x2 si 1ère fois).");
+                } else if (roomXpDrop > 0) {
+                    session.addLog("Chaque héros reçoit " + expPerHero + " XP (x2 si 1ère fois).");
+                }
+            }
+
             for (Personnage p : session.getPlayers()) {
                 p.resetCombatState();
             }
@@ -680,9 +694,11 @@ class CombatTurnService {
                 }
 
                 if (bossGold > 0 && !bossEligible.isEmpty()) {
+                    java.util.Set<Long> processedUserIds = new java.util.HashSet<>();
                     for (Personnage p : bossEligible) {
                         AppUser u = p.getUser();
-                        if (u != null) {
+                        if (u != null && u.getId() != null && !processedUserIds.contains(u.getId())) {
+                            processedUserIds.add(u.getId());
                             u.setMonnaie(u.getMonnaie() + bossGold);
                             userRepository.save(u);
                         }
@@ -738,9 +754,11 @@ class CombatTurnService {
                     session.setBossBonusSpiritualXp(session.getBossBonusSpiritualXp() + c.getRewardValue());
                     session.addLog("🔮 Challenge : +" + c.getRewardValue() + " XP Spiritualité.");
                 } else if ("BONUS_GOLD".equals(c.getRewardType()) && !bossEligible.isEmpty()) {
+                    java.util.Set<Long> processedUserIds = new java.util.HashSet<>();
                     for (Personnage p : bossEligible) {
                         AppUser u = p.getUser();
-                        if (u != null) {
+                        if (u != null && u.getId() != null && !processedUserIds.contains(u.getId())) {
+                            processedUserIds.add(u.getId());
                             u.setMonnaie(u.getMonnaie() + c.getRewardValue());
                             userRepository.save(u);
                         }

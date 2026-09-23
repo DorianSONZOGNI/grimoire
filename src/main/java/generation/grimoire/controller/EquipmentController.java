@@ -371,6 +371,7 @@ public class EquipmentController {
 
     /** Équiper un objet sur un personnage (remplace l'ancien dans le même slot) */
     @PostMapping("/{equipmentId}/equip/{personnageId}")
+    @SuppressWarnings("deprecation")
     public ResponseEntity<Map<String, Object>> equip(
             @PathVariable @org.springframework.lang.NonNull Long equipmentId,
             @PathVariable @org.springframework.lang.NonNull Long personnageId,
@@ -403,6 +404,24 @@ public class EquipmentController {
         // Si on précise un slot cible (ex: changer un anneau de main), on met à jour
         // l'équipement
         generation.grimoire.enumeration.EquipmentSlot finalSlot = targetSlot != null ? targetSlot : equipment.getSlot();
+
+        if (finalSlot == generation.grimoire.enumeration.EquipmentSlot.ANNEAU) {
+            if (equipmentRepository.findByPersonnageIdAndSlot(personnageId, generation.grimoire.enumeration.EquipmentSlot.ANNEAU_GAUCHE).isEmpty()) {
+                finalSlot = generation.grimoire.enumeration.EquipmentSlot.ANNEAU_GAUCHE;
+            } else if (equipmentRepository.findByPersonnageIdAndSlot(personnageId, generation.grimoire.enumeration.EquipmentSlot.ANNEAU_DROIT).isEmpty()) {
+                finalSlot = generation.grimoire.enumeration.EquipmentSlot.ANNEAU_DROIT;
+            } else {
+                finalSlot = generation.grimoire.enumeration.EquipmentSlot.ANNEAU_GAUCHE;
+            }
+        } else if (finalSlot == generation.grimoire.enumeration.EquipmentSlot.ARME) {
+            if (equipmentRepository.findByPersonnageIdAndSlot(personnageId, generation.grimoire.enumeration.EquipmentSlot.ARME_GAUCHE).isEmpty()) {
+                finalSlot = generation.grimoire.enumeration.EquipmentSlot.ARME_GAUCHE;
+            } else if (equipmentRepository.findByPersonnageIdAndSlot(personnageId, generation.grimoire.enumeration.EquipmentSlot.ARME_DROITE).isEmpty()) {
+                finalSlot = generation.grimoire.enumeration.EquipmentSlot.ARME_DROITE;
+            } else {
+                finalSlot = generation.grimoire.enumeration.EquipmentSlot.ARME_GAUCHE;
+            }
+        }
 
         // Ne jamais changer la catégorie d'une arme à 2 mains
         if (equipment.getSlot() == generation.grimoire.enumeration.EquipmentSlot.ARME_DEUX_MAINS) {
@@ -452,9 +471,8 @@ public class EquipmentController {
             return ResponseEntity.ok(response);
         }
 
-        if (targetSlot != null
-                && equipment.getSlot() != generation.grimoire.enumeration.EquipmentSlot.ARME_DEUX_MAINS) {
-            equipment.setSlot(targetSlot);
+        if (equipment.getSlot() != generation.grimoire.enumeration.EquipmentSlot.ARME_DEUX_MAINS) {
+            equipment.setSlot(finalSlot);
         }
 
         equipmentRepository.findByPersonnageIdAndSlot(personnageId, equipment.getSlot())
@@ -605,6 +623,9 @@ public class EquipmentController {
             EquipmentResponseDTO.PersonnageRef ref = new EquipmentResponseDTO.PersonnageRef();
             ref.setId(e.getPersonnage().getId());
             ref.setName(e.getPersonnage().getName());
+            if (e.getPersonnage().getVoie() != null) {
+                ref.setVoie(e.getPersonnage().getVoie().getNom());
+            }
             dto.setPersonnage(ref);
         }
         

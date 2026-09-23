@@ -11,7 +11,7 @@ const pageState = {
 async function loadShop() {
     try {
         const [resShop, resAno] = await Promise.all([
-            globalFetch('/api/shop/daily'),
+            globalFetch(`/api/shop/daily?_t=${Date.now()}`),
             globalFetch('/api/anomalies/all-templates')
         ]);
         pageState.shopItems = await resShop.json();
@@ -148,27 +148,33 @@ function generateStandHtml(eq) {
                 ${eq.description ? `<div class="font-italic text-muted text-center text-sm mt-2">${eq.description}</div>` : ''}
             </div>
             
-            <button class="shop-stand-price flex-wrap gap-2" onclick="window.openBuyModal('${eq.id}', ${isConsumable})">
-                <div>${oldPriceHtml} ${priceStr} <span class="material-symbols-outlined align-middle icon-md">monetization_on</span></div>
-                ${(() => {
-            if (eq.priceAnomalies && Object.keys(eq.priceAnomalies).length > 0) {
-                let anos = [];
-                for (const [n, q] of Object.entries(eq.priceAnomalies)) {
-                    let aTemp = pageState.allAnomalies.find(a => a.name === n);
+            ${eq.alreadyOwned ? 
+                `<div class="shop-stand-price flex-wrap gap-2" style="background: linear-gradient(135deg, #ef4444, #b91c1c); color: white; cursor: not-allowed; opacity: 0.8;">
+                    <span class="material-symbols-outlined align-middle icon-md">remove_shopping_cart</span> Vendu
+                </div>`
+            : 
+                `<button class="shop-stand-price flex-wrap gap-2" onclick="window.openBuyModal('${eq.id}', ${isConsumable})">
+                    <div>${oldPriceHtml} ${priceStr} <span class="material-symbols-outlined align-middle icon-md">monetization_on</span></div>
+                    ${(() => {
+                if (eq.priceAnomalies && Object.keys(eq.priceAnomalies).length > 0) {
+                    let anos = [];
+                    for (const [n, q] of Object.entries(eq.priceAnomalies)) {
+                        let aTemp = pageState.allAnomalies.find(a => a.name === n);
 
-                    const catIcon = aTemp && aTemp.category ? getCategoryIcon(aTemp.category) : 'star';
+                        const catIcon = aTemp && aTemp.category ? getCategoryIcon(aTemp.category) : 'star';
 
-                    const spiriColor = aTemp && aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
-                    const tooltipData = getAnomalyTooltipHTML(aTemp, n);
-                    anos.push(`<span class="anomaly-badge" style="border-color: ${spiriColor}; background: linear-gradient(${spiriColor}25, ${spiriColor}25), #1e293b; color: ${spiriColor};" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}">
-                                <span class="material-symbols-outlined align-middle text-base" style="color: ${spiriColor};">${catIcon}</span> ${q}
-                            </span>`);
+                        const spiriColor = aTemp && aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
+                        const tooltipData = getAnomalyTooltipHTML(aTemp, n);
+                        anos.push(`<span class="anomaly-badge" style="border-color: ${spiriColor}; background: linear-gradient(${spiriColor}25, ${spiriColor}25), #1e293b; color: ${spiriColor};" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}">
+                                    <span class="material-symbols-outlined align-middle text-base" style="color: ${spiriColor};">${catIcon}</span> ${q}
+                                </span>`);
+                    }
+                    return `<div class="flex flex-wrap justify-center gap-1">${anos.join('')}</div>`;
                 }
-                return `<div class="flex flex-wrap justify-center gap-1">${anos.join('')}</div>`;
+                return '';
+            })()}
+                </button>`
             }
-            return '';
-        })()}
-            </button>
         </div>
     `;
 }
@@ -286,6 +292,51 @@ function renderSpecials() {
     }
 }
 
+window.updateBuyModalPrice = function() {
+    let eq = window.currentBuyItem;
+    if (!eq) return;
+    let qtyInput = document.getElementById('buyQuantityInput');
+    if (!qtyInput) return;
+
+    let maxQty = 99;
+    if (eq.shopPrice > 0 && window.currentUser && window.currentUser.monnaie !== undefined) {
+        maxQty = Math.floor(window.currentUser.monnaie / eq.shopPrice);
+        if (maxQty > 99) maxQty = 99;
+        if (maxQty < 1) maxQty = 1;
+    }
+
+    let qty = parseInt(qtyInput.value, 10) || 1;
+    if (qty > maxQty && parseInt(qtyInput.value, 10) > maxQty) {
+        qty = maxQty;
+        qtyInput.value = qty;
+    }
+    if (qty < 1) {
+        qty = 1;
+        qtyInput.value = qty;
+    }
+    
+    let priceHtml = ``;
+    if (eq.shopPrice !== undefined && eq.shopPrice > 0) {
+        priceHtml += `<strong class="text-amber-400 inline-flex items-center gap-1">${eq.shopPrice * qty} <span class="material-symbols-outlined align-middle text-md-num text-amber-300">monetization_on</span></strong>`;
+    }
+    if (eq.priceAnomalies && Object.keys(eq.priceAnomalies).length > 0) {
+        let anos = [];
+        for (const [n, q] of Object.entries(eq.priceAnomalies)) {
+            let aTemp = pageState.allAnomalies.find(a => a.name === n);
+            const catIcon = aTemp && aTemp.category ? getCategoryIcon(aTemp.category) : 'star';
+            const spiriColor = aTemp && aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
+            const tooltipData = getAnomalyTooltipHTML(aTemp, n);
+            anos.push(`<span class="anomaly-badge tooltip-trigger inline-flex items-center gap-1 font-bold cursor-help rounded-md px-2 py-1" style="border: 1px solid ${spiriColor}; background: linear-gradient(${spiriColor}25, ${spiriColor}25), #1e293b; color: ${spiriColor};" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}"><span class="material-symbols-outlined align-middle text-base" style="color: ${spiriColor};">${catIcon}</span> ${q * qty}x ${n}</span>`);
+        }
+        if (priceHtml !== '') priceHtml += ` <span class="text-muted mx-1">et</span> `;
+        priceHtml += anos.join(' <span class="text-muted mx-1">+</span> ');
+    }
+    const container = document.getElementById('buyPriceContainer');
+    if (container) {
+        container.innerHTML = priceHtml;
+    }
+};
+
 window.openBuyModal = function (id, isConsumable = false) {
     let eq = null;
 
@@ -301,6 +352,7 @@ window.openBuyModal = function (id, isConsumable = false) {
     }
 
     if (!eq) return;
+    window.currentBuyItem = eq;
 
     let priceHtml = ``;
     if (eq.shopPrice !== undefined && eq.shopPrice > 0) {
@@ -321,14 +373,31 @@ window.openBuyModal = function (id, isConsumable = false) {
         priceHtml += anos.join(' <span class="text-muted mx-1">+</span> ');
     }
 
+    let qtyInputHtml = ``;
+    if (isConsumable) {
+        qtyInputHtml = `
+            <div class="mt-4 flex items-center justify-center gap-3">
+                <label for="buyQuantityInput" style="color: var(--text-muted);">Quantité :</label>
+                <input type="number" id="buyQuantityInput" value="1" min="1" max="99" oninput="if(window.updateBuyModalPrice) window.updateBuyModalPrice();" style="background: var(--bg-surface-light, #1e293b); color: white; border: 1px solid var(--border-color, #334155); border-radius: 4px; padding: 4px 8px; width: 60px; text-align: center; outline: none;">
+            </div>
+        `;
+    }
+
     showModal({
         title: 'Acheter cet objet ?',
-        body: `Êtes-vous sûr de vouloir acheter <strong class="text-white">${eq.name}</strong> pour <div class="inline-flex items-center justify-center flex-wrap mt-1">${priceHtml}</div> ?`,
+        body: `Êtes-vous sûr de vouloir acheter <strong class="text-white">${eq.name}</strong> pour <div class="inline-flex items-center justify-center flex-wrap mt-1" id="buyPriceContainer">${priceHtml}</div> ?${qtyInputHtml}`,
         icon: 'shopping_cart',
         confirmText: 'Oui, acheter',
         onConfirm: async () => {
             try {
-                let url = `/api/shop/buy/${id}`;
+                let qty = 1;
+                const qtyInput = document.getElementById('buyQuantityInput');
+                if (qtyInput) {
+                    qty = parseInt(qtyInput.value, 10) || 1;
+                    if (qty < 1) qty = 1;
+                }
+                
+                let url = `/api/shop/buy/${id}?quantity=${qty}`;
                 const res = await globalFetch(url, { method: 'POST' });
                 const data = await res.json();
 
@@ -337,6 +406,7 @@ window.openBuyModal = function (id, isConsumable = false) {
                     if (window.checkAuthStatus) {
                         window.checkAuthStatus(); // Met à jour l'or affiché
                     }
+                    loadShop(); // Met à jour l'affichage de la boutique (boutons Vendu)
                 } else {
                     showNotif(data.message || "Erreur lors de l'achat.", true);
                 }
@@ -391,10 +461,11 @@ function startPromoCountdown() {
 
 window.addEventListener('DOMContentLoaded', async () => {
     if (window.initAppMeta) await window.initAppMeta();
-    loadShop();
+    // Attend que auth soit chargé pour fetch loadShop
 });
 
 window.addEventListener('authLoaded', () => {
+    loadShop();
     const adminLink = document.getElementById('adminShopLink');
     if (adminLink) {
         adminLink.style.display = window.isAdmin ? 'inline-flex' : 'none';

@@ -28,6 +28,7 @@ public class EquipmentShopDTO {
     private Map<String, Integer> priceAnomalies;
     private double weight;
     private double baseWeight;
+    private boolean alreadyOwned;
     private int consumableHpPercent;
     private int consumableManaPercent;
     private int consumableMissingHpPercent;

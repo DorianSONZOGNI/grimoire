@@ -60,13 +60,26 @@ public class AlchemyService {
         List<AlchemyRecipe> all = getAllRecipes();
         if (user == null) return all;
 
-        // Admins voient tout
+        // Appliquer le filtre des secrets pour TOUT LE MONDE (même les admins)
+        // car le front-end les cache si le niveau ne correspond pas.
+        java.util.List<AlchemyRecipe> filteredBySecret = all.stream().filter(recipe -> {
+            if (recipe.getRewardType() == generation.grimoire.enumeration.RecipeRewardType.UNLOCK_FEATURE) {
+                int currentLevel = user.getUnlockedSecrets().getOrDefault(recipe.getRewardName(), 0);
+                if (currentLevel != (recipe.getRewardLevel() - 1)) {
+                    return false;
+                }
+            }
+            return true;
+        }).collect(java.util.stream.Collectors.toList());
+
+        // Admins voient tout le reste
         if ("ADMIN".equalsIgnoreCase(user.getRole()) || "ROLE_ADMIN".equalsIgnoreCase(user.getRole())) {
-            return all;
+            return filteredBySecret;
         }
 
         java.util.Set<String> discovered = user.getDiscoveredItems();
-        return all.stream().filter(recipe -> {
+        return filteredBySecret.stream().filter(recipe -> {
+
             // Vérifier que tous les ingrédients ont été découverts
             if (recipe.getRequiredAnomalies() != null) {
                 for (String name : recipe.getRequiredAnomalies().keySet()) {

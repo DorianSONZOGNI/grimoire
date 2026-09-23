@@ -95,4 +95,12 @@ public class AppUser {
     @MapKeyColumn(name = "spirit_id")
     @Column(name = "max_level")
     private Map<Long, Integer> unlockedSpiritualiteLevels = new HashMap<>();
+
+    @ElementCollection(fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SUBSELECT)
+    @CollectionTable(name = "user_shop_purchases", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "item_name")
+    private Set<String> dailyShopPurchases = new HashSet<>();
+
+    private java.time.LocalDate lastShopPurchaseDate;
 }

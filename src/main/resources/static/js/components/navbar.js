@@ -46,8 +46,9 @@ class AppNavbar extends HTMLElement {
                     <span class="material-symbols-outlined" style="font-size: 1.1rem;">shield</span> Armurerie
                     <span id="navArmoryBadge" class="nav-badge" style="display:none; position:absolute; top:-2px; right:-8px; background:red; color:white; border-radius:50%; font-size:0.7rem; padding:1px 5px; font-weight:bold; pointer-events:none;">0</span>
                 </a>
-                <a href="/dungeons.html" class="top-nav-link nav-dungeon ${activePage === 'dungeon' ? 'active' : ''}">
+                <a href="/dungeons.html" class="top-nav-link nav-dungeon ${activePage === 'dungeon' ? 'active' : ''}" style="position:relative;">
                     <span class="material-symbols-outlined" style="font-size: 1.1rem;">swords</span> Donjons
+                    <span id="navDungeonBadge" class="nav-badge" style="display:none; position:absolute; top:-2px; right:-8px; background:red; color:white; border-radius:50%; font-size:0.7rem; padding:1px 5px; font-weight:bold; pointer-events:none;">0</span>
                 </a>
                 <a href="/vault.html" class="top-nav-link nav-vault ${activePage === 'vault' ? 'active' : ''}">
                     <span class="material-symbols-outlined" style="font-size: 1.1rem;">money_bag</span> Coffres
@@ -84,3 +85,22 @@ class AppNavbar extends HTMLElement {
 }
 
 customElements.define('app-navbar', AppNavbar);
+
+// Keep-alive server ping (inactivité > 2min hors combat)
+let lastUserActivity = Date.now();
+['mousemove', 'keydown', 'click', 'scroll', 'touchstart'].forEach(evt => {
+    document.addEventListener(evt, () => { lastUserActivity = Date.now(); }, { passive: true });
+});
+
+setInterval(() => {
+    if (window.location.pathname.includes('combat.html')) return;
+    
+    // Si inactivité >= 2 minutes
+    if (Date.now() - lastUserActivity >= 120000) {
+        if (window.currentUser && typeof window.globalFetch === 'function') {
+            window.globalFetch('/api/personnage/me').catch(() => {});
+        }
+        // Reset the timer so it only pings once every 2 minutes of continuous inactivity
+        lastUserActivity = Date.now();
+    }
+}, 30000);

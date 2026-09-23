@@ -38,5 +38,6 @@ public class EquipmentResponseDTO {
     public static class PersonnageRef {
         private Long id;
         private String name;
+        private String voie;
     }
 }

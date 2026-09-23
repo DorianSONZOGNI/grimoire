@@ -264,9 +264,11 @@ public class CombatRoomService {
         }
 
         if (!chestEligible.isEmpty() && gold > 0) {
+            java.util.Set<Long> processedUserIds = new java.util.HashSet<>();
             for (Personnage p : chestEligible) {
                 AppUser user = p.getUser();
-                if (user != null) {
+                if (user != null && user.getId() != null && !processedUserIds.contains(user.getId())) {
+                    processedUserIds.add(user.getId());
                     user.setMonnaie(user.getMonnaie() + gold);
                     userRepository.save(user);
                 }
