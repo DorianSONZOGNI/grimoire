@@ -180,9 +180,11 @@
                 </div>
             </div>
 
-            <!-- Right: Event Content -->
-            <div class="flex flex-col items-center justify-start bg-slate-900/80 border border-white/10 rounded-2xl p-8 md:p-12 fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[99999] w-[90%] min-h-[400px] shadow-2xl max-h-[95vh] overflow-y-auto custom-scrollbar"
-                style="max-width: 1000px;">
+            <!-- Right: Event Content Wrapper -->
+            <div id="eventModalWrapper" class="fixed top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-[99999] w-[90%] flex flex-row items-stretch justify-center gap-6" style="max-width: 1300px; max-height: 95vh;">
+                <!-- Main Modal -->
+                <div class="flex flex-col items-center justify-start bg-slate-900/80 border border-white/10 rounded-2xl p-8 md:p-12 shadow-2xl w-full overflow-y-auto custom-scrollbar"
+                    style="max-width: 1000px;" id="eventModalContainer">
                 <span class="material-symbols-outlined text-amber mb-4 text-[5rem] flex-shrink-0"
                     id="eventIcon">money_bag</span>
                 <div class="result-title mb-4 text-[3rem] flex-shrink-0" id="eventTitle">Trésor
@@ -205,6 +207,7 @@
                     <button class="action-btn info hidden" id="btnContinueEvent" onclick="nextRoom()">
                         Continuer
                     </button>
+                </div>
                 </div>
             </div>
         </div>

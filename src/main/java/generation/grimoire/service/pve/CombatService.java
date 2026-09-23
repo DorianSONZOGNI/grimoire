@@ -401,25 +401,75 @@ public class CombatService {
     // Room interactions — delegates to CombatRoomService
     // ═══════════════════════════════════════════════════════════════════════
 
-    public CombatSession openChest(String sessionId, Long equipmentId) {
-        CombatSession session = getSession(sessionId);
-        if (session == null || session.isFinished())
-            return session;
-        return combatRoomService.openChest(session, equipmentId);
+    private void handleChoice(CombatSession session, String username, generation.grimoire.model.pve.RoomInteractionChoice choice) {
+        if (session.getPlayerRoomChoices() == null) {
+            session.setPlayerRoomChoices(new java.util.HashMap<>());
+        }
+        generation.grimoire.model.pve.RoomInteractionChoice existing = session.getPlayerRoomChoices().get(username);
+        if (existing != null && existing.getActionType().equals(choice.getActionType())) {
+            // Deselect
+            session.getPlayerRoomChoices().remove(username);
+        } else {
+            session.getPlayerRoomChoices().put(username, choice);
+        }
     }
 
-    public CombatSession acceptAlteration(String sessionId, Long anomalyId, Long characterId) {
-        CombatSession session = getSession(sessionId);
-        if (session == null || session.isFinished())
-            return session;
-        return combatRoomService.acceptAlteration(session, anomalyId, characterId);
+    private boolean isEveryoneReady(CombatSession session) {
+        java.util.Set<String> activeUsers = new java.util.HashSet<>();
+        for (Personnage p : session.getPlayers()) {
+            if (session.isEligibleForRewards(p) && p.getHealthCurrent() > 0) {
+                if (p.getOwnerUsername() != null) {
+                    activeUsers.add(p.getOwnerUsername());
+                }
+            }
+        }
+        return session.getPlayerRoomChoices() != null && 
+               session.getPlayerRoomChoices().keySet().containsAll(activeUsers);
     }
 
-    public CombatSession useRope(String sessionId, Long equipmentId) {
+    public CombatSession openChest(String sessionId, Long equipmentId, String username, String actionType) {
         CombatSession session = getSession(sessionId);
         if (session == null || session.isFinished())
             return session;
-        return combatRoomService.useRope(session, equipmentId);
+
+        if (session.isMulti()) {
+            handleChoice(session, username, new generation.grimoire.model.pve.RoomInteractionChoice(actionType, equipmentId));
+            if (!isEveryoneReady(session)) return session;
+        } else {
+            handleChoice(session, username, new generation.grimoire.model.pve.RoomInteractionChoice(actionType, equipmentId));
+        }
+
+        return combatRoomService.openChest(session);
+    }
+
+    public CombatSession acceptAlteration(String sessionId, Long anomalyId, Long characterId, String username, String actionType) {
+        CombatSession session = getSession(sessionId);
+        if (session == null || session.isFinished())
+            return session;
+
+        if (session.isMulti()) {
+            handleChoice(session, username, new generation.grimoire.model.pve.RoomInteractionChoice(actionType, anomalyId));
+            if (!isEveryoneReady(session)) return session;
+        } else {
+            handleChoice(session, username, new generation.grimoire.model.pve.RoomInteractionChoice(actionType, anomalyId));
+        }
+
+        return combatRoomService.acceptAlteration(session);
+    }
+
+    public CombatSession useRope(String sessionId, Long equipmentId, String username, String actionType) {
+        CombatSession session = getSession(sessionId);
+        if (session == null || session.isFinished())
+            return session;
+
+        if (session.isMulti()) {
+            handleChoice(session, username, new generation.grimoire.model.pve.RoomInteractionChoice(actionType, equipmentId));
+            if (!isEveryoneReady(session)) return session;
+        } else {
+            handleChoice(session, username, new generation.grimoire.model.pve.RoomInteractionChoice(actionType, equipmentId));
+        }
+
+        return combatRoomService.useRope(session);
     }
 
     public CombatSession consumeItem(String sessionId, Long consumableId, Long targetCharacterId, String username) {
@@ -450,7 +500,12 @@ public class CombatService {
             return session;
 
         if (session.isMulti()) {
+            if (session.getReadyForNextRoomUsers().contains(username)) {
+                session.getReadyForNextRoomUsers().remove(username);
+                return session;
+            }
             session.getReadyForNextRoomUsers().add(username);
+            
             java.util.Set<String> activeUsers = new java.util.HashSet<>();
             for (Personnage p : session.getPlayers()) {
                 if (session.isEligibleForRewards(p) && p.getHealthCurrent() > 0) {
@@ -478,7 +533,12 @@ public class CombatService {
             return session;
 
         if (session.isMulti()) {
+            if (session.getReadyForNextRoomUsers().contains(username)) {
+                session.getReadyForNextRoomUsers().remove(username);
+                return session;
+            }
             session.getReadyForNextRoomUsers().add(username);
+            
             java.util.Set<String> activeUsers = new java.util.HashSet<>();
             for (Personnage p : session.getPlayers()) {
                 if (session.isEligibleForRewards(p) && p.getHealthCurrent() > 0) {

@@ -35,6 +35,7 @@ class DamageOverTimeEffectTest {
         assertThat(target.getActiveDamageOverTimeEffects()).hasSize(1);
 
         // Tick three times – each tick should reduce health by 10 (armor multiplier = 1)
+        dotEffect.tick(target); // newlyApplied
         dotEffect.tick(target);
         dotEffect.tick(target);
         dotEffect.tick(target);
@@ -55,6 +56,7 @@ class DamageOverTimeEffectTest {
         dotEffect.apply(null, target);
         
         DamageOverTimeEffect appliedEffect = target.getActiveDamageOverTimeEffects().get(0);
+        appliedEffect.tick(target); // newlyApplied
         appliedEffect.tick(target); // first tick: 10 dmg
         appliedEffect.tick(target); // second tick: another 10 dmg
         assertThat(target.getHealthCurrent()).isEqualTo(80);
@@ -76,6 +78,7 @@ class DamageOverTimeEffectTest {
         target.getActiveBuffs().add(buff);
 
         dotEffect.apply(null, target);
+        dotEffect.tick(target); // newlyApplied
         dotEffect.tick(target);
         // Base damage 10 * multiplier 1.5 = 15
         assertThat(target.getHealthCurrent()).isEqualTo(85);

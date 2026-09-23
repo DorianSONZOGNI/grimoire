@@ -64,6 +64,7 @@ class EffectsTest {
 
         hot.apply(caster, target);
         assertThat(target.getActiveHealOverTimeEffects()).hasSize(1);
+        target.updateHealOverTimeEffects(); // bypass newlyApplied
 
         target.updateHealOverTimeEffects();
         assertThat(target.getHealthCurrent()).isEqualTo(60);

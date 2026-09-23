@@ -247,9 +247,12 @@ public class CombatController {
 
     @PostMapping("/{sessionId}/open-chest")
     public ResponseEntity<?> openChest(@PathVariable("sessionId") String sessionId,
-            @RequestParam(required = false) Long equipmentId) {
+            @RequestParam(required = false) Long equipmentId,
+            @RequestParam(required = false, defaultValue = "OPEN") String actionType,
+            java.security.Principal principal) {
         try {
-            CombatSession session = combatService.openChest(sessionId, equipmentId);
+            String username = principal != null ? principal.getName() : "Anonymous";
+            CombatSession session = combatService.openChest(sessionId, equipmentId, username, actionType);
             combatService.broadcastIfMulti(session);
             return ResponseEntity.ok(session);
         } catch (Exception e) {
@@ -262,9 +265,12 @@ public class CombatController {
     public ResponseEntity<?> acceptAlteration(
             @PathVariable("sessionId") String sessionId,
             @RequestParam(required = false) Long anomalyId,
-            @RequestParam(required = false) Long characterId) {
+            @RequestParam(required = false) Long characterId,
+            @RequestParam(required = false, defaultValue = "ACCEPT") String actionType,
+            java.security.Principal principal) {
         try {
-            CombatSession session = combatService.acceptAlteration(sessionId, anomalyId, characterId);
+            String username = principal != null ? principal.getName() : "Anonymous";
+            CombatSession session = combatService.acceptAlteration(sessionId, anomalyId, characterId, username, actionType);
             combatService.broadcastIfMulti(session);
             return ResponseEntity.ok(session);
         } catch (Exception e) {
@@ -274,9 +280,12 @@ public class CombatController {
 
     @PostMapping("/{sessionId}/use-rope")
     public ResponseEntity<?> useRope(@PathVariable("sessionId") String sessionId,
-            @RequestParam(required = false) Long equipmentId) {
+            @RequestParam(required = false) Long equipmentId,
+            @RequestParam(required = false, defaultValue = "ROPE") String actionType,
+            java.security.Principal principal) {
         try {
-            CombatSession session = combatService.useRope(sessionId, equipmentId);
+            String username = principal != null ? principal.getName() : "Anonymous";
+            CombatSession session = combatService.useRope(sessionId, equipmentId, username, actionType);
             combatService.broadcastIfMulti(session);
             return ResponseEntity.ok(session);
         } catch (Exception e) {
