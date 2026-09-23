@@ -365,14 +365,22 @@ public class CombatRoomService {
         java.util.Map<String, generation.grimoire.model.pve.RoomInteractionChoice> choices = session.getPlayerRoomChoices();
         if (choices == null) choices = new java.util.HashMap<>();
 
-        // Group processing by player
-        for (Personnage p : session.getPlayers()) {
-            if (p.getHealthCurrent() <= 0 || !session.isEligibleForRewards(p))
-                continue;
-                
+        // Group processing by user
+        List<Personnage> activePlayers = session.getPlayers().stream()
+                .filter(session::isEligibleForRewards).collect(java.util.stream.Collectors.toList());
+
+        java.util.Map<String, List<Personnage>> heroesByUser = new java.util.HashMap<>();
+        for (Personnage p : activePlayers) {
             AppUser u = p.getUser();
-            if (u == null) continue;
-            String username = u.getUsername();
+            if (u != null && u.getUsername() != null) {
+                heroesByUser.computeIfAbsent(u.getUsername(), k -> new ArrayList<>()).add(p);
+            }
+        }
+
+        for (java.util.Map.Entry<String, List<Personnage>> userEntry : heroesByUser.entrySet()) {
+            String username = userEntry.getKey();
+            List<Personnage> userHeroes = userEntry.getValue();
+            AppUser u = userHeroes.get(0).getUser();
             
             generation.grimoire.model.pve.RoomInteractionChoice choice = choices.get(username);
             if (choice == null || "PASS".equals(choice.getActionType())) {
@@ -384,23 +392,117 @@ public class CombatRoomService {
                 int effect = room.getAlterationHpAmount();
                 int expEffect = room.getAlterationExpAmount();
 
-                boolean hasEnoughHp = !(effect < 0 && p.getHealthCurrent() <= -effect);
-                boolean hasEnoughXp = !(expEffect < 0 && p.getExperience() < -expEffect);
+                boolean allHeroesReady = true;
+                for (Personnage p : userHeroes) {
+                    boolean hasEnoughHp = !(effect < 0 && p.getHealthCurrent() <= -effect);
+                    boolean hasEnoughXp = !(expEffect < 0 && p.getExperience() < -expEffect);
+                    if (!hasEnoughHp || !hasEnoughXp) {
+                        allHeroesReady = false;
+                        session.logInteractionResult(username, "Prérequis insuffisants pour l'altération sur " + p.getName() + ".");
+                    }
+                }
 
-                if (hasEnoughHp && hasEnoughXp) {
-                    if (effect > 0)
-                        p.heal(effect);
-                    else if (effect < 0)
-                        p.takeDamage(-effect, generation.grimoire.enumeration.DamageType.BRUT);
+                if (allHeroesReady) {
+                    for (Personnage p : userHeroes) {
+                        if (effect > 0)
+                            p.heal(effect);
+                        else if (effect < 0)
+                            p.takeDamage(-effect, generation.grimoire.enumeration.DamageType.BRUT);
 
-                    p.setExperience(p.getExperience() + expEffect);
-                    if (p.getExperience() < 0)
-                        p.setExperience(0);
+                        p.setExperience(p.getExperience() + expEffect);
+                        if (p.getExperience() < 0)
+                            p.setExperience(0);
 
-                    personnageService.save(p);
-                    session.logInteractionResult(username, "Effet appliqué : " + (effect >= 0 ? "+" : "") + effect + " PV et " + (expEffect >= 0 ? "+" : "") + expEffect + " XP sur " + p.getName() + ".");
-                } else {
-                    session.logInteractionResult(username, "Prérequis insuffisants pour l'altération sur " + p.getName() + ".");
+                        personnageService.save(p);
+
+                        String rewardType = room.getAlterationRewardType();
+                        if ("SPIRITUAL_XP".equals(rewardType)) {
+                            int spXp = room.getAlterationSpiritualXpReward();
+                            if (spXp > 0) {
+                                p.setSpiritualiteExperience(p.getSpiritualiteExperience() + spXp);
+                                personnageService.save(p);
+                            }
+                        }
+                    }
+
+                    session.logInteractionResult(username, "Effet appliqué : " + (effect >= 0 ? "+" : "") + effect + " PV et " + (expEffect >= 0 ? "+" : "") + expEffect + " XP.");
+
+                    String rewardType = room.getAlterationRewardType();
+                    if ("SPIRITUAL_XP".equals(rewardType)) {
+                        int spXp = room.getAlterationSpiritualXpReward();
+                        if (spXp > 0) {
+                            session.logInteractionResult(username, "L'altération vous accorde " + spXp + " XP de Spiritualité.");
+                        }
+                    }
+
+                    if ("SPECIAL_ITEM".equals(rewardType)) {
+                        String itemReward = room.getAlterationSpecialItemReward();
+                        if (itemReward != null && !itemReward.isEmpty()) {
+                            java.util.List<Anomalie> templates = anomalieRepository.findByName(itemReward);
+                            if (!templates.isEmpty()) {
+                                Anomalie template = templates.get(0);
+                                Anomalie clone = new Anomalie();
+                                clone.setName(template.getName());
+                                clone.setDescription(template.getDescription());
+                                clone.setSpiritualite(template.getSpiritualite());
+                                clone.setCategory(template.getCategory());
+                                clone.setLevel(template.getLevel() != null ? template.getLevel() : 1);
+                                clone.setMagicObject(template.isMagicObject());
+                                clone.setTemplate(false);
+                                clone.setOwnerUsername(username);
+                                clone.setUser(u);
+                                anomalieRepository.save(clone);
+                                session.logInteractionResult(username, "Objet trouvé : " + clone.getName() + " (Item Spécial) !");
+                            }
+                        }
+                    }
+                }
+            } else if ("ITEM".equals(altType)) {
+                String reqItem = room.getAlterationRequiredItem();
+                java.util.List<Anomalie> anomalies = anomalieRepository.findByOwnerUsername(username);
+                Anomalie toConsume = anomalies.stream()
+                        .filter(a -> reqItem != null && reqItem.equals(a.getName()))
+                        .findFirst()
+                        .orElse(null);
+
+                if (toConsume == null) {
+                    session.logInteractionResult(username, "Vous ne possédez pas l'item requis : " + reqItem + ".");
+                    continue;
+                }
+
+                consumeAnomalie(u, toConsume);
+                session.logInteractionResult(username, "Vous avez sacrifié l'item : " + reqItem + " !");
+
+                String rewardType = room.getAlterationRewardType();
+                if ("SPIRITUAL_XP".equals(rewardType)) {
+                    int spXp = room.getAlterationSpiritualXpReward();
+                    if (spXp > 0) {
+                        for (Personnage p : userHeroes) {
+                            p.setSpiritualiteExperience(p.getSpiritualiteExperience() + spXp);
+                            personnageService.save(p);
+                        }
+                        session.logInteractionResult(username, "L'altération vous accorde " + spXp + " XP de Spiritualité.");
+                    }
+                } else if ("SPECIAL_ITEM".equals(rewardType)) {
+                    String itemReward = room.getAlterationSpecialItemReward();
+                    if (itemReward != null && !itemReward.isEmpty()) {
+                        java.util.List<Anomalie> templates = anomalieRepository.findByName(itemReward);
+                        if (!templates.isEmpty()) {
+                            Anomalie template = templates.get(0);
+                            Anomalie clone = new Anomalie();
+                            clone.setName(template.getName());
+                            clone.setDescription(template.getDescription());
+                            clone.setSpiritualite(template.getSpiritualite());
+                            clone.setCategory(template.getCategory());
+                            clone.setLevel(template.getLevel() != null ? template.getLevel() : 1);
+                            clone.setMagicObject(template.isMagicObject());
+                            clone.setTemplate(false);
+                            clone.setOwnerUsername(username);
+                            clone.setUser(u);
+                            anomalieRepository.save(clone);
+                            session.logInteractionResult(username, "Objet trouvé : " + clone.getName() + " (Item Spécial) !");
+                        }
+                    }
                 }
             } else if ("AUTEL".equals(altType)) {
                 if (!"SACRIFICE".equals(choice.getActionType()) || choice.getItemId() == null) {
@@ -438,9 +540,11 @@ public class CombatRoomService {
                     session.logInteractionResult(username, "L'autel vous a offert " + multipliedValue + " Or !");
                 } else if ("XP".equals(rewardType)) {
                     int multipliedValue = (int) Math.round(rewardValue * multiplier);
-                    p.setSpiritualiteExperience(p.getSpiritualiteExperience() + multipliedValue);
-                    personnageService.save(p);
-                    session.logInteractionResult(username, "L'autel a accordé " + multipliedValue + " XP de Spiritualité à " + p.getName() + ".");
+                    for (Personnage p : userHeroes) {
+                        p.setSpiritualiteExperience(p.getSpiritualiteExperience() + multipliedValue);
+                        personnageService.save(p);
+                    }
+                    session.logInteractionResult(username, "L'autel vous a accordé " + multipliedValue + " XP de Spiritualité.");
                 } else if ("ITEM".equals(rewardType)) {
                     int chance = level == 1 ? 45 : (level == 2 ? 75 : 100);
                     boolean success = new java.util.Random().nextInt(100) < chance;
@@ -468,7 +572,7 @@ public class CombatRoomService {
                                 }
                             } else {
                                 u.getDiscoveredItems().add(clone.getName());
-                                session.logInteractionResult(username, "L'autel a offert l'équipement : " + template.getName() + " !");
+                                session.logInteractionResult(username, "Objet trouvé : " + clone.getName() + " (Autel) !");
                             }
                         }
                     } else {

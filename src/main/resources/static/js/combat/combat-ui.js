@@ -1034,15 +1034,54 @@ export function updateUI(data) {
                         lootContainer.classList.remove('hidden'); lootContainer.classList.add('flex');
 
                         let disabledState = '';
+                        let acceptSelectedStyle = '';
+                        let passSelectedStyle = '';
+                        let waitingHtml = '';
+
+                        let totalUsers = 1;
+                        if (data.players && data.players.length > 0) {
+                            totalUsers = new Set(data.players.map(p => p.ownerUsername)).size;
+                        }
+
+                        let acceptVotes = 0;
+                        let passVotes = 0;
+                        let isMulti = totalUsers > 1;
+
+                        if (data.playerRoomChoices) {
+                            for (let user in data.playerRoomChoices) {
+                                const choice = data.playerRoomChoices[user];
+                                if (choice.actionType === 'PASS') {
+                                    passVotes++;
+                                } else {
+                                    acceptVotes++;
+                                }
+                            }
+
+                            const myChoice = data.playerRoomChoices[pageState.currentUsername];
+                            if (myChoice) {
+                                if (myChoice.actionType === 'PASS') {
+                                    passSelectedStyle = 'box-shadow: 0 0 15px rgba(255,255,255,0.4); background: rgba(255,255,255,0.15) !important; border-color: rgba(255,255,255,0.8) !important;';
+                                } else {
+                                    acceptSelectedStyle = 'box-shadow: 0 0 15px rgba(168, 85, 247, 0.6); background: rgba(168, 85, 247, 0.25) !important; border-color: rgba(168, 85, 247, 0.8) !important;';
+                                }
+                                if (isMulti) {
+                                    waitingHtml = `<div class="text-center w-full mt-2 text-sm text-sky-medium animate-pulse">En attente des autres joueurs...</div>`;
+                                }
+                            }
+                        }
+
+                        let acceptVoteText = isMulti ? ` <span style="opacity: 0.7; font-size: 0.9em;">(${acceptVotes}/${totalUsers})</span>` : '';
+                        let passVoteText = isMulti ? ` <span style="opacity: 0.7; font-size: 0.9em;">(${passVotes}/${totalUsers})</span>` : '';
 
                         lootContainer.innerHTML = `
                             <div class="flex-col items-center w-full" style="max-width: 600px;">
                                 ${warningHtml}
                                 ${specialItemHtml}
                                 <div class="btn-row">
-                                    <button type="button" id="btnAcceptAlteration" class="btn" style="flex: 1; max-width: 250px; background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.3); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;" ${disabledState} onclick="event.preventDefault(); acceptAlteration();">${btnText}</button>
-                                    <button type="button" class="btn text-muted" onclick="event.preventDefault(); nextRoom();" style="flex: 1; max-width: 250px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">Ignorer et passer</button>
+                                    <button type="button" id="btnAcceptAlteration" class="btn" style="flex: 1; max-width: 250px; background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.3); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; ${acceptSelectedStyle}" ${disabledState} onclick="event.preventDefault(); acceptAlteration();">${btnText}${acceptVoteText}</button>
+                                    <button type="button" class="btn text-muted" onclick="event.preventDefault(); acceptAlteration(true);" style="flex: 1; max-width: 250px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; ${passSelectedStyle}">Ignorer et passer${passVoteText}</button>
                                 </div>
+                                ${waitingHtml}
                             </div>
                         `;
                     } else {
@@ -1056,95 +1095,154 @@ export function updateUI(data) {
                             renderAndAnimateXPCards('eventLootContainer', data.players, 'alt', false);
 
                             let gainedItemsHtml = '';
-                            if (data.combatLog) {
-                                for (let i = data.combatLog.length - 1; i >= 0; i--) {
-                                    const log = data.combatLog[i];
+                            let othersLootHtml = '';
+                            
+                            if (data.interactionResults) {
+                                for (let user in data.interactionResults) {
+                                    let logs = data.interactionResults[user];
+                                    let userOtherItemsHtml = '';
+                                    
+                                    logs.forEach(log => {
+                                        let logHtml = '';
 
-                                    const lostMatch = log.match(/sacrifi. l'item : (.*) !/);
-                                    if (lostMatch) {
-                                        const itemName = lostMatch[1].trim();
-                                        let spColor = '#ef4444';
-                                        let catIcon = 'star';
-                                        if (Array.isArray(window.allAnomaliesCombat)) {
-                                            const an = window.allAnomaliesCombat.find(a => a.name === itemName);
-                                            if (an) {
-                                                if (an.spiritualite === 'TENEBRES') spColor = '#a855f7';
-                                                else if (an.spiritualite === 'ESPRIT') spColor = '#38bdf8';
-                                                else if (an.spiritualite === 'KARMA') spColor = '#e7d198';
-                                                catIcon = an.category ? (getCategoryIcon(an.category)) : 'star';
+                                        if (log.includes("Effet appliqu")) {
+                                            const effetMatch = log.match(/Effet appliqu. : ([-+0-9]+) PV et ([-+0-9]+) XP/);
+                                            if (effetMatch) {
+                                                const pv = parseInt(effetMatch[1]);
+                                                const xp = parseInt(effetMatch[2]);
+                                                let pvHtml = pv !== 0 ? `<span class="${pv > 0 ? 'text-success' : 'text-error'} font-bold">${pv > 0 ? '+' : ''}${pv} PV</span>` : '';
+                                                let xpHtml = xp !== 0 ? `<span class="${xp > 0 ? 'text-xp' : 'text-error'} font-bold">${xp > 0 ? '+' : ''}${xp} XP</span>` : '';
+                                                let both = [pvHtml, xpHtml].filter(Boolean).join(' et ');
+                                                if (both) {
+                                                    logHtml = `
+                                                        <div class="flex-center" style="background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255,255,255,0.2); padding: 0.8rem 1rem; border-radius: 8px; color: #e2e8f0; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
+                                                            ${both}
+                                                        </div>
+                                                    `;
+                                                }
+                                            }
+                                        } else if (log.includes("a offert l'équipement") || log.includes("a offert l'\u00e9quipement")) {
+                                            const equipMatch = log.match(/a offert l'.quipement : (.*) !/) || log.match(/a offert l'.quipement : (.*) \(ajout. au groupe\)\./) || log.match(/a offert l'.quipement : (.*) \(envoy. au coffre\)\./);
+                                            if (equipMatch) {
+                                                const eqName = equipMatch[1].trim();
+                                                logHtml = `
+                                                    <div class="flex-center relative" style="background: rgba(0, 0, 0, 0.4); border: 1px solid #10b98180; padding: 0.8rem 1rem; border-radius: 8px; color: #10b981; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
+                                                        <span class="material-symbols-outlined" style="color: #10b981;">shield</span> <span style="border-bottom: 1px dashed #10b981;">${eqName}</span>
+                                                    </div>
+                                                `;
+                                            }
+                                        } else if (log.includes("a offert l'anomalie") || log.includes("Objet trouv")) {
+                                            const itemNameMatch = log.match(/Objet trouv. : (.*?) \(/) || log.match(/a offert l'anomalie : (.*)\./);
+                                            if (itemNameMatch) {
+                                                const eqName = itemNameMatch[1].trim();
+                                                let eq = null;
+                                                let an = null;
+                                                
+                                                if (Array.isArray(window.allAnomaliesCombat)) {
+                                                    an = window.allAnomaliesCombat.find(a => a.name === eqName);
+                                                }
+
+                                                let slotIcon = 'help';
+                                                let slotColor = '#94a3b8';
+                                                if (an && typeof getCategoryIcon === 'function') {
+                                                    slotIcon = an.category ? getCategoryIcon(an.category) : 'star';
+                                                    slotColor = typeof getSpiritualiteColor === 'function' ? getSpiritualiteColor(an.spiritualite) : '#d946ef';
+                                                } else if (an) {
+                                                    slotIcon = 'star';
+                                                    slotColor = '#d946ef';
+                                                }
+
+                                                const rarityColor = (an && typeof getSpiritualiteColor === 'function' ? getSpiritualiteColor(an.spiritualite) : '#d946ef');
+                                                const extraClass = '';
+
+                                                let tooltipDataHtml = '';
+                                                if (an && typeof window.getAnomalyTooltipHTML === 'function') {
+                                                    tooltipDataHtml = window.getAnomalyTooltipHTML(an, true);
+                                                }
+                                                const tooltipAttrs = tooltipDataHtml ? 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"' : '';
+
+                                                logHtml = `
+                                                    <div class="flex-center relative" ${tooltipAttrs} style="cursor: ${tooltipDataHtml ? 'help' : 'default'}; background: rgba(0, 0, 0, 0.4); border: 1px solid ${rarityColor}80; padding: 0.8rem 1rem; border-radius: 8px; color: ${rarityColor}; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
+                                                        ${tooltipDataHtml ? `<template class="tooltip-data">${tooltipDataHtml}</template>` : ''}
+                                                        <span class="material-symbols-outlined${extraClass}" style="color: ${slotColor};">${slotIcon}</span> <span style="${tooltipDataHtml ? `border-bottom: 1px dashed ${rarityColor};` : ''}">${eqName}</span>
+                                                    </div>
+                                                `;
+                                            }
+                                        } else if (log.includes("sacrifi")) {
+                                            const sacMatch = log.match(/sacrifi. l'item : (.*) !/) || log.match(/sacrifi. l'anomalie : (.*)\./);
+                                            if (sacMatch) {
+                                                const itemName = sacMatch[1].trim();
+                                                logHtml = `
+                                                    <div class="flex-center" style="background: rgba(0, 0, 0, 0.4); border: 1px solid #ef444480; padding: 0.8rem 1rem; border-radius: 8px; color: #ef4444; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
+                                                        <span class="material-symbols-outlined" style="color: #ef4444;">local_fire_department</span> -1 ${itemName}
+                                                    </div>
+                                                `;
+                                            }
+                                        } else if (log.includes("offert") && log.includes("Or")) {
+                                            const orMatch = log.match(/offert (\d+) Or/);
+                                            if (orMatch) {
+                                                const amount = orMatch[1];
+                                                logHtml = `
+                                                    <div class="flex-center" style="background: rgba(0, 0, 0, 0.4); border: 1px solid #eab30880; padding: 0.8rem 1rem; border-radius: 8px; color: #eab308; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
+                                                        <span class="material-symbols-outlined" style="color: #eab308;">toll</span> +${amount} Or
+                                                    </div>
+                                                `;
+                                            }
+                                        } else if (log.includes("XP de Spiritualit")) {
+                                            const spXpMatch = log.match(/accorde (\d+) XP de Spiritualit./);
+                                            if (spXpMatch) {
+                                                const amount = spXpMatch[1];
+                                                logHtml = `
+                                                    <div class="flex-center" style="background: rgba(0, 0, 0, 0.4); border: 1px solid #8b5cf680; padding: 0.8rem 1rem; border-radius: 8px; color: #8b5cf6; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
+                                                        <span class="material-symbols-outlined" style="color: #8b5cf6;">auto_awesome</span> +${amount} Sp-XP
+                                                    </div>
+                                                `;
                                             }
                                         }
-                                        gainedItemsHtml += `
-                                            <div class="flex-center" style="background: rgba(0, 0, 0, 0.4); border: 1px solid ${spColor}80; padding: 0.8rem 1rem; border-radius: 8px; color: ${spColor}; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
-                                                <span class="material-symbols-outlined" style="color: ${spColor};">${catIcon}</span> -1 ${itemName}
-                                            </div>
-                                        `;
-                                    }
 
-                                    const gainedMatch = log.match(/re.oit l'Item Sp.cial : (.*) !/);
-                                    if (gainedMatch) {
-                                        const itemName = gainedMatch[1].trim();
-                                        let spColor = '#d946ef';
-                                        let catIcon = 'star';
-                                        if (Array.isArray(window.allAnomaliesCombat)) {
-                                            const an = window.allAnomaliesCombat.find(a => a.name === itemName);
-                                            if (an) {
-                                                spColor = getSpiritualiteColor(an.spiritualite);
-                                                catIcon = an.category ? (getCategoryIcon(an.category)) : 'star';
+                                        if (logHtml) {
+                                            if (user === pageState.currentUsername) {
+                                                gainedItemsHtml += logHtml;
+                                            } else {
+                                                userOtherItemsHtml += logHtml;
                                             }
                                         }
-                                        gainedItemsHtml += `
-                                            <div class="flex-center" style="background: rgba(0, 0, 0, 0.4); border: 1px solid ${spColor}80; padding: 0.8rem 1rem; border-radius: 8px; color: ${spColor}; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
-                                                <span class="material-symbols-outlined" style="color: ${spColor};">${catIcon}</span> +1 ${itemName}
+                                    });
+
+                                    if (user !== pageState.currentUsername && userOtherItemsHtml) {
+                                        othersLootHtml += `
+                                            <div class="mb-4">
+                                                <div class="text-sm text-muted mb-2 font-bold uppercase tracking-wider text-center" style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem;">Loot de <span style="color: #10b981;">${user}</span></div>
+                                                <div class="flex flex-col gap-3">
+                                                    ${userOtherItemsHtml}
+                                                </div>
                                             </div>
                                         `;
                                     }
-
-                                    const altarGoldMatch = log.match(/r.compense de (\d+) Or/);
-                                    if (altarGoldMatch) {
-                                        const goldAmount = altarGoldMatch[1];
-                                        gainedItemsHtml += `
-                                            <div class="flex-center" style="background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(251, 191, 36, 0.5); padding: 0.8rem 1rem; border-radius: 8px; color: #fbbf24; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
-                                                <span class="material-symbols-outlined text-warning">monetization_on</span> +${goldAmount} Or
-                                            </div>
-                                        `;
-                                    }
-
-                                    const altarXpMatch = log.match(/accorde (\d+) XP de Spiritualit/);
-                                    if (altarXpMatch) {
-                                        const xpAmount = altarXpMatch[1];
-                                        gainedItemsHtml += `
-                                            <div class="flex-center" style="background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(245, 158, 11, 0.5); padding: 0.8rem 1rem; border-radius: 8px; color: #f59e0b; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
-                                                <span class="material-symbols-outlined" style="color: #f59e0b;">auto_awesome</span> +${xpAmount} XP Spirituel
-                                            </div>
-                                        `;
-                                    }
-
-                                    if (log.includes("Vous entrez dans") || log.includes("Vous trouvez un trésor") || log.startsWith("Événement :")) break;
                                 }
                             }
 
-                            if (data.currentRoom && data.currentRoom.altarRewardEquipment) {
-                                const eq = data.currentRoom.altarRewardEquipment;
-                                const slotInfo = typeof getSlotInfo === 'function' ? getSlotInfo(eq) : { icon: 'help', color: '#94a3b8' };
-                                const rarityColor = typeof getRarityColor === 'function' ? getRarityColor(eq.rarity) : '#10b981';
-                                const tooltipDataHtml = typeof window.getEquipmentTooltipHTML === 'function' ? window.getEquipmentTooltipHTML(eq) : '';
-                                const tooltipAttrs = tooltipDataHtml ? 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"' : '';
-
-                                gainedItemsHtml += `
-                                    <div class="flex-center relative" ${tooltipAttrs} style="cursor: ${tooltipDataHtml ? 'help' : 'default'}; background: rgba(0, 0, 0, 0.4); border: 1px solid ${rarityColor}80; padding: 0.8rem 1rem; border-radius: 8px; color: ${rarityColor}; font-weight: 600; gap: 0.5rem; margin-top: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
-                                        ${tooltipDataHtml ? `<template class="tooltip-data">${tooltipDataHtml}</template>` : ''}
-                                        <span class="material-symbols-outlined ${slotInfo.extraClass || ''}" style="color: ${slotInfo.color};">${slotInfo.icon}</span> <span style="${tooltipDataHtml ? `border-bottom: 1px dashed ${rarityColor};` : ''}">${eq.name}</span>
-                                    </div>
-                                `;
+                            if (gainedItemsHtml) {
+                                const wrapper = document.createElement('div');
+                                wrapper.className = 'btn-row';
+                                wrapper.style.flexWrap = 'wrap';
+                                wrapper.style.marginTop = '1rem';
+                                wrapper.innerHTML = gainedItemsHtml;
+                                lootContainer.appendChild(wrapper);
                             }
 
-                            if (gainedItemsHtml) {
-                                lootContainer.innerHTML += `
-                                    <div class="btn-row" style="flex-wrap: wrap;">
-                                        ${gainedItemsHtml}
-                                    </div>
-                                `;
+                            const existingRightPanel = document.getElementById('othersLootPanel');
+                            if (existingRightPanel) existingRightPanel.remove();
+
+                            if (othersLootHtml) {
+                                const rightPanel = document.createElement('div');
+                                rightPanel.id = 'othersLootPanel';
+                                rightPanel.className = 'bg-slate-900/95 border border-white/10 rounded-2xl p-6 shadow-2xl flex flex-col overflow-y-auto custom-scrollbar shrink-0';
+                                rightPanel.style.width = '280px';
+                                rightPanel.style.maxHeight = '100%';
+                                rightPanel.innerHTML = othersLootHtml;
+                                const wrapperEl = document.getElementById('eventModalWrapper');
+                                if (wrapperEl) wrapperEl.appendChild(rightPanel);
                             }
                         }
 
