@@ -714,7 +714,10 @@ export function updateUI(data) {
                     const actionContainer = document.getElementById('eventActionContainer');
                     if (actionContainer && btnCont) {
                         const keys = data.activeConsumables ? data.activeConsumables.filter(eq => eq.consumableCategory === 'CLE') : [];
+                        const seenKeys = new Set();
                         keys.forEach(key => {
+                            if (seenKeys.has(key.name)) return;
+                            seenKeys.add(key.name);
                             const btn = document.createElement('button');
                             btn.className = 'action-btn epic dynamic-key-btn';
                             btn.onclick = () => openChest(key.id);

@@ -569,6 +569,16 @@ body {
     transform: translateY(-2px);
 }
 
+.action-btn.dynamic-key-btn {
+    padding: 0.6rem 1.2rem;
+    font-size: 0.95rem;
+    border-radius: 6px;
+    gap: 0.4rem;
+}
+.action-btn.dynamic-key-btn .material-symbols-outlined {
+    font-size: 1.2rem;
+}
+
 .action-btn.info {
     background: rgba(59, 130, 246, 0.15);
     border-color: rgba(59, 130, 246, 0.4);
