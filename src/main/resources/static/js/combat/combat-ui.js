@@ -156,6 +156,10 @@ export function renderAndAnimateXPCards(containerId, players, prefix, isFirstCle
 }
 
 export function updateUI(data) {
+    if (ui.hideGlobalTooltip) {
+        ui.hideGlobalTooltip();
+    }
+
     let turnMap = { players: {}, enemies: {} };
     if (data.turnOrder) {
         data.turnOrder.forEach((entry, i) => {
