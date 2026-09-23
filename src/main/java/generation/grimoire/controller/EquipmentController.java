@@ -605,6 +605,9 @@ public class EquipmentController {
             EquipmentResponseDTO.PersonnageRef ref = new EquipmentResponseDTO.PersonnageRef();
             ref.setId(e.getPersonnage().getId());
             ref.setName(e.getPersonnage().getName());
+            if (e.getPersonnage().getVoie() != null) {
+                ref.setVoie(e.getPersonnage().getVoie().getNom());
+            }
             dto.setPersonnage(ref);
         }
         

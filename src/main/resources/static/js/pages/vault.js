@@ -380,7 +380,22 @@ function renderGrid(equipments) {
         const effectHtml = window.generateEquipmentEffectHtml(eq, 'vault-card-effect');
         let statusHtml = '';
         if (eq.personnage) {
-            statusHtml = `<span class="vault-card-status status-equipped">
+            let badgeClass = '';
+            if (eq.personnage.voie) {
+                const v = eq.personnage.voie.toUpperCase();
+                if (v.includes('ESPRIT')) badgeClass = 'status-equipped-esprit';
+                else if (v.includes('KARMA')) badgeClass = 'status-equipped-karma';
+                else if (v.includes('TENEBRE') || v.includes('TÉNÈBRE')) badgeClass = 'status-equipped-tenebres';
+                else if (v.includes('VIOLENCE')) badgeClass = 'status-equipped-violence';
+                else if (v.includes('TRAHISON')) badgeClass = 'status-equipped-trahison';
+                else if (v.includes('SURETE') || v.includes('SÛRETÉ')) badgeClass = 'status-equipped-surete';
+                else if (v.includes('RAISON')) badgeClass = 'status-equipped-raison';
+                else if (v.includes('DESTRUCTION')) badgeClass = 'status-equipped-destruction';
+                else if (v.includes('CREATION') || v.includes('CRÉATION')) badgeClass = 'status-equipped-creation';
+                else if (v.includes('CONVICTION')) badgeClass = 'status-equipped-conviction';
+                else if (v.includes('CONSOLIDATION')) badgeClass = 'status-equipped-consolidation';
+            }
+            statusHtml = `<span class="vault-card-status status-equipped ${badgeClass}">
                 <span class="material-symbols-outlined text-sm">person</span>
                 ${eq.personnage.name}
             </span>`;
