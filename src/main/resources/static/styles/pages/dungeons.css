@@ -755,7 +755,7 @@
     left: -11px;
     display: flex;
     gap: 6px;
-    z-index: 5;
+    z-index: 20;
 }
 
 .dungeon-badges-left .badge-completed {
