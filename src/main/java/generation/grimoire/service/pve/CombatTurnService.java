@@ -424,7 +424,7 @@ class CombatTurnService {
                 boolean anyGoldLost = false;
                 for (Personnage p : session.getPlayers()) {
                     if (p.getId() == null) continue;
-                    Personnage dbP = personnageRepository.findById(p.getId()).orElse(null);
+                    Personnage dbP = personnageRepository.findById(java.util.Objects.requireNonNull(p.getId())).orElse(null);
                     if (dbP != null && dbP.getUser() != null) {
                         AppUser user = dbP.getUser();
                         if (user.getId() != null && !processedUserIds.contains(user.getId())) {
