@@ -54,6 +54,8 @@ class CombatRoomServiceProgressionTest {
     private SpellRepository spellRepository;
     @Mock
     private com.fasterxml.jackson.databind.ObjectMapper objectMapper;
+    @Mock
+    private generation.grimoire.service.PersonnageService personnageService;
 
     @InjectMocks
     private CombatRoomService combatRoomService;
@@ -121,7 +123,7 @@ class CombatRoomServiceProgressionTest {
 
         // Mock user/personnage saving at the end of dungeon
         when(userRepository.save(any(AppUser.class))).thenReturn(appUser);
-        when(personnageRepository.save(any(Personnage.class))).thenReturn(player);
+        lenient().when(personnageRepository.save(any(Personnage.class))).thenReturn(player);
 
         combatRoomService.proceedToNextRoom(session);
 
@@ -154,8 +156,8 @@ class CombatRoomServiceProgressionTest {
         rope.setConsumableCategory(generation.grimoire.enumeration.ConsumableCategory.CORDE);
         session.getActiveConsumables().add(rope);
 
-        // 1. Use rope
-        combatRoomService.useRope(session, 15L);
+        session.getPlayerRoomChoices().put(appUser.getUsername(), new generation.grimoire.model.pve.RoomInteractionChoice("ROPE", 15L));
+        combatRoomService.useRope(session);
 
         assertThat(session.getActiveConsumables()).isEmpty();
         assertThat(session.isRoomEventCompleted()).isTrue();

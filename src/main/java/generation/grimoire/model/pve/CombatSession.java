@@ -115,6 +115,13 @@ public class CombatSession {
 
     private List<String> combatLog = new ArrayList<>();
 
+    public void logInteractionResult(String username, String message) {
+        if (interactionResults == null) {
+            interactionResults = new HashMap<>();
+        }
+        interactionResults.computeIfAbsent(username, k -> new ArrayList<>()).add(message);
+    }
+
     private int reloadCount = 0;
     private Instant lastActivity = Instant.now();
 
@@ -122,6 +129,8 @@ public class CombatSession {
     private boolean isMulti = false;
     private String multiSessionId = null;
     private Set<String> readyForNextRoomUsers = new HashSet<>();
+    private Map<String, RoomInteractionChoice> playerRoomChoices = new HashMap<>();
+    private Map<String, List<String>> interactionResults = new HashMap<>();
 
     public CombatSession(String sessionId, Donjon donjon, List<Personnage> players) {
         this.sessionId = sessionId;
@@ -191,6 +200,9 @@ public class CombatSession {
         this.currentRoomIndex = index;
         this.roomEventCompleted = false;
         this.purchasedMerchantItems.clear();
+        this.combatLog.clear();
+        if (this.playerRoomChoices != null) this.playerRoomChoices.clear();
+        if (this.interactionResults != null) this.interactionResults.clear();
         if (donjon.getSalles() != null && index < donjon.getSalles().size()) {
             this.currentRoom = donjon.getSalles().get(index);
             // On laisse handleRoomStart gérer les ennemis et la re-fetch de la salle

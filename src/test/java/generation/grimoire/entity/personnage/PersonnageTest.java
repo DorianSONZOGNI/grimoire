@@ -87,6 +87,10 @@ class PersonnageTest {
 
         hero.updateBuffs();
         assertThat(hero.getActiveBuffs()).hasSize(1);
+        assertThat(buff.getDuration()).isEqualTo(2); // isNewlyApplied protects from first tick
+
+        hero.updateBuffs();
+        assertThat(hero.getActiveBuffs()).hasSize(1);
         assertThat(buff.getDuration()).isEqualTo(1);
 
         hero.updateBuffs();
@@ -311,6 +315,7 @@ class PersonnageTest {
         assertThat(enemy.getActiveBuffs()).hasSize(2); // One flat, one modifier clone
 
         // Update buffs: should decrement active buff duration to 1
+        enemy.updateBuffs();
         enemy.updateBuffs();
         assertThat(enemy.getActiveBuffs()).hasSize(2);
         assertThat(enemy.getActiveBuffs().get(0).getDuration()).isEqualTo(1);

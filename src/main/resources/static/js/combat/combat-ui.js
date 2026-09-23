@@ -159,6 +159,19 @@ export function updateUI(data) {
     if (ui.hideGlobalTooltip) {
         ui.hideGlobalTooltip();
     }
+    
+    if (pageState.currentSessionData && data && !data.error) {
+        const old = pageState.currentSessionData;
+        const isStale = (
+            data.currentRoomIndex < old.currentRoomIndex ||
+            (data.currentRoomIndex === old.currentRoomIndex && data.turnNumber < old.turnNumber) ||
+            (data.currentRoomIndex === old.currentRoomIndex && data.turnNumber === old.turnNumber && data.combatLog && old.combatLog && data.combatLog.length < old.combatLog.length)
+        );
+        if (isStale) {
+            console.log('Ignored stale data update (likely delayed HTTP response).');
+            return;
+        }
+    }
 
     let turnMap = { players: {}, enemies: {} };
     if (data.turnOrder) {
@@ -388,7 +401,7 @@ export function updateUI(data) {
                                 gain.connect(ctx.destination);
                                 osc.start();
                                 osc.stop(ctx.currentTime + 0.3);
-                            } catch(e) {}
+                            } catch (e) { }
                         }
                     }
                     badge.style.background = 'rgba(69, 10, 10, 0.9)';
@@ -431,14 +444,14 @@ export function updateUI(data) {
     if (data.currentRoom) {
         if (data.currentRoom.type === 'COMBAT' || data.currentRoom.type === 'BOSS') {
             document.getElementById('eventOverlay').classList.remove('show');
-            
+
             if (typeof window.renderOverlayInventory === 'function') {
                 window.renderOverlayInventory('combatMainInventoryList');
             }
             if (typeof window.renderOverlayMap === 'function') {
                 window.renderOverlayMap('combatMainMapList');
             }
-            
+
             // Auto fold when a new combat starts
             if (window.lastCombatRoomIndex !== data.currentRoomIndex) {
                 const wrapper = document.getElementById('combatMainSidePanelWrapper');
@@ -583,6 +596,33 @@ export function updateUI(data) {
                 actionContainer.querySelectorAll('.dynamic-key-btn').forEach(b => b.remove());
             }
 
+
+            const myChoice = data.playerRoomChoices ? data.playerRoomChoices[pageState.currentUsername] : null;
+            function applyChoiceStyle(btn, isChosen, isMulti, readyCount, totalCount) {
+                if (!btn) return;
+
+                // Clear old styles first
+                btn.style.opacity = '1';
+                btn.classList.remove('bg-green-600', 'text-white', 'opacity-50');
+
+                // Remove previous counter if exists
+                const existingCounter = btn.querySelector('.ready-counter');
+                if (existingCounter) existingCounter.remove();
+
+                if (isChosen) {
+                    btn.classList.add('bg-green-600', 'text-white');
+                    btn.classList.remove('bg-dark-surface', 'bg-dark-hover'); // in case it has these
+                    if (isMulti) {
+                        btn.innerHTML += ` <span class="ready-counter text-xs opacity-75 ml-2">(${readyCount}/${totalCount})</span>`;
+                    }
+                } else if (myChoice) {
+                    // if they chose something else, dim this button
+                    btn.classList.add('opacity-50');
+                }
+            }
+
+            const activeUsersCount = new Set((data.players || []).filter(p => p.healthCurrent > 0 && p.ownerUsername).map(p => p.ownerUsername)).size;
+            const readyUsersCount = data.playerRoomChoices ? Object.keys(data.playerRoomChoices).length : 0;
             if (data.currentRoom.type === 'TREASURE') {
                 icon.textContent = data.roomEventCompleted ? 'lock_open' : 'lock';
                 icon.className = 'material-symbols-outlined mb-4 text-[5rem] text-gold';
@@ -603,69 +643,95 @@ export function updateUI(data) {
                         renderAndAnimateXPCards('eventLootContainer', data.players, 'treasure', data.firstClear);
 
                         let gainedItemsHtml = '';
+                        let othersLootHtml = '';
                         let goldAmount = 0;
                         let expAmount = 0;
-                        if (data.combatLog) {
-                            let chestLogs = [];
-                            for (let i = data.combatLog.length - 1; i >= 0; i--) {
-                                const log = data.combatLog[i];
-                                chestLogs.unshift(log);
-                                if (log.includes("Vous avez ouvert le coffre !")) {
-                                    const goldMatch = log.match(/trouvez (\d+) Or/);
-                                    if (goldMatch) goldAmount = parseInt(goldMatch[1]);
-                                    const expMatch = log.match(/gagne (\d+) XP/);
-                                    if (expMatch) expAmount = parseInt(expMatch[1]);
-                                    break;
-                                }
-                            }
-
-                            chestLogs.forEach(log => {
-                                const itemNameMatch = log.match(/Vous avez (?:obtenu l'item|trouvé un objet)\s*:\s*(.*?)(?: !| et il a été ajouté| \(envoyé)/);
-                                if (itemNameMatch) {
-                                    const eqName = itemNameMatch[1];
-                                    let eq = null;
-                                    let an = null;
-                                    if (data.currentRoom && data.currentRoom.lootTable) {
-                                        const entry = data.currentRoom.lootTable.find(l => l.equipment && l.equipment.name === eqName);
-                                        if (entry) eq = entry.equipment;
-                                    }
-                                    if (!eq && Array.isArray(window.allAnomaliesCombat)) {
-                                        an = window.allAnomaliesCombat.find(a => a.name === eqName);
-                                    }
-
-                                    const slotInfo = eq ? (getSlotInfo(eq) || { icon: 'help', color: '#94a3b8' }) : (an ? { icon: (an.category ? (getCategoryIcon(an.category)) : 'star'), color: getSpiritualiteColor(an.spiritualite) } : { icon: 'swords', color: '#f59e0b' });
-                                    const rarityColor = eq ? (getRarityColor(eq.rarity)) : (an ? getSpiritualiteColor(an.spiritualite) : '#f59e0b');
-                                    const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
-
-                                    let tooltipDataHtml = '';
-                                    if (eq && typeof window.getEquipmentTooltipHTML === 'function') {
-                                        tooltipDataHtml = window.getEquipmentTooltipHTML(eq);
-                                    } else if (an && typeof getAnomalyTooltipHTML === 'function') {
-                                        tooltipDataHtml = getAnomalyTooltipHTML(an, eqName);
-                                    }
-                                    const tooltipAttrs = tooltipDataHtml ? 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"' : '';
-
-                                    let inventoryStatus = log.includes("ajouté à l'inventaire") ? 'in_inventory' : (log.includes("envoyé au coffre") ? 'in_vault' : 'unknown');
-
-                                    let inventoryIconHtml = '';
-                                    if (eq && eq.slot === 'CONSOMMABLE') {
-                                        if (inventoryStatus === 'in_inventory') {
-                                            inventoryIconHtml = `<span class="material-symbols-outlined" style="position: absolute; top: 0.2rem; left: 0.2rem; font-size: 1.2rem; color: #10b981;" title="Dans l'inventaire du groupe">inventory_2</span>`;
-                                        } else if (inventoryStatus === 'in_vault') {
-                                            const safeName = eqName.replace(/'/g, "\\'");
-                                            inventoryIconHtml = `<span class="material-symbols-outlined vault-to-inv-icon" data-itemname="${eqName}" onclick="addLootedConsumable('${safeName}', this)" style="position: absolute; top: 0.2rem; left: 0.2rem; font-size: 1.2rem; color: #64748b; cursor: pointer; transition: color 0.2s;" title="Cliquer pour ajouter à l'inventaire" onmouseover="this.style.color='#10b981'" onmouseout="this.style.color='#64748b'">inventory_2</span>`;
+                        if (data.interactionResults) {
+                            for (let user in data.interactionResults) {
+                                let lines = data.interactionResults[user];
+                                let userOtherItemsHtml = '';
+                                
+                                lines.forEach(log => {
+                                    if (user === pageState.currentUsername) {
+                                        if (log.includes("trouvez")) {
+                                            const goldMatch = log.match(/trouvez (\d+) Or/);
+                                            if (goldMatch) goldAmount += parseInt(goldMatch[1]);
+                                            const expMatch = log.match(/gagnez (\d+) XP/);
+                                            if (expMatch) expAmount += parseInt(expMatch[1]);
                                         }
                                     }
+                                    
+                                    if (log.includes("Objet trouvé :")) {
+                                        const itemNameMatch = log.match(/Objet trouvé : (.*?) \(/);
+                                        if (itemNameMatch) {
+                                            const eqName = itemNameMatch[1].trim();
+                                            let eq = null;
+                                            let an = null;
+                                            if (data.currentRoom && data.currentRoom.lootTable) {
+                                                const entry = data.currentRoom.lootTable.find(l => l.equipment && l.equipment.name === eqName);
+                                                if (entry) eq = entry.equipment;
+                                            }
+                                            if (!eq && Array.isArray(window.allAnomaliesCombat)) {
+                                                an = window.allAnomaliesCombat.find(a => a.name === eqName);
+                                            }
 
-                                    gainedItemsHtml += `
-                                        <div class="flex-center relative" ${tooltipAttrs} style="cursor: ${tooltipDataHtml ? 'help' : 'default'}; background: rgba(0, 0, 0, 0.4); border: 1px solid ${rarityColor}80; padding: 0.8rem 1rem; border-radius: 8px; color: ${rarityColor}; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
-                                            ${inventoryIconHtml}
-                                            ${tooltipDataHtml ? `<template class="tooltip-data">${tooltipDataHtml}</template>` : ''}
-                                            <span class="material-symbols-outlined${extraClass}" style="color: ${slotInfo.color};">${slotInfo.icon}</span> <span style="${tooltipDataHtml ? `border-bottom: 1px dashed ${rarityColor};` : ''}">${eqName}</span>
+                                            const slotInfo = eq ? (getSlotInfo(eq) || { icon: 'help', color: '#94a3b8' }) : (an ? { icon: (an.category ? (getCategoryIcon(an.category)) : 'star'), color: getSpiritualiteColor(an.spiritualite) } : { icon: 'swords', color: '#f59e0b' });
+                                            const rarityColor = eq ? (getRarityColor(eq.rarity)) : (an ? getSpiritualiteColor(an.spiritualite) : '#f59e0b');
+                                            const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
+
+                                            let tooltipDataHtml = '';
+                                            if (eq && typeof window.getEquipmentTooltipHTML === 'function') {
+                                                tooltipDataHtml = window.getEquipmentTooltipHTML(eq);
+                                            } else if (an && typeof getAnomalyTooltipHTML === 'function') {
+                                                tooltipDataHtml = getAnomalyTooltipHTML(an, eqName);
+                                            }
+                                            const tooltipAttrs = tooltipDataHtml ? 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"' : '';
+
+                                            if (user === pageState.currentUsername) {
+                                                let inventoryStatus = (log.includes("ajouté à l'équipe") || log.includes("ajouté à l'inventaire")) ? 'in_inventory' : (log.includes("coffre") ? 'in_vault' : 'unknown');
+                                                let inventoryIconHtml = '';
+                                                if (eq && eq.slot === 'CONSOMMABLE') {
+                                                    if (inventoryStatus === 'in_inventory') {
+                                                        inventoryIconHtml = `<span class="material-symbols-outlined" style="position: absolute; top: 0.2rem; left: 0.2rem; font-size: 1.2rem; color: #10b981;" title="Dans l'inventaire du groupe">inventory_2</span>`;
+                                                    } else if (inventoryStatus === 'in_vault') {
+                                                        const safeName = eqName.replace(/'/g, "\\'");
+                                                        inventoryIconHtml = `<span class="material-symbols-outlined vault-to-inv-icon" data-itemname="${eqName}" onclick="addLootedConsumable('${safeName}', this)" style="position: absolute; top: 0.2rem; left: 0.2rem; font-size: 1.2rem; color: #64748b; cursor: pointer; transition: color 0.2s;" title="Cliquer pour ajouter à l'inventaire" onmouseover="this.style.color='#10b981'" onmouseout="this.style.color='#64748b'">inventory_2</span>`;
+                                                    }
+                                                }
+
+                                                gainedItemsHtml += `
+                                                    <div class="flex-center relative" ${tooltipAttrs} style="cursor: ${tooltipDataHtml ? 'help' : 'default'}; background: rgba(0, 0, 0, 0.4); border: 1px solid ${rarityColor}80; padding: 0.8rem 1rem; border-radius: 8px; color: ${rarityColor}; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
+                                                        ${inventoryIconHtml}
+                                                        ${tooltipDataHtml ? `<template class="tooltip-data">${tooltipDataHtml}</template>` : ''}
+                                                        <span class="material-symbols-outlined${extraClass}" style="color: ${slotInfo.color};">${slotInfo.icon}</span> <span style="${tooltipDataHtml ? `border-bottom: 1px dashed ${rarityColor};` : ''}">${eqName}</span>
+                                                    </div>
+                                                `;
+                                            } else {
+                                                userOtherItemsHtml += `
+                                                    <div class="flex items-center gap-2 mb-2 p-2 rounded relative" style="background: rgba(0,0,0,0.3); border: 1px solid ${rarityColor}50; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.9);">
+                                                        <span class="material-symbols-outlined text-sm${extraClass}" style="color: ${slotInfo.color};">${slotInfo.icon}</span>
+                                                        <span class="text-sm font-semibold relative" style="color: ${rarityColor}; ${tooltipDataHtml ? `border-bottom: 1px dashed ${rarityColor}; cursor: help;` : ''}" ${tooltipAttrs}>
+                                                            ${eqName}
+                                                            ${tooltipDataHtml ? `<template class="tooltip-data">${tooltipDataHtml}</template>` : ''}
+                                                        </span>
+                                                    </div>
+                                                `;
+                                            }
+                                        }
+                                    }
+                                });
+                                
+                                if (user !== pageState.currentUsername && userOtherItemsHtml) {
+                                    othersLootHtml += `
+                                        <div class="mb-4">
+                                            <div class="text-sm text-muted mb-2 font-bold uppercase tracking-wider text-center" style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem;">Loot de <span style="color: #10b981;">${user}</span></div>
+                                            <div class="flex flex-col gap-3">
+                                                ${userOtherItemsHtml}
+                                            </div>
                                         </div>
                                     `;
                                 }
-                            });
+                            }
 
                             if (expAmount > 0) {
                                 gainedItemsHtml = `
@@ -706,27 +772,52 @@ export function updateUI(data) {
                             wrapper.innerHTML = gainedItemsHtml;
                             lootContainer.appendChild(wrapper);
                         }
+
+                        // Remove old independent panel if it exists
+                        const existingRightPanel = document.getElementById('othersLootPanel');
+                        if (existingRightPanel) existingRightPanel.remove();
+
+                        if (othersLootHtml) {
+                            const rightPanel = document.createElement('div');
+                            rightPanel.id = 'othersLootPanel';
+                            rightPanel.className = 'bg-slate-900/95 border border-white/10 rounded-2xl p-6 shadow-2xl flex flex-col overflow-y-auto custom-scrollbar shrink-0';
+
+                            rightPanel.style.width = '280px';
+                            rightPanel.style.maxHeight = '100%';
+
+                            rightPanel.innerHTML = othersLootHtml;
+                            const wrapperEl = document.getElementById('eventModalWrapper');
+                            if (wrapperEl) wrapperEl.appendChild(rightPanel);
+                        }
                     }
                 } else {
+                    const oldRightPanel = document.getElementById('othersLootPanel');
+                    if (oldRightPanel) oldRightPanel.remove();
+
                     desc.textContent = `Un coffre mystérieux se trouve au centre de la pièce...`;
                     btnOpen.classList.remove('hidden');
-                    btnCont.classList.add('hidden');
+                    btnCont.classList.add('hidden'); // No pass button for chests
+
                     lootContainer.classList.add('hidden'); lootContainer.classList.remove('flex');
                     lootContainer.innerHTML = ''; // reset
                     delete lootContainer.dataset.filled;
 
+                    const isMainChosen = myChoice && myChoice.actionType === 'OPEN';
+                    applyChoiceStyle(btnOpen, isMainChosen, data.isMulti, readyUsersCount, activeUsersCount);
+
                     const actionContainer = document.getElementById('eventActionContainer');
                     if (actionContainer && btnCont) {
                         const keys = data.activeConsumables ? data.activeConsumables.filter(eq => eq.consumableCategory === 'CLE') : [];
-                        const seenKeys = new Set();
                         keys.forEach(key => {
-                            if (seenKeys.has(key.name)) return;
-                            seenKeys.add(key.name);
                             const btn = document.createElement('button');
                             btn.className = 'action-btn epic dynamic-key-btn';
-                            btn.onclick = () => openChest(key.id);
+                            btn.onclick = () => openChest(key.id, 'OPEN_KEY');
                             const bonus = key.specialEffectValue > 0 ? key.specialEffectValue : 10;
                             btn.innerHTML = `<span class="material-symbols-outlined">vpn_key</span> Ouvrir (${key.name} : +${bonus}% de butin)`;
+
+                            const isThisKeyChosen = myChoice && myChoice.actionType === 'OPEN_KEY' && myChoice.itemId === key.id;
+                            applyChoiceStyle(btn, isThisKeyChosen, data.isMulti, readyUsersCount, activeUsersCount);
+
                             actionContainer.insertBefore(btn, btnCont);
                         });
                         const btnKey = document.getElementById('btnOpenChestKey');
@@ -2118,7 +2209,7 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
         }
         const opacity = hasPlayed ? '0.5' : '1';
         const filter = hasPlayed ? 'grayscale(1)' : 'none';
-        
+
         turnOrderBadgeHtml = `<div title="Ordre de jeu : ${turnOrderNum}" style="position: absolute; top: -8px; left: -8px; width: 28px; height: 28px; background: linear-gradient(135deg, #1e293b, #0f172a); border: 2px solid ${isHero ? '#38bdf8' : '#ef4444'}; border-radius: 50%; color: #f8fafc; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.95rem; box-shadow: 0 4px 6px rgba(0,0,0,0.5); z-index: 5; opacity: ${opacity}; filter: ${filter}; transition: all 0.3s;">${turnOrderNum}</div>`;
     }
 

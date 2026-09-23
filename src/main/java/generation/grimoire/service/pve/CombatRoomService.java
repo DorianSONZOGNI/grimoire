@@ -213,7 +213,7 @@ public class CombatRoomService {
         }
     }
 
-    CombatSession openChest(CombatSession session, Long equipmentId) {
+    CombatSession openChest(CombatSession session) {
         if (session.getCurrentRoom().getType() != generation.grimoire.enumeration.RoomType.TREASURE) {
             throw new RuntimeException("Ce n'est pas une salle de trésor !");
         }
@@ -221,118 +221,111 @@ public class CombatRoomService {
             throw new RuntimeException("Le coffre a déjà été ouvert.");
         }
 
-        boolean useKey = (equipmentId != null);
-        double extraLootPercent = 0.0;
-        if (useKey) {
-            Equipment key = null;
-            for (Equipment eq : session.getActiveConsumables()) {
-                if (eq.getId().equals(equipmentId)
-                        && eq.getConsumableCategory() == generation.grimoire.enumeration.ConsumableCategory.CLE) {
-                    key = eq;
-                    break;
-                }
-            }
-            if (key == null) {
-                throw new RuntimeException("L'équipe ne possède pas cette Clé !");
-            }
-
-            // Use specialEffectValue as percentage, default to 10 if 0 (backward
-            // compatibility)
-            extraLootPercent = key.getSpecialEffectValue() > 0 ? key.getSpecialEffectValue() : 10.0;
-
-            session.getActiveConsumables().remove(key);
-            equipmentRepository.delete(key);
-            session.addLog("Vous utilisez " + key.getName() + " pour ouvrir les compartiments secrets du coffre ! (+"
-                    + extraLootPercent + "% de chance de butin)");
-        }
-
-        int gold = session.getCurrentRoom().getTreasureGold();
-        int exp = session.getCurrentRoom().getTreasureExp();
-        session.setTotalGoldAccumulated(session.getTotalGoldAccumulated() + gold);
-
-        List<Personnage> chestEligible = session.getPlayers().stream()
+        int baseGold = session.getCurrentRoom().getTreasureGold();
+        int baseExp = session.getCurrentRoom().getTreasureExp();
+        
+        List<Personnage> activePlayers = session.getPlayers().stream()
                 .filter(session::isEligibleForRewards).collect(java.util.stream.Collectors.toList());
-        int expPerHero = exp / Math.max(1, chestEligible.size());
-        for (Personnage p : chestEligible) {
-            int actualExp = expPerHero;
+        int expPerHero = baseExp / Math.max(1, activePlayers.size());
+
+        java.util.Map<String, generation.grimoire.model.pve.RoomInteractionChoice> choices = session.getPlayerRoomChoices();
+        if (choices == null) choices = new java.util.HashMap<>();
+
+        // Group processing by user
+        java.util.Map<String, List<Personnage>> heroesByUser = new java.util.HashMap<>();
+        for (Personnage p : activePlayers) {
             AppUser u = p.getUser();
-            if (u != null && !u.getCompletedDungeons().contains(session.getDungeonId())) {
-                actualExp *= 2;
+            if (u != null && u.getUsername() != null) {
+                heroesByUser.computeIfAbsent(u.getUsername(), k -> new ArrayList<>()).add(p);
             }
-            p.setExperience(p.getExperience() + actualExp);
-            personnageService.save(p);
         }
 
-        if (!chestEligible.isEmpty() && gold > 0) {
-            java.util.Set<Long> processedUserIds = new java.util.HashSet<>();
-            for (Personnage p : chestEligible) {
-                AppUser user = p.getUser();
-                if (user != null && user.getId() != null && !processedUserIds.contains(user.getId())) {
-                    processedUserIds.add(user.getId());
-                    user.setMonnaie(user.getMonnaie() + gold);
-                    userRepository.save(user);
+        for (java.util.Map.Entry<String, List<Personnage>> userEntry : heroesByUser.entrySet()) {
+            String username = userEntry.getKey();
+            List<Personnage> userHeroes = userEntry.getValue();
+            AppUser u = userHeroes.get(0).getUser();
+            
+            generation.grimoire.model.pve.RoomInteractionChoice choice = choices.get(username);
+            if (choice == null) {
+                continue;
+            }
+
+            boolean useKey = "OPEN_KEY".equals(choice.getActionType());
+            double extraLootPercent = 0.0;
+
+            if (useKey) {
+                Equipment key = null;
+                for (Equipment eq : session.getActiveConsumables()) {
+                    if (eq.getId().equals(choice.getItemId()) && eq.getConsumableCategory() == generation.grimoire.enumeration.ConsumableCategory.CLE) {
+                        key = eq;
+                        break;
+                    }
+                }
+                if (key == null) {
+                    session.logInteractionResult(username, "La clé a déjà été utilisée, ouverture simple du coffre.");
+                    useKey = false;
+                    extraLootPercent = 0.0;
+                } else {
+                    extraLootPercent = key.getSpecialEffectValue() > 0 ? key.getSpecialEffectValue() : 10.0;
+                    session.getActiveConsumables().remove(key);
+                    equipmentRepository.delete(key);
+                    session.logInteractionResult(username, "Vous utilisez " + key.getName() + " (+ " + extraLootPercent + "% proba).");
                 }
             }
-        }
 
-        session.addLog("Vous avez ouvert le coffre ! Vous trouvez " + gold + " Or et chaque héros gagne " + expPerHero
-                + " XP (x2 si 1ère fois).");
+            // Give XP
+            int totalActualExp = 0;
+            for (Personnage p : userHeroes) {
+                int actualExp = expPerHero;
+                if (!u.getCompletedDungeons().contains(session.getDungeonId())) {
+                    actualExp *= 2;
+                }
+                p.setExperience(p.getExperience() + actualExp);
+                personnageService.save(p);
+                totalActualExp += actualExp;
+            }
+            
+            // Give Gold
+            u.setMonnaie(u.getMonnaie() + baseGold);
+            userRepository.save(u);
+            session.setTotalGoldAccumulated(session.getTotalGoldAccumulated() + baseGold);
 
-        // First pass: collect items
-        double totalConsumablesWeight = 0.0;
-        List<Equipment> lootedConsumables = new ArrayList<>();
-        List<Equipment> lootedOthers = new ArrayList<>();
+            session.logInteractionResult(username, "Vous trouvez " + baseGold + " Or et gagnez " + totalActualExp + " XP.");
 
-        java.util.Random rnd = new java.util.Random();
-        if (session.getCurrentRoom().getLootTable() != null) {
-            for (LootEntry entry : session.getCurrentRoom().getLootTable()) {
-                double roll = rnd.nextDouble() * 100.0;
-                double proba = entry.getProbability() + extraLootPercent;
-                if (roll <= proba && entry.getEquipment() != null) {
-                    java.util.Set<Long> rewardedUserIds = new java.util.HashSet<>();
-                    boolean isFirstConsumable = true;
-                    for (Personnage p : session.getPlayers()) {
-                        if (!session.isEligibleForRewards(p))
-                            continue;
-                        AppUser u = p.getUser();
-                        if (u != null && !rewardedUserIds.contains(u.getId())) {
-                            rewardedUserIds.add(u.getId());
+            // Loot
+            java.util.Random rnd = new java.util.Random();
+            if (session.getCurrentRoom().getLootTable() != null) {
+                for (LootEntry entry : session.getCurrentRoom().getLootTable()) {
+                    double roll = rnd.nextDouble() * 100.0;
+                    double proba = entry.getProbability() + extraLootPercent;
+                    if (roll <= proba) {
+                        if (entry.getEquipment() != null) {
                             Equipment template = entry.getEquipment();
-
                             Equipment clone = new Equipment();
                             clone.copyStatsFrom(template);
-
                             clone.setTemplate(false);
                             clone.setUser(u);
-                            clone.setOwnerUsername(u.getUsername());
-
+                            clone.setOwnerUsername(username);
                             equipmentRepository.save(clone);
                             u.getDiscoveredItems().add(clone.getName());
-
+                            
                             if (clone.getSlot() == generation.grimoire.enumeration.EquipmentSlot.CONSOMMABLE) {
-                                if (isFirstConsumable) {
-                                    totalConsumablesWeight += clone.calculateWeight();
-                                    lootedConsumables.add(clone);
-                                    isFirstConsumable = false;
+                                // Add to session consumables
+                                double currentWeight = session.getActiveConsumables().stream()
+                                    .filter(java.util.Objects::nonNull).mapToDouble(e -> e.calculateWeight()).sum();
+                                double maxWeight = 10.0 + 5.0 * session.getPlayers().size();
+                                if (currentWeight + clone.calculateWeight() <= maxWeight) {
+                                    session.getActiveConsumables().add(clone);
+                                    session.logInteractionResult(username, "Objet trouvé : " + clone.getName() + " (ajouté à l'équipe).");
+                                } else {
+                                    session.logInteractionResult(username, "Objet trouvé : " + clone.getName() + " (coffre fort).");
                                 }
                             } else {
-                                lootedOthers.add(clone);
+                                session.logInteractionResult(username, "Objet trouvé : " + clone.getName() + " (ajouté à l'inventaire).");
                             }
-                        }
-                    }
-                } else if (roll <= proba && entry.getSpecialItemName() != null
-                        && !entry.getSpecialItemName().trim().isEmpty()) {
-                    String anomalyName = entry.getSpecialItemName();
-                    Anomalie template = anomalieRepository
-                            .findFirstByNameAndIsTemplateTrueOrderByIdAsc(anomalyName);
-                    if (template != null) {
-                        java.util.Set<Long> rewardedUserIds = new java.util.HashSet<>();
-                        for (Personnage p : session.getPlayers()) {
-                            if (!session.isEligibleForRewards(p))
-                                continue;
-                            AppUser u = p.getUser();
-                            if (u != null && !rewardedUserIds.contains(u.getId())) {
-                                rewardedUserIds.add(u.getId());
+                        } else if (entry.getSpecialItemName() != null && !entry.getSpecialItemName().trim().isEmpty()) {
+                            Anomalie template = anomalieRepository.findFirstByNameAndIsTemplateTrueOrderByIdAsc(entry.getSpecialItemName());
+                            if (template != null) {
                                 Anomalie clone = new Anomalie();
                                 clone.setName(template.getName());
                                 clone.setDescription(template.getDescription());
@@ -341,52 +334,24 @@ public class CombatRoomService {
                                 clone.setLevel(template.getLevel() != null ? template.getLevel() : 1);
                                 clone.setMagicObject(template.isMagicObject());
                                 clone.setTemplate(false);
-                                clone.setOwnerUsername(u.getUsername());
+                                clone.setOwnerUsername(username);
                                 clone.setUser(u);
                                 anomalieRepository.save(clone);
                                 u.getDiscoveredItems().add(clone.getName());
+                                session.logInteractionResult(username, "Objet trouvé : " + clone.getName() + " (ajouté à l'inventaire).");
                             }
                         }
-                        session.addLog("Vous avez obtenu l'item : " + template.getName() + " !");
                     }
                 }
             }
         }
-
-        double currentWeight = session.getActiveConsumables().stream()
-                .filter(java.util.Objects::nonNull)
-                .mapToDouble(e -> e.calculateWeight())
-                .sum();
-        double maxWeight = 10.0 + 5.0 * session.getPlayers().size();
-
-        boolean canFitAll = (currentWeight + totalConsumablesWeight) <= maxWeight;
-
-        java.util.Set<String> displayedLootLogs = new java.util.HashSet<>();
-
-        for (Equipment clone : lootedConsumables) {
-            if (canFitAll) {
-                session.getActiveConsumables().add(clone);
-                String msg = "Vous avez trouvé un objet : " + clone.getName()
-                        + " et il a été ajouté à l'inventaire du groupe.";
-                if (displayedLootLogs.add(msg))
-                    session.addLog(msg);
-            } else {
-                String msg = "Vous avez trouvé un objet : " + clone.getName() + " (envoyé au coffre, choix manuel).";
-                if (displayedLootLogs.add(msg))
-                    session.addLog(msg);
-            }
-        }
-        for (Equipment clone : lootedOthers) {
-            String msg = "Vous avez trouvé un objet : " + clone.getName() + " !";
-            if (displayedLootLogs.add(msg))
-                session.addLog(msg);
-        }
-
+        
         session.setRoomEventCompleted(true);
+        session.addLog("Le groupe a fouillé le trésor.");
         return session;
     }
 
-    CombatSession acceptAlteration(CombatSession session, Long anomalyId, Long characterId) {
+    CombatSession acceptAlteration(CombatSession session) {
         if (session.getCurrentRoom().getType() != generation.grimoire.enumeration.RoomType.EVENT ||
                 session.getCurrentRoom().getEventSubType() != generation.grimoire.enumeration.EventSubType.ALTERATION) {
             throw new RuntimeException("Ce n'est pas une salle d'altération !");
@@ -397,330 +362,197 @@ public class CombatRoomService {
 
         generation.grimoire.entity.pve.Salle room = session.getCurrentRoom();
         String altType = room.getAlterationType() != null ? room.getAlterationType() : "VIE_XP";
+        java.util.Map<String, generation.grimoire.model.pve.RoomInteractionChoice> choices = session.getPlayerRoomChoices();
+        if (choices == null) choices = new java.util.HashMap<>();
 
-        if ("VIE_XP".equals(altType)) {
-            int effect = room.getAlterationHpAmount();
-            int expEffect = room.getAlterationExpAmount();
-            int eligibleCount = 0;
+        // Group processing by player
+        for (Personnage p : session.getPlayers()) {
+            if (p.getHealthCurrent() <= 0 || !session.isEligibleForRewards(p))
+                continue;
+                
+            AppUser u = p.getUser();
+            if (u == null) continue;
+            String username = u.getUsername();
+            
+            generation.grimoire.model.pve.RoomInteractionChoice choice = choices.get(username);
+            if (choice == null || "PASS".equals(choice.getActionType())) {
+                session.logInteractionResult(username, "Vous avez passé votre chemin.");
+                continue;
+            }
 
-            for (Personnage p : session.getPlayers()) {
-                if (p.getHealthCurrent() <= 0)
-                    continue;
-                if (!session.isEligibleForRewards(p))
-                    continue;
+            if ("VIE_XP".equals(altType)) {
+                int effect = room.getAlterationHpAmount();
+                int expEffect = room.getAlterationExpAmount();
 
                 boolean hasEnoughHp = !(effect < 0 && p.getHealthCurrent() <= -effect);
                 boolean hasEnoughXp = !(expEffect < 0 && p.getExperience() < -expEffect);
 
                 if (hasEnoughHp && hasEnoughXp) {
-                    eligibleCount++;
                     if (effect > 0)
                         p.heal(effect);
                     else if (effect < 0)
                         p.takeDamage(-effect, generation.grimoire.enumeration.DamageType.BRUT);
 
-                    if (expEffect != 0) {
-                        p.setExperience(p.getExperience() + expEffect);
-                    }
-
-                    String rewardTypeForP = room.getAlterationRewardType();
-                    if ("SPECIAL_ITEM".equals(rewardTypeForP) && (room.getAlterationSpecialItemReward() == null
-                            || room.getAlterationSpecialItemReward().trim().isEmpty())) {
-                        rewardTypeForP = "SPIRITUAL_XP";
-                    }
-                    if ("SPIRITUAL_XP".equals(rewardTypeForP)) {
-                        int spXp = room.getAlterationSpiritualXpReward();
-                        if (spXp > 0)
-                            p.setSpiritualiteExperience(p.getSpiritualiteExperience() + spXp);
-                    }
+                    p.setExperience(p.getExperience() + expEffect);
+                    if (p.getExperience() < 0)
+                        p.setExperience(0);
 
                     personnageService.save(p);
+                    session.logInteractionResult(username, "Effet appliqué : " + (effect >= 0 ? "+" : "") + effect + " PV et " + (expEffect >= 0 ? "+" : "") + expEffect + " XP sur " + p.getName() + ".");
+                } else {
+                    session.logInteractionResult(username, "Prérequis insuffisants pour l'altération sur " + p.getName() + ".");
                 }
-            }
-
-            if (eligibleCount > 0) {
-                boolean logged = false;
-                if (effect > 0) {
-                    session.addLog(eligibleCount + " héros sont soignés de " + effect + " PV.");
-                    logged = true;
-                } else if (effect < 0) {
-                    session.addLog(eligibleCount + " héros sacrifient " + (-effect) + " PV.");
-                    logged = true;
-                }
-
-                if (expEffect > 0) {
-                    session.addLog(eligibleCount + " héros gagnent " + expEffect + " XP.");
-                    logged = true;
-                } else if (expEffect < 0) {
-                    session.addLog(eligibleCount + " héros sacrifient " + (-expEffect) + " XP.");
-                    logged = true;
-                }
-
-                String rewardType = room.getAlterationRewardType();
-                if ("SPECIAL_ITEM".equals(rewardType) && (room.getAlterationSpecialItemReward() == null
-                        || room.getAlterationSpecialItemReward().trim().isEmpty())) {
-                    rewardType = "SPIRITUAL_XP";
-                }
-
-                if ("SPIRITUAL_XP".equals(rewardType) && room.getAlterationSpiritualXpReward() > 0) {
-                    session.addLog(eligibleCount + " héros reçoivent " + room.getAlterationSpiritualXpReward()
-                            + " XP de Spiritualité !");
-                    logged = true;
-                } else if ("SPECIAL_ITEM".equals(rewardType)) {
-                    String itemName = room.getAlterationSpecialItemReward();
-                    Anomalie template = anomalieRepository.findFirstByNameAndIsTemplateTrueOrderByIdAsc(itemName);
-                    if (template != null && !session.getPlayers().isEmpty()) {
-                        java.util.Set<String> rewardedUsernames = new java.util.HashSet<>();
-                        for (Personnage p : session.getPlayers()) {
-                            if (!session.isEligibleForRewards(p))
-                                continue;
-                            AppUser user = p.getUser();
-                            if (user != null && !rewardedUsernames.contains(user.getUsername())) {
-                                rewardedUsernames.add(user.getUsername());
-                                Anomalie newAnomaly = new Anomalie();
-                                newAnomaly.setName(template.getName());
-                                newAnomaly.setDescription(template.getDescription());
-                                newAnomaly.setSpiritualite(template.getSpiritualite());
-                                newAnomaly.setCategory(template.getCategory());
-                                newAnomaly.setLevel(template.getLevel() != null ? template.getLevel() : 1);
-                                newAnomaly.setMagicObject(template.isMagicObject());
-                                newAnomaly.setOwnerUsername(user.getUsername());
-                                newAnomaly.setUser(user);
-                                anomalieRepository.save(newAnomaly);
-                                user.getDiscoveredItems().add(newAnomaly.getName());
-                            }
-                        }
-                        session.addLog("L'équipe reçoit l'Item Spécial : " + itemName + " !");
-                        logged = true;
-                    } else {
-                        session.addLog("L'item spécial '" + itemName + "' n'est plus disponible.");
-                        logged = true;
-                    }
-                }
-
-                if (!logged) {
-                    session.addLog("L'altération s'est produite, mais elle n'a eu aucun effet notable.");
-                }
-            } else {
-                session.addLog("Aucun héros n'avait les ressources nécessaires pour l'altération.");
-            }
-
-        } else if ("ITEM".equals(altType)) {
-            String requiredItemName = room.getAlterationRequiredItem();
-            if (requiredItemName == null || requiredItemName.isEmpty()) {
-                throw new RuntimeException("Aucun item requis pour cette altération.");
-            }
-
-            if (session.getPlayers().isEmpty()) {
-                throw new RuntimeException("Aucun joueur dans la session.");
-            }
-
-            Personnage accepteur = null;
-            if (characterId != null) {
-                accepteur = session.getPlayers().stream().filter(p -> p.getId().equals(characterId)).findFirst()
-                        .orElse(null);
-            }
-            if (accepteur == null) {
-                accepteur = session.getPlayers().get(0);
-            }
-
-            AppUser user = accepteur.getUser();
-            if (user == null) {
-                throw new RuntimeException("Utilisateur inconnu.");
-            }
-
-            List<Anomalie> userAnomalies = anomalieRepository.findByOwnerUsername(user.getUsername());
-            Anomalie toDestroy = userAnomalies.stream()
-                    .filter(a -> a.getName().equals(requiredItemName))
-                    .findFirst()
-                    .orElse(null);
-
-            if (toDestroy == null) {
-                throw new RuntimeException("Vous ne possédez pas l'item spécial : " + requiredItemName);
-            }
-
-            consumeAnomalie(user, toDestroy);
-
-            int spXp = room.getAlterationSpiritualXpReward();
-            for (Personnage p : session.getPlayers()) {
-                if (p.getHealthCurrent() <= 0)
+            } else if ("AUTEL".equals(altType)) {
+                if (!"SACRIFICE".equals(choice.getActionType()) || choice.getItemId() == null) {
+                    session.logInteractionResult(username, "Vous avez ignoré l'autel.");
                     continue;
-                if (!session.isEligibleForRewards(p))
+                }
+
+                long itemId = choice.getItemId();
+                Anomalie toDestroy = anomalieRepository.findById(itemId).orElse(null);
+                if (toDestroy == null || !u.getUsername().equals(toDestroy.getOwnerUsername())) {
+                    session.logInteractionResult(username, "Anomalie introuvable !");
                     continue;
-                if (spXp > 0) {
-                    p.setSpiritualiteExperience(p.getSpiritualiteExperience() + spXp);
+                }
+
+                String reqSp = room.getAltarRequiredSpirituality();
+                if (reqSp != null && toDestroy.getSpiritualite() != null
+                        && !toDestroy.getSpiritualite().name().equals(reqSp)) {
+                    session.logInteractionResult(username, "L'autel réclame une offrande de spiritualité " + reqSp + ".");
+                    continue;
+                }
+
+                String anomalyName = toDestroy.getName();
+                consumeAnomalie(u, toDestroy);
+                session.logInteractionResult(username, "Vous avez sacrifié l'anomalie : " + anomalyName + ".");
+
+                String rewardType = room.getAltarRewardType();
+                int rewardValue = room.getAltarRewardValue();
+                int level = toDestroy.getLevel() != null ? toDestroy.getLevel() : 1;
+                double multiplier = level == 1 ? 1.0 : (level == 2 ? 1.6 : 2.4);
+
+                if ("GOLD".equals(rewardType)) {
+                    int multipliedValue = (int) Math.round(rewardValue * multiplier);
+                    u.setMonnaie(u.getMonnaie() + multipliedValue);
+                    userRepository.save(u);
+                    session.logInteractionResult(username, "L'autel vous a offert " + multipliedValue + " Or !");
+                } else if ("XP".equals(rewardType)) {
+                    int multipliedValue = (int) Math.round(rewardValue * multiplier);
+                    p.setSpiritualiteExperience(p.getSpiritualiteExperience() + multipliedValue);
                     personnageService.save(p);
-                }
-            }
-            session.addLog("Vous avez sacrifié l'item : " + requiredItemName + " !");
-            if (spXp > 0) {
-                session.addLog("Vos héros reçoivent " + spXp + " XP de Spiritualité en échange !");
-            }
-        } else if ("AUTEL".equals(altType)) {
-            if (anomalyId == null) {
-                throw new RuntimeException("Aucune anomalie sélectionnée pour le sacrifice.");
-            }
+                    session.logInteractionResult(username, "L'autel a accordé " + multipliedValue + " XP de Spiritualité à " + p.getName() + ".");
+                } else if ("ITEM".equals(rewardType)) {
+                    int chance = level == 1 ? 45 : (level == 2 ? 75 : 100);
+                    boolean success = new java.util.Random().nextInt(100) < chance;
 
-            Personnage accepteur = null;
-            if (characterId != null) {
-                accepteur = session.getPlayers().stream().filter(p -> p.getId().equals(characterId)).findFirst()
-                        .orElse(null);
-            }
-            if (accepteur == null) {
-                accepteur = session.getPlayers().get(0);
-            }
-            AppUser user = accepteur.getUser();
-
-            Anomalie toDestroy = anomalieRepository.findById(anomalyId)
-                    .orElseThrow(() -> new RuntimeException("Anomalie introuvable."));
-
-            if (!toDestroy.getOwnerUsername().equals(user.getUsername())) {
-                throw new RuntimeException("Cette anomalie ne vous appartient pas.");
-            }
-
-            if (!toDestroy.isMagicObject()) {
-                throw new RuntimeException("Vous ne pouvez sacrifier que des objets magiques, pas des matériaux.");
-            }
-
-            String reqSp = room.getAltarRequiredSpirituality();
-            if (reqSp != null && toDestroy.getSpiritualite() != null
-                    && !toDestroy.getSpiritualite().name().equals(reqSp)) {
-                throw new RuntimeException("L'autel réclame une offrande de spiritualité " + reqSp + ".");
-            }
-
-            String anomalyName = toDestroy.getName();
-            consumeAnomalie(user, toDestroy);
-            session.addLog("Vous avez sacrifié l'anomalie : " + anomalyName + " sur l'autel.");
-
-            String rewardType = room.getAltarRewardType();
-            int rewardValue = room.getAltarRewardValue();
-            int level = toDestroy.getLevel() != null ? toDestroy.getLevel() : 1;
-            double multiplier = level == 1 ? 1.0 : (level == 2 ? 1.6 : 2.4);
-
-            if ("GOLD".equals(rewardType)) {
-                int multipliedValue = (int) Math.round(rewardValue * multiplier);
-                java.util.Set<AppUser> rewardedUsers = new java.util.HashSet<>();
-                for (Personnage p : session.getPlayers()) {
-                    AppUser u = p.getUser();
-                    if (u != null && !rewardedUsers.contains(u)) {
-                        rewardedUsers.add(u);
-                        u.setMonnaie(u.getMonnaie() + multipliedValue);
-                        userRepository.save(u);
-                    }
-                }
-                session.addLog("L'autel récompense le groupe de " + multipliedValue + " Or !");
-            } else if ("XP".equals(rewardType)) {
-                int multipliedValue = (int) Math.round(rewardValue * multiplier);
-                int aliveHeroes = (int) session.getPlayers().stream().filter(p -> p.getHealthCurrent() > 0).count();
-                if (aliveHeroes > 0) {
-                    int xpPerHero = multipliedValue / aliveHeroes;
-                    for (Personnage p : session.getPlayers()) {
-                        if (p.getHealthCurrent() > 0) {
-                            p.setSpiritualiteExperience(p.getSpiritualiteExperience() + xpPerHero);
-                            personnageService.save(p);
-                        }
-                    }
-                    session.addLog("L'autel accorde " + xpPerHero + " XP de Spiritualité à chaque héros !");
-                }
-            } else if ("ITEM".equals(rewardType)) {
-                int chance = level == 1 ? 45 : (level == 2 ? 75 : 100);
-                boolean success = new java.util.Random().nextInt(100) < chance;
-
-                if (success) {
-                    Equipment template = equipmentRepository.findById((long) rewardValue).orElse(null);
-                    if (template != null) {
-                        java.util.Set<AppUser> rewardedUsers = new java.util.HashSet<>();
-                        for (Personnage p : session.getPlayers()) {
-                            if (p.getUser() != null) {
-                                rewardedUsers.add(p.getUser());
-                            }
-                        }
-
-                        if (template.getSlot() == generation.grimoire.enumeration.EquipmentSlot.CONSOMMABLE) {
+                    if (success) {
+                        Equipment template = room.getAltarRewardEquipment();
+                        if (template != null) {
                             Equipment clone = new Equipment();
                             clone.copyStatsFrom(template);
                             clone.setTemplate(false);
-                            clone.setUser(user);
-                            clone.setOwnerUsername(user.getUsername());
+                            clone.setUser(u);
+                            clone.setOwnerUsername(username);
                             equipmentRepository.save(clone);
-                            user.getDiscoveredItems().add(clone.getName());
 
-                            double currentWeight = session.getActiveConsumables().stream()
-                                    .filter(java.util.Objects::nonNull)
-                                    .mapToDouble(e -> e.calculateWeight())
-                                    .sum();
-                            double maxWeight = 10.0 + 5.0 * session.getPlayers().size();
+                            if (clone.getSlot() == generation.grimoire.enumeration.EquipmentSlot.CONSOMMABLE) {
+                                double currentWeight = session.getActiveConsumables().stream()
+                                        .filter(java.util.Objects::nonNull).mapToDouble(e -> e.calculateWeight()).sum();
+                                double maxWeight = 10.0 + 5.0 * session.getPlayers().size();
 
-                            if (currentWeight + clone.calculateWeight() <= maxWeight) {
-                                session.getActiveConsumables().add(clone);
-                                session.addLog("L'autel vous a offert un équipement : " + template.getName()
-                                        + " et il a été ajouté à l'inventaire du groupe.");
+                                if (currentWeight + clone.calculateWeight() <= maxWeight) {
+                                    session.getActiveConsumables().add(clone);
+                                    session.logInteractionResult(username, "L'autel a offert l'équipement : " + template.getName() + " (ajouté au groupe).");
+                                } else {
+                                    session.logInteractionResult(username, "L'autel a offert l'équipement : " + template.getName() + " (envoyé au coffre).");
+                                }
                             } else {
-                                session.addLog("L'autel vous a offert un équipement : " + template.getName()
-                                        + " (envoyé au coffre, poids max atteint).");
-                            }
-                            room.setAltarRewardEquipment(clone);
-                        } else {
-                            Equipment firstClone = null;
-                            for (AppUser u : rewardedUsers) {
-                                Equipment clone = new Equipment();
-                                clone.copyStatsFrom(template);
-                                clone.setTemplate(false);
-                                clone.setUser(u);
-                                clone.setOwnerUsername(u.getUsername());
-                                equipmentRepository.save(clone);
                                 u.getDiscoveredItems().add(clone.getName());
-                                if (firstClone == null)
-                                    firstClone = clone;
+                                session.logInteractionResult(username, "L'autel a offert l'équipement : " + template.getName() + " !");
                             }
-                            session.addLog(
-                                    "L'autel a offert un équipement à chaque joueur : " + template.getName() + " !");
-                            room.setAltarRewardEquipment(firstClone);
                         }
+                    } else {
+                        session.logInteractionResult(username, "L'autel a consumé votre offrande sans vous accorder d'équipement...");
                     }
-                } else {
-                    room.setAltarRewardEquipment(null);
-                    session.addLog("L'autel a consumé votre offrande sans vous accorder d'équipement...");
                 }
             }
         }
 
         session.setRoomEventCompleted(true);
+        session.addLog("Le groupe a fait ses choix face à l'événement.");
         return session;
     }
 
-    CombatSession useRope(CombatSession session, Long equipmentId) {
+    CombatSession useRope(CombatSession session) {
         if (session.getCurrentRoom().getType() != generation.grimoire.enumeration.RoomType.EVENT ||
                 session.getCurrentRoom().getEventSubType() != generation.grimoire.enumeration.EventSubType.PIEGE) {
             throw new RuntimeException("Ce n'est pas un piège !");
         }
-
         if (!session.getCurrentRoom().isTrapHasRopeOption()) {
             throw new RuntimeException("Vous ne pouvez pas utiliser de corde ici.");
         }
-
         if (session.isRoomEventCompleted()) {
             throw new RuntimeException("L'événement a déjà été résolu.");
         }
 
-        Equipment rope = null;
-        for (Equipment eq : session.getActiveConsumables()) {
-            if (eq.getId().equals(equipmentId)
-                    && eq.getConsumableCategory() == generation.grimoire.enumeration.ConsumableCategory.CORDE) {
-                rope = eq;
-                break;
+        generation.grimoire.entity.pve.Salle room = session.getCurrentRoom();
+        int hpPct = room.getTrapDamageHpPct() != null ? room.getTrapDamageHpPct() : 0;
+        int manaPct = room.getTrapDamageManaPct() != null ? room.getTrapDamageManaPct() : 0;
+        int hpFixed = room.getTrapDamageHpFixed() != null ? room.getTrapDamageHpFixed() : 0;
+        int manaFixed = room.getTrapDamageManaFixed() != null ? room.getTrapDamageManaFixed() : 0;
+
+        if (hpPct == 0 && manaPct == 0 && hpFixed == 0 && manaFixed == 0 && room.getTrapAmount() > 0) {
+            if ("PV".equals(room.getTrapType())) hpFixed = room.getTrapAmount();
+            else if ("MANA".equals(room.getTrapType())) manaFixed = room.getTrapAmount();
+        }
+
+        java.util.Map<String, generation.grimoire.model.pve.RoomInteractionChoice> choices = session.getPlayerRoomChoices();
+        if (choices == null) choices = new java.util.HashMap<>();
+
+        // Traiter chaque joueur
+        for (Personnage p : session.getPlayers()) {
+            if (p.getHealthCurrent() <= 0 || !session.isEligibleForRewards(p)) continue;
+            AppUser u = p.getUser();
+            if (u == null) continue;
+            String username = u.getUsername();
+
+            generation.grimoire.model.pve.RoomInteractionChoice choice = choices.get(username);
+            boolean avoided = false;
+
+            if (choice != null && "ROPE".equals(choice.getActionType())) {
+                Equipment rope = null;
+                for (Equipment eq : session.getActiveConsumables()) {
+                    if (eq.getId().equals(choice.getItemId()) && eq.getConsumableCategory() == generation.grimoire.enumeration.ConsumableCategory.CORDE) {
+                        rope = eq;
+                        break;
+                    }
+                }
+                if (rope != null) {
+                    session.getActiveConsumables().remove(rope);
+                    equipmentRepository.delete(rope);
+                    session.logInteractionResult(username, "Vous utilisez " + rope.getName() + " pour éviter le piège !");
+                    avoided = true;
+                } else {
+                    session.logInteractionResult(username, "Corde introuvable ! Le piège se déclenche...");
+                }
+            }
+
+            if (!avoided) {
+                int hpDmg = hpFixed + (int) (p.getHealthMax() * (hpPct / 100.0));
+                int manaDmg = manaFixed + (int) (p.getManaMax() * (manaPct / 100.0));
+
+                if (hpDmg > 0) p.takeDamage(hpDmg, generation.grimoire.enumeration.DamageType.BRUT);
+                if (manaDmg > 0) p.setManaCurrent(Math.max(0, p.getManaCurrent() - manaDmg));
+
+                String log = "Vos héros tombent dans un piège !";
+                if (hpDmg > 0) log += " -" + hpDmg + " PV.";
+                if (manaDmg > 0) log += " -" + manaDmg + " Mana.";
+                session.logInteractionResult(username, log);
             }
         }
 
-        if (rope == null) {
-            throw new RuntimeException("L'équipe ne possède pas cette Corde !");
-        }
-
-        session.getActiveConsumables().remove(rope);
-        equipmentRepository.delete(rope);
-
-        session.addLog("Vous utilisez " + rope.getName() + " pour éviter le piège !");
         session.setRoomEventCompleted(true);
+        session.addLog("Le groupe a fait face au piège.");
         return session;
     }
 
@@ -1258,7 +1090,7 @@ public class CombatRoomService {
                                 clone.setUser(user);
                                 anomalieRepository.save(clone);
                                 user.getDiscoveredItems().add(clone.getName());
-                                session.addLog(user.getUsername() + " a obtenu l'item : " + anomalyName + " !");
+                                session.logInteractionResult(user.getUsername(), "Objet trouvé : " + anomalyName + " (ajouté à l'inventaire).");
                             }
                         }
                     }
