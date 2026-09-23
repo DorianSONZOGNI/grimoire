@@ -207,6 +207,16 @@ export async function buyMerchantItem(lootIndex) {
             return;
         }
         const data = await res.json();
+
+        try {
+            const anomRes = await globalFetch('/api/anomalies');
+            if (anomRes.ok) {
+                window.myGlobalAnomalies = await anomRes.json();
+            }
+        } catch (e) {
+            console.error("Erreur actualisation anomalies", e);
+        }
+
         updateUI(data);
     } catch (e) {
         console.error(e);
