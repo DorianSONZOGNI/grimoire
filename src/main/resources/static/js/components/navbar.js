@@ -85,3 +85,22 @@ class AppNavbar extends HTMLElement {
 }
 
 customElements.define('app-navbar', AppNavbar);
+
+// Keep-alive server ping (inactivité > 2min hors combat)
+let lastUserActivity = Date.now();
+['mousemove', 'keydown', 'click', 'scroll', 'touchstart'].forEach(evt => {
+    document.addEventListener(evt, () => { lastUserActivity = Date.now(); }, { passive: true });
+});
+
+setInterval(() => {
+    if (window.location.pathname.includes('combat.html')) return;
+    
+    // Si inactivité >= 2 minutes
+    if (Date.now() - lastUserActivity >= 120000) {
+        if (window.currentUser && typeof window.globalFetch === 'function') {
+            window.globalFetch('/api/personnage/me').catch(() => {});
+        }
+        // Reset the timer so it only pings once every 2 minutes of continuous inactivity
+        lastUserActivity = Date.now();
+    }
+}, 30000);
