@@ -41,7 +41,20 @@ public class ShopController {
     // --- DAILY SHOP ---
 
     @GetMapping("/daily")
-    public ResponseEntity<Map<String, Object>> getDailyShop() {
+    public ResponseEntity<Map<String, Object>> getDailyShop(Principal principal) {
+        AppUser user = null;
+        if (principal != null) {
+            user = userRepository.findByUsername(principal.getName()).orElse(null);
+        }
+        
+        final java.util.Set<String> ownedEquipments = new java.util.HashSet<>();
+        if (user != null) {
+            java.time.LocalDate today = java.time.LocalDate.now();
+            if (today.equals(user.getLastShopPurchaseDate()) && user.getDailyShopPurchases() != null) {
+                ownedEquipments.addAll(user.getDailyShopPurchases());
+            }
+            System.out.println("DEBUG getDailyShop - user: " + user.getUsername() + ", today: " + today + ", lastShopPurchaseDate: " + user.getLastShopPurchaseDate() + ", dailyShopPurchases: " + user.getDailyShopPurchases() + ", ownedEquipments: " + ownedEquipments);
+        }
         List<Equipment> templates = equipmentRepository.findByIsTemplateTrueAndAvailableInShopTrue();
 
         List<Equipment> equipmentTemplates = templates.stream()
@@ -83,11 +96,11 @@ public class ShopController {
         }
 
         Map<String, Object> response = new HashMap<>();
-        response.put("daily", dailySelection.stream().map(this::toShopDto).toList());
+        response.put("daily", dailySelection.stream().map(e -> toShopDto(e, ownedEquipments)).toList());
         response.put("promoExpiresAt", promoExpiresAt);
 
         if (promoItem != null) {
-            EquipmentShopDTO promoDto = toShopDto(promoItem);
+            EquipmentShopDTO promoDto = toShopDto(promoItem, ownedEquipments);
             double originalPrice = promoDto.getShopPrice();
             promoDto.setShopPrice(Math.ceil(originalPrice * 0.8));
             promoDto.setOriginalPrice(originalPrice);
@@ -97,7 +110,7 @@ public class ShopController {
 
         // Consumables from templates
         List<EquipmentShopDTO> consumables = consumableTemplates.stream()
-                .map(this::toShopDto)
+                .map(e -> toShopDto(e, ownedEquipments))
                 .toList();
         response.put("consumables", consumables);
 
@@ -183,6 +196,24 @@ public class ShopController {
             return ResponseEntity.badRequest().body(Map.of("message", "Fonds insuffisants en or."));
         }
 
+        if (template.getSlot() != EquipmentSlot.CONSOMMABLE) {
+            java.time.LocalDate today = java.time.LocalDate.now();
+            if (user.getLastShopPurchaseDate() == null || !user.getLastShopPurchaseDate().equals(today)) {
+                user.setLastShopPurchaseDate(today);
+                if (user.getDailyShopPurchases() != null) {
+                    user.getDailyShopPurchases().clear();
+                } else {
+                    user.setDailyShopPurchases(new java.util.HashSet<>());
+                }
+            }
+            
+            boolean alreadyOwns = user.getDailyShopPurchases().contains(template.getName());
+            if (alreadyOwns) {
+                return ResponseEntity.badRequest().body(Map.of("message", "Vous avez déjà acheté cet objet aujourd'hui."));
+            }
+            user.getDailyShopPurchases().add(template.getName());
+        }
+
         List<Anomalie> toConsumeList = new ArrayList<>();
         List<String> missingAnomaliesMsg = new ArrayList<>();
         if (template.getPriceAnomalies() != null && !template.getPriceAnomalies().isEmpty()) {
@@ -249,7 +280,7 @@ public class ShopController {
         if (principal == null || !isAdmin(principal))
             return ResponseEntity.status(403).build();
         List<Equipment> templates = equipmentRepository.findByIsTemplateTrueAndAvailableInShopTrue();
-        return ResponseEntity.ok(templates.stream().map(this::toShopDto).toList());
+        return ResponseEntity.ok(templates.stream().map(e -> toShopDto(e, java.util.Collections.emptySet())).toList());
     }
 
     @PostMapping("/templates")
@@ -265,7 +296,7 @@ public class ShopController {
         eq.setOwnerUsername("MODELE");
         eq.setUser(null);
         equipmentRepository.save(eq);
-        return ResponseEntity.ok(toShopDto(eq));
+        return ResponseEntity.ok(toShopDto(eq, java.util.Collections.emptySet()));
     }
 
     @PutMapping("/templates/{id}")
@@ -296,7 +327,7 @@ public class ShopController {
                 renameCascadeService.cascadeEquipmentRename(oldName, eq.getName());
             }
 
-            return ResponseEntity.ok(toShopDto(eq));
+            return ResponseEntity.ok(toShopDto(eq, java.util.Collections.emptySet()));
         }).orElse(ResponseEntity.notFound().build());
     }
 
@@ -325,7 +356,7 @@ public class ShopController {
 
 
 
-    private EquipmentShopDTO toShopDto(Equipment e) {
+    private EquipmentShopDTO toShopDto(Equipment e, java.util.Set<String> ownedEquipments) {
         EquipmentShopDTO dto = equipmentMapper.toShopDto(e);
         
         double shopPrice = e.calculateShopPrice();
@@ -337,6 +368,12 @@ public class ShopController {
             else if (nameLower.equals("potion de mana")) shopPrice = 10;
         }
         dto.setShopPrice(shopPrice);
+        
+        if (e.getSlot() != EquipmentSlot.CONSOMMABLE && ownedEquipments != null && e.getName() != null) {
+            dto.setAlreadyOwned(ownedEquipments.contains(e.getName()));
+        } else {
+            dto.setAlreadyOwned(false);
+        }
         
         return dto;
     }

@@ -11,7 +11,7 @@ const pageState = {
 async function loadShop() {
     try {
         const [resShop, resAno] = await Promise.all([
-            globalFetch('/api/shop/daily'),
+            globalFetch(`/api/shop/daily?_t=${Date.now()}`),
             globalFetch('/api/anomalies/all-templates')
         ]);
         pageState.shopItems = await resShop.json();
@@ -148,27 +148,33 @@ function generateStandHtml(eq) {
                 ${eq.description ? `<div class="font-italic text-muted text-center text-sm mt-2">${eq.description}</div>` : ''}
             </div>
             
-            <button class="shop-stand-price flex-wrap gap-2" onclick="window.openBuyModal('${eq.id}', ${isConsumable})">
-                <div>${oldPriceHtml} ${priceStr} <span class="material-symbols-outlined align-middle icon-md">monetization_on</span></div>
-                ${(() => {
-            if (eq.priceAnomalies && Object.keys(eq.priceAnomalies).length > 0) {
-                let anos = [];
-                for (const [n, q] of Object.entries(eq.priceAnomalies)) {
-                    let aTemp = pageState.allAnomalies.find(a => a.name === n);
+            ${eq.alreadyOwned ? 
+                `<div class="shop-stand-price flex-wrap gap-2" style="background: linear-gradient(135deg, #ef4444, #b91c1c); color: white; cursor: not-allowed; opacity: 0.8;">
+                    <span class="material-symbols-outlined align-middle icon-md">remove_shopping_cart</span> Vendu
+                </div>`
+            : 
+                `<button class="shop-stand-price flex-wrap gap-2" onclick="window.openBuyModal('${eq.id}', ${isConsumable})">
+                    <div>${oldPriceHtml} ${priceStr} <span class="material-symbols-outlined align-middle icon-md">monetization_on</span></div>
+                    ${(() => {
+                if (eq.priceAnomalies && Object.keys(eq.priceAnomalies).length > 0) {
+                    let anos = [];
+                    for (const [n, q] of Object.entries(eq.priceAnomalies)) {
+                        let aTemp = pageState.allAnomalies.find(a => a.name === n);
 
-                    const catIcon = aTemp && aTemp.category ? getCategoryIcon(aTemp.category) : 'star';
+                        const catIcon = aTemp && aTemp.category ? getCategoryIcon(aTemp.category) : 'star';
 
-                    const spiriColor = aTemp && aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
-                    const tooltipData = getAnomalyTooltipHTML(aTemp, n);
-                    anos.push(`<span class="anomaly-badge" style="border-color: ${spiriColor}; background: linear-gradient(${spiriColor}25, ${spiriColor}25), #1e293b; color: ${spiriColor};" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}">
-                                <span class="material-symbols-outlined align-middle text-base" style="color: ${spiriColor};">${catIcon}</span> ${q}
-                            </span>`);
+                        const spiriColor = aTemp && aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
+                        const tooltipData = getAnomalyTooltipHTML(aTemp, n);
+                        anos.push(`<span class="anomaly-badge" style="border-color: ${spiriColor}; background: linear-gradient(${spiriColor}25, ${spiriColor}25), #1e293b; color: ${spiriColor};" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}">
+                                    <span class="material-symbols-outlined align-middle text-base" style="color: ${spiriColor};">${catIcon}</span> ${q}
+                                </span>`);
+                    }
+                    return `<div class="flex flex-wrap justify-center gap-1">${anos.join('')}</div>`;
                 }
-                return `<div class="flex flex-wrap justify-center gap-1">${anos.join('')}</div>`;
+                return '';
+            })()}
+                </button>`
             }
-            return '';
-        })()}
-            </button>
         </div>
     `;
 }
@@ -337,6 +343,7 @@ window.openBuyModal = function (id, isConsumable = false) {
                     if (window.checkAuthStatus) {
                         window.checkAuthStatus(); // Met à jour l'or affiché
                     }
+                    loadShop(); // Met à jour l'affichage de la boutique (boutons Vendu)
                 } else {
                     showNotif(data.message || "Erreur lors de l'achat.", true);
                 }
@@ -391,10 +398,11 @@ function startPromoCountdown() {
 
 window.addEventListener('DOMContentLoaded', async () => {
     if (window.initAppMeta) await window.initAppMeta();
-    loadShop();
+    // Attend que auth soit chargé pour fetch loadShop
 });
 
 window.addEventListener('authLoaded', () => {
+    loadShop();
     const adminLink = document.getElementById('adminShopLink');
     if (adminLink) {
         adminLink.style.display = window.isAdmin ? 'inline-flex' : 'none';
