@@ -249,12 +249,12 @@ async function loadWeekly() {
                             Classement Final
                         </div>
                         <div class="quest-leaderboard-list">
-                            ${renderLeaderboard(plb, 'weekly')}
+                            ${renderLeaderboard(pLb, 'weekly')}
                         </div>
                     </div>
                 </div>
             `;
-            bindClaimButton(prevCard, pq.id);
+            bindClaimButton(prevCard, pQuest.id);
         } else {
             prevSection.style.display = 'none';
         }
