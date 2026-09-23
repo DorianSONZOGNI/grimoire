@@ -97,30 +97,62 @@ async function loadEquipments() {
 
 
 
+window.updateDeleteModalPrice = function() {
+    let ctx = window.currentDeleteCtx;
+    if (!ctx) return;
+    let qtyInput = document.getElementById('deleteQuantityInput');
+    if (!qtyInput) return;
+    let qty = parseInt(qtyInput.value, 10) || 1;
+    if (qty > ctx.maxQty) qty = ctx.maxQty;
+    if (qty < 1) qty = 1;
+    qtyInput.value = qty;
+    
+    const container = document.getElementById('deletePriceContainer');
+    if (container && ctx.weight) {
+        container.innerText = +(ctx.weight * qty).toFixed(1);
+    }
+}
+
 window.deleteAnomalie = function (idsStr) {
     const ids = String(idsStr).split(',');
+    const maxQty = ids.length;
     const firstId = Number(ids[0]);
     const eq = pageState.allEquipments.find(e => e.id === firstId && e.isAnomalie);
     if (!eq) return;
+    window.currentDeleteCtx = { eq, maxQty, weight: 0 };
+
+    let qtyHtml = ``;
+    if (maxQty > 1) {
+        qtyHtml = `
+            <div class="mt-4 flex items-center justify-center gap-3">
+                <label for="deleteQuantityInput" style="color: var(--text-muted);">Quantité :</label>
+                <input type="number" id="deleteQuantityInput" value="1" min="1" max="${maxQty}" oninput="if(window.updateDeleteModalPrice) window.updateDeleteModalPrice();" style="background: var(--bg-surface-light, #1e293b); color: white; border: 1px solid var(--border-color, #334155); border-radius: 4px; padding: 4px 8px; width: 60px; text-align: center; outline: none;">
+            </div>
+        `;
+    }
 
     showModal({
         title: "Détruire l'anomalie ?",
-        body: `Voulez-vous vraiment détruire l'anomalie <strong class="text-white">${eq.name}</strong> ?`,
+        body: `Voulez-vous vraiment détruire l'anomalie <strong class="text-white">${eq.name}</strong> ?${qtyHtml}`,
         icon: 'warning',
-        confirmText: "Oui, détruire l'anomalie",
+        confirmText: "Oui, détruire",
         onConfirm: async () => {
+            let qtyToDel = 1;
+            const input = document.getElementById('deleteQuantityInput');
+            if (input) qtyToDel = parseInt(input.value, 10) || 1;
+            
             try {
-                let success = false;
-                for (let id of ids) {
-                    const res = await globalFetch(`/api/anomalies/${id}`, { method: 'DELETE' });
-                    if (res.ok) {
-                        success = true;
-                        showNotif('Anomalie détruite.');
-                        await loadEquipments();
-                        break;
-                    }
+                let successCount = 0;
+                for (let i = 0; i < qtyToDel; i++) {
+                    const res = await globalFetch(`/api/anomalies/${ids[i]}`, { method: 'DELETE' });
+                    if (res.ok) successCount++;
                 }
-                if (!success) showNotif('Impossible de détruire cette anomalie (liée).', true);
+                if (successCount > 0) {
+                    showNotif(`${successCount} anomalie(s) détruite(s).`);
+                    await loadEquipments();
+                } else {
+                    showNotif('Impossible de détruire cette anomalie (liée).', true);
+                }
             } catch (e) {
                 showNotif('Erreur réseau.', true);
             }
@@ -130,31 +162,47 @@ window.deleteAnomalie = function (idsStr) {
 
 window.deleteEquipment = function (idsStr) {
     const ids = String(idsStr).split(',');
+    const maxQty = ids.length;
     const firstId = Number(ids[0]);
     const eq = pageState.allEquipments.find(e => e.id === firstId && !e.isAnomalie);
     if (!eq) return;
 
-    const weightStr = +Number(eq._weight).toFixed(1);
+    const weight = +Number(eq._weight).toFixed(1);
+    window.currentDeleteCtx = { eq, maxQty, weight };
+
+    let qtyHtml = ``;
+    if (maxQty > 1) {
+        qtyHtml = `
+            <div class="mt-4 flex items-center justify-center gap-3">
+                <label for="deleteQuantityInput" style="color: var(--text-muted);">Quantité :</label>
+                <input type="number" id="deleteQuantityInput" value="1" min="1" max="${maxQty}" oninput="if(window.updateDeleteModalPrice) window.updateDeleteModalPrice();" style="background: var(--bg-surface-light, #1e293b); color: white; border: 1px solid var(--border-color, #334155); border-radius: 4px; padding: 4px 8px; width: 60px; text-align: center; outline: none;">
+            </div>
+        `;
+    }
 
     showModal({
         title: "Détruire l'équipement ?",
-        body: `Voulez-vous vraiment détruire <strong class="text-white">${eq.name}</strong> ?<br><br>Vous récupérerez ${weightStr} <span class="material-symbols-outlined align-middle" class="icon-sm mt-neg-1">monetization_on</span>.`,
+        body: `Voulez-vous vraiment détruire <strong class="text-white">${eq.name}</strong> ?<br><br>Vous récupérerez <strong class="text-amber-400" id="deletePriceContainer">${weight}</strong> <span class="material-symbols-outlined align-middle text-amber-300" style="font-size: 1.1em; margin-top: -2px;">monetization_on</span>.${qtyHtml}`,
         icon: 'warning',
         confirmText: `Oui, détruire`,
         onConfirm: async () => {
+            let qtyToDel = 1;
+            const input = document.getElementById('deleteQuantityInput');
+            if (input) qtyToDel = parseInt(input.value, 10) || 1;
+
             try {
-                let success = false;
-                for (let id of ids) {
-                    const res = await globalFetch(`/api/equipments/${id}`, { method: 'DELETE' });
-                    if (res.ok) {
-                        success = true;
-                        showNotif('Équipement détruit.');
-                        await loadEquipments();
-                        if (window.checkAuthStatus) window.checkAuthStatus();
-                        break;
-                    }
+                let successCount = 0;
+                for (let i = 0; i < qtyToDel; i++) {
+                    const res = await globalFetch(`/api/equipments/${ids[i]}`, { method: 'DELETE' });
+                    if (res.ok) successCount++;
                 }
-                if (!success) showNotif('Impossible de détruire cet objet (lié).', true);
+                if (successCount > 0) {
+                    showNotif(`${successCount} équipement(s) détruit(s).`);
+                    await loadEquipments();
+                    if (window.checkAuthStatus) window.checkAuthStatus();
+                } else {
+                    showNotif('Impossible de détruire cet objet (lié).', true);
+                }
             } catch (e) {
                 showNotif('Erreur réseau.', true);
             }
@@ -166,14 +214,14 @@ function groupEquipments(list) {
     let stacked = [];
     let groups = {};
     list.forEach(eq => {
-        const isStackable = eq.isAnomalie || (eq.slot?.name || eq.slot) === 'CONSOMMABLE';
+        const isStackable = eq.isAnomalie || (eq.slot?.name || eq.slot) === 'CONSOMMABLE' || eq.personnage == null;
         if (!isStackable) {
             stacked.push(eq);
             return;
         }
 
         let ownerLabel = eq.personnage ? eq.personnage.name : eq.ownerUsername;
-        let key = eq.isAnomalie ? `ANO_${eq.name}_${eq.level || 1}` : `CONS_${eq.name}`;
+        let key = eq.isAnomalie ? `ANO_${eq.name}_${eq.level || 1}` : `EQ_${eq.name}_${eq.rarity?.name || eq.rarity}_${eq.level || 1}`;
         if (window.isAdmin) {
             key += `_${ownerLabel}`;
         }
