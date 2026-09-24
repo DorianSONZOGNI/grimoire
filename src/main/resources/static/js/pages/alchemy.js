@@ -53,32 +53,32 @@ function setDefaultFilter() {
     if (!window.currentUser || !window.currentUser.seenAlchemyRecipes) return;
     if (alchemyInitialFilterSet) return;
     alchemyInitialFilterSet = true;
-    
+
     window.initialSeenRecipes = [...(window.currentUser.seenAlchemyRecipes || [])];
 
     const unlockedSecrets = window.currentUser.unlockedSecrets || {};
     let hasUnseen = false;
     for (const r of pageState.allRecipes) {
         if (window.currentUser.seenAlchemyRecipes.includes(r.id)) continue;
-        
+
         if (r.rewardType === 'UNLOCK_FEATURE') {
             const currentLevel = unlockedSecrets[r.rewardName] || 0;
             if (currentLevel !== (r.rewardLevel - 1)) continue;
         }
-        
+
         hasUnseen = true;
         break;
     }
-    
+
     let bestType = 'GIVE_CONSUMABLE';
     if (hasUnseen) {
         bestType = 'NOUVEAUTE';
     }
-    
+
     const input = document.getElementById('filterRewardType');
     if (!input) return;
     input.value = bestType;
-    
+
     const wrapper = input.closest('.custom-select-wrapper');
     if (wrapper) {
         const option = wrapper.querySelector(`.custom-option[data-value="${bestType}"]`);
@@ -121,7 +121,8 @@ function canCraftRecipe(r) {
     }
 
     if (r.requiredAnomalies) {
-        for (const [name, qty] of Object.entries(r.requiredAnomalies)) {
+        for (const [name, baseQty] of Object.entries(r.requiredAnomalies)) {
+            const qty = baseQty;
             let count = 0;
             if (pageState.userAnomalies) {
                 count = pageState.userAnomalies.filter(a => a.name === name).length;
@@ -131,7 +132,8 @@ function canCraftRecipe(r) {
     }
 
     if (r.requiredConsumables) {
-        for (const [name, qty] of Object.entries(r.requiredConsumables)) {
+        for (const [name, baseQty] of Object.entries(r.requiredConsumables)) {
+            const qty = baseQty;
             let count = 0;
             if (pageState.userConsumables) {
                 count = pageState.userConsumables.filter(c => c.name === name).length;
@@ -181,7 +183,7 @@ function renderRecipesList() {
         } else if (filterType && r.rewardType !== filterType) {
             return false;
         }
-        
+
         if (searchTxt && !r.name.toLowerCase().includes(searchTxt)) return false;
 
         if (r.rewardType === 'UNLOCK_FEATURE') {
@@ -242,6 +244,7 @@ function renderRecipesList() {
 
 function selectRecipe(recipe, element) {
     pageState.selectedRecipe = recipe;
+    pageState.craftQuantity = 1;
     // Reset borders
     Array.from(document.getElementById('playerRecipesList').children).forEach(c => {
         const isCraftable = c.dataset.craftable === 'true';
@@ -307,12 +310,16 @@ function renderCauldron(r) {
     const container = document.getElementById('cauldronPanel');
     pageState.customSelectSetups = [];
 
+    const isSecret = r.rewardType === 'UNLOCK_FEATURE' || r.rewardType === 'SECRET' || (r.rewardName && r.rewardName.toLowerCase().includes('secret'));
+    const craftQty = isSecret ? 1 : (pageState.craftQuantity || 1);
+
     let reqsHTML = '';
     if (r.costGold > 0) {
-        const hasEnough = (window.currentUser?.monnaie || 0) >= r.costGold;
+        const reqGold = r.costGold * craftQty;
+        const hasEnough = (window.currentUser?.monnaie || 0) >= reqGold;
         reqsHTML += `<div class="flex items-center gap-2 bg-black/40 p-2 rounded-lg border border-amber-500/30 mb-1">
                         <span class="material-symbols-outlined text-amber-500 text-xl">monetization_on</span>
-                        <span class="text-amber-500 font-semibold text-sm">${r.costGold} Or</span>
+                        <span class="text-amber-500 font-semibold text-sm">${reqGold} Or</span>
                         <span class="ml-auto text-xs font-semibold ${hasEnough ? 'text-green-500' : 'text-red-500'}">
                             ${hasEnough ? '✓' : '✗'}
                         </span>
@@ -320,7 +327,8 @@ function renderCauldron(r) {
     }
 
     if (r.requiredAnomalies) {
-        for (const [name, qty] of Object.entries(r.requiredAnomalies)) {
+        for (const [name, baseQty] of Object.entries(r.requiredAnomalies)) {
+            const qty = baseQty * craftQty;
             let matching = pageState.userAnomalies.filter(a => a.name === name);
             const currentAmount = matching.length;
             const hasEnough = currentAmount >= qty;
@@ -400,7 +408,8 @@ function renderCauldron(r) {
     }
 
     if (r.requiredConsumables) {
-        for (const [name, qty] of Object.entries(r.requiredConsumables)) {
+        for (const [name, baseQty] of Object.entries(r.requiredConsumables)) {
+            const qty = baseQty * craftQty;
             let matching = pageState.userConsumables.filter(c => c.name === name);
             const hasEnough = matching.length >= qty;
             const statusColor = hasEnough ? '#10b981' : '#ef4444';
@@ -448,11 +457,11 @@ function renderCauldron(r) {
     if (r.costSpiritXp > 0 || r.rewardType === 'GIVE_SPIRIT_XP') {
         let actionText = '';
         if (r.costSpiritXp > 0 && r.rewardType === 'GIVE_SPIRIT_XP') {
-            actionText = `(-${r.costSpiritXp} XP Spirit. / Gagne ${r.rewardQuantity} XP)`;
+            actionText = `(-${r.costSpiritXp * craftQty} XP Spirit. / Gagne ${r.rewardQuantity * craftQty} XP)`;
         } else if (r.costSpiritXp > 0) {
-            actionText = `(-${r.costSpiritXp} XP Spirit.)`;
+            actionText = `(-${r.costSpiritXp * craftQty} XP Spirit.)`;
         } else if (r.rewardType === 'GIVE_SPIRIT_XP') {
-            actionText = `(Gagne ${r.rewardQuantity} XP Spirit.)`;
+            actionText = `(Gagne ${r.rewardQuantity * craftQty} XP Spirit.)`;
         }
 
         crafterSelectHTML = `
@@ -502,7 +511,7 @@ function renderCauldron(r) {
         }
     }
 
-    let quantityDisplay = `${r.rewardQuantity}x ${r.rewardName}`;
+    let quantityDisplay = `${r.rewardQuantity * craftQty}x ${r.rewardName}`;
     if (r.rewardType === 'GIVE_SPIRIT_XP') {
         quantityDisplay = `+${r.rewardQuantity} XP Spiritualité`;
     } else if (r.rewardLevel > 1) {
@@ -559,7 +568,12 @@ function renderCauldron(r) {
                         <strong class="text-lg" style="color: ${resultColor};">${quantityDisplay}</strong>
                     </div>
 
-                    <button class="btn-transmute" style="margin-top: 1.5rem;" onclick="craftSelected()">
+                    
+                    ${!isSecret ? `<div class="flex items-center gap-2 mt-2 mb-2">
+                        <label class="text-sm font-semibold text-emerald" for="craftQuantityInput">Quantité :</label>
+                        <input type="number" id="craftQuantityInput" min="1" value="${craftQty}" oninput="window.updateCraftQuantity(this)" class="bg-black/50 border border-emerald-500/30 text-white p-1 rounded w-20 text-center" />
+                    </div>` : ''}
+                    <button id="transmuteButton" class="btn-transmute" style="margin-top: 1.5rem;" onclick="craftSelected()">
                         <span class="material-symbols-outlined">science</span>
                         Transmuter
                     </button>
@@ -620,9 +634,21 @@ async function fetchUserCharacters() {
 
 async function craftSelected() {
     if (!pageState.selectedRecipe) return;
+    if (pageState.isCrafting) return;
+
     const msg = document.getElementById('craftMessage');
-    msg.innerText = "Transmutation en cours...";
-    msg.style.color = "var(--text-muted)";
+    const btn = document.getElementById('transmuteButton');
+    pageState.isCrafting = true;
+    if (btn) {
+        btn.disabled = true;
+        btn.style.opacity = '0.5';
+        btn.style.cursor = 'not-allowed';
+    }
+
+    if (msg) {
+        msg.innerText = "Transmutation en cours...";
+        msg.style.color = "var(--text-muted)";
+    }
 
     let anomalieIds = [];
     let consumableIds = [];
@@ -632,14 +658,9 @@ async function craftSelected() {
 
     document.querySelectorAll('.anomaly-select').forEach(sel => {
         const val = sel.value;
-        if (!val) {
-            isValid = false;
-        } else {
-            if (usedAnomalyIds.has(val)) {
-                msg.innerText = "Vous ne pouvez pas sélectionner la même anomalie plusieurs fois.";
-                msg.style.color = "#ef4444";
-                isValid = false;
-            }
+        if (!val) isValid = false;
+        else {
+            if (usedAnomalyIds.has(val)) isValid = false;
             usedAnomalyIds.add(val);
             anomalieIds.push(parseInt(val));
         }
@@ -649,206 +670,185 @@ async function craftSelected() {
     if (pageState.selectedRecipe.requiredAnomalies) {
         for (const qty of Object.values(pageState.selectedRecipe.requiredAnomalies)) reqAnoCount += qty;
     }
-    if (anomalieIds.length < reqAnoCount) {
-        msg.innerText = "Vous n'avez pas assez d'anomalies pour cette recette.";
-        msg.style.color = "#ef4444";
-        return;
-    }
-
-    if (!isValid && msg.innerText === "Transmutation en cours...") {
-        msg.innerText = "Veuillez sélectionner toutes les anomalies requises.";
-        msg.style.color = "#ef4444";
-        return;
-    }
-
-    document.querySelectorAll('.consumable-select').forEach(sel => {
-        const val = sel.value;
-        if (!val) {
-            isValid = false;
-        } else {
-            if (usedConsumableIds.has(val)) {
-                msg.innerText = "Vous ne pouvez pas sélectionner le même consommable plusieurs fois.";
-                msg.style.color = "#ef4444";
-                isValid = false;
-            }
-            usedConsumableIds.add(val);
-            consumableIds.push(parseInt(val));
-        }
-    });
 
     let reqConsCount = 0;
     if (pageState.selectedRecipe.requiredConsumables) {
         for (const qty of Object.values(pageState.selectedRecipe.requiredConsumables)) reqConsCount += qty;
     }
-    if (consumableIds.length < reqConsCount) {
-        msg.innerText = "Vous n'avez pas assez de consommables pour cette recette.";
-        msg.style.color = "#ef4444";
+
+    const craftQty = (pageState.selectedRecipe.rewardType === 'UNLOCK_FEATURE' || pageState.selectedRecipe.rewardType === 'SECRET' || (pageState.selectedRecipe.rewardName && pageState.selectedRecipe.rewardName.toLowerCase().includes('secret'))) ? 1 : (pageState.craftQuantity || 1);
+
+    if (anomalieIds.length < reqAnoCount * craftQty) {
+        if (msg) { msg.innerText = "Vous n'avez pas assez d'anomalies pour cette recette."; msg.style.color = "#ef4444"; }
+        pageState.isCrafting = false;
+        if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer'; }
         return;
     }
 
     if (!isValid) {
-        if (msg.innerText === "Transmutation en cours...") {
-            msg.innerText = "Veuillez sélectionner tous les consommables requis.";
-            msg.style.color = "#ef4444";
-        }
+        if (msg) { msg.innerText = "Veuillez sélectionner correctement toutes les anomalies (sans doublons)."; msg.style.color = "#ef4444"; }
+        pageState.isCrafting = false;
+        if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer'; }
         return;
     }
 
-    const body = {
-        personnageId: null,
-        anomalieIds: anomalieIds,
-        consumableIds: consumableIds
-    };
+    document.querySelectorAll('.consumable-select').forEach(sel => {
+        const val = sel.value;
+        if (!val) isValid = false;
+        else {
+            if (usedConsumableIds.has(val)) isValid = false;
+            usedConsumableIds.add(val);
+            consumableIds.push(parseInt(val));
+        }
+    });
 
+    if (consumableIds.length < reqConsCount * craftQty) {
+        if (msg) { msg.innerText = "Vous n'avez pas assez de consommables pour cette recette."; msg.style.color = "#ef4444"; }
+        pageState.isCrafting = false;
+        if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer'; }
+        return;
+    }
+
+    if (!isValid) {
+        if (msg) { msg.innerText = "Veuillez sélectionner tous les consommables requis (sans doublons)."; msg.style.color = "#ef4444"; }
+        pageState.isCrafting = false;
+        if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer'; }
+        return;
+    }
+
+    let personnageId = null;
     if (pageState.selectedRecipe.costSpiritXp > 0 || pageState.selectedRecipe.rewardType === 'GIVE_SPIRIT_XP') {
         const sel = document.getElementById('crafterSelect');
         if (!sel || !sel.value) {
-            msg.innerText = "Veuillez sélectionner un personnage.";
-            msg.style.color = "#ef4444";
+            if (msg) { msg.innerText = "Veuillez sélectionner un personnage."; msg.style.color = "#ef4444"; }
+            pageState.isCrafting = false;
+            if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer'; }
             return;
         }
-        body.personnageId = parseInt(sel.value);
+        personnageId = parseInt(sel.value);
     }
 
-    try {
-        const res = await globalFetch(`/api/alchemy/craft/${pageState.selectedRecipe.id}`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify(body)
-        });
-        const text = await res.text();
-        if (res.ok) {
-            msg.innerText = text;
-            msg.style.color = "#10b981";
+    let successCount = 0;
+    let lastMessage = "";
 
-            // Add cool particle animation if desired
-            createMagicParticles();
+    for (let i = 0; i < craftQty; i++) {
+        const body = {
+            personnageId: personnageId,
+            anomalieIds: anomalieIds.slice(i * reqAnoCount, (i + 1) * reqAnoCount),
+            consumableIds: consumableIds.slice(i * reqConsCount, (i + 1) * reqConsCount)
+        };
 
-            // Refresh user data (gold) in header
-            if (window.checkAuthStatus) {
-                window.checkAuthStatus().then(() => {
-                    // Fetch recipes again because a new recipe might have been unlocked
-                    globalFetch('/api/alchemy/recipes')
-                        .then(r => r.json())
-                        .then(data => {
-                            pageState.allRecipes = data;
-                            renderRecipesList();
-                        })
-                        .catch(e => console.error("Could not refresh recipes", e));
-                });
+        try {
+            const res = await globalFetch(`/api/alchemy/craft/${pageState.selectedRecipe.id}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(body)
+            });
+            const text = await res.text();
+            if (res.ok) {
+                successCount++;
+                lastMessage = text;
+            } else {
+                lastMessage = text;
+                break; // Stop loop on first failure
             }
-
-            // Refresh inventory
-            await fetchUserInventory();
-
-            setTimeout(() => {
-                // Force refresh of cauldron UI
-                renderCauldron(pageState.selectedRecipe);
-                const msgObj = document.getElementById('craftMessage');
-                if (msgObj) {
-                    msgObj.innerText = text;
-                    msgObj.style.color = "#10b981";
-                }
-            }, 2000);
-
-        } else {
-            msg.innerText = "Échec : " + text;
-            msg.style.color = "#ef4444";
+        } catch (e) {
+            console.warn(e);
+            lastMessage = "Erreur réseau.";
+            break;
         }
-    } catch (e) {
-        msg.innerText = "Erreur de connexion.";
-        msg.style.color = "#ef4444";
     }
+
+    if (msg) {
+        msg.innerText = craftQty > 1 ? `${successCount} / ${craftQty} réussis. ${lastMessage}` : lastMessage;
+        msg.style.color = successCount > 0 ? "#10b981" : "#ef4444";
+    }
+
+    if (successCount > 0) {
+        createMagicParticles();
+        let craftedLabel = pageState.selectedRecipe.rewardName || pageState.selectedRecipe.name;
+        let totalQty = (pageState.selectedRecipe.rewardQuantity || 1) * successCount;
+        if (pageState.selectedRecipe.rewardType === 'GIVE_SPIRIT_XP') craftedLabel = "XP Spiritualité";
+        let notifText = `Transmutation réussie : ${totalQty}x ${craftedLabel}`;
+        if (pageState.selectedRecipe.rewardType === 'UNLOCK_FEATURE' || pageState.selectedRecipe.rewardType === 'SECRET' || (pageState.selectedRecipe.rewardName && pageState.selectedRecipe.rewardName.toLowerCase().includes('secret'))) {
+            notifText = `Transmutation réussie : Secret débloqué`;
+        }
+        if (window.showNotif) {
+            window.showNotif(notifText, false);
+        }
+        if (window.checkAuthStatus) {
+            window.checkAuthStatus().then(() => {
+                globalFetch('/api/alchemy/recipes')
+                    .then(r => r.json())
+                    .then(data => {
+                        pageState.allRecipes = data;
+                        renderRecipesList();
+                    })
+                    .catch(e => console.error(e));
+            });
+        }
+        await fetchUserInventory();
+        setTimeout(() => {
+            renderCauldron(pageState.selectedRecipe);
+            const msgObj = document.getElementById('craftMessage');
+            if (msgObj && msg) {
+                msgObj.innerText = msg.innerText;
+                msgObj.style.color = msg.style.color;
+            }
+        }, 800);
+    }
+
+    pageState.isCrafting = false;
+    if (btn) { btn.disabled = false; btn.style.opacity = '1'; btn.style.cursor = 'pointer'; }
 }
 
 function createMagicParticles() {
-    const panel = document.getElementById('cauldronPanel');
-    const rect = panel.getBoundingClientRect();
-    const centerX = rect.left + rect.width / 2 + window.scrollX;
-    const centerY = rect.top + rect.height / 2 + window.scrollY;
+    const container = document.getElementById('cauldronPanel');
+    if (!container) return;
+    const rect = container.getBoundingClientRect();
 
-    // Central majestic flash
-    const flash = document.createElement('div');
-    flash.style.position = 'absolute';
-    flash.style.width = '30px';
-    flash.style.height = '30px';
-    flash.style.background = '#fff';
-    flash.style.borderRadius = '50%';
-    flash.style.boxShadow = '0 0 60px 30px #06b6d4, 0 0 120px 60px #10b981';
-    flash.style.left = centerX + 'px';
-    flash.style.top = centerY + 'px';
-    flash.style.transform = 'translate(-50%, -50%)';
-    flash.style.pointerEvents = 'none';
-    flash.style.zIndex = '9999';
-    document.body.appendChild(flash);
-
-    flash.animate([
-        { transform: 'translate(-50%, -50%) scale(1)', opacity: 0.5, offset: 0 },
-        { transform: 'translate(-50%, -50%) scale(10)', opacity: 1, offset: 0.3 },
-        { transform: 'translate(-50%, -50%) scale(20)', opacity: 0.9, offset: 0.7 },
-        { transform: 'translate(-50%, -50%) scale(35)', opacity: 0, offset: 1 }
-    ], {
-        duration: 3000,
-        easing: 'cubic-bezier(0.4, 0, 0.2, 1)',
-        fill: 'forwards'
-    });
-
-    setTimeout(() => flash.remove(), 6100);
-
-    // Particles
-    const colors = ['#10b981', '#06b6d4', '#f59e0b', '#a855f7', '#ffffff'];
-
-    for (let i = 0; i < 150; i++) {
+    for (let i = 0; i < 30; i++) {
         const p = document.createElement('div');
-        const size = 4 + Math.random() * 8;
-        p.style.position = 'absolute';
+        p.className = 'magic-particle';
+        const size = Math.random() * 8 + 4;
         p.style.width = `${size}px`;
         p.style.height = `${size}px`;
-        const color = colors[Math.floor(Math.random() * colors.length)];
-        p.style.background = color;
-        p.style.borderRadius = '50%';
-        p.style.boxShadow = `0 0 ${size * 2}px ${color}, 0 0 ${size * 4}px ${color}`;
-        p.style.left = centerX + 'px';
-        p.style.top = centerY + 'px';
+
+        const colors = ['#a78bfa', '#f472b6', '#38bdf8', '#34d399', '#fbbf24'];
+        p.style.background = colors[Math.floor(Math.random() * colors.length)];
+
+        const centerX = rect.left + rect.width / 2;
+        const centerY = rect.top + rect.height / 2;
+        p.style.left = `${centerX + (Math.random() * 60 - 30)}px`;
+        p.style.top = `${centerY + (Math.random() * 60 - 30)}px`;
+        p.style.position = 'fixed';
         p.style.pointerEvents = 'none';
         p.style.zIndex = '9999';
 
+        const tx = (Math.random() * 200 - 100) + 'px';
+        const ty = (Math.random() * 200 - 100) + 'px';
+        p.style.setProperty('--tx', tx);
+        p.style.setProperty('--ty', ty);
+
         document.body.appendChild(p);
 
-        // TRÈS LENT : 10 à 20 secondes
-        const duration = 10000 + Math.random() * 10000;
-        const angle = Math.random() * Math.PI * 2;
-
-        const dist = 100 + Math.random() * 250;
-        const destX = Math.cos(angle) * dist + (Math.random() * 200 - 100);
-        const destY = Math.sin(angle) * dist - (300 + Math.random() * 400);
-
-        p.animate([
-            { transform: 'translate(-50%, -50%) scale(0)', opacity: 0, offset: 0 },
-            { transform: 'translate(-50%, -50%) scale(1.5)', opacity: 1, offset: 0.05 },
-            { transform: `translate(calc(-50% + ${destX * 0.8}px), calc(-50% + ${destY * 0.8}px)) scale(1)`, opacity: 0.8, offset: 0.8 },
-            { transform: `translate(calc(-50% + ${destX}px), calc(-50% + ${destY}px)) scale(0)`, opacity: 0, offset: 1 }
-        ], {
-            duration: duration,
-            easing: 'linear',
-            fill: 'forwards'
-        });
-
         setTimeout(() => {
-            p.remove();
-        }, duration + 100);
+            if (p.parentNode === document.body) {
+                p.remove();
+            }
+        }, 1500);
     }
 }
 
-
-
-// STAT_DEFS → constants.js (window.STAT_DEFS)
-
-
-
-;
-
-
-
-
-
+window.updateCraftQuantity = function (input) {
+    let val = parseInt(input.value);
+    if (isNaN(val)) return;
+    if (val < 1) val = 1;
+    pageState.craftQuantity = val;
+    renderCauldron(pageState.selectedRecipe);
+    const newInput = document.getElementById('craftQuantityInput');
+    if (newInput) {
+        newInput.focus();
+        newInput.setSelectionRange(newInput.value.length, newInput.value.length);
+    }
+};

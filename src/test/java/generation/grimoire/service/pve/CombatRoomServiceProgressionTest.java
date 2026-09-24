@@ -45,7 +45,7 @@ class CombatRoomServiceProgressionTest {
     private SalleRepository salleRepository;
     @Mock
     private SpellAvailabilityService spellAvailabilityService;
-    
+
     @Mock
     private CombatTurnService combatTurnService;
     @Mock
@@ -99,6 +99,7 @@ class CombatRoomServiceProgressionTest {
         session = new CombatSession("test-session", mockDonjon, players);
         session.setCurrentRoom(room1);
     }
+
     @Test
     void testProceedToNextRoom_Normal() {
         // Room 1 has no trap damage set, so it shouldn't damage.
@@ -129,7 +130,7 @@ class CombatRoomServiceProgressionTest {
 
         assertThat(session.isFinished()).isTrue();
         assertThat(session.getCombatLog())
-                .anyMatch(log -> log.contains("terminÃ© le donjon") || log.contains("termin"));
+                .anyMatch(log -> log.contains("terminé le donjon") || log.contains("termin"));
     }
 
     @Test
@@ -156,7 +157,8 @@ class CombatRoomServiceProgressionTest {
         rope.setConsumableCategory(generation.grimoire.enumeration.ConsumableCategory.CORDE);
         session.getActiveConsumables().add(rope);
 
-        session.getPlayerRoomChoices().put(appUser.getUsername(), new generation.grimoire.model.pve.RoomInteractionChoice("ROPE", 15L));
+        session.getPlayerRoomChoices().put(appUser.getUsername(),
+                new generation.grimoire.model.pve.RoomInteractionChoice("ROPE", 15L));
         combatRoomService.useRope(session);
 
         assertThat(session.getActiveConsumables()).isEmpty();
