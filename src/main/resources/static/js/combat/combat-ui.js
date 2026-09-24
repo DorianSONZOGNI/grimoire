@@ -159,7 +159,7 @@ export function updateUI(data) {
     if (ui.hideGlobalTooltip) {
         ui.hideGlobalTooltip();
     }
-    
+
     if (pageState.currentSessionData && data && !data.error) {
         const old = pageState.currentSessionData;
         const isStale = (
@@ -664,7 +664,7 @@ export function updateUI(data) {
                             for (let user in data.interactionResults) {
                                 let lines = data.interactionResults[user];
                                 let userOtherItemsHtml = '';
-                                
+
                                 lines.forEach(log => {
                                     if (user === pageState.currentUsername) {
                                         if (log.includes("trouvez")) {
@@ -674,7 +674,7 @@ export function updateUI(data) {
                                             if (expMatch) expAmount += parseInt(expMatch[1]);
                                         }
                                     }
-                                    
+
                                     if (log.includes("Objet trouvé :")) {
                                         const itemNameMatch = log.match(/Objet trouvé : (.*?) \(/);
                                         if (itemNameMatch) {
@@ -734,7 +734,7 @@ export function updateUI(data) {
                                         }
                                     }
                                 });
-                                
+
                                 if (user !== pageState.currentUsername && userOtherItemsHtml) {
                                     othersLootHtml += `
                                         <div class="mb-4">
@@ -831,7 +831,7 @@ export function updateUI(data) {
                         actionContainer.classList.add('flex-wrap', 'justify-center');
 
                         const keys = data.activeConsumables ? data.activeConsumables.filter(eq => eq.consumableCategory === 'CLE') : [];
-                        
+
                         let keysContainer = document.getElementById('keysContainer');
                         if (!keysContainer) {
                             keysContainer = document.createElement('div');
@@ -841,7 +841,7 @@ export function updateUI(data) {
                         } else {
                             keysContainer.innerHTML = '';
                         }
-                        
+
                         const keyGroups = {};
                         keys.forEach(k => {
                             if (!keyGroups[k.name]) {
@@ -859,7 +859,7 @@ export function updateUI(data) {
                             let groupLocks = 0;
                             let myLockedId = null;
                             let lockedIds = new Set();
-                            
+
                             if (data.playerRoomChoices) {
                                 for (let user in data.playerRoomChoices) {
                                     const choice = data.playerRoomChoices[user];
@@ -884,9 +884,9 @@ export function updateUI(data) {
 
                             const btn = document.createElement('button');
                             btn.className = 'flex items-center gap-2 p-1.5 px-3 rounded-full border relative transition-all duration-300 hover:scale-105 shadow-md';
-                            
+
                             const isChosen = myLockedId !== null;
-                            
+
                             if (isChosen) {
                                 btn.style.background = 'rgba(22, 163, 74, 0.4)';
                                 btn.style.borderColor = '#4ade80';
@@ -899,7 +899,7 @@ export function updateUI(data) {
                                 btn.style.background = 'rgba(30, 41, 59, 0.8)';
                                 btn.style.borderColor = `${rarityColor}80`;
                             }
-                            
+
                             if (!isChosen && groupLocks >= group.ids.length) {
                                 btn.disabled = true;
                                 btn.style.opacity = '0.5';
@@ -908,7 +908,7 @@ export function updateUI(data) {
                                 btn.style.cursor = 'not-allowed';
                                 btn.classList.remove('hover:scale-105');
                             }
-                            
+
                             btn.onclick = () => {
                                 if (btn.disabled) return;
                                 let idToSend = myLockedId;
@@ -917,12 +917,12 @@ export function updateUI(data) {
                                 }
                                 openChest(idToSend, 'OPEN_KEY');
                             };
-                            
+
                             if (tooltipDataHtml) {
                                 btn.setAttribute('onmouseenter', 'window.showGlobalTooltip ? window.showGlobalTooltip(this) : null');
                                 btn.setAttribute('onmouseleave', 'window.hideGlobalTooltip ? window.hideGlobalTooltip() : null');
                             }
-                            
+
                             btn.innerHTML = `
                                 ${tooltipDataHtml ? `<template class="tooltip-data">${tooltipDataHtml}</template>` : ''}
                                 <span class="material-symbols-outlined" style="color: ${rarityColor}; font-size: 1.5rem;">vpn_key</span>
@@ -1211,12 +1211,12 @@ export function updateUI(data) {
 
                             let gainedItemsHtml = '';
                             let othersLootHtml = '';
-                            
+
                             if (data.interactionResults) {
                                 for (let user in data.interactionResults) {
                                     let logs = data.interactionResults[user];
                                     let userOtherItemsHtml = '';
-                                    
+
                                     logs.forEach(log => {
                                         let logHtml = '';
 
@@ -1252,7 +1252,7 @@ export function updateUI(data) {
                                                 const eqName = itemNameMatch[1].trim();
                                                 let eq = null;
                                                 let an = null;
-                                                
+
                                                 if (Array.isArray(window.allAnomaliesCombat)) {
                                                     an = window.allAnomaliesCombat.find(a => a.name === eqName);
                                                 }

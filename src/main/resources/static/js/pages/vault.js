@@ -456,7 +456,7 @@ function renderGrid(equipments) {
             </span>`;
         } else {
             statusHtml = `<span class="vault-card-status status-available">
-                <span class="material-symbols-outlined text-sm">check_circle</span>
+                <span class="material-symbols-outlined text-sm" style="color: #10b981;">check_circle</span>
                 Disponible
             </span>`;
         }
