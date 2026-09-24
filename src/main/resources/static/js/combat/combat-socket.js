@@ -131,7 +131,11 @@ export function setMultiActionsEnabled(enabled) {
                 if (!el.classList.contains('combat-spell-card')) {
                     el.style.pointerEvents = 'none';
                 }
-                el.style.opacity = '0.35';
+                if (el.classList.contains('cast-this-turn')) {
+                    el.style.opacity = '1';
+                } else {
+                    el.style.opacity = '0.35';
+                }
             }
         });
     });

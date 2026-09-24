@@ -163,3 +163,20 @@
             flex-wrap: wrap;
         }
 
+.combat-spell-card.cast-this-turn,
+.combat-spell-card.spell-disabled.cast-this-turn {
+    animation: castPulse 2.5s ease-in-out infinite alternate;
+    box-shadow: 0 0 15px var(--spell-color), 0 0 25px var(--spell-color) inset;
+    border-color: var(--spell-color) !important;
+    z-index: 10;
+}
+
+@keyframes castPulse {
+    0% {
+        box-shadow: 0 0 5px var(--spell-color), 0 0 10px var(--spell-color) inset;
+    }
+    100% {
+        box-shadow: 0 0 20px var(--spell-color), 0 0 40px var(--spell-color) inset;
+    }
+}
+
