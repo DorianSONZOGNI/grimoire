@@ -624,11 +624,13 @@ public class CombatRoomService {
             boolean avoided = false;
 
             if (choice != null && "ROPE".equals(choice.getActionType())) {
+                // Auto-select the heaviest rope (by baseWeight desc)
                 Equipment rope = null;
                 for (Equipment eq : session.getActiveConsumables()) {
-                    if (eq.getId().equals(choice.getItemId()) && eq.getConsumableCategory() == generation.grimoire.enumeration.ConsumableCategory.CORDE) {
-                        rope = eq;
-                        break;
+                    if (eq.getConsumableCategory() == generation.grimoire.enumeration.ConsumableCategory.CORDE) {
+                        if (rope == null || eq.getBaseWeight() > rope.getBaseWeight()) {
+                            rope = eq;
+                        }
                     }
                 }
                 if (rope != null) {

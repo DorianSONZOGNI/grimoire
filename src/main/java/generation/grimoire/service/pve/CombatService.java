@@ -463,12 +463,35 @@ public class CombatService {
             return session;
 
         if (session.isMulti()) {
+            // Check disagreement before recording: if another player already chose a different actionType, reject
+            java.util.Map<String, generation.grimoire.model.pve.RoomInteractionChoice> choices = session.getPlayerRoomChoices();
+            if (choices != null && !choices.isEmpty()) {
+                // Find the actionType already chosen by other players
+                for (var entry : choices.entrySet()) {
+                    if (!entry.getKey().equals(username)) {
+                        String otherAction = entry.getValue().getActionType();
+                        if (!otherAction.equals(actionType)) {
+                            throw new RuntimeException("Vous devez vous mettre d'accord avec votre allié !");
+                        }
+                    }
+                }
+            }
             handleChoice(session, username, new generation.grimoire.model.pve.RoomInteractionChoice(actionType, equipmentId));
+            broadcastIfMulti(session);
             if (!isEveryoneReady(session)) return session;
         } else {
             handleChoice(session, username, new generation.grimoire.model.pve.RoomInteractionChoice(actionType, equipmentId));
         }
 
+        // All agreed — execute the chosen action
+        if ("ACCEPT".equals(actionType)) {
+            // "Subir le piège" — apply trap damage via proceedToNextRoom
+            CombatSession result = combatRoomService.proceedToNextRoom(session);
+            if (session.isFinished()) {
+                activeSessions.remove(sessionId);
+            }
+            return result;
+        }
         return combatRoomService.useRope(session);
     }
 

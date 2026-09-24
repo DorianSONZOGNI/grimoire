@@ -166,13 +166,13 @@ export async function acceptAlteration(pass = false) {
     }
 }
 
-export async function useRope(equipmentId) {
+export async function useRope(equipmentId, actionType = 'ROPE') {
     if (!pageState.sessionId || pageState.isProcessing) return;
     pageState.isProcessing = true;
     setButtonsProcessing(true);
     try {
-        let url = `/api/pve/combat/${pageState.sessionId}/use-rope`;
-        if (equipmentId) url += `?equipmentId=${equipmentId}`;
+        let url = `/api/pve/combat/${pageState.sessionId}/use-rope?actionType=${actionType}`;
+        if (equipmentId) url += `&equipmentId=${equipmentId}`;
         const res = await globalFetch(url, {
             method: 'POST'
         });
@@ -180,6 +180,7 @@ export async function useRope(equipmentId) {
             const err = await res.text();
             window.showNotif(err || "Action impossible", true);
             pageState.isProcessing = false;
+            setButtonsProcessing(false);
             return;
         }
         const data = await res.json();

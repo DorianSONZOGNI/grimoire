@@ -1441,24 +1441,64 @@ export function updateUI(data) {
 
                         if (data.currentRoom.trapHasRopeOption) {
                             const ropes = data.activeConsumables ? data.activeConsumables.filter(eq => eq.consumableCategory === 'CORDE') : [];
-                            let ropeButtonsHtml = '';
-                            if (ropes.length > 0) {
-                                ropes.forEach(rope => {
-                                    ropeButtonsHtml += `<button type="button" class="btn" style="flex: 1; max-width: 250px; background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; margin-bottom: 0.5rem;" onclick="event.preventDefault(); useRope(${rope.id});"><span class="material-symbols-outlined text-[1.1rem] align-middle mr-1">gesture</span> Utiliser ${rope.name}</button>`;
-                                });
+                            const hasRope = ropes.length > 0;
+
+                            // Multi-player voting state
+                            let totalUsers = 1;
+                            if (data.players && data.players.length > 0) {
+                                totalUsers = new Set(data.players.filter(p => p.healthCurrent > 0 && p.ownerUsername).map(p => p.ownerUsername)).size;
+                            }
+                            const isMulti = totalUsers > 1;
+
+                            let ropeVotes = 0;
+                            let acceptVotes = 0;
+                            let ropeSelectedStyle = '';
+                            let acceptSelectedStyle = '';
+                            let waitingHtml = '';
+
+                            if (data.playerRoomChoices) {
+                                for (let user in data.playerRoomChoices) {
+                                    const choice = data.playerRoomChoices[user];
+                                    if (choice.actionType === 'ROPE') {
+                                        ropeVotes++;
+                                    } else if (choice.actionType === 'ACCEPT') {
+                                        acceptVotes++;
+                                    }
+                                }
+
+                                const myChoice = data.playerRoomChoices[pageState.currentUsername];
+                                if (myChoice) {
+                                    if (myChoice.actionType === 'ROPE') {
+                                        ropeSelectedStyle = 'box-shadow: 0 0 15px rgba(245, 158, 11, 0.6); background: rgba(245, 158, 11, 0.25) !important; border-color: rgba(245, 158, 11, 0.8) !important;';
+                                    } else if (myChoice.actionType === 'ACCEPT') {
+                                        acceptSelectedStyle = 'box-shadow: 0 0 15px rgba(255, 255, 255, 0.4); background: rgba(255, 255, 255, 0.15) !important; border-color: rgba(255, 255, 255, 0.8) !important;';
+                                    }
+                                    if (isMulti) {
+                                        waitingHtml = `<div class="text-center w-full mt-2 text-sm text-sky-medium animate-pulse">En attente des autres joueurs...</div>`;
+                                    }
+                                }
+                            }
+
+                            let ropeVoteText = isMulti ? ` <span class="ready-counter" style="opacity: 0.7; font-size: 0.9em;">(${ropeVotes}/${totalUsers})</span>` : '';
+                            let acceptVoteText = isMulti ? ` <span class="ready-counter" style="opacity: 0.7; font-size: 0.9em;">(${acceptVotes}/${totalUsers})</span>` : '';
+
+                            let ropeButtonHtml;
+                            if (hasRope) {
+                                ropeButtonHtml = `<button type="button" class="btn" onclick="event.preventDefault(); useRope(null, 'ROPE');" style="flex: 1; max-width: 250px; background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; ${ropeSelectedStyle}"><span class="material-symbols-outlined text-[1.1rem] align-middle mr-1">gesture</span> Utiliser une Corde${ropeVoteText}</button>`;
                             } else {
-                                ropeButtonsHtml = `<button type="button" class="btn" disabled title="Vous n'avez pas de corde" style="flex: 1; max-width: 250px; background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: not-allowed; opacity: 0.5; transition: all 0.2s ease; margin-bottom: 0.5rem;"><span class="material-symbols-outlined text-[1.1rem] align-middle mr-1">gesture</span> Utiliser une Corde</button>`;
+                                ropeButtonHtml = `<button type="button" class="btn" disabled title="Vous n'avez pas de corde" style="flex: 1; max-width: 250px; background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: not-allowed; opacity: 0.5; transition: all 0.2s ease;"><span class="material-symbols-outlined text-[1.1rem] align-middle mr-1">gesture</span> Utiliser une Corde</button>`;
                             }
 
                             lootContainer.classList.remove('hidden'); lootContainer.classList.add('flex');
                             lootContainer.innerHTML = `
                                 <div class="flex-col items-center w-full">
                                     <div class="flex-col items-center w-full" style="display:flex;">
-                                        ${ropeButtonsHtml}
+                                        ${ropeButtonHtml}
                                     </div>
                                     <div class="btn-row" style="margin-top: 1rem;">
-                                        <button type="button" class="btn text-muted" onclick="event.preventDefault(); nextRoom();" style="flex: 1; max-width: 250px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">Subir le piège et passer</button>
+                                        <button type="button" class="btn text-muted" onclick="event.preventDefault(); useRope(null, 'ACCEPT');" style="flex: 1; max-width: 250px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; ${acceptSelectedStyle}">Subir le piège et passer${acceptVoteText}</button>
                                     </div>
+                                    ${waitingHtml}
                                 </div>
                             `;
                             btnCont.classList.add('hidden');
