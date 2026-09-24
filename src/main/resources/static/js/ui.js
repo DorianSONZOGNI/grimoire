@@ -168,8 +168,8 @@ export function getSpellColor(sp) {
             return '#e7d198'; // Couleur de base Karma (Harmonie)
         }
         if (vNom.includes('violence')) {
-            if (sp.category === 'INSPIRATION' || sp.inspiration === true) return '#c41a27';
-            if (sp.category === 'EXPIRATION' || sp.inspiration === false) return '#8c0b56';
+            if (sp.category === 'INSPIRATION' || sp.inspiration === true) return '#c51616';
+            if (sp.category === 'EXPIRATION' || sp.inspiration === false) return '#b014c8';
             return '#a70740';
         }
         return getVoieButtonColor(sp.voie);
@@ -182,8 +182,8 @@ export function getSpellColor(sp) {
             return '#e7d198';
         }
         if (sNom.includes('violence')) {
-            if (sp.category === 'INSPIRATION' || sp.inspiration === true) return '#c41a27';
-            if (sp.category === 'EXPIRATION' || sp.inspiration === false) return '#8c0b56';
+            if (sp.category === 'INSPIRATION' || sp.inspiration === true) return '#c51616';
+            if (sp.category === 'EXPIRATION' || sp.inspiration === false) return '#b014c8';
             return '#a70740';
         }
         return getSpiritButtonColor(typeof sp.spiritualite === 'object' ? sp.spiritualite : { nom: sp.spiritualite });
