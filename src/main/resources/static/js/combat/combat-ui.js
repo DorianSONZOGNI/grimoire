@@ -1392,6 +1392,8 @@ export function updateUI(data) {
                         lootContainer.innerHTML = '';
 
                         data.currentRoom.lootTable.forEach((entry, idx) => {
+                            if (!data.availableMerchantItems || !data.availableMerchantItems.includes(idx)) return;
+
                             let nameHtml = '';
                             let rawName = '';
                             let iconHtml = '';

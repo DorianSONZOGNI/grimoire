@@ -936,8 +936,8 @@ function renderRooms() {
                         }
 
                         let priceHtml = '';
+                        if (loot.probability > 0) priceHtml += `<span class="text-indigo-400 text-xs ml-1" >${loot.probability}%</span>`;
                         if (loot.priceGold > 0) priceHtml += `<span class="text-amber-500 text-xs ml-1" >${loot.priceGold} Or</span>`;
-                        else if (!loot.priceGold && loot.probability > 0) priceHtml += `<span class="text-amber-500 text-xs ml-1" >${loot.probability} Or</span>`;
                         if (loot.priceSpecialItemName) {
                             let priceColor = '#d946ef';
                             let priceIcon = 'star';
@@ -1023,6 +1023,10 @@ function renderRooms() {
                             </div>
                         </div>
                         <div class="flex flex-col gap-3 mt-3" >
+                            <div>
+                                <label class="text-xs text-muted block mb-1" >Taux d'apparition (%)</label>
+                                <input class="form-control w-full m-0" type="number" id="room_merchant_prob_${rIndex}" placeholder="100" min="0" max="100" value="100">
+                            </div>
                             <div>
                                 <label class="text-xs text-muted block mb-1" >Prix en Or</label>
                                 <input class="form-control w-full m-0" type="number" id="room_merchant_gold_${rIndex}" placeholder="0" min="0">
@@ -2389,11 +2393,12 @@ window.addMerchantItemToRoom = function (rIndex) {
     const type = document.getElementById('room_merchant_type_' + rIndex).value;
     const goldCost = parseInt(document.getElementById('room_merchant_gold_' + rIndex).value) || 0;
     const itemCost = document.getElementById('room_merchant_cost_item_' + rIndex).value.trim();
+    const proba = parseInt(document.getElementById('room_merchant_prob_' + rIndex).value) || 0;
 
     if (!pageState.selectedRooms[rIndex].lootTable) pageState.selectedRooms[rIndex].lootTable = [];
 
     let newItem = {
-        probability: 0,
+        probability: proba,
         priceGold: goldCost > 0 ? goldCost : null,
         priceSpecialItemName: itemCost ? itemCost : null
     };
