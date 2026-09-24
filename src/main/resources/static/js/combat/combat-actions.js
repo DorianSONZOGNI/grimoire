@@ -109,7 +109,7 @@ export async function openStrangeDoor() {
     }
 }
 
-export async function acceptAlteration() {
+export async function acceptAlteration(pass = false) {
     if (!pageState.sessionId || pageState.isProcessing) return;
     pageState.isProcessing = true;
     setButtonsProcessing(true);
@@ -121,9 +121,14 @@ export async function acceptAlteration() {
         const charId = myPlayer ? myPlayer.id : '';
         let url = `/api/pve/combat/${pageState.sessionId}/alteration-accept?characterId=${charId}`;
         const select = document.getElementById('altarAnomalySelect');
-        if (select) {
+        
+        let actionType = pass ? 'PASS' : 'ACCEPT';
+        if (!pass && select) {
             url += `&anomalyId=${select.value}`;
+            actionType = 'SACRIFICE';
         }
+        url += `&actionType=${actionType}`;
+        
         const res = await globalFetch(url, {
             method: 'POST'
         });
@@ -161,13 +166,13 @@ export async function acceptAlteration() {
     }
 }
 
-export async function useRope(equipmentId) {
+export async function useRope(equipmentId, actionType = 'ROPE') {
     if (!pageState.sessionId || pageState.isProcessing) return;
     pageState.isProcessing = true;
     setButtonsProcessing(true);
     try {
-        let url = `/api/pve/combat/${pageState.sessionId}/use-rope`;
-        if (equipmentId) url += `?equipmentId=${equipmentId}`;
+        let url = `/api/pve/combat/${pageState.sessionId}/use-rope?actionType=${actionType}`;
+        if (equipmentId) url += `&equipmentId=${equipmentId}`;
         const res = await globalFetch(url, {
             method: 'POST'
         });
@@ -175,6 +180,7 @@ export async function useRope(equipmentId) {
             const err = await res.text();
             window.showNotif(err || "Action impossible", true);
             pageState.isProcessing = false;
+            setButtonsProcessing(false);
             return;
         }
         const data = await res.json();
@@ -218,6 +224,13 @@ export async function buyMerchantItem(lootIndex) {
         }
 
         updateUI(data);
+        
+        if (data.combatLog && data.combatLog.length > 0) {
+            const lastLog = data.combatLog[data.combatLog.length - 1];
+            if (lastLog.includes("coffre (poids max atteint)")) {
+                window.showNotif("Objet acheté et envoyé au coffre (poids max de l'équipe atteint) !", false);
+            }
+        }
     } catch (e) {
         console.error(e);
         window.showNotif("Erreur lors de l'achat.", true);
@@ -308,10 +321,29 @@ export async function addLootedConsumable(itemName, iconElement) {
     }
 }
 
-export async function openChest(equipmentId) {
+export async function openChest(equipmentId, actionType = 'OPEN') {
     if (!pageState.sessionId || pageState.isProcessing) return;
     pageState.isProcessing = true;
     setButtonsProcessing(true);
+
+    if (actionType === 'OPEN_KEY' && equipmentId) {
+        const choices = pageState.currentSessionData?.playerRoomChoices;
+        if (choices) {
+            for (const username in choices) {
+                if (username !== pageState.currentUsername) {
+                    const choice = choices[username];
+                    if (choice.actionType === 'OPEN_KEY' && choice.itemId === equipmentId) {
+                        if (typeof showNotif !== 'undefined') showNotif("Cette clé a déjà été sélectionnée par un autre joueur !", true);
+                        else ui.showNotif("Cette clé a déjà été sélectionnée par un autre joueur !", true);
+                        pageState.isProcessing = false;
+                        setButtonsProcessing(false);
+                        return;
+                    }
+                }
+            }
+        }
+    }
+
     try {
         const btn = document.getElementById('btnOpenChest');
         const btnKey = document.getElementById('btnOpenChestKey');
@@ -324,8 +356,8 @@ export async function openChest(equipmentId) {
             btn.innerHTML = `<span class="material-symbols-outlined spin">sync</span> Ouverture...`;
         }
 
-        let url = `/api/pve/combat/${pageState.sessionId}/open-chest`;
-        if (equipmentId) url += `?equipmentId=${equipmentId}`;
+        let url = `/api/pve/combat/${pageState.sessionId}/open-chest?actionType=${actionType}`;
+        if (equipmentId) url += `&equipmentId=${equipmentId}`;
         const res = await globalFetch(url, { method: 'POST' });
         if (!res.ok) {
             const err = await res.text();

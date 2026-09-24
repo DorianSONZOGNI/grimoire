@@ -98,7 +98,7 @@ setInterval(() => {
     // Si inactivité >= 2 minutes
     if (Date.now() - lastUserActivity >= 120000) {
         if (window.currentUser && typeof window.globalFetch === 'function') {
-            window.globalFetch('/api/personnage/me').catch(() => {});
+            window.globalFetch('/api/auth/me').catch(() => {});
         }
         // Reset the timer so it only pings once every 2 minutes of continuous inactivity
         lastUserActivity = Date.now();

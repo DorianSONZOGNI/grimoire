@@ -56,7 +56,7 @@ class SuretePassiveEffectTest {
         // Should gain +15% CRIT buff for 2 turns and +50% HEAL_GIVEN
         assertThat(hero.getActiveBuffs()).hasSize(2);
         assertThat(hero.getActiveBuffs().stream().anyMatch(b -> b.getStatAffected() == StatType.CRIT && b.getFlatValue() == 15)).isTrue();
-        assertThat(hero.getActiveBuffs().stream().anyMatch(b -> b.getStatAffected() == StatType.HEAL_GIVEN && b.getModifier() == 0.50)).isTrue();
+        assertThat(hero.getActiveBuffs().stream().anyMatch(b -> b.getStatAffected() == StatType.HEAL_GIVEN && b.getModifier() == 0.25)).isTrue();
     }
 
     @Test

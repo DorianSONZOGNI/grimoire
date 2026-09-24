@@ -346,7 +346,7 @@ function addRequirement(type, selectedName = '', qty = 1) {
 
 async function loadRecipes() {
     try {
-        const res = await globalFetch('/api/alchemy/recipes');
+        const res = await globalFetch('/api/alchemy/admin/recipes');
         if (res && res.ok) {
             const data = await res.json();
             pageState.allRecipes = data; // Store for edit

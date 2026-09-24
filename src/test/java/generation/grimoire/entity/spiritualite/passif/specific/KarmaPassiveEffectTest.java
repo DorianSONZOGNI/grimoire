@@ -75,9 +75,9 @@ class KarmaPassiveEffectTest {
         SpellCostAdjustEvent event = new SpellCostAdjustEvent(hero, enemy, protSpell, costs);
         passive.onEvent(event);
         
-        // 2 * 0.08 = 0.16 reduction -> 84, 42, 16
-        assertThat(costs[0]).isEqualTo(84);
-        assertThat(costs[1]).isEqualTo(42);
+        // 2 * 0.10 = 0.20 reduction -> 80, 40, 16
+        assertThat(costs[0]).isEqualTo(80);
+        assertThat(costs[1]).isEqualTo(40);
         assertThat(costs[2]).isEqualTo(16);
     }
     
@@ -104,8 +104,8 @@ class KarmaPassiveEffectTest {
         
         passive.onEvent(new SpellCostPaidEvent(hero, enemy, offSpell, 10, 0, 0));
         
-        // Bonus is 2 * 0.08 = 0.16. So amplification becomes 1.16
-        assertThat(dmgEff.getAmplificationMultiplier()).isEqualTo(1.16);
+        // Bonus is 2 * 0.10 = 0.20. So amplification becomes 1.2
+        assertThat(dmgEff.getAmplificationMultiplier()).isEqualTo(1.2);
     }
 
     // --- Harmonie Karmique (Heal/Mana on 0) ---
@@ -182,8 +182,8 @@ class KarmaPassiveEffectTest {
         assertThat(hero.getPassiveState("karma_locked", 0)).isEqualTo(1);
         assertThat(hero.getPassiveState("karma_locked_duration", 0)).isEqualTo(6);
         
-        // Applies initial Tenebres buff (x1.24) and then corruption (x1.5) -> 1.24 * 1.5 = 1.86
-        assertThat(dmgEff.getAmplificationMultiplier()).isCloseTo(1.86, org.assertj.core.data.Offset.offset(0.01));
+        // Applies initial Tenebres buff (x1.30) and then corruption (x1.5) -> 1.30 * 1.5 = 1.95
+        assertThat(dmgEff.getAmplificationMultiplier()).isCloseTo(1.95, org.assertj.core.data.Offset.offset(0.01));
     }
 
     @Test

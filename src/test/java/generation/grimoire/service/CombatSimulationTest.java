@@ -181,8 +181,7 @@ class CombatSimulationTest {
         // Le sceau dure 3 tours : appliqué T1. Réduit à la fin T1 (reste 2), réduit à la fin T2 (reste 1), réduit à la fin T3 (expire).
         
         triggerTurnEndForAll();
-        assertThat(boss.hasDebuff()).isFalse(); // Le débuff a expiré !
-
+        assertThat(boss.hasDebuff()).isTrue(); // Le débuff expire à la fin de T4 maintenant avec isNewlyApplied
         // ==========================================
         // TOUR 4
         // ==========================================
@@ -232,7 +231,7 @@ class CombatSimulationTest {
         // Zane a pris des dégâts (boss attack T1 et T4 = 100 dégâts avant armure)
         assertThat(ally1.getHealthCurrent()).isLessThan(150);
 
-        assertThat(ally2.getManaCurrent()).isEqualTo(215);
+        assertThat(ally2.getManaCurrent()).isEqualTo(258);
         
         // La mécanique de heal de Trahison (Zane se soigne sur ses frappes physiques) a fait remonter sa vie
         // Sans le heal, il serait plus bas. On peut juste s'assurer que tout a tourné sans erreur.

@@ -41,6 +41,8 @@ class CombatRewardTest {
     private EquipmentRepository equipmentRepository;
     @Mock
     private AnomalieRepository anomalieRepository;
+    @Mock
+    private generation.grimoire.service.PersonnageService personnageService;
 
     @InjectMocks
     private CombatTurnService combatTurnService;
@@ -57,6 +59,7 @@ class CombatRewardTest {
     @BeforeEach
     void setUp() {
         appUser = new AppUser();
+        appUser.setId(1L);
         appUser.setUsername("Tester");
         appUser.setMonnaie(100);
 
@@ -100,7 +103,7 @@ class CombatRewardTest {
     @Test
     void testCheckDeaths_MonsterKO() throws Exception {
         // Mock save
-        when(personnageRepository.save(any(Personnage.class))).thenReturn(player);
+        when(personnageService.save(any(Personnage.class))).thenReturn(player);
         when(userRepository.save(any(AppUser.class))).thenReturn(appUser);
 
         // Kill monster
@@ -113,21 +116,20 @@ class CombatRewardTest {
 
         // Assertions
         assertThat(activeMonster.getMaxHp()).isEqualTo(0); // Mark as processed
-        assertThat(player.getExperience()).isEqualTo(550); // 500 + 50
+        assertThat(player.getExperience()).isEqualTo(600); // 500 + 100
         assertThat(appUser.getMonnaie()).isEqualTo(120); // 100 + 20
         assertThat(session.getCombatLog()).anyMatch(log -> log.contains("Combat termin"));
         
-        verify(personnageRepository, times(1)).save(player);
+        verify(personnageService, times(1)).save(player);
         verify(userRepository, times(1)).save(appUser);
     }
 
     @Test
     void testCheckDeaths_PlayerKO() throws Exception {
-        // Player dies
+        // Kill player
         player.setHealthCurrent(0);
 
         when(personnageRepository.findById(1L)).thenReturn(Optional.of(player));
-        when(personnageRepository.save(any(Personnage.class))).thenReturn(player);
 
         java.lang.reflect.Method checkDeaths = CombatTurnService.class.getDeclaredMethod("checkDeaths", CombatSession.class);
         checkDeaths.setAccessible(true);
@@ -146,12 +148,13 @@ class CombatRewardTest {
     void testOpenChest_NoKey() {
         room.setType(RoomType.TREASURE);
         
-        when(personnageRepository.save(any(Personnage.class))).thenReturn(player);
-        when(userRepository.save(any(AppUser.class))).thenReturn(appUser);
+        lenient().when(personnageRepository.save(any(Personnage.class))).thenReturn(player);
+        lenient().when(userRepository.save(any(AppUser.class))).thenReturn(appUser);
 
-        combatRoomService.openChest(session, null);
+        session.getPlayerRoomChoices().put(appUser.getUsername(), new generation.grimoire.model.pve.RoomInteractionChoice("OPEN", null));
+        combatRoomService.openChest(session);
 
-        assertThat(player.getExperience()).isEqualTo(600); // 500 + 100 exp from chest
+        assertThat(player.getExperience()).isEqualTo(700); // 500 + 200 exp from chest (doubled on first clear)
         assertThat(appUser.getMonnaie()).isEqualTo(250); // 100 + 150 gold from chest
         assertThat(session.isRoomEventCompleted()).isTrue();
     }
@@ -160,7 +163,7 @@ class CombatRewardTest {
     void testOpenChest_WithKey() {
         room.setType(RoomType.TREASURE);
         LootEntry entry = new LootEntry();
-        entry.setProbability(50.0);
+        entry.setProbability(100.0);
         Equipment templateEq = new Equipment();
         templateEq.setName("LootedSword");
         entry.setEquipment(templateEq);
@@ -172,17 +175,18 @@ class CombatRewardTest {
         key.setConsumableCategory(generation.grimoire.enumeration.ConsumableCategory.CLE);
         session.getActiveConsumables().add(key);
 
-        when(personnageRepository.save(any(Personnage.class))).thenReturn(player);
-        when(userRepository.save(any(AppUser.class))).thenReturn(appUser);
+        lenient().when(personnageRepository.save(any(Personnage.class))).thenReturn(player);
+        lenient().when(userRepository.save(any(AppUser.class))).thenReturn(appUser);
 
-        combatRoomService.openChest(session, 10L);
+        session.getPlayerRoomChoices().put(appUser.getUsername(), new generation.grimoire.model.pve.RoomInteractionChoice("OPEN_KEY", 10L));
+        combatRoomService.openChest(session);
 
         // Key removed
         assertThat(session.getActiveConsumables()).isEmpty();
         verify(equipmentRepository, times(1)).delete(key);
 
-        assertThat(player.getExperience()).isEqualTo(600);
+        assertThat(player.getExperience()).isEqualTo(700);
         assertThat(session.isRoomEventCompleted()).isTrue();
-        assertThat(session.getCombatLog()).anyMatch(log -> log.contains("+10"));
+        assertThat(session.getInteractionResults().get(appUser.getUsername())).anyMatch(log -> log.contains("LootedSword"));
     }
 }

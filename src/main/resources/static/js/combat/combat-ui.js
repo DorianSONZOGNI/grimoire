@@ -160,6 +160,19 @@ export function updateUI(data) {
         ui.hideGlobalTooltip();
     }
 
+    if (pageState.currentSessionData && data && !data.error) {
+        const old = pageState.currentSessionData;
+        const isStale = (
+            data.currentRoomIndex < old.currentRoomIndex ||
+            (data.currentRoomIndex === old.currentRoomIndex && data.turnNumber < old.turnNumber) ||
+            (data.currentRoomIndex === old.currentRoomIndex && data.turnNumber === old.turnNumber && data.combatLog && old.combatLog && data.combatLog.length < old.combatLog.length)
+        );
+        if (isStale) {
+            console.log('Ignored stale data update (likely delayed HTTP response).');
+            return;
+        }
+    }
+
     let turnMap = { players: {}, enemies: {} };
     if (data.turnOrder) {
         data.turnOrder.forEach((entry, i) => {
@@ -388,7 +401,7 @@ export function updateUI(data) {
                                 gain.connect(ctx.destination);
                                 osc.start();
                                 osc.stop(ctx.currentTime + 0.3);
-                            } catch(e) {}
+                            } catch (e) { }
                         }
                     }
                     badge.style.background = 'rgba(69, 10, 10, 0.9)';
@@ -431,14 +444,14 @@ export function updateUI(data) {
     if (data.currentRoom) {
         if (data.currentRoom.type === 'COMBAT' || data.currentRoom.type === 'BOSS') {
             document.getElementById('eventOverlay').classList.remove('show');
-            
+
             if (typeof window.renderOverlayInventory === 'function') {
                 window.renderOverlayInventory('combatMainInventoryList');
             }
             if (typeof window.renderOverlayMap === 'function') {
                 window.renderOverlayMap('combatMainMapList');
             }
-            
+
             // Auto fold when a new combat starts
             if (window.lastCombatRoomIndex !== data.currentRoomIndex) {
                 const wrapper = document.getElementById('combatMainSidePanelWrapper');
@@ -573,6 +586,14 @@ export function updateUI(data) {
             const btnCont = document.getElementById('btnContinueEvent');
             const lootContainer = document.getElementById('eventLootContainer');
 
+            // Reset loot when room event is not yet completed
+            if (!data.roomEventCompleted) {
+                delete lootContainer.dataset.filled;
+                lootContainer.innerHTML = '';
+                const oldRightPanel = document.getElementById('othersLootPanel');
+                if (oldRightPanel) oldRightPanel.remove();
+            }
+
             // Reset default onclick to prevent previous events (like PORTE_ETRANGE) from overriding it
             if (btnCont) {
                 btnCont.onclick = nextRoom;
@@ -581,8 +602,41 @@ export function updateUI(data) {
             const actionContainer = document.getElementById('eventActionContainer');
             if (actionContainer) {
                 actionContainer.querySelectorAll('.dynamic-key-btn').forEach(b => b.remove());
+                const oldKeys = document.getElementById('keysContainer');
+                if (oldKeys) oldKeys.remove();
             }
 
+
+            const myChoice = data.playerRoomChoices ? data.playerRoomChoices[pageState.currentUsername] : null;
+            function applyChoiceStyle(btn, isChosen, isMulti, readyCount, totalCount) {
+                if (!btn) return;
+
+                // Clear old styles first
+                btn.style.opacity = '1';
+                btn.classList.remove('bg-green-600', 'text-white', 'opacity-50');
+
+                // Remove previous counter if exists
+                const existingCounter = btn.querySelector('.ready-counter');
+                if (existingCounter) existingCounter.remove();
+
+                if (isMulti) {
+                    const counter = document.createElement('span');
+                    counter.className = 'ready-counter text-xs opacity-75 ml-2';
+                    counter.textContent = `(${readyCount}/${totalCount})`;
+                    btn.appendChild(counter);
+                }
+
+                if (isChosen) {
+                    btn.classList.add('bg-green-600', 'text-white');
+                    btn.classList.remove('bg-dark-surface', 'bg-dark-hover'); // in case it has these
+                } else if (myChoice) {
+                    // if they chose something else, dim this button
+                    btn.classList.add('opacity-50');
+                }
+            }
+
+            const activeUsersCount = new Set((data.players || []).filter(p => p.healthCurrent > 0 && p.ownerUsername).map(p => p.ownerUsername)).size;
+            const readyUsersCount = data.playerRoomChoices ? Object.keys(data.playerRoomChoices).length : 0;
             if (data.currentRoom.type === 'TREASURE') {
                 icon.textContent = data.roomEventCompleted ? 'lock_open' : 'lock';
                 icon.className = 'material-symbols-outlined mb-4 text-[5rem] text-gold';
@@ -603,69 +657,95 @@ export function updateUI(data) {
                         renderAndAnimateXPCards('eventLootContainer', data.players, 'treasure', data.firstClear);
 
                         let gainedItemsHtml = '';
+                        let othersLootHtml = '';
                         let goldAmount = 0;
                         let expAmount = 0;
-                        if (data.combatLog) {
-                            let chestLogs = [];
-                            for (let i = data.combatLog.length - 1; i >= 0; i--) {
-                                const log = data.combatLog[i];
-                                chestLogs.unshift(log);
-                                if (log.includes("Vous avez ouvert le coffre !")) {
-                                    const goldMatch = log.match(/trouvez (\d+) Or/);
-                                    if (goldMatch) goldAmount = parseInt(goldMatch[1]);
-                                    const expMatch = log.match(/gagne (\d+) XP/);
-                                    if (expMatch) expAmount = parseInt(expMatch[1]);
-                                    break;
-                                }
-                            }
+                        if (data.interactionResults) {
+                            for (let user in data.interactionResults) {
+                                let lines = data.interactionResults[user];
+                                let userOtherItemsHtml = '';
 
-                            chestLogs.forEach(log => {
-                                const itemNameMatch = log.match(/Vous avez (?:obtenu l'item|trouvé un objet)\s*:\s*(.*?)(?: !| et il a été ajouté| \(envoyé)/);
-                                if (itemNameMatch) {
-                                    const eqName = itemNameMatch[1];
-                                    let eq = null;
-                                    let an = null;
-                                    if (data.currentRoom && data.currentRoom.lootTable) {
-                                        const entry = data.currentRoom.lootTable.find(l => l.equipment && l.equipment.name === eqName);
-                                        if (entry) eq = entry.equipment;
-                                    }
-                                    if (!eq && Array.isArray(window.allAnomaliesCombat)) {
-                                        an = window.allAnomaliesCombat.find(a => a.name === eqName);
-                                    }
-
-                                    const slotInfo = eq ? (getSlotInfo(eq) || { icon: 'help', color: '#94a3b8' }) : (an ? { icon: (an.category ? (getCategoryIcon(an.category)) : 'star'), color: getSpiritualiteColor(an.spiritualite) } : { icon: 'swords', color: '#f59e0b' });
-                                    const rarityColor = eq ? (getRarityColor(eq.rarity)) : (an ? getSpiritualiteColor(an.spiritualite) : '#f59e0b');
-                                    const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
-
-                                    let tooltipDataHtml = '';
-                                    if (eq && typeof window.getEquipmentTooltipHTML === 'function') {
-                                        tooltipDataHtml = window.getEquipmentTooltipHTML(eq);
-                                    } else if (an && typeof getAnomalyTooltipHTML === 'function') {
-                                        tooltipDataHtml = getAnomalyTooltipHTML(an, eqName);
-                                    }
-                                    const tooltipAttrs = tooltipDataHtml ? 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"' : '';
-
-                                    let inventoryStatus = log.includes("ajouté à l'inventaire") ? 'in_inventory' : (log.includes("envoyé au coffre") ? 'in_vault' : 'unknown');
-
-                                    let inventoryIconHtml = '';
-                                    if (eq && eq.slot === 'CONSOMMABLE') {
-                                        if (inventoryStatus === 'in_inventory') {
-                                            inventoryIconHtml = `<span class="material-symbols-outlined" style="position: absolute; top: 0.2rem; left: 0.2rem; font-size: 1.2rem; color: #10b981;" title="Dans l'inventaire du groupe">inventory_2</span>`;
-                                        } else if (inventoryStatus === 'in_vault') {
-                                            const safeName = eqName.replace(/'/g, "\\'");
-                                            inventoryIconHtml = `<span class="material-symbols-outlined vault-to-inv-icon" data-itemname="${eqName}" onclick="addLootedConsumable('${safeName}', this)" style="position: absolute; top: 0.2rem; left: 0.2rem; font-size: 1.2rem; color: #64748b; cursor: pointer; transition: color 0.2s;" title="Cliquer pour ajouter à l'inventaire" onmouseover="this.style.color='#10b981'" onmouseout="this.style.color='#64748b'">inventory_2</span>`;
+                                lines.forEach(log => {
+                                    if (user === pageState.currentUsername) {
+                                        if (log.includes("trouvez")) {
+                                            const goldMatch = log.match(/trouvez (\d+) Or/);
+                                            if (goldMatch) goldAmount += parseInt(goldMatch[1]);
+                                            const expMatch = log.match(/gagnez (\d+) XP/);
+                                            if (expMatch) expAmount += parseInt(expMatch[1]);
                                         }
                                     }
 
-                                    gainedItemsHtml += `
-                                        <div class="flex-center relative" ${tooltipAttrs} style="cursor: ${tooltipDataHtml ? 'help' : 'default'}; background: rgba(0, 0, 0, 0.4); border: 1px solid ${rarityColor}80; padding: 0.8rem 1rem; border-radius: 8px; color: ${rarityColor}; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
-                                            ${inventoryIconHtml}
-                                            ${tooltipDataHtml ? `<template class="tooltip-data">${tooltipDataHtml}</template>` : ''}
-                                            <span class="material-symbols-outlined${extraClass}" style="color: ${slotInfo.color};">${slotInfo.icon}</span> <span style="${tooltipDataHtml ? `border-bottom: 1px dashed ${rarityColor};` : ''}">${eqName}</span>
+                                    if (log.includes("Objet trouvé :")) {
+                                        const itemNameMatch = log.match(/Objet trouvé : (.*?) \(/);
+                                        if (itemNameMatch) {
+                                            const eqName = itemNameMatch[1].trim();
+                                            let eq = null;
+                                            let an = null;
+                                            if (data.currentRoom && data.currentRoom.lootTable) {
+                                                const entry = data.currentRoom.lootTable.find(l => l.equipment && l.equipment.name === eqName);
+                                                if (entry) eq = entry.equipment;
+                                            }
+                                            if (!eq && Array.isArray(window.allAnomaliesCombat)) {
+                                                an = window.allAnomaliesCombat.find(a => a.name === eqName);
+                                            }
+
+                                            const slotInfo = eq ? (getSlotInfo(eq) || { icon: 'help', color: '#94a3b8' }) : (an ? { icon: (an.category ? (getCategoryIcon(an.category)) : 'star'), color: getSpiritualiteColor(an.spiritualite) } : { icon: 'swords', color: '#f59e0b' });
+                                            const rarityColor = eq ? (getRarityColor(eq.rarity)) : (an ? getSpiritualiteColor(an.spiritualite) : '#f59e0b');
+                                            const extraClass = slotInfo.extraClass ? ` ${slotInfo.extraClass}` : '';
+
+                                            let tooltipDataHtml = '';
+                                            if (eq && typeof window.getEquipmentTooltipHTML === 'function') {
+                                                tooltipDataHtml = window.getEquipmentTooltipHTML(eq);
+                                            } else if (an && typeof getAnomalyTooltipHTML === 'function') {
+                                                tooltipDataHtml = getAnomalyTooltipHTML(an, eqName);
+                                            }
+                                            const tooltipAttrs = tooltipDataHtml ? 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"' : '';
+
+                                            if (user === pageState.currentUsername) {
+                                                let inventoryStatus = (log.includes("ajouté à l'équipe") || log.includes("ajouté à l'inventaire")) ? 'in_inventory' : (log.includes("coffre") ? 'in_vault' : 'unknown');
+                                                let inventoryIconHtml = '';
+                                                if (eq && eq.slot === 'CONSOMMABLE') {
+                                                    if (inventoryStatus === 'in_inventory') {
+                                                        inventoryIconHtml = `<span class="material-symbols-outlined" style="position: absolute; top: 0.2rem; left: 0.2rem; font-size: 1.2rem; color: #10b981;" title="Dans l'inventaire du groupe">inventory_2</span>`;
+                                                    } else if (inventoryStatus === 'in_vault') {
+                                                        const safeName = eqName.replace(/'/g, "\\'");
+                                                        inventoryIconHtml = `<span class="material-symbols-outlined vault-to-inv-icon" data-itemname="${eqName}" onclick="addLootedConsumable('${safeName}', this)" style="position: absolute; top: 0.2rem; left: 0.2rem; font-size: 1.2rem; color: #64748b; cursor: pointer; transition: color 0.2s;" title="Cliquer pour ajouter à l'inventaire" onmouseover="this.style.color='#10b981'" onmouseout="this.style.color='#64748b'">inventory_2</span>`;
+                                                    }
+                                                }
+
+                                                gainedItemsHtml += `
+                                                    <div class="flex-center relative" ${tooltipAttrs} style="cursor: ${tooltipDataHtml ? 'help' : 'default'}; background: rgba(0, 0, 0, 0.4); border: 1px solid ${rarityColor}80; padding: 0.8rem 1rem; border-radius: 8px; color: ${rarityColor}; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
+                                                        ${inventoryIconHtml}
+                                                        ${tooltipDataHtml ? `<template class="tooltip-data">${tooltipDataHtml}</template>` : ''}
+                                                        <span class="material-symbols-outlined${extraClass}" style="color: ${slotInfo.color};">${slotInfo.icon}</span> <span style="${tooltipDataHtml ? `border-bottom: 1px dashed ${rarityColor};` : ''}">${eqName}</span>
+                                                    </div>
+                                                `;
+                                            } else {
+                                                userOtherItemsHtml += `
+                                                    <div class="flex items-center gap-2 mb-2 p-2 rounded relative" style="background: rgba(0,0,0,0.3); border: 1px solid ${rarityColor}50; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.9);">
+                                                        <span class="material-symbols-outlined text-sm${extraClass}" style="color: ${slotInfo.color};">${slotInfo.icon}</span>
+                                                        <span class="text-sm font-semibold relative" style="color: ${rarityColor}; ${tooltipDataHtml ? `border-bottom: 1px dashed ${rarityColor}; cursor: help;` : ''}" ${tooltipAttrs}>
+                                                            ${eqName}
+                                                            ${tooltipDataHtml ? `<template class="tooltip-data">${tooltipDataHtml}</template>` : ''}
+                                                        </span>
+                                                    </div>
+                                                `;
+                                            }
+                                        }
+                                    }
+                                });
+
+                                if (user !== pageState.currentUsername && userOtherItemsHtml) {
+                                    othersLootHtml += `
+                                        <div class="mb-4">
+                                            <div class="text-sm text-muted mb-2 font-bold uppercase tracking-wider text-center" style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem;">Loot de <span style="color: #10b981;">${user}</span></div>
+                                            <div class="flex flex-col gap-3">
+                                                ${userOtherItemsHtml}
+                                            </div>
                                         </div>
                                     `;
                                 }
-                            });
+                            }
 
                             if (expAmount > 0) {
                                 gainedItemsHtml = `
@@ -706,28 +786,154 @@ export function updateUI(data) {
                             wrapper.innerHTML = gainedItemsHtml;
                             lootContainer.appendChild(wrapper);
                         }
+
+                        // Remove old independent panel if it exists
+                        const existingRightPanel = document.getElementById('othersLootPanel');
+                        if (existingRightPanel) existingRightPanel.remove();
+
+                        if (othersLootHtml) {
+                            const rightPanel = document.createElement('div');
+                            rightPanel.id = 'othersLootPanel';
+                            rightPanel.className = 'bg-slate-900/95 border border-white/10 rounded-2xl p-6 shadow-2xl flex flex-col overflow-y-auto custom-scrollbar shrink-0';
+
+                            rightPanel.style.width = '280px';
+                            rightPanel.style.maxHeight = '100%';
+
+                            rightPanel.innerHTML = othersLootHtml;
+                            const wrapperEl = document.getElementById('eventModalWrapper');
+                            if (wrapperEl) wrapperEl.appendChild(rightPanel);
+                        }
                     }
                 } else {
+                    const oldRightPanel = document.getElementById('othersLootPanel');
+                    if (oldRightPanel) oldRightPanel.remove();
+
                     desc.textContent = `Un coffre mystérieux se trouve au centre de la pièce...`;
                     btnOpen.classList.remove('hidden');
-                    btnCont.classList.add('hidden');
+                    btnCont.classList.add('hidden'); // No pass button for chests
+
                     lootContainer.classList.add('hidden'); lootContainer.classList.remove('flex');
-                    lootContainer.innerHTML = ''; // reset
-                    delete lootContainer.dataset.filled;
+
+                    let openVotes = 0;
+                    if (data.playerRoomChoices) {
+                        for (let user in data.playerRoomChoices) {
+                            if (data.playerRoomChoices[user].actionType === 'OPEN') {
+                                openVotes++;
+                            }
+                        }
+                    }
+
+                    const isMainChosen = myChoice && myChoice.actionType === 'OPEN';
+                    applyChoiceStyle(btnOpen, isMainChosen, activeUsersCount > 1, openVotes, activeUsersCount);
 
                     const actionContainer = document.getElementById('eventActionContainer');
                     if (actionContainer && btnCont) {
+                        actionContainer.classList.add('flex-wrap', 'justify-center');
+
                         const keys = data.activeConsumables ? data.activeConsumables.filter(eq => eq.consumableCategory === 'CLE') : [];
-                        const seenKeys = new Set();
-                        keys.forEach(key => {
-                            if (seenKeys.has(key.name)) return;
-                            seenKeys.add(key.name);
+
+                        let keysContainer = document.getElementById('keysContainer');
+                        if (!keysContainer) {
+                            keysContainer = document.createElement('div');
+                            keysContainer.id = 'keysContainer';
+                            keysContainer.className = 'flex gap-3 justify-center flex-wrap w-full mt-2';
+                            actionContainer.appendChild(keysContainer);
+                        } else {
+                            keysContainer.innerHTML = '';
+                        }
+
+                        const keyGroups = {};
+                        keys.forEach(k => {
+                            if (!keyGroups[k.name]) {
+                                keyGroups[k.name] = {
+                                    name: k.name,
+                                    bonus: k.specialEffectValue > 0 ? k.specialEffectValue : 10,
+                                    ids: [],
+                                    eq: k
+                                };
+                            }
+                            keyGroups[k.name].ids.push(k.id);
+                        });
+
+                        Object.values(keyGroups).forEach(group => {
+                            let groupLocks = 0;
+                            let myLockedId = null;
+                            let lockedIds = new Set();
+
+                            if (data.playerRoomChoices) {
+                                for (let user in data.playerRoomChoices) {
+                                    const choice = data.playerRoomChoices[user];
+                                    if (choice.actionType === 'OPEN_KEY') {
+                                        lockedIds.add(choice.itemId);
+                                        if (group.ids.includes(choice.itemId)) {
+                                            groupLocks++;
+                                            if (user === pageState.currentUsername) {
+                                                myLockedId = choice.itemId;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            const eq = group.eq;
+                            const rarityColor = typeof getRarityColor === 'function' ? getRarityColor(eq.rarity) : '#94a3b8';
+                            let tooltipDataHtml = '';
+                            if (typeof window.getEquipmentTooltipHTML === 'function') {
+                                tooltipDataHtml = window.getEquipmentTooltipHTML(eq);
+                            }
+
                             const btn = document.createElement('button');
-                            btn.className = 'action-btn epic dynamic-key-btn';
-                            btn.onclick = () => openChest(key.id);
-                            const bonus = key.specialEffectValue > 0 ? key.specialEffectValue : 10;
-                            btn.innerHTML = `<span class="material-symbols-outlined">vpn_key</span> Ouvrir (${key.name} : +${bonus}% de butin)`;
-                            actionContainer.insertBefore(btn, btnCont);
+                            btn.className = 'flex items-center gap-2 p-1.5 px-3 rounded-full border relative transition-all duration-300 hover:scale-105 shadow-md';
+
+                            const isChosen = myLockedId !== null;
+
+                            if (isChosen) {
+                                btn.style.background = 'rgba(22, 163, 74, 0.4)';
+                                btn.style.borderColor = '#4ade80';
+                                btn.style.boxShadow = '0 0 10px rgba(74, 222, 128, 0.3)';
+                            } else if (myChoice) {
+                                btn.style.background = 'rgba(30, 41, 59, 0.8)';
+                                btn.style.borderColor = `${rarityColor}80`;
+                                btn.style.opacity = '0.5';
+                            } else {
+                                btn.style.background = 'rgba(30, 41, 59, 0.8)';
+                                btn.style.borderColor = `${rarityColor}80`;
+                            }
+
+                            if (!isChosen && groupLocks >= group.ids.length) {
+                                btn.disabled = true;
+                                btn.style.opacity = '0.5';
+                                btn.style.filter = 'grayscale(100%)';
+                                btn.title = "Toutes les clés de ce type sont déjà sélectionnées.";
+                                btn.style.cursor = 'not-allowed';
+                                btn.classList.remove('hover:scale-105');
+                            }
+
+                            btn.onclick = () => {
+                                if (btn.disabled) return;
+                                let idToSend = myLockedId;
+                                if (!idToSend) {
+                                    idToSend = group.ids.find(id => !lockedIds.has(id)) || group.ids[0];
+                                }
+                                openChest(idToSend, 'OPEN_KEY');
+                            };
+
+                            if (tooltipDataHtml) {
+                                btn.setAttribute('onmouseenter', 'window.showGlobalTooltip ? window.showGlobalTooltip(this) : null');
+                                btn.setAttribute('onmouseleave', 'window.hideGlobalTooltip ? window.hideGlobalTooltip() : null');
+                            }
+
+                            btn.innerHTML = `
+                                ${tooltipDataHtml ? `<template class="tooltip-data">${tooltipDataHtml}</template>` : ''}
+                                <span class="material-symbols-outlined" style="color: ${rarityColor}; font-size: 1.5rem;">vpn_key</span>
+                                <div class="flex flex-col items-start leading-tight">
+                                    <span style="color: ${rarityColor}; font-weight: bold; font-size: 0.9em;">${group.name}</span>
+                                    <span style="color: ${rarityColor}; opacity: 0.8; font-size: 0.8em;">+${group.bonus}% butin</span>
+                                </div>
+                                <div class="ml-1 bg-black/50 rounded px-1.5 py-0.5 text-xs font-bold" style="color: #cbd5e1;">${groupLocks}/${group.ids.length}</div>
+                            `;
+
+                            keysContainer.appendChild(btn);
                         });
                         const btnKey = document.getElementById('btnOpenChestKey');
                         if (btnKey) btnKey.classList.add('hidden');
@@ -943,15 +1149,54 @@ export function updateUI(data) {
                         lootContainer.classList.remove('hidden'); lootContainer.classList.add('flex');
 
                         let disabledState = '';
+                        let acceptSelectedStyle = '';
+                        let passSelectedStyle = '';
+                        let waitingHtml = '';
+
+                        let totalUsers = 1;
+                        if (data.players && data.players.length > 0) {
+                            totalUsers = new Set(data.players.map(p => p.ownerUsername)).size;
+                        }
+
+                        let acceptVotes = 0;
+                        let passVotes = 0;
+                        let isMulti = totalUsers > 1;
+
+                        if (data.playerRoomChoices) {
+                            for (let user in data.playerRoomChoices) {
+                                const choice = data.playerRoomChoices[user];
+                                if (choice.actionType === 'PASS') {
+                                    passVotes++;
+                                } else {
+                                    acceptVotes++;
+                                }
+                            }
+
+                            const myChoice = data.playerRoomChoices[pageState.currentUsername];
+                            if (myChoice) {
+                                if (myChoice.actionType === 'PASS') {
+                                    passSelectedStyle = 'box-shadow: 0 0 15px rgba(255,255,255,0.4); background: rgba(255,255,255,0.15) !important; border-color: rgba(255,255,255,0.8) !important;';
+                                } else {
+                                    acceptSelectedStyle = 'box-shadow: 0 0 15px rgba(168, 85, 247, 0.6); background: rgba(168, 85, 247, 0.25) !important; border-color: rgba(168, 85, 247, 0.8) !important;';
+                                }
+                                if (isMulti) {
+                                    waitingHtml = `<div class="text-center w-full mt-2 text-sm text-sky-medium animate-pulse">En attente des autres joueurs...</div>`;
+                                }
+                            }
+                        }
+
+                        let acceptVoteText = isMulti ? ` <span style="opacity: 0.7; font-size: 0.9em;">(${acceptVotes}/${totalUsers})</span>` : '';
+                        let passVoteText = isMulti ? ` <span style="opacity: 0.7; font-size: 0.9em;">(${passVotes}/${totalUsers})</span>` : '';
 
                         lootContainer.innerHTML = `
                             <div class="flex-col items-center w-full" style="max-width: 600px;">
                                 ${warningHtml}
                                 ${specialItemHtml}
                                 <div class="btn-row">
-                                    <button type="button" id="btnAcceptAlteration" class="btn" style="flex: 1; max-width: 250px; background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.3); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;" ${disabledState} onclick="event.preventDefault(); acceptAlteration();">${btnText}</button>
-                                    <button type="button" class="btn text-muted" onclick="event.preventDefault(); nextRoom();" style="flex: 1; max-width: 250px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">Ignorer et passer</button>
+                                    <button type="button" id="btnAcceptAlteration" class="btn" style="flex: 1; max-width: 250px; background: rgba(139, 92, 246, 0.1); color: #8b5cf6; border: 1px solid rgba(139, 92, 246, 0.3); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; ${acceptSelectedStyle}" ${disabledState} onclick="event.preventDefault(); acceptAlteration();">${btnText}${acceptVoteText}</button>
+                                    <button type="button" class="btn text-muted" onclick="event.preventDefault(); acceptAlteration(true);" style="flex: 1; max-width: 250px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; ${passSelectedStyle}">Ignorer et passer${passVoteText}</button>
                                 </div>
+                                ${waitingHtml}
                             </div>
                         `;
                     } else {
@@ -965,95 +1210,167 @@ export function updateUI(data) {
                             renderAndAnimateXPCards('eventLootContainer', data.players, 'alt', false);
 
                             let gainedItemsHtml = '';
-                            if (data.combatLog) {
-                                for (let i = data.combatLog.length - 1; i >= 0; i--) {
-                                    const log = data.combatLog[i];
+                            let othersLootHtml = '';
 
-                                    const lostMatch = log.match(/sacrifi. l'item : (.*) !/);
-                                    if (lostMatch) {
-                                        const itemName = lostMatch[1].trim();
-                                        let spColor = '#ef4444';
-                                        let catIcon = 'star';
-                                        if (Array.isArray(window.allAnomaliesCombat)) {
-                                            const an = window.allAnomaliesCombat.find(a => a.name === itemName);
-                                            if (an) {
-                                                if (an.spiritualite === 'TENEBRES') spColor = '#a855f7';
-                                                else if (an.spiritualite === 'ESPRIT') spColor = '#38bdf8';
-                                                else if (an.spiritualite === 'KARMA') spColor = '#e7d198';
-                                                catIcon = an.category ? (getCategoryIcon(an.category)) : 'star';
+                            if (data.interactionResults) {
+                                for (let user in data.interactionResults) {
+                                    let logs = data.interactionResults[user];
+                                    let userOtherItemsHtml = '';
+
+                                    logs.forEach(log => {
+                                        let logHtml = '';
+
+                                        if (log.includes("Effet appliqu")) {
+                                            const effetMatch = log.match(/Effet appliqu. : ([-+0-9]+) PV et ([-+0-9]+) XP/);
+                                            if (effetMatch) {
+                                                const pv = parseInt(effetMatch[1]);
+                                                const xp = parseInt(effetMatch[2]);
+                                                let pvHtml = pv !== 0 ? `<span class="${pv > 0 ? 'text-success' : 'text-error'} font-bold">${pv > 0 ? '+' : ''}${pv} PV</span>` : '';
+                                                let xpHtml = xp !== 0 ? `<span class="${xp > 0 ? 'text-xp' : 'text-error'} font-bold">${xp > 0 ? '+' : ''}${xp} XP</span>` : '';
+                                                let both = [pvHtml, xpHtml].filter(Boolean).join(' et ');
+                                                if (both) {
+                                                    logHtml = `
+                                                        <div class="flex-center" style="background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(255,255,255,0.2); padding: 0.8rem 1rem; border-radius: 8px; color: #e2e8f0; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
+                                                            ${both}
+                                                        </div>
+                                                    `;
+                                                }
+                                            }
+                                        } else if (log.includes("a offert l'équipement") || log.includes("a offert l'\u00e9quipement")) {
+                                            const equipMatch = log.match(/a offert l'.quipement : (.*) !/) || log.match(/a offert l'.quipement : (.*) \(ajout. au groupe\)\./) || log.match(/a offert l'.quipement : (.*) \(envoy. au coffre\)\./);
+                                            if (equipMatch) {
+                                                const eqName = equipMatch[1].trim();
+                                                logHtml = `
+                                                    <div class="flex-center relative" style="background: rgba(0, 0, 0, 0.4); border: 1px solid #10b98180; padding: 0.8rem 1rem; border-radius: 8px; color: #10b981; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
+                                                        <span class="material-symbols-outlined" style="color: #10b981;">shield</span> <span style="border-bottom: 1px dashed #10b981;">${eqName}</span>
+                                                    </div>
+                                                `;
+                                            }
+                                        } else if (log.includes("a offert l'anomalie") || log.includes("Objet trouv")) {
+                                            const itemNameMatch = log.match(/Objet trouv. : (.*?) \(/) || log.match(/a offert l'anomalie : (.*)\./);
+                                            if (itemNameMatch) {
+                                                const eqName = itemNameMatch[1].trim();
+                                                let eq = null;
+                                                let an = null;
+
+                                                if (Array.isArray(window.allAnomaliesCombat)) {
+                                                    an = window.allAnomaliesCombat.find(a => a.name === eqName);
+                                                }
+                                                if (!an && data.currentRoom && data.currentRoom.altarRewardEquipment && data.currentRoom.altarRewardEquipment.name === eqName) {
+                                                    eq = data.currentRoom.altarRewardEquipment;
+                                                }
+
+                                                let slotIcon = 'help';
+                                                let slotColor = '#94a3b8';
+                                                let rarityColor = '#d946ef';
+                                                let tooltipDataHtml = '';
+
+                                                if (eq) {
+                                                    rarityColor = typeof getRarityColor === 'function' ? getRarityColor(eq.rarity) : '#eab308';
+                                                    slotColor = rarityColor;
+                                                    const slotInfo = typeof getSlotInfo === 'function' ? getSlotInfo(eq) : { icon: 'star' };
+                                                    slotIcon = slotInfo.icon;
+                                                    if (typeof window.getEquipmentTooltipHTML === 'function') {
+                                                        tooltipDataHtml = window.getEquipmentTooltipHTML(eq);
+                                                    }
+                                                } else if (an && typeof getCategoryIcon === 'function') {
+                                                    slotIcon = an.category ? getCategoryIcon(an.category) : 'star';
+                                                    slotColor = typeof getSpiritualiteColor === 'function' ? getSpiritualiteColor(an.spiritualite) : '#d946ef';
+                                                    rarityColor = slotColor;
+                                                    if (typeof window.getAnomalyTooltipHTML === 'function') {
+                                                        tooltipDataHtml = window.getAnomalyTooltipHTML(an, true);
+                                                    }
+                                                } else if (an) {
+                                                    slotIcon = 'star';
+                                                    slotColor = '#d946ef';
+                                                    rarityColor = slotColor;
+                                                }
+
+                                                const extraClass = '';
+                                                const tooltipAttrs = tooltipDataHtml ? 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"' : '';
+
+                                                logHtml = `
+                                                    <div class="flex-center relative" ${tooltipAttrs} style="cursor: ${tooltipDataHtml ? 'help' : 'default'}; background: rgba(0, 0, 0, 0.4); border: 1px solid ${rarityColor}80; padding: 0.8rem 1rem; border-radius: 8px; color: ${rarityColor}; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
+                                                        ${tooltipDataHtml ? `<template class="tooltip-data">${tooltipDataHtml}</template>` : ''}
+                                                        <span class="material-symbols-outlined${extraClass}" style="color: ${slotColor};">${slotIcon}</span> <span style="${tooltipDataHtml ? `border-bottom: 1px dashed ${rarityColor};` : ''}">${eqName}</span>
+                                                    </div>
+                                                `;
+                                            }
+                                        } else if (log.includes("sacrifi")) {
+                                            const sacMatch = log.match(/sacrifi. l'item : (.*) !/) || log.match(/sacrifi. l'anomalie : (.*)\./);
+                                            if (sacMatch) {
+                                                const itemName = sacMatch[1].trim();
+                                                logHtml = `
+                                                    <div class="flex-center" style="background: rgba(0, 0, 0, 0.4); border: 1px solid #ef444480; padding: 0.8rem 1rem; border-radius: 8px; color: #ef4444; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
+                                                        <span class="material-symbols-outlined" style="color: #ef4444;">local_fire_department</span> -1 ${itemName}
+                                                    </div>
+                                                `;
+                                            }
+                                        } else if (log.includes("offert") && log.includes("Or")) {
+                                            const orMatch = log.match(/offert (\d+) Or/);
+                                            if (orMatch) {
+                                                const amount = orMatch[1];
+                                                logHtml = `
+                                                    <div class="flex-center" style="background: rgba(0, 0, 0, 0.4); border: 1px solid #eab30880; padding: 0.8rem 1rem; border-radius: 8px; color: #eab308; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
+                                                        <span class="material-symbols-outlined" style="color: #eab308;">toll</span> +${amount} Or
+                                                    </div>
+                                                `;
+                                            }
+                                        } else if (log.includes("XP de Spiritualit")) {
+                                            const spXpMatch = log.match(/accorde (\d+) XP de Spiritualit./);
+                                            if (spXpMatch) {
+                                                const amount = spXpMatch[1];
+                                                logHtml = `
+                                                    <div class="flex-center" style="background: rgba(0, 0, 0, 0.4); border: 1px solid #8b5cf680; padding: 0.8rem 1rem; border-radius: 8px; color: #8b5cf6; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
+                                                        <span class="material-symbols-outlined" style="color: #8b5cf6;">auto_awesome</span> +${amount} Sp-XP
+                                                    </div>
+                                                `;
                                             }
                                         }
-                                        gainedItemsHtml += `
-                                            <div class="flex-center" style="background: rgba(0, 0, 0, 0.4); border: 1px solid ${spColor}80; padding: 0.8rem 1rem; border-radius: 8px; color: ${spColor}; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
-                                                <span class="material-symbols-outlined" style="color: ${spColor};">${catIcon}</span> -1 ${itemName}
-                                            </div>
-                                        `;
-                                    }
 
-                                    const gainedMatch = log.match(/re.oit l'Item Sp.cial : (.*) !/);
-                                    if (gainedMatch) {
-                                        const itemName = gainedMatch[1].trim();
-                                        let spColor = '#d946ef';
-                                        let catIcon = 'star';
-                                        if (Array.isArray(window.allAnomaliesCombat)) {
-                                            const an = window.allAnomaliesCombat.find(a => a.name === itemName);
-                                            if (an) {
-                                                spColor = getSpiritualiteColor(an.spiritualite);
-                                                catIcon = an.category ? (getCategoryIcon(an.category)) : 'star';
+                                        if (logHtml) {
+                                            if (user === pageState.currentUsername) {
+                                                gainedItemsHtml += logHtml;
+                                            } else {
+                                                userOtherItemsHtml += logHtml;
                                             }
                                         }
-                                        gainedItemsHtml += `
-                                            <div class="flex-center" style="background: rgba(0, 0, 0, 0.4); border: 1px solid ${spColor}80; padding: 0.8rem 1rem; border-radius: 8px; color: ${spColor}; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
-                                                <span class="material-symbols-outlined" style="color: ${spColor};">${catIcon}</span> +1 ${itemName}
+                                    });
+
+                                    if (user !== pageState.currentUsername && userOtherItemsHtml) {
+                                        othersLootHtml += `
+                                            <div class="mb-4">
+                                                <div class="text-sm text-muted mb-2 font-bold uppercase tracking-wider text-center" style="border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 0.5rem;">Loot de <span style="color: #10b981;">${user}</span></div>
+                                                <div class="flex flex-col gap-3">
+                                                    ${userOtherItemsHtml}
+                                                </div>
                                             </div>
                                         `;
                                     }
-
-                                    const altarGoldMatch = log.match(/r.compense de (\d+) Or/);
-                                    if (altarGoldMatch) {
-                                        const goldAmount = altarGoldMatch[1];
-                                        gainedItemsHtml += `
-                                            <div class="flex-center" style="background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(251, 191, 36, 0.5); padding: 0.8rem 1rem; border-radius: 8px; color: #fbbf24; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
-                                                <span class="material-symbols-outlined text-warning">monetization_on</span> +${goldAmount} Or
-                                            </div>
-                                        `;
-                                    }
-
-                                    const altarXpMatch = log.match(/accorde (\d+) XP de Spiritualit/);
-                                    if (altarXpMatch) {
-                                        const xpAmount = altarXpMatch[1];
-                                        gainedItemsHtml += `
-                                            <div class="flex-center" style="background: rgba(0, 0, 0, 0.4); border: 1px solid rgba(245, 158, 11, 0.5); padding: 0.8rem 1rem; border-radius: 8px; color: #f59e0b; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
-                                                <span class="material-symbols-outlined" style="color: #f59e0b;">auto_awesome</span> +${xpAmount} XP Spirituel
-                                            </div>
-                                        `;
-                                    }
-
-                                    if (log.includes("Vous entrez dans") || log.includes("Vous trouvez un trésor") || log.startsWith("Événement :")) break;
                                 }
                             }
 
-                            if (data.currentRoom && data.currentRoom.altarRewardEquipment) {
-                                const eq = data.currentRoom.altarRewardEquipment;
-                                const slotInfo = typeof getSlotInfo === 'function' ? getSlotInfo(eq) : { icon: 'help', color: '#94a3b8' };
-                                const rarityColor = typeof getRarityColor === 'function' ? getRarityColor(eq.rarity) : '#10b981';
-                                const tooltipDataHtml = typeof window.getEquipmentTooltipHTML === 'function' ? window.getEquipmentTooltipHTML(eq) : '';
-                                const tooltipAttrs = tooltipDataHtml ? 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"' : '';
-
-                                gainedItemsHtml += `
-                                    <div class="flex-center relative" ${tooltipAttrs} style="cursor: ${tooltipDataHtml ? 'help' : 'default'}; background: rgba(0, 0, 0, 0.4); border: 1px solid ${rarityColor}80; padding: 0.8rem 1rem; border-radius: 8px; color: ${rarityColor}; font-weight: 600; gap: 0.5rem; margin-top: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
-                                        ${tooltipDataHtml ? `<template class="tooltip-data">${tooltipDataHtml}</template>` : ''}
-                                        <span class="material-symbols-outlined ${slotInfo.extraClass || ''}" style="color: ${slotInfo.color};">${slotInfo.icon}</span> <span style="${tooltipDataHtml ? `border-bottom: 1px dashed ${rarityColor};` : ''}">${eq.name}</span>
-                                    </div>
-                                `;
+                            if (gainedItemsHtml) {
+                                const wrapper = document.createElement('div');
+                                wrapper.className = 'btn-row';
+                                wrapper.style.flexWrap = 'wrap';
+                                wrapper.style.marginTop = '1rem';
+                                wrapper.innerHTML = gainedItemsHtml;
+                                lootContainer.appendChild(wrapper);
                             }
 
-                            if (gainedItemsHtml) {
-                                lootContainer.innerHTML += `
-                                    <div class="btn-row" style="flex-wrap: wrap;">
-                                        ${gainedItemsHtml}
-                                    </div>
-                                `;
+                            const existingRightPanel = document.getElementById('othersLootPanel');
+                            if (existingRightPanel) existingRightPanel.remove();
+
+                            if (othersLootHtml) {
+                                const rightPanel = document.createElement('div');
+                                rightPanel.id = 'othersLootPanel';
+                                rightPanel.className = 'bg-slate-900/95 border border-white/10 rounded-2xl p-6 shadow-2xl flex flex-col overflow-y-auto custom-scrollbar shrink-0';
+                                rightPanel.style.width = '280px';
+                                rightPanel.style.maxHeight = '100%';
+                                rightPanel.innerHTML = othersLootHtml;
+                                const wrapperEl = document.getElementById('eventModalWrapper');
+                                if (wrapperEl) wrapperEl.appendChild(rightPanel);
                             }
                         }
 
@@ -1252,24 +1569,64 @@ export function updateUI(data) {
 
                         if (data.currentRoom.trapHasRopeOption) {
                             const ropes = data.activeConsumables ? data.activeConsumables.filter(eq => eq.consumableCategory === 'CORDE') : [];
-                            let ropeButtonsHtml = '';
-                            if (ropes.length > 0) {
-                                ropes.forEach(rope => {
-                                    ropeButtonsHtml += `<button type="button" class="btn" style="flex: 1; max-width: 250px; background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; margin-bottom: 0.5rem;" onclick="event.preventDefault(); useRope(${rope.id});"><span class="material-symbols-outlined text-[1.1rem] align-middle mr-1">gesture</span> Utiliser ${rope.name}</button>`;
-                                });
+                            const hasRope = ropes.length > 0;
+
+                            // Multi-player voting state
+                            let totalUsers = 1;
+                            if (data.players && data.players.length > 0) {
+                                totalUsers = new Set(data.players.filter(p => p.healthCurrent > 0 && p.ownerUsername).map(p => p.ownerUsername)).size;
+                            }
+                            const isMulti = totalUsers > 1;
+
+                            let ropeVotes = 0;
+                            let acceptVotes = 0;
+                            let ropeSelectedStyle = '';
+                            let acceptSelectedStyle = '';
+                            let waitingHtml = '';
+
+                            if (data.playerRoomChoices) {
+                                for (let user in data.playerRoomChoices) {
+                                    const choice = data.playerRoomChoices[user];
+                                    if (choice.actionType === 'ROPE') {
+                                        ropeVotes++;
+                                    } else if (choice.actionType === 'ACCEPT') {
+                                        acceptVotes++;
+                                    }
+                                }
+
+                                const myChoice = data.playerRoomChoices[pageState.currentUsername];
+                                if (myChoice) {
+                                    if (myChoice.actionType === 'ROPE') {
+                                        ropeSelectedStyle = 'box-shadow: 0 0 15px rgba(245, 158, 11, 0.6); background: rgba(245, 158, 11, 0.25) !important; border-color: rgba(245, 158, 11, 0.8) !important;';
+                                    } else if (myChoice.actionType === 'ACCEPT') {
+                                        acceptSelectedStyle = 'box-shadow: 0 0 15px rgba(255, 255, 255, 0.4); background: rgba(255, 255, 255, 0.15) !important; border-color: rgba(255, 255, 255, 0.8) !important;';
+                                    }
+                                    if (isMulti) {
+                                        waitingHtml = `<div class="text-center w-full mt-2 text-sm text-sky-medium animate-pulse">En attente des autres joueurs...</div>`;
+                                    }
+                                }
+                            }
+
+                            let ropeVoteText = isMulti ? ` <span class="ready-counter" style="opacity: 0.7; font-size: 0.9em;">(${ropeVotes}/${totalUsers})</span>` : '';
+                            let acceptVoteText = isMulti ? ` <span class="ready-counter" style="opacity: 0.7; font-size: 0.9em;">(${acceptVotes}/${totalUsers})</span>` : '';
+
+                            let ropeButtonHtml;
+                            if (hasRope) {
+                                ropeButtonHtml = `<button type="button" class="btn" onclick="event.preventDefault(); useRope(null, 'ROPE');" style="flex: 1; max-width: 250px; background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; ${ropeSelectedStyle}"><span class="material-symbols-outlined text-[1.1rem] align-middle mr-1">gesture</span> Utiliser une Corde${ropeVoteText}</button>`;
                             } else {
-                                ropeButtonsHtml = `<button type="button" class="btn" disabled title="Vous n'avez pas de corde" style="flex: 1; max-width: 250px; background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: not-allowed; opacity: 0.5; transition: all 0.2s ease; margin-bottom: 0.5rem;"><span class="material-symbols-outlined text-[1.1rem] align-middle mr-1">gesture</span> Utiliser une Corde</button>`;
+                                ropeButtonHtml = `<button type="button" class="btn" disabled title="Vous n'avez pas de corde" style="flex: 1; max-width: 250px; background: rgba(245, 158, 11, 0.1); color: #f59e0b; border: 1px solid rgba(245, 158, 11, 0.3); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: not-allowed; opacity: 0.5; transition: all 0.2s ease;"><span class="material-symbols-outlined text-[1.1rem] align-middle mr-1">gesture</span> Utiliser une Corde</button>`;
                             }
 
                             lootContainer.classList.remove('hidden'); lootContainer.classList.add('flex');
                             lootContainer.innerHTML = `
                                 <div class="flex-col items-center w-full">
                                     <div class="flex-col items-center w-full" style="display:flex;">
-                                        ${ropeButtonsHtml}
+                                        ${ropeButtonHtml}
                                     </div>
                                     <div class="btn-row" style="margin-top: 1rem;">
-                                        <button type="button" class="btn text-muted" onclick="event.preventDefault(); nextRoom();" style="flex: 1; max-width: 250px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease;">Subir le piège et passer</button>
+                                        <button type="button" class="btn text-muted" onclick="event.preventDefault(); useRope(null, 'ACCEPT');" style="flex: 1; max-width: 250px; background: rgba(255, 255, 255, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); padding: 0.8rem; border-radius: 8px; font-weight: 600; cursor: pointer; transition: all 0.2s ease; ${acceptSelectedStyle}">Subir le piège et passer${acceptVoteText}</button>
                                     </div>
+                                    ${waitingHtml}
                                 </div>
                             `;
                             btnCont.classList.add('hidden');
@@ -2118,7 +2475,7 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
         }
         const opacity = hasPlayed ? '0.5' : '1';
         const filter = hasPlayed ? 'grayscale(1)' : 'none';
-        
+
         turnOrderBadgeHtml = `<div title="Ordre de jeu : ${turnOrderNum}" style="position: absolute; top: -8px; left: -8px; width: 28px; height: 28px; background: linear-gradient(135deg, #1e293b, #0f172a); border: 2px solid ${isHero ? '#38bdf8' : '#ef4444'}; border-radius: 50%; color: #f8fafc; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.95rem; box-shadow: 0 4px 6px rgba(0,0,0,0.5); z-index: 5; opacity: ${opacity}; filter: ${filter}; transition: all 0.3s;">${turnOrderNum}</div>`;
     }
 
