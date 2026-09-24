@@ -289,6 +289,13 @@ function filterVault() {
 
     // Sorting
     filtered.sort((a, b) => {
+        if (filterStatus === 'EQUIPPED') {
+            const charA = a.personnage ? (a.personnage.name || '') : '';
+            const charB = b.personnage ? (b.personnage.name || '') : '';
+            const charCmp = charA.localeCompare(charB);
+            if (charCmp !== 0) return charCmp;
+        }
+
         if (sortVault === 'name_asc') return a.name.localeCompare(b.name);
         if (sortVault === 'name_desc') return b.name.localeCompare(a.name);
 
