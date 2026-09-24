@@ -68,6 +68,10 @@ class CombatTurnService {
     }
 
     CombatSession endTurn(CombatSession session) {
+        if (session.getTurnCastSpellIds() != null) {
+            session.getTurnCastSpellIds().clear();
+        }
+        
         if (session.getCurrentRoom().getType() != generation.grimoire.enumeration.RoomType.COMBAT
                 && session.getCurrentRoom().getType() != generation.grimoire.enumeration.RoomType.BOSS) {
             throw new RuntimeException("Ce n'est pas une salle de combat !");

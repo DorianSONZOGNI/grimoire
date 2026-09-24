@@ -3213,6 +3213,20 @@ export function renderSpellCard(sp) {
         multiDisabledStyle = 'opacity: 0.35;';
     }
 
+    const allEnemiesDead = !pageState.currentSessionData.enemies || 
+                           pageState.currentSessionData.enemies.length === 0 || 
+                           pageState.currentSessionData.enemies.every(e => e.dead || e.currentHp <= 0);
+
+    const isCastThisTurn = pageState.currentSessionData && 
+                           pageState.currentSessionData.turnCastSpellIds && 
+                           pageState.currentSessionData.turnCastSpellIds.includes(sp.id) && 
+                           !pageState.currentSessionData.finished &&
+                           !allEnemiesDead;
+    const castClass = isCastThisTurn ? ' cast-this-turn' : '';
+    if (isCastThisTurn) {
+        multiDisabledStyle = 'opacity: 1;'; // Force full opacity for cast spells
+    }
+
     // Build disabled badge HTML
     let disabledBadgeHtml = '';
     if (!isCastable && avail) {
@@ -3250,7 +3264,7 @@ export function renderSpellCard(sp) {
     }
 
     return `
-        <div id="spell-card-${sp.id}" class="combat-spell-card spell-btn${disabledClass}${multiDisabledClass}" style="border-top: 2px solid ${titleColor}; position: relative; ${multiDisabledStyle}" ${onClickAttr} ${tooltipAttrs}>
+        <div id="spell-card-${sp.id}" class="combat-spell-card spell-btn${disabledClass}${multiDisabledClass}${castClass}" style="--spell-color: ${titleColor}; border-top: 2px solid ${titleColor}; position: relative; ${multiDisabledStyle}" ${onClickAttr} ${tooltipAttrs}>
             <div class="absolute" style="top: -9px; left: -5px; background: #0f172a; border: 1px solid ${titleColor}; color: ${titleColor}; border-radius: 4px; padding: 0.1rem 0.4rem; font-size: 0.65rem; font-weight: bold; z-index: 25;">Lvl ${sp.niveau}</div>
             
             <div class="combat-spell-header mt-xs">

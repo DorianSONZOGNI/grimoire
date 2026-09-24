@@ -124,6 +124,7 @@ public class CombatSession {
     }
 
     private int reloadCount = 0;
+    private Set<Long> turnCastSpellIds = new HashSet<>();
     private Instant lastActivity = Instant.now();
 
     // Multi-player co-op
@@ -203,6 +204,7 @@ public class CombatSession {
         this.purchasedMerchantItems.clear();
         this.availableMerchantItems.clear();
         this.combatLog.clear();
+        if (this.turnCastSpellIds != null) this.turnCastSpellIds.clear();
         if (this.playerRoomChoices != null) this.playerRoomChoices.clear();
         if (this.interactionResults != null) this.interactionResults.clear();
         if (donjon.getSalles() != null && index < donjon.getSalles().size()) {

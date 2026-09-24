@@ -92,6 +92,9 @@ class CombatActionService {
                     spellService.castSpellGroup(spellToCast, p, finalTarget, finalAlly, allAllies, allEnemies,
                             choiceKey);
                 });
+                if (session.getTurnCastSpellIds() != null) {
+                    session.getTurnCastSpellIds().add(spellId);
+                }
             }
         } else if (targetIndex != null && targetIndex >= 0 && targetIndex < session.getEnemies().size()) {
             if (p.isBanalSpellCastThisTurn()) {
