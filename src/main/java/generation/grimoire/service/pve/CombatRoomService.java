@@ -107,6 +107,18 @@ public class CombatRoomService {
         } else if (session.getCurrentRoom().getType() == generation.grimoire.enumeration.RoomType.EVENT) {
             session.getEnemies().clear();
             session.addLog("Événement : " + session.getCurrentRoom().getEventText());
+
+            if (session.getCurrentRoom().getEventSubType() == generation.grimoire.enumeration.EventSubType.RENCONTRE) {
+                if (session.getCurrentRoom().getLootTable() != null) {
+                    java.util.List<LootEntry> lootTable = session.getCurrentRoom().getLootTable();
+                    for (int i = 0; i < lootTable.size(); i++) {
+                        LootEntry entry = lootTable.get(i);
+                        if (Math.random() * 100 < entry.getProbability()) {
+                            session.getAvailableMerchantItems().add(i);
+                        }
+                    }
+                }
+            }
         }
     }
 
@@ -778,7 +790,9 @@ public class CombatRoomService {
         if (session.getPurchasedMerchantItems().contains(lootIndex)) {
             throw new RuntimeException("Objet déjà acheté.");
         }
-
+        if (session.getAvailableMerchantItems() != null && !session.getAvailableMerchantItems().contains(lootIndex)) {
+            throw new RuntimeException("Objet non disponible dans cette boutique.");
+        }
         LootEntry entry = lootTable.get(lootIndex);
 
         Personnage acheteur = null;
