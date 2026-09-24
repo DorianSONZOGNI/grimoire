@@ -70,6 +70,14 @@ public class AlchemyController {
 
     // --- ADMIN ENDPOINTS ---
 
+    @GetMapping("/admin/recipes")
+    public ResponseEntity<?> getAllRecipesAdmin(Authentication authentication) {
+        if (authentication == null || !authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"))) {
+            return ResponseEntity.status(403).body("Accès refusé");
+        }
+        return ResponseEntity.ok(alchemyService.getAllRecipes());
+    }
+
     @PostMapping("/admin/recipe")
     public ResponseEntity<?> createRecipe(@RequestBody AlchemyRecipeRequestDTO dto, Authentication authentication) {
         if (authentication == null || !authentication.getAuthorities().stream().anyMatch(a -> a.getAuthority().equals("ROLE_ADMIN") || a.getAuthority().equals("ADMIN"))) {
