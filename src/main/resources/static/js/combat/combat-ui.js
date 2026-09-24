@@ -586,6 +586,14 @@ export function updateUI(data) {
             const btnCont = document.getElementById('btnContinueEvent');
             const lootContainer = document.getElementById('eventLootContainer');
 
+            // Reset loot when room event is not yet completed
+            if (!data.roomEventCompleted) {
+                delete lootContainer.dataset.filled;
+                lootContainer.innerHTML = '';
+                const oldRightPanel = document.getElementById('othersLootPanel');
+                if (oldRightPanel) oldRightPanel.remove();
+            }
+
             // Reset default onclick to prevent previous events (like PORTE_ETRANGE) from overriding it
             if (btnCont) {
                 btnCont.onclick = nextRoom;
@@ -594,6 +602,8 @@ export function updateUI(data) {
             const actionContainer = document.getElementById('eventActionContainer');
             if (actionContainer) {
                 actionContainer.querySelectorAll('.dynamic-key-btn').forEach(b => b.remove());
+                const oldKeys = document.getElementById('keysContainer');
+                if (oldKeys) oldKeys.remove();
             }
 
 
@@ -609,12 +619,16 @@ export function updateUI(data) {
                 const existingCounter = btn.querySelector('.ready-counter');
                 if (existingCounter) existingCounter.remove();
 
+                if (isMulti) {
+                    const counter = document.createElement('span');
+                    counter.className = 'ready-counter text-xs opacity-75 ml-2';
+                    counter.textContent = `(${readyCount}/${totalCount})`;
+                    btn.appendChild(counter);
+                }
+
                 if (isChosen) {
                     btn.classList.add('bg-green-600', 'text-white');
                     btn.classList.remove('bg-dark-surface', 'bg-dark-hover'); // in case it has these
-                    if (isMulti) {
-                        btn.innerHTML += ` <span class="ready-counter text-xs opacity-75 ml-2">(${readyCount}/${totalCount})</span>`;
-                    }
                 } else if (myChoice) {
                     // if they chose something else, dim this button
                     btn.classList.add('opacity-50');
@@ -799,26 +813,127 @@ export function updateUI(data) {
                     btnCont.classList.add('hidden'); // No pass button for chests
 
                     lootContainer.classList.add('hidden'); lootContainer.classList.remove('flex');
-                    lootContainer.innerHTML = ''; // reset
-                    delete lootContainer.dataset.filled;
+
+                    let openVotes = 0;
+                    if (data.playerRoomChoices) {
+                        for (let user in data.playerRoomChoices) {
+                            if (data.playerRoomChoices[user].actionType === 'OPEN') {
+                                openVotes++;
+                            }
+                        }
+                    }
 
                     const isMainChosen = myChoice && myChoice.actionType === 'OPEN';
-                    applyChoiceStyle(btnOpen, isMainChosen, data.isMulti, readyUsersCount, activeUsersCount);
+                    applyChoiceStyle(btnOpen, isMainChosen, activeUsersCount > 1, openVotes, activeUsersCount);
 
                     const actionContainer = document.getElementById('eventActionContainer');
                     if (actionContainer && btnCont) {
+                        actionContainer.classList.add('flex-wrap', 'justify-center');
+
                         const keys = data.activeConsumables ? data.activeConsumables.filter(eq => eq.consumableCategory === 'CLE') : [];
-                        keys.forEach(key => {
+                        
+                        let keysContainer = document.getElementById('keysContainer');
+                        if (!keysContainer) {
+                            keysContainer = document.createElement('div');
+                            keysContainer.id = 'keysContainer';
+                            keysContainer.className = 'flex gap-3 justify-center flex-wrap w-full mt-2';
+                            actionContainer.appendChild(keysContainer);
+                        } else {
+                            keysContainer.innerHTML = '';
+                        }
+                        
+                        const keyGroups = {};
+                        keys.forEach(k => {
+                            if (!keyGroups[k.name]) {
+                                keyGroups[k.name] = {
+                                    name: k.name,
+                                    bonus: k.specialEffectValue > 0 ? k.specialEffectValue : 10,
+                                    ids: [],
+                                    eq: k
+                                };
+                            }
+                            keyGroups[k.name].ids.push(k.id);
+                        });
+
+                        Object.values(keyGroups).forEach(group => {
+                            let groupLocks = 0;
+                            let myLockedId = null;
+                            let lockedIds = new Set();
+                            
+                            if (data.playerRoomChoices) {
+                                for (let user in data.playerRoomChoices) {
+                                    const choice = data.playerRoomChoices[user];
+                                    if (choice.actionType === 'OPEN_KEY') {
+                                        lockedIds.add(choice.itemId);
+                                        if (group.ids.includes(choice.itemId)) {
+                                            groupLocks++;
+                                            if (user === pageState.currentUsername) {
+                                                myLockedId = choice.itemId;
+                                            }
+                                        }
+                                    }
+                                }
+                            }
+
+                            const eq = group.eq;
+                            const rarityColor = typeof getRarityColor === 'function' ? getRarityColor(eq.rarity) : '#94a3b8';
+                            let tooltipDataHtml = '';
+                            if (typeof window.getEquipmentTooltipHTML === 'function') {
+                                tooltipDataHtml = window.getEquipmentTooltipHTML(eq);
+                            }
+
                             const btn = document.createElement('button');
-                            btn.className = 'action-btn epic dynamic-key-btn';
-                            btn.onclick = () => openChest(key.id, 'OPEN_KEY');
-                            const bonus = key.specialEffectValue > 0 ? key.specialEffectValue : 10;
-                            btn.innerHTML = `<span class="material-symbols-outlined">vpn_key</span> Ouvrir (${key.name} : +${bonus}% de butin)`;
+                            btn.className = 'flex items-center gap-2 p-1.5 px-3 rounded-full border relative transition-all duration-300 hover:scale-105 shadow-md';
+                            
+                            const isChosen = myLockedId !== null;
+                            
+                            if (isChosen) {
+                                btn.style.background = 'rgba(22, 163, 74, 0.4)';
+                                btn.style.borderColor = '#4ade80';
+                                btn.style.boxShadow = '0 0 10px rgba(74, 222, 128, 0.3)';
+                            } else if (myChoice) {
+                                btn.style.background = 'rgba(30, 41, 59, 0.8)';
+                                btn.style.borderColor = `${rarityColor}80`;
+                                btn.style.opacity = '0.5';
+                            } else {
+                                btn.style.background = 'rgba(30, 41, 59, 0.8)';
+                                btn.style.borderColor = `${rarityColor}80`;
+                            }
+                            
+                            if (!isChosen && groupLocks >= group.ids.length) {
+                                btn.disabled = true;
+                                btn.style.opacity = '0.5';
+                                btn.style.filter = 'grayscale(100%)';
+                                btn.title = "Toutes les clés de ce type sont déjà sélectionnées.";
+                                btn.style.cursor = 'not-allowed';
+                                btn.classList.remove('hover:scale-105');
+                            }
+                            
+                            btn.onclick = () => {
+                                if (btn.disabled) return;
+                                let idToSend = myLockedId;
+                                if (!idToSend) {
+                                    idToSend = group.ids.find(id => !lockedIds.has(id)) || group.ids[0];
+                                }
+                                openChest(idToSend, 'OPEN_KEY');
+                            };
+                            
+                            if (tooltipDataHtml) {
+                                btn.setAttribute('onmouseenter', 'window.showGlobalTooltip ? window.showGlobalTooltip(this) : null');
+                                btn.setAttribute('onmouseleave', 'window.hideGlobalTooltip ? window.hideGlobalTooltip() : null');
+                            }
+                            
+                            btn.innerHTML = `
+                                ${tooltipDataHtml ? `<template class="tooltip-data">${tooltipDataHtml}</template>` : ''}
+                                <span class="material-symbols-outlined" style="color: ${rarityColor}; font-size: 1.5rem;">vpn_key</span>
+                                <div class="flex flex-col items-start leading-tight">
+                                    <span style="color: ${rarityColor}; font-weight: bold; font-size: 0.9em;">${group.name}</span>
+                                    <span style="color: ${rarityColor}; opacity: 0.8; font-size: 0.8em;">+${group.bonus}% butin</span>
+                                </div>
+                                <div class="ml-1 bg-black/50 rounded px-1.5 py-0.5 text-xs font-bold" style="color: #cbd5e1;">${groupLocks}/${group.ids.length}</div>
+                            `;
 
-                            const isThisKeyChosen = myChoice && myChoice.actionType === 'OPEN_KEY' && myChoice.itemId === key.id;
-                            applyChoiceStyle(btn, isThisKeyChosen, data.isMulti, readyUsersCount, activeUsersCount);
-
-                            actionContainer.insertBefore(btn, btnCont);
+                            keysContainer.appendChild(btn);
                         });
                         const btnKey = document.getElementById('btnOpenChestKey');
                         if (btnKey) btnKey.classList.add('hidden');
@@ -1141,24 +1256,37 @@ export function updateUI(data) {
                                                 if (Array.isArray(window.allAnomaliesCombat)) {
                                                     an = window.allAnomaliesCombat.find(a => a.name === eqName);
                                                 }
+                                                if (!an && data.currentRoom && data.currentRoom.altarRewardEquipment && data.currentRoom.altarRewardEquipment.name === eqName) {
+                                                    eq = data.currentRoom.altarRewardEquipment;
+                                                }
 
                                                 let slotIcon = 'help';
                                                 let slotColor = '#94a3b8';
-                                                if (an && typeof getCategoryIcon === 'function') {
+                                                let rarityColor = '#d946ef';
+                                                let tooltipDataHtml = '';
+
+                                                if (eq) {
+                                                    rarityColor = typeof getRarityColor === 'function' ? getRarityColor(eq.rarity) : '#eab308';
+                                                    slotColor = rarityColor;
+                                                    const slotInfo = typeof getSlotInfo === 'function' ? getSlotInfo(eq) : { icon: 'star' };
+                                                    slotIcon = slotInfo.icon;
+                                                    if (typeof window.getEquipmentTooltipHTML === 'function') {
+                                                        tooltipDataHtml = window.getEquipmentTooltipHTML(eq);
+                                                    }
+                                                } else if (an && typeof getCategoryIcon === 'function') {
                                                     slotIcon = an.category ? getCategoryIcon(an.category) : 'star';
                                                     slotColor = typeof getSpiritualiteColor === 'function' ? getSpiritualiteColor(an.spiritualite) : '#d946ef';
+                                                    rarityColor = slotColor;
+                                                    if (typeof window.getAnomalyTooltipHTML === 'function') {
+                                                        tooltipDataHtml = window.getAnomalyTooltipHTML(an, true);
+                                                    }
                                                 } else if (an) {
                                                     slotIcon = 'star';
                                                     slotColor = '#d946ef';
+                                                    rarityColor = slotColor;
                                                 }
 
-                                                const rarityColor = (an && typeof getSpiritualiteColor === 'function' ? getSpiritualiteColor(an.spiritualite) : '#d946ef');
                                                 const extraClass = '';
-
-                                                let tooltipDataHtml = '';
-                                                if (an && typeof window.getAnomalyTooltipHTML === 'function') {
-                                                    tooltipDataHtml = window.getAnomalyTooltipHTML(an, true);
-                                                }
                                                 const tooltipAttrs = tooltipDataHtml ? 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"' : '';
 
                                                 logHtml = `
