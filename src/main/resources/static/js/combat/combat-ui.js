@@ -326,8 +326,6 @@ export function updateUI(data) {
             const manaTextEl = div.querySelector('.mana-text-val');
 
             if (forcedHp !== null && forcedHp !== p.healthCurrent) {
-                const suffix = p.shieldTotal > 0 ? ` (+${p.shieldTotal} 🛡️)` : '';
-
                 // DEBUG
                 const log = document.getElementById('combatLog');
                 if (log) {
@@ -338,7 +336,7 @@ export function updateUI(data) {
                     log.prepend(el);
                 }
 
-                animateGaugeJS(hpBar, hpTextEl, forcedHp, p.healthCurrent, p.healthMax, 800, suffix);
+                animateGaugeJS(hpBar, hpTextEl, forcedHp, p.healthCurrent, p.healthMax, 800);
             } else if (forcedHp === p.healthCurrent) {
                 // DEBUG
                 const log = document.getElementById('combatLog');
@@ -1127,7 +1125,7 @@ export function updateUI(data) {
                                         let baseChance = Math.round(90 - 65 * Math.exp(-0.64 * (level - 1)));
                                         let rarityMult = 1.0;
                                         if (data && data.currentRoom && data.currentRoom.altarRewardEquipment && data.currentRoom.altarRewardEquipment.rarity) {
-                                            switch(data.currentRoom.altarRewardEquipment.rarity) {
+                                            switch (data.currentRoom.altarRewardEquipment.rarity) {
                                                 case "COMMUN": rarityMult = 1.5; break;
                                                 case "INHABITUEL": rarityMult = 1.3; break;
                                                 case "RARE": rarityMult = 1.15; break;
@@ -1141,7 +1139,7 @@ export function updateUI(data) {
                                         let chance = Math.round(baseChance * rarityMult);
                                         if (chance > 100) chance = 100;
                                         if (chance < 1) chance = 1;
-                                        
+
                                         el.textContent = `(${chance}%)`;
                                         el.style.color = chance >= 85 ? '#10b981' : (chance >= 55 ? '#fbbf24' : '#ef4444');
                                     }
@@ -2138,10 +2136,10 @@ export function getBossBuffsHtml(c) {
 
     function makeBadge(val, colorHex, rgbStr, icon, label, description) {
         if (!val) return '';
-        return `<span ${tooltipAttrs} style="cursor: help; font-size: 0.75rem; background: rgba(${rgbStr}, 0.15); color: ${colorHex}; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(${rgbStr}, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;">` + 
-               `<template class="tooltip-data"><div style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:${colorHex}; border-bottom: 1px solid ${colorHex}; padding-bottom: 4px;">${label}</div>` +
-               `<div style="color:#cbd5e1; margin-top:8px; max-width: 350px; line-height: 1.4; white-space: normal !important; word-wrap: break-word;">${description}</div></template>` +
-               `<span class="material-symbols-outlined text-sm">${icon}</span>${label}</span>`;
+        return `<span ${tooltipAttrs} style="cursor: help; font-size: 0.75rem; background: rgba(${rgbStr}, 0.15); color: ${colorHex}; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(${rgbStr}, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;">` +
+            `<template class="tooltip-data"><div style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:${colorHex}; border-bottom: 1px solid ${colorHex}; padding-bottom: 4px;">${label}</div>` +
+            `<div style="color:#cbd5e1; margin-top:8px; max-width: 350px; line-height: 1.4; white-space: normal !important; word-wrap: break-word;">${description}</div></template>` +
+            `<span class="material-symbols-outlined text-sm">${icon}</span>${label}</span>`;
     }
 
     if (c.passiveStates['BOSS_BUFF_HP']) html += makeBadge(c.passiveStates['BOSS_BUFF_HP'], '#10b981', '16, 185, 129', 'favorite', `+${c.passiveStates['BOSS_BUFF_HP']}% PV`, `Le Boss possède ${c.passiveStates['BOSS_BUFF_HP']}% de points de vie maximum supplémentaires.`);
@@ -2150,7 +2148,7 @@ export function getBossBuffsHtml(c) {
     if (c.passiveStates['BOSS_BUFF_RESIST'] && hasResistBuff) html += makeBadge(c.passiveStates['BOSS_BUFF_RESIST'], '#d946ef', '217, 70, 239', 'health_and_safety', `+${c.passiveStates['BOSS_BUFF_RESIST']} Rés.`, `Le Boss possède ${c.passiveStates['BOSS_BUFF_RESIST']} points de Résistance magique.`);
     if (c.passiveStates['BOSS_BUFF_BURN']) html += makeBadge(c.passiveStates['BOSS_BUFF_BURN'], '#ef4444', '239, 68, 68', 'local_fire_department', `Brûlure`, `Inflige l'altération Brûlure à la cible lors d'une attaque réussie.`);
     if (c.passiveStates['BOSS_BUFF_POISON']) html += makeBadge(c.passiveStates['BOSS_BUFF_POISON'], '#22c55e', '34, 197, 94', 'pest_control', `Poison`, `Inflige l'altération Poison à la cible lors d'une attaque réussie.`);
-    
+
     if (c.passiveStates['BOSS_BUFF_DAMAGE_REFLECTION']) html += makeBadge(c.passiveStates['BOSS_BUFF_DAMAGE_REFLECTION'], '#f43f5e', '244, 63, 94', 'all_out', `Miroir Épineux`, `Renvoie ${c.passiveStates['BOSS_BUFF_DAMAGE_REFLECTION']}% des dégâts subis directement à l'attaquant.`);
     if (c.passiveStates['BOSS_BUFF_PHYSICAL_SHROUD']) html += makeBadge(c.passiveStates['BOSS_BUFF_PHYSICAL_SHROUD'], '#cbd5e1', '203, 213, 225', 'blur_on', `Voile Éthéré`, `Réduit les dégâts physiques subis de ${c.passiveStates['BOSS_BUFF_PHYSICAL_SHROUD']}%.`);
     if (c.passiveStates['BOSS_BUFF_MAGIC_SHROUD']) html += makeBadge(c.passiveStates['BOSS_BUFF_MAGIC_SHROUD'], '#818cf8', '129, 140, 248', 'blur_off', `Silencieux`, `Réduit les dégâts magiques subis de ${c.passiveStates['BOSS_BUFF_MAGIC_SHROUD']}%.`);
@@ -2167,7 +2165,33 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
     const hpToRender = forcedHp !== null && !isNaN(forcedHp) ? forcedHp : c.healthCurrent;
     const hpPct = c.healthMax > 0 ? Math.max(0, Math.min(100, (hpToRender / c.healthMax) * 100)) : 0;
     let hpLabel = `${hpToRender} / ${c.healthMax}`;
-    if (c.shieldTotal > 0) hpLabel += ` (+${c.shieldTotal} 🛡️)`;
+    let computedShieldTotal = c.shieldTotal || 0;
+    if (!computedShieldTotal && c.activeShields && Array.isArray(c.activeShields)) {
+        computedShieldTotal = c.activeShields.reduce((acc, s) => acc + (s.amount || 0), 0);
+    }
+    let shieldBadgeHtml = '';
+    if (computedShieldTotal > 0) {
+        let shieldEntriesHtml = '';
+        if (c.activeShields && Array.isArray(c.activeShields)) {
+            const shieldEntries = c.activeShields.map(s => `
+                <div class="flex justify-center items-center gap-1 w-full text-sm">
+                    <span class="material-symbols-outlined icon-sm-shrink text-base text-sky-300">security</span>
+                    <span class="font-bold text-white">[${s.sourceName || 'Inconnu'}]</span>
+                    <span class="text-sky-medium">Bouclier</span>
+                    <span class="text-subtle">→ ${s.amount} PV absorpt. (${s.duration} tours)</span>
+                </div>
+            `);
+            if (shieldEntries.length > 0) {
+                shieldEntriesHtml = `<template class="tooltip-data"><div class="flex-col-xs">${shieldEntries.join('')}</div></template>`;
+            }
+        }
+        const tooltipAttrs = shieldEntriesHtml ? 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"' : '';
+        shieldBadgeHtml = `<span class="sandbox-status-badge buff relative" style="cursor: help; border-color: rgba(56, 189, 248, 0.4); color: #38bdf8; background: rgba(56, 189, 248, 0.1); padding: 0.1rem 0.4rem; font-size: 0.75rem; border-radius: 4px; border: 1px solid rgba(56,189,248,0.4); display: flex; align-items: center; gap: 0.2rem;" ${tooltipAttrs}>
+            <span class="material-symbols-outlined" style="font-size: 1.1em;">security</span>
+            <span style="font-weight: 600;">+${computedShieldTotal}</span>
+            ${shieldEntriesHtml}
+        </span>`;
+    }
 
     const manaToRender = forcedMana !== null && !isNaN(forcedMana) ? forcedMana : c.manaCurrent;
     const manaPct = c.manaMax > 0 ? Math.max(0, Math.min(100, (manaToRender / c.manaMax) * 100)) : 0;
@@ -2547,6 +2571,14 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
         turnOrderBadgeHtml = `<div title="Ordre de jeu : ${turnOrderNum}" style="position: absolute; top: -8px; left: -8px; width: 28px; height: 28px; background: linear-gradient(135deg, #1e293b, #0f172a); border: 2px solid ${isHero ? '#38bdf8' : '#ef4444'}; border-radius: 50%; color: #f8fafc; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.95rem; box-shadow: 0 4px 6px rgba(0,0,0,0.5); z-index: 5; opacity: ${opacity}; filter: ${filter}; transition: all 0.3s;">${turnOrderNum}</div>`;
     }
 
+    let shieldBarHtml = '';
+    if (computedShieldTotal > 0 && c.healthMax > 0) {
+        const shieldPct = Math.min(100, (computedShieldTotal / c.healthMax) * 100);
+        const isOverflow = computedShieldTotal > c.healthMax;
+        const glowClass = isOverflow ? ' shield-glow-anim' : '';
+        shieldBarHtml = `<div style="width: 100%; height: 3px; background: rgba(0,0,0,0.3); border-radius: 2px; position: relative;"><div class="${glowClass}" style="position: absolute; top: 0; left: 0; height: 100%; width: ${shieldPct}%; background: #3b82f6; border-radius: 2px; box-shadow: 0 0 5px #3b82f6;"></div></div>`;
+    }
+
     return `
         ${turnOrderBadgeHtml}
         ${mutationsHtml}
@@ -2561,7 +2593,14 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
         ${monsterBadgesHtml}
         ${statsHtml}
         <div class="gauge-container" style="text-align: left;">
-            <div class="gauge-label"><span style="display:flex; align-items:center;">Santé (PV)${hpRegenBadge}</span><span class="hp-text-val">${hpLabel}</span></div>
+            <div class="gauge-label">
+                <span style="display:flex; align-items:center;">Santé (PV)${hpRegenBadge}</span>
+                <span style="display:flex; align-items:center; gap: 0.3rem;">
+                    <span class="hp-text-val">${hpLabel}</span>
+                    ${shieldBadgeHtml}
+                </span>
+            </div>
+            ${shieldBarHtml}
             <div class="gauge-track"><div class="gauge-fill hp" style="width: ${hpPct}%;"></div></div>
         </div>
         ${manaHtml.replace('<span style="display:flex; align-items:center;">Mana</span>', `<span style="display:flex; align-items:center;">Mana${manaRegenBadge}</span>`)}
@@ -2661,8 +2700,6 @@ export function renderEnemies(enemies, turnMap = null) {
         const manaTextEl = div.querySelector('.mana-text-val');
 
         if (forcedHp !== null && forcedHp !== pMonster.healthCurrent) {
-            const suffix = pMonster.shieldTotal > 0 ? ` (+${pMonster.shieldTotal} 🛡️)` : '';
-
             // DEBUG
             const log = document.getElementById('combatLog');
             if (log) {
@@ -2673,7 +2710,7 @@ export function renderEnemies(enemies, turnMap = null) {
                 log.prepend(el);
             }
 
-            animateGaugeJS(hpBar, hpTextEl, forcedHp, pMonster.healthCurrent, pMonster.healthMax, 800, suffix);
+            animateGaugeJS(hpBar, hpTextEl, forcedHp, pMonster.healthCurrent, pMonster.healthMax, 800);
         } else if (forcedHp === pMonster.healthCurrent) {
             // DEBUG
             const log = document.getElementById('combatLog');
@@ -2755,19 +2792,8 @@ export function renderShieldsHtml(shieldList) {
         shieldEntries.push(entryHtml);
     });
 
-    if (shieldEntries.length === 0) return '';
-
-    const tooltipAttrs = 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"';
-
-    return `<div class="sandbox-status-badge buff relative" ${tooltipAttrs} style="cursor: help; border-color: rgba(56, 189, 248, 0.4); color: #38bdf8; background: rgba(56, 189, 248, 0.1);">
-        <span class="material-symbols-outlined text-sm">shield</span>
-        <span>Boucliers (${totalShield})</span>
-        <template class="tooltip-data">
-            <div class="flex-col-xs">
-                ${shieldEntries.join('')}
-            </div>
-        </template>
-    </div>`;
+    // The bottom badge for shields has been removed in favor of the badge near the HP bar.
+    return '';
 }
 
 export function renderPoisonBurnHtml(c) {
@@ -3279,15 +3305,15 @@ export function renderSpellCard(sp) {
         multiDisabledStyle = 'opacity: 0.35;';
     }
 
-    const allEnemiesDead = !pageState.currentSessionData.enemies || 
-                           pageState.currentSessionData.enemies.length === 0 || 
-                           pageState.currentSessionData.enemies.every(e => e.dead || e.currentHp <= 0);
+    const allEnemiesDead = !pageState.currentSessionData.enemies ||
+        pageState.currentSessionData.enemies.length === 0 ||
+        pageState.currentSessionData.enemies.every(e => e.dead || e.currentHp <= 0);
 
-    const isCastThisTurn = pageState.currentSessionData && 
-                           pageState.currentSessionData.turnCastSpellIds && 
-                           pageState.currentSessionData.turnCastSpellIds.includes(sp.id) && 
-                           !pageState.currentSessionData.finished &&
-                           !allEnemiesDead;
+    const isCastThisTurn = pageState.currentSessionData &&
+        pageState.currentSessionData.turnCastSpellIds &&
+        pageState.currentSessionData.turnCastSpellIds.includes(sp.id) &&
+        !pageState.currentSessionData.finished &&
+        !allEnemiesDead;
     const castClass = isCastThisTurn ? ' cast-this-turn' : '';
     if (isCastThisTurn) {
         multiDisabledStyle = 'opacity: 1;'; // Force full opacity for cast spells
@@ -3464,4 +3490,20 @@ export function renderDotsHtml(dotList) {
             </template>
         </div>
     `;
+}
+
+if (!document.getElementById('shield-glow-style')) {
+    const style = document.createElement('style');
+    style.id = 'shield-glow-style';
+    style.innerHTML = `
+        @keyframes shield-overflow-glow {
+            0% { box-shadow: 0 0 5px #3b82f6, inset 0 0 2px #60a5fa; filter: brightness(1); }
+            50% { box-shadow: 0 0 15px #60a5fa, inset 0 0 8px #93c5fd; filter: brightness(1.3); }
+            100% { box-shadow: 0 0 5px #3b82f6, inset 0 0 2px #60a5fa; filter: brightness(1); }
+        }
+        .shield-glow-anim {
+            animation: shield-overflow-glow 2s infinite ease-in-out;
+        }
+    `;
+    document.head.appendChild(style);
 }
