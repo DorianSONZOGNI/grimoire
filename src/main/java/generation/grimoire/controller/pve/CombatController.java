@@ -55,6 +55,28 @@ public class CombatController {
         return null;
     }
 
+    @GetMapping("/current")
+    public ResponseEntity<?> getCurrentSession(Principal principal) {
+        if (principal == null) return ResponseEntity.ok(java.util.Map.of());
+        String username = principal.getName();
+        for (java.util.Map.Entry<String, CombatSession> entry : combatService.getActiveSessions().entrySet()) {
+            CombatSession session = entry.getValue();
+            boolean inCombat = session.getPlayers().stream()
+                    .anyMatch(p -> p.getUser() != null && username.equals(p.getUser().getUsername()) && p.getHealthCurrent() > 0);
+            
+            if (inCombat && !session.isFinished()) {
+                java.util.Map<String, Object> resp = new java.util.HashMap<>();
+                resp.put("sessionId", session.getSessionId());
+                resp.put("isMulti", session.isMulti());
+                if (session.isMulti()) {
+                    resp.put("multiId", session.getMultiSessionId());
+                }
+                return ResponseEntity.ok(resp);
+            }
+        }
+        return ResponseEntity.ok(java.util.Map.of());
+    }
+
     @PostMapping("/start")
     public ResponseEntity<?> startCombat(
             @RequestParam @NonNull List<Long> characterIds,

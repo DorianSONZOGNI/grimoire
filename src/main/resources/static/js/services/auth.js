@@ -3,6 +3,15 @@ window.initAppMeta = async function () {
     return initMeta();
 };
 
+const activeCombatId = localStorage.getItem('activeCombatId');
+if (activeCombatId && 
+    !window.location.pathname.includes('/combat.html') && 
+    !window.location.pathname.includes('/login.html') && 
+    !window.location.pathname.includes('/register.html')) {
+    console.warn('Active combat session found in localStorage, redirecting to combat page.');
+    window.location.href = '/combat.html';
+}
+
 let accessToken = null;
 
 window.setAccessToken = function (token) {
@@ -96,17 +105,38 @@ window.globalFetch = async function (url, options = {}) {
                 }
             }
         } else if (res.status === 403) {
-            if (!url.includes('/api/auth/me')) {
-                window.location.href = '/login.html';
+            let errorMsg = 'Accès refusé';
+            try {
+                const text = await res.text();
+                try {
+                    const data = JSON.parse(text);
+                    errorMsg = data.message || data.error || text || errorMsg;
+                } catch (e) {
+                    errorMsg = text || errorMsg;
+                }
+            } catch (e2) {}
+
+            if (errorMsg.includes('combat')) {
+                console.warn('Redirecting to combat page due to active combat session', url);
+                window.location.href = '/combat.html';
                 await new Promise(() => {}); // Halt execution
             }
-            throw new Error('Accès refusé');
+
+            // Pour un 403 générique, on ne redirige PAS vers login (car 403 = authentifié mais pas les droits)
+            throw new Error(errorMsg);
         }
 
         if (!res.ok) {
             if (res.status === 401 && !url.includes('/api/auth/me')) {
-                console.error('Would redirect to login', url);
-                await new Promise(() => {});
+                console.warn('Redirecting to login due to 401', url);
+                localStorage.removeItem('accessToken');
+                localStorage.removeItem('refreshToken');
+                localStorage.removeItem('isLikelyLoggedIn');
+                if (!window.isRedirectingToLogin) {
+                    window.isRedirectingToLogin = true;
+                    window.location.href = '/login.html';
+                }
+                await new Promise(() => {}); // Halt execution
             }
             let errorMsg = "Erreur serveur";
             try {
@@ -174,6 +204,24 @@ document.addEventListener('DOMContentLoaded', () => {
                         window.setAccessToken(data.token);
                     }
                     localStorage.setItem('isLikelyLoggedIn', 'true');
+                    
+                    // Check if user has an active combat session
+                    try {
+                        const currentSessionRes = await fetch('/api/pve/combat/current', {
+                            headers: { 'Authorization': `Bearer ${data.token}` }
+                        });
+                        if (currentSessionRes.ok) {
+                            const sessionData = await currentSessionRes.json();
+                            if (sessionData && sessionData.sessionId) {
+                                localStorage.setItem('activeCombatId', sessionData.sessionId);
+                                window.location.href = '/combat.html';
+                                return;
+                            }
+                        }
+                    } catch (e) {
+                        console.warn("Could not check active combat session on login", e);
+                    }
+                    
                     window.location.href = '/';
                 }
             } catch (err) {
@@ -359,6 +407,18 @@ window.checkAuthStatus = async function checkAuthStatus() {
 }
 
 window.logout = async function () {
+    if (typeof window.showModal === 'function') {
+        const confirmed = await window.showModal({
+            title: 'Déconnexion',
+            body: 'Voulez-vous vraiment vous déconnecter ?',
+            confirmText: 'Me déconnecter',
+            confirmStyle: 'danger'
+        });
+        if (!confirmed) return;
+    } else {
+        if (!confirm('Voulez-vous vraiment vous déconnecter ?')) return;
+    }
+
     try {
         localStorage.removeItem('isLikelyLoggedIn');
         await fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' });

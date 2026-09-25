@@ -233,9 +233,19 @@ function getAnomalyTooltipHTML(aTemp, fallbackName) {
     const catIcon = aTemp && aTemp.category ? getCategoryIcon(aTemp.category) : 'star';
     const spiriColor = aTemp && aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
 
+    let stockHtml = '';
+    if (aTemp && window.myGlobalAnomalies && Array.isArray(window.myGlobalAnomalies)) {
+        const stockCount = window.myGlobalAnomalies.filter(a => a.name === n).length;
+        if (stockCount > 0) {
+            stockHtml = `<span style="margin-left: 8px; font-size: 0.8rem; background: rgba(255,255,255,0.1); padding: 2px 6px; border-radius: 12px; color: #fff;">Stock: ${stockCount}</span>`;
+        }
+    }
+
     let html = `
-        <div class="anomaly-tooltip-title" style="color: ${spiriColor}; border-bottom: 1px solid ${spiriColor}40; padding-bottom: 4px;">
-            <span class="material-symbols-outlined" style="font-size: 1rem; margin-right: 4px;">${catIcon}</span>${n}
+        <div class="anomaly-tooltip-title" style="color: ${spiriColor}; border-bottom: 1px solid ${spiriColor}40; padding-bottom: 4px; display: flex; align-items: center;">
+            <span class="material-symbols-outlined" style="font-size: 1rem; margin-right: 4px;">${catIcon}</span>
+            <span style="flex-grow: 1;">${n}</span>
+            ${stockHtml}
         </div>
         <div style="display: flex; gap: 6px; margin: 6px 0; flex-wrap: wrap;">
             <span class="font-bold" style="border: 1px solid ${getLevelColor(aTemp ? aTemp.level : 1)}; color: ${getLevelColor(aTemp ? aTemp.level : 1)}; background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px; font-size: 0.75rem;">

@@ -65,7 +65,7 @@ export function initiateCombatCast(spellId) {
         const playerHeat = pageState.currentSessionData.activePlayer?.passiveStates ? (pageState.currentSessionData.activePlayer.passiveStates['destruction_heat'] || 0) : 0;
         const totalHeatCost = (sp.heatCost || 0) + requiredHeatFromEffects;
 
-        if (playerHeat < totalHeatCost) {
+        if (totalHeatCost > 0 && playerHeat < totalHeatCost) {
             addCombatLog(`Chaleur insuffisante pour cette option (${playerHeat}/${totalHeatCost})`, 'system');
             return;
         }

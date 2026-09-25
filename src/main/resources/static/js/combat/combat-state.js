@@ -118,9 +118,22 @@ window.confirmCombatCast = confirmCombatCast;
 window.cancelCombatCast = cancelCombatCast;
 
 window.promptFlee = function () {
+    console.log("promptFlee called", pageState.sessionId, pageState.currentSessionData);
+    if (!pageState.sessionId || !pageState.currentSessionData || pageState.currentSessionData.finished) {
+        console.log("promptFlee aborted due to missing data or finished session");
+        return;
+    }
+    
+    const roomsCount = Math.max(1, pageState.currentSessionData.totalRooms || 1);
+    const nbHeroes = Math.max(1, (pageState.currentSessionData.players || []).length);
+    const xpLossPerHero = Math.floor((10 * roomsCount) / nbHeroes);
+    const goldLoss = 10 * roomsCount;
+    
+    const penaltyHtml = `Perte d'xp et Or : <span style="color: #f87171;">-${xpLossPerHero} XP normal</span> (par perso) et <span class="text-warning">-${goldLoss} Or</span> (au total).`;
+
     ui.showModal({
         title: 'Fuir le combat ?',
-        body: `Êtes-vous sûr de vouloir fuir ?<br><br><span id="fleePenaltyText" class="text-sm text-error">Calcul de la pénalité...</span>`,
+        body: `Êtes-vous sûr de vouloir fuir ?<br><br><span id="fleePenaltyText" class="text-sm text-error">${penaltyHtml}</span>`,
         icon: 'directions_run',
         confirmText: 'Oui, fuir',
         onConfirm: async () => {
@@ -142,19 +155,6 @@ window.promptFlee = function () {
             }
         }
     });
-
-    // Populate penalty text
-    setTimeout(() => {
-        if (!pageState.sessionId || !pageState.currentSessionData || pageState.currentSessionData.finished) return;
-        const roomsCount = Math.max(1, pageState.currentSessionData.totalRooms || 1);
-        const nbHeroes = Math.max(1, (pageState.currentSessionData.players || []).length);
-        const xpLossPerHero = Math.floor((10 * roomsCount) / nbHeroes);
-        const goldLoss = 10 * roomsCount;
-        const fleePenaltySpan = document.getElementById('fleePenaltyText');
-        if (fleePenaltySpan) {
-            fleePenaltySpan.innerHTML = `Perte d'xp et Or : <span style="color: #f87171;">-${xpLossPerHero} XP normal</span> (par perso) et <span class="text-warning">-${goldLoss} Or</span> (au total).`;
-        }
-    }, 100);
 };
 
 
@@ -222,7 +222,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // ─── Mode solo classique
-    const savedCombatId = localStorage.getItem('activeCombatId');
+    let savedCombatId = localStorage.getItem('activeCombatId');
+    
+    if (!savedCombatId && !urlParams.get('dungeonId') && !urlParams.get('multiId')) {
+        // If we have no local session and no startup parameters, we might have been redirected here.
+        // Let's ask the server if we have an ongoing combat session.
+        try {
+            const res = await window.globalFetch('/api/pve/combat/current');
+            if (res.ok) {
+                const data = await res.json();
+                if (data && data.sessionId) {
+                    savedCombatId = data.sessionId;
+                    localStorage.setItem('activeCombatId', savedCombatId);
+                    if (data.isMulti) {
+                        window.location.href = `/combat.html?sessionId=${data.sessionId}&multiId=${data.multiId}`;
+                        return;
+                    }
+                }
+            }
+        } catch(e) {
+            console.warn("Impossible de récupérer la session de combat active depuis le serveur", e);
+        }
+    }
+
     if (savedCombatId) {
         resumeCombat(savedCombatId);
         return;
@@ -332,7 +354,7 @@ window.updateSpellCardState = function (spellId) {
         const playerHeat = pageState.currentSessionData.activePlayer?.passiveStates ? (pageState.currentSessionData.activePlayer.passiveStates['destruction_heat'] || 0) : 0;
         const totalHeatCost = (avail && avail.finalHeatCost !== undefined ? avail.finalHeatCost : (sp.heatCost || 0)) + requiredHeatFromEffects;
 
-        if (playerHeat < totalHeatCost) {
+        if (totalHeatCost > 0 && playerHeat < totalHeatCost) {
             isCastable = false;
             dynamicReason = 'HEAT';
         }
@@ -436,10 +458,8 @@ window.switchSpellTab = function (tab) {
     if (tabEl) tabEl.classList.add('active');
 
     // Reset secondary filters on tab change
-    const typeAll = document.querySelector('input[name="filterCastingType"][value="ALL"]');
-    if (typeAll) typeAll.checked = true;
-    const levelAll = document.querySelector('input[name="filterLevel"][value="ALL"]');
-    if (levelAll) levelAll.checked = true;
+    pageState.combatSpellTypeFilter = 'ALL';
+    updateCombatSpellTypeFilterUI();
 
     // Re-render
     if (pageState.currentSessionData && pageState.currentSessionData.availableSpells) {
@@ -448,27 +468,69 @@ window.switchSpellTab = function (tab) {
 }
 
 window.applySpellFilters = function (clickedEl) {
-    if (clickedEl && clickedEl.name === 'filterLevel') {
-        if (clickedEl.value === 'ALL' && clickedEl.checked) {
-            // Uncheck all other levels
-            document.querySelectorAll('input[name="filterLevel"]:not([value="ALL"])').forEach(el => el.checked = false);
-        } else if (clickedEl.value !== 'ALL' && clickedEl.checked) {
-            // Uncheck ALL
-            const allEl = document.querySelector('input[name="filterLevel"][value="ALL"]');
-            if (allEl) allEl.checked = false;
-        }
-
-        // If everything is unchecked, check ALL automatically
-        const anyChecked = document.querySelector('input[name="filterLevel"]:checked');
-        if (!anyChecked) {
-            const allEl = document.querySelector('input[name="filterLevel"][value="ALL"]');
-            if (allEl) allEl.checked = true;
-        }
-    }
-
     if (pageState.currentSessionData && pageState.currentSessionData.availableSpells) {
         renderSpells(pageState.currentSessionData.availableSpells);
     }
+}
+
+window.updateCombatSpellTypeFilterUI = function() {
+    const btn = document.getElementById('combatSpellTypeFilterBtn');
+    if (btn) {
+        btn.style.transform = 'scale(0.85)';
+        setTimeout(() => btn.style.transform = 'scale(1)', 150);
+
+        let html = '';
+        if (!pageState.combatSpellTypeFilter || pageState.combatSpellTypeFilter === 'ALL') {
+            html = `
+                <div class="relative w-full h-full" style="pointer-events: none;">
+                    <span class="material-symbols-outlined absolute text-amber-400" style="top: 3px; left: 50%; transform: translateX(-50%); font-size: 18px;">bolt</span>
+                    <span class="material-symbols-outlined absolute text-blue-400" style="bottom: 2px; left: 2px; font-size: 16px;">hourglass_empty</span>
+                    <span class="material-symbols-outlined absolute text-purple-400" style="bottom: 2px; right: 2px; font-size: 17px;">cyclone</span>
+                </div>
+            `;
+            btn.className = "flex-shrink-0 flex items-center justify-center bg-slate-900/80 border border-white/10 text-slate-200 rounded-md cursor-pointer outline-none hover:bg-slate-800";
+            btn.style.boxShadow = 'none';
+            btn.style.backgroundColor = '';
+            btn.style.borderColor = '';
+            btn.style.color = '';
+            btn.title = "Filtrer par type : Tous";
+        } else if (pageState.combatSpellTypeFilter === 'INSTANTANE') {
+            html = `<span class="material-symbols-outlined text-amber-400" style="pointer-events: none; font-size: 26px;">bolt</span>`;
+            btn.className = "flex-shrink-0 flex items-center justify-center rounded-md cursor-pointer outline-none transition-all";
+            btn.style.backgroundColor = 'rgba(245, 158, 11, 0.1)';
+            btn.style.borderColor = 'rgba(245, 158, 11, 0.3)';
+            btn.style.color = '#f59e0b';
+            btn.style.boxShadow = '0 0 10px rgba(245, 158, 11, 0.2)';
+            btn.title = "Filtrer par type : Instantané";
+        } else if (pageState.combatSpellTypeFilter === 'BANAL') {
+            html = `<span class="material-symbols-outlined text-blue-400" style="pointer-events: none; font-size: 24px;">hourglass_empty</span>`;
+            btn.className = "flex-shrink-0 flex items-center justify-center rounded-md cursor-pointer outline-none transition-all";
+            btn.style.backgroundColor = 'rgba(59, 130, 246, 0.1)';
+            btn.style.borderColor = 'rgba(59, 130, 246, 0.3)';
+            btn.style.color = '#60a5fa';
+            btn.style.boxShadow = '0 0 10px rgba(59, 130, 246, 0.2)';
+            btn.title = "Filtrer par type : Banal";
+        } else if (pageState.combatSpellTypeFilter === 'CANALISE') {
+            html = `<span class="material-symbols-outlined text-purple-400" style="pointer-events: none; font-size: 26px;">cyclone</span>`;
+            btn.className = "flex-shrink-0 flex items-center justify-center rounded-md cursor-pointer outline-none transition-all";
+            btn.style.backgroundColor = 'rgba(168, 85, 247, 0.1)';
+            btn.style.borderColor = 'rgba(168, 85, 247, 0.3)';
+            btn.style.color = '#c084fc';
+            btn.style.boxShadow = '0 0 10px rgba(168, 85, 247, 0.2)';
+            btn.title = "Filtrer par type : Canalisé";
+        }
+        btn.innerHTML = html;
+    }
+}
+
+window.toggleCombatSpellTypeFilter = function() {
+    const states = ['ALL', 'INSTANTANE', 'BANAL', 'CANALISE'];
+    pageState.combatSpellTypeFilter = pageState.combatSpellTypeFilter || 'ALL';
+    const currentIndex = states.indexOf(pageState.combatSpellTypeFilter);
+    pageState.combatSpellTypeFilter = states[(currentIndex + 1) % states.length];
+    
+    updateCombatSpellTypeFilterUI();
+    window.applySpellFilters();
 }
 
 window.toggleSidePanel = function(overlayPrefix, tabName) {
@@ -995,11 +1057,16 @@ window.showHeroEquipmentTooltip = function (el, characterId) {
     const content = document.getElementById('heroEquipmentTooltipContent');
     if (!tooltip || !content) return;
 
+    const hero = pageState.currentSessionData?.players?.find(p => p.id === characterId);
+    const heroName = hero ? hero.name || hero.nom || 'Héros' : 'Héros';
+    const heroLevel = hero ? hero.voieLevel || 1 : 1;
+    const headerHtml = `<div style="text-align:center; font-weight:bold; font-size: 1.1rem; color:#f8fafc; margin-bottom: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom:0.5rem;">${heroName} <span class="text-sky-300" style="font-size: 0.9em;">(Niv. ${heroLevel})</span></div>`;
+
     let eqs = pageState.combatEquipments[characterId];
     if (!eqs || eqs.length === 0) {
-        content.innerHTML = '<div style="color:#cbd5e1; font-size:0.9rem; text-align:center;">Aucun équipement</div>';
+        content.innerHTML = headerHtml + '<div style="color:#cbd5e1; font-size:0.9rem; text-align:center;">Aucun équipement</div>';
     } else {
-        let html = '<div class="equip-slots-grid" style="width: 100%; min-width: 500px;">';
+        let html = headerHtml + '<div class="equip-slots-grid" style="width: 100%; min-width: 500px;">';
 
         const slots = Object.keys(window.SLOT_LABELS || {}).filter(s => s !== 'CONSOMMABLE' && s !== 'ANOMALIE' && s !== 'ARME_DEUX_MAINS' && s !== 'ARME' && s !== 'ANNEAU');
 
