@@ -414,12 +414,7 @@ public class PersonnageCombatHelper {
             if (overhealPct > 0) {
                 int shieldAmount = (int) (surplus * (overhealPct / 100.0));
                 if (shieldAmount > 0) {
-                    generation.grimoire.entity.spell.type.effect.BuffDebuffEffect shieldEff = new generation.grimoire.entity.spell.type.effect.BuffDebuffEffect();
-                    shieldEff.setStatAffected(generation.grimoire.enumeration.StatType.BOUCLIER);
-                    shieldEff.setFlatValue(shieldAmount);
-                    shieldEff.setDuration(2);
-                    shieldEff.setUniqueId(java.util.UUID.randomUUID().toString());
-                    p.getActiveBuffs().add(shieldEff);
+                    p.addShield(shieldAmount, 2, "Bouclier vital");
                     System.out.println("🛡️ " + p.getName() + " convertit " + surplus + " PV de surplus en " + shieldAmount + " de Bouclier !");
                 }
             }
