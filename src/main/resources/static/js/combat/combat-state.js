@@ -118,9 +118,22 @@ window.confirmCombatCast = confirmCombatCast;
 window.cancelCombatCast = cancelCombatCast;
 
 window.promptFlee = function () {
+    console.log("promptFlee called", pageState.sessionId, pageState.currentSessionData);
+    if (!pageState.sessionId || !pageState.currentSessionData || pageState.currentSessionData.finished) {
+        console.log("promptFlee aborted due to missing data or finished session");
+        return;
+    }
+    
+    const roomsCount = Math.max(1, pageState.currentSessionData.totalRooms || 1);
+    const nbHeroes = Math.max(1, (pageState.currentSessionData.players || []).length);
+    const xpLossPerHero = Math.floor((10 * roomsCount) / nbHeroes);
+    const goldLoss = 10 * roomsCount;
+    
+    const penaltyHtml = `Perte d'xp et Or : <span style="color: #f87171;">-${xpLossPerHero} XP normal</span> (par perso) et <span class="text-warning">-${goldLoss} Or</span> (au total).`;
+
     ui.showModal({
         title: 'Fuir le combat ?',
-        body: `Êtes-vous sûr de vouloir fuir ?<br><br><span id="fleePenaltyText" class="text-sm text-error">Calcul de la pénalité...</span>`,
+        body: `Êtes-vous sûr de vouloir fuir ?<br><br><span id="fleePenaltyText" class="text-sm text-error">${penaltyHtml}</span>`,
         icon: 'directions_run',
         confirmText: 'Oui, fuir',
         onConfirm: async () => {
@@ -142,19 +155,6 @@ window.promptFlee = function () {
             }
         }
     });
-
-    // Populate penalty text
-    setTimeout(() => {
-        if (!pageState.sessionId || !pageState.currentSessionData || pageState.currentSessionData.finished) return;
-        const roomsCount = Math.max(1, pageState.currentSessionData.totalRooms || 1);
-        const nbHeroes = Math.max(1, (pageState.currentSessionData.players || []).length);
-        const xpLossPerHero = Math.floor((10 * roomsCount) / nbHeroes);
-        const goldLoss = 10 * roomsCount;
-        const fleePenaltySpan = document.getElementById('fleePenaltyText');
-        if (fleePenaltySpan) {
-            fleePenaltySpan.innerHTML = `Perte d'xp et Or : <span style="color: #f87171;">-${xpLossPerHero} XP normal</span> (par perso) et <span class="text-warning">-${goldLoss} Or</span> (au total).`;
-        }
-    }, 100);
 };
 
 
