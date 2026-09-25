@@ -1119,9 +1119,26 @@ export function updateUI(data) {
                                 window.updateAltarDropChance = function (level) {
                                     const el = document.getElementById('altarDropChance');
                                     if (el) {
-                                        let chance = level === 1 ? 45 : (level === 2 ? 75 : 100);
+                                        let baseChance = Math.round(90 - 65 * Math.exp(-0.64 * (level - 1)));
+                                        let rarityMult = 1.0;
+                                        if (data && data.currentRoom && data.currentRoom.altarRewardEquipment && data.currentRoom.altarRewardEquipment.rarity) {
+                                            switch(data.currentRoom.altarRewardEquipment.rarity) {
+                                                case "COMMUN": rarityMult = 1.5; break;
+                                                case "INHABITUEL": rarityMult = 1.3; break;
+                                                case "RARE": rarityMult = 1.15; break;
+                                                case "MYTHIQUE": rarityMult = 1.0; break;
+                                                case "EPIQUE": rarityMult = 0.85; break;
+                                                case "LEGENDAIRE": rarityMult = 0.70; break;
+                                                case "RELIQUE": rarityMult = 0.55; break;
+                                                case "MAUDIT": rarityMult = 0.40; break;
+                                            }
+                                        }
+                                        let chance = Math.round(baseChance * rarityMult);
+                                        if (chance > 100) chance = 100;
+                                        if (chance < 1) chance = 1;
+                                        
                                         el.textContent = `(${chance}%)`;
-                                        el.style.color = chance === 100 ? '#10b981' : (chance === 75 ? '#fbbf24' : '#ef4444');
+                                        el.style.color = chance >= 85 ? '#10b981' : (chance >= 55 ? '#fbbf24' : '#ef4444');
                                     }
                                     const valEl = document.getElementById('altarDynamicRewardValue');
                                     if (valEl) {

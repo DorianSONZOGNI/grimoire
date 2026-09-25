@@ -564,11 +564,29 @@ public class CombatRoomService {
                     }
                     session.logInteractionResult(username, "L'autel vous a accordé " + multipliedValue + " XP de Spiritualité.");
                 } else if ("ITEM".equals(rewardType)) {
-                    int chance = level == 1 ? 45 : (level == 2 ? 75 : 100);
+                    Equipment template = room.getAltarRewardEquipment();
+                    double rarityMultiplier = 1.0;
+                    if (template != null && template.getRarity() != null) {
+                        switch (template.getRarity().name()) {
+                            case "COMMUN": rarityMultiplier = 1.5; break;
+                            case "INHABITUEL": rarityMultiplier = 1.3; break;
+                            case "RARE": rarityMultiplier = 1.15; break;
+                            case "MYTHIQUE": rarityMultiplier = 1.0; break;
+                            case "EPIQUE": rarityMultiplier = 0.85; break;
+                            case "LEGENDAIRE": rarityMultiplier = 0.70; break;
+                            case "RELIQUE": rarityMultiplier = 0.55; break;
+                            case "MAUDIT": rarityMultiplier = 0.40; break;
+                        }
+                    }
+                    
+                    int baseChance = (int) Math.round(90 - 65 * Math.exp(-0.64 * (level - 1)));
+                    int chance = (int) Math.round(baseChance * rarityMultiplier);
+                    if (chance > 100) chance = 100;
+                    if (chance < 1) chance = 1;
+
                     boolean success = new java.util.Random().nextInt(100) < chance;
 
                     if (success) {
-                        Equipment template = room.getAltarRewardEquipment();
                         if (template != null) {
                             Equipment clone = new Equipment();
                             clone.copyStatsFrom(template);
