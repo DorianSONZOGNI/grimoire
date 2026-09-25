@@ -430,8 +430,8 @@ public class CombatRoomService {
                         String rewardType = room.getAlterationRewardType();
                         if ("SPIRITUAL_XP".equals(rewardType)) {
                             int spXp = room.getAlterationSpiritualXpReward();
-                            if (spXp > 0) {
-                                p.setSpiritualiteExperience(p.getSpiritualiteExperience() + spXp);
+                            if (spXp != 0) {
+                                p.setSpiritualiteExperience(Math.max(0, p.getSpiritualiteExperience() + spXp));
                                 personnageService.save(p);
                             }
                         }
@@ -444,6 +444,8 @@ public class CombatRoomService {
                         int spXp = room.getAlterationSpiritualXpReward();
                         if (spXp > 0) {
                             session.logInteractionResult(username, "L'altération vous accorde " + spXp + " XP de Spiritualité.");
+                        } else if (spXp < 0) {
+                            session.logInteractionResult(username, "L'altération vous retire " + Math.abs(spXp) + " XP de Spiritualité.");
                         }
                     }
 
@@ -488,12 +490,16 @@ public class CombatRoomService {
                 String rewardType = room.getAlterationRewardType();
                 if ("SPIRITUAL_XP".equals(rewardType)) {
                     int spXp = room.getAlterationSpiritualXpReward();
-                    if (spXp > 0) {
+                    if (spXp != 0) {
                         for (Personnage p : userHeroes) {
-                            p.setSpiritualiteExperience(p.getSpiritualiteExperience() + spXp);
+                            p.setSpiritualiteExperience(Math.max(0, p.getSpiritualiteExperience() + spXp));
                             personnageService.save(p);
                         }
-                        session.logInteractionResult(username, "L'altération vous accorde " + spXp + " XP de Spiritualité.");
+                        if (spXp > 0) {
+                            session.logInteractionResult(username, "L'altération vous accorde " + spXp + " XP de Spiritualité.");
+                        } else {
+                            session.logInteractionResult(username, "L'altération vous retire " + Math.abs(spXp) + " XP de Spiritualité.");
+                        }
                     }
                 } else if ("SPECIAL_ITEM".equals(rewardType)) {
                     String itemReward = room.getAlterationSpecialItemReward();

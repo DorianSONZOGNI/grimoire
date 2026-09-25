@@ -23,18 +23,21 @@ export function renderAndAnimateXPCards(containerId, players, prefix, isFirstCle
     let cardsHtml = '';
     players.forEach(p => {
         let oldExp = pageState.previousPlayerXP[p.id] !== undefined ? pageState.previousPlayerXP[p.id] : p.experience;
-        let oldStats = getExpStats(oldExp);
+        let oldStats = getExpStats(oldExp, p.voieLevel);
         let oldSpiritExp = pageState.previousPlayerSpiritXP[p.id] !== undefined ? pageState.previousPlayerSpiritXP[p.id] : (p.spiritualiteExperience || 0);
-        let oldSpiritStats = getSpiritExpStats(oldSpiritExp);
+        let oldSpiritStats = getSpiritExpStats(oldSpiritExp, p.spiritualiteLevel);
 
-        let gainedExp = Math.max(0, p.experience - oldExp);
-
+        let gainedExp = p.experience - oldExp;
         let x2Badge = '';
-        if (isFirstClear && gainedExp === maxGainedExp && gainedExp > 0 && (prefix === 'vic' || prefix === 'treasure')) {
+        if (isFirstClear && gainedExp > 0 && gainedExp === maxGainedExp && (prefix === 'vic' || prefix === 'treasure')) {
             x2Badge = `<span class="material-symbols-outlined text-amber-500" style="font-size: 1.1rem; vertical-align: middle; margin-left: 2px;" title="Bonus Première Complétion (x2)">star</span>`;
         }
-
-        let gainedHtml = gainedExp > 0 ? `<div class="text-info font-bold flex items-center justify-center" style="font-size: 0.95rem; text-shadow: 0 0 5px rgba(56, 189, 248, 0.5); margin-bottom: 0.4rem;">+${gainedExp} XP ${x2Badge}</div>` : '';
+        let gainedHtml = '';
+        if (gainedExp > 0) {
+            gainedHtml = `<div class="text-info font-bold flex items-center justify-center" style="font-size: 0.95rem; text-shadow: 0 0 5px rgba(56, 189, 248, 0.5); margin-bottom: 0.4rem;">+${gainedExp} XP ${x2Badge}</div>`;
+        } else if (gainedExp < 0) {
+            gainedHtml = `<div class="text-danger font-bold flex items-center justify-center" style="font-size: 0.95rem; text-shadow: 0 0 5px rgba(239, 68, 68, 0.5); margin-bottom: 0.4rem;">${gainedExp} XP</div>`;
+        }
 
         let cardsHtmlPart = `
             <div class="text-center relative" id="${prefix}-xp-card-${p.id}" style="background: rgba(0,0,0,0.4); padding: 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); width: 180px; overflow: hidden; transition: all 0.5s; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8); display: flex; flex-direction: column; gap: 0.3rem;">
@@ -48,9 +51,18 @@ export function renderAndAnimateXPCards(containerId, players, prefix, isFirstCle
                 <div class="text-muted" id="${prefix}-xp-text-${p.id}" style="font-size: 0.7rem; font-family: monospace;">${oldExp} / ${oldStats.level === 10 ? 'MAX' : oldStats.nextLvlXp} XP</div>
         `;
 
+        let gainedSpiritExp = (p.spiritualiteExperience || 0) - oldSpiritExp;
+        let gainedSpiritHtml = '';
+        if (gainedSpiritExp > 0) {
+            gainedSpiritHtml = `<div class="text-warning font-bold flex items-center justify-center" style="font-size: 0.85rem; text-shadow: 0 0 5px rgba(245, 158, 11, 0.5); margin-bottom: 0.2rem;">+${gainedSpiritExp} Spirit XP</div>`;
+        } else if (gainedSpiritExp < 0) {
+            gainedSpiritHtml = `<div class="text-danger font-bold flex items-center justify-center" style="font-size: 0.85rem; text-shadow: 0 0 5px rgba(239, 68, 68, 0.5); margin-bottom: 0.2rem;">${gainedSpiritExp} Spirit XP</div>`;
+        }
+
         if (oldSpiritExp > 0 || (p.spiritualiteExperience || 0) > 0 || prefix === 'treasure') {
             cardsHtmlPart += `
                 <div class="mt-xs"></div>
+                ${gainedSpiritHtml}
                 <div class="text-xs" id="${prefix}-spirit-lvl-${p.id}" style="color: #fb923c; font-weight: 600; transition: color 0.3s, transform 0.3s;">Spirit Niv. ${oldSpiritStats.level}</div>
                 <div class="progress-track">
                     <div id="${prefix}-spirit-fill-${p.id}" style="height: 100%; width: ${Math.min(100, oldSpiritStats.progress)}%; background: #f59e0b; transition: box-shadow 0.3s;"></div>
@@ -91,7 +103,7 @@ export function renderAndAnimateXPCards(containerId, players, prefix, isFirstCle
                 let easeT = t * (2 - t);
 
                 let currentExp = Math.floor(oldExp + (endExp - oldExp) * easeT);
-                let stats = getExpStats(currentExp);
+                let stats = getExpStats(currentExp, p.voieLevel);
                 if (bar && text && lvlText) {
                     bar.style.width = Math.min(100, stats.progress) + "%";
                     text.innerText = currentExp + " / " + (stats.level === 10 ? 'MAX' : stats.nextLvlXp) + " XP";
@@ -108,7 +120,7 @@ export function renderAndAnimateXPCards(containerId, players, prefix, isFirstCle
                 }
 
                 let currentSpiritExp = Math.floor(oldSpiritExp + (endSpiritExp - oldSpiritExp) * easeT);
-                let spiritStats = getSpiritExpStats(currentSpiritExp);
+                let spiritStats = getSpiritExpStats(currentSpiritExp, p.spiritualiteLevel);
                 if (spiritBar && spiritText && spiritLvlText) {
                     spiritBar.style.width = Math.min(100, spiritStats.progress) + "%";
                     spiritText.innerText = currentSpiritExp + " / " + (spiritStats.level === 10 ? 'MAX' : spiritStats.nextLvlXp) + " XP";
@@ -1318,11 +1330,19 @@ export function updateUI(data) {
                                             }
                                         } else if (log.includes("XP de Spiritualit")) {
                                             const spXpMatch = log.match(/accorde (\d+) XP de Spiritualit./);
+                                            const spXpLossMatch = log.match(/retire (\d+) XP de Spiritualit./);
                                             if (spXpMatch) {
                                                 const amount = spXpMatch[1];
                                                 logHtml = `
                                                     <div class="flex-center" style="background: rgba(0, 0, 0, 0.4); border: 1px solid #8b5cf680; padding: 0.8rem 1rem; border-radius: 8px; color: #8b5cf6; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
                                                         <span class="material-symbols-outlined" style="color: #8b5cf6;">auto_awesome</span> +${amount} Sp-XP
+                                                    </div>
+                                                `;
+                                            } else if (spXpLossMatch) {
+                                                const amount = spXpLossMatch[1];
+                                                logHtml = `
+                                                    <div class="flex-center" style="background: rgba(0, 0, 0, 0.4); border: 1px solid #ef444480; padding: 0.8rem 1rem; border-radius: 8px; color: #ef4444; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
+                                                        <span class="material-symbols-outlined" style="color: #ef4444;">auto_awesome</span> -${amount} Sp-XP
                                                     </div>
                                                 `;
                                             }
