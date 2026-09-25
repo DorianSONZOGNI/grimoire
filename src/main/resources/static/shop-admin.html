@@ -222,33 +222,33 @@
                                         (%)
                                     </div>
                                     <div class="custom-option effect-CURSED_MANA_DRAIN" data-value="CURSED_MANA_DRAIN">
-                                        <span class="material-symbols-outlined cs-icon text-dark-gray">opacity</span>
+                                        <span class="material-symbols-outlined cs-icon text-dark">opacity</span>
                                         Famine (Drain de mana par tour)
                                     </div>
                                     <div class="custom-option effect-CURSED_HP_LOSS_ON_MANA"
                                         data-value="CURSED_HP_LOSS_ON_MANA"><span
-                                            class="material-symbols-outlined cs-icon text-dark-gray">heart_broken</span>
+                                            class="material-symbols-outlined cs-icon text-dark">heart_broken</span>
                                         Brèche spirituelle (- hp % en
                                         mana Act.)
                                     </div>
                                     <div class="custom-option effect-CURSED_MAGIC_DAMAGE_REDUCTION"
                                         data-value="CURSED_MAGIC_DAMAGE_REDUCTION"><span
-                                            class="material-symbols-outlined cs-icon text-dark-gray">psychology</span>
+                                            class="material-symbols-outlined cs-icon text-dark">psychology</span>
                                         Folie (% dégâts magique -)
                                     </div>
                                     <div class="custom-option effect-CURSED_PHYSICAL_DAMAGE_REDUCTION"
                                         data-value="CURSED_PHYSICAL_DAMAGE_REDUCTION"><span
-                                            class="material-symbols-outlined cs-icon text-dark-gray">sword_rose</span>
+                                            class="material-symbols-outlined cs-icon text-dark">sword_rose</span>
                                         Faiblesse (% dégâts physique -)
                                     </div>
                                     <div class="custom-option effect-CURSED_VULNERABILITY"
                                         data-value="CURSED_VULNERABILITY"><span
-                                            class="material-symbols-outlined cs-icon text-dark-gray">gpp_bad</span>
+                                            class="material-symbols-outlined cs-icon text-dark">gpp_bad</span>
                                         Vulnérabilité (Dégâts subis % +)
                                     </div>
                                     <div class="custom-option effect-CURSED_HEALING_REDUCTION"
                                         data-value="CURSED_HEALING_REDUCTION"><span
-                                            class="material-symbols-outlined cs-icon text-dark-gray">healing</span>
+                                            class="material-symbols-outlined cs-icon text-dark">healing</span>
                                         Chair putréfiée (Soins % -)
                                     </div>
                                     <div class="custom-option effect-EXECUTION" data-value="EXECUTION"><span
@@ -263,12 +263,21 @@
                                             class="material-symbols-outlined cs-icon text-mana">change_circle</span>
                                         Arcane Vitale (Régen X% mana)
                                     </div>
+                                    <div class="custom-option effect-OVERHEAL_SHIELD" data-value="OVERHEAL_SHIELD"><span
+                                            class="material-symbols-outlined cs-icon text-success">security</span>
+                                        Bouclier vital (% Surplus Soin en Bouclier)
+                                    </div>
+                                    <div class="custom-option effect-CURSED_MANA_TAX" data-value="CURSED_MANA_TAX"><span
+                                            class="material-symbols-outlined cs-icon text-dark">weight</span>
+                                        Incantations Lourdes (Coût Mana % +)
+                                    </div>
                                 </div>
                                 <input type="hidden" id="eqSpecialEffect" value="NONE">
                             </div>
                         </div>
                         <div class="eq-create-field">
-                            <label for="eqSpecialEffectValue" class="text-power" id="eqSpecialEffectValueTitle">Puissance (Valeur)</label>
+                            <label for="eqSpecialEffectValue" class="text-power"
+                                id="eqSpecialEffectValueTitle">Puissance (Valeur)</label>
                             <input type="number" id="eqSpecialEffectValue" value="0" class="border-purple-400/30">
                         </div>
                     </div>
@@ -455,7 +464,7 @@
     <script defer src="/js/components/equipment-form.js"></script>
     <script defer src="/js/pages/shop-admin.js?v=101"></script>
     <script type="module" src="/js/services/auth.js?v=14"></script>
-    
+
 
 
 </body>

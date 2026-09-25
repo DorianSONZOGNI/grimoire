@@ -125,6 +125,10 @@ class SpellAvailabilityService {
                     p, p);
             actualManaCost += (int) (manaBase * spell.getPercentManaCost() / 100);
         }
+        int cursedTaxPct = p.getSpecialEffectValue(generation.grimoire.enumeration.EquipmentEffectType.CURSED_MANA_TAX);
+        if (cursedTaxPct > 0 && actualManaCost > 0) {
+            actualManaCost += (int) Math.ceil(actualManaCost * (cursedTaxPct / 100.0));
+        }
         int actualHealCost = spell.getHealCost();
         if (spell.getPercentHealCost() > 0) {
             double healBase = generation.grimoire.utils.StatCalculator.getSourceValue(

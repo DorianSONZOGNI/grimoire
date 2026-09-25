@@ -512,6 +512,10 @@ public class SpellService {
                     toCast.getPercentManaCostSource() != null ? toCast.getPercentManaCostSource() : Source.CASTER_MANA_MAX, caster, target);
             actualManaCost += (int) (manaBase * toCast.getPercentManaCost() / 100);
         }
+        int cursedTaxPct = caster.getSpecialEffectValue(generation.grimoire.enumeration.EquipmentEffectType.CURSED_MANA_TAX);
+        if (cursedTaxPct > 0 && actualManaCost > 0) {
+            actualManaCost += (int) Math.ceil(actualManaCost * (cursedTaxPct / 100.0));
+        }
         int actualHealCost = toCast.getHealCost();
         if (toCast.getPercentHealCost() > 0) {
             double healBase = StatCalculator.getSourceValue(

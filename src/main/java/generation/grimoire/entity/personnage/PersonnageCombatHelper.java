@@ -403,10 +403,30 @@ public class PersonnageCombatHelper {
         }
 
         int finalHeal = (int) (healAmount * Math.max(0, multiplier));
-        p.setHealthCurrent(p.getHealthCurrent() + finalHeal);
-        if (p.getHealthCurrent() > p.getTotalHealthMax()) {
-            p.setHealthCurrent(p.getTotalHealthMax());
-        } else if (p.getHealthCurrent() < 0) {
+        int maxHp = p.getTotalHealthMax();
+        int newHp = p.getHealthCurrent() + finalHeal;
+        
+        if (newHp > maxHp) {
+            int surplus = newHp - maxHp;
+            p.setHealthCurrent(maxHp);
+            
+            int overhealPct = p.getSpecialEffectValue(generation.grimoire.enumeration.EquipmentEffectType.OVERHEAL_SHIELD);
+            if (overhealPct > 0) {
+                int shieldAmount = (int) (surplus * (overhealPct / 100.0));
+                if (shieldAmount > 0) {
+                    generation.grimoire.entity.spell.type.effect.BuffDebuffEffect shieldEff = new generation.grimoire.entity.spell.type.effect.BuffDebuffEffect();
+                    shieldEff.setStatAffected(generation.grimoire.enumeration.StatType.BOUCLIER);
+                    shieldEff.setFlatValue(shieldAmount);
+                    shieldEff.setDuration(2);
+                    shieldEff.setUniqueId(java.util.UUID.randomUUID().toString());
+                    p.getActiveBuffs().add(shieldEff);
+                    System.out.println("🛡️ " + p.getName() + " convertit " + surplus + " PV de surplus en " + shieldAmount + " de Bouclier !");
+                }
+            }
+        } else {
+            p.setHealthCurrent(newHp);
+        }
+        if (p.getHealthCurrent() < 0) {
             p.setHealthCurrent(0);
         }
         System.out.println(p.getName() + " est soigné de " + finalHeal + " points. Vie actuelle : " + p.getHealthCurrent());
