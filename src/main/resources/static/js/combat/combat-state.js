@@ -222,7 +222,29 @@ document.addEventListener('DOMContentLoaded', async () => {
     }
 
     // ─── Mode solo classique
-    const savedCombatId = localStorage.getItem('activeCombatId');
+    let savedCombatId = localStorage.getItem('activeCombatId');
+    
+    if (!savedCombatId && !urlParams.get('dungeonId') && !urlParams.get('multiId')) {
+        // If we have no local session and no startup parameters, we might have been redirected here.
+        // Let's ask the server if we have an ongoing combat session.
+        try {
+            const res = await window.globalFetch('/api/pve/combat/current');
+            if (res.ok) {
+                const data = await res.json();
+                if (data && data.sessionId) {
+                    savedCombatId = data.sessionId;
+                    localStorage.setItem('activeCombatId', savedCombatId);
+                    if (data.isMulti) {
+                        window.location.href = `/combat.html?sessionId=${data.sessionId}&multiId=${data.multiId}`;
+                        return;
+                    }
+                }
+            }
+        } catch(e) {
+            console.warn("Impossible de récupérer la session de combat active depuis le serveur", e);
+        }
+    }
+
     if (savedCombatId) {
         resumeCombat(savedCombatId);
         return;
