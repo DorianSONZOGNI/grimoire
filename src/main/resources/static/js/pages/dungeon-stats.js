@@ -97,6 +97,10 @@ function populateDungeonSelect() {
                 <span>Tous - ${secret}</span>
             </div>`;
         });
+        html += `<div class="custom-option flex items-center gap-2" onclick="selectDungeonFilter('NO_SECRET', 'Sans Secret', null)">
+            <span class="material-symbols-outlined opacity-50" style="font-size: 1.2rem;">lock_open</span>
+            <span>Sans Secret</span>
+        </div>`;
     }
 
     // Individual dungeons sorted by secret then name
@@ -118,7 +122,7 @@ function populateDungeonSelect() {
             iconHtml = `<span class="material-symbols-outlined" style="color: ${secretMeta.color}; font-size: 1.2rem;" title="${d.secret.replace(/"/g, '&quot;')}">${secretMeta.icon}</span>`;
             secretArg = `'${d.secret.replace(/'/g, "\\'")}'`;
         } else {
-            iconHtml = `<span class="material-symbols-outlined opacity-0" style="font-size: 1.2rem;">help</span>`; // Just for alignment
+            iconHtml = `<span class="material-symbols-outlined opacity-50" style="font-size: 1.2rem; color: #94a3b8;">lock_open</span>`; 
         }
         
         const escapedName = d.name.replace(/'/g, "\\'");
@@ -197,6 +201,16 @@ function renderDashboard(dungeonFilterKey) {
             aggregateStat(globalStats[key]);
         });
         filteredRuns = allRuns.filter(r => window.dungeonSecretMap[r.dungeonId] === secretFilter);
+        combinedGlobalStats.multiRuns = filteredRuns.filter(r => r.multi).length;
+    } else if (dungeonFilterKey === 'NO_SECRET') {
+        const matchingKeys = Object.keys(globalStats).filter(key => {
+            const dId = key.split('_')[0];
+            return !window.dungeonSecretMap[dId];
+        });
+        matchingKeys.forEach(key => {
+            aggregateStat(globalStats[key]);
+        });
+        filteredRuns = allRuns.filter(r => !window.dungeonSecretMap[r.dungeonId]);
         combinedGlobalStats.multiRuns = filteredRuns.filter(r => r.multi).length;
     } else {
         const [dungeonId] = dungeonFilterKey.split('_');
