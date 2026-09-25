@@ -2287,10 +2287,26 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
             heat = c.passiveStates['destruction_heat'];
         }
         let dangerClass = heat >= 100 ? ' passive-orb-pulse' : '';
+
+        let heatRegen = 0;
+        let heatTooltipEffects = '';
+        if (c.activeHeatOverTimeEffects && c.activeHeatOverTimeEffects.length > 0) {
+            heatTooltipEffects += `<div style="margin-top: 0.4rem; padding-top: 0.4rem; border-top: 1px solid rgba(249, 115, 22, 0.3); display: flex; flex-direction: column; gap: 0.2rem;">`;
+            c.activeHeatOverTimeEffects.forEach(eff => {
+                let amount = eff.fixedValue || 0;
+                heatRegen += amount;
+                heatTooltipEffects += `<div style="color: #fdba74; font-size: 0.75rem; display: flex; align-items: center; gap: 0.3rem;"><span class="material-symbols-outlined" style="font-size: 0.8rem;">local_fire_department</span>+${amount} Chaleur (${eff.duration}t)</div>`;
+            });
+            heatTooltipEffects += `</div>`;
+        }
+
+        let regenBadge = heatRegen > 0 ? `<span class="flex-center font-bold absolute" style="top: -6px; right: -15px; background: #ea580c; color: #000000; font-size: 0.65rem; border-radius: 50%; min-width: 16px; height: 16px; justify-content: center; border: 1px solid #000000; padding: 0 3px; box-shadow: 0 2px 4px rgba(0,0,0,0.5); z-index: 2;">+${heatRegen}</span>` : '';
+
         passiveOrbs.push({
             icon: 'local_fire_department', color: '#f97316', value: `${heat}`,
             title: `Chaleur : ${heat}/100`, dangerClass,
-            tooltip: `<div class="text-sm font-medium" style="margin-bottom:0.3rem; color:#f97316;">🔥 Chaleur (Destruction)</div><div class="text-xs" style="color:#cbd5e1;">${heat}/100 — Augmente les dégâts de feu. À 100, surcharge !</div>`
+            topBadge: regenBadge,
+            tooltip: `<div class="text-sm font-medium" style="margin-bottom:0.3rem; color:#f97316;">🔥 Chaleur (Destruction)</div><div class="text-xs" style="color:#cbd5e1;">${heat}/100 — Augmente les dégâts de feu. À 100, surcharge !</div>${heatTooltipEffects}`
         });
     }
 
@@ -2446,6 +2462,7 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
                     <template class="tooltip-data">${orb.tooltip}</template>
                     <span class="material-symbols-outlined" style="font-size: 1.2rem; color: ${orb.color};">${orb.icon}</span>
                     ${valueHtml}
+                    ${orb.topBadge || ''}
                 </div>
             `;
         });
