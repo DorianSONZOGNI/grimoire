@@ -49,7 +49,7 @@ public class ShopController {
         
         final java.util.Set<String> ownedEquipments = new java.util.HashSet<>();
         if (user != null) {
-            java.time.LocalDate today = java.time.LocalDate.now();
+            java.time.LocalDate today = java.time.LocalDate.now(java.time.ZoneId.of("Europe/Paris"));
             if (today.equals(user.getLastShopPurchaseDate()) && user.getDailyShopPurchases() != null) {
                 ownedEquipments.addAll(user.getDailyShopPurchases());
             }
@@ -70,7 +70,7 @@ public class ShopController {
         List<Equipment> legendaries = equipmentTemplates.stream().filter(e -> e.getRarity() == EquipmentRarity.LEGENDAIRE).toList();
 
         // Seeded random based on today's date
-        long seed = LocalDate.now().toEpochDay();
+        long seed = LocalDate.now(java.time.ZoneId.of("Europe/Paris")).toEpochDay();
         Random random = new Random(seed);
 
         List<Equipment> dailySelection = new ArrayList<>();
@@ -139,7 +139,7 @@ public class ShopController {
         }
 
         // Verify it's in today's selection
-        long seed = LocalDate.now().toEpochDay();
+        long seed = LocalDate.now(java.time.ZoneId.of("Europe/Paris")).toEpochDay();
         Random random = new Random(seed);
         List<Equipment> allTemplates = equipmentRepository.findByIsTemplateTrueAndAvailableInShopTrue();
         
@@ -204,7 +204,7 @@ public class ShopController {
         }
 
         if (template.getSlot() != EquipmentSlot.CONSOMMABLE) {
-            java.time.LocalDate today = java.time.LocalDate.now();
+            java.time.LocalDate today = java.time.LocalDate.now(java.time.ZoneId.of("Europe/Paris"));
             if (user.getLastShopPurchaseDate() == null || !user.getLastShopPurchaseDate().equals(today)) {
                 user.setLastShopPurchaseDate(today);
                 if (user.getDailyShopPurchases() != null) {
