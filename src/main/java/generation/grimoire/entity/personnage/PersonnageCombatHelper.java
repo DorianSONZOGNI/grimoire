@@ -219,6 +219,7 @@ public class PersonnageCombatHelper {
                         }
                     }
                 }
+                p.getActiveShields().removeIf(s -> s.getAmount() <= 0);
             }
         }
 

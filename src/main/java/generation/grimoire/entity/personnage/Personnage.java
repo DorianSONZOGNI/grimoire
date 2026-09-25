@@ -874,13 +874,14 @@ public class Personnage {
      * Purge l'intégralité des buffs, débuffs, DoT et HoT actifs sur ce personnage.
      */
     public void purgeAllBuffsAndDebuffs() {
-        activeBuffs.clear();
-        consumableSpellBuffs.clear();
-        activeHealOverTimeEffects.clear();
-        activeDamageOverTimeEffects.clear();
-        activeManaOverTimeEffects.clear();
-        activeHeatOverTimeEffects.clear();
-        System.out.println(name + " est purifié de tous ses bonus et malus !");
+        if (activeBuffs != null) activeBuffs.clear();
+        if (consumableSpellBuffs != null) consumableSpellBuffs.clear();
+        if (activeHealOverTimeEffects != null) activeHealOverTimeEffects.clear();
+        if (activeDamageOverTimeEffects != null) activeDamageOverTimeEffects.clear();
+        if (activeManaOverTimeEffects != null) activeManaOverTimeEffects.clear();
+        if (activeHeatOverTimeEffects != null) activeHeatOverTimeEffects.clear();
+        if (activeShields != null) activeShields.clear();
+        System.out.println(name + " est purifié de tous ses bonus, malus et boucliers !");
     }
 
     public void setVoie(Voie voie) {
