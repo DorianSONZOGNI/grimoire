@@ -891,7 +891,7 @@ export function updateUI(data) {
                             }
 
                             const btn = document.createElement('button');
-                            btn.className = 'flex items-center gap-2 p-1.5 px-3 rounded-full border relative transition-all duration-300 hover:scale-105 shadow-md';
+                            btn.className = 'key-chest-btn flex items-center gap-2 p-1.5 px-3 rounded-full border relative transition-all duration-300 hover:scale-105 shadow-md';
 
                             const isChosen = myLockedId !== null;
 
