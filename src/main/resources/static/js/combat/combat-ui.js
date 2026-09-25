@@ -1075,10 +1075,15 @@ export function updateUI(data) {
                                     console.warn("Expected array for anomalies but got", anomalies);
                                 }
                                 const uniqueNames = new Set();
+                                const anomalyCounts = {};
+                                anomalies.forEach(a => {
+                                    anomalyCounts[a.name] = (anomalyCounts[a.name] || 0) + 1;
+                                });
                                 const eligible = anomalies.filter(a => {
                                     if (!a.magicObject || a.spiritualite !== data.currentRoom.altarRequiredSpirituality) return false;
                                     if (uniqueNames.has(a.name)) return false;
                                     uniqueNames.add(a.name);
+                                    a.stock = anomalyCounts[a.name];
                                     return true;
                                 });
                                 const container = document.getElementById('altarAnomalySelectContainer');
@@ -1101,7 +1106,7 @@ export function updateUI(data) {
                                 <div class="custom-select-wrapper" id="altarAnomalySelectWrapper" style="max-width: 350px; margin: 0 auto; z-index: 100;">
                                     <div class="custom-select-trigger" onclick="document.getElementById('altarAnomalySelectWrapper').classList.toggle('open')" style="padding: 0.6rem 1rem; border-radius: 8px; border: 1px solid ${spColor}; text-align: left; background: rgba(0,0,0,0.5);">
                                         <span class="cs-label" id="altarAnomalySelectLabel">
-                                            <span class="material-symbols-outlined cs-icon" style="color: ${spColor};">${firstCatIcon}</span> ${first.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${first.level || 1})</span>
+                                            <span class="material-symbols-outlined cs-icon" style="color: ${spColor};">${firstCatIcon}</span> ${first.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${first.level || 1}) (Stock: ${first.stock || 1})</span>
                                         </span>
                                         <span class="material-symbols-outlined">expand_more</span>
                                     </div>
@@ -1109,7 +1114,7 @@ export function updateUI(data) {
                                 `;
                                 eligible.forEach(a => {
                                     let catIcon = a.category ? (getCategoryIcon(a.category)) : 'star';
-                                    selectHtml += `<div class="custom-option" onclick="document.getElementById('altarAnomalySelectLabel').innerHTML = this.innerHTML; document.getElementById('altarAnomalySelect').value = '${a.id}'; document.getElementById('altarAnomalySelectWrapper').classList.remove('open'); if(window.updateAltarDropChance) window.updateAltarDropChance(${a.level || 1});"><span class="material-symbols-outlined cs-icon" style="color: ${spColor};">${catIcon}</span> ${a.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${a.level || 1})</span></div>`;
+                                    selectHtml += `<div class="custom-option" onclick="document.getElementById('altarAnomalySelectLabel').innerHTML = this.innerHTML; document.getElementById('altarAnomalySelect').value = '${a.id}'; document.getElementById('altarAnomalySelectWrapper').classList.remove('open'); if(window.updateAltarDropChance) window.updateAltarDropChance(${a.level || 1});"><span class="material-symbols-outlined cs-icon" style="color: ${spColor};">${catIcon}</span> ${a.name} <span style="opacity:0.5; font-size:0.8rem; margin-left:4px;">(Lvl ${a.level || 1}) (Stock: ${a.stock || 1})</span></div>`;
                                 });
                                 selectHtml += `
                                     </div>
@@ -1471,14 +1476,19 @@ export function updateUI(data) {
                             if (entry.priceSpecialItemName) {
                                 let priceColor = '#d946ef';
                                 let priceIcon = 'star';
+                                let priceTooltipHtml = '';
                                 if (Array.isArray(window.allAnomaliesCombat)) {
                                     const anPrice = window.allAnomaliesCombat.find(a => a.name === entry.priceSpecialItemName);
                                     if (anPrice) {
                                         priceColor = getSpiritualiteColor(anPrice.spiritualite);
                                         priceIcon = anPrice.category ? (getCategoryIcon(anPrice.category)) : 'star';
+                                        if (typeof getAnomalyTooltipHTML === 'function') {
+                                            priceTooltipHtml = getAnomalyTooltipHTML(anPrice, entry.priceSpecialItemName);
+                                        }
                                     }
                                 }
-                                priceHtml += `<span class="flex-center" style="color: ${priceColor}; gap: 0.3rem; margin-left: ${goldPrice > 0 ? '0.8rem' : '0'};"><span class="material-symbols-outlined text-lg">${priceIcon}</span>1x ${entry.priceSpecialItemName}</span>`;
+                                const tooltipAttrs = priceTooltipHtml ? 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"' : '';
+                                priceHtml += `<span class="flex-center relative" ${tooltipAttrs} style="color: ${priceColor}; gap: 0.3rem; margin-left: ${goldPrice > 0 ? '0.8rem' : '0'}; cursor: help; border-bottom: 1px dashed ${priceColor};"><span class="material-symbols-outlined text-lg">${priceIcon}</span>1x ${entry.priceSpecialItemName}${priceTooltipHtml ? `<template class="tooltip-data">${priceTooltipHtml}</template>` : ''}</span>`;
                             }
 
                             if (priceHtml === '') {

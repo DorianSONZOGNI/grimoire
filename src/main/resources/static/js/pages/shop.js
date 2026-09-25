@@ -10,13 +10,17 @@ const pageState = {
 
 async function loadShop() {
     try {
-        const [resShop, resAno] = await Promise.all([
+        const [resShop, resAno, resUserAno] = await Promise.all([
             globalFetch(`/api/shop/daily?_t=${Date.now()}`),
-            globalFetch('/api/anomalies/all-templates')
+            globalFetch('/api/anomalies/all-templates'),
+            globalFetch('/api/anomalies')
         ]);
         pageState.shopItems = await resShop.json();
         if (resAno.ok) {
             pageState.allAnomalies = await resAno.json();
+        }
+        if (resUserAno.ok) {
+            window.myGlobalAnomalies = await resUserAno.json();
         }
         renderShop();
         renderSpecials();
