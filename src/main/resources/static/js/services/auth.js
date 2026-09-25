@@ -132,7 +132,10 @@ window.globalFetch = async function (url, options = {}) {
                 localStorage.removeItem('accessToken');
                 localStorage.removeItem('refreshToken');
                 localStorage.removeItem('isLikelyLoggedIn');
-                window.location.href = '/login.html';
+                if (!window.isRedirectingToLogin) {
+                    window.isRedirectingToLogin = true;
+                    window.location.href = '/login.html';
+                }
                 await new Promise(() => {}); // Halt execution
             }
             let errorMsg = "Erreur serveur";
@@ -201,6 +204,24 @@ document.addEventListener('DOMContentLoaded', () => {
                         window.setAccessToken(data.token);
                     }
                     localStorage.setItem('isLikelyLoggedIn', 'true');
+                    
+                    // Check if user has an active combat session
+                    try {
+                        const currentSessionRes = await fetch('/api/pve/combat/current', {
+                            headers: { 'Authorization': `Bearer ${data.token}` }
+                        });
+                        if (currentSessionRes.ok) {
+                            const sessionData = await currentSessionRes.json();
+                            if (sessionData && sessionData.sessionId) {
+                                localStorage.setItem('activeCombatId', sessionData.sessionId);
+                                window.location.href = '/combat.html';
+                                return;
+                            }
+                        }
+                    } catch (e) {
+                        console.warn("Could not check active combat session on login", e);
+                    }
+                    
                     window.location.href = '/';
                 }
             } catch (err) {
