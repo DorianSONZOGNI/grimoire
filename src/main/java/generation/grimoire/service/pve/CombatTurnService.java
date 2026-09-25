@@ -858,6 +858,19 @@ class CombatTurnService {
                 Personnage p = session.getPlayers().get(current.getIndex());
                 session.addLog("--- Tour de " + p.getName() + " ---");
                 CombatLogCapture.captureLogs(session, () -> {
+                    int totalManaOppressionPct = 0;
+                    for (ActiveMonster monster : session.getEnemies()) {
+                        if (!monster.isDead()) {
+                            totalManaOppressionPct += monster.getAsPersonnage().getPassiveState("MANA_OPPRESSION", 0);
+                        }
+                    }
+                    if (totalManaOppressionPct > 0) {
+                        int manaLost = (int) Math.ceil(p.getManaCurrent() * (totalManaOppressionPct / 100.0));
+                        if (manaLost > 0) {
+                            p.setManaCurrent(Math.max(0, p.getManaCurrent() - manaLost));
+                            System.out.println("🌌 Oppression Magique : " + p.getName() + " perd " + manaLost + " Mana !");
+                        }
+                    }
                     spellService.startTurn(p);
                 });
 

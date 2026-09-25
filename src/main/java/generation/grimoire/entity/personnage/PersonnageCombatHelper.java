@@ -25,6 +25,13 @@ public class PersonnageCombatHelper {
             System.out.println(p.getName() + " continue de canaliser (tours restants : " + p.getRemainingChannelingTurns() + ").");
         }
 
+        int regenPct = p.getPassiveState("REGENERATION", 0);
+        if (regenPct > 0) {
+            int regenAmount = (int) Math.ceil(p.getTotalHealthMax() * (regenPct / 100.0));
+            System.out.println("🌱 " + p.getName() + " régénère " + regenAmount + " PV grâce à Régénération.");
+            p.healRegen(regenAmount);
+        }
+
         if (p.getHealthCurrent() > 0) {
             int totalHpRegen = p.getRegenHp();
             int totalManaRegen = p.getRegenMana();
@@ -110,6 +117,20 @@ public class PersonnageCombatHelper {
         if (cursedVul != 0) {
             damageTakenMultiplier += (Math.abs(cursedVul) / 100.0);
         }
+
+        if (damageType == DamageType.PHYSIC) {
+            int shroud = p.getPassiveState("PHYSICAL_SHROUD", 0);
+            if (shroud > 0) {
+                damageTakenMultiplier -= (shroud / 100.0);
+            }
+        } else if (damageType == DamageType.MAGIC) {
+            int shroud = p.getPassiveState("MAGIC_SHROUD", 0);
+            if (shroud > 0) {
+                damageTakenMultiplier -= (shroud / 100.0);
+            }
+        }
+
+        if (damageTakenMultiplier < 0) damageTakenMultiplier = 0;
 
         int flat = p.getStatFlatBonus(statType);
 
@@ -267,6 +288,16 @@ public class PersonnageCombatHelper {
                 "PV restants : " + p.getHealthCurrent());
 
         if (caster != null && totalDamageToHealth > 0) {
+            int freezeDuration = caster.getPassiveState("FREEZE_ON_HIT_DURATION", 0);
+            int freezeAmount = caster.getPassiveState("FREEZE_ON_HIT", 0);
+            if (freezeDuration > 0 && freezeAmount > 0 && (damageType == DamageType.PHYSIC || damageType == DamageType.MAGIC)) {
+                BuffDebuffEffect eff = new BuffDebuffEffect();
+                eff.setStatAffected(StatType.SPEED);
+                eff.setFlatValue(-freezeAmount);
+                eff.setDuration(freezeDuration);
+                p.getActiveBuffs().add(eff);
+                System.out.println("❄️ " + caster.getName() + " gèle " + p.getName() + " ! (-" + freezeAmount + " Vitesse)");
+            }
             if (damageType == DamageType.PHYSIC || damageType == DamageType.MAGIC) {
                 if (p.getMonsterType() == generation.grimoire.enumeration.MonsterType.EPINE) {
                     int epineDmg = (int) Math.ceil(totalDamageToHealth * 0.10);
@@ -274,6 +305,12 @@ public class PersonnageCombatHelper {
                         System.out.println("🌵 Épines (Monstre) renvoie " + epineDmg + " dégâts !");
                         caster.takeDamage(epineDmg, DamageType.BRUT);
                     }
+                }
+                int reflectPct = p.getPassiveState("DAMAGE_REFLECTION", 0);
+                if (reflectPct > 0) {
+                    int reflectDmg = (int) Math.ceil(totalDamageToHealth * (reflectPct / 100.0));
+                    System.out.println("🪞 Miroir Épineux renvoie " + reflectDmg + " dégâts !");
+                    caster.takeDamage(reflectDmg, DamageType.BRUT);
                 }
             }
             if (damageType == DamageType.PHYSIC) {
@@ -286,8 +323,10 @@ public class PersonnageCombatHelper {
             }
             if (damageType == DamageType.PHYSIC || damageType == DamageType.MAGIC) {
                 int lifestealPct = caster.getSpecialEffectValue(generation.grimoire.enumeration.EquipmentEffectType.LIFESTEAL);
-                if (lifestealPct > 0) {
-                    int healAmount = (int) Math.ceil(totalDamageToHealth * (lifestealPct / 100.0));
+                int auraLifesteal = caster.getPassiveState("LIFESTEAL_ON_HIT", 0);
+                int totalLifesteal = lifestealPct + auraLifesteal;
+                if (totalLifesteal > 0) {
+                    int healAmount = (int) Math.ceil(totalDamageToHealth * (totalLifesteal / 100.0));
                     System.out.println("🩸 Vol de vie : l'attaquant récupère " + healAmount + " PV.");
                     caster.heal(healAmount);
                 }
@@ -308,6 +347,11 @@ public class PersonnageCombatHelper {
         } else if (type == DamageType.BRUT) {
             multiplier = Math.max(0.0, p.getStatBuffMultiplier(StatType.DAMAGE_GIVEN_BRUT));
             flatBonus = p.getStatFlatBonus(StatType.DAMAGE_GIVEN_BRUT);
+        }
+        
+        int frenzy = p.getPassiveState("FRENZY", 0);
+        if (frenzy > 0) {
+            multiplier += (frenzy / 100.0);
         }
 
         baseDamage = (int) (baseDamage * multiplier) + flatBonus;

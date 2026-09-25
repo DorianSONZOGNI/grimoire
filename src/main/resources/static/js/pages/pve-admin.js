@@ -544,6 +544,14 @@ function renderRooms() {
                     else if (buff.type === 'RESIST_FLAT') buffLabel = `+${buff.value} Résistance (${buff.duration} tours)`;
                     else if (buff.type === 'BURN_ON_HIT') buffLabel = `Brûlure au touché : ${buff.value} dgts (${buff.duration} tours)`;
                     else if (buff.type === 'POISON_ON_HIT') buffLabel = `Poison au touché : ${buff.value} dgts (${buff.duration} tours)`;
+                    else if (buff.type === 'DAMAGE_REFLECTION') buffLabel = `Miroir Épineux : ${buff.value}%`;
+                    else if (buff.type === 'PHYSICAL_SHROUD') buffLabel = `Voile Éthéré : -${buff.value}%`;
+                    else if (buff.type === 'MAGIC_SHROUD') buffLabel = `Silencieux : -${buff.value}%`;
+                    else if (buff.type === 'FRENZY') buffLabel = `Rage Sanguinaire : +${buff.value}%`;
+                    else if (buff.type === 'LIFESTEAL_AURA') buffLabel = `Aura Vampirique : ${buff.value}%`;
+                    else if (buff.type === 'REGENERATION') buffLabel = `Régénération : ${buff.value}% PV/tour`;
+                    else if (buff.type === 'MANA_OPPRESSION') buffLabel = `Oppression Magique : -${buff.value}% Mana act./tour`;
+                    else if (buff.type === 'FREEZE_ON_HIT') buffLabel = `Gel au touché : -${buff.value} vit. (${buff.duration} tours)`;
 
                     buffsHtml += `
                         <div class="room-entity-row" >
@@ -590,6 +598,38 @@ function renderRooms() {
                             <div class="combobox-item buff-combobox-item" onclick="selectBuffType(${rIndex}, 'POISON_ON_HIT', 'Poison au touché', 'coronavirus', 'text-green-500')">
                                 <span class="material-symbols-outlined text-green-500 text-lg" >coronavirus</span>
                                 <span>Poison au touché</span>
+                            </div>
+                            <div class="combobox-item buff-combobox-item" onclick="selectBuffType(${rIndex}, 'DAMAGE_REFLECTION', 'Miroir Épineux', 'all_out', 'text-rose-500')">
+                                <span class="material-symbols-outlined text-rose-500 text-lg" >all_out</span>
+                                <span>Miroir Épineux</span>
+                            </div>
+                            <div class="combobox-item buff-combobox-item" onclick="selectBuffType(${rIndex}, 'PHYSICAL_SHROUD', 'Voile Éthéré', 'blur_on', 'text-slate-300')">
+                                <span class="material-symbols-outlined text-slate-300 text-lg" >blur_on</span>
+                                <span>Voile Éthéré</span>
+                            </div>
+                            <div class="combobox-item buff-combobox-item" onclick="selectBuffType(${rIndex}, 'MAGIC_SHROUD', 'Silencieux', 'blur_off', 'text-indigo-400')">
+                                <span class="material-symbols-outlined text-indigo-400 text-lg" >blur_off</span>
+                                <span>Silencieux</span>
+                            </div>
+                            <div class="combobox-item buff-combobox-item" onclick="selectBuffType(${rIndex}, 'FRENZY', 'Rage Sanguinaire', 'swords', 'text-red-500')">
+                                <span class="material-symbols-outlined text-red-500 text-lg" >swords</span>
+                                <span>Rage Sanguinaire</span>
+                            </div>
+                            <div class="combobox-item buff-combobox-item" onclick="selectBuffType(${rIndex}, 'LIFESTEAL_AURA', 'Aura Vampirique', 'water_drop', 'text-red-600')">
+                                <span class="material-symbols-outlined text-red-600 text-lg" >water_drop</span>
+                                <span>Aura Vampirique</span>
+                            </div>
+                            <div class="combobox-item buff-combobox-item" onclick="selectBuffType(${rIndex}, 'REGENERATION', 'Régénération', 'healing', 'text-emerald-400')">
+                                <span class="material-symbols-outlined text-emerald-400 text-lg" >healing</span>
+                                <span>Régénération</span>
+                            </div>
+                            <div class="combobox-item buff-combobox-item" onclick="selectBuffType(${rIndex}, 'MANA_OPPRESSION', 'Oppression Magique', 'do_not_disturb', 'text-purple-500')">
+                                <span class="material-symbols-outlined text-purple-500 text-lg" >do_not_disturb</span>
+                                <span>Oppression Magique</span>
+                            </div>
+                            <div class="combobox-item buff-combobox-item" onclick="selectBuffType(${rIndex}, 'FREEZE_ON_HIT', 'Gel au touché', 'ac_unit', 'text-cyan-400')">
+                                <span class="material-symbols-outlined text-cyan-400 text-lg" >ac_unit</span>
+                                <span>Gel au touché</span>
                             </div>
                         </div>
                     </div>
@@ -1223,7 +1263,15 @@ function renderRooms() {
                                     else if (buff.type === 'ARMOR_FLAT') buffLabel = `+${buff.value} Armure (${buff.duration} tours)`;
                                     else if (buff.type === 'RESIST_FLAT') buffLabel = `+${buff.value} Résistance (${buff.duration} tours)`;
                                     else if (buff.type === 'BURN_ON_HIT') buffLabel = `Brûlure au touché : ${buff.value} dgts (${buff.duration} tours)`;
-                                    else if (buff.type === 'POISON_ON_HIT') buffLabel = `Poison au touché : ${buff.value} dgts (${buff.duration} tours)`;
+                    else if (buff.type === 'POISON_ON_HIT') buffLabel = `Poison au touché : ${buff.value} dgts (${buff.duration} tours)`;
+                    else if (buff.type === 'DAMAGE_REFLECTION') buffLabel = `Miroir Épineux : ${buff.value}%`;
+                    else if (buff.type === 'PHYSICAL_SHROUD') buffLabel = `Voile Éthéré : -${buff.value}%`;
+                    else if (buff.type === 'MAGIC_SHROUD') buffLabel = `Silencieux : -${buff.value}%`;
+                    else if (buff.type === 'FRENZY') buffLabel = `Rage Sanguinaire : +${buff.value}%`;
+                    else if (buff.type === 'LIFESTEAL_AURA') buffLabel = `Aura Vampirique : ${buff.value}%`;
+                    else if (buff.type === 'REGENERATION') buffLabel = `Régénération : ${buff.value}% PV/tour`;
+                    else if (buff.type === 'MANA_OPPRESSION') buffLabel = `Oppression Magique : -${buff.value}% Mana act./tour`;
+                    else if (buff.type === 'FREEZE_ON_HIT') buffLabel = `Gel au touché : -${buff.value} vit. (${buff.duration} tours)`;
 
                                     buffsHtml += `
                                         <div class="room-entity-row" >
@@ -1247,6 +1295,14 @@ function renderRooms() {
                                         <option value="RESIST_FLAT">+ Résistance</option>
                                         <option value="BURN_ON_HIT">Brûlure au touché</option>
                                         <option value="POISON_ON_HIT">Poison au touché</option>
+                                        <option value="DAMAGE_REFLECTION">Miroir Épineux</option>
+                                        <option value="PHYSICAL_SHROUD">Voile Éthéré</option>
+                                        <option value="MAGIC_SHROUD">Silencieux</option>
+                                        <option value="FRENZY">Rage Sanguinaire</option>
+                                        <option value="LIFESTEAL_AURA">Aura Vampirique</option>
+                                        <option value="REGENERATION">Régénération</option>
+                                        <option value="MANA_OPPRESSION">Oppression Magique</option>
+                                        <option value="FREEZE_ON_HIT">Gel au touché</option>
                                     </select>
                                 </div>
                                 <div class="room-buff-col-sm" >

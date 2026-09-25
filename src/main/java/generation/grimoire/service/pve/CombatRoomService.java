@@ -169,6 +169,31 @@ public class CombatRoomService {
                         p.getPassiveStates().put("POISON_ON_HIT", bVal);
                         p.getPassiveStates().put("POISON_ON_HIT_DURATION", bDur > 0 ? bDur : 3);
                         p.getPassiveStates().put("BOSS_BUFF_POISON", bVal);
+                    } else if ("DAMAGE_REFLECTION".equals(bType)) {
+                        p.getPassiveStates().put("BOSS_BUFF_DAMAGE_REFLECTION", bVal);
+                        p.getPassiveStates().put("DAMAGE_REFLECTION", bVal);
+                    } else if ("PHYSICAL_SHROUD".equals(bType)) {
+                        p.getPassiveStates().put("BOSS_BUFF_PHYSICAL_SHROUD", bVal);
+                        p.getPassiveStates().put("PHYSICAL_SHROUD", bVal);
+                    } else if ("MAGIC_SHROUD".equals(bType)) {
+                        p.getPassiveStates().put("BOSS_BUFF_MAGIC_SHROUD", bVal);
+                        p.getPassiveStates().put("MAGIC_SHROUD", bVal);
+                    } else if ("FRENZY".equals(bType)) {
+                        p.getPassiveStates().put("BOSS_BUFF_FRENZY", bVal);
+                        p.getPassiveStates().put("FRENZY", bVal);
+                    } else if ("LIFESTEAL_AURA".equals(bType)) {
+                        p.getPassiveStates().put("BOSS_BUFF_LIFESTEAL_AURA", bVal);
+                        p.getPassiveStates().put("LIFESTEAL_ON_HIT", bVal);
+                    } else if ("REGENERATION".equals(bType)) {
+                        p.getPassiveStates().put("BOSS_BUFF_REGENERATION", bVal);
+                        p.getPassiveStates().put("REGENERATION", bVal);
+                    } else if ("MANA_OPPRESSION".equals(bType)) {
+                        p.getPassiveStates().put("BOSS_BUFF_MANA_OPPRESSION", bVal);
+                        p.getPassiveStates().put("MANA_OPPRESSION", bVal);
+                    } else if ("FREEZE_ON_HIT".equals(bType)) {
+                        p.getPassiveStates().put("BOSS_BUFF_FREEZE_ON_HIT", bVal);
+                        p.getPassiveStates().put("FREEZE_ON_HIT", bVal);
+                        p.getPassiveStates().put("FREEZE_ON_HIT_DURATION", bDur > 0 ? bDur : 3);
                     }
                 }
             }
