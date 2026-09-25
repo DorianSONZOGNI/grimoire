@@ -23,13 +23,20 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function initStats() {
-    if (!window.isAdmin) {
-        window.location.href = '/';
-        return;
+    const isAdmin = window.isAdmin;
+    const endpoint = isAdmin ? '/api/pve/admin/stats/dungeons' : '/api/pve/stats/my-dungeons';
+
+    // Update page title for non-admins
+    if (!isAdmin) {
+        const titleEl = document.querySelector('.logo-text-gradient.logo-dungeon');
+        if (titleEl) titleEl.textContent = 'Mes Statistiques PvE';
+        // Hide account column
+        const accountTh = document.querySelector('.runs-table th:nth-child(3)');
+        if (accountTh) accountTh.classList.add('is-hidden');
     }
 
     try {
-        const res = await window.globalFetch('/api/pve/admin/stats/dungeons');
+        const res = await window.globalFetch(endpoint);
         const data = await res.json();
         
         allRuns = data.runs;
@@ -353,10 +360,11 @@ function updateRunsTable(runs) {
             : `<span class="text-success font-bold flex items-center gap-1"><span class="material-symbols-outlined text-sm">favorite</span> En vie</span>`;
 
         const tr = document.createElement('tr');
+        const isAdmin = window.isAdmin;
         tr.innerHTML = `
             <td class="text-muted" style="white-space:nowrap">${date}</td>
             <td class="font-medium text-white">${r.dungeonName}</td>
-            <td class="text-white">${r.accountName || '-'}</td>
+            ${isAdmin ? `<td class="text-white">${r.accountName || '-'}</td>` : ''}
             <td>
                 <div class="text-white">${r.voieName || '-'}</div>
                 <div class="text-xs text-info">${r.spiritualiteName || '-'}</div>

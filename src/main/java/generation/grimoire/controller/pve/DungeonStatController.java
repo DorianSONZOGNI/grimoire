@@ -8,6 +8,8 @@ import generation.grimoire.enumeration.DungeonOutcome;
 import generation.grimoire.repository.pve.DungeonRunStatRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
@@ -18,22 +20,30 @@ import java.util.List;
 import java.util.Map;
 
 @RestController
-@RequestMapping("/api/pve/admin/stats")
+@RequestMapping("/api/pve")
 @RequiredArgsConstructor
 public class DungeonStatController {
 
     private final DungeonRunStatRepository repository;
 
-    @GetMapping("/dungeons")
+    @GetMapping("/admin/stats/dungeons")
     @PreAuthorize("hasAuthority('ADMIN') or hasAuthority('ROLE_ADMIN')")
     public DungeonStatsResponse getDungeonStats() {
-        List<DungeonRunStat> stats = repository.findAll();
-        
+        return buildResponse(repository.findAll());
+    }
+
+    @GetMapping("/stats/my-dungeons")
+    public DungeonStatsResponse getMyDungeonStats() {
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        String username = auth.getName();
+        return buildResponse(repository.findByAccountName(username));
+    }
+
+    private DungeonStatsResponse buildResponse(List<DungeonRunStat> stats) {
         List<DungeonRunStatDto> runDtos = new ArrayList<>();
         Map<String, DungeonGlobalStatDto> globalStats = new HashMap<>();
 
         for (DungeonRunStat stat : stats) {
-            // Convert to DTO
             DungeonRunStatDto dto = new DungeonRunStatDto(
                     stat.getId(),
                     stat.getDungeonId(),
@@ -79,3 +89,4 @@ public class DungeonStatController {
         return new DungeonStatsResponse(runDtos, globalStats);
     }
 }
+

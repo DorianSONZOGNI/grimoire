@@ -269,7 +269,7 @@ window.checkAuthStatus = async function checkAuthStatus() {
             let currentGold = data.monnaie !== undefined ? +Number(data.monnaie) : 0;
             
             container.innerHTML = `
-                ${window.isAdmin ? `<a href="/dungeon-stats.html" class="flex-center text-info no-underline text-sm mx-1 px-2 py-1 rounded transition-all" title="Statistiques PvE" onmouseover="this.style.background='rgba(56, 189, 248, 0.1)'" onmouseout="this.style.background='transparent'"><span class="material-symbols-outlined text-lg">insights</span></a>` : ''}
+                <a href="/dungeon-stats.html" class="flex-center text-info no-underline text-sm mx-1 px-2 py-1 rounded transition-all" title="${window.isAdmin ? 'Statistiques PvE (Admin)' : 'Mes Statistiques PvE'}" onmouseover="this.style.background='rgba(56, 189, 248, 0.1)'" onmouseout="this.style.background='transparent'"><span class="material-symbols-outlined text-lg">insights</span></a>
                 <a class="flex-center-gap font-medium text-success no-underline text-sm px-2 py-1 rounded transition-all" style="position:relative;" href="/secrets.html" onmouseover="this.style.background='rgba(16, 185, 129, 0.1)'" onmouseout="this.style.background='transparent'">
                     <span class="material-symbols-outlined text-lg">account_circle</span>
                     ${data.username}
