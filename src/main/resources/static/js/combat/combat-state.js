@@ -1017,11 +1017,16 @@ window.showHeroEquipmentTooltip = function (el, characterId) {
     const content = document.getElementById('heroEquipmentTooltipContent');
     if (!tooltip || !content) return;
 
+    const hero = pageState.currentSessionData?.players?.find(p => p.id === characterId);
+    const heroName = hero ? hero.name || hero.nom || 'Héros' : 'Héros';
+    const heroLevel = hero ? hero.voieLevel || 1 : 1;
+    const headerHtml = `<div style="text-align:center; font-weight:bold; font-size: 1.1rem; color:#f8fafc; margin-bottom: 0.8rem; border-bottom: 1px solid rgba(255,255,255,0.2); padding-bottom:0.5rem;">${heroName} <span class="text-sky-300" style="font-size: 0.9em;">(Niv. ${heroLevel})</span></div>`;
+
     let eqs = pageState.combatEquipments[characterId];
     if (!eqs || eqs.length === 0) {
-        content.innerHTML = '<div style="color:#cbd5e1; font-size:0.9rem; text-align:center;">Aucun équipement</div>';
+        content.innerHTML = headerHtml + '<div style="color:#cbd5e1; font-size:0.9rem; text-align:center;">Aucun équipement</div>';
     } else {
-        let html = '<div class="equip-slots-grid" style="width: 100%; min-width: 500px;">';
+        let html = headerHtml + '<div class="equip-slots-grid" style="width: 100%; min-width: 500px;">';
 
         const slots = Object.keys(window.SLOT_LABELS || {}).filter(s => s !== 'CONSOMMABLE' && s !== 'ANOMALIE' && s !== 'ARME_DEUX_MAINS' && s !== 'ARME' && s !== 'ANNEAU');
 
