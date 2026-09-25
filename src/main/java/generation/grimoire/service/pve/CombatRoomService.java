@@ -429,18 +429,7 @@ public class CombatRoomService {
                 int effect = room.getAlterationHpAmount();
                 int expEffect = room.getAlterationExpAmount();
 
-                boolean allHeroesReady = true;
                 for (Personnage p : userHeroes) {
-                    boolean hasEnoughHp = !(effect < 0 && p.getHealthCurrent() <= -effect);
-                    boolean hasEnoughXp = !(expEffect < 0 && p.getExperience() < -expEffect);
-                    if (!hasEnoughHp || !hasEnoughXp) {
-                        allHeroesReady = false;
-                        session.logInteractionResult(username, "Prérequis insuffisants pour l'altération sur " + p.getName() + ".");
-                    }
-                }
-
-                if (allHeroesReady) {
-                    for (Personnage p : userHeroes) {
                         if (effect > 0)
                             p.heal(effect);
                         else if (effect < 0)
@@ -495,7 +484,12 @@ public class CombatRoomService {
                             }
                         }
                     }
-                }
+                    
+                    // On a pu mourir suite à la perte de PV, on vérifie si l'équipe est morte
+                    boolean allDead = userHeroes.stream().allMatch(p -> p.getHealthCurrent() <= 0);
+                    if (allDead) {
+                        session.logInteractionResult("Système", "Le groupe a succombé à l'altération mystérieuse...");
+                    }
             } else if ("ITEM".equals(altType)) {
                 String reqItem = room.getAlterationRequiredItem();
                 java.util.List<Anomalie> anomalies = anomalieRepository.findByOwnerUsername(username);
