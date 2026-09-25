@@ -8,4 +8,6 @@ public interface DungeonRunStatRepository extends JpaRepository<DungeonRunStat, 
 
     @Query("SELECT COALESCE(MAX(d.runNumber), 0) FROM DungeonRunStat d WHERE d.dungeonId = :dungeonId")
     int findMaxRunNumberByDungeonId(Long dungeonId);
+
+    java.util.List<DungeonRunStat> findByAccountName(String accountName);
 }

@@ -23,13 +23,20 @@ document.addEventListener('DOMContentLoaded', () => {
 });
 
 async function initStats() {
-    if (!window.isAdmin) {
-        window.location.href = '/';
-        return;
+    const isAdmin = window.isAdmin;
+    const endpoint = isAdmin ? '/api/pve/admin/stats/dungeons' : '/api/pve/stats/my-dungeons';
+
+    // Update page title for non-admins
+    if (!isAdmin) {
+        const titleEl = document.querySelector('.logo-text-gradient.logo-dungeon');
+        if (titleEl) titleEl.textContent = 'Mes Statistiques PvE';
+        // Hide account column
+        const accountTh = document.querySelector('.runs-table th:nth-child(3)');
+        if (accountTh) accountTh.classList.add('is-hidden');
     }
 
     try {
-        const res = await window.globalFetch('/api/pve/admin/stats/dungeons');
+        const res = await window.globalFetch(endpoint);
         const data = await res.json();
         
         allRuns = data.runs;
@@ -90,6 +97,10 @@ function populateDungeonSelect() {
                 <span>Tous - ${secret}</span>
             </div>`;
         });
+        html += `<div class="custom-option flex items-center gap-2" onclick="selectDungeonFilter('NO_SECRET', 'Sans Secret', null)">
+            <span class="material-symbols-outlined opacity-50" style="font-size: 1.2rem;">lock_open</span>
+            <span>Sans Secret</span>
+        </div>`;
     }
 
     // Individual dungeons sorted by secret then name
@@ -111,7 +122,7 @@ function populateDungeonSelect() {
             iconHtml = `<span class="material-symbols-outlined" style="color: ${secretMeta.color}; font-size: 1.2rem;" title="${d.secret.replace(/"/g, '&quot;')}">${secretMeta.icon}</span>`;
             secretArg = `'${d.secret.replace(/'/g, "\\'")}'`;
         } else {
-            iconHtml = `<span class="material-symbols-outlined opacity-0" style="font-size: 1.2rem;">help</span>`; // Just for alignment
+            iconHtml = `<span class="material-symbols-outlined opacity-50" style="font-size: 1.2rem; color: #94a3b8;">lock_open</span>`; 
         }
         
         const escapedName = d.name.replace(/'/g, "\\'");
@@ -190,6 +201,16 @@ function renderDashboard(dungeonFilterKey) {
             aggregateStat(globalStats[key]);
         });
         filteredRuns = allRuns.filter(r => window.dungeonSecretMap[r.dungeonId] === secretFilter);
+        combinedGlobalStats.multiRuns = filteredRuns.filter(r => r.multi).length;
+    } else if (dungeonFilterKey === 'NO_SECRET') {
+        const matchingKeys = Object.keys(globalStats).filter(key => {
+            const dId = key.split('_')[0];
+            return !window.dungeonSecretMap[dId];
+        });
+        matchingKeys.forEach(key => {
+            aggregateStat(globalStats[key]);
+        });
+        filteredRuns = allRuns.filter(r => !window.dungeonSecretMap[r.dungeonId]);
         combinedGlobalStats.multiRuns = filteredRuns.filter(r => r.multi).length;
     } else {
         const [dungeonId] = dungeonFilterKey.split('_');
@@ -353,10 +374,11 @@ function updateRunsTable(runs) {
             : `<span class="text-success font-bold flex items-center gap-1"><span class="material-symbols-outlined text-sm">favorite</span> En vie</span>`;
 
         const tr = document.createElement('tr');
+        const isAdmin = window.isAdmin;
         tr.innerHTML = `
             <td class="text-muted" style="white-space:nowrap">${date}</td>
             <td class="font-medium text-white">${r.dungeonName}</td>
-            <td class="text-white">${r.accountName || '-'}</td>
+            ${isAdmin ? `<td class="text-white">${r.accountName || '-'}</td>` : ''}
             <td>
                 <div class="text-white">${r.voieName || '-'}</div>
                 <div class="text-xs text-info">${r.spiritualiteName || '-'}</div>
