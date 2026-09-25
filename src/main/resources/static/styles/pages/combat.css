@@ -1,7 +1,3 @@
-@view-transition {
-    navigation: auto;
-}
-
 .combat-notif {
     position: fixed;
     bottom: 2rem;
