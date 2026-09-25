@@ -216,10 +216,8 @@ export function updateUI(data) {
 
     if (pageState.currentSessionData && pageState.currentSessionData.activePlayer && data.activePlayer) {
         if (pageState.currentSessionData.activePlayer.name !== data.activePlayer.name) {
-            const typeAll = document.querySelector('input[name="filterCastingType"][value="ALL"]');
-            if (typeAll) typeAll.checked = true;
-            const levelAll = document.querySelector('input[name="filterLevel"][value="ALL"]');
-            if (levelAll) levelAll.checked = true;
+            pageState.combatSpellTypeFilter = 'ALL';
+            if (window.updateCombatSpellTypeFilterUI) window.updateCombatSpellTypeFilterUI();
         }
     }
 
@@ -3142,17 +3140,10 @@ export function renderSpells(spells) {
     if (countALL) countALL.textContent = spells.filter(s => s.voie != null || s.spiritualite != null).length;
 
     // Apply secondary filters
-    const typeFilterEl = document.querySelector('input[name="filterCastingType"]:checked');
-    const levelCheckboxes = Array.from(document.querySelectorAll('input[name="filterLevel"]:checked'));
+    const typeFilterVal = pageState.combatSpellTypeFilter || 'ALL';
 
-    if (typeFilterEl && typeFilterEl.value !== 'ALL') {
-        filteredSpells = filteredSpells.filter(s => s.castingType === typeFilterEl.value);
-    }
-
-    const isAllLevels = levelCheckboxes.some(cb => cb.value === 'ALL');
-    if (!isAllLevels && levelCheckboxes.length > 0) {
-        const selectedLevels = levelCheckboxes.map(cb => parseInt(cb.value, 10));
-        filteredSpells = filteredSpells.filter(s => selectedLevels.includes(s.niveau || 1));
+    if (typeFilterVal !== 'ALL') {
+        filteredSpells = filteredSpells.filter(s => s.castingType === typeFilterVal);
     }
 
     if (filteredSpells.length === 0) {
