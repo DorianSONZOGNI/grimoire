@@ -407,6 +407,18 @@ window.checkAuthStatus = async function checkAuthStatus() {
 }
 
 window.logout = async function () {
+    if (typeof window.showModal === 'function') {
+        const confirmed = await window.showModal({
+            title: 'Déconnexion',
+            body: 'Voulez-vous vraiment vous déconnecter ?',
+            confirmText: 'Me déconnecter',
+            confirmStyle: 'danger'
+        });
+        if (!confirmed) return;
+    } else {
+        if (!confirm('Voulez-vous vraiment vous déconnecter ?')) return;
+    }
+
     try {
         localStorage.removeItem('isLikelyLoggedIn');
         await fetch('/api/auth/logout', { method: 'POST', credentials: 'same-origin' });
