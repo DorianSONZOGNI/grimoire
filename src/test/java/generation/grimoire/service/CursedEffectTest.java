@@ -163,4 +163,27 @@ class CursedEffectTest {
         // HP becomes 50 + 70 = 120
         assertThat(hero.getHealthCurrent()).isEqualTo(120);
     }
+
+    @Test
+    void testCursedManaTax() {
+        // +50% mana cost on spells
+        Equipment cursedEq = new Equipment();
+        cursedEq.setSpecialEffect(EquipmentEffectType.CURSED_MANA_TAX);
+        cursedEq.setSpecialEffectValue(50);
+        hero.getEquipments().add(cursedEq);
+
+        Spell spell = new Spell();
+        spell.setNom("Mana Spell");
+        spell.setManaCost(50);
+        spell.setEffects(new java.util.LinkedHashSet<>());
+
+        hero.setManaMax(200);
+        hero.setManaCurrent(200);
+
+        spellService.castSpell(spell, hero, enemy, null);
+
+        // Cost is 50 base + 50% = 75 mana.
+        // Current mana: 200 - 75 = 125.
+        assertThat(hero.getManaCurrent()).isEqualTo(125);
+    }
 }
