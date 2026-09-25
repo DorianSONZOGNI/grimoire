@@ -64,64 +64,70 @@ export function showFloatingTextOnElement(el, text, color) {
     }, 3000);
 }
 
-export function getExpStats(exp) {
+export function getExpStats(exp, baseLevel = 1) {
     let level = 1;
-    if (exp >= 6000) level = 10;
-    else if (exp >= 4200) level = 9;
-    else if (exp >= 3200) level = 8;
-    else if (exp >= 2400) level = 7;
-    else if (exp >= 1600) level = 6;
-    else if (exp >= 1000) level = 5;
-    else if (exp >= 600) level = 4;
-    else if (exp >= 300) level = 3;
+    if (exp >= 39062500) level = 10;
+    else if (exp >= 7812500) level = 9;
+    else if (exp >= 1562500) level = 8;
+    else if (exp >= 312500) level = 7;
+    else if (exp >= 62500) level = 6;
+    else if (exp >= 12500) level = 5;
+    else if (exp >= 2500) level = 4;
+    else if (exp >= 500) level = 3;
     else if (exp >= 100) level = 2;
+
+    if (level < baseLevel) level = baseLevel;
 
     let currentLvlXp = 0;
     let nextLvlXp = 100;
-    if (level === 2) { currentLvlXp = 100; nextLvlXp = 300; }
-    else if (level === 3) { currentLvlXp = 300; nextLvlXp = 600; }
-    else if (level === 4) { currentLvlXp = 600; nextLvlXp = 1000; }
-    else if (level === 5) { currentLvlXp = 1000; nextLvlXp = 1600; }
-    else if (level === 6) { currentLvlXp = 1600; nextLvlXp = 2400; }
-    else if (level === 7) { currentLvlXp = 2400; nextLvlXp = 3200; }
-    else if (level === 8) { currentLvlXp = 3200; nextLvlXp = 4200; }
-    else if (level === 9) { currentLvlXp = 4200; nextLvlXp = 6000; }
-    else if (level === 10) { currentLvlXp = 6000; nextLvlXp = exp; }
+    if (level === 2) { nextLvlXp = 500; }
+    else if (level === 3) { nextLvlXp = 2500; }
+    else if (level === 4) { nextLvlXp = 12500; }
+    else if (level === 5) { nextLvlXp = 62500; }
+    else if (level === 6) { nextLvlXp = 312500; }
+    else if (level === 7) { nextLvlXp = 1562500; }
+    else if (level === 8) { nextLvlXp = 7812500; }
+    else if (level === 9) { nextLvlXp = 39062500; }
+    else if (level === 10) { nextLvlXp = 39062500; }
 
     let progress = 100;
     if (level < 10) {
         progress = ((exp - currentLvlXp) / (nextLvlXp - currentLvlXp)) * 100;
+        if (progress < 0) progress = 0;
     }
     return { level, currentLvlXp, nextLvlXp, progress };
 }
 
-export function getSpiritExpStats(exp) {
+export function getSpiritExpStats(exp, baseLevel = 1) {
     let level = 1;
-    if (exp >= 4500) level = 10;
-    else if (exp >= 3600) level = 9;
-    else if (exp >= 2800) level = 8;
-    else if (exp >= 2100) level = 7;
-    else if (exp >= 1500) level = 6;
-    else if (exp >= 1000) level = 5;
-    else if (exp >= 600) level = 4;
+    if (exp >= 656100) level = 10;
+    else if (exp >= 218700) level = 9;
+    else if (exp >= 72900) level = 8;
+    else if (exp >= 24300) level = 7;
+    else if (exp >= 8100) level = 6;
+    else if (exp >= 2700) level = 5;
+    else if (exp >= 900) level = 4;
     else if (exp >= 300) level = 3;
     else if (exp >= 100) level = 2;
 
+    if (level < baseLevel) level = baseLevel;
+
     let currentLvlXp = 0;
     let nextLvlXp = 100;
-    if (level === 2) { currentLvlXp = 100; nextLvlXp = 300; }
-    else if (level === 3) { currentLvlXp = 300; nextLvlXp = 600; }
-    else if (level === 4) { currentLvlXp = 600; nextLvlXp = 1000; }
-    else if (level === 5) { currentLvlXp = 1000; nextLvlXp = 1500; }
-    else if (level === 6) { currentLvlXp = 1500; nextLvlXp = 2100; }
-    else if (level === 7) { currentLvlXp = 2100; nextLvlXp = 2800; }
-    else if (level === 8) { currentLvlXp = 2800; nextLvlXp = 3600; }
-    else if (level === 9) { currentLvlXp = 3600; nextLvlXp = 4500; }
-    else if (level === 10) { currentLvlXp = 4500; nextLvlXp = exp; }
+    if (level === 2) { nextLvlXp = 300; }
+    else if (level === 3) { nextLvlXp = 900; }
+    else if (level === 4) { nextLvlXp = 2700; }
+    else if (level === 5) { nextLvlXp = 8100; }
+    else if (level === 6) { nextLvlXp = 24300; }
+    else if (level === 7) { nextLvlXp = 72900; }
+    else if (level === 8) { nextLvlXp = 218700; }
+    else if (level === 9) { nextLvlXp = 656100; }
+    else if (level === 10) { nextLvlXp = 656100; }
 
     let progress = 100;
     if (level < 10) {
         progress = ((exp - currentLvlXp) / (nextLvlXp - currentLvlXp)) * 100;
+        if (progress < 0) progress = 0;
     }
     return { level, currentLvlXp, nextLvlXp, progress };
 }

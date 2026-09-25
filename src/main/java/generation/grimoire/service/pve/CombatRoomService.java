@@ -169,6 +169,31 @@ public class CombatRoomService {
                         p.getPassiveStates().put("POISON_ON_HIT", bVal);
                         p.getPassiveStates().put("POISON_ON_HIT_DURATION", bDur > 0 ? bDur : 3);
                         p.getPassiveStates().put("BOSS_BUFF_POISON", bVal);
+                    } else if ("DAMAGE_REFLECTION".equals(bType)) {
+                        p.getPassiveStates().put("BOSS_BUFF_DAMAGE_REFLECTION", bVal);
+                        p.getPassiveStates().put("DAMAGE_REFLECTION", bVal);
+                    } else if ("PHYSICAL_SHROUD".equals(bType)) {
+                        p.getPassiveStates().put("BOSS_BUFF_PHYSICAL_SHROUD", bVal);
+                        p.getPassiveStates().put("PHYSICAL_SHROUD", bVal);
+                    } else if ("MAGIC_SHROUD".equals(bType)) {
+                        p.getPassiveStates().put("BOSS_BUFF_MAGIC_SHROUD", bVal);
+                        p.getPassiveStates().put("MAGIC_SHROUD", bVal);
+                    } else if ("FRENZY".equals(bType)) {
+                        p.getPassiveStates().put("BOSS_BUFF_FRENZY", bVal);
+                        p.getPassiveStates().put("FRENZY", bVal);
+                    } else if ("LIFESTEAL_AURA".equals(bType)) {
+                        p.getPassiveStates().put("BOSS_BUFF_LIFESTEAL_AURA", bVal);
+                        p.getPassiveStates().put("LIFESTEAL_ON_HIT", bVal);
+                    } else if ("REGENERATION".equals(bType)) {
+                        p.getPassiveStates().put("BOSS_BUFF_REGENERATION", bVal);
+                        p.getPassiveStates().put("REGENERATION", bVal);
+                    } else if ("MANA_OPPRESSION".equals(bType)) {
+                        p.getPassiveStates().put("BOSS_BUFF_MANA_OPPRESSION", bVal);
+                        p.getPassiveStates().put("MANA_OPPRESSION", bVal);
+                    } else if ("FREEZE_ON_HIT".equals(bType)) {
+                        p.getPassiveStates().put("BOSS_BUFF_FREEZE_ON_HIT", bVal);
+                        p.getPassiveStates().put("FREEZE_ON_HIT", bVal);
+                        p.getPassiveStates().put("FREEZE_ON_HIT_DURATION", bDur > 0 ? bDur : 3);
                     }
                 }
             }
@@ -430,8 +455,8 @@ public class CombatRoomService {
                         String rewardType = room.getAlterationRewardType();
                         if ("SPIRITUAL_XP".equals(rewardType)) {
                             int spXp = room.getAlterationSpiritualXpReward();
-                            if (spXp > 0) {
-                                p.setSpiritualiteExperience(p.getSpiritualiteExperience() + spXp);
+                            if (spXp != 0) {
+                                p.setSpiritualiteExperience(Math.max(0, p.getSpiritualiteExperience() + spXp));
                                 personnageService.save(p);
                             }
                         }
@@ -444,6 +469,8 @@ public class CombatRoomService {
                         int spXp = room.getAlterationSpiritualXpReward();
                         if (spXp > 0) {
                             session.logInteractionResult(username, "L'altération vous accorde " + spXp + " XP de Spiritualité.");
+                        } else if (spXp < 0) {
+                            session.logInteractionResult(username, "L'altération vous retire " + Math.abs(spXp) + " XP de Spiritualité.");
                         }
                     }
 
@@ -488,12 +515,16 @@ public class CombatRoomService {
                 String rewardType = room.getAlterationRewardType();
                 if ("SPIRITUAL_XP".equals(rewardType)) {
                     int spXp = room.getAlterationSpiritualXpReward();
-                    if (spXp > 0) {
+                    if (spXp != 0) {
                         for (Personnage p : userHeroes) {
-                            p.setSpiritualiteExperience(p.getSpiritualiteExperience() + spXp);
+                            p.setSpiritualiteExperience(Math.max(0, p.getSpiritualiteExperience() + spXp));
                             personnageService.save(p);
                         }
-                        session.logInteractionResult(username, "L'altération vous accorde " + spXp + " XP de Spiritualité.");
+                        if (spXp > 0) {
+                            session.logInteractionResult(username, "L'altération vous accorde " + spXp + " XP de Spiritualité.");
+                        } else {
+                            session.logInteractionResult(username, "L'altération vous retire " + Math.abs(spXp) + " XP de Spiritualité.");
+                        }
                     }
                 } else if ("SPECIAL_ITEM".equals(rewardType)) {
                     String itemReward = room.getAlterationSpecialItemReward();
@@ -558,11 +589,29 @@ public class CombatRoomService {
                     }
                     session.logInteractionResult(username, "L'autel vous a accordé " + multipliedValue + " XP de Spiritualité.");
                 } else if ("ITEM".equals(rewardType)) {
-                    int chance = level == 1 ? 45 : (level == 2 ? 75 : 100);
+                    Equipment template = room.getAltarRewardEquipment();
+                    double rarityMultiplier = 1.0;
+                    if (template != null && template.getRarity() != null) {
+                        switch (template.getRarity().name()) {
+                            case "COMMUN": rarityMultiplier = 1.5; break;
+                            case "INHABITUEL": rarityMultiplier = 1.3; break;
+                            case "RARE": rarityMultiplier = 1.15; break;
+                            case "MYTHIQUE": rarityMultiplier = 1.0; break;
+                            case "EPIQUE": rarityMultiplier = 0.85; break;
+                            case "LEGENDAIRE": rarityMultiplier = 0.70; break;
+                            case "RELIQUE": rarityMultiplier = 0.55; break;
+                            case "MAUDIT": rarityMultiplier = 0.40; break;
+                        }
+                    }
+                    
+                    int baseChance = (int) Math.round(90 - 65 * Math.exp(-0.64 * (level - 1)));
+                    int chance = (int) Math.round(baseChance * rarityMultiplier);
+                    if (chance > 100) chance = 100;
+                    if (chance < 1) chance = 1;
+
                     boolean success = new java.util.Random().nextInt(100) < chance;
 
                     if (success) {
-                        Equipment template = room.getAltarRewardEquipment();
                         if (template != null) {
                             Equipment clone = new Equipment();
                             clone.copyStatsFrom(template);

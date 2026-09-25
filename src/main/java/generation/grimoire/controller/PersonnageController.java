@@ -217,32 +217,30 @@ public class PersonnageController {
         int currentLevelXp = 0;
         int nextLevelXp = 100;
         int level = p.getVoieLevel();
-        if (level == 1) { currentLevelXp = 0; nextLevelXp = 100; }
-        else if (level == 2) { currentLevelXp = 100; nextLevelXp = 300; }
-        else if (level == 3) { currentLevelXp = 300; nextLevelXp = 600; }
-        else if (level == 4) { currentLevelXp = 600; nextLevelXp = 1000; }
-        else if (level == 5) { currentLevelXp = 1000; nextLevelXp = 1600; }
-        else if (level == 6) { currentLevelXp = 1600; nextLevelXp = 2400; }
-        else if (level == 7) { currentLevelXp = 2400; nextLevelXp = 3200; }
-        else if (level == 8) { currentLevelXp = 3200; nextLevelXp = 4200; }
-        else if (level == 9) { currentLevelXp = 4200; nextLevelXp = 6000; }
-        else if (level == 10) { currentLevelXp = 6000; nextLevelXp = 6000; }
+        if (level == 2) { nextLevelXp = 500; }
+        else if (level == 3) { nextLevelXp = 2500; }
+        else if (level == 4) { nextLevelXp = 12500; }
+        else if (level == 5) { nextLevelXp = 62500; }
+        else if (level == 6) { nextLevelXp = 312500; }
+        else if (level == 7) { nextLevelXp = 1562500; }
+        else if (level == 8) { nextLevelXp = 7812500; }
+        else if (level == 9) { nextLevelXp = 39062500; }
+        else if (level == 10) { nextLevelXp = 39062500; }
         dto.setCurrentLevelXp(currentLevelXp);
         dto.setNextLevelXp(nextLevelXp);
 
         int currentLevelSpiritXp = 0;
         int nextLevelSpiritXp = 100;
         int spiritLevel = p.getSpiritualiteLevel();
-        if (spiritLevel == 1) { currentLevelSpiritXp = 0; nextLevelSpiritXp = 100; }
-        else if (spiritLevel == 2) { currentLevelSpiritXp = 100; nextLevelSpiritXp = 300; }
-        else if (spiritLevel == 3) { currentLevelSpiritXp = 300; nextLevelSpiritXp = 600; }
-        else if (spiritLevel == 4) { currentLevelSpiritXp = 600; nextLevelSpiritXp = 1000; }
-        else if (spiritLevel == 5) { currentLevelSpiritXp = 1000; nextLevelSpiritXp = 1500; }
-        else if (spiritLevel == 6) { currentLevelSpiritXp = 1500; nextLevelSpiritXp = 2100; }
-        else if (spiritLevel == 7) { currentLevelSpiritXp = 2100; nextLevelSpiritXp = 2800; }
-        else if (spiritLevel == 8) { currentLevelSpiritXp = 2800; nextLevelSpiritXp = 3600; }
-        else if (spiritLevel == 9) { currentLevelSpiritXp = 3600; nextLevelSpiritXp = 4500; }
-        else if (spiritLevel == 10) { currentLevelSpiritXp = 4500; nextLevelSpiritXp = 4500; }
+        if (spiritLevel == 2) { nextLevelSpiritXp = 300; }
+        else if (spiritLevel == 3) { nextLevelSpiritXp = 900; }
+        else if (spiritLevel == 4) { nextLevelSpiritXp = 2700; }
+        else if (spiritLevel == 5) { nextLevelSpiritXp = 8100; }
+        else if (spiritLevel == 6) { nextLevelSpiritXp = 24300; }
+        else if (spiritLevel == 7) { nextLevelSpiritXp = 72900; }
+        else if (spiritLevel == 8) { nextLevelSpiritXp = 218700; }
+        else if (spiritLevel == 9) { nextLevelSpiritXp = 656100; }
+        else if (spiritLevel == 10) { nextLevelSpiritXp = 656100; }
         dto.setCurrentLevelSpiritXp(currentLevelSpiritXp);
         dto.setNextLevelSpiritXp(nextLevelSpiritXp);
 

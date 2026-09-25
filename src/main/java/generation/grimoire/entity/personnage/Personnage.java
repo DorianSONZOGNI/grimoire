@@ -75,21 +75,21 @@ public class Personnage {
         this.experience = newExperience;
 
         int newCalculated = 1;
-        if (this.experience >= 6000)
+        if (this.experience >= 39062500)
             newCalculated = 10;
-        else if (this.experience >= 4200)
+        else if (this.experience >= 7812500)
             newCalculated = 9;
-        else if (this.experience >= 3200)
+        else if (this.experience >= 1562500)
             newCalculated = 8;
-        else if (this.experience >= 2400)
+        else if (this.experience >= 312500)
             newCalculated = 7;
-        else if (this.experience >= 1600)
+        else if (this.experience >= 62500)
             newCalculated = 6;
-        else if (this.experience >= 1000)
+        else if (this.experience >= 12500)
             newCalculated = 5;
-        else if (this.experience >= 600)
+        else if (this.experience >= 2500)
             newCalculated = 4;
-        else if (this.experience >= 300)
+        else if (this.experience >= 500)
             newCalculated = 3;
         else if (this.experience >= 100)
             newCalculated = 2;
@@ -158,21 +158,21 @@ public class Personnage {
     @Column(name = "voie_level", nullable = false)
     public int getVoieLevel() {
         int calculated = 1;
-        if (experience >= 6000)
+        if (experience >= 39062500)
             calculated = 10;
-        else if (experience >= 4200)
+        else if (experience >= 7812500)
             calculated = 9;
-        else if (experience >= 3200)
+        else if (experience >= 1562500)
             calculated = 8;
-        else if (experience >= 2400)
+        else if (experience >= 312500)
             calculated = 7;
-        else if (experience >= 1600)
+        else if (experience >= 62500)
             calculated = 6;
-        else if (experience >= 1000)
+        else if (experience >= 12500)
             calculated = 5;
-        else if (experience >= 600)
+        else if (experience >= 2500)
             calculated = 4;
-        else if (experience >= 300)
+        else if (experience >= 500)
             calculated = 3;
         else if (experience >= 100)
             calculated = 2;
@@ -208,21 +208,21 @@ public class Personnage {
         this.spiritualiteExperience = newExperience;
 
         int newCalculated = 1;
-        if (this.spiritualiteExperience >= 4500)
+        if (this.spiritualiteExperience >= 39062500)
             newCalculated = 10;
-        else if (this.spiritualiteExperience >= 3600)
+        else if (this.spiritualiteExperience >= 7812500)
             newCalculated = 9;
-        else if (this.spiritualiteExperience >= 2800)
+        else if (this.spiritualiteExperience >= 1562500)
             newCalculated = 8;
-        else if (this.spiritualiteExperience >= 2100)
+        else if (this.spiritualiteExperience >= 312500)
             newCalculated = 7;
-        else if (this.spiritualiteExperience >= 1500)
+        else if (this.spiritualiteExperience >= 62500)
             newCalculated = 6;
-        else if (this.spiritualiteExperience >= 1000)
+        else if (this.spiritualiteExperience >= 12500)
             newCalculated = 5;
-        else if (this.spiritualiteExperience >= 600)
+        else if (this.spiritualiteExperience >= 2500)
             newCalculated = 4;
-        else if (this.spiritualiteExperience >= 300)
+        else if (this.spiritualiteExperience >= 500)
             newCalculated = 3;
         else if (this.spiritualiteExperience >= 100)
             newCalculated = 2;
@@ -292,19 +292,19 @@ public class Personnage {
     @Column(name = "spiritualite_level", nullable = false)
     public int getSpiritualiteLevel() {
         int calculated = 1;
-        if (spiritualiteExperience >= 4500)
+        if (spiritualiteExperience >= 656100)
             calculated = 10;
-        else if (spiritualiteExperience >= 3600)
+        else if (spiritualiteExperience >= 218700)
             calculated = 9;
-        else if (spiritualiteExperience >= 2800)
+        else if (spiritualiteExperience >= 72900)
             calculated = 8;
-        else if (spiritualiteExperience >= 2100)
+        else if (spiritualiteExperience >= 24300)
             calculated = 7;
-        else if (spiritualiteExperience >= 1500)
+        else if (spiritualiteExperience >= 8100)
             calculated = 6;
-        else if (spiritualiteExperience >= 1000)
+        else if (spiritualiteExperience >= 2700)
             calculated = 5;
-        else if (spiritualiteExperience >= 600)
+        else if (spiritualiteExperience >= 900)
             calculated = 4;
         else if (spiritualiteExperience >= 300)
             calculated = 3;
@@ -874,13 +874,14 @@ public class Personnage {
      * Purge l'intégralité des buffs, débuffs, DoT et HoT actifs sur ce personnage.
      */
     public void purgeAllBuffsAndDebuffs() {
-        activeBuffs.clear();
-        consumableSpellBuffs.clear();
-        activeHealOverTimeEffects.clear();
-        activeDamageOverTimeEffects.clear();
-        activeManaOverTimeEffects.clear();
-        activeHeatOverTimeEffects.clear();
-        System.out.println(name + " est purifié de tous ses bonus et malus !");
+        if (activeBuffs != null) activeBuffs.clear();
+        if (consumableSpellBuffs != null) consumableSpellBuffs.clear();
+        if (activeHealOverTimeEffects != null) activeHealOverTimeEffects.clear();
+        if (activeDamageOverTimeEffects != null) activeDamageOverTimeEffects.clear();
+        if (activeManaOverTimeEffects != null) activeManaOverTimeEffects.clear();
+        if (activeHeatOverTimeEffects != null) activeHeatOverTimeEffects.clear();
+        if (activeShields != null) activeShields.clear();
+        System.out.println(name + " est purifié de tous ses bonus, malus et boucliers !");
     }
 
     public void setVoie(Voie voie) {

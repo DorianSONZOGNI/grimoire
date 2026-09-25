@@ -23,18 +23,21 @@ export function renderAndAnimateXPCards(containerId, players, prefix, isFirstCle
     let cardsHtml = '';
     players.forEach(p => {
         let oldExp = pageState.previousPlayerXP[p.id] !== undefined ? pageState.previousPlayerXP[p.id] : p.experience;
-        let oldStats = getExpStats(oldExp);
+        let oldStats = getExpStats(oldExp, p.voieLevel);
         let oldSpiritExp = pageState.previousPlayerSpiritXP[p.id] !== undefined ? pageState.previousPlayerSpiritXP[p.id] : (p.spiritualiteExperience || 0);
-        let oldSpiritStats = getSpiritExpStats(oldSpiritExp);
+        let oldSpiritStats = getSpiritExpStats(oldSpiritExp, p.spiritualiteLevel);
 
-        let gainedExp = Math.max(0, p.experience - oldExp);
-
+        let gainedExp = p.experience - oldExp;
         let x2Badge = '';
-        if (isFirstClear && gainedExp === maxGainedExp && gainedExp > 0 && (prefix === 'vic' || prefix === 'treasure')) {
+        if (isFirstClear && gainedExp > 0 && gainedExp === maxGainedExp && (prefix === 'vic' || prefix === 'treasure')) {
             x2Badge = `<span class="material-symbols-outlined text-amber-500" style="font-size: 1.1rem; vertical-align: middle; margin-left: 2px;" title="Bonus Première Complétion (x2)">star</span>`;
         }
-
-        let gainedHtml = gainedExp > 0 ? `<div class="text-info font-bold flex items-center justify-center" style="font-size: 0.95rem; text-shadow: 0 0 5px rgba(56, 189, 248, 0.5); margin-bottom: 0.4rem;">+${gainedExp} XP ${x2Badge}</div>` : '';
+        let gainedHtml = '';
+        if (gainedExp > 0) {
+            gainedHtml = `<div class="text-info font-bold flex items-center justify-center" style="font-size: 0.95rem; text-shadow: 0 0 5px rgba(56, 189, 248, 0.5); margin-bottom: 0.4rem;">+${gainedExp} XP ${x2Badge}</div>`;
+        } else if (gainedExp < 0) {
+            gainedHtml = `<div class="text-danger font-bold flex items-center justify-center" style="font-size: 0.95rem; text-shadow: 0 0 5px rgba(239, 68, 68, 0.5); margin-bottom: 0.4rem;">${gainedExp} XP</div>`;
+        }
 
         let cardsHtmlPart = `
             <div class="text-center relative" id="${prefix}-xp-card-${p.id}" style="background: rgba(0,0,0,0.4); padding: 1rem; border-radius: 8px; border: 1px solid rgba(255,255,255,0.1); width: 180px; overflow: hidden; transition: all 0.5s; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8); display: flex; flex-direction: column; gap: 0.3rem;">
@@ -48,9 +51,18 @@ export function renderAndAnimateXPCards(containerId, players, prefix, isFirstCle
                 <div class="text-muted" id="${prefix}-xp-text-${p.id}" style="font-size: 0.7rem; font-family: monospace;">${oldExp} / ${oldStats.level === 10 ? 'MAX' : oldStats.nextLvlXp} XP</div>
         `;
 
+        let gainedSpiritExp = (p.spiritualiteExperience || 0) - oldSpiritExp;
+        let gainedSpiritHtml = '';
+        if (gainedSpiritExp > 0) {
+            gainedSpiritHtml = `<div class="text-warning font-bold flex items-center justify-center" style="font-size: 0.85rem; text-shadow: 0 0 5px rgba(245, 158, 11, 0.5); margin-bottom: 0.2rem;">+${gainedSpiritExp} Spirit XP</div>`;
+        } else if (gainedSpiritExp < 0) {
+            gainedSpiritHtml = `<div class="text-danger font-bold flex items-center justify-center" style="font-size: 0.85rem; text-shadow: 0 0 5px rgba(239, 68, 68, 0.5); margin-bottom: 0.2rem;">${gainedSpiritExp} Spirit XP</div>`;
+        }
+
         if (oldSpiritExp > 0 || (p.spiritualiteExperience || 0) > 0 || prefix === 'treasure') {
             cardsHtmlPart += `
                 <div class="mt-xs"></div>
+                ${gainedSpiritHtml}
                 <div class="text-xs" id="${prefix}-spirit-lvl-${p.id}" style="color: #fb923c; font-weight: 600; transition: color 0.3s, transform 0.3s;">Spirit Niv. ${oldSpiritStats.level}</div>
                 <div class="progress-track">
                     <div id="${prefix}-spirit-fill-${p.id}" style="height: 100%; width: ${Math.min(100, oldSpiritStats.progress)}%; background: #f59e0b; transition: box-shadow 0.3s;"></div>
@@ -91,7 +103,7 @@ export function renderAndAnimateXPCards(containerId, players, prefix, isFirstCle
                 let easeT = t * (2 - t);
 
                 let currentExp = Math.floor(oldExp + (endExp - oldExp) * easeT);
-                let stats = getExpStats(currentExp);
+                let stats = getExpStats(currentExp, p.voieLevel);
                 if (bar && text && lvlText) {
                     bar.style.width = Math.min(100, stats.progress) + "%";
                     text.innerText = currentExp + " / " + (stats.level === 10 ? 'MAX' : stats.nextLvlXp) + " XP";
@@ -108,7 +120,7 @@ export function renderAndAnimateXPCards(containerId, players, prefix, isFirstCle
                 }
 
                 let currentSpiritExp = Math.floor(oldSpiritExp + (endSpiritExp - oldSpiritExp) * easeT);
-                let spiritStats = getSpiritExpStats(currentSpiritExp);
+                let spiritStats = getSpiritExpStats(currentSpiritExp, p.spiritualiteLevel);
                 if (spiritBar && spiritText && spiritLvlText) {
                     spiritBar.style.width = Math.min(100, spiritStats.progress) + "%";
                     spiritText.innerText = currentSpiritExp + " / " + (spiritStats.level === 10 ? 'MAX' : spiritStats.nextLvlXp) + " XP";
@@ -1107,9 +1119,26 @@ export function updateUI(data) {
                                 window.updateAltarDropChance = function (level) {
                                     const el = document.getElementById('altarDropChance');
                                     if (el) {
-                                        let chance = level === 1 ? 45 : (level === 2 ? 75 : 100);
+                                        let baseChance = Math.round(90 - 65 * Math.exp(-0.64 * (level - 1)));
+                                        let rarityMult = 1.0;
+                                        if (data && data.currentRoom && data.currentRoom.altarRewardEquipment && data.currentRoom.altarRewardEquipment.rarity) {
+                                            switch(data.currentRoom.altarRewardEquipment.rarity) {
+                                                case "COMMUN": rarityMult = 1.5; break;
+                                                case "INHABITUEL": rarityMult = 1.3; break;
+                                                case "RARE": rarityMult = 1.15; break;
+                                                case "MYTHIQUE": rarityMult = 1.0; break;
+                                                case "EPIQUE": rarityMult = 0.85; break;
+                                                case "LEGENDAIRE": rarityMult = 0.70; break;
+                                                case "RELIQUE": rarityMult = 0.55; break;
+                                                case "MAUDIT": rarityMult = 0.40; break;
+                                            }
+                                        }
+                                        let chance = Math.round(baseChance * rarityMult);
+                                        if (chance > 100) chance = 100;
+                                        if (chance < 1) chance = 1;
+                                        
                                         el.textContent = `(${chance}%)`;
-                                        el.style.color = chance === 100 ? '#10b981' : (chance === 75 ? '#fbbf24' : '#ef4444');
+                                        el.style.color = chance >= 85 ? '#10b981' : (chance >= 55 ? '#fbbf24' : '#ef4444');
                                     }
                                     const valEl = document.getElementById('altarDynamicRewardValue');
                                     if (valEl) {
@@ -1318,11 +1347,19 @@ export function updateUI(data) {
                                             }
                                         } else if (log.includes("XP de Spiritualit")) {
                                             const spXpMatch = log.match(/accorde (\d+) XP de Spiritualit./);
+                                            const spXpLossMatch = log.match(/retire (\d+) XP de Spiritualit./);
                                             if (spXpMatch) {
                                                 const amount = spXpMatch[1];
                                                 logHtml = `
                                                     <div class="flex-center" style="background: rgba(0, 0, 0, 0.4); border: 1px solid #8b5cf680; padding: 0.8rem 1rem; border-radius: 8px; color: #8b5cf6; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
                                                         <span class="material-symbols-outlined" style="color: #8b5cf6;">auto_awesome</span> +${amount} Sp-XP
+                                                    </div>
+                                                `;
+                                            } else if (spXpLossMatch) {
+                                                const amount = spXpLossMatch[1];
+                                                logHtml = `
+                                                    <div class="flex-center" style="background: rgba(0, 0, 0, 0.4); border: 1px solid #ef444480; padding: 0.8rem 1rem; border-radius: 8px; color: #ef4444; font-weight: 600; gap: 0.5rem; animation: popIn 0.5s ease-out forwards; opacity: 0; transform: scale(0.8);">
+                                                        <span class="material-symbols-outlined" style="color: #ef4444;">auto_awesome</span> -${amount} Sp-XP
                                                     </div>
                                                 `;
                                             }
@@ -2087,12 +2124,31 @@ export function getBossBuffsHtml(c) {
     const hasArmorBuff = (c.activeBuffs || c.buffs || []).some(b => b.statAffected === 'ARMURE' && b.flatValue === c.passiveStates['BOSS_BUFF_ARMOR']);
     const hasResistBuff = (c.activeBuffs || c.buffs || []).some(b => b.statAffected === 'RESISTANCE' && b.flatValue === c.passiveStates['BOSS_BUFF_RESIST']);
 
-    if (c.passiveStates['BOSS_BUFF_HP']) html += `<span class="text-success" title="+${c.passiveStates['BOSS_BUFF_HP']}% PV Max (Boss Buff)" style="cursor: help; font-size: 0.75rem; background: rgba(16, 185, 129, 0.15); padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(16, 185, 129, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined text-sm">favorite</span>+${c.passiveStates['BOSS_BUFF_HP']}% PV</span>`;
-    if (c.passiveStates['BOSS_BUFF_SHIELD'] && c.shieldTotal > 0) html += `<span title="+${c.passiveStates['BOSS_BUFF_SHIELD']}% Bouclier (Boss Buff)" style="cursor: help; font-size: 0.75rem; background: rgba(56, 189, 248, 0.15); color: #38bdf8; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(56, 189, 248, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined text-sm">shield</span>+${c.passiveStates['BOSS_BUFF_SHIELD']}% Boucl.</span>`;
-    if (c.passiveStates['BOSS_BUFF_ARMOR'] && hasArmorBuff) html += `<span title="+${c.passiveStates['BOSS_BUFF_ARMOR']} Armure (Boss Buff)" style="cursor: help; font-size: 0.75rem; background: rgba(139, 92, 246, 0.15); color: #8b5cf6; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(139, 92, 246, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined text-sm">security</span>+${c.passiveStates['BOSS_BUFF_ARMOR']} Arm.</span>`;
-    if (c.passiveStates['BOSS_BUFF_RESIST'] && hasResistBuff) html += `<span title="+${c.passiveStates['BOSS_BUFF_RESIST']} Résistance (Boss Buff)" style="cursor: help; font-size: 0.75rem; background: rgba(217, 70, 239, 0.15); color: #d946ef; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(217, 70, 239, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined text-sm">health_and_safety</span>+${c.passiveStates['BOSS_BUFF_RESIST']} Rés.</span>`;
-    if (c.passiveStates['BOSS_BUFF_BURN']) html += `<span class="text-error" title="Brûlure sur coup (Boss Buff)" style="cursor: help; font-size: 0.75rem; background: rgba(239, 68, 68, 0.15); padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(239, 68, 68, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined text-sm">local_fire_department</span>Brûlure</span>`;
-    if (c.passiveStates['BOSS_BUFF_POISON']) html += `<span title="Poison sur coup (Boss Buff)" style="cursor: help; font-size: 0.75rem; background: rgba(34, 197, 94, 0.15); color: #22c55e; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(34, 197, 94, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;"><span class="material-symbols-outlined text-sm">pest_control</span>Poison</span>`;
+    const tooltipAttrs = 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"';
+
+    function makeBadge(val, colorHex, rgbStr, icon, label, description) {
+        if (!val) return '';
+        return `<span ${tooltipAttrs} style="cursor: help; font-size: 0.75rem; background: rgba(${rgbStr}, 0.15); color: ${colorHex}; padding: 0.15rem 0.5rem; border-radius: 6px; border: 1px solid rgba(${rgbStr}, 0.3); font-weight: 600; display: inline-flex; align-items: center; gap: 0.2rem;">` + 
+               `<template class="tooltip-data"><div style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:${colorHex}; border-bottom: 1px solid ${colorHex}; padding-bottom: 4px;">${label}</div>` +
+               `<div style="color:#cbd5e1; margin-top:8px; max-width: 350px; line-height: 1.4; white-space: normal !important; word-wrap: break-word;">${description}</div></template>` +
+               `<span class="material-symbols-outlined text-sm">${icon}</span>${label}</span>`;
+    }
+
+    if (c.passiveStates['BOSS_BUFF_HP']) html += makeBadge(c.passiveStates['BOSS_BUFF_HP'], '#10b981', '16, 185, 129', 'favorite', `+${c.passiveStates['BOSS_BUFF_HP']}% PV`, `Le Boss possède ${c.passiveStates['BOSS_BUFF_HP']}% de points de vie maximum supplémentaires.`);
+    if (c.passiveStates['BOSS_BUFF_SHIELD'] && c.shieldTotal > 0) html += makeBadge(c.passiveStates['BOSS_BUFF_SHIELD'], '#38bdf8', '56, 189, 248', 'shield', `+${c.passiveStates['BOSS_BUFF_SHIELD']}% Boucl.`, `Le Boss commence le combat avec un bouclier égal à ${c.passiveStates['BOSS_BUFF_SHIELD']}% de ses PV max.`);
+    if (c.passiveStates['BOSS_BUFF_ARMOR'] && hasArmorBuff) html += makeBadge(c.passiveStates['BOSS_BUFF_ARMOR'], '#8b5cf6', '139, 92, 246', 'security', `+${c.passiveStates['BOSS_BUFF_ARMOR']} Arm.`, `Le Boss possède ${c.passiveStates['BOSS_BUFF_ARMOR']} points d'Armure.`);
+    if (c.passiveStates['BOSS_BUFF_RESIST'] && hasResistBuff) html += makeBadge(c.passiveStates['BOSS_BUFF_RESIST'], '#d946ef', '217, 70, 239', 'health_and_safety', `+${c.passiveStates['BOSS_BUFF_RESIST']} Rés.`, `Le Boss possède ${c.passiveStates['BOSS_BUFF_RESIST']} points de Résistance magique.`);
+    if (c.passiveStates['BOSS_BUFF_BURN']) html += makeBadge(c.passiveStates['BOSS_BUFF_BURN'], '#ef4444', '239, 68, 68', 'local_fire_department', `Brûlure`, `Inflige l'altération Brûlure à la cible lors d'une attaque réussie.`);
+    if (c.passiveStates['BOSS_BUFF_POISON']) html += makeBadge(c.passiveStates['BOSS_BUFF_POISON'], '#22c55e', '34, 197, 94', 'pest_control', `Poison`, `Inflige l'altération Poison à la cible lors d'une attaque réussie.`);
+    
+    if (c.passiveStates['BOSS_BUFF_DAMAGE_REFLECTION']) html += makeBadge(c.passiveStates['BOSS_BUFF_DAMAGE_REFLECTION'], '#f43f5e', '244, 63, 94', 'all_out', `Miroir Épineux`, `Renvoie ${c.passiveStates['BOSS_BUFF_DAMAGE_REFLECTION']}% des dégâts subis directement à l'attaquant.`);
+    if (c.passiveStates['BOSS_BUFF_PHYSICAL_SHROUD']) html += makeBadge(c.passiveStates['BOSS_BUFF_PHYSICAL_SHROUD'], '#cbd5e1', '203, 213, 225', 'blur_on', `Voile Éthéré`, `Réduit les dégâts physiques subis de ${c.passiveStates['BOSS_BUFF_PHYSICAL_SHROUD']}%.`);
+    if (c.passiveStates['BOSS_BUFF_MAGIC_SHROUD']) html += makeBadge(c.passiveStates['BOSS_BUFF_MAGIC_SHROUD'], '#818cf8', '129, 140, 248', 'blur_off', `Silencieux`, `Réduit les dégâts magiques subis de ${c.passiveStates['BOSS_BUFF_MAGIC_SHROUD']}%.`);
+    if (c.passiveStates['BOSS_BUFF_FRENZY']) html += makeBadge(c.passiveStates['BOSS_BUFF_FRENZY'], '#ef4444', '239, 68, 68', 'swords', `Rage Sang.`, `Augmente tous les dégâts infligés de ${c.passiveStates['BOSS_BUFF_FRENZY']}%.`);
+    if (c.passiveStates['BOSS_BUFF_LIFESTEAL_AURA']) html += makeBadge(c.passiveStates['BOSS_BUFF_LIFESTEAL_AURA'], '#dc2626', '220, 38, 38', 'water_drop', `Vampirisme`, `Soigne le Boss de ${c.passiveStates['BOSS_BUFF_LIFESTEAL_AURA']}% des dégâts qu'il inflige.`);
+    if (c.passiveStates['BOSS_BUFF_REGENERATION']) html += makeBadge(c.passiveStates['BOSS_BUFF_REGENERATION'], '#34d399', '52, 211, 153', 'healing', `Régén.`, `Soigne le Boss de ${c.passiveStates['BOSS_BUFF_REGENERATION']}% de ses PV Max au début de son tour.`);
+    if (c.passiveStates['BOSS_BUFF_MANA_OPPRESSION']) html += makeBadge(c.passiveStates['BOSS_BUFF_MANA_OPPRESSION'], '#a855f7', '168, 85, 247', 'do_not_disturb', `O. Magique`, `Réduit le mana actuel des joueurs de ${c.passiveStates['BOSS_BUFF_MANA_OPPRESSION']}% à chaque début de tour.`);
+    if (c.passiveStates['BOSS_BUFF_FREEZE_ON_HIT']) html += makeBadge(c.passiveStates['BOSS_BUFF_FREEZE_ON_HIT'], '#22d3ee', '34, 211, 238', 'ac_unit', `Gel`, `Réduit la vitesse de la cible de ${c.passiveStates['BOSS_BUFF_FREEZE_ON_HIT']} lors d'une attaque subie ou infligée.`);
 
     return html;
 }

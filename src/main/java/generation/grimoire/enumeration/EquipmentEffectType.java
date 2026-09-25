@@ -15,6 +15,8 @@ public enum EquipmentEffectType {
     CURSED_HEALING_REDUCTION,
     EXECUTION,
     MAGIC_OVERLOAD,
-    VITAL_ARCANE
+    VITAL_ARCANE,
+    OVERHEAL_SHIELD,
+    CURSED_MANA_TAX
 }
 
