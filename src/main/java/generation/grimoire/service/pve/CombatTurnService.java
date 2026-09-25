@@ -80,10 +80,11 @@ class CombatTurnService {
         Personnage p = session.getActivePlayer();
 
         if (p != null) {
+            boolean startedChannelingThisTurn = p.isBanalSpellCastThisTurn() && p.getRemainingChannelingTurns() > 0;
             p.setBanalSpellCastThisTurn(false);
             p.setInstantSpellCastThisTurn(false);
             CombatLogCapture.captureLogs(session, () -> {
-                if (p.getRemainingChannelingTurns() > 0) {
+                if (p.getRemainingChannelingTurns() > 0 && !startedChannelingThisTurn) {
                     Personnage channelingTarget = p.getChannelingTarget();
                     if (channelingTarget == null && !session.getEnemies().isEmpty()) {
                         channelingTarget = session.getEnemies().get(0).getAsPersonnage();
