@@ -2276,13 +2276,22 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
     statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined text-warning">bolt</span>${vit} Vit</span>`;
     statsHtml += `<span class="hero-stat-chip"><span class="material-symbols-outlined text-error">gps_fixed</span>${crit}% Crit</span>`;
 
+    statsHtml += `</div>`;
+
+    // ─── Build passive round icons (left side of fighter card) ───
+    let passiveOrbs = [];
+
     if (c.voie && c.voie.nom && c.voie.nom.toLowerCase().includes('destruction')) {
         let heat = 0;
         if (c.passiveStates && c.passiveStates['destruction_heat'] !== undefined) {
             heat = c.passiveStates['destruction_heat'];
         }
-        let heatDangerClass = heat >= 100 ? ' destruction-danger' : '';
-        statsHtml += `<span class="hero-stat-chip chip-destruction${heatDangerClass}" title="Chaleur accumulée"><span class="material-symbols-outlined text-destruction">local_fire_department</span>${heat}/100</span>`;
+        let dangerClass = heat >= 100 ? ' passive-orb-pulse' : '';
+        passiveOrbs.push({
+            icon: 'local_fire_department', color: '#f97316', value: `${heat}`,
+            title: `Chaleur : ${heat}/100`, dangerClass,
+            tooltip: `<div class="text-sm font-medium" style="margin-bottom:0.3rem; color:#f97316;">🔥 Chaleur (Destruction)</div><div class="text-xs" style="color:#cbd5e1;">${heat}/100 — Augmente les dégâts de feu. À 100, surcharge !</div>`
+        });
     }
 
     if (c.voie && c.voie.nom && (c.voie.nom.toLowerCase().includes('surete') || c.voie.nom.toLowerCase().includes('sûreté'))) {
@@ -2290,7 +2299,11 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
         if (c.passiveStates && c.passiveStates['surete_points'] !== undefined) {
             suretePoints = c.passiveStates['surete_points'];
         }
-        statsHtml += `<span class="hero-stat-chip chip-surete" title="Points de Sûreté"><span class="material-symbols-outlined text-surete">security</span>${suretePoints}</span>`;
+        passiveOrbs.push({
+            icon: 'security', color: '#14b8a6', value: `${suretePoints}`,
+            title: `Sûreté : ${suretePoints} pts`, dangerClass: '',
+            tooltip: `<div class="text-sm font-medium" style="margin-bottom:0.3rem; color:#14b8a6;">🛡️ Points de Sûreté</div><div class="text-xs" style="color:#cbd5e1;">Stack actuel : ${suretePoints}</div>`
+        });
     }
 
     if (c.voie && c.voie.nom && c.voie.nom.toLowerCase().includes('violence')) {
@@ -2299,10 +2312,18 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
             if (c.passiveStates['violence_inspiration'] !== undefined) insp = c.passiveStates['violence_inspiration'];
             if (c.passiveStates['violence_expiration'] !== undefined) exp = c.passiveStates['violence_expiration'];
         }
-        let inspDanger = insp >= 6 ? ' violence-danger' : '';
-        let expDanger = exp >= 6 ? ' violence-danger' : '';
-        statsHtml += `<span class="hero-stat-chip violence-insp-chip${inspDanger}" title="Inspiration (Violence)"><span class="material-symbols-outlined violence-insp-icon">storm</span>${insp}/7 Insp</span>`;
-        statsHtml += `<span class="hero-stat-chip violence-exp-chip${expDanger}" title="Expiration (Violence)"><span class="material-symbols-outlined violence-exp-icon">air</span>${exp}/7 Exp</span>`;
+        let inspDanger = insp >= 6 ? ' passive-orb-pulse' : '';
+        let expDanger = exp >= 6 ? ' passive-orb-pulse' : '';
+        passiveOrbs.push({
+            icon: 'storm', color: '#dc2626', value: `${insp}`,
+            title: `Inspiration : ${insp}/7`, dangerClass: inspDanger,
+            tooltip: `<div class="text-sm font-medium" style="margin-bottom:0.3rem; color:#dc2626;">⚡ Inspiration (Violence)</div><div class="text-xs" style="color:#cbd5e1;">${insp}/7${insp >= 6 ? ' — <span style="color:#ef4444; font-weight:bold;">Attention, proche du max !</span>' : ''}</div>`
+        });
+        passiveOrbs.push({
+            icon: 'air', color: '#d946ef', value: `${exp}`,
+            title: `Expiration : ${exp}/7`, dangerClass: expDanger,
+            tooltip: `<div class="text-sm font-medium" style="margin-bottom:0.3rem; color:#d946ef;">💨 Expiration (Violence)</div><div class="text-xs" style="color:#cbd5e1;">${exp}/7${exp >= 6 ? ' — <span style="color:#ef4444; font-weight:bold;">Attention, proche du max !</span>' : ''}</div>`
+        });
     }
 
     if (c.voie && c.voie.nom && c.voie.nom.toLowerCase().includes('raison')) {
@@ -2310,7 +2331,11 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
         if (c.passiveStates && c.passiveStates['raison_speed_stacks'] !== undefined) {
             raisonStacks = c.passiveStates['raison_speed_stacks'];
         }
-        statsHtml += `<span class="hero-stat-chip chip-raison" title="Cumuls de Vitesse (Raison)"><span class="material-symbols-outlined text-raison">speed</span>${raisonStacks}</span>`;
+        passiveOrbs.push({
+            icon: 'speed', color: '#eab308', value: `${raisonStacks}`,
+            title: `Cumuls Vitesse : ${raisonStacks}`, dangerClass: '',
+            tooltip: `<div class="text-sm font-medium" style="margin-bottom:0.3rem; color:#eab308;">⚡ Vitesse (Raison)</div><div class="text-xs" style="color:#cbd5e1;">Cumuls de vitesse actuels : ${raisonStacks}</div>`
+        });
     }
 
     if (c.voie && c.voie.nom && c.voie.nom.toLowerCase().includes('trahison')) {
@@ -2318,51 +2343,59 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
         let lowHpAvail = !(c.passiveStates && c.passiveStates['trahison_low_hp_used_this_turn']);
         let debuffAvail = !(c.passiveStates && c.passiveStates['trahison_debuff_used_this_turn']);
 
-        let styleBase = baseAvail ? 'border-color: rgba(168, 85, 247, 0.6); color: #c084fc;' : 'border-color: #4b5563; color: #6b7280; opacity: 0.5;';
-        let styleLowHp = lowHpAvail ? 'border-color: rgba(168, 85, 247, 0.6); color: #c084fc;' : 'border-color: #4b5563; color: #6b7280; opacity: 0.5;';
-        let styleDebuff = debuffAvail ? 'border-color: rgba(168, 85, 247, 0.6); color: #c084fc;' : 'border-color: #4b5563; color: #6b7280; opacity: 0.5;';
+        const dots = [
+            { avail: baseAvail, label: '1er Att.', desc: '+10% dégâts phys. (1ère attaque du tour)' },
+            { avail: lowHpAvail, label: '< 50% PV', desc: '+20% dégâts phys. (cible < 50% PV)' },
+            { avail: debuffAvail, label: 'Débuff', desc: '+15% dégâts phys. (cible avec débuff)' }
+        ];
+        const dotIcons = dots.map(d => `<span style="width:8px; height:8px; border-radius:50%; background:${d.avail ? '#c084fc' : '#4b5563'}; display:inline-block; box-shadow:${d.avail ? '0 0 4px #c084fc' : 'none'};"></span>`).join('');
+        const tooltipLines = dots.map(d => `<div class="text-xs" style="color:${d.avail ? '#c084fc' : '#6b7280'}; display:flex; align-items:center; gap:0.3rem;">${d.avail ? '✓' : '✗'} ${d.desc}</div>`).join('');
 
-        statsHtml += `<span class="hero-stat-chip" title="1er attaque physique du tour (+10% dégâts physiques)" style="${styleBase}"><span class="material-symbols-outlined" style="color: inherit;">bolt</span>+10%</span>`;
-        statsHtml += `<span class="hero-stat-chip" title="Cible < 50% PV (+20% dégâts physiques)" style="${styleLowHp}"><span class="material-symbols-outlined" style="color: inherit;">heart_broken</span>+20%</span>`;
-        statsHtml += `<span class="hero-stat-chip" title="Cible avec Débuff (+15% dégâts physiques)" style="${styleDebuff}"><span class="material-symbols-outlined" style="color: inherit;">trending_down</span>+15%</span>`;
+        passiveOrbs.push({
+            icon: 'bolt', color: '#c084fc', value: dotIcons,
+            title: `Trahison`, dangerClass: '',
+            tooltip: `<div class="text-sm font-medium" style="margin-bottom:0.3rem; color:#c084fc;">🗡️ Buffs Trahison</div>${tooltipLines}`,
+            isCustomValue: true
+        });
     }
 
     if (c.voie && c.voie.nom && (c.voie.nom.toLowerCase().includes('création') || c.voie.nom.toLowerCase().includes('creation'))) {
         let buds = (c.passiveStates && c.passiveStates['creation_buds']) || 0;
-        let hasBuds = buds > 0;
-        let styleCreation = hasBuds ? 'border-color: rgba(16, 185, 129, 0.6); color: #10b981;' : 'border-color: #4b5563; color: #6b7280; opacity: 0.5;';
-        statsHtml += `<span class="hero-stat-chip" title="Bourgeons : ${buds}" style="${styleCreation}"><span class="material-symbols-outlined" style="color: inherit;">yard</span>${buds}</span>`;
+        passiveOrbs.push({
+            icon: 'yard', color: '#10b981', value: `${buds}`,
+            title: `Bourgeons : ${buds}`, dangerClass: '',
+            tooltip: `<div class="text-sm font-medium" style="margin-bottom:0.3rem; color:#10b981;">🌱 Graines (Création)</div><div class="text-xs" style="color:#cbd5e1;">Bourgeons actuels : ${buds}</div>`
+        });
     }
-
 
     const hasKarma = c.hasKarma || (c.spiritualite && c.spiritualite.nom && c.spiritualite.nom.toLowerCase().includes('karma'));
     if (hasKarma) {
         let karmaLocked = c.karmaLocked || (c.passiveStates && c.passiveStates['karma_locked'] === 1);
         let karmaHarmony = c.karmaHarmony || (c.passiveStates && c.passiveStates['karma_harmony'] === 1);
         let karmaGauge = c.karmaGauge !== undefined ? c.karmaGauge : (c.passiveStates && c.passiveStates['karma_gauge'] !== undefined ? c.passiveStates['karma_gauge'] : 0);
-
         let karmaLockedDuration = c.passiveStates && c.passiveStates['karma_locked_duration'] !== undefined ? c.passiveStates['karma_locked_duration'] : 0;
 
-        let borderColor, color, icon, text, title, extraClass = '';
+        let kColor, kIcon, kText, kTooltip, kDanger = '';
         if (karmaLocked) {
-            borderColor = 'rgba(239, 68, 68, 0.4)'; color = '#f87171'; icon = 'block';
-            text = `Brisé (${karmaLockedDuration})`; title = "Karma Brisé (Voie désactivée)";
+            kColor = '#f87171'; kIcon = 'block'; kText = `${karmaLockedDuration}`;
+            kTooltip = `<div class="text-sm font-medium" style="margin-bottom:0.3rem; color:#f87171;">💔 Karma Brisé</div><div class="text-xs" style="color:#ef4444; font-weight:bold;">Voie désactivée pendant ${karmaLockedDuration} tour(s) !</div>`;
+            kDanger = ' passive-orb-pulse';
         } else if (karmaHarmony) {
-            borderColor = 'rgba(100, 116, 139, 0.4)'; color = '#cbd5e1'; icon = 'brightness_medium';
-            text = 'Harmonie'; title = "Karma en Harmonie";
+            kColor = '#cbd5e1'; kIcon = 'brightness_medium'; kText = '☯';
+            kTooltip = `<div class="text-sm font-medium" style="margin-bottom:0.3rem; color:#cbd5e1;">☯ Karma en Harmonie</div><div class="text-xs" style="color:#cbd5e1;">Équilibre parfait.</div>`;
         } else if (karmaGauge < 0) {
-            borderColor = 'rgba(168, 85, 247, 0.4)'; color = '#c084fc'; icon = 'dark_mode';
-            text = `${karmaGauge}/3`; title = "Karma Ténèbres";
-            if (karmaGauge <= -3) extraClass = ' karma-dark-danger';
+            kColor = '#c084fc'; kIcon = 'dark_mode'; kText = `${karmaGauge}`;
+            kTooltip = `<div class="text-sm font-medium" style="margin-bottom:0.3rem; color:#c084fc;">🌙 Karma Ténèbres</div><div class="text-xs" style="color:#cbd5e1;">Jauge : ${karmaGauge}/3</div>`;
+            if (karmaGauge <= -3) kDanger = ' passive-orb-pulse';
         } else if (karmaGauge > 0) {
-            borderColor = 'rgba(253, 224, 71, 0.4)'; color = '#fde047'; icon = 'light_mode';
-            text = `+${karmaGauge}/3`; title = "Karma Lumière";
-            if (karmaGauge >= 3) extraClass = ' karma-light-danger';
+            kColor = '#fde047'; kIcon = 'light_mode'; kText = `+${karmaGauge}`;
+            kTooltip = `<div class="text-sm font-medium" style="margin-bottom:0.3rem; color:#fde047;">☀️ Karma Lumière</div><div class="text-xs" style="color:#cbd5e1;">Jauge : +${karmaGauge}/3</div>`;
+            if (karmaGauge >= 3) kDanger = ' passive-orb-pulse';
         } else {
-            borderColor = 'rgba(156, 163, 175, 0.4)'; color = '#9ca3af'; icon = 'all_inclusive';
-            text = `0/3`; title = "Karma Neutre";
+            kColor = '#9ca3af'; kIcon = 'all_inclusive'; kText = '0';
+            kTooltip = `<div class="text-sm font-medium" style="margin-bottom:0.3rem; color:#9ca3af;">⚖️ Karma Neutre</div><div class="text-xs" style="color:#cbd5e1;">Jauge : 0/3</div>`;
         }
-        statsHtml += `<span class="hero-stat-chip${extraClass}" title="${title}" style="border-color: ${borderColor}; color: ${color};"><span class="material-symbols-outlined" style="color: inherit;">${icon}</span>${text}</span>`;
+        passiveOrbs.push({ icon: kIcon, color: kColor, value: kText, title: 'Karma', dangerClass: kDanger, tooltip: kTooltip });
     }
 
     const isEsprit = c.spiritualite && c.spiritualite.nom && c.spiritualite.nom.toLowerCase().includes('esprit');
@@ -2370,12 +2403,11 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
         const hp = c.hpCurrent !== undefined ? c.hpCurrent : c.healthCurrent;
         const maxHp = c.hpMax !== undefined ? c.hpMax : c.healthMax;
         const canCast = hp >= maxHp * 0.20 && c.manaCurrent >= c.manaMax * 0.20;
-        const color = canCast ? '#38bdf8' : '#ef4444';
-        const borderColor = canCast ? 'rgba(56, 189, 248, 0.4)' : 'rgba(239, 68, 68, 0.4)';
-        const icon = canCast ? 'blur_on' : 'block';
-        const text = canCast ? 'Éveillé' : 'Bloqué';
-        const title = "Condition Esprit : >= 20% PV ET Mana";
-        statsHtml += `<span class="hero-stat-chip" title="${title}" style="border-color: ${borderColor}; color: ${color};"><span class="material-symbols-outlined" style="color: inherit;">${icon}</span>${text}</span>`;
+        const eColor = canCast ? '#38bdf8' : '#ef4444';
+        const eIcon = canCast ? 'blur_on' : 'block';
+        const eText = canCast ? '✓' : '✗';
+        const eTooltip = `<div class="text-sm font-medium" style="margin-bottom:0.3rem; color:${eColor};">${canCast ? '💫 Éveillé' : '🚫 Bloqué'} (Esprit)</div><div class="text-xs" style="color:#cbd5e1;">Condition : ≥ 20% PV ET Mana<br/>Statut : ${canCast ? '<span style="color:#38bdf8;">Actif</span>' : '<span style="color:#ef4444;">Inactif</span>'}</div>`;
+        passiveOrbs.push({ icon: eIcon, color: eColor, value: eText, title: canCast ? 'Éveillé' : 'Bloqué', dangerClass: '', tooltip: eTooltip });
     }
 
     const isTenebres = c.spiritualite && c.spiritualite.nom && (c.spiritualite.nom.toLowerCase().includes('ténèbres') || c.spiritualite.nom.toLowerCase().includes('tenebres'));
@@ -2383,21 +2415,43 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
         const hp = c.hpCurrent !== undefined ? c.hpCurrent : c.healthCurrent;
         const maxHp = c.hpMax !== undefined ? c.hpMax : c.healthMax;
         const canCast = hp <= maxHp * 0.80 || c.manaCurrent <= c.manaMax * 0.80;
-        const color = canCast ? '#c084fc' : '#ef4444';
-        const borderColor = canCast ? 'rgba(192, 132, 252, 0.4)' : 'rgba(239, 68, 68, 0.4)';
-        const icon = canCast ? 'nightlight_round' : 'block';
-        const text = canCast ? 'Assombri' : 'Bloqué';
-        const title = "Condition Ténèbres : <= 80% PV ou Mana";
-        statsHtml += `<span class="hero-stat-chip" title="${title}" style="border-color: ${borderColor}; color: ${color};"><span class="material-symbols-outlined" style="color: inherit;">${icon}</span>${text}</span>`;
+        const tColor = canCast ? '#c084fc' : '#ef4444';
+        const tIcon = canCast ? 'nightlight_round' : 'block';
+        const tText = canCast ? '✓' : '✗';
+        const tTooltip = `<div class="text-sm font-medium" style="margin-bottom:0.3rem; color:${tColor};">${canCast ? '🌑 Assombri' : '🚫 Bloqué'} (Ténèbres)</div><div class="text-xs" style="color:#cbd5e1;">Condition : ≤ 80% PV ou Mana<br/>Statut : ${canCast ? '<span style="color:#c084fc;">Actif</span>' : '<span style="color:#ef4444;">Inactif</span>'}</div>`;
+        passiveOrbs.push({ icon: tIcon, color: tColor, value: tText, title: canCast ? 'Assombri' : 'Bloqué', dangerClass: '', tooltip: tTooltip });
     }
 
     const ameDetacheeBuff = (c.activeBuffs || c.buffs || []).find(b => b.statAffected === 'AME_DETACHEE' || b.effectType === 'AME_DETACHEE');
     if (ameDetacheeBuff) {
         const turns = ameDetacheeBuff.duration;
-        statsHtml += `<span class="hero-stat-chip" title="Âme Détachée (+5 Dégâts Phys. et +40% Dégâts Phys.) - Reste ${turns} tour(s)" style="border-color: rgba(244, 63, 94, 0.4); color: #fda4af;"><span class="material-symbols-outlined" style="color: inherit;">hand_bones</span>${turns}</span>`;
+        passiveOrbs.push({
+            icon: 'hand_bones', color: '#fda4af', value: `${turns}`,
+            title: `Âme Détachée : ${turns} tour(s)`, dangerClass: '',
+            tooltip: `<div class="text-sm font-medium" style="margin-bottom:0.3rem; color:#fda4af;">💀 Âme Détachée</div><div class="text-xs" style="color:#cbd5e1;">+5 Dégâts Phys. et +40% Dégâts Phys.<br/>Reste ${turns} tour(s)</div>`
+        });
     }
 
-    statsHtml += `</div>`;
+    // Build passive icons HTML (positioned on left side)
+    let passiveIconsHtml = '';
+    if (isHero && passiveOrbs.length > 0) {
+        const tooltipAttrs = 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"';
+        passiveIconsHtml = `<div class="absolute" style="left: -1rem; top: 4rem; display: flex; flex-direction: column; gap: 0.5rem; z-index: 10;">`;
+        passiveOrbs.forEach(orb => {
+            const valueHtml = orb.isCustomValue
+                ? `<span class="flex-center absolute" style="bottom: -4px; right: -4px; background: #1e293b; border-radius: 6px; padding: 1px 3px; display: flex; gap: 2px; border: 1px solid ${orb.color}40;">${orb.value}</span>`
+                : `<span class="flex-center font-bold absolute" style="bottom: -4px; right: -4px; background: ${orb.color}; color: #000; font-size: 0.65rem; border-radius: 50%; min-width: 16px; height: 16px; justify-content: center; border: 2px solid #0f172a; padding: 0 2px;">${orb.value}</span>`;
+            passiveIconsHtml += `
+                <div class="flex-center passive-orb shadow-sm relative${orb.dangerClass}" ${tooltipAttrs} style="width: 36px; height: 36px; border-radius: 50%; background: #0f172a; justify-content: center; border: 2px solid ${orb.color}; color: ${orb.color}; cursor: help; box-shadow: 0 2px 6px rgba(0,0,0,0.4);">
+                    <template class="tooltip-data">${orb.tooltip}</template>
+                    <span class="material-symbols-outlined" style="font-size: 1.2rem; color: ${orb.color};">${orb.icon}</span>
+                    ${valueHtml}
+                </div>
+            `;
+        });
+        passiveIconsHtml += `</div>`;
+    }
+
 
     let specialItemsHtml = '';
 
@@ -2582,6 +2636,7 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
     return `
         ${turnOrderBadgeHtml}
         ${mutationsHtml}
+        ${passiveIconsHtml}
         ${channelingBadgeHtml}
         <div class="fighter-name" style="color: ${isHero ? '#f8fafc' : '#ef4444'}; font-size: 1.3rem; display: flex; justify-content: center; align-items: center; gap: 0.2rem; margin-bottom: 0.8rem; width: 100%;">
             <span style="flex-shrink: 0; display: flex; align-items: center; ${isHero ? 'cursor: help;' : ''}" ${isHero ? `onmouseenter="if(window.showHeroEquipmentTooltip) window.showHeroEquipmentTooltip(this, ${c.id})" onmouseleave="if(window.hideHeroEquipmentTooltip) window.hideHeroEquipmentTooltip()"` : ''}>${avatarHtml}</span>
