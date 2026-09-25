@@ -2513,12 +2513,14 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
             const icon = mut.icon || 'pets';
             const color = mut.color || '#e879f9';
             const tooltipAttrs = 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"';
+            const mutLevel = mut.level || 1;
             mutationsHtml += `
-                <div class="flex-center combat-mutation shadow-sm" ${tooltipAttrs} style="width: 38px; height: 38px; border-radius: 8px; background: #0f172a; justify-content: center; border: 1px solid ${color}; color: ${color}; cursor: help; box-shadow: 0 4px 6px rgba(0,0,0,0.4);">
+                <div class="flex-center combat-mutation shadow-sm relative" ${tooltipAttrs} style="width: 38px; height: 38px; border-radius: 8px; background: #0f172a; justify-content: center; border: 1px solid ${color}; color: ${color}; cursor: help; box-shadow: 0 4px 6px rgba(0,0,0,0.4);">
                     <template class="tooltip-data">
                         ${window.generateMutationTooltipHtml ? window.generateMutationTooltipHtml(mut) : ''}
                     </template>
                     <span class="material-symbols-outlined" style="font-size: 1.4rem; color: ${color};">${icon}</span>
+                    <span class="absolute" style="bottom: -6px; right: -6px; background: ${color}; color: #000; font-size: 0.7rem; font-weight: 900; border-radius: 50%; width: 18px; height: 18px; display: flex; align-items: center; justify-content: center; border: 2px solid #0f172a;">${mutLevel}</span>
                 </div>
             `;
         });
