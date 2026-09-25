@@ -289,6 +289,7 @@ public class SpellService {
         Spell channeledSpell = processChannelingTurn(caster);
         if (channeledSpell == null) return;
         
+        caster.setBanalSpellCastThisTurn(true);
         int currentTurn = channeledSpell.getChannelingDuration() - caster.getRemainingChannelingTurns();
 
         for (SpellEffect effect : channeledSpell.getEffects()) {
@@ -307,6 +308,7 @@ public class SpellService {
         Spell channeledSpell = processChannelingTurn(caster);
         if (channeledSpell == null) return;
         
+        caster.setBanalSpellCastThisTurn(true);
         int currentTurn = channeledSpell.getChannelingDuration() - caster.getRemainingChannelingTurns();
 
         for (SpellEffect effect : channeledSpell.getEffects()) {
@@ -336,10 +338,6 @@ public class SpellService {
             caster.setChannelingTarget(null);
             caster.setChannelingAlly(null);
             caster.setChannelingChoiceKey(null);
-        }
-
-        if (currentTurn == 1) {
-            return null;
         }
 
         log.debug("🌀 [Canalisation] Résolution des effets pour le Tour {} de {}", currentTurn, channeledSpell.getNom());
@@ -620,13 +618,18 @@ public class SpellService {
             caster.setBanalSpellCastThisTurn(true);
         } else if (cType == SpellCastingType.CANALISE) {
             caster.setBanalSpellCastThisTurn(true);
-            caster.setRemainingChannelingTurns(toCast.getChannelingDuration());
-            caster.setAllowInstantDuringCurrentChanneling(toCast.isAllowInstantDuringChanneling());
-            caster.setChanneledSpell(toCast);
-            caster.setChannelingTarget(target);
-            caster.setChannelingAlly(ally);
-            caster.setChannelingChoiceKey(choiceKey);
-            log.debug("{} commence à canaliser {} pour {} tours.", caster.getName(), toCast.getNom(), toCast.getChannelingDuration());
+            int remaining = toCast.getChannelingDuration() - 1;
+            if (remaining > 0) {
+                caster.setRemainingChannelingTurns(remaining);
+                caster.setAllowInstantDuringCurrentChanneling(toCast.isAllowInstantDuringChanneling());
+                caster.setChanneledSpell(toCast);
+                caster.setChannelingTarget(target);
+                caster.setChannelingAlly(ally);
+                caster.setChannelingChoiceKey(choiceKey);
+                log.debug("{} commence à canaliser {} pour {} tours (restants: {}).", caster.getName(), toCast.getNom(), toCast.getChannelingDuration(), remaining);
+            } else {
+                log.debug("{} canalise {} (1 tour) - terminé immédiatement.", caster.getName(), toCast.getNom());
+            }
         }
     }
 
