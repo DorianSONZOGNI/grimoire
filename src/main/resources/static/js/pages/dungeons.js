@@ -159,7 +159,8 @@ async function loadDungeons() {
             categories.set('free', { id: 'free', label: 'Libres', icon: 'public', color: '#38bdf8', dungeons: [], newCount: 0 });
 
             let seenDungeons = [];
-            try { seenDungeons = JSON.parse(localStorage.getItem('seenUnlockedDungeons')) || []; } catch(e) {}
+            const seenKey = 'seenUnlockedDungeons_' + (window.currentUser?.username || 'guest');
+            try { seenDungeons = JSON.parse(localStorage.getItem(seenKey)) || []; } catch(e) {}
 
             dungeons.forEach(d => {
                 let catId, label, icon, color;
@@ -231,11 +232,12 @@ async function loadDungeons() {
                     // Mark as seen
                     if (cat.newCount > 0) {
                         let currentSeen = [];
-                        try { currentSeen = JSON.parse(localStorage.getItem('seenUnlockedDungeons')) || []; } catch(e) {}
+                        const seenKey = 'seenUnlockedDungeons_' + (window.currentUser?.username || 'guest');
+                        try { currentSeen = JSON.parse(localStorage.getItem(seenKey)) || []; } catch(e) {}
                         cat.dungeons.forEach(d => {
                             if (!currentSeen.includes(d.id)) currentSeen.push(d.id);
                         });
-                        localStorage.setItem('seenUnlockedDungeons', JSON.stringify(currentSeen));
+                        localStorage.setItem(seenKey, JSON.stringify(currentSeen));
                         // Update global header badge
                         const globalBadge = document.getElementById('navDungeonBadge');
                         if (globalBadge) {
