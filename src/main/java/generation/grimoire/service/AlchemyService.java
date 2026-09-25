@@ -77,7 +77,12 @@ public class AlchemyService {
             return filteredBySecret;
         }
 
-        java.util.Set<String> discovered = user.getDiscoveredItems();
+        java.util.Set<String> discovered = new java.util.HashSet<>(user.getDiscoveredItems());
+        
+        // Ensure all currently owned items are considered discovered (fixes items obtained via combat/quests)
+        anomalieRepository.findByOwnerUsername(user.getUsername()).forEach(a -> discovered.add(a.getName()));
+        equipmentRepository.findByOwnerUsername(user.getUsername()).forEach(e -> discovered.add(e.getName()));
+
         return filteredBySecret.stream().filter(recipe -> {
 
             // Vérifier que tous les ingrédients ont été découverts

@@ -12,10 +12,15 @@ if (activeCombatId &&
     window.location.href = '/combat.html';
 }
 
-let accessToken = null;
+let accessToken = localStorage.getItem('accessToken');
 
 window.setAccessToken = function (token) {
     accessToken = token;
+    if (token) {
+        localStorage.setItem('accessToken', token);
+    } else {
+        localStorage.removeItem('accessToken');
+    }
 };
 
 window.animateGoldValue = function(element, start, end, duration) {
@@ -76,6 +81,7 @@ window.globalFetch = async function (url, options = {}) {
                             if (refreshRes.ok) {
                                 const data = await refreshRes.json();
                                 accessToken = data.token;
+                                localStorage.setItem('accessToken', data.token);
                                 window.lastRefreshTime = Date.now();
                                 return true;
                             } else {
