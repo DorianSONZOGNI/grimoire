@@ -68,47 +68,43 @@ window.globalFetch = async function (url, options = {}) {
         let res = await fetch(url, options);
 
         if (res.status === 401 && !url.includes('/api/auth/refresh') && !url.includes('/api/auth/login') && !url.includes('/api/auth/register')) {
-            // Check if we just refreshed the token recently (within 5 seconds)
-            const now = Date.now();
-            if (window.lastRefreshTime && now - window.lastRefreshTime < 5000) {
-                // Token was just refreshed, simply retry with the new token
+            // Attempt token refresh — dedup concurrent refreshes
+            if (!window._refreshingToken) {
+                window._refreshingToken = fetch('/api/auth/refresh', { method: 'POST', credentials: 'same-origin' })
+                    .then(async (refreshRes) => {
+                        if (refreshRes.ok) {
+                            const data = await refreshRes.json();
+                            accessToken = data.token;
+                            localStorage.setItem('accessToken', data.token);
+                            return true;
+                        }
+                        return false;
+                    })
+                    .catch(() => false)
+                    .finally(() => {
+                        // Clear after a short delay so concurrent awaits all resolve first
+                        setTimeout(() => { window._refreshingToken = null; }, 200);
+                    });
+            }
+
+            const refreshSuccess = await window._refreshingToken;
+
+            if (refreshSuccess) {
+                // Retry with the latest token (may have been set by another concurrent refresh)
                 options.headers['Authorization'] = `Bearer ${accessToken}`;
                 res = await fetch(url, options);
             } else {
-                if (!window.refreshPromise) {
-                    window.refreshPromise = fetch('/api/auth/refresh', { method: 'POST', credentials: 'same-origin' })
-                        .then(async (refreshRes) => {
-                            if (refreshRes.ok) {
-                                const data = await refreshRes.json();
-                                accessToken = data.token;
-                                localStorage.setItem('accessToken', data.token);
-                                window.lastRefreshTime = Date.now();
-                                return true;
-                            } else {
-                                return false;
-                            }
-                        })
-                        .catch(() => {
-                            return false;
-                        })
-                        .finally(() => {
-                            window.refreshPromise = null;
-                        });
-                }
-
-                const refreshSuccess = await window.refreshPromise;
-
-                if (refreshSuccess) {
-                    // Retry original request
-                    options.headers['Authorization'] = `Bearer ${accessToken}`;
-                    res = await fetch(url, options);
-                } else {
-                    if (!url.includes('/api/auth/me')) {
+                if (!url.includes('/api/auth/me')) {
+                    localStorage.removeItem('accessToken');
+                    localStorage.removeItem('refreshToken');
+                    localStorage.removeItem('isLikelyLoggedIn');
+                    if (!window.isRedirectingToLogin) {
+                        window.isRedirectingToLogin = true;
                         window.location.href = '/login.html';
-                        await new Promise(() => {}); // Halt execution
                     }
-                    throw new Error('Session expirée');
+                    await new Promise(() => {}); // Halt execution
                 }
+                throw new Error('Session expirée');
             }
         } else if (res.status === 403) {
             let errorMsg = 'Accès refusé';
