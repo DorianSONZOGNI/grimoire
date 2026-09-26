@@ -471,10 +471,14 @@ export function updateUI(data) {
 
             const allEnemiesDead = !data.enemies || data.enemies.length === 0 || data.enemies.every(e => e.dead || e.currentHp <= 0);
 
-            if (allEnemiesDead && !data.finished) {
+            if (allEnemiesDead) {
                 document.getElementById('btnAttack').disabled = true;
                 const vicOverlay = document.getElementById('combatVictoryOverlay');
                 if (vicOverlay) {
+                    // Si l'overlay est déjà visible, ne pas re-render (évite le clignotement)
+                    if (vicOverlay.classList.contains('show')) {
+                        // Overlay déjà affiché, on ne re-render pas le XP
+                    } else {
                     if (typeof window.renderOverlayInventory === 'function') {
                         window.renderOverlayInventory('combatVictoryInventoryList');
                         window.renderOverlayInventory('combatMainInventoryList');
@@ -559,6 +563,7 @@ export function updateUI(data) {
 
                         renderAndAnimateXPCards('combatVictoryXpContainer', data.players, 'vic', data.firstClear);
                     }
+                    } // fin else (overlay pas encore visible)
                 }
             } else {
                 const vicOverlay = document.getElementById('combatVictoryOverlay');

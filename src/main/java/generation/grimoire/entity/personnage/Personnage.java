@@ -602,6 +602,7 @@ public class Personnage {
 
     public void resetCombatState() {
         this.purgeAllBuffsAndDebuffs();
+        if (activeShields != null) activeShields.clear();
         this.cancelChanneling();
         this.banalSpellCastThisTurn = false;
         this.instantSpellCastThisTurn = false;
@@ -880,8 +881,7 @@ public class Personnage {
         if (activeDamageOverTimeEffects != null) activeDamageOverTimeEffects.clear();
         if (activeManaOverTimeEffects != null) activeManaOverTimeEffects.clear();
         if (activeHeatOverTimeEffects != null) activeHeatOverTimeEffects.clear();
-        if (activeShields != null) activeShields.clear();
-        System.out.println(name + " est purifié de tous ses bonus, malus et boucliers !");
+        System.out.println(name + " est purifié de tous ses bonus et malus !");
     }
 
     public void setVoie(Voie voie) {
