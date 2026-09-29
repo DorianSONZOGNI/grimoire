@@ -757,7 +757,6 @@ class CombatTurnService {
                         p.setSpiritualiteExperience(p.getSpiritualiteExperience() + actualSpXp);
                         personnageService.save(p);
                     }
-                    session.setBossBonusSpiritualXp(session.getBossBonusSpiritualXp() + c.getRewardValue());
                     session.addLog("🔮 Challenge : +" + c.getRewardValue() + " XP Spiritualité.");
                 } else if ("BONUS_GOLD".equals(c.getRewardType()) && !bossEligible.isEmpty()) {
                     java.util.Set<Long> processedUserIds = new java.util.HashSet<>();
@@ -770,7 +769,6 @@ class CombatTurnService {
                         }
                     }
                     session.setTotalGoldAccumulated(session.getTotalGoldAccumulated() + c.getRewardValue());
-                    session.setBossBonusGold(session.getBossBonusGold() + c.getRewardValue());
                     session.addLog("💰 Challenge : +" + c.getRewardValue() + " Or.");
                 } else if ("REGEN_HP_MANA".equals(c.getRewardType())) {
                     for (Personnage p : bossEligible) {
