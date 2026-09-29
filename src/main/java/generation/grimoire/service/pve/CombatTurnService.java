@@ -780,8 +780,9 @@ class CombatTurnService {
                     }
                     session.addLog("💖 Challenge : L'équipe régénère " + c.getRewardValue() + "% de ses PV et Mana.");
                 } else if ("EXTRA_LOOT".equals(c.getRewardType())) {
-                    session.addLog("🎁 Challenge : " + c.getRewardValue() + " Loots supplémentaires. (A implémenter : extra loot sur le drop !)");
-                    // TODO: Implement EXTRA_LOOT in loot dropping logic
+                    session.setChallengeExtraLootPercent(
+                            session.getChallengeExtraLootPercent() + c.getRewardValue());
+                    session.addLog("🎁 Challenge : +" + c.getRewardValue() + "% de probabilité de loot pour la suite du donjon !");
                 }
             }
         }
