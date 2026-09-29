@@ -743,6 +743,7 @@ class CombatTurnService {
             }
 
             if (!c.isFailed()) {
+                c.setCompleted(true);
                 // Give reward
                 session.addLog("🎁 Récompense de challenge obtenue !");
                 if ("BONUS_SPIRIT_XP".equals(c.getRewardType()) && !bossEligible.isEmpty()) {
@@ -756,7 +757,6 @@ class CombatTurnService {
                         p.setSpiritualiteExperience(p.getSpiritualiteExperience() + actualSpXp);
                         personnageService.save(p);
                     }
-                    session.setBossBonusSpiritualXp(session.getBossBonusSpiritualXp() + c.getRewardValue());
                     session.addLog("🔮 Challenge : +" + c.getRewardValue() + " XP Spiritualité.");
                 } else if ("BONUS_GOLD".equals(c.getRewardType()) && !bossEligible.isEmpty()) {
                     java.util.Set<Long> processedUserIds = new java.util.HashSet<>();
@@ -769,7 +769,6 @@ class CombatTurnService {
                         }
                     }
                     session.setTotalGoldAccumulated(session.getTotalGoldAccumulated() + c.getRewardValue());
-                    session.setBossBonusGold(session.getBossBonusGold() + c.getRewardValue());
                     session.addLog("💰 Challenge : +" + c.getRewardValue() + " Or.");
                 } else if ("REGEN_HP_MANA".equals(c.getRewardType())) {
                     for (Personnage p : bossEligible) {
@@ -780,8 +779,9 @@ class CombatTurnService {
                     }
                     session.addLog("💖 Challenge : L'équipe régénère " + c.getRewardValue() + "% de ses PV et Mana.");
                 } else if ("EXTRA_LOOT".equals(c.getRewardType())) {
-                    session.addLog("🎁 Challenge : " + c.getRewardValue() + " Loots supplémentaires. (A implémenter : extra loot sur le drop !)");
-                    // TODO: Implement EXTRA_LOOT in loot dropping logic
+                    session.setChallengeExtraLootPercent(
+                            session.getChallengeExtraLootPercent() + c.getRewardValue());
+                    session.addLog("🎁 Challenge : +" + c.getRewardValue() + "% de probabilité de loot pour la suite du donjon !");
                 }
             }
         }
