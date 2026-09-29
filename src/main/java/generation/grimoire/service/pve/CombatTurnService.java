@@ -743,6 +743,7 @@ class CombatTurnService {
             }
 
             if (!c.isFailed()) {
+                c.setCompleted(true);
                 // Give reward
                 session.addLog("🎁 Récompense de challenge obtenue !");
                 if ("BONUS_SPIRIT_XP".equals(c.getRewardType()) && !bossEligible.isEmpty()) {

@@ -2046,6 +2046,20 @@ export function updateUI(data) {
 
     processNewDeathLogs(data.combatLog);
     updateNextRoomButtons(data);
+    renderActiveChallenges(data);
+}
+
+function renderActiveChallenges(data) {
+    const bossChallengesContainer = document.getElementById('bossChallengesContainer');
+    if (bossChallengesContainer) {
+        bossChallengesContainer.innerHTML = '';
+        if (data && data.activeChallenges && data.activeChallenges.length > 0) {
+            const challHtml = getBossChallengesHtml(data.activeChallenges);
+            if (challHtml) {
+                bossChallengesContainer.innerHTML = challHtml;
+            }
+        }
+    }
 }
 
 function updateNextRoomButtons(data) {
@@ -2099,18 +2113,36 @@ export function getBossChallengesHtml(activeChallenges) {
         else if (chall.rewardType === 'REGEN_HP_MANA') rewLabel = `+${chall.rewardValue}% Régénération`;
         else if (chall.rewardType === 'EXTRA_LOOT') rewLabel = `+${chall.rewardValue} Loot Sup.`;
 
+        let statusHtml = '';
+        let badgeStyle = '';
+        let iconStyle = '';
+        let iconName = '';
+        
+        if (chall.failed) {
+            statusHtml = '<div class="text-error font-bold mt-2">❌ Challenge Échoué</div>';
+            badgeStyle = 'border-color: rgba(239, 68, 68, 0.4); color: #ef4444; background: rgba(239, 68, 68, 0.1); text-decoration: line-through;';
+            iconStyle = 'text-error';
+            iconName = 'cancel';
+        } else if (chall.completed) {
+            statusHtml = '<div class="text-success font-bold mt-2">✨ Challenge Réussi</div>';
+            badgeStyle = 'border-color: rgba(16, 185, 129, 0.4); color: #10b981; background: rgba(16, 185, 129, 0.1);';
+            iconStyle = 'text-success';
+            iconName = 'check_circle';
+        } else {
+            statusHtml = '<div class="text-success font-bold mt-2">✅ Challenge En cours</div>';
+            badgeStyle = 'border-color: rgba(245, 158, 11, 0.4); color: #f59e0b; background: rgba(245, 158, 11, 0.1);';
+            iconStyle = 'text-warning';
+            iconName = 'military_tech';
+        }
+
         const tooltipContent = `
             <div style="font-size: 0.85rem;">
                 <div class="text-amber-400 font-bold mb-1">Challenge : ${challLabel}</div>
                 <div class="text-green-400">Récompense : ${rewLabel}</div>
-                ${chall.failed ? '<div class="text-error font-bold mt-2">❌ Challenge Échoué</div>' : '<div class="text-success font-bold mt-2">✅ Challenge En cours</div>'}
+                ${statusHtml}
             </div>
         `;
         const tooltipAttrs = 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"';
-
-        const badgeStyle = chall.failed ? 'border-color: rgba(239, 68, 68, 0.4); color: #ef4444; background: rgba(239, 68, 68, 0.1); text-decoration: line-through;' : 'border-color: rgba(245, 158, 11, 0.4); color: #f59e0b; background: rgba(245, 158, 11, 0.1);';
-        const iconStyle = chall.failed ? 'text-error' : 'text-warning';
-        const iconName = chall.failed ? 'cancel' : 'military_tech';
 
         html += `
             <div class="sandbox-status-badge buff relative" ${tooltipAttrs} style="cursor: help; ${badgeStyle}">
@@ -2701,13 +2733,7 @@ export function renderEnemies(enemies, turnMap = null) {
         bossBuffsContainer.innerHTML = '';
     }
 
-    const bossChallengesContainer = document.getElementById('bossChallengesContainer');
-    if (bossChallengesContainer) {
-        bossChallengesContainer.innerHTML = '';
-    }
-
     let bossBuffsRendered = false;
-    let bossChallengesRendered = false;
 
     enemies.forEach((activeMonster, index) => {
         const m = activeMonster.base;
@@ -2813,13 +2839,6 @@ export function renderEnemies(enemies, turnMap = null) {
             animateGaugeJS(manaBar, manaTextEl, forcedMana, pMonster.manaCurrent, pMonster.manaMax, 800);
         }
     });
-
-    if (bossChallengesContainer && pageState.currentSessionData && pageState.currentSessionData.activeChallenges) {
-        const challHtml = getBossChallengesHtml(pageState.currentSessionData.activeChallenges);
-        if (challHtml) {
-            bossChallengesContainer.innerHTML = challHtml;
-        }
-    }
 }
 
 function animateGaugeJS(barEl, textEl, oldVal, newVal, max, duration = 600, suffix = '') {

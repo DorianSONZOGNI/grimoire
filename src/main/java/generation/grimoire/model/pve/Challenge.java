@@ -6,6 +6,7 @@ public class Challenge {
     private String rewardType; // BONUS_SPIRIT_XP, BONUS_GOLD, REGEN_HP_MANA, EXTRA_LOOT
     private int rewardValue;
     private boolean failed = false;
+    private boolean completed = false;
 
     // Getters and Setters
     public String getType() { return type; }
@@ -18,4 +19,6 @@ public class Challenge {
     public void setRewardValue(int rewardValue) { this.rewardValue = rewardValue; }
     public boolean isFailed() { return failed; }
     public void setFailed(boolean failed) { this.failed = failed; }
+    public boolean isCompleted() { return completed; }
+    public void setCompleted(boolean completed) { this.completed = completed; }
 }
