@@ -561,6 +561,45 @@ export function updateUI(data) {
                             `;
                         }
 
+                        if (data.activeChallenges) {
+                            data.activeChallenges.forEach(chall => {
+                                if (chall.completed) {
+                                    let challIcon = 'military_tech';
+                                    let challReward = '';
+                                    if (chall.rewardType === 'BONUS_GOLD') {
+                                        challReward = `<span class="material-symbols-outlined text-warning" style="font-size: 1.1em; margin-right: 0.2rem;">monetization_on</span> <span class="text-warning">+${chall.rewardValue} Or</span>`;
+                                    } else if (chall.rewardType === 'BONUS_SPIRIT_XP') {
+                                        const perHero = Math.floor(chall.rewardValue / Math.max(1, (data.players || []).length));
+                                        challReward = `<span class="material-symbols-outlined text-gold" style="font-size: 1.1em; margin-right: 0.2rem;">stars</span> <span class="text-gold">+${perHero} XP Spirit.</span>`;
+                                    } else if (chall.rewardType === 'REGEN_HP_MANA') {
+                                        challReward = `<span class="material-symbols-outlined text-success" style="font-size: 1.1em; margin-right: 0.2rem;">favorite</span> <span class="text-success">+${chall.rewardValue}% PV & Mana</span>`;
+                                    } else if (chall.rewardType === 'EXTRA_LOOT') {
+                                        challReward = `<span class="material-symbols-outlined text-sky-400" style="font-size: 1.1em; margin-right: 0.2rem;">redeem</span> <span class="text-sky-400">+${chall.rewardValue}% Loot</span>`;
+                                    }
+                                    
+                                    if (challReward !== '') {
+                                        let challName = chall.type;
+                                        if (chall.type === 'MAX_HEROES') challName = 'Héros rest.';
+                                        else if (chall.type === 'MAX_HP_LOSS_PCT') challName = 'Intouchable';
+                                        else if (chall.type === 'MIN_HP_LOSS_PCT') challName = 'Risque-tout';
+
+                                        let innerContent = `
+                                            <span class="material-symbols-outlined text-sky-400" >${challIcon}</span>
+                                            <span class="text-sky-400 font-bold" style="margin-right: 0.5rem; text-transform: uppercase;">${challName}</span>
+                                            ${challReward}
+                                        `;
+                                        xpContainer.innerHTML += `
+                                            <div class="victory-xp-block">
+                                                <div class="victory-xp-block-inner" style="border-color: rgba(56, 189, 248, 0.4); background: rgba(56, 189, 248, 0.05);">
+                                                    ${innerContent}
+                                                </div>
+                                            </div>
+                                        `;
+                                    }
+                                }
+                            });
+                        }
+
                         renderAndAnimateXPCards('combatVictoryXpContainer', data.players, 'vic', data.firstClear);
                     }
                     } // fin else (overlay pas encore visible)
