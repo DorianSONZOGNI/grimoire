@@ -76,7 +76,7 @@ public class CombatRoomService {
             } else {
                 if (session.getActiveChallenges() == null)
                     session.setActiveChallenges(new ArrayList<>());
-                session.getActiveChallenges().clear();
+                session.getActiveChallenges().removeIf(c -> !("EXTRA_LOOT".equals(c.getRewardType()) && c.isCompleted()));
             }
 
             if (session.getCurrentRoom().getMonsters() != null) {
@@ -206,7 +206,7 @@ public class CombatRoomService {
     private void loadChallenges(CombatSession session, String challengesJson) {
         if (session.getActiveChallenges() == null)
             session.setActiveChallenges(new ArrayList<>());
-        session.getActiveChallenges().clear();
+        session.getActiveChallenges().removeIf(c -> !("EXTRA_LOOT".equals(c.getRewardType()) && c.isCompleted()));
         if (challengesJson == null || challengesJson.trim().isEmpty())
             return;
         try {
@@ -1127,7 +1127,7 @@ public class CombatRoomService {
                 } else {
                     if (session.getActiveChallenges() == null)
                         session.setActiveChallenges(new ArrayList<>());
-                    session.getActiveChallenges().clear();
+                    session.getActiveChallenges().removeIf(c -> !("EXTRA_LOOT".equals(c.getRewardType()) && c.isCompleted()));
                 }
 
                 if (room.getMonsters() == null) {
