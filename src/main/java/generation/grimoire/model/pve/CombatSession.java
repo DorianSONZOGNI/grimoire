@@ -114,6 +114,7 @@ public class CombatSession {
     private boolean firstClear = false; // Is this the first time completing this dungeon?
     private int bossBonusSpiritualXp = 0; // XP Spiritualité bonus boss (total distribué)
     private int bossBonusGold = 0; // Or bonus boss
+    private double challengeExtraLootPercent = 0.0; // Bonus % loot from EXTRA_LOOT challenges (persistent)
 
     private List<String> combatLog = new ArrayList<>();
 

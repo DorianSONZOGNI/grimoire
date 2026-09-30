@@ -76,7 +76,7 @@ public class CombatRoomService {
             } else {
                 if (session.getActiveChallenges() == null)
                     session.setActiveChallenges(new ArrayList<>());
-                session.getActiveChallenges().clear();
+                session.getActiveChallenges().removeIf(c -> !("EXTRA_LOOT".equals(c.getRewardType()) && c.isCompleted()));
             }
 
             if (session.getCurrentRoom().getMonsters() != null) {
@@ -114,7 +114,7 @@ public class CombatRoomService {
                     java.util.List<LootEntry> lootTable = session.getCurrentRoom().getLootTable();
                     for (int i = 0; i < lootTable.size(); i++) {
                         LootEntry entry = lootTable.get(i);
-                        if (Math.random() * 100 < entry.getProbability()) {
+                        if (Math.random() * 100 < entry.getProbability() + session.getChallengeExtraLootPercent()) {
                             session.getAvailableMerchantItems().add(i);
                         }
                     }
@@ -206,7 +206,7 @@ public class CombatRoomService {
     private void loadChallenges(CombatSession session, String challengesJson) {
         if (session.getActiveChallenges() == null)
             session.setActiveChallenges(new ArrayList<>());
-        session.getActiveChallenges().clear();
+        session.getActiveChallenges().removeIf(c -> !("EXTRA_LOOT".equals(c.getRewardType()) && c.isCompleted()));
         if (challengesJson == null || challengesJson.trim().isEmpty())
             return;
         try {
@@ -335,7 +335,7 @@ public class CombatRoomService {
             if (session.getCurrentRoom().getLootTable() != null) {
                 for (LootEntry entry : session.getCurrentRoom().getLootTable()) {
                     double roll = rnd.nextDouble() * 100.0;
-                    double proba = entry.getProbability() + extraLootPercent;
+                    double proba = entry.getProbability() + extraLootPercent + session.getChallengeExtraLootPercent();
                     if (roll <= proba) {
                         if (entry.getEquipment() != null) {
                             Equipment template = entry.getEquipment();
@@ -1127,7 +1127,7 @@ public class CombatRoomService {
                 } else {
                     if (session.getActiveChallenges() == null)
                         session.setActiveChallenges(new ArrayList<>());
-                    session.getActiveChallenges().clear();
+                    session.getActiveChallenges().removeIf(c -> !("EXTRA_LOOT".equals(c.getRewardType()) && c.isCompleted()));
                 }
 
                 if (room.getMonsters() == null) {
