@@ -103,7 +103,23 @@ public class AuthController {
             res.put("unlockedVault", u.isUnlockedVault());
             res.put("unlockedAlchemy", u.isUnlockedAlchemy());
             res.put("unlockedShop", u.isUnlockedShop());
-            res.put("huntingClaimable", huntingQuestEntryRepository.countClaimable(u.getUsername()));
+            int huntingClaimableCount = 0;
+            for (generation.grimoire.entity.pve.HuntingQuestEntry e : huntingQuestEntryRepository.findByAccountName(u.getUsername())) {
+                if ("DAILY".equals(e.getQuest().getType())) {
+                    if (e.getCompletionCount() > 0 && !e.isRewardBronzeClaimed()) huntingClaimableCount++;
+                    if ((e.isChallenge1Completed() || e.isChallenge2Completed()) && !e.isRewardSilverClaimed()) huntingClaimableCount++;
+                    if (e.isChallenge1Completed() && e.isChallenge2Completed() && !e.isRewardGoldClaimed()) huntingClaimableCount++;
+                } else if ("WEEKLY".equals(e.getQuest().getType()) && !e.getQuest().isActive() && !e.isRewardClaimed()) {
+                    if (e.getQuest().getEndDate().plusWeeks(1).isAfter(java.time.LocalDate.now(java.time.ZoneId.of("Europe/Paris")))) {
+                        if (e.getRank() >= 1) {
+                            long totalParticipants = huntingQuestEntryRepository.findByQuestIdOrderByBestTurnCountAsc(e.getQuest().getId()).size();
+                            int threshold = (int) Math.ceil(totalParticipants * 0.2);
+                            if (e.getRank() <= threshold) huntingClaimableCount++;
+                        }
+                    }
+                }
+            }
+            res.put("huntingClaimable", huntingClaimableCount);
             
             res.put("seenAlchemyRecipes", u.getSeenAlchemyRecipes());
             if (u.isUnlockedAlchemy()) {
