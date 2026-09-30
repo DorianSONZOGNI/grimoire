@@ -25,9 +25,15 @@ public interface HuntingQuestEntryRepository extends JpaRepository<HuntingQuestE
     List<HuntingQuestEntry> findByQuestId(Long questId);
 
     @org.springframework.data.jpa.repository.Query(
-        "SELECT COUNT(e) FROM HuntingQuestEntry e WHERE e.accountName = :accountName AND e.rewardClaimed = false " +
-        "AND ((e.quest.type = 'DAILY') " +
-        "OR (e.quest.type = 'WEEKLY' AND e.quest.active = false AND e.rank >= 1 " +
-        "    AND e.rank <= CAST(CEIL((SELECT COUNT(e2) FROM HuntingQuestEntry e2 WHERE e2.quest.id = e.quest.id AND e2.bestTurnCount IS NOT NULL) * 0.2) AS integer)))")
+        "SELECT COUNT(e) FROM HuntingQuestEntry e WHERE e.accountName = :accountName " +
+        "AND (" +
+        "  (e.quest.type = 'DAILY' AND (" +
+        "      (e.completionCount > 0 AND e.rewardBronzeClaimed = false) OR " +
+        "      ((e.challenge1Completed = true OR e.challenge2Completed = true) AND e.rewardSilverClaimed = false) OR " +
+        "      ((e.challenge1Completed = true AND e.challenge2Completed = true) AND e.rewardGoldClaimed = false)" +
+        "  )) " +
+        "  OR (e.quest.type = 'WEEKLY' AND e.quest.active = false AND e.rewardClaimed = false AND e.rank >= 1 " +
+        "      AND e.rank <= CAST(CEIL((SELECT COUNT(e2) FROM HuntingQuestEntry e2 WHERE e2.quest.id = e.quest.id AND e2.bestTurnCount IS NOT NULL) * 0.2) AS integer))" +
+        ")")
     int countClaimable(@org.springframework.data.repository.query.Param("accountName") String accountName);
 }

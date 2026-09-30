@@ -565,6 +565,11 @@ public class HuntingQuestService {
         m.put("firstCompletionTime", e.getFirstCompletionTime() != null ? e.getFirstCompletionTime().toString() : null);
         m.put("rank", e.getRank());
         m.put("rewardClaimed", e.isRewardClaimed());
+        m.put("challenge1Completed", e.isChallenge1Completed());
+        m.put("challenge2Completed", e.isChallenge2Completed());
+        m.put("rewardBronzeClaimed", e.isRewardBronzeClaimed());
+        m.put("rewardSilverClaimed", e.isRewardSilverClaimed());
+        m.put("rewardGoldClaimed", e.isRewardGoldClaimed());
         return m;
     }
 
