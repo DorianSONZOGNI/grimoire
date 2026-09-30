@@ -88,10 +88,39 @@ class CombatActionService {
                 final Personnage finalTarget = target;
                 final Personnage finalAlly = allyTarget;
                 session.addLog(p.getName() + " lance " + spellToCast.getNom() + " !");
+                
+                // Track direct attacks for Impatient Chall 2
+                boolean isDirectDamage = spellToCast.getEffects().stream().anyMatch(e -> "DAMAGE".equals(e.getEffectType()));
+                
+                // Keep track of enemy HP before spell to check who died
+                java.util.Map<Long, Integer> hpBefore = new java.util.HashMap<>();
+                for (generation.grimoire.model.pve.ActiveMonster am : session.getEnemies()) {
+                    if (am != null && am.getAsPersonnage() != null && am.getAsPersonnage().getId() != null) {
+                        hpBefore.put(am.getAsPersonnage().getId(), am.getCurrentHp());
+                        if (isDirectDamage) {
+                            String key = session.getCurrentRoomIndex() + "-" + am.getAsPersonnage().getId();
+                            session.getDirectAttacksOnMob().put(key, session.getDirectAttacksOnMob().getOrDefault(key, 0) + 1);
+                            if (session.getDirectAttacksOnMob().get(key) > 2) {
+                                session.setImpatientChall2Failed(true);
+                            }
+                        }
+                    }
+                }
+
                 CombatLogCapture.captureLogs(session, () -> {
                     spellService.castSpellGroup(spellToCast, p, finalTarget, finalAlly, allAllies, allEnemies,
                             choiceKey);
                 });
+                
+                // Check if any monster died from this SPELL
+                for (generation.grimoire.model.pve.ActiveMonster am : session.getEnemies()) {
+                    if (am != null && am.getAsPersonnage() != null && am.getAsPersonnage().getId() != null) {
+                        int before = hpBefore.getOrDefault(am.getAsPersonnage().getId(), 0);
+                        if (before > 0 && (am.getCurrentHp() <= 0 || am.isDead())) {
+                            session.setHeadhunterChall2Failed(true); // Died from a spell
+                        }
+                    }
+                }
                 if (session.getTurnCastSpellIds() != null) {
                     session.getTurnCastSpellIds().add(spellId);
                 }

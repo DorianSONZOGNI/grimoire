@@ -30,12 +30,12 @@ public class HuntingQuestController {
     }
 
     @PostMapping("/claim/{questId}")
-    public ResponseEntity<?> claimReward(@PathVariable Long questId, Principal principal) {
+    public ResponseEntity<?> claimReward(@PathVariable Long questId, @RequestParam(required = false) String tier, Principal principal) {
         if (principal == null) {
             return ResponseEntity.status(401).body(Map.of("error", "Non connecté."));
         }
         try {
-            String message = huntingQuestService.claimReward(questId, principal.getName());
+            String message = huntingQuestService.claimReward(questId, principal.getName(), tier);
             return ResponseEntity.ok(Map.of("message", message));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Map.of("error", e.getMessage()));

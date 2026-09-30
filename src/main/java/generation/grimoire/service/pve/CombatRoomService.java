@@ -1020,7 +1020,7 @@ public class CombatRoomService {
                 for (generation.grimoire.entity.personnage.Personnage p : session.getPlayers()) {
                     String owner = p.getOwnerUsername();
                     if (owner != null && recorded.add(owner)) {
-                        huntingQuestService.recordCompletion(session.getDungeonId(), owner, session.getGlobalTurnCount());
+                        huntingQuestService.recordCompletion(session.getDungeonId(), owner, session.getGlobalTurnCount(), session);
                     }
                 }
             } catch (Exception e) {

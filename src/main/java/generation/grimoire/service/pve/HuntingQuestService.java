@@ -201,23 +201,58 @@ public class HuntingQuestService {
     // ═══════════════════════════════════════════════════════════════════════
 
     @Transactional
-    public void recordCompletion(Long dungeonId, String accountName, int totalTurns) {
+    public void recordCompletion(Long dungeonId, String accountName, int totalTurns, generation.grimoire.model.pve.CombatSession session) {
         // Vérifier la quête daily
         questRepository.findByTypeAndActiveTrue("DAILY").ifPresent(quest -> {
             if (quest.getDungeonId().equals(dungeonId)) {
-                HuntingQuestEntry entry = entryRepository
-                        .findByQuestIdAndAccountName(quest.getId(), accountName)
-                        .orElse(null);
-
-                if (entry == null) {
-                    entry = new HuntingQuestEntry();
-                    entry.setQuest(quest);
-                    entry.setAccountName(accountName);
-                    entry.setCompletionCount(1);
+                HuntingQuestEntry entry = entryRepository.findByQuestIdAndAccountName(quest.getId(), accountName).orElse(new HuntingQuestEntry());
+                entry.setQuest(quest);
+                entry.setAccountName(accountName);
+                entry.setCompletionCount(entry.getCompletionCount() + 1);
+                
+                if (entry.getFirstCompletionTime() == null) {
                     entry.setFirstCompletionTime(Instant.now());
-                    entryRepository.save(entry);
-                    recalculateDailyRanks(quest.getId());
                 }
+
+                // Check challenges based on duo
+                if (quest.getDailyChallengeDuo() != null && session != null) {
+                    boolean c1Failed = false;
+                    boolean c2Failed = false;
+                    switch (quest.getDailyChallengeDuo()) {
+                        case "HEADHUNTER":
+                            c1Failed = session.isHeadhunterChall1Failed();
+                            c2Failed = session.isHeadhunterChall2Failed();
+                            break;
+                        case "SURGEON":
+                            c1Failed = session.isSurgeonChall1Failed();
+                            c2Failed = session.isSurgeonChall2Failed();
+                            break;
+                        case "LONER":
+                            c1Failed = session.isLonerChall1Failed();
+                            c2Failed = session.isLonerChall2Failed();
+                            break;
+                        case "IMPATIENT":
+                            c1Failed = session.isImpatientChall1Failed();
+                            c2Failed = session.isImpatientChall2Failed();
+                            break;
+                    }
+                    boolean c1Run = !c1Failed;
+                    boolean c2Run = !c2Failed;
+                    int currentChalls = (c1Run ? 1 : 0) + (c2Run ? 1 : 0);
+                    int prevChalls = (entry.isChallenge1Completed() ? 1 : 0) + (entry.isChallenge2Completed() ? 1 : 0);
+                    
+                    if (currentChalls == 2) {
+                        entry.setChallenge1Completed(true);
+                        entry.setChallenge2Completed(true);
+                    } else if (currentChalls == 1 && prevChalls < 2) {
+                        if (prevChalls == 0) {
+                            entry.setChallenge1Completed(c1Run);
+                            entry.setChallenge2Completed(c2Run);
+                        }
+                    }
+                }
+
+                entryRepository.save(entry);
             }
         });
 
@@ -251,13 +286,7 @@ public class HuntingQuestService {
         });
     }
 
-    private void recalculateDailyRanks(Long questId) {
-        List<HuntingQuestEntry> entries = entryRepository.findByQuestIdOrderByFirstCompletionTimeAsc(questId);
-        for (int i = 0; i < entries.size(); i++) {
-            entries.get(i).setRank(i + 1); // 1er arrivé = rang 1
-        }
-        entryRepository.saveAll(entries);
-    }
+
 
     private void recalculateWeeklyRanks(Long questId) {
         // Classement par nombre de tours ASC, puis timestamp ASC comme départage
@@ -289,44 +318,76 @@ public class HuntingQuestService {
     // ═══════════════════════════════════════════════════════════════════════
 
     @Transactional
-    public String claimReward(Long questId, String username) {
+    public String claimReward(Long questId, String username, String tier) {
         HuntingQuestEntry entry = entryRepository.findByQuestIdAndAccountName(questId, username)
                 .orElseThrow(() -> new IllegalArgumentException("Pas d'entrée trouvée pour cette quête."));
 
-        if (entry.isRewardClaimed()) {
+        HuntingQuest quest = entry.getQuest();
+        if ("WEEKLY".equals(quest.getType()) && entry.isRewardClaimed()) {
             throw new IllegalStateException("Récompense déjà récupérée.");
         }
 
-        HuntingQuest quest = entry.getQuest();
-
         // Vérifier éligibilité
         if ("DAILY".equals(quest.getType())) {
-            // Vérifier que la quête daily est encore active ou date pas trop vieille
-            if (!quest.isActive() && quest.getEndDate().isBefore(LocalDate.now(ZONE))) {
+            if (!quest.isActive() && quest.getEndDate().isBefore(java.time.LocalDate.now(ZONE))) {
                 throw new IllegalStateException("La quête journalière a expiré.");
             }
 
-            int baseGold = 5 * quest.getDungeonRoomCount() * quest.getDungeonLevel();
-            int totalGold;
-            if (entry.getRank() == 1)
-                totalGold = baseGold + 100;
-            else if (entry.getRank() == 2)
-                totalGold = baseGold + 50;
-            else if (entry.getRank() == 3)
-                totalGold = baseGold + 25;
-            else
-                totalGold = (baseGold + 25) / 2;
+            int baseGold = quest.getDungeonLevel() * Math.max(1, quest.getRequiredSecretLevel()) * quest.getDungeonRoomCount();
+            int goldToGive = 0;
+
+            if ("BRONZE".equalsIgnoreCase(tier)) {
+                if (entry.isRewardBronzeClaimed()) throw new IllegalStateException("Récompense Bronze déjà récupérée.");
+                if (entry.getCompletionCount() == 0) throw new IllegalStateException("Vous n'avez pas terminé le donjon.");
+                goldToGive = baseGold;
+                entry.setRewardBronzeClaimed(true);
+            } else if ("SILVER".equalsIgnoreCase(tier)) {
+                if (entry.isRewardSilverClaimed()) throw new IllegalStateException("Récompense Argent déjà récupérée.");
+                int completedChalls = (entry.isChallenge1Completed() ? 1 : 0) + (entry.isChallenge2Completed() ? 1 : 0);
+                if (completedChalls < 1) throw new IllegalStateException("Vous n'avez pas réussi au moins 1 challenge.");
+                
+                goldToGive = (int) (baseGold * 2.00); 
+                entry.setRewardSilverClaimed(true);
+                
+                // Cumulatif : récupère aussi le Bronze s'il n'est pas déjà pris
+                if (!entry.isRewardBronzeClaimed()) {
+                    goldToGive += baseGold;
+                    entry.setRewardBronzeClaimed(true);
+                }
+            } else if ("GOLD".equalsIgnoreCase(tier)) {
+                if (entry.isRewardGoldClaimed()) throw new IllegalStateException("Récompense Or déjà récupérée.");
+                int completedChalls = (entry.isChallenge1Completed() ? 1 : 0) + (entry.isChallenge2Completed() ? 1 : 0);
+                if (completedChalls < 2) throw new IllegalStateException("Vous n'avez pas réussi les 2 challenges.");
+                
+                goldToGive = (int) (baseGold * 3.00);
+                entry.setRewardGoldClaimed(true);
+                
+                // Cumulatif : récupère aussi l'Argent et le Bronze s'ils ne sont pas déjà pris
+                if (!entry.isRewardSilverClaimed()) {
+                    goldToGive += (int) (baseGold * 2.00);
+                    entry.setRewardSilverClaimed(true);
+                }
+                if (!entry.isRewardBronzeClaimed()) {
+                    goldToGive += baseGold;
+                    entry.setRewardBronzeClaimed(true);
+                }
+            } else {
+                throw new IllegalStateException("Tier inconnu: " + tier);
+            }
 
             AppUser user = userRepository.findByUsername(username)
                     .orElseThrow(() -> new IllegalArgumentException("Utilisateur introuvable."));
-            user.setMonnaie(user.getMonnaie() + totalGold);
+            user.setMonnaie(user.getMonnaie() + goldToGive);
             userRepository.save(user);
 
-            entry.setRewardClaimed(true);
+            // Si tout est claim, on peut set rewardClaimed à true pour simplifier
+            if (entry.isRewardBronzeClaimed() && entry.isRewardSilverClaimed() && entry.isRewardGoldClaimed()) {
+                entry.setRewardClaimed(true);
+            }
+
             entryRepository.save(entry);
 
-            return totalGold + " pièces d'or récupérées !";
-
+            return goldToGive + " pièces d'or récupérées !";
         } else if ("WEEKLY".equals(quest.getType())) {
             int threshold = getTop20Threshold(quest.getId());
             if (entry.getRank() < 1 || entry.getRank() > threshold) {
@@ -507,7 +568,7 @@ public class HuntingQuestService {
     }
 
     private Map<String, Object> computeDailyRewardInfo(HuntingQuest quest) {
-        int baseGold = 5 * quest.getDungeonRoomCount() * quest.getDungeonLevel();
+        int baseGold = quest.getDungeonLevel() * Math.max(1, quest.getRequiredSecretLevel()) * quest.getDungeonRoomCount();
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("1st", baseGold + 100);
         m.put("2nd", baseGold + 50);

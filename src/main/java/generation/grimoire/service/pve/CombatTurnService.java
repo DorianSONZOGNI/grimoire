@@ -614,14 +614,42 @@ class CombatTurnService {
                 .allMatch(e -> e.getMaxHp() <= 0);
         int xpDrop = 0;
         int goldDrop = 0;
+        int killsThisCheck = 0;
+        // Challenge Surgeon 2
+        for (Personnage p : session.getPlayers()) {
+            if (p.getHealthCurrent() < p.getTotalHealthMax() * 0.8) {
+                session.setSurgeonChall2Failed(true);
+            }
+        }
+
         // Check dead enemies
         for (ActiveMonster am : session.getEnemies()) {
             if (am.isDead() && am.getCurrentHp() <= 0 && am.getMaxHp() > 0) {
+                // Challenge Headhunter 1
+                boolean hasHigherHpAlive = session.getEnemies().stream()
+                    .filter(e -> !e.isDead() && e.getCurrentHp() > 0 && e.getMaxHp() > 0)
+                    .anyMatch(e -> e.getAsPersonnage().getHealthMax() > am.getAsPersonnage().getHealthMax());
+                if (hasHigherHpAlive) {
+                    session.setHeadhunterChall1Failed(true);
+                }
                 am.setMaxHp(0);
+                killsThisCheck++;
                 session.addLog(am.getBase().getName() + " est mort !");
                 xpDrop += am.getBase().getRewardExp();
                 goldDrop += am.getBase().getRewardGold();
             }
+        }
+
+        if (killsThisCheck > 0) {
+            if (session.getLastKillTurn() != session.getTurnNumber()) {
+                session.setCurrentTurnKills(0);
+                session.setLastKillTurn(session.getTurnNumber());
+            }
+            session.setCurrentTurnKills(session.getCurrentTurnKills() + killsThisCheck);
+            if (session.getCurrentTurnKills() > 1) {
+                session.setLonerChall2Failed(true);
+            }
+            session.getCurrentRoomDeathTurns().add(session.getTurnNumber());
         }
 
         if (xpDrop > 0 || goldDrop > 0) {
@@ -637,6 +665,14 @@ class CombatTurnService {
 
         if (!allAlreadyProcessed && allNowProcessed) {
             session.addLog("Combat terminé, vous avez vaincu tous les monstres !");
+            
+            // Daily Challenges Room checks
+            if (session.getCurrentRoomDeathTurns().size() > 1) {
+                session.setSurgeonChall1Failed(true);
+            }
+            if (session.getTurnNumber() > 3) {
+                session.setImpatientChall1Failed(true);
+            }
             
             int roomXpDrop = session.getRoomExpAccumulated();
             int roomGoldDrop = session.getRoomGoldAccumulated();
