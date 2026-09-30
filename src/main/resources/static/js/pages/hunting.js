@@ -203,7 +203,7 @@ async function loadWeekly() {
                         </div>
                         <div class="quest-reward-detail">
                             Les <strong>${data.top20Threshold || 1}</strong> meilleur(s) joueur(s) (top 20% de ${data.totalParticipants || 0} participants) avec le moins de tours reçoivent une
-                            <strong>Anomalie Niv.2+</strong> liée au secret <strong>${escHtml(quest.requiredSecret || '?')}</strong>.
+                            <strong>Anomalie Niv.${quest.requiredSecretLevel || 2}</strong> liée au secret <strong>${escHtml(quest.requiredSecret || '?')}</strong>.
                         </div>
                     </div>
                     ${renderClaimButton(quest, myEntry, 'weekly', data.rewardAnomalie)}

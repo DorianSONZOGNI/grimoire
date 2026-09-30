@@ -73,7 +73,7 @@ public class HuntingQuestService {
         });
 
         List<Donjon> eligible = donjonRepository.findAll().stream()
-                .filter(d -> d.getRecommendedLevel() >= 3)
+                .filter(d -> d.getRequiredSecretLevel() >= 2)
                 .filter(d -> d.getRequiredSecret() != null && !d.getRequiredSecret().isBlank())
                 .filter(d -> d.getSalles().stream().anyMatch(s -> s.getType() == RoomType.BOSS))
                 .collect(Collectors.toList());
@@ -102,14 +102,14 @@ public class HuntingQuestService {
         List<Anomalie> templates = new ArrayList<>();
         if (mappedSpiri != null) {
             templates = anomalieRepository.findByIsTemplateTrue().stream()
-                    .filter(a -> a.getLevel() >= 2)
+                    .filter(a -> a.getLevel() == selected.getRequiredSecretLevel())
                     .filter(a -> a.getSpiritualite() == mappedSpiri)
                     .collect(Collectors.toList());
         }
 
         if (templates.isEmpty()) {
             templates = anomalieRepository.findByIsTemplateTrue().stream()
-                    .filter(a -> a.getLevel() >= 2)
+                    .filter(a -> a.getLevel() == selected.getRequiredSecretLevel())
                     .collect(Collectors.toList());
         }
         if (!templates.isEmpty()) {
@@ -153,7 +153,7 @@ public class HuntingQuestService {
                     quest.getRequiredSecret());
             if (mappedSpiri != null) {
                 anomalieRepository.findByIsTemplateTrue().stream()
-                        .filter(a -> a.getLevel() >= 2)
+                        .filter(a -> a.getLevel() == quest.getRequiredSecretLevel())
                         .filter(a -> a.getSpiritualite() == mappedSpiri)
                         .findFirst()
                         .ifPresent(a -> {
