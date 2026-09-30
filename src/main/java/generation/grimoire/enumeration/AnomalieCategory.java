@@ -8,6 +8,13 @@ public enum AnomalieCategory {
     CRISTAL("Cristal", "diamond"),
     PLUME("Plume", "history_edu"),
     ECAILLE("Écaille", "waves"),
+    GOUTTE("Goutte", "water_drop"),
+    LIVRE("Livre", "auto_stories"),
+    CRANE("Crâne", "skull"),
+    SABLIER_VIDE("Sablier vide", "hourglass_empty"),
+    SABLIER_PLEIN("Sablier plein", "hourglass_full"),
+    MATIERE("Matière", "matter"),
+    JETON("Jeton", "token"),
     AUTRE("Autre", "category");
 
     private final String label;
