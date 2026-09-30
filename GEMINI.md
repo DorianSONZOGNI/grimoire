@@ -36,4 +36,7 @@
 - **Sécurité XSS:** données utilisateur → `textContent`. Jamais `innerHTML` avec input non-sanitisé.
 - Arborescence CSS: `variables.css` → `ui/` (réutilisable) → `pages/` (spécifique) → `sprites/` (animations).
 - **Modularité JS:** un fichier JS par domaine fonctionnel. Éviter les god files (>500 lignes = splitter).
+
+### Règles Transverses / Outillage (CRITIQUES)
+- **Encodage UTF-8 obligatoire:** Si une modification de fichier via un script (PowerShell, Node.js) est nécessaire, l'encodage `UTF-8` DOIT OBLIGATOIREMENT être forcé explicitement (ex: `Set-Content -Encoding UTF8` en PowerShell ou `fs.writeFileSync(..., 'utf8')` en Node). Sinon, les émojis et les accents français seront corrompus dans la codebase. En général, prioriser les outils natifs de l'agent.
 <!-- GRIMOIRE_END -->
