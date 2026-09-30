@@ -523,6 +523,7 @@ public class HuntingQuestService {
 
     @Transactional
     public void ensureQuestsExist() {
+        expireOldQuests();
         if (questRepository.findByTypeAndActiveTrue("DAILY").isEmpty()) {
             rotateDailyQuest();
         }
