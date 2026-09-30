@@ -126,6 +126,7 @@ public class AuthController {
             res.put("huntingClaimable", huntingClaimableCount);
             
             res.put("seenAlchemyRecipes", u.getSeenAlchemyRecipes());
+            res.put("seenDungeons", u.getSeenDungeons());
             if (u.isUnlockedAlchemy()) {
                 long unseenCount = alchemyService.getDiscoveredRecipes(u).stream()
                     .filter(r -> !u.getSeenAlchemyRecipes().contains(r.getId()))

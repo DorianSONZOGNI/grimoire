@@ -1,6 +1,6 @@
-
+﻿
 function getChallengeTitle(duo) {
-    if (duo === 'HEADHUNTER') return 'Chasseur de têtes';
+    if (duo === 'HEADHUNTER') return 'Chasseur de tÃªtes';
     if (duo === 'SURGEON') return 'Chirurgien';
     if (duo === 'LONER') return 'Loup solitaire';
     if (duo === 'IMPATIENT') return 'Impatient';
@@ -13,10 +13,10 @@ function getChallengeDuoText(duo) {
         desc += "<li>Tuer les monstres du plus grand PV max au plus petit</li>";
         desc += "<li style='margin-top:4px;'>Achever tous les monstres avec une attaque de base</li>";
     } else if (duo === 'SURGEON') {
-        desc += "<li>Tuer tous les monstres durant le même tour (par salle)</li>";
-        desc += "<li style='margin-top:4px;'>Ne pas perdre plus de 20% de vos PV max sur un héros</li>";
+        desc += "<li>Tuer tous les monstres durant le mÃªme tour (par salle)</li>";
+        desc += "<li style='margin-top:4px;'>Ne pas perdre plus de 20% de vos PV max sur un hÃ©ros</li>";
     } else if (duo === 'LONER') {
-        desc += "<li>Terminer le donjon avec un seul héros</li>";
+        desc += "<li>Terminer le donjon avec un seul hÃ©ros</li>";
         desc += "<li style='margin-top:4px;'>Tuer un seul monstre par tour maximum</li>";
     } else if (duo === 'IMPATIENT') {
         desc += "<li>Terminer chaque salle de combat en 3 tours max</li>";
@@ -186,9 +186,7 @@ async function loadDungeons() {
             // Force Libre to be the first key in the map to guarantee tab order
             categories.set('free', { id: 'free', label: 'Libres', icon: 'public', color: '#38bdf8', dungeons: [], newCount: 0 });
 
-            let seenDungeons = [];
-            const seenKey = 'seenUnlockedDungeons_' + (window.currentUser?.username || 'guest');
-            try { seenDungeons = JSON.parse(localStorage.getItem(seenKey)) || []; } catch(e) {}
+            let seenDungeons = window.currentUser?.seenDungeons || [];
 
             dungeons.forEach(d => {
                 let catId, label, icon, color;
@@ -259,13 +257,16 @@ async function loadDungeons() {
                     switchDungeonTab(cat.id);
                     // Mark as seen
                     if (cat.newCount > 0) {
-                        let currentSeen = [];
-                        const seenKey = 'seenUnlockedDungeons_' + (window.currentUser?.username || 'guest');
-                        try { currentSeen = JSON.parse(localStorage.getItem(seenKey)) || []; } catch(e) {}
+                        let currentSeen = window.currentUser?.seenDungeons || [];
                         cat.dungeons.forEach(d => {
-                            if (!currentSeen.includes(d.id)) currentSeen.push(d.id);
+                            if (!currentSeen.includes(d.id)) {
+                                currentSeen.push(d.id);
+                                globalFetch('/api/pve/dungeons/' + d.id + '/seen', { method: 'POST' }).catch(() => {});
+                            }
                         });
-                        localStorage.setItem(seenKey, JSON.stringify(currentSeen));
+                        if (window.currentUser) {
+                            window.currentUser.seenDungeons = currentSeen;
+                        }
                         // Update global header badge
                         const globalBadge = document.getElementById('navDungeonBadge');
                         if (globalBadge) {
@@ -334,7 +335,7 @@ async function loadDungeons() {
                             isLocked = true;
                             lockedHtml = `<div class="dungeon-lock-overlay">
                                 <span class="material-symbols-outlined opacity-80 mb-2 text-[3.5rem]">lock</span>
-                                <div class="font-outfit text-[1.2rem] font-bold text-slate-50 mb-1">Accès Verrouillé</div>
+                                <div class="font-outfit text-[1.2rem] font-bold text-slate-50 mb-1">AccÃ¨s VerrouillÃ©</div>
                                 <div class="text-[0.95rem] text-red-300">Secret requis : <strong class="text-slate-50">${d.requiredSecret}</strong> (Niv. ${reqLevel})</div>
                             </div>`;
                         }
@@ -345,13 +346,13 @@ async function loadDungeons() {
                             isLocked = true;
                             lockedHtml = `<div class="dungeon-lock-overlay bg-slate-900/75 text-amber-500">
                                 <span class="material-symbols-outlined opacity-80 mb-2 text-[3.5rem]">lock</span>
-                                <div class="font-outfit text-[1.2rem] font-bold text-slate-50 mb-4">Donjon Verrouillé</div>
-                                <button class="btn btn-primary flex-center btn-unlock-dungeon" onclick="event.stopPropagation(); unlockDungeon(${d.id}, ${d.unlockCostGold}, event)"><span class="material-symbols-outlined text-lg">lock_open</span> Débloquer (${d.unlockCostGold} Or)</button>
+                                <div class="font-outfit text-[1.2rem] font-bold text-slate-50 mb-4">Donjon VerrouillÃ©</div>
+                                <button class="btn btn-primary flex-center btn-unlock-dungeon" onclick="event.stopPropagation(); unlockDungeon(${d.id}, ${d.unlockCostGold}, event)"><span class="material-symbols-outlined text-lg">lock_open</span> DÃ©bloquer (${d.unlockCostGold} Or)</button>
                             </div>`;
                         }
                     }
 
-                    const entryCostHtml = d.entryCostGold > 0 ? `<div class="text-sm text-warning font-semibold mt-2"><span class="material-symbols-outlined align-middle icon-sm">monetization_on</span> Coût d'entrée : ${d.entryCostGold} Or</div>` : '';
+                    const entryCostHtml = d.entryCostGold > 0 ? `<div class="text-sm text-warning font-semibold mt-2"><span class="material-symbols-outlined align-middle icon-sm">monetization_on</span> CoÃ»t d'entrÃ©e : ${d.entryCostGold} Or</div>` : '';
 
                     const rawDiff = d.difficulty !== undefined ? d.difficulty : 0;
 
@@ -373,7 +374,7 @@ async function loadDungeons() {
                         skullGlow = 'rgba(168, 85, 247, 0.5)';
                     }
 
-                    let skullsHtml = '<div style="position: absolute; top: 10px; right: 12px; display: flex; gap: 2px; align-items: center;" title="Difficulté">';
+                    let skullsHtml = '<div style="position: absolute; top: 10px; right: 12px; display: flex; gap: 2px; align-items: center;" title="DifficultÃ©">';
                     for (let i = 0; i < 3; i++) {
                         const isActive = i < activeSkulls;
                         skullsHtml += `<span class="material-symbols-outlined" style="font-size: 1.2rem; color: ${isActive ? skullColor : 'rgba(255,255,255,0.2)'}; text-shadow: ${isActive ? '0 0 5px ' + skullGlow : 'none'};">skull</span>`;
@@ -383,28 +384,28 @@ async function loadDungeons() {
                     let leftBadges = `<div class="dungeon-badges-left">`;
 
                     if (d.completed) {
-                        leftBadges += `<div class="badge-completed" title="Donjon Terminé">
+                        leftBadges += `<div class="badge-completed" title="Donjon TerminÃ©">
                             <span class="material-symbols-outlined text-green-600 badge-icon">check_circle</span>
                         </div>`;
                     } else if (!isLocked) {
-                        leftBadges += `<div class="badge-xp2" title="Bonus XP de Première Complétion !">
+                        leftBadges += `<div class="badge-xp2" title="Bonus XP de PremiÃ¨re ComplÃ©tion !">
                             <span class="text-xs font-bold text-amber-500 flex items-center gap-1"><span class="material-symbols-outlined text-[1rem]">star</span> XP x2</span>
                         </div>`;
                     }
 
                                         if (d.dailyQuest) {
                         if (d.dailyChallengeDuo) {
-                            leftBadges += `<div class="badge-quest daily" style="cursor: pointer;" title="Cible de la Quête Journalière" onmouseenter="if(window.showGlobalTooltip) window.showGlobalTooltip(this)" onmouseleave="if(window.hideGlobalTooltip) window.hideGlobalTooltip()" data-tooltip-html="<div style='padding:4px;'><strong>Défi du jour : <span style='color:#f59e0b;'>${getChallengeTitle(d.dailyChallengeDuo)}</span></strong><br>${getChallengeDuoText(d.dailyChallengeDuo).replace(/"/g, '&quot;')}</div>">
+                            leftBadges += `<div class="badge-quest daily" style="cursor: pointer;" title="Cible de la QuÃªte JournaliÃ¨re" onmouseenter="if(window.showGlobalTooltip) window.showGlobalTooltip(this)" onmouseleave="if(window.hideGlobalTooltip) window.hideGlobalTooltip()" data-tooltip-html="<div style='padding:4px;'><strong>DÃ©fi du jour : <span style='color:#f59e0b;'>${getChallengeTitle(d.dailyChallengeDuo)}</span></strong><br>${getChallengeDuoText(d.dailyChallengeDuo).replace(/"/g, '&quot;')}</div>">
                                 <span class="material-symbols-outlined text-warning badge-icon">workspace_premium</span>
                             </div>`;
                         } else {
-                            leftBadges += `<div class="badge-quest daily" title="Cible de la Quête Journalière">
+                            leftBadges += `<div class="badge-quest daily" title="Cible de la QuÃªte JournaliÃ¨re">
                                 <span class="material-symbols-outlined text-warning badge-icon">workspace_premium</span>
                             </div>`;
                         }
                     }
                     if (d.weeklyQuest) {
-                        leftBadges += `<div class="badge-quest weekly" title="Cible de la Quête Hebdomadaire">
+                        leftBadges += `<div class="badge-quest weekly" title="Cible de la QuÃªte Hebdomadaire">
                             <span class="material-symbols-outlined text-purple badge-icon">emoji_events</span>
                         </div>`;
                     }
@@ -424,7 +425,7 @@ async function loadDungeons() {
                             ${entryCostHtml}
                             <div class="text-sm text-slate-50 mt-2 pt-2 border-t border-white/10 grid gap-1.5">
                                 <div class="flex-center text-sky-500 font-semibold gap-1">
-                                    <span class="material-symbols-outlined text-lg">group</span> Héros max : ${d.maxHeroes || 1}
+                                    <span class="material-symbols-outlined text-lg">group</span> HÃ©ros max : ${d.maxHeroes || 1}
                                 </div>
                                 <div><span class="font-semibold">Salles totales :</span> ${totalSalles}</div>
                                 ${combats > 0 ? `<div class="flex-center text-error ml-2 gap-[0.3rem]">
@@ -434,10 +435,10 @@ async function loadDungeons() {
                                     <span class="material-symbols-outlined icon-sm">skull</span> Boss : ${bosses} (avec ${totalBossMobs} mob${totalBossMobs > 1 ? 's' : ''})
                                 </div>` : ''}
                                 ${treasures > 0 ? `<div class="flex-center text-warning ml-2 gap-[0.3rem]">
-                                    <span class="material-symbols-outlined icon-sm">shopping_bag</span> Trésors : ${treasures}
+                                    <span class="material-symbols-outlined icon-sm">shopping_bag</span> TrÃ©sors : ${treasures}
                                 </div>` : ''}
                                 <div class="flex-center text-purple ml-2 gap-[0.3rem]">
-                                    <span class="material-symbols-outlined icon-sm">auto_awesome</span> Événements : ${events}
+                                    <span class="material-symbols-outlined icon-sm">auto_awesome</span> Ã‰vÃ©nements : ${events}
                                 </div>
                             </div>
                         </div>
@@ -499,17 +500,17 @@ async function loadCharacters() {
                 if (c.spiritualite && c.spiritualite.nom) {
                     const sColor = window.getSpiritualiteColor ? window.getSpiritualiteColor(c.spiritualite.nom) : '#a78bfa';
                     const sIcon = window.getSpiritualiteIcon ? window.getSpiritualiteIcon(c.spiritualite.nom) : 'psychology';
-                    iconsHtml += `<span class="material-symbols-outlined text-[1.1rem] ml-1" style="color: ${sColor};" title="Spiritualité : ${c.spiritualite.nom}">${sIcon}</span>`;
+                    iconsHtml += `<span class="material-symbols-outlined text-[1.1rem] ml-1" style="color: ${sColor};" title="SpiritualitÃ© : ${c.spiritualite.nom}">${sIcon}</span>`;
                 }
                 let avatarName = '';
                 if (c.voie && c.voie.nom) {
                     const vNom = c.voie.nom.toLowerCase();
                     if (vNom.includes('consolidation')) avatarName = 'consolidation';
                     else if (vNom.includes('conviction')) avatarName = 'conviction';
-                    else if (vNom.includes('création') || vNom.includes('creation')) avatarName = 'creation';
+                    else if (vNom.includes('crÃ©ation') || vNom.includes('creation')) avatarName = 'creation';
                     else if (vNom.includes('destruction')) avatarName = 'destruction';
                     else if (vNom.includes('raison')) avatarName = 'raison';
-                    else if (vNom.includes('sûreté') || vNom.includes('surete')) avatarName = 'surete';
+                    else if (vNom.includes('sÃ»retÃ©') || vNom.includes('surete')) avatarName = 'surete';
                     else if (vNom.includes('trahison')) avatarName = 'trahison';
                     else if (vNom.includes('violence')) avatarName = 'violence';
                 }
@@ -627,7 +628,7 @@ function renderConsumablesList() {
     }
 
     if (filteredConsumables.length === 0) {
-        list.innerHTML = `<div class="text-muted text-center text-sm p-4">Aucun consommable ne correspond à ces filtres.</div>`;
+        list.innerHTML = `<div class="text-muted text-center text-sm p-4">Aucun consommable ne correspond Ã  ces filtres.</div>`;
         return;
     }
 
@@ -674,7 +675,7 @@ function renderConsumablesList() {
         if (c.consumableCategory === 'CLE') {
             cardTooltip = ` onmouseenter="if(window.showGlobalTooltip) window.showGlobalTooltip(this)" onmouseleave="if(window.hideGlobalTooltip) window.hideGlobalTooltip()" data-tooltip-html="Permet d'augmenter les chances de loot lors d'ouverture de coffre" style="cursor: help;"`;
         } else if (c.consumableCategory === 'CORDE') {
-            cardTooltip = ` onmouseenter="if(window.showGlobalTooltip) window.showGlobalTooltip(this)" onmouseleave="if(window.hideGlobalTooltip) window.hideGlobalTooltip()" data-tooltip-html="Permet d'éviter certain piège" style="cursor: help;"`;
+            cardTooltip = ` onmouseenter="if(window.showGlobalTooltip) window.showGlobalTooltip(this)" onmouseleave="if(window.hideGlobalTooltip) window.hideGlobalTooltip()" data-tooltip-html="Permet d'Ã©viter certain piÃ¨ge" style="cursor: help;"`;
         }
 
         cardsHtml += `
@@ -693,10 +694,10 @@ function renderConsumablesList() {
                         ${c.consumableMissingHpPercent ? `<span class="inline-flex items-center text-red-500" title="PV Manq">+${c.consumableMissingHpPercent}%<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">healing</span></span>` : ''}
                         ${c.consumableMissingManaPercent ? `<span class="inline-flex items-center text-purple-500" title="Mana Manq">+${c.consumableMissingManaPercent}%<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">cyclone</span></span>` : ''}
                         ${c.consumableBonusXpPercent ? `<span class="inline-flex items-center text-yellow-400" title="XP">${c.consumableBonusXpPercent > 0 ? '+' : ''}${c.consumableBonusXpPercent}%<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">star</span></span>` : ''}
-                        ${c.consumableBonusMagicalDamagePercent ? `<span class="inline-flex items-center text-purple-400" title="Dégâts Magiques">${c.consumableBonusMagicalDamagePercent > 0 ? '+' : ''}${c.consumableBonusMagicalDamagePercent}%<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">auto_awesome</span></span>` : ''}
-                        ${c.consumableBonusPhysicalDamagePercent ? `<span class="inline-flex items-center text-red-400" title="Dégâts Physiques">${c.consumableBonusPhysicalDamagePercent > 0 ? '+' : ''}${c.consumableBonusPhysicalDamagePercent}%<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">fitness_center</span></span>` : ''}
+                        ${c.consumableBonusMagicalDamagePercent ? `<span class="inline-flex items-center text-purple-400" title="DÃ©gÃ¢ts Magiques">${c.consumableBonusMagicalDamagePercent > 0 ? '+' : ''}${c.consumableBonusMagicalDamagePercent}%<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">auto_awesome</span></span>` : ''}
+                        ${c.consumableBonusPhysicalDamagePercent ? `<span class="inline-flex items-center text-red-400" title="DÃ©gÃ¢ts Physiques">${c.consumableBonusPhysicalDamagePercent > 0 ? '+' : ''}${c.consumableBonusPhysicalDamagePercent}%<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">fitness_center</span></span>` : ''}
                         ${c.consumableBonusArmorFlat ? `<span class="inline-flex items-center text-blue-400" title="Armure">${c.consumableBonusArmorFlat > 0 ? '+' : ''}${c.consumableBonusArmorFlat}<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">shield</span></span>` : ''}
-                        ${c.consumableBonusResistanceFlat ? `<span class="inline-flex items-center text-emerald-400" title="Résistance">${c.consumableBonusResistanceFlat > 0 ? '+' : ''}${c.consumableBonusResistanceFlat}<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">shield</span></span>` : ''}
+                        ${c.consumableBonusResistanceFlat ? `<span class="inline-flex items-center text-emerald-400" title="RÃ©sistance">${c.consumableBonusResistanceFlat > 0 ? '+' : ''}${c.consumableBonusResistanceFlat}<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">shield</span></span>` : ''}
                         ${c.consumableCategory === 'CLE' && c.specialEffectValue ? `<span class="inline-flex items-center text-yellow-400" title="Bonus butin coffre">+${c.specialEffectValue}%<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">diamond</span></span>` : ''}
                     </div>
                 </div>
@@ -715,7 +716,7 @@ window.addConsumableGroup = function (name) {
     if (unselectedItem) {
         const itemWeight = unselectedItem.weight || 0;
         if (getCurrentWeight() + itemWeight > getMaxWeight()) {
-            window.showNotif(`Le poids maximum serait dépassé !`, true);
+            window.showNotif(`Le poids maximum serait dÃ©passÃ© !`, true);
             return;
         }
         pageState.selectedConsumableIds.push(unselectedItem.id);
@@ -759,7 +760,7 @@ window.selectCharacter = async function (id) {
                 return c && c.voie && c.voie.nom === charToAdd.voie.nom;
             });
             if (hasSameVoie) {
-                window.showNotif(`Vous avez déjà sélectionné un personnage de la ${charToAdd.voie.nom}.`, true);
+                window.showNotif(`Vous avez dÃ©jÃ  sÃ©lectionnÃ© un personnage de la ${charToAdd.voie.nom}.`, true);
                 return;
             }
         }
@@ -830,8 +831,8 @@ window.selectCharacter = async function (id) {
     grid.innerHTML = `
         <div class="stat-item text-pink-500"><span class="material-symbols-outlined">favorite</span> ${totalStats.healthMax} PV</div>
         <div class="stat-item text-info"><span class="material-symbols-outlined">water_drop</span> ${totalStats.manaMax} Mana</div>
-        <div class="stat-item text-pink-500"><span class="material-symbols-outlined">healing</span> ${totalStats.regenHealthPerTurn > 0 ? '+' : ''}${totalStats.regenHealthPerTurn} Régen PV</div>
-        <div class="stat-item text-info"><span class="material-symbols-outlined">cyclone</span> ${totalStats.regenManaPerTurn > 0 ? '+' : ''}${totalStats.regenManaPerTurn} Régen Mana</div>
+        <div class="stat-item text-pink-500"><span class="material-symbols-outlined">healing</span> ${totalStats.regenHealthPerTurn > 0 ? '+' : ''}${totalStats.regenHealthPerTurn} RÃ©gen PV</div>
+        <div class="stat-item text-info"><span class="material-symbols-outlined">cyclone</span> ${totalStats.regenManaPerTurn > 0 ? '+' : ''}${totalStats.regenManaPerTurn} RÃ©gen Mana</div>
         <div class="stat-item text-purple"><span class="material-symbols-outlined">auto_awesome</span> ${totalStats.power} Puissance</div>
         <div class="stat-item text-rose-500"><span class="material-symbols-outlined">fitness_center</span> ${totalStats.strength} Force</div>
         <div class="stat-item text-blue-500"><span class="material-symbols-outlined">shield</span> ${totalStats.armor} Armure</div>
@@ -898,10 +899,10 @@ window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost,
     const btnCreateLobby = document.getElementById('btnCreateLobby');
     if (window.currentDungeonEntryCost > 0) {
         btnEnter.innerHTML = `<span class="material-symbols-outlined">swords</span> Payer ${window.currentDungeonEntryCost} Or & Entrer`;
-        if (btnCreateLobby) btnCreateLobby.innerHTML = `<span class="material-symbols-outlined">group</span> Créer le lobby (${window.currentDungeonEntryCost} Or)`;
+        if (btnCreateLobby) btnCreateLobby.innerHTML = `<span class="material-symbols-outlined">group</span> CrÃ©er le lobby (${window.currentDungeonEntryCost} Or)`;
     } else {
         btnEnter.innerHTML = `<span class="material-symbols-outlined">swords</span> ENTRER DANS LE DONJON`;
-        if (btnCreateLobby) btnCreateLobby.innerHTML = `<span class="material-symbols-outlined">group</span> CRÉER LE LOBBY CO-OP`;
+        if (btnCreateLobby) btnCreateLobby.innerHTML = `<span class="material-symbols-outlined">group</span> CRÃ‰ER LE LOBBY CO-OP`;
     }
 
     const salles = JSON.parse(decodeURIComponent(sallesData) || '[]');
@@ -913,17 +914,17 @@ window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost,
         let html = '';
         salles.forEach((s, index) => {
             if (s.type === 'COMBAT' || s.type === 'BOSS') {
-                html += `<div class="flex-center text-error mb-2 font-semibold gap-[0.3rem]"><span class="material-symbols-outlined icon-sm">${s.type === 'BOSS' ? 'skull' : 'swords'}</span> Étape ${index + 1} : ${s.type === 'BOSS' ? 'Boss' : 'Combat'}</div>`;
+                html += `<div class="flex-center text-error mb-2 font-semibold gap-[0.3rem]"><span class="material-symbols-outlined icon-sm">${s.type === 'BOSS' ? 'skull' : 'swords'}</span> Ã‰tape ${index + 1} : ${s.type === 'BOSS' ? 'Boss' : 'Combat'}</div>`;
                 if (!s.monsters || s.monsters.length === 0) {
-                    html += `<div class="text-muted ml-6 mb-2 text-sm">Aucun ennemi détecté</div>`;
+                    html += `<div class="text-muted ml-6 mb-2 text-sm">Aucun ennemi dÃ©tectÃ©</div>`;
                 } else {
                     const count = s.monsters.length;
                     html += `<div class="ml-6 mb-2 text-sm text-slate-50">${count} ennemi${count > 1 ? 's' : ''}</div>`;
                 }
             } else if (s.type === 'TREASURE') {
-                html += `<div class="flex-center text-warning mb-2 font-semibold gap-[0.3rem]"><span class="material-symbols-outlined icon-sm">shopping_bag</span> Étape ${index + 1} : Trésor</div>`;
+                html += `<div class="flex-center text-warning mb-2 font-semibold gap-[0.3rem]"><span class="material-symbols-outlined icon-sm">shopping_bag</span> Ã‰tape ${index + 1} : TrÃ©sor</div>`;
             } else if (s.type === 'EVENT') {
-                html += `<div class="flex-center text-purple mb-2 font-semibold gap-[0.3rem]"><span class="material-symbols-outlined icon-sm">auto_awesome</span> Étape ${index + 1} : Événement</div>`;
+                html += `<div class="flex-center text-purple mb-2 font-semibold gap-[0.3rem]"><span class="material-symbols-outlined icon-sm">auto_awesome</span> Ã‰tape ${index + 1} : Ã‰vÃ©nement</div>`;
             }
         });
         list.innerHTML = html;
@@ -996,7 +997,7 @@ window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost,
 
             const tooltipContent = `
                 <div style="font-weight:600; color:#f59e0b; margin-bottom:0.5rem; font-size:0.85rem; text-transform:uppercase; letter-spacing:0.05em; display:flex; align-items:center; gap:0.25rem;">
-                    <span class="material-symbols-outlined text-[1.1rem]">shopping_bag</span> Équipements trouvables
+                    <span class="material-symbols-outlined text-[1.1rem]">shopping_bag</span> Ã‰quipements trouvables
                 </div>
                 <div style="display:flex; flex-direction:column; padding-right: 0.5rem;">${listHtml}</div>
             `;
@@ -1032,7 +1033,7 @@ window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost,
     document.getElementById('prepStatEmpty').classList.remove('hidden');
     document.getElementById('prepStatEmpty').style.display = '';
     document.getElementById('prepStatGrid').classList.add('hidden');
-    document.getElementById('prepEquipList').innerHTML = '<div class="text-sm text-muted">Aucun équipement à afficher.</div>';
+    document.getElementById('prepEquipList').innerHTML = '<div class="text-sm text-muted">Aucun Ã©quipement Ã  afficher.</div>';
 
     const btn = document.getElementById('btnEnterDungeon');
     if (btn) {
@@ -1184,14 +1185,14 @@ window.closeEntryModal = function () {
     document.getElementById('entryModal').classList.remove('active');
 };
 
-// ═══════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // CO-OP LOBBY
-// ═══════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
-let coopLobbyId = null;       // multiSessionId du lobby actif (hôte)
+let coopLobbyId = null;       // multiSessionId du lobby actif (hÃ´te)
 let coopLobbySSE = null;      // SSE EventSource pour les events du lobby
 
-// ─── Toggle co-op / solo ────────────────────────────────────────────────────
+// â”€â”€â”€ Toggle co-op / solo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 window.onCoopToggleChange = function () {
     const isCoopMode = document.getElementById('coopModeToggle').checked;
@@ -1206,14 +1207,14 @@ window.onCoopToggleChange = function () {
         btnCoop.classList.add('hidden');
     }
 
-    // Mettre à jour le poids (qui dépend du mode Co-op)
+    // Mettre Ã  jour le poids (qui dÃ©pend du mode Co-op)
     if (typeof renderConsumablesList === 'function') {
         renderConsumablesList();
     }
 };
 
-// ─── Synchroniser l'état du bouton co-op avec la sélection ─────────────────
-// (appelé par updateHeroCountDisplay ou directement)
+// â”€â”€â”€ Synchroniser l'Ã©tat du bouton co-op avec la sÃ©lection â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
+// (appelÃ© par updateHeroCountDisplay ou directement)
 const _origUpdateHeroCount = window.updateHeroCountDisplay;
 window.updateHeroCountDisplay = function () {
     if (_origUpdateHeroCount) _origUpdateHeroCount();
@@ -1228,21 +1229,21 @@ window.updateHeroCountDisplay = function () {
     } else {
         btnCoop.classList.add('opacity-50', 'cursor-not-allowed');
         if (isFull) {
-            btnCoop.title = "Laissez une place libre au minimum pour créer le lobby";
+            btnCoop.title = "Laissez une place libre au minimum pour crÃ©er le lobby";
         }
     }
 };
 
-// ─── Création du lobby (hôte) ────────────────────────────────────────────────
+// â”€â”€â”€ CrÃ©ation du lobby (hÃ´te) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 window.createCoopLobby = async function () {
     if (pageState.selectedCharIds.length === 0) {
-        window.showNotif('Sélectionnez au moins un personnage.', true);
+        window.showNotif('SÃ©lectionnez au moins un personnage.', true);
         return;
     }
     const isFull = pageState.selectedCharIds.length >= pageState.currentMaxHeroes;
     if (isFull) {
-        window.showNotif('Laissez une place libre au minimum pour créer le lobby.', true);
+        window.showNotif('Laissez une place libre au minimum pour crÃ©er le lobby.', true);
         return;
     }
 
@@ -1263,7 +1264,7 @@ window.createCoopLobby = async function () {
         const res = await globalFetch(url, { method: 'POST' });
         if (!res.ok) {
             const err = await res.text();
-            window.showNotif(err || 'Erreur lors de la création du lobby.', true);
+            window.showNotif(err || 'Erreur lors de la crÃ©ation du lobby.', true);
             return;
         }
         const lobby = await res.json();
@@ -1295,7 +1296,7 @@ window.createCoopLobby = async function () {
             onLobbyReady(data);
         });
         coopLobbySSE.addEventListener('lobby-cancelled', () => {
-            window.showNotif('Lobby annulé.', true);
+            window.showNotif('Lobby annulÃ©.', true);
             closeLobbyOverlay();
         });
         coopLobbySSE.onerror = () => {
@@ -1310,16 +1311,16 @@ window.createCoopLobby = async function () {
 function onLobbyReady(lobby) {
     if (coopLobbySSE) { coopLobbySSE.close(); coopLobbySSE = null; }
     document.getElementById('lobbyWaitingStatus').innerHTML =
-        '<span style="color:#4ade80; font-size:1rem;">✔ Joueur 2 connecté ! Lancement...</span>';
+        '<span style="color:#4ade80; font-size:1rem;">âœ” Joueur 2 connectÃ© ! Lancement...</span>';
 
-    // Courte pause puis redirect vers combat.html en tant qu'hôte
+    // Courte pause puis redirect vers combat.html en tant qu'hÃ´te
     setTimeout(() => {
         closeLobbyOverlay();
         window.location.href = `/combat.html?sessionId=${lobby.combatSessionId}&multiId=${lobby.multiSessionId}&role=host`;
     }, 1200);
 }
 
-// ─── Annulation du lobby ─────────────────────────────────────────────────────
+// â”€â”€â”€ Annulation du lobby â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 window.cancelCoopLobby = async function () {
     if (!coopLobbyId) { closeLobbyOverlay(); return; }
@@ -1335,7 +1336,7 @@ function closeLobbyOverlay() {
     document.getElementById('lobbyWaitingOverlay').style.display = 'none';
 }
 
-// ─── Modal Rejoindre un lobby ─────────────────────────────────────────────────
+// â”€â”€â”€ Modal Rejoindre un lobby â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 let joinSelectedCharIds = [];
 
@@ -1367,7 +1368,7 @@ window.openJoinLobbyModal = function () {
         if (c.spiritualite && c.spiritualite.nom) {
             const sColor = window.getSpiritualiteColor ? window.getSpiritualiteColor(c.spiritualite.nom) : '#a78bfa';
             const sIcon = window.getSpiritualiteIcon ? window.getSpiritualiteIcon(c.spiritualite.nom) : 'psychology';
-            iconsHtml += `<span class="material-symbols-outlined text-[0.95rem] ml-0.5 align-middle" style="color: ${sColor};" title="Spiritualité : ${c.spiritualite.nom}">${sIcon}</span>`;
+            iconsHtml += `<span class="material-symbols-outlined text-[0.95rem] ml-0.5 align-middle" style="color: ${sColor};" title="SpiritualitÃ© : ${c.spiritualite.nom}">${sIcon}</span>`;
         }
 
         let avatarName = '';
@@ -1375,10 +1376,10 @@ window.openJoinLobbyModal = function () {
             const vNom = c.voie.nom.toLowerCase();
             if (vNom.includes('consolidation')) avatarName = 'consolidation';
             else if (vNom.includes('conviction')) avatarName = 'conviction';
-            else if (vNom.includes('création') || vNom.includes('creation')) avatarName = 'creation';
+            else if (vNom.includes('crÃ©ation') || vNom.includes('creation')) avatarName = 'creation';
             else if (vNom.includes('destruction')) avatarName = 'destruction';
             else if (vNom.includes('raison')) avatarName = 'raison';
-            else if (vNom.includes('sûreté') || vNom.includes('surete')) avatarName = 'surete';
+            else if (vNom.includes('sÃ»retÃ©') || vNom.includes('surete')) avatarName = 'surete';
             else if (vNom.includes('trahison')) avatarName = 'trahison';
             else if (vNom.includes('violence')) avatarName = 'violence';
         }
@@ -1413,7 +1414,7 @@ window.toggleJoinChar = function (charId) {
     const idx = joinSelectedCharIds.indexOf(charId);
     if (idx === -1) {
         if (joinSelectedCharIds.length >= window.maxSelectableJoinChars) {
-            window.showNotif(`Vous ne pouvez sélectionner que ${window.maxSelectableJoinChars} héros pour ce lobby.`, true);
+            window.showNotif(`Vous ne pouvez sÃ©lectionner que ${window.maxSelectableJoinChars} hÃ©ros pour ce lobby.`, true);
             return;
         }
 
@@ -1424,7 +1425,7 @@ window.toggleJoinChar = function (charId) {
                 return c && c.voie && c.voie.nom === charToAdd.voie.nom;
             });
             if (hasSameVoie) {
-                window.showNotif(`Vous avez déjà sélectionné un personnage de la ${charToAdd.voie.nom}.`, true);
+                window.showNotif(`Vous avez dÃ©jÃ  sÃ©lectionnÃ© un personnage de la ${charToAdd.voie.nom}.`, true);
                 return;
             }
         }
@@ -1477,13 +1478,13 @@ window.updateJoinCharAvailability = function (info) {
         let userSecretLvl = window.currentUser.unlockedSecrets ? window.currentUser.unlockedSecrets[info.requiredSecret] : undefined;
         if (userSecretLvl === undefined || userSecretLvl < info.requiredSecretLevel) {
             hasSecret = false;
-            lockReason = "Secret requis non débloqué ou niveau insuffisant";
+            lockReason = "Secret requis non dÃ©bloquÃ© ou niveau insuffisant";
         }
     }
     if (hasSecret && info && info.unlockCostGold > 0) {
         if (!window.currentUser.unlockedDungeons || !window.currentUser.unlockedDungeons.includes(info.dungeonId)) {
             hasGoldUnlock = false;
-            lockReason = "Donjon non débloqué";
+            lockReason = "Donjon non dÃ©bloquÃ©";
         }
     }
 
@@ -1529,10 +1530,10 @@ window.updateJoinCharAvailability = function (info) {
         if (!info) {
             msgContainer.style.display = 'none';
         } else if (!hasSecret) {
-            msgContainer.textContent = "Vous n'avez pas débloqué le niveau de secret requis pour ce donjon";
+            msgContainer.textContent = "Vous n'avez pas dÃ©bloquÃ© le niveau de secret requis pour ce donjon";
             msgContainer.style.display = 'block';
         } else if (!hasGoldUnlock) {
-            msgContainer.textContent = "Vous n'avez pas payé le prix en Or pour déverrouiller ce donjon.";
+            msgContainer.textContent = "Vous n'avez pas payÃ© le prix en Or pour dÃ©verrouiller ce donjon.";
             msgContainer.style.display = 'block';
         } else if (!anyCharMeetsLevel) {
             msgContainer.textContent = "Vous n'avez aucun personnage ayant le niveau minimum requis pour ce donjon.";
@@ -1562,11 +1563,11 @@ document.addEventListener('DOMContentLoaded', () => {
                             const getVIcon = (nom) => {
                                 const n = nom.toLowerCase();
                                 if (n.includes('raison')) return { c: '#3b82f6', i: 'psychology' };
-                                if (n.includes('sûreté') || n.includes('surete')) return { c: '#00e5cc', i: 'water_drop' };
+                                if (n.includes('sÃ»retÃ©') || n.includes('surete')) return { c: '#00e5cc', i: 'water_drop' };
                                 if (n.includes('trahison')) return { c: '#ed5677', i: 'visibility_off' };
                                 if (n.includes('consolidation')) return { c: '#99674c', i: 'foundation' };
                                 if (n.includes('conviction')) return { c: '#b74c0b', i: 'volcano' };
-                                if (n.includes('création') || n.includes('creation')) return { c: '#10b981', i: 'eco' };
+                                if (n.includes('crÃ©ation') || n.includes('creation')) return { c: '#10b981', i: 'eco' };
                                 if (n.includes('destruction')) return { c: '#ff0000', i: 'local_fire_department' };
                                 if (n.includes('violence')) return { c: '#a70740', i: 'explosion' };
                                 return { c: '#94a3b8', i: 'route' };
@@ -1574,13 +1575,13 @@ document.addEventListener('DOMContentLoaded', () => {
                             const getSIcon = (nom) => {
                                 const n = nom.toLowerCase();
                                 if (n.includes('esprit')) return { c: '#38bdf8', i: 'blur_on' };
-                                if (n.includes('ténèbres') || n.includes('tenebres')) return { c: '#c084fc', i: 'dark_mode' };
+                                if (n.includes('tÃ©nÃ¨bres') || n.includes('tenebres')) return { c: '#c084fc', i: 'dark_mode' };
                                 if (n.includes('karma')) return { c: '#e7d198', i: 'all_inclusive' };
                                 return { c: '#94a3b8', i: 'star' };
                             };
 
                             hostHeroesHtml = '<div style="margin-top: 0.75rem; border-top: 1px solid rgba(255,255,255,0.1); padding-top: 0.75rem;">' +
-                                '<div style="font-size:0.75rem; color:#64748b; margin-bottom:0.5rem; text-transform:uppercase; letter-spacing:0.05em;">Héros de l\'hôte</div>' +
+                                '<div style="font-size:0.75rem; color:#64748b; margin-bottom:0.5rem; text-transform:uppercase; letter-spacing:0.05em;">HÃ©ros de l\'hÃ´te</div>' +
                                 '<div style="display:flex; flex-wrap:wrap; gap:0.4rem;">' +
                                 info.hostHeroInfos.map(h => {
                                     let vHtml = '';
@@ -1609,10 +1610,10 @@ document.addEventListener('DOMContentLoaded', () => {
 
                         infoContainer.style.display = 'block';
                         infoContainer.innerHTML = `
-                            <div style="font-weight:600; color:#e2e8f0; margin-bottom:0.25rem;">Hôte : <span style="color:#38bdf8;">${info.hostUsername}</span></div>
+                            <div style="font-weight:600; color:#e2e8f0; margin-bottom:0.25rem;">HÃ´te : <span style="color:#38bdf8;">${info.hostUsername}</span></div>
                             <div style="color:#94a3b8; font-size:0.85rem; margin-bottom:0.5rem;">Donjon : ${info.dungeonName} (Niv. ${info.recommendedLevel})</div>
                             <div style="display:flex; justify-content:space-between; align-items:center; font-size:0.85rem;">
-                                <span style="color:#cbd5e1;">Héros maximum : ${info.maxHeroes}</span>
+                                <span style="color:#cbd5e1;">HÃ©ros maximum : ${info.maxHeroes}</span>
                                 <span style="color:${info.availableSlots > 0 ? '#10b981' : '#f43f5e'}; font-weight:600;">Places restantes : ${info.availableSlots}</span>
                             </div>
                             ${hostHeroesHtml}
@@ -1632,7 +1633,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         window.updateJoinCharAvailability(null);
                     }
                 } catch (err) {
-                    console.error("Erreur lors de la récupération des infos du lobby", err);
+                    console.error("Erreur lors de la rÃ©cupÃ©ration des infos du lobby", err);
                     infoContainer.style.display = 'none';
                     window.maxSelectableJoinChars = 4;
                     window.updateJoinCharAvailability(1);
@@ -1649,11 +1650,11 @@ document.addEventListener('DOMContentLoaded', () => {
 window.submitJoinLobby = async function () {
     const code = document.getElementById('joinLobbyCodeInput').value.trim().toUpperCase();
     if (code.length < 4) {
-        window.showNotif('Entrez un code valide (6 caractères).', true);
+        window.showNotif('Entrez un code valide (6 caractÃ¨res).', true);
         return;
     }
     if (joinSelectedCharIds.length === 0) {
-        window.showNotif('Sélectionnez au moins un personnage.', true);
+        window.showNotif('SÃ©lectionnez au moins un personnage.', true);
         return;
     }
 
@@ -1665,7 +1666,7 @@ window.submitJoinLobby = async function () {
         // 1. Trouver le lobby par code court
         const findRes = await globalFetch(`/api/pve/multi/find/${code}`);
         if (!findRes.ok) {
-            window.showNotif('Lobby introuvable ou déjà démarré.', true);
+            window.showNotif('Lobby introuvable ou dÃ©jÃ  dÃ©marrÃ©.', true);
             btn.disabled = false;
             btn.innerHTML = '<span class="material-symbols-outlined" style="font-size:1.1rem;">login</span> Rejoindre';
             return;
@@ -1698,6 +1699,8 @@ window.submitJoinLobby = async function () {
 window.closeEntryModal = function () {
     document.getElementById('entryModal').classList.remove('active');
 };
+
+
 
 
 

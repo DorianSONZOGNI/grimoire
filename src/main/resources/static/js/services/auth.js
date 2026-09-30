@@ -346,9 +346,7 @@ window.checkAuthStatus = async function checkAuthStatus() {
                     globalFetch('/api/pve/dungeons', { credentials: 'same-origin' }).then(r => r.ok ? r.json() : []),
                     globalFetch('/api/personnages', { credentials: 'same-origin' }).then(r => r.ok ? r.json() : [])
                 ]).then(([dungeons, characters]) => {
-                    let seen = [];
-                    const seenKey = 'seenUnlockedDungeons_' + (data.username || 'guest');
-                    try { seen = JSON.parse(localStorage.getItem(seenKey)) || []; } catch(e) {}
+                    let seen = data.seenDungeons || [];
                     let newCount = 0;
                     const maxLevel = characters.length > 0 ? Math.max(...characters.map(c => c.voieLevel || 1)) : 0;
 
