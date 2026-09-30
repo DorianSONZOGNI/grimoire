@@ -130,6 +130,7 @@ public class CombatSession {
     private Instant lastActivity = Instant.now();
 
     // Daily Challenge Tracking
+    private String dailyChallengeDuo;
     private boolean headhunterChall1Failed = false;
     private boolean headhunterChall2Failed = false;
     private boolean surgeonChall1Failed = false;

@@ -1,3 +1,31 @@
+
+function getChallengeTitle(duo) {
+    if (duo === 'HEADHUNTER') return 'Chasseur de têtes';
+    if (duo === 'SURGEON') return 'Chirurgien';
+    if (duo === 'LONER') return 'Loup solitaire';
+    if (duo === 'IMPATIENT') return 'Impatient';
+    return duo;
+}
+
+function getChallengeDuoText(duo) {
+    let desc = "<ul style='margin:0; padding-left:16px; margin-top:4px; color:#e2e8f0; line-height:1.4;'>";
+    if (duo === 'HEADHUNTER') {
+        desc += "<li>Tuer les monstres du plus grand PV max au plus petit</li>";
+        desc += "<li style='margin-top:4px;'>Achever tous les monstres avec une attaque de base</li>";
+    } else if (duo === 'SURGEON') {
+        desc += "<li>Tuer tous les monstres durant le même tour (par salle)</li>";
+        desc += "<li style='margin-top:4px;'>Ne pas perdre plus de 20% de vos PV max sur un héros</li>";
+    } else if (duo === 'LONER') {
+        desc += "<li>Terminer le donjon avec un seul héros</li>";
+        desc += "<li style='margin-top:4px;'>Tuer un seul monstre par tour maximum</li>";
+    } else if (duo === 'IMPATIENT') {
+        desc += "<li>Terminer chaque salle de combat en 3 tours max</li>";
+        desc += "<li style='margin-top:4px;'>Tuer les monstres en 2 attaques directes max par monstre</li>";
+    }
+    desc += "</ul>";
+    return desc;
+}
+
 window.switchDungeonTab = function (tabName) {
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
@@ -364,10 +392,16 @@ async function loadDungeons() {
                         </div>`;
                     }
 
-                    if (d.dailyQuest) {
-                        leftBadges += `<div class="badge-quest daily" title="Cible de la Quête Journalière">
-                            <span class="material-symbols-outlined text-warning badge-icon">workspace_premium</span>
-                        </div>`;
+                                        if (d.dailyQuest) {
+                        if (d.dailyChallengeDuo) {
+                            leftBadges += `<div class="badge-quest daily" style="cursor: pointer;" title="Cible de la Quête Journalière" onmouseenter="if(window.showGlobalTooltip) window.showGlobalTooltip(this)" onmouseleave="if(window.hideGlobalTooltip) window.hideGlobalTooltip()" data-tooltip-html="<div style='padding:4px;'><strong>Défi du jour : <span style='color:#f59e0b;'>${getChallengeTitle(d.dailyChallengeDuo)}</span></strong><br>${getChallengeDuoText(d.dailyChallengeDuo).replace(/"/g, '&quot;')}</div>">
+                                <span class="material-symbols-outlined text-warning badge-icon">workspace_premium</span>
+                            </div>`;
+                        } else {
+                            leftBadges += `<div class="badge-quest daily" title="Cible de la Quête Journalière">
+                                <span class="material-symbols-outlined text-warning badge-icon">workspace_premium</span>
+                            </div>`;
+                        }
                     }
                     if (d.weeklyQuest) {
                         leftBadges += `<div class="badge-quest weekly" title="Cible de la Quête Hebdomadaire">

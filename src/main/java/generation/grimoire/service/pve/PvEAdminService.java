@@ -94,9 +94,13 @@ public class PvEAdminService {
     public List<generation.grimoire.dto.pve.DonjonSummaryDTO> getDungeonSummaries() {
         Long activeDailyDungeonId = null;
         Long activeWeeklyDungeonId = null;
+        String dailyChallengeDuoStr = null;
         try {
             var dailyQuest = huntingQuestRepository.findByTypeAndActiveTrue("DAILY").orElse(null);
-            if (dailyQuest != null) activeDailyDungeonId = dailyQuest.getDungeonId();
+            if (dailyQuest != null) {
+                activeDailyDungeonId = dailyQuest.getDungeonId();
+                dailyChallengeDuoStr = dailyQuest.getDailyChallengeDuo();
+            }
 
             var weeklyQuest = huntingQuestRepository.findByTypeAndActiveTrue("WEEKLY").orElse(null);
             if (weeklyQuest != null) activeWeeklyDungeonId = weeklyQuest.getDungeonId();
@@ -104,6 +108,7 @@ public class PvEAdminService {
 
         final Long finalDailyDungeonId = activeDailyDungeonId;
         final Long finalWeeklyDungeonId = activeWeeklyDungeonId;
+        final String finalDailyChallengeDuo = dailyChallengeDuoStr;
 
         return donjonRepository.findAllByOrderByDisplayOrderAsc().stream().map(d -> {
             generation.grimoire.dto.pve.DonjonSummaryDTO dto = new generation.grimoire.dto.pve.DonjonSummaryDTO();
@@ -124,6 +129,7 @@ public class PvEAdminService {
             
             if (finalDailyDungeonId != null && finalDailyDungeonId.equals(d.getId())) {
                 dto.setDailyQuest(true);
+                dto.setDailyChallengeDuo(finalDailyChallengeDuo);
             }
             if (finalWeeklyDungeonId != null && finalWeeklyDungeonId.equals(d.getId())) {
                 dto.setWeeklyQuest(true);

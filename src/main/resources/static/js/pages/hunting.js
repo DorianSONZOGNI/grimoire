@@ -69,15 +69,15 @@ async function loadDaily() {
                             ${escHtml(quest.requiredSecret)} Niv.${quest.requiredSecretLevel}
                         </span>` : ''}
                     </div>
-                    <div class="quest-reward-box">
-                        <div class="quest-reward-title">
-                            <span class="material-symbols-outlined" style="font-size: 1rem;">payments</span>
+                    <div class="quest-reward-box" style="position: relative;">
+                        <div class="quest-reward-title" style="display: flex; align-items: center;">
+                            <span class="material-symbols-outlined" style="font-size: 1rem; margin-right: 4px;">payments</span>
                             Récompenses en Or
                         </div>
+                        ${quest.dailyChallengeDuo ? `<div class="badge-quest daily" style="position: absolute; top: -12px; right: -12px; background: rgba(15, 23, 42, 0.95); border-radius: 50%; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; border: 2px solid #f59e0b; box-shadow: 0 4px 10px rgba(245, 158, 11, 0.4); cursor: pointer;" onmouseenter="if(window.showGlobalTooltip) window.showGlobalTooltip(this)" onmouseleave="if(window.hideGlobalTooltip) window.hideGlobalTooltip()" data-tooltip-html="<div style='padding:4px;'><strong>Défi du jour : <span style='color:#f59e0b;'>${getChallengeTitle(quest.dailyChallengeDuo)}</span></strong><br>${getChallengeDuoText(quest.dailyChallengeDuo).replace(/"/g, '&quot;')}</div>">
+                            <span class="material-symbols-outlined text-warning badge-icon" style="font-size: 1.5rem;">workspace_premium</span>
+                        </div>` : ''}
                         <div class="quest-reward-detail">
-                            ${quest.dailyChallengeDuo ? `<div style="margin-bottom: 8px; font-size: 0.9em; color: #b4c6ef;"><strong>Challenges du jour (${quest.dailyChallengeDuo}) :</strong><br>
-                                ${getChallengeDuoText(quest.dailyChallengeDuo)}
-                            </div>` : ''}
                             🥉 Bronze (Terminer le donjon) : <strong>${reward['base'] || '?'}</strong> gold<br>
                             🥈 Argent (1 challenge) : <strong>+${Math.floor((reward['base'] || 0) * 2.00)}</strong> gold<br>
                             🥇 Or (2 challenges) : <strong>+${Math.floor((reward['base'] || 0) * 3.00)}</strong> gold
@@ -497,16 +497,26 @@ function escHtml(str) {
 }
 
 
+function getChallengeTitle(duo) {
+    switch (duo) {
+        case 'HEADHUNTER': return 'Chasseur de têtes';
+        case 'SURGEON': return 'Chirurgien';
+        case 'LONER': return 'Loup solitaire';
+        case 'IMPATIENT': return 'Impatient';
+        default: return duo;
+    }
+}
+
 function getChallengeDuoText(duo) {
     switch (duo) {
         case 'HEADHUNTER':
-            return "- Tuer les monstres du plus grand PV max au plus petit<br>- Achever tous les monstres avec une attaque de base";
+            return "<ul style='margin:0; padding-left:16px; margin-top:4px; color:#e2e8f0; line-height:1.4;'><li>Tuer les monstres du plus grand PV max au plus petit</li><li style='margin-top:4px;'>Achever tous les monstres avec une attaque de base</li></ul>";
         case 'SURGEON':
-            return "- Tuer tous les monstres durant le même tour (par salle)<br>- Ne pas perdre plus de 20% de vos PV max sur un héros";
+            return "<ul style='margin:0; padding-left:16px; margin-top:4px; color:#e2e8f0; line-height:1.4;'><li>Tuer tous les monstres durant le même tour (par salle)</li><li style='margin-top:4px;'>Ne pas perdre plus de 20% de vos PV max sur un héros</li></ul>";
         case 'LONER':
-            return "- Terminer le donjon avec un seul héros<br>- Tuer un seul monstre par tour maximum";
+            return "<ul style='margin:0; padding-left:16px; margin-top:4px; color:#e2e8f0; line-height:1.4;'><li>Terminer le donjon avec un seul héros</li><li style='margin-top:4px;'>Tuer un seul monstre par tour maximum</li></ul>";
         case 'IMPATIENT':
-            return "- Terminer chaque salle de combat en 3 tours max<br>- Tuer les monstres en 2 attaques directes max par monstre";
+            return "<ul style='margin:0; padding-left:16px; margin-top:4px; color:#e2e8f0; line-height:1.4;'><li>Terminer chaque salle de combat en 3 tours max</li><li style='margin-top:4px;'>Tuer les monstres en 2 attaques directes max par monstre</li></ul>";
         default: return "";
     }
 }

@@ -242,6 +242,65 @@ export function updateUI(data) {
 
     if (data.donjonName) {
         document.getElementById('headerDungeonName').textContent = data.donjonName + " - Étape " + (data.currentRoomIndex + 1);
+
+        // Daily Challenge Tooltip
+        let challContainer = document.getElementById('dailyChallengeTooltipContainer');
+        if (!challContainer) {
+            challContainer = document.createElement('span');
+            challContainer.id = 'dailyChallengeTooltipContainer';
+            challContainer.style.marginLeft = '12px';
+            challContainer.style.display = 'inline-flex';
+            challContainer.style.alignItems = 'center';
+            document.getElementById('headerDungeonName').parentNode.insertBefore(challContainer, document.getElementById('headerDungeonName').nextSibling);
+        }
+
+        if (data.dailyChallengeDuo) {
+            let title = data.dailyChallengeDuo;
+            let c1Failed = false;
+            let c2Failed = false;
+            let c1Text = "";
+            let c2Text = "";
+            
+            if (data.dailyChallengeDuo === 'HEADHUNTER') {
+                title = 'Chasseur de têtes';
+                c1Failed = data.headhunterChall1Failed;
+                c2Failed = data.headhunterChall2Failed;
+                c1Text = "Tuer les monstres du plus grand PV max au plus petit";
+                c2Text = "Achever tous les monstres avec une attaque de base";
+            } else if (data.dailyChallengeDuo === 'SURGEON') {
+                title = 'Chirurgien';
+                c1Failed = data.surgeonChall1Failed;
+                c2Failed = data.surgeonChall2Failed;
+                c1Text = "Tuer tous les monstres durant le même tour (par salle)";
+                c2Text = "Ne pas perdre plus de 20% de vos PV max sur un héros";
+            } else if (data.dailyChallengeDuo === 'LONER') {
+                title = 'Loup solitaire';
+                c1Failed = data.lonerChall1Failed;
+                c2Failed = data.lonerChall2Failed;
+                c1Text = "Terminer le donjon avec un seul héros";
+                c2Text = "Tuer un seul monstre par tour maximum";
+            } else if (data.dailyChallengeDuo === 'IMPATIENT') {
+                title = 'Impatient';
+                c1Failed = data.impatientChall1Failed;
+                c2Failed = data.impatientChall2Failed;
+                c1Text = "Terminer chaque salle de combat en 3 tours max";
+                c2Text = "Tuer les monstres en 2 attaques directes max par monstre";
+            }
+            
+            let desc = "<ul style='margin:0; padding-left:16px; margin-top:4px; color:#e2e8f0; line-height:1.4;'>";
+            desc += "<li style='" + (c1Failed ? "color:#f87171; text-decoration:line-through;" : "") + "'>" + c1Text + "</li>";
+            desc += "<li style='margin-top:4px; " + (c2Failed ? "color:#f87171; text-decoration:line-through;" : "") + "'>" + c2Text + "</li>";
+            desc += "</ul>";
+
+                        challContainer.innerHTML = `<span class="material-symbols-outlined" style="font-size: 1.4rem; cursor: pointer; color: ${(c1Failed && c2Failed) ? '#f87171' : '#f59e0b'}; filter: drop-shadow(0 0 5px ${(c1Failed && c2Failed) ? 'rgba(248,113,113,0.5)' : 'rgba(245,158,11,0.5)'});" 
+                onmouseenter="if(window.showGlobalTooltip) window.showGlobalTooltip(this)" 
+                onmouseleave="if(window.hideGlobalTooltip) window.hideGlobalTooltip()" 
+                data-tooltip-html="<div style='padding:4px;'><strong>Défi du jour : <span style='color:${(c1Failed && c2Failed) ? '#f87171' : '#f59e0b'};'>${title}</span></strong><br>${desc.replace(/"/g, '&quot;')}</div>">
+                ${(c1Failed && c2Failed) ? 'error' : 'workspace_premium'}
+            </span>`;
+        } else {
+            challContainer.innerHTML = '';
+        }
         if (!data.finished) {
             playDungeonMusic(data);
         }

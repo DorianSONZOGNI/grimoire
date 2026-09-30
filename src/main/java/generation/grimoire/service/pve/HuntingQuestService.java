@@ -553,6 +553,7 @@ public class HuntingQuestService {
         m.put("startDate", q.getStartDate().toString());
         m.put("endDate", q.getEndDate().toString());
         m.put("active", q.isActive());
+        m.put("dailyChallengeDuo", q.getDailyChallengeDuo());
         return m;
     }
 
