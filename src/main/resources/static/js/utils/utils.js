@@ -297,7 +297,12 @@ function getEquipmentTooltipHTML(eq) {
         { key: 'consumableHpPercent', label: 'PV Max', icon: 'favorite', color: '#ec4899', isPercent: true },
         { key: 'consumableManaPercent', label: 'Mana Max', icon: 'water_drop', color: '#38bdf8', isPercent: true },
         { key: 'consumableMissingHpPercent', label: 'PV Manq', icon: 'healing', color: '#f43f5e', isPercent: true },
-        { key: 'consumableMissingManaPercent', label: 'Mana Manq', icon: 'cyclone', color: '#a855f7', isPercent: true }
+        { key: 'consumableMissingManaPercent', label: 'Mana Manq', icon: 'cyclone', color: '#a855f7', isPercent: true },
+        { key: 'consumableBonusXpPercent', label: 'XP', icon: 'star', color: '#facc15', isPercent: true },
+        { key: 'consumableBonusMagicalDamagePercent', label: 'Dégâts Mag.', icon: 'auto_awesome', color: '#c084fc', isPercent: true },
+        { key: 'consumableBonusPhysicalDamagePercent', label: 'Dégâts Phys.', icon: 'fitness_center', color: '#f87171', isPercent: true },
+        { key: 'consumableBonusArmorFlat', label: 'Armure', icon: 'shield', color: '#60a5fa', isPercent: false },
+        { key: 'consumableBonusResistanceFlat', label: 'Résistance', icon: 'shield', color: '#34d399', isPercent: false }
     ];
     let statsHtml = statsDef
         .filter(s => eq[s.key] && eq[s.key] !== 0)
@@ -375,7 +380,12 @@ window.generateEquipmentStatsHtml = function (eq, cssClass = 'vault-stat-chip') 
         { key: 'consumableHpPercent', label: 'PV Max', icon: 'favorite', color: '#ec4899', isPercent: true },
         { key: 'consumableManaPercent', label: 'Mana Max', icon: 'water_drop', color: '#38bdf8', isPercent: true },
         { key: 'consumableMissingHpPercent', label: 'PV Manq', icon: 'healing', color: '#f43f5e', isPercent: true },
-        { key: 'consumableMissingManaPercent', label: 'Mana Manq', icon: 'cyclone', color: '#a855f7', isPercent: true }
+        { key: 'consumableMissingManaPercent', label: 'Mana Manq', icon: 'cyclone', color: '#a855f7', isPercent: true },
+        { key: 'consumableBonusXpPercent', label: 'XP', icon: 'star', color: '#facc15', isPercent: true },
+        { key: 'consumableBonusMagicalDamagePercent', label: 'Dégâts Mag.', icon: 'auto_awesome', color: '#c084fc', isPercent: true },
+        { key: 'consumableBonusPhysicalDamagePercent', label: 'Dégâts Phys.', icon: 'fitness_center', color: '#f87171', isPercent: true },
+        { key: 'consumableBonusArmorFlat', label: 'Armure', icon: 'shield', color: '#60a5fa', isPercent: false },
+        { key: 'consumableBonusResistanceFlat', label: 'Résistance', icon: 'shield', color: '#34d399', isPercent: false }
     ];
     let html = statsDef
         .filter(s => eq[s.key] && eq[s.key] !== 0)

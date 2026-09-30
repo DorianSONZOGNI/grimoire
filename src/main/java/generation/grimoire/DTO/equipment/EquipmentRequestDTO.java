@@ -28,6 +28,12 @@ public class EquipmentRequestDTO {
     private int consumableManaPercent = 0;
     private int consumableMissingHpPercent = 0;
     private int consumableMissingManaPercent = 0;
+    private int consumableBonusXpPercent = 0;
+    private int consumableBonusMagicalDamagePercent = 0;
+    private int consumableBonusPhysicalDamagePercent = 0;
+    private int consumableBonusArmorFlat = 0;
+    private int consumableBonusResistanceFlat = 0;
+    private int consumableDurationTurns = 0;
     private ConsumableCategory consumableCategory;
     private EquipmentRarity rarity;
     private EquipmentEffectType specialEffect;

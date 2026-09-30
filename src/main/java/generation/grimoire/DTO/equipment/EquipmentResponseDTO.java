@@ -25,6 +25,12 @@ public class EquipmentResponseDTO {
     private int consumableManaPercent;
     private int consumableMissingHpPercent;
     private int consumableMissingManaPercent;
+    private int consumableBonusXpPercent;
+    private int consumableBonusMagicalDamagePercent;
+    private int consumableBonusPhysicalDamagePercent;
+    private int consumableBonusArmorFlat;
+    private int consumableBonusResistanceFlat;
+    private int consumableDurationTurns;
     private String consumableCategory;
     private double weight;
     private double maxWeight;

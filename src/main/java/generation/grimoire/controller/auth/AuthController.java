@@ -147,7 +147,9 @@ public class AuthController {
             res.put("unlockedSpiritualiteLevels", u.getUnlockedSpiritualiteLevels());
         });
 
-        return ResponseEntity.ok(res);
+        return ResponseEntity.ok()
+            .header(org.springframework.http.HttpHeaders.CACHE_CONTROL, "no-cache, no-store, max-age=0, must-revalidate")
+            .body(res);
     }
 
     private java.util.List<String> getClaimableSecretRewards(AppUser u) {

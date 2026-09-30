@@ -370,8 +370,13 @@ function bindClaimButton(container, questId) {
     const btns = container.querySelectorAll('.btn-claim.claimable');
     btns.forEach(btn => {
         btn.addEventListener('click', async () => {
+            const originalHtml = btn.innerHTML;
             btn.disabled = true;
-            btn.innerHTML = '<span class="material-symbols-outlined spin">progress_activity</span> Récupération…';
+            if (originalHtml.includes('material-symbols-outlined')) {
+                btn.innerHTML = originalHtml.replace(/<span class="material-symbols-outlined">[^<]*<\/span>/, '<span class="material-symbols-outlined spin">progress_activity</span>');
+            } else {
+                btn.innerHTML = '<span class="material-symbols-outlined spin">progress_activity</span>...';
+            }
             try {
                 const tier = btn.getAttribute('data-tier') || '';
                 const res = await window.globalFetch(`/api/pve/hunting/claim/${questId}${tier ? '?tier=' + tier : ''}`, { method: 'POST' });
@@ -382,7 +387,12 @@ function bindClaimButton(container, questId) {
                     btn.innerHTML = '<span class="material-symbols-outlined">redeem</span> Récupérer la récompense';
                 } else {
                     btn.className = 'btn-claim claimed';
-                    btn.innerHTML = `<span class="material-symbols-outlined">check_circle</span> ${escHtml(data.message)}`;
+                    if (originalHtml && originalHtml.includes('material-symbols-outlined')) {
+                        btn.innerHTML = originalHtml.replace(/<span class="material-symbols-outlined">[^<]*<\/span>/, '<span class="material-symbols-outlined">check_circle</span>');
+                    } else {
+                        btn.innerHTML = `<span class="material-symbols-outlined">check_circle</span> Récupéré`;
+                    }
+                    if (window.showNotif && data.message) window.showNotif(data.message, false);
                     
                     // Diminuer le badge rouge en temps réel
                     const badge = document.getElementById('navHuntingBadge');
@@ -402,7 +412,7 @@ function bindClaimButton(container, questId) {
             } catch (e) {
                 alert('Erreur lors de la récupération.');
                 btn.disabled = false;
-                btn.innerHTML = '<span class="material-symbols-outlined">redeem</span> Réessayer';
+                btn.innerHTML = originalHtml;
             }
         });
     });

@@ -238,18 +238,10 @@ public class HuntingQuestService {
                     }
                     boolean c1Run = !c1Failed;
                     boolean c2Run = !c2Failed;
-                    int currentChalls = (c1Run ? 1 : 0) + (c2Run ? 1 : 0);
-                    int prevChalls = (entry.isChallenge1Completed() ? 1 : 0) + (entry.isChallenge2Completed() ? 1 : 0);
                     
-                    if (currentChalls == 2) {
-                        entry.setChallenge1Completed(true);
-                        entry.setChallenge2Completed(true);
-                    } else if (currentChalls == 1 && prevChalls < 2) {
-                        if (prevChalls == 0) {
-                            entry.setChallenge1Completed(c1Run);
-                            entry.setChallenge2Completed(c2Run);
-                        }
-                    }
+                    // On accumule les challenges réussis au fil des runs
+                    if (c1Run) entry.setChallenge1Completed(true);
+                    if (c2Run) entry.setChallenge2Completed(true);
                 }
 
                 entryRepository.save(entry);

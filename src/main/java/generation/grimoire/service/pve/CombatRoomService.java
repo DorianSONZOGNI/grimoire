@@ -436,7 +436,11 @@ public class CombatRoomService {
                         else if (effect < 0)
                             p.takeDamage(-effect, generation.grimoire.enumeration.DamageType.BRUT);
 
-                        p.setExperience(p.getExperience() + expEffect);
+                        int finalExpEffect = expEffect;
+                        if (expEffect > 0 && p.getConsumableBonusXpPercent() != 0) {
+                            finalExpEffect = (int) (finalExpEffect * (1.0 + p.getConsumableBonusXpPercent() / 100.0));
+                        }
+                        p.setExperience(p.getExperience() + finalExpEffect);
                         if (p.getExperience() < 0)
                             p.setExperience(0);
 
@@ -787,9 +791,91 @@ public class CombatRoomService {
                 session.addLog(
                         "🧪 " + target.getName() + " consomme " + itemName + " et récupère " + healMana + " Mana.");
             }
-            if (healHp == 0 && healMana == 0) {
+            if (healHp == 0 && healMana == 0 && toConsume.getConsumableDurationTurns() == 0) {
                 session.addLog(
-                        "🎒 " + target.getName() + " consomme " + itemName + " mais cela n'a aucun effet de soin.");
+                        "🎒 " + target.getName() + " consomme " + itemName + " mais cela n'a aucun effet.");
+            }
+            
+            // Apply buffs if duration is set
+            if (toConsume.getConsumableDurationTurns() > 0) {
+                boolean buffApplied = false;
+                
+                if (toConsume.getConsumableBonusXpPercent() != 0) {
+                    if (target.getConsumableBonusXpTurns() > 0) {
+                        throw new RuntimeException("Un bonus d'XP est déjà actif sur ce personnage.");
+                    }
+                    target.setConsumableBonusXpPercent(toConsume.getConsumableBonusXpPercent());
+                    target.setConsumableBonusXpTurns(toConsume.getConsumableDurationTurns());
+                    buffApplied = true;
+                }
+                
+                if (toConsume.getConsumableBonusMagicalDamagePercent() != 0) {
+                    boolean alreadyHasBuff = target.getActiveBuffs().stream()
+                        .anyMatch(b -> b.getStatAffected() == generation.grimoire.enumeration.StatType.DAMAGE_GIVEN_MAGIC && b.getDuration() > 0 && "Consommable".equals(b.getSourceName()));
+                    if (alreadyHasBuff) {
+                        throw new RuntimeException("Un bonus de dégâts magiques (consommable) est déjà actif sur ce personnage.");
+                    }
+                    generation.grimoire.entity.spell.type.effect.BuffDebuffEffect effect = new generation.grimoire.entity.spell.type.effect.BuffDebuffEffect();
+                    effect.setStatAffected(generation.grimoire.enumeration.StatType.DAMAGE_GIVEN_MAGIC);
+                    effect.setModifier(toConsume.getConsumableBonusMagicalDamagePercent() / 100.0);
+                    effect.setDuration(toConsume.getConsumableDurationTurns());
+                    effect.setSourceName("Consommable");
+                    effect.setNewlyApplied(true);
+                    target.getActiveBuffs().add(effect);
+                    buffApplied = true;
+                }
+                
+                if (toConsume.getConsumableBonusPhysicalDamagePercent() != 0) {
+                    boolean alreadyHasBuff = target.getActiveBuffs().stream()
+                        .anyMatch(b -> b.getStatAffected() == generation.grimoire.enumeration.StatType.DAMAGE_GIVEN_PHYSIC && b.getDuration() > 0 && "Consommable".equals(b.getSourceName()));
+                    if (alreadyHasBuff) {
+                        throw new RuntimeException("Un bonus de dégâts physiques (consommable) est déjà actif sur ce personnage.");
+                    }
+                    generation.grimoire.entity.spell.type.effect.BuffDebuffEffect effect = new generation.grimoire.entity.spell.type.effect.BuffDebuffEffect();
+                    effect.setStatAffected(generation.grimoire.enumeration.StatType.DAMAGE_GIVEN_PHYSIC);
+                    effect.setModifier(toConsume.getConsumableBonusPhysicalDamagePercent() / 100.0);
+                    effect.setDuration(toConsume.getConsumableDurationTurns());
+                    effect.setSourceName("Consommable");
+                    effect.setNewlyApplied(true);
+                    target.getActiveBuffs().add(effect);
+                    buffApplied = true;
+                }
+                
+                if (toConsume.getConsumableBonusArmorFlat() != 0) {
+                    boolean alreadyHasBuff = target.getActiveBuffs().stream()
+                        .anyMatch(b -> b.getStatAffected() == generation.grimoire.enumeration.StatType.ARMURE && b.getDuration() > 0 && "Consommable".equals(b.getSourceName()));
+                    if (alreadyHasBuff) {
+                        throw new RuntimeException("Un bonus d'armure (consommable) est déjà actif sur ce personnage.");
+                    }
+                    generation.grimoire.entity.spell.type.effect.BuffDebuffEffect effect = new generation.grimoire.entity.spell.type.effect.BuffDebuffEffect();
+                    effect.setStatAffected(generation.grimoire.enumeration.StatType.ARMURE);
+                    effect.setFlatValue(toConsume.getConsumableBonusArmorFlat());
+                    effect.setDuration(toConsume.getConsumableDurationTurns());
+                    effect.setSourceName("Consommable");
+                    effect.setNewlyApplied(true);
+                    target.getActiveBuffs().add(effect);
+                    buffApplied = true;
+                }
+                
+                if (toConsume.getConsumableBonusResistanceFlat() != 0) {
+                    boolean alreadyHasBuff = target.getActiveBuffs().stream()
+                        .anyMatch(b -> b.getStatAffected() == generation.grimoire.enumeration.StatType.RESISTANCE && b.getDuration() > 0 && "Consommable".equals(b.getSourceName()));
+                    if (alreadyHasBuff) {
+                        throw new RuntimeException("Un bonus de résistance (consommable) est déjà actif sur ce personnage.");
+                    }
+                    generation.grimoire.entity.spell.type.effect.BuffDebuffEffect effect = new generation.grimoire.entity.spell.type.effect.BuffDebuffEffect();
+                    effect.setStatAffected(generation.grimoire.enumeration.StatType.RESISTANCE);
+                    effect.setFlatValue(toConsume.getConsumableBonusResistanceFlat());
+                    effect.setDuration(toConsume.getConsumableDurationTurns());
+                    effect.setSourceName("Consommable");
+                    effect.setNewlyApplied(true);
+                    target.getActiveBuffs().add(effect);
+                    buffApplied = true;
+                }
+                
+                if (buffApplied) {
+                    session.addLog("✨ " + target.getName() + " consomme " + itemName + " et reçoit un bonus pour " + toConsume.getConsumableDurationTurns() + " tours.");
+                }
             }
         } else {
             throw new RuntimeException("Cet objet n'est pas un consommable.");

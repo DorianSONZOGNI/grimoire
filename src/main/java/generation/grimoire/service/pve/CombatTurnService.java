@@ -687,6 +687,7 @@ class CombatTurnService {
                     if (u != null && !u.getCompletedDungeons().contains(session.getDungeonId())) {
                         actualExp *= 2;
                     }
+                    if (p.getConsumableBonusXpPercent() != 0) actualExp = (int) (actualExp * (1.0 + p.getConsumableBonusXpPercent() / 100.0));
                     p.setExperience(p.getExperience() + actualExp);
                     personnageService.save(p);
                 }
