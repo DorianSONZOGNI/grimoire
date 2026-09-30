@@ -201,7 +201,7 @@ public class HuntingQuestService {
     // ═══════════════════════════════════════════════════════════════════════
 
     @Transactional
-    public void recordCompletion(Long dungeonId, String accountName) {
+    public void recordCompletion(Long dungeonId, String accountName, int totalTurns) {
         // Vérifier la quête daily
         questRepository.findByTypeAndActiveTrue("DAILY").ifPresent(quest -> {
             if (quest.getDungeonId().equals(dungeonId)) {
@@ -210,7 +210,6 @@ public class HuntingQuestService {
                         .orElse(null);
 
                 if (entry == null) {
-                    // Première complétion pour ce compte sur cette quête daily
                     entry = new HuntingQuestEntry();
                     entry.setQuest(quest);
                     entry.setAccountName(accountName);
@@ -219,11 +218,10 @@ public class HuntingQuestService {
                     entryRepository.save(entry);
                     recalculateDailyRanks(quest.getId());
                 }
-                // Sinon, déjà fait → on ignore (une seule fois par compte)
             }
         });
 
-        // Vérifier la quête weekly
+        // Vérifier la quête weekly — classement par meilleur nombre de tours
         questRepository.findByTypeAndActiveTrue("WEEKLY").ifPresent(quest -> {
             if (quest.getDungeonId().equals(dungeonId)) {
                 HuntingQuestEntry entry = entryRepository
@@ -237,9 +235,16 @@ public class HuntingQuestService {
                         });
 
                 entry.setCompletionCount(entry.getCompletionCount() + 1);
-                if (entry.getFirstCompletionTime() == null) {
+
+                // Enregistrer le meilleur score (moins de tours = mieux)
+                if (entry.getBestTurnCount() == null || totalTurns < entry.getBestTurnCount()) {
+                    entry.setBestTurnCount(totalTurns);
+                    // Mettre à jour le timestamp quand on améliore son score
+                    entry.setFirstCompletionTime(Instant.now());
+                } else if (entry.getFirstCompletionTime() == null) {
                     entry.setFirstCompletionTime(Instant.now());
                 }
+
                 entryRepository.save(entry);
                 recalculateWeeklyRanks(quest.getId());
             }
@@ -255,11 +260,28 @@ public class HuntingQuestService {
     }
 
     private void recalculateWeeklyRanks(Long questId) {
-        List<HuntingQuestEntry> entries = entryRepository.findByQuestIdOrderByCompletionCountDesc(questId);
-        for (int i = 0; i < entries.size(); i++) {
-            entries.get(i).setRank(i + 1);
+        // Classement par nombre de tours ASC, puis timestamp ASC comme départage
+        List<HuntingQuestEntry> ranked = entryRepository.findByQuestIdOrderByBestTurnCountAsc(questId);
+        for (int i = 0; i < ranked.size(); i++) {
+            ranked.get(i).setRank(i + 1);
         }
-        entryRepository.saveAll(entries);
+        entryRepository.saveAll(ranked);
+
+        // Les joueurs sans bestTurnCount (jamais terminé) → rank = 0
+        List<HuntingQuestEntry> all = entryRepository.findByQuestId(questId);
+        for (HuntingQuestEntry e : all) {
+            if (e.getBestTurnCount() == null && e.getRank() != 0) {
+                e.setRank(0);
+                entryRepository.save(e);
+            }
+        }
+    }
+
+    /** Calcule le seuil top 20% pour une quête weekly */
+    private int getTop20Threshold(Long questId) {
+        List<HuntingQuestEntry> ranked = entryRepository.findByQuestIdOrderByBestTurnCountAsc(questId);
+        if (ranked.isEmpty()) return 0;
+        return Math.max(1, (int) Math.ceil(ranked.size() * 0.2));
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -306,8 +328,9 @@ public class HuntingQuestService {
             return totalGold + " pièces d'or récupérées !";
 
         } else if ("WEEKLY".equals(quest.getType())) {
-            if (entry.getRank() < 1 || entry.getRank() > 3) {
-                throw new IllegalStateException("Vous n'êtes pas dans le top 3.");
+            int threshold = getTop20Threshold(quest.getId());
+            if (entry.getRank() < 1 || entry.getRank() > threshold) {
+                throw new IllegalStateException("Vous n'êtes pas dans le top 20% (top " + threshold + ").");
             }
             // Vérifier que la quête weekly est récupérable (fin + 7 jours max)
             if (quest.getEndDate().plusWeeks(1).isBefore(LocalDate.now(ZONE))) {
@@ -390,6 +413,11 @@ public class HuntingQuestService {
             result.put("quest", questToMap(quest));
             result.put("leaderboard", getLeaderboard(quest.getId()));
 
+            int threshold = getTop20Threshold(quest.getId());
+            long totalParticipants = entryRepository.findByQuestIdOrderByBestTurnCountAsc(quest.getId()).size();
+            result.put("top20Threshold", threshold);
+            result.put("totalParticipants", totalParticipants);
+
             if (quest.getRewardAnomalieId() != null) {
                 anomalieRepository.findById(quest.getRewardAnomalieId().longValue())
                         .ifPresent(a -> result.put("rewardAnomalie", anomalieToMap(a)));
@@ -409,6 +437,11 @@ public class HuntingQuestService {
                 Map<String, Object> prevData = new HashMap<>();
                 prevData.put("quest", questToMap(prev));
                 prevData.put("leaderboard", getLeaderboard(prev.getId()));
+
+                int prevThreshold = getTop20Threshold(prev.getId());
+                long prevTotal = entryRepository.findByQuestIdOrderByBestTurnCountAsc(prev.getId()).size();
+                prevData.put("top20Threshold", prevThreshold);
+                prevData.put("totalParticipants", prevTotal);
 
                 if (prev.getRewardAnomalieId() != null) {
                     anomalieRepository.findById(prev.getRewardAnomalieId().longValue())
@@ -440,7 +473,7 @@ public class HuntingQuestService {
         if ("DAILY".equals(quest.getType())) {
             entries = entryRepository.findByQuestIdOrderByFirstCompletionTimeAsc(questId);
         } else {
-            entries = entryRepository.findByQuestIdOrderByCompletionCountDesc(questId);
+            entries = entryRepository.findByQuestIdOrderByBestTurnCountAsc(questId);
         }
 
         return entries.stream().map(this::entryToMap).collect(Collectors.toList());
@@ -466,6 +499,7 @@ public class HuntingQuestService {
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("accountName", e.getAccountName());
         m.put("completionCount", e.getCompletionCount());
+        m.put("bestTurnCount", e.getBestTurnCount());
         m.put("firstCompletionTime", e.getFirstCompletionTime() != null ? e.getFirstCompletionTime().toString() : null);
         m.put("rank", e.getRank());
         m.put("rewardClaimed", e.isRewardClaimed());

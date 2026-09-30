@@ -96,6 +96,7 @@ public class CombatRoomService {
                 session.addLog("Vous entrez dans une salle de combat ! Préparez-vous.");
             }
             session.setTurnNumber(1);
+            session.setGlobalTurnCount(session.getGlobalTurnCount() + 1);
             for (Personnage p : session.getPlayers()) {
                 p.setBanalSpellCastThisTurn(false);
                 p.setInstantSpellCastThisTurn(false);
@@ -1019,7 +1020,7 @@ public class CombatRoomService {
                 for (generation.grimoire.entity.personnage.Personnage p : session.getPlayers()) {
                     String owner = p.getOwnerUsername();
                     if (owner != null && recorded.add(owner)) {
-                        huntingQuestService.recordCompletion(session.getDungeonId(), owner);
+                        huntingQuestService.recordCompletion(session.getDungeonId(), owner, session.getGlobalTurnCount());
                     }
                 }
             } catch (Exception e) {
