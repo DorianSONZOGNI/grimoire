@@ -106,6 +106,7 @@ class CombatTurnService {
 
         if (session.isRoundFinished() && !session.areAllEnemiesDead() && !session.areAllPlayersDead()) {
             session.setTurnNumber(session.getTurnNumber() + 1);
+            session.setGlobalTurnCount(session.getGlobalTurnCount() + 1);
             rollInitiative(session);
         }
 
@@ -120,6 +121,7 @@ class CombatTurnService {
         if (session.isRoundFinished()) {
             if (!session.areAllEnemiesDead() && !session.areAllPlayersDead()) {
                 session.setTurnNumber(session.getTurnNumber() + 1);
+                session.setGlobalTurnCount(session.getGlobalTurnCount() + 1);
                 rollInitiative(session);
             }
             spellAvailabilityService.compute(session);
@@ -446,6 +448,7 @@ class CombatTurnService {
             }
         } else if (session.isRoundFinished() && !session.areAllEnemiesDead()) {
             session.setTurnNumber(session.getTurnNumber() + 1);
+            session.setGlobalTurnCount(session.getGlobalTurnCount() + 1);
             rollInitiative(session);
         }
 

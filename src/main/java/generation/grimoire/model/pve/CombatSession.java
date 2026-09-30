@@ -54,6 +54,7 @@ public class CombatSession {
     private List<ActiveMonster> enemies = new ArrayList<>();
 
     private int turnNumber = 1;
+    private int globalTurnCount = 0;
     private boolean isFinished = false;
     private boolean playerWon = false;
     private boolean roomEventCompleted = false;

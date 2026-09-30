@@ -175,6 +175,8 @@ async function loadWeekly() {
 
         updateTimer('weeklyTimer', quest.endDate, 'Fin dans');
 
+        window._weeklyTop20Threshold = data.top20Threshold || 1;
+
         card.innerHTML = `
             <div class="quest-card-inner">
                 <div class="quest-dungeon-info">
@@ -200,7 +202,7 @@ async function loadWeekly() {
                             Récompense — Anomalie
                         </div>
                         <div class="quest-reward-detail">
-                            Top 3 des comptes avec le plus de victoires sur ce donjon reçoivent une
+                            Les <strong>${data.top20Threshold || 1}</strong> meilleur(s) joueur(s) (top 20% de ${data.totalParticipants || 0} participants) avec le moins de tours reçoivent une
                             <strong>Anomalie Niv.2+</strong> liée au secret <strong>${escHtml(quest.requiredSecret || '?')}</strong>.
                         </div>
                     </div>
@@ -209,7 +211,7 @@ async function loadWeekly() {
                 <div class="quest-leaderboard">
                     <div class="quest-leaderboard-title">
                         <span class="material-symbols-outlined" style="font-size: 1rem;">military_tech</span>
-                        Meilleurs Chasseurs
+                        Classement — Moins de Tours
                     </div>
                     <div class="quest-leaderboard-list">
                         ${renderLeaderboard(lb, 'weekly')}
@@ -283,7 +285,7 @@ function renderLeaderboard(entries, type) {
         const isMe = currentUser && e.accountName === currentUser;
         const stat = type === 'daily'
             ? (e.firstCompletionTime ? formatTime(e.firstCompletionTime) : '')
-            : `${e.completionCount} victoire${e.completionCount > 1 ? 's' : ''}`;
+            : (e.bestTurnCount != null ? `${e.bestTurnCount} tour${e.bestTurnCount > 1 ? 's' : ''}` : 'Non terminé');
 
         return `
             <div class="lb-row ${isMe ? 'me' : ''}">
@@ -343,11 +345,11 @@ function renderClaimButton(quest, myEntry, type, rewardAnomalie = null) {
         </button>`;
     }
 
-    // Weekly : top 3 seulement
-    if (type === 'weekly' && (myEntry.rank < 1 || myEntry.rank > 3)) {
+    // Weekly : top 20% seulement
+    if (type === 'weekly' && (myEntry.rank < 1 || myEntry.rank > (window._weeklyTop20Threshold || 1))) {
         return `<button class="btn-claim locked">
             <span class="material-symbols-outlined">lock</span>
-            Réservé au Top 3
+            Réservé au Top 20%
             ${anomalieHtml}
         </button>`;
     }

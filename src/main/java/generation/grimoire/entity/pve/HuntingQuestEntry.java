@@ -36,6 +36,9 @@ public class HuntingQuestEntry {
     @Column(name = "quest_rank", nullable = false)
     private int rank = 0;
 
+    /** Meilleur nombre de tours pour terminer le donjon (weekly) */
+    private Integer bestTurnCount;
+
     /** Récompense récupérée ? */
     @Column(nullable = false)
     private boolean rewardClaimed = false;
