@@ -36,7 +36,26 @@ public class HuntingQuestEntry {
     @Column(name = "quest_rank", nullable = false)
     private int rank = 0;
 
-    /** Récompense récupérée ? */
+    /** Meilleur nombre de tours pour terminer le donjon (weekly) */
+    private Integer bestTurnCount;
+
+    /** Récompense récupérée (pour weekly) */
     @Column(nullable = false)
     private boolean rewardClaimed = false;
+
+    // Daily Challenge Medals
+    @Column(nullable = false)
+    private boolean challenge1Completed = false;
+
+    @Column(nullable = false)
+    private boolean challenge2Completed = false;
+
+    @Column(nullable = false)
+    private boolean rewardBronzeClaimed = false;
+
+    @Column(nullable = false)
+    private boolean rewardSilverClaimed = false;
+
+    @Column(nullable = false)
+    private boolean rewardGoldClaimed = false;
 }

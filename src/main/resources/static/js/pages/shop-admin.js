@@ -452,6 +452,12 @@ window.editEquipment = function (id) {
     if (document.getElementById('eqConsumableManaPercent')) document.getElementById('eqConsumableManaPercent').value = eq.consumableManaPercent || 0;
     if (document.getElementById('eqConsumableMissingHpPercent')) document.getElementById('eqConsumableMissingHpPercent').value = eq.consumableMissingHpPercent || 0;
     if (document.getElementById('eqConsumableMissingManaPercent')) document.getElementById('eqConsumableMissingManaPercent').value = eq.consumableMissingManaPercent || 0;
+    if (document.getElementById('eqConsumableBonusXpPercent')) document.getElementById('eqConsumableBonusXpPercent').value = eq.consumableBonusXpPercent || 0;
+    if (document.getElementById('eqConsumableBonusMagicalDamagePercent')) document.getElementById('eqConsumableBonusMagicalDamagePercent').value = eq.consumableBonusMagicalDamagePercent || 0;
+    if (document.getElementById('eqConsumableBonusPhysicalDamagePercent')) document.getElementById('eqConsumableBonusPhysicalDamagePercent').value = eq.consumableBonusPhysicalDamagePercent || 0;
+    if (document.getElementById('eqConsumableBonusArmorFlat')) document.getElementById('eqConsumableBonusArmorFlat').value = eq.consumableBonusArmorFlat || 0;
+    if (document.getElementById('eqConsumableBonusResistanceFlat')) document.getElementById('eqConsumableBonusResistanceFlat').value = eq.consumableBonusResistanceFlat || 0;
+    if (document.getElementById('eqConsumableDurationTurns')) document.getElementById('eqConsumableDurationTurns').value = eq.consumableDurationTurns || 0;
     if (document.getElementById('eqConsumableCategory')) {
         const cat = eq.consumableCategory || 'AUTRE';
         document.getElementById('eqConsumableCategory').value = cat;

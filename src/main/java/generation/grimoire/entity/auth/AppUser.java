@@ -73,6 +73,12 @@ public class AppUser {
     @Column(name = "recipe_id")
     private Set<Long> seenAlchemyRecipes = new HashSet<>();
 
+    @ElementCollection(fetch = FetchType.EAGER)
+    @Fetch(FetchMode.SUBSELECT)
+    @CollectionTable(name = "user_seen_dungeons", joinColumns = @JoinColumn(name = "user_id"))
+    @Column(name = "dungeon_id")
+    private Set<Long> seenDungeons = new HashSet<>();
+
     @Column(nullable = false)
     private boolean unlockedVault = false;
 

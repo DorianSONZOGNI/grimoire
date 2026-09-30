@@ -66,6 +66,12 @@ public class Equipment {
     private int consumableManaPercent = 0;
     private int consumableMissingHpPercent = 0;
     private int consumableMissingManaPercent = 0;
+    private int consumableBonusXpPercent = 0;
+    private int consumableBonusMagicalDamagePercent = 0;
+    private int consumableBonusPhysicalDamagePercent = 0;
+    private int consumableBonusArmorFlat = 0;
+    private int consumableBonusResistanceFlat = 0;
+    private int consumableDurationTurns = 0;
     private generation.grimoire.enumeration.ConsumableCategory consumableCategory = ConsumableCategory.AUTRE;
 
     @JsonIgnore
@@ -117,6 +123,12 @@ public class Equipment {
         this.setConsumableManaPercent(template.getConsumableManaPercent());
         this.setConsumableMissingHpPercent(template.getConsumableMissingHpPercent());
         this.setConsumableMissingManaPercent(template.getConsumableMissingManaPercent());
+        this.setConsumableBonusXpPercent(template.getConsumableBonusXpPercent());
+        this.setConsumableBonusMagicalDamagePercent(template.getConsumableBonusMagicalDamagePercent());
+        this.setConsumableBonusPhysicalDamagePercent(template.getConsumableBonusPhysicalDamagePercent());
+        this.setConsumableBonusArmorFlat(template.getConsumableBonusArmorFlat());
+        this.setConsumableBonusResistanceFlat(template.getConsumableBonusResistanceFlat());
+        this.setConsumableDurationTurns(template.getConsumableDurationTurns());
         this.setConsumableCategory(template.getConsumableCategory());
     }
 

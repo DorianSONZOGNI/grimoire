@@ -44,4 +44,7 @@ public class HuntingQuest {
     private boolean active = true;
 
     private Long rewardAnomalieId;
+
+    @Column(name = "daily_challenge_duo")
+    private String dailyChallengeDuo;
 }

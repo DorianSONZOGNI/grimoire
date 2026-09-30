@@ -200,6 +200,10 @@ public class Personnage {
         return lowestHpReached;
     }
 
+    private int consumableBonusXpPercent = 0;
+    private int consumableBonusXpTurns = 0;
+
+
     public void setLowestHpReached(Integer lowestHpReached) {
         this.lowestHpReached = lowestHpReached;
     }
@@ -589,6 +593,8 @@ public class Personnage {
     public void clearBuffs() {
         // Optionnel : rétablir les statistiques en inversant les effets appliqués
         activeBuffs.clear();
+        this.consumableBonusXpPercent = 0;
+        this.consumableBonusXpTurns = 0;
         System.out.println(name + " a été purifié de tous les buffs/débuffs.");
     }
 

@@ -1,3 +1,31 @@
+
+function getChallengeTitle(duo) {
+    if (duo === 'HEADHUNTER') return 'Chasseur de têtes';
+    if (duo === 'SURGEON') return 'Chirurgien';
+    if (duo === 'LONER') return 'Loup solitaire';
+    if (duo === 'IMPATIENT') return 'Impatient';
+    return duo;
+}
+
+function getChallengeDuoText(duo) {
+    let desc = "<ul style='margin:0; padding-left:16px; margin-top:4px; color:#e2e8f0; line-height:1.4;'>";
+    if (duo === 'HEADHUNTER') {
+        desc += "<li>Tuer les monstres du plus grand PV max au plus petit</li>";
+        desc += "<li style='margin-top:4px;'>Achever tous les monstres avec une attaque de base</li>";
+    } else if (duo === 'SURGEON') {
+        desc += "<li>Tuer tous les monstres durant le même tour (par salle)</li>";
+        desc += "<li style='margin-top:4px;'>Ne pas perdre plus de 20% de vos PV max sur un héros</li>";
+    } else if (duo === 'LONER') {
+        desc += "<li>Terminer le donjon avec un seul héros</li>";
+        desc += "<li style='margin-top:4px;'>Tuer un seul monstre par tour maximum</li>";
+    } else if (duo === 'IMPATIENT') {
+        desc += "<li>Terminer chaque salle de combat en 3 tours max</li>";
+        desc += "<li style='margin-top:4px;'>Tuer les monstres en 2 attaques directes max par monstre</li>";
+    }
+    desc += "</ul>";
+    return desc;
+}
+
 window.switchDungeonTab = function (tabName) {
     document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
     document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
@@ -21,7 +49,7 @@ pageState.currentMaxHeroes = 1;
 pageState.selectedConsumableIds = [];
 pageState.userCharacters = [];
 pageState.availableConsumables = [];
-pageState.activeConsumableFilters = { hp: false, mana: false, util: false };
+pageState.activeConsumableFilters = { hp: false, mana: false, dmg: false, def: false, xp: false, util: false };
 pageState.allAnomalies = [];
 
 function collectDungeonAnomaliesLocal(salles) {
@@ -158,9 +186,7 @@ async function loadDungeons() {
             // Force Libre to be the first key in the map to guarantee tab order
             categories.set('free', { id: 'free', label: 'Libres', icon: 'public', color: '#38bdf8', dungeons: [], newCount: 0 });
 
-            let seenDungeons = [];
-            const seenKey = 'seenUnlockedDungeons_' + (window.currentUser?.username || 'guest');
-            try { seenDungeons = JSON.parse(localStorage.getItem(seenKey)) || []; } catch(e) {}
+            let seenDungeons = window.currentUser?.seenDungeons || [];
 
             dungeons.forEach(d => {
                 let catId, label, icon, color;
@@ -231,13 +257,16 @@ async function loadDungeons() {
                     switchDungeonTab(cat.id);
                     // Mark as seen
                     if (cat.newCount > 0) {
-                        let currentSeen = [];
-                        const seenKey = 'seenUnlockedDungeons_' + (window.currentUser?.username || 'guest');
-                        try { currentSeen = JSON.parse(localStorage.getItem(seenKey)) || []; } catch(e) {}
+                        let currentSeen = window.currentUser?.seenDungeons || [];
                         cat.dungeons.forEach(d => {
-                            if (!currentSeen.includes(d.id)) currentSeen.push(d.id);
+                            if (!currentSeen.includes(d.id)) {
+                                currentSeen.push(d.id);
+                                globalFetch('/api/pve/dungeons/' + d.id + '/seen', { method: 'POST' }).catch(() => {});
+                            }
                         });
-                        localStorage.setItem(seenKey, JSON.stringify(currentSeen));
+                        if (window.currentUser) {
+                            window.currentUser.seenDungeons = currentSeen;
+                        }
                         // Update global header badge
                         const globalBadge = document.getElementById('navDungeonBadge');
                         if (globalBadge) {
@@ -364,10 +393,16 @@ async function loadDungeons() {
                         </div>`;
                     }
 
-                    if (d.dailyQuest) {
-                        leftBadges += `<div class="badge-quest daily" title="Cible de la Quête Journalière">
-                            <span class="material-symbols-outlined text-warning badge-icon">workspace_premium</span>
-                        </div>`;
+                                        if (d.dailyQuest) {
+                        if (d.dailyChallengeDuo) {
+                            leftBadges += `<div class="badge-quest daily" style="cursor: pointer;" title="Cible de la Quête Journalière" onmouseenter="if(window.showGlobalTooltip) window.showGlobalTooltip(this)" onmouseleave="if(window.hideGlobalTooltip) window.hideGlobalTooltip()" data-tooltip-html="<div style='padding:4px;'><strong>Défi du jour : <span style='color:#f59e0b;'>${getChallengeTitle(d.dailyChallengeDuo)}</span></strong><br>${getChallengeDuoText(d.dailyChallengeDuo).replace(/"/g, '&quot;')}</div>">
+                                <span class="material-symbols-outlined text-warning badge-icon">workspace_premium</span>
+                            </div>`;
+                        } else {
+                            leftBadges += `<div class="badge-quest daily" title="Cible de la Quête Journalière">
+                                <span class="material-symbols-outlined text-warning badge-icon">workspace_premium</span>
+                            </div>`;
+                        }
                     }
                     if (d.weeklyQuest) {
                         leftBadges += `<div class="badge-quest weekly" title="Cible de la Quête Hebdomadaire">
@@ -564,29 +599,47 @@ function renderConsumablesList() {
     }
 
     let filteredConsumables = pageState.availableConsumables;
-    const hasFilter = pageState.activeConsumableFilters.hp || pageState.activeConsumableFilters.mana || pageState.activeConsumableFilters.util;
+    const hasFilter = pageState.activeConsumableFilters.hp || pageState.activeConsumableFilters.mana || pageState.activeConsumableFilters.dmg || pageState.activeConsumableFilters.def || pageState.activeConsumableFilters.xp || pageState.activeConsumableFilters.util;
 
     if (hasFilter) {
         filteredConsumables = pageState.availableConsumables.filter(c => {
-            const hasHp = (c.consumableHpPercent && c.consumableHpPercent > 0) ||
+            const hasHp = Boolean((c.consumableHpPercent && c.consumableHpPercent > 0) ||
                 (c.consumableMissingHpPercent && c.consumableMissingHpPercent > 0) ||
                 (c.bonusHealthMax && c.bonusHealthMax > 0) ||
-                c.consumableCategory === 'POTION_ROUGE' ||
-                c.consumableCategory === 'POTION_ROSE' ||
-                c.consumableCategory === 'NOURRITURE';
+                (c.regenHealthPerTurn && c.regenHealthPerTurn > 0) ||
+                c.consumableCategory === 'NOURRITURE');
 
-            const hasMana = (c.consumableManaPercent && c.consumableManaPercent > 0) ||
+            const hasMana = Boolean((c.consumableManaPercent && c.consumableManaPercent > 0) ||
                 (c.consumableMissingManaPercent && c.consumableMissingManaPercent > 0) ||
                 (c.bonusManaMax && c.bonusManaMax > 0) ||
-                c.consumableCategory === 'POTION_BLEUE' ||
-                c.consumableCategory === 'POTION_VIOLETTE';
+                (c.regenManaPerTurn && c.regenManaPerTurn > 0));
 
-            const hasUtil = !hasHp && !hasMana;
+            const hasDmg = Boolean((c.consumableBonusMagicalDamagePercent && c.consumableBonusMagicalDamagePercent > 0) ||
+                (c.consumableBonusPhysicalDamagePercent && c.consumableBonusPhysicalDamagePercent > 0) ||
+                (c.bonusPower && c.bonusPower > 0) ||
+                (c.bonusStrength && c.bonusStrength > 0) ||
+                (c.bonusCrit && c.bonusCrit > 0));
 
-            let match = true;
-            if (pageState.activeConsumableFilters.hp !== hasHp) match = false;
-            if (pageState.activeConsumableFilters.mana !== hasMana) match = false;
-            if (pageState.activeConsumableFilters.util !== hasUtil) match = false;
+            const hasDef = Boolean((c.consumableBonusArmorFlat && c.consumableBonusArmorFlat > 0) ||
+                (c.consumableBonusResistanceFlat && c.consumableBonusResistanceFlat > 0) ||
+                (c.bonusArmor && c.bonusArmor > 0) ||
+                (c.bonusResistance && c.bonusResistance > 0) ||
+                (c.bonusSpeed && c.bonusSpeed > 0));
+
+            const hasXp = Boolean(c.consumableBonusXpPercent && c.consumableBonusXpPercent > 0);
+
+            const hasUtil = !hasHp && !hasMana && !hasDmg && !hasDef && !hasXp;
+
+            // Logique de filtrage "INCLUSIF" : 
+            // Si l'objet possède l'une des stats demandées par les filtres actifs, on l'affiche.
+            // Si aucun filtre n'est coché, hasFilter est false et tout est affiché.
+            let match = false;
+            if (pageState.activeConsumableFilters.hp && hasHp) match = true;
+            if (pageState.activeConsumableFilters.mana && hasMana) match = true;
+            if (pageState.activeConsumableFilters.dmg && hasDmg) match = true;
+            if (pageState.activeConsumableFilters.def && hasDef) match = true;
+            if (pageState.activeConsumableFilters.xp && hasXp) match = true;
+            if (pageState.activeConsumableFilters.util && hasUtil) match = true;
 
             return match;
         });
@@ -658,6 +711,11 @@ function renderConsumablesList() {
                         ${c.consumableManaPercent ? `<span class="inline-flex items-center text-sky-500" title="Mana Max">+${c.consumableManaPercent}%<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">water_drop</span></span>` : ''}
                         ${c.consumableMissingHpPercent ? `<span class="inline-flex items-center text-red-500" title="PV Manq">+${c.consumableMissingHpPercent}%<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">healing</span></span>` : ''}
                         ${c.consumableMissingManaPercent ? `<span class="inline-flex items-center text-purple-500" title="Mana Manq">+${c.consumableMissingManaPercent}%<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">cyclone</span></span>` : ''}
+                        ${c.consumableBonusXpPercent ? `<span class="inline-flex items-center text-yellow-400" title="XP">${c.consumableBonusXpPercent > 0 ? '+' : ''}${c.consumableBonusXpPercent}%<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">star</span></span>` : ''}
+                        ${c.consumableBonusMagicalDamagePercent ? `<span class="inline-flex items-center text-purple-400" title="Dégâts Magiques">${c.consumableBonusMagicalDamagePercent > 0 ? '+' : ''}${c.consumableBonusMagicalDamagePercent}%<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">auto_awesome</span></span>` : ''}
+                        ${c.consumableBonusPhysicalDamagePercent ? `<span class="inline-flex items-center text-red-400" title="Dégâts Physiques">${c.consumableBonusPhysicalDamagePercent > 0 ? '+' : ''}${c.consumableBonusPhysicalDamagePercent}%<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">fitness_center</span></span>` : ''}
+                        ${c.consumableBonusArmorFlat ? `<span class="inline-flex items-center text-blue-400" title="Armure">${c.consumableBonusArmorFlat > 0 ? '+' : ''}${c.consumableBonusArmorFlat}<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">shield</span></span>` : ''}
+                        ${c.consumableBonusResistanceFlat ? `<span class="inline-flex items-center text-emerald-400" title="Résistance">${c.consumableBonusResistanceFlat > 0 ? '+' : ''}${c.consumableBonusResistanceFlat}<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">shield</span></span>` : ''}
                         ${c.consumableCategory === 'CLE' && c.specialEffectValue ? `<span class="inline-flex items-center text-yellow-400" title="Bonus butin coffre">+${c.specialEffectValue}%<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">diamond</span></span>` : ''}
                     </div>
                 </div>
@@ -1145,14 +1203,14 @@ window.closeEntryModal = function () {
     document.getElementById('entryModal').classList.remove('active');
 };
 
-// ═══════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 // CO-OP LOBBY
-// ═══════════════════════════════════════════════════════════════════════════
+// â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•â•
 
 let coopLobbyId = null;       // multiSessionId du lobby actif (hôte)
 let coopLobbySSE = null;      // SSE EventSource pour les events du lobby
 
-// ─── Toggle co-op / solo ────────────────────────────────────────────────────
+// â”€â”€â”€ Toggle co-op / solo â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 window.onCoopToggleChange = function () {
     const isCoopMode = document.getElementById('coopModeToggle').checked;
@@ -1173,7 +1231,7 @@ window.onCoopToggleChange = function () {
     }
 };
 
-// ─── Synchroniser l'état du bouton co-op avec la sélection ─────────────────
+// â”€â”€â”€ Synchroniser l'état du bouton co-op avec la sélection â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 // (appelé par updateHeroCountDisplay ou directement)
 const _origUpdateHeroCount = window.updateHeroCountDisplay;
 window.updateHeroCountDisplay = function () {
@@ -1194,7 +1252,7 @@ window.updateHeroCountDisplay = function () {
     }
 };
 
-// ─── Création du lobby (hôte) ────────────────────────────────────────────────
+// â”€â”€â”€ Création du lobby (hôte) â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 window.createCoopLobby = async function () {
     if (pageState.selectedCharIds.length === 0) {
@@ -1271,7 +1329,7 @@ window.createCoopLobby = async function () {
 function onLobbyReady(lobby) {
     if (coopLobbySSE) { coopLobbySSE.close(); coopLobbySSE = null; }
     document.getElementById('lobbyWaitingStatus').innerHTML =
-        '<span style="color:#4ade80; font-size:1rem;">✔ Joueur 2 connecté ! Lancement...</span>';
+        '<span style="color:#4ade80; font-size:1rem;">âœ” Joueur 2 connecté ! Lancement...</span>';
 
     // Courte pause puis redirect vers combat.html en tant qu'hôte
     setTimeout(() => {
@@ -1280,7 +1338,7 @@ function onLobbyReady(lobby) {
     }, 1200);
 }
 
-// ─── Annulation du lobby ─────────────────────────────────────────────────────
+// â”€â”€â”€ Annulation du lobby â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 window.cancelCoopLobby = async function () {
     if (!coopLobbyId) { closeLobbyOverlay(); return; }
@@ -1296,7 +1354,7 @@ function closeLobbyOverlay() {
     document.getElementById('lobbyWaitingOverlay').style.display = 'none';
 }
 
-// ─── Modal Rejoindre un lobby ─────────────────────────────────────────────────
+// â”€â”€â”€ Modal Rejoindre un lobby â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€â”€
 
 let joinSelectedCharIds = [];
 
@@ -1659,6 +1717,8 @@ window.submitJoinLobby = async function () {
 window.closeEntryModal = function () {
     document.getElementById('entryModal').classList.remove('active');
 };
+
+
 
 
 

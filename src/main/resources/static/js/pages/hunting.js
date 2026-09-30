@@ -3,23 +3,21 @@
 let currentUser = null;
 let refreshInterval = null;
 
-document.addEventListener('DOMContentLoaded', () => {
-    if (window.currentUser !== undefined) {
-        initHunting();
-    } else {
-        window.addEventListener('authLoaded', initHunting);
-    }
-});
+document.addEventListener('DOMContentLoaded', () => { if (window.currentUser !== undefined) { initHunting(); } else { const authHandler = () => { initHunting(); window.removeEventListener('authLoaded', authHandler); }; window.addEventListener('authLoaded', authHandler); } });
 
+let isHuntingInitialized = false;
 async function initHunting() {
+    if (isHuntingInitialized) return;
     if (!window.currentUser) {
         window.location.href = '/login.html';
         return;
     }
+    isHuntingInitialized = true;
     currentUser = window.currentUser.username;
     await loadAll();
 
     // Refresh toutes les 30s
+    if (refreshInterval) clearInterval(refreshInterval);
     refreshInterval = setInterval(loadAll, 30000);
 }
 
@@ -69,16 +67,18 @@ async function loadDaily() {
                             ${escHtml(quest.requiredSecret)} Niv.${quest.requiredSecretLevel}
                         </span>` : ''}
                     </div>
-                    <div class="quest-reward-box">
-                        <div class="quest-reward-title">
-                            <span class="material-symbols-outlined" style="font-size: 1rem;">payments</span>
+                    <div class="quest-reward-box" style="position: relative;">
+                        <div class="quest-reward-title" style="display: flex; align-items: center;">
+                            <span class="material-symbols-outlined" style="font-size: 1rem; margin-right: 4px;">payments</span>
                             Récompenses en Or
                         </div>
+                        ${quest.dailyChallengeDuo ? `<div class="badge-quest daily" style="position: absolute; top: -12px; right: -12px; background: rgba(15, 23, 42, 0.95); border-radius: 50%; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; border: 2px solid #f59e0b; box-shadow: 0 4px 10px rgba(245, 158, 11, 0.4); cursor: pointer;" onmouseenter="if(window.showGlobalTooltip) window.showGlobalTooltip(this)" onmouseleave="if(window.hideGlobalTooltip) window.hideGlobalTooltip()" data-tooltip-html="<div style='padding:4px;'><strong>Défi du jour : <span style='color:#f59e0b;'>${getChallengeTitle(quest.dailyChallengeDuo)}</span></strong><br>${getChallengeDuoText(quest.dailyChallengeDuo).replace(/"/g, '&quot;')}</div>">
+                            <span class="material-symbols-outlined text-warning badge-icon" style="font-size: 1.5rem;">workspace_premium</span>
+                        </div>` : ''}
                         <div class="quest-reward-detail">
-                            🥇 1er : <strong>${reward['1st'] || '?'}</strong> gold &nbsp;
-                            🥈 2ème : <strong>${reward['2nd'] || '?'}</strong> gold &nbsp;
-                            🥉 3ème : <strong>${reward['3rd'] || '?'}</strong> gold<br>
-                            <span style="font-size: 0.85em; color: #94a3b8; display: inline-block; margin-top: 4px;">4ème et + : <strong>${reward['other'] || '0'}</strong> gold</span>
+                            🥉 Bronze (Terminer le donjon) : <strong>${reward['base'] || '?'}</strong> gold<br>
+                            🥈 Argent (1 challenge) : <strong>+${Math.floor((reward['base'] || 0) * 2.00)}</strong> gold<br>
+                            🥇 Or (2 challenges) : <strong>+${Math.floor((reward['base'] || 0) * 3.00)}</strong> gold
                         </div>
                     </div>
                     ${renderClaimButton(quest, myEntry, 'daily')}
@@ -86,7 +86,7 @@ async function loadDaily() {
                 <div class="quest-leaderboard">
                     <div class="quest-leaderboard-title">
                         <span class="material-symbols-outlined" style="font-size: 1rem;">emoji_events</span>
-                        Premiers à conquérir
+                        Héros du jour
                     </div>
                     <div class="quest-leaderboard-list">
                         ${renderLeaderboard(lb, 'daily')}
@@ -175,6 +175,8 @@ async function loadWeekly() {
 
         updateTimer('weeklyTimer', quest.endDate, 'Fin dans');
 
+        window._weeklyTop20Threshold = data.top20Threshold || 1;
+
         card.innerHTML = `
             <div class="quest-card-inner">
                 <div class="quest-dungeon-info">
@@ -200,8 +202,8 @@ async function loadWeekly() {
                             Récompense — Anomalie
                         </div>
                         <div class="quest-reward-detail">
-                            Top 3 des comptes avec le plus de victoires sur ce donjon reçoivent une
-                            <strong>Anomalie Niv.2+</strong> liée au secret <strong>${escHtml(quest.requiredSecret || '?')}</strong>.
+                            Les <strong>${data.top20Threshold || 1}</strong> meilleur(s) joueur(s) (top 20% de ${data.totalParticipants || 0} participants) avec le moins de tours reçoivent une
+                            <strong>Anomalie Niv.${quest.requiredSecretLevel || 2}</strong> liée au secret <strong>${escHtml(quest.requiredSecret || '?')}</strong>.
                         </div>
                     </div>
                     ${renderClaimButton(quest, myEntry, 'weekly', data.rewardAnomalie)}
@@ -209,7 +211,7 @@ async function loadWeekly() {
                 <div class="quest-leaderboard">
                     <div class="quest-leaderboard-title">
                         <span class="material-symbols-outlined" style="font-size: 1rem;">military_tech</span>
-                        Meilleurs Chasseurs
+                        Classement — Moins de Tours
                     </div>
                     <div class="quest-leaderboard-list">
                         ${renderLeaderboard(lb, 'weekly')}
@@ -276,14 +278,21 @@ function renderLeaderboard(entries, type) {
         const rankNum = e.rank || (i + 1);
         let rankClass = 'normal';
         let rankIcon = rankNum;
-        if (rankNum === 1) { rankClass = 'gold'; rankIcon = '🥇'; }
-        else if (rankNum === 2) { rankClass = 'silver'; rankIcon = '🥈'; }
-        else if (rankNum === 3) { rankClass = 'bronze'; rankIcon = '🥉'; }
+        if (type === 'daily') {
+            let challs = (e.challenge1Completed ? 1 : 0) + (e.challenge2Completed ? 1 : 0);
+            if (challs === 2) { rankClass = 'gold'; rankIcon = '🥇'; }
+            else if (challs === 1) { rankClass = 'silver'; rankIcon = '🥈'; }
+            else { rankClass = 'bronze'; rankIcon = '🥉'; }
+        } else {
+            if (rankNum === 1) { rankClass = 'gold'; rankIcon = '🥇'; }
+            else if (rankNum === 2) { rankClass = 'silver'; rankIcon = '🥈'; }
+            else if (rankNum === 3) { rankClass = 'bronze'; rankIcon = '🥉'; }
+        }
 
         const isMe = currentUser && e.accountName === currentUser;
         const stat = type === 'daily'
             ? (e.firstCompletionTime ? formatTime(e.firstCompletionTime) : '')
-            : `${e.completionCount} victoire${e.completionCount > 1 ? 's' : ''}`;
+            : (e.bestTurnCount != null ? `${e.bestTurnCount} tour${e.bestTurnCount > 1 ? 's' : ''}` : 'Non terminé');
 
         return `
             <div class="lb-row ${isMe ? 'me' : ''}">
@@ -298,75 +307,79 @@ function renderLeaderboard(entries, type) {
 function renderClaimButton(quest, myEntry, type, rewardAnomalie = null) {
     if (!currentUser) return '';
 
-    // Construction du badge d'anomalie s'il existe
     let anomalieHtml = '';
     if (rewardAnomalie) {
         const icon = window.getCategoryIcon ? window.getCategoryIcon(rewardAnomalie.category) : 'auto_awesome';
         const color = window.getSpiritualiteColor ? window.getSpiritualiteColor(rewardAnomalie.spiritualite) : '#a855f7';
-        
-        // Escape quotes to safely put HTML into an attribute
         const tooltipHtml = window.getAnomalyTooltipHTML(rewardAnomalie, rewardAnomalie.name).replace(/"/g, '&quot;');
-        
-        anomalieHtml = `
-            <div class="reward-anomalie-badge" 
-                 style="border: 2px solid ${color}; color: ${color}; box-shadow: 0 0 10px ${color}40;"
-                 onmouseenter="if(window.showGlobalTooltip) window.showGlobalTooltip(this)"
-                 onmouseleave="if(window.hideGlobalTooltip) window.hideGlobalTooltip()"
-                 data-tooltip-html="${tooltipHtml}">
-                <span class="material-symbols-outlined">${icon}</span>
-            </div>
-        `;
+        anomalieHtml = `<div class="reward-anomalie-badge" style="border: 2px solid ${color}; color: ${color}; box-shadow: 0 0 10px ${color}40;" onmouseenter="if(window.showGlobalTooltip) window.showGlobalTooltip(this)" onmouseleave="if(window.hideGlobalTooltip) window.hideGlobalTooltip()" data-tooltip-html="${tooltipHtml}"><span class="material-symbols-outlined">${icon}</span></div>`;
     }
 
     if (!myEntry) {
-        return `<button class="btn-claim locked" title="Vous n'avez pas de score sur cette quête.">
-            <span class="material-symbols-outlined">lock</span>
-            Non participé
-            ${anomalieHtml}
-        </button>`;
+        return `<button class="btn-claim locked" title="Vous n'avez pas de score sur cette quête."><span class="material-symbols-outlined">lock</span> Non participé ${anomalieHtml}</button>`;
+    }
+
+    if (type === 'daily') {
+        let buttons = [];
+        let completedChalls = (myEntry.challenge1Completed ? 1 : 0) + (myEntry.challenge2Completed ? 1 : 0);
+        
+        // Bronze
+        if (myEntry.rewardBronzeClaimed) {
+            buttons.push(`<button class="btn-claim claimed" style="flex: 1; font-size: 0.85em; padding: 6px;"><span class="material-symbols-outlined">check_circle</span> Bronze</button>`);
+        } else {
+            buttons.push(`<button class="btn-claim claimable" data-quest-id="${quest.id}" data-tier="BRONZE" style="flex: 1; font-size: 0.85em; padding: 6px; background: #cd7f32; color: #fff;"><span class="material-symbols-outlined">redeem</span> Bronze</button>`);
+        }
+        
+        // Silver
+        if (myEntry.rewardSilverClaimed) {
+            buttons.push(`<button class="btn-claim claimed" style="flex: 1; font-size: 0.85em; padding: 6px;"><span class="material-symbols-outlined">check_circle</span> Argent</button>`);
+        } else if (completedChalls >= 1) {
+            buttons.push(`<button class="btn-claim claimable" data-quest-id="${quest.id}" data-tier="SILVER" style="flex: 1; font-size: 0.85em; padding: 6px; background: #c0c0c0; color: #000;"><span class="material-symbols-outlined">redeem</span> Argent</button>`);
+        } else {
+            buttons.push(`<button class="btn-claim locked" style="flex: 1; font-size: 0.85em; padding: 6px;"><span class="material-symbols-outlined">lock</span> Argent</button>`);
+        }
+        
+        // Gold
+        if (myEntry.rewardGoldClaimed) {
+            buttons.push(`<button class="btn-claim claimed" style="flex: 1; font-size: 0.85em; padding: 6px;"><span class="material-symbols-outlined">check_circle</span> Or</button>`);
+        } else if (completedChalls >= 2) {
+            buttons.push(`<button class="btn-claim claimable" data-quest-id="${quest.id}" data-tier="GOLD" style="flex: 1; font-size: 0.85em; padding: 6px; background: #ffd700; color: #000;"><span class="material-symbols-outlined">redeem</span> Or</button>`);
+        } else {
+            buttons.push(`<button class="btn-claim locked" style="flex: 1; font-size: 0.85em; padding: 6px;"><span class="material-symbols-outlined">lock</span> Or</button>`);
+        }
+        
+        return `<div style="display: flex; gap: 8px; width: 100%; margin-top: 12px;">${buttons.join('')}</div>`;
     }
 
     if (myEntry.rewardClaimed) {
-        return `<button class="btn-claim claimed">
-            <span class="material-symbols-outlined">check_circle</span>
-            Récompense récupérée
-            ${anomalieHtml}
-        </button>`;
+        return `<button class="btn-claim claimed"><span class="material-symbols-outlined">check_circle</span> Récompense récupérée ${anomalieHtml}</button>`;
     }
 
-    // Weekly active : on peut claim seulement si la quête est terminée (pas active)
     if (type === 'weekly' && quest.active) {
-        return `<button class="btn-claim locked">
-            <span class="material-symbols-outlined">hourglass_top</span>
-            Disponible à la fin de la semaine
-            ${anomalieHtml}
-        </button>`;
+        return `<button class="btn-claim locked"><span class="material-symbols-outlined">hourglass_top</span> Disponible à la fin de la semaine ${anomalieHtml}</button>`;
     }
 
-    // Weekly : top 3 seulement
-    if (type === 'weekly' && (myEntry.rank < 1 || myEntry.rank > 3)) {
-        return `<button class="btn-claim locked">
-            <span class="material-symbols-outlined">lock</span>
-            Réservé au Top 3
-            ${anomalieHtml}
-        </button>`;
+    if (type === 'weekly' && (myEntry.rank < 1 || myEntry.rank > (window._weeklyTop20Threshold || 1))) {
+        return `<button class="btn-claim locked"><span class="material-symbols-outlined">lock</span> Réservé au Top 20% ${anomalieHtml}</button>`;
     }
 
-    return `<button class="btn-claim claimable" data-quest-id="${quest.id}">
-        <span class="material-symbols-outlined">redeem</span>
-        Récupérer la récompense
-        ${anomalieHtml}
-    </button>`;
+    return `<button class="btn-claim claimable" data-quest-id="${quest.id}"><span class="material-symbols-outlined">redeem</span> Récupérer la récompense ${anomalieHtml}</button>`;
 }
 
 function bindClaimButton(container, questId) {
-    const btn = container.querySelector('.btn-claim.claimable');
-    if (btn) {
+    const btns = container.querySelectorAll('.btn-claim.claimable');
+    btns.forEach(btn => {
         btn.addEventListener('click', async () => {
+            const originalHtml = btn.innerHTML;
             btn.disabled = true;
-            btn.innerHTML = '<span class="material-symbols-outlined spin">progress_activity</span> Récupération…';
+            if (originalHtml.includes('material-symbols-outlined')) {
+                btn.innerHTML = originalHtml.replace(/<span class="material-symbols-outlined">[^<]*<\/span>/, '<span class="material-symbols-outlined spin">progress_activity</span>');
+            } else {
+                btn.innerHTML = '<span class="material-symbols-outlined spin">progress_activity</span>...';
+            }
             try {
-                const res = await window.globalFetch(`/api/pve/hunting/claim/${questId}`, { method: 'POST' });
+                const tier = btn.getAttribute('data-tier') || '';
+                const res = await window.globalFetch(`/api/pve/hunting/claim/${questId}${tier ? '?tier=' + tier : ''}`, { method: 'POST' });
                 const data = await res.json();
                 if (data.error) {
                     alert(data.error);
@@ -374,7 +387,12 @@ function bindClaimButton(container, questId) {
                     btn.innerHTML = '<span class="material-symbols-outlined">redeem</span> Récupérer la récompense';
                 } else {
                     btn.className = 'btn-claim claimed';
-                    btn.innerHTML = `<span class="material-symbols-outlined">check_circle</span> ${escHtml(data.message)}`;
+                    if (originalHtml && originalHtml.includes('material-symbols-outlined')) {
+                        btn.innerHTML = originalHtml.replace(/<span class="material-symbols-outlined">[^<]*<\/span>/, '<span class="material-symbols-outlined">check_circle</span>');
+                    } else {
+                        btn.innerHTML = `<span class="material-symbols-outlined">check_circle</span> Récupéré`;
+                    }
+                    if (window.showNotif && data.message) window.showNotif(data.message, false);
                     
                     // Diminuer le badge rouge en temps réel
                     const badge = document.getElementById('navHuntingBadge');
@@ -389,17 +407,15 @@ function bindClaimButton(container, questId) {
                     if (window.currentUser && window.currentUser.huntingClaimable > 0) {
                         window.currentUser.huntingClaimable--;
                     }
-                    if (window.checkAuthStatus) {
-                        window.checkAuthStatus();
-                    }
+                    try { const meRes = await window.globalFetch('/api/auth/me'); if (meRes.ok) { const meData = await meRes.json(); const prevGold = window.currentUser.monnaie; window.currentUser.monnaie = meData.monnaie; const goldEl = document.getElementById('navUserGold'); if (goldEl && window.animateGoldValue) { window.animateGoldValue(goldEl, prevGold, meData.monnaie, 1000); } else if (goldEl) { goldEl.textContent = Number(meData.monnaie).toFixed(1); } } } catch(e){}
                 }
             } catch (e) {
                 alert('Erreur lors de la récupération.');
                 btn.disabled = false;
-                btn.innerHTML = '<span class="material-symbols-outlined">redeem</span> Récupérer la récompense';
+                btn.innerHTML = originalHtml;
             }
         });
-    }
+    });
 }
 
 // ═══════════════════════════════════════════════════════════════════════
@@ -484,4 +500,29 @@ function escHtml(str) {
     const div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
+}
+
+
+function getChallengeTitle(duo) {
+    switch (duo) {
+        case 'HEADHUNTER': return 'Chasseur de têtes';
+        case 'SURGEON': return 'Chirurgien';
+        case 'LONER': return 'Loup solitaire';
+        case 'IMPATIENT': return 'Impatient';
+        default: return duo;
+    }
+}
+
+function getChallengeDuoText(duo) {
+    switch (duo) {
+        case 'HEADHUNTER':
+            return "<ul style='margin:0; padding-left:16px; margin-top:4px; color:#e2e8f0; line-height:1.4;'><li>Tuer les monstres du plus grand PV max au plus petit</li><li style='margin-top:4px;'>Achever tous les monstres avec une attaque de base</li></ul>";
+        case 'SURGEON':
+            return "<ul style='margin:0; padding-left:16px; margin-top:4px; color:#e2e8f0; line-height:1.4;'><li>Tuer tous les monstres durant le même tour (par salle)</li><li style='margin-top:4px;'>Ne pas perdre plus de 20% de vos PV max sur un héros</li></ul>";
+        case 'LONER':
+            return "<ul style='margin:0; padding-left:16px; margin-top:4px; color:#e2e8f0; line-height:1.4;'><li>Terminer le donjon avec un seul héros</li><li style='margin-top:4px;'>Tuer un seul monstre par tour maximum</li></ul>";
+        case 'IMPATIENT':
+            return "<ul style='margin:0; padding-left:16px; margin-top:4px; color:#e2e8f0; line-height:1.4;'><li>Terminer chaque salle de combat en 3 tours max</li><li style='margin-top:4px;'>Tuer les monstres en 2 attaques directes max par monstre</li></ul>";
+        default: return "";
+    }
 }

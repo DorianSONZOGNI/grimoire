@@ -73,7 +73,7 @@ public class HuntingQuestService {
         });
 
         List<Donjon> eligible = donjonRepository.findAll().stream()
-                .filter(d -> d.getRecommendedLevel() >= 3)
+                .filter(d -> d.getRequiredSecretLevel() >= 2)
                 .filter(d -> d.getRequiredSecret() != null && !d.getRequiredSecret().isBlank())
                 .filter(d -> d.getSalles().stream().anyMatch(s -> s.getType() == RoomType.BOSS))
                 .collect(Collectors.toList());
@@ -102,14 +102,14 @@ public class HuntingQuestService {
         List<Anomalie> templates = new ArrayList<>();
         if (mappedSpiri != null) {
             templates = anomalieRepository.findByIsTemplateTrue().stream()
-                    .filter(a -> a.getLevel() >= 2)
+                    .filter(a -> a.getLevel() == selected.getRequiredSecretLevel())
                     .filter(a -> a.getSpiritualite() == mappedSpiri)
                     .collect(Collectors.toList());
         }
 
         if (templates.isEmpty()) {
             templates = anomalieRepository.findByIsTemplateTrue().stream()
-                    .filter(a -> a.getLevel() >= 2)
+                    .filter(a -> a.getLevel() == selected.getRequiredSecretLevel())
                     .collect(Collectors.toList());
         }
         if (!templates.isEmpty()) {
@@ -153,7 +153,7 @@ public class HuntingQuestService {
                     quest.getRequiredSecret());
             if (mappedSpiri != null) {
                 anomalieRepository.findByIsTemplateTrue().stream()
-                        .filter(a -> a.getLevel() >= 2)
+                        .filter(a -> a.getLevel() == quest.getRequiredSecretLevel())
                         .filter(a -> a.getSpiritualite() == mappedSpiri)
                         .findFirst()
                         .ifPresent(a -> {
@@ -201,29 +201,54 @@ public class HuntingQuestService {
     // ═══════════════════════════════════════════════════════════════════════
 
     @Transactional
-    public void recordCompletion(Long dungeonId, String accountName) {
+    public void recordCompletion(Long dungeonId, String accountName, int totalTurns, generation.grimoire.model.pve.CombatSession session) {
         // Vérifier la quête daily
         questRepository.findByTypeAndActiveTrue("DAILY").ifPresent(quest -> {
             if (quest.getDungeonId().equals(dungeonId)) {
-                HuntingQuestEntry entry = entryRepository
-                        .findByQuestIdAndAccountName(quest.getId(), accountName)
-                        .orElse(null);
-
-                if (entry == null) {
-                    // Première complétion pour ce compte sur cette quête daily
-                    entry = new HuntingQuestEntry();
-                    entry.setQuest(quest);
-                    entry.setAccountName(accountName);
-                    entry.setCompletionCount(1);
+                HuntingQuestEntry entry = entryRepository.findByQuestIdAndAccountName(quest.getId(), accountName).orElse(new HuntingQuestEntry());
+                entry.setQuest(quest);
+                entry.setAccountName(accountName);
+                entry.setCompletionCount(entry.getCompletionCount() + 1);
+                
+                if (entry.getFirstCompletionTime() == null) {
                     entry.setFirstCompletionTime(Instant.now());
-                    entryRepository.save(entry);
-                    recalculateDailyRanks(quest.getId());
                 }
-                // Sinon, déjà fait → on ignore (une seule fois par compte)
+
+                // Check challenges based on duo
+                if (quest.getDailyChallengeDuo() != null && session != null) {
+                    boolean c1Failed = false;
+                    boolean c2Failed = false;
+                    switch (quest.getDailyChallengeDuo()) {
+                        case "HEADHUNTER":
+                            c1Failed = session.isHeadhunterChall1Failed();
+                            c2Failed = session.isHeadhunterChall2Failed();
+                            break;
+                        case "SURGEON":
+                            c1Failed = session.isSurgeonChall1Failed();
+                            c2Failed = session.isSurgeonChall2Failed();
+                            break;
+                        case "LONER":
+                            c1Failed = session.isLonerChall1Failed();
+                            c2Failed = session.isLonerChall2Failed();
+                            break;
+                        case "IMPATIENT":
+                            c1Failed = session.isImpatientChall1Failed();
+                            c2Failed = session.isImpatientChall2Failed();
+                            break;
+                    }
+                    boolean c1Run = !c1Failed;
+                    boolean c2Run = !c2Failed;
+                    
+                    // On accumule les challenges réussis au fil des runs
+                    if (c1Run) entry.setChallenge1Completed(true);
+                    if (c2Run) entry.setChallenge2Completed(true);
+                }
+
+                entryRepository.save(entry);
             }
         });
 
-        // Vérifier la quête weekly
+        // Vérifier la quête weekly — classement par meilleur nombre de tours
         questRepository.findByTypeAndActiveTrue("WEEKLY").ifPresent(quest -> {
             if (quest.getDungeonId().equals(dungeonId)) {
                 HuntingQuestEntry entry = entryRepository
@@ -237,29 +262,47 @@ public class HuntingQuestService {
                         });
 
                 entry.setCompletionCount(entry.getCompletionCount() + 1);
-                if (entry.getFirstCompletionTime() == null) {
+
+                // Enregistrer le meilleur score (moins de tours = mieux)
+                if (entry.getBestTurnCount() == null || totalTurns < entry.getBestTurnCount()) {
+                    entry.setBestTurnCount(totalTurns);
+                    // Mettre à jour le timestamp quand on améliore son score
+                    entry.setFirstCompletionTime(Instant.now());
+                } else if (entry.getFirstCompletionTime() == null) {
                     entry.setFirstCompletionTime(Instant.now());
                 }
+
                 entryRepository.save(entry);
                 recalculateWeeklyRanks(quest.getId());
             }
         });
     }
 
-    private void recalculateDailyRanks(Long questId) {
-        List<HuntingQuestEntry> entries = entryRepository.findByQuestIdOrderByFirstCompletionTimeAsc(questId);
-        for (int i = 0; i < entries.size(); i++) {
-            entries.get(i).setRank(i + 1); // 1er arrivé = rang 1
-        }
-        entryRepository.saveAll(entries);
-    }
+
 
     private void recalculateWeeklyRanks(Long questId) {
-        List<HuntingQuestEntry> entries = entryRepository.findByQuestIdOrderByCompletionCountDesc(questId);
-        for (int i = 0; i < entries.size(); i++) {
-            entries.get(i).setRank(i + 1);
+        // Classement par nombre de tours ASC, puis timestamp ASC comme départage
+        List<HuntingQuestEntry> ranked = entryRepository.findByQuestIdOrderByBestTurnCountAsc(questId);
+        for (int i = 0; i < ranked.size(); i++) {
+            ranked.get(i).setRank(i + 1);
         }
-        entryRepository.saveAll(entries);
+        entryRepository.saveAll(ranked);
+
+        // Les joueurs sans bestTurnCount (jamais terminé) → rank = 0
+        List<HuntingQuestEntry> all = entryRepository.findByQuestId(questId);
+        for (HuntingQuestEntry e : all) {
+            if (e.getBestTurnCount() == null && e.getRank() != 0) {
+                e.setRank(0);
+                entryRepository.save(e);
+            }
+        }
+    }
+
+    /** Calcule le seuil top 20% pour une quête weekly */
+    private int getTop20Threshold(Long questId) {
+        List<HuntingQuestEntry> ranked = entryRepository.findByQuestIdOrderByBestTurnCountAsc(questId);
+        if (ranked.isEmpty()) return 0;
+        return Math.max(1, (int) Math.ceil(ranked.size() * 0.2));
     }
 
     // ═══════════════════════════════════════════════════════════════════════
@@ -267,47 +310,64 @@ public class HuntingQuestService {
     // ═══════════════════════════════════════════════════════════════════════
 
     @Transactional
-    public String claimReward(Long questId, String username) {
+    public String claimReward(Long questId, String username, String tier) {
         HuntingQuestEntry entry = entryRepository.findByQuestIdAndAccountName(questId, username)
                 .orElseThrow(() -> new IllegalArgumentException("Pas d'entrée trouvée pour cette quête."));
 
-        if (entry.isRewardClaimed()) {
+        HuntingQuest quest = entry.getQuest();
+        if ("WEEKLY".equals(quest.getType()) && entry.isRewardClaimed()) {
             throw new IllegalStateException("Récompense déjà récupérée.");
         }
 
-        HuntingQuest quest = entry.getQuest();
-
         // Vérifier éligibilité
         if ("DAILY".equals(quest.getType())) {
-            // Vérifier que la quête daily est encore active ou date pas trop vieille
-            if (!quest.isActive() && quest.getEndDate().isBefore(LocalDate.now(ZONE))) {
+            if (!quest.isActive() && quest.getEndDate().isBefore(java.time.LocalDate.now(ZONE))) {
                 throw new IllegalStateException("La quête journalière a expiré.");
             }
 
-            int baseGold = 5 * quest.getDungeonRoomCount() * quest.getDungeonLevel();
-            int totalGold;
-            if (entry.getRank() == 1)
-                totalGold = baseGold + 100;
-            else if (entry.getRank() == 2)
-                totalGold = baseGold + 50;
-            else if (entry.getRank() == 3)
-                totalGold = baseGold + 25;
-            else
-                totalGold = (baseGold + 25) / 2;
+            int baseGold = quest.getDungeonLevel() * Math.max(1, quest.getRequiredSecretLevel()) * quest.getDungeonRoomCount();
+            int goldToGive = 0;
+
+            if ("BRONZE".equalsIgnoreCase(tier)) {
+                if (entry.isRewardBronzeClaimed()) throw new IllegalStateException("Récompense Bronze déjà récupérée.");
+                if (entry.getCompletionCount() == 0) throw new IllegalStateException("Vous n'avez pas terminé le donjon.");
+                goldToGive = baseGold;
+                entry.setRewardBronzeClaimed(true);
+            } else if ("SILVER".equalsIgnoreCase(tier)) {
+                if (entry.isRewardSilverClaimed()) throw new IllegalStateException("Récompense Argent déjà récupérée.");
+                int completedChalls = (entry.isChallenge1Completed() ? 1 : 0) + (entry.isChallenge2Completed() ? 1 : 0);
+                if (completedChalls < 1) throw new IllegalStateException("Vous n'avez pas réussi au moins 1 challenge.");
+                
+                goldToGive = (int) (baseGold * 2.00); 
+                entry.setRewardSilverClaimed(true);
+            } else if ("GOLD".equalsIgnoreCase(tier)) {
+                if (entry.isRewardGoldClaimed()) throw new IllegalStateException("Récompense Or déjà récupérée.");
+                int completedChalls = (entry.isChallenge1Completed() ? 1 : 0) + (entry.isChallenge2Completed() ? 1 : 0);
+                if (completedChalls < 2) throw new IllegalStateException("Vous n'avez pas réussi les 2 challenges.");
+                
+                goldToGive = (int) (baseGold * 3.00);
+                entry.setRewardGoldClaimed(true);
+            } else {
+                throw new IllegalStateException("Tier inconnu: " + tier);
+            }
 
             AppUser user = userRepository.findByUsername(username)
                     .orElseThrow(() -> new IllegalArgumentException("Utilisateur introuvable."));
-            user.setMonnaie(user.getMonnaie() + totalGold);
+            user.setMonnaie(user.getMonnaie() + goldToGive);
             userRepository.save(user);
 
-            entry.setRewardClaimed(true);
+            // Si tout est claim, on peut set rewardClaimed à true pour simplifier
+            if (entry.isRewardBronzeClaimed() && entry.isRewardSilverClaimed() && entry.isRewardGoldClaimed()) {
+                entry.setRewardClaimed(true);
+            }
+
             entryRepository.save(entry);
 
-            return totalGold + " pièces d'or récupérées !";
-
+            return goldToGive + " pièces d'or récupérées !";
         } else if ("WEEKLY".equals(quest.getType())) {
-            if (entry.getRank() < 1 || entry.getRank() > 3) {
-                throw new IllegalStateException("Vous n'êtes pas dans le top 3.");
+            int threshold = getTop20Threshold(quest.getId());
+            if (entry.getRank() < 1 || entry.getRank() > threshold) {
+                throw new IllegalStateException("Vous n'êtes pas dans le top 20% (top " + threshold + ").");
             }
             // Vérifier que la quête weekly est récupérable (fin + 7 jours max)
             if (quest.getEndDate().plusWeeks(1).isBefore(LocalDate.now(ZONE))) {
@@ -390,6 +450,11 @@ public class HuntingQuestService {
             result.put("quest", questToMap(quest));
             result.put("leaderboard", getLeaderboard(quest.getId()));
 
+            int threshold = getTop20Threshold(quest.getId());
+            long totalParticipants = entryRepository.findByQuestIdOrderByBestTurnCountAsc(quest.getId()).size();
+            result.put("top20Threshold", threshold);
+            result.put("totalParticipants", totalParticipants);
+
             if (quest.getRewardAnomalieId() != null) {
                 anomalieRepository.findById(quest.getRewardAnomalieId().longValue())
                         .ifPresent(a -> result.put("rewardAnomalie", anomalieToMap(a)));
@@ -409,6 +474,11 @@ public class HuntingQuestService {
                 Map<String, Object> prevData = new HashMap<>();
                 prevData.put("quest", questToMap(prev));
                 prevData.put("leaderboard", getLeaderboard(prev.getId()));
+
+                int prevThreshold = getTop20Threshold(prev.getId());
+                long prevTotal = entryRepository.findByQuestIdOrderByBestTurnCountAsc(prev.getId()).size();
+                prevData.put("top20Threshold", prevThreshold);
+                prevData.put("totalParticipants", prevTotal);
 
                 if (prev.getRewardAnomalieId() != null) {
                     anomalieRepository.findById(prev.getRewardAnomalieId().longValue())
@@ -440,7 +510,7 @@ public class HuntingQuestService {
         if ("DAILY".equals(quest.getType())) {
             entries = entryRepository.findByQuestIdOrderByFirstCompletionTimeAsc(questId);
         } else {
-            entries = entryRepository.findByQuestIdOrderByCompletionCountDesc(questId);
+            entries = entryRepository.findByQuestIdOrderByBestTurnCountAsc(questId);
         }
 
         return entries.stream().map(this::entryToMap).collect(Collectors.toList());
@@ -459,6 +529,7 @@ public class HuntingQuestService {
         m.put("startDate", q.getStartDate().toString());
         m.put("endDate", q.getEndDate().toString());
         m.put("active", q.isActive());
+        m.put("dailyChallengeDuo", q.getDailyChallengeDuo());
         return m;
     }
 
@@ -466,14 +537,20 @@ public class HuntingQuestService {
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("accountName", e.getAccountName());
         m.put("completionCount", e.getCompletionCount());
+        m.put("bestTurnCount", e.getBestTurnCount());
         m.put("firstCompletionTime", e.getFirstCompletionTime() != null ? e.getFirstCompletionTime().toString() : null);
         m.put("rank", e.getRank());
         m.put("rewardClaimed", e.isRewardClaimed());
+        m.put("challenge1Completed", e.isChallenge1Completed());
+        m.put("challenge2Completed", e.isChallenge2Completed());
+        m.put("rewardBronzeClaimed", e.isRewardBronzeClaimed());
+        m.put("rewardSilverClaimed", e.isRewardSilverClaimed());
+        m.put("rewardGoldClaimed", e.isRewardGoldClaimed());
         return m;
     }
 
     private Map<String, Object> computeDailyRewardInfo(HuntingQuest quest) {
-        int baseGold = 5 * quest.getDungeonRoomCount() * quest.getDungeonLevel();
+        int baseGold = quest.getDungeonLevel() * Math.max(1, quest.getRequiredSecretLevel()) * quest.getDungeonRoomCount();
         Map<String, Object> m = new LinkedHashMap<>();
         m.put("1st", baseGold + 100);
         m.put("2nd", baseGold + 50);
@@ -489,6 +566,7 @@ public class HuntingQuestService {
 
     @Transactional
     public void ensureQuestsExist() {
+        expireOldQuests();
         if (questRepository.findByTypeAndActiveTrue("DAILY").isEmpty()) {
             rotateDailyQuest();
         }

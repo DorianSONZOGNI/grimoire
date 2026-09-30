@@ -60,7 +60,12 @@ export const STAT_DEFS = [
     { key: 'consumableHpPercent', label: 'PV Max', icon: 'favorite', color: 'var(--secondary)', isPercent: true },
     { key: 'consumableManaPercent', label: 'Mana Max', icon: 'water_drop', color: 'var(--mana)', isPercent: true },
     { key: 'consumableMissingHpPercent', label: 'PV Manq', icon: 'healing', color: 'var(--danger)', isPercent: true },
-    { key: 'consumableMissingManaPercent', label: 'Mana Manq', icon: 'cyclone', color: 'var(--magic)', isPercent: true }
+    { key: 'consumableMissingManaPercent', label: 'Mana Manq', icon: 'cyclone', color: 'var(--magic)', isPercent: true },
+    { key: 'consumableBonusXpPercent', label: 'XP', icon: 'star', color: '#facc15', isPercent: true },
+    { key: 'consumableBonusMagicalDamagePercent', label: 'Dégâts Mag.', icon: 'auto_awesome', color: '#c084fc', isPercent: true },
+    { key: 'consumableBonusPhysicalDamagePercent', label: 'Dégâts Phys.', icon: 'fitness_center', color: '#f87171', isPercent: true },
+    { key: 'consumableBonusArmorFlat', label: 'Armure', icon: 'shield', color: '#60a5fa', isPercent: false },
+    { key: 'consumableBonusResistanceFlat', label: 'Résistance', icon: 'shield', color: '#34d399', isPercent: false }
 ];
 
 window.STAT_DEFS = STAT_DEFS;

@@ -807,3 +807,16 @@
 .dungeon-badges-left .badge-quest .badge-icon {
     font-size: 1.5rem;
 }
+
+.border-orange-500\/40 { border-color: rgba(249, 115, 22, 0.4); }
+.bg-orange-500\/10 { background-color: rgba(249, 115, 22, 0.1); }
+.text-orange-300 { color: rgb(253, 186, 116); }
+
+.border-yellow-500\/40 { border-color: rgba(234, 179, 8, 0.4); }
+.bg-yellow-500\/10 { background-color: rgba(234, 179, 8, 0.1); }
+.text-yellow-300 { color: rgb(253, 224, 71); }
+
+/* In case emerald is missing */
+.border-emerald-500\/40 { border-color: rgba(16, 185, 129, 0.4); }
+.bg-emerald-500\/10 { background-color: rgba(16, 185, 129, 0.1); }
+.text-emerald-300 { color: rgb(110, 231, 183); }

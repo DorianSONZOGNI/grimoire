@@ -54,6 +54,7 @@ public class CombatSession {
     private List<ActiveMonster> enemies = new ArrayList<>();
 
     private int turnNumber = 1;
+    private int globalTurnCount = 0;
     private boolean isFinished = false;
     private boolean playerWon = false;
     private boolean roomEventCompleted = false;
@@ -113,6 +114,7 @@ public class CombatSession {
     private boolean firstClear = false; // Is this the first time completing this dungeon?
     private int bossBonusSpiritualXp = 0; // XP Spiritualité bonus boss (total distribué)
     private int bossBonusGold = 0; // Or bonus boss
+    private double challengeExtraLootPercent = 0.0; // Bonus % loot from EXTRA_LOOT challenges (persistent)
 
     private List<String> combatLog = new ArrayList<>();
 
@@ -126,6 +128,24 @@ public class CombatSession {
     private int reloadCount = 0;
     private Set<Long> turnCastSpellIds = new HashSet<>();
     private Instant lastActivity = Instant.now();
+
+    // Daily Challenge Tracking
+    private String dailyChallengeDuo;
+    private boolean headhunterChall1Failed = false;
+    private boolean headhunterChall2Failed = false;
+    private boolean surgeonChall1Failed = false;
+    private boolean surgeonChall2Failed = false;
+    private boolean lonerChall1Failed = false;
+    private boolean lonerChall2Failed = false;
+    private boolean impatientChall1Failed = false;
+    private boolean impatientChall2Failed = false;
+
+    // Ephemeral trackers
+    private Set<Integer> currentRoomDeathTurns = new HashSet<>();
+    private int currentTurnKills = 0;
+    private int lastKillTurn = -1;
+    private Map<Long, Integer> cumulativeDamageTaken = new HashMap<>();
+    private Map<String, Integer> directAttacksOnMob = new HashMap<>();
 
     // Multi-player co-op
     private boolean isMulti = false;
@@ -145,6 +165,10 @@ public class CombatSession {
         this.donjonLevel = donjon.getRecommendedLevel();
         this.totalRooms = donjon.getSalles() != null ? donjon.getSalles().size() : 0;
         this.players = players;
+
+        if (players != null && players.size() > 1) {
+            this.lonerChall1Failed = true;
+        }
 
         loadRoom(0);
     }

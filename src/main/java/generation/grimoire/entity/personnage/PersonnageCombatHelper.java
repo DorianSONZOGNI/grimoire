@@ -471,6 +471,12 @@ public class PersonnageCombatHelper {
                 }
             }
         }
+        
+        if (p.getConsumableBonusXpTurns() > 0) {
+            p.setConsumableBonusXpTurns(p.getConsumableBonusXpTurns() - 1);
+            if (p.getConsumableBonusXpTurns() == 0) p.setConsumableBonusXpPercent(0);
+        }
+
         updateShields(p);
     }
 
@@ -584,6 +590,7 @@ public class PersonnageCombatHelper {
                 }
             }
         }
+
 
         int passiveBonus = p.getPassiveState("stat_flat_" + statType.name(), 0);
 

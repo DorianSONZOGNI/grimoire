@@ -17,6 +17,12 @@ function resetEqForm() {
     if (document.getElementById('eqConsumableManaPercent')) document.getElementById('eqConsumableManaPercent').value = 0;
     if (document.getElementById('eqConsumableMissingHpPercent')) document.getElementById('eqConsumableMissingHpPercent').value = 0;
     if (document.getElementById('eqConsumableMissingManaPercent')) document.getElementById('eqConsumableMissingManaPercent').value = 0;
+    if (document.getElementById('eqConsumableBonusXpPercent')) document.getElementById('eqConsumableBonusXpPercent').value = 0;
+    if (document.getElementById('eqConsumableBonusMagicalDamagePercent')) document.getElementById('eqConsumableBonusMagicalDamagePercent').value = 0;
+    if (document.getElementById('eqConsumableBonusPhysicalDamagePercent')) document.getElementById('eqConsumableBonusPhysicalDamagePercent').value = 0;
+    if (document.getElementById('eqConsumableBonusArmorFlat')) document.getElementById('eqConsumableBonusArmorFlat').value = 0;
+    if (document.getElementById('eqConsumableBonusResistanceFlat')) document.getElementById('eqConsumableBonusResistanceFlat').value = 0;
+    if (document.getElementById('eqConsumableDurationTurns')) document.getElementById('eqConsumableDurationTurns').value = 0;
     if (document.getElementById('eqConsumableCategory')) {
         document.getElementById('eqConsumableCategory').value = 'AUTRE';
         const label = document.getElementById('eqConsumableCategoryLabel');
@@ -85,6 +91,12 @@ function getFormEquipmentData() {
         consumableManaPercent: document.getElementById('eqConsumableManaPercent') ? (parseInt(document.getElementById('eqConsumableManaPercent').value) || 0) : 0,
         consumableMissingHpPercent: document.getElementById('eqConsumableMissingHpPercent') ? (parseInt(document.getElementById('eqConsumableMissingHpPercent').value) || 0) : 0,
         consumableMissingManaPercent: document.getElementById('eqConsumableMissingManaPercent') ? (parseInt(document.getElementById('eqConsumableMissingManaPercent').value) || 0) : 0,
+        consumableBonusXpPercent: document.getElementById('eqConsumableBonusXpPercent') ? (parseInt(document.getElementById('eqConsumableBonusXpPercent').value) || 0) : 0,
+        consumableBonusMagicalDamagePercent: document.getElementById('eqConsumableBonusMagicalDamagePercent') ? (parseInt(document.getElementById('eqConsumableBonusMagicalDamagePercent').value) || 0) : 0,
+        consumableBonusPhysicalDamagePercent: document.getElementById('eqConsumableBonusPhysicalDamagePercent') ? (parseInt(document.getElementById('eqConsumableBonusPhysicalDamagePercent').value) || 0) : 0,
+        consumableBonusArmorFlat: document.getElementById('eqConsumableBonusArmorFlat') ? (parseInt(document.getElementById('eqConsumableBonusArmorFlat').value) || 0) : 0,
+        consumableBonusResistanceFlat: document.getElementById('eqConsumableBonusResistanceFlat') ? (parseInt(document.getElementById('eqConsumableBonusResistanceFlat').value) || 0) : 0,
+        consumableDurationTurns: document.getElementById('eqConsumableDurationTurns') ? (parseInt(document.getElementById('eqConsumableDurationTurns').value) || 0) : 0,
         consumableCategory: document.getElementById('eqConsumableCategory') ? document.getElementById('eqConsumableCategory').value : 'AUTRE',
         baseWeight: document.getElementById('eqBaseWeight') ? parseFloat(document.getElementById('eqBaseWeight').value) || 0 : 0,
         rarity,

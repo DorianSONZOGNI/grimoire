@@ -44,6 +44,7 @@ public class CombatService {
     private final DonjonRepository donjonRepository;
     private final UserRepository userRepository;
     private final EquipmentRepository equipmentRepository;
+    private final generation.grimoire.repository.pve.HuntingQuestRepository questRepository;
 
     // Sub-services
     private final CombatRoomService combatRoomService;
@@ -136,6 +137,11 @@ public class CombatService {
         String sessionId = UUID.randomUUID().toString();
         CombatSession session = new CombatSession(sessionId, d, players);
         session.setFirstClear(!account.getCompletedDungeons().contains(d.getId()));
+        questRepository.findByTypeAndActiveTrue("DAILY").ifPresent(quest -> {
+            if (quest.getDungeonId().equals(d.getId())) {
+                session.setDailyChallengeDuo(quest.getDailyChallengeDuo());
+            }
+        });
 
         if (consumableIds != null && !consumableIds.isEmpty()) {
             for (Long cid : consumableIds) {

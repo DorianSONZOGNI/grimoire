@@ -103,9 +103,30 @@ public class AuthController {
             res.put("unlockedVault", u.isUnlockedVault());
             res.put("unlockedAlchemy", u.isUnlockedAlchemy());
             res.put("unlockedShop", u.isUnlockedShop());
-            res.put("huntingClaimable", huntingQuestEntryRepository.countClaimable(u.getUsername()));
+            int huntingClaimableCount = 0;
+            for (generation.grimoire.entity.pve.HuntingQuestEntry e : huntingQuestEntryRepository.findByAccountName(u.getUsername())) {
+                if ("DAILY".equals(e.getQuest().getType())) {
+                    boolean isExpired = !e.getQuest().isActive() && e.getQuest().getEndDate().isBefore(java.time.LocalDate.now(java.time.ZoneId.of("Europe/Paris")));
+                    if (!isExpired) {
+                        if (e.getCompletionCount() > 0 && !e.isRewardBronzeClaimed()) huntingClaimableCount++;
+                        if ((e.isChallenge1Completed() || e.isChallenge2Completed()) && !e.isRewardSilverClaimed()) huntingClaimableCount++;
+                        if (e.isChallenge1Completed() && e.isChallenge2Completed() && !e.isRewardGoldClaimed()) huntingClaimableCount++;
+                    }
+
+                } else if ("WEEKLY".equals(e.getQuest().getType()) && !e.getQuest().isActive() && !e.isRewardClaimed()) {
+                    if (e.getQuest().getEndDate().plusWeeks(1).isAfter(java.time.LocalDate.now(java.time.ZoneId.of("Europe/Paris")))) {
+                        if (e.getRank() >= 1) {
+                            long totalParticipants = huntingQuestEntryRepository.findByQuestIdOrderByBestTurnCountAsc(e.getQuest().getId()).size();
+                            int threshold = (int) Math.ceil(totalParticipants * 0.2);
+                            if (e.getRank() <= threshold) huntingClaimableCount++;
+                        }
+                    }
+                }
+            }
+            res.put("huntingClaimable", huntingClaimableCount);
             
             res.put("seenAlchemyRecipes", u.getSeenAlchemyRecipes());
+            res.put("seenDungeons", u.getSeenDungeons());
             if (u.isUnlockedAlchemy()) {
                 long unseenCount = alchemyService.getDiscoveredRecipes(u).stream()
                     .filter(r -> !u.getSeenAlchemyRecipes().contains(r.getId()))
@@ -127,7 +148,9 @@ public class AuthController {
             res.put("unlockedSpiritualiteLevels", u.getUnlockedSpiritualiteLevels());
         });
 
-        return ResponseEntity.ok(res);
+        return ResponseEntity.ok()
+            .header(org.springframework.http.HttpHeaders.CACHE_CONTROL, "no-cache, no-store, max-age=0, must-revalidate")
+            .body(res);
     }
 
     private java.util.List<String> getClaimableSecretRewards(AppUser u) {

@@ -106,6 +106,7 @@ class CombatTurnService {
 
         if (session.isRoundFinished() && !session.areAllEnemiesDead() && !session.areAllPlayersDead()) {
             session.setTurnNumber(session.getTurnNumber() + 1);
+            session.setGlobalTurnCount(session.getGlobalTurnCount() + 1);
             rollInitiative(session);
         }
 
@@ -120,6 +121,7 @@ class CombatTurnService {
         if (session.isRoundFinished()) {
             if (!session.areAllEnemiesDead() && !session.areAllPlayersDead()) {
                 session.setTurnNumber(session.getTurnNumber() + 1);
+                session.setGlobalTurnCount(session.getGlobalTurnCount() + 1);
                 rollInitiative(session);
             }
             spellAvailabilityService.compute(session);
@@ -446,6 +448,7 @@ class CombatTurnService {
             }
         } else if (session.isRoundFinished() && !session.areAllEnemiesDead()) {
             session.setTurnNumber(session.getTurnNumber() + 1);
+            session.setGlobalTurnCount(session.getGlobalTurnCount() + 1);
             rollInitiative(session);
         }
 
@@ -611,14 +614,42 @@ class CombatTurnService {
                 .allMatch(e -> e.getMaxHp() <= 0);
         int xpDrop = 0;
         int goldDrop = 0;
+        int killsThisCheck = 0;
+        // Challenge Surgeon 2
+        for (Personnage p : session.getPlayers()) {
+            if (p.getHealthCurrent() < p.getTotalHealthMax() * 0.8) {
+                session.setSurgeonChall2Failed(true);
+            }
+        }
+
         // Check dead enemies
         for (ActiveMonster am : session.getEnemies()) {
             if (am.isDead() && am.getCurrentHp() <= 0 && am.getMaxHp() > 0) {
+                // Challenge Headhunter 1
+                boolean hasHigherHpAlive = session.getEnemies().stream()
+                    .filter(e -> !e.isDead() && e.getCurrentHp() > 0 && e.getMaxHp() > 0)
+                    .anyMatch(e -> e.getAsPersonnage().getHealthMax() > am.getAsPersonnage().getHealthMax());
+                if (hasHigherHpAlive) {
+                    session.setHeadhunterChall1Failed(true);
+                }
                 am.setMaxHp(0);
+                killsThisCheck++;
                 session.addLog(am.getBase().getName() + " est mort !");
                 xpDrop += am.getBase().getRewardExp();
                 goldDrop += am.getBase().getRewardGold();
             }
+        }
+
+        if (killsThisCheck > 0) {
+            if (session.getLastKillTurn() != session.getTurnNumber()) {
+                session.setCurrentTurnKills(0);
+                session.setLastKillTurn(session.getTurnNumber());
+            }
+            session.setCurrentTurnKills(session.getCurrentTurnKills() + killsThisCheck);
+            if (session.getCurrentTurnKills() > 1) {
+                session.setLonerChall2Failed(true);
+            }
+            session.getCurrentRoomDeathTurns().add(session.getTurnNumber());
         }
 
         if (xpDrop > 0 || goldDrop > 0) {
@@ -635,6 +666,14 @@ class CombatTurnService {
         if (!allAlreadyProcessed && allNowProcessed) {
             session.addLog("Combat terminé, vous avez vaincu tous les monstres !");
             
+            // Daily Challenges Room checks
+            if (session.getCurrentRoomDeathTurns().size() > 1) {
+                session.setSurgeonChall1Failed(true);
+            }
+            if (session.getTurnNumber() > 3) {
+                session.setImpatientChall1Failed(true);
+            }
+            
             int roomXpDrop = session.getRoomExpAccumulated();
             int roomGoldDrop = session.getRoomGoldAccumulated();
 
@@ -648,6 +687,7 @@ class CombatTurnService {
                     if (u != null && !u.getCompletedDungeons().contains(session.getDungeonId())) {
                         actualExp *= 2;
                     }
+                    if (p.getConsumableBonusXpPercent() != 0) actualExp = (int) (actualExp * (1.0 + p.getConsumableBonusXpPercent() / 100.0));
                     p.setExperience(p.getExperience() + actualExp);
                     personnageService.save(p);
                 }
@@ -743,6 +783,7 @@ class CombatTurnService {
             }
 
             if (!c.isFailed()) {
+                c.setCompleted(true);
                 // Give reward
                 session.addLog("🎁 Récompense de challenge obtenue !");
                 if ("BONUS_SPIRIT_XP".equals(c.getRewardType()) && !bossEligible.isEmpty()) {
@@ -756,7 +797,6 @@ class CombatTurnService {
                         p.setSpiritualiteExperience(p.getSpiritualiteExperience() + actualSpXp);
                         personnageService.save(p);
                     }
-                    session.setBossBonusSpiritualXp(session.getBossBonusSpiritualXp() + c.getRewardValue());
                     session.addLog("🔮 Challenge : +" + c.getRewardValue() + " XP Spiritualité.");
                 } else if ("BONUS_GOLD".equals(c.getRewardType()) && !bossEligible.isEmpty()) {
                     java.util.Set<Long> processedUserIds = new java.util.HashSet<>();
@@ -769,7 +809,6 @@ class CombatTurnService {
                         }
                     }
                     session.setTotalGoldAccumulated(session.getTotalGoldAccumulated() + c.getRewardValue());
-                    session.setBossBonusGold(session.getBossBonusGold() + c.getRewardValue());
                     session.addLog("💰 Challenge : +" + c.getRewardValue() + " Or.");
                 } else if ("REGEN_HP_MANA".equals(c.getRewardType())) {
                     for (Personnage p : bossEligible) {
@@ -780,8 +819,9 @@ class CombatTurnService {
                     }
                     session.addLog("💖 Challenge : L'équipe régénère " + c.getRewardValue() + "% de ses PV et Mana.");
                 } else if ("EXTRA_LOOT".equals(c.getRewardType())) {
-                    session.addLog("🎁 Challenge : " + c.getRewardValue() + " Loots supplémentaires. (A implémenter : extra loot sur le drop !)");
-                    // TODO: Implement EXTRA_LOOT in loot dropping logic
+                    session.setChallengeExtraLootPercent(
+                            session.getChallengeExtraLootPercent() + c.getRewardValue());
+                    session.addLog("🎁 Challenge : +" + c.getRewardValue() + "% de probabilité de loot pour la suite du donjon !");
                 }
             }
         }

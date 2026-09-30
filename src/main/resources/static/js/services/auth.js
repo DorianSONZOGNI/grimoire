@@ -78,9 +78,11 @@ window.globalFetch = async function (url, options = {}) {
                             localStorage.setItem('accessToken', data.token);
                             return true;
                         }
+                        if (refreshRes.status >= 500) {
+                            throw new Error("Erreur serveur, réessayez plus tard.");
+                        }
                         return false;
                     })
-                    .catch(() => false)
                     .finally(() => {
                         // Clear after a short delay so concurrent awaits all resolve first
                         setTimeout(() => { window._refreshingToken = null; }, 200);
@@ -94,7 +96,7 @@ window.globalFetch = async function (url, options = {}) {
                 options.headers['Authorization'] = `Bearer ${accessToken}`;
                 res = await fetch(url, options);
             } else {
-                if (!url.includes('/api/auth/me')) {
+                if (!url.includes('/api/auth/me') && !url.includes('/api/alchemy/recipes') && !url.includes('/api/meta/all')) {
                     localStorage.removeItem('accessToken');
                     localStorage.removeItem('refreshToken');
                     localStorage.removeItem('isLikelyLoggedIn');
@@ -129,7 +131,7 @@ window.globalFetch = async function (url, options = {}) {
         }
 
         if (!res.ok) {
-            if (res.status === 401 && !url.includes('/api/auth/me')) {
+            if (res.status === 401 && !url.includes('/api/auth/me') && !url.includes('/api/alchemy/recipes') && !url.includes('/api/meta/all')) {
                 console.warn('Redirecting to login due to 401', url);
                 localStorage.removeItem('accessToken');
                 localStorage.removeItem('refreshToken');
@@ -344,9 +346,7 @@ window.checkAuthStatus = async function checkAuthStatus() {
                     globalFetch('/api/pve/dungeons', { credentials: 'same-origin' }).then(r => r.ok ? r.json() : []),
                     globalFetch('/api/personnages', { credentials: 'same-origin' }).then(r => r.ok ? r.json() : [])
                 ]).then(([dungeons, characters]) => {
-                    let seen = [];
-                    const seenKey = 'seenUnlockedDungeons_' + (data.username || 'guest');
-                    try { seen = JSON.parse(localStorage.getItem(seenKey)) || []; } catch(e) {}
+                    let seen = data.seenDungeons || [];
                     let newCount = 0;
                     const maxLevel = characters.length > 0 ? Math.max(...characters.map(c => c.voieLevel || 1)) : 0;
 

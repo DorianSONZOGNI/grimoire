@@ -242,6 +242,65 @@ export function updateUI(data) {
 
     if (data.donjonName) {
         document.getElementById('headerDungeonName').textContent = data.donjonName + " - Étape " + (data.currentRoomIndex + 1);
+
+        // Daily Challenge Tooltip
+        let challContainer = document.getElementById('dailyChallengeTooltipContainer');
+        if (!challContainer) {
+            challContainer = document.createElement('span');
+            challContainer.id = 'dailyChallengeTooltipContainer';
+            challContainer.style.marginLeft = '12px';
+            challContainer.style.display = 'inline-flex';
+            challContainer.style.alignItems = 'center';
+            document.getElementById('headerDungeonName').parentNode.insertBefore(challContainer, document.getElementById('headerDungeonName').nextSibling);
+        }
+
+        if (data.dailyChallengeDuo) {
+            let title = data.dailyChallengeDuo;
+            let c1Failed = false;
+            let c2Failed = false;
+            let c1Text = "";
+            let c2Text = "";
+            
+            if (data.dailyChallengeDuo === 'HEADHUNTER') {
+                title = 'Chasseur de têtes';
+                c1Failed = data.headhunterChall1Failed;
+                c2Failed = data.headhunterChall2Failed;
+                c1Text = "Tuer les monstres du plus grand PV max au plus petit";
+                c2Text = "Achever tous les monstres avec une attaque de base";
+            } else if (data.dailyChallengeDuo === 'SURGEON') {
+                title = 'Chirurgien';
+                c1Failed = data.surgeonChall1Failed;
+                c2Failed = data.surgeonChall2Failed;
+                c1Text = "Tuer tous les monstres durant le même tour (par salle)";
+                c2Text = "Ne pas perdre plus de 20% de vos PV max sur un héros";
+            } else if (data.dailyChallengeDuo === 'LONER') {
+                title = 'Loup solitaire';
+                c1Failed = data.lonerChall1Failed;
+                c2Failed = data.lonerChall2Failed;
+                c1Text = "Terminer le donjon avec un seul héros";
+                c2Text = "Tuer un seul monstre par tour maximum";
+            } else if (data.dailyChallengeDuo === 'IMPATIENT') {
+                title = 'Impatient';
+                c1Failed = data.impatientChall1Failed;
+                c2Failed = data.impatientChall2Failed;
+                c1Text = "Terminer chaque salle de combat en 3 tours max";
+                c2Text = "Tuer les monstres en 2 attaques directes max par monstre";
+            }
+            
+            let desc = "<ul style='margin:0; padding-left:16px; margin-top:4px; color:#e2e8f0; line-height:1.4;'>";
+            desc += "<li style='" + (c1Failed ? "color:#f87171; text-decoration:line-through;" : "") + "'>" + c1Text + "</li>";
+            desc += "<li style='margin-top:4px; " + (c2Failed ? "color:#f87171; text-decoration:line-through;" : "") + "'>" + c2Text + "</li>";
+            desc += "</ul>";
+
+                        challContainer.innerHTML = `<span class="material-symbols-outlined" style="font-size: 1.4rem; cursor: pointer; color: ${(c1Failed && c2Failed) ? '#f87171' : '#f59e0b'}; filter: drop-shadow(0 0 5px ${(c1Failed && c2Failed) ? 'rgba(248,113,113,0.5)' : 'rgba(245,158,11,0.5)'});" 
+                onmouseenter="if(window.showGlobalTooltip) window.showGlobalTooltip(this)" 
+                onmouseleave="if(window.hideGlobalTooltip) window.hideGlobalTooltip()" 
+                data-tooltip-html="<div style='padding:4px;'><strong>Défi du jour : <span style='color:${(c1Failed && c2Failed) ? '#f87171' : '#f59e0b'};'>${title}</span></strong><br>${desc.replace(/"/g, '&quot;')}</div>">
+                ${(c1Failed && c2Failed) ? 'error' : 'workspace_premium'}
+            </span>`;
+        } else {
+            challContainer.innerHTML = '';
+        }
         if (!data.finished) {
             playDungeonMusic(data);
         }
@@ -559,6 +618,45 @@ export function updateUI(data) {
                                     </div>
                                 </div>
                             `;
+                        }
+
+                        if (data.activeChallenges) {
+                            data.activeChallenges.forEach(chall => {
+                                if (chall.completed) {
+                                    let challIcon = 'military_tech';
+                                    let challReward = '';
+                                    if (chall.rewardType === 'BONUS_GOLD') {
+                                        challReward = `<span class="material-symbols-outlined text-warning" style="font-size: 1.1em; margin-right: 0.2rem;">monetization_on</span> <span class="text-warning">+${chall.rewardValue} Or</span>`;
+                                    } else if (chall.rewardType === 'BONUS_SPIRIT_XP') {
+                                        const perHero = Math.floor(chall.rewardValue / Math.max(1, (data.players || []).length));
+                                        challReward = `<span class="material-symbols-outlined text-gold" style="font-size: 1.1em; margin-right: 0.2rem;">stars</span> <span class="text-gold">+${perHero} XP Spirit.</span>`;
+                                    } else if (chall.rewardType === 'REGEN_HP_MANA') {
+                                        challReward = `<span class="material-symbols-outlined text-success" style="font-size: 1.1em; margin-right: 0.2rem;">favorite</span> <span class="text-success">+${chall.rewardValue}% PV & Mana</span>`;
+                                    } else if (chall.rewardType === 'EXTRA_LOOT') {
+                                        challReward = `<span class="material-symbols-outlined text-sky-400" style="font-size: 1.1em; margin-right: 0.2rem;">redeem</span> <span class="text-sky-400">+${chall.rewardValue}% Loot</span>`;
+                                    }
+                                    
+                                    if (challReward !== '') {
+                                        let challName = chall.type;
+                                        if (chall.type === 'MAX_HEROES') challName = 'Héros rest.';
+                                        else if (chall.type === 'MAX_HP_LOSS_PCT') challName = 'Intouchable';
+                                        else if (chall.type === 'MIN_HP_LOSS_PCT') challName = 'Risque-tout';
+
+                                        let innerContent = `
+                                            <span class="material-symbols-outlined text-sky-400" >${challIcon}</span>
+                                            <span class="text-sky-400 font-bold" style="margin-right: 0.5rem; text-transform: uppercase;">${challName}</span>
+                                            ${challReward}
+                                        `;
+                                        xpContainer.innerHTML += `
+                                            <div class="victory-xp-block">
+                                                <div class="victory-xp-block-inner" style="border-color: rgba(56, 189, 248, 0.4); background: rgba(56, 189, 248, 0.05);">
+                                                    ${innerContent}
+                                                </div>
+                                            </div>
+                                        `;
+                                    }
+                                }
+                            });
                         }
 
                         renderAndAnimateXPCards('combatVictoryXpContainer', data.players, 'vic', data.firstClear);
@@ -2046,6 +2144,20 @@ export function updateUI(data) {
 
     processNewDeathLogs(data.combatLog);
     updateNextRoomButtons(data);
+    renderActiveChallenges(data);
+}
+
+function renderActiveChallenges(data) {
+    const bossChallengesContainer = document.getElementById('bossChallengesContainer');
+    if (bossChallengesContainer) {
+        bossChallengesContainer.innerHTML = '';
+        if (data && data.activeChallenges && data.activeChallenges.length > 0) {
+            const challHtml = getBossChallengesHtml(data.activeChallenges);
+            if (challHtml) {
+                bossChallengesContainer.innerHTML = challHtml;
+            }
+        }
+    }
 }
 
 function updateNextRoomButtons(data) {
@@ -2099,18 +2211,36 @@ export function getBossChallengesHtml(activeChallenges) {
         else if (chall.rewardType === 'REGEN_HP_MANA') rewLabel = `+${chall.rewardValue}% Régénération`;
         else if (chall.rewardType === 'EXTRA_LOOT') rewLabel = `+${chall.rewardValue} Loot Sup.`;
 
+        let statusHtml = '';
+        let badgeStyle = '';
+        let iconStyle = '';
+        let iconName = '';
+        
+        if (chall.failed) {
+            statusHtml = '<div class="text-error font-bold mt-2">❌ Challenge Échoué</div>';
+            badgeStyle = 'border-color: rgba(239, 68, 68, 0.4); color: #ef4444; background: rgba(239, 68, 68, 0.1); text-decoration: line-through;';
+            iconStyle = 'text-error';
+            iconName = 'cancel';
+        } else if (chall.completed) {
+            statusHtml = '<div class="text-success font-bold mt-2">✨ Challenge Réussi</div>';
+            badgeStyle = 'border-color: rgba(16, 185, 129, 0.4); color: #10b981; background: rgba(16, 185, 129, 0.1);';
+            iconStyle = 'text-success';
+            iconName = 'check_circle';
+        } else {
+            statusHtml = '<div class="text-success font-bold mt-2">✅ Challenge En cours</div>';
+            badgeStyle = 'border-color: rgba(245, 158, 11, 0.4); color: #f59e0b; background: rgba(245, 158, 11, 0.1);';
+            iconStyle = 'text-warning';
+            iconName = 'military_tech';
+        }
+
         const tooltipContent = `
             <div style="font-size: 0.85rem;">
                 <div class="text-amber-400 font-bold mb-1">Challenge : ${challLabel}</div>
                 <div class="text-green-400">Récompense : ${rewLabel}</div>
-                ${chall.failed ? '<div class="text-error font-bold mt-2">❌ Challenge Échoué</div>' : '<div class="text-success font-bold mt-2">✅ Challenge En cours</div>'}
+                ${statusHtml}
             </div>
         `;
         const tooltipAttrs = 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"';
-
-        const badgeStyle = chall.failed ? 'border-color: rgba(239, 68, 68, 0.4); color: #ef4444; background: rgba(239, 68, 68, 0.1); text-decoration: line-through;' : 'border-color: rgba(245, 158, 11, 0.4); color: #f59e0b; background: rgba(245, 158, 11, 0.1);';
-        const iconStyle = chall.failed ? 'text-error' : 'text-warning';
-        const iconName = chall.failed ? 'cancel' : 'military_tech';
 
         html += `
             <div class="sandbox-status-badge buff relative" ${tooltipAttrs} style="cursor: help; ${badgeStyle}">
@@ -2634,8 +2764,7 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
             avatarHtml = `<img src="/images/avatar/${avatarName}.png" alt="${avatarName}" style="width: 64px; height: 64px; object-fit: contain; margin-top: -12px; margin-bottom: -12px; margin-right: 0.1rem; filter: drop-shadow(0 4px 6px rgba(0,0,0,0.5));">`;
         }
     }
-
-    let turnOrderBadgeHtml = '';
+    let topBadgesHtml = '';
     if (turnOrderNum) {
         let hasPlayed = false;
         if (pageState && pageState.currentSessionData && pageState.currentSessionData.currentTurnIndex !== undefined) {
@@ -2644,8 +2773,23 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
         const opacity = hasPlayed ? '0.5' : '1';
         const filter = hasPlayed ? 'grayscale(1)' : 'none';
 
-        turnOrderBadgeHtml = `<div title="Ordre de jeu : ${turnOrderNum}" style="position: absolute; top: -8px; left: -8px; width: 28px; height: 28px; background: linear-gradient(135deg, #1e293b, #0f172a); border: 2px solid ${isHero ? '#38bdf8' : '#ef4444'}; border-radius: 50%; color: #f8fafc; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.95rem; box-shadow: 0 4px 6px rgba(0,0,0,0.5); z-index: 5; opacity: ${opacity}; filter: ${filter}; transition: all 0.3s;">${turnOrderNum}</div>`;
+        topBadgesHtml += `<div title="Ordre de jeu : ${turnOrderNum}" style="position: absolute; top: -8px; left: -8px; width: 28px; height: 28px; background: linear-gradient(135deg, #1e293b, #0f172a); border: 2px solid ${isHero ? '#38bdf8' : '#ef4444'}; border-radius: 50%; color: #f8fafc; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.95rem; box-shadow: 0 4px 6px rgba(0,0,0,0.5); z-index: 5; opacity: ${opacity}; filter: ${filter}; transition: all 0.3s;">${turnOrderNum}</div>`;
     }
+
+    if (c.consumableBonusXpPercent && c.consumableBonusXpTurns) {
+        let hasPlayed = false;
+        if (turnOrderNum && pageState && pageState.currentSessionData && pageState.currentSessionData.currentTurnIndex !== undefined) {
+            hasPlayed = (turnOrderNum - 1) < pageState.currentSessionData.currentTurnIndex;
+        }
+        const opacity = hasPlayed ? '0.5' : '1';
+        const filter = hasPlayed ? 'grayscale(1)' : 'none';
+        let leftPos = turnOrderNum ? '24px' : '-8px';
+        const tooltipAttrs = 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"';
+        const xpTooltipHtml = `<div class="text-sm font-medium" style="margin-bottom:0.3rem; color:#facc15; display:flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size:1.1rem;">star</span> Bonus d'Expérience</div><div class="text-xs" style="color:#cbd5e1;">XP à la fin du combat : <span class="text-success" style="font-weight:bold;">+${c.consumableBonusXpPercent}%</span><br/>Reste : <span style="font-weight:bold;">${c.consumableBonusXpTurns}</span> tour(s)</div>`;
+        
+        topBadgesHtml += `<div ${tooltipAttrs} style="position: absolute; top: -8px; left: ${leftPos}; width: 28px; height: 28px; background: linear-gradient(135deg, #422006, #1a0f02); border: 2px solid #facc15; border-radius: 50%; color: #facc15; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.75rem; box-shadow: 0 4px 6px rgba(0,0,0,0.5); z-index: 4; opacity: ${opacity}; filter: ${filter}; transition: all 0.3s; cursor: help;"><template class="tooltip-data">${xpTooltipHtml}</template><span class="material-symbols-outlined" style="font-size: 1rem;">star</span></div>`;
+    }
+    let turnOrderBadgeHtml = topBadgesHtml;
 
     let shieldBarHtml = '';
     if (computedShieldTotal > 0 && c.healthMax > 0) {
@@ -2701,13 +2845,7 @@ export function renderEnemies(enemies, turnMap = null) {
         bossBuffsContainer.innerHTML = '';
     }
 
-    const bossChallengesContainer = document.getElementById('bossChallengesContainer');
-    if (bossChallengesContainer) {
-        bossChallengesContainer.innerHTML = '';
-    }
-
     let bossBuffsRendered = false;
-    let bossChallengesRendered = false;
 
     enemies.forEach((activeMonster, index) => {
         const m = activeMonster.base;
@@ -2813,13 +2951,6 @@ export function renderEnemies(enemies, turnMap = null) {
             animateGaugeJS(manaBar, manaTextEl, forcedMana, pMonster.manaCurrent, pMonster.manaMax, 800);
         }
     });
-
-    if (bossChallengesContainer && pageState.currentSessionData && pageState.currentSessionData.activeChallenges) {
-        const challHtml = getBossChallengesHtml(pageState.currentSessionData.activeChallenges);
-        if (challHtml) {
-            bossChallengesContainer.innerHTML = challHtml;
-        }
-    }
 }
 
 function animateGaugeJS(barEl, textEl, oldVal, newVal, max, duration = 600, suffix = '') {

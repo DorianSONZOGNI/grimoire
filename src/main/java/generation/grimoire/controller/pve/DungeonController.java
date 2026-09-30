@@ -70,4 +70,21 @@ public class DungeonController {
 
         return ResponseEntity.ok("Donjon débloqué avec succès.");
     }
+
+    @PostMapping("/{id}/seen")
+    public ResponseEntity<?> markDungeonAsSeen(@PathVariable @org.springframework.lang.NonNull Long id,
+            Principal principal) {
+        if (principal == null)
+            return ResponseEntity.status(401).build();
+
+        AppUser user = userRepository.findByUsername(principal.getName())
+                .orElseThrow(() -> new RuntimeException("Utilisateur introuvable"));
+
+        if (!user.getSeenDungeons().contains(id)) {
+            user.getSeenDungeons().add(id);
+            userRepository.save(user);
+        }
+
+        return ResponseEntity.ok().build();
+    }
 }
