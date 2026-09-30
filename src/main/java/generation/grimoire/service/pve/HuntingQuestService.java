@@ -348,12 +348,6 @@ public class HuntingQuestService {
                 
                 goldToGive = (int) (baseGold * 2.00); 
                 entry.setRewardSilverClaimed(true);
-                
-                // Cumulatif : récupère aussi le Bronze s'il n'est pas déjà pris
-                if (!entry.isRewardBronzeClaimed()) {
-                    goldToGive += baseGold;
-                    entry.setRewardBronzeClaimed(true);
-                }
             } else if ("GOLD".equalsIgnoreCase(tier)) {
                 if (entry.isRewardGoldClaimed()) throw new IllegalStateException("Récompense Or déjà récupérée.");
                 int completedChalls = (entry.isChallenge1Completed() ? 1 : 0) + (entry.isChallenge2Completed() ? 1 : 0);
@@ -361,16 +355,6 @@ public class HuntingQuestService {
                 
                 goldToGive = (int) (baseGold * 3.00);
                 entry.setRewardGoldClaimed(true);
-                
-                // Cumulatif : récupère aussi l'Argent et le Bronze s'ils ne sont pas déjà pris
-                if (!entry.isRewardSilverClaimed()) {
-                    goldToGive += (int) (baseGold * 2.00);
-                    entry.setRewardSilverClaimed(true);
-                }
-                if (!entry.isRewardBronzeClaimed()) {
-                    goldToGive += baseGold;
-                    entry.setRewardBronzeClaimed(true);
-                }
             } else {
                 throw new IllegalStateException("Tier inconnu: " + tier);
             }

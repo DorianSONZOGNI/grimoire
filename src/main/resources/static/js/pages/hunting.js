@@ -3,23 +3,21 @@
 let currentUser = null;
 let refreshInterval = null;
 
-document.addEventListener('DOMContentLoaded', () => {
-    if (window.currentUser !== undefined) {
-        initHunting();
-    } else {
-        window.addEventListener('authLoaded', initHunting);
-    }
-});
+document.addEventListener('DOMContentLoaded', () => { if (window.currentUser !== undefined) { initHunting(); } else { const authHandler = () => { initHunting(); window.removeEventListener('authLoaded', authHandler); }; window.addEventListener('authLoaded', authHandler); } });
 
+let isHuntingInitialized = false;
 async function initHunting() {
+    if (isHuntingInitialized) return;
     if (!window.currentUser) {
         window.location.href = '/login.html';
         return;
     }
+    isHuntingInitialized = true;
     currentUser = window.currentUser.username;
     await loadAll();
 
     // Refresh toutes les 30s
+    if (refreshInterval) clearInterval(refreshInterval);
     refreshInterval = setInterval(loadAll, 30000);
 }
 
@@ -399,9 +397,7 @@ function bindClaimButton(container, questId) {
                     if (window.currentUser && window.currentUser.huntingClaimable > 0) {
                         window.currentUser.huntingClaimable--;
                     }
-                    if (window.checkAuthStatus) {
-                        window.checkAuthStatus();
-                    }
+                    try { const meRes = await window.globalFetch('/api/auth/me'); if (meRes.ok) { const meData = await meRes.json(); const prevGold = window.currentUser.monnaie; window.currentUser.monnaie = meData.monnaie; const goldEl = document.getElementById('navUserGold'); if (goldEl && window.animateGoldValue) { window.animateGoldValue(goldEl, prevGold, meData.monnaie, 1000); } else if (goldEl) { goldEl.textContent = Number(meData.monnaie).toFixed(1); } } } catch(e){}
                 }
             } catch (e) {
                 alert('Erreur lors de la récupération.');
