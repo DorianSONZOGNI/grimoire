@@ -1028,16 +1028,12 @@ window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost,
                     dropPctStr = `<span style="color:#facc15; font-size:0.8rem; margin-right:4px;">[${pctStr}%]</span>`;
                 }
 
-                // Construction de l'affichage avec dégâts si présents
-                let dmgStr = '';
-                if (eq.bonusPower) dmgStr += `<span style="color:#a855f7; font-size:0.8rem; margin-left:4px;" title="Puissance Magique">(${eq.bonusPower} Puiss)</span>`;
-                if (eq.bonusStrength) dmgStr += `<span style="color:#f43f5e; font-size:0.8rem; margin-left:4px;" title="Force Physique">(${eq.bonusStrength} Force)</span>`;
-                if (eq.consumableBonusMagicalDamagePercent) dmgStr += `<span style="color:#c084fc; font-size:0.8rem; margin-left:4px;" title="Dégâts Magiques">(${eq.consumableBonusMagicalDamagePercent}% Dég. Mag)</span>`;
-                if (eq.consumableBonusPhysicalDamagePercent) dmgStr += `<span style="color:#f87171; font-size:0.8rem; margin-left:4px;" title="Dégâts Physiques">(${eq.consumableBonusPhysicalDamagePercent}% Dég. Phys)</span>`;
-
-                return `<div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem;">
+                return `<div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem; cursor:help;"
+                             onmouseenter="window.showGlobalTooltip && window.showGlobalTooltip(this)"
+                             onmouseleave="window.hideGlobalTooltip && window.hideGlobalTooltip()"
+                             data-tooltip-html="${(window.getEquipmentTooltipHTML ? window.getEquipmentTooltipHTML(eq) : '').replace(/"/g, '&quot;')}">
                     <span class="material-symbols-outlined text-[1.1rem] ${slotInfo.extraClass || ''}" style="color:${slotInfo.color || rarityColor};">${slotInfo.icon}</span>
-                    <span style="color:${rarityColor}; font-weight:500; font-size:0.9rem;">${dropPctStr}${eq.name}${dmgStr}</span>
+                    <span style="color:${rarityColor}; font-weight:500; font-size:0.9rem;">${dropPctStr}${eq.name}</span>
                 </div>`;
             }).join('');
 
@@ -1048,7 +1044,9 @@ window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost,
                 <div style="display:flex; flex-direction:column; padding-right: 0.5rem;">${listHtml}</div>
             `;
 
-            tooltipTrigger.setAttribute('data-tooltip-html', tooltipContent);
+            const dropdown = document.getElementById('prepLootDropdown');
+            if (dropdown) dropdown.innerHTML = tooltipContent;
+
             tooltipTrigger.style.display = 'flex';
             tooltipTrigger.classList.remove('hidden');
             tooltipTrigger.classList.add('flex');
@@ -1745,6 +1743,7 @@ window.submitJoinLobby = async function () {
 window.closeEntryModal = function () {
     document.getElementById('entryModal').classList.remove('active');
 };
+
 
 
 

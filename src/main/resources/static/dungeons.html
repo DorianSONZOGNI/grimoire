@@ -1,4 +1,4 @@
-<!DOCTYPE html>
+﻿<!DOCTYPE html>
 <html lang="fr">
 
 <head>
@@ -169,12 +169,16 @@
                             <div class="text-sm text-red-300 font-semibold uppercase tracking-[1px]">
                                 Ennemis détectés
                             </div>
-                            <div id="prepLootTooltipTrigger" style="display:none;" 
-                                 class="w-7 h-7 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center cursor-help transition-all hover:bg-amber-500/20"
-                                 onmouseenter="window.showGlobalTooltip && window.showGlobalTooltip(this)" 
-                                 onmouseleave="window.hideGlobalTooltip && window.hideGlobalTooltip()">
-                                <span class="material-symbols-outlined text-[1rem]">shield</span>
-                            </div>
+                            <div class="relative flex items-center justify-center" style="z-index: 50;"
+     onmouseenter="clearTimeout(this.hideTimer); const d = document.getElementById('prepLootDropdown'); if(d && d.innerHTML.trim() !== '') d.style.display='flex';"
+     onmouseleave="this.hideTimer = setTimeout(() => { const d = document.getElementById('prepLootDropdown'); if(d) d.style.display='none'; window.hideGlobalTooltip && window.hideGlobalTooltip(); }, 150);">
+    <div id="prepLootTooltipTrigger" style="display:none;" 
+         class="w-7 h-7 rounded-full bg-amber-500/10 border border-amber-500/30 text-amber-400 flex items-center justify-center cursor-help transition-all hover:bg-amber-500/20">
+        <span class="material-symbols-outlined text-[1rem]">shield</span>
+    </div>
+    <div id="prepLootDropdown" class="global-tooltip" style="display:none; position:absolute; right:0; top:100%; margin-top:8px; min-width: 260px; pointer-events: auto; flex-direction:column; z-index:9999;">
+    </div>
+</div>
                         </div>
                         <div class="text-danger font-medium" id="prepMonstersList">
                             <!-- Rempli par JS -->
@@ -353,3 +357,8 @@
 </body>
 
 </html>
+
+
+
+
+
