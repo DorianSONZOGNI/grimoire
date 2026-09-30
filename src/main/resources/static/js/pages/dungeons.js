@@ -77,8 +77,15 @@ function collectDungeonLootItemsLocal(salles) {
         if (s.lootTable) {
             s.lootTable.forEach(e => {
                 if (e.equipment) {
+                    const prob = (e.probability || 0) / 100.0;
                     if (!itemsMap.has(e.equipment.name)) {
-                        itemsMap.set(e.equipment.name, e.equipment);
+                        itemsMap.set(e.equipment.name, {
+                            equipment: e.equipment,
+                            notDropProb: (1 - prob)
+                        });
+                    } else {
+                        const entry = itemsMap.get(e.equipment.name);
+                        entry.notDropProb *= (1 - prob);
                     }
                 }
             });
@@ -88,7 +95,14 @@ function collectDungeonLootItemsLocal(salles) {
     const rarityOrder = { 'MAUDIT': 1, 'RELIQUE': 2, 'EPIQUE': 3, 'LEGENDAIRE': 4, 'MYTHIQUE': 5, 'RARE': 6, 'INHABITUEL': 7, 'COMMUN': 8 };
     const slotOrder = { 'CASQUE': 1, 'PLASTRON': 2, 'ARME_DEUX_MAINS': 3, 'ARME_GAUCHE': 4, 'ARME_DROITE': 5, 'ANNEAU': 6, 'BOTTES': 8, 'CAPE': 9, 'CONSOMMABLE': 10 };
 
-    return Array.from(itemsMap.values()).sort((a, b) => {
+    const lootItems = [];
+    itemsMap.forEach((val) => {
+        const eq = Object.assign({}, val.equipment);
+        eq.effectiveDropRate = (1 - val.notDropProb);
+        lootItems.push(eq);
+    });
+
+    return lootItems.sort((a, b) => {
         const rA = rarityOrder[a.rarity?.name || a.rarity] || 100;
         const rB = rarityOrder[b.rarity?.name || b.rarity] || 100;
         if (rA !== rB) return rA - rB;
@@ -1007,9 +1021,19 @@ window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost,
                     }
                 }
 
-                return `<div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem;">
+                let dropPctStr = '';
+                if (eq.effectiveDropRate !== undefined) {
+                    const pct = (eq.effectiveDropRate * 100);
+                    const pctStr = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(1);
+                    dropPctStr = `<span style="color:#facc15; font-size:0.8rem; margin-right:4px;">[${pctStr}%]</span>`;
+                }
+
+                return `<div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem; cursor:help;"
+                             onmouseenter="window.showGlobalTooltip && window.showGlobalTooltip(this)"
+                             onmouseleave="window.hideGlobalTooltip && window.hideGlobalTooltip()"
+                             data-tooltip-html="${(window.getEquipmentTooltipHTML ? window.getEquipmentTooltipHTML(eq) : '').replace(/"/g, '&quot;')}">
                     <span class="material-symbols-outlined text-[1.1rem] ${slotInfo.extraClass || ''}" style="color:${slotInfo.color || rarityColor};">${slotInfo.icon}</span>
-                    <span style="color:${rarityColor}; font-weight:500; font-size:0.9rem;">${eq.name}</span>
+                    <span style="color:${rarityColor}; font-weight:500; font-size:0.9rem;">${dropPctStr}${eq.name}</span>
                 </div>`;
             }).join('');
 
@@ -1020,7 +1044,9 @@ window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost,
                 <div style="display:flex; flex-direction:column; padding-right: 0.5rem;">${listHtml}</div>
             `;
 
-            tooltipTrigger.setAttribute('data-tooltip-html', tooltipContent);
+            const dropdown = document.getElementById('prepLootDropdown');
+            if (dropdown) dropdown.innerHTML = tooltipContent;
+
             tooltipTrigger.style.display = 'flex';
             tooltipTrigger.classList.remove('hidden');
             tooltipTrigger.classList.add('flex');
@@ -1717,6 +1743,7 @@ window.submitJoinLobby = async function () {
 window.closeEntryModal = function () {
     document.getElementById('entryModal').classList.remove('active');
 };
+
 
 
 
