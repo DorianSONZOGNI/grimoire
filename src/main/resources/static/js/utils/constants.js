@@ -112,10 +112,17 @@ export async function initMeta() {
                 });
             }
 
+            window.ANOMALIE_CATEGORIES = {};
             window.CATEGORY_ICONS = {};
+
             if (allMeta.anomalieCategories) {
                 allMeta.anomalieCategories.forEach(c => {
                     window.CATEGORY_ICONS[c.name] = c.icon;
+                    
+                    window.ANOMALIE_CATEGORIES[c.name] = {
+                        label: c.label,
+                        icon: c.icon
+                    };
                 });
             }
 

@@ -765,7 +765,6 @@ window.editEquipment = function (id) {
 }
 
 
-
 window.openCreateAnomalieModal = function () {
     pageState.editingAnomalieId = null;
     const titleEl = document.getElementById('anomalieModalTitle');
@@ -780,6 +779,10 @@ window.openCreateAnomalieModal = function () {
     document.getElementById('anomalieSpiritualite').value = 'TENEBRES';
     document.getElementById('anomalieLevel').value = 1;
 
+    if (window.renderAnomalieCategorySelect) {
+        window.renderAnomalieCategorySelect();
+    }
+
     const toggleMagic = document.getElementById('anomalieMagicToggle');
     if (toggleMagic) {
         toggleMagic.checked = true;
@@ -788,6 +791,7 @@ window.openCreateAnomalieModal = function () {
     }
 
     document.getElementById('anomalieCreateModal').classList.add('show');
+
 };
 
 window.editAnomalie = function (id) {
@@ -807,6 +811,10 @@ window.editAnomalie = function (id) {
     document.getElementById('anomalieSpiritualite').value = eq.spiritualite || 'TENEBRES';
     document.getElementById('anomalieCategory').value = eq.category || 'AUTRE';
     document.getElementById('anomalieLevel').value = eq.level || 1;
+
+    if (window.renderAnomalieCategorySelect) {
+        window.renderAnomalieCategorySelect();
+    }
 
     // Update custom selects UI
     const spiriLabel = document.getElementById('anomalieSpiritualiteLabel');
@@ -1077,6 +1085,3 @@ window.updateWeightUI = async function () {
         }
     }
 }
-
-
-

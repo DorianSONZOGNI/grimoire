@@ -822,3 +822,35 @@ export function renderConsumableCategorySelect() {
 }
 
 window.renderConsumableCategorySelect = renderConsumableCategorySelect;
+
+export function renderAnomalieCategorySelect() {
+    const optionsContainer = document.getElementById('anomalieCategoryOptions');
+
+    if (!optionsContainer) return;
+
+    optionsContainer.innerHTML = '';
+
+    // Sécurité si les données ne sont pas chargées
+    if (!window.ANOMALIE_CATEGORIES || Object.keys(window.ANOMALIE_CATEGORIES).length === 0) {
+        optionsContainer.innerHTML = `
+            <div class="custom-option" data-value="AUTRE">
+                <span class="material-symbols-outlined cs-icon">category</span> Autre
+            </div>`;
+        return;
+    }
+
+    // Génération dynamique
+    Object.entries(window.ANOMALIE_CATEGORIES).forEach(([categoryName, categoryData]) => {
+        const optionDiv = document.createElement('div');
+        optionDiv.className = 'custom-option';
+        optionDiv.dataset.value = categoryName;
+        
+        optionDiv.innerHTML = `
+            <span class="material-symbols-outlined cs-icon">${categoryData.icon}</span> ${categoryData.label}
+        `;
+
+        optionsContainer.appendChild(optionDiv);
+    });
+}
+
+window.renderAnomalieCategorySelect = renderAnomalieCategorySelect;
