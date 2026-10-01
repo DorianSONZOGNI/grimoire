@@ -97,7 +97,7 @@ async function loadEquipments() {
 
 
 
-window.updateDeleteModalPrice = function() {
+window.updateDeleteModalPrice = function () {
     let ctx = window.currentDeleteCtx;
     if (!ctx) return;
     let qtyInput = document.getElementById('deleteQuantityInput');
@@ -106,7 +106,7 @@ window.updateDeleteModalPrice = function() {
     if (qty > ctx.maxQty) qty = ctx.maxQty;
     if (qty < 1) qty = 1;
     qtyInput.value = qty;
-    
+
     const container = document.getElementById('deletePriceContainer');
     if (container && ctx.weight) {
         container.innerText = +(ctx.weight * qty).toFixed(1);
@@ -140,7 +140,7 @@ window.deleteAnomalie = function (idsStr) {
             let qtyToDel = 1;
             const input = document.getElementById('deleteQuantityInput');
             if (input) qtyToDel = parseInt(input.value, 10) || 1;
-            
+
             try {
                 let successCount = 0;
                 for (let i = 0; i < qtyToDel; i++) {
@@ -1000,8 +1000,14 @@ window.updateWeightUI = async function () {
     }
 
     document.querySelectorAll('.consumable-category-field').forEach(el => {
-        if (slot === 'CONSOMMABLE') el.classList.remove('hidden');
-        else el.classList.add('hidden');
+        if (slot === 'CONSOMMABLE') {
+            el.classList.remove('hidden');
+            if (window.renderConsumableCategorySelect) {
+                window.renderConsumableCategorySelect();
+            }
+        } else {
+            el.classList.add('hidden');
+        }
         el.style.display = '';
     });
 
