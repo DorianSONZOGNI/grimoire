@@ -241,6 +241,8 @@ public class CombatRoomService {
                 } else {
                     session.addLog("✅ Challenge en cours : Terminer avec " + c.getValue() + " héros ou moins.");
                 }
+            } else if ("MAX_TURNS".equals(c.getType())) {
+                session.addLog("✅ Challenge en cours : Terminer le combat en " + c.getValue() + " tours maximum.");
             } else if ("MAX_HP_LOSS_PCT".equals(c.getType())) {
                 session.addLog("✅ Challenge en cours : Ne perdre aucun héros en dessous de " + (100 - c.getValue())
                         + "% de ses PV.");

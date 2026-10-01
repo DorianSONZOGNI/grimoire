@@ -685,6 +685,7 @@ function renderRooms() {
                             <option value="MAX_HEROES">Max Héros</option>
                             <option value="MAX_HP_LOSS_PCT">Max PV perdus (%)</option>
                             <option value="MIN_HP_LOSS_PCT">Min PV perdus (%)</option>
+                              <option value="MAX_TURNS">Max Tours</option>
                         </select>
                     </div>
                     <div class="w-20">
@@ -1356,6 +1357,7 @@ function renderRooms() {
                                             <option value="MAX_HEROES">Max Héros</option>
                                             <option value="MAX_HP_LOSS_PCT">Max PV perdus (%)</option>
                                             <option value="MIN_HP_LOSS_PCT">Min PV perdus (%)</option>
+                              <option value="MAX_TURNS">Max Tours</option>
                                         </select>
                                     </div>
                                     <div class="w-20">

@@ -641,6 +641,7 @@ export function updateUI(data) {
                                         if (chall.type === 'MAX_HEROES') challName = 'Héros rest.';
                                         else if (chall.type === 'MAX_HP_LOSS_PCT') challName = 'Intouchable';
                                         else if (chall.type === 'MIN_HP_LOSS_PCT') challName = 'Risque-tout';
+                                        else if (chall.type === 'MAX_TURNS') challName = 'Vitesse';
 
                                         let innerContent = `
                                             <span class="material-symbols-outlined text-sky-400" >${challIcon}</span>
@@ -2204,6 +2205,7 @@ export function getBossChallengesHtml(activeChallenges) {
         if (chall.type === 'MAX_HEROES') challLabel = `Max Héros : ${chall.value}`;
         else if (chall.type === 'MAX_HP_LOSS_PCT') challLabel = `Max PV perdus : ${chall.value}%`;
         else if (chall.type === 'MIN_HP_LOSS_PCT') challLabel = `Min PV perdus : ${chall.value}%`;
+        else if (chall.type === 'MAX_TURNS') challLabel = `Max Tours : ${chall.value}`;
 
         let rewLabel = '';
         if (chall.rewardType === 'BONUS_SPIRIT_XP') rewLabel = `+${chall.rewardValue} XP Spirit.`;
