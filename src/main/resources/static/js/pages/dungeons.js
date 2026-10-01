@@ -1004,38 +1004,71 @@ window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost,
                 'COMMUN': '#94a3b8', 'INHABITUEL': '#22c55e', 'RARE': '#3b82f6', 'MYTHIQUE': '#f97316', 'LEGENDAIRE': '#eab308',
                 'EPIQUE': '#ef4444', 'RELIQUE': '#a855f7', 'MAUDIT': '#7f1d1d'
             };
-            const listHtml = lootItems.map(eq => {
+            
+            const rarityOrder = {
+                'COMMUN': 0, 'INHABITUEL': 1, 'RARE': 2, 'MYTHIQUE': 3, 
+                'LEGENDAIRE': 4, 'EPIQUE': 5, 'RELIQUE': 6, 'MAUDIT': 7
+            };
+
+            const equipments = [];
+            const consumables = [];
+            lootItems.forEach(eq => {
                 const slotName = eq.slot?.name || eq.slot;
-                const slotInfo = Object.assign({}, window.SLOT_LABELS && window.SLOT_LABELS[slotName] ? window.SLOT_LABELS[slotName] : { label: slotName, icon: 'help', color: '#94a3b8', extraClass: '' });
-                const rarityName = eq.rarity?.name || eq.rarity;
-                const rarityColor = colorMap[rarityName] || '#f8fafc';
+                if (slotName === 'CONSOMMABLE') consumables.push(eq);
+                else equipments.push(eq);
+            });
 
-                if (slotName === 'CONSOMMABLE') {
-                    const catName = eq.consumableCategory?.name || eq.consumableCategory;
-                    if (catName && window.CONSUMABLE_CATEGORIES && window.CONSUMABLE_CATEGORIES[catName]) {
-                        slotInfo.icon = window.CONSUMABLE_CATEGORIES[catName].icon;
-                        slotInfo.color = window.CONSUMABLE_CATEGORIES[catName].color;
-                    } else if (catName) {
-                        slotInfo.icon = 'inventory_2';
-                        slotInfo.color = '#854c4c';
+            const sortFn = (a, b) => {
+                const rA = a.rarity?.name || a.rarity;
+                const rB = b.rarity?.name || b.rarity;
+                return (rarityOrder[rB] ?? 0) - (rarityOrder[rA] ?? 0);
+            };
+
+            equipments.sort(sortFn);
+            consumables.sort(sortFn);
+
+            const generateListHtml = (items) => {
+                return items.map(eq => {
+                    const slotName = eq.slot?.name || eq.slot;
+                    const slotInfo = Object.assign({}, window.SLOT_LABELS && window.SLOT_LABELS[slotName] ? window.SLOT_LABELS[slotName] : { label: slotName, icon: 'help', color: '#94a3b8', extraClass: '' });
+                    const rarityName = eq.rarity?.name || eq.rarity;
+                    const rarityColor = colorMap[rarityName] || '#f8fafc';
+
+                    if (slotName === 'CONSOMMABLE') {
+                        const catName = eq.consumableCategory?.name || eq.consumableCategory;
+                        if (catName && window.CONSUMABLE_CATEGORIES && window.CONSUMABLE_CATEGORIES[catName]) {
+                            slotInfo.icon = window.CONSUMABLE_CATEGORIES[catName].icon;
+                            slotInfo.color = window.CONSUMABLE_CATEGORIES[catName].color;
+                        } else if (catName) {
+                            slotInfo.icon = 'inventory_2';
+                            slotInfo.color = '#854c4c';
+                        }
                     }
-                }
 
-                let dropPctStr = '';
-                if (eq.effectiveDropRate !== undefined) {
-                    const pct = (eq.effectiveDropRate * 100);
-                    const pctStr = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(1);
-                    dropPctStr = `<span style="color:#facc15; font-size:0.8rem; margin-right:4px;">[${pctStr}%]</span>`;
-                }
+                    let dropPctStr = '';
+                    if (eq.effectiveDropRate !== undefined) {
+                        const pct = (eq.effectiveDropRate * 100);
+                        const pctStr = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(1);
+                        dropPctStr = `<span style="color:#facc15; font-size:0.8rem; margin-right:4px;">[${pctStr}%]</span>`;
+                    }
 
-                return `<div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem; cursor:help;"
-                             onmouseenter="window.showGlobalTooltip && window.showGlobalTooltip(this)"
-                             onmouseleave="window.hideGlobalTooltip && window.hideGlobalTooltip()"
-                             data-tooltip-html="${(window.getEquipmentTooltipHTML ? window.getEquipmentTooltipHTML(eq) : '').replace(/"/g, '&quot;')}">
-                    <span class="material-symbols-outlined text-[1.1rem] ${slotInfo.extraClass || ''}" style="color:${slotInfo.color || rarityColor};">${slotInfo.icon}</span>
-                    <span style="color:${rarityColor}; font-weight:500; font-size:0.9rem;">${dropPctStr}${eq.name}</span>
-                </div>`;
-            }).join('');
+                    return `<div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem; cursor:help;"
+                                 onmouseenter="window.showGlobalTooltip && window.showGlobalTooltip(this)"
+                                 onmouseleave="window.hideGlobalTooltip && window.hideGlobalTooltip()"
+                                 data-tooltip-html="${(window.getEquipmentTooltipHTML ? window.getEquipmentTooltipHTML(eq) : '').replace(/"/g, '&quot;')}">
+                        <span class="material-symbols-outlined text-[1.1rem] ${slotInfo.extraClass || ''}" style="color:${slotInfo.color || rarityColor};">${slotInfo.icon}</span>
+                        <span style="color:${rarityColor}; font-weight:500; font-size:0.9rem;">${dropPctStr}${eq.name}</span>
+                    </div>`;
+                }).join('');
+            };
+
+            let listHtml = generateListHtml(equipments);
+            if (consumables.length > 0) {
+                if (equipments.length > 0) {
+                    listHtml += `<div style="height: 1px; background: rgba(255,255,255,0.2); margin: 0.5rem 0;"></div>`;
+                }
+                listHtml += generateListHtml(consumables);
+            }
 
             const tooltipContent = `
                 <div style="font-weight:600; color:#f59e0b; margin-bottom:0.5rem; font-size:0.85rem; text-transform:uppercase; letter-spacing:0.05em; display:flex; align-items:center; gap:0.25rem;">
