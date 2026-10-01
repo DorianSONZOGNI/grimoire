@@ -110,9 +110,17 @@ public class HuntingQuestService {
                     .filter(a -> a.getLevel() == selected.getRequiredSecretLevel())
                     .filter(a -> a.getSpiritualite() == mappedSpiri)
                     .collect(Collectors.toList());
+                    
+            if (templates.isEmpty()) {
+                // Fallback 1 : Même spiritualité, mais on ignore le niveau strict (on prend le plus proche ou n'importe lequel)
+                templates = anomalieRepository.findByIsTemplateTrue().stream()
+                        .filter(a -> a.getSpiritualite() == mappedSpiri)
+                        .collect(Collectors.toList());
+            }
         }
 
         if (templates.isEmpty()) {
+            // Fallback 2 : Même niveau, mais n'importe quelle spiritualité
             templates = anomalieRepository.findByIsTemplateTrue().stream()
                     .filter(a -> a.getLevel() == selected.getRequiredSecretLevel())
                     .collect(Collectors.toList());
@@ -157,15 +165,34 @@ public class HuntingQuestService {
             generation.grimoire.enumeration.SpiritualiteType mappedSpiri = mapSecretToSpiritualite(
                     quest.getRequiredSecret());
             if (mappedSpiri != null) {
-                anomalieRepository.findByIsTemplateTrue().stream()
+                // Essayer niveau exact + spiri
+                Anomalie target = anomalieRepository.findByIsTemplateTrue().stream()
                         .filter(a -> a.getLevel() == quest.getRequiredSecretLevel())
                         .filter(a -> a.getSpiritualite() == mappedSpiri)
                         .findFirst()
-                        .ifPresent(a -> {
-                            quest.setRewardAnomalieId(a.getId());
-                            questRepository.save(quest);
-                            System.out.println("[Fix] Updated active weekly quest anomaly to: " + a.getName());
-                        });
+                        .orElse(null);
+
+                // Fallback 1 : spiri uniquement
+                if (target == null) {
+                    target = anomalieRepository.findByIsTemplateTrue().stream()
+                            .filter(a -> a.getSpiritualite() == mappedSpiri)
+                            .findFirst()
+                            .orElse(null);
+                }
+                
+                // Fallback 2 : niveau uniquement
+                if (target == null) {
+                    target = anomalieRepository.findByIsTemplateTrue().stream()
+                            .filter(a -> a.getLevel() == quest.getRequiredSecretLevel())
+                            .findFirst()
+                            .orElse(null);
+                }
+
+                if (target != null) {
+                    quest.setRewardAnomalieId(target.getId());
+                    questRepository.save(quest);
+                    System.out.println("[Fix] Updated active weekly quest anomaly to: " + target.getName());
+                }
             }
         });
     }
