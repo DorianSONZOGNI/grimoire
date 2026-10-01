@@ -15,6 +15,7 @@ public enum AnomalieCategory {
     SABLIER_PLEIN("Sablier plein", "hourglass_full"),
     MATIERE("Matière", "matter"),
     JETON("Jeton", "token"),
+    DRONE("Drone", "drone_2"),
     AUTRE("Autre", "category");
 
     private final String label;
