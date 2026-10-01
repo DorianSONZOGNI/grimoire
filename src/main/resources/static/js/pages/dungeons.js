@@ -682,10 +682,12 @@ function renderConsumablesList() {
         const selCount = group.selectedIds.length;
         const isSelected = selCount > 0;
 
-        const catIcons = { POTION_ROSE: 'science', POTION_BLEUE: 'science', POTION_ROUGE: 'science', POTION_VIOLETTE: 'science', CLE: 'vpn_key', CORDE: 'gesture', PARCHEMIN: 'history_edu', NOURRITURE: 'restaurant', OUTIL: 'construction', AUTRE: 'inventory_2' };
-        const catColors = { POTION_ROSE: '#ec4899', POTION_BLEUE: '#0ea5e9', POTION_ROUGE: '#ef4444', POTION_VIOLETTE: '#a855f7', CLE: '#eab308', CORDE: '#8b4513', PARCHEMIN: '#f59e0b', NOURRITURE: '#f43f5e', OUTIL: '#64748b', AUTRE: '#94a3b8' };
-        const iconName = c.consumableCategory ? (catIcons[c.consumableCategory] || 'inventory_2') : 'inventory_2';
-        const iconColor = c.consumableCategory ? (catColors[c.consumableCategory] || '#854c4c') : '#854c4c';
+        let iconName = 'inventory_2';
+        let iconColor = '#854c4c';
+        if (c.consumableCategory && window.CONSUMABLE_CATEGORIES && window.CONSUMABLE_CATEGORIES[c.consumableCategory]) {
+            iconName = window.CONSUMABLE_CATEGORIES[c.consumableCategory].icon;
+            iconColor = window.CONSUMABLE_CATEGORIES[c.consumableCategory].color;
+        }
 
         let badgeHtml = '';
         if (isSelected) {
@@ -1014,10 +1016,8 @@ window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost,
                         slotInfo.icon = window.CONSUMABLE_CATEGORIES[catName].icon;
                         slotInfo.color = window.CONSUMABLE_CATEGORIES[catName].color;
                     } else if (catName) {
-                        const catIcons = { POTION_ROSE: 'science', POTION_BLEUE: 'science', POTION_ROUGE: 'science', POTION_VIOLETTE: 'science', CLE: 'vpn_key', CORDE: 'gesture', PARCHEMIN: 'history_edu', NOURRITURE: 'restaurant', OUTIL: 'construction', AUTRE: 'inventory_2' };
-                        const catColors = { POTION_ROSE: '#ec4899', POTION_BLEUE: '#0ea5e9', POTION_ROUGE: '#ef4444', POTION_VIOLETTE: '#a855f7', CLE: '#eab308', CORDE: '#8b4513', PARCHEMIN: '#f59e0b', NOURRITURE: '#f43f5e', OUTIL: '#64748b', AUTRE: '#94a3b8' };
-                        slotInfo.icon = catIcons[catName] || 'inventory_2';
-                        slotInfo.color = catColors[catName] || '#854c4c';
+                        slotInfo.icon = 'inventory_2';
+                        slotInfo.color = '#854c4c';
                     }
                 }
 
