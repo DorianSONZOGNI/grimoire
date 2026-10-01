@@ -688,7 +688,12 @@ window.updateWeightUI = async function () {
         el.style.display = '';
     });
     document.querySelectorAll('.consumable-category-field').forEach(el => {
-        if (slot === 'CONSOMMABLE') el.classList.remove('hidden');
+        if (slot === 'CONSOMMABLE') {
+            el.classList.remove('hidden');
+            if (window.renderConsumableCategorySelect) {
+                window.renderConsumableCategorySelect();
+            }
+        }
         else el.classList.add('hidden');
         el.style.display = '';
     });
@@ -777,9 +782,7 @@ window.updateWeightUI = async function () {
         const displayPrice = +Number(price).toFixed(1);
         priceEl.innerHTML = `${displayPrice} <span class="material-symbols-outlined icon-md">monetization_on</span>`;
     }
-}
-
-;
+};
 
 
 
