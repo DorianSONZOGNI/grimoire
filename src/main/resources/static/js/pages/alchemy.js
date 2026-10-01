@@ -225,10 +225,21 @@ function renderRecipesList() {
         else if (r.rewardType === 'UNLOCK_FEATURE') rewardIcon = `<span class="material-symbols-outlined" style="color: #f59e0b; font-size: 1.1rem; opacity: 0.8;" title="Secret">key</span>`;
         else if (r.rewardType === 'GIVE_SPIRIT_XP') rewardIcon = `<span class="material-symbols-outlined" style="color: #38bdf8; font-size: 1.1rem; opacity: 0.8;" title="XP Spiritualité">self_improvement</span>`;
 
+        let titleColorClass = r.rewardType === 'UNLOCK_FEATURE' ? 'text-blue-500' : 'text-cyan-400';
+        let titleColorStyle = '';
+
+        if (r.rewardType === 'GIVE_ANOMALY') {
+            const anomalyTemp = (pageState.allAnomalyTemplates || []).find(a => a.name === r.rewardName);
+            if (anomalyTemp && anomalyTemp.spiritualite) {
+                titleColorClass = '';
+                titleColorStyle = `color: ${getSpiritualiteColor(anomalyTemp.spiritualite)}; text-shadow: 0 0 10px ${getSpiritualiteColor(anomalyTemp.spiritualite)}40;`;
+            }
+        }
+
         const isUnseen = window.currentUser && window.currentUser.seenAlchemyRecipes && !window.currentUser.seenAlchemyRecipes.includes(r.id);
 
         div.innerHTML = `
-            <h4 class="m-0 ${r.rewardType === 'UNLOCK_FEATURE' ? 'text-blue-500' : 'text-cyan-400'} flex items-center justify-between" style="position:relative;">
+            <h4 class="m-0 ${titleColorClass} flex items-center justify-between" style="position:relative; ${titleColorStyle}">
                 <span class="flex items-center gap-2">
                     <span class="material-symbols-outlined text-xl">experiment</span>
                     ${r.name}
