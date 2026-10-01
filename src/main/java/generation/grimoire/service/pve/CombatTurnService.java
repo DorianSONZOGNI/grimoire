@@ -49,7 +49,12 @@ class CombatTurnService {
         for (generation.grimoire.model.pve.Challenge c : session.getActiveChallenges()) {
             if (c.isFailed()) continue;
             
-            if ("MAX_HP_LOSS_PCT".equals(c.getType())) {
+            if ("MAX_TURNS".equals(c.getType())) {
+                if (session.getTurnNumber() > c.getValue()) {
+                    c.setFailed(true);
+                    session.addLog("❌ Challenge échoué : Le combat a dépassé la limite de " + c.getValue() + " tours.");
+                }
+            } else if ("MAX_HP_LOSS_PCT".equals(c.getType())) {
                 boolean failed = false;
                 for (Personnage p : players) {
                     int lowest = p.getLowestHpReached() != null ? p.getLowestHpReached() : p.getHealthCurrent();

@@ -352,12 +352,37 @@ function getEquipmentTooltipHTML(eq) {
         </div>`;
     }
 
-    if (!statsHtml && !effectHtml && !cleHtml) return `<div class="font-italic text-muted text-center" style="min-width: 150px; padding: 0.5rem;">Aucun attribut</div>`;
+    let consumableExtraHtml = '';
+    if (eq.slot === 'CONSOMMABLE') {
+        if (eq.consumableDurationTurns && eq.consumableDurationTurns > 0) {
+            consumableExtraHtml += `<div class="flex-between" style="gap: 1rem; margin-top: 0.3rem;">
+                <div class="flex-center text-muted" style="gap: 0.3rem; font-size: 0.85rem;">
+                    <span class="material-symbols-outlined" style="color:#94a3b8; font-size: 1rem;">schedule</span>
+                    Durée
+                </div>
+                <span style="font-weight: 600; color: #cbd5e1; font-size: 0.85rem;">${eq.consumableDurationTurns} tour${eq.consumableDurationTurns > 1 ? 's' : ''}</span>
+            </div>`;
+        }
+        
+        const weightValue = eq.weight !== undefined ? eq.weight : eq.baseWeight;
+        if (weightValue !== undefined && weightValue !== null) {
+            consumableExtraHtml += `<div class="flex-between" style="gap: 1rem; margin-top: 0.3rem;">
+                <div class="flex-center text-muted" style="gap: 0.3rem; font-size: 0.85rem;">
+                    <span class="material-symbols-outlined" style="color:#94a3b8; font-size: 1rem;">scale</span>
+                    Poids
+                </div>
+                <span style="font-weight: 600; color: #cbd5e1; font-size: 0.85rem;">${weightValue}</span>
+            </div>`;
+        }
+    }
+
+    if (!statsHtml && !effectHtml && !cleHtml && !consumableExtraHtml) return `<div class="font-italic text-muted text-center" style="min-width: 150px; padding: 0.5rem;">Aucun attribut</div>`;
 
     return `<div style="min-width: 150px; padding: 0.5rem;">
         ${statsHtml}
         ${cleHtml}
         ${effectHtml}
+        ${consumableExtraHtml ? `<div style="margin-top: 0.5rem; padding-top: 0.5rem; border-top: 1px solid rgba(255,255,255,0.1);">${consumableExtraHtml}</div>` : ''}
     </div>`;
 }
 

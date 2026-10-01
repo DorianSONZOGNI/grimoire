@@ -225,10 +225,35 @@ function renderRecipesList() {
         else if (r.rewardType === 'UNLOCK_FEATURE') rewardIcon = `<span class="material-symbols-outlined" style="color: #f59e0b; font-size: 1.1rem; opacity: 0.8;" title="Secret">key</span>`;
         else if (r.rewardType === 'GIVE_SPIRIT_XP') rewardIcon = `<span class="material-symbols-outlined" style="color: #38bdf8; font-size: 1.1rem; opacity: 0.8;" title="XP Spiritualité">self_improvement</span>`;
 
+        let titleColorClass = r.rewardType === 'UNLOCK_FEATURE' ? 'text-blue-500' : 'text-cyan-400';
+        let titleColorStyle = '';
+
+        if (r.rewardType === 'GIVE_ANOMALY') {
+            const anomalyTemp = (pageState.allAnomalyTemplates || []).find(a => a.name === r.rewardName);
+            if (anomalyTemp && anomalyTemp.spiritualite) {
+                titleColorClass = '';
+                titleColorStyle = `color: ${getSpiritualiteColor(anomalyTemp.spiritualite)}; text-shadow: 0 0 10px ${getSpiritualiteColor(anomalyTemp.spiritualite)}40;`;
+            }
+        } else if (r.rewardType === 'GIVE_CONSUMABLE' || r.rewardType === 'GIVE_EQUIPMENT') {
+            const eqTemp = (pageState.allEquipmentTemplates || []).find(e => e.name === r.rewardName);
+            if (eqTemp && eqTemp.rarity) {
+                titleColorClass = '';
+                const rColor = getRarityColor(eqTemp.rarity);
+                titleColorStyle = `color: ${rColor}; text-shadow: 0 0 10px ${rColor}40;`;
+            }
+        } else if (r.rewardType === 'UNLOCK_FEATURE') {
+            const secretMeta = window.DEFAULT_SECRETS_META.find(s => s.name === r.rewardName);
+            if (secretMeta) {
+                titleColorClass = '';
+                const sColor = secretMeta.color;
+                titleColorStyle = `color: ${sColor}; text-shadow: 0 0 10px ${sColor}40;`;
+            }
+        }
+
         const isUnseen = window.currentUser && window.currentUser.seenAlchemyRecipes && !window.currentUser.seenAlchemyRecipes.includes(r.id);
 
         div.innerHTML = `
-            <h4 class="m-0 ${r.rewardType === 'UNLOCK_FEATURE' ? 'text-blue-500' : 'text-cyan-400'} flex items-center justify-between" style="position:relative;">
+            <h4 class="m-0 ${titleColorClass} flex items-center justify-between" style="position:relative; ${titleColorStyle}">
                 <span class="flex items-center gap-2">
                     <span class="material-symbols-outlined text-xl">experiment</span>
                     ${r.name}
@@ -524,18 +549,20 @@ function renderCauldron(r) {
         resultTooltipAttr = `data-color="${resultColor}" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData}"`;
     } else if (resultType === 'EQUIPMENT' || resultType === 'CONSUMABLE') {
         const temp = pageState.allEquipmentTemplates.find(e => e.name === r.rewardName);
-        const statsData = window.getEquipmentTooltipHTML(temp);
-        const slotInfo = getSlotInfo(temp);
-        const rarityColor = getRarityColor(temp.rarity);
-        const tooltipData = `
-            <div style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:${rarityColor}; border-bottom:1px solid ${rarityColor}40; padding-bottom:4px; display: flex; justify-content: space-between; align-items: center;">
-                <span style="display: flex; align-items: center; gap: 6px;">${temp.name}</span>
-                <span class="material-symbols-outlined ${slotInfo.extraClass || ''}" style="font-size: 1.1rem; color: ${slotInfo.color};" title="${slotInfo.label}">${slotInfo.icon}</span>
-            </div>
-            <div style="display:flex; flex-direction:column; gap:4px;">${statsData}</div>
-        `.replace(/"/g, '&quot;');
-        if (tooltipData) {
-            resultTooltipAttr = `data-color="${resultColor}" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData}"`;
+        if (temp) {
+            const statsData = window.getEquipmentTooltipHTML(temp);
+            const slotInfo = getSlotInfo(temp);
+            const rarityColor = getRarityColor(temp.rarity);
+            const tooltipData = `
+                <div style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:${rarityColor}; border-bottom:1px solid ${rarityColor}40; padding-bottom:4px; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="display: flex; align-items: center; gap: 6px;">${temp.name}</span>
+                    <span class="material-symbols-outlined ${slotInfo.extraClass || ''}" style="font-size: 1.1rem; color: ${slotInfo.color};" title="${slotInfo.label}">${slotInfo.icon}</span>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:4px;">${statsData}</div>
+            `.replace(/"/g, '&quot;');
+            if (tooltipData) {
+                resultTooltipAttr = `data-color="${resultColor}" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData}"`;
+            }
         }
     }
 

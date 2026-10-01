@@ -409,24 +409,24 @@ async function loadDungeons() {
 
                                         if (d.dailyQuest) {
                         if (d.dailyChallengeDuo) {
-                            leftBadges += `<div class="badge-quest daily" style="cursor: pointer;" title="Cible de la Quête Journalière" onmouseenter="if(window.showGlobalTooltip) window.showGlobalTooltip(this)" onmouseleave="if(window.hideGlobalTooltip) window.hideGlobalTooltip()" data-tooltip-html="<div style='padding:4px;'><strong>Défi du jour : <span style='color:#f59e0b;'>${getChallengeTitle(d.dailyChallengeDuo)}</span></strong><br>${getChallengeDuoText(d.dailyChallengeDuo).replace(/"/g, '&quot;')}</div>">
+                            leftBadges += `<div class="badge-quest daily" style="cursor: pointer;" onmouseenter="if(window.showGlobalTooltip) window.showGlobalTooltip(this)" onmouseleave="if(window.hideGlobalTooltip) window.hideGlobalTooltip()" data-tooltip-html="<div style='padding:4px;'><strong>Défi du jour : <span style='color:#f59e0b;'>${getChallengeTitle(d.dailyChallengeDuo)}</span></strong><br>${getChallengeDuoText(d.dailyChallengeDuo).replace(/"/g, '&quot;')}</div>">
                                 <span class="material-symbols-outlined text-warning badge-icon">workspace_premium</span>
                             </div>`;
                         } else {
-                            leftBadges += `<div class="badge-quest daily" title="Cible de la Quête Journalière">
+                            leftBadges += `<div class="badge-quest daily">
                                 <span class="material-symbols-outlined text-warning badge-icon">workspace_premium</span>
                             </div>`;
                         }
                     }
                     if (d.weeklyQuest) {
-                        leftBadges += `<div class="badge-quest weekly" title="Cible de la Quête Hebdomadaire">
+                        leftBadges += `<div class="badge-quest weekly" style="cursor: pointer;" onmouseenter="if(window.showGlobalTooltip) window.showGlobalTooltip(this)" onmouseleave="if(window.hideGlobalTooltip) window.hideGlobalTooltip()" data-tooltip-html="<div style='padding:4px; max-width:280px; white-space:normal; line-height:1.4;'><strong>Défi Hebdomadaire</strong><br><span style='color:#a78bfa;'>Terminez le donjon en un <strong>minimum de tours</strong> pour vous classer parmi les <strong>20% des meilleurs joueurs</strong> et remporter la récompense à la fin de la semaine.</span></div>">
                             <span class="material-symbols-outlined text-purple badge-icon">emoji_events</span>
                         </div>`;
                     }
                     leftBadges += `</div>`;
 
                     const cardHtml = `
-                        <div class="dungeon-card ${isLocked ? 'locked' : ''}" id="dungeon-card-${d.id}" style="position: relative;" ${isLocked ? '' : `onclick="openPrepInterface(${d.id}, '${d.name.replace(/'/g, "\\'")}', '${sallesData}', ${d.maxHeroes || 1}, ${d.entryCostGold || 0}, ${d.recommendedLevel || 1})"`}>
+                        <div class="dungeon-card ${isLocked ? 'locked' : ''}" id="dungeon-card-${d.id}" style="position: relative;" ${isLocked ? '' : `onclick="openPrepInterface(${d.id}, '${d.name.replace(/'/g, "\\'")}', '${sallesData}', ${d.maxHeroes || 1}, ${d.entryCostGold || 0}, ${d.recommendedLevel || 1}, ${d.dailyQuest ? 'true' : 'false'}, ${d.weeklyQuest ? 'true' : 'false'}, ${d.dailyChallengeDuo ? `'${d.dailyChallengeDuo}'` : 'null'})"`}>
                             ${lockedHtml}
                             ${leftBadges}
                             ${skullsHtml}
@@ -901,13 +901,16 @@ window.selectCharacter = async function (id) {
     }
 };
 
-window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost, reqLevel) {
+window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost, reqLevel, isDailyQuest, isWeeklyQuest, dailyChallengeDuo) {
     pageState.currentDungeonId = id;
     pageState.selectedCharIds = [];
     pageState.selectedConsumableIds = [];
     pageState.currentMaxHeroes = maxHeroes || 1;
     window.currentDungeonEntryCost = entryCost || 0;
     window.currentDungeonReqLevel = reqLevel || 1;
+    window.currentDungeonIsDaily = isDailyQuest;
+    window.currentDungeonIsWeekly = isWeeklyQuest;
+    window.currentDungeonChallengeDuo = dailyChallengeDuo;
 
     const coopSection = document.getElementById('coopToggleSection');
     if (coopSection) {
@@ -931,12 +934,43 @@ window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost,
 
     const btnEnter = document.getElementById('btnEnterDungeon');
     const btnCreateLobby = document.getElementById('btnCreateLobby');
-    if (window.currentDungeonEntryCost > 0) {
-        btnEnter.innerHTML = `<span class="material-symbols-outlined">swords</span> Payer ${window.currentDungeonEntryCost} Or & Entrer`;
-        if (btnCreateLobby) btnCreateLobby.innerHTML = `<span class="material-symbols-outlined">group</span> Créer le lobby (${window.currentDungeonEntryCost} Or)`;
-    } else {
-        btnEnter.innerHTML = `<span class="material-symbols-outlined">swords</span> ENTRER DANS LE DONJON`;
-        if (btnCreateLobby) btnCreateLobby.innerHTML = `<span class="material-symbols-outlined">group</span> CRÉER LE LOBBY CO-OP`;
+
+    let questBadge = '';
+    const dailyStyle = "position: absolute; top: -12px; right: -12px; background: rgba(15, 23, 42, 0.95); border-radius: 50%; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; border: 2px solid #f59e0b; box-shadow: 0 4px 10px rgba(245, 158, 11, 0.4); cursor: pointer; z-index: 10;";
+    const weeklyStyle = "position: absolute; top: -12px; right: -12px; background: rgba(15, 23, 42, 0.95); border-radius: 50%; width: 38px; height: 38px; display: flex; align-items: center; justify-content: center; border: 2px solid #8b5cf6; box-shadow: 0 4px 10px rgba(139, 92, 246, 0.4); cursor: pointer; z-index: 10;";
+
+    if (window.currentDungeonIsDaily === true || window.currentDungeonIsDaily === 'true') {
+        if (window.currentDungeonChallengeDuo && window.currentDungeonChallengeDuo !== 'null') {
+            questBadge = `<div style="${dailyStyle}" onmouseenter="if(window.showGlobalTooltip) window.showGlobalTooltip(this)" onmouseleave="if(window.hideGlobalTooltip) window.hideGlobalTooltip()" data-tooltip-html="<div style='padding:4px;'><strong>Défi du jour : <span style='color:#f59e0b;'>${getChallengeTitle(window.currentDungeonChallengeDuo)}</span></strong><br>${getChallengeDuoText(window.currentDungeonChallengeDuo).replace(/"/g, '&quot;')}</div>">
+                <span class="material-symbols-outlined text-warning" style="font-size: 20px;">workspace_premium</span>
+            </div>`;
+        } else {
+            questBadge = `<div style="${dailyStyle}">
+                <span class="material-symbols-outlined text-warning" style="font-size: 20px;">workspace_premium</span>
+            </div>`;
+        }
+    } else if (window.currentDungeonIsWeekly === true || window.currentDungeonIsWeekly === 'true') {
+        questBadge = `<div style="${weeklyStyle}" onmouseenter="if(window.showGlobalTooltip) window.showGlobalTooltip(this)" onmouseleave="if(window.hideGlobalTooltip) window.hideGlobalTooltip()" data-tooltip-html="<div style='padding:4px; max-width:280px; white-space:normal; line-height:1.4;'><strong>Défi Hebdomadaire</strong><br><span style='color:#a78bfa;'>Terminez le donjon en un <strong>minimum de tours</strong> pour vous classer parmi les <strong>20% des meilleurs joueurs</strong> et remporter la récompense à la fin de la semaine.</span></div>">
+            <span class="material-symbols-outlined text-purple" style="font-size: 20px;">emoji_events</span>
+        </div>`;
+    }
+
+    if (btnEnter) {
+        btnEnter.style.position = 'relative';
+        if (window.currentDungeonEntryCost > 0) {
+            btnEnter.innerHTML = `<span class="material-symbols-outlined">swords</span> Payer ${window.currentDungeonEntryCost} Or & Entrer ${questBadge}`;
+        } else {
+            btnEnter.innerHTML = `<span class="material-symbols-outlined">swords</span> ENTRER DANS LE DONJON ${questBadge}`;
+        }
+    }
+
+    if (btnCreateLobby) {
+        btnCreateLobby.style.position = 'relative';
+        if (window.currentDungeonEntryCost > 0) {
+            btnCreateLobby.innerHTML = `<span class="material-symbols-outlined">group</span> Créer le lobby (${window.currentDungeonEntryCost} Or) ${questBadge}`;
+        } else {
+            btnCreateLobby.innerHTML = `<span class="material-symbols-outlined">group</span> CRÉER LE LOBBY CO-OP ${questBadge}`;
+        }
     }
 
     const salles = JSON.parse(decodeURIComponent(sallesData) || '[]');
@@ -1004,38 +1038,71 @@ window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost,
                 'COMMUN': '#94a3b8', 'INHABITUEL': '#22c55e', 'RARE': '#3b82f6', 'MYTHIQUE': '#f97316', 'LEGENDAIRE': '#eab308',
                 'EPIQUE': '#ef4444', 'RELIQUE': '#a855f7', 'MAUDIT': '#7f1d1d'
             };
-            const listHtml = lootItems.map(eq => {
+            
+            const rarityOrder = {
+                'COMMUN': 0, 'INHABITUEL': 1, 'RARE': 2, 'MYTHIQUE': 3, 
+                'LEGENDAIRE': 4, 'EPIQUE': 5, 'RELIQUE': 6, 'MAUDIT': 7
+            };
+
+            const equipments = [];
+            const consumables = [];
+            lootItems.forEach(eq => {
                 const slotName = eq.slot?.name || eq.slot;
-                const slotInfo = Object.assign({}, window.SLOT_LABELS && window.SLOT_LABELS[slotName] ? window.SLOT_LABELS[slotName] : { label: slotName, icon: 'help', color: '#94a3b8', extraClass: '' });
-                const rarityName = eq.rarity?.name || eq.rarity;
-                const rarityColor = colorMap[rarityName] || '#f8fafc';
+                if (slotName === 'CONSOMMABLE') consumables.push(eq);
+                else equipments.push(eq);
+            });
 
-                if (slotName === 'CONSOMMABLE') {
-                    const catName = eq.consumableCategory?.name || eq.consumableCategory;
-                    if (catName && window.CONSUMABLE_CATEGORIES && window.CONSUMABLE_CATEGORIES[catName]) {
-                        slotInfo.icon = window.CONSUMABLE_CATEGORIES[catName].icon;
-                        slotInfo.color = window.CONSUMABLE_CATEGORIES[catName].color;
-                    } else if (catName) {
-                        slotInfo.icon = 'inventory_2';
-                        slotInfo.color = '#854c4c';
+            const sortFn = (a, b) => {
+                const rA = a.rarity?.name || a.rarity;
+                const rB = b.rarity?.name || b.rarity;
+                return (rarityOrder[rB] ?? 0) - (rarityOrder[rA] ?? 0);
+            };
+
+            equipments.sort(sortFn);
+            consumables.sort(sortFn);
+
+            const generateListHtml = (items) => {
+                return items.map(eq => {
+                    const slotName = eq.slot?.name || eq.slot;
+                    const slotInfo = Object.assign({}, window.SLOT_LABELS && window.SLOT_LABELS[slotName] ? window.SLOT_LABELS[slotName] : { label: slotName, icon: 'help', color: '#94a3b8', extraClass: '' });
+                    const rarityName = eq.rarity?.name || eq.rarity;
+                    const rarityColor = colorMap[rarityName] || '#f8fafc';
+
+                    if (slotName === 'CONSOMMABLE') {
+                        const catName = eq.consumableCategory?.name || eq.consumableCategory;
+                        if (catName && window.CONSUMABLE_CATEGORIES && window.CONSUMABLE_CATEGORIES[catName]) {
+                            slotInfo.icon = window.CONSUMABLE_CATEGORIES[catName].icon;
+                            slotInfo.color = window.CONSUMABLE_CATEGORIES[catName].color;
+                        } else if (catName) {
+                            slotInfo.icon = 'inventory_2';
+                            slotInfo.color = '#854c4c';
+                        }
                     }
-                }
 
-                let dropPctStr = '';
-                if (eq.effectiveDropRate !== undefined) {
-                    const pct = (eq.effectiveDropRate * 100);
-                    const pctStr = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(1);
-                    dropPctStr = `<span style="color:#facc15; font-size:0.8rem; margin-right:4px;">[${pctStr}%]</span>`;
-                }
+                    let dropPctStr = '';
+                    if (eq.effectiveDropRate !== undefined) {
+                        const pct = (eq.effectiveDropRate * 100);
+                        const pctStr = pct % 1 === 0 ? pct.toFixed(0) : pct.toFixed(1);
+                        dropPctStr = `<span style="color:#facc15; font-size:0.8rem; margin-right:4px;">[${pctStr}%]</span>`;
+                    }
 
-                return `<div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem; cursor:help;"
-                             onmouseenter="window.showGlobalTooltip && window.showGlobalTooltip(this)"
-                             onmouseleave="window.hideGlobalTooltip && window.hideGlobalTooltip()"
-                             data-tooltip-html="${(window.getEquipmentTooltipHTML ? window.getEquipmentTooltipHTML(eq) : '').replace(/"/g, '&quot;')}">
-                    <span class="material-symbols-outlined text-[1.1rem] ${slotInfo.extraClass || ''}" style="color:${slotInfo.color || rarityColor};">${slotInfo.icon}</span>
-                    <span style="color:${rarityColor}; font-weight:500; font-size:0.9rem;">${dropPctStr}${eq.name}</span>
-                </div>`;
-            }).join('');
+                    return `<div style="display:flex; align-items:center; gap:0.5rem; margin-bottom:0.25rem; cursor:help;"
+                                 onmouseenter="window.showGlobalTooltip && window.showGlobalTooltip(this)"
+                                 onmouseleave="window.hideGlobalTooltip && window.hideGlobalTooltip()"
+                                 data-tooltip-html="${(window.getEquipmentTooltipHTML ? window.getEquipmentTooltipHTML(eq) : '').replace(/"/g, '&quot;')}">
+                        <span class="material-symbols-outlined text-[1.1rem] ${slotInfo.extraClass || ''}" style="color:${slotInfo.color || rarityColor};">${slotInfo.icon}</span>
+                        <span style="color:${rarityColor}; font-weight:500; font-size:0.9rem;">${dropPctStr}${eq.name}</span>
+                    </div>`;
+                }).join('');
+            };
+
+            let listHtml = generateListHtml(equipments);
+            if (consumables.length > 0) {
+                if (equipments.length > 0) {
+                    listHtml += `<div style="height: 1px; background: rgba(255,255,255,0.2); margin: 0.5rem 0;"></div>`;
+                }
+                listHtml += generateListHtml(consumables);
+            }
 
             const tooltipContent = `
                 <div style="font-weight:600; color:#f59e0b; margin-bottom:0.5rem; font-size:0.85rem; text-transform:uppercase; letter-spacing:0.05em; display:flex; align-items:center; gap:0.25rem;">
