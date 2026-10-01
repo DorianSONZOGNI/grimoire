@@ -234,6 +234,20 @@ function renderRecipesList() {
                 titleColorClass = '';
                 titleColorStyle = `color: ${getSpiritualiteColor(anomalyTemp.spiritualite)}; text-shadow: 0 0 10px ${getSpiritualiteColor(anomalyTemp.spiritualite)}40;`;
             }
+        } else if (r.rewardType === 'GIVE_CONSUMABLE' || r.rewardType === 'GIVE_EQUIPMENT') {
+            const eqTemp = (pageState.allEquipmentTemplates || []).find(e => e.name === r.rewardName);
+            if (eqTemp && eqTemp.rarity) {
+                titleColorClass = '';
+                const rColor = getRarityColor(eqTemp.rarity);
+                titleColorStyle = `color: ${rColor}; text-shadow: 0 0 10px ${rColor}40;`;
+            }
+        } else if (r.rewardType === 'UNLOCK_FEATURE') {
+            const secretMeta = window.DEFAULT_SECRETS_META.find(s => s.name === r.rewardName);
+            if (secretMeta) {
+                titleColorClass = '';
+                const sColor = secretMeta.color;
+                titleColorStyle = `color: ${sColor}; text-shadow: 0 0 10px ${sColor}40;`;
+            }
         }
 
         const isUnseen = window.currentUser && window.currentUser.seenAlchemyRecipes && !window.currentUser.seenAlchemyRecipes.includes(r.id);
