@@ -419,7 +419,7 @@ async function loadDungeons() {
                         }
                     }
                     if (d.weeklyQuest) {
-                        leftBadges += `<div class="badge-quest weekly">
+                        leftBadges += `<div class="badge-quest weekly" style="cursor: pointer;" onmouseenter="if(window.showGlobalTooltip) window.showGlobalTooltip(this)" onmouseleave="if(window.hideGlobalTooltip) window.hideGlobalTooltip()" data-tooltip-html="<div style='padding:4px; max-width:280px; white-space:normal; line-height:1.4;'><strong>Défi Hebdomadaire</strong><br><span style='color:#a78bfa;'>Terminez le donjon en un <strong>minimum de tours</strong> pour vous classer parmi les <strong>20% des meilleurs joueurs</strong> et remporter la récompense à la fin de la semaine.</span></div>">
                             <span class="material-symbols-outlined text-purple badge-icon">emoji_events</span>
                         </div>`;
                     }
@@ -950,7 +950,7 @@ window.openPrepInterface = function (id, name, sallesData, maxHeroes, entryCost,
             </div>`;
         }
     } else if (window.currentDungeonIsWeekly === true || window.currentDungeonIsWeekly === 'true') {
-        questBadge = `<div style="${weeklyStyle}" title="Cible de la Quête Hebdomadaire">
+        questBadge = `<div style="${weeklyStyle}" onmouseenter="if(window.showGlobalTooltip) window.showGlobalTooltip(this)" onmouseleave="if(window.hideGlobalTooltip) window.hideGlobalTooltip()" data-tooltip-html="<div style='padding:4px; max-width:280px; white-space:normal; line-height:1.4;'><strong>Défi Hebdomadaire</strong><br><span style='color:#a78bfa;'>Terminez le donjon en un <strong>minimum de tours</strong> pour vous classer parmi les <strong>20% des meilleurs joueurs</strong> et remporter la récompense à la fin de la semaine.</span></div>">
             <span class="material-symbols-outlined text-purple" style="font-size: 20px;">emoji_events</span>
         </div>`;
     }
