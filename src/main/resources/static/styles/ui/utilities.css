@@ -923,10 +923,6 @@
     color: #7dd3fc !important;
 }
 
-.text-rose-500 {
-    color: #f43f5e !important;
-}
-
 .text-rose-600 {
     color: #e11d48 !important;
 }
@@ -1155,10 +1151,6 @@
 
 .bg-rose-500\/10 {
     background-color: rgba(244, 63, 94, 0.1) !important;
-}
-
-.text-rose-500 {
-    color: #f43f5e !important;
 }
 
 .bg-emerald-500\/15 {

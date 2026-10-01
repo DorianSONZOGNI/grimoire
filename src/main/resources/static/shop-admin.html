@@ -146,38 +146,7 @@
                                     </span>
                                     <span class="material-symbols-outlined cs-arrow text-lg">expand_more</span>
                                 </div>
-                                <div class="custom-select-options" id="eqConsumableCategoryOptions">
-                                    <div class="custom-option" data-value="AUTRE"><span
-                                            class="material-symbols-outlined cs-icon text-muted">inventory_2</span>
-                                        Autre</div>
-                                    <div class="custom-option" data-value="POTION_ROSE"><span
-                                            class="material-symbols-outlined cs-icon text-pv">science</span> Potion Rose
-                                    </div>
-                                    <div class="custom-option" data-value="POTION_BLEUE"><span
-                                            class="material-symbols-outlined cs-icon text-mana">science</span> Potion
-                                        Bleue</div>
-                                    <div class="custom-option" data-value="POTION_ROUGE"><span
-                                            class="material-symbols-outlined cs-icon text-crit">science</span> Potion
-                                        Rouge</div>
-                                    <div class="custom-option" data-value="POTION_VIOLETTE"><span
-                                            class="material-symbols-outlined cs-icon text-power">science</span> Potion
-                                        Violette</div>
-                                    <div class="custom-option" data-value="CLE"><span
-                                            class="material-symbols-outlined cs-icon text-warning">vpn_key</span> Clé
-                                    </div>
-                                    <div class="custom-option" data-value="CORDE"><span
-                                            class="material-symbols-outlined cs-icon text-brown">gesture</span> Corde
-                                    </div>
-                                    <div class="custom-option" data-value="OUTIL"><span
-                                            class="material-symbols-outlined cs-icon text-muted">construction</span>
-                                        Outil</div>
-                                    <div class="custom-option" data-value="PARCHEMIN"><span
-                                            class="material-symbols-outlined cs-icon text-warning">history_edu</span>
-                                        Parchemin</div>
-                                    <div class="custom-option" data-value="NOURRITURE"><span
-                                            class="material-symbols-outlined cs-icon text-physic">restaurant</span>
-                                        Nourriture</div>
-                                </div>
+                                <div class="custom-select-options" id="eqConsumableCategoryOptions"></div>
                                 <input type="hidden" id="eqConsumableCategory" value="AUTRE">
                             </div>
                         </div>
@@ -381,35 +350,45 @@
                     </div>
                     <div class="eq-create-row quad consumable-stat hidden" style="margin-top: 1rem;">
                         <div class="eq-create-field">
-                            <label for="eqConsumableBonusPhysicalDamagePercent" class="flex items-center gap-1" style="font-size: 0.85rem;"><span
-                                    class="material-symbols-outlined text-physic text-base align-bottom">fitness_center</span>% Dégâts Phy</label>
+                            <label for="eqConsumableBonusPhysicalDamagePercent" class="flex items-center gap-1"
+                                style="font-size: 0.85rem;"><span
+                                    class="material-symbols-outlined text-physic text-base align-bottom">fitness_center</span>%
+                                Dégâts Phy</label>
                             <input type="number" id="eqConsumableBonusPhysicalDamagePercent" value="0">
                         </div>
                         <div class="eq-create-field">
-                            <label for="eqConsumableBonusMagicalDamagePercent" class="flex items-center gap-1" style="font-size: 0.85rem;"><span
-                                    class="material-symbols-outlined text-power text-base align-bottom">auto_awesome</span>% Dégâts Mag</label>
+                            <label for="eqConsumableBonusMagicalDamagePercent" class="flex items-center gap-1"
+                                style="font-size: 0.85rem;"><span
+                                    class="material-symbols-outlined text-power text-base align-bottom">auto_awesome</span>%
+                                Dégâts Mag</label>
                             <input type="number" id="eqConsumableBonusMagicalDamagePercent" value="0">
                         </div>
                         <div class="eq-create-field">
-                            <label for="eqConsumableBonusArmorFlat" class="flex items-center gap-1" style="font-size: 0.85rem;"><span
+                            <label for="eqConsumableBonusArmorFlat" class="flex items-center gap-1"
+                                style="font-size: 0.85rem;"><span
                                     class="material-symbols-outlined text-armor text-base align-bottom">shield</span>Armure</label>
                             <input type="number" id="eqConsumableBonusArmorFlat" value="0">
                         </div>
                         <div class="eq-create-field">
-                            <label for="eqConsumableBonusResistanceFlat" class="flex items-center gap-1" style="font-size: 0.85rem;"><span
+                            <label for="eqConsumableBonusResistanceFlat" class="flex items-center gap-1"
+                                style="font-size: 0.85rem;"><span
                                     class="material-symbols-outlined text-resist text-base align-bottom">shield</span>Résistance</label>
                             <input type="number" id="eqConsumableBonusResistanceFlat" value="0">
                         </div>
                     </div>
                     <div class="eq-create-row quad consumable-stat hidden" style="margin-top: 1rem;">
                         <div class="eq-create-field">
-                            <label for="eqConsumableBonusXpPercent" class="flex items-center gap-1" style="font-size: 0.85rem;"><span
-                                    class="material-symbols-outlined text-warning text-base align-bottom">star</span>% XP Bonus</label>
+                            <label for="eqConsumableBonusXpPercent" class="flex items-center gap-1"
+                                style="font-size: 0.85rem;"><span
+                                    class="material-symbols-outlined text-warning text-base align-bottom">star</span>%
+                                XP Bonus</label>
                             <input type="number" id="eqConsumableBonusXpPercent" value="0">
                         </div>
                         <div class="eq-create-field">
-                            <label for="eqConsumableDurationTurns" class="flex items-center gap-1" style="font-size: 0.85rem;"><span
-                                    class="material-symbols-outlined text-muted text-base align-bottom">hourglass_bottom</span>Durée (Tours)</label>
+                            <label for="eqConsumableDurationTurns" class="flex items-center gap-1"
+                                style="font-size: 0.85rem;"><span
+                                    class="material-symbols-outlined text-muted text-base align-bottom">hourglass_bottom</span>Durée
+                                (Tours)</label>
                             <input type="number" id="eqConsumableDurationTurns" value="0">
                         </div>
                     </div>
