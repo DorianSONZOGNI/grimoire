@@ -524,18 +524,20 @@ function renderCauldron(r) {
         resultTooltipAttr = `data-color="${resultColor}" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData}"`;
     } else if (resultType === 'EQUIPMENT' || resultType === 'CONSUMABLE') {
         const temp = pageState.allEquipmentTemplates.find(e => e.name === r.rewardName);
-        const statsData = window.getEquipmentTooltipHTML(temp);
-        const slotInfo = getSlotInfo(temp);
-        const rarityColor = getRarityColor(temp.rarity);
-        const tooltipData = `
-            <div style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:${rarityColor}; border-bottom:1px solid ${rarityColor}40; padding-bottom:4px; display: flex; justify-content: space-between; align-items: center;">
-                <span style="display: flex; align-items: center; gap: 6px;">${temp.name}</span>
-                <span class="material-symbols-outlined ${slotInfo.extraClass || ''}" style="font-size: 1.1rem; color: ${slotInfo.color};" title="${slotInfo.label}">${slotInfo.icon}</span>
-            </div>
-            <div style="display:flex; flex-direction:column; gap:4px;">${statsData}</div>
-        `.replace(/"/g, '&quot;');
-        if (tooltipData) {
-            resultTooltipAttr = `data-color="${resultColor}" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData}"`;
+        if (temp) {
+            const statsData = window.getEquipmentTooltipHTML(temp);
+            const slotInfo = getSlotInfo(temp);
+            const rarityColor = getRarityColor(temp.rarity);
+            const tooltipData = `
+                <div style="font-weight:bold; font-size:1rem; margin-bottom:6px; color:${rarityColor}; border-bottom:1px solid ${rarityColor}40; padding-bottom:4px; display: flex; justify-content: space-between; align-items: center;">
+                    <span style="display: flex; align-items: center; gap: 6px;">${temp.name}</span>
+                    <span class="material-symbols-outlined ${slotInfo.extraClass || ''}" style="font-size: 1.1rem; color: ${slotInfo.color};" title="${slotInfo.label}">${slotInfo.icon}</span>
+                </div>
+                <div style="display:flex; flex-direction:column; gap:4px;">${statsData}</div>
+            `.replace(/"/g, '&quot;');
+            if (tooltipData) {
+                resultTooltipAttr = `data-color="${resultColor}" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData}"`;
+            }
         }
     }
 
