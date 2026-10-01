@@ -59,6 +59,11 @@ public class HuntingQuestService {
         quest.setStartDate(LocalDate.now(ZONE));
         quest.setEndDate(LocalDate.now(ZONE).plusDays(1));
         quest.setActive(true);
+
+        // --- Tirage du défi ---
+        java.util.List<String> possibleChallenges = java.util.List.of("HEADHUNTER", "SURGEON", "LONER", "IMPATIENT");
+        quest.setDailyChallengeDuo(possibleChallenges.get(new java.util.Random().nextInt(possibleChallenges.size())));
+
         questRepository.save(quest);
 
         System.out.println("[HuntingQuest] Daily quest rotated: " + selected.getName());
@@ -161,6 +166,18 @@ public class HuntingQuestService {
                             questRepository.save(quest);
                             System.out.println("[Fix] Updated active weekly quest anomaly to: " + a.getName());
                         });
+            }
+        });
+    }
+
+    @jakarta.annotation.PostConstruct
+    public void fixActiveDailyQuest() {
+        questRepository.findByTypeAndActiveTrue("DAILY").stream().findFirst().ifPresent(quest -> {
+            if (quest.getDailyChallengeDuo() == null) {
+                java.util.List<String> possibleChallenges = java.util.List.of("HEADHUNTER", "SURGEON", "LONER", "IMPATIENT");
+                quest.setDailyChallengeDuo(possibleChallenges.get(new java.util.Random().nextInt(possibleChallenges.size())));
+                questRepository.save(quest);
+                System.out.println("[Fix] Updated active daily quest challenge to: " + quest.getDailyChallengeDuo());
             }
         });
     }
