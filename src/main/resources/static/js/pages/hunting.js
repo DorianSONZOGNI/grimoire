@@ -387,6 +387,8 @@ function bindClaimButton(container, questId) {
                     btn.innerHTML = '<span class="material-symbols-outlined">redeem</span> Récupérer la récompense';
                 } else {
                     btn.className = 'btn-claim claimed';
+                    btn.style.background = '';
+                    btn.style.color = '';
                     if (originalHtml && originalHtml.includes('material-symbols-outlined')) {
                         btn.innerHTML = originalHtml.replace(/<span class="material-symbols-outlined">[^<]*<\/span>/, '<span class="material-symbols-outlined">check_circle</span>');
                     } else {
