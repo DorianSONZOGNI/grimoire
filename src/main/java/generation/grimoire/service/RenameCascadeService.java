@@ -137,7 +137,7 @@ public class RenameCascadeService {
         List<AlchemyRecipe> allRecipes = alchemyService.getAllRecipes();
         for (AlchemyRecipe r : allRecipes) {
             boolean modified = false;
-            if (RecipeRewardType.GIVE_EQUIPMENT.equals(r.getRewardType()) && oldName.equals(r.getRewardName())) {
+            if ((RecipeRewardType.GIVE_EQUIPMENT.equals(r.getRewardType()) || RecipeRewardType.GIVE_CONSUMABLE.equals(r.getRewardType())) && oldName.equals(r.getRewardName())) {
                 r.setRewardName(newName);
                 modified = true;
             }
