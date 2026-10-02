@@ -227,13 +227,36 @@ public class ShopController {
         long promoExpiresAt = (promoSeed + 1) * twoHoursInMillis;
 
         Equipment promoItem = null;
-        if (!remainingTemplates.isEmpty()) {
-            promoItem = remainingTemplates.get(promoRandom.nextInt(remainingTemplates.size()));
+        if (unlockPromo && !remainingTemplates.isEmpty()) {
+            EquipmentRarity promoRarity = EquipmentRarity.COMMUN;
+            if (currentConfig != null && currentConfig.getSlotRules() != null) {
+                List<generation.grimoire.entity.ShopSlotRarityRule> promoRules = currentConfig.getSlotRules().stream()
+                        .filter(r -> r.getSlotIndex() == 6)
+                        .toList();
+                
+                int roll = promoRandom.nextInt(100);
+                int sum = 0;
+                for (generation.grimoire.entity.ShopSlotRarityRule rule : promoRules) {
+                    if (roll >= sum && roll < sum + rule.getWeight()) {
+                        promoRarity = rule.getRarity();
+                        break;
+                    }
+                    sum += rule.getWeight();
+                }
+            } else {
+                promoRandom.nextInt(100);
+            }
+
+            promoItem = pickOneByRarity(promoRarity, remainingTemplates, promoRandom, new HashSet<>());
+            if (promoItem == null) {
+                promoItem = pickOneByRarity(EquipmentRarity.COMMUN, remainingTemplates, promoRandom, new HashSet<>());
+            }
         }
 
         Map<String, Object> response = new HashMap<>();
         response.put("shopLevel", shopLevel);
         response.put("lockedSlots", lockedSlots);
+        response.put("isPromoLocked", !unlockPromo);
         response.put("daily", dailySelection.stream().map(e -> toShopDto(e, ownedEquipments)).toList());
         response.put("promoExpiresAt", promoExpiresAt);
 

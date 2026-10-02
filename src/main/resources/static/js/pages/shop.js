@@ -311,6 +311,17 @@ function renderSpecials() {
                 ${generateStandHtml(discountItem)}
             </div>
         `;
+    } else if (pageState.shopItems.isPromoLocked) {
+        const lockedPromoSlot = {
+            requiredLevel: "Promo",
+            hint: "Améliorez la boutique pour débloquer"
+        };
+        html += `
+            <div class="shop-rarity-group shop-rarity-group--locked">
+                <div class="shop-rarity-title shop-rarity-title--locked">EN PROMO</div>
+                ${generateLockedSlotHtml(lockedPromoSlot)}
+            </div>
+        `;
     }
 
     if (consumables.length > 0) {

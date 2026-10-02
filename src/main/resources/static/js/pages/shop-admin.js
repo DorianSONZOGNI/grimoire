@@ -831,9 +831,57 @@ function renderUpgradesGrid() {
               }).join('') + `</div>`
             : `<span class="text-muted text-sm">Aucune anomalie requise</span>`;
 
+        let unlocks = [];
+        if (cfg.unlocksSlot4) unlocks.push('Slot 4');
+        if (cfg.unlocksSlot5) unlocks.push('Slot 5');
+        if (cfg.unlocksPromo) unlocks.push('Promo');
+        if (cfg.unlocksBlackMarket) unlocks.push('Marché Noir');
+        
+        let unlocksHtml = '';
+        if (unlocks.length > 0) {
+            unlocksHtml = `<div class="text-xs mt-1 flex gap-2 flex-wrap" style="color: #60a5fa;">` + 
+                unlocks.map(u => `<span style="background: rgba(59,130,246,0.15); padding: 2px 6px; border-radius: 4px; border: 1px solid rgba(59,130,246,0.3);"><span class="material-symbols-outlined align-middle" style="font-size:0.8rem">lock_open</span> ${u}</span>`).join('') +
+                `</div>`;
+        }
+
+        let rulesHtml = '';
+        const groupedRules = {};
+        if (cfg.slotRules) {
+            cfg.slotRules.forEach(rule => {
+                if (!groupedRules[rule.slotIndex]) groupedRules[rule.slotIndex] = [];
+                groupedRules[rule.slotIndex].push(rule);
+            });
+        }
+        
+        if (Object.keys(groupedRules).length > 0) {
+            const ruleItems = [];
+            for (const [sIndex, rules] of Object.entries(groupedRules)) {
+                const sortedRules = [...rules].sort((a,b) => b.weight - a.weight);
+                const ruleBadges = sortedRules.map(r => {
+                    const color = typeof getRarityColor === 'function' ? getRarityColor(r.rarity) : '#cbd5e1';
+                    const rName = r.rarity.charAt(0) + r.rarity.slice(1).toLowerCase();
+                    return `<span style="color: ${color}; font-weight: 500;">${r.weight}% ${rName}</span>`;
+                }).join('<span class="text-slate-600 mx-1">•</span>');
+                
+                const slotName = sIndex === '6' ? 'Promo' : `Slot ${sIndex}`;
+                ruleItems.push(`<div class="text-xs bg-slate-800/50 rounded px-2 py-1 flex items-center gap-2 border border-slate-700/50">
+                    <span class="text-slate-400 font-bold">${slotName}</span>
+                    <div class="flex items-center">${ruleBadges}</div>
+                </div>`);
+            }
+            
+            rulesHtml = `<div class="mt-2 flex flex-col gap-1">
+                ${ruleItems.join('')}
+            </div>`;
+        }
+
         return `
-        <div class="upgrade-admin-card" style="display: flex; align-items: center; gap: 1rem; padding: 1rem; background: var(--bg-card); border-radius: 8px; margin-bottom: 0.5rem;">
-            <div class="upgrade-admin-level flex-1 font-bold">Niveau ${cfg.targetLevel} <span class="text-xs text-muted ml-2 font-normal">${cfg.description || '—'}</span></div>
+        <div class="upgrade-admin-card" style="display: flex; align-items: flex-start; gap: 1rem; padding: 1rem; background: var(--bg-card); border-radius: 8px; margin-bottom: 0.5rem;">
+            <div class="flex-1">
+                <div class="upgrade-admin-level font-bold">Niveau ${cfg.targetLevel} <span class="text-xs text-muted ml-2 font-normal">${cfg.description || '—'}</span></div>
+                ${unlocksHtml}
+                ${rulesHtml}
+            </div>
             <div class="upgrade-admin-costs flex gap-2 items-center">
                 ${cfg.goldCost > 0 ? `<span class="upgrade-admin-tag upgrade-admin-tag--gold" style="border-color: #f59e0b; color: #f59e0b; padding: 0.2rem 0.5rem; border-radius: 4px; border: 1px solid; background: rgba(245, 158, 11, 0.1);"><span class="material-symbols-outlined align-middle" style="font-size:0.9rem">monetization_on</span> ${cfg.goldCost}</span>` : ''}
                 ${anomalyHtml}
@@ -853,20 +901,23 @@ function renderUpgradesGrid() {
 function openCreateUpgradeModal() {
     upgradeState.editingId = null;
     let nextLevel = 2;
+    let previousConfig = null;
     if (upgradeState.configs && upgradeState.configs.length > 0) {
-        nextLevel = Math.max(...upgradeState.configs.map(c => c.targetLevel)) + 1;
+        const sorted = [...upgradeState.configs].sort((a, b) => b.targetLevel - a.targetLevel);
+        previousConfig = sorted[0];
+        nextLevel = previousConfig.targetLevel + 1;
     }
-    renderUpgradeModal(null, nextLevel);
+    renderUpgradeModal(previousConfig, nextLevel, false);
 }
 
 function openEditUpgradeModal(id) {
     const cfg = upgradeState.configs.find(c => c.id === id);
     if (!cfg) return;
     upgradeState.editingId = id;
-    renderUpgradeModal(cfg);
+    renderUpgradeModal(cfg, cfg.targetLevel, true);
 }
 
-function renderUpgradeModal(cfg, nextLevel = 2) {
+function renderUpgradeModal(cfg, nextLevel = 2, isEditing = true) {
     // Construire le modal inline
     const existingModal = document.getElementById('upgradeModal');
     if (existingModal) existingModal.remove();
@@ -881,7 +932,7 @@ function renderUpgradeModal(cfg, nextLevel = 2) {
             <div class="equip-modal-header">
                 <div class="equip-modal-title">
                     <span class="material-symbols-outlined" style="color:#a855f7">upgrade</span>
-                    ${cfg ? 'Modifier le palier' : 'Nouveau palier'}
+                    ${isEditing ? 'Modifier le palier' : 'Nouveau palier'}
                 </div>
                 <button class="equip-modal-close" onclick="document.getElementById('upgradeModal').remove()">
                     <span class="material-symbols-outlined text-2xl">close</span>
@@ -890,11 +941,11 @@ function renderUpgradeModal(cfg, nextLevel = 2) {
             <div class="equip-modal-body" style="display:flex;flex-direction:column;gap:1rem;padding:1.5rem;">
                 <div class="eq-create-field">
                     <label for="upLevel">Niveau cible</label>
-                    <input type="number" id="upLevel" min="2" value="${cfg ? cfg.targetLevel : nextLevel}" placeholder="Ex: 2">
+                    <input type="number" id="upLevel" min="2" value="${nextLevel}" placeholder="Ex: 2">
                 </div>
                 <div class="eq-create-field">
                     <label for="upDesc">Description</label>
-                    <input type="text" id="upDesc" value="${cfg ? cfg.description : ''}" placeholder="Ex: Débloque le slot Inhabituel">
+                    <input type="text" id="upDesc" value="${(isEditing && cfg) ? cfg.description : (cfg ? cfg.description : '')}" placeholder="Ex: Débloque le slot Inhabituel">
                 </div>
                 <div class="eq-create-field">
                     <label for="upGold">Coût en Or</label>
@@ -944,7 +995,7 @@ function renderUpgradeModal(cfg, nextLevel = 2) {
                     style="background:linear-gradient(135deg,#a855f7,#7c3aed);"
                     onclick="submitUpgrade()">
                     <span class="material-symbols-outlined text-xl">save</span>
-                    ${cfg ? 'Enregistrer' : 'Créer le palier'}
+                    ${isEditing ? 'Enregistrer' : 'Créer le palier'}
                 </button>
             </div>
         </div>`;
@@ -1015,6 +1066,7 @@ window.upgradeSlotRuleRowHtml = function(slotIndex = 1, rarity = 'COMMUN', weigh
             <option value="3" ${slotIndex === 3 ? 'selected' : ''}>Slot 3</option>
             <option value="4" ${slotIndex === 4 ? 'selected' : ''}>Slot 4</option>
             <option value="5" ${slotIndex === 5 ? 'selected' : ''}>Slot 5</option>
+            <option value="6" ${slotIndex === 6 ? 'selected' : ''}>Promo</option>
         </select>
         <select class="rule-rarity flex-1" style="background:#1e293b;border:1px solid #334155;color:white;border-radius:6px;padding:6px;font-size:0.9rem;">
             ${rarityOptions}
@@ -1071,7 +1123,8 @@ window.submitUpgrade = async function() {
     }
     for (const [idx, sum] of Object.entries(slotSums)) {
         if (sum > 100) {
-            showNotif(`Erreur : Le total des probabilités pour le Slot ${idx} dépasse 100% (actuel: ${sum}%)`, true);
+            const slotName = idx === '6' ? 'Promo' : `Slot ${idx}`;
+            showNotif(`Erreur : Le total des probabilités pour le ${slotName} dépasse 100% (actuel: ${sum}%)`, true);
             return;
         }
     }
