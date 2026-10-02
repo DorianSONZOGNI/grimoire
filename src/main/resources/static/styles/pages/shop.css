@@ -5,7 +5,7 @@
 /* Le panneau quête est fixed à droite, ne décale pas la boutique */
 .shop-sidebar {
     position: fixed;
-    top: 4.5rem;
+    top: 14.5rem;
     right: 1rem;
     width: 250px;
     z-index: 1000;

@@ -6,6 +6,7 @@ import generation.grimoire.dto.shop.ShopStatusDTO;
 import generation.grimoire.entity.Equipment;
 import generation.grimoire.entity.auth.AppUser;
 import generation.grimoire.entity.Anomalie;
+import generation.grimoire.entity.ShopUpgradeConfig;
 import generation.grimoire.mapper.EquipmentMapper;
 import generation.grimoire.repository.AnomalieRepository;
 import generation.grimoire.repository.EquipmentRepository;
@@ -59,6 +60,7 @@ public class ShopController {
         if (user == null) return ResponseEntity.status(401).build();
 
         int currentLevel = user.getShopLevel();
+        if (currentLevel < 1) currentLevel = 1;
         int nextLevel = currentLevel + 1;
         var config = getUpgradeConfigFromDb(nextLevel);
 
@@ -94,7 +96,9 @@ public class ShopController {
         AppUser user = userRepository.findByUsername(principal.getName()).orElse(null);
         if (user == null) return ResponseEntity.status(401).build();
 
-        int nextLevel = user.getShopLevel() + 1;
+        int currentLevel = user.getShopLevel();
+        if (currentLevel < 1) currentLevel = 1;
+        int nextLevel = currentLevel + 1;
         var config = getUpgradeConfigFromDb(nextLevel);
         if (config == null) {
             return ResponseEntity.badRequest().body(Map.of("error", "Niveau maximum atteint ou non configuré."));
@@ -133,6 +137,16 @@ public class ShopController {
         }
 
         int shopLevel = (user != null) ? user.getShopLevel() : 1;
+        if (shopLevel < 1) shopLevel = 1;
+
+        ShopUpgradeConfig currentConfig = null;
+        if (shopLevel > 1) {
+            currentConfig = getUpgradeConfigFromDb(shopLevel);
+        }
+        
+        boolean unlock4 = currentConfig != null && currentConfig.isUnlocksSlot4();
+        boolean unlock5 = currentConfig != null && currentConfig.isUnlocksSlot5();
+        boolean unlockPromo = currentConfig != null && currentConfig.isUnlocksPromo();
 
         final java.util.Set<String> ownedEquipments = new java.util.HashSet<>();
         if (user != null) {
@@ -152,26 +166,52 @@ public class ShopController {
                 .filter(e -> e.getSlot() == EquipmentSlot.CONSOMMABLE)
                 .toList();
 
-        List<Equipment> commons    = equipmentTemplates.stream().filter(e -> e.getRarity() == EquipmentRarity.COMMUN).toList();
-        List<Equipment> unusuals   = equipmentTemplates.stream().filter(e -> e.getRarity() == EquipmentRarity.INHABITUEL).toList();
-        List<Equipment> rares      = equipmentTemplates.stream().filter(e -> e.getRarity() == EquipmentRarity.RARE).toList();
-        List<Equipment> legendaries= equipmentTemplates.stream().filter(e -> e.getRarity() == EquipmentRarity.LEGENDAIRE).toList();
-
         long seed = LocalDate.now(java.time.ZoneId.of("Europe/Paris")).toEpochDay();
         Random random = new Random(seed);
 
         List<Equipment> dailySelection = new ArrayList<>();
-        // Slot 1-3 : COMMUN (toujours dispo)
-        dailySelection.addAll(pickRandom(commons, 3, random));
-
-        // Slot 4 : INHABITUEL — débloqué au niveau 2 (pas de RARE encore)
+        Set<Long> pickedIds = new HashSet<>();
         List<LockedSlotDTO> lockedSlots = new ArrayList<>();
-        if (shopLevel >= 2) {
-            dailySelection.addAll(pickRandom(unusuals, 1, random));
-        } else {
-            // Consommer le random pour garder la cohérence du seed
-            pickRandom(unusuals, 1, random);
-            lockedSlots.add(new LockedSlotDTO(4, "Niveau 2", "Améliorer la boutique pour débloquer ce slot"));
+
+        for (int slotIndex = 1; slotIndex <= 5; slotIndex++) {
+            boolean isLocked = false;
+            if (slotIndex == 4 && !unlock4) isLocked = true;
+            if (slotIndex == 5 && !unlock5) isLocked = true;
+
+            if (isLocked) {
+                random.nextInt(100); // Consommer le random pour la cohérence
+                lockedSlots.add(new LockedSlotDTO(slotIndex, "Amélioration", "Améliorez la boutique pour débloquer ce slot"));
+                continue;
+            }
+
+            EquipmentRarity chosenRarity = EquipmentRarity.COMMUN;
+            if (currentConfig != null && currentConfig.getSlotRules() != null) {
+                final int sIdx = slotIndex;
+                List<generation.grimoire.entity.ShopSlotRarityRule> rulesForSlot = currentConfig.getSlotRules().stream()
+                        .filter(r -> r.getSlotIndex() == sIdx)
+                        .toList();
+                
+                int roll = random.nextInt(100);
+                int sum = 0;
+                for (generation.grimoire.entity.ShopSlotRarityRule rule : rulesForSlot) {
+                    if (roll >= sum && roll < sum + rule.getWeight()) {
+                        chosenRarity = rule.getRarity();
+                        break;
+                    }
+                    sum += rule.getWeight();
+                }
+            } else {
+                random.nextInt(100); // Consommer le random
+            }
+
+            Equipment picked = pickOneByRarity(chosenRarity, equipmentTemplates, random, pickedIds);
+            if (picked == null) {
+                picked = pickOneByRarity(EquipmentRarity.COMMUN, equipmentTemplates, random, pickedIds);
+            }
+            if (picked != null) {
+                pickedIds.add(picked.getId());
+                dailySelection.add(picked);
+            }
         }
 
         List<Equipment> consumableTemplates = pickRandom(allConsumables, 4, random);
@@ -224,6 +264,14 @@ public class ShopController {
         List<Equipment> copy = new ArrayList<>(source);
         Collections.shuffle(copy, random);
         return copy.subList(0, Math.min(count, copy.size()));
+    }
+
+    private Equipment pickOneByRarity(EquipmentRarity rarity, List<Equipment> availablePool, Random random, java.util.Set<Long> alreadyPickedIds) {
+        List<Equipment> matching = availablePool.stream()
+            .filter(e -> e.getRarity() == rarity && !alreadyPickedIds.contains(e.getId()))
+            .collect(Collectors.toList());
+        if (matching.isEmpty()) return null;
+        return matching.get(random.nextInt(matching.size()));
     }
 
     @PostMapping("/buy/{templateId}")

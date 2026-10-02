@@ -352,14 +352,25 @@ function renderUpgradePanel() {
 
     const requirementsHtml = (status.requirements || []).map(req => {
         const fulfilled = req.fulfilled;
-        const icon = req.type === 'GOLD' ? 'monetization_on' : 'auto_awesome';
         const color = fulfilled ? '#22c55e' : '#ef4444';
-        const label = req.type === 'GOLD' ? `${req.required} Or` : `${req.required}× ${req.name}`;
         const progress = `${req.owned}/${req.required}`;
+
+        let labelHtml = '';
+        if (req.type === 'GOLD') {
+            labelHtml = `${req.required} Or`;
+        } else {
+            let aTemp = pageState.allAnomalies.find(a => a.name === req.name);
+            const catIcon = aTemp && aTemp.category ? getCategoryIcon(aTemp.category) : 'star';
+            const spiriColor = aTemp && aTemp.spiritualite ? getSpiritualiteColor(aTemp.spiritualite) : '#a855f7';
+            const tooltipData = getAnomalyTooltipHTML(aTemp, req.name);
+            labelHtml = `<span class="anomaly-badge tooltip-trigger inline-flex items-center gap-1 font-bold cursor-help rounded-md px-1.5 py-0.5 ml-1" style="border: 1px solid ${spiriColor}; background: linear-gradient(${spiriColor}25, ${spiriColor}25), #1e293b; color: ${spiriColor}; font-size: 0.8rem;" onmouseenter="showGlobalTooltip(this)" onmouseleave="hideGlobalTooltip()" data-tooltip-html="${tooltipData.replace(/"/g, '&quot;')}">
+                <span class="material-symbols-outlined align-middle" style="color: ${spiriColor}; font-size: 1rem;">${catIcon}</span> ${req.required}
+            </span>`;
+        }
 
         return `<div class="upgrade-req ${fulfilled ? 'upgrade-req--ok' : 'upgrade-req--nok'}">
             <span class="material-symbols-outlined" style="color: ${color}; font-size: 1rem;">${fulfilled ? 'check_circle' : 'cancel'}</span>
-            <span class="upgrade-req-label">${label}</span>
+            <span class="upgrade-req-label flex items-center">${labelHtml}</span>
             <span class="upgrade-req-progress">${progress}</span>
         </div>`;
     }).join('');
