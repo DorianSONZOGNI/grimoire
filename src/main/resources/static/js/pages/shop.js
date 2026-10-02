@@ -212,6 +212,12 @@ function generateLockedSlotHtml(slot) {
 function renderShop() {
     const container = document.getElementById('shopGrid');
 
+    const levelBadge = document.getElementById('shopLevelBadge');
+    if (levelBadge && pageState.shopStatus) {
+        levelBadge.innerHTML = `<span class="material-symbols-outlined" style="font-size: 1rem;">upgrade</span> Niv. ${pageState.shopStatus.currentLevel}`;
+        levelBadge.style.display = 'flex';
+    }
+
     // Force the correct class in case HTML is cached
     container.className = 'shop-showcase';
 
