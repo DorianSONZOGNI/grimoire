@@ -1,4 +1,4 @@
-import { createAnomalyBadgeHtml, getExpStats, getSpiritExpStats } from './combat-utils.js';
+﻿import { createAnomalyBadgeHtml, getExpStats, getSpiritExpStats } from './combat-utils.js';
 import { pageState } from './combat-state.js';
 import { processNewDeathLogs, updateMultiTurnBanner } from './combat-socket.js';
 import { currentSpellsTab, initiateCombatCast } from './combat-spells.js';
@@ -2778,7 +2778,7 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
         topBadgesHtml += `<div title="Ordre de jeu : ${turnOrderNum}" style="position: absolute; top: -8px; left: -8px; width: 28px; height: 28px; background: linear-gradient(135deg, #1e293b, #0f172a); border: 2px solid ${isHero ? '#38bdf8' : '#ef4444'}; border-radius: 50%; color: #f8fafc; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.95rem; box-shadow: 0 4px 6px rgba(0,0,0,0.5); z-index: 5; opacity: ${opacity}; filter: ${filter}; transition: all 0.3s;">${turnOrderNum}</div>`;
     }
 
-    if (c.consumableBonusXpPercent && c.consumableBonusXpTurns) {
+    if ((c.consumableBonusXpPercent && c.consumableBonusXpTurns) || c.eligibleForCatchupXp) {
         let hasPlayed = false;
         if (turnOrderNum && pageState && pageState.currentSessionData && pageState.currentSessionData.currentTurnIndex !== undefined) {
             hasPlayed = (turnOrderNum - 1) < pageState.currentSessionData.currentTurnIndex;
@@ -2787,7 +2787,18 @@ export function generateFighterHtml(c, isHero, skipBadges = false, forcedHp = nu
         const filter = hasPlayed ? 'grayscale(1)' : 'none';
         let leftPos = turnOrderNum ? '24px' : '-8px';
         const tooltipAttrs = 'onmouseenter="window.showGlobalTooltip ? window.showGlobalTooltip(this) : null" onmouseleave="window.hideGlobalTooltip ? window.hideGlobalTooltip() : null"';
-        const xpTooltipHtml = `<div class="text-sm font-medium" style="margin-bottom:0.3rem; color:#facc15; display:flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size:1.1rem;">star</span> Bonus d'Expérience</div><div class="text-xs" style="color:#cbd5e1;">XP à la fin du combat : <span class="text-success" style="font-weight:bold;">+${c.consumableBonusXpPercent}%</span><br/>Reste : <span style="font-weight:bold;">${c.consumableBonusXpTurns}</span> tour(s)</div>`;
+        
+        let xpTooltipHtml = `<div class="text-sm font-medium" style="margin-bottom:0.3rem; color:#facc15; display:flex; align-items:center; gap:0.2rem;"><span class="material-symbols-outlined" style="font-size:1.1rem;">star</span> Bonus d'Expérience</div><div class="text-xs" style="color:#cbd5e1;">`;
+        if (c.consumableBonusXpPercent && c.consumableBonusXpTurns) {
+            xpTooltipHtml += `Consommable : <span class="text-success" style="font-weight:bold;">+${c.consumableBonusXpPercent}%</span><br/>Reste : <span style="font-weight:bold;">${c.consumableBonusXpTurns}</span> tour(s)`;
+        }
+        if (c.eligibleForCatchupXp) {
+            if (c.consumableBonusXpPercent && c.consumableBonusXpTurns) {
+                xpTooltipHtml += `<br/><br/>`;
+            }
+            xpTooltipHtml += `Bonus d'xp perso bas level : <span class="text-success" style="font-weight:bold;">XP x2</span>`;
+        }
+        xpTooltipHtml += `</div>`;
         
         topBadgesHtml += `<div ${tooltipAttrs} style="position: absolute; top: -8px; left: ${leftPos}; width: 28px; height: 28px; background: linear-gradient(135deg, #422006, #1a0f02); border: 2px solid #facc15; border-radius: 50%; color: #facc15; display: flex; align-items: center; justify-content: center; font-weight: bold; font-size: 0.75rem; box-shadow: 0 4px 6px rgba(0,0,0,0.5); z-index: 4; opacity: ${opacity}; filter: ${filter}; transition: all 0.3s; cursor: help;"><template class="tooltip-data">${xpTooltipHtml}</template><span class="material-symbols-outlined" style="font-size: 1rem;">star</span></div>`;
     }

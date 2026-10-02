@@ -31,6 +31,31 @@ public class PersonnageService {
         return persoRepo.findAll();
     }
 
+    public java.util.List<Personnage> findByUserUsername(String username) {
+        return persoRepo.findByUser_Username(username);
+    }
+
+    public boolean isEligibleForCatchupXp(Personnage p, generation.grimoire.model.pve.CombatSession session) {
+        if (session == null || p == null) return false;
+        
+        // Rule 1: No character in combat is level 5 or above
+        for (Personnage fighter : session.getPlayers()) {
+            if (fighter.getVoieLevel() >= 5) {
+                return false;
+            }
+        }
+        
+        // Rule 2: Must have at least 2 characters on the account with strictly more XP
+        if (p.getUser() == null || p.getUser().getUsername() == null) return false;
+        
+        java.util.List<Personnage> accountPersos = persoRepo.findByUser_Username(p.getUser().getUsername());
+        long higherLevelCount = accountPersos.stream()
+                .filter(other -> other.getExperience() > p.getExperience())
+                .count();
+                
+        return higherLevelCount >= 2;
+    }
+
     public Personnage save(@org.springframework.lang.NonNull Personnage personnage) {
         boolean userUpdated = false;
         generation.grimoire.entity.auth.AppUser user = personnage.getUser();

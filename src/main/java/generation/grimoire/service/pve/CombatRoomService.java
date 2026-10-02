@@ -320,6 +320,7 @@ public class CombatRoomService {
                 if (!u.getCompletedDungeons().contains(session.getDungeonId())) {
                     actualExp *= 2;
                 }
+                if (personnageService.isEligibleForCatchupXp(p, session)) actualExp *= 2;
                 p.setExperience(p.getExperience() + actualExp);
                 personnageService.save(p);
                 totalActualExp += actualExp;
@@ -439,6 +440,7 @@ public class CombatRoomService {
                             p.takeDamage(-effect, generation.grimoire.enumeration.DamageType.BRUT);
 
                         int finalExpEffect = expEffect;
+                        if (expEffect > 0 && personnageService.isEligibleForCatchupXp(p, session)) finalExpEffect *= 2;
                         if (expEffect > 0 && p.getConsumableBonusXpPercent() != 0) {
                             finalExpEffect = (int) (finalExpEffect * (1.0 + p.getConsumableBonusXpPercent() / 100.0));
                         }
