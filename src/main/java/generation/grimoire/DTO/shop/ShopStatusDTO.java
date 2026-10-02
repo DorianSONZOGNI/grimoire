@@ -1,7 +1,6 @@
 package generation.grimoire.dto.shop;
 
 import java.util.List;
-import java.util.Map;
 
 /**
  * DTO décrivant l'état du niveau de la boutique et la prochaine amélioration.

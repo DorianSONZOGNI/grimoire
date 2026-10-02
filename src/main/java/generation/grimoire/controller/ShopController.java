@@ -222,7 +222,8 @@ public class ShopController {
 
         long currentEpochMillis = System.currentTimeMillis();
         long twoHoursInMillis = 2 * 60 * 60 * 1000L;
-        long promoSeed = currentEpochMillis / twoHoursInMillis;
+        long totalBlockIndex = currentEpochMillis / twoHoursInMillis;
+        long promoSeed = totalBlockIndex;
         Random promoRandom = new Random(promoSeed);
         long promoExpiresAt = (promoSeed + 1) * twoHoursInMillis;
 
@@ -253,10 +254,57 @@ public class ShopController {
             }
         }
 
+        // Marché Noir
+        // Apparaît 2 blocks de 2h par jour
+        long daySeed = LocalDate.now().toEpochDay();
+        Random dayRandom = new Random(daySeed);
+        int chosenBlock1 = dayRandom.nextInt(12);
+        int chosenBlock2 = dayRandom.nextInt(11);
+        if (chosenBlock2 >= chosenBlock1) {
+            chosenBlock2++;
+        }
+        
+        long currentBlockOfToday = totalBlockIndex % 12;
+        boolean isBlackMarketActive = (currentBlockOfToday == chosenBlock1 || currentBlockOfToday == chosenBlock2);
+
+        Equipment blackMarketItem = null;
+        if (isBlackMarketActive && currentConfig != null && currentConfig.isUnlocksBlackMarket() && !remainingTemplates.isEmpty()) {
+            Random bmRandom = new Random(totalBlockIndex + 9999); // Seed spécifique au bloc
+            EquipmentRarity bmRarity = EquipmentRarity.COMMUN;
+            if (currentConfig.getSlotRules() != null) {
+                List<generation.grimoire.entity.ShopSlotRarityRule> bmRules = currentConfig.getSlotRules().stream()
+                        .filter(r -> r.getSlotIndex() == 7)
+                        .toList();
+                
+                int roll = bmRandom.nextInt(100);
+                int sum = 0;
+                for (generation.grimoire.entity.ShopSlotRarityRule rule : bmRules) {
+                    if (roll >= sum && roll < sum + rule.getWeight()) {
+                        bmRarity = rule.getRarity();
+                        break;
+                    }
+                    sum += rule.getWeight();
+                }
+            } else {
+                bmRandom.nextInt(100);
+            }
+
+            // Exclure l'item promo
+            List<Equipment> bmTemplates = new ArrayList<>(remainingTemplates);
+            if (promoItem != null) bmTemplates.remove(promoItem);
+
+            blackMarketItem = pickOneByRarity(bmRarity, bmTemplates, bmRandom, new HashSet<>());
+            if (blackMarketItem == null) {
+                blackMarketItem = pickOneByRarity(EquipmentRarity.COMMUN, bmTemplates, bmRandom, new HashSet<>());
+            }
+        }
+
         Map<String, Object> response = new HashMap<>();
         response.put("shopLevel", shopLevel);
         response.put("lockedSlots", lockedSlots);
         response.put("isPromoLocked", !unlockPromo);
+        response.put("isBlackMarketActive", isBlackMarketActive);
+        response.put("isBlackMarketLocked", currentConfig == null || !currentConfig.isUnlocksBlackMarket());
         response.put("daily", dailySelection.stream().map(e -> toShopDto(e, ownedEquipments)).toList());
         response.put("promoExpiresAt", promoExpiresAt);
 
@@ -267,6 +315,19 @@ public class ShopController {
             promoDto.setOriginalPrice(originalPrice);
             promoDto.setDiscount(true);
             response.put("discount", promoDto);
+        }
+
+        if (blackMarketItem != null) {
+            EquipmentShopDTO bmDto = toShopDto(blackMarketItem, ownedEquipments);
+            bmDto.setShopPrice(0);
+            if (bmDto.getPriceAnomalies() != null) {
+                Map<String, Integer> doubled = new HashMap<>();
+                for (Map.Entry<String, Integer> entry : bmDto.getPriceAnomalies().entrySet()) {
+                    doubled.put(entry.getKey(), entry.getValue() * 2);
+                }
+                bmDto.setPriceAnomalies(doubled);
+            }
+            response.put("blackMarket", bmDto);
         }
 
         List<EquipmentShopDTO> consumables = consumableTemplates.stream()
@@ -313,61 +374,34 @@ public class ShopController {
         if (user == null)
             return ResponseEntity.status(401).build();
 
-        int shopLevel = user.getShopLevel();
+        ResponseEntity<Map<String, Object>> shopRes = getDailyShop(principal);
+        Map<String, Object> shopData = shopRes.getBody();
+        if (shopData == null) return ResponseEntity.status(500).build();
 
-        // Verify it's in today's selection
-        long seed = LocalDate.now(java.time.ZoneId.of("Europe/Paris")).toEpochDay();
-        Random random = new Random(seed);
-        List<Equipment> allTemplates = equipmentRepository.findByIsTemplateTrueAndAvailableInShopTrue();
+        EquipmentShopDTO targetDto = null;
         
-        List<Equipment> equipmentTemplates = allTemplates.stream()
-                .filter(e -> e.getSlot() != EquipmentSlot.CONSOMMABLE)
-                .toList();
-
-        List<Equipment> allConsumables = allTemplates.stream()
-                .filter(e -> e.getSlot() == EquipmentSlot.CONSOMMABLE)
-                .toList();
-
-        List<Equipment> commons    = equipmentTemplates.stream().filter(e -> e.getRarity() == EquipmentRarity.COMMUN).toList();
-        List<Equipment> unusuals   = equipmentTemplates.stream().filter(e -> e.getRarity() == EquipmentRarity.INHABITUEL).toList();
-        List<Equipment> rares      = equipmentTemplates.stream().filter(e -> e.getRarity() == EquipmentRarity.RARE).toList();
-        List<Equipment> legendaries= equipmentTemplates.stream().filter(e -> e.getRarity() == EquipmentRarity.LEGENDAIRE).toList();
-
-        List<Equipment> dailySelection = new ArrayList<>();
-        dailySelection.addAll(pickRandom(commons, 3, random));
-        // Slot 4 INHABITUEL : accessible seulement niveau 2+
-        if (shopLevel >= 2) {
-            dailySelection.addAll(pickRandom(unusuals, 1, random));
-        } else {
-            pickRandom(unusuals, 1, random); // consume seed
+        @SuppressWarnings("unchecked")
+        List<EquipmentShopDTO> daily = (List<EquipmentShopDTO>) shopData.get("daily");
+        if (daily != null) targetDto = daily.stream().filter(d -> d.getId().equals(templateId)).findFirst().orElse(null);
+        
+        if (targetDto == null) {
+            @SuppressWarnings("unchecked")
+            List<EquipmentShopDTO> consumables = (List<EquipmentShopDTO>) shopData.get("consumables");
+            if (consumables != null) targetDto = consumables.stream().filter(d -> d.getId().equals(templateId)).findFirst().orElse(null);
         }
-
-        List<Equipment> consumableTemplates = pickRandom(allConsumables, 4, random);
-
-        List<Equipment> remainingTemplates = new ArrayList<>(equipmentTemplates);
-        remainingTemplates.removeAll(dailySelection);
         
-        long currentEpochMillis = System.currentTimeMillis();
-        long twoHoursInMillis = 2 * 60 * 60 * 1000L;
-        long promoSeed = currentEpochMillis / twoHoursInMillis;
-        Random promoRandom = new Random(promoSeed);
-        
-        Equipment promoItem = null;
-        if (!remainingTemplates.isEmpty()) {
-            promoItem = remainingTemplates.get(promoRandom.nextInt(remainingTemplates.size()));
+        if (targetDto == null && shopData.get("discount") != null) {
+            EquipmentShopDTO promo = (EquipmentShopDTO) shopData.get("discount");
+            if (promo.getId().equals(templateId)) targetDto = promo;
         }
-
-        boolean isDaily = dailySelection.stream().anyMatch(e -> e.getId().equals(templateId));
-        boolean isPromo = promoItem != null && promoItem.getId().equals(templateId);
-        boolean isConsumable = consumableTemplates.stream().anyMatch(e -> e.getId().equals(templateId));
-
-        if (!isDaily && !isPromo && !isConsumable) {
+        
+        if (targetDto == null && shopData.get("blackMarket") != null) {
+            EquipmentShopDTO bm = (EquipmentShopDTO) shopData.get("blackMarket");
+            if (bm.getId().equals(templateId)) targetDto = bm;
+        }
+        
+        if (targetDto == null) {
             return ResponseEntity.badRequest().body(Map.of("message", "Cet objet n'est pas en vente aujourd'hui."));
-        }
-
-        double price = template.calculateShopPrice();
-        if (isPromo) {
-            price = Math.ceil(price * 0.8);
         }
 
         if (quantity < 1) quantity = 1;
@@ -375,7 +409,7 @@ public class ShopController {
             quantity = 1;
         }
         
-        double totalGoldPrice = price * quantity;
+        double totalGoldPrice = targetDto.getShopPrice() * quantity;
         if (user.getMonnaie() < totalGoldPrice) {
             return ResponseEntity.badRequest().body(Map.of("message", "Fonds insuffisants en or."));
         }
@@ -400,10 +434,10 @@ public class ShopController {
 
         List<Anomalie> toConsumeList = new ArrayList<>();
         List<String> missingAnomaliesMsg = new ArrayList<>();
-        if (template.getPriceAnomalies() != null && !template.getPriceAnomalies().isEmpty()) {
+        if (targetDto.getPriceAnomalies() != null && !targetDto.getPriceAnomalies().isEmpty()) {
             List<Anomalie> userAnomalies = anomalieRepository.findByOwnerUsername(user.getUsername());
 
-            for (Map.Entry<String, Integer> entry : template.getPriceAnomalies().entrySet()) {
+            for (Map.Entry<String, Integer> entry : targetDto.getPriceAnomalies().entrySet()) {
                 String reqName = entry.getKey();
                 int reqQuantity = entry.getValue() * quantity;
 
@@ -556,7 +590,7 @@ public class ShopController {
 
     @PutMapping("/admin/upgrades/{id}")
     public ResponseEntity<?> updateUpgradeConfig(
-            @PathVariable Long id,
+            @PathVariable @org.springframework.lang.NonNull Long id,
             @RequestBody generation.grimoire.entity.ShopUpgradeConfig dto, Principal principal) {
         if (principal == null || !isAdmin(principal)) return ResponseEntity.status(403).build();
         return shopUpgradeConfigRepository.findById(id).map(existing -> {
@@ -581,7 +615,7 @@ public class ShopController {
 
     @DeleteMapping("/admin/upgrades/{id}")
     public ResponseEntity<?> deleteUpgradeConfig(
-            @PathVariable Long id, Principal principal) {
+            @PathVariable @org.springframework.lang.NonNull Long id, Principal principal) {
         if (principal == null || !isAdmin(principal)) return ResponseEntity.status(403).build();
         if (!shopUpgradeConfigRepository.existsById(id)) return ResponseEntity.notFound().build();
         shopUpgradeConfigRepository.deleteById(id);

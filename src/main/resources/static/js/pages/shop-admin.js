@@ -863,7 +863,9 @@ function renderUpgradesGrid() {
                     return `<span style="color: ${color}; font-weight: 500;">${r.weight}% ${rName}</span>`;
                 }).join('<span class="text-slate-600 mx-1">•</span>');
                 
-                const slotName = sIndex === '6' ? 'Promo' : `Slot ${sIndex}`;
+                let slotName = `Slot ${sIndex}`;
+                if (sIndex === '6') slotName = 'Promo';
+                if (sIndex === '7') slotName = 'M. Noir';
                 ruleItems.push(`<div class="text-xs bg-slate-800/50 rounded px-2 py-1 flex items-center gap-2 border border-slate-700/50">
                     <span class="text-slate-400 font-bold">${slotName}</span>
                     <div class="flex items-center">${ruleBadges}</div>
@@ -1067,6 +1069,7 @@ window.upgradeSlotRuleRowHtml = function(slotIndex = 1, rarity = 'COMMUN', weigh
             <option value="4" ${slotIndex === 4 ? 'selected' : ''}>Slot 4</option>
             <option value="5" ${slotIndex === 5 ? 'selected' : ''}>Slot 5</option>
             <option value="6" ${slotIndex === 6 ? 'selected' : ''}>Promo</option>
+            <option value="7" ${slotIndex === 7 ? 'selected' : ''}>M. Noir</option>
         </select>
         <select class="rule-rarity flex-1" style="background:#1e293b;border:1px solid #334155;color:white;border-radius:6px;padding:6px;font-size:0.9rem;">
             ${rarityOptions}
@@ -1123,7 +1126,9 @@ window.submitUpgrade = async function() {
     }
     for (const [idx, sum] of Object.entries(slotSums)) {
         if (sum > 100) {
-            const slotName = idx === '6' ? 'Promo' : `Slot ${idx}`;
+            let slotName = `Slot ${idx}`;
+            if (idx === '6') slotName = 'Promo';
+            if (idx === '7') slotName = 'Marché Noir';
             showNotif(`Erreur : Le total des probabilités pour le ${slotName} dépasse 100% (actuel: ${sum}%)`, true);
             return;
         }

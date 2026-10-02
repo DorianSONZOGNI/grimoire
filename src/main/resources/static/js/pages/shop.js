@@ -29,6 +29,8 @@ async function loadShop() {
         }
         renderShop();
         renderSpecials();
+        renderBlackMarket();
+        startPromoCountdown();
         renderUpgradePanel();
     } catch (e) {
         console.error('Erreur chargement boutique:', e);
@@ -136,7 +138,7 @@ function generateStandHtml(eq) {
     }
 
     let promoTimerHtml = '';
-    if (isPromo) {
+    if (isPromo || eq.isBlackMarket) {
         const expiresAt = pageState.shopItems && pageState.shopItems.promoExpiresAt ? pageState.shopItems.promoExpiresAt : 0;
         promoTimerHtml = `
             <div class="shop-stand-timer promo-countdown" style="color: ${rarityColor};" data-expires="${expiresAt}">
@@ -336,10 +338,6 @@ function renderSpecials() {
     }
 
     container.innerHTML = html;
-
-    if (discountItem) {
-        startPromoCountdown();
-    }
 }
 
 /** Rend le panneau quête d'amélioration de la boutique */
@@ -489,6 +487,11 @@ window.openBuyModal = function (id, isConsumable = false) {
                 eq = pageState.shopItems.discount;
             }
         }
+        if (!eq && pageState.shopItems.blackMarket) {
+            if (pageState.shopItems.blackMarket.id === parseInt(id)) {
+                eq = pageState.shopItems.blackMarket;
+            }
+        }
     }
 
     if (!eq) return;
@@ -564,35 +567,42 @@ window.openBuyModal = function (id, isConsumable = false) {
 let promoCountdownInterval = null;
 
 function startPromoCountdown() {
-    const countdownEl = document.querySelector('.promo-countdown');
-    if (!countdownEl) return;
-
-    const textEl = countdownEl.querySelector('.countdown-text');
-    const expiresAtStr = countdownEl.getAttribute('data-expires');
-    if (!expiresAtStr || expiresAtStr === '0') {
-        textEl.textContent = '--:--:--';
-        return;
-    }
-    const expiresAt = parseInt(expiresAtStr, 10);
+    const countdownEls = document.querySelectorAll('.promo-countdown');
+    if (!countdownEls || countdownEls.length === 0) return;
 
     if (promoCountdownInterval) clearInterval(promoCountdownInterval);
 
     const updateTimer = () => {
         const now = Date.now();
-        const diff = expiresAt - now;
+        
+        let allExpired = true;
 
-        if (diff <= 0) {
-            textEl.textContent = '00:00:00';
+        countdownEls.forEach(countdownEl => {
+            const textEl = countdownEl.querySelector('.countdown-text');
+            const expiresAtStr = countdownEl.getAttribute('data-expires');
+            if (!expiresAtStr || expiresAtStr === '0') {
+                if (textEl) textEl.textContent = '--:--:--';
+                return;
+            }
+            const expiresAt = parseInt(expiresAtStr, 10);
+            const diff = expiresAt - now;
+
+            if (diff <= 0) {
+                if (textEl) textEl.textContent = '00:00:00';
+            } else {
+                allExpired = false;
+                const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
+                const m = Math.floor((diff / 1000 / 60) % 60);
+                const s = Math.floor((diff / 1000) % 60);
+
+                if (textEl) textEl.textContent = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
+            }
+        });
+
+        if (allExpired && countdownEls.length > 0) {
             clearInterval(promoCountdownInterval);
             loadShop();
-            return;
         }
-
-        const h = Math.floor((diff / (1000 * 60 * 60)) % 24);
-        const m = Math.floor((diff / 1000 / 60) % 60);
-        const s = Math.floor((diff / 1000) % 60);
-
-        textEl.textContent = `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}:${s.toString().padStart(2, '0')}`;
     };
 
     updateTimer();
@@ -603,6 +613,45 @@ window.addEventListener('DOMContentLoaded', async () => {
     if (window.initAppMeta) await window.initAppMeta();
     // Attend que auth soit chargé pour fetch loadShop
 });
+
+function renderBlackMarket() {
+    let container = document.getElementById('blackMarketContainer');
+    if (!container) {
+        container = document.createElement('div');
+        container.id = 'blackMarketContainer';
+        container.style.position = 'fixed';
+        container.style.left = '10px';
+        container.style.top = '50%';
+        container.style.transform = 'translateY(-50%) scale(0.85)';
+        container.style.transformOrigin = 'left center';
+        container.style.zIndex = '50';
+        container.style.display = 'flex';
+        container.style.flexDirection = 'column';
+        container.style.gap = '10px';
+        document.body.appendChild(container);
+    }
+
+    if (!pageState.shopItems || !pageState.shopItems.isBlackMarketActive) {
+        container.innerHTML = '';
+        return;
+    }
+
+    const { isBlackMarketLocked, blackMarket } = pageState.shopItems;
+
+    let html = `<div style="text-align:center; font-family:'Cinzel',serif; color:#ef4444; text-shadow:0 0 10px rgba(239,68,68,0.5); font-weight:bold; margin-bottom:5px; font-size:1.2rem; letter-spacing:2px;">Marché Noir</div>`;
+
+    if (isBlackMarketLocked) {
+        html += generateLockedSlotHtml({ requiredLevel: "Marché Noir", hint: "Débloquez-le via les améliorations de boutique" });
+    } else if (blackMarket) {
+        blackMarket.isBlackMarket = true;
+        // Appliquer un style spécifique pour le marché noir (rouge sombre / ombres rouges)
+        let standHtml = generateStandHtml(blackMarket);
+        standHtml = standHtml.replace('class="shop-stand"', 'class="shop-stand" style="border-color: #7f1d1d !important; box-shadow: 0 0 15px rgba(220,38,38,0.3) !important; background: linear-gradient(135deg, rgba(127,29,29,0.2) 0%, rgba(127,29,29,0.05) 100%) !important;"');
+        html += standHtml;
+    }
+
+    container.innerHTML = html;
+}
 
 window.addEventListener('authLoaded', () => {
     loadShop();
