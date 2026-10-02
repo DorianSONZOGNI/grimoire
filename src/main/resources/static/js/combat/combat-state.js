@@ -580,6 +580,58 @@ window.renderOverlayInventory = function (containerId) {
     if (!list) return;
     list.innerHTML = '';
 
+    // Hero HP/Mana summary panel (only for the event/exploration inventory)
+    if (containerId === 'eventOverlayInventoryList') {
+        let statsDiv = document.getElementById('eventOverlayHeroesStats');
+        const players = pageState.currentSessionData && pageState.currentSessionData.players;
+        if (statsDiv && players && players.length > 0) {
+            let statsHtml = '';
+            players.forEach(p => {
+                const cHp = p.healthCurrent || 0;
+                const mHp = p.healthMax || 1;
+                const cMp = p.manaCurrent || 0;
+                const mMp = p.manaMax || 1;
+                const hpPct = Math.max(0, Math.min(100, (cHp / mHp) * 100));
+                const mpPct = Math.max(0, Math.min(100, (cMp / mMp) * 100));
+                let iconName = 'account_circle';
+                let iconColor = '#94a3b8';
+                if (p.spiritualite && p.spiritualite.nom && window.getSpiritualiteIcon) {
+                    iconName = window.getSpiritualiteIcon(p.spiritualite.nom);
+                    iconColor = window.getSpiritualiteColor ? window.getSpiritualiteColor(p.spiritualite.nom) : '#94a3b8';
+                } else if (p.voie && p.voie.nom && window.getSpiritualiteIcon) {
+                    iconName = window.getSpiritualiteIcon(p.voie.nom);
+                    iconColor = window.getSpiritualiteColor ? window.getSpiritualiteColor(p.voie.nom) : '#94a3b8';
+                }
+                statsHtml += `<div style="display:flex; flex-direction:column; gap:4px; padding:8px 10px; background:rgba(15,23,42,0.92); border:1px solid rgba(255,255,255,0.08); border-radius:10px;">
+                    <div style="display:flex; align-items:center; gap:6px; margin-bottom:2px;">
+                        <span class="material-symbols-outlined" style="font-size:1rem; color:${iconColor}; flex-shrink:0;">${iconName}</span>
+                        <span style="font-size:0.72rem; font-weight:600; color:#e2e8f0; white-space:nowrap; overflow:hidden; text-overflow:ellipsis;">${p.name}</span>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:4px;">
+                        <span class="material-symbols-outlined" style="font-size:0.8rem; color:#f472b6; flex-shrink:0;">favorite</span>
+                        <div style="flex:1; background:#0f172a; border-radius:99px; height:10px; position:relative; overflow:hidden; border:1px solid rgba(255,255,255,0.06);">
+                            <div style="position:absolute; left:0; top:0; bottom:0; background:#db2777; width:${hpPct}%;"></div>
+                            <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:0.58rem; font-weight:700; color:#fff; text-shadow:0 0 3px #000;">${cHp}/${mHp}</div>
+                        </div>
+                    </div>
+                    <div style="display:flex; align-items:center; gap:4px;">
+                        <span class="material-symbols-outlined" style="font-size:0.8rem; color:#38bdf8; flex-shrink:0;">water_drop</span>
+                        <div style="flex:1; background:#0f172a; border-radius:99px; height:10px; position:relative; overflow:hidden; border:1px solid rgba(255,255,255,0.06);">
+                            <div style="position:absolute; left:0; top:0; bottom:0; background:#0ea5e9; width:${mpPct}%;"></div>
+                            <div style="position:absolute; inset:0; display:flex; align-items:center; justify-content:center; font-size:0.58rem; font-weight:700; color:#fff; text-shadow:0 0 3px #000;">${cMp}/${mMp}</div>
+                        </div>
+                    </div>
+                </div>`;
+            });
+            statsDiv.innerHTML = statsHtml;
+            statsDiv.style.display = statsHtml ? 'flex' : 'none';
+            statsDiv.style.flexDirection = 'column';
+            statsDiv.style.gap = '6px';
+        } else if (statsDiv) {
+            statsDiv.style.display = 'none';
+        }
+    }
+
     let totalWeight = 0;
     if (pageState.currentSessionData && pageState.currentSessionData.activeConsumables) {
         pageState.currentSessionData.activeConsumables.forEach(c => {
