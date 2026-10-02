@@ -1803,7 +1803,7 @@ function renderJoinConsumablesList() {
         let badgeHtml = '';
         if (isSelected) {
             badgeHtml = `
-            <div class="flex items-center gap-1 absolute shadow-md" style="bottom:-2px; right:-2px; background:#0f172a; border-radius:6px; padding:2px 4px; border:1px solid #334155; z-index:10;">
+            <div class="flex items-center gap-1 absolute shadow-md" style="bottom:-6px; right:-6px; background:#0f172a; border-radius:6px; padding:2px 4px; border:1px solid #334155; z-index:10;">
                 <button onclick="event.stopPropagation(); window.removeJoinConsumable('${c.name.replace(/'/g, "\\'")}')" style="display:flex; align-items:center; justify-content:center; width:18px; height:18px; background:none; border:none; color:#94a3b8; cursor:pointer; border-radius:4px;">
                     <span class="material-symbols-outlined" style="font-size:14px;">remove</span>
                 </button>
@@ -1813,20 +1813,39 @@ function renderJoinConsumablesList() {
                 </button>
             </div>`;
         } else {
-            badgeHtml = `<div style="position:absolute; bottom:-2px; right:-2px; background:rgba(15,23,42,0.9); padding:3px 6px; border-radius:6px; border:1px solid #334155; font-size:0.7rem; font-weight:700; color:#64748b;">0/${total}</div>`;
+            badgeHtml = `<div style="position:absolute; bottom:-5px; right:-5px; background:rgba(15,23,42,0.9); padding:3px 6px; border-radius:6px; border:1px solid #334155; font-size:0.7rem; font-weight:700; color:#64748b;">0/${total}</div>`;
+        }
+
+        let cardTooltip = '';
+        if (c.consumableCategory === 'CLE') {
+            cardTooltip = ` onmouseenter="if(window.showGlobalTooltip) window.showGlobalTooltip(this)" onmouseleave="if(window.hideGlobalTooltip) window.hideGlobalTooltip()" data-tooltip-html="Permet d'augmenter les chances de loot lors d'ouverture de coffre" style="cursor: help;"`;
+        } else if (c.consumableCategory === 'CORDE') {
+            cardTooltip = ` onmouseenter="if(window.showGlobalTooltip) window.showGlobalTooltip(this)" onmouseleave="if(window.hideGlobalTooltip) window.hideGlobalTooltip()" data-tooltip-html="Permet d'éviter certain piège" style="cursor: help;"`;
         }
 
         html += `
-            <div class="consumable-card ${isSelected ? 'selected' : ''} relative overflow-visible cursor-pointer"
-                 onclick="addJoinConsumable('${c.name.replace(/'/g, "\\'")}')"
-                 style="margin-bottom:0;">
-                <span class="material-symbols-outlined flex-shrink-0" style="font-size:1.1rem; color:${isSelected ? '#10b981' : iconColor};">${iconName}</span>
+            <div class="consumable-card ${isSelected ? 'selected' : ''} relative overflow-visible cursor-pointer" 
+                 onclick="addJoinConsumable('${c.name.replace(/'/g, "\\'")}')" 
+                 style="margin-bottom:0;" ${cardTooltip}>
+                <span class="material-symbols-outlined flex-shrink-0" style="font-size: 1.1rem; color: ${isSelected ? '#10b981' : iconColor};">${iconName}</span>
                 <div class="flex-1 min-w-0">
-                    <div style="display:flex; justify-content:space-between; align-items:center;">
-                        <div style="white-space:nowrap; color:#f8fafc; font-weight:600; font-size:0.7rem; overflow:hidden; text-overflow:ellipsis;" title="${c.name}">${c.name}</div>
-                        <div style="font-size:0.65rem; font-weight:700; color:#64748b; background:rgba(0,0,0,0.3); padding:1px 4px; border-radius:4px; display:flex; align-items:center; gap:2px;">
-                            <span class="material-symbols-outlined" style="font-size:0.65rem;">scale</span>${+Number(c.weight).toFixed(1)}
-                        </div>
+                    <div class="flex-between items-center">
+                        <div class="whitespace-nowrap text-slate-50 font-semibold text-[0.7rem] truncate" title="${c.name}">${c.name}</div>
+                        <div class="text-xxs font-bold text-muted bg-black/30 px-1 py-0.5 rounded inline-flex items-center gap-1"><span class="material-symbols-outlined" style="font-size: 0.7rem;">scale</span>${+Number(c.weight).toFixed(1)}</div>
+                    </div>
+                    <div class="text-muted text-xs flex gap-1.5 flex-wrap overflow-visible items-center mt-[2px]" style="min-height: 18px;">
+                        ${c.bonusHealthMax ? `<span class="inline-flex items-center text-pink-500" title="PV">+${c.bonusHealthMax}<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">favorite</span></span>` : ''}
+                        ${c.bonusManaMax ? `<span class="inline-flex items-center text-sky-500" title="Mana">+${c.bonusManaMax}<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">water_drop</span></span>` : ''}
+                        ${c.consumableHpPercent ? `<span class="inline-flex items-center text-pink-500" title="PV Max">+${c.consumableHpPercent}%<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">favorite</span></span>` : ''}
+                        ${c.consumableManaPercent ? `<span class="inline-flex items-center text-sky-500" title="Mana Max">+${c.consumableManaPercent}%<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">water_drop</span></span>` : ''}
+                        ${c.consumableMissingHpPercent ? `<span class="inline-flex items-center text-red-500" title="PV Manq">+${c.consumableMissingHpPercent}%<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">healing</span></span>` : ''}
+                        ${c.consumableMissingManaPercent ? `<span class="inline-flex items-center text-purple-500" title="Mana Manq">+${c.consumableMissingManaPercent}%<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">cyclone</span></span>` : ''}
+                        ${c.consumableBonusXpPercent ? `<span class="inline-flex items-center text-yellow-400" title="XP">${c.consumableBonusXpPercent > 0 ? '+' : ''}${c.consumableBonusXpPercent}%<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">star</span></span>` : ''}
+                        ${c.consumableBonusMagicalDamagePercent ? `<span class="inline-flex items-center text-purple-400" title="Dégâts Magiques">${c.consumableBonusMagicalDamagePercent > 0 ? '+' : ''}${c.consumableBonusMagicalDamagePercent}%<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">auto_awesome</span></span>` : ''}
+                        ${c.consumableBonusPhysicalDamagePercent ? `<span class="inline-flex items-center text-red-400" title="Dégâts Physiques">${c.consumableBonusPhysicalDamagePercent > 0 ? '+' : ''}${c.consumableBonusPhysicalDamagePercent}%<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">fitness_center</span></span>` : ''}
+                        ${c.consumableBonusArmorFlat ? `<span class="inline-flex items-center text-blue-400" title="Armure">${c.consumableBonusArmorFlat > 0 ? '+' : ''}${c.consumableBonusArmorFlat}<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">shield</span></span>` : ''}
+                        ${c.consumableBonusResistanceFlat ? `<span class="inline-flex items-center text-emerald-400" title="Résistance">${c.consumableBonusResistanceFlat > 0 ? '+' : ''}${c.consumableBonusResistanceFlat}<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">shield</span></span>` : ''}
+                        ${c.consumableCategory === 'CLE' && c.specialEffectValue ? `<span class="inline-flex items-center text-yellow-400" title="Bonus butin coffre">+${c.specialEffectValue}%<span class="material-symbols-outlined text-[0.8rem] ml-[1px]">diamond</span></span>` : ''}
                     </div>
                 </div>
                 ${badgeHtml}
