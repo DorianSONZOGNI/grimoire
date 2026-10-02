@@ -222,8 +222,8 @@
     </main>
 
     <!-- Overlay Lobby Attente (Co-op hôte) -->
-    <div id="lobbyWaitingOverlay" class="lobby-waiting-overlay">
-        <div class="lobby-modal">
+    <div id="lobbyWaitingOverlay" class="lobby-waiting-overlay" onclick="cancelCoopLobby()">
+        <div class="lobby-modal" onclick="event.stopPropagation()">
             <div class="lobby-modal-icon">⚔️</div>
             <h3 class="lobby-modal-title">Lobby Co-op Créé !</h3>
             <p class="lobby-modal-subtitle">Partagez ce code à votre allié :</p>

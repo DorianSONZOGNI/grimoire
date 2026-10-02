@@ -1573,16 +1573,43 @@ let _joinLobbyMultiId = null; // multiSessionId du lobby rejoint
 let _joinLobbyHostHeroCount = 0; // nombre de héros de l'hôte
 let _joinLobbyHostConsumableWeight = 0; // Poids des consomables déjà sélectionnés par l'hôte
 let _joinAvailableConsumables = []; // consomables dispo chargés une fois
+let _joinLobbySSE = null; // EventSource pour le guest
 
 
-window.openJoinLobbyModal = function () {
+
+function _clearJoinSelections() {
+    joinSelectedCharIds.forEach(id => {
+        const el = document.getElementById(`joinChar_${id}`);
+        if (el) {
+            el.style.borderColor = 'rgba(255,255,255,0.1)';
+            el.style.background = '';
+        }
+    });
     joinSelectedCharIds = [];
     joinSelectedConsumableIds = [];
+    renderJoinConsumablesList();
+}
+
+function _setJoinCharSelectEnabled(enabled) {
+    const charSelect = document.getElementById('joinLobbyCharSelect');
+    if (charSelect) {
+        charSelect.style.opacity = enabled ? '1' : '0.4';
+        charSelect.style.pointerEvents = enabled ? 'auto' : 'none';
+    }
+}
+
+window.openJoinLobbyModal = function () {
+    _clearJoinSelections();
     _joinLobbyMultiId = null;
     _joinLobbyHostHeroCount = 0;
     _joinLobbyHostConsumableWeight = 0;
+    if (_joinLobbySSE) {
+        _joinLobbySSE.close();
+        _joinLobbySSE = null;
+    }
     const modal = document.getElementById('joinLobbyModal');
     modal.style.display = 'flex';
+    _setJoinCharSelectEnabled(false);
 
     // Reset input and info
     const input = document.getElementById('joinLobbyCodeInput');
@@ -1829,6 +1856,15 @@ window.removeJoinConsumable = function(name) {
 };
 
 window.closeJoinLobbyModal = function () {
+    if (_joinLobbyMultiId) {
+        _clearJoinSelections();
+        _sendJoinGuestUpdate();
+    }
+    if (_joinLobbySSE) {
+        _joinLobbySSE.close();
+        _joinLobbySSE = null;
+    }
+    _joinLobbyMultiId = null;
     document.getElementById('joinLobbyModal').style.display = 'none';
 };
 
@@ -2026,6 +2062,7 @@ document.addEventListener('DOMContentLoaded', () => {
                         `;
 
                         window.updateJoinCharAvailability(info);
+                        _setJoinCharSelectEnabled(true);
 
                         // Auto-unselect characters if we are over the new limit
                         while (joinSelectedCharIds.length > window.maxSelectableJoinChars) {
@@ -2045,13 +2082,27 @@ document.addEventListener('DOMContentLoaded', () => {
                                         const c = pageState.availableConsumables.find(ac => ac.id === cid);
                                         return c ? (c.weight || 0) : 0;
                                     })
-                                    .reduce((a, b) => a + b, 0);
+                                .reduce((a, b) => a + b, 0);
+
+                                if (_joinLobbySSE) {
+                                    _joinLobbySSE.close();
+                                }
+                                _joinLobbySSE = new EventSource(`/api/pve/multi/${_joinLobbyMultiId}/events`);
+                                _joinLobbySSE.addEventListener('lobby-cancelled', () => {
+                                    window.showNotif('Lobby annulé par l\'hôte.', true);
+                                    window.closeJoinLobbyModal();
+                                });
+                                _joinLobbySSE.onerror = () => {
+                                    if (_joinLobbySSE) _joinLobbySSE.close();
+                                };
                             }
                         } catch (_) {}
 
                     } else {
                         infoContainer.style.display = 'none';
                         _joinLobbyMultiId = null;
+                        _setJoinCharSelectEnabled(false);
+                        _clearJoinSelections();
                         _joinLobbyHostHeroCount = 0;
                         _joinLobbyHostConsumableWeight = 0;
                         window.maxSelectableJoinChars = 4;
@@ -2069,6 +2120,8 @@ document.addEventListener('DOMContentLoaded', () => {
             } else {
                 infoContainer.style.display = 'none';
                 _joinLobbyMultiId = null;
+                _setJoinCharSelectEnabled(false);
+                _clearJoinSelections();
                 _joinLobbyHostHeroCount = 0;
                 _joinLobbyHostConsumableWeight = 0;
                 window.maxSelectableJoinChars = 4;
