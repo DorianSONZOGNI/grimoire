@@ -1803,7 +1803,7 @@ function renderJoinConsumablesList() {
         let badgeHtml = '';
         if (isSelected) {
             badgeHtml = `
-            <div class="flex items-center gap-1 absolute shadow-md" style="bottom:-6px; right:-6px; background:#0f172a; border-radius:6px; padding:2px 4px; border:1px solid #334155; z-index:10;">
+            <div class="flex items-center gap-1 absolute shadow-md" style="bottom:-2px; right:-2px; background:#0f172a; border-radius:6px; padding:2px 4px; border:1px solid #334155; z-index:10;">
                 <button onclick="event.stopPropagation(); window.removeJoinConsumable('${c.name.replace(/'/g, "\\'")}')" style="display:flex; align-items:center; justify-content:center; width:18px; height:18px; background:none; border:none; color:#94a3b8; cursor:pointer; border-radius:4px;">
                     <span class="material-symbols-outlined" style="font-size:14px;">remove</span>
                 </button>
@@ -1813,7 +1813,7 @@ function renderJoinConsumablesList() {
                 </button>
             </div>`;
         } else {
-            badgeHtml = `<div style="position:absolute; bottom:-5px; right:-5px; background:rgba(15,23,42,0.9); padding:3px 6px; border-radius:6px; border:1px solid #334155; font-size:0.7rem; font-weight:700; color:#64748b;">0/${total}</div>`;
+            badgeHtml = `<div style="position:absolute; bottom:-2px; right:-2px; background:rgba(15,23,42,0.9); padding:3px 6px; border-radius:6px; border:1px solid #334155; font-size:0.7rem; font-weight:700; color:#64748b;">0/${total}</div>`;
         }
 
         html += `

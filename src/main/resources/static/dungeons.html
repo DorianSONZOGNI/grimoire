@@ -310,7 +310,7 @@
         </div>
 
         <!-- Right Panel: Consumables (drawer droit) -->
-        <div id="joinLobbyConsomablesSection" style="display:none; position:absolute; right:0; top:0; height:100%; width:min(380px,100%); background:linear-gradient(180deg,#0f1629 0%,#111b35 100%); border-left:1px solid rgba(14,165,233,0.3); flex-direction:column; overflow:hidden; box-shadow:-8px 0 32px rgba(0,0,0,0.5); z-index:1003;">
+        <div id="joinLobbyConsomablesSection" style="display:none; position:absolute; right:24px; top:50%; transform:translateY(-50%); height:max-content; max-height:92vh; border-radius:1.5rem; width:min(460px,100%); background:linear-gradient(180deg,#0f1629 0%,#111b35 100%); border:1px solid rgba(14,165,233,0.3); flex-direction:column; overflow:hidden; box-shadow:-8px 0 32px rgba(0,0,0,0.5); z-index:1003;">
             <div style="padding:1.5rem 1.5rem 1rem; border-bottom:1px solid rgba(255,255,255,0.07); flex-shrink:0;">
                 <div style="font-size:1rem; font-weight:700; color:#e2e8f0; display:flex; align-items:center; justify-content:space-between;">
                     <span style="display:flex; align-items:center; gap:0.5rem;">
@@ -321,7 +321,7 @@
                 </div>
                 <p style="color:#64748b; font-size:0.75rem; margin:0.5rem 0 0 0;">Sélectionnez les objets pour la partie.</p>
             </div>
-            <div style="flex:1; overflow-y:auto; padding:1rem 1.5rem;" class="custom-scrollbar">
+            <div style="flex:1; padding:1rem 1.5rem;">
                 <div id="joinConsomableList">
                     <!-- rempli par JS -->
                 </div>
