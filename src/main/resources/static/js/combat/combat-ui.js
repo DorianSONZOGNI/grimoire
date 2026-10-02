@@ -1,4 +1,4 @@
-﻿import { createAnomalyBadgeHtml, getExpStats, getSpiritExpStats } from './combat-utils.js';
+import { createAnomalyBadgeHtml, getExpStats, getSpiritExpStats } from './combat-utils.js';
 import { pageState } from './combat-state.js';
 import { processNewDeathLogs, updateMultiTurnBanner } from './combat-socket.js';
 import { currentSpellsTab, initiateCombatCast } from './combat-spells.js';
@@ -547,6 +547,10 @@ export function updateUI(data) {
                         window.renderOverlayMap('combatMainMapList');
                     }
                     vicOverlay.classList.add('show');
+                    // Show hero HP/Mana panel as soon as combat ends (after show so overlay detection works)
+                    if (typeof window.renderHeroStatsPanel === 'function') {
+                        window.renderHeroStatsPanel();
+                    }
                     const xpContainer = document.getElementById('combatVictoryXpContainer');
                     if (xpContainer) {
                         xpContainer.innerHTML = '';
@@ -1880,6 +1884,10 @@ export function updateUI(data) {
                 window.renderOverlayMap('combatMainMapList');
             }
             overlay.classList.add('show');
+            // Show hero HP/Mana panel automatically on non-combat rooms (after show so overlay detection works)
+            if (typeof window.renderHeroStatsPanel === 'function') {
+                window.renderHeroStatsPanel();
+            }
         }
     }
 
